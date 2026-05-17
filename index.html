@@ -1,87 +1,179 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CLI AGENTIC MARKET — Supermarkets as programmable commerce</title>
 <style>
   :root {
-    --bg: #0c0c0c;
-    --fg: #c0c0c0;
-    --green: #00d700;
-    --green-dim: #005f00;
-    --dim: #585858;
-    --bold: #ffffff;
-    --cyan: #00d7d7;
+    --bg:     #09090b;
+    --card:   #111113;
+    --border: #1f1f22;
+    --green:  #00d75f;
+    --green-dim: #006633;
+    --fg:     #c4c4cc;
+    --fg-dim: #6b6b76;
+    --white:  #f0f0f5;
+    --cyan:   #00c8c8;
+    --yellow: #e6b800;
+    --magenta:#c040c0;
+    --radius: 8px;
+    --font:   'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+    --sans:   'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
   body {
     background: var(--bg);
     color: var(--fg);
-    font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
-    line-height: 1.7;
-    padding: 2rem;
-    max-width: 860px;
-    margin: 0 auto;
+    font-family: var(--sans);
+    line-height: 1.65;
   }
-  .ascii { color: var(--green); font-size: 0.62rem; line-height: 1.1; white-space: pre; overflow-x: auto; }
-  h1 { color: var(--green); font-size: 1.6rem; margin: 1.5rem 0 0.25rem; }
-  h2 { color: var(--green); font-size: 1.1rem; margin: 2.5rem 0 1rem; text-transform: uppercase; letter-spacing: 0.15em; }
-  h2::before { content: "▸ "; }
-  p { margin: 0.6rem 0; }
-  .pitch { color: var(--green); font-size: 1.05rem; margin: 1.5rem 0; }
-  .divider { color: var(--dim); margin: 2rem 0; letter-spacing: 0.3em; }
-  code { color: var(--cyan); background: #1a1a1a; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9rem; }
-  pre { background: #111; border: 1px solid #222; padding: 1.2rem; overflow-x: auto; border-radius: 6px; margin: 1rem 0; }
-  pre code { background: none; padding: 0; }
-  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-  th { color: var(--green); text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid #222; }
-  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #111; }
-  .tag {
-    display: inline-block;
-    background: #1a2a1a;
-    color: var(--green);
-    padding: 0.3rem 0.7rem;
-    border-radius: 4px;
-    margin: 0.25rem;
-    font-size: 0.85rem;
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
   }
-  .cta {
-    display: inline-block;
-    background: var(--green);
-    color: var(--bg);
-    padding: 0.7rem 1.5rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 1rem 0.5rem 1rem 0;
-    font-size: 0.95rem;
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(9,9,11,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .cta-dim {
-    display: inline-block;
-    background: #1a1a1a;
-    color: var(--green);
-    border: 1px solid var(--green-dim);
-    padding: 0.7rem 1.5rem;
-    border-radius: 6px;
-    text-decoration: none;
-    margin: 1rem 0.5rem 1rem 0;
-    font-size: 0.95rem;
+  nav .logo { font-family: var(--font); color: var(--green); font-size: 0.85rem; letter-spacing: 0.05em; }
+  nav .links { display: flex; gap: 1.5rem; }
+  nav a { color: var(--fg-dim); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+  nav a:hover { color: var(--fg); }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+  .hero {
+    padding: 8rem 0 5rem;
+    text-align: center;
   }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
-  .card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; }
-  .card h3 { color: var(--green); margin-bottom: 0.5rem; }
-  .card ul { list-style: none; padding: 0; }
-  .card li { padding: 0.25rem 0; }
-  .card li::before { content: "· "; color: var(--green-dim); }
-  .footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #222; color: var(--dim); font-size: 0.85rem; }
-  .footer .pitch { font-size: 0.9rem; }
-  .footer a { color: var(--green-dim); }
+  .hero-ascii {
+    font-family: var(--font); color: var(--green); font-size: 0.55rem; line-height: 1.15;
+    white-space: pre; margin-bottom: 2rem; opacity: 0.9;
+  }
+  .hero h1 { font-family: var(--font); font-size: clamp(1.6rem, 4vw, 2.6rem); color: var(--white); font-weight: 400; line-height: 1.25; margin-bottom: 1rem; }
+  .hero h1 span { color: var(--green); }
+  .hero .pitch { font-size: 1.1rem; color: var(--fg-dim); max-width: 600px; margin: 0 auto 2rem; line-height: 1.6; }
+  .install-bar {
+    display: inline-flex; align-items: center; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    font-family: var(--font); font-size: 0.85rem;
+  }
+  .install-bar .prefix { color: var(--green); padding: 0.7rem 1rem; border-right: 1px solid var(--border); }
+  .install-bar code { padding: 0.7rem 1rem; color: var(--fg); }
+  .install-bar button {
+    padding: 0.7rem 1rem; background: var(--green); color: var(--bg);
+    border: none; font-family: var(--sans); font-weight: 600; font-size: 0.8rem; cursor: pointer;
+  }
+  .install-bar button:hover { opacity: 0.85; }
+  .tags { margin-top: 1.5rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4rem; }
+  .tags span {
+    font-family: var(--font); font-size: 0.7rem; color: var(--green-dim);
+    background: rgba(0,215,95,0.06); border: 1px solid rgba(0,215,95,0.12);
+    padding: 0.25rem 0.6rem; border-radius: 4px;
+  }
+  section { padding: 5rem 0; }
+  .section-label {
+    font-family: var(--font); font-size: 0.7rem; color: var(--green);
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem;
+  }
+  h2 { font-family: var(--font); font-size: 1.4rem; color: var(--white); font-weight: 400; margin-bottom: 1rem; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 2rem; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(0,215,95,0.25); }
+  .card-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+  .card p { color: var(--fg-dim); font-size: 0.9rem; }
+  .card ul { list-style: none; margin-top: 1rem; }
+  .card li { font-family: var(--font); font-size: 0.8rem; padding: 0.3rem 0; }
+  .card li::before { content: "▸ "; color: var(--green-dim); }
+  .terminal {
+    background: #0a0a0c; border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin: 1.5rem 0;
+    box-shadow: 0 0 40px rgba(0,215,95,0.04);
+  }
+  .terminal-header {
+    background: #131316; padding: 0.5rem 1rem;
+    display: flex; gap: 0.4rem; align-items: center; border-bottom: 1px solid var(--border);
+  }
+  .terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .terminal-header .dot:nth-child(1) { background: #ff5f56; }
+  .terminal-header .dot:nth-child(2) { background: #ffbd2e; }
+  .terminal-header .dot:nth-child(3) { background: #27c93f; }
+  .terminal-header .title { margin-left: 0.6rem; font-family: var(--font); font-size: 0.7rem; color: var(--fg-dim); }
+  .terminal-body { padding: 1.2rem; font-family: var(--font); font-size: 0.78rem; line-height: 1.7; overflow-x: auto; }
+  .prompt { color: var(--green); }
+  .output-dim { color: var(--fg-dim); }
+  .output-price { color: var(--yellow); }
+  .output-store { color: var(--magenta); }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+  .feature { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+  .feature .emoji { font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .feature h4 { font-family: var(--font); font-size: 0.85rem; color: var(--white); margin-bottom: 0.3rem; }
+  .feature p { color: var(--fg-dim); font-size: 0.8rem; line-height: 1.5; }
+  .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; }
+  .store-flag {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.75rem 1rem; font-family: var(--font); font-size: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .store-flag .name { color: var(--fg); }
+  .store-flag .country { color: var(--fg-dim); font-size: 0.65rem; }
+  .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .price-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem; text-align: center;
+  }
+  .price-card.highlight { border-color: var(--green-dim); }
+  .price-card .tier { font-family: var(--font); font-size: 0.75rem; color: var(--green); margin-bottom: 0.5rem; }
+  .price-card .price { font-family: var(--font); font-size: 1.5rem; color: var(--white); margin-bottom: 0.5rem; }
+  .price-card .desc { color: var(--fg-dim); font-size: 0.8rem; }
+  .cta-section { text-align: center; padding: 5rem 0; }
+  .btn {
+    display: inline-block; padding: 0.8rem 1.8rem; border-radius: var(--radius);
+    font-family: var(--font); font-size: 0.85rem; text-decoration: none;
+    transition: opacity 0.15s; margin: 0 0.4rem;
+  }
+  .btn-primary { background: var(--green); color: var(--bg); font-weight: 600; }
+  .btn-secondary { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+  .btn:hover { opacity: 0.85; }
+  footer {
+    border-top: 1px solid var(--border); padding: 3rem 0; text-align: center;
+    color: var(--fg-dim); font-size: 0.8rem;
+  }
+  footer .pitch { color: var(--green); font-family: var(--font); font-size: 0.8rem; margin-bottom: 1rem; }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  @media (max-width: 700px) {
+    .split { grid-template-columns: 1fr; }
+    .hero { padding: 6rem 0 3rem; }
+    nav { padding: 0.75rem 1rem; }
+    .container { padding: 0 1rem; }
+    .hero-ascii { font-size: 0.4rem; }
+    .hero .install-bar { flex-wrap: wrap; justify-content: center; }
+  }
 </style>
 </head>
 <body>
+<nav>
+  <span class="logo">▸ CLI AGENTIC MARKET</span>
+  <div class="links">
+    <a href="#product">Product</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://github.com/Treevu-ai/agentic-market">GitHub</a>
+  </div>
+</nav>
 
-<div class="ascii">
+<section class="hero">
+  <div class="container">
+    <div class="hero-ascii">
  ██████╗██╗     ██╗     █████╗  ██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗
 ██╔════╝██║     ██║    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝
 ██║     ██║     ██║    ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ██║██║
@@ -94,109 +186,141 @@
  ██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ██╔══╝     ██║
  ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
  ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝
-</div>
-
-<h1>CLI AGENTIC MARKET</h1>
-<p class="pitch">Infrastructure layer — supermarkets as programmable commerce.</p>
-<p class="pitch">Stripe transformed payments into APIs. We transform supermarkets into APIs for AI agents.</p>
-
-<div style="margin:1.5rem 0">
-  <a href="https://github.com" class="cta">pip install agentic-market</a>
-  <a href="https://github.com" class="cta-dim">GitHub →</a>
-</div>
-
-<div class="tag">Peru</div><div class="tag">Chile</div><div class="tag">Colombia</div><div class="tag">LATAM</div><div class="tag">MCP</div><div class="tag">AI agents</div>
-
-<div class="divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-
-<h2>The problem</h2>
-<p>E-commerce is optimized for <strong>clicks</strong>, not <strong>agents</strong>. Retailers are not prepared for autonomous commerce. No standardized AI-native supermarket layer exists in LATAM. APIs are fragmented or nonexistent.</p>
-
-<h2>The solution</h2>
-<div class="grid">
-  <div class="card">
-    <h3>Human-friendly</h3>
-    <ul>
-      <li>Terminal CLI with Spanish commands</li>
-      <li>Rich tables and formatted output</li>
-      <li>Full purchase flow: search → cart → checkout</li>
-      <li>Price comparison across stores</li>
-    </ul>
+    </div>
+    <h1>Supermarkets as <span>programmable commerce</span></h1>
+    <p class="pitch">Stripe transformed payments into APIs. We transform supermarkets into APIs for AI agents.</p>
+    <div class="install-bar">
+      <span class="prefix">$</span>
+      <code>pip install git+https://github.com/Treevu-ai/agentic-market.git</code>
+      <button onclick="navigator.clipboard.writeText('pip install git+https://github.com/Treevu-ai/agentic-market.git')">Copy</button>
+    </div>
+    <div class="tags">
+      <span>Peru</span><span>Argentina</span><span>Brazil</span><span>Mexico</span><span>Colombia</span>
+      <span>VTEX</span><span>MCP</span><span>FastAPI</span><span>Open Source</span>
+    </div>
   </div>
-  <div class="card">
-    <h3>Agent-friendly</h3>
-    <ul>
-      <li>REST API — FastAPI on localhost</li>
-      <li>MCP Tools — 9 tools over stdio</li>
-      <li>JSON parseable output</li>
-      <li>Autonomous purchase workflows</li>
-    </ul>
+</section>
+
+<section id="product">
+  <div class="container">
+    <div class="section-label">// Product</div>
+    <div class="split">
+      <div class="card">
+        <div class="card-icon">&#x1f5a5;&#xfe0f;</div>
+        <h3>For Humans</h3>
+        <p>Terminal-native CLI with Spanish commands.</p>
+        <ul>
+          <li>market search "leche"</li>
+          <li>market compare "aceite"</li>
+          <li>market add &lt;id&gt; --qty 2</li>
+          <li>market cart</li>
+          <li>market checkout</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1f916;</div>
+        <h3>For AI Agents</h3>
+        <p>REST API + MCP Tools. JSON-native.</p>
+        <ul>
+          <li>market --json</li>
+          <li>market ask "compra arroz"</li>
+          <li>9 MCP tools over stdio</li>
+          <li>Autonomous checkout</li>
+          <li>Compatible DeepSeek, Claude</li>
+        </ul>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 
-<pre><code>$ market search "leche"
-┏━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┓
-┃ # ┃ Producto       ┃ Marca  ┃ Tienda  ┃ Precio ┃
-┡━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━┩
-│ 1 │ Leche Gloria   │ Gloria │ P.Vea   │ S/5.90 │
-│ 2 │ Leche de Tigre │ Tiger  │ Metro   │ S/8.90 │
-│ 3 │ Leche Cond.    │ Nestlé │ Wong    │ S/3.90 │
-└───┴────────────────┴────────┴─────────┴────────┘
+<section>
+  <div class="container">
+    <div class="section-label">// Live Demo</div>
+    <div class="terminal">
+      <div class="terminal-header">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="title">market — zsh</span>
+      </div>
+      <div class="terminal-body">
+        <span class="prompt">$</span> <span class="cmd">market search "leche" --limit 4</span><br>
+        <span class="output-dim">#   Producto            Marca    Tienda   Precio</span><br>
+        <span class="output-dim">1   Choc. con Leche    Triang   </span><span class="output-store">Wong</span><span class="output-dim">    </span><span class="output-price">S/1.70</span><br>
+        <span class="output-dim">2   Leche Gloria       Gloria   </span><span class="output-store">P.Vea</span><span class="output-dim">    </span><span class="output-price">S/5.90</span><br>
+        <span class="output-dim">3   Leche de Tigre     Tiger    </span><span class="output-store">Metro</span><span class="output-dim">    </span><span class="output-price">S/8.90</span><br>
+        <span class="output-dim">4   Leche Condensada   </span><span class="output-store">Nestle</span><span class="output-dim">   </span><span class="output-store">Wong</span><span class="output-dim">    </span><span class="output-price">S/3.90</span><br>
+        <span class="output-dim">4 results across Wong, Metro, Plaza Vea</span><br><br>
+        <span class="prompt">$</span> <span class="cmd">market ask "compra lo mas barato"</span><br>
+        <span class="output-dim">Added 'Chocolate con Leche Triangulo' from Wong at S/1.70</span><br>
+        <span class="output-dim">Cart: 2 items, S/5.60</span><br><br>
+        <span class="prompt">$</span> <span class="cmd">market checkout</span><br>
+        <span class="output-dim">Order b1ce2c73 completed. Total: S/5.60</span><br><br>
+        <span class="prompt">$</span> <span class="cmd">market --json</span><br>
+        <span class="output-dim">{"company":"CLI AGENTIC MARKET","stores":8,"countries":5}</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-$ market ask "compra lo más barato"
-✓ Agregué 'Leche Condensada Nestlé' de Wong a S/3.90
-Carrito: 2 items, S/49.40
+<section>
+  <div class="container">
+    <div class="section-label">// Capabilities</div>
+    <div class="features">
+      <div class="feature"><div class="emoji">&#x1f50d;</div><h4>Semantic Search</h4><p>Natural language queries. Fuzzy matching between supermarket groups.</p></div>
+      <div class="feature"><div class="emoji">&#x1f4ca;</div><h4>Price Comparison</h4><p>Side-by-side prices across 8 stores in 5 countries.</p></div>
+      <div class="feature"><div class="emoji">&#x1f6d2;</div><h4>Cart &amp; Checkout</h4><p>Full flow: add, modify, checkout with Yape/Plin.</p></div>
+      <div class="feature"><div class="emoji">&#x1f9e0;</div><h4>Purchase Memory</h4><p>Inferred preferences. One-command reorder.</p></div>
+      <div class="feature"><div class="emoji">&#x1f916;</div><h4>Agent-Native</h4><p>MCP server. 9 tools. JSON output for LLMs.</p></div>
+      <div class="feature"><div class="emoji">&#x1f310;</div><h4>Multi-Country</h4><p>8 stores. Filter by country. Add new in 1 line.</p></div>
+      <div class="feature"><div class="emoji">&#x1f4e6;</div><h4>Barcode Lookup</h4><p>Open Food Facts. 3M+ products with NutriScore.</p></div>
+      <div class="feature"><div class="emoji">&#x1f3f7;</div><h4>Categories</h4><p>VTEX category tree. Drill down to any aisle.</p></div>
+    </div>
+  </div>
+</section>
 
-$ market --json
-{"company":"CLI AGENTIC MARKET","stores":["wong","metro","plazavea"]}</code></pre>
+<section>
+  <div class="container">
+    <div class="section-label">// Supported Stores</div>
+    <div class="store-grid">
+      <div class="store-flag"><span>&#x1f1f5;&#x1f1ea;</span><span class="name">Wong</span><span class="country">PE</span></div>
+      <div class="store-flag"><span>&#x1f1f5;&#x1f1ea;</span><span class="name">Metro</span><span class="country">PE</span></div>
+      <div class="store-flag"><span>&#x1f1f5;&#x1f1ea;</span><span class="name">Plaza Vea</span><span class="country">PE</span></div>
+      <div class="store-flag"><span>&#x1f1e6;&#x1f1f7;</span><span class="name">Carrefour</span><span class="country">AR</span></div>
+      <div class="store-flag"><span>&#x1f1e6;&#x1f1f7;</span><span class="name">Jumbo</span><span class="country">AR</span></div>
+      <div class="store-flag"><span>&#x1f1e7;&#x1f1f7;</span><span class="name">Carrefour</span><span class="country">BR</span></div>
+      <div class="store-flag"><span>&#x1f1f2;&#x1f1fd;</span><span class="name">Chedraui</span><span class="country">MX</span></div>
+      <div class="store-flag"><span>&#x1f1f2;&#x1f1fd;</span><span class="name">HEB</span><span class="country">MX</span></div>
+      <div class="store-flag"><span>&#x1f1e8;&#x1f1f4;</span><span class="name">Olimpica</span><span class="country">CO</span></div>
+      <div class="store-flag"><span>&#x1f310;</span><span class="name">Open Food Facts</span><span class="country">Global</span></div>
+    </div>
+  </div>
+</section>
 
-<div class="divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+<section id="pricing">
+  <div class="container">
+    <div class="section-label">// Pricing</div>
+    <div class="pricing">
+      <div class="price-card"><div class="tier">DEV</div><div class="price">Free</div><div class="desc">Self-hosted<br>Open source</div></div>
+      <div class="price-card highlight"><div class="tier">STARTER</div><div class="price">$499/mo</div><div class="desc">Single retailer<br>Email support</div></div>
+      <div class="price-card"><div class="tier">GROWTH</div><div class="price">$1,999/mo</div><div class="desc">Multi-store<br>Custom integrations</div></div>
+      <div class="price-card"><div class="tier">ENTERPRISE</div><div class="price">Custom</div><div class="desc">White-label<br>Dedicated infra</div></div>
+    </div>
+  </div>
+</section>
 
-<h2>Use cases</h2>
-<table>
-  <tr><th>Command</th><th>Result</th></tr>
-  <tr><td><code>market ask "compra lo mismo del mes pasado"</code></td><td>Reorders last purchase automatically</td></tr>
-  <tr><td><code>market ask "arma una compra saludable por S/200"</code></td><td>Searches, compares, and fills cart within budget</td></tr>
-  <tr><td><code>market ask "qué aceite está más barato"</code></td><td>Price comparison across 3 stores</td></tr>
-  <tr><td><code>market --json</code></td><td>Machine-readable for LLM consumption</td></tr>
-</table>
+<section class="cta-section">
+  <div class="container">
+    <h2>One command to start.</h2>
+    <a href="https://github.com/Treevu-ai/agentic-market" class="btn btn-primary">pip install agentic-market</a>
+    <a href="https://github.com/Treevu-ai/agentic-market" class="btn btn-secondary">View on GitHub</a>
+  </div>
+</section>
 
-<div class="divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-
-<h2>Supported supermarkets</h2>
-<table>
-  <tr><th>Store</th><th>Group</th><th>API</th><th>Status</th></tr>
-  <tr><td>Wong</td><td>Cencosud</td><td>VTEX</td><td>✅</td></tr>
-  <tr><td>Metro</td><td>Cencosud</td><td>VTEX</td><td>✅</td></tr>
-  <tr><td>Plaza Vea</td><td>SPSA</td><td>VTEX</td><td>✅</td></tr>
-</table>
-<p style="color:var(--dim)">Adding a store is one line of config.</p>
-
-<div class="divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-
-<h2>Pricing</h2>
-<table>
-  <tr><th>Tier</th><th>Price</th><th>For</th></tr>
-  <tr><td>Dev</td><td>Free</td><td>Self-hosted, open source</td></tr>
-  <tr><td>Starter</td><td>$499/mo</td><td>Single retailer, hosted</td></tr>
-  <tr><td>Growth</td><td>$1,999/mo</td><td>Multi-store, priority support</td></tr>
-  <tr><td>Enterprise</td><td>Custom</td><td>White-label, SLA, dedicated</td></tr>
-</table>
-
-<div style="margin:2rem 0">
-  <a href="https://github.com" class="cta">Start free →</a>
-  <a href="mailto:" class="cta-dim">Talk to sales</a>
-</div>
-
-<div class="footer">
-  <p class="pitch">"Estamos convirtiendo supermercados en infraestructura consumible por inteligencia artificial."</p>
-  <p style="margin-top:1rem">
-    CLI AGENTIC MARKET · v1.0 · 
-    <a href="https://github.com">GitHub</a> · 
-    <a href="https://twitter.com">@agenticmarket</a>
-  </p>
-  <p>Peru · Chile · Colombia → LATAM</p>
-</div>
-
+<footer>
+  <div class="container">
+    <p class="pitch">"Estamos convirtiendo supermercados en infraestructura consumible por inteligencia artificial."</p>
+    <p>CLI AGENTIC MARKET · v1.0 · <a href="https://github.com/Treevu-ai/agentic-market">GitHub</a></p>
+    <p style="margin-top:0.5rem">Peru · Argentina · Brazil · Mexico · Colombia → LATAM</p>
+  </div>
+</footer>
 </body>
 </html>
