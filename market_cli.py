@@ -316,7 +316,7 @@ def cmd_search(args):
     console.print()
     console.print(table)
     console.print(f"\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
-    console.print(f"[dim]Ej: market add 3 --qty 2[/]  (el #3 de la tabla)[/]")
+    console.print(f"[dim]Ej: market add 3 --qty 2  (el #3 de la tabla)[/]")
 
 
 def cmd_compare(args):
