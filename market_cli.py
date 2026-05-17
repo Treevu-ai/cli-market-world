@@ -459,6 +459,56 @@ def cmd_countries(args):
     console.print(f"\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
 
 
+def cmd_categories(args):
+    """Muestra el árbol de categorías de una tienda."""
+    with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
+        data = api("GET", f"/categories/{args.store}")
+    if isinstance(data, list):
+        _print_cat_tree(data, indent=0)
+    else:
+        console.print(f"[yellow]Sin categorías para {args.store}[/]")
+
+
+def _print_cat_tree(cats, indent):
+    for c in cats[:15]:
+        name = c.get("name", "?")
+        children = c.get("children", [])
+        prefix = "  " * indent + ("▸ " if indent > 0 else "● ")
+        console.print(f"{prefix}[bold]{name}[/] [dim]({len(children)} subcats)[/]")
+        if children and indent < 1:
+            _print_cat_tree(children, indent + 1)
+
+
+def cmd_barcode(args):
+    """Busca un producto por código de barras."""
+    with console.status(f"[cyan]Buscando código {args.code}..."):
+        data = api("GET", f"/products/barcode/{args.code}")
+    table = Table(title=f"[bold green]Código: {args.code}[/]", border_style="dim blue")
+    for k, v in data.items():
+        if v:
+            table.add_row(k, str(v)[:100])
+    console.print(table)
+
+
+def cmd_enrich(args):
+    """Busca productos en Open Food Facts."""
+    with console.status(f"[cyan]Buscando '{args.query}' en Open Food Facts..."):
+        data = api("GET", f"/products/enrich?query={args.query}&limit={args.limit}")
+    results = data.get("results", [])
+    table = Table(title=f"[bold green]Open Food Facts: {args.query} ({data['total']:,} total)[/]", border_style="dim blue")
+    table.add_column("#", style="dim", width=3, justify="right")
+    table.add_column("Producto", style="white", max_width=35, no_wrap=False)
+    table.add_column("Marca", style="blue", max_width=15)
+    table.add_column("Nutri", justify="center", width=6)
+    table.add_column("Barcode", style="dim", width=15)
+    for i, p in enumerate(results, 1):
+        ns = p.get("nutriscore", "?")
+        ns_color = {"A": "green", "B": "green", "C": "yellow", "D": "red", "E": "red"}.get(ns, "dim")
+        table.add_row(str(i), p.get("name", "?")[:35], p.get("brand", "?")[:15], f"[{ns_color}]{ns}[/]", p.get("barcode", ""))
+    console.print()
+    console.print(table)
+
+
 def cmd_whoami(args):
     """Muestra el usuario autenticado."""
     try:
@@ -546,6 +596,19 @@ def main():
     # preferences
     sub.add_parser("preferences", help="Ver perfil y preferencias de compra")
 
+    # categories
+    p = sub.add_parser("categories", help="Explorar categorías de una tienda")
+    p.add_argument("store", choices=list(STORES.keys()), help="Tienda")
+
+    # barcode
+    p = sub.add_parser("barcode", help="Buscar producto por código de barras")
+    p.add_argument("code", help="Código de barras EAN/UPC")
+
+    # enrich
+    p = sub.add_parser("enrich", help="Buscar con datos de Open Food Facts")
+    p.add_argument("query", help="Término de búsqueda")
+    p.add_argument("--limit", "-l", type=int, default=5)
+
     # countries
     sub.add_parser("countries", help="Ver países y tiendas disponibles")
 
@@ -585,6 +648,9 @@ def main():
         "ask":      cmd_ask,
         "preferences": cmd_preferences,
         "countries": cmd_countries,
+        "categories": cmd_categories,
+        "barcode":  cmd_barcode,
+        "enrich":   cmd_enrich,
         "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),
         "whoami":   cmd_whoami,
     }

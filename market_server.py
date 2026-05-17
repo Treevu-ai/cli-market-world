@@ -332,6 +332,85 @@ async def compare_products(body: SearchRequest):
     return {"query": body.query, "comparison": comparison, "total": len(comparison)}
 
 
+@app.get("/categories/{store}")
+async def category_tree(store: str):
+    """Navegación por categorías de una tienda VTEX."""
+    if store not in STORES:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.get(f"{STORES[store]['base']}/api/catalog_system/pub/category/tree/5")
+        return resp.json()
+
+
+@app.post("/products/category/{store}/{category_id}")
+async def search_by_category(store: str, category_id: str, limit: int = 20):
+    """Buscar productos por categoría en una tienda."""
+    if store not in STORES:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    base = STORES[store]["base"]
+    url = f"{base}/api/catalog_system/pub/products/search?fq=C:/{category_id}/&_from=0&_to={limit-1}"
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+        raw = resp.json()
+        return {
+            "store": store,
+            "category_id": category_id,
+            "results": [product_from_json(p, store) for p in raw],
+            "total": len(raw),
+        }
+
+
+@app.get("/products/barcode/{code}")
+async def barcode_lookup(code: str):
+    """Buscar producto por código de barras en Open Food Facts."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(
+            f"https://world.openfoodfacts.org/api/v0/product/{code}.json",
+            headers={"User-Agent": "AgenticMarket/1.0"}
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail="Open Food Facts no disponible")
+        data = resp.json()
+        if data.get("status") == 0:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+        p = data["product"]
+        return {
+            "barcode": code,
+            "name": p.get("product_name", ""),
+            "brand": p.get("brands", ""),
+            "category": p.get("categories", ""),
+            "nutriscore": p.get("nutriscore_grade", "").upper(),
+            "image": p.get("image_url", ""),
+            "ingredients": p.get("ingredients_text", "")[:300] if p.get("ingredients_text") else None,
+        }
+
+
+@app.get("/products/enrich")
+async def enrich_products(query: str = "leche", limit: int = 5):
+    """Enriquecer búsqueda con datos de Open Food Facts."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(
+            "https://world.openfoodfacts.org/cgi/search.pl",
+            params={"search_terms": query, "search_simple": 1, "json": 1, "page_size": limit},
+            headers={"User-Agent": "AgenticMarket/1.0"}
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail="Open Food Facts no disponible")
+        data = resp.json()
+        results = []
+        for p in data.get("products", []):
+            results.append({
+                "name": p.get("product_name", ""),
+                "brand": p.get("brands", ""),
+                "category": p.get("categories", ""),
+                "nutriscore": (p.get("nutriscore_grade") or "").upper(),
+                "image": p.get("image_url", ""),
+                "barcode": p.get("code", ""),
+            })
+        return {"query": query, "source": "openfoodfacts", "total": data.get("count", 0), "results": results}
+
+
 @app.post("/cart/add")
 def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
     if not authorization:
