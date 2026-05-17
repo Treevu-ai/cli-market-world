@@ -37,6 +37,8 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
             resp = httpx.post(f"{API}{path}", headers=headers, json=json_data, timeout=30)
         elif method == "PUT":
             resp = httpx.put(f"{API}{path}", headers=headers, json=json_data, timeout=30)
+        elif method == "DELETE":
+            resp = httpx.delete(f"{API}{path}", headers=headers, timeout=30)
         else:
             return {"error": f"Unknown method: {method}"}
         if resp.status_code >= 400:
@@ -65,12 +67,12 @@ TOOLS = [
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en todos los retailers VTEX (16 comercios en 6 líneas de negocio). Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en todos los retailers VTEX (17 comercios en 6 líneas). Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Término de búsqueda"},
-                "store": {"type": "string", "description": "ID de tienda específica (vacío = todas)"},
+                "store": {"type": "string", "description": "ID de tienda específica (vacío = todas). Usar market_lines para ver IDs válidos."},
                 "line": {"type": "string", "description": "Línea de negocio: supermercados, farmacias, electro, moda, deportes, hogar"},
                 "limit": {"type": "integer", "default": 10},
             },
@@ -92,15 +94,15 @@ TOOLS = [
     },
     {
         "name": "market_add",
-        "description": "Agregar producto al carrito.",
+        "description": "Agregar producto al carrito. Usar product_id y store_key del resultado de market_search. Usar market_lines para ver IDs de tienda válidos.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "product_id": {"type": "string"},
-                "name": {"type": "string"},
-                "price": {"type": "number"},
-                "store": {"type": "string", "description": "wong, metro, o plazavea"},
-                "quantity": {"type": "integer", "default": 1},
+                "product_id": {"type": "string", "description": "Copiar del campo 'product_id' en market_search"},
+                "name":       {"type": "string", "description": "Copiar del campo 'name' en market_search"},
+                "price":      {"type": "number", "description": "Copiar del campo 'price' en market_search"},
+                "store":      {"type": "string", "description": "Copiar del campo 'store_key' en market_search"},
+                "quantity":   {"type": "integer", "default": 1},
             },
             "required": ["product_id", "name", "price", "store"],
         },
@@ -109,6 +111,29 @@ TOOLS = [
         "name": "market_cart",
         "description": "Ver carrito actual con productos, cantidades, precios y total.",
         "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_cart_update",
+        "description": "Cambiar la cantidad de un producto en el carrito. Usar quantity=0 para eliminar.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {"type": "string", "description": "ID del producto en el carrito (campo 'product_id')"},
+                "quantity":   {"type": "integer", "description": "Nueva cantidad (0 = eliminar)"},
+            },
+            "required": ["product_id", "quantity"],
+        },
+    },
+    {
+        "name": "market_cart_remove",
+        "description": "Eliminar un producto del carrito por su ID.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {"type": "string", "description": "ID del producto a eliminar del carrito"},
+            },
+            "required": ["product_id"],
+        },
     },
     {
         "name": "market_checkout",
@@ -152,7 +177,19 @@ def handle_search(args: dict) -> dict:
         "limit": args.get("limit", 10),
     })
     if "error" in r: return r
-    items = [{"id": p["id"], "name": p["name"], "brand": p["brand"], "price": p["price"], "store": p["store_name"], "line": p.get("line_name", ""), "url": p["url"]} for p in r.get("results", [])[:args.get("limit", 10)]]
+    items = []
+    for p in r.get("results", [])[:args.get("limit", 10)]:
+        items.append({
+            "product_id": p["id"],
+            "name":       p["name"],
+            "brand":      p["brand"],
+            "price":      p["price"],
+            "store":      p["store_name"],
+            "store_key":  p["store"],
+            "line":       p.get("line_name", ""),
+            "line_key":   p.get("line", ""),
+            "url":        p["url"],
+        })
     return {"query": r["query"], "total": r["total"], "products": items}
 
 
@@ -172,29 +209,74 @@ def handle_compare(args: dict) -> dict:
 
 
 def handle_ask(args: dict) -> dict:
-    prompt = args["prompt"].lower()
-    # "repite última compra" / "lo mismo del mes pasado"
+    prompt = args["prompt"].lower().strip()
+    import re
+
+    # ── "repite última compra" ──
     if any(w in prompt for w in ["repetir", "repite", "mismo", "última compra", "mes pasado"]):
         r = api("POST", "/orders/reorder")
         return {"message": "Última orden restaurada al carrito", "cart": r.get("cart", [])} if "error" not in r else r
-    # "compara X" / "X más barato"
+
+    # ── "compara X" / "X más barato" ──
     if any(w in prompt for w in ["compar", "más barato", "mas barato"]):
-        import re
         q = re.sub(r'(compara[rm]?\s*|m[aá]s barato\s*)', '', prompt).strip().rstrip(".!?")
-        return handle_compare({"query": q}) if q else {"message": "¿Qué producto querés comparar?"}
-    # "compra X"
-    import re
-    m = re.search(r'compra\s+(.+)', prompt)
+        if not q:
+            return {"message": "¿Qué producto querés comparar?"}
+        # Extraer línea si se menciona
+        line = None
+        for lk in ["supermercados", "farmacias", "electro", "moda", "deportes", "hogar"]:
+            if lk in prompt:
+                line = lk
+                break
+        return handle_compare({"query": q, "line": line})
+
+    # ── "compra 2 leche en farmacias" ──
+    m = re.search(r'compra\s+(?:(\d+)\s+)?(.+)', prompt)
     if m:
-        item = m.group(1).strip().rstrip(".!?")
-        r = api("POST", "/products/search", {"query": item, "limit": 3})
-        if "error" in r: return {"message": f"No encontré '{item}'", "error": r["error"]}
+        qty = int(m.group(1)) if m.group(1) else 1
+        item = m.group(2).strip().rstrip(".!?")
+
+        # Extraer línea y tienda del texto
+        line = None
+        store = None
+        for lk in ["supermercados", "farmacias", "electro", "moda", "deportes", "hogar"]:
+            if lk in item:
+                line = lk
+                item = item.replace(lk, "").replace("en", "").strip()
+                break
+
+        search_body = {"query": item, "limit": 5}
+        if line:
+            search_body["line"] = line
+
+        r = api("POST", "/products/search", search_body)
+        if "error" in r:
+            return {"message": f"No encontré '{item}'", "error": r["error"]}
         prods = r.get("results", [])
-        if not prods: return {"message": f"No encontré '{item}'"}
+        if not prods:
+            return {"message": f"No encontré '{item}'", "suggestion": "Probá con un término más general o usá market_search."}
+
+        # Elegir el más barato con precio > 0
         best = min(prods, key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
-        add = api("POST", "/cart/add", {"product_id": best["id"], "name": best["name"], "price": best["price"], "store": best["store"], "quantity": 1})
-        return {"message": f"Agregué '{best['name']}' de {best['store_name']} a S/ {best['price']}", "product": best, "cart": add.get("cart", [])} if "error" not in add else add
-    # default: search
+        add = api("POST", "/cart/add", {
+            "product_id": best["id"],
+            "name": best["name"],
+            "price": best["price"],
+            "store": best["store"],
+            "quantity": qty,
+        })
+        if "error" in add:
+            return add
+
+        currency = best.get("currency", "")
+        return {
+            "message": f"Agregué {qty}× '{best['name']}' de {best['store_name']} a {currency} {best['price']}",
+            "product": best,
+            "quantity": qty,
+            "cart": add.get("cart", []),
+        }
+
+    # ── "muéstrame X" / "busca X" → search ──
     return handle_search({"query": prompt, "limit": 5})
 
 
@@ -205,6 +287,8 @@ HANDLERS = {
     "market_compare": handle_compare,
     "market_add": lambda a: api("POST", "/cart/add", {"product_id": a["product_id"], "name": a["name"], "price": a["price"], "store": a.get("store","wong"), "quantity": a.get("quantity",1)}),
     "market_cart": lambda a: api("GET", "/cart"),
+    "market_cart_update": lambda a: api("PUT", "/cart/update", {"product_id": a["product_id"], "quantity": a["quantity"]}),
+    "market_cart_remove": lambda a: api("DELETE", f"/cart/{a['product_id']}"),
     "market_checkout": lambda a: api("POST", "/checkout", {"payment_method": a.get("payment_method","yape")}),
     "market_orders": lambda a: api("GET", "/orders"),
     "market_reorder": lambda a: api("POST", "/orders/reorder"),
