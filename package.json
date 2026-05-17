@@ -1,0 +1,12 @@
+{
+  "name": "cli-market-latam",
+  "private": true,
+  "scripts": {
+    "build": "cd landing && npm install && npm run build"
+  },
+  "dependencies": {
+    "next": "^16.2.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
