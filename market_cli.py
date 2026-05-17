@@ -28,7 +28,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-API = "http://127.0.0.1:8765"
+API = os.environ.get("MARKET_API_URL", "http://127.0.0.1:8765")
 SESSION_FILE = Path.home() / ".market" / "session.json"
 console = Console()
 

@@ -15,6 +15,7 @@ import asyncio
 import json
 import os
 import re
+import sqlite3
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,12 +27,107 @@ from pydantic import BaseModel
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
-DATA_DIR = Path.home() / ".market"
-DATA_DIR.mkdir(exist_ok=True)
+DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.home() / ".market"))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 USERS_FILE = DATA_DIR / "users.json"
 CARTS_FILE = DATA_DIR / "carts.json"
 ORDERS_FILE = DATA_DIR / "orders.json"
 SESSION_FILE = DATA_DIR / "session.json"
+DB_FILE = DATA_DIR / "market.db"
+
+# ── SQLite Data Moat ────────────────────────────────────────────────────────
+
+def get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(DB_FILE))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
+
+def init_db():
+    db = get_db()
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS price_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id TEXT NOT NULL,
+            name TEXT,
+            brand TEXT,
+            price REAL,
+            list_price REAL,
+            discount INTEGER,
+            store TEXT NOT NULL,
+            store_name TEXT,
+            currency TEXT,
+            line TEXT,
+            line_name TEXT,
+            category TEXT,
+            stock INTEGER,
+            url TEXT,
+            queried_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store);
+        CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
+        CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
+        CREATE INDEX IF NOT EXISTS idx_ps_queried ON price_snapshots(queried_at);
+
+        CREATE TABLE IF NOT EXISTS search_queries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query TEXT NOT NULL,
+            line TEXT,
+            country TEXT,
+            store_filter TEXT,
+            num_results INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_sq_created ON search_queries(created_at);
+    """)
+    db.commit()
+    db.close()
+
+def save_price_snapshot(p: dict) -> None:
+    try:
+        db = get_db()
+        db.execute("""
+            INSERT INTO price_snapshots
+                (product_id, name, brand, price, list_price, discount,
+                 store, store_name, currency, line, line_name, category, stock, url)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            p.get("id", p.get("product_id", "")),
+            p.get("name", ""),
+            p.get("brand", ""),
+            p.get("price", 0),
+            p.get("list_price", 0),
+            p.get("discount"),
+            p.get("store", ""),
+            p.get("store_name", ""),
+            p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
+            STORES.get(p.get("store", ""), {}).get("line", ""),
+            p.get("line_name", ""),
+            p.get("category", ""),
+            p.get("stock", 0),
+            p.get("url", ""),
+        ))
+        db.commit()
+        db.close()
+    except Exception:
+        pass
+
+def save_search_query(query: str, line: str | None, store: str | None, num_results: int) -> None:
+    try:
+        db = get_db()
+        db.execute(
+            "INSERT INTO search_queries (query, line, store_filter, num_results) VALUES (?,?,?,?)",
+            (query, line, store, num_results)
+        )
+        db.commit()
+        db.close()
+    except Exception:
+        pass
+
+# ── Initialize ───────────────────────────────────────────────────────────────
+
+init_db()
 
 # ── Stores (VTEX retailers) ─────────────────────────────────────────────────
 # Cada store pertenece a una línea de negocio (line).
@@ -321,6 +417,12 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
         except Exception:
             continue
     results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
+
+    # ── Data moat: persist every price seen ──
+    for p in results:
+        save_price_snapshot(p)
+    save_search_query(body.query, body.line, body.store, len(results))
+
     return {"query": body.query, "results": results, "total": len(results)}
 
 
@@ -611,6 +713,50 @@ def reorder_last(authorization: str | None = Header(None)):
     return {"message": "Última orden restaurada al carrito", "cart": carts[username]}
 
 
+@app.get("/analytics/price-history")
+def price_history(product_id: str | None = None, store: str | None = None, line: str | None = None, limit: int = 50):
+    """Consultar histórico de precios capturados (data moat)."""
+    db = get_db()
+    q = "SELECT * FROM price_snapshots WHERE 1=1"
+    params: list = []
+    if product_id:
+        q += " AND product_id = ?"
+        params.append(product_id)
+    if store:
+        q += " AND store = ?"
+        params.append(store)
+    if line:
+        q += " AND line = ?"
+        params.append(line)
+    q += " ORDER BY queried_at DESC LIMIT ?"
+    params.append(limit)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    return {
+        "count": len(rows),
+        "snapshots": [dict(r) for r in rows],
+    }
+
+
+@app.get("/analytics/stats")
+def analytics_stats():
+    """Estadísticas del data moat."""
+    db = get_db()
+    total_snapshots = db.execute("SELECT COUNT(*) as n FROM price_snapshots").fetchone()["n"]
+    total_queries = db.execute("SELECT COUNT(*) as n FROM search_queries").fetchone()["n"]
+    stores_tracked = db.execute("SELECT COUNT(DISTINCT store) as n FROM price_snapshots").fetchone()["n"]
+    products_tracked = db.execute("SELECT COUNT(DISTINCT product_id) as n FROM price_snapshots").fetchone()["n"]
+    latest = db.execute("SELECT MAX(queried_at) as t FROM price_snapshots").fetchone()["t"]
+    db.close()
+    return {
+        "total_price_snapshots": total_snapshots,
+        "total_search_queries": total_queries,
+        "unique_stores_tracked": stores_tracked,
+        "unique_products_tracked": products_tracked,
+        "latest_snapshot_at": latest,
+    }
+
+
 @app.get("/agent/preferences")
 def agent_preferences(authorization: str | None = Header(None)):
     """Memoria de compra: preferencias inferidas del historial de órdenes."""
@@ -722,11 +868,12 @@ def agent_actions():
 def main():
     """Entry point for `market-server` command."""
     import uvicorn
-    print("Agentic Market API")
-    print("   -> http://localhost:8765")
-    print("   -> http://localhost:8765/docs")
-    print(f"   -> data in {DATA_DIR}")
-    uvicorn.run(app, host="127.0.0.1", port=8765, log_level="info")
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8765"))
+    print(f"Agentic Market API → http://{host}:{port}")
+    print(f"   Docs → http://{host}:{port}/docs")
+    print(f"   Data → {DATA_DIR}")
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
