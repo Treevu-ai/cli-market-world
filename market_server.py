@@ -12,18 +12,21 @@ Ejecutar:
 """
 
 import asyncio
+import hashlib
 import json
 import os
 import re
 import sqlite3
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import FastAPI, HTTPException, Header, Body
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Header, Body, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, field_validator
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
@@ -128,6 +131,49 @@ def save_search_query(query: str, line: str | None, store: str | None, num_resul
 # ── Initialize ───────────────────────────────────────────────────────────────
 
 init_db()
+
+# ── Security: rate limiter (in-memory, no dependencies) ──────────────────────
+
+_rate_limit_store: dict[str, list[float]] = {}
+RATE_LIMIT_WINDOW = 60   # seconds
+RATE_LIMIT_MAX = 100     # requests per window per IP
+
+def check_rate_limit(ip: str) -> None:
+    now = time.time()
+    window_start = now - RATE_LIMIT_WINDOW
+    _rate_limit_store.setdefault(ip, [])
+    _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if t > window_start]
+    if len(_rate_limit_store[ip]) >= RATE_LIMIT_MAX:
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Esperá unos segundos.")
+    _rate_limit_store[ip].append(now)
+
+# ── Security: password hashing ───────────────────────────────────────────────
+
+def hash_password(password: str) -> str:
+    salt = os.urandom(16).hex()
+    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
+    return f"{salt}:{h.hex()}"
+
+def verify_password(password: str, stored: str) -> bool:
+    if ":" not in stored:
+        # Legacy plaintext fallback — migrate on next login
+        return stored == password
+    salt, h = stored.split(":", 1)
+    return h == hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000).hex()
+
+# ── Security: brute-force protection ─────────────────────────────────────────
+
+_auth_attempts: dict[str, list[float]] = {}
+AUTH_MAX_ATTEMPTS = 5
+AUTH_WINDOW = 300  # 5 minutes
+
+def check_auth_brute_force(username: str) -> None:
+    now = time.time()
+    window_start = now - AUTH_WINDOW
+    _auth_attempts.setdefault(username, [])
+    _auth_attempts[username] = [t for t in _auth_attempts[username] if t > window_start]
+    if len(_auth_attempts[username]) >= AUTH_MAX_ATTEMPTS:
+        raise HTTPException(status_code=429, detail="Demasiados intentos. Esperá 5 minutos.")
 
 # ── Stores (VTEX retailers) ─────────────────────────────────────────────────
 # Cada store pertenece a una línea de negocio (line).
@@ -306,9 +352,18 @@ DEFAULT_STORES = list(STORES.keys())
 PAGE_SIZE = 20
 
 app = FastAPI(
-    title="Agentic Market API",
-    description="AI-native commerce infrastructure — 17 retailers across 6 verticals in 5 LATAM countries. MCP-native. Agent-ready.",
+    title="CLI Market API",
+    description="AI-native commerce infrastructure — 100 retailers across 12 verticals in 10 countries. MCP-native. Agent-ready.",
     version="1.0.0",
+)
+
+# ── CORS ──
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ORIGINS", "https://cli-market.dev,http://localhost:3000").split(","),
+    allow_credentials=True,
+    allow_methods=["GET","POST","PUT","DELETE"],
+    allow_headers=["*"],
 )
 
 
@@ -326,7 +381,8 @@ def save_json(path: Path, data: Any) -> None:
 
 def get_users() -> dict:
     if not USERS_FILE.exists():
-        default = {"admin": {"password": "market", "token": str(uuid.uuid4())}}
+        admin_pass = os.getenv("MARKET_ADMIN_PASSWORD", "market")
+        default = {"admin": {"password": hash_password(admin_pass), "token": str(uuid.uuid4())}}
         save_json(USERS_FILE, default)
         return default
     return load_json(USERS_FILE, {})
@@ -414,6 +470,14 @@ class SearchRequest(BaseModel):
     page: int = 1
     limit: int = PAGE_SIZE
 
+    @field_validator("query")
+    @classmethod
+    def sanitize_query(cls, v: str) -> str:
+        v = v.strip()[:200]
+        if not v:
+            raise ValueError("Query no puede estar vacío")
+        return re.sub(r"[<>{}()\[\]]", "", v)  # strip XSS-prone chars
+
 
 class AddToCartRequest(BaseModel):
     product_id: str
@@ -436,9 +500,10 @@ class CheckoutRequest(BaseModel):
 # ── Endpoints ──────────────────────────────────────────────────────────────
 
 @app.get("/")
-def root():
+def root(request: Request):
+    check_rate_limit(request.client.host if request.client else "unknown")
     return {
-        "name": "Agentic Market",
+        "name": "CLI Market",
         "status": "running",
         "stores": len(STORES),
         "lines": len(LINES),
@@ -498,10 +563,16 @@ def list_countries():
 
 @app.post("/auth/login")
 def login(body: LoginRequest):
+    check_rate_limit("auth")
+    check_auth_brute_force(body.username)
     users = get_users()
     user = users.get(body.username)
-    if not user or user["password"] != body.password:
+    if not user or not verify_password(body.password, user["password"]):
+        _auth_attempts.setdefault(body.username, []).append(time.time())
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    # Migrate legacy plaintext passwords on successful login
+    if ":" not in user["password"]:
+        user["password"] = hash_password(body.password)
     if "token" not in user or not user["token"]:
         user["token"] = str(uuid.uuid4())
         save_json(USERS_FILE, users)
