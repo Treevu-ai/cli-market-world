@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
+}
+
+:root {
+  --neon-mint: #00FF88;
+  --neon-yellow: #FFD600;
+  --bg-primary: #0A0A0A;
+  --text-light: #F5F5F0;
+  --text-gray: #888888;
+  --text-muted: #555555;
+  --text-dim: #444444;
+  --border-dark: #2D2D2D;
+  --border-subtle: #1D1D1D;
+}
+
+@utility font-grotesk {
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+}
+
+@utility font-ibm-mono {
+  font-family: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
+}
