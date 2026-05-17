@@ -177,7 +177,8 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
 # ── Currency symbols ─────────────────────────────────────────────────────────
 
 CURRENCY_SYMBOLS = {
-    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP", "EUR": "€",
+    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP",
+    "CLP": "CLP", "EUR": "€", "GBP": "£",
 }
 
 
@@ -723,8 +724,11 @@ COUNTRIES = {
     "BR": "Brasil",
     "MX": "México",
     "CO": "Colombia",
+    "CL": "Chile",
     "ES": "España",
     "FR": "Francia",
+    "IT": "Italia",
+    "GB": "Reino Unido",
 }
 
 

@@ -37,7 +37,7 @@ export default function Hero() {
       </h1>
       <div className="h-6 sm:h-8 md:h-[32px]" />
       <p className="font-ibm-mono text-[11px] sm:text-[13px] md:text-[15px] text-[#888888] tracking-[0.5px] sm:tracking-[1px] leading-[1.5] sm:leading-[1.6] text-center w-full max-w-[800px] px-2 group-hover:text-[#AAAAAA] transition-colors duration-500">
-        19 COMERCIOS · 6 LÍNEAS DE NEGOCIO · 7 PAÍSES · 1 API UNIFICADA.<br />
+        100 COMERCIOS · 12 LÍNEAS · 10 PAÍSES · 1 API UNIFICADA.<br />
         UN PRODUCTO PENSADO PARA HUMANOS. DISEÑADO PARA AGENTES.
       </p>
       <div className="h-8 sm:h-10 md:h-[48px]" />
