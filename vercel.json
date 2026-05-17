@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "rootDirectory": "landing",
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "buildCommand": "cd landing && npm install && npm run build",
+  "outputDirectory": "landing/.next",
+  "installCommand": "cd landing && npm install"
 }
