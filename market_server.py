@@ -187,7 +187,7 @@ PAGE_SIZE = 20
 
 app = FastAPI(
     title="Agentic Market API",
-    description="AI-native supermarket infrastructure — 8 stores across 5 LATAM countries.",
+    description="AI-native commerce infrastructure — 17 retailers across 6 verticals in 5 LATAM countries. MCP-native. Agent-ready.",
     version="1.0.0",
 )
 

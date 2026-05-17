@@ -108,7 +108,7 @@ function PlanCard({
 }
 
 const STARTER_FEATURES = [
-  { label: "ACCESO A 8 SUPERMERCADOS",        included: true  },
+  { label: "ACCESO A 17 COMERCIOS EN 6 LÍNEAS", included: true  },
   { label: "BÚSQUEDA Y COMPARACIÓN",          included: true  },
   { label: "API REST BÁSICA",                 included: true  },
   { label: "1 USUARIO",                       included: true  },
@@ -120,7 +120,7 @@ const STARTER_FEATURES = [
 
 const GROWTH_FEATURES = [
   { label: "TODO LO DE STARTER",              included: true  },
-  { label: "SERVIDOR MCP (9 HERRAMIENTAS)",   included: true  },
+  { label: "SERVIDOR MCP (12 HERRAMIENTAS)",  included: true  },
   { label: "CHECKOUT UNIFICADO",              included: true  },
   { label: "HASTA 5 USUARIOS",                included: true  },
   { label: "SOPORTE PRIORITARIO",             included: true  },

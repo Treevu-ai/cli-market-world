@@ -47,7 +47,7 @@ export default function HowItWorks() {
         <StepCard
           number="01"
           title={"CONECTA\nTUS TIENDAS"}
-          description="INSTALA EL CLI Y AUTENTÍCATE. ACCEDE A 8 SUPERMERCADOS EN 5 PAÍSES CON UNA SOLA HERRAMIENTA. COMPATIBLE CON VTEX."
+          description="INSTALA EL CLI Y AUTENTÍCATE. ACCEDE A 17 COMERCIOS EN 6 LÍNEAS Y 5 PAÍSES CON UNA SOLA HERRAMIENTA. COMPATIBLE CON VTEX."
         />
         <StepCard
           number="02"
@@ -60,7 +60,7 @@ export default function HowItWorks() {
         <StepCard
           number="03"
           title={"CONECTA TUS\nAGENTES IA"}
-          description="USA EL SERVIDOR MCP PARA QUE TUS AGENTES DE IA COMPREN POR TI. 9 HERRAMIENTAS LISTAS PARA DEEPSEEK, CLAUDE Y MÁS."
+          description="USA EL SERVIDOR MCP PARA QUE TUS AGENTES DE IA COMPREN POR TI. 12 HERRAMIENTAS LISTAS PARA DEEPSEEK, CLAUDE Y MÁS."
         />
       </div>
     </section>

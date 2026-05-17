@@ -16,7 +16,7 @@ export default function FinalCTA() {
       </h2>
 
       <p className="font-ibm-mono text-[9px] sm:text-[10px] md:text-[14px] text-[#666666] tracking-[0.5px] md:tracking-[2px] text-center text-pretty w-full max-w-[700px] px-2 leading-[1.5]">
-        <GlitchText text="ÚNETE A LAS EMPRESAS QUE YA USAN CLI MARKET PARA CONECTAR AGENTES DE IA CON SUPERMERCADOS DE LATAM." speed={20} delay={450} />
+        <GlitchText text="ÚNETE A LAS EMPRESAS QUE YA ESTÁN CONECTANDO AGENTES DE IA CON EL COMERCIO DE LATAM. PRECIO DE LANZAMIENTO DISPONIBLE POR TIEMPO LIMITADO." speed={20} delay={450} />
       </p>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-[16px] w-full sm:w-auto px-2 sm:px-0">

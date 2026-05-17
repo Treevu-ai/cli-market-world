@@ -17,7 +17,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "CLI Market LATAM — Supermercados como APIs para Agentes IA",
   description:
-    "Infraestructura que convierte supermercados de LATAM en sistemas de comercio compatibles con agentes de inteligencia artificial. 8 tiendas, 5 países, compatible con MCP.",
+    "Infraestructura que convierte 17 comercios de LATAM en 6 líneas de negocio — sistemas de comercio compatibles con agentes de inteligencia artificial. 5 países, 12 herramientas MCP.",
 };
 
 export default function RootLayout({

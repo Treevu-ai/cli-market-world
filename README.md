@@ -67,7 +67,7 @@ market --json                    # Machine-readable for LLMs
 
 ```bash
 market login              # Authenticate
-market search "leche"     # Search across 8 stores
+market search "leche"     # Search across 17 stores
 market compare "aceite"   # Price comparison
 market add <id> --qty 2   # Add to cart
 market cart               # View cart
@@ -102,7 +102,7 @@ LLMs / AI Agents / Assistants
 python market_mcp.py
 ```
 
-9 tools: `market_login`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`.
+12 tools: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`.
 
 Compatible with DeepSeek TUI, Claude, and any MCP client.
 
