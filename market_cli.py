@@ -160,6 +160,8 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
             resp = httpx.post(f"{API}{path}", headers=headers, json=json_data, timeout=30)
         elif method == "PUT":
             resp = httpx.put(f"{API}{path}", headers=headers, json=json_data, timeout=30)
+        elif method == "DELETE":
+            resp = httpx.delete(f"{API}{path}", headers=headers, timeout=30)
         else:
             raise ValueError(f"Unknown method: {method}")
         if resp.status_code >= 400:
@@ -172,18 +174,65 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
         sys.exit(1)
 
 
-def fmt_price(price: float) -> str:
-    return f"S/ {price:,.2f}"
+# ── Currency symbols ─────────────────────────────────────────────────────────
+
+CURRENCY_SYMBOLS = {
+    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP",
+}
+
+
+def fmt_price(price: float, currency: str = "PEN") -> str:
+    symbol = CURRENCY_SYMBOLS.get(currency, currency)
+    return f"{symbol} {price:,.2f}"
 
 
 def store_color(store: str) -> str:
-    colors = {"wong": "#3cffd0", "metro": "#5200ff", "plazavea": "#ffe600"}
+    colors = {
+        "wong": "#3cffd0", "metro": "#5200ff", "plazavea": "#ffe600",
+        "carrefour": "#3cffd0", "jumbo_ar": "#00FF88", "carrefour_br": "#3cffd0",
+        "chedraui": "#FF6B35", "heb": "#FF6B35",
+        "olimpica": "#60A5FA", "exito": "#60A5FA",
+        "drogaraia": "#FF6B35", "drogasil": "#FF6B35",
+        "magazineluiza": "#A78BFA", "motorola_br": "#A78BFA",
+        "renner": "#FFD600", "centauro": "#4ADE80", "homecenter": "#F5F5F0",
+    }
     return colors.get(store, "#e9e9e9")
 
 
 def store_emoji(store: str) -> str:
-    emojis = {"wong": "🛒", "metro": "🏪", "plazavea": "🏬"}
-    return emojis.get(store, "📦")
+    if store in STORES:
+        return STORES[store].get("emoji", "📦")
+    return "📦"
+
+
+# ── Last-search cache (for market add auto-fill) ─────────────────────────────
+
+LAST_SEARCH_FILE = Path.home() / ".market" / "last_search.json"
+
+
+def save_last_search(results: list[dict]) -> None:
+    slim = []
+    for p in results[:50]:
+        slim.append({
+            "product_id": p.get("id", p.get("product_id", "")),
+            "name": p.get("name", ""),
+            "price": p.get("price", 0),
+            "store": p.get("store", ""),
+            "store_name": p.get("store_name", ""),
+            "currency": p.get("currency", "PEN"),
+            "brand": p.get("brand", ""),
+        })
+    LAST_SEARCH_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LAST_SEARCH_FILE.write_text(json.dumps(slim, ensure_ascii=False))
+
+
+def load_last_search() -> list[dict]:
+    if LAST_SEARCH_FILE.exists():
+        try:
+            return json.loads(LAST_SEARCH_FILE.read_text())
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return []
 
 
 # ── Comandos ───────────────────────────────────────────────────────────────
@@ -196,7 +245,12 @@ def cmd_login(args):
 
 
 def cmd_search(args):
-    """Busca productos. Soporta --country para filtrar por país."""
+    """Busca productos. Soporta --country, --line, --store, --page."""
+    if not args.query:
+        console.print("[yellow]USO: market search <término> [--line LINEA] [--country PAIS] [--store TIENDA] [--limit N] [--page N][/]")
+        console.print("[dim]Ej: market search \"leche\" --line supermercados --country PE[/]")
+        return
+
     stores_to_search = [args.store] if args.store else None
     if args.country and not args.store:
         country_stores = [k for k, v in STORES.items() if v["country"] == args.country]
@@ -211,8 +265,8 @@ def cmd_search(args):
             "store": args.store,
             "line": args.line,
             "limit": args.limit,
+            "page": getattr(args, "page", 1),
         })
-        # Filter by country on client side if needed
         if args.country and not args.store:
             data["results"] = [p for p in data["results"] if p["store"] in stores_to_search]
             data["total"] = len(data["results"])
@@ -222,6 +276,9 @@ def cmd_search(args):
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
 
+    # Cache results for market add auto-fill
+    save_last_search(results)
+
     table = Table(
         title=f'[bold white]"{args.query}" — {len(results)} resultados[/]',
         border_style="dim blue",
@@ -230,15 +287,16 @@ def cmd_search(args):
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=38, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=14)
-    table.add_column("Tienda", max_width=10)
-    table.add_column("Precio", style="bold yellow", justify="right")
+    table.add_column("Tienda", max_width=12)
+    table.add_column("Precio", style="bold yellow", justify="right", width=12)
     table.add_column("Desc.", justify="center", width=7)
     table.add_column("ID", style="dim", max_width=20)
 
     for i, p in enumerate(results, 1):
         color = store_color(p["store"])
         disc = p.get("discount")
-        price_str = fmt_price(p["price"])
+        currency = p.get("currency", "PEN")
+        price_str = fmt_price(p["price"], currency)
         if disc:
             price_str = f"[bold yellow]{price_str}[/]"
             disc_str = f"[#3cffd0]{disc}%[/]"
@@ -252,16 +310,17 @@ def cmd_search(args):
             f"[{color}]{p['store_name']}[/]",
             price_str,
             disc_str,
-            p["id"],
+            p.get("id", p.get("product_id", "")),
         )
 
     console.print()
     console.print(table)
-    console.print(f"\n[dim]Para agregar al carrito: market add <ID> [--store {list(STORES.keys())[0]}] [--name \"...\"] [--price ...][/]")
+    console.print(f"\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
+    console.print(f"[dim]Ej: market add 3 --qty 2[/]  (el #3 de la tabla)[/]")
 
 
 def cmd_compare(args):
-    """Compara precios entre las 3 tiendas."""
+    """Compara precios. Columnas dinámicas según los stores en los resultados."""
     with console.status(f"[cyan]Comparando '{args.query}'..."):
         data = api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
 
@@ -270,16 +329,30 @@ def cmd_compare(args):
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
 
+    # Extraer todas las tiendas que aparecen en los resultados (columnas dinámicas)
+    all_stores: list[str] = []
+    seen = set()
+    for item in comp:
+        for sk in item.get("prices", {}):
+            if sk not in seen:
+                all_stores.append(sk)
+                seen.add(sk)
+
+    # Limitar a 6 columnas máximo en pantalla
+    display_stores = all_stores[:6]
+    if len(all_stores) > 6:
+        console.print(f"[dim]Mostrando {len(display_stores)} de {len(all_stores)} tiendas.[/]")
+
     table = Table(
         title=f'[bold white]Comparativa: "{args.query}"[/]',
         border_style="dim blue",
     )
     table.add_column("#", style="dim", width=3, justify="right")
-    table.add_column("Producto", style="white", max_width=34, no_wrap=False)
+    table.add_column("Producto", style="white", max_width=30, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=12)
-    table.add_column("Wong", justify="right", width=11)
-    table.add_column("Metro", justify="right", width=11)
-    table.add_column("P. Vea", justify="right", width=11)
+    for sk in display_stores:
+        store_name = STORES.get(sk, {}).get("name", sk)
+        table.add_column(store_name, justify="right", width=11)
     table.add_column("Mejor", justify="center", width=10)
 
     for i, item in enumerate(comp, 1):
@@ -287,32 +360,45 @@ def cmd_compare(args):
         best = item["best_store"]
         best_color = store_color(best) if best else "dim"
 
-        def pcell(store_key):
-            if store_key in prices:
-                return f"[{store_color(store_key)}]{fmt_price(prices[store_key])}[/]"
+        def pcell(sk):
+            if sk in prices:
+                currency = STORES.get(sk, {}).get("currency", "PEN")
+                return f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
             return "[dim]—[/]"
 
-        table.add_row(
-            str(i),
-            item["name"],
-            item["brand"],
-            pcell("wong"),
-            pcell("metro"),
-            pcell("plazavea"),
-            f"[bold {best_color}]{STORES[best]['name']}[/]" if best else "—",
-        )
+        row = [str(i), item["name"], item["brand"]]
+        for sk in display_stores:
+            row.append(pcell(sk))
+        row.append(f"[bold {best_color}]{STORES[best]['name']}[/]" if best else "—")
+        table.add_row(*row)
 
     console.print()
     console.print(table)
 
 
 def cmd_add(args):
-    """Agrega un producto al carrito."""
+    """Agrega un producto al carrito. Auto-fill desde último search si se usa # de tabla."""
+    # Si el product_id es un número de tabla (1-based), buscar en cache
+    pid = args.product_id
+    name = args.name
+    price = args.price
+    store = args.store
+
+    if pid.isdigit() and not name and not price:
+        idx = int(pid) - 1
+        cache = load_last_search()
+        if 0 <= idx < len(cache):
+            p = cache[idx]
+            pid = p["product_id"]
+            name = name or p["name"]
+            price = price if price else p["price"]
+            store = store or p["store"]
+
     data = api("POST", "/cart/add", {
-        "product_id": args.product_id,
-        "name": args.name or args.product_id,
-        "price": args.price,
-        "store": args.store or "wong",
+        "product_id": pid,
+        "name": name or pid,
+        "price": price or 0,
+        "store": store or "wong",
         "quantity": args.qty,
     })
     cart = data["cart"]
@@ -357,6 +443,35 @@ def cmd_cart(args):
     console.print("[dim]market checkout → finalizar compra[/]")
 
 
+def cmd_cart_remove(args):
+    """Elimina un producto del carrito."""
+    data = api("DELETE", f"/cart/{args.product_id}")
+    console.print(f"[#3cffd0]✓ {data.get('message', 'Eliminado')}[/]")
+    if "cart" in data:
+        console.print(f"[dim]Carrito: {data.get('items', 0)} items, total: {fmt_price(data.get('total', 0))}[/]")
+
+
+def cmd_cart_update(args):
+    """Cambia la cantidad de un producto del carrito."""
+    data = api("PUT", "/cart/update", {"product_id": args.product_id, "quantity": args.quantity})
+    console.print(f"[#3cffd0]✓ {data.get('message', 'Actualizado')}[/]")
+    if "cart" in data:
+        total = sum(i["price"] * i["quantity"] for i in data["cart"])
+        console.print(f"[dim]Carrito: {len(data['cart'])} items, total: {fmt_price(total)}[/]")
+
+
+def cmd_cart_clear(args):
+    """Vacía el carrito completo."""
+    data = api("GET", "/cart")
+    cart = data.get("cart", [])
+    if not cart:
+        console.print("[yellow]Carrito ya está vacío[/]")
+        return
+    for item in cart:
+        api("DELETE", f"/cart/{item.get('cart_id', item.get('product_id', ''))}")
+    console.print(f"[#3cffd0]✓ Carrito vaciado ({len(cart)} items eliminados)[/]")
+
+
 def cmd_checkout(args):
     """Finaliza la compra."""
     payment = args.payment or "yape"
@@ -374,7 +489,7 @@ def cmd_checkout(args):
 
 
 def cmd_orders(args):
-    """Historial de órdenes."""
+    """Historial de órdenes con detalle de ítems."""
     data = api("GET", "/orders")
     orders = data["orders"]
     if not orders:
@@ -384,31 +499,58 @@ def cmd_orders(args):
     table = Table(title="[bold white]Historial de órdenes[/]", border_style="dim blue")
     table.add_column("Orden", style="bold", width=10)
     table.add_column("Fecha", style="dim", width=12)
-    table.add_column("Items", justify="center", width=6)
+    table.add_column("Ítems", style="white", max_width=45, no_wrap=False)
     table.add_column("Total", style="bold yellow", justify="right")
     table.add_column("Pago", width=10)
 
     for o in reversed(orders):
         date = o["created_at"][:10] if "created_at" in o else "?"
+        item_names = ", ".join(f"{i.get('quantity',1)}× {i.get('name','?')[:20]}" for i in o.get("items", [])[:4])
+        if len(o.get("items", [])) > 4:
+            item_names += f" +{len(o['items']) - 4} más"
         table.add_row(
             o["order_id"],
             date,
-            str(len(o["items"])),
+            item_names,
             fmt_price(o["total"]),
             o.get("payment_method", "?"),
         )
 
     console.print()
     console.print(table)
-    console.print(f"\n[dim]{len(orders)} órdenes — market reorder para repetir la última[/]")
+    console.print(f"\n[dim]{len(orders)} órdenes — market reorder [orden_id] para repetir una específica[/]")
 
 
 def cmd_reorder(args):
-    """Repite la última orden."""
-    data = api("POST", "/orders/reorder")
-    cart = data["cart"]
-    total = sum(i["price"] * i["quantity"] for i in cart)
-    console.print(f"[#3cffd0]✓ Última orden restaurada al carrito[/] ({len(cart)} items, {fmt_price(total)})")
+    """Repite una orden. Si se pasa ID, repite esa; si no, la última."""
+    if getattr(args, "order_id", None):
+        # Buscar la orden específica y restaurar sus ítems al carrito
+        data = api("GET", "/orders")
+        orders = data.get("orders", [])
+        target = next((o for o in orders if o["order_id"] == args.order_id), None)
+        if not target:
+            console.print(f"[yellow]Orden '{args.order_id}' no encontrada[/]")
+            return
+        # Limpiar carrito y agregar los ítems de la orden
+        current = api("GET", "/cart")
+        for item in current.get("cart", []):
+            api("DELETE", f"/cart/{item.get('cart_id', item.get('product_id', ''))}")
+        for item in target.get("items", []):
+            api("POST", "/cart/add", {
+                "product_id": item["product_id"],
+                "name": item["name"],
+                "price": item["price"],
+                "store": item.get("store", "wong"),
+                "quantity": item.get("quantity", 1),
+            })
+        cart = api("GET", "/cart")
+        total = sum(i["price"] * i["quantity"] for i in cart.get("cart", []))
+        console.print(f"[#3cffd0]✓ Orden {args.order_id} restaurada al carrito[/] ({len(cart.get('cart', []))} items, {fmt_price(total)})")
+    else:
+        data = api("POST", "/orders/reorder")
+        cart = data["cart"]
+        total = sum(i["price"] * i["quantity"] for i in cart)
+        console.print(f"[#3cffd0]✓ Última orden restaurada al carrito[/] ({len(cart)} items, {fmt_price(total)})")
     console.print("[dim]market cart → market checkout[/]")
 
 
@@ -602,24 +744,37 @@ def main():
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
     p.add_argument("--limit", "-l", type=int, default=10)
+    p.add_argument("--page", "-p", type=int, default=1, help="Página de resultados")
 
     # compare
     p = sub.add_parser("compare", help="Comparar precios entre tiendas")
     p.add_argument("query", nargs="?", default="")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None, help="Filtrar por país")
     p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # add
-    p = sub.add_parser("add", help="Agregar al carrito")
-    p.add_argument("product_id", help="ID del producto")
-    p.add_argument("--name", help="Nombre del producto")
-    p.add_argument("--price", type=float, required=True, help="Precio del producto")
-    p.add_argument("--store", "-s", choices=list(STORES.keys()), default="wong")
+    p = sub.add_parser("add", help="Agregar al carrito (usa # de tabla o product_id)")
+    p.add_argument("product_id", help="Número de la tabla de búsqueda (#) o ID de producto")
+    p.add_argument("--name", help="Nombre del producto (auto-fill si se usa #)")
+    p.add_argument("--price", type=float, default=None, help="Precio (auto-fill si se usa #)")
+    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--qty", type=int, default=1)
 
     # cart
     sub.add_parser("cart", help="Ver carrito")
+
+    # cart-remove
+    p = sub.add_parser("cart-remove", help="Eliminar un producto del carrito")
+    p.add_argument("product_id", help="ID del producto a eliminar")
+
+    # cart-update
+    p = sub.add_parser("cart-update", help="Cambiar cantidad de un producto en el carrito")
+    p.add_argument("product_id", help="ID del producto")
+    p.add_argument("quantity", type=int, help="Nueva cantidad (0 = eliminar)")
+
+    # cart-clear
+    sub.add_parser("cart-clear", help="Vaciar el carrito por completo")
 
     # checkout
     p = sub.add_parser("checkout", help="Finalizar compra")
@@ -629,7 +784,8 @@ def main():
     sub.add_parser("orders", help="Historial de órdenes")
 
     # reorder
-    sub.add_parser("reorder", help="Repetir última orden")
+    p = sub.add_parser("reorder", help="Repetir una orden (última si no se especifica ID)")
+    p.add_argument("order_id", nargs="?", default=None, help="ID de la orden a repetir")
 
     # ask
     p = sub.add_parser("ask", help="Compra por lenguaje natural")
@@ -687,6 +843,9 @@ def main():
         "compare":  cmd_compare,
         "add":      cmd_add,
         "cart":     cmd_cart,
+        "cart-remove": cmd_cart_remove,
+        "cart-update": cmd_cart_update,
+        "cart-clear":  cmd_cart_clear,
         "checkout": cmd_checkout,
         "orders":   cmd_orders,
         "reorder":  cmd_reorder,
