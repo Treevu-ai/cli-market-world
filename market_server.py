@@ -179,6 +179,7 @@ def product_from_json(p: dict, store: str) -> dict:
         "stock": offer.get("AvailableQuantity", 0),
         "store": store,
         "store_name": STORES[store]["name"],
+        "currency": STORES[store]["currency"],
         "url": f"{STORES[store]['base']}/{p.get('linkText', '')}/p",
     }
 
@@ -534,6 +535,24 @@ def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None
         item["quantity"] = body.quantity
     save_json(CARTS_FILE, carts)
     return {"message": "Carrito actualizado", "cart": cart}
+
+
+@app.delete("/cart/{product_id}")
+def cart_remove(product_id: str, authorization: str | None = Header(None)):
+    """Elimina un producto del carrito por su ID."""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Sin token")
+    token = authorization.replace("Bearer ", "")
+    username = auth_user(token)
+    carts = get_carts()
+    cart = carts.get(username, [])
+    item = next((i for i in cart if i["cart_id"] == product_id or i["product_id"] == product_id), None)
+    if not item:
+        raise HTTPException(status_code=404, detail="Producto no encontrado en el carrito")
+    cart.remove(item)
+    save_json(CARTS_FILE, carts)
+    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    return {"message": "Producto eliminado del carrito", "cart": cart, "total": total, "items": len(cart)}
 
 
 @app.post("/checkout")
