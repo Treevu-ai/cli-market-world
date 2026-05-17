@@ -128,4 +128,4 @@ asciinema rec demo.cast --command "bash demo.sh"
 
 **"Estamos convirtiendo supermercados en infraestructura consumible por inteligencia artificial."**
 
-🌎 [cli-market-latam.vercel.app](https://cli-market-latam.vercel.app)
+🌎 [cli-market.dev](https://cli-market.dev)
