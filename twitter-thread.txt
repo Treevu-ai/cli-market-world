@@ -1,0 +1,63 @@
+HILO DE TWITTER — CLI AGENTIC MARKET
+=====================================
+5 tweets para lanzamiento. Publicar en orden, sin replies.
+Ideal: acompañar cada tweet con screenshot o GIF.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TWEET 1 — EL PROBLEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Los supermercados en LATAM no están listos para agentes IA.
+
+Sus APIs no existen, están fragmentadas, o son imposibles de consumir por un LLM.
+
+Si querés que un agente haga las compras por vos, hoy no puede.
+
+Pero eso está por cambiar. 🧵
+[GIF del banner verde de market]
+
+
+TWEET 2 — LA SOLUCIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLI AGENTIC MARKET convierte supermercados en APIs para agentes IA.
+
+Buscás productos reales en Wong, Metro y Plaza Vea. Comparás precios. Comprás. Todo desde la terminal.
+
+Y si sos dev: exponemos todo como MCP tools para que tus agentes compren solos.
+[Screenshot de market search]
+
+
+TWEET 3 — CÓMO FUNCIONA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3 comandos y ya estás comprando:
+
+market search "leche" — busca en 3 supermercados
+market compare "aceite" — te dice cuál es más barato
+market ask "compra arroz" — el agente busca, elige y agrega al carrito
+
+Zero clicks. Todo desde la terminal.
+[Screenshot del flujo completo]
+
+
+TWEET 4 — PARA AGENTES IA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Esto no es solo para humanos.
+
+market --json → salida parseable por LLMs
+market_mcp.py → 9 MCP tools para DeepSeek TUI, Claude, etc.
+
+Stripe transformó pagos en APIs. Nosotros transformamos supermercados.
+[Screenshot de market --json]
+
+
+TWEET 5 — CALL TO ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pip install agentic-market
+
+→ Buscá productos en 3 supermercados peruanos
+→ Compará precios en tiempo real
+→ Dejá que tu agente IA compre por vos
+→ Sumá tu supermercado con 1 línea de config
+
+Abierto. Código en GitHub. LATAM first.
+[Link al repo + GIF de market checkout]
