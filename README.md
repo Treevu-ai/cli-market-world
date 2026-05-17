@@ -1,18 +1,20 @@
-# CLI AGENTIC MARKET · v1.0
+# CLI Market LATAM · v1.0
 
-**Infrastructure layer — supermarkets as programmable commerce.**
+<p align="center">
+  <img src="https://img.shields.io/badge/stores-8-green" alt="8">
+  <img src="https://img.shields.io/badge/countries-5-blue" alt="5">
+  <img src="https://img.shields.io/badge/MCP-compatible-00d75f" alt="MCP">
+  <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
+</p>
 
-Stripe transformed payments into APIs.  
-We transform supermarkets into APIs for AI agents.
-
----
+> Infrastructure layer that transforms LATAM supermarkets into AI-agent compatible commerce systems.
+>
+> Stripe transformed payments into APIs. We transform supermarkets into APIs for AI agents.
 
 ## The problem
 
-- E-commerce is optimized for **clicks**, not **agents**.
-- Retailers are not ready for autonomous commerce.
-- No standardized AI-native supermarket layer exists in LATAM.
-- Supermarket APIs are fragmented or nonexistent.
+E-commerce is optimized for **clicks**, not **agents**. Retailers in LATAM are not ready for autonomous commerce. No standardized AI-native supermarket layer exists. APIs are fragmented or nonexistent.
 
 ## The solution
 
@@ -21,12 +23,12 @@ We transform supermarkets into APIs for AI agents.
 | Terminal CLI | REST API |
 | Rich tables | MCP Tools |
 | Spanish commands | JSON parseable |
-| Interactive flow | Autonomous workflows |
+| Purchase flow | Autonomous workflows |
 
 ## Quick start
 
 ```bash
-pip install git+https://github.com/Treevu-ai/agentic-market.git
+pip install git+https://github.com/Treevu-ai/cli-market-latam.git
 
 # Terminal 1 — backend
 market-server
@@ -46,37 +48,40 @@ market orders
 ```bash
 market ask "compra arroz"
 market ask "compara aceite"
-market ask "repite la última compra"
-
-# Machine-readable for LLMs
-market --json
+market ask "repite la ultima compra"
+market --json                    # Machine-readable for LLMs
 ```
 
-## Supported supermarkets (VTEX API)
+## Supported supermarkets
 
-| Store | Group | Status |
-|---|---|---|
-| Wong | Cencosud | ✅ |
-| Metro | Cencosud | ✅ |
-| Plaza Vea | SPSA | ✅ |
-
-Add your store: edit `STORES` in `market_server.py`.
+| Country | Stores | Platform |
+|---------|--------|----------|
+| 🇵🇪 Peru | Wong, Metro, Plaza Vea | VTEX |
+| 🇦🇷 Argentina | Carrefour, Jumbo | VTEX |
+| 🇧🇷 Brazil | Carrefour | VTEX |
+| 🇲🇽 Mexico | Chedraui, HEB | VTEX |
+| 🇨🇴 Colombia | Olimpica | VTEX |
+| 🌐 Global | Open Food Facts (3M+ products) | Public API |
 
 ## Commands
 
 ```bash
 market login              # Authenticate
-market search "leche"     # Search across 3 stores
-market compare "aceite"   # Price comparison table
+market search "leche"     # Search across 8 stores
+market compare "aceite"   # Price comparison
 market add <id> --qty 2   # Add to cart
 market cart               # View cart
 market checkout           # Complete purchase
 market orders             # Order history
 market reorder            # Repeat last order
 market ask "compra X"     # Natural language
+market categories wong    # Browse categories
+market barcode <ean>      # Lookup by barcode
+market enrich "cafe"      # Open Food Facts search
 market preferences        # Purchase profile
+market countries          # List countries
 market about              # Business model
-market --json             # Agent-readable output
+market --json             # Agent-readable
 ```
 
 ## Architecture
@@ -84,7 +89,7 @@ market --json             # Agent-readable output
 ```
 Retailers LATAM (VTEX APIs)
         │
-CLI AGENTIC MARKET
+CLI Market LATAM
         │
 APIs + MCP + Agent Layer
         │
@@ -115,8 +120,6 @@ Compatible with DeepSeek TUI, Claude, and any MCP client.
 
 ## Demo
 
-[![Demo](demo.gif)](demo.gif)
-
 ```bash
 asciinema rec demo.cast --command "bash demo.sh"
 ```
@@ -124,3 +127,5 @@ asciinema rec demo.cast --command "bash demo.sh"
 ---
 
 **"Estamos convirtiendo supermercados en infraestructura consumible por inteligencia artificial."**
+
+🌎 [cli-market-latam.vercel.app](https://cli-market-latam.vercel.app)
