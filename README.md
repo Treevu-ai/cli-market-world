@@ -26,7 +26,7 @@ We transform supermarkets into APIs for AI agents.
 ## Quick start
 
 ```bash
-pip install agentic-market
+pip install git+https://github.com/Treevu-ai/agentic-market.git
 
 # Terminal 1 — backend
 market-server
