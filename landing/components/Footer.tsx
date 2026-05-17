@@ -59,7 +59,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full px-4 sm:px-6 md:px-[120px] py-4 md:h-[56px] border-t border-t-[#1D1D1D] gap-3 sm:gap-0">
         <span className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px]">
-          © 2025 CLI MARKET LATAM · TREEVU AI. TODOS LOS DERECHOS RESERVADOS.
+          © 2026 CLI MARKET LATAM · SINAPSIS INNOVADORA. TODOS LOS DERECHOS RESERVADOS.
         </span>
         <div className="flex items-center gap-4 sm:gap-6 md:gap-[32px]">
           <a href="#" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
