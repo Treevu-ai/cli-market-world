@@ -35,7 +35,7 @@ console = Console()
 # ── JSON-able business model (agent-friendly) ──────────────────────
 
 BUSINESS_MODEL_JSON = {
-    "company": "CLI AGENTIC MARKET",
+    "company": "CLI Market LATAM",
     "version": "1.0.0",
     "positioning": "Infrastructure layer that transforms traditional LATAM supermarkets into AI-agent compatible commerce systems.",
     "solution": {
@@ -56,10 +56,10 @@ BUSINESS_MODEL_JSON = {
         "phase_1": ["Peru", "Chile", "Colombia"],
         "phase_2": ["Mexico", "Brazil", "Argentina"],
     },
-    "pitch": "Stripe transformed payments into APIs. CLI AGENTIC MARKET transforms supermarkets into APIs for AI agents.",
+    "pitch": "Stripe transformed payments into APIs. CLI Market LATAM transforms supermarkets into APIs for AI agents.",
 }
 
-WELCOME_BANNER = """[green]
+WELCOME_BANNER = """[#3cffd0]
  ██████╗██╗     ██╗     █████╗  ██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗
 ██╔════╝██║     ██║    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝
 ██║     ██║     ██║    ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ██║██║
@@ -72,64 +72,64 @@ WELCOME_BANNER = """[green]
  ██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ██╔══╝     ██║
  ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
  ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝[/]
-[bold green]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[bold #3cffd0]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLI Market LATAM · v1.0
 Infrastructure layer — supermarkets as programmable commerce
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/]
-[green]Stripe transformó pagos en APIs.
+[#3cffd0]Stripe transformó pagos en APIs.
 Nosotros transformamos supermercados en APIs para agentes IA.[/]
 
-[dim]Human-friendly[/] [green]▸[/] [dim]Terminal CLI · Comandos · Tablas · Flujo de compra[/]
-[dim]Agent-friendly [/] [green]▸[/] [dim]REST API · MCP Tools · JSON · Agentes autónomos[/]
+[dim]Human-friendly[/] [#3cffd0]▸[/] [dim]Terminal CLI · Comandos · Tablas · Flujo de compra[/]
+[dim]Agent-friendly [/] [#3cffd0]▸[/] [dim]REST API · MCP Tools · JSON · Agentes autónomos[/]
 
-[bold green]COMANDOS[/]
-  [green]market login[/]              Autenticarse
-  [green]market search[/] [dim]"leche"[/]        Buscar en Wong, Metro y Plaza Vea
-  [green]market compare[/] [dim]"aceite"[/]      Comparar precios entre tiendas
-  [green]market add[/] [dim]<id> --qty 2[/]      Agregar al carrito
-  [green]market cart[/]               Ver carrito y total
-  [green]market checkout[/]           Finalizar compra
-  [green]market ask[/] [dim]"compra arroz"[/]    Lenguaje natural → acción
-  [green]market preferences[/]        Perfil de compra inferido
-  [green]market about[/]              Modelo de negocio
-  [green]market --json[/]             Modo agente (machine-readable)
+[bold #3cffd0]COMANDOS[/]
+  [#3cffd0]market login[/]              Autenticarse
+  [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en Wong, Metro y Plaza Vea
+  [#3cffd0]market compare[/] [dim]"aceite"[/]      Comparar precios entre tiendas
+  [#3cffd0]market add[/] [dim]<id> --qty 2[/]      Agregar al carrito
+  [#3cffd0]market cart[/]               Ver carrito y total
+  [#3cffd0]market checkout[/]           Finalizar compra
+  [#3cffd0]market ask[/] [dim]"compra arroz"[/]    Lenguaje natural → acción
+  [#3cffd0]market preferences[/]        Perfil de compra inferido
+  [#3cffd0]market about[/]              Modelo de negocio
+  [#3cffd0]market --json[/]             Modo agente (machine-readable)
 
-[dim]Backend:[/] [green]market-server[/] [dim]· MCP:[/] [green]python market_mcp.py[/]
+[dim]Backend:[/] [#3cffd0]market-server[/] [dim]· MCP:[/] [#3cffd0]python market_mcp.py[/]
 """
 
-BUSINESS_MODEL_BANNER = """[bold green]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLI AGENTIC MARKET · MODELO DE NEGOCIO
+BUSINESS_MODEL_BANNER = """[bold #3cffd0]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLI Market LATAM · MODELO DE NEGOCIO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/]
 
 [bold]Posicionamiento[/]
 Infrastructure layer that transforms traditional LATAM
 supermarkets into AI-agent compatible commerce systems.
 
-[bold green]▸ Problema[/]
+[bold #3cffd0]▸ Problema[/]
   · E-commerce tradicional optimizado para clicks, no agentes
   · Retailers no preparados para comercio autónomo
   · No existe capa agentic estandarizada en LATAM
   · APIs de supermercados fragmentadas o inexistentes
 
-[bold green]▸ Solución[/]
+[bold #3cffd0]▸ Solución[/]
   Agent Layer · MCP compatible · Búsqueda semántica
   Checkout autónomo · Multi-retailer (Wong, Metro, Plaza Vea)
 
-[bold green]▸ Mercado objetivo[/]
+[bold #3cffd0]▸ Mercado objetivo[/]
   Primario:   Supermercados · Retail · Dark stores · Farmacias
   Secundario: AI startups · Asistentes voz · Fintechs · Smart home
 
-[bold green]▸ Modelo de ingresos[/]
+[bold #3cffd0]▸ Modelo de ingresos[/]
   SaaS B2B:     Starter $499/mes · Growth $1,999/mes · Enterprise
   API usage:    Cobro por request, checkout, acción de agente
   Transacción:  1-5% por orden completada
   White-label:  Infraestructura bajo marca del retailer
 
-[bold green]▸ Moat estratégico[/]
+[bold #3cffd0]▸ Moat estratégico[/]
   Primera capa agentic de supermercados en LATAM
   MCP nativo · Inteligencia semántica · Interoperabilidad retail
 
-[bold green]▸ Expansión[/]
+[bold #3cffd0]▸ Expansión[/]
   Fase 1: Perú · Chile · Colombia
   Fase 2: México · Brasil · Argentina
 
@@ -176,8 +176,8 @@ def fmt_price(price: float) -> str:
 
 
 def store_color(store: str) -> str:
-    colors = {"wong": "cyan", "metro": "magenta", "plazavea": "yellow"}
-    return colors.get(store, "white")
+    colors = {"wong": "#3cffd0", "metro": "#5200ff", "plazavea": "#ffe600"}
+    return colors.get(store, "#e9e9e9")
 
 
 def store_emoji(store: str) -> str:
@@ -190,7 +190,7 @@ def store_emoji(store: str) -> str:
 def cmd_login(args):
     """Autentica al usuario contra el servidor."""
     data = api("POST", "/auth/login", {"username": args.username, "password": args.password})
-    console.print(f"[green]✓ Autenticado como [bold]{data['username']}[/][/]")
+    console.print(f"[#3cffd0]✓ Autenticado como [bold]{data['username']}[/][/]")
     console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
 
 
@@ -237,7 +237,7 @@ def cmd_search(args):
         price_str = fmt_price(p["price"])
         if disc:
             price_str = f"[bold yellow]{price_str}[/]"
-            disc_str = f"[green]{disc}%[/]"
+            disc_str = f"[#3cffd0]{disc}%[/]"
         else:
             disc_str = "—"
 
@@ -313,7 +313,7 @@ def cmd_add(args):
     })
     cart = data["cart"]
     total = sum(i["price"] * i["quantity"] for i in cart)
-    console.print(f"[green]✓ Agregado al carrito[/] ({len(cart)} items, total: {fmt_price(total)})")
+    console.print(f"[#3cffd0]✓ Agregado al carrito[/] ({len(cart)} items, total: {fmt_price(total)})")
 
 
 def cmd_cart(args):
@@ -359,7 +359,7 @@ def cmd_checkout(args):
     data = api("POST", "/checkout", {"payment_method": payment})
     order = data["order"]
     console.print(Panel.fit(
-        f"[bold green]✓ Compra completada[/]\n\n"
+        f"[bold #3cffd0]✓ Compra completada[/]\n\n"
         f"Orden: [bold]{order['order_id']}[/]\n"
         f"Total: [bold yellow]{fmt_price(order['total'])}[/]\n"
         f"Pago: {order['payment_method']}\n"
@@ -404,7 +404,7 @@ def cmd_reorder(args):
     data = api("POST", "/orders/reorder")
     cart = data["cart"]
     total = sum(i["price"] * i["quantity"] for i in cart)
-    console.print(f"[green]✓ Última orden restaurada al carrito[/] ({len(cart)} items, {fmt_price(total)})")
+    console.print(f"[#3cffd0]✓ Última orden restaurada al carrito[/] ({len(cart)} items, {fmt_price(total)})")
     console.print("[dim]market cart → market checkout[/]")
 
 
@@ -413,7 +413,7 @@ def cmd_ask(args):
     with console.status("[cyan]Pensando..."):
         data = api("POST", "/agent/ask", {"prompt": args.prompt})
     if "message" in data:
-        console.print(f"[green]{data['message']}[/]")
+        console.print(f"[#3cffd0]{data['message']}[/]")
     if "cart" in data:
         cart = data["cart"]
         total = sum(i["price"] * i["quantity"] for i in cart)
@@ -444,7 +444,7 @@ def cmd_countries(args):
     """Lista países y tiendas disponibles."""
     data = api("GET", "/countries")
     countries = data.get("countries", {})
-    table = Table(title="[bold green]Países y supermercados[/]", border_style="dim blue")
+    table = Table(title="[bold #3cffd0]Países y supermercados[/]", border_style="dim blue")
     table.add_column("País", style="bold", width=14)
     table.add_column("Tiendas", style="white", width=50)
     table.add_column("Cant.", justify="center", width=6)
@@ -483,7 +483,7 @@ def cmd_barcode(args):
     """Busca un producto por código de barras."""
     with console.status(f"[cyan]Buscando código {args.code}..."):
         data = api("GET", f"/products/barcode/{args.code}")
-    table = Table(title=f"[bold green]Código: {args.code}[/]", border_style="dim blue")
+    table = Table(title=f"[bold #3cffd0]Código: {args.code}[/]", border_style="dim blue")
     for k, v in data.items():
         if v:
             table.add_row(k, str(v)[:100])
@@ -495,7 +495,7 @@ def cmd_enrich(args):
     with console.status(f"[cyan]Buscando '{args.query}' en Open Food Facts..."):
         data = api("GET", f"/products/enrich?query={args.query}&limit={args.limit}")
     results = data.get("results", [])
-    table = Table(title=f"[bold green]Open Food Facts: {args.query} ({data['total']:,} total)[/]", border_style="dim blue")
+    table = Table(title=f"[bold #3cffd0]Open Food Facts: {args.query} ({data['total']:,} total)[/]", border_style="dim blue")
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=35, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=15)
@@ -513,7 +513,7 @@ def cmd_whoami(args):
     """Muestra el usuario autenticado."""
     try:
         data = api("GET", "/auth/whoami")
-        console.print(f"[green]Sesión activa: [bold]{data['username']}[/][/]")
+        console.print(f"[#3cffd0]Sesión activa: [bold]{data['username']}[/][/]")
     except SystemExit:
         pass
 
@@ -628,7 +628,7 @@ def main():
             console.print(_json.dumps(BUSINESS_MODEL_JSON, indent=2, ensure_ascii=False))
         else:
             console.print(WELCOME_BANNER)
-            console.print("\n[dim]market login[/] [dim]para empezar ·[/] [green]market --json[/] [dim]para agentes ·[/] [green]market about[/] [dim]para el pitch[/]")
+            console.print("\n[dim]market login[/] [dim]para empezar ·[/] [#3cffd0]market --json[/] [dim]para agentes ·[/] [#3cffd0]market about[/] [dim]para el pitch[/]")
         return
 
     if args.json and args.command == "about":
