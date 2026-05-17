@@ -30,11 +30,24 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
+  // Close mobile menu on Escape key
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
+  // Close mobile menu when scrolling past threshold
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      if (menuOpen) setMenuOpen(false);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [menuOpen]);
 
   useEffect(() => {
     const ids = links.map((l) => l.section).filter(Boolean);
@@ -131,9 +144,16 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile backdrop + drawer */}
+      {menuOpen && (
+        <div
+          className="md:hidden fixed inset-0 top-[60px] z-40"
+          onClick={() => setMenuOpen(false)}
+          style={{ background: "rgba(0,0,0,0.4)" }}
+        />
+      )}
       <div
-        className="md:hidden overflow-hidden transition-all duration-300"
+        className="md:hidden overflow-hidden transition-all duration-300 relative z-50"
         style={{
           maxHeight: menuOpen ? "400px" : "0px",
           background: "rgba(10,10,10,0.97)",

@@ -19,17 +19,17 @@ export default function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div className="flex flex-col gap-[16px] w-full">
-      <span className="font-ibm-mono text-[10px] md:text-[12px] font-bold text-[#FFD600] tracking-[1.5px] md:tracking-[3px]">
+      <span className="font-ibm-mono text-[9px] sm:text-[10px] md:text-[12px] font-bold text-[#FFD600] tracking-[1.5px] md:tracking-[3px]">
         <GlitchText text={label} speed={30} />
       </span>
       <h2
-        className={`font-grotesk text-[36px] md:text-[56px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05] whitespace-pre-line ${titleWidth}`}
+        className={`font-grotesk text-[28px] sm:text-[36px] md:text-[56px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05] whitespace-pre-line ${titleWidth}`}
       >
         <GlitchText text={title} speed={40} delay={150} />
       </h2>
       {subtitle && (
         <p
-          className={`font-ibm-mono text-[10px] md:text-[13px] text-[#666666] tracking-[0.5px] md:tracking-[1px] leading-[1.6] text-pretty ${subtitleWidth}`}
+          className={`font-ibm-mono text-[9px] sm:text-[11px] md:text-[13px] text-[#666666] tracking-[0.5px] md:tracking-[1px] leading-[1.6] text-pretty ${subtitleWidth}`}
         >
           <GlitchText text={subtitle} speed={20} delay={350} />
         </p>

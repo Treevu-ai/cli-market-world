@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import SectionHeader from "./SectionHeader";
 
 interface PlanCardProps {
@@ -37,9 +40,13 @@ function PlanCard({
   features,
   accentColor = "#555555",
 }: PlanCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleFeatures = expanded ? features : features.slice(0, 4);
+  const hasMore = features.length > 4;
+
   return (
     <div
-      className="flex flex-col gap-6 sm:gap-8 p-5 sm:p-8 md:p-[40px] w-full md:flex-1"
+      className="flex flex-col gap-5 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-[40px] w-full md:flex-1"
       style={{ backgroundColor: bgColor, border: `${borderWidth}px solid ${borderColor}` }}
     >
       <div
@@ -50,16 +57,16 @@ function PlanCard({
           {tier}
         </span>
       </div>
-      <span className="font-grotesk text-[28px] font-bold tracking-[1px]" style={{ color: nameColor }}>
+      <span className="font-grotesk text-[24px] sm:text-[28px] font-bold tracking-[1px]" style={{ color: nameColor }}>
         {name}
       </span>
-      <p className="font-ibm-mono text-[12px] text-[#666666] tracking-[1px] leading-[1.6]">
+      <p className="font-ibm-mono text-[11px] sm:text-[12px] text-[#666666] tracking-[1px] leading-[1.6]">
         {description}
       </p>
 
       <div className="flex flex-col gap-[10px]" style={{ borderTop: `1px solid ${borderColor === "#0F0F0F" ? "#2D2D2D" : borderColor}` }}>
-        <div className="pt-6 flex flex-col gap-[10px]">
-          {features.map((f, i) => (
+        <div className="pt-4 sm:pt-6 flex flex-col gap-[8px] sm:gap-[10px]">
+          {visibleFeatures.map((f, i) => (
             <div key={i} className="flex items-center gap-3">
               <span
                 className="font-ibm-mono text-[14px] leading-none shrink-0"
@@ -68,13 +75,23 @@ function PlanCard({
                 {f.included ? "+" : "—"}
               </span>
               <span
-                className="font-ibm-mono text-[11px] tracking-[1px]"
+                className="font-ibm-mono text-[10px] sm:text-[11px] tracking-[1px]"
                 style={{ color: f.included ? "#A0A09A" : "#3D3D3D" }}
               >
                 {f.label}
               </span>
             </div>
           ))}
+          {hasMore && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-2 pt-2 text-left"
+            >
+              <span className="font-ibm-mono text-[10px] tracking-[2px] text-[#555555] hover:text-[#888888] transition-colors">
+                {expanded ? "— MOSTRAR MENOS" : `+ VER ${features.length - 4} MÁS`}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
