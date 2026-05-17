@@ -10,7 +10,7 @@
 --purple:#5200ff;--purple-dim:#3d00bf;--yellow:#ffe600;--pink:#ff69b4;--blue:#3860be;
 --fg:#e9e9e9;--fg-dim:#949494;--white:#fff;
 --font:'Inter','Helvetica Neue','Arial Black',sans-serif;
---mono:'JetBrains Mono','Fira Code','SF Mono',monospace;
+--mono:'Cascadia Code','JetBrains Mono','Fira Code','SF Mono','Consolas',monospace;
 --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
 --radius:20px;--radius-lg:24px;--radius-xl:40px;
 }
@@ -24,10 +24,11 @@ nav .links{display:flex;gap:1.8rem}
 nav a{color:var(--fg-dim);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .15s}
 nav a:hover{color:var(--mint)}
 .container{max-width:960px;margin:0 auto;padding:0 2rem}
-.hero{padding:9rem 0 6rem;text-align:center}
-.hero-ascii{font-family:var(--mono);color:var(--mint);font-size:.5rem;line-height:1.1;white-space:pre;margin-bottom:2.5rem;opacity:.85}
-.hero h1{font-family:var(--font);font-size:clamp(2.5rem,6vw,5.5rem);color:var(--white);font-weight:900;line-height:.95;letter-spacing:-.02em;margin-bottom:.8rem}
-.hero h1 span{color:var(--mint);display:block;font-size:.7em;font-weight:700;margin-top:.3rem}
+.hero{padding:8rem 0 5rem;text-align:center}
+.hero-ascii{font-family:var(--mono);color:var(--mint);font-size:.52rem;line-height:1.12;white-space:pre;margin-bottom:2rem;opacity:.92;text-shadow:0 0 12px rgba(60,255,208,0.15)}
+.hero h1{font-family:var(--mono);font-size:clamp(1.4rem,3.5vw,2.2rem);color:var(--mint);font-weight:600;line-height:1.3;margin-bottom:0.6rem;letter-spacing:.02em}
+.hero h1 span{color:var(--white);font-weight:700}
+.hero .subtitle{font-family:var(--mono);font-size:.78rem;color:var(--fg-dim);letter-spacing:.08em;margin-bottom:2.5rem}
 .hero .pitch{font-size:1.15rem;color:var(--fg-dim);max-width:620px;margin:1.5rem auto 2.5rem;line-height:1.55}
 .install-bar{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;font-family:var(--mono);font-size:.82rem}
 .install-bar .prefix{color:var(--mint);padding:.8rem 1.2rem;border-right:1px solid var(--border)}
@@ -84,7 +85,7 @@ footer a{color:var(--mint-dim);text-decoration:none}footer a:hover{color:var(--m
 </style>
 </head>
 <body>
-<nav><span class="logo">&#x25b8; CLI Market LATAM</span><div class="links"><a href="#product">Product</a><a href="#pricing">Pricing</a><a href="https://github.com/Treevu-ai/cli-market-latam">GitHub</a></div></nav>
+<nav><span class="logo">$ CLI‑Market_Latam</span><div class="links"><a href="#product">Product</a><a href="#pricing">Pricing</a><a href="https://github.com/Treevu-ai/cli-market-latam">GitHub</a></div></nav>
 
 <section class="hero"><div class="container">
 <div class="hero-ascii">
@@ -101,7 +102,8 @@ footer a{color:var(--mint-dim);text-decoration:none}footer a:hover{color:var(--m
  ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
  ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝
 </div>
-<h1>Supermarkets as<span>programmable commerce</span></h1>
+<h1><span>CLI‑Market_Latam</span></h1>
+<p class="subtitle">$ supermarkets as programmable commerce</p>
 <p class="pitch">Stripe transformed payments into APIs. We transform supermarkets into APIs for AI agents.</p>
 <div class="install-bar"><span class="prefix">$</span><code>pip install git+https://github.com/Treevu-ai/cli-market-latam.git</code><button onclick="navigator.clipboard.writeText('pip install git+https://github.com/Treevu-ai/cli-market-latam.git')">COPY</button></div>
 <div class="tags"><span>8 stores</span><span>5 countries</span><span>VTEX</span><span>MCP</span><span>Open Source</span></div>
