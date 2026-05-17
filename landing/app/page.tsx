@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PixelDivider from "@/components/PixelDivider";
 import Logos from "@/components/Logos";
+import Lines from "@/components/Lines";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import Stats from "@/components/Stats";
@@ -20,6 +21,7 @@ export default function Home() {
       <Hero />
       <PixelDivider />
       <Logos />
+      <Lines />
       <Features />
       <HowItWorks />
       <Stats />

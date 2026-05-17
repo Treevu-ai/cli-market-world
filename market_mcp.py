@@ -59,13 +59,19 @@ TOOLS = [
         },
     },
     {
+        "name": "market_lines",
+        "description": "Listar todas las líneas de negocio (supermercados, farmacias, electro, moda, deportes, hogar) con sus retailers VTEX.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "market_search",
-        "description": "Buscar productos en Wong, Metro y Plaza Vea. Retorna nombre, marca, precio, tienda e ID.",
+        "description": "Buscar productos en todos los retailers VTEX (16 comercios en 6 líneas de negocio). Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Término de búsqueda"},
-                "store": {"type": "string", "description": "wong, metro, o plazavea (vacío = todas)"},
+                "store": {"type": "string", "description": "ID de tienda específica (vacío = todas)"},
+                "line": {"type": "string", "description": "Línea de negocio: supermercados, farmacias, electro, moda, deportes, hogar"},
                 "limit": {"type": "integer", "default": 10},
             },
             "required": ["query"],
@@ -73,11 +79,12 @@ TOOLS = [
     },
     {
         "name": "market_compare",
-        "description": "Comparar precios entre Wong, Metro y Plaza Vea.",
+        "description": "Comparar precios entre todos los retailers VTEX. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Producto a comparar"},
+                "line": {"type": "string", "description": "Línea de negocio: supermercados, farmacias, electro, moda, deportes, hogar"},
                 "limit": {"type": "integer", "default": 10},
             },
             "required": ["query"],
@@ -138,14 +145,29 @@ TOOLS = [
 
 
 def handle_search(args: dict) -> dict:
-    r = api("POST", "/products/search", {"query": args["query"], "store": args.get("store"), "limit": args.get("limit", 10)})
+    r = api("POST", "/products/search", {
+        "query": args["query"],
+        "store": args.get("store"),
+        "line": args.get("line"),
+        "limit": args.get("limit", 10),
+    })
     if "error" in r: return r
-    items = [{"id": p["id"], "name": p["name"], "brand": p["brand"], "price": p["price"], "store": p["store_name"], "url": p["url"]} for p in r.get("results", [])[:args.get("limit", 10)]]
+    items = [{"id": p["id"], "name": p["name"], "brand": p["brand"], "price": p["price"], "store": p["store_name"], "line": p.get("line_name", ""), "url": p["url"]} for p in r.get("results", [])[:args.get("limit", 10)]]
     return {"query": r["query"], "total": r["total"], "products": items}
 
 
+def handle_lines(args: dict) -> dict:
+    r = api("GET", "/lines")
+    if "error" in r: return r
+    return r
+
+
 def handle_compare(args: dict) -> dict:
-    r = api("POST", "/products/compare", {"query": args["query"], "limit": args.get("limit", 10)})
+    r = api("POST", "/products/compare", {
+        "query": args["query"],
+        "line": args.get("line"),
+        "limit": args.get("limit", 10),
+    })
     return r if "error" in r else {"query": r["query"], "comparison": r["comparison"][:10]}
 
 
@@ -178,6 +200,7 @@ def handle_ask(args: dict) -> dict:
 
 HANDLERS = {
     "market_login": lambda a: api("POST", "/auth/login", {"username": a.get("username", "admin"), "password": a.get("password", "market")}),
+    "market_lines": handle_lines,
     "market_search": handle_search,
     "market_compare": handle_compare,
     "market_add": lambda a: api("POST", "/cart/add", {"product_id": a["product_id"], "name": a["name"], "price": a["price"], "store": a.get("store","wong"), "quantity": a.get("quantity",1)}),

@@ -33,24 +33,57 @@ CARTS_FILE = DATA_DIR / "carts.json"
 ORDERS_FILE = DATA_DIR / "orders.json"
 SESSION_FILE = DATA_DIR / "session.json"
 
+# ── Stores (VTEX retailers) ─────────────────────────────────────────────────
+# Cada store pertenece a una línea de negocio (line).
+# Para agregar un retailer nuevo: copiar un entry y cambiar base, name, country, line.
+
 STORES = {
-    "wong":      {"name": "Wong",       "base": "https://www.wong.pe",          "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "metro":     {"name": "Metro",      "base": "https://www.metro.pe",         "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "plazavea":  {"name": "Plaza Vea",  "base": "https://www.plazavea.com.pe",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "carrefour": {"name": "Carrefour",  "base": "https://www.carrefour.com.ar", "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
-    "jumbo_ar":  {"name": "Jumbo",      "base": "https://www.jumbo.com.ar",     "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
-    "carrefour_br": {"name": "Carrefour", "base": "https://www.carrefour.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷"},
-    "chedraui":  {"name": "Chedraui",   "base": "https://www.chedraui.com.mx", "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
-    "heb":       {"name": "HEB",        "base": "https://www.heb.com.mx",       "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
-    "olimpica":  {"name": "Olímpica",   "base": "https://www.olimpica.com",     "country": "CO", "currency": "COP", "emoji": "🇨🇴"},
+    # ── 🛒 SUPERMERCADOS ──
+    "wong":      {"name": "Wong",       "base": "https://www.wong.pe",          "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "metro":     {"name": "Metro",      "base": "https://www.metro.pe",         "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "plazavea":  {"name": "Plaza Vea",  "base": "https://www.plazavea.com.pe",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "carrefour": {"name": "Carrefour",  "base": "https://www.carrefour.com.ar", "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
+    "jumbo_ar":  {"name": "Jumbo",      "base": "https://www.jumbo.com.ar",     "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
+    "carrefour_br": {"name": "Carrefour", "base": "https://www.carrefour.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "supermercados"},
+    "chedraui":  {"name": "Chedraui",   "base": "https://www.chedraui.com.mx", "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
+    "heb":       {"name": "HEB",        "base": "https://www.heb.com.mx",       "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
+    "olimpica":  {"name": "Olímpica",   "base": "https://www.olimpica.com",     "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
+
+    # ── 💊 FARMACIAS ──
+    "drogaraia":   {"name": "Droga Raia",   "base": "https://www.drogaraia.com.br",   "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
+    "drogasil":    {"name": "Drogasil",     "base": "https://www.drogasil.com.br",    "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
+
+    # ── 📱 ELECTRO Y TECNOLOGÍA ──
+    "magazineluiza": {"name": "Magazine Luiza", "base": "https://www.magazineluiza.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
+    "motorola_br":   {"name": "Motorola",       "base": "https://www.motorola.com.br",       "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
+
+    # ── 👕 MODA ──
+    "renner": {"name": "Lojas Renner", "base": "https://www.lojasrenner.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "moda"},
+
+    # ── ⚽ DEPORTES ──
+    "centauro": {"name": "Centauro", "base": "https://www.centauro.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "deportes"},
+
+    # ── 🏠 HOGAR ──
+    "homecenter": {"name": "Homecenter", "base": "https://www.homecenter.com.co", "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "hogar"},
+}
+
+# ── Lines (verticals) ────────────────────────────────────────────────────────
+
+LINES = {
+    "supermercados": {"name": "Supermercados",            "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
+    "farmacias":     {"name": "Farmacias y Salud",        "emoji": "💊", "description": "Medicamentos, bienestar y cuidado personal"},
+    "electro":       {"name": "Electro y Tecnología",     "emoji": "📱", "description": "Electrónicos, electrodomésticos y gadgets"},
+    "moda":          {"name": "Moda y Calzado",            "emoji": "👕", "description": "Ropa, calzado y accesorios"},
+    "deportes":      {"name": "Deportes y Fitness",        "emoji": "⚽", "description": "Artículos deportivos, ropa deportiva y equipo"},
+    "hogar":         {"name": "Hogar y Construcción",      "emoji": "🏠", "description": "Mejoramiento del hogar, muebles, ferretería"},
 }
 
 COUNTRIES = {
-    "PE": {"name": "Perú", "stores": ["wong", "metro", "plazavea"]},
-    "AR": {"name": "Argentina", "stores": ["carrefour", "jumbo_ar"]},
-    "BR": {"name": "Brasil", "stores": ["carrefour_br"]},
-    "MX": {"name": "México", "stores": ["chedraui", "heb"]},
-    "CO": {"name": "Colombia", "stores": ["olimpica"]},
+    "PE": {"name": "Perú",       "stores": [k for k, v in STORES.items() if v["country"] == "PE"]},
+    "AR": {"name": "Argentina",  "stores": [k for k, v in STORES.items() if v["country"] == "AR"]},
+    "BR": {"name": "Brasil",     "stores": [k for k, v in STORES.items() if v["country"] == "BR"]},
+    "MX": {"name": "México",     "stores": [k for k, v in STORES.items() if v["country"] == "MX"]},
+    "CO": {"name": "Colombia",   "stores": [k for k, v in STORES.items() if v["country"] == "CO"]},
 }
 DEFAULT_STORES = list(STORES.keys())
 PAGE_SIZE = 20
@@ -159,6 +192,7 @@ class LoginRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str
     store: str | None = None
+    line: str | None = None
     page: int = 1
     limit: int = PAGE_SIZE
 
@@ -189,22 +223,46 @@ def root():
         "name": "Agentic Market",
         "status": "running",
         "stores": len(STORES),
+        "lines": len(LINES),
         "countries": len(COUNTRIES),
         "docs": "/docs",
     }
 
 
+@app.get("/lines")
+def list_lines():
+    """Lista todas las líneas de negocio con sus retailers."""
+    result = {}
+    for line_id, line_meta in LINES.items():
+        line_stores = {
+            k: {"name": v["name"], "country": v["country"], "currency": v["currency"], "emoji": v["emoji"]}
+            for k, v in STORES.items() if v["line"] == line_id
+        }
+        result[line_id] = {
+            "name": line_meta["name"],
+            "emoji": line_meta["emoji"],
+            "description": line_meta["description"],
+            "stores": line_stores,
+            "total_stores": len(line_stores),
+        }
+    return {"lines": result, "total": len(result)}
+
+
 @app.get("/stores")
-def list_stores(country: str | None = None):
-    """Lista todas las tiendas. Filtrar por país con ?country=PE."""
+def list_stores(country: str | None = None, line: str | None = None):
+    """Lista todas las tiendas. Filtrar por país (?country=PE) o línea (?line=supermercados)."""
     result = {}
     for key, s in STORES.items():
         if country and s["country"] != country.upper():
+            continue
+        if line and s["line"] != line:
             continue
         result[key] = {
             "name": s["name"],
             "country": s["country"],
             "currency": s["currency"],
+            "line": s["line"],
+            "line_name": LINES[s["line"]]["name"],
             "base": s["base"],
         }
     return {"stores": result, "total": len(result)}
@@ -246,12 +304,18 @@ def whoami(authorization: str | None = Header(None)):
 async def search_products(body: SearchRequest, authorization: str | None = Header(None)):
     stores = [body.store] if body.store else DEFAULT_STORES
     stores = [s for s in stores if s in STORES]
+    # Filtrar por línea si se especifica
+    if body.line and body.line in LINES:
+        stores = [s for s in stores if STORES[s]["line"] == body.line]
     results = []
     for store in stores:
         try:
             raw = await fetch_store(store, body.query, body.page, body.limit)
             for p in raw:
-                results.append(product_from_json(p, store))
+                prod = product_from_json(p, store)
+                prod["line"] = STORES[store]["line"]
+                prod["line_name"] = LINES[STORES[store]["line"]]["name"]
+                results.append(prod)
         except Exception:
             continue
     results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
@@ -262,6 +326,8 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
 async def compare_products(body: SearchRequest):
     stores = [body.store] if body.store else DEFAULT_STORES
     stores = [s for s in stores if s in STORES]
+    if body.line and body.line in LINES:
+        stores = [s for s in stores if STORES[s]["line"] == body.line]
     all_raw = {}
     for store in stores:
         try:

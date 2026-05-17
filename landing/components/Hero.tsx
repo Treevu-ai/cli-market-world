@@ -49,9 +49,9 @@ export default function Hero() {
       <div className="h-6 sm:h-8 md:h-[32px]" />
 
       <p className="font-ibm-mono text-[11px] sm:text-[13px] md:text-[15px] text-[#888888] tracking-[0.5px] sm:tracking-[1px] leading-[1.5] sm:leading-[1.6] text-center w-full max-w-[800px] px-2">
-        8 SUPERMERCADOS · 5 PAÍSES · 1 API UNIFICADA.
+        16 COMERCIOS · 6 LÍNEAS DE NEGOCIO · 5 PAÍSES · 1 API UNIFICADA.
         <br />
-        STRIPE CONVIRTIÓ LOS PAGOS EN APIs. NOSOTROS CONVERTIMOS LOS SUPERMERCADOS EN APIs.
+        STRIPE CONVIRTIÓ LOS PAGOS EN APIs. NOSOTROS CONVERTIMOS EL COMERCIO LATAM EN APIs PARA AGENTES IA.
       </p>
 
       <div className="h-8 sm:h-10 md:h-[48px]" />
