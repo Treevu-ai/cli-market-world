@@ -4,13 +4,44 @@ import { useEffect, useState } from "react";
 import GlitchText from "@/components/GlitchText";
 import CollabCursors from "@/components/CollabCursors";
 
+const LATAM_MAP = [
+  "                   ▄▄▄▄▄▄▄                   ",
+  "               ▄▄████████████▄▄               ",
+  "            ▄████████████████████▄            ",
+  "          ▄████████████████████████▄          ",
+  "        ▄██████▀▀          ▀▀██████▄        ",
+  "       ██████▌                ▐██████       ",
+  "      █████                      █████      ",
+  "     █████         ▄████▄         █████     ",
+  "    █████        ▄████████▄        █████    ",
+  "   █████       ▄████████████▄       █████   ",
+  "  █████       ████████████████      █████   ",
+  "  █████      ▐████████████████▌     █████   ",
+  " █████       ██████████████████     █████   ",
+  " █████        ████████████████      █████   ",
+  "▐█████         ▀████████████▀      █████▌   ",
+  " █████            ▀▀████▀▀         █████    ",
+  "  █████                           █████     ",
+  "    █████▌                       ▐█████     ",
+  "      ██████▄▄               ▄▄██████       ",
+  "         ▀█████████▄▄▄▄▄▄▄████████▀         ",
+  "              ▀▀████████████▀▀              ",
+];
+
+const COUNTRY_DOTS = [
+  { row: 5,  col: 18, color: "#FF6B35", label: "MX", delay: "0s" },
+  { row: 8,  col: 23, color: "#FFD600", label: "CO", delay: "0.3s" },
+  { row: 11, col: 20, color: "#00FF88", label: "PE", delay: "0.6s" },
+  { row: 10, col: 30, color: "#4ADE80", label: "BR", delay: "0.9s" },
+  { row: 17, col: 22, color: "#60A5FA", label: "AR", delay: "1.2s" },
+];
+
 export default function Hero() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   return (
     <section className="relative flex flex-col items-center w-full bg-[#0A0A0A] py-12 px-4 sm:py-16 sm:px-6 md:py-[100px] md:px-[120px] overflow-hidden">
-      {/* Badge */}
       <div className="flex items-center justify-center gap-[6px] sm:gap-[8px] h-[28px] sm:h-[32px] px-[10px] sm:px-[12px] md:px-[16px] bg-[#1A1A1A] border-2 border-[#00FF88] max-w-full">
         <div className="w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] bg-[#00FF88] shrink-0" />
         <span className="font-ibm-mono text-[8px] sm:text-[9px] md:text-[11px] font-bold text-[#00FF88] tracking-[1px] md:tracking-[2px]">
@@ -18,7 +49,6 @@ export default function Hero() {
         </span>
       </div>
       <div className="h-6 sm:h-8 md:h-[24px]" />
-      {/* Urgency badge */}
       <div className="flex items-center justify-center gap-[6px] h-[24px] sm:h-[28px] px-[10px] sm:px-[14px] bg-[#FFD600]/10 border border-[#FFD600]/30 mb-2">
         <span className="w-[5px] h-[5px] bg-[#FFD600] rounded-full animate-pulse" />
         <span className="font-ibm-mono text-[8px] sm:text-[9px] font-bold text-[#FFD600] tracking-[1px]">
@@ -54,69 +84,54 @@ export default function Hero() {
         pip install git+https://github.com/Treevu-ai/cli-market-latam.git
       </p>
       <div className="h-8 sm:h-12 md:h-[48px]" />
-      <div className="w-full max-w-[900px] overflow-hidden" style={{ border: "2px solid #1A1A1A" }}>
-        <LatamMapSVG mounted={mounted} />
+      <div className="w-full max-w-[680px] overflow-hidden" style={{ border: "2px solid #1A1A1A" }}>
+        <LatamMapSCII mounted={mounted} />
       </div>
       <CollabCursors />
     </section>
   );
 }
 
-function LatamMapSVG({ mounted }: { mounted: boolean }) {
+function LatamMapSCII({ mounted }: { mounted: boolean }) {
   if (!mounted) return null;
   return (
-    <svg viewBox="0 0 480 300" width="100%" height="auto" style={{ display: "block" }}>
+    <div className="bg-[#080808] p-3 sm:p-4 md:p-5 font-mono leading-[1.15] relative overflow-hidden select-none">
       <style>{`
-        @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes scan-line { 0%{transform:translateY(0);opacity:0} 15%{opacity:0.4} 85%{opacity:0.4} 100%{transform:translateY(280px);opacity:0} }
-        @keyframes grid-shift { 0%,100%{opacity:0.12} 50%{opacity:0.2} }
-        .dmx{animation:dot-pulse 2.2s ease-in-out infinite}
-        .dco{animation:dot-pulse 2.4s ease-in-out infinite;animation-delay:0.3s}
-        .dpe{animation:dot-pulse 2.0s ease-in-out infinite;animation-delay:0.6s}
-        .dbr{animation:dot-pulse 2.6s ease-in-out infinite;animation-delay:0.9s}
-        .dar{animation:dot-pulse 2.3s ease-in-out infinite;animation-delay:1.2s}
-        .mgrid{animation:grid-shift 4s ease-in-out infinite}
-        .mscan{animation:scan-line 5s linear infinite}
+        @keyframes scan-mapscii { 0%{top:0;opacity:0} 15%{opacity:0.35} 85%{opacity:0.35} 100%{top:100%;opacity:0} }
+        @keyframes mpulse { 0%,100%{opacity:1;box-shadow:0 0 4px currentColor} 50%{opacity:0.25;box-shadow:0 0 8px currentColor} }
+        .mscan-line { position:absolute; left:0; width:100%; height:1px; background:#00FF88; animation:scan-mapscii 4.5s linear infinite; z-index:5; }
+        .mdot { animation:mpulse 2s ease-in-out infinite; }
       `}</style>
-      <rect width="480" height="300" fill="#080808" />
-      <defs><pattern id="g" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M 16 0 L 0 0 0 16" fill="none" stroke="#141414" strokeWidth="0.3" /></pattern></defs>
-      <rect width="480" height="300" fill="url(#g)" className="mgrid" />
-      <line x1="0" y1="0" x2="480" y2="0" stroke="#00FF88" strokeWidth="0.6" opacity="0" className="mscan" />
-      <g fill="none" stroke="#1D3D2D" strokeWidth="0.7" opacity="0.6">
-        <path d="M50,50 L70,45 L85,48 L95,42 L105,48 L98,56 L80,58 L65,54 L50,50 Z" />
-        <path d="M98,56 L110,62 L118,66 L112,74 L105,68 L98,56 Z" />
-        <path d="M112,74 L128,68 L148,65 L168,62 L188,64 L208,70 L222,78 L232,90 L238,105 L242,122 L238,140 L232,155 L220,168 L210,178 L195,185 L175,190 L158,188 L142,183 L132,172 L126,158 L120,142 L116,126 L114,108 L112,94 Z" />
-        <path d="M112,74 L120,64 L126,68 L122,78 L112,74 Z" />
-        <path d="M158,188 L168,192 L162,202 L150,210 L140,205 L145,196 L152,190 Z" />
-      </g>
-      <circle cx="82" cy="48" r="3" fill="#FF6B35" className="dmx" />
-      <circle cx="82" cy="48" r="7" fill="#FF6B35" opacity="0.08" className="dmx" />
-      <circle cx="118" cy="76" r="3" fill="#FFD600" className="dco" />
-      <circle cx="118" cy="76" r="7" fill="#FFD600" opacity="0.08" className="dco" />
-      <circle cx="130" cy="120" r="3" fill="#00FF88" className="dpe" />
-      <circle cx="130" cy="120" r="7" fill="#00FF88" opacity="0.08" className="dpe" />
-      <circle cx="198" cy="108" r="3" fill="#4ADE80" className="dbr" />
-      <circle cx="198" cy="108" r="7" fill="#4ADE80" opacity="0.08" className="dbr" />
-      <circle cx="155" cy="195" r="3" fill="#60A5FA" className="dar" />
-      <circle cx="155" cy="195" r="7" fill="#60A5FA" opacity="0.08" className="dar" />
-      <text x="88" y="50" fontFamily="monospace" fontSize="5.5" fill="#555" letterSpacing="1">MX</text>
-      <text x="124" y="79" fontFamily="monospace" fontSize="5.5" fill="#555" letterSpacing="1">CO</text>
-      <text x="136" y="123" fontFamily="monospace" fontSize="5.5" fill="#00FF88" letterSpacing="1">PE</text>
-      <text x="204" y="111" fontFamily="monospace" fontSize="5.5" fill="#4ADE80" letterSpacing="1">BR</text>
-      <text x="161" y="198" fontFamily="monospace" fontSize="5.5" fill="#555" letterSpacing="1">AR</text>
-      <rect x="320" y="12" width="150" height="84" fill="#0A0A0A" stroke="#1A1A1A" strokeWidth="0.5" rx="3" opacity="0.92" />
-      <text x="332" y="26" fontFamily="monospace" fontSize="5.5" fill="#444" letterSpacing="1">SYS STATUS</text>
-      <line x1="332" y1="30" x2="458" y2="30" stroke="#141414" strokeWidth="0.5" />
-      <text x="332" y="42" fontFamily="monospace" fontSize="5.5" fill="#777">COMERCIOS</text>
-      <text x="448" y="42" fontFamily="monospace" fontSize="5.5" fill="#00FF88" textAnchor="end">17</text>
-      <text x="332" y="54" fontFamily="monospace" fontSize="5.5" fill="#777">LÍNEAS</text>
-      <text x="448" y="54" fontFamily="monospace" fontSize="5.5" fill="#FFD600" textAnchor="end">6</text>
-      <text x="332" y="66" fontFamily="monospace" fontSize="5.5" fill="#777">PAÍSES</text>
-      <text x="448" y="66" fontFamily="monospace" fontSize="5.5" fill="#60A5FA" textAnchor="end">5</text>
-      <text x="332" y="78" fontFamily="monospace" fontSize="5.5" fill="#777">MCP TOOLS</text>
-      <text x="448" y="78" fontFamily="monospace" fontSize="5.5" fill="#FF6B35" textAnchor="end">12</text>
-      <line x1="0" y1="288" x2="480" y2="288" stroke="#141414" strokeWidth="0.5" />
-      <text x="8" y="297" fontFamily="monospace" fontSize="5" fill="#222">WONG · METRO · PLAZA VEA · CARREFOUR · JUMBO · CHEDRAUI · HEB · OLÍMPICA · ÉXITO · DROGA RAIA · MAGAZINE LUIZA · RENNER · CENTAURO · HOMECENTER</text>
-    </svg>
+      <div className="mscan-line" />
+      <div className="text-[7px] sm:text-[8px] md:text-[9px] text-[#333] tracking-[2px] mb-1 flex justify-between">
+        <span>MAPSCII — LATAM COVERAGE</span>
+        <span className="text-[#444]">┌─ TERMINAL ─┐</span>
+      </div>
+      <div className="relative inline-block text-[6px] sm:text-[7px] md:text-[8px]">
+        <pre className="text-[#1A3D2D] leading-[1.05] m-0" style={{ fontFamily: "'IBM Plex Mono', 'Courier New', monospace" }}>
+          {LATAM_MAP.join("\n")}
+        </pre>
+        {COUNTRY_DOTS.map((dot) => (
+          <div key={dot.label} className="absolute flex items-center gap-[3px]"
+            style={{
+              top: `calc(${dot.row} * 1.05em + 2px)`,
+              left: `calc(${dot.col} * 1ch)`,
+              animationDelay: dot.delay,
+            } as React.CSSProperties}
+          >
+            <span className="mdot inline-block w-[4px] h-[4px] sm:w-[5px] sm:h-[5px] rounded-full"
+              style={{ backgroundColor: dot.color, color: dot.color }} />
+            <span className="text-[#555] font-mono text-[5px] sm:text-[6px]">{dot.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 sm:gap-5 mt-2 pt-1.5 border-t border-[#141414] text-[6px] sm:text-[7px] md:text-[8px] font-mono">
+        <span><span className="text-[#00FF88]">●</span> <span className="text-[#555]">17 STORES</span></span>
+        <span><span className="text-[#FFD600]">●</span> <span className="text-[#555]">6 LINES</span></span>
+        <span><span className="text-[#60A5FA]">●</span> <span className="text-[#555]">5 COUNTRIES</span></span>
+        <span><span className="text-[#FF6B35]">●</span> <span className="text-[#555]">12 TOOLS</span></span>
+        <span className="ml-auto text-[#333] animate-pulse">█ ONLINE</span>
+      </div>
+    </div>
   );
 }
