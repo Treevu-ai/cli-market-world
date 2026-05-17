@@ -1,7 +1,7 @@
 HILO DE TWITTER — CLI AGENTIC MARKET
 =====================================
-5 tweets para lanzamiento. Publicar en orden, sin replies.
-Ideal: acompañar cada tweet con screenshot o GIF.
+5 tweets. Publicar en orden.
+Capturá screenshots reales de tu terminal ejecutando los comandos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -13,8 +13,11 @@ Sus APIs no existen, están fragmentadas, o son imposibles de consumir por un LL
 
 Si querés que un agente haga las compras por vos, hoy no puede.
 
-Pero eso está por cambiar. 🧵
-[GIF del banner verde de market]
+Pero eso está por cambiar.
+
+[Screenshot del banner del market corriendo en terminal]
+
+https://nuevo-virid.vercel.app
 
 
 TWEET 2 — LA SOLUCIÓN
@@ -23,30 +26,38 @@ CLI AGENTIC MARKET convierte supermercados en APIs para agentes IA.
 
 Buscás productos reales en Wong, Metro y Plaza Vea. Comparás precios. Comprás. Todo desde la terminal.
 
-Y si sos dev: exponemos todo como MCP tools para que tus agentes compren solos.
-[Screenshot de market search]
+Y si sos dev: exponemos todo como MCP tools para tus agentes.
+
+[Screenshot de market search o market compare]
+
+https://github.com/Treevu-ai/agentic-market
 
 
 TWEET 3 — CÓMO FUNCIONA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3 comandos y ya estás comprando:
+Tres comandos y ya estás comprando:
 
 market search "leche" — busca en 3 supermercados
 market compare "aceite" — te dice cuál es más barato
 market ask "compra arroz" — el agente busca, elige y agrega al carrito
 
 Zero clicks. Todo desde la terminal.
-[Screenshot del flujo completo]
+
+[Screenshot del flujo search → add → cart]
 
 
-TWEET 4 — PARA AGENTES IA
+TWEET 4 — PARA HUMANOS Y AGENTES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Esto no es solo para humanos.
 
-market --json → salida parseable por LLMs
-market_mcp.py → 9 MCP tools para DeepSeek TUI, Claude, etc.
+Human-friendly: comandos, tablas, flujo de compra
+Agent-friendly: REST API, MCP tools, JSON
+
+market --json → parseable por cualquier LLM
+market_mcp.py → 9 tools MCP para DeepSeek TUI, Claude, etc.
 
 Stripe transformó pagos en APIs. Nosotros transformamos supermercados.
+
 [Screenshot de market --json]
 
 
@@ -54,10 +65,14 @@ TWEET 5 — CALL TO ACTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 pip install agentic-market
 
-→ Buscá productos en 3 supermercados peruanos
+→ Buscá en Wong, Metro y Plaza Vea
 → Compará precios en tiempo real
 → Dejá que tu agente IA compre por vos
 → Sumá tu supermercado con 1 línea de config
 
-Abierto. Código en GitHub. LATAM first.
-[Link al repo + GIF de market checkout]
+Open source. GitHub. LATAM first.
+
+🌎 Landing: https://nuevo-virid.vercel.app
+💻 GitHub: https://github.com/Treevu-ai/agentic-market
+
+[GIF del market corriendo]
