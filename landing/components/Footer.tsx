@@ -4,8 +4,8 @@ const tiendasLinks = ["WONG", "METRO", "PLAZA VEA", "CARREFOUR", "JUMBO", "CHEDR
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col w-full bg-[#050505]">
-      <div className="flex flex-col md:flex-row gap-10 sm:gap-12 md:gap-[80px] px-4 sm:px-6 md:px-[120px] py-10 sm:py-12 md:py-[64px]">
+    <footer className="flex flex-col w-full bg-[#050505] safe-bottom">
+      <div className="flex flex-col md:flex-row gap-8 sm:gap-10 md:gap-[80px] px-4 sm:px-6 md:px-[120px] py-8 sm:py-10 md:py-[64px]">
         {/* Brand */}
         <div className="flex flex-col gap-5 sm:gap-6 md:w-[280px] md:shrink-0">
           <div className="flex items-center gap-[10px] sm:gap-[12px]">

@@ -22,7 +22,7 @@ export default function FinalCTA() {
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-[16px] w-full sm:w-auto px-2 sm:px-0">
         <a
           href="https://github.com/Treevu-ai/cli-market-latam"
-          className="flex items-center justify-center w-full sm:w-[280px] h-[56px] sm:h-[64px] bg-[#00FF88] hover:bg-[#00cc6a] transition-colors"
+          className="flex items-center justify-center w-full sm:w-[280px] h-[56px] sm:h-[64px] bg-[#00FF88] hover:bg-[#00cc6a] active:scale-[0.98] transition-all"
         >
           <span className="font-grotesk text-[12px] sm:text-[13px] font-bold text-[#0A0A0A] tracking-[1.5px] sm:tracking-[2px]">
             INSTALAR AHORA
@@ -30,7 +30,7 @@ export default function FinalCTA() {
         </a>
         <a
           href="#pricing"
-          className="flex items-center justify-center w-full sm:w-[220px] h-[56px] sm:h-[64px] bg-[#0A0A0A] border-2 border-[#3D3D3D] hover:border-[#888888] transition-colors"
+          className="flex items-center justify-center w-full sm:w-[220px] h-[56px] sm:h-[64px] bg-[#0A0A0A] border-2 border-[#3D3D3D] hover:border-[#888888] active:scale-[0.98] transition-all"
         >
           <span className="font-ibm-mono text-[11px] sm:text-[12px] text-[#666666] tracking-[1.5px] sm:tracking-[2px]">
             VER PLANES

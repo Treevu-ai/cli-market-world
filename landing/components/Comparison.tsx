@@ -59,30 +59,25 @@ export default function Comparison() {
       </div>
 
       {/* Mobile — card layout */}
-      <div className="flex flex-col md:hidden w-full gap-3">
-        <div className="flex items-center gap-2 bg-[#111111] border-b-2 border-b-[#00FF88] px-3 py-3">
+      <div className="flex flex-col md:hidden w-full gap-2">
+        <div className="flex items-center gap-2 bg-[#111111] border-b-2 border-b-[#00FF88] px-3 py-3 rounded-t-sm">
           <span className="font-grotesk text-[11px] font-bold text-[#00FF88] tracking-[1.5px]">CLI MARKET</span>
-          <span className="font-ibm-mono text-[9px] text-[#555555] tracking-[1px]">vs COMPRA MANUAL · APP DEL SUPER · API VTEX</span>
+          <span className="font-ibm-mono text-[9px] text-[#555555] tracking-[1px]">vs Manual · App · API VTEX</span>
         </div>
         {rows.map((row, i) => (
-          <div key={row.feature} className="flex flex-col gap-2 p-4 border border-[#1D1D1D] bg-[#0D0D0D]">
-            <div className="flex items-center justify-between">
-              <span className="font-grotesk text-[12px] font-bold text-[#F5F5F0] tracking-[0.5px]">{row.feature}</span>
-              <span className="font-ibm-mono text-[16px] font-bold text-[#00FF88]">{row.market}</span>
-            </div>
-            <div className="flex gap-3">
-              {[
-                { label: "Manual", val: row.humano },
-                { label: "App", val: row.app },
-                { label: "API", val: row.api },
-              ].map((a) => (
-                <span key={a.label} className="font-ibm-mono text-[10px] text-[#555555] tracking-[1px]">
-                  {a.label}: <span className={a.val === "[✓]" ? "text-[#00FF88] font-bold" : a.val === "[✗]" ? "text-[#3D3D3D]" : "text-[#444444]"}>{a.val}</span>
-                </span>
-              ))}
+          <div key={row.feature} className={`flex items-center justify-between px-4 py-3 border border-[#1D1D1D] bg-[#0D0D0D] gap-2 ${i === rows.length - 1 ? "rounded-b-sm" : ""}`}>
+            <span className="font-grotesk text-[11px] font-bold text-[#CCCCCC] tracking-[0.5px] shrink-0">{row.feature}</span>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="font-ibm-mono text-[11px] text-[#555555] tracking-[1px]">Otr: <span className={row.humano === "[✓]" ? "text-[#00FF88] font-bold" : "text-[#3D3D3D]"}>{row.humano}</span></span>
+              <span className="font-ibm-mono text-[14px] font-bold text-[#00FF88] tracking-[1px]">{row.market}</span>
             </div>
           </div>
         ))}
+        <div className="flex items-center justify-center gap-3 py-2">
+          <span className="font-ibm-mono text-[9px] text-[#333333] tracking-[1px]">
+            <span className="text-[#00FF88]">[✓]</span> Soportado · <span className="text-[#3D3D3D]">[✗]</span> No · <span className="text-[#444444]">[—]</span> Parcial
+          </span>
+        </div>
       </div>
     </section>
   );

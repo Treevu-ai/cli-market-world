@@ -57,15 +57,15 @@ export default function Hero() {
       <div className="h-8 sm:h-10 md:h-[48px]" />
 
       {/* CTAs */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-[16px] w-full sm:w-auto px-4 sm:px-0">
-        <button className="flex items-center justify-center w-full sm:w-[240px] h-[52px] sm:h-[56px] bg-[#00FF88] hover:bg-[#00cc6a] transition-colors">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-[16px] w-full sm:w-auto px-2 sm:px-0">
+        <button className="flex items-center justify-center w-full sm:w-[240px] h-[52px] sm:h-[56px] bg-[#00FF88] hover:bg-[#00cc6a] active:scale-[0.98] transition-all">
           <span className="font-grotesk text-[11px] sm:text-[12px] font-bold text-[#0A0A0A] tracking-[1.5px] sm:tracking-[2px]">
             INSTALAR AHORA
           </span>
         </button>
-        <button className="flex items-center justify-center w-full sm:w-[200px] h-[52px] sm:h-[56px] bg-[#0A0A0A] border-2 border-[#3D3D3D] hover:border-[#888888] transition-colors">
-          <span className="font-ibm-mono text-[11px] sm:text-[12px] text-[#888888] tracking-[1.5px] sm:tracking-[2px]">
-            VER COMANDOS &gt;
+        <button className="flex items-center justify-center w-full sm:w-[200px] h-[52px] sm:h-[56px] bg-[#0A0A0A] border-2 border-[#3D3D3D] hover:border-[#888888] active:scale-[0.98] transition-all">
+          <span className="font-ibm-mono text-[11px] sm:text-[12px] text-[#888888] tracking-[1px] sm:tracking-[2px]">
+            VER COMANDOS →
           </span>
         </button>
       </div>

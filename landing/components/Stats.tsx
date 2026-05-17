@@ -18,8 +18,7 @@ export default function Stats() {
             key={stat.label}
             className={`flex flex-col gap-2 items-center justify-center py-6 md:py-0 md:h-[160px] md:flex-1
               ${stat.border ? "md:border-r-2 md:border-r-[#0A0A0A]" : ""}
-              ${i === 0 ? "md:pr-[40px]" : i === stats.length - 1 ? "md:pl-[40px]" : "md:px-[40px]"}
-              ${i % 2 === 0 ? "border-r-2 border-r-[#0A0A0A] pr-4 md:border-r-0 md:pr-0" : "pl-4 md:pl-0"}
+              ${i === 0 ? "md:pr-[40px] pr-3" : i === stats.length - 1 ? "md:pl-[40px] pl-3" : "md:px-[40px] px-3"}
               ${i >= 2 ? "border-t-2 border-t-[#0A0A0A] pt-4 md:border-t-0 md:pt-0" : ""}
             `}
           >

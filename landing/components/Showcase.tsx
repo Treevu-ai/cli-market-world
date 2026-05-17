@@ -89,11 +89,11 @@ export default function Showcase() {
       {/* Mobile */}
       <div className="md:hidden px-4 sm:px-6">
         <div
-          className="flex flex-col gap-4 p-5 border-2 w-full"
+          className="flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 border-2 w-full"
           style={{ backgroundColor: slide.bg, borderColor: slide.border }}
         >
-          <div className="flex items-center justify-center h-[100px] sm:h-[140px] bg-[#1A1A1A] border border-[#2D2D2D]">
-            <span className="font-ibm-mono text-[10px] sm:text-[11px] text-[#333333] tracking-[1px] sm:tracking-[2px]">[CASO DE USO]</span>
+          <div className="flex items-center justify-center h-[80px] sm:h-[120px] bg-[#1A1A1A] border border-[#2D2D2D]">
+            <span className="font-ibm-mono text-[9px] sm:text-[10px] text-[#333333] tracking-[1px] sm:tracking-[2px]">[CASO DE USO]</span>
           </div>
           <div className="flex items-center justify-between w-full">
             <div
