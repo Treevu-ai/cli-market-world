@@ -162,6 +162,10 @@ STORES = {
 
     # ── 🏠 HOGAR ──
     "homecenter": {"name": "Homecenter", "base": "https://www.homecenter.com.co", "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "hogar"},
+
+    # ── 🌍 EUROPA (VTEX global) ──
+    "carrefour_es": {"name": "Carrefour España", "base": "https://www.carrefour.es", "country": "ES", "currency": "EUR", "emoji": "🇪🇸", "line": "supermercados"},
+    "decathlon_fr":  {"name": "Decathlon",       "base": "https://www.decathlon.fr",  "country": "FR", "currency": "EUR", "emoji": "🇫🇷", "line": "deportes"},
 }
 
 # ── Lines (verticals) ────────────────────────────────────────────────────────
@@ -181,6 +185,8 @@ COUNTRIES = {
     "BR": {"name": "Brasil",     "stores": [k for k, v in STORES.items() if v["country"] == "BR"]},
     "MX": {"name": "México",     "stores": [k for k, v in STORES.items() if v["country"] == "MX"]},
     "CO": {"name": "Colombia",   "stores": [k for k, v in STORES.items() if v["country"] == "CO"]},
+    "ES": {"name": "España",    "stores": [k for k, v in STORES.items() if v["country"] == "ES"]},
+    "FR": {"name": "Francia",   "stores": [k for k, v in STORES.items() if v["country"] == "FR"]},
 }
 DEFAULT_STORES = list(STORES.keys())
 PAGE_SIZE = 20
