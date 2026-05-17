@@ -82,9 +82,10 @@ Nosotros transformamos supermercados en APIs para agentes IA.[/]
 [dim]Human-friendly[/] [#3cffd0]▸[/] [dim]Terminal CLI · Comandos · Tablas · Flujo de compra[/]
 [dim]Agent-friendly [/] [#3cffd0]▸[/] [dim]REST API · MCP Tools · JSON · Agentes autónomos[/]
 
-[bold #3cffd0]COMANDOS[/]
-  [#3cffd0]market login[/]              Autenticarse
-  [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en Wong, Metro y Plaza Vea
+ [bold #3cffd0]COMANDOS[/]
+   [#3cffd0]market lines[/]              Explorar líneas de negocio (6 verticales, 16 retailers)
+   [#3cffd0]market login[/]              Autenticarse
+   [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en 16 comercios VTEX
   [#3cffd0]market compare[/] [dim]"aceite"[/]      Comparar precios entre tiendas
   [#3cffd0]market add[/] [dim]<id> --qty 2[/]      Agregar al carrito
   [#3cffd0]market cart[/]               Ver carrito y total
@@ -201,11 +202,14 @@ def cmd_search(args):
         country_stores = [k for k, v in STORES.items() if v["country"] == args.country]
         stores_to_search = country_stores
 
-    label = args.store or args.country or "todas"
+    label = args.store or args.country or args.line or "todas"
+    if args.line:
+        label = LINES[args.line]["name"]
     with console.status(f"[cyan]Buscando '{args.query}' en {label}..."):
         data = api("POST", "/products/search", {
             "query": args.query,
             "store": args.store,
+            "line": args.line,
             "limit": args.limit,
         })
         # Filter by country on client side if needed
@@ -259,7 +263,7 @@ def cmd_search(args):
 def cmd_compare(args):
     """Compara precios entre las 3 tiendas."""
     with console.status(f"[cyan]Comparando '{args.query}'..."):
-        data = api("POST", "/products/compare", {"query": args.query, "limit": args.limit})
+        data = api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
 
     comp = data["comparison"]
     if not comp:
@@ -459,6 +463,25 @@ def cmd_countries(args):
     console.print(f"\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
 
 
+def cmd_lines(args):
+    """Lista líneas de negocio con sus retailers."""
+    data = api("GET", "/lines")
+    lines = data.get("lines", {})
+
+    table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style="dim blue")
+    table.add_column("Línea", style="bold", width=22)
+    table.add_column("Retailers", width=45)
+    table.add_column("Cant.", justify="center", width=6)
+
+    for line_id, info in lines.items():
+        stores_str = ", ".join(s["name"] for s in info["stores"].values())
+        table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
+
+    console.print()
+    console.print(table)
+    console.print(f"\n[dim]market search --line farmacias \"paracetamol\"[/] [dim]para buscar en una línea[/]")
+
+
 def cmd_categories(args):
     """Muestra el árbol de categorías de una tienda."""
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
@@ -521,15 +544,31 @@ def cmd_whoami(args):
 # ── Store config (duplicated for CLI standalone use) ───────────────────────
 
 STORES = {
-    "wong":      {"name": "Wong",       "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "metro":     {"name": "Metro",      "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "plazavea":  {"name": "Plaza Vea",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
-    "carrefour": {"name": "Carrefour",  "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
-    "jumbo_ar":  {"name": "Jumbo",      "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
-    "carrefour_br": {"name": "Carrefour", "country": "BR", "currency": "BRL", "emoji": "🇧🇷"},
-    "chedraui":  {"name": "Chedraui",   "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
-    "heb":       {"name": "HEB",        "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
-    "olimpica":  {"name": "Olímpica",   "country": "CO", "currency": "COP", "emoji": "🇨🇴"},
+    "wong":      {"name": "Wong",       "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "metro":     {"name": "Metro",      "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "plazavea":  {"name": "Plaza Vea",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
+    "carrefour": {"name": "Carrefour",  "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
+    "jumbo_ar":  {"name": "Jumbo",      "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
+    "carrefour_br": {"name": "Carrefour", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "supermercados"},
+    "chedraui":  {"name": "Chedraui",   "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
+    "heb":       {"name": "HEB",        "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
+    "olimpica":  {"name": "Olímpica",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
+    "drogaraia": {"name": "Droga Raia",  "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
+    "drogasil":  {"name": "Drogasil",    "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
+    "magazineluiza": {"name": "Magazine Luiza", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
+    "motorola_br":   {"name": "Motorola",       "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
+    "renner":    {"name": "Lojas Renner", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "moda"},
+    "centauro":  {"name": "Centauro",     "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "deportes"},
+    "homecenter":{"name": "Homecenter",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "hogar"},
+}
+
+LINES = {
+    "supermercados": {"name": "Supermercados",       "emoji": "🛒"},
+    "farmacias":     {"name": "Farmacias y Salud",   "emoji": "💊"},
+    "electro":       {"name": "Electro y Tecnología","emoji": "📱"},
+    "moda":          {"name": "Moda y Calzado",       "emoji": "👕"},
+    "deportes":      {"name": "Deportes y Fitness",   "emoji": "⚽"},
+    "hogar":         {"name": "Hogar y Construcción", "emoji": "🏠"},
 }
 
 COUNTRIES = {
@@ -560,12 +599,14 @@ def main():
     p.add_argument("query", nargs="?", default="")
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # compare
     p = sub.add_parser("compare", help="Comparar precios entre tiendas")
     p.add_argument("query", nargs="?", default="")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # add
@@ -612,6 +653,9 @@ def main():
     # countries
     sub.add_parser("countries", help="Ver países y tiendas disponibles")
 
+    # lines
+    sub.add_parser("lines", help="Ver líneas de negocio y sus retailers")
+
     # about
     sub.add_parser("about", help="Modelo de negocio")
 
@@ -648,6 +692,7 @@ def main():
         "ask":      cmd_ask,
         "preferences": cmd_preferences,
         "countries": cmd_countries,
+        "lines":     cmd_lines,
         "categories": cmd_categories,
         "barcode":  cmd_barcode,
         "enrich":   cmd_enrich,
