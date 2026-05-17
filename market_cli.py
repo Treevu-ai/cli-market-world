@@ -553,6 +553,7 @@ STORES = {
     "chedraui":  {"name": "Chedraui",   "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
     "heb":       {"name": "HEB",        "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
     "olimpica":  {"name": "Olímpica",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
+    "exito":     {"name": "Éxito",      "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
     "drogaraia": {"name": "Droga Raia",  "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
     "drogasil":  {"name": "Drogasil",    "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
     "magazineluiza": {"name": "Magazine Luiza", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
