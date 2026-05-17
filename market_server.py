@@ -48,6 +48,7 @@ STORES = {
     "chedraui":  {"name": "Chedraui",   "base": "https://www.chedraui.com.mx", "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
     "heb":       {"name": "HEB",        "base": "https://www.heb.com.mx",       "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
     "olimpica":  {"name": "Olímpica",   "base": "https://www.olimpica.com",     "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
+    "exito":     {"name": "Éxito",      "base": "https://www.exito.com",         "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
 
     # ── 💊 FARMACIAS ──
     "drogaraia":   {"name": "Droga Raia",   "base": "https://www.drogaraia.com.br",   "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},

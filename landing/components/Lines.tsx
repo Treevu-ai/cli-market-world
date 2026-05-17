@@ -2,8 +2,8 @@ const lines = [
   {
     emoji: "🛒",
     name: "Supermercados",
-    count: 9,
-    stores: "Wong · Metro · Plaza Vea · Carrefour · Jumbo · Chedraui · HEB · Olímpica",
+    count: 10,
+    stores: "Wong · Metro · Plaza Vea · Carrefour · Jumbo · Chedraui · HEB · Olímpica · Éxito",
     color: "#00FF88",
   },
   {
@@ -91,7 +91,7 @@ export default function Lines() {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-[24px] pt-4">
         <div className="flex items-center gap-[6px]">
-          <span className="font-grotesk text-[20px] sm:text-[24px] font-bold text-[#00FF88]">16</span>
+          <span className="font-grotesk text-[20px] sm:text-[24px] font-bold text-[#00FF88]">17</span>
           <span className="font-ibm-mono text-[9px] sm:text-[10px] text-[#888888] tracking-[1px]">COMERCIOS VTEX</span>
         </div>
         <div className="flex items-center gap-[6px]">
