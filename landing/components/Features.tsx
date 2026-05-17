@@ -61,7 +61,7 @@ export default function Features() {
         <FeatureCard
           iconColor="#00FF88"
           title={"BÚSQUEDA\nMULTITIENDA"}
-          description="BUSCA PRODUCTOS EN 8 SUPERMERCADOS SIMULTÁNEAMENTE. RESULTADOS EN MILISEGUNDOS, FORMATEADOS COMO JSON O TABLAS."
+          description="BUSCA PRODUCTOS EN 17 COMERCIOS SIMULTÁNEAMENTE. RESULTADOS EN MILISEGUNDOS, FORMATEADOS COMO JSON O TABLAS."
           tag="SEARCH"
           tagColor="#00FF88"
           borderColor="#00FF88"

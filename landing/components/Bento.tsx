@@ -18,7 +18,7 @@ export default function Bento() {
               {"API UNIFICADA\nMULTITIENDA"}
             </h3>
             <p className="font-ibm-mono text-[12px] text-[#1A1A1A] tracking-[1px] leading-[1.6]">
-              UNA SOLA API PARA 8 SUPERMERCADOS EN 5 PAÍSES. ABSTRAE LAS DIFERENCIAS ENTRE VTEX, APIs PROPIETARIAS Y OPEN FOOD FACTS.
+              UNA SOLA API PARA 17 COMERCIOS EN 6 LÍNEAS Y 5 PAÍSES. ABSTRAE LAS DIFERENCIAS ENTRE VTEX, APIs PROPIETARIAS Y OPEN FOOD FACTS.
             </p>
             <div className="flex items-center justify-center h-[28px] px-[12px] bg-[#0A0A0A] w-fit">
               <span className="font-ibm-mono text-[10px] font-bold text-[#00FF88] tracking-[2px]">[VTEX]</span>
@@ -31,7 +31,7 @@ export default function Bento() {
               {"COMPATIBLE\nCON MCP"}
             </h3>
             <p className="font-ibm-mono text-[12px] text-[#666666] tracking-[1px] leading-[1.6]">
-              9 HERRAMIENTAS MCP LISTAS PARA USAR. CONECTA TUS AGENTES DE IA EN MINUTOS. COMPATIBLE CON DEEPSEEK, CLAUDE Y CUALQUIER CLIENTE MCP.
+              12 HERRAMIENTAS MCP LISTAS PARA USAR. CONECTA TUS AGENTES DE IA EN MINUTOS. COMPATIBLE CON DEEPSEEK, CLAUDE Y CUALQUIER CLIENTE MCP.
             </p>
           </div>
 

@@ -115,7 +115,7 @@ export default function Logos() {
   return (
     <section className="flex flex-col items-center w-full bg-[#0F0F0F] py-10 px-4 sm:py-[48px] sm:px-6 md:px-[120px] gap-6 sm:gap-[32px]">
       <span className="font-ibm-mono text-[10px] sm:text-[11px] text-[#444444] tracking-[2px] sm:tracking-[3px] text-center">
-        8 SUPERMERCADOS · 5 PAÍSES · 1 API
+        17 COMERCIOS · 6 LÍNEAS · 5 PAÍSES · 1 API
       </span>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 md:gap-x-[40px] md:gap-y-[24px] w-full max-w-[1000px]">

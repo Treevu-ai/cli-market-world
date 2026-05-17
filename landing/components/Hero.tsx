@@ -17,6 +17,14 @@ export default function Hero() {
           [CLI] // INFRAESTRUCTURA PARA AGENTES IA
         </span>
       </div>
+      <div className="h-6 sm:h-8 md:h-[24px]" />
+      {/* Urgency badge */}
+      <div className="flex items-center justify-center gap-[6px] h-[24px] sm:h-[28px] px-[10px] sm:px-[14px] bg-[#FFD600]/10 border border-[#FFD600]/30 mb-2">
+        <span className="w-[5px] h-[5px] bg-[#FFD600] rounded-full animate-pulse" />
+        <span className="font-ibm-mono text-[8px] sm:text-[9px] font-bold text-[#FFD600] tracking-[1px]">
+          EARLY ADOPTER — LANZAMIENTO MAYO 2026
+        </span>
+      </div>
       <div className="h-6 sm:h-8 md:h-[32px]" />
       <h1 className="font-grotesk text-[clamp(26px,8vw,96px)] font-bold text-[#F5F5F0] tracking-[-0.5px] sm:tracking-[-1px] leading-none text-center w-full max-w-[1100px]">
         <GlitchText text="SUPERMERCADOS" speed={45} delay={100} /><br />

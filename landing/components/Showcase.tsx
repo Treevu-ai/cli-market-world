@@ -47,7 +47,7 @@ const slides = [
     idx: "04 / 04",
     idxColor: "#444444",
     title: "MARKETPLACE\nMULTIPAÍS",
-    by: "UN MARKETPLACE CONECTÓ 8 SUPERMERCADOS EN 5 PAÍSES USANDO LA API UNIFICADA. ESCALÓ EN 3 SEMANAS.",
+    by: "UN MARKETPLACE CONECTÓ 17 COMERCIOS EN 6 LÍNEAS USANDO LA API UNIFICADA. ESCALÓ EN 3 SEMANAS.",
     border: "#2D2D2D",
     bg: "#111111",
     tagBorder: "",
