@@ -1,0 +1,1 @@
+{"version":2,"outputDirectory":".","builds":[],"routes":[{"src":"/(.*)","dest":"/index.html"}]}
