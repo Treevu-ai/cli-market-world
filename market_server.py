@@ -34,16 +34,30 @@ ORDERS_FILE = DATA_DIR / "orders.json"
 SESSION_FILE = DATA_DIR / "session.json"
 
 STORES = {
-    "wong":    {"name": "Wong",      "base": "https://www.wong.pe"},
-    "metro":   {"name": "Metro",     "base": "https://www.metro.pe"},
-    "plazavea":{"name": "Plaza Vea", "base": "https://www.plazavea.com.pe"},
+    "wong":      {"name": "Wong",       "base": "https://www.wong.pe",          "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "metro":     {"name": "Metro",      "base": "https://www.metro.pe",         "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "plazavea":  {"name": "Plaza Vea",  "base": "https://www.plazavea.com.pe",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "carrefour": {"name": "Carrefour",  "base": "https://www.carrefour.com.ar", "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
+    "jumbo_ar":  {"name": "Jumbo",      "base": "https://www.jumbo.com.ar",     "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
+    "carrefour_br": {"name": "Carrefour", "base": "https://www.carrefour.com.br", "country": "BR", "currency": "BRL", "emoji": "🇧🇷"},
+    "chedraui":  {"name": "Chedraui",   "base": "https://www.chedraui.com.mx", "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
+    "heb":       {"name": "HEB",        "base": "https://www.heb.com.mx",       "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
+    "olimpica":  {"name": "Olímpica",   "base": "https://www.olimpica.com",     "country": "CO", "currency": "COP", "emoji": "🇨🇴"},
+}
+
+COUNTRIES = {
+    "PE": {"name": "Perú", "stores": ["wong", "metro", "plazavea"]},
+    "AR": {"name": "Argentina", "stores": ["carrefour", "jumbo_ar"]},
+    "BR": {"name": "Brasil", "stores": ["carrefour_br"]},
+    "MX": {"name": "México", "stores": ["chedraui", "heb"]},
+    "CO": {"name": "Colombia", "stores": ["olimpica"]},
 }
 DEFAULT_STORES = list(STORES.keys())
 PAGE_SIZE = 20
 
 app = FastAPI(
     title="Agentic Market API",
-    description="AI-native supermarket infrastructure — Wong, Metro, Plaza Vea.",
+    description="AI-native supermarket infrastructure — 8 stores across 5 LATAM countries.",
     version="1.0.0",
 )
 
@@ -174,8 +188,35 @@ def root():
     return {
         "name": "Agentic Market",
         "status": "running",
-        "stores": list(STORES.keys()),
+        "stores": len(STORES),
+        "countries": len(COUNTRIES),
         "docs": "/docs",
+    }
+
+
+@app.get("/stores")
+def list_stores(country: str | None = None):
+    """Lista todas las tiendas. Filtrar por país con ?country=PE."""
+    result = {}
+    for key, s in STORES.items():
+        if country and s["country"] != country.upper():
+            continue
+        result[key] = {
+            "name": s["name"],
+            "country": s["country"],
+            "currency": s["currency"],
+            "base": s["base"],
+        }
+    return {"stores": result, "total": len(result)}
+
+
+@app.get("/countries")
+def list_countries():
+    return {
+        "countries": {
+            code: {"name": c["name"], "stores": c["stores"], "count": len(c["stores"])}
+            for code, c in COUNTRIES.items()
+        }
     }
 
 

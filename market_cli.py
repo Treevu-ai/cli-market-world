@@ -195,14 +195,23 @@ def cmd_login(args):
 
 
 def cmd_search(args):
-    """Busca productos. Si no se especifica tienda, busca en las 3."""
-    store_label = args.store or "todas"
-    with console.status(f"[cyan]Buscando '{args.query}' en {store_label}..."):
+    """Busca productos. Soporta --country para filtrar por país."""
+    stores_to_search = [args.store] if args.store else None
+    if args.country and not args.store:
+        country_stores = [k for k, v in STORES.items() if v["country"] == args.country]
+        stores_to_search = country_stores
+
+    label = args.store or args.country or "todas"
+    with console.status(f"[cyan]Buscando '{args.query}' en {label}..."):
         data = api("POST", "/products/search", {
             "query": args.query,
             "store": args.store,
             "limit": args.limit,
         })
+        # Filter by country on client side if needed
+        if args.country and not args.store:
+            data["results"] = [p for p in data["results"] if p["store"] in stores_to_search]
+            data["total"] = len(data["results"])
 
     results = data["results"]
     if not results:
@@ -431,6 +440,25 @@ def cmd_preferences(args):
         console.print(f"  Última compra: {data['last_order_date'][:10]}")
 
 
+def cmd_countries(args):
+    """Lista países y tiendas disponibles."""
+    data = api("GET", "/countries")
+    countries = data.get("countries", {})
+    table = Table(title="[bold green]Países y supermercados[/]", border_style="dim blue")
+    table.add_column("País", style="bold", width=14)
+    table.add_column("Tiendas", style="white", width=50)
+    table.add_column("Cant.", justify="center", width=6)
+
+    for code, info in countries.items():
+        stores_list = ", ".join(STORES[s]["name"] for s in info["stores"] if s in STORES)
+        emoji = STORES.get(info["stores"][0], {}).get("emoji", "")
+        table.add_row(f"{emoji} {info['name']}", stores_list, str(info["count"]))
+
+    console.print()
+    console.print(table)
+    console.print(f"\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
+
+
 def cmd_whoami(args):
     """Muestra el usuario autenticado."""
     try:
@@ -443,9 +471,23 @@ def cmd_whoami(args):
 # ── Store config (duplicated for CLI standalone use) ───────────────────────
 
 STORES = {
-    "wong":    {"name": "Wong"},
-    "metro":   {"name": "Metro"},
-    "plazavea":{"name": "Plaza Vea"},
+    "wong":      {"name": "Wong",       "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "metro":     {"name": "Metro",      "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "plazavea":  {"name": "Plaza Vea",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪"},
+    "carrefour": {"name": "Carrefour",  "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
+    "jumbo_ar":  {"name": "Jumbo",      "country": "AR", "currency": "ARS", "emoji": "🇦🇷"},
+    "carrefour_br": {"name": "Carrefour", "country": "BR", "currency": "BRL", "emoji": "🇧🇷"},
+    "chedraui":  {"name": "Chedraui",   "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
+    "heb":       {"name": "HEB",        "country": "MX", "currency": "MXN", "emoji": "🇲🇽"},
+    "olimpica":  {"name": "Olímpica",   "country": "CO", "currency": "COP", "emoji": "🇨🇴"},
+}
+
+COUNTRIES = {
+    "PE": "Perú",
+    "AR": "Argentina",
+    "BR": "Brasil",
+    "MX": "México",
+    "CO": "Colombia",
 }
 
 
@@ -467,11 +509,13 @@ def main():
     p = sub.add_parser("search", help="Buscar productos")
     p.add_argument("query", nargs="?", default="")
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # compare
     p = sub.add_parser("compare", help="Comparar precios entre tiendas")
     p.add_argument("query", nargs="?", default="")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # add
@@ -501,6 +545,9 @@ def main():
 
     # preferences
     sub.add_parser("preferences", help="Ver perfil y preferencias de compra")
+
+    # countries
+    sub.add_parser("countries", help="Ver países y tiendas disponibles")
 
     # about
     sub.add_parser("about", help="Modelo de negocio")
@@ -537,6 +584,7 @@ def main():
         "reorder":  cmd_reorder,
         "ask":      cmd_ask,
         "preferences": cmd_preferences,
+        "countries": cmd_countries,
         "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),
         "whoami":   cmd_whoami,
     }
