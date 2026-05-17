@@ -177,7 +177,7 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
 # ── Currency symbols ─────────────────────────────────────────────────────────
 
 CURRENCY_SYMBOLS = {
-    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP",
+    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP", "EUR": "€",
 }
 
 
@@ -195,6 +195,7 @@ def store_color(store: str) -> str:
         "drogaraia": "#FF6B35", "drogasil": "#FF6B35",
         "magazineluiza": "#A78BFA", "motorola_br": "#A78BFA",
         "renner": "#FFD600", "centauro": "#4ADE80", "homecenter": "#F5F5F0",
+        "carrefour_es": "#FFD600", "decathlon_fr": "#4ADE80",
     }
     return colors.get(store, "#e9e9e9")
 
@@ -703,6 +704,8 @@ STORES = {
     "renner":    {"name": "Lojas Renner", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "moda"},
     "centauro":  {"name": "Centauro",     "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "deportes"},
     "homecenter":{"name": "Homecenter",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "hogar"},
+    "carrefour_es": {"name": "Carrefour España", "country": "ES", "currency": "EUR", "emoji": "🇪🇸", "line": "supermercados"},
+    "decathlon_fr":  {"name": "Decathlon",       "country": "FR", "currency": "EUR", "emoji": "🇫🇷", "line": "deportes"},
 }
 
 LINES = {
@@ -720,6 +723,8 @@ COUNTRIES = {
     "BR": "Brasil",
     "MX": "México",
     "CO": "Colombia",
+    "ES": "España",
+    "FR": "Francia",
 }
 
 
