@@ -73,7 +73,7 @@ WELCOME_BANNER = """[green]
  ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
  ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝[/]
 [bold green]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLI AGENTIC MARKET · v1.0
+CLI Market LATAM · v1.0
 Infrastructure layer — supermarkets as programmable commerce
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/]
 [green]Stripe transformó pagos en APIs.

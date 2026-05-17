@@ -1,0 +1,51 @@
+POST — X / LinkedIn — CLI Market LATAM
+=========================================
+
+HEADER:
+CLI Market LATAM — Supermarkets as programmable commerce
+8 stores · 5 countries · 1 pip install
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BODY:
+
+Los supermercados en LATAM no están listos para agentes IA. Sus APIs no existen o están fragmentadas. Un LLM no puede comprar una leche.
+
+CLI Market LATAM lo resuelve: una capa de infraestructura que convierte supermercados en APIs para agentes IA.
+
+Buscás productos reales en Wong, Metro, Plaza Vea, Carrefour, Jumbo, Chedraui, HEB y Olímpica. Comparás precios en tiempo real. Comprás desde la terminal.
+
+Y si sos dev: exponemos 9 MCP tools para que tus agentes compren solos.
+
+Lo que hace:
+
+  market search "leche"          → busca en 8 supermercados
+  market compare "aceite"        → tabla comparativa multi-país
+  market ask "compra arroz"      → el agente busca, elige, agrega al carrito
+  market checkout --payment yape → compra completada
+
+Para agentes IA:
+
+  market --json                  → salida parseable por cualquier LLM
+  python market_mcp.py           → 9 MCP tools sobre stdio
+  /agent/ask                     → lenguaje natural a acción
+
+Stack: Python · FastAPI · VTEX · Rich · MCP · Open Food Facts
+
+Estado actual:
+  8 supermercados en 5 países (PE, AR, BR, MX, CO)
+  20 endpoints REST
+  16 comandos CLI
+  9 MCP tools
+  Open Food Facts: 3M+ productos con NutriScore
+  Fuzzy matching cross-supermarket-group
+
+Open source. MIT license. LATAM first.
+pip install git+https://github.com/Treevu-ai/cli-market-latam.git
+
+🌎 cli-market-latam.vercel.app
+💻 github.com/Treevu-ai/cli-market-latam
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TAGS:
+#cli #market #latam #agentic #ai #mcp #vtex #supermarket #opensource #python #fastapi #peru #argentina #brazil #mexico #colombia
