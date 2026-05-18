@@ -63,21 +63,21 @@ WELCOME_BANNER = """\
 [#00FF88]  ╭───────────────────────────────────────────────────────────────╮
   │                                                               │
   │  [#FFFFFF bold] C L I   M A R K E T[/]                                  │
-  │  [#888888]commerce infrastructure for ai agents[/]                      │
+  │  [#888888]infraestructura de comercio para humanos y agentes IA[/]                      │
   │                                                               │
-  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines        │
-  │  [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json output     │
-  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source     │
+  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 paises       [#00FF88]●[/] 12 lineas       │
+  │  [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo     │
+  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source     │
   │                                                               │
   │  [#555555]pip install cli-market[/]                                   │
   │  [#555555]github.com/treevu-ai/cli-market-world[/]                    │
   │                                                               │
-  │  [#00FF88]market login[/]        [#888888]authenticate[/]                    │
-  │  [#00FF88]market search[/]       [#888888]search across all retailers[/]       │
-  │  [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]     │
-  │  [#00FF88]market ask[/]          [#888888]natural language agent mode[/]         │
-  │  [#00FF88]market checkout[/]     [#888888]complete purchase[/]                │
-  │  [#00FF88]market --help[/]       [#888888]all commands[/]                     │
+  │  [#00FF88]market login[/]        [#888888]autenticate[/]                      │
+  │  [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]          │
+  │  [#00FF88]market compare[/]      [#888888]compara precios entre paises[/]           │
+  │  [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]          │
+  │  [#00FF88]market checkout[/]     [#888888]completa la compra[/]                 │
+  │  [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]       │
   │                                                               │
   ╰───────────────────────────────────────────────────────────────╯[/]
 
@@ -95,12 +95,13 @@ def get_token() -> str:
     if not SESSION_FILE.exists():
         console.print(Panel.fit(
             "[bold #FFD600]No estas autenticado aun.[/]\n\n"
-            "[#888888]Para usar CLI Market necesitas un token.[/]\n"
-            "[#888888]Es gratis y toma 5 segundos:[/]\n\n"
+            "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
+            "[#888888]Es gratis. Toma 5 segundos:[/]\n\n"
             "  [#00FF88 bold]1.[/] Ejecuta:  [#00FF88]market login[/]\n"
             "  [#00FF88 bold]2.[/] Usuario: [#FFFFFF bold]admin[/]\n"
             "  [#00FF88 bold]3.[/] Password: [#FFFFFF bold]market[/]\n\n"
-            "[dim]El servidor genera tu token automaticamente.[/]",
+            "[dim]El servidor genera tu token automaticamente.[/]\n"
+            "[dim]Si eres un agente IA: usa market --json para integrarte.[/]",
             title="CLI Market",
             border_style="#FFD600"
         ))
@@ -131,7 +132,7 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
             sys.exit(1)
         return resp.json()
     except httpx.ConnectError:
-        console.print("[red]Error: No se pudo conectar al servidor. Ejecutá primero: python market_server.py[/]")
+        console.print("[red]Error: No se pudo conectar al servidor. Ejecuta primero: python market_server.py[/]")
         sys.exit(1)
 
 
@@ -211,6 +212,7 @@ def cmd_login(args):
             "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
             "[#888888]Vas a crear tu token de acceso.[/]\n"
             "[#888888]Es un solo paso y queda guardado en tu equipo.[/]\n\n"
+            "[#888888]Si eres un agente IA: este token activa 12 herramientas MCP.[/]\n\n"
             "[dim]Credenciales por defecto:[/]\n"
             "  Usuario: [#FFFFFF bold]admin[/]\n"
             "  Password: [#FFFFFF bold]market[/]",
@@ -230,8 +232,9 @@ def cmd_login(args):
     data = api("POST", "/auth/login", {"username": username, "password": password})
     console.print(f"\n[#00FF88]✓ Autenticado como [bold]{data['username']}[/][/]")
     console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
-    console.print(f"\n[#888888]Ahora podes buscar productos:[/]")
+    console.print(f"\n[#888888]Ahora puedes buscar productos:[/]")
     console.print(f"  [#00FF88]market search[/] [dim]\"leche\" --country PE[/]")
+    console.print(f"\n[dim]Tip para agentes:[/] [#00FF88]market --json[/] [dim]te da salida estructurada[/]")
 
 
 def cmd_search(args):
@@ -827,10 +830,10 @@ def main():
         else:
             console.print(WELCOME_BANNER)
             console.print(Panel.fit(
-                "[#888888]Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autenticate (usuario: admin, password: market)[/]\n"
-                "[#888888]Queres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
-                "[#888888]Sos agente IA?[/] [#00FF88]market --json[/] [#888888]→ salida estructurada para LLMs[/]\n"
-                "[#888888]No sabes que hacer?[/] [#00FF88]market --help[/] [#888888]→ todos los comandos[/]",
+                "[#888888]¿Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autentificate (usuario: admin, password: market)[/]\n"
+                "[#888888]¿Quieres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
+                "[#888888]¿Eres un agente IA?[/] [#00FF88]market --json[/] [#888888]→ salida estructurada MCP para LLMs[/]\n"
+                "[#888888]¿No sabes por donde empezar?[/] [#00FF88]market --help[/] [#888888]→ todos los comandos[/]",
                 border_style="#1A1A1A"
             ))
         return
