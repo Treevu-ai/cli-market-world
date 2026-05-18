@@ -1,10 +1,10 @@
 POST — X / LinkedIn — CLI Market
 =========================================
 HEADER:
-CLI Market — 3,400+ retailers. Una sola API.
+CLI Market — 3,600+ retailers. Una sola API.
 
 BODY:
-Construi la capa de infraestructura que convierte 3,400+ comercios VTEX en 67 paises en APIs para agentes de IA.
+Construi la capa de infraestructura que convierte 3,600+ comercios VTEX en 67 paises en APIs para agentes de IA.
 
 Busca, compara y compra desde la terminal:
 - market search "leche" --country PE

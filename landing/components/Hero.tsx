@@ -60,7 +60,7 @@ export default function Hero() {
           </div>
           <div className={`mb-12 transition-all duration-700 delay-300 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
             <p className="text-lg lg:text-xl text-white/50 leading-relaxed max-w-xl font-mono">
-              Conectamos agentes de inteligencia artificial con 3400+ comercios VTEX en 67 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
+              Conectamos agentes de inteligencia artificial con 3600+ comercios VTEX en 67 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
             </p>
           </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>

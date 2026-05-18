@@ -4,7 +4,7 @@ export default function HowItWorks() {
     {n:"01",cmd:"pip install git+https://github.com/Treevu-ai/cli-market-world.git",desc:"Instala el CLI",color:"#00FF88"},
     {n:"02",cmd:"market-server &",desc:"Levanta el backend",color:"#00FF88"},
     {n:"03",cmd:"market login",desc:"Autenticate",color:"#00FF88"},
-    {n:"04",cmd:'market search "leche" --country PE',desc:"Busca en 3,400+ comercios",color:"#FF6B35"},
+    {n:"04",cmd:'market search "leche" --country PE',desc:"Busca en 3,600+ comercios",color:"#FF6B35"},
     {n:"05",cmd:'market compare "aceite"',desc:"Compara precios cross-border",color:"#4ADE80"},
     {n:"06",cmd:"market checkout --payment yape",desc:"Compra con pago local",color:"#F5F5F0"},
   ];

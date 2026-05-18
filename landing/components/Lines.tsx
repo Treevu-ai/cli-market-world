@@ -18,7 +18,7 @@ export default function Lines() {
     <section className="flex flex-col w-full bg-[#080808] py-12 px-4 sm:py-16 sm:px-6 md:py-[100px] md:px-[120px] gap-8 sm:gap-10 md:gap-[48px]">
       <div className="flex flex-col gap-[16px] w-full">
         <span className="font-ibm-mono text-[9px] sm:text-[10px] md:text-[12px] font-bold text-[#FFD600] tracking-[1.5px] md:tracking-[3px]">
-          [COBERTURA] // 3,400+ COMERCIOS · 12 LÍNEAS · 67 PAÍSES
+          [COBERTURA] // 3,600+ COMERCIOS · 12 LÍNEAS · 67 PAÍSES
         </span>
         <h2 className="font-grotesk text-[28px] sm:text-[36px] md:text-[56px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05] whitespace-pre-line w-full max-w-[700px]">
           {"UN CONECTOR.\nCOBERTURA REAL."}
