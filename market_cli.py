@@ -71,54 +71,56 @@ BUSINESS_MODEL_JSON = {
 }
 
 WELCOME_BANNER = """\
-[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
-  │                                                               │
-  │  [#FFFFFF bold] C L I   M A R K E T[/]                                  │
-  │  [#888888]infraestructura de comercio para humanos y agentes IA[/]                      │
-  │                                                               │
-  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 paises       [#00FF88]●[/] 12 lineas       │
-  │  [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo     │
-  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source     │
-  │                                                               │
-  │  [#555555]pip install cli-market[/]                                   │
-  │  [#555555]github.com/treevu-ai/cli-market-world[/]                    │
-  │                                                               │
-  │  [#00FF88]market login[/]        [#888888]autenticate[/]                      │
-  │  [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]          │
-  │  [#00FF88]market compare[/]      [#888888]compara precios entre paises[/]           │
-  │  [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]          │
-  │  [#00FF88]market checkout[/]     [#888888]completa la compra[/]                 │
-  │  [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]       │
-  │                                                               │
-  ╰───────────────────────────────────────────────────────────────╯[/]
+[#00FF88]  ─────────────────────────────────────────────────────────────
+                                                                   
+     [#FFFFFF bold] C L I   M A R K E T[/]                                   
+     [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
+                                                                   
+     [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 paises       [#00FF88]●[/] 12 lineas        
+     [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
+     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
+                                                                   
+     [#555555]pip install cli-market[/]                                    
+     [#555555]github.com/treevu-ai/cli-market-world[/]                     
+                                                                   
+     [#00FF88]market login[/]        [#888888]autenticate[/]                       
+     [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]           
+     [#00FF88]market compare[/]      [#888888]compara precios entre paises[/]            
+     [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]           
+     [#00FF88]market checkout[/]     [#888888]completa la compra[/]                  
+     [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]        
+                                                                   
+  ─────────────────────────────────────────────────────────────[/]
 
 """
 
 
 WELCOME_BANNER_EN = """\n[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
   │                                                               │
-  │  [#FFFFFF bold] C L I   M A R K E T[/]                                  │
-  │  [#888888]commerce infrastructure for humans and ai agents[/]            │
-  │                                                               │
-  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines        │
-  │  [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native     │
-  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source     │
-  │                                                               │
-  │  [#555555]pip install cli-market[/]                                   │
-  │  [#555555]github.com/treevu-ai/cli-market-world[/]                    │
-  │                                                               │
-  │  [#00FF88]market login[/]        [#888888]authenticate[/]                    │
-  │  [#00FF88]market search[/]       [#888888]search across all retailers[/]       │
-  │  [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]     │
-  │  [#00FF88]market ask[/]          [#888888]agent mode: natural language[/]        │
-  │  [#00FF88]market checkout[/]     [#888888]complete purchase[/]                │
-  │  [#00FF88]market --json[/]       [#888888]structured output for agents[/]        │
-  │                                                               │
+     [#FFFFFF bold] C L I   M A R K E T[/]                                   
+     [#888888]commerce infrastructure for humans and ai agents[/]             
+                                                                   
+     [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines         
+     [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
+     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
+                                                                   
+     [#555555]pip install cli-market[/]                                    
+     [#555555]github.com/treevu-ai/cli-market-world[/]                     
+                                                                   
+     [#00FF88]market login[/]        [#888888]authenticate[/]                     
+     [#00FF88]market search[/]       [#888888]search across all retailers[/]        
+     [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]      
+     [#00FF88]market ask[/]          [#888888]agent mode: natural language[/]         
+     [#00FF88]market checkout[/]     [#888888]complete purchase[/]                 
+     [#00FF88]market --json[/]       [#888888]structured output for agents[/]         
+                                                                   
   ╰───────────────────────────────────────────────────────────────╯[/]
 """
 
 def welcome_banner():
-    return WELCOME_BANNER_EN if get_lang() == "en" else WELCOME_BANNER
+    banner = WELCOME_BANNER_EN if get_lang() == "en" else WELCOME_BANNER
+    from rich.panel import Panel
+    return Panel(banner.strip(), border_style="#00FF88", padding=(1, 2))
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
