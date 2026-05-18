@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-500+-brightgreen" alt="100 retailers">
+  <img src="https://img.shields.io/badge/retailers-3400+-brightgreen" alt="3400 retailers">
   <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
-  <img src="https://img.shields.io/badge/countries-31-orange" alt="12 countries">
+  <img src="https://img.shields.io/badge/countries-67-orange" alt="67 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>100 retailers · 12 lines · 12 countries · 1 API.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,400+ retailers · 12 lines · 67 countries · 1 API.</p>
 
 ---
 
 ## What is CLI Market?
 
-CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 100 retailers in 12 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
+CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 3,400+ retailers in 67 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
@@ -64,7 +64,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 ## Coverage
 
-100 retailers across 12 business lines in 12 countries.
+3,400+ retailers across 12 business lines in 67 countries.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
@@ -81,7 +81,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 | 🍔 Food | 3 | Nestle · Unilever · Swift |
 | 🔧 Auto | 1 | AutoZone |
 
-**Countries:** PE(10) · AR(10) · BR(34) · MX(14) · CO(14) · CL(9) · ES(2) · FR(2) · IT(2) · GB(1) · UY(1) · PT(1)
+**Countries:** 67 países en LATAM, Europa y global
 
 ## API
 
@@ -124,7 +124,7 @@ AI Agents (Claude, DeepSeek, GPT)
         |
    CLI Market API    ← You are here
         |
-   100 VTEX retailers across 12 countries
+   3,400+ VTEX retailers across 67 countries
         |
   SQLite data moat — price snapshots, search history
 ```
