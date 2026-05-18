@@ -42,11 +42,11 @@ def generate_stores(rows):
         cli_lines.append(f"\n    # ── {line.upper()} ──")
         for r in line_stores:
             flag = COUNTRY_EMOJIS.get(r["country"], "🌐")
-            server_lines.append(f'    "{r["key"]}": {{"name":"{r["name"]}","base":"{r["base_url"]}","country":"{r["country"]}","currency":"{r["currency"]}","emoji":"{flag}","line":"{r["line"]}"}},'.rstrip(",")+",")
-            cli_lines.append(f'    "{r["key"]}": {{"name":"{r["name"]}","country":"{r["country"]}","currency":"{r["currency"]}","emoji":"{flag}","line":"{r["line"]}"}},'.rstrip(",")+",")
+            server_lines.append(f'    "{r["key"]}": {{"name":"{r["name"]}","base":"{r["base_url"]}","country":"{r["country"]}","currency":"{r["currency"]}","emoji":"{flag}","line":"{r["line"]}"}},')
+            cli_lines.append(f'    "{r["key"]}": {{"name":"{r["name"]}","country":"{r["country"]}","currency":"{r["currency"]}","emoji":"{flag}","line":"{r["line"]}"}},')
 
-    server_dict = "STORES = {" + "".join(server_lines) + "\n}"
-    cli_dict = "STORES = {" + "".join(cli_lines) + "\n}"
+    server_dict = "STORES = {\n" + "\n".join(server_lines) + "\n}\n"
+    cli_dict = "STORES = {\n" + "\n".join(cli_lines) + "\n}\n"
     return server_dict, cli_dict, scored
 
 def main():
