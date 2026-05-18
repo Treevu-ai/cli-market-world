@@ -1,187 +1,77 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import GlitchText from "@/components/GlitchText";
 
-function TerminalPreview({ mounted }: { mounted: boolean }) {
-  if (!mounted) return null;
-  return (
-    <div className="w-full max-w-[540px] mx-auto lg:mx-0 opacity-80 hover:opacity-100 transition-opacity duration-500">
-      <svg viewBox="0 0 560 420" width="100%" height="auto" style={{ display: "block" }}>
-        <style>{`
-          @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-          @keyframes fade-in { 0%{opacity:0} 100%{opacity:1} }
-          .tc { animation: cursor-blink 1s step-end infinite; }
-          .r1 { animation: fade-in 0.3s ease-out 0.8s both; }
-          .r2 { animation: fade-in 0.3s ease-out 1.0s both; }
-          .r3 { animation: fade-in 0.3s ease-out 1.2s both; }
-        `}</style>
-        <rect x="4" y="4" width="552" height="412" rx="8" fill="#090909" stroke="#1A1A1A" strokeWidth="1" />
-        <rect x="4" y="4" width="552" height="28" rx="8" fill="#0F0F0F" />
-        <rect x="4" y="22" width="552" height="10" fill="#0F0F0F" />
-        <circle cx="22" cy="18" r="4" fill="#FF5F57" />
-        <circle cx="38" cy="18" r="4" fill="#FEBC2E" />
-        <circle cx="54" cy="18" r="4" fill="#28C840" />
-        <text x="280" y="22" fontFamily="monospace" fontSize="8" fill="#333" textAnchor="middle">cli-market — bash</text>
+const words = ["comprar", "comparar", "buscar", "analizar"];
 
-        {/* Welcome banner */}
-        <rect x="20" y="44" width="520" height="48" fill="#0D0D0D" stroke="#1A1A1A" strokeWidth="0.5" rx="2" />
-        <text x="40" y="64" fontFamily="monospace" fontSize="9" fill="#FFD600" fontWeight="bold">CLI MARKET v1.0 · 500+ retailers · 12 líneas</text>
-        <text x="40" y="80" fontFamily="monospace" fontSize="7" fill="#444">Conectá agentes de IA con el comercio LATAM</text>
-
-        {/* Prompt 1 */}
-        <text x="32" y="118" fontFamily="monospace" fontSize="8" fill="#444">~/market</text>
-        <text x="104" y="118" fontFamily="monospace" fontSize="8" fill="#888">❯</text>
-        <text x="116" y="118" fontFamily="monospace" fontSize="9" fill="#00FF88" fontWeight="bold">market lines</text>
-
-        {/* Lines output */}
-        <g className="r1">
-          <text x="32" y="134" fontFamily="monospace" fontSize="6" fill="#444">🛒 Supermercados 27</text>
-          <text x="160" y="134" fontFamily="monospace" fontSize="6" fill="#444">📱 Electro 14</text>
-          <text x="280" y="134" fontFamily="monospace" fontSize="6" fill="#444">👕 Moda 8</text>
-          <text x="390" y="134" fontFamily="monospace" fontSize="6" fill="#444">⚽ Deportes 15</text>
-        </g>
-        <g className="r2">
-          <text x="32" y="148" fontFamily="monospace" fontSize="6" fill="#444">💊 Farmacias 6</text>
-          <text x="160" y="148" fontFamily="monospace" fontSize="6" fill="#444">🏠 Hogar 7</text>
-          <text x="280" y="148" fontFamily="monospace" fontSize="6" fill="#444">💄 Belleza 6</text>
-          <text x="390" y="148" fontFamily="monospace" fontSize="6" fill="#444">🐾 Mascotas 3</text>
-        </g>
-
-        {/* Prompt 2 */}
-        <text x="32" y="172" fontFamily="monospace" fontSize="8" fill="#444">~/market</text>
-        <text x="104" y="172" fontFamily="monospace" fontSize="8" fill="#888">❯</text>
-        <text x="116" y="172" fontFamily="monospace" fontSize="9" fill="#FF6B35" fontWeight="bold">market search</text>
-        <text x="236" y="172" fontFamily="monospace" fontSize="8" fill="#AAA">"leche"</text>
-        <text x="292" y="172" fontFamily="monospace" fontSize="8" fill="#888">--country PE</text>
-
-        <g className="r1">
-          <text x="32" y="188" fontFamily="monospace" fontSize="6" fill="#555">Buscando en 3 retailers...</text>
-        </g>
-
-        {/* Search results table */}
-        <g className="r2">
-          <rect x="32" y="196" width="496" height="12" fill="#0F0F0F" />
-          <text x="42" y="205" fontFamily="monospace" fontSize="5" fill="#555">PRODUCTO</text>
-          <text x="200" y="205" fontFamily="monospace" fontSize="5" fill="#555">TIENDA</text>
-          <text x="310" y="205" fontFamily="monospace" fontSize="5" fill="#555">PRECIO</text>
-          <text x="400" y="205" fontFamily="monospace" fontSize="5" fill="#555">PAÍS</text>
-        </g>
-        <g className="r3">
-          <text x="42" y="220" fontFamily="monospace" fontSize="7" fill="#CCC">Leche Gloria 400ml</text>
-          <text x="200" y="220" fontFamily="monospace" fontSize="7" fill="#888">Wong</text>
-          <text x="310" y="220" fontFamily="monospace" fontSize="7" fill="#FFD600">S/3.50</text>
-          <text x="400" y="220" fontFamily="monospace" fontSize="7" fill="#555">🇵🇪</text>
-        </g>
-
-        {/* Prompt 3 */}
-        <text x="32" y="258" fontFamily="monospace" fontSize="8" fill="#444">~/market</text>
-        <text x="104" y="258" fontFamily="monospace" fontSize="8" fill="#888">❯</text>
-        <text x="116" y="258" fontFamily="monospace" fontSize="9" fill="#4ADE80" fontWeight="bold">market compare</text>
-        <text x="252" y="258" fontFamily="monospace" fontSize="8" fill="#AAA">"aceite"</text>
-
-        {/* Compare table */}
-        <g className="r1">
-          <rect x="32" y="272" width="496" height="12" fill="#0F0F0F" />
-          <text x="42" y="281" fontFamily="monospace" fontSize="5" fill="#555">PRODUCTO</text>
-          <text x="250" y="281" fontFamily="monospace" fontSize="5" fill="#555">PRECIO</text>
-          <text x="350" y="281" fontFamily="monospace" fontSize="5" fill="#555">TIENDA</text>
-          <text x="460" y="281" fontFamily="monospace" fontSize="5" fill="#555">PAÍS</text>
-        </g>
-        <g className="r2"><text x="42" y="296" fontFamily="monospace" fontSize="7" fill="#CCC">Aceite Primor 1L</text><text x="250" y="296" fontFamily="monospace" fontSize="7" fill="#FFD600">S/8.90</text><text x="350" y="296" fontFamily="monospace" fontSize="7" fill="#888">Wong</text><text x="460" y="296" fontFamily="monospace" fontSize="7" fill="#555">🇵🇪</text></g>
-        <g className="r2"><text x="42" y="310" fontFamily="monospace" fontSize="7" fill="#999">Aceite Natura 900ml</text><text x="250" y="310" fontFamily="monospace" fontSize="7" fill="#FFD600">ARS 1,250</text><text x="350" y="310" fontFamily="monospace" fontSize="7" fill="#888">Carrefour</text><text x="460" y="310" fontFamily="monospace" fontSize="7" fill="#555">🇦🇷</text></g>
-        <g className="r2"><text x="42" y="324" fontFamily="monospace" fontSize="7" fill="#999">Aceite Liza 900ml</text><text x="250" y="324" fontFamily="monospace" fontSize="7" fill="#FFD600">R$ 6.50</text><text x="350" y="324" fontFamily="monospace" fontSize="7" fill="#888">Carrefour BR</text><text x="460" y="324" fontFamily="monospace" fontSize="7" fill="#555">🇧🇷</text></g>
-
-        {/* Prompt 4 with cursor */}
-        <text x="32" y="360" fontFamily="monospace" fontSize="8" fill="#444">~/market</text>
-        <text x="104" y="360" fontFamily="monospace" fontSize="8" fill="#888">❯</text>
-        <text x="116" y="360" fontFamily="monospace" fontSize="9" fill="#AAA">_</text>
-        <rect x="116" y="351" width="7" height="11" fill="#00FF88" className="tc" />
-
-        {/* Status bar */}
-        <rect x="4" y="388" width="552" height="28" fill="#0F0F0F" />
-        <circle cx="18" cy="402" r="3" fill="#00FF88" />
-        <text x="28" y="406" fontFamily="monospace" fontSize="6" fill="#555">500+ STORES</text>
-        <text x="132" y="406" fontFamily="monospace" fontSize="6" fill="#444">·</text>
-        <text x="142" y="406" fontFamily="monospace" fontSize="6" fill="#555">12 LINES</text>
-        <text x="240" y="406" fontFamily="monospace" fontSize="6" fill="#444">·</text>
-        <text x="250" y="406" fontFamily="monospace" fontSize="6" fill="#555">12 COUNTRIES</text>
-        <text x="370" y="406" fontFamily="monospace" fontSize="6" fill="#444">·</text>
-        <text x="380" y="406" fontFamily="monospace" fontSize="6" fill="#555">MCP ONLINE</text>
-      </svg>
-    </div>
-  );
+function BlurWord({ word, trigger }: { word: string; trigger: number }) {
+  const letters = word.split("");
+  const [states, setStates] = useState<{o:number;b:number}[]>(letters.map(()=>({o:0,b:20})));
+  const [gradient, setGradient] = useState(true);
+  useEffect(() => {
+    setStates(letters.map(()=>({o:0,b:20}))); setGradient(true);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    letters.forEach((_,i)=>{timers.push(setTimeout(()=>{const start=performance.now();const tick=(n:number)=>{const p=Math.min((n-start)/500,1);const e=1-Math.pow(1-p,3);setStates(s=>{const ns=[...s];ns[i]={o:e,b:20*(1-e)};return ns});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)},i*45))});
+    timers.push(setTimeout(()=>setGradient(false),45*letters.length+500+200));
+    return ()=>timers.forEach(clearTimeout);
+  },[trigger]);
+  const gc=["#00FF88","#FFD600","#FF6B35","#60A5FA","#00FF88"];
+  return <>{letters.map((c,i)=>{const ci=(i/Math.max(letters.length-1,1))*(gc.length-1);const lo=Math.floor(ci),up=Math.min(lo+1,gc.length-1),t=ci-lo;const hx=(h:string)=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];const[r1,g1,b1]=hx(gc[lo]),[r2,g2,b2]=hx(gc[up]);const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b=Math.round(b1+(b2-b1)*t);return <span key={i} style={{display:"inline-block",opacity:states[i]?.o??0,filter:`blur(${states[i]?.b??20}px)`,color:gradient?`rgb(${r},${g},${b})`:"white",transition:"color 0.4s ease"}}>{c}</span>})}</>;
 }
 
 export default function Hero() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [visible, setVisible] = useState(false);
+  const [wordIdx, setWordIdx] = useState(0);
+  useEffect(()=>{setVisible(true)},[]);
+  useEffect(()=>{const i=setInterval(()=>setWordIdx(p=>(p+1)%words.length),2500);return ()=>clearInterval(i)},[]);
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center px-6 md:px-28 pt-20 pb-24 md:pt-32 md:pb-32 overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-        backgroundSize: "64px 64px",
-      }} />
-      <div className="hidden md:block absolute left-6 top-1/2 -translate-y-1/2">
-        <img src="/logo.svg" alt="CLI Market" className="h-[32px] w-auto -rotate-90 origin-left opacity-30" />
+    <section className="relative min-h-screen flex flex-col justify-center items-start overflow-hidden bg-black">
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-black to-[#0A0A0A]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:"linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",backgroundSize:"64px 64px"}} />
+      </div>
+      <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none opacity-[0.08]">
+        {[...Array(6)].map((_,i)=><div key={`h${i}`} className="absolute h-px bg-white/10" style={{top:`${14.28*(i+1)}%`,left:0,right:0}}/>)}
+        {[...Array(10)].map((_,i)=><div key={`v${i}`} className="absolute w-px bg-white/10" style={{left:`${9.09*(i+1)}%`,top:0,bottom:0}}/>)}
+      </div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#00FF88]/[0.02] blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 lg:px-12 py-32 lg:py-40">
+        <div className="lg:max-w-[65%]">
+          <div className={`mb-8 transition-all duration-700 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
+            <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40">
+              <span className="w-8 h-px bg-[#00FF88]/40" />
+              Infraestructura de comercio para agentes de IA · LATAM y global
+            </span>
+          </div>
+          <div className="mb-12">
+            <h1 className={`text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white transition-all duration-1000 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-8"}`}>
+              <span className="block">500+ retailers.</span>
+              <span className="block">Una sola API.</span>
+              <span className="block">Tus agentes pueden{" "}
+                <span className="relative inline-block"><BlurWord word={words[wordIdx]} trigger={wordIdx} /></span>
+                {" "}solos.
+              </span>
+            </h1>
+          </div>
+          <div className={`mb-12 transition-all duration-700 delay-300 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
+            <p className="text-lg lg:text-xl text-white/50 leading-relaxed max-w-xl font-mono">
+              Conectamos agentes de inteligencia artificial con 500+ comercios VTEX en 31 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
+            </p>
+          </div>
+          <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
+            <a href="https://github.com/Treevu-ai/cli-market-latam" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">Instalar CLI<span className="text-xs opacity-60">→</span></a>
+            <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">Ver cobertura</a>
+            <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-16 w-full max-w-[1200px] mx-auto">
-        <div className="flex-1 flex flex-col justify-center max-w-[520px]">
-          <div className="font-grotesk text-[clamp(48px,10vw,96px)] font-bold text-[#F5F5F0] tracking-[-2px] leading-[0.9]">
-            {mounted ? <GlitchText text="CLI MARKET" speed={60} delay={200} /> : "CLI MARKET"}
-          </div>
-          <h2 className="font-mono text-[#666] text-[clamp(12px,1.8vw,16px)] mt-4 md:mt-6 tracking-[0.15em] uppercase">
-            Infraestructura de comercio para agentes de inteligencia artificial
-          </h2>
-          <p className="mt-6 md:mt-8 max-w-md font-mono text-[13px] md:text-[14px] text-[#888] leading-relaxed">
-            500+ retailers en 31 países comparten la misma API VTEX. 
-            Construimos la capa de datos que ningún retailer puede construir solo.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            {[
-              { label: "Developers", sub: "CLI · REST · JSON · MCP", color: "#00FF88" },
-              { label: "Business", sub: "Data Feed · CIaaS · Analytics", color: "#FFD600" },
-              { label: "AI Agents", sub: "12 MCP Tools · Autonomous", color: "#FF6B35" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#222]">
-                <div className="w-[5px] h-[5px] rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <div className="flex flex-col">
-                  <span className="font-mono text-[10px] font-bold tracking-[1px]" style={{ color: item.color }}>{item.label}</span>
-                  <span className="font-mono text-[9px] text-[#555]">{item.sub}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
-            <a href="https://github.com/Treevu-ai/cli-market-latam"
-              className="group inline-flex items-center gap-3 border border-[#333] px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-[#AAA] hover:border-[#00FF88] hover:text-[#00FF88] transition-all duration-200"
-            >
-              Instalar CLI
-              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </a>
-            <a href="#coverage"
-              className="font-mono text-[11px] uppercase tracking-widest text-[#555] hover:text-[#888] transition-colors duration-200"
-            >
-              Cobertura ↓
-            </a>
-          </div>
-          <div className="mt-8 md:mt-10 p-4 sm:p-5 bg-[#0A0A0A] border border-[#1A1A1A] w-full max-w-[520px] overflow-x-auto">
-            <span className="font-mono text-[9px] text-[#444] uppercase tracking-[0.15em]">Quick start</span>
-            <pre className="mt-2 font-mono text-[11px] sm:text-[12px] text-[#888] leading-[1.6] whitespace-pre-wrap break-all">
-              <span className="text-[#555]">$</span> <span className="text-[#00FF88]">curl</span> <span className="text-[#FFD600]">cli-market-api-production.up.railway.app</span>
-            </pre>
-            <pre className="mt-1 font-mono text-[10px] text-[#555] leading-[1.5] whitespace-pre-wrap">
-              {'{"name":"CLI Market","stores":100,"lines":12,"countries":12}'}
-            </pre>
-            <a href="https://cli-market-api-production.up.railway.app/docs" className="inline-block mt-2 font-mono text-[10px] text-[#00FF88] hover:underline">Ver API docs →</a>
-          </div>
-        </div>
-
-        <div className="flex-1 w-full lg:max-w-[540px] flex justify-center lg:justify-end">
-          <TerminalPreview mounted={mounted} />
-        </div>
+      <div className={`absolute bottom-12 left-0 right-0 px-6 lg:px-12 transition-all duration-700 delay-500 ${visible?"opacity-100":"opacity-0"}`}>
+        <div className="max-w-[1200px] mx-auto flex flex-wrap items-start gap-6 sm:gap-10 lg:gap-20">
+          {[{value:"500+",label:"retailers VTEX activos"},{value:"31",label:"países en LATAM y Europa"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
+            <div key={s.label} className="flex flex-col gap-2"><span className="text-3xl lg:text-4xl font-grotesk font-bold text-white">{s.value}</span><span className="text-xs text-white/30 leading-tight font-mono uppercase tracking-wider">{s.label}</span></div>
+          ))}</div>
       </div>
     </section>
   );
