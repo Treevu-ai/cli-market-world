@@ -60,60 +60,26 @@ BUSINESS_MODEL_JSON = {
 }
 
 WELCOME_BANNER = """\
-[bold #00FF88]   ██████╗ ██╗     ██╗      ███╗   ███╗  █████╗  ██████╗  ██╗  ██╗ ███████╗ ████████╗
-  ██╔════╝ ██║     ██║      ████╗ ████║ ██╔══██╗ ██╔══██╗ ██║ ██╔╝ ██╔════╝ ╚══██╔══╝
-  ██║      ██║     ██║      ██╔████╔██║ ███████║ ██████╔╝ █████╔╝  █████╗     ██║
-  ██║      ██║     ██║      ██║╚██╔╝██║ ██╔══██║ ██╔══██╗ ██╔═██╗  ██╔══╝     ██║
-  ╚██████╗ ███████╗ ███████╗ ██║ ╚═╝ ██║ ██║  ██║ ██║  ██║ ██║  ██╗ ███████╗   ██║
-   ╚═════╝ ╚══════╝ ╚══════╝ ╚═╝     ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚══════╝   ╚═╝[/]  [#888888]commerce infrastructure for ai agents[/]
-
-[bold white]     cli market[/]      [#555555]v1.0  ·  open source  ·  mit[/]
-
-[#00FF88]▌[/] 3,603 retailers  ·  67 countries  ·  12 lines  ·  mcp native
-[#00FF88]▌[/] api.rest  ·  json parseable  ·  cross-border  ·  autonomous
-[#00FF88]▌[/] pip install cli-market  ·  github.com/treevu-ai/cli-market-world
-
-  [#00FF88]market login[/]          authenticate
-  [#00FF88]market search[/] [dim]\"...\"[/]       search across all retailers
-  [#00FF88]market compare[/] [dim]\"...\"[/]     cross-country price comparison
-  [#00FF88]market add[/] [dim]<id>[/]            add to cart
-  [#00FF88]market checkout[/]       complete purchase
-  [#00FF88]market ask[/] [dim]\"...\"[/]          natural language agent mode
-  [#00FF88]market --json[/]         structured output for llms
-"""
-
-
-BUSINESS_MODEL_BANNER = """[bold #3cffd0]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLI Market LATAM · MODELO DE NEGOCIO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/]
-
-[bold]Posicionamiento[/]
-Infrastructure layer that transforms traditional LATAM
-supermarkets into AI-agent compatible commerce systems.
-
-[bold #3cffd0]▸ Problema[/]
-  · E-commerce tradicional optimizado para clicks, no agentes
-  · Retailers no preparados para comercio autónomo
-  · No existe capa agentic estandarizada en LATAM
-  · APIs de supermercados fragmentadas o inexistentes
-
-[bold #3cffd0]▸ Solución[/]
-  Agent Layer · MCP compatible · Búsqueda semántica
-  Checkout autónomo · Multi-retailer (Wong, Metro, Plaza Vea)
-
-[bold #3cffd0]▸ Mercado objetivo[/]
-  Primario:   Supermercados · Retail · Dark stores · Farmacias
-  Secundario: AI startups · Asistentes voz · Fintechs · Smart home
-
-[bold #3cffd0]▸ Modelo de ingresos[/]
-  SaaS B2B:     Starter $499/mes · Growth $1,999/mes · Enterprise
-  API usage:    Cobro por request, checkout, acción de agente
-  Transacción:  1-5% por orden completada
-  White-label:  Infraestructura bajo marca del retailer
-
-[bold #3cffd0]▸ Moat estratégico[/]
-  Primera capa agentic de supermercados en LATAM
-  MCP nativo · Inteligencia semántica · Interoperabilidad retail
+[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
+  │                                                               │
+  │  [#FFFFFF bold] C L I   M A R K E T[/]                                  │
+  │  [#888888]commerce infrastructure for ai agents[/]                      │
+  │                                                               │
+  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines        │
+  │  [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json output     │
+  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source     │
+  │                                                               │
+  │  [#555555]pip install cli-market[/]                                   │
+  │  [#555555]github.com/treevu-ai/cli-market-world[/]                    │
+  │                                                               │
+  │  [#00FF88]market login[/]        [#888888]authenticate[/]                    │
+  │  [#00FF88]market search[/]       [#888888]search across all retailers[/]       │
+  │  [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]     │
+  │  [#00FF88]market ask[/]          [#888888]natural language agent mode[/]         │
+  │  [#00FF88]market checkout[/]     [#888888]complete purchase[/]                │
+  │  [#00FF88]market --help[/]       [#888888]all commands[/]                     │
+  │                                                               │
+  ╰───────────────────────────────────────────────────────────────╯[/]
 
 [bold #3cffd0]▸ Expansión[/]
   Fase 1: Perú · Chile · Colombia
