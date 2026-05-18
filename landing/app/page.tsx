@@ -27,13 +27,13 @@ export default function Home() {
 
       <div className="relative z-10">
         <Hero />
-        <Lines />
-        <TerminalSection />
-        <AgentDispatch />
-        <HowItWorks />
         <StatsSection />
-        <UseCases />
+        <TerminalSection />
+        <HowItWorks />
         <Features />
+        <AgentDispatch />
+        <UseCases />
+        <Lines />
         <Pricing />
         <FAQ />
         <FinalCTA />
