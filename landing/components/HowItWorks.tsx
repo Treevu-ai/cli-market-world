@@ -12,7 +12,7 @@ export default function HowItWorks() {
     <section id="how" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-10">
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>Flujo</span>
-        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">6 comandos. Compra completa.</h2>
+        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">{"6 comandos.\nCompra completa."}</h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">Del install al checkout en menos de un minuto. Sin interfaz. Sin navegador.</p>
       </div>
       <div className="flex flex-wrap gap-4 max-w-[1000px]">
