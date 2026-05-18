@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-3600+-brightgreen" alt="3600 retailers">
+  <img src="https://img.shields.io/badge/retailers-3760+-brightgreen" alt="3760 retailers">
   <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
   <img src="https://img.shields.io/badge/countries-67-orange" alt="67 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
@@ -10,13 +10,13 @@
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,600+ retailers · 12 lines · 67 countries · 1 API.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,760+ retailers · 12 lines · 67 countries · 1 API.</p>
 
 ---
 
 ## What is CLI Market?
 
-CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 3,600+ retailers in 67 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
+CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 3,760+ retailers in 67 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
@@ -112,7 +112,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 ## Coverage
 
-3,600+ retailers across 12 business lines in 67 countries.
+3,760+ retailers across 12 business lines in 67 countries.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
@@ -172,14 +172,14 @@ AI Agents (Claude, DeepSeek, GPT)
         |
    CLI Market API    ← You are here
         |
-   3,600+ VTEX retailers across 67 countries
+   3,760+ VTEX retailers across 67 countries
         |
   SQLite data moat — price snapshots, search history
 ```
 
 ## Why this exists
 
-E-commerce is optimized for clicks, not agents. VTEX powers 3,600+ retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
+E-commerce is optimized for clicks, not agents. VTEX powers 3,760+ retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
 
 ## Links
 
