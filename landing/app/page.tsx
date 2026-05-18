@@ -12,6 +12,7 @@ import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import { NoiseOverlay } from "@/components/AnimatedSphere";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
@@ -25,6 +26,7 @@ export default function Home() {
       <NoiseOverlay />
       <Navbar />
 
+      <ErrorBoundary>
       <div className="relative z-10">
         <Hero />
         <StatsSection />
@@ -39,6 +41,7 @@ export default function Home() {
         <FinalCTA />
         <Footer />
       </div>
+      </ErrorBoundary>
     </main>
   );
 }

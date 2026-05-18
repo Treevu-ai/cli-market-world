@@ -5,8 +5,18 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cli-market"
 version = "1.0.0"
-description = "CLI Market — 3,600+ retailers VTEX, 67 países, 12 líneas. Infraestructura de comercio para agentes de IA."
+description = "CLI Market — 3,600+ retailers VTEX, 67 countries, 12 lines. Commerce infrastructure for AI agents."
 requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "CLI Market", email = "hello@cli-market.dev"}]
+keywords = ["vtex", "mcp", "ai-agents", "ecommerce", "cli", "retail", "commerce", "infrastructure"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+]
 dependencies = [
     "httpx>=0.27",
     "rich>=13.0",
