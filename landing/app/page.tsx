@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Lines from "@/components/Lines";
+import TerminalSection from "@/components/TerminalSection";
 import Features from "@/components/Features";
 import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
@@ -21,6 +22,7 @@ export default function Home() {
       <div className="relative z-10">
         <Hero />
         <Lines />
+        <TerminalSection />
         <Features />
         <Pricing />
         <FAQ />
