@@ -1,6 +1,6 @@
 "use client";
 
-import SectionHeader from "./SectionHeader";
+
 
 interface FeatureCardProps {
   iconColor: string;
@@ -51,11 +51,11 @@ export default function Features() {
       id="features"
       className="flex flex-col w-full bg-[#0A0A0A] py-12 px-4 sm:py-16 sm:px-6 md:py-[100px] md:px-[120px] gap-10 sm:gap-12 md:gap-[64px]"
     >
-      <SectionHeader
-        label="Comandos"
-        title={"Una CLI.\n500+ comercios."}
-        subtitle="Infraestructura unificada para buscar, comparar y comprar desde la terminal."
-      />
+      <div className="flex flex-col gap-[12px] w-full">
+        <span className="font-mono text-[10px] md:text-[11px] font-bold text-[#FFD600] tracking-[2px] uppercase">Comandos</span>
+        <h2 className="font-grotesk text-[28px] sm:text-[36px] md:text-[56px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05] whitespace-pre-line">{"Una CLI.\n3,600+ comercios."}</h2>
+        <p className="font-mono text-[11px] md:text-[13px] text-[#666] tracking-[0.5px] leading-[1.6] max-w-[600px]">Infraestructura unificada para buscar, comparar y comprar desde la terminal.</p>
+      </div>
 
       <div className="flex flex-col md:flex-row w-full gap-[2px]">
         <FeatureCard
