@@ -9,7 +9,7 @@ export default function Pricing() {
           Free tier disponible.
         </h2>
         <p className="font-mono text-[12px] sm:text-[13px] md:text-[15px] text-[#666] tracking-[0.5px] leading-[1.6] max-w-[500px]">
-          La API está viva. El CLI es open source. Si estás construyendo agentes de IA, empezá hoy. Planes pagos para escala enterprise disponibles pronto.
+          La API está viva. El CLI es open source. Si estás construyendo agentes de IA, empieza hoy. Planes pagos para escala enterprise disponibles pronto.
         </p>
       </div>
 
