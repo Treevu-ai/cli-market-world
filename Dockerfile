@@ -6,7 +6,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY market_server.py market_mcp.py market_cli.py pyproject.toml ./
+COPY market_server.py market_mcp.py market_cli.py market_stores.py pyproject.toml ./
 
 RUN mkdir -p /data
 ENV MARKET_DATA_DIR=/data
