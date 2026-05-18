@@ -50,7 +50,7 @@ export default function Hero() {
           </div>
           <div className="mb-12">
             <h1 className={`text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white transition-all duration-1000 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-8"}`}>
-              <span className="block">1000+ retailers.</span>
+              <span className="block">3400+ retailers.</span>
               <span className="block">Una sola API.</span>
               <span className="block">Tus agentes pueden{" "}
                 <span className="relative inline-block"><BlurWord word={words[wordIdx]} trigger={wordIdx} /></span>
@@ -60,7 +60,7 @@ export default function Hero() {
           </div>
           <div className={`mb-12 transition-all duration-700 delay-300 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
             <p className="text-lg lg:text-xl text-white/50 leading-relaxed max-w-xl font-mono">
-              Conectamos agentes de inteligencia artificial con 1000+ comercios VTEX en 44 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
+              Conectamos agentes de inteligencia artificial con 3400+ comercios VTEX en 67 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
             </p>
           </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
@@ -73,7 +73,7 @@ export default function Hero() {
 
       <div className={`relative lg:absolute bottom-0 lg:bottom-12 left-0 right-0 px-6 lg:px-12 mt-12 lg:mt-0 transition-all duration-700 delay-500 ${visible?"opacity-100":"opacity-0"}`}>
         <div className="max-w-[1200px] mx-auto flex flex-wrap items-start gap-4 sm:gap-8 lg:gap-20">
-          {[{value:"3200+",label:"retailers VTEX activos"},{value:"67",label:"países en LATAM, Europa y global"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
+          {[{value:"3400+",label:"retailers VTEX activos"},{value:"67",label:"países en LATAM, Europa y global"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
             <div key={s.label} className="flex flex-col gap-2"><span className="text-3xl lg:text-4xl font-grotesk font-bold text-white">{s.value}</span><span className="text-xs text-white/30 leading-tight font-mono uppercase tracking-wider">{s.label}</span></div>
           ))}</div>
       </div>

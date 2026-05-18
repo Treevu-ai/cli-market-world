@@ -5,7 +5,7 @@ export default function TerminalSection() {
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>Terminal</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">Una CLI. Miles de comercios.</h2>
-        <p className="text-white/50 font-mono text-sm leading-relaxed">Instalá, autenticate y empezá a buscar en 3,200+ retailers VTEX desde la terminal. Sin interfaz. Sin navegador. Pura infraestructura.</p>
+        <p className="text-white/50 font-mono text-sm leading-relaxed">Instalá, autenticate y empezá a buscar en 3,400+ retailers VTEX desde la terminal. Sin interfaz. Sin navegador. Pura infraestructura.</p>
       </div>
       <div className="w-full max-w-[800px] bg-[#0A0A0A] border border-[#1A1A1A] overflow-x-auto font-mono text-[10px] sm:text-[11px] md:text-[12px] leading-[1.7]">
         <div className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border-b border-[#1A1A1A]">
@@ -18,7 +18,7 @@ export default function TerminalSection() {
           <div className="pt-2"><span className="text-[#555]">$</span> <span className="text-[#00FF88]">market-server</span> <span className="text-[#555]">&</span></div>
           <div className="text-[#444] text-[10px] pl-4">→ Levantá el backend en localhost:8765</div>
           <div className="pt-2"><span className="text-[#555]">$</span> <span className="text-[#00FF88]">market login</span></div>
-          <div className="text-[#444] text-[10px] pl-4">→ Autenticate para acceder a 3,200+ retailers</div>
+          <div className="text-[#444] text-[10px] pl-4">→ Autenticate para acceder a 3,400+ retailers</div>
           <div className="pt-2"><span className="text-[#555]">$</span> <span className="text-[#FF6B35]">market search</span> <span className="text-[#AAA]">"leche"</span> <span className="text-[#888]">--country PE</span></div>
           <div className="pl-4 text-[10px]"><span className="text-[#00FF88]">1.</span> <span className="text-[#CCC]">Leche Gloria 400ml</span> <span className="text-[#888]">Wong</span> <span className="text-[#FFD600]">S/3.50</span></div>
           <div className="pt-2"><span className="text-[#555]">$</span> <span className="text-[#4ADE80]">market compare</span> <span className="text-[#AAA]">"aceite"</span></div>
@@ -30,7 +30,7 @@ export default function TerminalSection() {
           <div className="pt-4"><span className="text-[#555]">$</span> <span className="inline-block w-[8px] h-[14px] bg-[#00FF88] animate-pulse align-middle"/></div>
         </div>
       </div>
-      <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">OPEN SOURCE · MIT LICENSE · pip install · 3,200+ COMERCIOS · 67 PAÍSES</p>
+      <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">OPEN SOURCE · MIT LICENSE · pip install · 3,400+ COMERCIOS · 67 PAÍSES</p>
     </section>
   );
 }
