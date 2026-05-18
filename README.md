@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
+  <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build">
+  <img src="https://img.shields.io/badge/CI-vercel-black" alt="Vercel">
 </p>
 
 <h1 align="center">CLI Market</h1>
