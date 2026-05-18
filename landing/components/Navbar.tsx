@@ -40,7 +40,10 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#1A1A1A]" : "bg-transparent"}`}>
       <div className="flex items-center justify-between h-[52px] px-6 md:px-28">
-        <a href="#hero" className="font-mono text-[13px] tracking-[0.2em] text-[#F5F5F0] hover:text-[#00FF88] transition-colors">CLI MARKET</a>
+        <a href="#hero" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo.svg" alt="CLI Market" className="h-[22px] w-auto" />
+          <span className="font-mono text-[11px] tracking-[0.15em] text-[#F5F5F0]">MARKET</span>
+        </a>
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <button key={l.section} onClick={() => scrollTo(l.section)}
