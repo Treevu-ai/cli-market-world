@@ -7,115 +7,139 @@
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
 </p>
 
-<p align="center">
-  <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=300&fit=crop&crop=edges&fm=jpg&q=80" width="100%" alt="code" />
-</p>
-
-> Infrastructure layer that transforms VTEX retailers into AI-agent compatible commerce systems. One connector. 100 retailers. 12 countries.
+<h1 align="center">CLI Market</h1>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>100 retailers · 12 lines · 12 countries · 1 API.</p>
 
 ---
 
-## English
+## What is CLI Market?
 
-### What
+CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 100 retailers in 12 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
 
-CLI Market is the middleware between VTEX and AI agents. 100 retailers in 12 countries. CLI for humans. MCP tools for agents. JSON for LLMs.
+> Stripe turned payments into APIs. We turn commerce into APIs.
+
+## Quick start
 
 ```bash
+# 1. Install
 pip install git+https://github.com/Treevu-ai/cli-market-latam.git
-market-server & market login
+
+# 2. Start backend
+market-server
+
+# 3. Use the CLI
+market login
 market search "leche" --country PE
 market compare "aceite"
 market add 3 --qty 2
 market checkout --payment yape
+
+# 4. Agent mode
+market ask "compra arroz"
+market --json
 ```
 
-### Coverage
+## Features
 
-100 retailers · 12 lines · 12 countries
-
-| Line | N | Key retailers |
-|------|---|--------------|
-| 🛒 Supermarkets | 27 | Wong, Metro, Plaza Vea, Carrefour, Jumbo, Coto, Dia, Pao de Acucar, Chedraui, HEB, Exito, Lider, Soriana, Carulla |
-| 💊 Pharmacy | 6 | Droga Raia, Drogasil, Pacheco, Farmatodo, Inkafarma |
-| 📱 Electronics | 14 | Magazine Luiza, Samsung, LG, Motorola, Electrolux, Whirlpool, Alkosto, Fravega, Casas Bahia |
-| ⚽ Sports | 15 | Centauro, Nike, Adidas, Decathlon (10 countries), Marti |
-| 👕 Fashion | 8 | Renner, C&A, Marisa, Riachuelo, Arturo Calle, Leonisa |
-| 🏠 Home | 7 | Homecenter, Sodimac, Easy, Leroy Merlin, Promart |
-| 💄 Beauty | 6 | O Boticario, Natura (4 countries), Avon |
-| 🏬 Department | 7 | Liverpool, Palacio de Hierro, Sears, Sanborns, Oechsle, Paris, La Polar |
-| 🐾 Pets | 3 | Petlove, Petz, Cobasi |
-| 📚 Books | 3 | Saraiva, Office Depot, Tai Loy |
-| 🍔 Food | 3 | Nestle, Unilever, Swift |
-| 🔧 Auto | 1 | AutoZone |
-
-PE(11) · AR(12) · BR(37) · MX(18) · CO(14) · CL(9) · ES(3) · FR(3) · IT(3) · GB(2) · PT(1) · UY(1)
+| For humans | For AI agents |
+|---|---|
+| Terminal CLI | REST API + JSON |
+| Rich tables | 12 MCP Tools |
+| Spanish / English | CSV export |
+| `market search "milk"` | Autonomous workflows |
 
 ### Commands
 
-`market login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
+`login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
 
 ### MCP Server
 
-12 tools. Compatible with DeepSeek TUI, Claude, Cursor. `python market_mcp.py`
+```bash
+python market_mcp.py
+```
 
-### API v1
+12 tools: `market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask`
+
+Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
+
+## Coverage
+
+100 retailers across 12 business lines in 12 countries.
+
+| Line | Count | Key retailers |
+|------|-------|--------------|
+| 🛒 Supermarkets | 27 | Wong · Metro · Plaza Vea · Carrefour · Jumbo · Coto · Dia · Pao de Acucar · Chedraui · HEB · Olimpica · Exito · Lider · Soriana · Carulla |
+| 💊 Pharmacies | 6 | Droga Raia · Drogasil · Pacheco · Farmatodo · Inkafarma |
+| 📱 Electronics | 14 | Magazine Luiza · Samsung · Motorola · LG · Electrolux · Whirlpool · Alkosto · Fravega · Casas Bahia |
+| 👕 Fashion | 8 | Renner · C&A · Marisa · Riachuelo · Arturo Calle · Leonisa |
+| ⚽ Sports | 15 | Centauro · Nike · Adidas · Decathlon (10 countries) · Marti |
+| 🏠 Home | 7 | Homecenter · Sodimac · Easy · Promart · Leroy Merlin |
+| 💄 Beauty | 6 | O Boticario · Natura · Avon |
+| 🐾 Pets | 3 | Petlove · Petz · Cobasi |
+| 📚 Books | 3 | Saraiva · Office Depot · Tai Loy |
+| 🏬 Department | 8 | Liverpool · Palacio · Sears · Sanborns · Oechsle · Paris · La Polar |
+| 🍔 Food | 3 | Nestle · Unilever · Swift |
+| 🔧 Auto | 1 | AutoZone |
+
+**Countries:** PE(10) · AR(10) · BR(34) · MX(14) · CO(14) · CL(9) · ES(2) · FR(2) · IT(2) · GB(1) · UY(1) · PT(1)
+
+## API
+
+```
+Base URL: https://cli-market-api-production.up.railway.app
+Swagger:  /docs
+llms.txt: https://cli-market.dev/llms.txt
+```
+
+### Endpoints
 
 ```bash
+# Status
+GET /
+
 # Data Feed
 GET /v1/feed/prices?query=cafe&country=PE&format=csv
 GET /v1/feed/stats?period=7d
-GET /v1/pricing
 
 # Competitive Intelligence (CIaaS)
 GET /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
 GET /v1/intel/delta?product=cafe&country_a=PE&country_b=CO
 GET /v1/intel/alerts?product=arroz&threshold_pct=5
+
+# Pricing
+GET /v1/pricing
 ```
 
----
+### Rate limits
 
-## Español
+| Tier | Requests/min | Requests/day | CIaaS |
+|------|-------------|-------------|-------|
+| Free | 10 | 100 | No |
+| Paid | Contact | Contact | Yes |
 
-### Qué es
+## Architecture
 
-CLI Market es el middleware entre VTEX y los agentes de IA. 100 retailers en 12 países. CLI para humanos. Herramientas MCP para agentes. JSON para LLMs.
-
-```bash
-pip install git+https://github.com/Treevu-ai/cli-market-latam.git
-market-server & market login
-market search "leche" --country PE
-market add 3 --qty 2
-market checkout --payment yape
+```
+AI Agents (Claude, DeepSeek, GPT)
+        |
+   CLI Market API    ← You are here
+        |
+   100 VTEX retailers across 12 countries
+        |
+  SQLite data moat — price snapshots, search history
 ```
 
-### Cobertura
+## Why this exists
 
-100 retailers · 12 líneas · 12 países
+E-commerce is optimized for clicks, not agents. VTEX powers 3,400+ retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
 
-| Línea | N | Retailers clave |
-|-------|---|----------------|
-| 🛒 Supermercados | 27 | Wong, Metro, Plaza Vea, Carrefour, Jumbo, Coto, Dia, Pao de Acucar, Chedraui, HEB, Exito, Lider, Soriana |
-| 💊 Farmacias | 6 | Droga Raia, Drogasil, Pacheco, Farmatodo, Inkafarma |
-| 📱 Electro | 14 | Magazine Luiza, Samsung, LG, Motorola, Electrolux, Alkosto, Fravega, Casas Bahia |
-| ⚽ Deportes | 15 | Centauro, Nike, Adidas, Decathlon (10 países), Marti |
-| 👕 Moda | 8 | Renner, C&A, Marisa, Riachuelo, Arturo Calle, Leonisa |
-| 🏠 Hogar | 7 | Homecenter, Sodimac, Easy, Leroy Merlin, Promart |
-| 💄 Belleza | 6 | O Boticario, Natura (4 países), Avon |
-| 🏬 Departamentales | 7 | Liverpool, Palacio, Sears, Sanborns, Oechsle, Paris, La Polar |
-| 🐾 Mascotas | 3 | Petlove, Petz, Cobasi |
-| 📚 Librería | 3 | Saraiva, Office Depot, Tai Loy |
-| 🍔 Alimentos | 3 | Nestle, Unilever, Swift |
-| 🔧 Autopartes | 1 | AutoZone |
+## Links
 
-### Comandos
+- Landing: [cli-market.dev](https://cli-market.dev)
+- API: [cli-market-api-production.up.railway.app](https://cli-market-api-production.up.railway.app)
+- Telegram: [@climarketbot](https://t.me/climarketbot)
+- llms.txt: [cli-market.dev/llms.txt](https://cli-market.dev/llms.txt)
 
-`market login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
+## License
 
-### Servidor MCP
-
-12 herramientas. Compatible con DeepSeek TUI, Claude, Cursor. `python market_mcp.py`
-
----
-
-🌎 [cli-market.dev](https://cli-market.dev) · 💻 [GitHub](https://github.com/Treevu-ai/cli-market-latam) · 📡 [API](https://cli-market-api-production.up.railway.app)
+MIT © 2026 CLI Market · Sinapsis Innovadora
