@@ -1,7 +1,7 @@
 "use client";
 export default function AgentDispatch() {
   return (
-    <section id="agents" className="relative flex flex-col w-full bg-[#060606] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section id="agents" className="relative flex flex-col w-full bg-[#080808] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1A1A1A] pb-6">
         <div>
           <span className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#00FF88]/10 text-[#00FF88] px-2.5 py-1 uppercase tracking-wider font-semibold">
