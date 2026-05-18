@@ -22,12 +22,14 @@ CLI Market is the middleware between VTEX and AI agents. One API call searches, 
 
 ## Quick start
 
+### Linux / macOS / WSL
+
 ```bash
 # 1. Install
-pip install git+https://github.com/Treevu-ai/cli-market-latam.git
+pip install git+https://github.com/Treevu-ai/cli-market-world.git
 
 # 2. Start backend
-market-server
+market-server &
 
 # 3. Use the CLI
 market login
@@ -37,6 +39,48 @@ market add 3 --qty 2
 market checkout --payment yape
 
 # 4. Agent mode
+market ask "compra arroz"
+market --json
+```
+
+### Windows (PowerShell)
+
+```powershell
+# 1. Install
+pip install git+https://github.com/Treevu-ai/cli-market-world.git
+
+# 2. Start backend (in a separate terminal)
+Start-Process -NoNewWindow python -ArgumentList "-m", "market_server"
+
+# 3. Use the CLI
+market login
+market search "leche" --country PE
+market compare "aceite"
+market add 3 --qty 2
+market checkout --payment yape
+
+# 4. Agent mode
+market ask "compra arroz"
+market --json
+```
+
+### Windows (CMD)
+
+```cmd
+:: 1. Install
+pip install git+https://github.com/Treevu-ai/cli-market-world.git
+
+:: 2. Start backend (in a separate terminal)
+start python -m market_server
+
+:: 3. Use the CLI
+market login
+market search "leche" --country PE
+market compare "aceite"
+market add 3 --qty 2
+market checkout --payment yape
+
+:: 4. Agent mode
 market ask "compra arroz"
 market --json
 ```
