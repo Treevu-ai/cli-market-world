@@ -1,131 +1,115 @@
-# CLI Market LATAM · v1.0
-
 <p align="center">
-  <img src="https://img.shields.io/badge/stores-8-green" alt="8">
-  <img src="https://img.shields.io/badge/countries-5-blue" alt="5">
-  <img src="https://img.shields.io/badge/MCP-compatible-00d75f" alt="MCP">
+  <img src="https://img.shields.io/badge/retailers-100-brightgreen" alt="100 retailers">
+  <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
+  <img src="https://img.shields.io/badge/countries-12-orange" alt="12 countries">
+  <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
 </p>
 
-> Infrastructure layer that transforms LATAM supermarkets into AI-agent compatible commerce systems.
->
-> Stripe transformed payments into APIs. We transform supermarkets into APIs for AI agents.
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=300&fit=crop&crop=edges&fm=jpg&q=80" width="100%" alt="code" />
+</p>
 
-## The problem
+> Infrastructure layer that transforms VTEX retailers into AI-agent compatible commerce systems. One connector. 100 retailers. 12 countries.
 
-E-commerce is optimized for **clicks**, not **agents**. Retailers in LATAM are not ready for autonomous commerce. No standardized AI-native supermarket layer exists. APIs are fragmented or nonexistent.
+---
 
-## The solution
+## English
 
-| Human-friendly | Agent-friendly |
-|---|---|
-| Terminal CLI | REST API |
-| Rich tables | MCP Tools |
-| Spanish commands | JSON parseable |
-| Purchase flow | Autonomous workflows |
+### What
 
-## Quick start
+CLI Market is the middleware between VTEX and AI agents. 100 retailers in 12 countries. CLI for humans. MCP tools for agents. JSON for LLMs.
 
 ```bash
 pip install git+https://github.com/Treevu-ai/cli-market-latam.git
-
-# Terminal 1 — backend
-market-server
-
-# Terminal 2 — CLI
-market login
-market search "leche"
-market compare "aceite de oliva"
-market add 5834 --price 45.50 --store metro --name "Tollo de Leche" --qty 2
-market cart
+market-server & market login
+market search "leche" --country PE
+market compare "aceite"
+market add 3 --qty 2
 market checkout --payment yape
-market orders
 ```
 
-## Agent mode
+### Coverage
+
+100 retailers · 12 lines · 12 countries
+
+| Line | N | Key retailers |
+|------|---|--------------|
+| 🛒 Supermarkets | 27 | Wong, Metro, Plaza Vea, Carrefour, Jumbo, Coto, Dia, Pao de Acucar, Chedraui, HEB, Exito, Lider, Soriana, Carulla |
+| 💊 Pharmacy | 6 | Droga Raia, Drogasil, Pacheco, Farmatodo, Inkafarma |
+| 📱 Electronics | 14 | Magazine Luiza, Samsung, LG, Motorola, Electrolux, Whirlpool, Alkosto, Fravega, Casas Bahia |
+| ⚽ Sports | 15 | Centauro, Nike, Adidas, Decathlon (10 countries), Marti |
+| 👕 Fashion | 8 | Renner, C&A, Marisa, Riachuelo, Arturo Calle, Leonisa |
+| 🏠 Home | 7 | Homecenter, Sodimac, Easy, Leroy Merlin, Promart |
+| 💄 Beauty | 6 | O Boticario, Natura (4 countries), Avon |
+| 🏬 Department | 7 | Liverpool, Palacio de Hierro, Sears, Sanborns, Oechsle, Paris, La Polar |
+| 🐾 Pets | 3 | Petlove, Petz, Cobasi |
+| 📚 Books | 3 | Saraiva, Office Depot, Tai Loy |
+| 🍔 Food | 3 | Nestle, Unilever, Swift |
+| 🔧 Auto | 1 | AutoZone |
+
+PE(11) · AR(12) · BR(37) · MX(18) · CO(14) · CL(9) · ES(3) · FR(3) · IT(3) · GB(2) · PT(1) · UY(1)
+
+### Commands
+
+`market login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
+
+### MCP Server
+
+12 tools. Compatible with DeepSeek TUI, Claude, Cursor. `python market_mcp.py`
+
+### API v1
 
 ```bash
-market ask "compra arroz"
-market ask "compara aceite"
-market ask "repite la ultima compra"
-market --json                    # Machine-readable for LLMs
-```
-
-## Supported supermarkets
-
-| Country | Stores | Platform |
-|---------|--------|----------|
-| 🇵🇪 Peru | Wong, Metro, Plaza Vea | VTEX |
-| 🇦🇷 Argentina | Carrefour, Jumbo | VTEX |
-| 🇧🇷 Brazil | Carrefour | VTEX |
-| 🇲🇽 Mexico | Chedraui, HEB | VTEX |
-| 🇨🇴 Colombia | Olimpica | VTEX |
-| 🌐 Global | Open Food Facts (3M+ products) | Public API |
-
-## Commands
-
-```bash
-market login              # Authenticate
-market search "leche"     # Search across 17 stores
-market compare "aceite"   # Price comparison
-market add <id> --qty 2   # Add to cart
-market cart               # View cart
-market checkout           # Complete purchase
-market orders             # Order history
-market reorder            # Repeat last order
-market ask "compra X"     # Natural language
-market categories wong    # Browse categories
-market barcode <ean>      # Lookup by barcode
-market enrich "cafe"      # Open Food Facts search
-market preferences        # Purchase profile
-market countries          # List countries
-market about              # Business model
-market --json             # Agent-readable
-```
-
-## Architecture
-
-```
-Retailers LATAM (VTEX APIs)
-        │
-CLI Market LATAM
-        │
-APIs + MCP + Agent Layer
-        │
-LLMs / AI Agents / Assistants
-```
-
-## MCP Server
-
-```bash
-python market_mcp.py
-```
-
-12 tools: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`.
-
-Compatible with DeepSeek TUI, Claude, and any MCP client.
-
-## Business model
-
-**SaaS B2B:** Starter $499/mo · Growth $1,999/mo · Enterprise custom  
-**API usage:** Per-request pricing for AI agents  
-**Transaction fee:** 1-5% per completed order  
-**White-label:** Retailers deploy under their own brand
-
-## LATAM expansion
-
-- **Phase 1:** Peru · Chile · Colombia
-- **Phase 2:** Mexico · Brazil · Argentina
-
-## Demo
-
-```bash
-asciinema rec demo.cast --command "bash demo.sh"
+GET /v1/feed/prices?query=cafe&country=PE&format=csv
+GET /v1/feed/stats?period=7d
+GET /v1/pricing
 ```
 
 ---
 
-**"Estamos convirtiendo supermercados en infraestructura consumible por inteligencia artificial."**
+## Español
 
-🌎 [cli-market.dev](https://cli-market.dev)
+### Qué es
+
+CLI Market es el middleware entre VTEX y los agentes de IA. 100 retailers en 12 países. CLI para humanos. Herramientas MCP para agentes. JSON para LLMs.
+
+```bash
+pip install git+https://github.com/Treevu-ai/cli-market-latam.git
+market-server & market login
+market search "leche" --country PE
+market add 3 --qty 2
+market checkout --payment yape
+```
+
+### Cobertura
+
+100 retailers · 12 líneas · 12 países
+
+| Línea | N | Retailers clave |
+|-------|---|----------------|
+| 🛒 Supermercados | 27 | Wong, Metro, Plaza Vea, Carrefour, Jumbo, Coto, Dia, Pao de Acucar, Chedraui, HEB, Exito, Lider, Soriana |
+| 💊 Farmacias | 6 | Droga Raia, Drogasil, Pacheco, Farmatodo, Inkafarma |
+| 📱 Electro | 14 | Magazine Luiza, Samsung, LG, Motorola, Electrolux, Alkosto, Fravega, Casas Bahia |
+| ⚽ Deportes | 15 | Centauro, Nike, Adidas, Decathlon (10 países), Marti |
+| 👕 Moda | 8 | Renner, C&A, Marisa, Riachuelo, Arturo Calle, Leonisa |
+| 🏠 Hogar | 7 | Homecenter, Sodimac, Easy, Leroy Merlin, Promart |
+| 💄 Belleza | 6 | O Boticario, Natura (4 países), Avon |
+| 🏬 Departamentales | 7 | Liverpool, Palacio, Sears, Sanborns, Oechsle, Paris, La Polar |
+| 🐾 Mascotas | 3 | Petlove, Petz, Cobasi |
+| 📚 Librería | 3 | Saraiva, Office Depot, Tai Loy |
+| 🍔 Alimentos | 3 | Nestle, Unilever, Swift |
+| 🔧 Autopartes | 1 | AutoZone |
+
+### Comandos
+
+`market login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
+
+### Servidor MCP
+
+12 herramientas. Compatible con DeepSeek TUI, Claude, Cursor. `python market_mcp.py`
+
+---
+
+🌎 [cli-market.dev](https://cli-market.dev) · 💻 [GitHub](https://github.com/Treevu-ai/cli-market-latam) · 📡 [API](https://cli-market-api-production.up.railway.app)
