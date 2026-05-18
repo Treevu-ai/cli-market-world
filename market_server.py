@@ -981,6 +981,54 @@ def intel_alerts(product: str, store: str | None = None, threshold_pct: float = 
     return {"product": product, "threshold": threshold_pct, "alerts": alerts[:limit], "total": len(alerts)}
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# Telegram Bot — Contact & Support
+# ═══════════════════════════════════════════════════════════════════════════════
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
+async def send_telegram_message(chat_id: str, text: str) -> bool:
+    if not TELEGRAM_TOKEN: return False
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"})
+            return r.status_code == 200
+    except Exception: return False
+
+@app.post("/telegram/webhook")
+async def telegram_webhook(request: Request):
+    if not TELEGRAM_TOKEN: return {"status": "disabled", "hint": "Set TELEGRAM_BOT_TOKEN env var"}
+    try: body = await request.json()
+    except Exception: return {"status": "invalid_json"}
+    message = body.get("message", {}); chat = message.get("chat", {})
+    text = (message.get("text") or "").strip().lower(); chat_id = str(chat.get("id", "")); first_name = chat.get("first_name", "")
+    if not text or not chat_id: return {"status": "no_message"}
+
+    if text in ("/start","hola","hi","hello"):
+        reply = f"Hola <b>{first_name}</b> \U0001f44b\n\nSoy el bot de <b>CLI Market</b> — infraestructura de comercio para agentes de IA.\n\n<b>Comandos:</b>\n/status — Estado\n/coverage — Cobertura\n/pricing — Acceso\n/docs — Documentacion\n/help — Ayuda"
+    elif text in ("/status","status"):
+        reply = "<b>CLI Market</b> — ONLINE\n\u2022 100 retailers en 12 lineas\n\u2022 12 paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api-production.up.railway.app\n\u2022 Docs: /docs"
+    elif text in ("/coverage","coverage","cobertura"):
+        reply = "<b>Cobertura:</b>\n\U0001f6d2 Supermercados: 27 | \U0001f48a Farmacias: 6\n\U0001f4f1 Electro: 14 | \U0001f455 Moda: 8\n\u26bd Deportes: 15 | \U0001f3e0 Hogar: 7\n\U0001f484 Belleza: 6 | \U0001f43e Mascotas: 3\n\U0001f4da Libreria: 3 | \U0001f3ec Departamentales: 8\n\U0001f354 Alimentos: 3 | \U0001f527 Autopartes: 1\n\n12 paises \U0001f1f5\U0001f1ea\U0001f1e6\U0001f1f7\U0001f1e7\U0001f1f7\U0001f1f2\U0001f1fd\U0001f1e8\U0001f1f1\U0001f1ea\U0001f1f8\U0001f1eb\U0001f1f7\U0001f1ee\U0001f1f9\U0001f1ec\U0001f1e7\U0001f1fa\U0001f1fe\U0001f1f5\U0001f1f9"
+    elif text in ("/pricing","pricing","precio","costo"):
+        reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT) — gratis\n\u2022 API: free tier disponible\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam\nLanding: cli-market.dev"
+    elif text in ("/docs","docs","documentacion","api"):
+        reply = "<b>Documentacion:</b>\n\u2022 Swagger: cli-market-api-production.up.railway.app/docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam"
+    elif text in ("/help","help","ayuda"):
+        reply = "<b>Comandos:</b>\n/status\n/coverage\n/pricing\n/docs\n/help"
+    else:
+        reply = f"Gracias <b>{first_name}</b>. Te respondemos pronto.Proba /help para ver comandos."
+        if TELEGRAM_CHAT_ID and chat_id != TELEGRAM_CHAT_ID:
+            await send_telegram_message(TELEGRAM_CHAT_ID, f"\U0001f4e9 <b>Nuevo mensaje:</b>\nDe: {first_name} ({chat_id})\n{text}")
+    await send_telegram_message(chat_id, reply)
+    return {"status": "ok"}
+
+@app.get("/telegram/info")
+def telegram_info():
+    bot = os.getenv("TELEGRAM_BOT_USERNAME", "")
+    return {"telegram_bot": f"https://t.me/{bot}" if bot else "Not configured", "setup": "Set TELEGRAM_BOT_TOKEN + TELEGRAM_BOT_USERNAME env vars", "webhook_url": "POST /telegram/webhook"}
+
 # ── Run ────────────────────────────────────────────────────────────────────
 
 def main():
