@@ -666,7 +666,8 @@ def cmd_lines(args):
         table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
 
     console.print()
-    console.print(table)
+    with console.pager():
+        console.print(table)
     console.print(f"\n[dim]market search --line farmacias \"paracetamol\"[/] [dim]para buscar en una línea[/]")
 
 
