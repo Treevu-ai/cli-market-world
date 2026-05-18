@@ -16,9 +16,21 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CLI Market LATAM — Supermercados como APIs para Agentes IA",
+  title: "CLI Market — Infraestructura de comercio para agentes de IA",
   description:
-    "Infraestructura que convierte 17 comercios de LATAM en 6 líneas de negocio — sistemas de comercio compatibles con agentes de inteligencia artificial. 5 países, 12 herramientas MCP.",
+    "100 retailers VTEX en 12 países y 12 líneas de negocio. API REST, CLI y 12 herramientas MCP para agentes de inteligencia artificial. Open source.",
+  openGraph: {
+    title: "CLI Market — Infraestructura de comercio para agentes IA",
+    description: "100 retailers, 12 líneas, 12 países. Una sola API. Open source.",
+    url: "https://cli-market.dev",
+    siteName: "CLI Market",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CLI Market — Comercio para agentes IA",
+    description: "100 retailers VTEX en 12 países. API REST, CLI y 12 MCP tools.",
+  },
 };
 
 export default function RootLayout({

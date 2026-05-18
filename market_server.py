@@ -507,8 +507,10 @@ def root(request: Request):
         "status": "running",
         "stores": len(STORES),
         "lines": len(LINES),
-        "countries": len(COUNTRIES),
+        "countries": len([k for k, v in STORES.items()]),
+        "countries_detail": {ck: len(cv["stores"]) for ck, cv in COUNTRIES.items()},
         "docs": "/docs",
+        "llms": "https://cli-market.dev/llms.txt",
     }
 
 
