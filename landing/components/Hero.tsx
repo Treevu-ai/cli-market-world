@@ -68,8 +68,9 @@ export default function Hero() {
             </p>
           </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
-            <a href="https://github.com/Treevu-ai/cli-market-latam" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">Instalar CLI<span className="text-xs opacity-60">→</span></a>
+            <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">Instalar CLI<span className="text-xs opacity-60">→</span></a>
             <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">Ver cobertura</a>
+            <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-5 py-2 border border-[#FFD600]/20 text-[#FFD600] text-xs font-mono hover:bg-[#FFD600]/5 transition-colors">⭐ Star on GitHub</a>
             <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
           </div>
         </div>

@@ -35,7 +35,22 @@ export default function Features() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-[1000px]">
         {cards.map((c,i)=><Card key={i} icon={c.i} title={_t(c.t)} desc={_t(c.d)} color={c.c} tag={c.tag}/>)}
       </div>
-      <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">MCP NATIVO · API REST · JSON PARSEABLE · CROSS-BORDER · DATA FEED · CHECKOUT LOCAL</p>
+      {/* For builders bar — merged from UseCases */}
+      <div className="max-w-[1000px] grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+        {[
+          {icon:"🤖",t:_t("usecases_ai_title"),d:_t("usecases_ai_desc")},
+          {icon:"📊",t:_t("usecases_fintech_title"),d:_t("usecases_fintech_desc")},
+          {icon:"🛒",t:_t("usecases_ecom_title"),d:_t("usecases_ecom_desc")},
+          {icon:"💻",t:_t("usecases_dev_title"),d:_t("usecases_dev_desc")},
+        ].map((c,i)=>(
+          <div key={i} className="bg-[#0A0A0A] border border-[#1A1A1A] p-3 flex flex-col gap-1.5 hover:border-[#333] transition-colors">
+            <div className="flex items-center gap-2"><span>{c.icon}</span><span className="text-xs font-grotesk font-bold text-white">{c.t}</span></div>
+            <p className="text-[9px] font-mono text-[#555] leading-relaxed">{c.d}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px] mt-4">MCP NATIVO · API REST · JSON PARSEABLE · CROSS-BORDER · DATA FEED · CHECKOUT LOCAL</p>
+      <p className="text-white/10 font-mono text-[9px] mt-2">live · last updated 2026-05-18 · 3,603 retailers indexed</p>
     </section>
   );
 }

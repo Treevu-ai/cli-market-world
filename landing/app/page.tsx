@@ -33,11 +33,10 @@ export default function Home() {
         <TerminalSection />
         <HowItWorks />
         <Features />
-        <AgentDispatch />
-        <UseCases />
         <Lines />
         <Pricing />
         <FAQ />
+        <AgentDispatch />
         <FinalCTA />
         <Footer />
       </div>
