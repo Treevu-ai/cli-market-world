@@ -1,4 +1,3 @@
-import { useLang } from "@/lib/LanguageContext";
 "use client";
 import { useState } from "react";
 
@@ -12,13 +11,12 @@ const faqs = [
 ];
 
 export default function FAQ() {
-  const { t: _t } = useLang();
   const [openIndex, setOpenIndex] = useState(0);
   return (
     <section id="faq" className="flex flex-col w-full bg-[#060606] py-12 px-4 sm:py-16 sm:px-6 md:py-[80px] md:px-[120px] gap-8 sm:gap-10">
       <div className="flex flex-col gap-[12px] w-full">
         <span className="font-mono text-[9px] sm:text-[10px] md:text-[11px] font-bold text-[#FFD600] tracking-[2px] md:tracking-[3px] uppercase">FAQ</span>
-        <h2 className="font-grotesk text-[26px] sm:text-[32px] md:text-[48px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05]">{_t("faq_title")}</h2>
+        <h2 className="font-grotesk text-[26px] sm:text-[32px] md:text-[48px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05]">Preguntas frecuentes.</h2>
       </div>
       <div className="flex flex-col w-full max-w-[640px]">
         {faqs.map((faq, i) => {

@@ -1,8 +1,6 @@
-import { useLang } from "@/lib/LanguageContext";
 "use client";
 
 export default function Pricing() {
-  const { t: _t } = useLang();
   return (
     <section id="pricing" className="flex flex-col w-full bg-[#060606] py-12 px-4 sm:py-16 sm:px-6 md:py-[80px] md:px-[120px] gap-8 sm:gap-10 md:gap-[48px]">
       <div className="flex flex-col gap-[12px] w-full">
