@@ -30,7 +30,7 @@ export default function Hero() {
   useEffect(()=>{const i=setInterval(()=>setWordIdx(p=>(p+1)%words.length),2500);return ()=>clearInterval(i)},[]);
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center items-start overflow-hidden bg-black">
+    <section className="relative min-h-screen flex flex-col justify-center items-start overflow-hidden bg-[#030303]">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-black to-[#0A0A0A]" />
         <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:"linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",backgroundSize:"64px 64px"}} />

@@ -26,7 +26,7 @@ function Card({ icon, title, desc, color, tag }: { icon:string; title:string; de
 export default function Features() {
   const { t: _t } = useLang();
   return (
-    <section id="features" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section id="features" className="relative flex flex-col w-full bg-[#0C0C0C] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>{_t("features_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">{_t("features_title")}</h2>

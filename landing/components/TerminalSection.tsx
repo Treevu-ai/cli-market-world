@@ -49,7 +49,7 @@ export default function TerminalSection() {
   const os = osData[osIdx];
 
   return (
-    <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-[#060606] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>Terminal</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">Una CLI. Miles de comercios.</h2>
