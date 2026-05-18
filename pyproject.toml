@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentic-market"
+name = "cli-market"
 version = "1.0.0"
-description = "CLI Agentic Market — supermercados como infraestructura para agentes IA"
+description = "CLI Market — 3,400+ retailers VTEX, 67 países, 12 líneas. Infraestructura de comercio para agentes de IA."
 requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.27",

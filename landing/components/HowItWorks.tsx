@@ -1,68 +1,32 @@
-import SectionHeader from "./SectionHeader";
-
-interface StepCardProps {
-  number: string;
-  title: string;
-  description: string;
-  bgColor?: string;
-  borderColor?: string;
-  borderWidth?: number;
-}
-
-function StepCard({
-  number,
-  title,
-  description,
-  bgColor = "#0A0A0A",
-  borderColor = "#2D2D2D",
-  borderWidth = 1,
-}: StepCardProps) {
-  return (
-    <div
-      className="flex flex-col gap-3 sm:gap-4 p-5 sm:p-8 md:p-[40px] border w-full md:flex-1"
-      style={{ backgroundColor: bgColor, borderColor, borderWidth }}
-    >
-      <span className="font-grotesk text-[48px] font-bold text-[#00FF88] tracking-[-2px]">
-        {number}
-      </span>
-      <h3 className="font-grotesk text-[20px] font-bold text-[#F5F5F0] tracking-[1px] leading-[1.2] whitespace-pre-line">
-        {title}
-      </h3>
-      <p className="font-ibm-mono text-[11px] text-[#555555] tracking-[1px] leading-[1.5]">
-        {description}
-      </p>
-    </div>
-  );
-}
-
+"use client";
 export default function HowItWorks() {
+  const steps=[
+    {n:"01",cmd:"pip install git+https://github.com/Treevu-ai/cli-market-world.git",desc:"Instala el CLI",color:"#00FF88"},
+    {n:"02",cmd:"market-server &",desc:"Levanta el backend",color:"#00FF88"},
+    {n:"03",cmd:"market login",desc:"Autenticate",color:"#00FF88"},
+    {n:"04",cmd:'market search "leche" --country PE',desc:"Busca en 3,400+ comercios",color:"#FF6B35"},
+    {n:"05",cmd:'market compare "aceite"',desc:"Compara precios cross-border",color:"#4ADE80"},
+    {n:"06",cmd:"market checkout --payment yape",desc:"Compra con pago local",color:"#F5F5F0"},
+  ];
   return (
-    <section className="flex flex-col w-full bg-[#0D0D0D] py-12 px-4 sm:py-16 sm:px-6 md:py-[100px] md:px-[120px] gap-10 sm:gap-12 md:gap-[64px]">
-      <SectionHeader
-        label="[02] // CÓMO FUNCIONA"
-        title={"TRES PASOS.\nTU SUPERMERCADO EN APIs."}
-      />
-
-      <div className="flex flex-col md:flex-row w-full gap-[2px]">
-        <StepCard
-          number="01"
-          title={"CONECTA\nTUS TIENDAS"}
-          description="INSTALA EL CLI Y AUTENTÍCATE. ACCEDE A 17 COMERCIOS EN 6 LÍNEAS Y 5 PAÍSES CON UNA SOLA HERRAMIENTA. COMPATIBLE CON VTEX."
-        />
-        <StepCard
-          number="02"
-          title={"BUSCA, COMPARA\nY COMPRA"}
-          description="BUSCA PRODUCTOS, COMPARA PRECIOS ENTRE TIENDAS, AGREGA AL CARRO Y COMPLETA LA COMPRA. TODO DESDE LA TERMINAL."
-          bgColor="#111111"
-          borderColor="#00FF88"
-          borderWidth={1}
-        />
-        <StepCard
-          number="03"
-          title={"CONECTA TUS\nAGENTES IA"}
-          description="USA EL SERVIDOR MCP PARA QUE TUS AGENTES DE IA COMPREN POR TI. 12 HERRAMIENTAS LISTAS PARA DEEPSEEK, CLAUDE Y MÁS."
-        />
+    <section id="how" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-10">
+      <div className="flex flex-col gap-3 max-w-[600px]">
+        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>Flujo</span>
+        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">6 comandos. Compra completa.</h2>
+        <p className="text-white/50 font-mono text-sm leading-relaxed">Del install al checkout en menos de un minuto. Sin interfaz. Sin navegador.</p>
       </div>
+      <div className="flex flex-wrap gap-4 max-w-[1000px]">
+        {steps.map((s,i)=>(
+          <div key={i} className="flex items-start gap-4 bg-[#0A0A0A] border border-[#1A1A1A] p-5 min-w-[280px] flex-1 group hover:border-[#333] transition-colors">
+            <span className="text-2xl font-grotesk font-bold text-white/10 group-hover:text-white/20">{s.n}</span>
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className="text-[11px] font-mono break-all" style={{color:s.color}}>{s.cmd}</span>
+              <span className="text-[10px] font-mono text-[#444]">{s.desc}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest">INSTALL → SEARCH → COMPARE → CHECKOUT · TODO EN LA TERMINAL</p>
     </section>
   );
 }

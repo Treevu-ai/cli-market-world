@@ -3,6 +3,9 @@ import Hero from "@/components/Hero";
 import Lines from "@/components/Lines";
 import TerminalSection from "@/components/TerminalSection";
 import AgentDispatch from "@/components/AgentDispatch";
+import HowItWorks from "@/components/HowItWorks";
+import StatsSection from "@/components/StatsSection";
+import UseCases from "@/components/UseCases";
 import Features from "@/components/Features";
 import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
@@ -27,6 +30,9 @@ export default function Home() {
         <Lines />
         <TerminalSection />
         <AgentDispatch />
+        <HowItWorks />
+        <StatsSection />
+        <UseCases />
         <Features />
         <Pricing />
         <FAQ />
