@@ -7,6 +7,7 @@ import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
+import { NoiseOverlay } from "@/components/AnimatedSphere";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
         backgroundSize: "64px 64px",
       }} aria-hidden="true" />
 
+      <NoiseOverlay />
       <Navbar />
 
       <div className="relative z-10">
