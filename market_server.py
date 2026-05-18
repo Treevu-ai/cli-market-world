@@ -50,6 +50,14 @@ def get_db() -> sqlite3.Connection:
 def init_db():
     db = get_db()
     db.executescript("""
+        CREATE TABLE IF NOT EXISTS contacts (
+            chat_id TEXT PRIMARY KEY,
+            first_name TEXT,
+            username TEXT,
+            last_message TEXT,
+            created_at TEXT,
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
         CREATE TABLE IF NOT EXISTS price_snapshots (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id TEXT NOT NULL,
@@ -1020,24 +1028,62 @@ async def telegram_webhook(request: Request):
     text = (message.get("text") or "").strip().lower(); chat_id = str(chat.get("id", "")); first_name = chat.get("first_name", "")
     if not text or not chat_id: return {"status": "no_message"}
 
+    # Guardar contacto
+    try:
+        db = get_db()
+        db.execute("INSERT OR REPLACE INTO contacts (chat_id, first_name, username, last_message, created_at) VALUES (?,?,?,?,datetime('now'))", (chat_id, first_name, chat.get("username",""), text))
+        db.commit(); db.close()
+    except: pass
+
     if text in ("/start","hola","hi","hello"):
-        reply = f"Hola <b>{first_name}</b> \U0001f44b\n\nSoy el bot de <b>CLI Market</b> — infraestructura de comercio para agentes de IA.\n\n<b>Comandos:</b>\n/status — Estado\n/coverage — Cobertura\n/pricing — Acceso\n/docs — Documentacion\n/help — Ayuda"
-    elif text in ("/status","status"):
-        reply = "<b>CLI Market</b> — ONLINE\n\u2022 100 retailers en 12 lineas\n\u2022 12 paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api-production.up.railway.app\n\u2022 Docs: /docs"
-    elif text in ("/coverage","coverage","cobertura"):
-        reply = "<b>Cobertura:</b>\n\U0001f6d2 Supermercados: 27 | \U0001f48a Farmacias: 6\n\U0001f4f1 Electro: 14 | \U0001f455 Moda: 8\n\u26bd Deportes: 15 | \U0001f3e0 Hogar: 7\n\U0001f484 Belleza: 6 | \U0001f43e Mascotas: 3\n\U0001f4da Libreria: 3 | \U0001f3ec Departamentales: 8\n\U0001f354 Alimentos: 3 | \U0001f527 Autopartes: 1\n\n12 paises \U0001f1f5\U0001f1ea\U0001f1e6\U0001f1f7\U0001f1e7\U0001f1f7\U0001f1f2\U0001f1fd\U0001f1e8\U0001f1f1\U0001f1ea\U0001f1f8\U0001f1eb\U0001f1f7\U0001f1ee\U0001f1f9\U0001f1ec\U0001f1e7\U0001f1fa\U0001f1fe\U0001f1f5\U0001f1f9"
+        reply = f"Hola <b>{first_name}</b> \U0001f44b\n\nSoy el bot de <b>CLI Market</b> — infraestructura de comercio para agentes de IA.\n\n<b>Comandos:</b>\n/search leche — buscar productos\n/status — estado\n/coverage — cobertura\n/pricing — acceso\n/docs — docs\n/help — ayuda"
+    elif text.startswith("/search") or text.startswith("buscar"):
+        query = text.replace("/search","").replace("buscar","").strip()
+        if not query: query = "leche"
+        reply = f"\U0001f50d <b>Buscando:</b> {query}\n\n"
+        try:
+            db_q = get_db()
+            rows = db_q.execute("SELECT * FROM price_snapshots WHERE name LIKE ? ORDER BY queried_at DESC LIMIT 5", (f"%{query}%",)).fetchall()
+            db_q.close()
+            if rows:
+                for r in rows:
+                    reply += f"\u2022 <b>{r['name']}</b>\n  {r['store_name']} — {r['currency']} {r['price']}\n"
+                reply += f"\n{len(rows)} resultados del data moat."
+            else:
+                reply += "No hay datos todavia. Ejecuta 'market search' desde el CLI primero."
+        except: reply += "Error consultando."
+    elif text.startswith("/status") or text == "status":
+        reply = f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u2022 {len(STORES)} retailers en {len(LINES)} lineas\n\u2022 {len(COUNTRIES)} paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api-production.up.railway.app\n\u2022 Free tier: 10 req/min, 100/dia"
+    elif text.startswith("/coverage") or text in ("coverage","cobertura"):
+        reply = "<b>Cobertura por linea:</b>\n"
+        for lk in LINES:
+            c = sum(1 for v in STORES.values() if v["line"] == lk)
+            reply += f"{LINES[lk]['emoji']} {LINES[lk]['name']}: {c}\n"
+        reply += "\n<b>Por pais:</b>\n"
+        for ck, cv in COUNTRIES.items(): reply += f"{cv['name']}: {len(cv['stores'])}\n"
     elif text in ("/pricing","pricing","precio","costo"):
-        reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT) — gratis\n\u2022 API: free tier disponible\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam\nLanding: cli-market.dev"
-    elif text in ("/docs","docs","documentacion","api"):
-        reply = "<b>Documentacion:</b>\n\u2022 Swagger: cli-market-api-production.up.railway.app/docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam"
+        reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT)\n\u2022 API: free tier (10/min, 100/dia)\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam\nLanding: cli-market.dev\nBot: @climarketbot"
+    elif text in ("/docs","docs","api"):
+        reply = "<b>Documentacion:</b>\n\u2022 Swagger: /docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam\n\u2022 API status: GET /"
     elif text in ("/help","help","ayuda"):
-        reply = "<b>Comandos:</b>\n/status\n/coverage\n/pricing\n/docs\n/help"
+        reply = "<b>Comandos:</b>\n/search [producto]\n/status\n/coverage\n/pricing\n/docs\n/help"
     else:
         reply = f"Gracias <b>{first_name}</b>. Te respondemos pronto.Proba /help para ver comandos."
         if TELEGRAM_CHAT_ID and chat_id != TELEGRAM_CHAT_ID:
-            await send_telegram_message(TELEGRAM_CHAT_ID, f"\U0001f4e9 <b>Nuevo mensaje:</b>\nDe: {first_name} ({chat_id})\n{text}")
+            await send_telegram_message(TELEGRAM_CHAT_ID, f"\U0001f4e9 <b>Nuevo mensaje de {first_name}</b> (@{chat.get('username','sin username')}):\n{text}")
     await send_telegram_message(chat_id, reply)
     return {"status": "ok"}
+
+@app.get("/contacts")
+def list_contacts(authorization: str | None = Header(None)):
+    """Lista de contactos capturados (requiere auth)."""
+    if not authorization: raise HTTPException(status_code=401)
+    token = authorization.replace("Bearer ", "")
+    if not auth_user(token): raise HTTPException(status_code=401)
+    db = get_db()
+    rows = db.execute("SELECT * FROM contacts ORDER BY updated_at DESC").fetchall()
+    db.close()
+    return {"contacts": [dict(r) for r in rows], "total": len(rows)}
 
 @app.get("/telegram/info")
 def telegram_info():
