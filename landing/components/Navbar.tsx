@@ -1,18 +1,11 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import { useLang, LangToggle } from "./lang";
 
-function useNavLinks() {
-  const { t } = useLang();
-  return [
-    { label: t("nav_comandos"),    section: "features"   },
-    { label: t("nav_arquitectura"), section: "comparison" },
-    { label: t("nav_casos"),       section: "coverage"   },
-    { label: t("nav_faq"),         section: "faq"        },
-    { label: t("nav_precios"),     section: "pricing"    },
-  ];
-}
+const links = [
+  { label: "Cobertura", section: "coverage" },
+  { label: "Comandos",  section: "features" },
+  { label: "FAQ",       section: "faq"      },
+];
 
 function scrollTo(id: string) {
   const el = document.getElementById(id);
@@ -20,182 +13,60 @@ function scrollTo(id: string) {
 }
 
 export default function Navbar() {
-  const links = useNavLinks();
-  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Body scroll lock when mobile menu is open
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // Close mobile menu on Escape key
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) setMenuOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
-
-  // Close mobile menu when scrolling past threshold
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 24);
-      if (menuOpen) setMenuOpen(false);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [menuOpen]);
+  }, []);
 
   useEffect(() => {
-    const ids = links.map((l) => l.section).filter(Boolean);
-    const obs: IntersectionObserver[] = [];
-
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const o = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActive(id); },
-        { rootMargin: "-35% 0px -60% 0px" }
-      );
-      o.observe(el);
-      obs.push(o);
-    });
-
-    return () => obs.forEach((o) => o.disconnect());
+    const obs = new IntersectionObserver(
+      (entries) => { for (const e of entries) { if (e.isIntersecting && e.target.id) setActive(e.target.id); } },
+      { threshold: 0.3 }
+    );
+    links.forEach((l) => { const el = document.getElementById(l.section); if (el) obs.observe(el); });
+    return () => obs.disconnect();
   }, []);
 
   return (
-    <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-      style={{
-        background: scrolled ? "rgba(10,10,10,0.88)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(14px)" : "none",
-        borderBottom: scrolled ? "1px solid #1E1E1E" : "1px solid transparent",
-      }}
-    >
-      <div className="flex items-center justify-between h-[60px] px-6 md:px-[48px] max-w-[1400px] mx-auto">
-        {/* Logo */}
-        <a href="#" className="flex items-center gap-[10px] shrink-0 group">
-          <span className="font-grotesk text-[13px] font-bold text-[#F5F5F0] tracking-[2.5px]">
-            <span className="text-[#00FF88]">$ </span>MARKET
-          </span>
-        </a>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-[36px]">
-          {links.map(({ label, section }) => {
-            const isActive = active === section;
-            return (
-              <button
-                key={label}
-                onClick={() => scrollTo(section)}
-                className="relative font-ibm-mono text-[10px] tracking-[1.5px] transition-colors duration-150 bg-transparent border-none cursor-pointer"
-                style={{ color: isActive ? "#00FF88" : "#555" }}
-                onMouseEnter={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.color = "#F5F5F0";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.color = isActive ? "#00FF88" : "#555";
-                }}
-              >
-                {label}
-                <span
-                  className="absolute left-0 -bottom-[3px] h-[1.5px] bg-[#00FF88] transition-all duration-300"
-                  style={{ width: isActive ? "100%" : "0%" }}
-                />
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Desktop CTA + Lang */}
-        <div className="hidden md:flex items-center gap-[10px]">
-          <LangToggle />
-          <a
-            href="https://github.com/Treevu-ai/cli-market-latam"
-            className="font-grotesk text-[11px] font-bold text-[#0A0A0A] bg-[#00FF88] tracking-[1.5px] px-[18px] py-[9px] hover:bg-[#00cc6a] transition-colors"
-          >
-            {t("nav_instalar")}
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#1A1A1A]" : "bg-transparent"}`}>
+      <div className="flex items-center justify-between h-[52px] px-6 md:px-28">
+        <a href="#hero" className="font-mono text-[13px] tracking-[0.2em] text-[#F5F5F0] hover:text-[#00FF88] transition-colors">CLI MARKET</a>
+        <div className="hidden md:flex items-center gap-8">
+          {links.map((l) => (
+            <button key={l.section} onClick={() => scrollTo(l.section)}
+              className={`font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${active === l.section ? "text-[#F5F5F0]" : "text-[#555] hover:text-[#888]"}`}>
+              {l.label}
+            </button>
+          ))}
+          <a href="https://github.com/Treevu-ai/cli-market-latam"
+            className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#AAA] border border-[#333] px-4 py-1.5 hover:border-[#00FF88] hover:text-[#00FF88] transition-all">
+            Instalar
           </a>
         </div>
-
-        {/* Mobile burger */}
-        <button
-          className="md:hidden flex flex-col items-center justify-center gap-[5px] w-[44px] h-[44px] -mr-2"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={menuOpen}
-        >
-          <span
-            className="block w-[20px] h-[1.5px] bg-[#F5F5F0] transition-transform duration-200 origin-center"
-            style={{ transform: menuOpen ? "translateY(6.5px) rotate(45deg)" : "none" }}
-          />
-          <span
-            className="block w-[20px] h-[1.5px] bg-[#F5F5F0] transition-opacity duration-200"
-            style={{ opacity: menuOpen ? 0 : 1 }}
-          />
-          <span
-            className="block w-[20px] h-[1.5px] bg-[#F5F5F0] transition-transform duration-200 origin-center"
-            style={{ transform: menuOpen ? "translateY(-6.5px) rotate(-45deg)" : "none" }}
-          />
+        <button className="md:hidden font-mono text-[11px] text-[#888]" onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? "Cerrar" : "Menú"}
         </button>
       </div>
-
-      {/* Mobile backdrop + drawer */}
       {menuOpen && (
-        <div
-          className="md:hidden fixed inset-0 top-[60px] z-40"
-          onClick={() => setMenuOpen(false)}
-          style={{ background: "rgba(0,0,0,0.4)" }}
-        />
+        <div className="md:hidden bg-[#0A0A0A] border-t border-[#1A1A1A] px-6 py-6 flex flex-col gap-5">
+          {links.map((l) => (
+            <button key={l.section} onClick={() => { scrollTo(l.section); setMenuOpen(false); }}
+              className="font-mono text-[12px] uppercase tracking-[0.15em] text-[#888] text-left">{l.label}</button>
+          ))}
+          <a href="https://github.com/Treevu-ai/cli-market-latam"
+            className="font-mono text-[11px] text-[#00FF88] border border-[#00FF88]/30 px-4 py-2 text-center mt-2">Instalar CLI</a>
+        </div>
       )}
-      <div
-        className="md:hidden overflow-hidden transition-all duration-300 relative z-50"
-        style={{
-          maxHeight: menuOpen ? "400px" : "0px",
-          background: "rgba(10,10,10,0.97)",
-          backdropFilter: "blur(14px)",
-          borderBottom: menuOpen ? "1px solid #1E1E1E" : "none",
-        }}
-      >
-        <nav className="flex flex-col px-6 py-5 gap-0">
-          {links.map(({ label, section }) => {
-            const isActive = active === section;
-            return (
-              <button
-                key={label}
-                onClick={() => { scrollTo(section); setMenuOpen(false); }}
-                className="flex items-center gap-3 w-full font-ibm-mono text-[13px] tracking-[2px] py-4 border-b border-[#141414] transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer min-h-[48px]"
-                style={{ color: isActive ? "#00FF88" : "#666" }}
-              >
-                <span
-                  className="w-[4px] h-[4px] rounded-full shrink-0 transition-colors"
-                  style={{ background: isActive ? "#00FF88" : "#2D2D2D" }}
-                />
-                {label}
-              </button>
-            );
-          })}
-          <div className="flex flex-col gap-[10px] pt-5">
-            <a
-              href="https://github.com/Treevu-ai/cli-market-latam"
-              className="font-grotesk text-[11px] font-bold text-[#0A0A0A] bg-[#00FF88] tracking-[1.5px] px-[18px] py-[11px] text-center hover:bg-[#00cc6a] transition-colors"
-            >
-              INSTALAR CLI
-            </a>
-          </div>
-        </nav>
-      </div>
-    </header>
+    </nav>
   );
 }
