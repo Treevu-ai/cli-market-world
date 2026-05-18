@@ -21,7 +21,7 @@ export default function FinalCTA() {
           Instalar CLI
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </a>
-        <a href="https://t.me/CLIMarketBot"
+        <a href="https://t.me/climarketbot"
           className="font-mono text-[11px] uppercase tracking-widest text-[#555] hover:text-[#888] transition-colors">
           Contactar
         </a>
