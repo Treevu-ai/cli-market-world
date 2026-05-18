@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: cli-market
-Version: 1.0.12
-Summary: CLI Market — 3,600+ retailers VTEX, 67 countries, 12 lines. Commerce infrastructure for AI agents.
+Version: 1.0.13
+Summary: CLI Market — 3,760+ retailers VTEX, 67 countries, 12 lines. Commerce infrastructure for AI agents.
 Author-email: CLI Market <hello@cli-market.dev>
 License-Expression: MIT
 Keywords: vtex,mcp,ai-agents,ecommerce,cli,retail,commerce,infrastructure

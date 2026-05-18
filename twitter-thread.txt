@@ -5,14 +5,14 @@ HILO DE TWITTER — CLI MARKET
 TWEET 1:
 Stripe convirtio los pagos en APIs. Yo converti el comercio en APIs.
 
-CLI Market: 3,600+ retailers VTEX en 67 paises. Una sola API. 12 herramientas MCP. Open source.
+CLI Market: 3,760+ retailers VTEX en 67 paises. Una sola API. 12 herramientas MCP. Open source.
 
 Los agentes de IA ya pueden buscar, comparar y comprar solos.
 
 TWEET 2:
 El e-commerce esta optimizado para clicks, no para agentes.
 
-VTEX tiene 3,600+ retailers con la misma API publica. Nadie habia construido la capa de agregacion cross-retailer. Ahora existe.
+VTEX tiene 3,760+ retailers con la misma API publica. Nadie habia construido la capa de agregacion cross-retailer. Ahora existe.
 
 Una linea de JSON por retailer. 67 paises. 12 lineas de negocio.
 
