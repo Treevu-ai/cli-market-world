@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLang, LangToggle } from "./lang";
 
-const links = [
-  { label: "COMANDOS",    section: "features"   },
-  { label: "ARQUITECTURA", section: "comparison" },
-  { label: "CASOS",       section: "showcase"   },
-  { label: "FAQ",         section: "faq"        },
-  { label: "PRECIOS",     section: "pricing"    },
-];
+function useNavLinks() {
+  const { t } = useLang();
+  return [
+    { label: t("nav_comandos"),    section: "features"   },
+    { label: t("nav_arquitectura"), section: "comparison" },
+    { label: t("nav_casos"),       section: "coverage"   },
+    { label: t("nav_faq"),         section: "faq"        },
+    { label: t("nav_precios"),     section: "pricing"    },
+  ];
+}
 
 function scrollTo(id: string) {
   const el = document.getElementById(id);
@@ -16,6 +20,8 @@ function scrollTo(id: string) {
 }
 
 export default function Navbar() {
+  const links = useNavLinks();
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -112,13 +118,14 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-[14px]">
+        {/* Desktop CTA + Lang */}
+        <div className="hidden md:flex items-center gap-[10px]">
+          <LangToggle />
           <a
             href="https://github.com/Treevu-ai/cli-market-latam"
             className="font-grotesk text-[11px] font-bold text-[#0A0A0A] bg-[#00FF88] tracking-[1.5px] px-[18px] py-[9px] hover:bg-[#00cc6a] transition-colors"
           >
-            INSTALAR CLI
+            {t("nav_instalar")}
           </a>
         </div>
 
