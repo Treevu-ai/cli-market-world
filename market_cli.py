@@ -93,7 +93,17 @@ WELCOME_BANNER = """\
 
 def get_token() -> str:
     if not SESSION_FILE.exists():
-        console.print("[red]No autenticado. Ejecutá: market login[/]")
+        console.print(Panel.fit(
+            "[bold #FFD600]No estas autenticado aun.[/]\n\n"
+            "[#888888]Para usar CLI Market necesitas un token.[/]\n"
+            "[#888888]Es gratis y toma 5 segundos:[/]\n\n"
+            "  [#00FF88 bold]1.[/] Ejecuta:  [#00FF88]market login[/]\n"
+            "  [#00FF88 bold]2.[/] Usuario: [#FFFFFF bold]admin[/]\n"
+            "  [#00FF88 bold]3.[/] Password: [#FFFFFF bold]market[/]\n\n"
+            "[dim]El servidor genera tu token automaticamente.[/]",
+            title="CLI Market",
+            border_style="#FFD600"
+        ))
         sys.exit(1)
     data = json.loads(SESSION_FILE.read_text())
     return data["token"]
@@ -192,9 +202,36 @@ def load_last_search() -> list[dict]:
 
 def cmd_login(args):
     """Autentica al usuario contra el servidor."""
-    data = api("POST", "/auth/login", {"username": args.username, "password": args.password})
-    console.print(f"[#3cffd0]✓ Autenticado como [bold]{data['username']}[/][/]")
+    username = args.username
+    password = args.password
+
+    # Interactive mode — guide the newbie
+    if not username:
+        console.print(Panel.fit(
+            "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
+            "[#888888]Vas a crear tu token de acceso.[/]\n"
+            "[#888888]Es un solo paso y queda guardado en tu equipo.[/]\n\n"
+            "[dim]Credenciales por defecto:[/]\n"
+            "  Usuario: [#FFFFFF bold]admin[/]\n"
+            "  Password: [#FFFFFF bold]market[/]",
+            border_style="#00FF88"
+        ))
+        username = console.input("[#00FF88]Usuario:[/] ")
+        if not username:
+            console.print("[red]Cancelado.[/]")
+            return
+
+    if not password:
+        password = console.input("[#00FF88]Password:[/] ", password=True)
+        if not password:
+            console.print("[red]Cancelado.[/]")
+            return
+
+    data = api("POST", "/auth/login", {"username": username, "password": password})
+    console.print(f"\n[#00FF88]✓ Autenticado como [bold]{data['username']}[/][/]")
     console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
+    console.print(f"\n[#888888]Ahora podes buscar productos:[/]")
+    console.print(f"  [#00FF88]market search[/] [dim]\"leche\" --country PE[/]")
 
 
 def cmd_search(args):
@@ -789,7 +826,13 @@ def main():
             console.print(_json.dumps(BUSINESS_MODEL_JSON, indent=2, ensure_ascii=False))
         else:
             console.print(WELCOME_BANNER)
-            console.print("\n[dim]market login[/] [dim]para empezar ·[/] [#3cffd0]market --json[/] [dim]para agentes ·[/] [#3cffd0]market about[/] [dim]para el pitch[/]")
+            console.print(Panel.fit(
+                "[#888888]Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autenticate (usuario: admin, password: market)[/]\n"
+                "[#888888]Queres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
+                "[#888888]Sos agente IA?[/] [#00FF88]market --json[/] [#888888]→ salida estructurada para LLMs[/]\n"
+                "[#888888]No sabes que hacer?[/] [#00FF88]market --help[/] [#888888]→ todos los comandos[/]",
+                border_style="#1A1A1A"
+            ))
         return
 
     if args.json and args.command == "about":
