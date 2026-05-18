@@ -26,7 +26,7 @@ CLI Market is the middleware between VTEX and AI agents. One API call searches, 
 
 ```bash
 # 1. Install
-pip install git+https://github.com/Treevu-ai/cli-market-world.git
+pip install cli-market
 
 # 2. Start backend
 market-server &
@@ -47,7 +47,7 @@ market --json
 
 ```powershell
 # 1. Install
-pip install git+https://github.com/Treevu-ai/cli-market-world.git
+pip install cli-market
 
 # 2. Start backend (in a separate terminal)
 Start-Process -NoNewWindow python -ArgumentList "-m", "market_server"
@@ -68,7 +68,7 @@ market --json
 
 ```cmd
 :: 1. Install
-pip install git+https://github.com/Treevu-ai/cli-market-world.git
+pip install cli-market
 
 :: 2. Start backend (in a separate terminal)
 start python -m market_server
