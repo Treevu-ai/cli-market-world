@@ -53,7 +53,7 @@ export default function Features() {
     >
       <SectionHeader
         label="Comandos"
-        title={"Una CLI.\nCien comercios."}
+        title={"Una CLI.\n500+ comercios."}
         subtitle="Infraestructura unificada para buscar, comparar y comprar desde la terminal."
       />
 
@@ -61,7 +61,7 @@ export default function Features() {
         <FeatureCard
           iconColor="#00FF88"
           title={"Búsqueda\nmultitienda"}
-          description="Busca productos en 100 comercios simultáneamente. Resultados en milisegundos, formateados como JSON o tablas."
+          description="Busca productos en 500+ comercios simultáneamente. Resultados en milisegundos, formateados como JSON o tablas."
           tag="SEARCH"
           tagColor="#00FF88"
           borderColor="#00FF88"
