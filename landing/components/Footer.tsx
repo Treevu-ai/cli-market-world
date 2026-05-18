@@ -1,8 +1,10 @@
+import { useLang } from "@/lib/LanguageContext";
 const comandosLinks = ["MARKET SEARCH", "MARKET COMPARE", "MARKET ADD", "MARKET CART", "MARKET CHECKOUT", "MARKET ASK"];
 const recursosLinks = ["GITHUB", "DOCS", "MCP SERVER"];
 const tiendasLinks = ["WONG", "METRO", "PLAZA VEA", "CARREFOUR", "JUMBO", "CHEDRAUI", "HEB", "OLÍMPICA"];
 
 export default function Footer() {
+  const { t: _t } = useLang();
   return (
     <footer className="flex flex-col w-full bg-[#050505] safe-bottom">
       <div className="flex flex-col md:flex-row gap-8 sm:gap-10 md:gap-[80px] px-4 sm:px-6 md:px-[120px] py-8 sm:py-10 md:py-[64px]">
