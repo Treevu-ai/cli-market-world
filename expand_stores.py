@@ -395,6 +395,20 @@ PATTERNS += [
     ("Salomon {cc}","salomon.{domain}","deportes",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","JP":"jp","KR":"kr","CN":"cn","AU":"com.au","SE":"se","FI":"fi","NO":"no"}),
     ("Mammut {cc}","mammut.{domain}","deportes",{"US":"com","DE":"de","AT":"at","CH":"ch","FR":"fr","IT":"it","GB":"co.uk","ES":"es","JP":"jp"}),
     ("Lululemon {cc}","lululemon.{domain}","deportes",{"US":"com","MX":"com.mx","CA":"ca","GB":"co.uk","DE":"de","FR":"fr","AU":"com.au","JP":"jp","KR":"kr","CN":"cn"}),
+    ("Lamborghini {cc}","lamborghini.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","JP":"jp","CN":"cn","AE":"ae"}),
+    ("Bugatti {cc}","bugatti.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"com","JP":"jp","CN":"cn"}),
+    ("Porsche Design {cc}","porsche-design.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","JP":"jp","KR":"kr","CN":"cn"}),
+    ("Maserati {cc}","maserati.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","JP":"jp","CN":"cn"}),
+    ("Aston Martin {cc}","astonmartin.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"com","JP":"jp","CN":"cn"}),
+    ("Bentley {cc}","bentley.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"motors","JP":"jp","CN":"cn"}),
+    ("Rolls-Royce {cc}","rolls-roycemotorcars.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"com","JP":"jp","CN":"cn"}),
+    ("McLaren {cc}","mclaren.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"fr","GB":"com","DE":"de","IT":"com","JP":"jp","CN":"cn"}),
+    ("Ducati {cc}","ducati.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","JP":"jp","CN":"cn","AE":"ae"}),
+    ("Harley Davidson {cc}","harley-davidson.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","AU":"com.au","JP":"jp","CN":"cn"}),
+    ("BMW {cc}","bmw.{domain}","autopartes",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","AU":"com.au","JP":"jp","KR":"kr","CN":"cn"}),
+    ("Mercedes-Benz {cc}","mercedes-benz.{domain}","autopartes",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","AU":"com.au","JP":"jp","KR":"kr","CN":"cn"}),
+    ("Audi {cc}","audi.{domain}","autopartes",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","AU":"com.au","JP":"jp","KR":"kr","CN":"cn"}),
+    ("Tesla {cc}","tesla.{domain}","autopartes",{"US":"com","MX":"com.mx","CA":"ca","GB":"co.uk","DE":"de","FR":"fr","AU":"com.au","JP":"jp","KR":"kr","CN":"cn"}),
 ]
 if __name__ == "__main__":
     main()
