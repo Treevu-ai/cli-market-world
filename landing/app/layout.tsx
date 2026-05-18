@@ -17,10 +17,10 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "CLI Market — Infraestructura de comercio para agentes de IA",
   description:
-    "3,400+ retailers VTEX en 67 países y 12 líneas de negocio. API REST, CLI y 12 herramientas MCP para agentes de inteligencia artificial. Open source.",
+    "3,600+ retailers VTEX en 67 países y 12 líneas de negocio. API REST, CLI y 12 herramientas MCP para agentes de inteligencia artificial. Open source.",
   openGraph: {
     title: "CLI Market — Infraestructura de comercio para agentes IA",
-    description: "3,400+ retailers, 12 lineas, 67 paises. Una sola API. Open source.",
+    description: "3,600+ retailers, 12 lineas, 67 paises. Una sola API. Open source.",
     url: "https://cli-market.dev",
     siteName: "CLI Market",
     type: "website",

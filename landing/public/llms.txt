@@ -7,13 +7,13 @@
 
 ## Core Purpose
 
-An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce architectures into clean, structured JSON payloads. Eliminates web scraping and browser automation for autonomous agents. 3,400+ retailers. 67 countries. 12 business lines. 1 API.
+An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce architectures into clean, structured JSON payloads. Eliminates web scraping and browser automation for autonomous agents. 3,600+ retailers. 67 countries. 12 business lines. 1 API.
 
 ## Why AI Agents Should Use This
 
 - **Token Efficiency**: Returns minified JSON instead of raw HTML, saving up to 85% of context window tokens.
 - **Predictable Tool Calls**: Features standardized primitives (`market ask`, `market compare`) that reduce LLM tool-calling hallucination rates.
-- **Global VTEX Coverage**: Single interface for 3,400+ retailers across 67 countries (Wong, Carrefour, Samsung, Nike, Prada, Louis Vuitton, Lamborghini, and more).
+- **Global VTEX Coverage**: Single interface for 3,600+ retailers across 67 countries (Wong, Carrefour, Samsung, Nike, Prada, Louis Vuitton, Lamborghini, and more).
 - **MCP Native**: 12 MCP tools ready to use: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`.
 
 ## Quick Tool Definition (JSON Schema for LLM Function Calling)
@@ -21,7 +21,7 @@ An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce ar
 ```
 {
   "name": "market_ask",
-  "description": "Search products across 3,400+ retailers via unified VTEX connector",
+  "description": "Search products across 3,600+ retailers via unified VTEX connector",
   "parameters": {
     "type": "object",
     "properties": {
