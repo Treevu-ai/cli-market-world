@@ -46,28 +46,16 @@ LANG = get_lang()
 # ── JSON-able business model (agent-friendly) ──────────────────────
 
 BUSINESS_MODEL_JSON = {
-    "company": "CLI Market LATAM",
-    "version": "1.0.0",
-    "positioning": "Infrastructure layer that transforms traditional LATAM supermarkets into AI-agent compatible commerce systems.",
-    "solution": {
-        "agent_layer": True,
-        "mcp_compatible": True,
-        "semantic_search": True,
-        "autonomous_checkout": True,
-        "multi_retailer_support": True,
-        "integrated_stores": ["wong", "metro", "plazavea"],
-    },
-    "business_model": {
-        "saas_b2b": {"starter": "$499/mo", "growth": "$1,999/mo", "enterprise": "custom"},
-        "api_usage": {"metrics": ["search_requests", "checkout_executions", "agent_actions"]},
-        "transaction_fee": "1-5% per order",
-        "white_label": "Retailers deploy infrastructure under their own brand",
-    },
-    "latam_expansion": {
-        "phase_1": ["Peru", "Chile", "Colombia"],
-        "phase_2": ["Mexico", "Brazil", "Argentina"],
-    },
-    "pitch": "Stripe transformed payments into APIs. CLI Market LATAM transforms supermarkets into APIs for AI agents.",
+    "name": "CLI Market",
+    "version": "1.0",
+    "description": "Commerce infrastructure for humans and AI agents — 3,603 VTEX retailers, 67 countries, 12 lines, 12 MCP tools.",
+    "stats": {"retailers": 3603, "countries": 67, "lines": 12, "mcp_tools": 12},
+    "capabilities": {"mcp_server": True, "cli": True, "rest_api": True, "json_output": True, "cross_border": True, "autonomous_checkout": True, "multi_retailer": True},
+    "license": "MIT",
+    "install": "pip install cli-market",
+    "github": "https://github.com/Treevu-ai/cli-market-world",
+    "landing": "https://cli-market.dev",
+    "api": "https://cli-market-api-production.up.railway.app",
 }
 
 WELCOME_BANNER = """\
