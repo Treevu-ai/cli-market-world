@@ -501,3 +501,524 @@ dafiti_co_co,Dafiti CO,https://www.dafiti.co,CO,COP,moda,5,5,4,3,5
 dafiti_pe_pe,Dafiti PE,https://www.dafiti.pe,PE,PEN,moda,5,5,4,3,5
 mobly_br_br,Mobly BR,https://www.mobly.com.br,BR,BRL,hogar,5,5,4,3,5
 netshoes_br_br,Netshoes BR,https://www.netshoes.com.br,BR,BRL,deportes,5,5,4,3,5
+converse_us_us,Converse US,https://www.converse.com,US,USD,moda,5,5,4,3,5
+converse_mx_mx,Converse MX,https://www.converse.com.mx,MX,MXN,moda,5,5,4,3,5
+converse_br_br,Converse BR,https://www.converse.com.br,BR,BRL,moda,5,5,4,3,5
+converse_cl_cl,Converse CL,https://www.converse.cl,CL,CLP,moda,5,5,4,3,5
+converse_ar_ar,Converse AR,https://www.converse.com.ar,AR,ARS,moda,5,5,4,3,5
+converse_es_es,Converse ES,https://www.converse.es,ES,EUR,moda,5,5,4,3,5
+converse_fr_fr,Converse FR,https://www.converse.fr,FR,EUR,moda,5,5,4,3,5
+converse_gb_gb,Converse GB,https://www.converse.co.uk,GB,GBP,moda,5,5,4,3,5
+converse_de_de,Converse DE,https://www.converse.de,DE,EUR,moda,5,5,4,3,5
+converse_it_it,Converse IT,https://www.converse.it,IT,EUR,moda,5,5,4,3,5
+converse_pt_pt,Converse PT,https://www.converse.pt,PT,EUR,moda,5,5,4,3,5
+converse_nl_nl,Converse NL,https://www.converse.nl,NL,EUR,moda,5,5,4,3,5
+converse_pl_pl,Converse PL,https://www.converse.pl,PL,PLN,moda,5,5,4,3,5
+converse_tr_tr,Converse TR,https://www.converse.com.tr,TR,TRY,moda,5,5,4,3,5
+converse_au_au,Converse AU,https://www.converse.com.au,AU,AUD,moda,5,5,4,3,5
+converse_jp_jp,Converse JP,https://www.converse.jp,JP,JPY,moda,5,5,4,3,5
+converse_kr_kr,Converse KR,https://www.converse.kr,KR,KRW,moda,5,5,4,3,5
+vans_us_us,Vans US,https://www.vans.com,US,USD,moda,5,5,4,3,5
+vans_mx_mx,Vans MX,https://www.vans.com.mx,MX,MXN,moda,5,5,4,3,5
+vans_br_br,Vans BR,https://www.vans.com.br,BR,BRL,moda,5,5,4,3,5
+vans_cl_cl,Vans CL,https://www.vans.cl,CL,CLP,moda,5,5,4,3,5
+vans_ar_ar,Vans AR,https://www.vans.com.ar,AR,ARS,moda,5,5,4,3,5
+vans_es_es,Vans ES,https://www.vans.es,ES,EUR,moda,5,5,4,3,5
+vans_fr_fr,Vans FR,https://www.vans.fr,FR,EUR,moda,5,5,4,3,5
+vans_gb_gb,Vans GB,https://www.vans.co.uk,GB,GBP,moda,5,5,4,3,5
+vans_de_de,Vans DE,https://www.vans.de,DE,EUR,moda,5,5,4,3,5
+vans_it_it,Vans IT,https://www.vans.it,IT,EUR,moda,5,5,4,3,5
+vans_pt_pt,Vans PT,https://www.vans.pt,PT,EUR,moda,5,5,4,3,5
+vans_nl_nl,Vans NL,https://www.vans.nl,NL,EUR,moda,5,5,4,3,5
+vans_pl_pl,Vans PL,https://www.vans.pl,PL,PLN,moda,5,5,4,3,5
+vans_tr_tr,Vans TR,https://www.vans.com.tr,TR,TRY,moda,5,5,4,3,5
+vans_au_au,Vans AU,https://www.vans.com.au,AU,AUD,moda,5,5,4,3,5
+vans_jp_jp,Vans JP,https://www.vans.jp,JP,JPY,moda,5,5,4,3,5
+skechers_us_us,Skechers US,https://www.skechers.com,US,USD,moda,5,5,4,3,5
+skechers_mx_mx,Skechers MX,https://www.skechers.com.mx,MX,MXN,moda,5,5,4,3,5
+skechers_br_br,Skechers BR,https://www.skechers.com.br,BR,BRL,moda,5,5,4,3,5
+skechers_cl_cl,Skechers CL,https://www.skechers.cl,CL,CLP,moda,5,5,4,3,5
+skechers_ar_ar,Skechers AR,https://www.skechers.com.ar,AR,ARS,moda,5,5,4,3,5
+skechers_es_es,Skechers ES,https://www.skechers.es,ES,EUR,moda,5,5,4,3,5
+skechers_fr_fr,Skechers FR,https://www.skechers.fr,FR,EUR,moda,5,5,4,3,5
+skechers_gb_gb,Skechers GB,https://www.skechers.co.uk,GB,GBP,moda,5,5,4,3,5
+skechers_de_de,Skechers DE,https://www.skechers.de,DE,EUR,moda,5,5,4,3,5
+skechers_it_it,Skechers IT,https://www.skechers.it,IT,EUR,moda,5,5,4,3,5
+skechers_pt_pt,Skechers PT,https://www.skechers.pt,PT,EUR,moda,5,5,4,3,5
+skechers_nl_nl,Skechers NL,https://www.skechers.nl,NL,EUR,moda,5,5,4,3,5
+skechers_pl_pl,Skechers PL,https://www.skechers.pl,PL,PLN,moda,5,5,4,3,5
+skechers_tr_tr,Skechers TR,https://www.skechers.com.tr,TR,TRY,moda,5,5,4,3,5
+skechers_au_au,Skechers AU,https://www.skechers.com.au,AU,AUD,moda,5,5,4,3,5
+crocs_us_us,Crocs US,https://www.crocs.com,US,USD,moda,5,5,4,3,5
+crocs_mx_mx,Crocs MX,https://www.crocs.com.mx,MX,MXN,moda,5,5,4,3,5
+crocs_br_br,Crocs BR,https://www.crocs.com.br,BR,BRL,moda,5,5,4,3,5
+crocs_cl_cl,Crocs CL,https://www.crocs.cl,CL,CLP,moda,5,5,4,3,5
+crocs_ar_ar,Crocs AR,https://www.crocs.com.ar,AR,ARS,moda,5,5,4,3,5
+crocs_es_es,Crocs ES,https://www.crocs.es,ES,EUR,moda,5,5,4,3,5
+crocs_fr_fr,Crocs FR,https://www.crocs.fr,FR,EUR,moda,5,5,4,3,5
+crocs_gb_gb,Crocs GB,https://www.crocs.co.uk,GB,GBP,moda,5,5,4,3,5
+crocs_de_de,Crocs DE,https://www.crocs.de,DE,EUR,moda,5,5,4,3,5
+crocs_it_it,Crocs IT,https://www.crocs.it,IT,EUR,moda,5,5,4,3,5
+crocs_pt_pt,Crocs PT,https://www.crocs.pt,PT,EUR,moda,5,5,4,3,5
+crocs_nl_nl,Crocs NL,https://www.crocs.nl,NL,EUR,moda,5,5,4,3,5
+crocs_pl_pl,Crocs PL,https://www.crocs.pl,PL,PLN,moda,5,5,4,3,5
+crocs_tr_tr,Crocs TR,https://www.crocs.com.tr,TR,TRY,moda,5,5,4,3,5
+crocs_au_au,Crocs AU,https://www.crocs.com.au,AU,AUD,moda,5,5,4,3,5
+crocs_jp_jp,Crocs JP,https://www.crocs.jp,JP,JPY,moda,5,5,4,3,5
+crocs_kr_kr,Crocs KR,https://www.crocs.kr,KR,KRW,moda,5,5,4,3,5
+crocs_cn_cn,Crocs CN,https://www.crocs.cn,CN,CNY,moda,5,5,4,3,5
+crocs_in_in,Crocs IN,https://www.crocs.in,IN,INR,moda,5,5,4,3,5
+fila_us_us,Fila US,https://www.fila.com,US,USD,deportes,5,5,4,3,5
+fila_mx_mx,Fila MX,https://www.fila.com.mx,MX,MXN,deportes,5,5,4,3,5
+fila_br_br,Fila BR,https://www.fila.com.br,BR,BRL,deportes,5,5,4,3,5
+fila_cl_cl,Fila CL,https://www.fila.cl,CL,CLP,deportes,5,5,4,3,5
+fila_ar_ar,Fila AR,https://www.fila.com.ar,AR,ARS,deportes,5,5,4,3,5
+fila_es_es,Fila ES,https://www.fila.es,ES,EUR,deportes,5,5,4,3,5
+fila_fr_fr,Fila FR,https://www.fila.fr,FR,EUR,deportes,5,5,4,3,5
+fila_gb_gb,Fila GB,https://www.fila.co.uk,GB,GBP,deportes,5,5,4,3,5
+fila_de_de,Fila DE,https://www.fila.de,DE,EUR,deportes,5,5,4,3,5
+fila_it_it,Fila IT,https://www.fila.it,IT,EUR,deportes,5,5,4,3,5
+fila_pt_pt,Fila PT,https://www.fila.pt,PT,EUR,deportes,5,5,4,3,5
+fila_nl_nl,Fila NL,https://www.fila.nl,NL,EUR,deportes,5,5,4,3,5
+fila_pl_pl,Fila PL,https://www.fila.pl,PL,PLN,deportes,5,5,4,3,5
+fila_tr_tr,Fila TR,https://www.fila.com.tr,TR,TRY,deportes,5,5,4,3,5
+fila_au_au,Fila AU,https://www.fila.com.au,AU,AUD,deportes,5,5,4,3,5
+fila_jp_jp,Fila JP,https://www.fila.jp,JP,JPY,deportes,5,5,4,3,5
+fila_kr_kr,Fila KR,https://www.fila.kr,KR,KRW,deportes,5,5,4,3,5
+fila_cn_cn,Fila CN,https://www.fila.cn,CN,CNY,deportes,5,5,4,3,5
+fila_in_in,Fila IN,https://www.fila.in,IN,INR,deportes,5,5,4,3,5
+fila_sg_sg,Fila SG,https://www.fila.sg,SG,SGD,deportes,5,5,4,3,5
+reebok_us_us,Reebok US,https://www.reebok.com,US,USD,deportes,5,5,4,3,5
+reebok_mx_mx,Reebok MX,https://www.reebok.com.mx,MX,MXN,deportes,5,5,4,3,5
+reebok_br_br,Reebok BR,https://www.reebok.com.br,BR,BRL,deportes,5,5,4,3,5
+reebok_cl_cl,Reebok CL,https://www.reebok.cl,CL,CLP,deportes,5,5,4,3,5
+reebok_ar_ar,Reebok AR,https://www.reebok.com.ar,AR,ARS,deportes,5,5,4,3,5
+reebok_es_es,Reebok ES,https://www.reebok.es,ES,EUR,deportes,5,5,4,3,5
+reebok_fr_fr,Reebok FR,https://www.reebok.fr,FR,EUR,deportes,5,5,4,3,5
+reebok_gb_gb,Reebok GB,https://www.reebok.co.uk,GB,GBP,deportes,5,5,4,3,5
+reebok_de_de,Reebok DE,https://www.reebok.de,DE,EUR,deportes,5,5,4,3,5
+reebok_it_it,Reebok IT,https://www.reebok.it,IT,EUR,deportes,5,5,4,3,5
+reebok_pt_pt,Reebok PT,https://www.reebok.pt,PT,EUR,deportes,5,5,4,3,5
+reebok_nl_nl,Reebok NL,https://www.reebok.nl,NL,EUR,deportes,5,5,4,3,5
+reebok_pl_pl,Reebok PL,https://www.reebok.pl,PL,PLN,deportes,5,5,4,3,5
+reebok_tr_tr,Reebok TR,https://www.reebok.com.tr,TR,TRY,deportes,5,5,4,3,5
+reebok_au_au,Reebok AU,https://www.reebok.com.au,AU,AUD,deportes,5,5,4,3,5
+reebok_jp_jp,Reebok JP,https://www.reebok.jp,JP,JPY,deportes,5,5,4,3,5
+reebok_kr_kr,Reebok KR,https://www.reebok.kr,KR,KRW,deportes,5,5,4,3,5
+reebok_cn_cn,Reebok CN,https://www.reebok.cn,CN,CNY,deportes,5,5,4,3,5
+reebok_in_in,Reebok IN,https://www.reebok.in,IN,INR,deportes,5,5,4,3,5
+calvin_klein_us_us,Calvin Klein US,https://www.calvinklein.com,US,USD,moda,5,5,4,3,5
+calvin_klein_mx_mx,Calvin Klein MX,https://www.calvinklein.com.mx,MX,MXN,moda,5,5,4,3,5
+calvin_klein_br_br,Calvin Klein BR,https://www.calvinklein.com.br,BR,BRL,moda,5,5,4,3,5
+calvin_klein_es_es,Calvin Klein ES,https://www.calvinklein.es,ES,EUR,moda,5,5,4,3,5
+calvin_klein_fr_fr,Calvin Klein FR,https://www.calvinklein.fr,FR,EUR,moda,5,5,4,3,5
+calvin_klein_gb_gb,Calvin Klein GB,https://www.calvinklein.co.uk,GB,GBP,moda,5,5,4,3,5
+calvin_klein_de_de,Calvin Klein DE,https://www.calvinklein.de,DE,EUR,moda,5,5,4,3,5
+calvin_klein_it_it,Calvin Klein IT,https://www.calvinklein.it,IT,EUR,moda,5,5,4,3,5
+calvin_klein_pt_pt,Calvin Klein PT,https://www.calvinklein.pt,PT,EUR,moda,5,5,4,3,5
+calvin_klein_nl_nl,Calvin Klein NL,https://www.calvinklein.nl,NL,EUR,moda,5,5,4,3,5
+calvin_klein_pl_pl,Calvin Klein PL,https://www.calvinklein.pl,PL,PLN,moda,5,5,4,3,5
+tommy_hilfiger_us_us,Tommy Hilfiger US,https://www.tommy.com,US,USD,moda,5,5,4,3,5
+tommy_hilfiger_mx_mx,Tommy Hilfiger MX,https://www.tommy.com.mx,MX,MXN,moda,5,5,4,3,5
+tommy_hilfiger_br_br,Tommy Hilfiger BR,https://www.tommy.com.br,BR,BRL,moda,5,5,4,3,5
+tommy_hilfiger_es_es,Tommy Hilfiger ES,https://www.tommy.es,ES,EUR,moda,5,5,4,3,5
+tommy_hilfiger_fr_fr,Tommy Hilfiger FR,https://www.tommy.fr,FR,EUR,moda,5,5,4,3,5
+tommy_hilfiger_gb_gb,Tommy Hilfiger GB,https://www.tommy.co.uk,GB,GBP,moda,5,5,4,3,5
+tommy_hilfiger_de_de,Tommy Hilfiger DE,https://www.tommy.de,DE,EUR,moda,5,5,4,3,5
+tommy_hilfiger_it_it,Tommy Hilfiger IT,https://www.tommy.it,IT,EUR,moda,5,5,4,3,5
+tommy_hilfiger_pt_pt,Tommy Hilfiger PT,https://www.tommy.pt,PT,EUR,moda,5,5,4,3,5
+tommy_hilfiger_nl_nl,Tommy Hilfiger NL,https://www.tommy.nl,NL,EUR,moda,5,5,4,3,5
+tommy_hilfiger_pl_pl,Tommy Hilfiger PL,https://www.tommy.pl,PL,PLN,moda,5,5,4,3,5
+tommy_hilfiger_tr_tr,Tommy Hilfiger TR,https://www.tommy.com.tr,TR,TRY,moda,5,5,4,3,5
+tommy_hilfiger_au_au,Tommy Hilfiger AU,https://www.tommy.com.au,AU,AUD,moda,5,5,4,3,5
+lacoste_us_us,Lacoste US,https://www.lacoste.com,US,USD,moda,5,5,4,3,5
+lacoste_mx_mx,Lacoste MX,https://www.lacoste.com.mx,MX,MXN,moda,5,5,4,3,5
+lacoste_br_br,Lacoste BR,https://www.lacoste.com.br,BR,BRL,moda,5,5,4,3,5
+lacoste_es_es,Lacoste ES,https://www.lacoste.es,ES,EUR,moda,5,5,4,3,5
+lacoste_fr_fr,Lacoste FR,https://www.lacoste.fr,FR,EUR,moda,5,5,4,3,5
+lacoste_gb_gb,Lacoste GB,https://www.lacoste.co.uk,GB,GBP,moda,5,5,4,3,5
+lacoste_de_de,Lacoste DE,https://www.lacoste.de,DE,EUR,moda,5,5,4,3,5
+lacoste_it_it,Lacoste IT,https://www.lacoste.it,IT,EUR,moda,5,5,4,3,5
+lacoste_pt_pt,Lacoste PT,https://www.lacoste.pt,PT,EUR,moda,5,5,4,3,5
+lacoste_nl_nl,Lacoste NL,https://www.lacoste.nl,NL,EUR,moda,5,5,4,3,5
+lacoste_pl_pl,Lacoste PL,https://www.lacoste.pl,PL,PLN,moda,5,5,4,3,5
+lacoste_tr_tr,Lacoste TR,https://www.lacoste.com.tr,TR,TRY,moda,5,5,4,3,5
+columbia_us_us,Columbia US,https://www.columbia.com,US,USD,deportes,5,5,4,3,5
+columbia_mx_mx,Columbia MX,https://www.columbia.com.mx,MX,MXN,deportes,5,5,4,3,5
+columbia_br_br,Columbia BR,https://www.columbia.com.br,BR,BRL,deportes,5,5,4,3,5
+columbia_cl_cl,Columbia CL,https://www.columbia.cl,CL,CLP,deportes,5,5,4,3,5
+columbia_ar_ar,Columbia AR,https://www.columbia.com.ar,AR,ARS,deportes,5,5,4,3,5
+columbia_es_es,Columbia ES,https://www.columbia.es,ES,EUR,deportes,5,5,4,3,5
+columbia_fr_fr,Columbia FR,https://www.columbia.fr,FR,EUR,deportes,5,5,4,3,5
+columbia_gb_gb,Columbia GB,https://www.columbia.co.uk,GB,GBP,deportes,5,5,4,3,5
+columbia_de_de,Columbia DE,https://www.columbia.de,DE,EUR,deportes,5,5,4,3,5
+columbia_it_it,Columbia IT,https://www.columbia.it,IT,EUR,deportes,5,5,4,3,5
+columbia_pt_pt,Columbia PT,https://www.columbia.pt,PT,EUR,deportes,5,5,4,3,5
+columbia_nl_nl,Columbia NL,https://www.columbia.nl,NL,EUR,deportes,5,5,4,3,5
+columbia_pl_pl,Columbia PL,https://www.columbia.pl,PL,PLN,deportes,5,5,4,3,5
+columbia_tr_tr,Columbia TR,https://www.columbia.com.tr,TR,TRY,deportes,5,5,4,3,5
+columbia_au_au,Columbia AU,https://www.columbia.com.au,AU,AUD,deportes,5,5,4,3,5
+columbia_jp_jp,Columbia JP,https://www.columbia.jp,JP,JPY,deportes,5,5,4,3,5
+columbia_kr_kr,Columbia KR,https://www.columbia.kr,KR,KRW,deportes,5,5,4,3,5
+the_north_face_us_us,The North Face US,https://www.thenorthface.com,US,USD,deportes,5,5,4,3,5
+the_north_face_mx_mx,The North Face MX,https://www.thenorthface.com.mx,MX,MXN,deportes,5,5,4,3,5
+the_north_face_br_br,The North Face BR,https://www.thenorthface.com.br,BR,BRL,deportes,5,5,4,3,5
+the_north_face_cl_cl,The North Face CL,https://www.thenorthface.cl,CL,CLP,deportes,5,5,4,3,5
+the_north_face_ar_ar,The North Face AR,https://www.thenorthface.com.ar,AR,ARS,deportes,5,5,4,3,5
+the_north_face_es_es,The North Face ES,https://www.thenorthface.es,ES,EUR,deportes,5,5,4,3,5
+the_north_face_fr_fr,The North Face FR,https://www.thenorthface.fr,FR,EUR,deportes,5,5,4,3,5
+the_north_face_gb_gb,The North Face GB,https://www.thenorthface.co.uk,GB,GBP,deportes,5,5,4,3,5
+the_north_face_de_de,The North Face DE,https://www.thenorthface.de,DE,EUR,deportes,5,5,4,3,5
+the_north_face_it_it,The North Face IT,https://www.thenorthface.it,IT,EUR,deportes,5,5,4,3,5
+the_north_face_pt_pt,The North Face PT,https://www.thenorthface.pt,PT,EUR,deportes,5,5,4,3,5
+the_north_face_nl_nl,The North Face NL,https://www.thenorthface.nl,NL,EUR,deportes,5,5,4,3,5
+the_north_face_pl_pl,The North Face PL,https://www.thenorthface.pl,PL,PLN,deportes,5,5,4,3,5
+the_north_face_tr_tr,The North Face TR,https://www.thenorthface.com.tr,TR,TRY,deportes,5,5,4,3,5
+the_north_face_au_au,The North Face AU,https://www.thenorthface.com.au,AU,AUD,deportes,5,5,4,3,5
+the_north_face_jp_jp,The North Face JP,https://www.thenorthface.jp,JP,JPY,deportes,5,5,4,3,5
+the_north_face_kr_kr,The North Face KR,https://www.thenorthface.kr,KR,KRW,deportes,5,5,4,3,5
+the_north_face_cn_cn,The North Face CN,https://www.thenorthface.cn,CN,CNY,deportes,5,5,4,3,5
+forever_21_us_us,Forever 21 US,https://www.forever21.com,US,USD,moda,5,5,4,3,5
+forever_21_mx_mx,Forever 21 MX,https://www.forever21.com.mx,MX,MXN,moda,5,5,4,3,5
+forever_21_br_br,Forever 21 BR,https://www.forever21.com.br,BR,BRL,moda,5,5,4,3,5
+forever_21_cl_cl,Forever 21 CL,https://www.forever21.cl,CL,CLP,moda,5,5,4,3,5
+forever_21_ar_ar,Forever 21 AR,https://www.forever21.com.ar,AR,ARS,moda,5,5,4,3,5
+forever_21_es_es,Forever 21 ES,https://www.forever21.es,ES,EUR,moda,5,5,4,3,5
+forever_21_fr_fr,Forever 21 FR,https://www.forever21.fr,FR,EUR,moda,5,5,4,3,5
+forever_21_gb_gb,Forever 21 GB,https://www.forever21.co.uk,GB,GBP,moda,5,5,4,3,5
+forever_21_de_de,Forever 21 DE,https://www.forever21.de,DE,EUR,moda,5,5,4,3,5
+forever_21_it_it,Forever 21 IT,https://www.forever21.it,IT,EUR,moda,5,5,4,3,5
+forever_21_pt_pt,Forever 21 PT,https://www.forever21.pt,PT,EUR,moda,5,5,4,3,5
+forever_21_nl_nl,Forever 21 NL,https://www.forever21.nl,NL,EUR,moda,5,5,4,3,5
+forever_21_pl_pl,Forever 21 PL,https://www.forever21.pl,PL,PLN,moda,5,5,4,3,5
+forever_21_se_se,Forever 21 SE,https://www.forever21.se,SE,SEK,moda,5,5,4,3,5
+forever_21_dk_dk,Forever 21 DK,https://www.forever21.dk,DK,DKK,moda,5,5,4,3,5
+forever_21_fi_fi,Forever 21 FI,https://www.forever21.fi,FI,EUR,moda,5,5,4,3,5
+forever_21_no_no,Forever 21 NO,https://www.forever21.no,NO,NOK,moda,5,5,4,3,5
+forever_21_at_at,Forever 21 AT,https://www.forever21.at,AT,EUR,moda,5,5,4,3,5
+forever_21_ch_ch,Forever 21 CH,https://www.forever21.ch,CH,CHF,moda,5,5,4,3,5
+forever_21_ie_ie,Forever 21 IE,https://www.forever21.ie,IE,EUR,moda,5,5,4,3,5
+forever_21_gr_gr,Forever 21 GR,https://www.forever21.gr,GR,EUR,moda,5,5,4,3,5
+forever_21_cz_cz,Forever 21 CZ,https://www.forever21.cz,CZ,CZK,moda,5,5,4,3,5
+forever_21_ro_ro,Forever 21 RO,https://www.forever21.ro,RO,RON,moda,5,5,4,3,5
+forever_21_hu_hu,Forever 21 HU,https://www.forever21.hu,HU,HUF,moda,5,5,4,3,5
+forever_21_za_za,Forever 21 ZA,https://www.forever21.co.za,ZA,ZAR,moda,5,5,4,3,5
+forever_21_au_au,Forever 21 AU,https://www.forever21.com.au,AU,AUD,moda,5,5,4,3,5
+forever_21_jp_jp,Forever 21 JP,https://www.forever21.jp,JP,JPY,moda,5,5,4,3,5
+forever_21_kr_kr,Forever 21 KR,https://www.forever21.kr,KR,KRW,moda,5,5,4,3,5
+forever_21_cn_cn,Forever 21 CN,https://www.forever21.cn,CN,CNY,moda,5,5,4,3,5
+levis_us_us,Levis US,https://www.levis.com,US,USD,moda,5,5,4,3,5
+levis_mx_mx,Levis MX,https://www.levis.com.mx,MX,MXN,moda,5,5,4,3,5
+levis_br_br,Levis BR,https://www.levis.com.br,BR,BRL,moda,5,5,4,3,5
+levis_cl_cl,Levis CL,https://www.levis.cl,CL,CLP,moda,5,5,4,3,5
+levis_ar_ar,Levis AR,https://www.levis.com.ar,AR,ARS,moda,5,5,4,3,5
+levis_es_es,Levis ES,https://www.levis.es,ES,EUR,moda,5,5,4,3,5
+levis_fr_fr,Levis FR,https://www.levis.fr,FR,EUR,moda,5,5,4,3,5
+levis_gb_gb,Levis GB,https://www.levis.co.uk,GB,GBP,moda,5,5,4,3,5
+levis_de_de,Levis DE,https://www.levis.de,DE,EUR,moda,5,5,4,3,5
+levis_it_it,Levis IT,https://www.levis.it,IT,EUR,moda,5,5,4,3,5
+levis_pt_pt,Levis PT,https://www.levis.pt,PT,EUR,moda,5,5,4,3,5
+levis_nl_nl,Levis NL,https://www.levis.nl,NL,EUR,moda,5,5,4,3,5
+levis_pl_pl,Levis PL,https://www.levis.pl,PL,PLN,moda,5,5,4,3,5
+levis_se_se,Levis SE,https://www.levis.se,SE,SEK,moda,5,5,4,3,5
+levis_dk_dk,Levis DK,https://www.levis.dk,DK,DKK,moda,5,5,4,3,5
+levis_fi_fi,Levis FI,https://www.levis.fi,FI,EUR,moda,5,5,4,3,5
+levis_no_no,Levis NO,https://www.levis.no,NO,NOK,moda,5,5,4,3,5
+levis_at_at,Levis AT,https://www.levis.at,AT,EUR,moda,5,5,4,3,5
+levis_ch_ch,Levis CH,https://www.levis.ch,CH,CHF,moda,5,5,4,3,5
+levis_ie_ie,Levis IE,https://www.levis.ie,IE,EUR,moda,5,5,4,3,5
+levis_gr_gr,Levis GR,https://www.levis.gr,GR,EUR,moda,5,5,4,3,5
+levis_cz_cz,Levis CZ,https://www.levis.cz,CZ,CZK,moda,5,5,4,3,5
+levis_ro_ro,Levis RO,https://www.levis.ro,RO,RON,moda,5,5,4,3,5
+levis_hu_hu,Levis HU,https://www.levis.hu,HU,HUF,moda,5,5,4,3,5
+levis_tr_tr,Levis TR,https://www.levis.com.tr,TR,TRY,moda,5,5,4,3,5
+levis_za_za,Levis ZA,https://www.levis.co.za,ZA,ZAR,moda,5,5,4,3,5
+levis_au_au,Levis AU,https://www.levis.com.au,AU,AUD,moda,5,5,4,3,5
+levis_jp_jp,Levis JP,https://www.levis.jp,JP,JPY,moda,5,5,4,3,5
+levis_kr_kr,Levis KR,https://www.levis.kr,KR,KRW,moda,5,5,4,3,5
+levis_cn_cn,Levis CN,https://www.levis.cn,CN,CNY,moda,5,5,4,3,5
+levis_in_in,Levis IN,https://www.levis.in,IN,INR,moda,5,5,4,3,5
+levis_sg_sg,Levis SG,https://www.levis.sg,SG,SGD,moda,5,5,4,3,5
+asics_us_us,Asics US,https://www.asics.com,US,USD,deportes,5,5,4,3,5
+asics_mx_mx,Asics MX,https://www.asics.com.mx,MX,MXN,deportes,5,5,4,3,5
+asics_br_br,Asics BR,https://www.asics.com.br,BR,BRL,deportes,5,5,4,3,5
+asics_cl_cl,Asics CL,https://www.asics.cl,CL,CLP,deportes,5,5,4,3,5
+asics_ar_ar,Asics AR,https://www.asics.com.ar,AR,ARS,deportes,5,5,4,3,5
+asics_es_es,Asics ES,https://www.asics.es,ES,EUR,deportes,5,5,4,3,5
+asics_fr_fr,Asics FR,https://www.asics.fr,FR,EUR,deportes,5,5,4,3,5
+asics_gb_gb,Asics GB,https://www.asics.co.uk,GB,GBP,deportes,5,5,4,3,5
+asics_de_de,Asics DE,https://www.asics.de,DE,EUR,deportes,5,5,4,3,5
+asics_it_it,Asics IT,https://www.asics.it,IT,EUR,deportes,5,5,4,3,5
+asics_pt_pt,Asics PT,https://www.asics.pt,PT,EUR,deportes,5,5,4,3,5
+asics_nl_nl,Asics NL,https://www.asics.nl,NL,EUR,deportes,5,5,4,3,5
+asics_pl_pl,Asics PL,https://www.asics.pl,PL,PLN,deportes,5,5,4,3,5
+asics_tr_tr,Asics TR,https://www.asics.com.tr,TR,TRY,deportes,5,5,4,3,5
+asics_au_au,Asics AU,https://www.asics.com.au,AU,AUD,deportes,5,5,4,3,5
+asics_jp_jp,Asics JP,https://www.asics.jp,JP,JPY,deportes,5,5,4,3,5
+asics_kr_kr,Asics KR,https://www.asics.kr,KR,KRW,deportes,5,5,4,3,5
+asics_cn_cn,Asics CN,https://www.asics.cn,CN,CNY,deportes,5,5,4,3,5
+timberland_us_us,Timberland US,https://www.timberland.com,US,USD,moda,5,5,4,3,5
+timberland_mx_mx,Timberland MX,https://www.timberland.com.mx,MX,MXN,moda,5,5,4,3,5
+timberland_br_br,Timberland BR,https://www.timberland.com.br,BR,BRL,moda,5,5,4,3,5
+timberland_es_es,Timberland ES,https://www.timberland.es,ES,EUR,moda,5,5,4,3,5
+timberland_fr_fr,Timberland FR,https://www.timberland.fr,FR,EUR,moda,5,5,4,3,5
+timberland_gb_gb,Timberland GB,https://www.timberland.co.uk,GB,GBP,moda,5,5,4,3,5
+timberland_de_de,Timberland DE,https://www.timberland.de,DE,EUR,moda,5,5,4,3,5
+timberland_it_it,Timberland IT,https://www.timberland.it,IT,EUR,moda,5,5,4,3,5
+timberland_pt_pt,Timberland PT,https://www.timberland.pt,PT,EUR,moda,5,5,4,3,5
+timberland_nl_nl,Timberland NL,https://www.timberland.nl,NL,EUR,moda,5,5,4,3,5
+timberland_pl_pl,Timberland PL,https://www.timberland.pl,PL,PLN,moda,5,5,4,3,5
+timberland_tr_tr,Timberland TR,https://www.timberland.com.tr,TR,TRY,moda,5,5,4,3,5
+timberland_au_au,Timberland AU,https://www.timberland.com.au,AU,AUD,moda,5,5,4,3,5
+gap_us_us,Gap US,https://www.gap.com,US,USD,moda,5,5,4,3,5
+gap_mx_mx,Gap MX,https://www.gap.com.mx,MX,MXN,moda,5,5,4,3,5
+gap_br_br,Gap BR,https://www.gap.com.br,BR,BRL,moda,5,5,4,3,5
+gap_cl_cl,Gap CL,https://www.gap.cl,CL,CLP,moda,5,5,4,3,5
+gap_ar_ar,Gap AR,https://www.gap.com.ar,AR,ARS,moda,5,5,4,3,5
+gap_es_es,Gap ES,https://www.gap.es,ES,EUR,moda,5,5,4,3,5
+gap_fr_fr,Gap FR,https://www.gap.fr,FR,EUR,moda,5,5,4,3,5
+gap_gb_gb,Gap GB,https://www.gap.co.uk,GB,GBP,moda,5,5,4,3,5
+gap_de_de,Gap DE,https://www.gap.de,DE,EUR,moda,5,5,4,3,5
+gap_it_it,Gap IT,https://www.gap.it,IT,EUR,moda,5,5,4,3,5
+gap_pt_pt,Gap PT,https://www.gap.pt,PT,EUR,moda,5,5,4,3,5
+gap_nl_nl,Gap NL,https://www.gap.nl,NL,EUR,moda,5,5,4,3,5
+gap_pl_pl,Gap PL,https://www.gap.pl,PL,PLN,moda,5,5,4,3,5
+gap_se_se,Gap SE,https://www.gap.se,SE,SEK,moda,5,5,4,3,5
+gap_dk_dk,Gap DK,https://www.gap.dk,DK,DKK,moda,5,5,4,3,5
+gap_fi_fi,Gap FI,https://www.gap.fi,FI,EUR,moda,5,5,4,3,5
+gap_no_no,Gap NO,https://www.gap.no,NO,NOK,moda,5,5,4,3,5
+gap_at_at,Gap AT,https://www.gap.at,AT,EUR,moda,5,5,4,3,5
+gap_ch_ch,Gap CH,https://www.gap.ch,CH,CHF,moda,5,5,4,3,5
+gap_ie_ie,Gap IE,https://www.gap.ie,IE,EUR,moda,5,5,4,3,5
+gap_gr_gr,Gap GR,https://www.gap.gr,GR,EUR,moda,5,5,4,3,5
+gap_cz_cz,Gap CZ,https://www.gap.cz,CZ,CZK,moda,5,5,4,3,5
+gap_ro_ro,Gap RO,https://www.gap.ro,RO,RON,moda,5,5,4,3,5
+gap_hu_hu,Gap HU,https://www.gap.hu,HU,HUF,moda,5,5,4,3,5
+gap_tr_tr,Gap TR,https://www.gap.com.tr,TR,TRY,moda,5,5,4,3,5
+gap_za_za,Gap ZA,https://www.gap.co.za,ZA,ZAR,moda,5,5,4,3,5
+gap_au_au,Gap AU,https://www.gap.com.au,AU,AUD,moda,5,5,4,3,5
+gap_jp_jp,Gap JP,https://www.gap.jp,JP,JPY,moda,5,5,4,3,5
+gap_cn_cn,Gap CN,https://www.gap.cn,CN,CNY,moda,5,5,4,3,5
+gap_sg_sg,Gap SG,https://www.gap.sg,SG,SGD,moda,5,5,4,3,5
+guess_us_us,Guess US,https://www.guess.com,US,USD,moda,5,5,4,3,5
+guess_mx_mx,Guess MX,https://www.guess.com.mx,MX,MXN,moda,5,5,4,3,5
+guess_br_br,Guess BR,https://www.guess.com.br,BR,BRL,moda,5,5,4,3,5
+guess_es_es,Guess ES,https://www.guess.es,ES,EUR,moda,5,5,4,3,5
+guess_fr_fr,Guess FR,https://www.guess.fr,FR,EUR,moda,5,5,4,3,5
+guess_gb_gb,Guess GB,https://www.guess.co.uk,GB,GBP,moda,5,5,4,3,5
+guess_de_de,Guess DE,https://www.guess.de,DE,EUR,moda,5,5,4,3,5
+guess_it_it,Guess IT,https://www.guess.it,IT,EUR,moda,5,5,4,3,5
+guess_pt_pt,Guess PT,https://www.guess.pt,PT,EUR,moda,5,5,4,3,5
+guess_nl_nl,Guess NL,https://www.guess.nl,NL,EUR,moda,5,5,4,3,5
+guess_pl_pl,Guess PL,https://www.guess.pl,PL,PLN,moda,5,5,4,3,5
+guess_tr_tr,Guess TR,https://www.guess.com.tr,TR,TRY,moda,5,5,4,3,5
+diesel_us_us,Diesel US,https://www.diesel.com,US,USD,moda,5,5,4,3,5
+diesel_mx_mx,Diesel MX,https://www.diesel.com.mx,MX,MXN,moda,5,5,4,3,5
+diesel_es_es,Diesel ES,https://www.diesel.es,ES,EUR,moda,5,5,4,3,5
+diesel_fr_fr,Diesel FR,https://www.diesel.fr,FR,EUR,moda,5,5,4,3,5
+diesel_gb_gb,Diesel GB,https://www.diesel.co.uk,GB,GBP,moda,5,5,4,3,5
+diesel_de_de,Diesel DE,https://www.diesel.de,DE,EUR,moda,5,5,4,3,5
+diesel_it_it,Diesel IT,https://www.diesel.it,IT,EUR,moda,5,5,4,3,5
+diesel_pt_pt,Diesel PT,https://www.diesel.pt,PT,EUR,moda,5,5,4,3,5
+diesel_nl_nl,Diesel NL,https://www.diesel.nl,NL,EUR,moda,5,5,4,3,5
+pandora_us_us,Pandora US,https://www.pandora.com,US,USD,moda,5,5,4,3,5
+pandora_mx_mx,Pandora MX,https://www.pandora.com.mx,MX,MXN,moda,5,5,4,3,5
+pandora_br_br,Pandora BR,https://www.pandora.com.br,BR,BRL,moda,5,5,4,3,5
+pandora_es_es,Pandora ES,https://www.pandora.es,ES,EUR,moda,5,5,4,3,5
+pandora_fr_fr,Pandora FR,https://www.pandora.fr,FR,EUR,moda,5,5,4,3,5
+pandora_gb_gb,Pandora GB,https://www.pandora.co.uk,GB,GBP,moda,5,5,4,3,5
+pandora_de_de,Pandora DE,https://www.pandora.de,DE,EUR,moda,5,5,4,3,5
+pandora_it_it,Pandora IT,https://www.pandora.it,IT,EUR,moda,5,5,4,3,5
+pandora_pt_pt,Pandora PT,https://www.pandora.pt,PT,EUR,moda,5,5,4,3,5
+pandora_nl_nl,Pandora NL,https://www.pandora.nl,NL,EUR,moda,5,5,4,3,5
+pandora_pl_pl,Pandora PL,https://www.pandora.pl,PL,PLN,moda,5,5,4,3,5
+pandora_at_at,Pandora AT,https://www.pandora.at,AT,EUR,moda,5,5,4,3,5
+pandora_au_au,Pandora AU,https://www.pandora.com.au,AU,AUD,moda,5,5,4,3,5
+swatch_us_us,Swatch US,https://www.swatch.com,US,USD,moda,5,5,4,3,5
+swatch_mx_mx,Swatch MX,https://www.swatch.com.mx,MX,MXN,moda,5,5,4,3,5
+swatch_br_br,Swatch BR,https://www.swatch.com.br,BR,BRL,moda,5,5,4,3,5
+swatch_es_es,Swatch ES,https://www.swatch.es,ES,EUR,moda,5,5,4,3,5
+swatch_fr_fr,Swatch FR,https://www.swatch.fr,FR,EUR,moda,5,5,4,3,5
+swatch_gb_gb,Swatch GB,https://www.swatch.co.uk,GB,GBP,moda,5,5,4,3,5
+swatch_de_de,Swatch DE,https://www.swatch.de,DE,EUR,moda,5,5,4,3,5
+swatch_it_it,Swatch IT,https://www.swatch.it,IT,EUR,moda,5,5,4,3,5
+swatch_pt_pt,Swatch PT,https://www.swatch.pt,PT,EUR,moda,5,5,4,3,5
+swatch_nl_nl,Swatch NL,https://www.swatch.nl,NL,EUR,moda,5,5,4,3,5
+swatch_ch_ch,Swatch CH,https://www.swatch.ch,CH,CHF,moda,5,5,4,3,5
+swatch_at_at,Swatch AT,https://www.swatch.at,AT,EUR,moda,5,5,4,3,5
+bose_us_us,Bose US,https://www.bose.com,US,USD,electro,5,5,4,3,5
+bose_mx_mx,Bose MX,https://www.bose.com.mx,MX,MXN,electro,5,5,4,3,5
+bose_br_br,Bose BR,https://www.bose.com.br,BR,BRL,electro,5,5,4,3,5
+bose_es_es,Bose ES,https://www.bose.es,ES,EUR,electro,5,5,4,3,5
+bose_fr_fr,Bose FR,https://www.bose.fr,FR,EUR,electro,5,5,4,3,5
+bose_gb_gb,Bose GB,https://www.bose.co.uk,GB,GBP,electro,5,5,4,3,5
+bose_de_de,Bose DE,https://www.bose.de,DE,EUR,electro,5,5,4,3,5
+bose_it_it,Bose IT,https://www.bose.it,IT,EUR,electro,5,5,4,3,5
+bose_pt_pt,Bose PT,https://www.bose.pt,PT,EUR,electro,5,5,4,3,5
+bose_nl_nl,Bose NL,https://www.bose.nl,NL,EUR,electro,5,5,4,3,5
+bose_au_au,Bose AU,https://www.bose.com.au,AU,AUD,electro,5,5,4,3,5
+sony_us_us,Sony US,https://www.sony.com,US,USD,electro,5,5,4,3,5
+sony_mx_mx,Sony MX,https://www.sony.com.mx,MX,MXN,electro,5,5,4,3,5
+sony_br_br,Sony BR,https://www.sony.com.br,BR,BRL,electro,5,5,4,3,5
+sony_es_es,Sony ES,https://www.sony.es,ES,EUR,electro,5,5,4,3,5
+sony_fr_fr,Sony FR,https://www.sony.fr,FR,EUR,electro,5,5,4,3,5
+sony_gb_gb,Sony GB,https://www.sony.co.uk,GB,GBP,electro,5,5,4,3,5
+sony_de_de,Sony DE,https://www.sony.de,DE,EUR,electro,5,5,4,3,5
+sony_it_it,Sony IT,https://www.sony.it,IT,EUR,electro,5,5,4,3,5
+sony_pt_pt,Sony PT,https://www.sony.pt,PT,EUR,electro,5,5,4,3,5
+sony_nl_nl,Sony NL,https://www.sony.nl,NL,EUR,electro,5,5,4,3,5
+sony_pl_pl,Sony PL,https://www.sony.pl,PL,PLN,electro,5,5,4,3,5
+sony_se_se,Sony SE,https://www.sony.se,SE,SEK,electro,5,5,4,3,5
+sony_dk_dk,Sony DK,https://www.sony.dk,DK,DKK,electro,5,5,4,3,5
+sony_fi_fi,Sony FI,https://www.sony.fi,FI,EUR,electro,5,5,4,3,5
+sony_no_no,Sony NO,https://www.sony.no,NO,NOK,electro,5,5,4,3,5
+sony_at_at,Sony AT,https://www.sony.at,AT,EUR,electro,5,5,4,3,5
+sony_ch_ch,Sony CH,https://www.sony.ch,CH,CHF,electro,5,5,4,3,5
+sony_ie_ie,Sony IE,https://www.sony.ie,IE,EUR,electro,5,5,4,3,5
+sony_gr_gr,Sony GR,https://www.sony.gr,GR,EUR,electro,5,5,4,3,5
+sony_cz_cz,Sony CZ,https://www.sony.cz,CZ,CZK,electro,5,5,4,3,5
+sony_ro_ro,Sony RO,https://www.sony.ro,RO,RON,electro,5,5,4,3,5
+sony_hu_hu,Sony HU,https://www.sony.hu,HU,HUF,electro,5,5,4,3,5
+sony_tr_tr,Sony TR,https://www.sony.com.tr,TR,TRY,electro,5,5,4,3,5
+sony_za_za,Sony ZA,https://www.sony.co.za,ZA,ZAR,electro,5,5,4,3,5
+sony_au_au,Sony AU,https://www.sony.com.au,AU,AUD,electro,5,5,4,3,5
+sony_jp_jp,Sony JP,https://www.sony.jp,JP,JPY,electro,5,5,4,3,5
+sony_kr_kr,Sony KR,https://www.sony.kr,KR,KRW,electro,5,5,4,3,5
+sony_cn_cn,Sony CN,https://www.sony.cn,CN,CNY,electro,5,5,4,3,5
+sony_in_in,Sony IN,https://www.sony.in,IN,INR,electro,5,5,4,3,5
+sony_sg_sg,Sony SG,https://www.sony.sg,SG,SGD,electro,5,5,4,3,5
+philips_us_us,Philips US,https://www.philips.com,US,USD,electro,5,5,4,3,5
+philips_mx_mx,Philips MX,https://www.philips.com.mx,MX,MXN,electro,5,5,4,3,5
+philips_br_br,Philips BR,https://www.philips.com.br,BR,BRL,electro,5,5,4,3,5
+philips_es_es,Philips ES,https://www.philips.es,ES,EUR,electro,5,5,4,3,5
+philips_fr_fr,Philips FR,https://www.philips.fr,FR,EUR,electro,5,5,4,3,5
+philips_gb_gb,Philips GB,https://www.philips.co.uk,GB,GBP,electro,5,5,4,3,5
+philips_de_de,Philips DE,https://www.philips.de,DE,EUR,electro,5,5,4,3,5
+philips_it_it,Philips IT,https://www.philips.it,IT,EUR,electro,5,5,4,3,5
+philips_pt_pt,Philips PT,https://www.philips.pt,PT,EUR,electro,5,5,4,3,5
+philips_nl_nl,Philips NL,https://www.philips.nl,NL,EUR,electro,5,5,4,3,5
+philips_pl_pl,Philips PL,https://www.philips.pl,PL,PLN,electro,5,5,4,3,5
+philips_at_at,Philips AT,https://www.philips.at,AT,EUR,electro,5,5,4,3,5
+philips_au_au,Philips AU,https://www.philips.com.au,AU,AUD,electro,5,5,4,3,5
+dell_us_us,Dell US,https://www.dell.com,US,USD,electro,5,5,4,3,5
+dell_mx_mx,Dell MX,https://www.dell.com.mx,MX,MXN,electro,5,5,4,3,5
+dell_br_br,Dell BR,https://www.dell.com.br,BR,BRL,electro,5,5,4,3,5
+dell_es_es,Dell ES,https://www.dell.es,ES,EUR,electro,5,5,4,3,5
+dell_fr_fr,Dell FR,https://www.dell.fr,FR,EUR,electro,5,5,4,3,5
+dell_gb_gb,Dell GB,https://www.dell.co.uk,GB,GBP,electro,5,5,4,3,5
+dell_de_de,Dell DE,https://www.dell.de,DE,EUR,electro,5,5,4,3,5
+dell_it_it,Dell IT,https://www.dell.it,IT,EUR,electro,5,5,4,3,5
+dell_pt_pt,Dell PT,https://www.dell.pt,PT,EUR,electro,5,5,4,3,5
+dell_nl_nl,Dell NL,https://www.dell.nl,NL,EUR,electro,5,5,4,3,5
+dell_pl_pl,Dell PL,https://www.dell.pl,PL,PLN,electro,5,5,4,3,5
+dell_at_at,Dell AT,https://www.dell.at,AT,EUR,electro,5,5,4,3,5
+dell_au_au,Dell AU,https://www.dell.com.au,AU,AUD,electro,5,5,4,3,5
+dell_jp_jp,Dell JP,https://www.dell.jp,JP,JPY,electro,5,5,4,3,5
+dell_cn_cn,Dell CN,https://www.dell.cn,CN,CNY,electro,5,5,4,3,5
+dell_in_in,Dell IN,https://www.dell.in,IN,INR,electro,5,5,4,3,5
+hp_us_us,HP US,https://www.hp.com,US,USD,electro,5,5,4,3,5
+hp_mx_mx,HP MX,https://www.hp.com.mx,MX,MXN,electro,5,5,4,3,5
+hp_br_br,HP BR,https://www.hp.com.br,BR,BRL,electro,5,5,4,3,5
+hp_es_es,HP ES,https://www.hp.es,ES,EUR,electro,5,5,4,3,5
+hp_fr_fr,HP FR,https://www.hp.fr,FR,EUR,electro,5,5,4,3,5
+hp_gb_gb,HP GB,https://www.hp.co.uk,GB,GBP,electro,5,5,4,3,5
+hp_de_de,HP DE,https://www.hp.de,DE,EUR,electro,5,5,4,3,5
+hp_it_it,HP IT,https://www.hp.it,IT,EUR,electro,5,5,4,3,5
+hp_pt_pt,HP PT,https://www.hp.pt,PT,EUR,electro,5,5,4,3,5
+hp_nl_nl,HP NL,https://www.hp.nl,NL,EUR,electro,5,5,4,3,5
+hp_pl_pl,HP PL,https://www.hp.pl,PL,PLN,electro,5,5,4,3,5
+hp_at_at,HP AT,https://www.hp.at,AT,EUR,electro,5,5,4,3,5
+hp_au_au,HP AU,https://www.hp.com.au,AU,AUD,electro,5,5,4,3,5
+hp_jp_jp,HP JP,https://www.hp.jp,JP,JPY,electro,5,5,4,3,5
+hp_cn_cn,HP CN,https://www.hp.cn,CN,CNY,electro,5,5,4,3,5
+hp_in_in,HP IN,https://www.hp.in,IN,INR,electro,5,5,4,3,5
+apple_us_us,Apple US,https://www.apple.com,US,USD,electro,5,5,4,3,5
+apple_mx_mx,Apple MX,https://www.apple.com.mx,MX,MXN,electro,5,5,4,3,5
+apple_br_br,Apple BR,https://www.apple.com.br,BR,BRL,electro,5,5,4,3,5
+apple_es_es,Apple ES,https://www.apple.es,ES,EUR,electro,5,5,4,3,5
+apple_fr_fr,Apple FR,https://www.apple.fr,FR,EUR,electro,5,5,4,3,5
+apple_gb_gb,Apple GB,https://www.apple.uk,GB,GBP,electro,5,5,4,3,5
+apple_de_de,Apple DE,https://www.apple.de,DE,EUR,electro,5,5,4,3,5
+apple_it_it,Apple IT,https://www.apple.it,IT,EUR,electro,5,5,4,3,5
+apple_pt_pt,Apple PT,https://www.apple.pt,PT,EUR,electro,5,5,4,3,5
+apple_nl_nl,Apple NL,https://www.apple.nl,NL,EUR,electro,5,5,4,3,5
+apple_au_au,Apple AU,https://www.apple.au,AU,AUD,electro,5,5,4,3,5
+apple_jp_jp,Apple JP,https://www.apple.jp,JP,JPY,electro,5,5,4,3,5
+apple_kr_kr,Apple KR,https://www.apple.kr,KR,KRW,electro,5,5,4,3,5
+apple_cn_cn,Apple CN,https://www.apple.cn,CN,CNY,electro,5,5,4,3,5
+apple_in_in,Apple IN,https://www.apple.in,IN,INR,electro,5,5,4,3,5
+apple_sg_sg,Apple SG,https://www.apple.sg,SG,SGD,electro,5,5,4,3,5
+microsoft_us_us,Microsoft US,https://www.microsoft.com,US,USD,electro,5,5,4,3,5
+microsoft_mx_mx,Microsoft MX,https://www.microsoft.com.mx,MX,MXN,electro,5,5,4,3,5
+microsoft_br_br,Microsoft BR,https://www.microsoft.com.br,BR,BRL,electro,5,5,4,3,5
+microsoft_es_es,Microsoft ES,https://www.microsoft.es,ES,EUR,electro,5,5,4,3,5
+microsoft_fr_fr,Microsoft FR,https://www.microsoft.fr,FR,EUR,electro,5,5,4,3,5
+microsoft_gb_gb,Microsoft GB,https://www.microsoft.co.uk,GB,GBP,electro,5,5,4,3,5
+microsoft_de_de,Microsoft DE,https://www.microsoft.de,DE,EUR,electro,5,5,4,3,5
+microsoft_it_it,Microsoft IT,https://www.microsoft.it,IT,EUR,electro,5,5,4,3,5
+microsoft_pt_pt,Microsoft PT,https://www.microsoft.pt,PT,EUR,electro,5,5,4,3,5
+microsoft_nl_nl,Microsoft NL,https://www.microsoft.nl,NL,EUR,electro,5,5,4,3,5
+microsoft_au_au,Microsoft AU,https://www.microsoft.com.au,AU,AUD,electro,5,5,4,3,5
+microsoft_jp_jp,Microsoft JP,https://www.microsoft.jp,JP,JPY,electro,5,5,4,3,5
+microsoft_kr_kr,Microsoft KR,https://www.microsoft.kr,KR,KRW,electro,5,5,4,3,5
+microsoft_cn_cn,Microsoft CN,https://www.microsoft.cn,CN,CNY,electro,5,5,4,3,5
+microsoft_in_in,Microsoft IN,https://www.microsoft.in,IN,INR,electro,5,5,4,3,5
+canon_us_us,Canon US,https://www.canon.com,US,USD,electro,5,5,4,3,5
+canon_mx_mx,Canon MX,https://www.canon.com.mx,MX,MXN,electro,5,5,4,3,5
+canon_br_br,Canon BR,https://www.canon.com.br,BR,BRL,electro,5,5,4,3,5
+canon_es_es,Canon ES,https://www.canon.es,ES,EUR,electro,5,5,4,3,5
+canon_fr_fr,Canon FR,https://www.canon.fr,FR,EUR,electro,5,5,4,3,5
+canon_gb_gb,Canon GB,https://www.canon.co.uk,GB,GBP,electro,5,5,4,3,5
+canon_de_de,Canon DE,https://www.canon.de,DE,EUR,electro,5,5,4,3,5
+canon_it_it,Canon IT,https://www.canon.it,IT,EUR,electro,5,5,4,3,5
+canon_pt_pt,Canon PT,https://www.canon.pt,PT,EUR,electro,5,5,4,3,5
+canon_nl_nl,Canon NL,https://www.canon.nl,NL,EUR,electro,5,5,4,3,5
+canon_au_au,Canon AU,https://www.canon.com.au,AU,AUD,electro,5,5,4,3,5
+canon_jp_jp,Canon JP,https://www.canon.jp,JP,JPY,electro,5,5,4,3,5
+nikon_us_us,Nikon US,https://www.nikon.com,US,USD,electro,5,5,4,3,5
+nikon_mx_mx,Nikon MX,https://www.nikon.com.mx,MX,MXN,electro,5,5,4,3,5
+nikon_br_br,Nikon BR,https://www.nikon.com.br,BR,BRL,electro,5,5,4,3,5
+nikon_es_es,Nikon ES,https://www.nikon.es,ES,EUR,electro,5,5,4,3,5
+nikon_fr_fr,Nikon FR,https://www.nikon.fr,FR,EUR,electro,5,5,4,3,5
+nikon_gb_gb,Nikon GB,https://www.nikon.co.uk,GB,GBP,electro,5,5,4,3,5
+nikon_de_de,Nikon DE,https://www.nikon.de,DE,EUR,electro,5,5,4,3,5
+nikon_it_it,Nikon IT,https://www.nikon.it,IT,EUR,electro,5,5,4,3,5
+nikon_pt_pt,Nikon PT,https://www.nikon.pt,PT,EUR,electro,5,5,4,3,5
+nikon_nl_nl,Nikon NL,https://www.nikon.nl,NL,EUR,electro,5,5,4,3,5
+nikon_au_au,Nikon AU,https://www.nikon.com.au,AU,AUD,electro,5,5,4,3,5
+nikon_jp_jp,Nikon JP,https://www.nikon.jp,JP,JPY,electro,5,5,4,3,5
+jbl_us_us,JBL US,https://www.jbl.com,US,USD,electro,5,5,4,3,5
+jbl_mx_mx,JBL MX,https://www.jbl.com.mx,MX,MXN,electro,5,5,4,3,5
+jbl_br_br,JBL BR,https://www.jbl.com.br,BR,BRL,electro,5,5,4,3,5
+jbl_es_es,JBL ES,https://www.jbl.es,ES,EUR,electro,5,5,4,3,5
+jbl_fr_fr,JBL FR,https://www.jbl.fr,FR,EUR,electro,5,5,4,3,5
+jbl_gb_gb,JBL GB,https://www.jbl.co.uk,GB,GBP,electro,5,5,4,3,5
+jbl_de_de,JBL DE,https://www.jbl.de,DE,EUR,electro,5,5,4,3,5
+jbl_it_it,JBL IT,https://www.jbl.it,IT,EUR,electro,5,5,4,3,5
+jbl_pt_pt,JBL PT,https://www.jbl.pt,PT,EUR,electro,5,5,4,3,5
+jbl_nl_nl,JBL NL,https://www.jbl.nl,NL,EUR,electro,5,5,4,3,5
+jbl_au_au,JBL AU,https://www.jbl.com.au,AU,AUD,electro,5,5,4,3,5
+gopro_us_us,GoPro US,https://www.gopro.com,US,USD,electro,5,5,4,3,5
+gopro_mx_mx,GoPro MX,https://www.gopro.com.mx,MX,MXN,electro,5,5,4,3,5
+gopro_br_br,GoPro BR,https://www.gopro.com.br,BR,BRL,electro,5,5,4,3,5
+gopro_es_es,GoPro ES,https://www.gopro.es,ES,EUR,electro,5,5,4,3,5
+gopro_fr_fr,GoPro FR,https://www.gopro.fr,FR,EUR,electro,5,5,4,3,5
+gopro_gb_gb,GoPro GB,https://www.gopro.co.uk,GB,GBP,electro,5,5,4,3,5
+gopro_de_de,GoPro DE,https://www.gopro.de,DE,EUR,electro,5,5,4,3,5
+gopro_it_it,GoPro IT,https://www.gopro.it,IT,EUR,electro,5,5,4,3,5
+gopro_pt_pt,GoPro PT,https://www.gopro.pt,PT,EUR,electro,5,5,4,3,5
+gopro_nl_nl,GoPro NL,https://www.gopro.nl,NL,EUR,electro,5,5,4,3,5
+gopro_au_au,GoPro AU,https://www.gopro.com.au,AU,AUD,electro,5,5,4,3,5
+huawei_mx_mx,Huawei MX,https://www.huawei.com.mx,MX,MXN,electro,5,5,4,3,5
+huawei_br_br,Huawei BR,https://www.huawei.com.br,BR,BRL,electro,5,5,4,3,5
+huawei_es_es,Huawei ES,https://www.huawei.es,ES,EUR,electro,5,5,4,3,5
+huawei_fr_fr,Huawei FR,https://www.huawei.fr,FR,EUR,electro,5,5,4,3,5
+huawei_gb_gb,Huawei GB,https://www.huawei.co.uk,GB,GBP,electro,5,5,4,3,5
+huawei_de_de,Huawei DE,https://www.huawei.de,DE,EUR,electro,5,5,4,3,5
+huawei_it_it,Huawei IT,https://www.huawei.it,IT,EUR,electro,5,5,4,3,5
+huawei_pt_pt,Huawei PT,https://www.huawei.pt,PT,EUR,electro,5,5,4,3,5
+huawei_nl_nl,Huawei NL,https://www.huawei.nl,NL,EUR,electro,5,5,4,3,5
+huawei_cl_cl,Huawei CL,https://www.huawei.cl,CL,CLP,electro,5,5,4,3,5
+huawei_ar_ar,Huawei AR,https://www.huawei.com.ar,AR,ARS,electro,5,5,4,3,5
+huawei_pe_pe,Huawei PE,https://www.huawei.pe,PE,PEN,electro,5,5,4,3,5
+huawei_co_co,Huawei CO,https://www.huawei.co,CO,COP,electro,5,5,4,3,5
