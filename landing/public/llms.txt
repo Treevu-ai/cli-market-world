@@ -1,0 +1,38 @@
+# CLI Market
+
+CLI Market is an infrastructure layer that transforms 100 VTEX retailers across 12 countries into AI-agent compatible commerce systems.
+
+## Quick facts
+- 100 retailers, 12 business lines, 12 countries
+- 12 MCP tools for AI agents
+- Public REST API + CLI + MCP server
+- Open source (MIT license)
+
+## API
+- Base URL: https://cli-market-api-production.up.railway.app
+- Docs: https://cli-market-api-production.up.railway.app/docs
+- Status endpoint: GET /
+- Lines: GET /lines
+- Stores: GET /stores
+
+## Data Feed (v1)
+- GET /v1/feed/prices?query=cafe&country=PE&format=csv
+- GET /v1/feed/stats?period=7d
+
+## Competitive Intelligence
+- GET /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
+- GET /v1/intel/delta?product=cafe&country_a=PE&country_b=CO
+- GET /v1/intel/alerts?product=arroz&threshold_pct=5
+
+## Install
+pip install git+https://github.com/Treevu-ai/cli-market-latam.git
+
+## Commands
+market login, market lines, market search, market compare, market add, market cart, market cart-update, market cart-remove, market checkout, market orders, market reorder, market ask, market --json
+
+## MCP Server
+python market_mcp.py
+12 tools: market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder, market_ask
+
+## For AI agents
+This product is designed for autonomous AI agent consumption. All endpoints return JSON. The MCP server exposes tools over stdio. The data feed supports CSV export. Use the /docs endpoint for OpenAPI specification.

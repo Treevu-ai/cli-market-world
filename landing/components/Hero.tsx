@@ -167,6 +167,16 @@ export default function Hero() {
               Cobertura ↓
             </a>
           </div>
+          <div className="mt-8 md:mt-10 p-4 sm:p-5 bg-[#0A0A0A] border border-[#1A1A1A] w-full max-w-[520px] overflow-x-auto">
+            <span className="font-mono text-[9px] text-[#444] uppercase tracking-[0.15em]">Quick start</span>
+            <pre className="mt-2 font-mono text-[11px] sm:text-[12px] text-[#888] leading-[1.6] whitespace-pre-wrap break-all">
+              <span className="text-[#555]">$</span> <span className="text-[#00FF88]">curl</span> <span className="text-[#FFD600]">cli-market-api-production.up.railway.app</span>
+            </pre>
+            <pre className="mt-1 font-mono text-[10px] text-[#555] leading-[1.5] whitespace-pre-wrap">
+              {'{"name":"CLI Market","stores":100,"lines":12,"countries":12}'}
+            </pre>
+            <a href="https://cli-market-api-production.up.railway.app/docs" className="inline-block mt-2 font-mono text-[10px] text-[#00FF88] hover:underline">Ver API docs →</a>
+          </div>
         </div>
 
         <div className="flex-1 w-full lg:max-w-[540px] flex justify-center lg:justify-end">
