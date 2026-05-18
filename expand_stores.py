@@ -355,6 +355,17 @@ PATTERNS += [
     ("Balenciaga {cc}","balenciaga.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
     ("Saint Laurent {cc}","ysl.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
     ("Givenchy {cc}","givenchy.{domain}","moda",{"US":"com","MX":"com.mx","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Timex {cc}","timex.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","PT":"pt","NL":"nl","AU":"com.au","JP":"jp","CN":"cn","IN":"in"}),
+    ("Hugo Boss {cc}","hugoboss.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"fr","GB":"co.uk","DE":"de","IT":"it","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Dior {cc}","dior.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Chanel {cc}","chanel.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Louis Vuitton {cc}","louisvuitton.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"com","IT":"it","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Giorgio Armani {cc}","armani.{domain}","moda",{"US":"com","MX":"com.mx","BR":"com.br","ES":"es","FR":"com","IT":"com","GB":"com","DE":"de","PT":"pt","NL":"nl","AT":"at","CH":"ch","AU":"com.au","JP":"jp","KR":"kr","CN":"cn","SG":"sg"}),
+    ("Home Depot {cc}","homedepot.{domain}","hogar",{"US":"com","MX":"com.mx","CA":"ca"}),
+    ("Lowes {cc}","lowes.{domain}","hogar",{"US":"com","CA":"ca"}),
+    ("Obi {cc}","obi.{domain}","hogar",{"DE":"de","AT":"at","CH":"ch","IT":"it","PL":"pl","CZ":"cz","SK":"sk","HU":"hu","RO":"ro"}),
+    ("Bauhaus {cc}","bauhaus.{domain}","hogar",{"DE":"de","AT":"at","CH":"ch","DK":"dk","SE":"se","FI":"fi","NO":"no","CZ":"cz","SK":"sk","HU":"hu"}),
+    ("Hornbach {cc}","hornbach.{domain}","hogar",{"DE":"de","AT":"at","CH":"ch","NL":"nl","CZ":"cz","SK":"sk","RO":"ro","SE":"se"}),
 ]
 if __name__ == "__main__":
     main()

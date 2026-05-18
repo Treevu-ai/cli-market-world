@@ -69,7 +69,7 @@ export default function Hero() {
 
       <div className={`absolute bottom-12 left-0 right-0 px-6 lg:px-12 transition-all duration-700 delay-500 ${visible?"opacity-100":"opacity-0"}`}>
         <div className="max-w-[1200px] mx-auto flex flex-wrap items-start gap-6 sm:gap-10 lg:gap-20">
-          {[{value:"3100+",label:"retailers VTEX activos"},{value:"67",label:"países en LATAM, Europa y global"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
+          {[{value:"3200+",label:"retailers VTEX activos"},{value:"67",label:"países en LATAM, Europa y global"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
             <div key={s.label} className="flex flex-col gap-2"><span className="text-3xl lg:text-4xl font-grotesk font-bold text-white">{s.value}</span><span className="text-xs text-white/30 leading-tight font-mono uppercase tracking-wider">{s.label}</span></div>
           ))}</div>
       </div>
