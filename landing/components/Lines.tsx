@@ -21,7 +21,7 @@ export default function Lines() {
           [COBERTURA] // 3,400+ COMERCIOS · 12 LÍNEAS · 67 PAÍSES
         </span>
         <h2 className="font-grotesk text-[28px] sm:text-[36px] md:text-[56px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05] whitespace-pre-line w-full max-w-[700px]">
-          {"UN CONECTOR.\n3,400+ COMERCIOS."}
+          {"UN CONECTOR.\nCOBERTURA REAL."}
         </h2>
         <p className="font-ibm-mono text-[9px] sm:text-[11px] md:text-[13px] text-[#666666] tracking-[0.5px] md:tracking-[1px] leading-[1.6] text-pretty w-full max-w-[600px]">
           EL CONECTOR VTEX ES GENÉRICO. AGREGAR UN COMERCIO NUEVO ES UNA LÍNEA DE CONFIGURACIÓN. TODOS COMPARTEN LA MISMA API PÚBLICA.
