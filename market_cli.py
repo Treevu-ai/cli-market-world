@@ -30,7 +30,18 @@ from rich.table import Table
 
 API = os.environ.get("MARKET_API_URL", "http://127.0.0.1:8765")
 SESSION_FILE = Path.home() / ".market" / "session.json"
+LANG_FILE = Path.home() / ".market" / "lang"
 console = Console()
+
+def get_lang() -> str:
+    try: return LANG_FILE.read_text().strip()[:2]
+    except Exception: return "es"
+
+def set_lang(code: str) -> None:
+    LANG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LANG_FILE.write_text(code)
+
+LANG = get_lang()
 
 # ── JSON-able business model (agent-friendly) ──────────────────────
 
@@ -88,6 +99,31 @@ WELCOME_BANNER = """\
 [dim]market --json about[/] [dim]para versión machine-readable[/]
 """
 
+
+WELCOME_BANNER_EN = """\n[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
+  │                                                               │
+  │  [#FFFFFF bold] C L I   M A R K E T[/]                                  │
+  │  [#888888]commerce infrastructure for humans and ai agents[/]            │
+  │                                                               │
+  │  [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines        │
+  │  [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native     │
+  │  [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source     │
+  │                                                               │
+  │  [#555555]pip install cli-market[/]                                   │
+  │  [#555555]github.com/treevu-ai/cli-market-world[/]                    │
+  │                                                               │
+  │  [#00FF88]market login[/]        [#888888]authenticate[/]                    │
+  │  [#00FF88]market search[/]       [#888888]search across all retailers[/]       │
+  │  [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]     │
+  │  [#00FF88]market ask[/]          [#888888]agent mode: natural language[/]        │
+  │  [#00FF88]market checkout[/]     [#888888]complete purchase[/]                │
+  │  [#00FF88]market --json[/]       [#888888]structured output for agents[/]        │
+  │                                                               │
+  ╰───────────────────────────────────────────────────────────────╯[/]
+"""
+
+def welcome_banner():
+    return WELCOME_BANNER_EN if get_lang() == "en" else WELCOME_BANNER
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -200,6 +236,26 @@ def load_last_search() -> list[dict]:
 
 
 # ── Comandos ───────────────────────────────────────────────────────────────
+
+def cmd_lang(args):
+    if not args.lang_code:
+        from rich.panel import Panel
+        g=get_lang()
+        msg = f"Idioma actual: [#00FF88]{g}[/]\n\n"
+        msg += "[#888888]Idiomas disponibles:[/]\n"
+        msg += "  [#00FF88]es[/] espanol\n"
+        msg += "  [#00FF88]en[/] english\n\n"
+        msg += "[dim]Usa: market lang es  o  market lang en[/]"
+        console.print(Panel.fit(msg, border_style="#00FF88"))
+        return
+    code=args.lang_code.strip()[:2]
+    if code not in ("es","en"):
+        console.print("[red]Idioma no valido. Usa es o en.[/]")
+        return
+    set_lang(code)
+    global LANG
+    LANG=code
+    console.print(f"[#00FF88]Idioma cambiado a {code}[/]")
 
 def cmd_login(args):
     """Autentica al usuario contra el servidor."""
@@ -818,6 +874,8 @@ def main():
 
     # whoami
     sub.add_parser("whoami", help="Ver sesión activa")
+    p_lang=sub.add_parser("lang", help="Cambiar idioma (es/en)")
+    p_lang.add_argument("lang_code", nargs="?", help="Codigo de idioma: es o en")
 
     parser.add_argument("--json", action="store_true", help="Salida machine-readable para agentes IA")
 
@@ -828,7 +886,7 @@ def main():
             import json as _json
             console.print(_json.dumps(BUSINESS_MODEL_JSON, indent=2, ensure_ascii=False))
         else:
-            console.print(WELCOME_BANNER)
+            console.print(welcome_banner())
             console.print(Panel.fit(
                 "[#888888]¿Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autentificate (usuario: admin, password: market)[/]\n"
                 "[#888888]¿Quieres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
