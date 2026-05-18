@@ -116,20 +116,20 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
-| 👕 Moda | 1,560 | Louis Vuitton · Gucci · Prada · Chanel · Dior · Zara · H&M · Levi's · Nike · Adidas · Renner · Lamborghini · Ferrari |
-| 📱 Electro | 571 | Samsung · Apple · Sony · LG · Panasonic · Dell · HP · Lenovo · Yamaha · Dyson |
-| 🏠 Hogar | 314 | IKEA · Homecenter · Sodimac · Miele · Bosch · Smeg · Tefal · KitchenAid |
-| ⚽ Deportes | 306 | Nike · Adidas · Reebok · Puma · Under Armour · Decathlon · Foot Locker · Patagonia |
-| 🛒 Supermercados | 252 | Wong · Carrefour · Jumbo · Coto · Costco · Sainsbury's · Edeka · Albert Heijn |
-| 🍔 Alimentos | 176 | Nestle · Unilever · Coca-Cola · Pepsi · Lindt · Heineken · Nespresso |
-| 💄 Belleza | 170 | Sephora · MAC · Clinique · Estee Lauder · Lancome · Lush · Yves Rocher |
-| 🏬 Departamentales | 136 | Mercado Libre · El Corte Ingles · Otto · Miniso · Lego · Americanas |
-| 💊 Farmacias | 51 | Droga Raia · Drogasil · Boots · DM · Rossmann |
-| 🔧 Autopartes | 50 | BMW · Mercedes-Benz · Audi · Tesla · Harley Davidson · Ducati |
-| 📚 Librería | 11 | Staples · Office Depot |
+| 👕 Fashion | 1,560 | Louis Vuitton · Gucci · Prada · Chanel · Dior · Zara · H&M · Levi's · Nike · Adidas · Renner · Lamborghini · Ferrari |
+| 📱 Electronics | 571 | Samsung · Apple · Sony · LG · Panasonic · Dell · HP · Lenovo · Yamaha · Dyson |
+| 🏠 Home | 314 | IKEA · Homecenter · Sodimac · Miele · Bosch · Smeg · Tefal · KitchenAid |
+| ⚽ Sports | 306 | Nike · Adidas · Reebok · Puma · Under Armour · Decathlon · Foot Locker · Patagonia |
+| 🛒 Supermarkets | 252 | Wong · Carrefour · Jumbo · Coto · Costco · Sainsbury's · Edeka · Albert Heijn |
+| 🍔 Food | 176 | Nestle · Unilever · Coca-Cola · Pepsi · Lindt · Heineken · Nespresso |
+| 💄 Beauty | 170 | Sephora · MAC · Clinique · Estee Lauder · Lancome · Lush · Yves Rocher |
+| 🏬 Department Stores | 136 | Mercado Libre · El Corte Ingles · Otto · Miniso · Lego · Americanas |
+| 💊 Pharmacies | 51 | Droga Raia · Drogasil · Boots · DM · Rossmann |
+| 🔧 Auto Parts | 50 | BMW · Mercedes-Benz · Audi · Tesla · Harley Davidson · Ducati |
+| 📚 Stationery | 11 | Staples · Office Depot |
 
 
-**Countries:** 67 países en LATAM, Europa y global
+**Countries:** 67 countries across LATAM, Europe, and global
 
 ## API
 
