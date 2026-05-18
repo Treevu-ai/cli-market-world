@@ -1054,6 +1054,64 @@ def agent_actions():
     }
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# CIaaS — Competitive Intelligence as a Service
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/v1/intel/competitor")
+def intel_competitor(product: str, store_a: str, store_b: str):
+    """Compara precios del mismo producto entre dos retailers específicos."""
+    db = get_db()
+    rows_a = db.execute("SELECT * FROM price_snapshots WHERE name LIKE ? AND store=? ORDER BY queried_at DESC LIMIT 1", (f"%{product}%", store_a)).fetchall()
+    rows_b = db.execute("SELECT * FROM price_snapshots WHERE name LIKE ? AND store=? ORDER BY queried_at DESC LIMIT 1", (f"%{product}%", store_b)).fetchall()
+    db.close()
+    a = dict(rows_a[0]) if rows_a else None
+    b = dict(rows_b[0]) if rows_b else None
+    if not a or not b:
+        return {"product": product, "error": "No data for one or both retailers. Run a search first."}
+    delta = round(a["price"] - b["price"], 2)
+    delta_pct = round((delta / b["price"]) * 100, 1) if b["price"] > 0 else 0
+    return {"product": product, "comparison": {"store_a": {"name": a["store_name"], "price": a["price"], "currency": a["currency"]}, "store_b": {"name": b["store_name"], "price": b["price"], "currency": b["currency"]}}, "delta": delta, "delta_percent": delta_pct, "cheaper": "store_a" if delta < 0 else "store_b" if delta > 0 else "equal"}
+
+
+@app.get("/v1/intel/delta")
+def intel_delta(product: str, country_a: str, country_b: str):
+    """Cross-border price delta: ¿cuánto más barato es el producto en país A vs B?"""
+    db = get_db()
+    stores_a = [k for k, v in STORES.items() if v["country"] == country_a.upper()]
+    stores_b = [k for k, v in STORES.items() if v["country"] == country_b.upper()]
+    if not stores_a or not stores_b:
+        db.close(); return {"error": f"No retailers in {country_a} or {country_b}"}
+    q = "SELECT AVG(price) as avg, COUNT(*) as n FROM price_snapshots WHERE name LIKE ? AND store IN ("
+    pa = ",".join("?" * len(stores_a)); pb = ",".join("?" * len(stores_b))
+    ra = db.execute(f"{q}{pa})", [f"%{product}%"] + stores_a).fetchone()
+    rb = db.execute(f"{q}{pb})", [f"%{product}%"] + stores_b).fetchone()
+    db.close()
+    if not ra["n"] or not rb["n"]: return {"product": product, "error": "Insufficient data"}
+    delta_pct = round(((ra["avg"] - rb["avg"]) / rb["avg"]) * 100, 1)
+    return {"product": product, "country_a": {"code": country_a, "avg_price": round(ra["avg"], 2), "samples": ra["n"]}, "country_b": {"code": country_b, "avg_price": round(rb["avg"], 2), "samples": rb["n"]}, "delta_percent": delta_pct, "cheaper": country_a if delta_pct < 0 else country_b}
+
+
+@app.get("/v1/intel/alerts")
+def intel_alerts(product: str, store: str | None = None, threshold_pct: float = 5.0, limit: int = 10):
+    """Alertas de cambio de precio > threshold%."""
+    db = get_db()
+    q = "SELECT * FROM price_snapshots WHERE name LIKE ?"
+    params: list = [f"%{product}%"]
+    if store: q += " AND store = ?"; params.append(store)
+    q += " ORDER BY queried_at DESC LIMIT ?"; params.append(limit * 2)
+    rows = db.execute(q, params).fetchall(); db.close()
+    alerts = []; seen = {}
+    for r in rows:
+        key = (r["product_id"], r["store"])
+        if key in seen:
+            prev = seen[key]; pct = round(((r["price"] - prev["price"]) / prev["price"]) * 100, 1) if prev["price"] > 0 else 0
+            if abs(pct) >= threshold_pct:
+                alerts.append({"name": r["name"], "store": r["store_name"], "prev": prev["price"], "curr": r["price"], "pct": pct, "dir": "up" if pct > 0 else "down"})
+        else: seen[key] = r
+    return {"product": product, "threshold": threshold_pct, "alerts": alerts[:limit], "total": len(alerts)}
+
+
 # ── Run ────────────────────────────────────────────────────────────────────
 
 def main():
