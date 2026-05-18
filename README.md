@@ -20,6 +20,8 @@ CLI Market is the middleware between VTEX and AI agents. One API call searches, 
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
+![CLI Market demo](demo.gif)
+
 ## Quick start
 
 ### Linux / macOS / WSL
