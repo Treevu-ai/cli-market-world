@@ -83,9 +83,9 @@ Nosotros transformamos supermercados en APIs para agentes IA.[/]
 [dim]Agent-friendly [/] [#3cffd0]▸[/] [dim]REST API · MCP Tools · JSON · Agentes autónomos[/]
 
  [bold #3cffd0]COMANDOS[/]
-   [#3cffd0]market lines[/]              Explorar líneas de negocio (6 verticales, 17 retailers)
+   [#3cffd0]market lines[/]              Explorar lineas de negocio (12 verticales, 3,400+ retailers)
    [#3cffd0]market login[/]              Autenticarse
-   [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en 17 comercios VTEX
+   [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en 3,400+ comercios VTEX
   [#3cffd0]market compare[/] [dim]"aceite"[/]      Comparar precios entre tiendas
   [#3cffd0]market add[/] [dim]<id> --qty 2[/]      Agregar al carrito
   [#3cffd0]market cart[/]               Ver carrito y total
