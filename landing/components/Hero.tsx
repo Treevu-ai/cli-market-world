@@ -35,7 +35,7 @@ export default function Hero() {
         {[...Array(6)].map((_,i)=><div key={`h${i}`} className="absolute h-px bg-white/10" style={{top:`${14.28*(i+1)}%`,left:0,right:0}}/>)}
         {[...Array(10)].map((_,i)=><div key={`v${i}`} className="absolute w-px bg-white/10" style={{left:`${9.09*(i+1)}%`,top:0,bottom:0}}/>)}
       </div>
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-30 pointer-events-none">
+      <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] xl:w-[800px] xl:h-[800px] opacity-20 pointer-events-none">
         <AnimatedSphere />
       </div>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#00FF88]/[0.02] blur-[120px] rounded-full pointer-events-none" />
@@ -71,8 +71,8 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className={`absolute bottom-12 left-0 right-0 px-6 lg:px-12 transition-all duration-700 delay-500 ${visible?"opacity-100":"opacity-0"}`}>
-        <div className="max-w-[1200px] mx-auto flex flex-wrap items-start gap-6 sm:gap-10 lg:gap-20">
+      <div className={`relative lg:absolute bottom-0 lg:bottom-12 left-0 right-0 px-6 lg:px-12 mt-12 lg:mt-0 transition-all duration-700 delay-500 ${visible?"opacity-100":"opacity-0"}`}>
+        <div className="max-w-[1200px] mx-auto flex flex-wrap items-start gap-4 sm:gap-8 lg:gap-20">
           {[{value:"3200+",label:"retailers VTEX activos"},{value:"67",label:"países en LATAM, Europa y global"},{value:"12",label:"líneas de negocio"},{value:"12",label:"herramientas MCP"}].map(s=>(
             <div key={s.label} className="flex flex-col gap-2"><span className="text-3xl lg:text-4xl font-grotesk font-bold text-white">{s.value}</span><span className="text-xs text-white/30 leading-tight font-mono uppercase tracking-wider">{s.label}</span></div>
           ))}</div>
