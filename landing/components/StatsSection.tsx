@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 
-const items = [
-  { end: 3600, suffix: "+", label: "Retailers VTEX activos en 67 paises" },
-  { end: 67, suffix: "", label: "Paises con cobertura real" },
-  { end: 12, suffix: "", label: "Lineas de negocio" },
-  { end: 12, suffix: "", label: "Herramientas MCP" },
-];
+"use client";
+import { useEffect, useState, useRef } from "react";
+import { useLang } from "@/lib/LanguageContext";
+
+const labels = ["stats_retailers","stats_countries","stats_lines","stats_tools"];
+const ends = [3600, 67, 12, 12];
+const suffixes = ["+", "", "", ""];
 
 function Counter({ end, suffix, label, delay }: { end: number; suffix: string; label: string; delay: number }) {
   const [count, setCount] = useState(0);
@@ -32,16 +33,17 @@ function Counter({ end, suffix, label, delay }: { end: number; suffix: string; l
 }
 
 export default function StatsSection() {
+  const { t: _t } = useLang();
   return (
     <section className="relative flex flex-col w-full py-24 px-6 lg:px-12 md:py-[120px] gap-10" style={{background:"linear-gradient(135deg, #0A0A0A 0%, #0D1F17 50%, #0A0A0A 100%)"}}>
       <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:"radial-gradient(circle at 70% 30%, #00FF88 0%, transparent 60%)"}}/>
       <div className="relative z-10 flex flex-col gap-3 max-w-[600px]">
-        <span className="inline-flex items-center gap-3 text-sm font-mono text-[#00FF88]/60"><span className="w-8 h-px bg-[#00FF88]/40"/>Escala</span>
-        <h2 className="text-[clamp(2rem,5vw,5rem)] font-grotesk font-bold text-white leading-[0.92] whitespace-pre-line">{"El ecosistema\nVTEX completo."}</h2>
-        <p className="text-white/40 font-mono text-sm leading-relaxed">Un conector generico. Una linea de JSON por retailer. Infraestructura invisible.</p>
+        <span className="inline-flex items-center gap-3 text-sm font-mono text-[#00FF88]/60"><span className="w-8 h-px bg-[#00FF88]/40"/>{_t("stats_label")}</span>
+        <h2 className="text-[clamp(2rem,5vw,5rem)] font-grotesk font-bold text-white leading-[0.92] whitespace-pre-line">{_t("stats_title")}</h2>
+        <p className="text-white/40 font-mono text-sm leading-relaxed">{_t("stats_sub")}</p>
       </div>
       <div className="relative z-10 flex flex-wrap gap-8 sm:gap-12 lg:gap-20 max-w-[900px]">
-        {items.map((s,i)=><Counter key={i} end={s.end} suffix={s.suffix} label={s.label} delay={i*150}/>)}
+        {labels.map((lk,i)=><Counter key={i} end={ends[i]} suffix={suffixes[i]} label={_t(lk)} delay={i*150}/>)}
       </div>
       <div className="relative z-10 max-w-[900px] grid grid-cols-2 sm:grid-cols-4 gap-4">
         {["LATAM","Europa","Norteamerica","Asia-Pacifico"].map(r=><div key={r} className="bg-white/[0.02] border border-white/[0.04] px-4 py-3 text-center font-mono text-[10px] text-white/30 uppercase tracking-widest hover:bg-white/[0.04] transition-colors">{r}</div>)}
