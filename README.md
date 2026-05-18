@@ -62,9 +62,15 @@ PE(11) · AR(12) · BR(37) · MX(18) · CO(14) · CL(9) · ES(3) · FR(3) · IT(
 ### API v1
 
 ```bash
+# Data Feed
 GET /v1/feed/prices?query=cafe&country=PE&format=csv
 GET /v1/feed/stats?period=7d
 GET /v1/pricing
+
+# Competitive Intelligence (CIaaS)
+GET /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
+GET /v1/intel/delta?product=cafe&country_a=PE&country_b=CO
+GET /v1/intel/alerts?product=arroz&threshold_pct=5
 ```
 
 ---
