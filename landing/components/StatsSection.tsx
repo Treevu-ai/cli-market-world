@@ -1,8 +1,5 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-
-"use client";
-import { useEffect, useState, useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const labels = ["stats_retailers","stats_countries","stats_lines","stats_tools"];
