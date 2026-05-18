@@ -114,18 +114,18 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
-| 🛒 Supermarkets | 27 | Wong · Metro · Plaza Vea · Carrefour · Jumbo · Coto · Dia · Pao de Acucar · Chedraui · HEB · Olimpica · Exito · Lider · Soriana · Carulla |
-| 💊 Pharmacies | 6 | Droga Raia · Drogasil · Pacheco · Farmatodo · Inkafarma |
-| 📱 Electronics | 14 | Magazine Luiza · Samsung · Motorola · LG · Electrolux · Whirlpool · Alkosto · Fravega · Casas Bahia |
-| 👕 Fashion | 8 | Renner · C&A · Marisa · Riachuelo · Arturo Calle · Leonisa |
-| ⚽ Sports | 15 | Centauro · Nike · Adidas · Decathlon (10 countries) · Marti |
-| 🏠 Home | 7 | Homecenter · Sodimac · Easy · Promart · Leroy Merlin |
-| 💄 Beauty | 6 | O Boticario · Natura · Avon |
-| 🐾 Pets | 3 | Petlove · Petz · Cobasi |
-| 📚 Books | 3 | Saraiva · Office Depot · Tai Loy |
-| 🏬 Department | 8 | Liverpool · Palacio · Sears · Sanborns · Oechsle · Paris · La Polar |
-| 🍔 Food | 3 | Nestle · Unilever · Swift |
-| 🔧 Auto | 1 | AutoZone |
+| 👕 Moda | 1,560 | Louis Vuitton · Gucci · Prada · Chanel · Dior · Zara · H&M · Levi's · Nike · Adidas · Renner · Lamborghini · Ferrari |
+| 📱 Electro | 571 | Samsung · Apple · Sony · LG · Panasonic · Dell · HP · Lenovo · Yamaha · Dyson |
+| 🏠 Hogar | 314 | IKEA · Homecenter · Sodimac · Miele · Bosch · Smeg · Tefal · KitchenAid |
+| ⚽ Deportes | 306 | Nike · Adidas · Reebok · Puma · Under Armour · Decathlon · Foot Locker · Patagonia |
+| 🛒 Supermercados | 252 | Wong · Carrefour · Jumbo · Coto · Costco · Sainsbury's · Edeka · Albert Heijn |
+| 🍔 Alimentos | 176 | Nestle · Unilever · Coca-Cola · Pepsi · Lindt · Heineken · Nespresso |
+| 💄 Belleza | 170 | Sephora · MAC · Clinique · Estee Lauder · Lancome · Lush · Yves Rocher |
+| 🏬 Departamentales | 136 | Mercado Libre · El Corte Ingles · Otto · Miniso · Lego · Americanas |
+| 💊 Farmacias | 51 | Droga Raia · Drogasil · Boots · DM · Rossmann |
+| 🔧 Autopartes | 50 | BMW · Mercedes-Benz · Audi · Tesla · Harley Davidson · Ducati |
+| 📚 Librería | 11 | Staples · Office Depot |
+
 
 **Countries:** 67 países en LATAM, Europa y global
 
