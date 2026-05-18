@@ -59,44 +59,24 @@ BUSINESS_MODEL_JSON = {
     "pitch": "Stripe transformed payments into APIs. CLI Market LATAM transforms supermarkets into APIs for AI agents.",
 }
 
-WELCOME_BANNER = """[#3cffd0]
- ██████╗██╗     ██╗     █████╗  ██████╗ ███████╗███╗   ██╗████████╗██╗ ██████╗
-██╔════╝██║     ██║    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██║██╔════╝
-██║     ██║     ██║    ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ██║██║
-██║     ██║     ██║    ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ██║██║
-╚██████╗███████╗██║    ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ██║╚██████╗
- ╚═════╝╚══════╝╚═╝    ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝
- ███╗   ███╗ █████╗ ██████╗ ██╗  ██╗███████╗████████╗
- ████╗ ████║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝╚══██╔══╝
- ██╔████╔██║███████║██████╔╝█████╔╝ █████╗     ██║
- ██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ██╔══╝     ██║
- ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
- ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝[/]
-[bold #3cffd0]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLI Market LATAM · v1.0
-Infrastructure layer — supermarkets as programmable commerce
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/]
-[#3cffd0]Stripe transformó pagos en APIs.
-Nosotros transformamos supermercados en APIs para agentes IA.[/]
+WELCOME_BANNER = """\
+[bold #00FF88]  ▐▛███▜▌  ▐▛█▜▌[/]  [#888888]commerce infrastructure for ai agents[/]
 
-[dim]Human-friendly[/] [#3cffd0]▸[/] [dim]Terminal CLI · Comandos · Tablas · Flujo de compra[/]
-[dim]Agent-friendly [/] [#3cffd0]▸[/] [dim]REST API · MCP Tools · JSON · Agentes autónomos[/]
+[bold white]     cli market[/]      [#555555]v1.0  ·  open source  ·  mit[/]
 
- [bold #3cffd0]COMANDOS[/]
-   [#3cffd0]market lines[/]              Explorar lineas de negocio (12 verticales, 3,400+ retailers)
-   [#3cffd0]market login[/]              Autenticarse
-   [#3cffd0]market search[/] [dim]"leche"[/]        Buscar en 3,400+ comercios VTEX
-  [#3cffd0]market compare[/] [dim]"aceite"[/]      Comparar precios entre tiendas
-  [#3cffd0]market add[/] [dim]<id> --qty 2[/]      Agregar al carrito
-  [#3cffd0]market cart[/]               Ver carrito y total
-  [#3cffd0]market checkout[/]           Finalizar compra
-  [#3cffd0]market ask[/] [dim]"compra arroz"[/]    Lenguaje natural → acción
-  [#3cffd0]market preferences[/]        Perfil de compra inferido
-  [#3cffd0]market about[/]              Modelo de negocio
-  [#3cffd0]market --json[/]             Modo agente (machine-readable)
+[#00FF88]▌[/] 3,603 retailers  ·  67 countries  ·  12 lines  ·  mcp native
+[#00FF88]▌[/] api.rest  ·  json parseable  ·  cross-border  ·  autonomous
+[#00FF88]▌[/] pip install cli-market  ·  github.com/treevu-ai/cli-market-world
 
-[dim]Backend:[/] [#3cffd0]market-server[/] [dim]· MCP:[/] [#3cffd0]python market_mcp.py[/]
+  [#00FF88]market login[/]          authenticate
+  [#00FF88]market search[/] [dim]\"...\"[/]       search across all retailers
+  [#00FF88]market compare[/] [dim]\"...\"[/]     cross-country price comparison
+  [#00FF88]market add[/] [dim]<id>[/]            add to cart
+  [#00FF88]market checkout[/]       complete purchase
+  [#00FF88]market ask[/] [dim]\"...\"[/]          natural language agent mode
+  [#00FF88]market --json[/]         structured output for llms
 """
+
 
 BUSINESS_MODEL_BANNER = """[bold #3cffd0]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLI Market LATAM · MODELO DE NEGOCIO
