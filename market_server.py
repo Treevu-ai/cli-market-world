@@ -136,15 +136,30 @@ init_db()
 
 _rate_limit_store: dict[str, list[float]] = {}
 RATE_LIMIT_WINDOW = 60   # seconds
-RATE_LIMIT_MAX = 100     # requests per window per IP
+RATE_LIMIT_MAX = 10      # free tier: 10 req/min per IP
+RATE_LIMIT_DAILY: dict[str, int] = {}
+RATE_LIMIT_DAILY_MAX = 100  # free tier: 100 req/day per IP
+_rate_limit_day: str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 def check_rate_limit(ip: str) -> None:
     now = time.time()
+    # Reset daily counters at midnight
+    global _rate_limit_day
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if today != _rate_limit_day:
+        RATE_LIMIT_DAILY.clear()
+        _rate_limit_day = today
+    # Daily cap
+    daily = RATE_LIMIT_DAILY.get(ip, 0)
+    if daily >= RATE_LIMIT_DAILY_MAX:
+        raise HTTPException(status_code=429, detail="Límite diario alcanzado (free tier: 100 req/día).")
+    RATE_LIMIT_DAILY[ip] = daily + 1
+    # Per-minute cap
     window_start = now - RATE_LIMIT_WINDOW
     _rate_limit_store.setdefault(ip, [])
     _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if t > window_start]
     if len(_rate_limit_store[ip]) >= RATE_LIMIT_MAX:
-        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Esperá unos segundos.")
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Free tier: 10 req/min. Esperá unos segundos.")
     _rate_limit_store[ip].append(now)
 
 # ── Security: password hashing ───────────────────────────────────────────────
