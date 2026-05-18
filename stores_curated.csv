@@ -3259,3 +3259,204 @@ hornbach_cz_cz,Hornbach CZ,https://www.hornbach.cz,CZ,CZK,hogar,5,5,4,3,5
 hornbach_sk_sk,Hornbach SK,https://www.hornbach.sk,SK,EUR,hogar,5,5,4,3,5
 hornbach_ro_ro,Hornbach RO,https://www.hornbach.ro,RO,RON,hogar,5,5,4,3,5
 hornbach_se_se,Hornbach SE,https://www.hornbach.se,SE,SEK,hogar,5,5,4,3,5
+fendi_us_us,Fendi US,https://www.fendi.com,US,USD,moda,5,5,4,3,5
+fendi_mx_mx,Fendi MX,https://www.fendi.com.mx,MX,MXN,moda,5,5,4,3,5
+fendi_es_es,Fendi ES,https://www.fendi.es,ES,EUR,moda,5,5,4,3,5
+fendi_fr_fr,Fendi FR,https://www.fendi.com,FR,EUR,moda,5,5,4,3,5
+fendi_it_it,Fendi IT,https://www.fendi.com,IT,EUR,moda,5,5,4,3,5
+fendi_gb_gb,Fendi GB,https://www.fendi.com,GB,GBP,moda,5,5,4,3,5
+fendi_de_de,Fendi DE,https://www.fendi.de,DE,EUR,moda,5,5,4,3,5
+fendi_jp_jp,Fendi JP,https://www.fendi.jp,JP,JPY,moda,5,5,4,3,5
+fendi_kr_kr,Fendi KR,https://www.fendi.kr,KR,KRW,moda,5,5,4,3,5
+fendi_cn_cn,Fendi CN,https://www.fendi.cn,CN,CNY,moda,5,5,4,3,5
+fendi_sg_sg,Fendi SG,https://www.fendi.sg,SG,SGD,moda,5,5,4,3,5
+loewe_es_es,Loewe ES,https://www.loewe.com,ES,EUR,moda,5,5,4,3,5
+loewe_fr_fr,Loewe FR,https://www.loewe.com,FR,EUR,moda,5,5,4,3,5
+loewe_it_it,Loewe IT,https://www.loewe.it,IT,EUR,moda,5,5,4,3,5
+loewe_gb_gb,Loewe GB,https://www.loewe.com,GB,GBP,moda,5,5,4,3,5
+loewe_de_de,Loewe DE,https://www.loewe.de,DE,EUR,moda,5,5,4,3,5
+loewe_jp_jp,Loewe JP,https://www.loewe.jp,JP,JPY,moda,5,5,4,3,5
+loewe_kr_kr,Loewe KR,https://www.loewe.kr,KR,KRW,moda,5,5,4,3,5
+loewe_cn_cn,Loewe CN,https://www.loewe.cn,CN,CNY,moda,5,5,4,3,5
+loewe_sg_sg,Loewe SG,https://www.loewe.sg,SG,SGD,moda,5,5,4,3,5
+bottega_veneta_us_us,Bottega Veneta US,https://www.bottegaveneta.com,US,USD,moda,5,5,4,3,5
+bottega_veneta_mx_mx,Bottega Veneta MX,https://www.bottegaveneta.com.mx,MX,MXN,moda,5,5,4,3,5
+bottega_veneta_es_es,Bottega Veneta ES,https://www.bottegaveneta.es,ES,EUR,moda,5,5,4,3,5
+bottega_veneta_fr_fr,Bottega Veneta FR,https://www.bottegaveneta.com,FR,EUR,moda,5,5,4,3,5
+bottega_veneta_it_it,Bottega Veneta IT,https://www.bottegaveneta.com,IT,EUR,moda,5,5,4,3,5
+bottega_veneta_gb_gb,Bottega Veneta GB,https://www.bottegaveneta.com,GB,GBP,moda,5,5,4,3,5
+bottega_veneta_de_de,Bottega Veneta DE,https://www.bottegaveneta.de,DE,EUR,moda,5,5,4,3,5
+bottega_veneta_jp_jp,Bottega Veneta JP,https://www.bottegaveneta.jp,JP,JPY,moda,5,5,4,3,5
+bottega_veneta_kr_kr,Bottega Veneta KR,https://www.bottegaveneta.kr,KR,KRW,moda,5,5,4,3,5
+bottega_veneta_cn_cn,Bottega Veneta CN,https://www.bottegaveneta.cn,CN,CNY,moda,5,5,4,3,5
+bottega_veneta_sg_sg,Bottega Veneta SG,https://www.bottegaveneta.sg,SG,SGD,moda,5,5,4,3,5
+celine_us_us,Celine US,https://www.celine.com,US,USD,moda,5,5,4,3,5
+celine_mx_mx,Celine MX,https://www.celine.com.mx,MX,MXN,moda,5,5,4,3,5
+celine_es_es,Celine ES,https://www.celine.es,ES,EUR,moda,5,5,4,3,5
+celine_fr_fr,Celine FR,https://www.celine.com,FR,EUR,moda,5,5,4,3,5
+celine_it_it,Celine IT,https://www.celine.it,IT,EUR,moda,5,5,4,3,5
+celine_gb_gb,Celine GB,https://www.celine.com,GB,GBP,moda,5,5,4,3,5
+celine_de_de,Celine DE,https://www.celine.de,DE,EUR,moda,5,5,4,3,5
+celine_jp_jp,Celine JP,https://www.celine.jp,JP,JPY,moda,5,5,4,3,5
+celine_kr_kr,Celine KR,https://www.celine.kr,KR,KRW,moda,5,5,4,3,5
+celine_cn_cn,Celine CN,https://www.celine.cn,CN,CNY,moda,5,5,4,3,5
+bq_gb_gb,B&Q GB,https://www.diy.com,GB,GBP,hogar,5,5,4,3,5
+bq_ie_ie,B&Q IE,https://www.diy.ie,IE,EUR,hogar,5,5,4,3,5
+castorama_fr_fr,Castorama FR,https://www.castorama.fr,FR,EUR,hogar,5,5,4,3,5
+castorama_pl_pl,Castorama PL,https://www.castorama.pl,PL,PLN,hogar,5,5,4,3,5
+brico_depot_fr_fr,Brico Depot FR,https://www.bricodepot.fr,FR,EUR,hogar,5,5,4,3,5
+brico_depot_es_es,Brico Depot ES,https://www.bricodepot.es,ES,EUR,hogar,5,5,4,3,5
+brico_depot_pt_pt,Brico Depot PT,https://www.bricodepot.pt,PT,EUR,hogar,5,5,4,3,5
+brico_depot_it_it,Brico Depot IT,https://www.bricodepot.it,IT,EUR,hogar,5,5,4,3,5
+brico_depot_ro_ro,Brico Depot RO,https://www.bricodepot.ro,RO,RON,hogar,5,5,4,3,5
+brico_depot_pl_pl,Brico Depot PL,https://www.bricodepot.pl,PL,PLN,hogar,5,5,4,3,5
+ferrari_us_us,Ferrari US,https://www.store.ferrari.com,US,USD,moda,5,5,4,3,5
+ferrari_mx_mx,Ferrari MX,https://www.store.ferrari.com.mx,MX,MXN,moda,5,5,4,3,5
+ferrari_es_es,Ferrari ES,https://www.store.ferrari.es,ES,EUR,moda,5,5,4,3,5
+ferrari_gb_gb,Ferrari GB,https://www.store.ferrari.com,GB,GBP,moda,5,5,4,3,5
+ferrari_de_de,Ferrari DE,https://www.store.ferrari.de,DE,EUR,moda,5,5,4,3,5
+ferrari_it_it,Ferrari IT,https://www.store.ferrari.com,IT,EUR,moda,5,5,4,3,5
+ferrari_jp_jp,Ferrari JP,https://www.store.ferrari.jp,JP,JPY,moda,5,5,4,3,5
+ferrari_cn_cn,Ferrari CN,https://www.store.ferrari.cn,CN,CNY,moda,5,5,4,3,5
+ferrari_sg_sg,Ferrari SG,https://www.store.ferrari.sg,SG,SGD,moda,5,5,4,3,5
+ferrari_ae_ae,Ferrari AE,https://www.store.ferrari.ae,AE,AED,moda,5,5,4,3,5
+salvatore_ferragamo_us_us,Salvatore Ferragamo US,https://www.ferragamo.com,US,USD,moda,5,5,4,3,5
+salvatore_ferragamo_mx_mx,Salvatore Ferragamo MX,https://www.ferragamo.com.mx,MX,MXN,moda,5,5,4,3,5
+salvatore_ferragamo_br_br,Salvatore Ferragamo BR,https://www.ferragamo.com.br,BR,BRL,moda,5,5,4,3,5
+salvatore_ferragamo_es_es,Salvatore Ferragamo ES,https://www.ferragamo.es,ES,EUR,moda,5,5,4,3,5
+salvatore_ferragamo_gb_gb,Salvatore Ferragamo GB,https://www.ferragamo.com,GB,GBP,moda,5,5,4,3,5
+salvatore_ferragamo_de_de,Salvatore Ferragamo DE,https://www.ferragamo.de,DE,EUR,moda,5,5,4,3,5
+salvatore_ferragamo_it_it,Salvatore Ferragamo IT,https://www.ferragamo.com,IT,EUR,moda,5,5,4,3,5
+salvatore_ferragamo_jp_jp,Salvatore Ferragamo JP,https://www.ferragamo.jp,JP,JPY,moda,5,5,4,3,5
+salvatore_ferragamo_kr_kr,Salvatore Ferragamo KR,https://www.ferragamo.kr,KR,KRW,moda,5,5,4,3,5
+salvatore_ferragamo_cn_cn,Salvatore Ferragamo CN,https://www.ferragamo.cn,CN,CNY,moda,5,5,4,3,5
+salvatore_ferragamo_sg_sg,Salvatore Ferragamo SG,https://www.ferragamo.sg,SG,SGD,moda,5,5,4,3,5
+tory_burch_us_us,Tory Burch US,https://www.toryburch.com,US,USD,moda,5,5,4,3,5
+tory_burch_mx_mx,Tory Burch MX,https://www.toryburch.com.mx,MX,MXN,moda,5,5,4,3,5
+tory_burch_es_es,Tory Burch ES,https://www.toryburch.es,ES,EUR,moda,5,5,4,3,5
+tory_burch_fr_fr,Tory Burch FR,https://www.toryburch.fr,FR,EUR,moda,5,5,4,3,5
+tory_burch_gb_gb,Tory Burch GB,https://www.toryburch.co.uk,GB,GBP,moda,5,5,4,3,5
+tory_burch_de_de,Tory Burch DE,https://www.toryburch.de,DE,EUR,moda,5,5,4,3,5
+tory_burch_it_it,Tory Burch IT,https://www.toryburch.it,IT,EUR,moda,5,5,4,3,5
+tory_burch_jp_jp,Tory Burch JP,https://www.toryburch.jp,JP,JPY,moda,5,5,4,3,5
+tory_burch_kr_kr,Tory Burch KR,https://www.toryburch.kr,KR,KRW,moda,5,5,4,3,5
+tory_burch_cn_cn,Tory Burch CN,https://www.toryburch.cn,CN,CNY,moda,5,5,4,3,5
+jimmy_choo_us_us,Jimmy Choo US,https://www.jimmychoo.com,US,USD,moda,5,5,4,3,5
+jimmy_choo_mx_mx,Jimmy Choo MX,https://www.jimmychoo.com.mx,MX,MXN,moda,5,5,4,3,5
+jimmy_choo_es_es,Jimmy Choo ES,https://www.jimmychoo.es,ES,EUR,moda,5,5,4,3,5
+jimmy_choo_fr_fr,Jimmy Choo FR,https://www.jimmychoo.fr,FR,EUR,moda,5,5,4,3,5
+jimmy_choo_gb_gb,Jimmy Choo GB,https://www.jimmychoo.co.uk,GB,GBP,moda,5,5,4,3,5
+jimmy_choo_de_de,Jimmy Choo DE,https://www.jimmychoo.de,DE,EUR,moda,5,5,4,3,5
+jimmy_choo_it_it,Jimmy Choo IT,https://www.jimmychoo.com,IT,EUR,moda,5,5,4,3,5
+jimmy_choo_jp_jp,Jimmy Choo JP,https://www.jimmychoo.jp,JP,JPY,moda,5,5,4,3,5
+jimmy_choo_kr_kr,Jimmy Choo KR,https://www.jimmychoo.kr,KR,KRW,moda,5,5,4,3,5
+jimmy_choo_cn_cn,Jimmy Choo CN,https://www.jimmychoo.cn,CN,CNY,moda,5,5,4,3,5
+jimmy_choo_sg_sg,Jimmy Choo SG,https://www.jimmychoo.sg,SG,SGD,moda,5,5,4,3,5
+alexander_mcqueen_us_us,Alexander McQueen US,https://www.alexandermcqueen.com,US,USD,moda,5,5,4,3,5
+alexander_mcqueen_mx_mx,Alexander McQueen MX,https://www.alexandermcqueen.com.mx,MX,MXN,moda,5,5,4,3,5
+alexander_mcqueen_es_es,Alexander McQueen ES,https://www.alexandermcqueen.es,ES,EUR,moda,5,5,4,3,5
+alexander_mcqueen_fr_fr,Alexander McQueen FR,https://www.alexandermcqueen.com,FR,EUR,moda,5,5,4,3,5
+alexander_mcqueen_it_it,Alexander McQueen IT,https://www.alexandermcqueen.it,IT,EUR,moda,5,5,4,3,5
+alexander_mcqueen_gb_gb,Alexander McQueen GB,https://www.alexandermcqueen.com,GB,GBP,moda,5,5,4,3,5
+alexander_mcqueen_de_de,Alexander McQueen DE,https://www.alexandermcqueen.de,DE,EUR,moda,5,5,4,3,5
+alexander_mcqueen_jp_jp,Alexander McQueen JP,https://www.alexandermcqueen.jp,JP,JPY,moda,5,5,4,3,5
+alexander_mcqueen_kr_kr,Alexander McQueen KR,https://www.alexandermcqueen.kr,KR,KRW,moda,5,5,4,3,5
+alexander_mcqueen_cn_cn,Alexander McQueen CN,https://www.alexandermcqueen.cn,CN,CNY,moda,5,5,4,3,5
+alexander_mcqueen_sg_sg,Alexander McQueen SG,https://www.alexandermcqueen.sg,SG,SGD,moda,5,5,4,3,5
+off-white_us_us,Off-White US,https://www.off---white.com,US,USD,moda,5,5,4,3,5
+off-white_mx_mx,Off-White MX,https://www.off---white.com.mx,MX,MXN,moda,5,5,4,3,5
+off-white_es_es,Off-White ES,https://www.off---white.es,ES,EUR,moda,5,5,4,3,5
+off-white_fr_fr,Off-White FR,https://www.off---white.com,FR,EUR,moda,5,5,4,3,5
+off-white_it_it,Off-White IT,https://www.off---white.com,IT,EUR,moda,5,5,4,3,5
+off-white_gb_gb,Off-White GB,https://www.off---white.com,GB,GBP,moda,5,5,4,3,5
+off-white_de_de,Off-White DE,https://www.off---white.de,DE,EUR,moda,5,5,4,3,5
+off-white_jp_jp,Off-White JP,https://www.off---white.jp,JP,JPY,moda,5,5,4,3,5
+off-white_kr_kr,Off-White KR,https://www.off---white.kr,KR,KRW,moda,5,5,4,3,5
+off-white_cn_cn,Off-White CN,https://www.off---white.cn,CN,CNY,moda,5,5,4,3,5
+palm_angels_us_us,Palm Angels US,https://www.palmangels.com,US,USD,moda,5,5,4,3,5
+palm_angels_mx_mx,Palm Angels MX,https://www.palmangels.com.mx,MX,MXN,moda,5,5,4,3,5
+palm_angels_es_es,Palm Angels ES,https://www.palmangels.es,ES,EUR,moda,5,5,4,3,5
+palm_angels_fr_fr,Palm Angels FR,https://www.palmangels.com,FR,EUR,moda,5,5,4,3,5
+palm_angels_it_it,Palm Angels IT,https://www.palmangels.it,IT,EUR,moda,5,5,4,3,5
+palm_angels_gb_gb,Palm Angels GB,https://www.palmangels.com,GB,GBP,moda,5,5,4,3,5
+palm_angels_de_de,Palm Angels DE,https://www.palmangels.de,DE,EUR,moda,5,5,4,3,5
+palm_angels_jp_jp,Palm Angels JP,https://www.palmangels.jp,JP,JPY,moda,5,5,4,3,5
+palm_angels_kr_kr,Palm Angels KR,https://www.palmangels.kr,KR,KRW,moda,5,5,4,3,5
+palm_angels_cn_cn,Palm Angels CN,https://www.palmangels.cn,CN,CNY,moda,5,5,4,3,5
+stone_island_us_us,Stone Island US,https://www.stoneisland.com,US,USD,moda,5,5,4,3,5
+stone_island_mx_mx,Stone Island MX,https://www.stoneisland.com.mx,MX,MXN,moda,5,5,4,3,5
+stone_island_es_es,Stone Island ES,https://www.stoneisland.es,ES,EUR,moda,5,5,4,3,5
+stone_island_fr_fr,Stone Island FR,https://www.stoneisland.fr,FR,EUR,moda,5,5,4,3,5
+stone_island_it_it,Stone Island IT,https://www.stoneisland.it,IT,EUR,moda,5,5,4,3,5
+stone_island_gb_gb,Stone Island GB,https://www.stoneisland.co.uk,GB,GBP,moda,5,5,4,3,5
+stone_island_de_de,Stone Island DE,https://www.stoneisland.de,DE,EUR,moda,5,5,4,3,5
+stone_island_nl_nl,Stone Island NL,https://www.stoneisland.nl,NL,EUR,moda,5,5,4,3,5
+stone_island_jp_jp,Stone Island JP,https://www.stoneisland.jp,JP,JPY,moda,5,5,4,3,5
+stone_island_kr_kr,Stone Island KR,https://www.stoneisland.kr,KR,KRW,moda,5,5,4,3,5
+stone_island_cn_cn,Stone Island CN,https://www.stoneisland.cn,CN,CNY,moda,5,5,4,3,5
+moncler_us_us,Moncler US,https://www.moncler.com,US,USD,moda,5,5,4,3,5
+moncler_mx_mx,Moncler MX,https://www.moncler.com.mx,MX,MXN,moda,5,5,4,3,5
+moncler_es_es,Moncler ES,https://www.moncler.es,ES,EUR,moda,5,5,4,3,5
+moncler_fr_fr,Moncler FR,https://www.moncler.fr,FR,EUR,moda,5,5,4,3,5
+moncler_it_it,Moncler IT,https://www.moncler.com,IT,EUR,moda,5,5,4,3,5
+moncler_gb_gb,Moncler GB,https://www.moncler.co.uk,GB,GBP,moda,5,5,4,3,5
+moncler_de_de,Moncler DE,https://www.moncler.de,DE,EUR,moda,5,5,4,3,5
+moncler_jp_jp,Moncler JP,https://www.moncler.jp,JP,JPY,moda,5,5,4,3,5
+moncler_kr_kr,Moncler KR,https://www.moncler.kr,KR,KRW,moda,5,5,4,3,5
+moncler_cn_cn,Moncler CN,https://www.moncler.cn,CN,CNY,moda,5,5,4,3,5
+patagonia_us_us,Patagonia US,https://www.patagonia.com,US,USD,deportes,5,5,4,3,5
+patagonia_mx_mx,Patagonia MX,https://www.patagonia.com.mx,MX,MXN,deportes,5,5,4,3,5
+patagonia_es_es,Patagonia ES,https://www.patagonia.es,ES,EUR,deportes,5,5,4,3,5
+patagonia_fr_fr,Patagonia FR,https://www.patagonia.fr,FR,EUR,deportes,5,5,4,3,5
+patagonia_gb_gb,Patagonia GB,https://www.patagonia.co.uk,GB,GBP,deportes,5,5,4,3,5
+patagonia_de_de,Patagonia DE,https://www.patagonia.de,DE,EUR,deportes,5,5,4,3,5
+patagonia_it_it,Patagonia IT,https://www.patagonia.it,IT,EUR,deportes,5,5,4,3,5
+patagonia_nl_nl,Patagonia NL,https://www.patagonia.nl,NL,EUR,deportes,5,5,4,3,5
+patagonia_jp_jp,Patagonia JP,https://www.patagonia.jp,JP,JPY,deportes,5,5,4,3,5
+patagonia_kr_kr,Patagonia KR,https://www.patagonia.kr,KR,KRW,deportes,5,5,4,3,5
+patagonia_cn_cn,Patagonia CN,https://www.patagonia.cn,CN,CNY,deportes,5,5,4,3,5
+patagonia_au_au,Patagonia AU,https://www.patagonia.com.au,AU,AUD,deportes,5,5,4,3,5
+arcteryx_us_us,Arc'teryx US,https://www.arcteryx.com,US,USD,deportes,5,5,4,3,5
+arcteryx_mx_mx,Arc'teryx MX,https://www.arcteryx.com.mx,MX,MXN,deportes,5,5,4,3,5
+arcteryx_es_es,Arc'teryx ES,https://www.arcteryx.es,ES,EUR,deportes,5,5,4,3,5
+arcteryx_fr_fr,Arc'teryx FR,https://www.arcteryx.fr,FR,EUR,deportes,5,5,4,3,5
+arcteryx_gb_gb,Arc'teryx GB,https://www.arcteryx.co.uk,GB,GBP,deportes,5,5,4,3,5
+arcteryx_de_de,Arc'teryx DE,https://www.arcteryx.de,DE,EUR,deportes,5,5,4,3,5
+arcteryx_it_it,Arc'teryx IT,https://www.arcteryx.it,IT,EUR,deportes,5,5,4,3,5
+arcteryx_jp_jp,Arc'teryx JP,https://www.arcteryx.jp,JP,JPY,deportes,5,5,4,3,5
+arcteryx_kr_kr,Arc'teryx KR,https://www.arcteryx.kr,KR,KRW,deportes,5,5,4,3,5
+arcteryx_cn_cn,Arc'teryx CN,https://www.arcteryx.cn,CN,CNY,deportes,5,5,4,3,5
+arcteryx_au_au,Arc'teryx AU,https://www.arcteryx.com.au,AU,AUD,deportes,5,5,4,3,5
+salomon_us_us,Salomon US,https://www.salomon.com,US,USD,deportes,5,5,4,3,5
+salomon_mx_mx,Salomon MX,https://www.salomon.com.mx,MX,MXN,deportes,5,5,4,3,5
+salomon_es_es,Salomon ES,https://www.salomon.es,ES,EUR,deportes,5,5,4,3,5
+salomon_fr_fr,Salomon FR,https://www.salomon.fr,FR,EUR,deportes,5,5,4,3,5
+salomon_gb_gb,Salomon GB,https://www.salomon.co.uk,GB,GBP,deportes,5,5,4,3,5
+salomon_de_de,Salomon DE,https://www.salomon.de,DE,EUR,deportes,5,5,4,3,5
+salomon_it_it,Salomon IT,https://www.salomon.it,IT,EUR,deportes,5,5,4,3,5
+salomon_jp_jp,Salomon JP,https://www.salomon.jp,JP,JPY,deportes,5,5,4,3,5
+salomon_kr_kr,Salomon KR,https://www.salomon.kr,KR,KRW,deportes,5,5,4,3,5
+salomon_cn_cn,Salomon CN,https://www.salomon.cn,CN,CNY,deportes,5,5,4,3,5
+salomon_au_au,Salomon AU,https://www.salomon.com.au,AU,AUD,deportes,5,5,4,3,5
+salomon_se_se,Salomon SE,https://www.salomon.se,SE,SEK,deportes,5,5,4,3,5
+salomon_fi_fi,Salomon FI,https://www.salomon.fi,FI,EUR,deportes,5,5,4,3,5
+salomon_no_no,Salomon NO,https://www.salomon.no,NO,NOK,deportes,5,5,4,3,5
+mammut_us_us,Mammut US,https://www.mammut.com,US,USD,deportes,5,5,4,3,5
+mammut_de_de,Mammut DE,https://www.mammut.de,DE,EUR,deportes,5,5,4,3,5
+mammut_at_at,Mammut AT,https://www.mammut.at,AT,EUR,deportes,5,5,4,3,5
+mammut_ch_ch,Mammut CH,https://www.mammut.ch,CH,CHF,deportes,5,5,4,3,5
+mammut_fr_fr,Mammut FR,https://www.mammut.fr,FR,EUR,deportes,5,5,4,3,5
+mammut_it_it,Mammut IT,https://www.mammut.it,IT,EUR,deportes,5,5,4,3,5
+mammut_gb_gb,Mammut GB,https://www.mammut.co.uk,GB,GBP,deportes,5,5,4,3,5
+mammut_es_es,Mammut ES,https://www.mammut.es,ES,EUR,deportes,5,5,4,3,5
+mammut_jp_jp,Mammut JP,https://www.mammut.jp,JP,JPY,deportes,5,5,4,3,5
+lululemon_us_us,Lululemon US,https://www.lululemon.com,US,USD,deportes,5,5,4,3,5
+lululemon_mx_mx,Lululemon MX,https://www.lululemon.com.mx,MX,MXN,deportes,5,5,4,3,5
+lululemon_ca_ca,Lululemon CA,https://www.lululemon.ca,CA,CAD,deportes,5,5,4,3,5
+lululemon_gb_gb,Lululemon GB,https://www.lululemon.co.uk,GB,GBP,deportes,5,5,4,3,5
+lululemon_de_de,Lululemon DE,https://www.lululemon.de,DE,EUR,deportes,5,5,4,3,5
+lululemon_fr_fr,Lululemon FR,https://www.lululemon.fr,FR,EUR,deportes,5,5,4,3,5
+lululemon_au_au,Lululemon AU,https://www.lululemon.com.au,AU,AUD,deportes,5,5,4,3,5
+lululemon_jp_jp,Lululemon JP,https://www.lululemon.jp,JP,JPY,deportes,5,5,4,3,5
+lululemon_kr_kr,Lululemon KR,https://www.lululemon.kr,KR,KRW,deportes,5,5,4,3,5
+lululemon_cn_cn,Lululemon CN,https://www.lululemon.cn,CN,CNY,deportes,5,5,4,3,5
