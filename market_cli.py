@@ -637,9 +637,9 @@ def cmd_countries(args):
     data = api("GET", "/countries")
     countries = data.get("countries", {})
     table = Table(title="[bold #3cffd0]Países y supermercados[/]", border_style="dim blue")
-    table.add_column("País", style="bold", width=14)
-    table.add_column("Tiendas", style="white", width=50)
-    table.add_column("Cant.", justify="center", width=6)
+    table.add_column("Pais", style="bold")
+    table.add_column("Tiendas")
+    table.add_column("Cant.", justify="center")
 
     for code, info in countries.items():
         stores_list = ", ".join(STORES[s]["name"] for s in info["stores"] if s in STORES)
@@ -657,17 +657,16 @@ def cmd_lines(args):
     lines = data.get("lines", {})
 
     table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style="dim blue")
-    table.add_column("Línea", style="bold", width=22)
-    table.add_column("Retailers", width=45)
-    table.add_column("Cant.", justify="center", width=6)
+    table.add_column("Línea", style="bold", )
+    table.add_column("Retailers")
+    table.add_column("Cant.", justify="center")
 
     for line_id, info in lines.items():
         stores_str = ", ".join(s["name"] for s in info["stores"].values())
         table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
 
     console.print()
-    with console.pager():
-        console.print(table)
+    console.print(table)
     console.print(f"\n[dim]market search --line farmacias \"paracetamol\"[/] [dim]para buscar en una línea[/]")
 
 
