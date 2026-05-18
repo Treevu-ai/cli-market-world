@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { AnimatedSphere } from "./AnimatedSphere";
+import { useLang } from "@/lib/LanguageContext";
 
-const words = ["comprar", "comparar", "buscar", "analizar"];
+const words_es = ["comprar", "comparar", "buscar", "analizar"];
+const words_en = ["purchase", "compare", "search", "analyze"];
 
 function BlurWord({ word, trigger }: { word: string; trigger: number }) {
   const letters = word.split("");
@@ -20,6 +22,8 @@ function BlurWord({ word, trigger }: { word: string; trigger: number }) {
 }
 
 export default function Hero() {
+  const { lang, t: _t } = useLang();
+  const words = lang === "es" ? words_es : words_en;
   const [visible, setVisible] = useState(false);
   const [wordIdx, setWordIdx] = useState(0);
   useEffect(()=>{setVisible(true)},[]);
@@ -45,7 +49,7 @@ export default function Hero() {
           <div className={`mb-8 transition-all duration-700 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
             <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40">
               <span className="w-8 h-px bg-[#00FF88]/40" />
-              Infraestructura de comercio para agentes de IA · LATAM y global
+              {_t("hero_eye")}
             </span>
           </div>
           <div className="mb-12">
@@ -60,7 +64,7 @@ export default function Hero() {
           </div>
           <div className={`mb-12 transition-all duration-700 delay-300 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
             <p className="text-lg lg:text-xl text-white/50 leading-relaxed max-w-xl font-mono">
-              Conectamos agentes de inteligencia artificial con 3600+ comercios VTEX en 67 países. Buscar, comparar y comprar — todo desde la terminal o vía API.
+              {_t("hero_sub")}
             </p>
           </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
