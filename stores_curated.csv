@@ -1,0 +1,99 @@
+key,name,base_url,country,currency,line,comparability,frequency,catalog_vol,geo_coverage,relevance
+wong,Wong,https://www.wong.pe,PE,PEN,supermercados,5,5,4,3,5
+metro,Metro,https://www.metro.pe,PE,PEN,supermercados,5,5,4,3,5
+plazavea,Plaza Vea,https://www.plazavea.com.pe,PE,PEN,supermercados,5,5,4,3,5
+vivanda_pe,Vivanda,https://www.vivanda.com.pe,PE,PEN,supermercados,5,4,3,2,4
+carrefour,Carrefour AR,https://www.carrefour.com.ar,AR,ARS,supermercados,5,5,5,4,5
+jumbo_ar,Jumbo AR,https://www.jumbo.com.ar,AR,ARS,supermercados,5,5,4,4,5
+coto_ar,Coto,https://www.coto.com.ar,AR,ARS,supermercados,5,5,4,4,5
+dia_ar,Dia AR,https://www.dia.com.ar,AR,ARS,supermercados,5,4,3,2,4
+vea_ar,Vea AR,https://www.vea.com.ar,AR,ARS,supermercados,5,4,3,2,4
+changomas_ar,Changomas,https://www.changomas.com.ar,AR,ARS,supermercados,5,4,3,2,3
+carrefour_br,Carrefour BR,https://www.carrefour.com.br,BR,BRL,supermercados,5,5,5,5,5
+paodeacucar,Pao de Acucar,https://www.paodeacucar.com,BR,BRL,supermercados,5,5,4,5,5
+mambo_br,Mambo,https://www.mambo.com.br,BR,BRL,supermercados,5,4,3,1,3
+gpa_extra,Extra BR,https://www.extra.com.br,BR,BRL,supermercados,5,4,4,1,4
+chedraui,Chedraui,https://www.chedraui.com.mx,MX,MXN,supermercados,5,5,4,4,5
+heb,HEB,https://www.heb.com.mx,MX,MXN,supermercados,5,5,4,4,5
+soriana_mx,Soriana,https://www.soriana.com,MX,MXN,supermercados,5,4,4,2,4
+olimpica,Olimpica,https://www.olimpica.com,CO,COP,supermercados,5,5,4,4,5
+exito,Exito,https://www.exito.com,CO,COP,supermercados,5,5,5,4,5
+carulla_co,Carulla,https://www.carulla.com,CO,COP,supermercados,5,4,3,2,4
+surtimax_co,Surtimax,https://www.surtimax.com.co,CO,COP,supermercados,5,3,3,2,3
+lider_cl,Lider CL,https://www.lider.cl,CL,CLP,supermercados,5,5,5,5,5
+jumbo_cl,Jumbo CL,https://www.jumbo.cl,CL,CLP,supermercados,5,5,4,3,5
+santaisabel_cl,Santa Isabel CL,https://www.santaisabel.cl,CL,CLP,supermercados,5,4,3,2,4
+carrefour_es,Carrefour ES,https://www.carrefour.es,ES,EUR,supermercados,5,5,5,5,5
+carrefour_fr,Carrefour FR,https://www.carrefour.fr,FR,EUR,supermercados,5,5,5,5,5
+carrefour_it,Carrefour IT,https://www.carrefour.it,IT,EUR,supermercados,5,4,4,4,4
+drogaraia,Droga Raia,https://www.drogaraia.com.br,BR,BRL,farmacias,5,5,5,5,5
+drogasil,Drogasil,https://www.drogasil.com.br,BR,BRL,farmacias,5,5,4,1,4
+pacheco_br,Drogaria Pacheco,https://www.drogariaspacheco.com.br,BR,BRL,farmacias,5,5,4,1,4
+farmatodo_co,Farmatodo,https://www.farmatodo.com.co,CO,COP,farmacias,5,5,4,3,5
+inkafarma_pe,Inkafarma,https://www.inkafarma.pe,PE,PEN,farmacias,5,4,4,2,4
+boticasysalud_pe,Boticas y Salud,https://www.boticasysalud.pe,PE,PEN,farmacias,5,3,3,1,3
+magazineluiza,Magazine Luiza,https://www.magazineluiza.com.br,BR,BRL,electro,5,5,5,5,5
+motorola_br,Motorola BR,https://www.motorola.com.br,BR,BRL,electro,4,4,4,1,4
+samsung_br,Samsung BR,https://www.samsung.com.br,BR,BRL,electro,5,5,5,1,5
+electrolux_br,Electrolux BR,https://www.electrolux.com.br,BR,BRL,electro,4,4,4,1,4
+whirlpool_br,Whirlpool BR,https://www.whirlpool.com.br,BR,BRL,electro,4,4,4,1,4
+lg_br,LG BR,https://www.lg.com.br,BR,BRL,electro,5,5,5,1,5
+samsung_mx,Samsung MX,https://www.samsung.com.mx,MX,MXN,electro,5,4,5,3,5
+alkosto_co,Alkosto,https://www.alkosto.com,CO,COP,electro,5,5,5,4,5
+alkomprar_co,Alkomprar,https://www.alkomprar.com,CO,COP,electro,5,4,4,2,4
+fravega_ar,Fravega,https://www.fravega.com.ar,AR,ARS,electro,5,4,5,3,5
+musimundo_ar,Musimundo,https://www.musimundo.com.ar,AR,ARS,electro,5,4,4,2,4
+pontofrio_br,Ponto Frio,https://www.pontofrio.com.br,BR,BRL,electro,5,4,5,1,4
+casasbahia_br,Casas Bahia,https://www.casasbahia.com.br,BR,BRL,electro,5,5,5,1,5
+renner,Lojas Renner,https://www.lojasrenner.com.br,BR,BRL,moda,2,4,5,5,5
+ca_br,C&A BR,https://www.cea.com.br,BR,BRL,moda,2,4,5,1,4
+marisa_br,Marisa,https://www.marisa.com.br,BR,BRL,moda,2,4,4,1,4
+riachuelo_br,Riachuelo,https://www.riachuelo.com.br,BR,BRL,moda,2,4,4,1,4
+ca_mx,C&A MX,https://www.cea.com.mx,MX,MXN,moda,2,4,4,3,4
+arturocalle_co,Arturo Calle,https://www.arturocalle.com,CO,COP,moda,2,3,3,3,4
+leonisa_co,Leonisa,https://www.leonisa.com,CO,COP,moda,2,3,3,2,4
+totto_co,Totto,https://www.totto.com,CO,COP,moda,2,3,3,2,3
+centauro,Centauro BR,https://www.centauro.com.br,BR,BRL,deportes,5,5,5,5,5
+nike_br,Nike BR,https://www.nike.com.br,BR,BRL,deportes,5,5,5,1,5
+adidas_br,Adidas BR,https://www.adidas.com.br,BR,BRL,deportes,5,5,5,1,5
+marti_mx,Marti,https://www.marti.mx,MX,MXN,deportes,5,4,4,3,5
+decathlon_fr,Decathlon FR,https://www.decathlon.fr,FR,EUR,deportes,5,5,5,5,5
+decathlon_es,Decathlon ES,https://www.decathlon.es,ES,EUR,deportes,5,5,5,4,5
+decathlon_br,Decathlon BR,https://www.decathlon.com.br,BR,BRL,deportes,5,5,5,1,5
+decathlon_cl,Decathlon CL,https://www.decathlon.cl,CL,CLP,deportes,5,5,4,3,5
+decathlon_pe,Decathlon PE,https://www.decathlon.pe,PE,PEN,deportes,5,4,4,2,4
+decathlon_co,Decathlon CO,https://www.decathlon.com.co,CO,COP,deportes,5,4,4,3,4
+decathlon_ar,Decathlon AR,https://www.decathlon.com.ar,AR,ARS,deportes,5,4,4,3,4
+decathlon_mx,Decathlon MX,https://www.decathlon.com.mx,MX,MXN,deportes,5,4,4,3,4
+decathlon_it,Decathlon IT,https://www.decathlon.it,IT,EUR,deportes,5,5,4,4,5
+decathlon_uk,Decathlon UK,https://www.decathlon.co.uk,GB,GBP,deportes,5,4,4,4,4
+homecenter,Homecenter CO,https://www.homecenter.com.co,CO,COP,hogar,4,4,5,4,5
+sodimac_co,Sodimac CO,https://www.sodimac.com.co,CO,COP,hogar,4,4,4,2,4
+sodimac_cl,Sodimac CL,https://www.sodimac.cl,CL,CLP,hogar,4,4,5,3,5
+easy_ar,Easy AR,https://www.easy.com.ar,AR,ARS,hogar,4,4,4,3,4
+promart_pe,Promart,https://www.promart.pe,PE,PEN,hogar,4,4,4,2,4
+leroymerlin_br,Leroy Merlin BR,https://www.leroymerlin.com.br,BR,BRL,hogar,4,4,5,1,5
+rosen_cl,Rosen CL,https://www.rosen.cl,CL,CLP,hogar,3,3,3,2,3
+oboticario_br,O Boticario,https://www.oboticario.com.br,BR,BRL,belleza,3,4,5,5,5
+natura_br,Natura BR,https://www.natura.com.br,BR,BRL,belleza,3,4,5,1,5
+avon_br,Avon BR,https://www.avon.com.br,BR,BRL,belleza,3,4,4,1,4
+natura_mx,Natura MX,https://www.natura.com.mx,MX,MXN,belleza,3,3,4,3,4
+natura_co,Natura CO,https://www.natura.com.co,CO,COP,belleza,3,3,4,3,4
+natura_cl,Natura CL,https://www.natura.cl,CL,CLP,belleza,3,3,3,2,4
+petlove_br,Petlove,https://www.petlove.com.br,BR,BRL,mascotas,3,4,5,5,5
+petz_br,Petz,https://www.petz.com.br,BR,BRL,mascotas,3,4,5,1,5
+cobasi_br,Cobasi,https://www.cobasi.com.br,BR,BRL,mascotas,3,4,4,1,4
+saraiva_br,Saraiva,https://www.saraiva.com.br,BR,BRL,libreria,3,3,4,5,4
+officedepot_mx,Office Depot MX,https://www.officedepot.com.mx,MX,MXN,libreria,3,3,4,3,4
+tailoy_pe,Tai Loy,https://www.tailoy.com.pe,PE,PEN,libreria,3,2,3,2,3
+liverpool_mx,Liverpool,https://www.liverpool.com.mx,MX,MXN,departamentales,4,5,5,4,5
+palacio_mx,Palacio Hierro,https://www.elpalaciodehierro.com,MX,MXN,departamentales,3,4,5,3,5
+sears_mx,Sears MX,https://www.sears.com.mx,MX,MXN,departamentales,3,4,5,2,4
+sanborns_mx,Sanborns,https://www.sanborns.com.mx,MX,MXN,departamentales,3,4,4,1,4
+oechsle_pe,Oechsle,https://www.oechsle.pe,PE,PEN,departamentales,3,4,4,3,4
+paris_cl,Paris CL,https://www.paris.cl,CL,CLP,departamentales,3,4,5,3,5
+lapolar_cl,La Polar CL,https://www.lapolar.cl,CL,CLP,departamentales,3,3,4,1,3
+nestle_br,Nestle BR,https://www.nestle.com.br,BR,BRL,alimentos,4,3,4,5,5
+unilever_br,Unilever BR,https://www.unilever.com.br,BR,BRL,alimentos,4,3,4,1,5
+swift_br,Swift BR,https://www.swift.com.br,BR,BRL,alimentos,4,3,4,1,4
+autozone_mx,AutoZone MX,https://www.autozone.com.mx,MX,MXN,autopartes,3,3,4,3,5
