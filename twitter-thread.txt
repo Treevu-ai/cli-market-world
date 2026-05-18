@@ -1,78 +1,48 @@
-HILO DE TWITTER — CLI AGENTIC MARKET
+HILO DE TWITTER — CLI MARKET
 =====================================
 5 tweets. Publicar en orden.
-Capturá screenshots reales de tu terminal ejecutando los comandos.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TWEET 1:
+Stripe convirtio los pagos en APIs. Yo converti el comercio en APIs.
 
-TWEET 1 — EL PROBLEMA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Los supermercados en LATAM no están listos para agentes IA.
+CLI Market: 3,400+ retailers VTEX en 67 paises. Una sola API. 12 herramientas MCP. Open source.
 
-Sus APIs no existen, están fragmentadas, o son imposibles de consumir por un LLM.
+Los agentes de IA ya pueden buscar, comparar y comprar solos.
 
-Si querés que un agente haga las compras por vos, hoy no puede.
+TWEET 2:
+El e-commerce esta optimizado para clicks, no para agentes.
 
-Pero eso está por cambiar.
+VTEX tiene 3,400+ retailers con la misma API publica. Nadie habia construido la capa de agregacion cross-retailer. Ahora existe.
 
-[Screenshot del banner del market corriendo en terminal]
+Una linea de JSON por retailer. 67 paises. 12 lineas de negocio.
 
-https://nuevo-virid.vercel.app
+TWEET 3:
+Como funciona en la terminal:
 
+$ market search "leche" --country PE
+1. Leche Gloria 400ml Wong S/3.50
 
-TWEET 2 — LA SOLUCIÓN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLI AGENTIC MARKET convierte supermercados en APIs para agentes IA.
+$ market compare "aceite"
+Aceite Primor 1L → S/8.90 Wong PE
+Aceite Natura 900ml → ARS 1,250 Carrefour AR
+Aceite Liza 900ml → R$6.50 Carrefour BR
 
-Buscás productos reales en Wong, Metro y Plaza Vea. Comparás precios. Comprás. Todo desde la terminal.
+$ market checkout --payment yape
 
-Y si sos dev: exponemos todo como MCP tools para tus agentes.
+TWEET 4:
+Para agentes de IA: 12 MCP tools listas.
 
-[Screenshot de market search o market compare]
+market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder, market_ask
 
-https://github.com/Treevu-ai/agentic-market
+Compatible con Claude, DeepSeek, GPT. JSON parseable. Token-efficient.
 
+TWEET 5:
+Open source. MIT license. Python.
 
-TWEET 3 — CÓMO FUNCIONA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Tres comandos y ya estás comprando:
+pip install git+https://github.com/Treevu-ai/cli-market-world.git
+market-server &
+market login
 
-market search "leche" — busca en 3 supermercados
-market compare "aceite" — te dice cuál es más barato
-market ask "compra arroz" — el agente busca, elige y agrega al carrito
+https://cli-market.dev
 
-Zero clicks. Todo desde la terminal.
-
-[Screenshot del flujo search → add → cart]
-
-
-TWEET 4 — PARA HUMANOS Y AGENTES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Esto no es solo para humanos.
-
-Human-friendly: comandos, tablas, flujo de compra
-Agent-friendly: REST API, MCP tools, JSON
-
-market --json → parseable por cualquier LLM
-market_mcp.py → 9 tools MCP para DeepSeek TUI, Claude, etc.
-
-Stripe transformó pagos en APIs. Nosotros transformamos supermercados.
-
-[Screenshot de market --json]
-
-
-TWEET 5 — CALL TO ACTION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-pip install agentic-market
-
-→ Buscá en Wong, Metro y Plaza Vea
-→ Compará precios en tiempo real
-→ Dejá que tu agente IA compre por vos
-→ Sumá tu supermercado con 1 línea de config
-
-Open source. GitHub. LATAM first.
-
-🌎 Landing: https://nuevo-virid.vercel.app
-💻 GitHub: https://github.com/Treevu-ai/agentic-market
-
-[GIF del market corriendo]
+Si estas construyendo agentes de IA o infraestructura para el nuevo internet, el repo es publico.
