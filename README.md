@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-100-brightgreen" alt="100 retailers">
+  <img src="https://img.shields.io/badge/retailers-500+-brightgreen" alt="100 retailers">
   <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
-  <img src="https://img.shields.io/badge/countries-12-orange" alt="12 countries">
+  <img src="https://img.shields.io/badge/countries-31-orange" alt="12 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">

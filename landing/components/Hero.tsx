@@ -26,7 +26,7 @@ function TerminalPreview({ mounted }: { mounted: boolean }) {
 
         {/* Welcome banner */}
         <rect x="20" y="44" width="520" height="48" fill="#0D0D0D" stroke="#1A1A1A" strokeWidth="0.5" rx="2" />
-        <text x="40" y="64" fontFamily="monospace" fontSize="9" fill="#FFD600" fontWeight="bold">CLI MARKET v1.0 · 100 retailers · 12 líneas</text>
+        <text x="40" y="64" fontFamily="monospace" fontSize="9" fill="#FFD600" fontWeight="bold">CLI MARKET v1.0 · 500+ retailers · 12 líneas</text>
         <text x="40" y="80" fontFamily="monospace" fontSize="7" fill="#444">Conectá agentes de IA con el comercio LATAM</text>
 
         {/* Prompt 1 */}
@@ -101,7 +101,7 @@ function TerminalPreview({ mounted }: { mounted: boolean }) {
         {/* Status bar */}
         <rect x="4" y="388" width="552" height="28" fill="#0F0F0F" />
         <circle cx="18" cy="402" r="3" fill="#00FF88" />
-        <text x="28" y="406" fontFamily="monospace" fontSize="6" fill="#555">100 STORES</text>
+        <text x="28" y="406" fontFamily="monospace" fontSize="6" fill="#555">500+ STORES</text>
         <text x="132" y="406" fontFamily="monospace" fontSize="6" fill="#444">·</text>
         <text x="142" y="406" fontFamily="monospace" fontSize="6" fill="#555">12 LINES</text>
         <text x="240" y="406" fontFamily="monospace" fontSize="6" fill="#444">·</text>
@@ -136,7 +136,7 @@ export default function Hero() {
             Infraestructura de comercio para agentes de inteligencia artificial
           </h2>
           <p className="mt-6 md:mt-8 max-w-md font-mono text-[13px] md:text-[14px] text-[#888] leading-relaxed">
-            100 retailers en 12 países comparten la misma API VTEX. 
+            500+ retailers en 31 países comparten la misma API VTEX. 
             Construimos la capa de datos que ningún retailer puede construir solo.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

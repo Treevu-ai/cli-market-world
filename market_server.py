@@ -224,20 +224,16 @@ LINES = {
     "autopartes":      {"name": "Autopartes",            "emoji": "🔧", "description": "Repuestos y accesorios automotrices"},
 }
 
-COUNTRIES = {
-    "PE": {"name": "Perú",       "stores": [k for k, v in STORES.items() if v["country"] == "PE"]},
-    "AR": {"name": "Argentina",  "stores": [k for k, v in STORES.items() if v["country"] == "AR"]},
-    "BR": {"name": "Brasil",     "stores": [k for k, v in STORES.items() if v["country"] == "BR"]},
-    "MX": {"name": "México",     "stores": [k for k, v in STORES.items() if v["country"] == "MX"]},
-    "CO": {"name": "Colombia",   "stores": [k for k, v in STORES.items() if v["country"] == "CO"]},
-    "CL": {"name": "Chile",     "stores": [k for k, v in STORES.items() if v["country"] == "CL"]},
-    "ES": {"name": "España",    "stores": [k for k, v in STORES.items() if v["country"] == "ES"]},
-    "FR": {"name": "Francia",   "stores": [k for k, v in STORES.items() if v["country"] == "FR"]},
-    "IT": {"name": "Italia",    "stores": [k for k, v in STORES.items() if v["country"] == "IT"]},
-    "GB": {"name": "Reino Unido","stores": [k for k, v in STORES.items() if v["country"] == "GB"]},
-    "UY": {"name": "Uruguay",   "stores": [k for k, v in STORES.items() if v["country"] == "UY"]},
-    "PT": {"name": "Portugal",  "stores": [k for k, v in STORES.items() if v["country"] == "PT"]},
-}
+COUNTRIES = {}
+for _sk, _sv in STORES.items():
+    _cc = _sv["country"]
+    if _cc not in COUNTRIES:
+        COUNTRIES[_cc] = {"name": _cc, "stores": []}
+    COUNTRIES[_cc]["stores"].append(_sk)
+# Human-readable country names
+_country_names = {"PE":"Perú","AR":"Argentina","BR":"Brasil","MX":"México","CO":"Colombia","CL":"Chile","ES":"España","FR":"Francia","IT":"Italia","DE":"Alemania","GB":"Reino Unido","PT":"Portugal","NL":"Países Bajos","BE":"Bélgica","PL":"Polonia","SE":"Suecia","DK":"Dinamarca","FI":"Finlandia","NO":"Noruega","AT":"Austria","CH":"Suiza","IE":"Irlanda","GR":"Grecia","CZ":"República Checa","RO":"Rumania","HU":"Hungría","SK":"Eslovaquia","BG":"Bulgaria","HR":"Croacia","SI":"Eslovenia","UY":"Uruguay","EC":"Ecuador","BO":"Bolivia","PY":"Paraguay","VE":"Venezuela","CR":"Costa Rica","GT":"Guatemala","SV":"El Salvador","PA":"Panamá","US":"Estados Unidos","AU":"Australia","JP":"Japón","KR":"Corea del Sur","CN":"China","TW":"Taiwán","SG":"Singapur","IN":"India","TR":"Turquía","ZA":"Sudáfrica"}
+for _cc in COUNTRIES:
+    COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 DEFAULT_STORES = list(STORES.keys())
 PAGE_SIZE = 20
 

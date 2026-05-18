@@ -99,3 +99,405 @@ swift_br,Swift BR,https://www.swift.com.br,BR,BRL,alimentos,4,3,4,1,4
 autozone_mx,AutoZone MX,https://www.autozone.com.mx,MX,MXN,autopartes,3,3,4,3,5
 ta_ta_uy,Ta-Ta,https://www.tata.com.uy,UY,UYU,supermercados,5,5,4,5,5
 decathlon_pt,Decathlon PT,https://www.decathlon.pt,PT,EUR,deportes,5,5,4,4,5
+carrefour_ar_ar,Carrefour AR,https://www.carrefour.com.ar,AR,ARS,supermercados,5,5,4,3,5
+carrefour_br_br,Carrefour BR,https://www.carrefour.com.br,BR,BRL,supermercados,5,5,4,3,5
+carrefour_es_es,Carrefour ES,https://www.carrefour.es,ES,EUR,supermercados,5,5,4,3,5
+carrefour_fr_fr,Carrefour FR,https://www.carrefour.fr,FR,EUR,supermercados,5,5,4,3,5
+carrefour_it_it,Carrefour IT,https://www.carrefour.it,IT,EUR,supermercados,5,5,4,3,5
+carrefour_be_be,Carrefour BE,https://www.carrefour.be,BE,EUR,supermercados,5,5,4,3,5
+carrefour_ro_ro,Carrefour RO,https://www.carrefour.ro,RO,RON,supermercados,5,5,4,3,5
+carrefour_pl_pl,Carrefour PL,https://www.carrefour.pl,PL,PLN,supermercados,5,5,4,3,5
+lider_cl_cl,Lider CL,https://www.lider.cl,CL,CLP,supermercados,5,5,4,3,5
+santa_isabel_cl_cl,Santa Isabel CL,https://www.santaisabel.cl,CL,CLP,supermercados,5,5,4,3,5
+santa_isabel_pe_pe,Santa Isabel PE,https://www.santaisabel.pe,PE,PEN,supermercados,5,5,4,3,5
+cencosud_ar_ar,Cencosud AR,https://www.cencosud.com.ar,AR,ARS,supermercados,5,5,4,3,5
+cencosud_cl_cl,Cencosud CL,https://www.cencosud.cl,CL,CLP,supermercados,5,5,4,3,5
+cencosud_pe_pe,Cencosud PE,https://www.cencosud.pe,PE,PEN,supermercados,5,5,4,3,5
+cencosud_co_co,Cencosud CO,https://www.cencosud.co,CO,COP,supermercados,5,5,4,3,5
+cencosud_br_br,Cencosud BR,https://www.cencosud.com.br,BR,BRL,supermercados,5,5,4,3,5
+cencosud_uy_uy,Cencosud UY,https://www.cencosud.uy,UY,UYU,supermercados,5,5,4,3,5
+dia_ar_ar,Dia AR,https://www.dia.com.ar,AR,ARS,supermercados,5,5,4,3,5
+dia_br_br,Dia BR,https://www.dia.com.br,BR,BRL,supermercados,5,5,4,3,5
+dia_es_es,Dia ES,https://www.dia.es,ES,EUR,supermercados,5,5,4,3,5
+dia_pt_pt,Dia PT,https://www.dia.pt,PT,EUR,supermercados,5,5,4,3,5
+walmart_mx_mx,Walmart MX,https://www.walmart.com.mx,MX,MXN,supermercados,5,5,4,3,5
+walmart_cl_cl,Walmart CL,https://www.walmart.cl,CL,CLP,supermercados,5,5,4,3,5
+walmart_ar_ar,Walmart AR,https://www.walmart.com.ar,AR,ARS,supermercados,5,5,4,3,5
+walmart_us_us,Walmart US,https://www.walmart.com,US,USD,supermercados,5,5,4,3,5
+exito_co_co,Éxito CO,https://www.exito.com,CO,COP,supermercados,5,5,4,3,5
+exito_uy_uy,Éxito UY,https://www.exito.uy,UY,UYU,supermercados,5,5,4,3,5
+exito_ec_ec,Éxito EC,https://www.exito.ec,EC,USD,supermercados,5,5,4,3,5
+sodimac_co_co,Sodimac CO,https://www.sodimac.com.co,CO,COP,hogar,5,5,4,3,5
+sodimac_cl_cl,Sodimac CL,https://www.sodimac.cl,CL,CLP,hogar,5,5,4,3,5
+sodimac_pe_pe,Sodimac PE,https://www.sodimac.pe,PE,PEN,hogar,5,5,4,3,5
+sodimac_ar_ar,Sodimac AR,https://www.sodimac.com.ar,AR,ARS,hogar,5,5,4,3,5
+sodimac_br_br,Sodimac BR,https://www.sodimac.com.br,BR,BRL,hogar,5,5,4,3,5
+sodimac_mx_mx,Sodimac MX,https://www.sodimac.com.mx,MX,MXN,hogar,5,5,4,3,5
+sodimac_uy_uy,Sodimac UY,https://www.sodimac.com.uy,UY,UYU,hogar,5,5,4,3,5
+easy_ar_ar,Easy AR,https://www.easy.com.ar,AR,ARS,hogar,5,5,4,3,5
+easy_cl_cl,Easy CL,https://www.easy.cl,CL,CLP,hogar,5,5,4,3,5
+easy_co_co,Easy CO,https://www.easy.co,CO,COP,hogar,5,5,4,3,5
+easy_pe_pe,Easy PE,https://www.easy.pe,PE,PEN,hogar,5,5,4,3,5
+ripley_cl_cl,Ripley CL,https://www.ripley.cl,CL,CLP,departamentales,5,5,4,3,5
+ripley_pe_pe,Ripley PE,https://www.ripley.pe,PE,PEN,departamentales,5,5,4,3,5
+ripley_co_co,Ripley CO,https://www.ripley.co,CO,COP,departamentales,5,5,4,3,5
+ripley_mx_mx,Ripley MX,https://www.ripley.com.mx,MX,MXN,departamentales,5,5,4,3,5
+ripley_ar_ar,Ripley AR,https://www.ripley.com.ar,AR,ARS,departamentales,5,5,4,3,5
+falabella_cl_cl,Falabella CL,https://www.falabella.cl,CL,CLP,departamentales,5,5,4,3,5
+falabella_pe_pe,Falabella PE,https://www.falabella.pe,PE,PEN,departamentales,5,5,4,3,5
+falabella_co_co,Falabella CO,https://www.falabella.co,CO,COP,departamentales,5,5,4,3,5
+falabella_ar_ar,Falabella AR,https://www.falabella.com.ar,AR,ARS,departamentales,5,5,4,3,5
+falabella_br_br,Falabella BR,https://www.falabella.com.br,BR,BRL,departamentales,5,5,4,3,5
+falabella_mx_mx,Falabella MX,https://www.falabella.com.mx,MX,MXN,departamentales,5,5,4,3,5
+falabella_uy_uy,Falabella UY,https://www.falabella.com.uy,UY,UYU,departamentales,5,5,4,3,5
+samsung_br_br,Samsung BR,https://www.samsung.com.br,BR,BRL,electro,5,5,4,3,5
+samsung_mx_mx,Samsung MX,https://www.samsung.com.mx,MX,MXN,electro,5,5,4,3,5
+samsung_ar_ar,Samsung AR,https://www.samsung.com.ar,AR,ARS,electro,5,5,4,3,5
+samsung_cl_cl,Samsung CL,https://www.samsung.cl,CL,CLP,electro,5,5,4,3,5
+samsung_pe_pe,Samsung PE,https://www.samsung.pe,PE,PEN,electro,5,5,4,3,5
+samsung_co_co,Samsung CO,https://www.samsung.co,CO,COP,electro,5,5,4,3,5
+samsung_es_es,Samsung ES,https://www.samsung.es,ES,EUR,electro,5,5,4,3,5
+samsung_fr_fr,Samsung FR,https://www.samsung.fr,FR,EUR,electro,5,5,4,3,5
+samsung_it_it,Samsung IT,https://www.samsung.it,IT,EUR,electro,5,5,4,3,5
+samsung_gb_gb,Samsung GB,https://www.samsung.uk,GB,GBP,electro,5,5,4,3,5
+samsung_de_de,Samsung DE,https://www.samsung.de,DE,EUR,electro,5,5,4,3,5
+samsung_us_us,Samsung US,https://www.samsung.us,US,USD,electro,5,5,4,3,5
+samsung_pt_pt,Samsung PT,https://www.samsung.pt,PT,EUR,electro,5,5,4,3,5
+lg_br_br,LG BR,https://www.lg.com.br,BR,BRL,electro,5,5,4,3,5
+lg_mx_mx,LG MX,https://www.lg.com.mx,MX,MXN,electro,5,5,4,3,5
+lg_ar_ar,LG AR,https://www.lg.com.ar,AR,ARS,electro,5,5,4,3,5
+lg_cl_cl,LG CL,https://www.lg.cl,CL,CLP,electro,5,5,4,3,5
+lg_es_es,LG ES,https://www.lg.es,ES,EUR,electro,5,5,4,3,5
+lg_fr_fr,LG FR,https://www.lg.fr,FR,EUR,electro,5,5,4,3,5
+lg_it_it,LG IT,https://www.lg.it,IT,EUR,electro,5,5,4,3,5
+lg_de_de,LG DE,https://www.lg.de,DE,EUR,electro,5,5,4,3,5
+lg_us_us,LG US,https://www.lg.us,US,USD,electro,5,5,4,3,5
+lg_pt_pt,LG PT,https://www.lg.pt,PT,EUR,electro,5,5,4,3,5
+motorola_br_br,Motorola BR,https://www.motorola.com.br,BR,BRL,electro,5,5,4,3,5
+motorola_mx_mx,Motorola MX,https://www.motorola.com.mx,MX,MXN,electro,5,5,4,3,5
+motorola_ar_ar,Motorola AR,https://www.motorola.com.ar,AR,ARS,electro,5,5,4,3,5
+motorola_cl_cl,Motorola CL,https://www.motorola.cl,CL,CLP,electro,5,5,4,3,5
+motorola_es_es,Motorola ES,https://www.motorola.es,ES,EUR,electro,5,5,4,3,5
+motorola_it_it,Motorola IT,https://www.motorola.it,IT,EUR,electro,5,5,4,3,5
+motorola_gb_gb,Motorola GB,https://www.motorola.co.uk,GB,GBP,electro,5,5,4,3,5
+motorola_de_de,Motorola DE,https://www.motorola.de,DE,EUR,electro,5,5,4,3,5
+motorola_us_us,Motorola US,https://www.motorola.com,US,USD,electro,5,5,4,3,5
+electrolux_br_br,Electrolux BR,https://www.electrolux.com.br,BR,BRL,electro,5,5,4,3,5
+electrolux_mx_mx,Electrolux MX,https://www.electrolux.com.mx,MX,MXN,electro,5,5,4,3,5
+electrolux_ar_ar,Electrolux AR,https://www.electrolux.com.ar,AR,ARS,electro,5,5,4,3,5
+electrolux_cl_cl,Electrolux CL,https://www.electrolux.cl,CL,CLP,electro,5,5,4,3,5
+electrolux_es_es,Electrolux ES,https://www.electrolux.es,ES,EUR,electro,5,5,4,3,5
+electrolux_it_it,Electrolux IT,https://www.electrolux.it,IT,EUR,electro,5,5,4,3,5
+electrolux_fr_fr,Electrolux FR,https://www.electrolux.fr,FR,EUR,electro,5,5,4,3,5
+electrolux_de_de,Electrolux DE,https://www.electrolux.de,DE,EUR,electro,5,5,4,3,5
+electrolux_se_se,Electrolux SE,https://www.electrolux.se,SE,SEK,electro,5,5,4,3,5
+electrolux_pt_pt,Electrolux PT,https://www.electrolux.pt,PT,EUR,electro,5,5,4,3,5
+electrolux_nl_nl,Electrolux NL,https://www.electrolux.nl,NL,EUR,electro,5,5,4,3,5
+whirlpool_br_br,Whirlpool BR,https://www.whirlpool.com.br,BR,BRL,electro,5,5,4,3,5
+whirlpool_mx_mx,Whirlpool MX,https://www.whirlpool.com.mx,MX,MXN,electro,5,5,4,3,5
+whirlpool_ar_ar,Whirlpool AR,https://www.whirlpool.com.ar,AR,ARS,electro,5,5,4,3,5
+whirlpool_es_es,Whirlpool ES,https://www.whirlpool.es,ES,EUR,electro,5,5,4,3,5
+whirlpool_it_it,Whirlpool IT,https://www.whirlpool.it,IT,EUR,electro,5,5,4,3,5
+whirlpool_fr_fr,Whirlpool FR,https://www.whirlpool.fr,FR,EUR,electro,5,5,4,3,5
+whirlpool_de_de,Whirlpool DE,https://www.whirlpool.de,DE,EUR,electro,5,5,4,3,5
+whirlpool_gb_gb,Whirlpool GB,https://www.whirlpool.co.uk,GB,GBP,electro,5,5,4,3,5
+whirlpool_us_us,Whirlpool US,https://www.whirlpool.com,US,USD,electro,5,5,4,3,5
+whirlpool_pt_pt,Whirlpool PT,https://www.whirlpool.pt,PT,EUR,electro,5,5,4,3,5
+ca_br_br,C&A BR,https://www.cea.com.br,BR,BRL,moda,5,5,4,3,5
+ca_mx_mx,C&A MX,https://www.cea.com.mx,MX,MXN,moda,5,5,4,3,5
+ca_ar_ar,C&A AR,https://www.cea.com.ar,AR,ARS,moda,5,5,4,3,5
+ca_cl_cl,C&A CL,https://www.cea.cl,CL,CLP,moda,5,5,4,3,5
+ca_pe_pe,C&A PE,https://www.cea.pe,PE,PEN,moda,5,5,4,3,5
+ca_co_co,C&A CO,https://www.cea.co,CO,COP,moda,5,5,4,3,5
+ca_es_es,C&A ES,https://www.cea.es,ES,EUR,moda,5,5,4,3,5
+ca_fr_fr,C&A FR,https://www.cea.fr,FR,EUR,moda,5,5,4,3,5
+ca_de_de,C&A DE,https://www.cea.de,DE,EUR,moda,5,5,4,3,5
+ca_it_it,C&A IT,https://www.cea.it,IT,EUR,moda,5,5,4,3,5
+ca_pt_pt,C&A PT,https://www.cea.pt,PT,EUR,moda,5,5,4,3,5
+ca_nl_nl,C&A NL,https://www.cea.nl,NL,EUR,moda,5,5,4,3,5
+hering_br_br,Hering BR,https://www.hering.com.br,BR,BRL,moda,5,5,4,3,5
+hering_mx_mx,Hering MX,https://www.hering.com.mx,MX,MXN,moda,5,5,4,3,5
+hering_ar_ar,Hering AR,https://www.hering.com.ar,AR,ARS,moda,5,5,4,3,5
+hering_cl_cl,Hering CL,https://www.hering.cl,CL,CLP,moda,5,5,4,3,5
+hering_pe_pe,Hering PE,https://www.hering.pe,PE,PEN,moda,5,5,4,3,5
+hering_co_co,Hering CO,https://www.hering.co,CO,COP,moda,5,5,4,3,5
+zara_es_es,Zara ES,https://www.zara.es,ES,EUR,moda,5,5,4,3,5
+zara_fr_fr,Zara FR,https://www.zara.fr,FR,EUR,moda,5,5,4,3,5
+zara_it_it,Zara IT,https://www.zara.it,IT,EUR,moda,5,5,4,3,5
+zara_de_de,Zara DE,https://www.zara.de,DE,EUR,moda,5,5,4,3,5
+zara_gb_gb,Zara GB,https://www.zara.co.uk,GB,GBP,moda,5,5,4,3,5
+zara_pt_pt,Zara PT,https://www.zara.pt,PT,EUR,moda,5,5,4,3,5
+zara_nl_nl,Zara NL,https://www.zara.nl,NL,EUR,moda,5,5,4,3,5
+zara_cl_cl,Zara CL,https://www.zara.cl,CL,CLP,moda,5,5,4,3,5
+zara_mx_mx,Zara MX,https://www.zara.com.mx,MX,MXN,moda,5,5,4,3,5
+zara_ar_ar,Zara AR,https://www.zara.com.ar,AR,ARS,moda,5,5,4,3,5
+zara_co_co,Zara CO,https://www.zara.co,CO,COP,moda,5,5,4,3,5
+zara_pe_pe,Zara PE,https://www.zara.pe,PE,PEN,moda,5,5,4,3,5
+zara_br_br,Zara BR,https://www.zara.com.br,BR,BRL,moda,5,5,4,3,5
+mango_es_es,Mango ES,https://www.mango.com,ES,EUR,moda,5,5,4,3,5
+mango_fr_fr,Mango FR,https://www.mango.fr,FR,EUR,moda,5,5,4,3,5
+mango_it_it,Mango IT,https://www.mango.it,IT,EUR,moda,5,5,4,3,5
+mango_de_de,Mango DE,https://www.mango.de,DE,EUR,moda,5,5,4,3,5
+mango_gb_gb,Mango GB,https://www.mango.co.uk,GB,GBP,moda,5,5,4,3,5
+mango_pt_pt,Mango PT,https://www.mango.pt,PT,EUR,moda,5,5,4,3,5
+mango_nl_nl,Mango NL,https://www.mango.nl,NL,EUR,moda,5,5,4,3,5
+decathlon_fr_fr,Decathlon FR,https://www.decathlon.fr,FR,EUR,deportes,5,5,4,3,5
+decathlon_es_es,Decathlon ES,https://www.decathlon.es,ES,EUR,deportes,5,5,4,3,5
+decathlon_it_it,Decathlon IT,https://www.decathlon.it,IT,EUR,deportes,5,5,4,3,5
+decathlon_de_de,Decathlon DE,https://www.decathlon.de,DE,EUR,deportes,5,5,4,3,5
+decathlon_gb_gb,Decathlon GB,https://www.decathlon.co.uk,GB,GBP,deportes,5,5,4,3,5
+decathlon_pt_pt,Decathlon PT,https://www.decathlon.pt,PT,EUR,deportes,5,5,4,3,5
+decathlon_nl_nl,Decathlon NL,https://www.decathlon.nl,NL,EUR,deportes,5,5,4,3,5
+decathlon_be_be,Decathlon BE,https://www.decathlon.be,BE,EUR,deportes,5,5,4,3,5
+decathlon_pl_pl,Decathlon PL,https://www.decathlon.pl,PL,PLN,deportes,5,5,4,3,5
+decathlon_br_br,Decathlon BR,https://www.decathlon.com.br,BR,BRL,deportes,5,5,4,3,5
+decathlon_cl_cl,Decathlon CL,https://www.decathlon.cl,CL,CLP,deportes,5,5,4,3,5
+decathlon_pe_pe,Decathlon PE,https://www.decathlon.pe,PE,PEN,deportes,5,5,4,3,5
+decathlon_co_co,Decathlon CO,https://www.decathlon.com.co,CO,COP,deportes,5,5,4,3,5
+decathlon_ar_ar,Decathlon AR,https://www.decathlon.com.ar,AR,ARS,deportes,5,5,4,3,5
+decathlon_mx_mx,Decathlon MX,https://www.decathlon.com.mx,MX,MXN,deportes,5,5,4,3,5
+decathlon_se_se,Decathlon SE,https://www.decathlon.se,SE,SEK,deportes,5,5,4,3,5
+nike_br_br,Nike BR,https://www.nike.com.br,BR,BRL,deportes,5,5,4,3,5
+nike_mx_mx,Nike MX,https://www.nike.com.mx,MX,MXN,deportes,5,5,4,3,5
+nike_ar_ar,Nike AR,https://www.nike.com.ar,AR,ARS,deportes,5,5,4,3,5
+nike_cl_cl,Nike CL,https://www.nike.cl,CL,CLP,deportes,5,5,4,3,5
+nike_pe_pe,Nike PE,https://www.nike.pe,PE,PEN,deportes,5,5,4,3,5
+nike_co_co,Nike CO,https://www.nike.co,CO,COP,deportes,5,5,4,3,5
+nike_es_es,Nike ES,https://www.nike.es,ES,EUR,deportes,5,5,4,3,5
+nike_fr_fr,Nike FR,https://www.nike.fr,FR,EUR,deportes,5,5,4,3,5
+nike_it_it,Nike IT,https://www.nike.it,IT,EUR,deportes,5,5,4,3,5
+nike_de_de,Nike DE,https://www.nike.de,DE,EUR,deportes,5,5,4,3,5
+nike_gb_gb,Nike GB,https://www.nike.com,GB,GBP,deportes,5,5,4,3,5
+nike_pt_pt,Nike PT,https://www.nike.pt,PT,EUR,deportes,5,5,4,3,5
+nike_nl_nl,Nike NL,https://www.nike.nl,NL,EUR,deportes,5,5,4,3,5
+nike_se_se,Nike SE,https://www.nike.se,SE,SEK,deportes,5,5,4,3,5
+nike_pl_pl,Nike PL,https://www.nike.pl,PL,PLN,deportes,5,5,4,3,5
+adidas_br_br,Adidas BR,https://www.adidas.com.br,BR,BRL,deportes,5,5,4,3,5
+adidas_mx_mx,Adidas MX,https://www.adidas.com.mx,MX,MXN,deportes,5,5,4,3,5
+adidas_ar_ar,Adidas AR,https://www.adidas.com.ar,AR,ARS,deportes,5,5,4,3,5
+adidas_cl_cl,Adidas CL,https://www.adidas.cl,CL,CLP,deportes,5,5,4,3,5
+adidas_pe_pe,Adidas PE,https://www.adidas.pe,PE,PEN,deportes,5,5,4,3,5
+adidas_co_co,Adidas CO,https://www.adidas.co,CO,COP,deportes,5,5,4,3,5
+adidas_es_es,Adidas ES,https://www.adidas.es,ES,EUR,deportes,5,5,4,3,5
+adidas_fr_fr,Adidas FR,https://www.adidas.fr,FR,EUR,deportes,5,5,4,3,5
+adidas_it_it,Adidas IT,https://www.adidas.it,IT,EUR,deportes,5,5,4,3,5
+adidas_de_de,Adidas DE,https://www.adidas.de,DE,EUR,deportes,5,5,4,3,5
+adidas_gb_gb,Adidas GB,https://www.adidas.co.uk,GB,GBP,deportes,5,5,4,3,5
+adidas_pt_pt,Adidas PT,https://www.adidas.pt,PT,EUR,deportes,5,5,4,3,5
+adidas_nl_nl,Adidas NL,https://www.adidas.nl,NL,EUR,deportes,5,5,4,3,5
+adidas_pl_pl,Adidas PL,https://www.adidas.pl,PL,PLN,deportes,5,5,4,3,5
+adidas_se_se,Adidas SE,https://www.adidas.se,SE,SEK,deportes,5,5,4,3,5
+puma_br_br,Puma BR,https://www.puma.com.br,BR,BRL,deportes,5,5,4,3,5
+puma_mx_mx,Puma MX,https://www.puma.com.mx,MX,MXN,deportes,5,5,4,3,5
+puma_ar_ar,Puma AR,https://www.puma.com.ar,AR,ARS,deportes,5,5,4,3,5
+puma_es_es,Puma ES,https://www.puma.es,ES,EUR,deportes,5,5,4,3,5
+puma_fr_fr,Puma FR,https://www.puma.fr,FR,EUR,deportes,5,5,4,3,5
+puma_it_it,Puma IT,https://www.puma.it,IT,EUR,deportes,5,5,4,3,5
+puma_de_de,Puma DE,https://www.puma.de,DE,EUR,deportes,5,5,4,3,5
+puma_gb_gb,Puma GB,https://www.puma.co.uk,GB,GBP,deportes,5,5,4,3,5
+puma_pt_pt,Puma PT,https://www.puma.pt,PT,EUR,deportes,5,5,4,3,5
+puma_nl_nl,Puma NL,https://www.puma.nl,NL,EUR,deportes,5,5,4,3,5
+o_boticario_br_br,O Boticário BR,https://www.oboticario.com.br,BR,BRL,belleza,5,5,4,3,5
+o_boticario_pt_pt,O Boticário PT,https://www.oboticario.pt,PT,EUR,belleza,5,5,4,3,5
+o_boticario_ar_ar,O Boticário AR,https://www.oboticario.com.ar,AR,ARS,belleza,5,5,4,3,5
+o_boticario_cl_cl,O Boticário CL,https://www.oboticario.cl,CL,CLP,belleza,5,5,4,3,5
+o_boticario_pe_pe,O Boticário PE,https://www.oboticario.pe,PE,PEN,belleza,5,5,4,3,5
+o_boticario_co_co,O Boticário CO,https://www.oboticario.co,CO,COP,belleza,5,5,4,3,5
+o_boticario_mx_mx,O Boticário MX,https://www.oboticario.com.mx,MX,MXN,belleza,5,5,4,3,5
+o_boticario_bo_bo,O Boticário BO,https://www.oboticario.com.bo,BO,BOB,belleza,5,5,4,3,5
+o_boticario_py_py,O Boticário PY,https://www.oboticario.com.py,PY,PYG,belleza,5,5,4,3,5
+o_boticario_uy_uy,O Boticário UY,https://www.oboticario.com.uy,UY,UYU,belleza,5,5,4,3,5
+o_boticario_es_es,O Boticário ES,https://www.oboticario.es,ES,EUR,belleza,5,5,4,3,5
+o_boticario_fr_fr,O Boticário FR,https://www.oboticario.fr,FR,EUR,belleza,5,5,4,3,5
+o_boticario_it_it,O Boticário IT,https://www.oboticario.it,IT,EUR,belleza,5,5,4,3,5
+o_boticario_de_de,O Boticário DE,https://www.oboticario.de,DE,EUR,belleza,5,5,4,3,5
+o_boticario_gb_gb,O Boticário GB,https://www.oboticario.co.uk,GB,GBP,belleza,5,5,4,3,5
+o_boticario_us_us,O Boticário US,https://www.oboticario.com,US,USD,belleza,5,5,4,3,5
+natura_br_br,Natura BR,https://www.natura.com.br,BR,BRL,belleza,5,5,4,3,5
+natura_mx_mx,Natura MX,https://www.natura.com.mx,MX,MXN,belleza,5,5,4,3,5
+natura_ar_ar,Natura AR,https://www.natura.com.ar,AR,ARS,belleza,5,5,4,3,5
+natura_cl_cl,Natura CL,https://www.natura.cl,CL,CLP,belleza,5,5,4,3,5
+natura_pe_pe,Natura PE,https://www.natura.pe,PE,PEN,belleza,5,5,4,3,5
+natura_co_co,Natura CO,https://www.natura.co,CO,COP,belleza,5,5,4,3,5
+natura_bo_bo,Natura BO,https://www.natura.com.bo,BO,BOB,belleza,5,5,4,3,5
+natura_fr_fr,Natura FR,https://www.natura.fr,FR,EUR,belleza,5,5,4,3,5
+avon_br_br,Avon BR,https://www.avon.com.br,BR,BRL,belleza,5,5,4,3,5
+avon_mx_mx,Avon MX,https://www.avon.com.mx,MX,MXN,belleza,5,5,4,3,5
+avon_ar_ar,Avon AR,https://www.avon.com.ar,AR,ARS,belleza,5,5,4,3,5
+avon_cl_cl,Avon CL,https://www.avon.cl,CL,CLP,belleza,5,5,4,3,5
+avon_es_es,Avon ES,https://www.avon.es,ES,EUR,belleza,5,5,4,3,5
+avon_fr_fr,Avon FR,https://www.avon.fr,FR,EUR,belleza,5,5,4,3,5
+avon_it_it,Avon IT,https://www.avon.it,IT,EUR,belleza,5,5,4,3,5
+avon_de_de,Avon DE,https://www.avon.de,DE,EUR,belleza,5,5,4,3,5
+avon_gb_gb,Avon GB,https://www.avon.com,GB,GBP,belleza,5,5,4,3,5
+avon_pt_pt,Avon PT,https://www.avon.pt,PT,EUR,belleza,5,5,4,3,5
+avon_pl_pl,Avon PL,https://www.avon.pl,PL,PLN,belleza,5,5,4,3,5
+leroy_merlin_br_br,Leroy Merlin BR,https://www.leroymerlin.com.br,BR,BRL,hogar,5,5,4,3,5
+leroy_merlin_es_es,Leroy Merlin ES,https://www.leroymerlin.es,ES,EUR,hogar,5,5,4,3,5
+leroy_merlin_fr_fr,Leroy Merlin FR,https://www.leroymerlin.fr,FR,EUR,hogar,5,5,4,3,5
+leroy_merlin_it_it,Leroy Merlin IT,https://www.leroymerlin.it,IT,EUR,hogar,5,5,4,3,5
+leroy_merlin_pt_pt,Leroy Merlin PT,https://www.leroymerlin.pt,PT,EUR,hogar,5,5,4,3,5
+leroy_merlin_pl_pl,Leroy Merlin PL,https://www.leroymerlin.pl,PL,PLN,hogar,5,5,4,3,5
+leroy_merlin_ro_ro,Leroy Merlin RO,https://www.leroymerlin.ro,RO,RON,hogar,5,5,4,3,5
+rosen_cl_cl,Rosen CL,https://www.rosen.cl,CL,CLP,hogar,5,5,4,3,5
+rosen_pe_pe,Rosen PE,https://www.rosen.pe,PE,PEN,hogar,5,5,4,3,5
+rosen_co_co,Rosen CO,https://www.rosen.co,CO,COP,hogar,5,5,4,3,5
+rosen_mx_mx,Rosen MX,https://www.rosen.com.mx,MX,MXN,hogar,5,5,4,3,5
+rosen_ar_ar,Rosen AR,https://www.rosen.com.ar,AR,ARS,hogar,5,5,4,3,5
+rosen_ec_ec,Rosen EC,https://www.rosen.com,EC,USD,hogar,5,5,4,3,5
+nestle_br_br,Nestlé BR,https://www.nestle.com.br,BR,BRL,alimentos,5,5,4,3,5
+nestle_mx_mx,Nestlé MX,https://www.nestle.com.mx,MX,MXN,alimentos,5,5,4,3,5
+nestle_ar_ar,Nestlé AR,https://www.nestle.com.ar,AR,ARS,alimentos,5,5,4,3,5
+nestle_es_es,Nestlé ES,https://www.nestle.es,ES,EUR,alimentos,5,5,4,3,5
+nestle_fr_fr,Nestlé FR,https://www.nestle.fr,FR,EUR,alimentos,5,5,4,3,5
+nestle_it_it,Nestlé IT,https://www.nestle.it,IT,EUR,alimentos,5,5,4,3,5
+nestle_de_de,Nestlé DE,https://www.nestle.de,DE,EUR,alimentos,5,5,4,3,5
+nestle_pt_pt,Nestlé PT,https://www.nestle.pt,PT,EUR,alimentos,5,5,4,3,5
+nestle_cl_cl,Nestlé CL,https://www.nestle.cl,CL,CLP,alimentos,5,5,4,3,5
+nestle_co_co,Nestlé CO,https://www.nestle.co,CO,COP,alimentos,5,5,4,3,5
+nestle_pe_pe,Nestlé PE,https://www.nestle.pe,PE,PEN,alimentos,5,5,4,3,5
+nestle_gb_gb,Nestlé GB,https://www.nestle.co.uk,GB,GBP,alimentos,5,5,4,3,5
+unilever_br_br,Unilever BR,https://www.unilever.com.br,BR,BRL,alimentos,5,5,4,3,5
+unilever_mx_mx,Unilever MX,https://www.unilever.com.mx,MX,MXN,alimentos,5,5,4,3,5
+unilever_ar_ar,Unilever AR,https://www.unilever.com.ar,AR,ARS,alimentos,5,5,4,3,5
+unilever_es_es,Unilever ES,https://www.unilever.es,ES,EUR,alimentos,5,5,4,3,5
+unilever_fr_fr,Unilever FR,https://www.unilever.fr,FR,EUR,alimentos,5,5,4,3,5
+unilever_it_it,Unilever IT,https://www.unilever.it,IT,EUR,alimentos,5,5,4,3,5
+unilever_de_de,Unilever DE,https://www.unilever.de,DE,EUR,alimentos,5,5,4,3,5
+unilever_gb_gb,Unilever GB,https://www.unilever.co.uk,GB,GBP,alimentos,5,5,4,3,5
+unilever_pt_pt,Unilever PT,https://www.unilever.pt,PT,EUR,alimentos,5,5,4,3,5
+unilever_nl_nl,Unilever NL,https://www.unilever.nl,NL,EUR,alimentos,5,5,4,3,5
+danone_br_br,Danone BR,https://www.danone.com.br,BR,BRL,alimentos,5,5,4,3,5
+danone_mx_mx,Danone MX,https://www.danone.com.mx,MX,MXN,alimentos,5,5,4,3,5
+danone_ar_ar,Danone AR,https://www.danone.com.ar,AR,ARS,alimentos,5,5,4,3,5
+danone_es_es,Danone ES,https://www.danone.es,ES,EUR,alimentos,5,5,4,3,5
+danone_fr_fr,Danone FR,https://www.danone.fr,FR,EUR,alimentos,5,5,4,3,5
+danone_it_it,Danone IT,https://www.danone.it,IT,EUR,alimentos,5,5,4,3,5
+danone_de_de,Danone DE,https://www.danone.de,DE,EUR,alimentos,5,5,4,3,5
+danone_pt_pt,Danone PT,https://www.danone.pt,PT,EUR,alimentos,5,5,4,3,5
+leonisa_co_co,Leonisa CO,https://www.leonisa.com,CO,COP,moda,5,5,4,3,5
+leonisa_pe_pe,Leonisa PE,https://www.leonisa.pe,PE,PEN,moda,5,5,4,3,5
+leonisa_mx_mx,Leonisa MX,https://www.leonisa.com.mx,MX,MXN,moda,5,5,4,3,5
+leonisa_es_es,Leonisa ES,https://www.leonisa.es,ES,EUR,moda,5,5,4,3,5
+leonisa_us_us,Leonisa US,https://www.leonisa.com,US,USD,moda,5,5,4,3,5
+totto_co_co,Totto CO,https://www.totto.com,CO,COP,moda,5,5,4,3,5
+totto_pe_pe,Totto PE,https://www.totto.pe,PE,PEN,moda,5,5,4,3,5
+totto_ec_ec,Totto EC,https://www.totto.com,EC,USD,moda,5,5,4,3,5
+totto_mx_mx,Totto MX,https://www.totto.com.mx,MX,MXN,moda,5,5,4,3,5
+totto_cr_cr,Totto CR,https://www.totto.co.cr,CR,CRC,moda,5,5,4,3,5
+totto_gt_gt,Totto GT,https://www.totto.com.gt,GT,GTQ,moda,5,5,4,3,5
+totto_pa_pa,Totto PA,https://www.totto.com.pa,PA,USD,moda,5,5,4,3,5
+totto_bo_bo,Totto BO,https://www.totto.com.bo,BO,BOB,moda,5,5,4,3,5
+farmatodo_co_co,Farmatodo CO,https://www.farmatodo.com.co,CO,COP,farmacias,5,5,4,3,5
+farmatodo_mx_mx,Farmatodo MX,https://www.farmatodo.com.mx,MX,MXN,farmacias,5,5,4,3,5
+farmatodo_ve_ve,Farmatodo VE,https://www.farmatodo.com.ve,VE,USD,farmacias,5,5,4,3,5
+farmatodo_ar_ar,Farmatodo AR,https://www.farmatodo.com.ar,AR,ARS,farmacias,5,5,4,3,5
+cruz_verde_co_co,Cruz Verde CO,https://www.cruzverde.com.co,CO,COP,farmacias,5,5,4,3,5
+cruz_verde_cl_cl,Cruz Verde CL,https://www.cruzverde.cl,CL,CLP,farmacias,5,5,4,3,5
+cruz_verde_pe_pe,Cruz Verde PE,https://www.cruzverde.pe,PE,PEN,farmacias,5,5,4,3,5
+cruz_verde_mx_mx,Cruz Verde MX,https://www.cruzverde.com.mx,MX,MXN,farmacias,5,5,4,3,5
+office_depot_mx_mx,Office Depot MX,https://www.officedepot.com.mx,MX,MXN,libreria,5,5,4,3,5
+office_depot_es_es,Office Depot ES,https://www.officedepot.es,ES,EUR,libreria,5,5,4,3,5
+office_depot_fr_fr,Office Depot FR,https://www.officedepot.fr,FR,EUR,libreria,5,5,4,3,5
+office_depot_gb_gb,Office Depot GB,https://www.officedepot.co.uk,GB,GBP,libreria,5,5,4,3,5
+office_depot_us_us,Office Depot US,https://www.officedepot.com,US,USD,libreria,5,5,4,3,5
+office_depot_pe_pe,Office Depot PE,https://www.officedepot.pe,PE,PEN,libreria,5,5,4,3,5
+hm_es_es,H&M ES,https://www.hm.es,ES,EUR,moda,5,5,4,3,5
+hm_fr_fr,H&M FR,https://www.hm.fr,FR,EUR,moda,5,5,4,3,5
+hm_it_it,H&M IT,https://www.hm.it,IT,EUR,moda,5,5,4,3,5
+hm_de_de,H&M DE,https://www.hm.de,DE,EUR,moda,5,5,4,3,5
+hm_gb_gb,H&M GB,https://www.hm.com,GB,GBP,moda,5,5,4,3,5
+hm_pt_pt,H&M PT,https://www.hm.pt,PT,EUR,moda,5,5,4,3,5
+hm_nl_nl,H&M NL,https://www.hm.nl,NL,EUR,moda,5,5,4,3,5
+hm_cl_cl,H&M CL,https://www.hm.cl,CL,CLP,moda,5,5,4,3,5
+hm_mx_mx,H&M MX,https://www.hm.com.mx,MX,MXN,moda,5,5,4,3,5
+hm_ar_ar,H&M AR,https://www.hm.com.ar,AR,ARS,moda,5,5,4,3,5
+hm_pe_pe,H&M PE,https://www.hm.pe,PE,PEN,moda,5,5,4,3,5
+hm_co_co,H&M CO,https://www.hm.co,CO,COP,moda,5,5,4,3,5
+hm_br_br,H&M BR,https://www.hm.com.br,BR,BRL,moda,5,5,4,3,5
+farmacias_guadalajara_mx_mx,Farmacias Guadalajara MX,https://www.farmaciasguadalajara.com.mx,MX,MXN,farmacias,5,5,4,3,5
+farmacias_del_ahorro_mx_mx,Farmacias del Ahorro MX,https://www.farmaciasdelahorro.com.mx,MX,MXN,farmacias,5,5,4,3,5
+coppel_mx_mx,Coppel MX,https://www.coppel.com,MX,MXN,departamentales,5,5,4,3,5
+coppel_ar_ar,Coppel AR,https://www.coppel.com.ar,AR,ARS,departamentales,5,5,4,3,5
+garbarino_ar_ar,Garbarino AR,https://www.garbarino.com.ar,AR,ARS,electro,5,5,4,3,5
+mediamarkt_es_es,MediaMarkt ES,https://www.mediamarkt.es,ES,EUR,electro,5,5,4,3,5
+mediamarkt_de_de,MediaMarkt DE,https://www.mediamarkt.de,DE,EUR,electro,5,5,4,3,5
+mediamarkt_it_it,MediaMarkt IT,https://www.mediamarkt.it,IT,EUR,electro,5,5,4,3,5
+mediamarkt_nl_nl,MediaMarkt NL,https://www.mediamarkt.nl,NL,EUR,electro,5,5,4,3,5
+mediamarkt_pl_pl,MediaMarkt PL,https://www.mediamarkt.pl,PL,PLN,electro,5,5,4,3,5
+mediamarkt_pt_pt,MediaMarkt PT,https://www.mediamarkt.pt,PT,EUR,electro,5,5,4,3,5
+mediamarkt_at_at,MediaMarkt AT,https://www.mediamarkt.at,AT,EUR,electro,5,5,4,3,5
+autozone_mx_mx,AutoZone MX,https://www.autozone.com.mx,MX,MXN,autopartes,5,5,4,3,5
+autozone_us_us,AutoZone US,https://www.autozone.com,US,USD,autopartes,5,5,4,3,5
+autozone_br_br,AutoZone BR,https://www.autozone.com.br,BR,BRL,autopartes,5,5,4,3,5
+swift_br_br,Swift BR,https://www.swift.com.br,BR,BRL,alimentos,5,5,4,3,5
+swift_ar_ar,Swift AR,https://www.swift.com.ar,AR,ARS,alimentos,5,5,4,3,5
+swift_uy_uy,Swift UY,https://www.swift.com.uy,UY,UYU,alimentos,5,5,4,3,5
+petlove_br_br,Petlove BR,https://www.petlove.com.br,BR,BRL,mascotas,5,5,4,3,5
+petz_br_br,Petz BR,https://www.petz.com.br,BR,BRL,mascotas,5,5,4,3,5
+cobasi_br_br,Cobasi BR,https://www.cobasi.com.br,BR,BRL,mascotas,5,5,4,3,5
+saraiva_br_br,Saraiva BR,https://www.saraiva.com.br,BR,BRL,libreria,5,5,4,3,5
+livraria_cultura_br_br,Livraria Cultura BR,https://www.livrariacultura.com.br,BR,BRL,libreria,5,5,4,3,5
+centauro_br_br,Centauro BR,https://www.centauro.com.br,BR,BRL,deportes,5,5,4,3,5
+casas_bahia_br_br,Casas Bahia BR,https://www.casasbahia.com.br,BR,BRL,electro,5,5,4,3,5
+ponto_frio_br_br,Ponto Frio BR,https://www.pontofrio.com.br,BR,BRL,electro,5,5,4,3,5
+marisa_br_br,Marisa BR,https://www.marisa.com.br,BR,BRL,moda,5,5,4,3,5
+marisa_ar_ar,Marisa AR,https://www.marisa.com.ar,AR,ARS,moda,5,5,4,3,5
+riachuelo_br_br,Riachuelo BR,https://www.riachuelo.com.br,BR,BRL,moda,5,5,4,3,5
+magazine_luiza_br_br,Magazine Luiza BR,https://www.magazineluiza.com.br,BR,BRL,electro,5,5,4,3,5
+sephora_br_br,Sephora BR,https://www.sephora.com.br,BR,BRL,belleza,5,5,4,3,5
+sephora_mx_mx,Sephora MX,https://www.sephora.com.mx,MX,MXN,belleza,5,5,4,3,5
+sephora_es_es,Sephora ES,https://www.sephora.es,ES,EUR,belleza,5,5,4,3,5
+sephora_fr_fr,Sephora FR,https://www.sephora.fr,FR,EUR,belleza,5,5,4,3,5
+sephora_it_it,Sephora IT,https://www.sephora.it,IT,EUR,belleza,5,5,4,3,5
+sephora_de_de,Sephora DE,https://www.sephora.de,DE,EUR,belleza,5,5,4,3,5
+sephora_gb_gb,Sephora GB,https://www.sephora.co.uk,GB,GBP,belleza,5,5,4,3,5
+sephora_pt_pt,Sephora PT,https://www.sephora.pt,PT,EUR,belleza,5,5,4,3,5
+mac_br_br,MAC BR,https://www.maccosmetics.com.br,BR,BRL,belleza,5,5,4,3,5
+mac_mx_mx,MAC MX,https://www.maccosmetics.com.mx,MX,MXN,belleza,5,5,4,3,5
+mac_ar_ar,MAC AR,https://www.maccosmetics.com.ar,AR,ARS,belleza,5,5,4,3,5
+mac_es_es,MAC ES,https://www.maccosmetics.es,ES,EUR,belleza,5,5,4,3,5
+mac_fr_fr,MAC FR,https://www.maccosmetics.fr,FR,EUR,belleza,5,5,4,3,5
+mac_it_it,MAC IT,https://www.maccosmetics.it,IT,EUR,belleza,5,5,4,3,5
+mac_de_de,MAC DE,https://www.maccosmetics.de,DE,EUR,belleza,5,5,4,3,5
+mac_gb_gb,MAC GB,https://www.maccosmetics.co.uk,GB,GBP,belleza,5,5,4,3,5
+mac_pt_pt,MAC PT,https://www.maccosmetics.pt,PT,EUR,belleza,5,5,4,3,5
+ikea_es_es,IKEA ES,https://www.ikea.es,ES,EUR,hogar,5,5,4,3,5
+ikea_fr_fr,IKEA FR,https://www.ikea.fr,FR,EUR,hogar,5,5,4,3,5
+ikea_it_it,IKEA IT,https://www.ikea.it,IT,EUR,hogar,5,5,4,3,5
+ikea_de_de,IKEA DE,https://www.ikea.de,DE,EUR,hogar,5,5,4,3,5
+ikea_gb_gb,IKEA GB,https://www.ikea.com,GB,GBP,hogar,5,5,4,3,5
+ikea_pt_pt,IKEA PT,https://www.ikea.pt,PT,EUR,hogar,5,5,4,3,5
+ikea_nl_nl,IKEA NL,https://www.ikea.nl,NL,EUR,hogar,5,5,4,3,5
+ikea_be_be,IKEA BE,https://www.ikea.be,BE,EUR,hogar,5,5,4,3,5
+ikea_pl_pl,IKEA PL,https://www.ikea.pl,PL,PLN,hogar,5,5,4,3,5
+lidl_de_de,Lidl DE,https://www.lidl.de,DE,EUR,supermercados,5,5,4,3,5
+lidl_es_es,Lidl ES,https://www.lidl.es,ES,EUR,supermercados,5,5,4,3,5
+lidl_fr_fr,Lidl FR,https://www.lidl.fr,FR,EUR,supermercados,5,5,4,3,5
+lidl_it_it,Lidl IT,https://www.lidl.it,IT,EUR,supermercados,5,5,4,3,5
+lidl_gb_gb,Lidl GB,https://www.lidl.co.uk,GB,GBP,supermercados,5,5,4,3,5
+lidl_pt_pt,Lidl PT,https://www.lidl.pt,PT,EUR,supermercados,5,5,4,3,5
+lidl_nl_nl,Lidl NL,https://www.lidl.nl,NL,EUR,supermercados,5,5,4,3,5
+lidl_be_be,Lidl BE,https://www.lidl.be,BE,EUR,supermercados,5,5,4,3,5
+lidl_pl_pl,Lidl PL,https://www.lidl.pl,PL,PLN,supermercados,5,5,4,3,5
+aldi_de_de,Aldi DE,https://www.aldi.de,DE,EUR,supermercados,5,5,4,3,5
+aldi_us_us,Aldi US,https://www.aldi.us,US,USD,supermercados,5,5,4,3,5
+aldi_gb_gb,Aldi GB,https://www.aldi.co.uk,GB,GBP,supermercados,5,5,4,3,5
+aldi_fr_fr,Aldi FR,https://www.aldi.fr,FR,EUR,supermercados,5,5,4,3,5
+aldi_es_es,Aldi ES,https://www.aldi.es,ES,EUR,supermercados,5,5,4,3,5
+aldi_it_it,Aldi IT,https://www.aldi.it,IT,EUR,supermercados,5,5,4,3,5
+aldi_nl_nl,Aldi NL,https://www.aldi.nl,NL,EUR,supermercados,5,5,4,3,5
+tesco_gb_gb,Tesco GB,https://www.tesco.com,GB,GBP,supermercados,5,5,4,3,5
+tesco_ie_ie,Tesco IE,https://www.tesco.ie,IE,EUR,supermercados,5,5,4,3,5
+tesco_pl_pl,Tesco PL,https://www.tesco.pl,PL,PLN,supermercados,5,5,4,3,5
+tesco_cz_cz,Tesco CZ,https://www.tesco.cz,CZ,CZK,supermercados,5,5,4,3,5
+tesco_sk_sk,Tesco SK,https://www.tesco.sk,SK,EUR,supermercados,5,5,4,3,5
+tesco_hu_hu,Tesco HU,https://www.tesco.hu,HU,HUF,supermercados,5,5,4,3,5
+dafiti_br_br,Dafiti BR,https://www.dafiti.com.br,BR,BRL,moda,5,5,4,3,5
+dafiti_mx_mx,Dafiti MX,https://www.dafiti.com.mx,MX,MXN,moda,5,5,4,3,5
+dafiti_ar_ar,Dafiti AR,https://www.dafiti.com.ar,AR,ARS,moda,5,5,4,3,5
+dafiti_cl_cl,Dafiti CL,https://www.dafiti.cl,CL,CLP,moda,5,5,4,3,5
+dafiti_co_co,Dafiti CO,https://www.dafiti.co,CO,COP,moda,5,5,4,3,5
+dafiti_pe_pe,Dafiti PE,https://www.dafiti.pe,PE,PEN,moda,5,5,4,3,5
+mobly_br_br,Mobly BR,https://www.mobly.com.br,BR,BRL,hogar,5,5,4,3,5
+netshoes_br_br,Netshoes BR,https://www.netshoes.com.br,BR,BRL,deportes,5,5,4,3,5
