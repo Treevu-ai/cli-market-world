@@ -20,7 +20,7 @@ export default function Pricing() {
           Instalar CLI
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </a>
-        <a href="mailto:hello@cli-market.dev"
+        <a href="https://t.me/CLIMarketBot"
           className="group inline-flex items-center gap-3 border border-[#333] px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-[#666] hover:border-[#888] hover:text-[#888] transition-all duration-200 w-fit"
         >
           Contactar
