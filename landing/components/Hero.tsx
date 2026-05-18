@@ -124,7 +124,7 @@ export default function Hero() {
         backgroundSize: "64px 64px",
       }} />
       <div className="hidden md:block absolute left-6 top-1/2 -translate-y-1/2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#444] -rotate-90 origin-left block whitespace-nowrap">CLI MARKET</span>
+        <img src="/logo.svg" alt="CLI Market" className="h-[32px] w-auto -rotate-90 origin-left opacity-30" />
       </div>
 
       <div className="flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-16 w-full max-w-[1200px] mx-auto">
