@@ -35,6 +35,22 @@ export default function Hero() {
       <p className="font-ibm-mono text-[11px] sm:text-[13px] md:text-[15px] text-[#888888] tracking-[0.5px] sm:tracking-[1px] leading-[1.5] sm:leading-[1.6] text-center w-full max-w-[800px] px-2 group-hover:text-[#AAAAAA] transition-colors duration-500">
         {t("hero_stats")}<br />{t("hero_sub")}
       </p>
+      <div className="h-6 sm:h-8" />
+      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 md:gap-[24px] px-2">
+        {[
+          { label: t("hero_for_devs") ?? "FOR DEVELOPERS", sub: "CLI · REST API · JSON · CSV · MCP Tools", color: "#00FF88" },
+          { label: t("hero_for_biz") ?? "FOR BUSINESS", sub: "Data Feed · Price Intelligence · Cross-Border Analytics", color: "#FFD600" },
+          { label: t("hero_for_agents") ?? "FOR AI AGENTS", sub: "12 MCP Tools · Autonomous Checkout · Natural Language", color: "#FF6B35" },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center gap-[6px] sm:gap-[8px] h-[32px] sm:h-[36px] px-[10px] sm:px-[14px] bg-[#0F0F0F] border border-[#1D1D1D] group-hover:border-[#2A2A2A] transition-colors">
+            <div className="w-[5px] h-[5px] rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+            <div className="flex items-baseline gap-[6px] sm:gap-[8px]">
+              <span className="font-ibm-mono text-[7px] sm:text-[8px] font-bold tracking-[1px]" style={{ color: item.color }}>{item.label}</span>
+              <span className="font-ibm-mono text-[7px] sm:text-[8px] text-[#555] tracking-[0.5px] hidden sm:inline">{item.sub}</span>
+            </div>
+          </div>
+        ))}
+      </div>
       <div className="h-8 sm:h-10 md:h-[48px]" />
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-[16px] w-full sm:w-auto px-2 sm:px-0">
         <a href="https://github.com/Treevu-ai/cli-market-latam"
