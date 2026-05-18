@@ -1,14 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PixelDivider from "@/components/PixelDivider";
-import Ribbon from "@/components/Ribbon";
 import Lines from "@/components/Lines";
 import Features from "@/components/Features";
-import HowItWorks from "@/components/HowItWorks";
-import Stats from "@/components/Stats";
-import Bento from "@/components/Bento";
-import Comparison from "@/components/Comparison";
-import CoverageDashboard from "@/components/CoverageDashboard";
 import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
@@ -20,16 +14,11 @@ export default function Home() {
       <Navbar />
       <Hero />
       <PixelDivider />
-      <Ribbon />
       <Lines />
       <Features />
-      <HowItWorks />
-      <Stats />
-      <Bento />
-      <Comparison />
-      <CoverageDashboard />
-      <FAQ />
+      <PixelDivider />
       <Pricing />
+      <FAQ />
       <FinalCTA />
       <Footer />
     </main>
