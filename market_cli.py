@@ -92,11 +92,6 @@ WELCOME_BANNER = """\
   │                                                               │
   ╰───────────────────────────────────────────────────────────────╯[/]
 
-[bold #3cffd0]▸ Expansión[/]
-  Fase 1: Perú · Chile · Colombia
-  Fase 2: México · Brasil · Argentina
-
-[dim]market --json about[/] [dim]para versión machine-readable[/]
 """
 
 
@@ -921,6 +916,7 @@ def main():
         "barcode":  cmd_barcode,
         "enrich":   cmd_enrich,
         "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),
+        "lang":     cmd_lang,
         "whoami":   cmd_whoami,
     }
 
