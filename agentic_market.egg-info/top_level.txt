@@ -1,4 +1,0 @@
-market_cli
-market_mcp
-market_server
-wongcli
