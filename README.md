@@ -37,6 +37,8 @@
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
+<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> — full landing, live coverage, MCP docs</p>
+
 ![CLI Market demo](https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/demo.gif)
 
 ## Quick start
