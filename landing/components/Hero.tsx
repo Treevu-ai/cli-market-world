@@ -73,6 +73,11 @@ export default function Hero() {
             <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-5 py-2 border border-[#FFD600]/20 text-[#FFD600] text-xs font-mono hover:bg-[#FFD600]/5 transition-colors">⭐ Star on GitHub</a>
             <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
           </div>
+          <div className={`mt-8 transition-all duration-700 delay-600 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-2"}`}>
+            <a href="https://www.producthunt.com/products/cli-market/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-cli-market" target="_blank" rel="noopener">
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1228411&theme=dark" alt="CLI Market - 3,760 retailers, one API for AI agents | Product Hunt" style={{width:250,height:54}} width={250} height={54} />
+            </a>
+          </div>
         </div>
       </div>
 
