@@ -1,0 +1,16 @@
+{
+  "$schema": "https://registry.modelcontextprotocol.io/schema.json",
+  "name": "CLI Market",
+  "description": "Commerce infrastructure for AI agents — 12 MCP tools to search, compare, and purchase across 3,760 VTEX retailers in 67 countries.",
+  "type": "stdio",
+  "command": "market-mcp",
+  "args": [],
+  "env": {},
+  "repository": "https://github.com/Treevu-ai/cli-market-world",
+  "website": "https://cli-market.dev",
+  "license": "MIT",
+  "language": "Python",
+  "tools": ["market_login","market_lines","market_search","market_compare","market_add","market_cart","market_cart_update","market_cart_remove","market_checkout","market_orders","market_reorder","market_ask"],
+  "keywords": ["vtex","ecommerce","commerce","retail","prices","agents"],
+  "categories": ["commerce","data"]
+}
