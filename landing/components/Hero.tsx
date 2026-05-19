@@ -73,18 +73,16 @@ export default function Hero() {
 
             <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
           </div>
-          <div className={`mt-8 transition-all duration-700 delay-600 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-2"}`}>
+          <div className={`mt-8 transition-all duration-700 delay-600 grid grid-cols-[auto_auto_auto] gap-4 items-center justify-center max-w-full ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-2"}`}>
             <a href="https://www.producthunt.com/products/cli-market/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-cli-market" target="_blank" rel="noopener">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1228411&theme=dark" alt="CLI Market - 3,760 retailers, one API for AI agents | Product Hunt" style={{width:250,height:54}} width={250} height={54} />
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1228411&theme=dark" alt="CLI Market on Product Hunt" className="h-[40px] w-auto" />
             </a>
-            <div className="flex gap-4 ml-4 items-center">
-              <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener">
-                <img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=social" alt="GitHub stars" style={{height:20}} />
-              </a>
-              <a href="https://pypi.org/project/cli-market/" target="_blank" rel="noopener">
-                <img src="https://img.shields.io/pypi/dm/cli-market?style=social" alt="PyPI downloads" style={{height:20}} />
-              </a>
-            </div>
+            <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener">
+              <img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=flat-square" alt="GitHub stars" className="h-[20px] w-auto" />
+            </a>
+            <a href="https://pypi.org/project/cli-market/" target="_blank" rel="noopener">
+              <img src="https://img.shields.io/pypi/dm/cli-market?style=flat-square" alt="PyPI downloads" className="h-[20px] w-auto" />
+            </a>
           </div>
         </div>
       </div>
