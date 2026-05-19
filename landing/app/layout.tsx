@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "CLI Market — Comercio para agentes IA",
-    description: "100 retailers VTEX en 12 países. API REST, CLI y 12 MCP tools.",
+    description: "3,760 retailers VTEX en 67 paises. API REST, CLI y 12 MCP tools.",
   },
 };
 
