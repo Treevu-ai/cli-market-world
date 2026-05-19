@@ -2,3 +2,9 @@
 __pycache__/
 *.pyc
 .vercel
+stores_curated.csv
+expand_stores.py
+gen_stores.py
+PRICE_INTEL_PLAN.md
+VALIDATION_PLAN.md
+_gen_*.py
