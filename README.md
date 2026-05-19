@@ -11,6 +11,13 @@
   <img src="https://img.shields.io/badge/CI-vercel-black" alt="Vercel">
 </p>
 
+<p align="center">
+  <a href="https://pypi.org/project/cli-market/"><img src="https://img.shields.io/pypi/v/cli-market?color=00FF88" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/cli-market/"><img src="https://img.shields.io/pypi/dm/cli-market?color=00FF88" alt="PyPI downloads"></a>
+  <a href="https://github.com/Treevu-ai/cli-market-world"><img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=social" alt="GitHub stars"></a>
+  <a href="https://www.producthunt.com/products/cli-market"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&amp;theme=neutral" alt="ProductHunt featured" width="125" height="27"></a>
+</p>
+
 
 <h1 align="center">CLI Market</h1>
 <p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,760+ retailers · 12 lines · 67 countries · 1 API.</p>
@@ -19,7 +26,14 @@
 
 ## What is CLI Market?
 
-CLI Market is the middleware between VTEX and AI agents. One API call searches, compares, and purchases across 3,760+ retailers in 67 countries. Human-friendly CLI. Agent-friendly MCP tools. JSON-parseable output.
+**The problem:** AI agents can't comparison-shop autonomously today. 3,760 VTEX retailers — Nike, Carrefour, Samsung, Motorola — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
+
+**CLI Market fixes this.** One API call across all retailers. One `pip install`. One JSON schema.
+
+- **Search** any product across 3,760 retailers in 67 countries
+- **Compare** prices cross-border in real time
+- **Purchase** autonomously via 12 MCP tools
+- **Build** on our data moat — SQLite snapshots of pricing history, SKU normalization, cross-retailer intelligence
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
