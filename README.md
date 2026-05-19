@@ -19,6 +19,8 @@
 </p>
 
 
+<!-- mcp-name: io.github.Treevu-ai/cli-market -->
+
 <h1 align="center">CLI Market</h1>
 <p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,760+ retailers · 12 lines · 67 countries · 1 API.</p>
 
