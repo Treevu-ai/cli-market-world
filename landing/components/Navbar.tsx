@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
-const linkKeys = ["nav_coverage","nav_how","nav_cli","nav_agents","nav_cases","nav_features","nav_pricing","nav_faq"];
+const linkKeys = ["nav_coverage","nav_terminal","nav_how","nav_features","nav_pricing","nav_faq"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,9 +16,8 @@ export default function Navbar() {
   }, []);
 
   const navLabels: Record<string,string> = {
-    nav_coverage: _t("nav_coverage"), nav_how: _t("nav_how"), nav_cli: _t("nav_cli"),
-    nav_agents: _t("nav_agents"), nav_cases: _t("nav_cases"), nav_features: _t("nav_features"),
-    nav_pricing: _t("nav_pricing"), nav_faq: _t("nav_faq"),
+    nav_coverage: _t("nav_coverage"), nav_terminal: _t("nav_terminal"), nav_how: _t("nav_how"),
+    nav_features: _t("nav_features"), nav_pricing: _t("nav_pricing"), nav_faq: _t("nav_faq"),
   };
 
   return (

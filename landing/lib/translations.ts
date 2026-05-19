@@ -2,7 +2,7 @@ export type Lang = "es" | "en";
 export type Dict = Record<string, string>;
 
 const es: Dict = {
-  nav_coverage: "Cobertura", nav_how: "Flujo", nav_cli: "Terminal", nav_features: "Comandos",
+  nav_coverage: "Cobertura", nav_how: "Flujo", nav_terminal: "Terminal", nav_features: "Capacidades",
   nav_pricing: "Precios", nav_faq: "FAQ", nav_agents: "Agentes", nav_cases: "Casos",
   hero_eye: "Infraestructura de comercio para agentes de IA",
   hero_h1a: "3,760+ retailers.", hero_h1b: "Una sola API.", hero_h1c_p: "Tus agentes pueden", hero_h1c_s: "solos.",
@@ -24,7 +24,7 @@ const es: Dict = {
   cta_title: "Tu agente puede comprar solo.\nHoy.",
 };
 const en: Dict = {
-  nav_coverage: "Coverage", nav_how: "Flow", nav_cli: "Terminal", nav_features: "Commands",
+  nav_coverage: "Coverage", nav_how: "Flow", nav_terminal: "Terminal", nav_features: "Capabilities",
   nav_pricing: "Pricing", nav_faq: "FAQ", nav_agents: "Agents", nav_cases: "Use Cases",
   hero_eye: "Commerce infrastructure for AI agents",
   hero_h1a: "3,760+ retailers.", hero_h1b: "One single API.", hero_h1c_p: "Your agents can", hero_h1c_s: "on their own.",
