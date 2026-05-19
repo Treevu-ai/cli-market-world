@@ -1,56 +1,70 @@
 =========================================
 REDDIT — r/programming
 =========================================
-TITLE: I built the world's largest VTEX connector — 3,760 retailers, 67 countries, one API
+RULES: No self-promo if you don't participate. Posts must be technical.
+STRATEGY: Frame as a technical architecture post, not a launch.
+
+TITLE: The VTEX public API is the same for 3,760 retailers — but no one aggregated it. Until now.
 
 BODY:
-VTEX powers e-commerce for Nike, Carrefour, Samsung, Motorola, and 3,700+ other brands. All of them share the same public API. But that API is designed for storefronts, not for programmatic access.
+VTEX runs e-commerce for Nike, Carrefour, Samsung, Motorola, and 3,760+ other brands. Every one exposes the same search and catalog API endpoints. Same JSON schema. Same pagination rules.
 
-I built the aggregation layer. One connector. One JSON schema. 3,760 retailers in 67 countries.
+For years, if you wanted to query products across retailers, you had to scrape or make separate API calls per store. There was no aggregation layer.
 
-How it works:
-- A single Python connector maps VTEX's search/catalog/checkout APIs
-- Each retailer is one line of config: {domain, country, currency, line}
-- The CLI lets you search across all retailers at once
-- 12 MCP tools expose everything to AI agents (Claude, DeepSeek, GPT)
-- JSON output saves ~85% context tokens vs raw HTML
+So I built one.
 
-Stack: Python, FastAPI, Rich, SQLite, Next.js
+Technical details:
+- Single Python connector that maps VTEX's public search/catalog/checkout endpoints
+- Each retailer = one config line: {domain, country, currency, line}
+- SQLite price snapshots for historical data
+- Rich terminal UI + REST API + MCP server (12 tools)
+- JSON output saves ~85% context window tokens vs raw HTML
 
-Open source. MIT. pip install cli-market.
+Everything is indexed and queryable cross-retailer. Search "milk" and get results from Carrefour Brazil, Sainsbury's UK, Wong Peru, in one response.
 
-Live: https://cli-market.dev
 GitHub: https://github.com/Treevu-ai/cli-market-world
+Live: https://cli-market.dev
 
-Happy to answer questions about VTEX internals, the connector architecture, or why e-commerce APIs are still built for browsers instead of agents.
+Stack: Python, FastAPI, Rich, SQLite, Next.js. MIT license.
+
+Curious what the community thinks about e-commerce APIs being still optimized for browsers instead of programmatic access.
 
 =========================================
 REDDIT — r/Python
 =========================================
-TITLE: pip install cli-market — search, compare, and buy across 3,760 retailers from your terminal
+RULES: Must be Python-related. Show your work.
+STRATEGY: Python-first, code-first.
+
+TITLE: CLI Market — a Python CLI + MCP server that queries 3,760 retailers in 67 countries
 
 BODY:
-A Python CLI that turns VTEX e-commerce into structured JSON for AI agents and developers.
+Built with Python. Works from the terminal.
 
 pip install cli-market
-market search "milk" --country GB
-market compare "oil"
+market search "leche" --country PE
+market compare "aceite"
 market checkout --payment yape
 market --json
 
-12 MCP tools. 67 countries. All open source.
+12 MCP tools included. Your AI agents can query, compare, and purchase autonomously.
 
 GitHub: https://github.com/Treevu-ai/cli-market-world
+PyPI: https://pypi.org/project/cli-market/
+
+Built with: Python 3.10+, FastAPI, Rich, httpx, SQLite, Pydantic.
 
 =========================================
 REDDIT — r/MCP
 =========================================
-TITLE: 12 MCP tools for autonomous commerce — search, compare, buy across 3,760 retailers
+RULES: Must be MCP-related.
+STRATEGY: Focus on the 12 tools.
+
+TITLE: 12 MCP tools for autonomous commerce across 3,760 VTEX retailers
 
 BODY:
 market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder, market_ask
 
-All 12 tools exposed over MCP. Your agent can search products, compare prices cross-border, and complete purchases across 3,760 VTEX retailers in 67 countries.
+All 12 tools via MCP stdio. Your agent searches products, compares prices cross-border, and completes purchases across 3,760 retailers in 67 countries.
 
 Python. MIT. pip install cli-market.
 
