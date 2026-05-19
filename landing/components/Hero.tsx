@@ -67,18 +67,18 @@ export default function Hero() {
               {_t("hero_sub")}
             </p>
           </div>
+          <div className={`mb-6 transition-all duration-700 delay-400 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
+            <a href="https://www.producthunt.com/products/cli-market?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cli-market" target="_blank" rel="noopener">
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&theme=neutral&t=1779222495059" alt="CLI Market on Product Hunt" className="h-[54px] w-auto" />
+            </a>
+          </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
             <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">Instalar CLI<span className="text-xs opacity-60">→</span></a>
             <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">Ver cobertura</a>
 
             <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
           </div>
-          <div className={`mt-8 transition-all duration-700 delay-600 flex items-center justify-center ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-2"}`}>
-            <a href="https://www.producthunt.com/products/cli-market?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cli-market" target="_blank" rel="noopener">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&theme=neutral&t=1779222495059" alt="CLI Market on Product Hunt" className="h-[54px] w-auto" />
-            </a>
 
-          </div>
         </div>
       </div>
 
