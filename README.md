@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/retailers-3760+-brightgreen" alt="3760 retailers">
   <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
@@ -9,7 +11,6 @@
   <img src="https://img.shields.io/badge/CI-vercel-black" alt="Vercel">
 </p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <h1 align="center">CLI Market</h1>
 <p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,760+ retailers · 12 lines · 67 countries · 1 API.</p>
