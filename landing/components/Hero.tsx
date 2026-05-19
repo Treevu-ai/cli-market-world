@@ -75,7 +75,7 @@ export default function Hero() {
           </div>
           <div className={`mt-8 transition-all duration-700 delay-600 grid grid-cols-[auto_auto_auto] gap-4 items-center justify-center max-w-full ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-2"}`}>
             <a href="https://www.producthunt.com/products/cli-market?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cli-market" target="_blank" rel="noopener">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&theme=dark&t=1779222454790" alt="CLI Market on Product Hunt" className="h-[40px] w-auto" />
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&theme=neutral&t=1779222495059" alt="CLI Market on Product Hunt" className="h-[40px] w-auto" />
             </a>
             <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener">
               <img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=flat-square" alt="GitHub stars" className="h-[20px] w-auto" />
