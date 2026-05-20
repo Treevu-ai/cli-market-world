@@ -209,6 +209,17 @@ E-commerce is optimized for clicks, not agents. VTEX powers 3,760+ retailers wit
 - Telegram: [@climarketbot](https://t.me/climarketbot)
 - llms.txt: [cli-market.dev/llms.txt](https://cli-market.dev/llms.txt)
 
-## License
+## Legal
 
-MIT © 2026 CLI Market · Sinapsis Innovadora
+**Software:** MIT License. Use, modify, distribute freely.
+
+**Data:** Pricing data, SKU mappings, historical snapshots, and retailer indexes are proprietary. Licensed under the [Data License Agreement](legal/Data_License_Agreement.md). The software is open. The data moat is protected.
+
+**Documents:**
+- [Terms of Service](legal/ToS.md)
+- [Privacy Policy](legal/Privacy.md)
+- [Data License Agreement](legal/Data_License_Agreement.md)
+- [Acceptable Use Policy](legal/AUP.md)
+- [Service Level Agreement](legal/SLA.md)
+
+MIT © 2026 CLI Market · Treevu AI

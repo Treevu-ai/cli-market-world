@@ -62,11 +62,14 @@ export default function Footer() {
           © 2026 CLI MARKET LATAM · SINAPSIS INNOVADORA. TODOS LOS DERECHOS RESERVADOS.
         </span>
         <div className="flex items-center gap-4 sm:gap-6 md:gap-[32px]">
-          <a href="#" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/legal/Privacy.md" target="_blank" rel="noopener" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
             PRIVACIDAD
           </a>
-          <a href="#" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/legal/ToS.md" target="_blank" rel="noopener" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
             TÉRMINOS
+          </a>
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/legal/Data_License_Agreement.md" target="_blank" rel="noopener" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
+            DATOS
           </a>
           <span className="font-ibm-mono text-[10px] sm:text-[11px] font-bold text-[#00FF88] tracking-[0.5px] sm:tracking-[1px]">
             V1.0
