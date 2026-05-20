@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 900">
+  <rect width="1000" height="900" fill="#080808"/>
+  <text x="500" y="50" text-anchor="middle" font-family="monospace" font-size="14" fill="#00FF88" letter-spacing="4" opacity="0.6">12 MCP TOOLS · 3,760 RETAILERS · 67 COUNTRIES</text>
+  <rect x="40" y="70" width="920" height="30" rx="2" fill="#0A0A0A" stroke="#1A1A1A"/>
+  <text x="60" y="90" font-family="monospace" font-size="11" fill="#666" font-weight="bold">TOOL</text>
+  <text x="340" y="90" font-family="monospace" font-size="11" fill="#666" font-weight="bold">WHAT IT DOES</text>
+  <text x="780" y="90" font-family="monospace" font-size="11" fill="#666" font-weight="bold">COMPOSES</text>
+  <line x1="60" y1="108" x2="940" y2="108" stroke="#1A1A1A"/>
+  <rect x="40" y="116" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="138" r="4" fill="#00FF88" opacity="0.3"/>
+  <text x="68" y="142" font-family="monospace" font-size="12" fill="#00FF88" font-weight="bold">market_login</text>
+  <text x="340" y="142" font-family="monospace" font-size="11" fill="#888">Authenticate the agent session</text>
+  <text x="780" y="142" font-family="monospace" font-size="10" fill="#555">All tools</text>
+  <rect x="40" y="164" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="186" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="190" font-family="monospace" font-size="12" fill="white">market_lines</text>
+  <text x="340" y="190" font-family="monospace" font-size="11" fill="#888">List 12 business lines with retailer counts</text>
+  <text x="780" y="190" font-family="monospace" font-size="10" fill="#555">search</text>
+  <rect x="40" y="212" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="234" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="238" font-family="monospace" font-size="12" fill="white">market_search</text>
+  <text x="340" y="238" font-family="monospace" font-size="11" fill="#888">Semantic product search across all retailers</text>
+  <text x="780" y="238" font-family="monospace" font-size="10" fill="#555">compare, add</text>
+  <rect x="40" y="260" width="920" height="44" rx="1" fill="#0D0D0D" stroke="#00FF88" stroke-width="0.5"/>
+  <circle cx="58" cy="282" r="4" fill="#00FF88" opacity="0.5"/>
+  <text x="68" y="286" font-family="monospace" font-size="12" fill="#00FF88" font-weight="bold">market_compare</text>
+  <text x="340" y="286" font-family="monospace" font-size="11" fill="#00FF88" opacity="0.8">Cross-retailer price comparison + SKU normalization</text>
+  <text x="780" y="286" font-family="monospace" font-size="10" fill="#555">add</text>
+  <rect x="40" y="308" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="330" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="334" font-family="monospace" font-size="12" fill="white">market_add</text>
+  <text x="340" y="334" font-family="monospace" font-size="11" fill="#888">Add product to cart with quantity</text>
+  <text x="780" y="334" font-family="monospace" font-size="10" fill="#555">cart, checkout</text>
+  <rect x="40" y="356" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="378" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="382" font-family="monospace" font-size="12" fill="white">market_cart</text>
+  <text x="340" y="382" font-family="monospace" font-size="11" fill="#888">View current shopping cart state</text>
+  <text x="780" y="382" font-family="monospace" font-size="10" fill="#555">update, checkout</text>
+  <rect x="40" y="404" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="426" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="430" font-family="monospace" font-size="12" fill="white">market_cart_update</text>
+  <text x="340" y="430" font-family="monospace" font-size="11" fill="#888">Modify quantities of items in cart</text>
+  <text x="780" y="430" font-family="monospace" font-size="10" fill="#555">checkout</text>
+  <rect x="40" y="452" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="474" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="478" font-family="monospace" font-size="12" fill="white">market_cart_remove</text>
+  <text x="340" y="478" font-family="monospace" font-size="11" fill="#888">Remove items from shopping cart</text>
+  <text x="780" y="478" font-family="monospace" font-size="10" fill="#555">checkout</text>
+  <rect x="40" y="500" width="920" height="44" rx="1" fill="#0D0D0D" stroke="#00FF88" stroke-width="0.5"/>
+  <circle cx="58" cy="522" r="4" fill="#00FF88" opacity="0.5"/>
+  <text x="68" y="526" font-family="monospace" font-size="12" fill="#00FF88" font-weight="bold">market_checkout</text>
+  <text x="340" y="526" font-family="monospace" font-size="11" fill="#00FF88" opacity="0.8">Complete purchase — human-in-the-loop by design</text>
+  <text x="780" y="526" font-family="monospace" font-size="10" fill="#555">—</text>
+  <rect x="40" y="548" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="570" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="574" font-family="monospace" font-size="12" fill="white">market_orders</text>
+  <text x="340" y="574" font-family="monospace" font-size="11" fill="#888">List past purchase orders</text>
+  <text x="780" y="574" font-family="monospace" font-size="10" fill="#555">reorder</text>
+  <rect x="40" y="596" width="920" height="44" rx="1" fill="#0A0A0A" stroke="#1A1A1A" opacity="0.6"/>
+  <circle cx="58" cy="618" r="4" fill="#00FF88" opacity="0.15"/>
+  <text x="68" y="622" font-family="monospace" font-size="12" fill="white">market_reorder</text>
+  <text x="340" y="622" font-family="monospace" font-size="11" fill="#888">Reorder items from purchase history</text>
+  <text x="780" y="622" font-family="monospace" font-size="10" fill="#555">add, checkout</text>
+  <rect x="40" y="644" width="920" height="44" rx="1" fill="#0D0D0D" stroke="#00FF88" stroke-width="0.5"/>
+  <circle cx="58" cy="666" r="4" fill="#00FF88" opacity="0.7"/>
+  <text x="68" y="670" font-family="monospace" font-size="12" fill="#00FF88" font-weight="bold">market_ask</text>
+  <text x="340" y="670" font-family="monospace" font-size="11" fill="#00FF88" opacity="0.8">Natural language → full purchase pipeline</text>
+  <text x="780" y="670" font-family="monospace" font-size="10" fill="#555">Everything</text>
+  <text x="500" y="730" text-anchor="middle" font-family="monospace" font-size="11" fill="#00FF88" letter-spacing="2" opacity="0.5">HIGHLIGHTED = COMPOSITE TOOLS (multi-step under one call)</text>
+  <line x1="200" y1="750" x2="800" y2="750" stroke="#1A1A1A"/>
+  <text x="500" y="775" text-anchor="middle" font-family="monospace" font-size="10" fill="#333" letter-spacing="3">pip install cli-market</text>
+  <text x="500" y="800" text-anchor="middle" font-family="monospace" font-size="10" fill="#333" letter-spacing="2">io.github.Treevu-ai/cli-market</text>
+  <text x="500" y="830" text-anchor="middle" font-family="monospace" font-size="9" fill="#333" letter-spacing="4">github.com/Treevu-ai/cli-market-world</text>
+  <text x="500" y="860" text-anchor="middle" font-family="monospace" font-size="9" fill="#333" letter-spacing="4">MIT · 67 COUNTRIES · MCP REGISTRY</text>
+</svg>
