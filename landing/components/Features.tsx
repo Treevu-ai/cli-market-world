@@ -108,6 +108,37 @@ export default function Features() {
         })}
       </div>
 
+      {/* Checkout receipt */}
+      <div className="max-w-[500px] bg-[#0A0A0A] border border-[#1A1A1A] overflow-hidden mt-6">
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border-b border-[#1A1A1A]">
+          <div className="w-[8px] h-[8px] rounded-full bg-[#FF5F57]"/><div className="w-[8px] h-[8px] rounded-full bg-[#FEBC2E]"/><div className="w-[8px] h-[8px] rounded-full bg-[#28C840]"/>
+          <span className="ml-2 text-[9px] font-mono text-[#555] tracking-wider">CHECKOUT — ORD-004</span>
+          <span className="ml-auto text-[8px] font-mono text-[#28C840]">● {lang === "es" ? "CONFIRMADO" : "CONFIRMED"}</span>
+        </div>
+        <div className="p-5 font-mono text-[10px] leading-relaxed">
+          <div className="flex justify-between text-[#888] border-b border-[#1A1A1A] pb-3 mb-3">
+            <span>{lang === "es" ? "Tienda" : "Store"}</span>
+            <span className="text-white/60">Wong · 🇵🇪</span>
+          </div>
+          <div className="space-y-2 border-b border-[#1A1A1A] pb-3 mb-3">
+            <div className="flex justify-between"><span className="text-[#888]">2× Leche Gloria 400ml</span><span className="text-white/60">S/7.00</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">1× Arroz Costeno 1kg</span><span className="text-white/60">S/4.20</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">1× Aceite Primor 1L</span><span className="text-white/60">S/8.90</span></div>
+          </div>
+          <div className="flex justify-between text-[#00FF88] font-bold">
+            <span>TOTAL</span>
+            <span>S/20.10</span>
+          </div>
+          <div className="flex justify-between text-[#555] mt-2 text-[9px]">
+            <span>{lang === "es" ? "Pago" : "Payment"}</span>
+            <span>Yape · {lang === "es" ? "Aprobado" : "Approved"}</span>
+          </div>
+          <div className="text-[9px] text-[#444] mt-3 text-center border-t border-[#1A1A1A] pt-3">
+            market checkout --payment yape
+          </div>
+        </div>
+      </div>
+
       <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px] mt-2">MCP NATIVO · API REST · JSON PARSEABLE · CROSS-BORDER · DATA FEED · CHECKOUT LOCAL</p>
       <p className="text-white/10 font-mono text-[9px] mt-1">{_t("features_live")}</p>
     </section>
