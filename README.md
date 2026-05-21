@@ -1,9 +1,9 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-3760+-brightgreen" alt="3760 retailers">
-  <img src="https://img.shields.io/badge/lines-12-blue" alt="4 lines">
-  <img src="https://img.shields.io/badge/countries-67-orange" alt="8 countries">
+  <img src="https://img.shields.io/badge/retailers-27-brightgreen" alt="27 retailers">
+  <img src="https://img.shields.io/badge/lines-4-blue" alt="4 lines">
+  <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
@@ -28,7 +28,7 @@
 
 ## What is CLI Market?
 
-**The problem:** AI agents can't comparison-shop autonomously today. 26 VTEX retailers — Nike, Carrefour, Samsung, Motorola — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
+**The problem:** AI agents can't comparison-shop autonomously today. 27 verified VTEX retailers — Carrefour, Wong, Motorola, HEB — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
 
 **CLI Market fixes this.** One API call across all retailers. One `pip install`. One JSON schema.
 
