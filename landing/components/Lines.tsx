@@ -34,7 +34,7 @@ export default function Lines() {
         ))}
       </div>
       <div className="flex gap-4 max-w-[1100px] flex-wrap">
-        <div className="bg-[#0A0A0A] border border-[#1A1A1A] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">3,760+</span><span className="text-[10px] font-mono text-[#555] uppercase tracking-wider">{_t("lines_stores_badge")}</span></div>
+        <div className="bg-[#0A0A0A] border border-[#1A1A1A] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">26</span><span className="text-[10px] font-mono text-[#555] uppercase tracking-wider">{_t("lines_stores_badge")}</span></div>
         <div className="bg-[#0A0A0A] border border-[#1A1A1A] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">1</span><span className="text-[10px] font-mono text-[#555] uppercase tracking-wider">{_t("lines_connector_badge")}</span></div>
       </div>
     </section>

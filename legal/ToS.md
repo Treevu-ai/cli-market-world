@@ -12,7 +12,7 @@ By accessing or using the CLI Market API, MCP tools, CLI client, or any related 
 
 ## 2. Description of Service
 
-CLI Market provides a programmable interface for product search, price comparison, and purchase execution across 3,760+ VTEX retailers in 67 countries. The Service is delivered via PyPI package (`pip install cli-market`), MCP server (12 tools), a REST API, and data snapshots (SQLite databases of pricing history and SKU mappings — licensed separately under the Data License Agreement).
+CLI Market provides a programmable interface for product search, price comparison, and purchase execution across 26 VTEX retailers in 8 countries. The Service is delivered via PyPI package (`pip install cli-market`), MCP server (12 tools), a REST API, and data snapshots (SQLite databases of pricing history and SKU mappings — licensed separately under the Data License Agreement).
 
 ## 3. Account Registration
 

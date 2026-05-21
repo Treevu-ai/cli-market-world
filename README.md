@@ -2,8 +2,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/retailers-3760+-brightgreen" alt="3760 retailers">
-  <img src="https://img.shields.io/badge/lines-12-blue" alt="12 lines">
-  <img src="https://img.shields.io/badge/countries-67-orange" alt="67 countries">
+  <img src="https://img.shields.io/badge/lines-12-blue" alt="4 lines">
+  <img src="https://img.shields.io/badge/countries-67-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
@@ -22,17 +22,17 @@
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>3,760+ retailers · 12 lines · 67 countries · 1 API.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>26 retailers · 4 lines · 8 countries · 1 API.</p>
 
 ---
 
 ## What is CLI Market?
 
-**The problem:** AI agents can't comparison-shop autonomously today. 3,760 VTEX retailers — Nike, Carrefour, Samsung, Motorola — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
+**The problem:** AI agents can't comparison-shop autonomously today. 26 VTEX retailers — Nike, Carrefour, Samsung, Motorola — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
 
 **CLI Market fixes this.** One API call across all retailers. One `pip install`. One JSON schema.
 
-- **Search** any product across 3,760 retailers in 67 countries
+- **Search** any product across 26 retailers in 8 countries
 - **Compare** prices cross-border in real time
 - **Purchase** autonomously via 12 MCP tools
 - **Build** on our data moat — SQLite snapshots of pricing history, SKU normalization, cross-retailer intelligence
@@ -133,7 +133,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 ## Coverage
 
-3,760+ retailers across 12 business lines in 67 countries.
+26 retailers across 12 business lines in 8 countries.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
@@ -150,7 +150,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 | 📚 Stationery | 11 | Staples · Office Depot |
 
 
-**Countries:** 67 countries across LATAM, Europe, and global
+**Countries:** 8 countries across LATAM, Europe, and global
 
 ## API
 
@@ -188,7 +188,7 @@ GET /v1/pricing
 
 ## Data Moat
 
-The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 3,760 retailers every 4 hours.
+The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 26 retailers every 4 hours.
 
 ```bash
 # One-time run
@@ -205,7 +205,7 @@ python collect_prices.py --report
 | Feature | Spec |
 |---------|------|
 | Parallelism | 50 stores simultaneous |
-| Queries | 40 seed products across 12 lines |
+| Queries | 40 seed products across 4 lines |
 | Circuit breaker | 5 consecutive failures = 5 min cooldown |
 | Dedup | `UNIQUE(product_id, store)` upsert |
 | Rate limit | 150ms between queries per store |
@@ -218,14 +218,14 @@ AI Agents (Claude, DeepSeek, GPT)
         |
    CLI Market API    ← You are here
         |
-   3,760+ VTEX retailers across 67 countries
+   26 VTEX retailers across 8 countries
         |
   SQLite data moat — price snapshots, search history
 ```
 
 ## Why this exists
 
-E-commerce is optimized for clicks, not agents. VTEX powers 3,760+ retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
+E-commerce is optimized for clicks, not agents. VTEX powers 26 retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
 
 ## Links
 
