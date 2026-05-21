@@ -31,7 +31,12 @@ from pydantic import BaseModel, field_validator
 # ── Config ─────────────────────────────────────────────────────────────────
 
 DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.home() / ".market"))
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+# Ensure writable: fall back to cwd if home is not writable (e.g. serverless)
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except PermissionError:
+    DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.cwd() / ".market"))
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 USERS_FILE = DATA_DIR / "users.json"
 CARTS_FILE = DATA_DIR / "carts.json"
 ORDERS_FILE = DATA_DIR / "orders.json"
