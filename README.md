@@ -34,8 +34,10 @@
 
 - **Search** any product across 27 retailers in 8 countries
 - **Compare** prices cross-border in real time
-- **Purchase** autonomously via 12 MCP tools
-- **Build** on our data moat — SQLite snapshots of pricing history, SKU normalization, cross-retailer intelligence
+- **Basket** — compare full shopping carts across retailers, find the cheapest total
+- **Inflation** — track price changes across countries from the data moat
+- **Purchase** autonomously via 15 MCP tools (basket, inflation, categories)
+- **Build** on our data moat — 4,500+ prices every 4h, historical snapshots, cross-retailer intelligence
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 

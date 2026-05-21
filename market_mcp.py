@@ -167,6 +167,41 @@ TOOLS = [
             "required": ["prompt"],
         },
     },
+    {
+        "name": "market_basket",
+        "description": "Comparar el costo total de una canasta de productos entre retailers. Pasa una lista de items con nombre y cantidad. Retorna el total por tienda y cuál es la más barata.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "items": {"type": "array", "description": "Lista de productos, ej: [{\"name\":\"leche\",\"qty\":2},{\"name\":\"arroz\",\"qty\":1}]"},
+                "stores": {"type": "array", "description": "Lista opcional de stores. Vacío = todos los retailers."},
+            },
+            "required": ["items"],
+        },
+    },
+    {
+        "name": "market_inflation",
+        "description": "Consultar la variación de precios (inflación) desde el data moat. Retorna productos con su delta de precio y un promedio de inflación. Filtrar por país o línea.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "Código de país: AR, BR, MX, CO, PE, CL, IT, FR"},
+                "line": {"type": "string", "description": "Línea de negocio: supermercados, farmacias, electro, hogar"},
+                "days": {"type": "integer", "description": "Ventana de días para el análisis (default 30)"},
+            },
+        },
+    },
+    {
+        "name": "market_categories",
+        "description": "Explorar el árbol de categorías de un retailer VTEX. Retorna la jerarquía completa de categorías y subcategorías.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "store": {"type": "string", "description": "ID de la tienda (usar market_lines para ver IDs válidos)"},
+            },
+            "required": ["store"],
+        },
+    },
 ]
 
 
@@ -294,6 +329,9 @@ HANDLERS = {
     "market_orders": lambda a: api("GET", "/orders"),
     "market_reorder": lambda a: api("POST", "/orders/reorder"),
     "market_ask": handle_ask,
+    "market_basket": lambda a: api("POST", "/v1/basket/compare", {"items": a["items"], "stores": a.get("stores")}),
+    "market_inflation": lambda a: api("GET", f"/v1/intel/inflation?country={a.get('country','')}&line={a.get('line','')}&days={a.get('days',30)}"),
+    "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
 }
 
 
