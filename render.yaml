@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: cli-market-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn market_server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MARKET_API_TOKEN
+        value: oHC9ec3dPB5WEI1q1VPZJeQuv_yS9uTk1B38hl0HZ38
+      - key: MARKET_DATA_DIR
+        value: /data
