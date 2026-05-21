@@ -8,11 +8,11 @@ const osData = [
 ];
 
 const steps = [
-  { cmd: "market login", color: "#00FF88", output: "Autenticate para acceder a 3,760+ retailers", outColor: "#444" },
+  { cmd: "market login", color: "#00FF88", output: "Autentícate para acceder a 3,760+ retailers", outColor: "#444" },
   { cmd: 'market search "leche" --country PE', color: "#FF6B35", isMulti: true, results: [{text:"1. Leche Gloria 400ml  Wong  S/3.50",color:"#CCC"}]},
   { cmd: 'market compare "aceite"', color: "#4ADE80", isMulti: true, results: [{text:"Aceite Primor 1L → S/8.90 Wong 🇵🇪",color:"#888"},{text:"Aceite Natura 900ml → ARS 1,250 Carrefour 🇦🇷",color:"#888"},{text:"Aceite Liza 900ml → R$6.50 Carrefour BR 🇧🇷",color:"#888"}]},
-  { cmd: "market add 1 --qty 2", color: "#F5F5F0", output: "Agrega al carrito desde el resultado de busqueda", outColor: "#444" },
-  { cmd: "market checkout --payment yape", color: "#F5F5F0", output: "Completa la compra con metodos de pago locales", outColor: "#444" },
+  { cmd: "market add 1 --qty 2", color: "#F5F5F0", output: "Agrega al carrito desde el resultado de búsqueda", outColor: "#444" },
+  { cmd: "market checkout --payment yape", color: "#F5F5F0", output: "Completa la compra con métodos de pago locales", outColor: "#444" },
 ];
 
 export default function TerminalSection() {
@@ -53,7 +53,7 @@ export default function TerminalSection() {
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>Terminal</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">Una CLI. Miles de comercios.</h2>
-        <p className="text-white/50 font-mono text-sm leading-relaxed">Instala, autenticate y empieza a buscar en 3,760+ retailers VTEX desde la terminal.</p>
+        <p className="text-white/50 font-mono text-sm leading-relaxed">Instala, autentícate y empieza a buscar en 3,760+ retailers VTEX desde la terminal.</p>
         <div className="flex gap-1 mt-1">
           {osData.map((o, i) => (
             <button key={i} onClick={() => setOsIdx(i)} className="px-3 py-1.5 text-[10px] font-mono border transition-colors cursor-pointer" style={{color: i===osIdx ? "#00FF88" : "#555", borderColor: i===osIdx ? "#00FF88" : "#1A1A1A", background: i===osIdx ? "rgba(0,255,136,0.05)" : "transparent" }}>{o.label}</button>
@@ -91,7 +91,7 @@ export default function TerminalSection() {
           {done && <div><span className="text-[#555]">{os.prompt}</span> <span className="inline-block w-[7px] h-[13px] bg-[#00FF88] animate-pulse align-middle"/></div>}
         </div>
       </div>
-      <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">OPEN SOURCE · MIT LICENSE · pip install · 3,760+ COMERCIOS · 67 PAISES</p>
+      <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">OPEN SOURCE · MIT LICENSE · pip install · 3,760+ COMERCIOS · 67 PAÍSES</p>
     </section>
   );
 }

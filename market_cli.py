@@ -48,7 +48,7 @@ LANG = get_lang()
 BUSINESS_MODEL_JSON = {
     "name": "CLI Market",
     "version": "1.0",
-    "description": "Commerce infrastructure for humans and AI agents — 3,603 VTEX retailers, 67 countries, 12 lines, 12 MCP tools.",
+    "description": "Commerce infrastructure for humans and AI agents — 3,760 VTEX retailers, 67 countries, 12 lines, 12 MCP tools.",
     "stats": {"retailers": 3760, "countries": 67, "lines": 12, "mcp_tools": 12},
     "capabilities": {"mcp_server": True, "cli": True, "rest_api": True, "json_output": True, "cross_border": True, "autonomous_checkout": True, "multi_retailer": True},
     "pricing": "Free tier available. Contact for enterprise.",
@@ -66,16 +66,16 @@ WELCOME_BANNER = """\
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
                                                                    
-     [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 paises       [#00FF88]●[/] 12 lineas        
+     [#00FF88]●[/] 3,760 retailers    [#00FF88]●[/] 67 países       [#00FF88]●[/] 12 líneas        
      [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
                                                                    
      [#555555]pip install cli-market[/]                                    
      [#555555]github.com/treevu-ai/cli-market-world[/]                     
                                                                    
-     [#00FF88]market login[/]        [#888888]autenticate[/]                       
+     [#00FF88]market login[/]        [#888888]autentícate[/]                       
      [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]           
-     [#00FF88]market compare[/]      [#888888]compara precios entre paises[/]            
+     [#00FF88]market compare[/]      [#888888]compara precios entre países[/]            
      [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]           
      [#00FF88]market checkout[/]     [#888888]completa la compra[/]                  
      [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]        
@@ -90,7 +90,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]commerce infrastructure for humans and ai agents[/]             
                                                                    
-     [#00FF88]●[/] 3,603 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines         
+     [#00FF88]●[/] 3,760 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines         
      [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
                                                                    
@@ -117,7 +117,7 @@ def welcome_banner():
 def get_token() -> str:
     if not SESSION_FILE.exists():
         console.print(Panel.fit(
-            "[bold #FFD600]No estas autenticado aun.[/]\n\n"
+            "[bold #FFD600]No estás autenticado aún.[/]\n\n"
             "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
             "[#888888]Es gratis. Toma 5 segundos:[/]\n\n"
             "  [#00FF88 bold]1.[/] Ejecuta:  [#00FF88]market login[/]\n"
