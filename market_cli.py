@@ -34,6 +34,7 @@ LANG_FILE = Path.home() / ".market" / "lang"
 console = Console()
 
 # ── i18n ────────────────────────────────────────────────────────────────────
+_ = lambda x: x
 
 T = {
     "es": {
@@ -49,7 +50,7 @@ T = {
         "about": "Modelo de negocio", "whoami": "Ver sesión activa", "lang": "Cambiar idioma (es/en)",
         "categories": "Explorar categorías de una tienda", "barcode": "Buscar producto por código de barras",
         "enrich": "Buscar con datos de Open Food Facts",
-        "query": _("query"), "store": "Tienda específica", "country": "Filtrar por país",
+        "query": "Buscar productos", "store": "Tienda específica", "country": "Filtrar por país",
         "line": "Filtrar por línea de negocio", "limit": "Cantidad de resultados", "page": "Página de resultados",
         "product_id": "Número de la tabla de búsqueda (#) o ID de producto",
         "product_name_help": "Nombre del producto (auto-fill si se usa #)",

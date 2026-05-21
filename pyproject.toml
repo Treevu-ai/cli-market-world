@@ -31,4 +31,4 @@ market-server = "market_server:main"
 wongcli = "wongcli:main"
 
 [tool.setuptools]
-py-modules = ["market_cli", "market_server", "market_mcp", "wongcli"]
+py-modules = ["market_cli", "market_server", "market_mcp", "wongcli", "market_stores"]
