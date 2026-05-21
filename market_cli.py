@@ -832,22 +832,18 @@ LINES = {
     "supermercados": {"name": "Supermercados",       "emoji": "🛒"},
     "farmacias":     {"name": "Farmacias y Salud",   "emoji": "💊"},
     "electro":       {"name": "Electro y Tecnología","emoji": "📱"},
-    "moda":          {"name": "Moda y Calzado",       "emoji": "👕"},
-    "deportes":      {"name": "Deportes y Fitness",   "emoji": "⚽"},
     "hogar":         {"name": "Hogar y Construcción", "emoji": "🏠"},
 }
 
 COUNTRIES = {
-    "PE": "Perú",
     "AR": "Argentina",
     "BR": "Brasil",
     "MX": "México",
     "CO": "Colombia",
+    "PE": "Perú",
     "CL": "Chile",
-    "ES": "España",
-    "FR": "Francia",
     "IT": "Italia",
-    "GB": "Reino Unido",
+    "FR": "Francia",
 }
 
 
