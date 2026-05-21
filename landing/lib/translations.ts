@@ -54,7 +54,7 @@ const es: Dict = {
   pricing_free_4: "Carrito y checkout en 26 retailers",
   pricing_free_5: "Acceso a SQLite data moat (bajo demanda)",
   pricing_pro_title: "Enterprise",
-  pricing_pro_price: "Contactanos",
+  pricing_pro_price: "Contáctanos",
   pricing_pro_period: "a medida",
   pricing_pro_1: "API con rate limit enterprise",
   pricing_pro_2: "Soporte prioritario (Slack/email)",
