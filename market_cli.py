@@ -57,7 +57,7 @@ BUSINESS_MODEL_JSON = {
     "install": "pip install cli-market",
     "github": "https://github.com/Treevu-ai/cli-market-world",
     "landing": "https://cli-market.dev",
-    "api": "https://cli-market-api-production.up.railway.app",
+    "api": "https://cli-market-api.onrender.com",
 }
 
 WELCOME_BANNER = """\

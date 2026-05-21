@@ -1084,7 +1084,7 @@ async def telegram_webhook(request: Request):
                 reply += "No hay datos todavia. Ejecuta 'market search' desde el CLI primero."
         except: reply += "Error consultando."
     elif text.startswith("/status") or text == "status":
-        reply = f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u2022 {len(STORES)} retailers en {len(LINES)} lineas\n\u2022 {len(COUNTRIES)} paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api-production.up.railway.app\n\u2022 Free tier: 10 req/min, 100/dia"
+        reply = f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u2022 {len(STORES)} retailers en {len(LINES)} lineas\n\u2022 {len(COUNTRIES)} paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api.onrender.com\n\u2022 Free tier: 10 req/min, 100/dia"
     elif text.startswith("/coverage") or text in ("coverage","cobertura"):
         reply = "<b>Cobertura por linea:</b>\n"
         for lk in LINES:

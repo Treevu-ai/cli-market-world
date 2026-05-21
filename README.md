@@ -155,7 +155,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 ## API
 
 ```
-Base URL: https://cli-market-api-production.up.railway.app
+Base URL: https://cli-market-api.onrender.com
 Swagger:  /docs
 llms.txt: https://cli-market.dev/llms.txt
 ```
@@ -205,7 +205,7 @@ E-commerce is optimized for clicks, not agents. VTEX powers 3,760+ retailers wit
 ## Links
 
 - Landing: [cli-market.dev](https://cli-market.dev)
-- API: [cli-market-api-production.up.railway.app](https://cli-market-api-production.up.railway.app)
+- API: [cli-market-api.onrender.com](https://cli-market-api.onrender.com)
 - Telegram: [@climarketbot](https://t.me/climarketbot)
 - llms.txt: [cli-market.dev/llms.txt](https://cli-market.dev/llms.txt)
 
