@@ -1,36 +1,40 @@
 "use client";
 import { useState } from "react";
+import { useLang } from "@/lib/LanguageContext";
 
-const faqs = [
-  { question: "¿Qué es CLI Market?", answer: "Es una capa de infraestructura que convierte 3,760+ comercios VTEX en 67 países y 12 líneas de negocio en sistemas compatibles con agentes de inteligencia artificial. Stripe convirtió los pagos en APIs; nosotros convertimos el comercio en APIs.", defaultOpen: true },
-  { question: "¿Con qué comercios funciona?", answer: "Con 3,760+ comercios en 12 líneas: supermercados (Wong, Metro, Plaza Vea, Carrefour, Jumbo, Coto, Dia, Pão de Açúcar, Chedraui, HEB, Olímpica, Éxito, Lider, Soriana), farmacias (Droga Raia, Drogasil, Inkafarma, Farmatodo), electro (Magazine Luiza, Samsung, Motorola, LG, Alkosto, Frávega), moda (Renner, C&A, Marisa, Riachuelo, Arturo Calle, Leonisa), deportes (Centauro, Nike, Adidas, Decathlon en 10 países), hogar (Homecenter, Sodimac, Easy, Promart, Leroy Merlin) y más." },
-  { question: "¿Cómo se integra con agentes de IA?", answer: "El proyecto incluye un servidor MCP con 12 herramientas listas para usar: market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder y market_ask. Compatible con DeepSeek, Claude y cualquier cliente MCP." },
-  { question: "¿Necesito saber programar?", answer: "Para el CLI básico solo necesitas saber usar una terminal. Los comandos son simples: market search, market compare, market cart, market checkout. Para el modo agente, conectas el servidor MCP a tu asistente de IA y listo." },
-  { question: "¿Cómo se manejan los pagos?", answer: "El checkout está diseñado para integrarse con métodos de pago locales de cada país: Yape y Plin en Perú, PIX en Brasil, Mercado Pago en Argentina, OXXO y SPEI en México, y tarjetas de crédito en toda la región. Las credenciales se almacenan localmente con PBKDF2." },
-  { question: "¿Cuánto cuesta?", answer: "El CLI es open source y gratuito (licencia MIT). La API tiene un free tier disponible para que puedas probarla. Los planes pagos para escala enterprise estarán disponibles pronto. Si tienes un caso de uso específico, escríbenos." },
+const faqKeys = [
+  { qKey: "faq1_q", aKey: "faq1_a", defaultOpen: true },
+  { qKey: "faq2_q", aKey: "faq2_a" },
+  { qKey: "faq3_q", aKey: "faq3_a" },
+  { qKey: "faq4_q", aKey: "faq4_a" },
+  { qKey: "faq5_q", aKey: "faq5_a" },
+  { qKey: "faq6_q", aKey: "faq6_a" },
 ];
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState(0);
+  const { t } = useLang();
+  const [open, setOpen] = useState(0);
+
   return (
-    <section id="faq" className="flex flex-col w-full bg-[#050505] py-12 px-4 sm:py-16 sm:px-6 md:py-[80px] md:px-[120px] gap-8 sm:gap-10">
-      <div className="flex flex-col gap-[12px] w-full">
-        <span className="font-mono text-[9px] sm:text-[10px] md:text-[11px] font-bold text-[#FFD600] tracking-[2px] md:tracking-[3px] uppercase">FAQ</span>
-        <h2 className="font-grotesk text-[26px] sm:text-[32px] md:text-[48px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05]">Preguntas frecuentes.</h2>
+    <section id="faq" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+      <div className="flex flex-col gap-3 max-w-[600px]">
+        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>FAQ</span>
+        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">{t("faq_title")}</h2>
       </div>
-      <div className="flex flex-col w-full max-w-[640px]">
-        {faqs.map((faq, i) => {
-          const isOpen = openIndex === i;
-          return (
-            <div key={i} className="border-b border-[#1A1A1A]">
-              <button onClick={() => setOpenIndex(isOpen ? -1 : i)} className="flex items-center justify-between w-full py-4 sm:py-5 text-left">
-                <span className="font-mono text-[12px] sm:text-[13px] text-[#AAA] tracking-[0.5px] pr-4">{faq.question}</span>
-                <span className="font-mono text-[16px] text-[#555] shrink-0">{isOpen ? "−" : "+"}</span>
-              </button>
-              {isOpen && <p className="font-mono text-[11px] sm:text-[12px] text-[#666] leading-[1.6] pb-4 sm:pb-5">{faq.answer}</p>}
-            </div>
-          );
-        })}
+      <div className="flex flex-col gap-4 max-w-[800px]">
+        {faqKeys.map((f, i) => (
+          <div key={i} className="bg-[#0A0A0A] border border-[#1A1A1A] overflow-hidden">
+            <button onClick={() => setOpen(open === i ? -1 : i)} className="w-full flex justify-between items-center px-6 py-4 text-left">
+              <span className="font-grotesk text-sm font-bold text-white">{t(f.qKey)}</span>
+              <span className="text-[#00FF88] text-lg" style={{transform: open===i ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.2s"}}>+</span>
+            </button>
+            {open === i && (
+              <div className="px-6 pb-5">
+                <p className="text-[#888] text-sm font-sans leading-relaxed">{t(f.aKey)}</p>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

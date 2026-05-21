@@ -50,7 +50,7 @@ export default function Features() {
         ))}
       </div>
       <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px] mt-4">MCP NATIVO · API REST · JSON PARSEABLE · CROSS-BORDER · DATA FEED · CHECKOUT LOCAL</p>
-      <p className="text-white/10 font-mono text-[9px] mt-2">live · last updated 2026-05-18 · 3,760 retailers indexed</p>
+      <p className="text-white/10 font-mono text-[9px] mt-2">{_t("features_live")}</p>
     </section>
   );
 }
