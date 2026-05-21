@@ -54,11 +54,11 @@ export default function Hero() {
           </div>
           <div className="mb-12">
             <h1 className={`text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white transition-all duration-1000 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-8"}`}>
-              <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">3,760+</span> retailers.</span>
-              <span className="block">Una sola API.</span>
-              <span className="block">Tus agentes pueden{" "}
+              <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">3,760+</span> {_t("hero_h1a").replace("3,760+ ","")}</span>
+              <span className="block">{_t("hero_h1b")}</span>
+              <span className="block">{_t("hero_h1c_p")}{" "}
                 <span className="relative inline-block"><BlurWord word={words[wordIdx]} trigger={wordIdx} /></span>
-                {" "}solos.
+                {" "}{_t("hero_h1c_s")}
               </span>
             </h1>
           </div>
@@ -73,10 +73,10 @@ export default function Hero() {
             </a>
           </div>
           <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500 ${visible?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`}>
-            <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">Instalar CLI<span className="text-xs opacity-60">→</span></a>
-            <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">Ver cobertura</a>
+            <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-8 py-4 bg-[#00FF88] text-black font-medium hover:bg-[#00cc6a] transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_install")}<span className="text-xs opacity-60">→</span></a>
+            <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_cov")}</a>
 
-            <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">Contactar</a>
+            <a href="https://t.me/climarketbot" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_contact")}</a>
           </div>
 
         </div>
