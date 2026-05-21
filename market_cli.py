@@ -795,6 +795,67 @@ def cmd_enrich(args):
     console.print(table)
 
 
+def cmd_basket(args):
+    """Compara canasta completa entre retailers."""
+    items = []
+    for arg in args.items:
+        if ":" in arg:
+            name, qty = arg.split(":", 1)
+            items.append({"name": name, "qty": int(qty)})
+        else:
+            items.append({"name": arg, "qty": 1})
+    stores = []
+    if args.country:
+        stores = [k for k,v in STORES.items() if v["country"] == args.country]
+    with console.status("[cyan]Comparando canasta..."):
+        data = api("POST", "/v1/basket/compare", {"items": items, "stores": stores or None})
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+    comp = data.get("comparison", {})
+    if not comp:
+        console.print("[yellow]No se encontraron productos en ninguna tienda[/]")
+        return
+    table = Table(title="[bold white]Comparativa de canasta[/]", border_style="dim blue")
+    table.add_column("Tienda", style="bold")
+    table.add_column("Productos", max_width=50)
+    table.add_column("Total", style="bold yellow", justify="right")
+    for store_key, info in sorted(comp.items(), key=lambda x: x[1]["total"]):
+        items_str = ", ".join(f"{i['qty']}x {i['name'][:15]}" for i in info["items"][:3])
+        table.add_row(info["store_name"], items_str, f"{info['currency']} {info['total']:.2f}")
+    console.print(table)
+    best = data.get("best_store")
+    if best:
+        console.print(f"\n[#00FF88]✓ Mejor opción: {comp[best]['store_name']} — {comp[best]['currency']} {comp[best]['total']:.2f}[/]")
+
+
+def cmd_inflation(args):
+    """Muestra la inflación desde el data moat."""
+    params = []
+    if args.country: params.append(f"country={args.country}")
+    if args.line: params.append(f"line={args.line}")
+    qs = "&".join(params)
+    with console.status("[cyan]Calculando inflación..."):
+        data = api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+    items = data.get("items", [])
+    avg = data.get("avg_inflation_pct", 0)
+    color = "#FF6B35" if avg > 0 else "#00FF88"
+    console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({len(items)} productos rastreados)[/]")
+    if items:
+        table = Table(title="[bold white]Variación de precios[/]", border_style="dim blue")
+        table.add_column("Producto", max_width=35)
+        table.add_column("Desde", style="dim")
+        table.add_column("Hasta", style="dim")
+        table.add_column("Δ %", justify="right")
+        for i in items[:15]:
+            c = "#FF6B35" if i["delta_pct"] > 0 else "#00FF88"
+            table.add_row(i["product"][:35], f"{i['currency']} {i['first_price']:.2f}", f"{i['currency']} {i['last_price']:.2f}", f"[{c}]{i['delta_pct']:+.1f}%[/]")
+        console.print(table)
+
+
 def cmd_whoami(args):
     """Muestra el usuario autenticado."""
     try:
@@ -945,6 +1006,16 @@ def main():
     p_lang=sub.add_parser("lang", help=_("lang"))
     p_lang.add_argument("lang_code", nargs="?", help=_("lang_code_help"))
 
+    # basket
+    p = sub.add_parser("basket", help="Comparar canasta completa entre retailers")
+    p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+
+    # inflation
+    p = sub.add_parser("inflation", help="Ver inflación desde el data moat")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
     parser.add_argument("--json", action="store_true", help=_("json_help"))
 
     args = parser.parse_args()
@@ -986,6 +1057,8 @@ def main():
         "countries": cmd_countries,
         "lines":     cmd_lines,
         "categories": cmd_categories,
+        "basket":    cmd_basket,
+        "inflation": cmd_inflation,
         "barcode":  cmd_barcode,
         "enrich":   cmd_enrich,
         "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),

@@ -1007,6 +1007,66 @@ def intel_delta(product: str, country_a: str, country_b: str):
     return {"product": product, "country_a": {"code": country_a, "avg_price": round(ra["avg"], 2), "samples": ra["n"]}, "country_b": {"code": country_b, "avg_price": round(rb["avg"], 2), "samples": rb["n"]}, "delta_percent": delta_pct, "cheaper": country_a if delta_pct < 0 else country_b}
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# 🛒 Basket comparison
+# ═══════════════════════════════════════════════════════════════════════
+
+class BasketRequest(BaseModel):
+    items: list[dict]
+    stores: list[str] | None = None
+
+@app.post("/v1/basket/compare")
+async def basket_compare(body: BasketRequest):
+    stores = body.stores or list(STORES.keys())
+    stores = [s for s in stores if s in STORES]
+    results = {}
+    for store in stores:
+        t = 0; found = []
+        for item in body.items:
+            try:
+                raw = await fetch_store(store, item["name"])
+                if raw:
+                    best = min(raw, key=lambda p: float((p.get("items",[{}])[0].get("sellers",[{}])[0].get("commertialOffer",{}).get("Price",0) or 0) or float("inf")))
+                    prod = product_from_json(best, store)
+                    q = item.get("qty",1); t += prod["price"]*q
+                    found.append({"name":prod["name"][:40],"price":prod["price"],"qty":q,"subtotal":round(prod["price"]*q,2)})
+            except: continue
+        if found: results[store] = {"store_name": STORES[store]["name"], "currency": STORES[store]["currency"], "items": found, "total": round(t,2), "items_found": len(found), "items_requested": len(body.items)}
+    best = min(results, key=lambda s: results[s]["total"]) if results else None
+    return {"basket": body.items, "comparison": results, "best_store": best, "best_total": results[best]["total"] if best else None, "stores_compared": len(results)}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 📊 Inflation tracker
+# ═══════════════════════════════════════════════════════════════════════
+
+@app.get("/v1/intel/inflation")
+def inflation_tracker(country: str | None = None, line: str | None = None, days: int = 30, limit: int = 100):
+    db = get_db()
+    q = "SELECT name, store, store_name, currency, price, queried_at FROM price_snapshots WHERE 1=1"
+    params = []
+    if country:
+        cc_stores = [k for k,v in STORES.items() if v["country"]==country.upper()]
+        if cc_stores: q += f" AND store IN ({','.join('?'*len(cc_stores))})"; params.extend(cc_stores)
+    if line: q += " AND line = ?"; params.append(line)
+    q += " ORDER BY queried_at DESC LIMIT ?"; params.append(limit*2)
+    rows = db.execute(q, params).fetchall(); db.close()
+    prods = {}
+    for r in rows:
+        k = r["name"].lower()[:40]
+        prods.setdefault(k,[]).append({"price":r["price"],"date":r["queried_at"],"store":r["store_name"],"currency":r["currency"]})
+    items = []
+    for name, snaps in list(prods.items())[:limit]:
+        snaps.sort(key=lambda s:s["date"])
+        if len(snaps)>=2:
+            f=snaps[0]; l=snaps[-1]
+            if f["price"]>0:
+                d=round(l["price"]-f["price"],2); dp=round((d/f["price"])*100,1)
+                items.append({"product":name,"first_price":f["price"],"last_price":l["price"],"first_date":f["date"],"last_date":l["date"],"delta":d,"delta_pct":dp,"currency":f["currency"]})
+    avg = round(sum(i["delta_pct"] for i in items)/len(items),1) if items else 0
+    return {"country":country,"line":line,"days":days,"products_tracked":len(items),"avg_inflation_pct":avg,"items":items}
+
+
 @app.get("/v1/intel/alerts")
 def intel_alerts(product: str, store: str | None = None, threshold_pct: float = 5.0, limit: int = 10):
     """Alertas de cambio de precio > threshold%."""
