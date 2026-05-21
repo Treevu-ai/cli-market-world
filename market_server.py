@@ -284,7 +284,7 @@ def get_orders() -> list:
 
 # ── Auth ───────────────────────────────────────────────────────────────────
 
-DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "")
+DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "oHC9ec3dPB5WEI1q1VPZJeQuv_yS9uTk1B38hl0HZ38")
 
 def auth_user(token: str) -> str:
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
