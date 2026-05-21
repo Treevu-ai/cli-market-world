@@ -68,7 +68,7 @@ TOOLS = [
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en todos los retailers VTEX (26 retailers en 8 países, 4 líneas). Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en todos los retailers VTEX (27 retailers en 8 países, 4 líneas). Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {

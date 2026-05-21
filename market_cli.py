@@ -131,7 +131,7 @@ WELCOME_BANNER = """\
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
                                                                    
-     [#00FF88]●[/] 26 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas        
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas        
      [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
                                                                    
@@ -155,7 +155,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]commerce infrastructure for humans and ai agents[/]             
                                                                    
-     [#00FF88]●[/] 26 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines         
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines         
      [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
                                                                    
