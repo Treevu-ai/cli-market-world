@@ -1,9 +1,9 @@
 export default function UseCases() {
   const cases = [
-    { title:"Agentes de IA", desc:"Conecta Claude, DeepSeek o GPT a 12 MCP tools. El agente busca, compara y compra de forma autonoma.", icon:"🤖" },
-    { title:"Fintech y Hedge Funds", desc:"Data feed de precios en 67 paises. Competitive intelligence cross-border. API REST con JSON parseable.", icon:"📊" },
-    { title:"E-commerce", desc:"Una sola integracion para 3,760+ retailers VTEX. Sin licitar APIs por tienda. Un conector generico.", icon:"🛒" },
-    { title:"Desarrolladores", desc:"pip install y estas listo. Open source, MIT license. Contribui al conector VTEX mas grande del mundo.", icon:"💻" },
+    { title:"Agentes de IA", desc:"Conecta Claude, DeepSeek o GPT a 12 MCP tools. El agente busca, compara y compra de forma autónoma.", icon:"🤖" },
+    { title:"Fintech y Hedge Funds", desc:"Data feed de precios en 67 países. Competitive intelligence cross-border. API REST con JSON parseable.", icon:"📊" },
+    { title:"E-commerce", desc:"Una sola integración para 3,760+ retailers VTEX. Sin licitar APIs por tienda. Un conector genérico.", icon:"🛒" },
+    { title:"Desarrolladores", desc:"pip install y estás listo. Open source, MIT license. Contribuí al conector VTEX más grande del mundo.", icon:"💻" },
   ];
   return (
     <section id="usecases" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-8">

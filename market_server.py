@@ -1081,21 +1081,21 @@ async def telegram_webhook(request: Request):
                     reply += f"\u2022 <b>{r['name']}</b>\n  {r['store_name']} — {r['currency']} {r['price']}\n"
                 reply += f"\n{len(rows)} resultados del data moat."
             else:
-                reply += "No hay datos todavia. Ejecuta 'market search' desde el CLI primero."
+                reply += "No hay datos todavía. Ejecuta 'market search' desde el CLI primero."
         except: reply += "Error consultando."
     elif text.startswith("/status") or text == "status":
-        reply = f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u2022 {len(STORES)} retailers en {len(LINES)} lineas\n\u2022 {len(COUNTRIES)} paises\n\u2022 12 MCP tools\n\u2022 API: cli-market-api.onrender.com\n\u2022 Free tier: 10 req/min, 100/dia"
+        reply = f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u2022 {len(STORES)} retailers en {len(LINES)} líneas\n\u2022 {len(COUNTRIES)} países\n\u2022 12 MCP tools\n\u2022 API: cli-market-api.onrender.com\n\u2022 Free tier: 10 req/min, 100/día"
     elif text.startswith("/coverage") or text in ("coverage","cobertura"):
-        reply = "<b>Cobertura por linea:</b>\n"
+        reply = "<b>Cobertura por línea:</b>\n"
         for lk in LINES:
             c = sum(1 for v in STORES.values() if v["line"] == lk)
             reply += f"{LINES[lk]['emoji']} {LINES[lk]['name']}: {c}\n"
         reply += "\n<b>Por pais:</b>\n"
         for ck, cv in COUNTRIES.items(): reply += f"{cv['name']}: {len(cv['stores'])}\n"
     elif text in ("/pricing","pricing","precio","costo"):
-        reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT)\n\u2022 API: free tier (10/min, 100/dia)\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam\nLanding: cli-market.dev\nBot: @climarketbot"
+        reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT)\n\u2022 API: free tier (10/min, 100/día)\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam\nLanding: cli-market.dev\nBot: @climarketbot"
     elif text in ("/docs","docs","api"):
-        reply = "<b>Documentacion:</b>\n\u2022 Swagger: /docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam\n\u2022 API status: GET /"
+        reply = "<b>Documentación:</b>\n\u2022 Swagger: /docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam\n\u2022 API status: GET /"
     elif text in ("/help","help","ayuda"):
         reply = "<b>Comandos:</b>\n/search [producto]\n/status\n/coverage\n/pricing\n/docs\n/help"
     else:
