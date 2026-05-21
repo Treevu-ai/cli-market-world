@@ -151,7 +151,11 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
             raise ValueError(f"Unknown method: {method}")
         if resp.status_code >= 400:
             detail = resp.json().get("detail", resp.text)
-            console.print(f"[red]Error: {detail}[/]")
+            if resp.status_code == 401:
+                console.print(f"[red]Sesión expirada. Ejecutá: market login[/]")
+                console.print("[dim]Si usás MARK_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
+            else:
+                console.print(f"[red]Error: {detail}[/]")
             sys.exit(1)
         return resp.json()
     except httpx.ConnectError:
@@ -281,7 +285,7 @@ def cmd_login(args):
 
 
 def cmd_search(args):
-    """Busca productos. Soporta --country, --line, --store, --page."""
+    """Busca productos. Soporta --country, --line, --store, --page, --json."""
     if not args.query:
         console.print("[yellow]USO: market search <término> [--line LINEA] [--country PAIS] [--store TIENDA] [--limit N] [--page N][/]")
         console.print("[dim]Ej: market search \"leche\" --line supermercados --country PE[/]")
@@ -308,6 +312,11 @@ def cmd_search(args):
             data["total"] = len(data["results"])
 
     results = data["results"]
+
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
     if not results:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
@@ -361,6 +370,11 @@ def cmd_compare(args):
         data = api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
 
     comp = data["comparison"]
+
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
     if not comp:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
@@ -445,6 +459,9 @@ def cmd_add(args):
 def cmd_cart(args):
     """Muestra el carrito actual."""
     data = api("GET", "/cart")
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
     cart = data["cart"]
     if not cart:
         console.print("[yellow]Carrito vacío[/]")
@@ -527,6 +544,9 @@ def cmd_checkout(args):
 def cmd_orders(args):
     """Historial de órdenes con detalle de ítems."""
     data = api("GET", "/orders")
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
     orders = data["orders"]
     if not orders:
         console.print("[yellow]Sin órdenes previas[/]")
