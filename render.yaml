@@ -8,4 +8,4 @@ services:
       - key: MARKET_API_TOKEN
         value: oHC9ec3dPB5WEI1q1VPZJeQuv_yS9uTk1B38hl0HZ38
       - key: MARKET_DATA_DIR
-        value: /data
+        value: /opt/render/project/src/.market
