@@ -33,6 +33,71 @@ SESSION_FILE = Path.home() / ".market" / "session.json"
 LANG_FILE = Path.home() / ".market" / "lang"
 console = Console()
 
+# ── i18n ────────────────────────────────────────────────────────────────────
+
+T = {
+    "es": {
+        "desc": "Agentic Market CLI — compras desde la terminal.",
+        "usage": "market <comando> [opciones]",
+        "login": "Autenticarse", "search": "Buscar productos", "compare": "Comparar precios entre tiendas",
+        "add": "Agregar al carrito (usa # de tabla o product_id)", "cart": "Ver carrito",
+        "cart_remove": "Eliminar un producto del carrito", "cart_update": "Cambiar cantidad de un producto en el carrito",
+        "cart_clear": "Vaciar el carrito por completo", "checkout": "Finalizar compra",
+        "orders": "Historial de órdenes", "reorder": "Repetir una orden (última si no se especifica ID)",
+        "ask": "Compra por lenguaje natural", "preferences": "Ver perfil y preferencias de compra",
+        "countries": "Ver países y tiendas disponibles", "lines": "Ver líneas de negocio y sus retailers",
+        "about": "Modelo de negocio", "whoami": "Ver sesión activa", "lang": "Cambiar idioma (es/en)",
+        "categories": "Explorar categorías de una tienda", "barcode": "Buscar producto por código de barras",
+        "enrich": "Buscar con datos de Open Food Facts",
+        "query": _("query"), "store": "Tienda específica", "country": "Filtrar por país",
+        "line": "Filtrar por línea de negocio", "limit": "Cantidad de resultados", "page": "Página de resultados",
+        "product_id": "Número de la tabla de búsqueda (#) o ID de producto",
+        "product_name_help": "Nombre del producto (auto-fill si se usa #)",
+        "price_help": "Precio (auto-fill si se usa #)", "qty": "Cantidad",
+        "payment": "Método de pago", "order_id_help": "ID de la orden a repetir",
+        "prompt": "Ej: 'compra leche', 'repite la última', 'compara arroz'",
+        "barcode_help": "Código de barras EAN/UPC",
+        "lang_code_help": "Código de idioma: es o en",
+        "json_help": "Salida machine-readable para agentes IA",
+        "username": "Usuario", "password": "Contraseña",
+        "product_remove_help": "ID del producto a eliminar del carrito",
+        "product_update_help": "ID del producto",
+        "quantity_help": "Nueva cantidad (0 = eliminar)",
+    },
+    "en": {
+        "desc": "Agentic Market CLI — purchases from the terminal.",
+        "usage": "market <command> [options]",
+        "login": "Authenticate", "search": "Search products", "compare": "Compare prices across stores",
+        "add": "Add to cart (use table # or product_id)", "cart": "View cart",
+        "cart_remove": "Remove a product from cart", "cart_update": "Change quantity in cart",
+        "cart_clear": "Empty the entire cart", "checkout": "Complete purchase",
+        "orders": "Order history", "reorder": "Repeat an order (last one if no ID specified)",
+        "ask": "Purchase via natural language", "preferences": "View profile and purchase preferences",
+        "countries": "View available countries and stores", "lines": "View business lines and retailers",
+        "about": "Business model", "whoami": "View active session", "lang": "Change language (es/en)",
+        "categories": "Browse store categories", "barcode": "Search product by barcode",
+        "enrich": "Search with Open Food Facts data",
+        "query": "Search term", "store": "Specific store", "country": "Filter by country",
+        "line": "Filter by business line", "limit": "Number of results", "page": "Results page",
+        "product_id": "Table number from search (#) or product ID",
+        "product_name_help": "Product name (auto-filled if using #)",
+        "price_help": "Price (auto-filled if using #)", "qty": "Quantity",
+        "payment": "Payment method", "order_id_help": "Order ID to repeat",
+        "prompt": "E.g. 'buy milk', 'repeat last', 'compare rice'",
+        "barcode_help": "EAN/UPC barcode",
+        "lang_code_help": "Language code: es or en",
+        "json_help": "Machine-readable output for AI agents",
+        "username": "Username", "password": "Password",
+        "product_remove_help": "Product ID to remove from cart",
+        "product_update_help": "Product ID",
+        "quantity_help": "New quantity (0 = remove)",
+    },
+}
+
+def _(key: str) -> str:
+    lang = get_lang()
+    return T.get(lang, T["es"]).get(key, key)
+
 def get_lang() -> str:
     try: return LANG_FILE.read_text().strip()[:2]
     except Exception: return "es"
@@ -790,101 +855,101 @@ COUNTRIES = {
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Agentic Market CLI — compras desde la terminal.",
-        usage="market <comando> [opciones]",
+        description=_("desc"),
+        usage=_("usage"),
     )
     sub = parser.add_subparsers(dest="command")
 
     # login
-    p = sub.add_parser("login", help="Autenticarse")
+    p = sub.add_parser("login", help=_("login"))
     p.add_argument("--username", default="admin")
     p.add_argument("--password", default="market")
 
     # search
-    p = sub.add_parser("search", help="Buscar productos")
+    p = sub.add_parser("search", help=_("search"))
     p.add_argument("query", nargs="?", default="")
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
+    p.add_argument("--line", choices=list(LINES.keys()), default=None, help=_("line"))
     p.add_argument("--limit", "-l", type=int, default=10)
-    p.add_argument("--page", "-p", type=int, default=1, help="Página de resultados")
+    p.add_argument("--page", "-p", type=int, default=1, help=_("page"))
 
     # compare
-    p = sub.add_parser("compare", help="Comparar precios entre tiendas")
+    p = sub.add_parser("compare", help=_("compare"))
     p.add_argument("query", nargs="?", default="")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None, help="Filtrar por país")
-    p.add_argument("--line", choices=list(LINES.keys()), default=None, help="Filtrar por línea de negocio")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None, help=_("country"))
+    p.add_argument("--line", choices=list(LINES.keys()), default=None, help=_("line"))
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # add
-    p = sub.add_parser("add", help="Agregar al carrito (usa # de tabla o product_id)")
-    p.add_argument("product_id", help="Número de la tabla de búsqueda (#) o ID de producto")
-    p.add_argument("--name", help="Nombre del producto (auto-fill si se usa #)")
-    p.add_argument("--price", type=float, default=None, help="Precio (auto-fill si se usa #)")
+    p = sub.add_parser("add", help=_("add"))
+    p.add_argument("product_id", help=_("product_id"))
+    p.add_argument("--name", help=_("product_name_help"))
+    p.add_argument("--price", type=float, default=None, help=_("price_help"))
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--qty", type=int, default=1)
 
     # cart
-    sub.add_parser("cart", help="Ver carrito")
+    sub.add_parser("cart", help=_("cart"))
 
     # cart-remove
-    p = sub.add_parser("cart-remove", help="Eliminar un producto del carrito")
-    p.add_argument("product_id", help="ID del producto a eliminar")
+    p = sub.add_parser("cart-remove", help=_("cart_remove"))
+    p.add_argument("product_id", help=_("product_remove_help"))
 
     # cart-update
-    p = sub.add_parser("cart-update", help="Cambiar cantidad de un producto en el carrito")
-    p.add_argument("product_id", help="ID del producto")
-    p.add_argument("quantity", type=int, help="Nueva cantidad (0 = eliminar)")
+    p = sub.add_parser("cart-update", help=_("cart_update"))
+    p.add_argument("product_id", help=_("product_update_help"))
+    p.add_argument("quantity", type=int, help=_("quantity_help"))
 
     # cart-clear
-    sub.add_parser("cart-clear", help="Vaciar el carrito por completo")
+    sub.add_parser("cart-clear", help=_("cart_clear"))
 
     # checkout
-    p = sub.add_parser("checkout", help="Finalizar compra")
+    p = sub.add_parser("checkout", help=_("checkout"))
     p.add_argument("--payment", choices=["yape", "plin", "tarjeta"], default="yape")
 
     # orders
-    sub.add_parser("orders", help="Historial de órdenes")
+    sub.add_parser("orders", help=_("orders"))
 
     # reorder
-    p = sub.add_parser("reorder", help="Repetir una orden (última si no se especifica ID)")
-    p.add_argument("order_id", nargs="?", default=None, help="ID de la orden a repetir")
+    p = sub.add_parser("reorder", help=_("reorder"))
+    p.add_argument("order_id", nargs="?", default=None, help=_("order_id_help"))
 
     # ask
-    p = sub.add_parser("ask", help="Compra por lenguaje natural")
-    p.add_argument("prompt", help="Ej: 'compra leche', 'repite la última', 'compara arroz'")
+    p = sub.add_parser("ask", help=_("ask"))
+    p.add_argument("prompt", help=_("prompt"))
 
     # preferences
-    sub.add_parser("preferences", help="Ver perfil y preferencias de compra")
+    sub.add_parser("preferences", help=_("preferences"))
 
     # categories
-    p = sub.add_parser("categories", help="Explorar categorías de una tienda")
-    p.add_argument("store", choices=list(STORES.keys()), help="Tienda")
+    p = sub.add_parser("categories", help=_("categories"))
+    p.add_argument("store", choices=list(STORES.keys()), help=_("store"))
 
     # barcode
-    p = sub.add_parser("barcode", help="Buscar producto por código de barras")
-    p.add_argument("code", help="Código de barras EAN/UPC")
+    p = sub.add_parser("barcode", help=_("barcode"))
+    p.add_argument("code", help=_("barcode_help"))
 
     # enrich
-    p = sub.add_parser("enrich", help="Buscar con datos de Open Food Facts")
-    p.add_argument("query", help="Término de búsqueda")
+    p = sub.add_parser("enrich", help=_("enrich"))
+    p.add_argument("query", help=_("query"))
     p.add_argument("--limit", "-l", type=int, default=5)
 
     # countries
-    sub.add_parser("countries", help="Ver países y tiendas disponibles")
+    sub.add_parser("countries", help=_("countries"))
 
     # lines
-    sub.add_parser("lines", help="Ver líneas de negocio y sus retailers")
+    sub.add_parser("lines", help=_("lines"))
 
     # about
-    sub.add_parser("about", help="Modelo de negocio")
+    sub.add_parser("about", help=_("about"))
 
     # whoami
-    sub.add_parser("whoami", help="Ver sesión activa")
-    p_lang=sub.add_parser("lang", help="Cambiar idioma (es/en)")
-    p_lang.add_argument("lang_code", nargs="?", help="Codigo de idioma: es o en")
+    sub.add_parser("whoami", help=_("whoami"))
+    p_lang=sub.add_parser("lang", help=_("lang"))
+    p_lang.add_argument("lang_code", nargs="?", help=_("lang_code_help"))
 
-    parser.add_argument("--json", action="store_true", help="Salida machine-readable para agentes IA")
+    parser.add_argument("--json", action="store_true", help=_("json_help"))
 
     args = parser.parse_args()
 
@@ -895,7 +960,7 @@ def main():
         else:
             console.print(welcome_banner())
             console.print(Panel.fit(
-                "[#888888]¿Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autentificate (usuario: admin, password: market)[/]\n"
+                "[#888888]¿Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autentícate (usuario: admin, password: market)[/]\n"
                 "[#888888]¿Quieres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
                 "[#888888]¿Eres un agente IA?[/] [#00FF88]market --json[/] [#888888]→ salida estructurada MCP para LLMs[/]\n"
                 "[#888888]¿No sabes por donde empezar?[/] [#00FF88]market --help[/] [#888888]→ todos los comandos[/]",
