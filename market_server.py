@@ -218,15 +218,7 @@ LINES = {
     "supermercados":   {"name": "Supermercados",        "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
     "farmacias":       {"name": "Farmacias y Salud",    "emoji": "💊", "description": "Medicamentos, bienestar y cuidado personal"},
     "electro":         {"name": "Electro y Tecnología", "emoji": "📱", "description": "Electrónicos, electrodomésticos y gadgets"},
-    "moda":            {"name": "Moda y Calzado",        "emoji": "👕", "description": "Ropa, calzado y accesorios"},
-    "deportes":        {"name": "Deportes y Fitness",    "emoji": "⚽", "description": "Artículos deportivos, ropa y equipo"},
     "hogar":           {"name": "Hogar y Construcción",  "emoji": "🏠", "description": "Mejoramiento del hogar, muebles, ferretería"},
-    "belleza":         {"name": "Belleza y Cosmética",   "emoji": "💄", "description": "Cosméticos, perfumes y cuidado personal"},
-    "mascotas":        {"name": "Mascotas",              "emoji": "🐾", "description": "Alimentos, accesorios y salud animal"},
-    "libreria":        {"name": "Librería y Oficina",    "emoji": "📚", "description": "Libros, papelería y artículos de oficina"},
-    "departamentales": {"name": "Tiendas Departamentales","emoji": "🏬", "description": "Grandes almacenes multi-categoría"},
-    "alimentos":       {"name": "Alimentos Directos",    "emoji": "🍔", "description": "Marcas de consumo con venta directa"},
-    "autopartes":      {"name": "Autopartes",            "emoji": "🔧", "description": "Repuestos y accesorios automotrices"},
 }
 
 COUNTRIES = {}
