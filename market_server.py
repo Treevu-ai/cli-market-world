@@ -284,7 +284,11 @@ def get_orders() -> list:
 
 # ── Auth ───────────────────────────────────────────────────────────────────
 
+DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "")
+
 def auth_user(token: str) -> str:
+    if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
+        return "admin"
     users = get_users()
     for username, data in users.items():
         if data.get("token") == token:
@@ -484,17 +488,39 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
     # Filtrar por línea si se especifica
     if body.line and body.line in LINES:
         stores = [s for s in stores if STORES[s]["line"] == body.line]
-    results = []
-    for store in stores:
+    
+    # Parallel search with timeout and partial results
+    PARALLEL_BATCH = 50
+    SEARCH_TIMEOUT = 8.0
+
+    async def fetch_one(store):
         try:
             raw = await fetch_store(store, body.query, body.page, body.limit)
+            return store, raw, None
+        except Exception as e:
+            return store, [], str(e)
+
+    results = []
+    errors = []
+    for i in range(0, len(stores), PARALLEL_BATCH):
+        batch = stores[i : i + PARALLEL_BATCH]
+        batch_tasks = [fetch_one(s) for s in batch]
+        try:
+            batch_results = await asyncio.wait_for(asyncio.gather(*batch_tasks), timeout=SEARCH_TIMEOUT)
+        except asyncio.TimeoutError:
+            for s in batch:
+                errors.append({"store": s, "error": "timeout"})
+            break
+        for store, raw, err in batch_results:
+            if err:
+                errors.append({"store": store, "error": err})
+                continue
             for p in raw:
                 prod = product_from_json(p, store)
                 prod["line"] = STORES[store]["line"]
                 prod["line_name"] = LINES[STORES[store]["line"]]["name"]
                 results.append(prod)
-        except Exception:
-            continue
+
     results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
 
     # ── Data moat: persist every price seen ──
@@ -502,7 +528,11 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
         save_price_snapshot(p)
     save_search_query(body.query, body.line, body.store, len(results))
 
-    return {"query": body.query, "results": results, "total": len(results)}
+    response = {"query": body.query, "results": results, "total": len(results)}
+    if errors:
+        response["partial"] = True
+        response["errors"] = errors
+    return response
 
 
 @app.post("/products/compare")
