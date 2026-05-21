@@ -114,8 +114,8 @@ LANG = get_lang()
 BUSINESS_MODEL_JSON = {
     "name": "CLI Market",
     "version": "1.0",
-    "description": "Commerce infrastructure for humans and AI agents — 26 VTEX retailers, 8 countries, 4 lines, 12 MCP tools.",
-    "stats": {"retailers": 26, "countries": 8, "lines": 4, "mcp_tools": 12},
+    "description": "Commerce infrastructure for humans and AI agents — 26 VTEX retailers, 8 countries, 4 lines, 15 MCP tools.",
+    "stats": {"retailers": 27, "countries": 8, "lines": 4, "mcp_tools": 15},
     "capabilities": {"mcp_server": True, "cli": True, "rest_api": True, "json_output": True, "cross_border": True, "autonomous_checkout": True, "multi_retailer": True},
     "pricing": "Free tier available. Contact for enterprise.",
     "contact": "hello@cli-market.dev",
@@ -133,7 +133,7 @@ WELCOME_BANNER = """\
      [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
                                                                    
      [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas        
-     [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
+     [#00FF88]●[/] 15 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
                                                                    
      [#555555]pip install cli-market[/]                                    
@@ -157,7 +157,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#888888]commerce infrastructure for humans and ai agents[/]             
                                                                    
      [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines         
-     [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
+     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
                                                                    
      [#555555]pip install cli-market[/]                                    
@@ -325,7 +325,7 @@ def cmd_login(args):
             "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
             "[#888888]Vas a crear tu token de acceso.[/]\n"
             "[#888888]Es un solo paso y queda guardado en tu equipo.[/]\n\n"
-            "[#888888]Si eres un agente IA: este token activa 12 herramientas MCP.[/]\n\n"
+            "[#888888]Si eres un agente IA: este token activa 15 herramientas MCP.[/]\n\n"
             "[dim]Credenciales por defecto:[/]\n"
             "  Usuario: [#FFFFFF bold]admin[/]\n"
             "  Password: [#FFFFFF bold]market[/]",
