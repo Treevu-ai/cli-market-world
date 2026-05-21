@@ -113,8 +113,8 @@ LANG = get_lang()
 BUSINESS_MODEL_JSON = {
     "name": "CLI Market",
     "version": "1.0",
-    "description": "Commerce infrastructure for humans and AI agents — 3,760 VTEX retailers, 67 countries, 12 lines, 12 MCP tools.",
-    "stats": {"retailers": 3760, "countries": 67, "lines": 12, "mcp_tools": 12},
+    "description": "Commerce infrastructure for humans and AI agents — 26 VTEX retailers, 8 countries, 4 lines, 12 MCP tools.",
+    "stats": {"retailers": 26, "countries": 8, "lines": 4, "mcp_tools": 12},
     "capabilities": {"mcp_server": True, "cli": True, "rest_api": True, "json_output": True, "cross_border": True, "autonomous_checkout": True, "multi_retailer": True},
     "pricing": "Free tier available. Contact for enterprise.",
     "contact": "hello@cli-market.dev",
@@ -131,7 +131,7 @@ WELCOME_BANNER = """\
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
                                                                    
-     [#00FF88]●[/] 3,760 retailers    [#00FF88]●[/] 67 países       [#00FF88]●[/] 12 líneas        
+     [#00FF88]●[/] 26 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas        
      [#00FF88]●[/] 12 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
                                                                    
@@ -155,7 +155,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]                                   
      [#888888]commerce infrastructure for humans and ai agents[/]             
                                                                    
-     [#00FF88]●[/] 3,760 retailers    [#00FF88]●[/] 67 countries    [#00FF88]●[/] 12 lines         
+     [#00FF88]●[/] 26 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines         
      [#00FF88]●[/] 12 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
                                                                    

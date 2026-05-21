@@ -63,12 +63,12 @@ TOOLS = [
     },
     {
         "name": "market_lines",
-        "description": "Listar las 12 líneas de negocio (supermercados, farmacias, electro, moda, deportes, hogar, financiero, automotriz, libros, viajes, hogar-construcción, educación) con sus retailers VTEX y países.",
+        "description": "Listar las 4 líneas de negocio (supermercados, farmacias, electro, moda, deportes, hogar, financiero, automotriz, libros, viajes, hogar-construcción, educación) con sus retailers VTEX y países.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en todos los retailers VTEX (3,760 retailers en 67 países, 12 líneas). Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en todos los retailers VTEX (26 retailers en 8 países, 4 líneas). Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
