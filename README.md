@@ -22,7 +22,7 @@
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>26 retailers · 4 lines · 8 countries · 1 API.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>27 retailers · 4 lines · 8 countries · 1 API.</p>
 
 ---
 
@@ -32,7 +32,7 @@
 
 **CLI Market fixes this.** One API call across all retailers. One `pip install`. One JSON schema.
 
-- **Search** any product across 26 retailers in 8 countries
+- **Search** any product across 27 retailers in 8 countries
 - **Compare** prices cross-border in real time
 - **Purchase** autonomously via 12 MCP tools
 - **Build** on our data moat — SQLite snapshots of pricing history, SKU normalization, cross-retailer intelligence
@@ -133,7 +133,7 @@ Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
 
 ## Coverage
 
-26 retailers across 12 business lines in 8 countries.
+27 retailers across 12 business lines in 8 countries.
 
 | Line | Count | Key retailers |
 |------|-------|--------------|
@@ -188,7 +188,7 @@ GET /v1/pricing
 
 ## Data Moat
 
-The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 26 retailers every 4 hours.
+The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 27 retailers every 4 hours.
 
 ```bash
 # One-time run
@@ -225,7 +225,7 @@ AI Agents (Claude, DeepSeek, GPT)
 
 ## Why this exists
 
-E-commerce is optimized for clicks, not agents. VTEX powers 26 retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
+E-commerce is optimized for clicks, not agents. VTEX powers 27 retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
 
 ## Links
 
