@@ -9,9 +9,6 @@ export default function HowItWorks() {
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">{_t("how_title")}</h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">{_t("how_subtitle")}</p>
       </div>
-      <div className="max-w-[700px] border border-[#1A1A1A] overflow-hidden">
-        <img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/demo.gif" alt="CLI Market demo" className="w-full h-auto" />
-      </div>
       <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest">{_t("how_footer")}</p>
     </section>
   );
