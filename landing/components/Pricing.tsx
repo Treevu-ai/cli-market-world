@@ -9,11 +9,11 @@ const tiers = [
   { key:"pro", title_es:"Pro", title_en:"Pro", price:"$29", period_es:"/ mes", period_en:"/ month", color:"#FFD600",
     f_es:["Todo lo de Free","1,000 requests / dia","Data moat: historico de precios","Export CSV / JSON","Inflation tracker (API)","Soporte email prioritario"],
     f_en:["Everything in Free","1,000 requests / day","Data moat: price history","CSV / JSON export","Inflation tracker (API)","Priority email support"],
-    cta_es:"Suscribirse", cta_en:"Subscribe", href:"mailto:hello@cli-market.dev?subject=Pro" },
+    cta_es:"Suscribirse", cta_en:"Subscribe", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro&body=Hola%2C%20quiero%20activar%20el%20plan%20Pro%20(USD%2029%2Fmes)." },
   { key:"enterprise", title_es:"Enterprise", title_en:"Enterprise", price_es:"Contactanos", price_en:"Contact us", period_es:"a medida", period_en:"custom", color:"#FF6B35",
     f_es:["Todo lo de Pro","Rate limits custom","SLA 99.5%","Endpoints dedicados","Data feed tiempo real","White-label","Integracion custom"],
     f_en:["Everything in Pro","Custom rate limits","SLA 99.5%","Dedicated endpoints","Real-time data feed","White-label","Custom integration"],
-    cta_es:"Contactar", cta_en:"Contact", href:"mailto:hello@cli-market.dev?subject=Enterprise" },
+    cta_es:"Contactar", cta_en:"Contact", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Enterprise&body=Hola%2C%20me%20interesa%20el%20plan%20Enterprise.%20Mi%20caso%20de%20uso%20es%3A" },
 ];
 
 export default function Pricing() {

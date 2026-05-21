@@ -19,7 +19,7 @@ export default function FinalCTA() {
           {t("cta_button")}
           <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </a>
-        <a href="mailto:hello@cli-market.dev"
+        <a href="mailto:hello@cli-market.dev?subject=CLI%20Market&body=Hola%2C%20me%20interesa%20CLI%20Market."
           className="font-mono text-[11px] uppercase tracking-widest text-[#555] hover:text-[#888] transition-colors">
           {t("hero_contact")}
         </a>
