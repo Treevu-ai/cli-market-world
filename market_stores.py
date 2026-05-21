@@ -1,7 +1,8 @@
 # Auto-generated — verified VTEX stores with working public APIs
-# 26 retailers | 8 countries | 4 lines
+# 27 retailers | 8 countries | 4 lines
 STORES = {
     "carrefour": {"name":"Carrefour AR","base":"https://www.carrefour.com.ar","country":"AR","currency":"ARS","emoji":"","line":"supermercados"},
+    "exito_co": {"name":"Exito CO","base":"https://www.exito.com","country":"CO","currency":"COP","emoji":"","line":"supermercados"},
     "vea_ar": {"name":"Vea AR","base":"https://www.vea.com.ar","country":"AR","currency":"ARS","emoji":"","line":"supermercados"},
     "jumbo_ar": {"name":"Jumbo AR","base":"https://www.jumbo.com.ar","country":"AR","currency":"ARS","emoji":"","line":"supermercados"},
     "easy_ar": {"name":"Easy AR","base":"https://www.easy.com.ar","country":"AR","currency":"ARS","emoji":"","line":"hogar"},
