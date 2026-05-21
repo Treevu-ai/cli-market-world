@@ -4,7 +4,7 @@ export type Dict = Record<string, string>;
 const es: Dict = {
   nav_coverage: "Cobertura", nav_how: "Flujo", nav_terminal: "Terminal", nav_features: "Capacidades",
   nav_pricing: "Precios", nav_faq: "FAQ", nav_agents: "Agentes", nav_cases: "Casos",
-  hero_eye: "Infraestructura de comercio para agentes de IA",
+  hero_eye: "Infraestructura de comercio verificada para agentes de IA",
   hero_h1a: "27 retailers.", hero_h1b: "Una sola API.", hero_h1c_p: "Tus agentes pueden", hero_h1c_s: "solos.",
   hero_sub: "Conectamos agentes de IA con 27 comercios VTEX en 8 países.",
   hero_install: "Instalar CLI", hero_cov: "Ver cobertura", hero_contact: "Contactar",
@@ -84,9 +84,9 @@ const es: Dict = {
 const en: Dict = {
   nav_coverage: "Coverage", nav_how: "Flow", nav_terminal: "Terminal", nav_features: "Capabilities",
   nav_pricing: "Pricing", nav_faq: "FAQ", nav_agents: "Agents", nav_cases: "Use Cases",
-  hero_eye: "Commerce infrastructure for AI agents",
+  hero_eye: "Verified commerce infrastructure for AI agents",
   hero_h1a: "27 retailers.", hero_h1b: "One single API.", hero_h1c_p: "Your agents can", hero_h1c_s: "on their own.",
-  hero_sub: "We connect AI agents to 26 VTEX retailers across 8 countries.",
+  hero_sub: "We connect AI agents to 27 verified VTEX retailers across 8 countries.",
   hero_install: "Install CLI", hero_cov: "Coverage", hero_contact: "Contact",
   hero_words: "purchase,compare,search,analyze",
   stats_label: "Scale", stats_title: "27 retailers.\nOne connector.", stats_sub: "Each retailer is one line of JSON. All share the same public API. Invisible infrastructure.",
