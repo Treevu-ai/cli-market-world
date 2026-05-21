@@ -1,26 +1,73 @@
 "use client";
+import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const tools = [
-  { n: "market_login",       d_es: "Autentica al agente para operar",       d_en: "Authenticate the agent session",       c: "#00FF88" },
-  { n: "market_lines",       d_es: "Lista las 4 líneas con sus retailers",  d_en: "List 4 business lines with retailers",  c: "#00FF88" },
-  { n: "market_search",      d_es: "Busca productos en 27 retailers",       d_en: "Search products across 27 retailers",   c: "#FFD600" },
-  { n: "market_compare",     d_es: "Compara precios entre países",           d_en: "Cross-country price comparison",         c: "#4ADE80" },
-  { n: "market_add",         d_es: "Agrega productos al carrito",           d_en: "Add products to cart",                  c: "#FF6B35" },
-  { n: "market_cart",        d_es: "Muestra el carrito actual",              d_en: "View current cart",                     c: "#FF6B35" },
-  { n: "market_cart_update", d_es: "Cambia cantidades en el carrito",       d_en: "Update cart quantities",                c: "#FF6B35" },
-  { n: "market_cart_remove", d_es: "Elimina productos del carrito",         d_en: "Remove items from cart",                c: "#FF6B35" },
-  { n: "market_checkout",    d_es: "Completa la compra (humano requerido)",  d_en: "Complete purchase (human-in-the-loop)",  c: "#60A5FA" },
-  { n: "market_orders",      d_es: "Historial de órdenes",                   d_en: "Order history",                         c: "#A78BFA" },
-  { n: "market_reorder",     d_es: "Repite una orden anterior",              d_en: "Repeat a previous order",               c: "#A78BFA" },
-  { n: "market_ask",         d_es: "Compra por lenguaje natural",             d_en: "Natural language purchase",             c: "#FB923C" },
-  { n: "market_basket",      d_es: "Compara canasta completa entre tiendas",  d_en: "Compare full basket across stores",     c: "#F472B6" },
-  { n: "market_inflation",   d_es: "Inflación desde el data moat",            d_en: "Inflation tracking from data moat",     c: "#38BDF8" },
-  { n: "market_categories",  d_es: "Árbol de categorías por tienda",          d_en: "Category tree per retailer",            c: "#34D399" },
+  { n: "market_login",   d_es: "Autentica al agente para operar",        d_en: "Authenticate the agent session",
+    demo_es: "market login\n→ Token guardado en ~/.market/session.json\n→ Todas las tools requieren este paso.",
+    demo_en: "market login\n→ Token stored in ~/.market/session.json\n→ All tools require this step first.",
+    c: "#00FF88" },
+  { n: "market_lines",   d_es: "Lista las 4 lineas con sus retailers",   d_en: "List 4 business lines with retailers",
+    demo_es: "market lines\n→ supermercados (14) · electro (9) · farmacias (2) · hogar (1)",
+    demo_en: "market lines\n→ supermarkets (14) · electronics (9) · pharmacies (2) · home (1)",
+    c: "#00FF88" },
+  { n: "market_search",  d_es: "Busca productos en 27 retailers",        d_en: "Search products across 27 retailers",
+    demo_es: 'market search "leche" --country PE\n→ 1. Leche Gloria 400ml  Wong  S/3.50\n→ 2. Leche Ideal 395g  Metro  S/3.20',
+    demo_en: 'market search "milk" --country AR\n→ 1. Milk 1L  Carrefour  ARS 1,200\n→ 2. Milk 1L  Jumbo  ARS 1,150',
+    c: "#FFD600" },
+  { n: "market_compare", d_es: "Compara precios entre paises",            d_en: "Cross-country price comparison",
+    demo_es: 'market compare "aceite"\n→ Aceite Primor 1L: Wong S/8.90, Carrefour AR ARS 1250, Exito COP 8500\n→ Mejor: Wong',
+    demo_en: 'market compare "oil"\n→ Oil 1L: Wong PEN 8.90, Carrefour AR ARS 1250, Exito COP 8500\n→ Best: Wong',
+    c: "#4ADE80" },
+  { n: "market_add",     d_es: "Agrega productos al carrito",            d_en: "Add products to cart",
+    demo_es: "market add 3 --qty 2\n→ Agregado: 2x Leche Gloria 400ml\n→ Carrito: 2 items, total S/7.00",
+    demo_en: "market add 3 --qty 2\n→ Added: 2x Milk 1L\n→ Cart: 2 items, total ARS 2,400",
+    c: "#FF6B35" },
+  { n: "market_cart",    d_es: "Muestra el carrito actual",               d_en: "View current cart",
+    demo_es: "market cart\n→ 1. 2x Leche Gloria 400ml  Wong  S/3.50\n→ 2. 1x Arroz Costeno 1kg  Metro  S/4.20\n→ Total: S/11.20",
+    demo_en: "market cart\n→ 1. 2x Milk 1L  Carrefour  ARS 1,200\n→ 2. 1x Rice 1kg  Jumbo  ARS 980\n→ Total: ARS 3,380",
+    c: "#FF6B35" },
+  { n: "market_cart_update", d_es: "Cambia cantidades en el carrito",    d_en: "Update cart quantities",
+    demo_es: "market cart-update <product_id> 5\n→ Cantidad actualizada a 5",
+    demo_en: "market cart-update <product_id> 5\n→ Quantity updated to 5",
+    c: "#FF6B35" },
+  { n: "market_cart_remove", d_es: "Elimina productos del carrito",      d_en: "Remove items from cart",
+    demo_es: "market cart-remove <product_id>\n→ Producto eliminado del carrito",
+    demo_en: "market cart-remove <product_id>\n→ Item removed from cart",
+    c: "#FF6B35" },
+  { n: "market_checkout", d_es: "Completa la compra (humano requerido)",   d_en: "Complete purchase (human-in-the-loop)",
+    demo_es: "market checkout --payment yape\n→ Pedido #ORD-004 confirmado\n→ Total: S/11.20 · Pago: Yape\n→ Requiere aprobacion humana",
+    demo_en: "market checkout --payment card\n→ Order #ORD-004 confirmed\n→ Total: ARS 3,380 · Payment: Card\n→ Requires human approval",
+    c: "#60A5FA" },
+  { n: "market_orders",  d_es: "Historial de ordenes",                    d_en: "Order history",
+    demo_es: "market orders\n→ #ORD-001  2026-05-18  S/15.50  Yape\n→ #ORD-002  2026-05-19  S/8.90   Plin",
+    demo_en: "market orders\n→ #ORD-001  2026-05-18  ARS 5,200  Card\n→ #ORD-002  2026-05-19  ARS 3,100  Card",
+    c: "#A78BFA" },
+  { n: "market_reorder", d_es: "Repite una orden anterior",               d_en: "Repeat a previous order",
+    demo_es: "market reorder ORD-001\n→ Orden ORD-001 restaurada al carrito\n→ 3 items listos para checkout",
+    demo_en: "market reorder ORD-001\n→ Order ORD-001 restored to cart\n→ 3 items ready for checkout",
+    c: "#A78BFA" },
+  { n: "market_ask",     d_es: "Compra por lenguaje natural",              d_en: "Natural language purchase",
+    demo_es: 'market ask "compra 2 leche y 1 arroz al mejor precio"\n→ Buscando leche... Comparando arroz...\n→ Mejor: Wong — S/11.20 total',
+    demo_en: 'market ask "buy 2 milk and 1 rice at the best price"\n→ Searching milk... Comparing rice...\n→ Best: Wong — S/11.20 total',
+    c: "#FB923C" },
+  { n: "market_basket",  d_es: "Compara canasta completa entre tiendas",   d_en: "Compare full basket across stores",
+    demo_es: "market basket leche:2 arroz:1 --country AR\n→ Carrefour AR: ARS 3,380\n→ Jumbo AR: ARS 3,150  ······ MEJOR\n→ Vea AR: ARS 3,420",
+    demo_en: "market basket milk:2 rice:1 --country AR\n→ Carrefour AR: ARS 3,380\n→ Jumbo AR: ARS 3,150  ······ BEST\n→ Vea AR: ARS 3,420",
+    c: "#F472B6" },
+  { n: "market_inflation", d_es: "Inflacion desde el data moat",           d_en: "Inflation tracking from data moat",
+    demo_es: "market inflation --country AR\n→ Inflacion promedio: +2.3%\n→ 127 productos rastreados · ultima actualizacion: hace 4h",
+    demo_en: "market inflation --country AR\n→ Avg inflation: +2.3%\n→ 127 products tracked · last updated: 4h ago",
+    c: "#38BDF8" },
+  { n: "market_categories", d_es: "Arbol de categorias por tienda",        d_en: "Category tree per retailer",
+    demo_es: "market categories wong\n→ Alimentos\n  Lacteos\n  Panaderia\n  Carnes\n→ Bebidas\n→ Limpieza",
+    demo_en: "market categories carrefour\n→ Food\n  Dairy\n  Bakery\n  Meat\n→ Drinks\n→ Cleaning",
+    c: "#34D399" },
 ];
 
 export default function Features() {
   const { t: _t, lang } = useLang();
+  const [active, setActive] = useState<number | null>(null);
 
   return (
     <section id="features" className="relative flex flex-col w-full bg-[#0C0C0C] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
@@ -30,20 +77,35 @@ export default function Features() {
           {lang === "es" ? "15 herramientas.\nUn ecosistema." : "15 tools.\nOne ecosystem."}
         </h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">
-          {lang === "es" ? "12 originales más basket, inflation y categories. Componibles. Un solo comando." : "12 original plus basket, inflation and categories. Composable. One command."}
+          {lang === "es" ? "Clickea cualquier tool para ver como funciona." : "Click any tool to see how it works."}
         </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 max-w-[1100px]">
-        {tools.map((t) => (
-          <div key={t.n} className="bg-[#0A0A0A] border border-[#1A1A1A] p-3 flex flex-col gap-1.5 hover:border-[#333] transition-all">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: t.c }} />
-              <span className="text-[10px] font-mono font-bold text-white/80 truncate">{t.n}</span>
+        {tools.map((t, i) => {
+          const isOpen = active === i;
+          return (
+            <div key={t.n}>
+              <button
+                onClick={() => setActive(isOpen ? null : i)}
+                className="w-full text-left bg-[#0A0A0A] border p-3 flex flex-col gap-1.5 transition-all cursor-pointer"
+                style={{ borderColor: isOpen ? t.c : "#1A1A1A", background: isOpen ? `${t.c}08` : "#0A0A0A" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: t.c }} />
+                  <span className="text-[10px] font-mono font-bold text-white/80 truncate">{t.n}</span>
+                  <span className="ml-auto text-[9px] font-mono" style={{ color: isOpen ? t.c : "#333" }}>{isOpen ? "−" : "+"}</span>
+                </div>
+                <p className="text-[9px] font-mono text-[#555] leading-relaxed">{lang === "es" ? t.d_es : t.d_en}</p>
+              </button>
+              {isOpen && (
+                <div className="bg-[#050505] border border-t-0 px-3 py-3 font-mono text-[9px] leading-relaxed whitespace-pre-wrap" style={{ borderColor: `${t.c}30` }}>
+                  <span className="text-[#888]">{lang === "es" ? t.demo_es : t.demo_en}</span>
+                </div>
+              )}
             </div>
-            <p className="text-[9px] font-mono text-[#555] leading-relaxed">{lang === "es" ? t.d_es : t.d_en}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px] mt-2">MCP NATIVO · API REST · JSON PARSEABLE · CROSS-BORDER · DATA FEED · CHECKOUT LOCAL</p>
