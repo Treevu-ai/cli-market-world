@@ -186,6 +186,31 @@ GET /v1/pricing
 | Free | 10 | 100 | No |
 | Paid | Contact | Contact | Yes |
 
+## Data Moat
+
+The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 3,760 retailers every 4 hours.
+
+```bash
+# One-time run
+python collect_prices.py
+
+# Continuous daemon
+python collect_prices.py --daemon --interval 4
+
+# View stats
+python collect_prices.py --status
+python collect_prices.py --report
+```
+
+| Feature | Spec |
+|---------|------|
+| Parallelism | 50 stores simultaneous |
+| Queries | 40 seed products across 12 lines |
+| Circuit breaker | 5 consecutive failures = 5 min cooldown |
+| Dedup | `UNIQUE(product_id, store)` upsert |
+| Rate limit | 150ms between queries per store |
+| Tables | `price_snapshots`, `collector_runs`, `store_health` |
+
 ## Architecture
 
 ```
