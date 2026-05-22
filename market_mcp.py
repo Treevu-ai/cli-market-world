@@ -202,6 +202,30 @@ TOOLS = [
             "required": ["store"],
         },
     },
+    {
+        "name": "market_alerts",
+        "description": "Crear, listar o eliminar alertas de precio. Recibiras notificacion cuando un producto baje o suba mas del threshold%. Usa action='create','list' o 'delete'.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product": {"type": "string", "description": "Producto a monitorear"},
+                "country": {"type": "string", "description": "Codigo de pais opcional"},
+                "threshold_pct": {"type": "number", "description": "Porcentaje de cambio que dispara la alerta (default 5)"},
+                "action": {"type": "string", "description": "create, list o delete"},
+            },
+            "required": ["product"],
+        },
+    },
+    {
+        "name": "market_ticket",
+        "description": "Escanea un ticket de compra (foto) y compara los precios contra nuestro data moat para ver si pagaste de mas. Usa el CLI: market ticket scan <foto.jpg>",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_voice",
+        "description": "Transcribe un mensaje de voz y ejecuta el comando market ask con el texto transcrito. Usa el CLI: market voice <audio.ogg>",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -332,6 +356,9 @@ HANDLERS = {
     "market_basket": lambda a: api("POST", "/v1/basket/compare", {"items": a["items"], "stores": a.get("stores")}),
     "market_inflation": lambda a: api("GET", f"/v1/intel/inflation?country={a.get('country','')}&line={a.get('line','')}&days={a.get('days',30)}"),
     "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
+    "market_alerts": lambda a: api("POST", "/v1/alerts", {"product": a["product"], "country": a.get("country"), "store": a.get("store"), "threshold_pct": a.get("threshold_pct", 5.0), "action": a.get("action", "create")}),
+    "market_ticket": lambda a: api("POST", "/v1/ticket/scan", {}),  # file upload via MCP not supported: use CLI
+    "market_voice": lambda a: api("POST", "/v1/voice/transcribe", {}),  # file upload via MCP not supported: use CLI
 }
 
 
