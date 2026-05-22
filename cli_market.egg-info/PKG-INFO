@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: cli-market
-Version: 1.0.24
+Version: 1.0.25
 Summary: CLI Market — 3,760+ retailers VTEX, 67 countries, 12 lines. Commerce infrastructure for AI agents.
 Author-email: CLI Market <hello@cli-market.dev>
 License-Expression: MIT
@@ -20,10 +20,10 @@ Requires-Dist: pydantic>=2.0
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-3760+-brightgreen" alt="3760 retailers">
-  <img src="https://img.shields.io/badge/lines-12-blue" alt="4 lines">
-  <img src="https://img.shields.io/badge/countries-67-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/MCP%20tools-12-00d75f" alt="MCP">
+  <img src="https://img.shields.io/badge/retailers-27-brightgreen" alt="27 retailers">
+  <img src="https://img.shields.io/badge/lines-4-blue" alt="4 lines">
+  <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
+  <img src="https://img.shields.io/badge/MCP%20tools-15-00d75f" alt="15 MCP tools">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build">
@@ -37,233 +37,182 @@ Requires-Dist: pydantic>=2.0
   <a href="https://www.producthunt.com/products/cli-market"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&amp;theme=neutral" alt="ProductHunt featured" width="125" height="27"></a>
 </p>
 
-
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>27 retailers · 4 lines · 8 countries · 1 API.</p>
+<p align="center"><b>Your AI agent can search, compare, and buy across 27 retailers in 8 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
 ## What is CLI Market?
 
-**The problem:** AI agents can't comparison-shop autonomously today. 26 VTEX retailers — Nike, Carrefour, Samsung, Motorola — all share the same public API. But every retailer requires separate auth, separate search logic, no unified cart state, no cross-retailer pricing. Agents fail before the first query.
+**The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 27 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One API call across all retailers. One `pip install`. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across all 27 retailers. One JSON schema.
 
-- **Search** any product across 27 retailers in 8 countries
-- **Compare** prices cross-border in real time
-- **Purchase** autonomously via 12 MCP tools
-- **Build** on our data moat — SQLite snapshots of pricing history, SKU normalization, cross-retailer intelligence
+- **Search** any product across 27 verified retailers in 8 countries
+- **Compare** prices cross-border — ARS, BRL, MXN, PEN, COP, CLP, EUR
+- **Basket** — compare your full shopping cart across retailers, find the cheapest
+- **Inflation** — track real price changes from supermarket shelves, updated every 4 hours
+- **Buy** — autonomous checkout with human approval (15 MCP tools)
+- **Build** — data moat with thousands of verified prices, historical snapshots, SKU normalization
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
-<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> — full landing, live coverage, MCP docs</p>
+<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a></p>
 
-![CLI Market demo](https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/demo.gif)
+---
 
 ## Quick start
-
-### Linux / macOS / WSL
 
 ```bash
 # 1. Install
 pip install cli-market
 
-# 2. Start backend
-market-server &
+# 2. Point to our cloud API (or run locally: python market_server.py)
+export MARKET_API_URL=https://cli-market-api.onrender.com
 
-# 3. Use the CLI
+# 3. Authenticate
 market login
-market search "leche" --country PE
+
+# 4. Search
+market search "leche" --country AR       # Argentina
+market search "leite" --store carrefour_br  # Brazil
+
+# 5. Compare prices
 market compare "aceite"
+
+# 6. Add to cart and checkout
 market add 3 --qty 2
+market cart
 market checkout --payment yape
 
-# 4. Agent mode
-market ask "compra arroz"
+# 7. Agent mode — natural language
+market ask "compra arroz al mejor precio"
+market ask "compara canasta: leche:2 arroz:1"
+
+# 8. Machine-readable output
 market --json
 ```
 
-### Windows (PowerShell)
+---
 
-```powershell
-# 1. Install
-pip install cli-market
+## What you get
 
-# 2. Start backend (in a separate terminal)
-Start-Process -NoNewWindow python -ArgumentList "-m", "market_server"
+| You | Your AI agent |
+|-----|---------------|
+| `pip install cli-market` | 15 MCP tools |
+| `market search "milk"` | REST API + JSON native |
+| Rich terminal tables | Cross-border price intelligence |
+| Spanish / English | Inflation tracking |
+| Cart, checkout, reorder | Autonomous workflows |
 
-# 3. Use the CLI
-market login
-market search "leche" --country PE
-market compare "aceite"
-market add 3 --qty 2
-market checkout --payment yape
+### 15 MCP tools
 
-# 4. Agent mode
-market ask "compra arroz"
-market --json
-```
+`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories`
 
-### Windows (CMD)
+Compatible with **DeepSeek TUI, Claude, Cursor, Windsurf, Continue, and any MCP client.** [Registered on the MCP Registry.](https://registry.modelcontextprotocol.io)
 
-```cmd
-:: 1. Install
-pip install cli-market
+---
 
-:: 2. Start backend (in a separate terminal)
-start python -m market_server
+## Coverage
 
-:: 3. Use the CLI
-market login
-market search "leche" --country PE
-market compare "aceite"
-market add 3 --qty 2
-market checkout --payment yape
+Every retailer below has been verified. The VTEX API responds. No dead URLs.
 
-:: 4. Agent mode
-market ask "compra arroz"
-market --json
-```
+| Retailer | Country | Line | Currency |
+|----------|---------|------|----------|
+| **Carrefour** | AR, BR | Supermarkets | ARS, BRL |
+| **Wong, Metro, Plaza Vea** | PE | Supermarkets | PEN |
+| **Exito, Carulla, Olimpica** | CO | Supermarkets | COP |
+| **Chedraui, HEB** | MX | Supermarkets | MXN |
+| **Vea, Jumbo, Easy** | AR | Supermarkets, Home | ARS |
+| **Farmatodo** | MX | Pharmacies | MXN |
+| **Drogaria Pacheco** | BR | Pharmacies | BRL |
+| **Motorola** | AR, BR, MX, CL | Electronics | ARS, BRL, MXN, CLP |
+| **Electrolux** | AR, CL | Electronics | ARS, CLP |
+| **Whirlpool** | AR, IT, FR | Electronics | ARS, EUR |
+| **Sam's Club, Mambo** | BR | Supermarkets | BRL |
 
-## Features
+**8 countries. 27 retailers. 4 lines.** All verified. Growing.
 
-| For humans | For AI agents |
-|---|---|
-| Terminal CLI | REST API + JSON |
-| Rich tables | 12 MCP Tools |
-| Spanish / English | CSV export |
-| `market search "milk"` | Autonomous workflows |
+---
 
-### Commands
-
-`login` `lines` `search` `compare` `add` `cart` `cart-update` `cart-remove` `cart-clear` `checkout` `orders` `reorder` `ask` `--json`
-
-### MCP Server
+## MCP Server
 
 ```bash
 python market_mcp.py
 ```
 
-12 tools: `market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask`
+15 tools ready for your AI agent.
 
-Compatible with DeepSeek TUI, Claude, Cursor, and any MCP client.
-
-## Coverage
-
-27 retailers across 12 business lines in 8 countries.
-
-| Line | Count | Key retailers |
-|------|-------|--------------|
-| 👕 Fashion | 1,560 | Louis Vuitton · Gucci · Prada · Chanel · Dior · Zara · H&M · Levi's · Nike · Adidas · Renner · Lamborghini · Ferrari |
-| 📱 Electronics | 571 | Samsung · Apple · Sony · LG · Panasonic · Dell · HP · Lenovo · Yamaha · Dyson |
-| 🏠 Home | 314 | IKEA · Homecenter · Sodimac · Miele · Bosch · Smeg · Tefal · KitchenAid |
-| ⚽ Sports | 306 | Nike · Adidas · Reebok · Puma · Under Armour · Decathlon · Foot Locker · Patagonia |
-| 🛒 Supermarkets | 252 | Wong · Carrefour · Jumbo · Coto · Costco · Sainsbury's · Edeka · Albert Heijn |
-| 🍔 Food | 176 | Nestle · Unilever · Coca-Cola · Pepsi · Lindt · Heineken · Nespresso |
-| 💄 Beauty | 170 | Sephora · MAC · Clinique · Estee Lauder · Lancome · Lush · Yves Rocher |
-| 🏬 Department Stores | 136 | Mercado Libre · El Corte Ingles · Otto · Miniso · Lego · Americanas |
-| 💊 Pharmacies | 51 | Droga Raia · Drogasil · Boots · DM · Rossmann |
-| 🔧 Auto Parts | 50 | BMW · Mercedes-Benz · Audi · Tesla · Harley Davidson · Ducati |
-| 📚 Stationery | 11 | Staples · Office Depot |
-
-
-**Countries:** 8 countries across LATAM, Europe, and global
+---
 
 ## API
 
 ```
-Base URL: https://cli-market-api.onrender.com
-Swagger:  /docs
-llms.txt: https://cli-market.dev/llms.txt
+Base: https://cli-market-api.onrender.com
+Docs: /docs
 ```
-
-### Endpoints
 
 ```bash
-# Status
-GET /
-
-# Data Feed
-GET /v1/feed/prices?query=cafe&country=PE&format=csv
-GET /v1/feed/stats?period=7d
-
-# Competitive Intelligence (CIaaS)
-GET /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
-GET /v1/intel/delta?product=cafe&country_a=PE&country_b=CO
-GET /v1/intel/alerts?product=arroz&threshold_pct=5
-
-# Pricing
-GET /v1/pricing
+GET  /
+POST /products/search   {"query":"cafe","store":"wong"}
+POST /products/compare  {"query":"aceite"}
+POST /v1/basket/compare {"items":[{"name":"leche","qty":2},{"name":"arroz","qty":1}]}
+GET  /v1/intel/inflation?country=AR
+GET  /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
+GET  /categories/{store}
 ```
 
-### Rate limits
+| Tier | Requests/min | Requests/day |
+|------|-------------|-------------|
+| Free | 10 | 100 |
+| Enterprise | [Contact](mailto:hello@cli-market.dev) | |
 
-| Tier | Requests/min | Requests/day | CIaaS |
-|------|-------------|-------------|-------|
-| Free | 10 | 100 | No |
-| Paid | Contact | Contact | Yes |
-
-## Data Moat
-
-The SQLite database is fed by an automated price collector. It queries 40 canonical products (milk, rice, oil, eggs, paracetamol, sneakers, jeans, TVs, laptops, etc.) across all 27 retailers every 4 hours.
-
-```bash
-# One-time run
-python collect_prices.py
-
-# Continuous daemon
-python collect_prices.py --daemon --interval 4
-
-# View stats
-python collect_prices.py --status
-python collect_prices.py --report
-```
-
-| Feature | Spec |
-|---------|------|
-| Parallelism | 50 stores simultaneous |
-| Queries | 40 seed products across 4 lines |
-| Circuit breaker | 5 consecutive failures = 5 min cooldown |
-| Dedup | `UNIQUE(product_id, store)` upsert |
-| Rate limit | 150ms between queries per store |
-| Tables | `price_snapshots`, `collector_runs`, `store_health` |
+---
 
 ## Architecture
 
 ```
-AI Agents (Claude, DeepSeek, GPT)
-        |
-   CLI Market API    ← You are here
-        |
-   26 VTEX retailers across 8 countries
-        |
-  SQLite data moat — price snapshots, search history
+AI Agent
+   │
+CLI Market API
+   │
+27 verified VTEX retailers
+   │
+Data moat — prices every 4h, deduplicated, historical
 ```
 
-## Why this exists
+---
 
-E-commerce is optimized for clicks, not agents. VTEX powers 27 retailers with the same public API — yet no one has built a unified agentic layer on top. CLI Market is that layer.
+## Data Moat
+
+Price collector runs every 4 hours. Thousands of verified prices per day.
+
+```bash
+python collect_prices.py              # run once
+python collect_prices.py --daemon     # continuous
+python collect_prices.py --status     # stats
+python collect_prices.py --report     # latest prices
+```
+
+PostgreSQL in production. SQLite for local dev. Circuit breaker. Parallel.
+
+---
 
 ## Links
 
 - Landing: [cli-market.dev](https://cli-market.dev)
 - API: [cli-market-api.onrender.com](https://cli-market-api.onrender.com)
+- MCP Registry: `io.github.Treevu-ai/cli-market`
 - Telegram: [@climarketbot](https://t.me/climarketbot)
-- llms.txt: [cli-market.dev/llms.txt](https://cli-market.dev/llms.txt)
+
+---
 
 ## Legal
 
-**Software:** MIT License. Use, modify, distribute freely.
+**Software:** MIT License. **Data:** Proprietary — [Data License Agreement](legal/Data_License_Agreement.md).
 
-**Data:** Pricing data, SKU mappings, historical snapshots, and retailer indexes are proprietary. Licensed under the [Data License Agreement](legal/Data_License_Agreement.md). The software is open. The data moat is protected.
+- [ToS](legal/ToS.md) · [Privacy](legal/Privacy.md) · [DLA](legal/Data_License_Agreement.md) · [AUP](legal/AUP.md) · [SLA](legal/SLA.md)
 
-**Documents:**
-- [Terms of Service](legal/ToS.md)
-- [Privacy Policy](legal/Privacy.md)
-- [Data License Agreement](legal/Data_License_Agreement.md)
-- [Acceptable Use Policy](legal/AUP.md)
-- [Service Level Agreement](legal/SLA.md)
-
-MIT © 2026 CLI Market · Treevu AI
+<p align="center">MIT © 2026 CLI Market · Treevu AI</p>
