@@ -857,6 +857,79 @@ def cmd_inflation(args):
         console.print(table)
 
 
+def cmd_alerts(args):
+    """Maneja alertas de precio."""
+    if args.action == "list":
+        data = api("POST", "/v1/alerts", {"product": "", "action": "list"})
+        alerts_list = data.get("alerts", [])
+        if not alerts_list:
+            console.print("[yellow]No hay alertas configuradas.[/]")
+            return
+        for a in alerts_list:
+            console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}% | {a.get('country','todas')} | {a.get('created_at','')[:10]}")
+        return
+    if args.action == "check":
+        data = api("GET", "/v1/alerts/check")
+        triggered = data.get("triggered", [])
+        if not triggered:
+            console.print("[dim]Sin alertas disparadas.[/]")
+            return
+        for t in triggered:
+            dir_emoji = "🔻" if t["direction"] == "down" else "🔺"
+            console.print(f"  {dir_emoji} {t['product']} | {t['store']} | {t['currency']} {t['prev_price']} → {t['curr_price']} ({t['delta_pct']:+.1f}%)")
+        return
+    if not args.product:
+        console.print("[yellow]USO: market alerts create <producto> [--country AR] [--threshold 5][/]")
+        return
+    data = api("POST", "/v1/alerts", {"product": args.product, "country": args.country, "threshold_pct": args.threshold, "action": args.action})
+    console.print(f"[#00FF88]{data.get('message','')}[/]")
+
+
+def cmd_ticket(args):
+    """Escanea ticket y compara precios."""
+    import httpx
+    with open(args.file, "rb") as f:
+        resp = httpx.post(f"{API}/v1/ticket/scan", files={"file": f}, timeout=30)
+    data = resp.json()
+    if data.get("items"):
+        table = Table(title="[bold white]Comparativa ticket vs data moat[/]", border_style="dim blue")
+        table.add_column("Ticket", max_width=35)
+        table.add_column("Mejor precio", max_width=30)
+        table.add_column("Tienda", max_width=12)
+        table.add_column("Precio", justify="right")
+        for i in data["items"]:
+            table.add_row(i["ticket_text"][:35], i["best_match"][:30], i["store"], f"{i['currency']} {i['price']:.2f}")
+        console.print(table)
+        console.print(f"\nAhorro potencial: [#00FF88]{data['currency'] if data.get('items') else ''} {data['potential_savings']:.2f}[/]")
+    else:
+        console.print(f"[yellow]{data.get('message','No se detectaron productos.')}[/]")
+
+
+def cmd_voice(args):
+    """Transcribe audio y ejecuta market ask."""
+    import httpx
+    with open(args.file, "rb") as f:
+        resp = httpx.post(f"{API}/v1/voice/transcribe", files={"file": f}, timeout=30)
+    data = resp.json()
+    transcript = data.get("transcript", "").strip()
+    if not transcript or transcript.startswith("["):
+        console.print(f"[yellow]{transcript}[/]")
+        return
+    console.print(f"[dim]Transcripción: {transcript}[/]")
+    # Execute market ask with transcript
+    with console.status("[cyan]Ejecutando..."):
+        ask_data = api("POST", "/agent/ask", {"prompt": transcript})
+    if "message" in ask_data:
+        console.print(f"[#3cffd0]{ask_data['message']}[/]")
+    if "comparison" in ask_data:
+        for c in ask_data.get("comparison", [])[:3]:
+            stores = ", ".join(f"{s}: {fmt_price(p)}" for s, p in c.get("prices", {}).items())
+            console.print(f"  {c['name'][:40]} | {stores}")
+    if "results" in ask_data:
+        for p in ask_data.get("results", [])[:3]:
+            console.print(f"  {p['name'][:40]} | {p['store_name']} | {fmt_price(p['price'])}")
+
+
 def cmd_whoami(args):
     """Muestra el usuario autenticado."""
     try:
@@ -1017,6 +1090,22 @@ def main():
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
 
+    # alerts
+    p = sub.add_parser("alerts", help="Alertas de precio: create, list, delete, check")
+    p.add_argument("action", choices=["create", "list", "delete", "check"], help="Acción")
+    p.add_argument("product", nargs="?", help="Producto a monitorear")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--threshold", type=float, default=5.0, help="% de cambio (default 5)")
+
+    # ticket
+    p = sub.add_parser("ticket", help="Escanear ticket y comparar precios")
+    p.add_argument("action", choices=["scan"], help="Acción")
+    p.add_argument("file", help="Ruta a la foto del ticket")
+
+    # voice
+    p = sub.add_parser("voice", help="Transcribir audio y ejecutar market ask")
+    p.add_argument("file", help="Ruta al archivo de audio (.ogg, .mp3, .wav)")
+
     parser.add_argument("--json", action="store_true", help=_("json_help"))
 
     args = parser.parse_args()
@@ -1060,6 +1149,9 @@ def main():
         "categories": cmd_categories,
         "basket":    cmd_basket,
         "inflation": cmd_inflation,
+        "alerts":    cmd_alerts,
+        "ticket":    cmd_ticket,
+        "voice":     cmd_voice,
         "barcode":  cmd_barcode,
         "enrich":   cmd_enrich,
         "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),

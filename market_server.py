@@ -1187,6 +1187,130 @@ def telegram_info():
     bot = os.getenv("TELEGRAM_BOT_USERNAME", "")
     return {"telegram_bot": f"https://t.me/{bot}" if bot else "Not configured", "setup": "Set TELEGRAM_BOT_TOKEN + TELEGRAM_BOT_USERNAME env vars", "webhook_url": "POST /telegram/webhook"}
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔔 Price alerts
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ALERTS_FILE = DATA_DIR / "price_alerts.json"
+
+class AlertRequest(BaseModel):
+    product: str
+    country: str | None = None
+    store: str | None = None
+    threshold_pct: float = 5.0
+    action: str | None = None  # "create", "delete", "list"
+
+@app.post("/v1/alerts")
+def alerts(body: AlertRequest):
+    alerts_data = json.loads(ALERTS_FILE.read_text()) if ALERTS_FILE.exists() else []
+    
+    if body.action == "delete":
+        alerts_data = [a for a in alerts_data if not (a["product"] == body.product and a.get("country") == body.country)]
+        ALERTS_FILE.write_text(json.dumps(alerts_data, indent=2))
+        return {"message": f"Alerta eliminada para '{body.product}'", "alerts": alerts_data}
+    
+    if body.action == "list":
+        return {"alerts": alerts_data, "total": len(alerts_data)}
+    
+    # create
+    alert = {"product": body.product, "country": body.country, "store": body.store, "threshold_pct": body.threshold_pct, "created_at": datetime.now(timezone.utc).isoformat()}
+    alerts_data.append(alert)
+    ALERTS_FILE.write_text(json.dumps(alerts_data, indent=2))
+    return {"message": f"Alerta creada para '{body.product}' al {body.threshold_pct}%", "alert": alert}
+
+@app.get("/v1/alerts/check")
+def check_alerts():
+    """Evalúa todas las alertas contra los precios actuales del data moat."""
+    alerts_data = json.loads(ALERTS_FILE.read_text()) if ALERTS_FILE.exists() else []
+    if not alerts_data: return {"triggered": [], "message": "No hay alertas configuradas."}
+    
+    db = get_db()
+    triggered = []
+    for alert in alerts_data:
+        q = "SELECT * FROM price_snapshots WHERE name LIKE ?"
+        params = [f"%{alert['product']}%"]
+        if alert.get("store"): q += " AND store = ?"; params.append(alert["store"])
+        q += " ORDER BY queried_at DESC LIMIT 2"
+        rows = db.execute(q, params).fetchall()
+        if len(rows) >= 2:
+            curr, prev = rows[0], rows[1]
+            if prev["price"] > 0:
+                delta = round(((curr["price"] - prev["price"]) / prev["price"]) * 100, 1)
+                if abs(delta) >= alert["threshold_pct"]:
+                    triggered.append({"product": alert["product"], "store": rows[0]["store_name"], "prev_price": prev["price"], "curr_price": curr["price"], "delta_pct": delta, "direction": "down" if delta < 0 else "up", "currency": curr["currency"]})
+    db.close()
+    return {"triggered": triggered, "total_alerts": len(alerts_data), "checked_at": datetime.now(timezone.utc).isoformat()}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🎙️ Voice integration (Telegram)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+import subprocess, tempfile
+
+@app.post("/v1/voice/transcribe")
+async def voice_transcribe(file: UploadFile = File(...)):
+    """Recibe un archivo de audio (ogg/mp3/wav) y devuelve la transcripción."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        # Use whisper if available, else return placeholder
+        result = subprocess.run(["whisper", tmp_path, "--model", "tiny", "--language", "es", "--output_format", "txt", "--output_dir", "/tmp"], capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            txt_file = tmp_path.replace(".ogg", ".txt")
+            transcript = open(txt_file).read().strip() if os.path.exists(txt_file) else ""
+        else:
+            transcript = "[Transcripción no disponible - instalar whisper: pip install openai-whisper]"
+    except FileNotFoundError:
+        transcript = "[Whisper no instalado. Instalar: pip install openai-whisper]"
+    finally:
+        os.unlink(tmp_path)
+        try: os.unlink(tmp_path.replace(".ogg", ".txt"))
+        except: pass
+    return {"transcript": transcript, "language": "es"}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🧾 Ticket scanner
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/v1/ticket/scan")
+async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
+    """Escanea un ticket/foto y compara precios contra el data moat."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        # Use tesseract OCR if available
+        result = subprocess.run(["tesseract", tmp_path, "stdout", "-l", "spa", "--psm", "6"], capture_output=True, text=True, timeout=15)
+        ocr_text = result.stdout.strip() if result.returncode == 0 else ""
+    except FileNotFoundError:
+        ocr_text = "[Tesseract no instalado. Instalar: sudo apt install tesseract-ocr tesseract-ocr-spa]"
+    finally:
+        os.unlink(tmp_path)
+    
+    # Parse OCR text into product lines
+    lines = [l.strip() for l in ocr_text.split("\n") if l.strip() and len(l.strip()) > 3]
+    
+    # Compare each detected item against data moat
+    db = get_db()
+    items_found = []
+    for line in lines[:20]:
+        words = line.split()
+        if len(words) < 2: continue
+        query = "%" + "%".join(words[:3]) + "%"
+        row = db.execute("SELECT name, store_name, price, currency FROM price_snapshots WHERE name LIKE ? ORDER BY price ASC LIMIT 1", (query,)).fetchone()
+        if row:
+            items_found.append({"ticket_text": line[:50], "best_match": row["name"], "store": row["store_name"], "price": row["price"], "currency": row["currency"]})
+    db.close()
+    
+    savings = sum((i.get("price", 0) or 0) for i in items_found) if items_found else 0
+    return {"ocr_text": ocr_text[:500], "items_detected": len(lines), "items_matched": len(items_found), "potential_savings": round(savings, 2), "items": items_found, "message": "Compara contra los precios mas baratos de nuestro data moat. Los precios del ticket pueden ser mayores." if items_found else "No se detectaron productos. Asegurate de que la foto sea clara y contenga nombres de productos."}
+
+
 # ── Run ────────────────────────────────────────────────────────────────────
 
 def main():
