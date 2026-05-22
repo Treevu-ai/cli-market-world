@@ -17,8 +17,22 @@ function BlurWord({ word, trigger }: { word: string; trigger: number }) {
     timers.push(setTimeout(()=>setGradient(false),45*letters.length+500+200));
     return ()=>timers.forEach(clearTimeout);
   },[trigger]);
-  const gc=["#00FF88","#FFD600","#FF6B35","#60A5FA","#00FF88"];
-  return <>{letters.map((c,i)=>{const ci=(i/Math.max(letters.length-1,1))*(gc.length-1);const lo=Math.floor(ci),up=Math.min(lo+1,gc.length-1),t=ci-lo;const hx=(h:string)=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];const[r1,g1,b1]=hx(gc[lo]),[r2,g2,b2]=hx(gc[up]);const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b=Math.round(b1+(b2-b1)*t);return <span key={i} style={{display:"inline-block",opacity:states[i]?.o??0,filter:`blur(${states[i]?.b??20}px)`,color:gradient?`rgb(${r},${g},${b})`:"white",transition:"color 0.4s ease"}}>{c}</span>})}</>;
+  const gc = ["#00FF88","#FFD600","#FF6B35","#60A5FA","#00FF88"];
+  return <>{letters.map((c,i)=>{
+    const ci = (i/Math.max(letters.length-1,1))*(gc.length-1);
+    const lo=Math.floor(ci),up=Math.min(lo+1,gc.length-1),t=ci-lo;
+    const hx=(h:string)=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+    const[r1,g1,b1]=hx(gc[lo]),[r2,g2,b2]=hx(gc[up]);
+    const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b=Math.round(b1+(b2-b1)*t);
+    return <span key={i} className="inline-block" style={{
+      color: states[i]?.o ? `rgb(${r},${g},${b})` : "white",
+      opacity: states[i]?.o ?? 0,
+      filter: `blur(${states[i]?.b ?? 20}px)`,
+      transition: "color 0.4s ease",
+      willChange: "filter, opacity",
+      contentVisibility: "auto",
+    }}>{c}</span>
+  })}</>;
 }
 
 export default function Hero() {
