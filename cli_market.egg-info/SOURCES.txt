@@ -2,6 +2,7 @@ README.md
 market_cli.py
 market_mcp.py
 market_server.py
+market_stores.py
 pyproject.toml
 wongcli.py
 cli_market.egg-info/PKG-INFO
