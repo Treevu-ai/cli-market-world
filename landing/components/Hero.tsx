@@ -39,7 +39,7 @@ export default function Hero() {
         {[...Array(6)].map((_,i)=><div key={`h${i}`} className="absolute h-px bg-white/10" style={{top:`${14.28*(i+1)}%`,left:0,right:0}}/>)}
         {[...Array(10)].map((_,i)=><div key={`v${i}`} className="absolute w-px bg-white/10" style={{left:`${9.09*(i+1)}%`,top:0,bottom:0}}/>)}
       </div>
-      <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] xl:w-[800px] xl:h-[800px] opacity-20 pointer-events-none">
+      <div className="hidden xl:block absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] xl:w-[800px] xl:h-[800px] opacity-20 pointer-events-none">
         <AnimatedSphere />
       </div>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#00FF88]/[0.02] blur-[120px] rounded-full pointer-events-none" />
