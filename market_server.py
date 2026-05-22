@@ -1168,6 +1168,20 @@ def list_contacts(authorization: str | None = Header(None)):
     db.close()
     return {"contacts": [dict(r) for r in rows], "total": len(rows)}
 
+class ContactFormRequest(BaseModel):
+    plan: str
+    email: str
+    use_case: str
+
+@app.post("/v1/contact")
+def contact_form(body: ContactFormRequest):
+    contact_file = DATA_DIR / "contacts.json"
+    contacts = json.loads(contact_file.read_text()) if contact_file.exists() else []
+    contacts.append({"plan": body.plan, "email": body.email, "use_case": body.use_case, "created_at": datetime.now(timezone.utc).isoformat()})
+    contact_file.write_text(json.dumps(contacts, indent=2, ensure_ascii=False))
+    return {"message": "Contact received. We will reach out within 24 hours.", "id": len(contacts)}
+
+
 @app.get("/telegram/info")
 def telegram_info():
     bot = os.getenv("TELEGRAM_BOT_USERNAME", "")
