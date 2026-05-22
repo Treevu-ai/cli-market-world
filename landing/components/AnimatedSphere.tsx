@@ -2,9 +2,9 @@
 export function AnimatedSphere() {
   return (
     <div className="relative w-full h-full">
-      <div className="absolute inset-0 rounded-full animate-[spin_20s_linear_infinite] opacity-20"
+      <div className="absolute inset-0 rounded-full animate-[spin_30s_linear_infinite] opacity-20"
         style={{background:"radial-gradient(circle at 30% 30%, rgba(0,255,136,0.15) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255,214,0,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(96,165,250,0.08) 0%, transparent 60%)"}}/>
-      <div className="absolute inset-0 rounded-full animate-[spin_15s_linear_infinite_reverse] opacity-15"
+      <div className="absolute inset-0 rounded-full animate-[spin_25s_linear_infinite_reverse] opacity-15"
         style={{background:"radial-gradient(circle at 60% 40%, rgba(0,255,136,0.1) 0%, transparent 45%), radial-gradient(circle at 40% 70%, rgba(255,107,53,0.08) 0%, transparent 40%)"}}/>
     </div>
   );
