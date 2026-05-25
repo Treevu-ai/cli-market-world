@@ -16,7 +16,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#0A0A0A]">
+    <main className="relative min-h-screen bg-[#131313]">
       {/* Global grid background */}
       <div className="grid-bg fixed inset-0 opacity-[0.03] pointer-events-none" style={{
         backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",

@@ -2,7 +2,7 @@
 import { useLang } from "@/lib/LanguageContext";
 
 const tiers = [
-  { key:"free", title_es:"Free", title_en:"Free", price:"$0", period_es:"para siempre", period_en:"forever", color:"#00FF88",
+  { key:"free", title_es:"Free", title_en:"Free", price:"$0", period_es:"para siempre", period_en:"forever", color:"#3cffd0",
     f_es:["CLI + 15 MCP tools","100 requests / dia","Busquedas ilimitadas","Carrito + checkout","Acceso API cloud"],
     f_en:["CLI + 15 MCP tools","100 requests / day","Unlimited searches","Cart + checkout","Cloud API access"],
     cta_es:"Empezar gratis", cta_en:"Start free", href:"https://github.com/Treevu-ai/cli-market-world" },
@@ -20,7 +20,7 @@ export default function Pricing() {
   const { t, lang } = useLang();
 
   return (
-    <section id="pricing" className="flex flex-col w-full bg-[#060606] py-12 px-4 sm:py-16 sm:px-6 md:py-[80px] md:px-[120px] gap-8 sm:gap-10 md:gap-[48px]">
+    <section id="pricing" className="flex flex-col w-full bg-[#131313] py-12 px-4 sm:py-16 sm:px-6 md:py-[80px] md:px-[120px] gap-8 sm:gap-10 md:gap-[48px]">
       <div className="flex flex-col gap-[12px] w-full">
         <span className="font-mono text-[9px] sm:text-[10px] md:text-[11px] font-bold text-[#FFD600] tracking-[2px] md:tracking-[3px] uppercase">{t("pricing_label")}</span>
         <h2 className="font-grotesk text-[26px] sm:text-[32px] md:text-[48px] font-bold text-[#F5F5F0] tracking-[-1px] leading-[1.05]">
@@ -33,7 +33,7 @@ export default function Pricing() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-[900px]">
         {tiers.map((tier) => (
-          <div key={tier.key} className="flex flex-col gap-4 p-6 bg-[#0F0F0F] border border-[#1D1D1D] hover:border-[#333] transition-all">
+          <div key={tier.key} className="flex flex-col gap-4 p-6 bg-[#1a1a1a] border border-[#1D1D1D] hover:border-[#333] transition-all">
             <span className="font-mono text-[11px] font-bold tracking-[2px] uppercase" style={{ color: tier.color }}>
               {lang==="es" ? tier.title_es : tier.title_en}
             </span>

@@ -1,10 +1,10 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-27-brightgreen" alt="27 retailers">
-  <img src="https://img.shields.io/badge/lines-4-blue" alt="4 lines">
+  <img src="https://img.shields.io/badge/retailers-30-brightgreen" alt="30 retailers">
+  <img src="https://img.shields.io/badge/lines-6-blue" alt="6 lines">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/MCP%20tools-17-00d75f" alt="17 MCP tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-19-00d75f" alt="19 MCP tools">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build">
