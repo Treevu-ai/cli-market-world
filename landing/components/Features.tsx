@@ -78,7 +78,7 @@ export default function Features() {
           {lang === "es" ? "36 herramientas.\nUn ecosistema." : "36 tools.\nOne ecosystem."}
         </h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">
-          {lang === "es" ? "4 categorías. Clickeá para expandir y ver cada tool." : "4 categories. Click to expand and explore each tool."}
+          {lang === "es" ? "4 categorías. Haz clic para expandir y ver cada herramienta." : "4 categories. Click to expand and explore each tool."}
         </p>
       </div>
 
