@@ -1,5 +1,6 @@
 README.md
 market_cli.py
+market_core.py
 market_mcp.py
 market_server.py
 market_stores.py
@@ -11,3 +12,4 @@ cli_market.egg-info/dependency_links.txt
 cli_market.egg-info/entry_points.txt
 cli_market.egg-info/requires.txt
 cli_market.egg-info/top_level.txt
+tests/test_server.py
