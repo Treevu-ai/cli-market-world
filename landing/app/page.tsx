@@ -30,8 +30,8 @@ export default function Home() {
       <div className="relative z-10">
         <Hero />
         <StatsSection />
-        <TerminalSection />
         <HowItWorks />
+        <TerminalSection />
         <Features />
         <Lines />
         <Pricing />
