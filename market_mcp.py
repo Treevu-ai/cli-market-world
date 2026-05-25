@@ -14,40 +14,10 @@ Uso:
 import json
 import os
 import sys
-from pathlib import Path
 
 import httpx
 
-API = os.environ.get("MARKET_API_URL", "http://127.0.0.1:8765")
-SESSION_FILE = Path.home() / ".market" / "session.json"
-
-
-def get_token() -> str:
-    if SESSION_FILE.exists():
-        return json.loads(SESSION_FILE.read_text()).get("token", "")
-    return ""
-
-
-def api(method: str, path: str, json_data: dict | None = None) -> dict:
-    token = get_token()
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    try:
-        if method == "GET":
-            resp = httpx.get(f"{API}{path}", headers=headers, timeout=30)
-        elif method == "POST":
-            resp = httpx.post(f"{API}{path}", headers=headers, json=json_data, timeout=30)
-        elif method == "PUT":
-            resp = httpx.put(f"{API}{path}", headers=headers, json=json_data, timeout=30)
-        elif method == "DELETE":
-            resp = httpx.delete(f"{API}{path}", headers=headers, timeout=30)
-        else:
-            return {"error": f"Unknown method: {method}"}
-        if resp.status_code >= 400:
-            return {"error": resp.json().get("detail", resp.text)}
-        return resp.json()
-    except httpx.ConnectError:
-        return {"error": "Server not running. Start: python market_server.py"}
-
+from market_core import API, SESSION_FILE, get_token, api
 
 TOOLS = [
     {
@@ -203,200 +173,111 @@ TOOLS = [
         },
     },
     {
-        "name": "market_alerts",
-        "description": "Crear, listar o eliminar alertas de precio. Recibiras notificacion cuando un producto baje o suba mas del threshold%. Usa action='create','list' o 'delete'.",
+        "name": "market_barcode",
+        "description": "Buscar producto por código de barras EAN/UPC.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "product": {"type": "string", "description": "Producto a monitorear"},
-                "country": {"type": "string", "description": "Codigo de pais opcional"},
-                "threshold_pct": {"type": "number", "description": "Porcentaje de cambio que dispara la alerta (default 5)"},
-                "action": {"type": "string", "description": "create, list o delete"},
+                "code": {"type": "string", "description": "Código de barras EAN/UPC"},
             },
-            "required": ["product"],
+            "required": ["code"],
         },
     },
     {
-        "name": "market_ticket",
-        "description": "Escanea un ticket de compra (foto) y compara los precios contra nuestro data moat para ver si pagaste de mas. Usa el CLI: market ticket scan <foto.jpg>",
-        "inputSchema": {"type": "object", "properties": {}},
-    },
-    {
-        "name": "market_voice",
-        "description": "Transcribe un mensaje de voz y ejecuta el comando market ask con el texto transcrito. Usa el CLI: market voice <audio.ogg>",
-        "inputSchema": {"type": "object", "properties": {}},
+        "name": "market_enrich",
+        "description": "Buscar productos en Open Food Facts para enriquecer con datos nutricionales.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Producto a buscar"},
+                "limit": {"type": "integer", "default": 5},
+            },
+            "required": ["query"],
+        },
     },
 ]
 
 
-def handle_search(args: dict) -> dict:
-    r = api("POST", "/products/search", {
-        "query": args["query"],
-        "store": args.get("store"),
-        "line": args.get("line"),
-        "limit": args.get("limit", 10),
-    })
-    if "error" in r: return r
-    items = []
-    for p in r.get("results", [])[:args.get("limit", 10)]:
-        items.append({
-            "product_id": p["id"],
-            "name":       p["name"],
-            "brand":      p["brand"],
-            "price":      p["price"],
-            "store":      p["store_name"],
-            "store_key":  p["store"],
-            "line":       p.get("line_name", ""),
-            "line_key":   p.get("line", ""),
-            "url":        p["url"],
-        })
-    return {"query": r["query"], "total": r["total"], "products": items}
+def handle_tool(name: str, args: dict) -> str:
+    """Dispatch MCP tool calls to the API."""
+    tool_map = {
+        "market_login":      lambda a: api("POST", "/auth/login", {"username": a.get("username", "admin"), "password": a.get("password", "market")}),
+        "market_lines":      lambda a: api("GET", "/lines"),
+        "market_search":     lambda a: api("POST", "/products/search", {"query": a["query"], "store": a.get("store"), "line": a.get("line"), "limit": a.get("limit", 10)}),
+        "market_compare":    lambda a: api("POST", "/products/compare", {"query": a["query"], "line": a.get("line"), "limit": a.get("limit", 10)}),
+        "market_add":        lambda a: api("POST", "/cart/add", {"product_id": a["product_id"], "name": a["name"], "price": a["price"], "store": a["store"], "quantity": a.get("quantity", 1)}),
+        "market_cart":       lambda a: api("GET", "/cart"),
+        "market_cart_update": lambda a: api("PUT", "/cart/update", {"product_id": a["product_id"], "quantity": a["quantity"]}),
+        "market_cart_remove": lambda a: api("DELETE", f"/cart/{a['product_id']}"),
+        "market_checkout":   lambda a: api("POST", "/checkout", {"payment_method": a.get("payment_method", "yape")}),
+        "market_orders":     lambda a: api("GET", "/orders"),
+        "market_reorder":    lambda a: api("POST", "/orders/reorder"),
+        "market_ask":        lambda a: api("POST", "/agent/ask", {"prompt": a["prompt"]}),
+        "market_basket":     lambda a: api("POST", "/v1/basket/compare", {"items": a["items"], "stores": a.get("stores")}),
+        "market_inflation":  lambda a: api("GET", f"/v1/intel/inflation?country={a.get('country', '')}&line={a.get('line', '')}"),
+        "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
+        "market_barcode":    lambda a: api("GET", f"/products/barcode/{a['code']}"),
+        "market_enrich":     lambda a: api("GET", f"/products/enrich?query={a['query']}&limit={a.get('limit', 5)}"),
+    }
+    handler = tool_map.get(name)
+    if not handler:
+        return json.dumps({"error": f"Unknown tool: {name}"})
+    try:
+        result = handler(args)
+        return json.dumps(result, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"error": str(e)})
 
 
-def handle_lines(args: dict) -> dict:
-    r = api("GET", "/lines")
-    if "error" in r: return r
-    return r
-
-
-def handle_compare(args: dict) -> dict:
-    r = api("POST", "/products/compare", {
-        "query": args["query"],
-        "line": args.get("line"),
-        "limit": args.get("limit", 10),
-    })
-    return r if "error" in r else {"query": r["query"], "comparison": r["comparison"][:10]}
-
-
-def handle_ask(args: dict) -> dict:
-    prompt = args["prompt"].lower().strip()
-    import re
-
-    # ── "repite última compra" ──
-    if any(w in prompt for w in ["repetir", "repite", "mismo", "última compra", "mes pasado"]):
-        r = api("POST", "/orders/reorder")
-        return {"message": "Última orden restaurada al carrito", "cart": r.get("cart", [])} if "error" not in r else r
-
-    # ── "compara X" / "X más barato" ──
-    if any(w in prompt for w in ["compar", "más barato", "mas barato"]):
-        q = re.sub(r'(compara[rm]?\s*|m[aá]s barato\s*)', '', prompt).strip().rstrip(".!?")
-        if not q:
-            return {"message": "¿Qué producto querés comparar?"}
-        # Extraer línea si se menciona
-        line = None
-        for lk in ["supermercados", "farmacias", "electro", "moda", "deportes", "hogar"]:
-            if lk in prompt:
-                line = lk
-                break
-        return handle_compare({"query": q, "line": line})
-
-    # ── "compra 2 leche en farmacias" ──
-    m = re.search(r'compra\s+(?:(\d+)\s+)?(.+)', prompt)
-    if m:
-        qty = int(m.group(1)) if m.group(1) else 1
-        item = m.group(2).strip().rstrip(".!?")
-
-        # Extraer línea y tienda del texto
-        line = None
-        store = None
-        for lk in ["supermercados", "farmacias", "electro", "moda", "deportes", "hogar"]:
-            if lk in item:
-                line = lk
-                item = item.replace(lk, "").replace("en", "").strip()
-                break
-
-        search_body = {"query": item, "limit": 5}
-        if line:
-            search_body["line"] = line
-
-        r = api("POST", "/products/search", search_body)
-        if "error" in r:
-            return {"message": f"No encontré '{item}'", "error": r["error"]}
-        prods = r.get("results", [])
-        if not prods:
-            return {"message": f"No encontré '{item}'", "suggestion": "Probá con un término más general o usá market_search."}
-
-        # Elegir el más barato con precio > 0
-        best = min(prods, key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
-        add = api("POST", "/cart/add", {
-            "product_id": best["id"],
-            "name": best["name"],
-            "price": best["price"],
-            "store": best["store"],
-            "quantity": qty,
-        })
-        if "error" in add:
-            return add
-
-        currency = best.get("currency", "")
-        return {
-            "message": f"Agregué {qty}× '{best['name']}' de {best['store_name']} a {currency} {best['price']}",
-            "product": best,
-            "quantity": qty,
-            "cart": add.get("cart", []),
-        }
-
-    # ── "muéstrame X" / "busca X" → search ──
-    return handle_search({"query": prompt, "limit": 5})
-
-
-HANDLERS = {
-    "market_login": lambda a: api("POST", "/auth/login", {"username": a.get("username", "admin"), "password": a.get("password", "market")}),
-    "market_lines": handle_lines,
-    "market_search": handle_search,
-    "market_compare": handle_compare,
-    "market_add": lambda a: api("POST", "/cart/add", {"product_id": a["product_id"], "name": a["name"], "price": a["price"], "store": a.get("store","wong"), "quantity": a.get("quantity",1)}),
-    "market_cart": lambda a: api("GET", "/cart"),
-    "market_cart_update": lambda a: api("PUT", "/cart/update", {"product_id": a["product_id"], "quantity": a["quantity"]}),
-    "market_cart_remove": lambda a: api("DELETE", f"/cart/{a['product_id']}"),
-    "market_checkout": lambda a: api("POST", "/checkout", {"payment_method": a.get("payment_method","yape")}),
-    "market_orders": lambda a: api("GET", "/orders"),
-    "market_reorder": lambda a: api("POST", "/orders/reorder"),
-    "market_ask": handle_ask,
-    "market_basket": lambda a: api("POST", "/v1/basket/compare", {"items": a["items"], "stores": a.get("stores")}),
-    "market_inflation": lambda a: api("GET", f"/v1/intel/inflation?country={a.get('country','')}&line={a.get('line','')}&days={a.get('days',30)}"),
-    "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
-    "market_alerts": lambda a: api("POST", "/v1/alerts", {"product": a["product"], "country": a.get("country"), "store": a.get("store"), "threshold_pct": a.get("threshold_pct", 5.0), "action": a.get("action", "create")}),
-    "market_ticket": lambda a: api("POST", "/v1/ticket/scan", {}),  # file upload via MCP not supported: use CLI
-    "market_voice": lambda a: api("POST", "/v1/voice/transcribe", {}),  # file upload via MCP not supported: use CLI
-}
-
-
-def send_rpc(msg: dict) -> None:
-    sys.stdout.write(json.dumps(msg, ensure_ascii=False) + "\n")
-    sys.stdout.flush()
-
-
-def run():
+def main():
+    """MCP JSON-RPC loop over stdio."""
     for line in sys.stdin:
         line = line.strip()
-        if not line: continue
-        try: request = json.loads(line)
-        except json.JSONDecodeError: continue
-        rid = request.get("id")
+        if not line:
+            continue
+        try:
+            request = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
         method = request.get("method", "")
-        params = request.get("params", {})
+        req_id = request.get("id")
+
         if method == "initialize":
-            send_rpc({"jsonrpc":"2.0","id":rid,"result":{"protocolVersion":"2024-11-05","serverInfo":{"name":"agentic-market","version":"1.0.0"},"capabilities":{"tools":{}}}})
+            response = {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {"tools": {}},
+                    "serverInfo": {"name": "cli-market", "version": "1.0.0"},
+                },
+            }
         elif method == "tools/list":
-            send_rpc({"jsonrpc":"2.0","id":rid,"result":{"tools":TOOLS}})
+            response = {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"tools": TOOLS},
+            }
         elif method == "tools/call":
-            name = params.get("name","")
-            args = params.get("arguments",{})
-            handler = HANDLERS.get(name)
-            if handler:
-                try:
-                    result = handler(args)
-                    send_rpc({"jsonrpc":"2.0","id":rid,"result":{"content":[{"type":"text","text":json.dumps(result,indent=2,ensure_ascii=False)}]}})
-                except Exception as e:
-                    send_rpc({"jsonrpc":"2.0","id":rid,"result":{"content":[{"type":"text","text":str(e)}],"isError":True}})
-            else:
-                send_rpc({"jsonrpc":"2.0","id":rid,"error":{"code":-32601,"message":f"Tool not found: {name}"}})
-        elif method == "notifications/initialized":
-            pass
+            tool_name = request["params"]["name"]
+            tool_args = request["params"].get("arguments", {})
+            content = handle_tool(tool_name, tool_args)
+            response = {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": content}]},
+            }
         else:
-            send_rpc({"jsonrpc":"2.0","id":rid,"error":{"code":-32601,"message":f"Unknown: {method}"}})
+            response = {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "error": {"code": -32601, "message": f"Method not found: {method}"},
+            }
+
+        sys.stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
-    run()
+    main()

@@ -15,23 +15,18 @@ Usage:
 import asyncio, json, os, sqlite3, sys, time
 from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 import httpx
 
-DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.home() / ".market"))
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DB_FILE = DATA_DIR / "market.db"
+from market_core import STORES, DATA_DIR, DB_FILE, logger as log
+
+logger = log.getChild("collector")
+
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 PARALLEL = int(os.getenv("COLLECT_PARALLEL", "50"))
 REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.15"))
 QUERY_TIMEOUT = 10.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
-
-try:
-    from market_stores import STORES
-except ImportError:
-    print("ERROR: market_stores.py not found."); sys.exit(1)
 
 LINES = {
     "supermercados":{"name":"Supermercados"}, "farmacias":{"name":"Farmacias y Salud"},

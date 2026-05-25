@@ -1,0 +1,615 @@
+#!/usr/bin/env python3
+"""
+market_core — Shared utilities for CLI Market.
+
+Imports once, used everywhere: server, CLI, MCP server, collector.
+Eliminates the 4-way code duplication of api(), product_from_json(),
+STORES/LINES, get_token(), and price helpers.
+"""
+
+import json
+import os
+import sys
+import sqlite3
+import logging
+from pathlib import Path
+from typing import Any
+
+import httpx
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
+logger = logging.getLogger("market")
+
+# ── Paths & config ────────────────────────────────────────────────────────────
+
+API = os.environ.get("MARKET_API_URL", "http://127.0.0.1:8765")
+DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.home() / ".market"))
+# Ensure writable: fall back to cwd if home is not writable (e.g. serverless)
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except PermissionError:
+    DATA_DIR = Path(os.getenv("MARKET_DATA_DIR", Path.cwd() / ".market"))
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+SESSION_FILE = DATA_DIR / "session.json"
+LANG_FILE = DATA_DIR / "lang"
+LAST_SEARCH_FILE = DATA_DIR / "last_search.json"
+USERS_FILE = DATA_DIR / "users.json"
+CARTS_FILE = DATA_DIR / "carts.json"
+ORDERS_FILE = DATA_DIR / "orders.json"
+DB_FILE = DATA_DIR / "market.db"
+
+# ── Stores (VTEX retailers) ───────────────────────────────────────────────────
+
+# Canonical STORES source: market_stores.py (27 verified VTEX retailers with base URLs).
+# Set MARKET_STORES=expanded to use market_stores_cli.py (3,760 entries, display-only, no base URLs).
+# To add/remove retailers: edit stores_curated.csv, run: python3 gen_stores.py
+if os.getenv("MARKET_STORES", "") == "expanded":
+    try:
+        from market_stores_cli import STORES
+    except ImportError:
+        from market_stores import STORES
+else:
+    from market_stores import STORES
+
+LINES = {
+    "supermercados":  {"name": "Supermercados",        "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
+    "farmacias":      {"name": "Farmacias y Salud",    "emoji": "💊", "description": "Medicamentos, bienestar y cuidado personal"},
+    "electro":        {"name": "Electro y Tecnología", "emoji": "📱", "description": "Electrónicos, electrodomésticos y gadgets"},
+    "hogar":          {"name": "Hogar y Construcción", "emoji": "🏠", "description": "Mejoramiento del hogar, muebles, ferretería"},
+}
+
+COUNTRIES: dict[str, dict] = {}
+for _sk, _sv in STORES.items():
+    _cc = _sv["country"]
+    if _cc not in COUNTRIES:
+        COUNTRIES[_cc] = {"name": _cc, "stores": []}
+    COUNTRIES[_cc]["stores"].append(_sk)
+# Human-readable country names
+_country_names: dict[str, str] = {
+    "PE": "Perú", "AR": "Argentina", "BR": "Brasil", "MX": "México", "CO": "Colombia",
+    "CL": "Chile", "ES": "España", "FR": "Francia", "IT": "Italia", "DE": "Alemania",
+    "GB": "Reino Unido", "PT": "Portugal", "NL": "Países Bajos", "BE": "Bélgica",
+    "PL": "Polonia", "SE": "Suecia", "DK": "Dinamarca", "FI": "Finlandia",
+    "NO": "Noruega", "AT": "Austria", "CH": "Suiza", "IE": "Irlanda",
+    "GR": "Grecia", "CZ": "República Checa", "RO": "Rumania", "HU": "Hungría",
+    "SK": "Eslovaquia", "BG": "Bulgaria", "HR": "Croacia", "SI": "Eslovenia",
+    "LU": "Luxemburgo", "EE": "Estonia", "LV": "Letonia", "LT": "Lituania",
+    "UY": "Uruguay", "EC": "Ecuador", "BO": "Bolivia", "PY": "Paraguay",
+    "VE": "Venezuela", "CR": "Costa Rica", "GT": "Guatemala", "SV": "El Salvador",
+    "PA": "Panamá", "DO": "República Dominicana", "HN": "Honduras", "NI": "Nicaragua",
+    "US": "Estados Unidos", "CA": "Canadá", "AU": "Australia", "NZ": "Nueva Zelanda",
+    "JP": "Japón", "KR": "Corea del Sur", "CN": "China", "TW": "Taiwán",
+    "HK": "Hong Kong", "SG": "Singapur", "IN": "India", "MY": "Malasia",
+    "TH": "Tailandia", "ID": "Indonesia", "PH": "Filipinas", "VN": "Vietnam",
+    "TR": "Turquía", "RU": "Rusia", "AE": "Emiratos Árabes Unidos",
+    "ZA": "Sudáfrica", "NG": "Nigeria",
+}
+for _cc in COUNTRIES:
+    COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
+
+DEFAULT_STORES = list(STORES.keys())
+PAGE_SIZE = 20
+
+# ── Currency ──────────────────────────────────────────────────────────────────
+
+CURRENCY_SYMBOLS: dict[str, str] = {
+    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP",
+    "CLP": "CLP", "EUR": "€", "GBP": "£",
+}
+
+def fmt_price(price: float, currency: str = "PEN") -> str:
+    symbol = CURRENCY_SYMBOLS.get(currency, currency)
+    return f"{symbol} {price:,.2f}"
+
+def store_color(store: str) -> str:
+    colors: dict[str, str] = {
+        "wong": "#3cffd0", "metro": "#5200ff", "plazavea": "#ffe600",
+        "carrefour": "#3cffd0", "jumbo_ar": "#00FF88", "carrefour_br": "#3cffd0",
+        "chedraui": "#FF6B35", "heb": "#FF6B35",
+        "olimpica": "#60A5FA", "exito": "#60A5FA",
+        "drogaraia": "#FF6B35", "drogasil": "#FF6B35",
+        "magazineluiza": "#A78BFA", "motorola_br": "#A78BFA",
+        "renner": "#FFD600", "centauro": "#4ADE80", "homecenter": "#F5F5F0",
+        "carrefour_es": "#FFD600", "decathlon_fr": "#4ADE80",
+    }
+    return colors.get(store, "#e9e9e9")
+
+def store_emoji(store: str) -> str:
+    return STORES.get(store, {}).get("emoji", "📦")
+
+# ── Session / auth helpers ────────────────────────────────────────────────────
+
+def get_token() -> str:
+    if not SESSION_FILE.exists():
+        return ""
+    data = json.loads(SESSION_FILE.read_text())
+    return data.get("token", "")
+
+# ── API client (sync — used by CLI and MCP) ───────────────────────────────────
+
+def api(method: str, path: str, json_data: dict | None = None) -> dict:
+    token = None
+    if path not in ("/auth/login", "/"):
+        token = get_token()
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    try:
+        if method == "GET":
+            resp = httpx.get(f"{API}{path}", headers=headers, timeout=30)
+        elif method == "POST":
+            resp = httpx.post(f"{API}{path}", headers=headers, json=json_data, timeout=30)
+        elif method == "PUT":
+            resp = httpx.put(f"{API}{path}", headers=headers, json=json_data, timeout=30)
+        elif method == "DELETE":
+            resp = httpx.delete(f"{API}{path}", headers=headers, timeout=30)
+        else:
+            raise ValueError(f"Unknown method: {method}")
+        if resp.status_code >= 400:
+            detail = resp.json().get("detail", resp.text)
+            return {"error": detail, "status": resp.status_code}
+        return resp.json()
+    except httpx.ConnectError:
+        return {"error": "Server not running. Start: python market_server.py"}
+
+# ── VTEX helpers ──────────────────────────────────────────────────────────────
+
+def parse_price(price: Any) -> float:
+    try:
+        return float(price or 0)
+    except (ValueError, TypeError):
+        return 0.0
+
+def clean_name(name: str) -> str:
+    return name.replace("-", " ")
+
+async def fetch_store(store: str, term: str, page: int = 1, limit: int = PAGE_SIZE) -> list[dict]:
+    """Search a VTEX store's public catalog API."""
+    base = STORES[store]["base"]
+    url = f"{base}/api/catalog_system/pub/products/search/{term}"
+    _from = (page - 1) * PAGE_SIZE
+    _to = min(_from + limit - 1, _from + PAGE_SIZE - 1)
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)})
+        resp.raise_for_status()
+        return resp.json()
+
+def product_from_json(p: dict, store: str) -> dict:
+    """Normalize a VTEX product JSON into a flat dict."""
+    items = p.get("items", [])
+    item = items[0] if items else {}
+    sellers = item.get("sellers", [])
+    seller = sellers[0] if sellers else {}
+    offer = seller.get("commertialOffer", {})
+    price = parse_price(offer.get("Price"))
+    list_price = parse_price(offer.get("ListPrice"))
+    discount = round((1 - price / list_price) * 100) if list_price > price > 0 else None
+
+    return {
+        "id": p.get("productReference", p.get("productId", "")),
+        "product_id": p.get("productReference", p.get("productId", "")),  # alias
+        "name": clean_name(p.get("productName", "")),
+        "brand": p.get("brand") or "—",
+        "category": p.get("categoryId", ""),
+        "price": price,
+        "list_price": list_price,
+        "discount": discount,
+        "stock": offer.get("AvailableQuantity", 0),
+        "store": store,
+        "store_name": STORES[store]["name"],
+        "currency": STORES[store]["currency"],
+        "url": f"{STORES[store]['base']}/{p.get('linkText', '')}/p",
+    }
+
+# ── Last-search cache (for CLI auto-fill via table #) ─────────────────────────
+
+def save_last_search(results: list[dict]) -> None:
+    slim: list[dict] = []
+    for p in results[:50]:
+        slim.append({
+            "product_id": p.get("id", p.get("product_id", "")),
+            "name": p.get("name", ""),
+            "price": p.get("price", 0),
+            "store": p.get("store", ""),
+            "store_name": p.get("store_name", ""),
+            "currency": p.get("currency", "PEN"),
+            "brand": p.get("brand", ""),
+        })
+    LAST_SEARCH_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LAST_SEARCH_FILE.write_text(json.dumps(slim))
+
+def load_last_search() -> list[dict]:
+    if LAST_SEARCH_FILE.exists():
+        try:
+            return json.loads(LAST_SEARCH_FILE.read_text())
+        except (json.JSONDecodeError, OSError):
+            return []
+    return []
+
+# ── SQLite helpers ────────────────────────────────────────────────────────────
+
+def get_db() -> sqlite3.Connection:
+    import time as _time
+    for attempt in range(3):
+        try:
+            conn = sqlite3.connect(str(DB_FILE))
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA busy_timeout=5000")
+            return conn
+        except sqlite3.OperationalError:
+            if attempt < 2:
+                _time.sleep(0.2 * (attempt + 1))
+            else:
+                raise
+
+def init_db() -> None:
+    db = get_db()
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS contacts (
+            chat_id TEXT PRIMARY KEY,
+            first_name TEXT,
+            username TEXT,
+            last_message TEXT,
+            created_at TEXT,
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS price_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id TEXT NOT NULL,
+            name TEXT,
+            brand TEXT,
+            price REAL,
+            list_price REAL,
+            discount INTEGER,
+            store TEXT NOT NULL,
+            store_name TEXT,
+            currency TEXT,
+            line TEXT,
+            line_name TEXT,
+            category TEXT,
+            stock INTEGER,
+            url TEXT,
+            queried_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store);
+        CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
+        CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
+        CREATE INDEX IF NOT EXISTS idx_ps_queried ON price_snapshots(queried_at);
+
+        CREATE TABLE IF NOT EXISTS search_queries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query TEXT NOT NULL,
+            line TEXT,
+            country TEXT,
+            store_filter TEXT,
+            num_results INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_sq_created ON search_queries(created_at);
+
+        -- Application persistence (migrated from JSON files)
+        CREATE TABLE IF NOT EXISTS app_users (
+            username TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            token TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS app_carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            store TEXT NOT NULL,
+            store_name TEXT DEFAULT '',
+            quantity INTEGER NOT NULL DEFAULT 1,
+            url TEXT DEFAULT '',
+            added_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_cart_user ON app_carts(username);
+
+        CREATE TABLE IF NOT EXISTS app_orders (
+            order_id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            payment_method TEXT DEFAULT 'yape',
+            total REAL NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'completed',
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_order_user ON app_orders(username);
+
+        CREATE TABLE IF NOT EXISTS app_order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL REFERENCES app_orders(order_id),
+            product_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            store TEXT NOT NULL,
+            store_name TEXT DEFAULT '',
+            quantity INTEGER NOT NULL DEFAULT 1,
+            url TEXT DEFAULT ''
+        );
+        CREATE INDEX IF NOT EXISTS idx_oi_order ON app_order_items(order_id);
+
+        -- Rate limiting (persistent across restarts)
+        CREATE TABLE IF NOT EXISTS rate_limits (
+            key TEXT NOT NULL,
+            window_start REAL NOT NULL,
+            counter INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (key, window_start)
+        );
+        CREATE INDEX IF NOT EXISTS idx_rl_key ON rate_limits(key);
+    """)
+    db.commit()
+    db.close()
+
+# ── Rate limiter (SQLite-backed) ──────────────────────────────────────────────
+
+def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
+                            daily_max: int = 100) -> None:
+    """SQLite-backed rate limiter. Persists across restarts."""
+    import time as _time
+    now = _time.time()
+    db = get_db()
+
+    # Daily cap
+    today_start = _time.mktime(_time.strptime(
+        _time.strftime("%Y-%m-%d", _time.gmtime(now)), "%Y-%m-%d"
+    ))
+    daily_key = f"{ip}:daily"
+    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (daily_key, today_start))
+    daily_row = db.execute(
+        "SELECT SUM(counter) as total FROM rate_limits WHERE key=? AND window_start = ?",
+        (daily_key, today_start)
+    ).fetchone()
+    daily_count = daily_row["total"] or 0
+    if daily_count >= daily_max:
+        db.close()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=429, detail="Límite diario alcanzado (free tier: 100 req/día).")
+    db.execute(
+        "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
+        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
+        (daily_key, today_start)
+    )
+
+    # Per-minute cap — group by minute bucket
+    minute_bucket = int(now // 60) * 60  # start of current minute
+    minute_key = f"{ip}:minute"
+    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (minute_key, minute_bucket))
+    minute_row = db.execute(
+        "SELECT counter FROM rate_limits WHERE key=? AND window_start = ?",
+        (minute_key, minute_bucket)
+    ).fetchone()
+    minute_count = minute_row["counter"] if minute_row else 0
+    if minute_count >= max_req:
+        db.close()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Free tier: 10 req/min.")
+
+    db.execute(
+        "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
+        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
+        (minute_key, minute_bucket)
+    )
+    db.commit()
+    db.close()
+
+# ── App persistence (SQLite) ──────────────────────────────────────────────────
+
+def db_get_users() -> dict:
+    """Return all users as a dict (for backwards compat with existing code)."""
+    db = get_db()
+    rows = db.execute("SELECT username, password_hash, token FROM app_users").fetchall()
+    db.close()
+    return {r["username"]: {"password": r["password_hash"], "token": r["token"]} for r in rows}
+
+def db_save_user(username: str, password_hash: str, token: str | None = None) -> None:
+    db = get_db()
+    db.execute(
+        "INSERT INTO app_users (username, password_hash, token, updated_at) VALUES (?,?,?,datetime('now')) "
+        "ON CONFLICT(username) DO UPDATE SET password_hash=excluded.password_hash, token=excluded.token, updated_at=datetime('now')",
+        (username, password_hash, token)
+    )
+    db.commit()
+    db.close()
+
+def db_get_cart(username: str) -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, product_id, name, price, store, store_name, quantity, url FROM app_carts WHERE username=?",
+        (username,)
+    ).fetchall()
+    db.close()
+    return [{"cart_id": str(r["id"]), "product_id": r["product_id"], "name": r["name"],
+             "price": r["price"], "store": r["store"], "store_name": r["store_name"],
+             "quantity": r["quantity"], "url": r["url"]} for r in rows]
+
+def db_add_to_cart(username: str, product_id: str, name: str, price: float,
+                   store: str, store_name: str = "", quantity: int = 1, url: str = "") -> int:
+    db = get_db()
+    c = db.execute(
+        "INSERT INTO app_carts (username, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
+        (username, product_id, name, price, store, store_name, quantity, url)
+    )
+    cart_id = c.lastrowid
+    db.commit()
+    db.close()
+    return cart_id
+
+def db_update_cart_item(username: str, cart_id: int, quantity: int) -> bool:
+    db = get_db()
+    if quantity <= 0:
+        db.execute("DELETE FROM app_carts WHERE id=? AND username=?", (cart_id, username))
+    else:
+        db.execute("UPDATE app_carts SET quantity=? WHERE id=? AND username=?", (quantity, cart_id, username))
+    db.commit()
+    db.close()
+    return True
+
+def db_remove_cart_item(username: str, cart_id: int) -> bool:
+    db = get_db()
+    db.execute("DELETE FROM app_carts WHERE id=? AND username=?", (cart_id, username))
+    db.commit()
+    db.close()
+    return True
+
+def db_clear_cart(username: str) -> None:
+    db = get_db()
+    db.execute("DELETE FROM app_carts WHERE username=?", (username,))
+    db.commit()
+    db.close()
+
+def db_get_orders(username: str) -> list[dict]:
+    db = get_db()
+    orders = db.execute(
+        "SELECT order_id, username, payment_method, total, status, created_at FROM app_orders WHERE username=? ORDER BY created_at DESC",
+        (username,)
+    ).fetchall()
+    result = []
+    for o in orders:
+        items = db.execute(
+            "SELECT product_id, name, price, store, store_name, quantity, url FROM app_order_items WHERE order_id=?",
+            (o["order_id"],)
+        ).fetchall()
+        result.append({
+            "order_id": o["order_id"],
+            "username": o["username"],
+            "payment_method": o["payment_method"],
+            "total": o["total"],
+            "status": o["status"],
+            "created_at": o["created_at"],
+            "items": [dict(i) for i in items],
+        })
+    db.close()
+    return result
+
+def db_create_order(username: str, items: list[dict], payment_method: str, total: float) -> dict:
+    import uuid
+    order_id = str(uuid.uuid4())[:8]
+    db = get_db()
+    db.execute(
+        "INSERT INTO app_orders (order_id, username, payment_method, total, status) VALUES (?,?,?,?,?)",
+        (order_id, username, payment_method, total, "completed")
+    )
+    for item in items:
+        db.execute(
+            "INSERT INTO app_order_items (order_id, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
+            (order_id, item.get("product_id", ""), item.get("name", ""), item.get("price", 0),
+             item.get("store", ""), item.get("store_name", ""), item.get("quantity", 1), item.get("url", ""))
+        )
+    db.commit()
+    db.close()
+    return {"order_id": order_id, "username": username, "payment_method": payment_method, "total": total, "status": "completed"}
+
+def db_migrate_from_json() -> None:
+    """One-time migration: import existing JSON data into SQLite tables."""
+    import json as _json
+    # Migrate users
+    if USERS_FILE.exists():
+        try:
+            users = _json.loads(USERS_FILE.read_text())
+            db = get_db()
+            for username, data in users.items():
+                db.execute(
+                    "INSERT OR IGNORE INTO app_users (username, password_hash, token) VALUES (?,?,?)",
+                    (username, data.get("password", ""), data.get("token", ""))
+                )
+            db.commit()
+            db.close()
+            logger.info("Migrated %d users from JSON", len(users))
+        except Exception as e:
+            logger.warning("User migration skipped: %s", e)
+    # Migrate carts
+    if CARTS_FILE.exists():
+        try:
+            carts = _json.loads(CARTS_FILE.read_text())
+            db = get_db()
+            count = 0
+            for username, items in carts.items():
+                for item in items:
+                    db.execute(
+                        "INSERT OR IGNORE INTO app_carts (username, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
+                        (username, item.get("product_id", ""), item.get("name", ""), item.get("price", 0),
+                         item.get("store", ""), item.get("store_name", ""), item.get("quantity", 1), item.get("url", ""))
+                    )
+                    count += 1
+            db.commit()
+            db.close()
+            logger.info("Migrated %d cart items from JSON", count)
+        except Exception as e:
+            logger.warning("Cart migration skipped: %s", e)
+    # Migrate orders
+    if ORDERS_FILE.exists():
+        try:
+            orders = _json.loads(ORDERS_FILE.read_text())
+            db = get_db()
+            for o in orders:
+                db.execute(
+                    "INSERT OR IGNORE INTO app_orders (order_id, username, payment_method, total, status, created_at) VALUES (?,?,?,?,?,?)",
+                    (o.get("order_id", ""), o.get("username", ""), o.get("payment_method", "yape"),
+                     o.get("total", 0), o.get("status", "completed"), o.get("created_at", ""))
+                )
+                for item in o.get("items", []):
+                    db.execute(
+                        "INSERT OR IGNORE INTO app_order_items (order_id, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
+                        (o.get("order_id", ""), item.get("product_id", ""), item.get("name", ""), item.get("price", 0),
+                         item.get("store", ""), item.get("store_name", ""), item.get("quantity", 1), item.get("url", ""))
+                    )
+            db.commit()
+            db.close()
+            logger.info("Migrated %d orders from JSON", len(orders))
+        except Exception as e:
+            logger.warning("Order migration skipped: %s", e)
+
+def save_price_snapshot(p: dict) -> None:
+    try:
+        db = get_db()
+        db.execute("""
+            INSERT INTO price_snapshots
+                (product_id, name, brand, price, list_price, discount,
+                 store, store_name, currency, line, line_name, category, stock, url)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            p.get("id", p.get("product_id", "")),
+            p.get("name", ""),
+            p.get("brand", ""),
+            p.get("price", 0),
+            p.get("list_price", 0),
+            p.get("discount"),
+            p.get("store", ""),
+            p.get("store_name", ""),
+            p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
+            STORES.get(p.get("store", ""), {}).get("line", ""),
+            p.get("line_name", ""),
+            p.get("category", ""),
+            p.get("stock", 0),
+            p.get("url", ""),
+        ))
+        db.commit()
+        db.close()
+    except Exception as e:
+        logger.warning("save_price_snapshot failed: %s", e)
+
+def save_search_query(query: str, line: str | None, store: str | None, num_results: int) -> None:
+    try:
+        db = get_db()
+        db.execute(
+            "INSERT INTO search_queries (query, line, store_filter, num_results) VALUES (?,?,?,?)",
+            (query, line, store, num_results)
+        )
+        db.commit()
+        db.close()
+    except Exception as e:
+        logger.warning("save_search_query failed: %s", e)
+
+# ── Initialize DB at import time ──────────────────────────────────────────────
+init_db()
