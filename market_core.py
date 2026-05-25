@@ -441,6 +441,29 @@ def init_db_pg(db: _DB) -> None:
         )
     """)
     db.execute("CREATE INDEX IF NOT EXISTS idx_rl_key ON rate_limits(key)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS collector_runs (
+            id SERIAL PRIMARY KEY,
+            started_at TIMESTAMPTZ DEFAULT NOW(),
+            finished_at TIMESTAMPTZ,
+            stores_attempted INT DEFAULT 0,
+            stores_succeeded INT DEFAULT 0,
+            prices_collected INT DEFAULT 0,
+            errors TEXT
+        )
+    """)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS store_health (
+            store TEXT PRIMARY KEY,
+            last_success TEXT,
+            last_error TEXT,
+            consecutive_failures INT DEFAULT 0,
+            total_requests INT DEFAULT 0,
+            total_successes INT DEFAULT 0
+        )
+    """)
     db.commit()
 
 
@@ -539,6 +562,25 @@ _SQLITE_DDL = """\
             PRIMARY KEY (key, window_start)
         );
         CREATE INDEX IF NOT EXISTS idx_rl_key ON rate_limits(key);
+
+        CREATE TABLE IF NOT EXISTS collector_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            started_at TEXT,
+            finished_at TEXT,
+            stores_attempted INT DEFAULT 0,
+            stores_succeeded INT DEFAULT 0,
+            prices_collected INT DEFAULT 0,
+            errors TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS store_health (
+            store TEXT PRIMARY KEY,
+            last_success TEXT,
+            last_error TEXT,
+            consecutive_failures INT DEFAULT 0,
+            total_requests INT DEFAULT 0,
+            total_successes INT DEFAULT 0
+        );
 """
 
 
