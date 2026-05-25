@@ -6,11 +6,11 @@ const tools = [
   { n: "market_login",   d_es: "Autentica al agente para operar",        d_en: "Authenticate the agent session",
     demo_es: "market login\n→ Token guardado en ~/.market/session.json\n→ Todas las tools requieren este paso.",
     demo_en: "market login\n→ Token stored in ~/.market/session.json\n→ All tools require this step first.",
-    c: "#00FF88" },
+    c: "#3cffd0" },
   { n: "market_lines",   d_es: "Lista las 4 lineas con sus retailers",   d_en: "List 4 business lines with retailers",
     demo_es: "market lines\n→ supermercados (14) · electro (9) · farmacias (2) · hogar (1)",
     demo_en: "market lines\n→ supermarkets (14) · electronics (9) · pharmacies (2) · home (1)",
-    c: "#00FF88" },
+    c: "#3cffd0" },
   { n: "market_search",  d_es: "Busca productos en 27 retailers",        d_en: "Search products across 27 retailers",
     demo_es: 'market search "leche" --country PE\n→ 1. Leche Gloria 400ml  Wong  S/3.50\n→ 2. Leche Ideal 395g  Metro  S/3.20',
     demo_en: 'market search "milk" --country AR\n→ 1. Milk 1L  Carrefour  ARS 1,200\n→ 2. Milk 1L  Jumbo  ARS 1,150',
@@ -70,9 +70,9 @@ export default function Features() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <section id="features" className="relative flex flex-col w-full bg-[#0C0C0C] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section id="features" className="relative flex flex-col w-full bg-[#131313] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col gap-3 max-w-[600px]">
-        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#00FF88]/40"/>{_t("features_label")}</span>
+        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{_t("features_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">
           {lang === "es" ? "15 herramientas.\nUn ecosistema." : "15 tools.\nOne ecosystem."}
         </h2>
@@ -88,8 +88,8 @@ export default function Features() {
             <div key={t.n}>
               <button
                 onClick={() => setActive(isOpen ? null : i)}
-                className="w-full text-left bg-[#0A0A0A] border p-3 flex flex-col gap-1.5 transition-all cursor-pointer"
-                style={{ borderColor: isOpen ? t.c : "#1A1A1A", background: isOpen ? `${t.c}08` : "#0A0A0A" }}
+                className="w-full text-left bg-[#131313] border p-3 flex flex-col gap-1.5 transition-all cursor-pointer"
+                style={{ borderColor: isOpen ? t.c : "#2d2d2d", background: isOpen ? `${t.c}08` : "#131313" }}
               >
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: t.c }} />
@@ -99,7 +99,7 @@ export default function Features() {
                 <p className="text-[9px] font-mono text-[#555] leading-relaxed">{lang === "es" ? t.d_es : t.d_en}</p>
               </button>
               {isOpen && (
-                <div className="bg-[#050505] border border-t-0 px-3 py-3 font-mono text-[9px] leading-relaxed whitespace-pre-wrap" style={{ borderColor: `${t.c}30` }}>
+                <div className="bg-[#0c0c0c] border border-t-0 px-3 py-3 font-mono text-[9px] leading-relaxed whitespace-pre-wrap" style={{ borderColor: `${t.c}30` }}>
                   <span className="text-[#888]">{lang === "es" ? t.demo_es : t.demo_en}</span>
                 </div>
               )}
@@ -109,23 +109,23 @@ export default function Features() {
       </div>
 
       {/* Checkout receipt */}
-      <div className="max-w-[500px] bg-[#0A0A0A] border border-[#1A1A1A] overflow-hidden mt-6">
-        <div className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border-b border-[#1A1A1A]">
+      <div className="max-w-[500px] bg-[#131313] border border-[#2d2d2d] overflow-hidden mt-6">
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border-b border-[#2d2d2d]">
           <div className="w-[8px] h-[8px] rounded-full bg-[#FF5F57]"/><div className="w-[8px] h-[8px] rounded-full bg-[#FEBC2E]"/><div className="w-[8px] h-[8px] rounded-full bg-[#28C840]"/>
           <span className="ml-2 text-[9px] font-mono text-[#555] tracking-wider">CHECKOUT — ORD-004</span>
           <span className="ml-auto text-[8px] font-mono text-[#28C840]">● {lang === "es" ? "CONFIRMADO" : "CONFIRMED"}</span>
         </div>
         <div className="p-5 font-mono text-[10px] leading-relaxed">
-          <div className="flex justify-between text-[#888] border-b border-[#1A1A1A] pb-3 mb-3">
+          <div className="flex justify-between text-[#888] border-b border-[#2d2d2d] pb-3 mb-3">
             <span>{lang === "es" ? "Tienda" : "Store"}</span>
             <span className="text-white/60">Wong · 🇵🇪</span>
           </div>
-          <div className="space-y-2 border-b border-[#1A1A1A] pb-3 mb-3">
+          <div className="space-y-2 border-b border-[#2d2d2d] pb-3 mb-3">
             <div className="flex justify-between"><span className="text-[#888]">2× Leche Gloria 400ml</span><span className="text-white/60">S/7.00</span></div>
             <div className="flex justify-between"><span className="text-[#888]">1× Arroz Costeno 1kg</span><span className="text-white/60">S/4.20</span></div>
             <div className="flex justify-between"><span className="text-[#888]">1× Aceite Primor 1L</span><span className="text-white/60">S/8.90</span></div>
           </div>
-          <div className="flex justify-between text-[#00FF88] font-bold">
+          <div className="flex justify-between text-[#3cffd0] font-bold">
             <span>TOTAL</span>
             <span>S/20.10</span>
           </div>
@@ -133,7 +133,7 @@ export default function Features() {
             <span>{lang === "es" ? "Pago" : "Payment"}</span>
             <span>Yape · {lang === "es" ? "Aprobado" : "Approved"}</span>
           </div>
-          <div className="text-[9px] text-[#444] mt-3 text-center border-t border-[#1A1A1A] pt-3">
+          <div className="text-[9px] text-[#444] mt-3 text-center border-t border-[#2d2d2d] pt-3">
             market checkout --payment yape
           </div>
         </div>

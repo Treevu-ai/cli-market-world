@@ -4,12 +4,12 @@ const tiendasLinks = ["WONG", "METRO", "PLAZA VEA", "CARREFOUR", "JUMBO", "CHEDR
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col w-full bg-[#050505] safe-bottom">
+    <footer className="flex flex-col w-full bg-[#0c0c0c] safe-bottom">
       <div className="flex flex-col md:flex-row gap-8 sm:gap-10 md:gap-[80px] px-4 sm:px-6 md:px-[120px] py-8 sm:py-10 md:py-[64px]">
         {/* Brand */}
         <div className="flex flex-col gap-5 sm:gap-6 md:w-[280px] md:shrink-0">
           <div className="flex items-center gap-[10px] sm:gap-[12px]">
-            <span className="font-grotesk text-[14px] sm:text-[16px] font-bold text-[#00FF88] tracking-[2px] sm:tracking-[3px]">
+            <span className="font-grotesk text-[14px] sm:text-[16px] font-bold text-[#3cffd0] tracking-[2px] sm:tracking-[3px]">
               <span className="text-[#F5F5F0]">$ </span>MARKET
             </span>
           </div>
@@ -71,7 +71,7 @@ export default function Footer() {
           <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/legal/Data_License_Agreement.md" target="_blank" rel="noopener" className="font-ibm-mono text-[10px] sm:text-[11px] text-[#666666] tracking-[0.5px] sm:tracking-[1px] hover:text-[#AAAAAA] transition-colors">
             DATOS
           </a>
-          <span className="font-ibm-mono text-[10px] sm:text-[11px] font-bold text-[#00FF88] tracking-[0.5px] sm:tracking-[1px]">
+          <span className="font-ibm-mono text-[10px] sm:text-[11px] font-bold text-[#3cffd0] tracking-[0.5px] sm:tracking-[1px]">
             V1.0
           </span>
         </div>

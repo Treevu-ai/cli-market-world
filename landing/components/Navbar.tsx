@@ -21,25 +21,25 @@ export default function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-colors duration-300 ${scrolled ? "bg-black/80 backdrop-blur-md border-b border-[#1A1A1A]" : "bg-transparent"}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-colors duration-300 ${scrolled ? "bg-black/80 backdrop-blur-md border-b border-[#2d2d2d]" : "bg-transparent"}`}>
       <div className="max-w-[1200px] mx-auto px-6 lg:px-12 flex items-center justify-between h-14">
         <a href="/" className="font-grotesk font-bold text-white text-lg tracking-tight">CLI Market</a>
         <div className="hidden md:flex items-center gap-6">
           {linkKeys.map(k => (
             <a key={k} href={`#${k.replace("nav_","")}`} className="text-[11px] font-mono text-[#555] hover:text-white transition-colors uppercase tracking-wider">{navLabels[k]}</a>
           ))}
-          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#00FF88] border border-[#00FF88]/30 px-2 py-0.5 hover:bg-[#00FF88]/10 transition-colors uppercase cursor-pointer">
+          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#3cffd0] border border-[#3cffd0]/30 px-2 py-0.5 hover:bg-[#3cffd0]/10 transition-colors uppercase cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="text-[11px] font-mono text-[#888] hover:text-white transition-colors uppercase tracking-wider">{_t("nav_agents") === "Agentes" ? "GitHub" : "GitHub"}</a>
         </div>
         <div className="md:hidden flex items-center gap-3">
-          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#00FF88] border border-[#00FF88]/30 px-2 py-0.5 cursor-pointer">{lang === "es" ? "EN" : "ES"}</button>
+          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#3cffd0] border border-[#3cffd0]/30 px-2 py-0.5 cursor-pointer">{lang === "es" ? "EN" : "ES"}</button>
           <button onClick={() => setOpen(!open)} className="text-white text-xl cursor-pointer">{open ? "×" : "☰"}</button>
         </div>
       </div>
       {open && (
-        <div className="md:hidden bg-black border-t border-[#1A1A1A] px-6 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-black border-t border-[#2d2d2d] px-6 py-4 flex flex-col gap-3">
           {linkKeys.map(k => <a key={k} href={`#${k.replace("nav_","")}`} onClick={() => setOpen(false)} className="text-[11px] font-mono text-[#888] hover:text-white transition-colors uppercase tracking-wider">{navLabels[k]}</a>)}
         </div>
       )}

@@ -33,12 +33,12 @@ TOOLS = [
     },
     {
         "name": "market_lines",
-        "description": "Listar las 4 líneas de negocio verificadas (supermercados, farmacias, electro, hogar) con sus retailers VTEX, países y monedas.",
+        "description": "Listar las 6 líneas de negocio verificadas (supermercados, farmacias, electro, hogar, departamentales, moda) con sus retailers VTEX, países y monedas.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en 27 retailers VTEX verificados (8 países, 4 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en 30 retailers VTEX verificados (8 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -195,6 +195,16 @@ TOOLS = [
             "required": ["query"],
         },
     },
+    {
+        "name": "market_stores",
+        "description": "Listar todos los 30 retailers VTEX verificados con país, moneda, línea de negocio y emoji. Usar para descubrir qué tiendas están disponibles.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_countries",
+        "description": "Listar los 8 países disponibles con sus retailers y conteo de tiendas por país.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -218,6 +228,8 @@ def handle_tool(name: str, args: dict) -> str:
         "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
         "market_barcode":    lambda a: api("GET", f"/products/barcode/{a['code']}"),
         "market_enrich":     lambda a: api("GET", f"/products/enrich?query={a['query']}&limit={a.get('limit', 5)}"),
+        "market_stores":     lambda a: api("GET", "/stores"),
+        "market_countries":  lambda a: api("GET", "/countries"),
     }
     handler = tool_map.get(name)
     if not handler:

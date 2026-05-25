@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="h-full">
       <body
-        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#0A0A0A] overflow-x-hidden`}
+        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#131313] overflow-x-hidden`}
       >
         <LanguageProvider>{children}</LanguageProvider>
       </body>

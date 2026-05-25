@@ -77,10 +77,12 @@ else:
     from market_stores import STORES
 
 LINES = {
-    "supermercados":  {"name": "Supermercados",        "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
-    "farmacias":      {"name": "Farmacias y Salud",    "emoji": "💊", "description": "Medicamentos, bienestar y cuidado personal"},
-    "electro":        {"name": "Electro y Tecnología", "emoji": "📱", "description": "Electrónicos, electrodomésticos y gadgets"},
-    "hogar":          {"name": "Hogar y Construcción", "emoji": "🏠", "description": "Mejoramiento del hogar, muebles, ferretería"},
+    "supermercados":   {"name": "Supermercados",          "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
+    "farmacias":       {"name": "Farmacias y Salud",      "emoji": "💊", "description": "Medicamentos, bienestar y cuidado personal"},
+    "electro":         {"name": "Electro y Tecnología",   "emoji": "📱", "description": "Electrónicos, electrodomésticos y gadgets"},
+    "hogar":           {"name": "Hogar y Construcción",   "emoji": "🏠", "description": "Mejoramiento del hogar, muebles, ferretería"},
+    "departamentales": {"name": "Tiendas Departamentales", "emoji": "🏬", "description": "Ropa, hogar, electrónicos y más"},
+    "moda":            {"name": "Moda y Vestimenta",      "emoji": "👕", "description": "Ropa, calzado y accesorios"},
 }
 
 COUNTRIES: dict[str, dict] = {}

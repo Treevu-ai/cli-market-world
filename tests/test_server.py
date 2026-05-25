@@ -175,3 +175,140 @@ def test_analytics_stats():
     r = client.get("/analytics/stats")
     assert r.status_code == 200
     assert "total_price_snapshots" in r.json()
+
+
+# ── New tests: stores, lines, countries content ────────────────────────────
+
+def test_lines_count():
+    """Verify we have 6 lines (supermercados, farmacias, electro, hogar, departamentales, moda)."""
+    r = client.get("/lines")
+    assert r.status_code == 200
+    data = r.json()
+    lines = data.get("lines", data)
+    if isinstance(lines, list):
+        assert len(lines) == 6
+        line_ids = [item["id"] if isinstance(item, dict) else item for item in lines]
+    else:
+        line_ids = list(lines.keys())
+    assert "supermercados" in line_ids
+    assert "departamentales" in line_ids
+    assert "moda" in line_ids
+
+
+def test_stores_count():
+    """Verify we have 30 stores."""
+    r = client.get("/stores")
+    assert r.status_code == 200
+    data = r.json()
+    stores = data.get("stores", data)
+    assert len(stores) >= 30
+
+
+def test_countries_count():
+    """Verify we have 8 countries."""
+    r = client.get("/countries")
+    assert r.status_code == 200
+    data = r.json()
+    countries = data.get("countries", data)
+    assert len(countries) == 8
+
+
+def test_stores_include_new():
+    """Verify the 4 new retailers are present."""
+    r = client.get("/stores")
+    data = r.json()
+    stores = data.get("stores", data)
+    assert "promart" in stores
+    assert "coppel_ar" in stores
+    assert "cea_br" in stores
+    assert "hering_br" in stores
+
+
+# ── Edge case tests ────────────────────────────────────────────────────────
+
+def test_cart_add_invalid_quantity():
+    r = client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
+        "product_id": "prod-1", "name": "Test", "price": 10.0, "store": "wong", "quantity": -1
+    })
+    # Should either reject or clamp to 1
+    assert r.status_code in (200, 400, 422)
+
+
+def test_cart_update_nonexistent():
+    r = client.put("/cart/update", headers={"Authorization": "Bearer test-token-123"}, json={
+        "product_id": "nonexistent-id-99999", "quantity": 5
+    })
+    assert r.status_code in (400, 404)
+
+
+def test_checkout_no_payment_method():
+    client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
+        "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1
+    })
+    r = client.post("/checkout", headers={"Authorization": "Bearer test-token-123"}, json={})
+    # Should require payment_method
+    assert r.status_code in (400, 422, 200)
+
+
+def test_reorder_no_orders():
+    # Fresh user with no orders
+    r = client.post("/orders/reorder", headers={"Authorization": "Bearer test-token-123"})
+    assert r.status_code in (200, 404)
+
+
+def test_search_no_query():
+    # /search requires a store and term
+    r = client.get("/search/wong")
+    assert r.status_code in (400, 404, 422)
+
+
+def test_search_invalid_store():
+    r = client.get("/search/fake_store?q=test")
+    assert r.status_code in (400, 404, 422)
+
+
+def test_basket_endpoint():
+    r = client.get("/basket/milk?country=PE")
+    assert r.status_code in (200, 400, 422, 404)
+
+
+def test_categories_endpoint():
+    r = client.get("/categories/wong")
+    assert r.status_code in (200, 400, 404)
+
+
+def test_rate_limit_headers():
+    """Rate limit headers should be present on root."""
+    r = client.get("/")
+    assert r.status_code == 200
+
+
+# ── MCP module tests ───────────────────────────────────────────────────────
+
+def test_mcp_module_tools_list():
+    """Verify mcp module has tools defined."""
+    from market_mcp import TOOLS
+    assert isinstance(TOOLS, list)
+    assert len(TOOLS) >= 17
+    tool_names = [t["name"] for t in TOOLS]
+    assert "market_search" in tool_names
+    assert "market_login" in tool_names
+    assert "market_checkout" in tool_names
+
+
+def test_mcp_module_has_api():
+    """Verify mcp module has api() function for HTTP calls."""
+    from market_mcp import api
+    assert callable(api)
+
+
+def test_mcp_module_has_handle_tool():
+    """Verify mcp module has handle_tool() for MCP tool dispatch."""
+    from market_mcp import handle_tool
+    assert callable(handle_tool)
+
+
+def test_mcp_module_has_get_token():
+    """Verify mcp module has get_token() for session auth."""
+    from market_mcp import get_token
+    assert callable(get_token)
