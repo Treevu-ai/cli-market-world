@@ -21,4 +21,4 @@ services:
       - key: MARKET_DATA_DIR
         value: /opt/render/project/src/.market
       - key: COLLECT_INTERVAL_HOURS
-        value: "4"
+        value: "8"
