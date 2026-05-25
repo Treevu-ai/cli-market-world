@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
-const linkKeys = ["nav_stats","nav_terminal","nav_how","nav_features","nav_coverage","nav_pricing","nav_faq"];
+const linkKeys = ["nav_stats","nav_terminal","nav_how","nav_features","nav_pricing","nav_faq"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -17,30 +17,67 @@ export default function Navbar() {
 
   const navLabels: Record<string,string> = {
     nav_stats: _t("nav_stats"), nav_terminal: _t("nav_terminal"), nav_how: _t("nav_how"),
-    nav_features: _t("nav_features"), nav_coverage: _t("nav_coverage"), nav_pricing: _t("nav_pricing"), nav_faq: _t("nav_faq"),
+    nav_features: _t("nav_features"), nav_pricing: _t("nav_pricing"), nav_faq: _t("nav_faq"),
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-colors duration-300 ${scrolled ? "bg-black/80 backdrop-blur-md border-b border-[#2d2d2d]" : "bg-transparent"}`}>
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-12 flex items-center justify-between h-14">
-        <a href="/" className="font-grotesk font-bold text-white text-lg tracking-tight">CLI Market</a>
-        <div className="hidden md:flex items-center gap-6">
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      scrolled ? "bg-white/90 backdrop-blur-md border-b border-[#e5e5e5]" : "bg-white border-b border-transparent"
+    }`}>
+      <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between h-14">
+        {/* Logo */}
+        <a href="/" className="flex items-center gap-2 text-black">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-black">
+            <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
+            <rect x="11" y="10" width="7" height="1.5" rx="0.5" fill="currentColor"/>
+            <rect x="12" y="13" width="5" height="1.5" rx="0.5" fill="currentColor"/>
+            <rect x="13" y="16" width="3" height="1.5" rx="0.5" fill="currentColor"/>
+            <rect x="19" y="10" width="1" height="1.5" rx="0.5" fill="currentColor">
+              <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+            </rect>
+          </svg>
+          <span className="font-medium text-sm tracking-tight">CLI Market</span>
+        </a>
+
+        {/* Nav links */}
+        <div className="hidden md:flex items-center gap-5">
           {linkKeys.map(k => (
-            <a key={k} href={`#${k.replace("nav_","")}`} className="text-[11px] font-mono text-[#555] hover:text-white transition-colors uppercase tracking-wider">{navLabels[k]}</a>
+            <a key={k} href={`#${k.replace("nav_","")}`}
+               className="text-[11px] font-medium text-[#737373] hover:text-black transition-colors">
+              {navLabels[k]}
+            </a>
           ))}
-          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#3cffd0] border border-[#3cffd0]/30 px-2 py-0.5 hover:bg-[#3cffd0]/10 transition-colors uppercase cursor-pointer">
+          <span className="text-[#d4d4d4]">|</span>
+          <button onClick={() => setLang(lang === "es" ? "en" : "es")}
+            className="text-[11px] font-medium text-[#a3a3a3] hover:text-black transition-colors cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
-          <a href="https://github.com/Treevu-ai/cli-market-world" className="text-[11px] font-mono text-[#888] hover:text-white transition-colors uppercase tracking-wider">{_t("nav_agents") === "Agentes" ? "GitHub" : "GitHub"}</a>
         </div>
+
+        {/* Mobile menu */}
         <div className="md:hidden flex items-center gap-3">
-          <button onClick={() => setLang(lang === "es" ? "en" : "es")} className="text-[11px] font-mono text-[#3cffd0] border border-[#3cffd0]/30 px-2 py-0.5 cursor-pointer">{lang === "es" ? "EN" : "ES"}</button>
-          <button onClick={() => setOpen(!open)} className="text-white text-xl cursor-pointer">{open ? "×" : "☰"}</button>
+          <button onClick={() => setLang(lang === "es" ? "en" : "es")}
+            className="text-[11px] font-medium text-[#a3a3a3] cursor-pointer">
+            {lang === "es" ? "EN" : "ES"}
+          </button>
+          <button onClick={() => setOpen(!open)}
+            className="text-black text-lg cursor-pointer font-medium">
+            {open ? "×" : "☰"}
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden bg-black border-t border-[#2d2d2d] px-6 py-4 flex flex-col gap-3">
-          {linkKeys.map(k => <a key={k} href={`#${k.replace("nav_","")}`} onClick={() => setOpen(false)} className="text-[11px] font-mono text-[#888] hover:text-white transition-colors uppercase tracking-wider">{navLabels[k]}</a>)}
+        <div className="md:hidden bg-white border-t border-[#e5e5e5] px-6 py-4 flex flex-col gap-3">
+          {linkKeys.map(k => (
+            <a key={k} href={`#${k.replace("nav_","")}`} onClick={() => setOpen(false)}
+               className="text-sm text-[#737373] hover:text-black transition-colors">
+              {navLabels[k]}
+            </a>
+          ))}
         </div>
       )}
     </nav>
