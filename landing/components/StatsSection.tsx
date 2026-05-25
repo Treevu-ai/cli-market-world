@@ -63,7 +63,7 @@ export default function StatsSection() {
   }, []);
 
   return (
-    <section className="relative flex flex-col w-full py-24 px-6 lg:px-12 md:py-[120px] gap-10" style={{ background: "linear-gradient(135deg, #131313 0%, #0d0d20 50%, #131313 100%)" }}>
+    <section id="stats" className="relative flex flex-col w-full py-24 px-6 lg:px-12 md:py-[120px] gap-10" style={{ background: "linear-gradient(135deg, #131313 0%, #0d0d20 50%, #131313 100%)" }}>
       <div className="absolute inset-0 opacity-[0.03] parallax-glow" style={{ backgroundImage: "radial-gradient(circle at 70% 30%, #3cffd0 0%, transparent 60%)" }} />
       <div className="relative z-10 flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-[#3cffd0]/60"><span className="w-8 h-px bg-[#3cffd0]/40" />{_t("stats_label")}</span>
