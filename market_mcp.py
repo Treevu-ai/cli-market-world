@@ -26,8 +26,8 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "username": {"type": "string", "default": "admin"},
-                "password": {"type": "string", "default": "market"},
+                "username": {"type": "string"},
+                "password": {"type": "string"},
             },
         },
     },
@@ -201,7 +201,7 @@ TOOLS = [
 def handle_tool(name: str, args: dict) -> str:
     """Dispatch MCP tool calls to the API."""
     tool_map = {
-        "market_login":      lambda a: api("POST", "/auth/login", {"username": a.get("username", "admin"), "password": a.get("password", "market")}),
+        "market_login":      lambda a: api("POST", "/auth/login", {"username": a["username"], "password": a["password"]}),
         "market_lines":      lambda a: api("GET", "/lines"),
         "market_search":     lambda a: api("POST", "/products/search", {"query": a["query"], "store": a.get("store"), "line": a.get("line"), "limit": a.get("limit", 10)}),
         "market_compare":    lambda a: api("POST", "/products/compare", {"query": a["query"], "line": a.get("line"), "limit": a.get("limit", 10)}),
