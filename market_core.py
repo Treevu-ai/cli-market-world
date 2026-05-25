@@ -17,6 +17,24 @@ from typing import Any
 
 import httpx
 
+# ── Database backend selection ──────────────────────────────────────────────
+
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+USE_PG = bool(DATABASE_URL)
+
+if USE_PG:
+    try:
+        import psycopg2
+        import psycopg2.extras
+        logger_pg = logging.getLogger("market.pg")
+        logger_pg.info("Using PostgreSQL backend")
+    except ImportError:
+        logging.getLogger("market").error(
+            "DATABASE_URL is set but psycopg2 is not installed. "
+            "Install: pip install psycopg2-binary. Falling back to SQLite."
+        )
+        USE_PG = False
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 
 logging.basicConfig(
@@ -231,26 +249,200 @@ def load_last_search() -> list[dict]:
             return []
     return []
 
-# ── SQLite helpers ────────────────────────────────────────────────────────────
+# ── Database abstraction (PostgreSQL or SQLite) ──────────────────────────────
 
-def get_db() -> sqlite3.Connection:
+class _PgCursor:
+    """Mimics sqlite3.Cursor for psycopg2."""
+    def __init__(self, cur):
+        self._cur = cur
+        self.lastrowid = None
+
+    def fetchall(self):
+        return [dict(r) for r in self._cur.fetchall()]
+
+    def fetchone(self):
+        row = self._cur.fetchone()
+        return dict(row) if row else None
+
+
+class _DB:
+    """Unified DB connection: PostgreSQL or SQLite."""
+    def __init__(self):
+        if USE_PG:
+            self._conn = psycopg2.connect(DATABASE_URL)
+            self._pg = True
+        else:
+            self._conn = sqlite3.connect(str(DB_FILE))
+            self._conn.row_factory = sqlite3.Row
+            self._conn.execute("PRAGMA journal_mode=WAL")
+            self._conn.execute("PRAGMA busy_timeout=5000")
+            self._pg = False
+
+    def execute(self, sql, params=None):
+        if self._pg:
+            sql = sql.replace("?", "%s")
+            sql = sql.replace("datetime('now')", "NOW()")
+            sql = sql.replace("INSERT OR IGNORE", "INSERT")
+            cur = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur.execute(sql, params)
+            wrapper = _PgCursor(cur)
+            # Capture lastrowid from RETURNING clause
+            if "RETURNING" in sql.upper():
+                row = cur.fetchone()
+                if row:
+                    wrapper.lastrowid = list(row.values())[0] if row else None
+            return wrapper
+        else:
+            return self._conn.execute(sql, params or ())
+
+    def executescript(self, sql):
+        if self._pg:
+            for stmt in sql.split(";"):
+                stmt = stmt.strip()
+                if stmt:
+                    self.execute(stmt)
+        else:
+            self._conn.executescript(sql)
+
+    def commit(self):
+        self._conn.commit()
+
+    def close(self):
+        self._conn.close()
+
+
+def get_db() -> _DB:
     import time as _time
     for attempt in range(3):
         try:
-            conn = sqlite3.connect(str(DB_FILE))
-            conn.row_factory = sqlite3.Row
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA busy_timeout=5000")
-            return conn
-        except sqlite3.OperationalError:
+            return _DB()
+        except Exception:
             if attempt < 2:
                 _time.sleep(0.2 * (attempt + 1))
             else:
                 raise
 
-def init_db() -> None:
-    db = get_db()
-    db.executescript("""
+
+def init_db_pg(db: _DB) -> None:
+    """PostgreSQL schema."""
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS contacts (
+            chat_id TEXT PRIMARY KEY,
+            first_name TEXT,
+            username TEXT,
+            last_message TEXT,
+            created_at TEXT,
+            updated_at TEXT DEFAULT NOW()
+        )
+    """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS price_snapshots (
+            id SERIAL PRIMARY KEY,
+            product_id TEXT NOT NULL,
+            name TEXT,
+            brand TEXT,
+            price DOUBLE PRECISION,
+            list_price DOUBLE PRECISION,
+            discount INTEGER,
+            store TEXT NOT NULL,
+            store_name TEXT,
+            currency TEXT,
+            line TEXT,
+            line_name TEXT,
+            category TEXT,
+            stock INTEGER,
+            url TEXT,
+            queried_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE(product_id, store)
+        )
+    """)
+    for idx_sql in [
+        "CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store)",
+        "CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store)",
+        "CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line)",
+        "CREATE INDEX IF NOT EXISTS idx_ps_queried ON price_snapshots(queried_at)",
+    ]:
+        db.execute(idx_sql)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS search_queries (
+            id SERIAL PRIMARY KEY,
+            query TEXT NOT NULL,
+            line TEXT,
+            country TEXT,
+            store_filter TEXT,
+            num_results INTEGER DEFAULT 0,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_sq_created ON search_queries(created_at)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS app_users (
+            username TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            token TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS app_carts (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            price DOUBLE PRECISION NOT NULL DEFAULT 0,
+            store TEXT NOT NULL,
+            store_name TEXT DEFAULT '',
+            quantity INTEGER NOT NULL DEFAULT 1,
+            url TEXT DEFAULT '',
+            added_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_cart_user ON app_carts(username)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS app_orders (
+            order_id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            payment_method TEXT DEFAULT 'yape',
+            total DOUBLE PRECISION NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'completed',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_order_user ON app_orders(username)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS app_order_items (
+            id SERIAL PRIMARY KEY,
+            order_id TEXT NOT NULL REFERENCES app_orders(order_id),
+            product_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            price DOUBLE PRECISION NOT NULL DEFAULT 0,
+            store TEXT NOT NULL,
+            store_name TEXT DEFAULT '',
+            quantity INTEGER NOT NULL DEFAULT 1,
+            url TEXT DEFAULT ''
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_oi_order ON app_order_items(order_id)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS rate_limits (
+            key TEXT NOT NULL,
+            window_start DOUBLE PRECISION NOT NULL,
+            counter INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (key, window_start)
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_rl_key ON rate_limits(key)")
+    db.commit()
+
+
+_SQLITE_DDL = """\
         CREATE TABLE IF NOT EXISTS contacts (
             chat_id TEXT PRIMARY KEY,
             first_name TEXT,
@@ -293,7 +485,6 @@ def init_db() -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_sq_created ON search_queries(created_at);
 
-        -- Application persistence (migrated from JSON files)
         CREATE TABLE IF NOT EXISTS app_users (
             username TEXT PRIMARY KEY,
             password_hash TEXT NOT NULL,
@@ -339,7 +530,6 @@ def init_db() -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_oi_order ON app_order_items(order_id);
 
-        -- Rate limiting (persistent across restarts)
         CREATE TABLE IF NOT EXISTS rate_limits (
             key TEXT NOT NULL,
             window_start REAL NOT NULL,
@@ -347,15 +537,24 @@ def init_db() -> None:
             PRIMARY KEY (key, window_start)
         );
         CREATE INDEX IF NOT EXISTS idx_rl_key ON rate_limits(key);
-    """)
+"""
+
+
+def init_db() -> None:
+    db = get_db()
+    if USE_PG:
+        init_db_pg(db)
+    else:
+        db.executescript(_SQLITE_DDL)
     db.commit()
     db.close()
 
-# ── Rate limiter (SQLite-backed) ──────────────────────────────────────────────
+
+# ── Rate limiter ────────────────────────────────────────────────────────────
 
 def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
                             daily_max: int = 100) -> None:
-    """SQLite-backed rate limiter. Persists across restarts."""
+    """Rate limiter. Persists across restarts."""
     import time as _time
     now = _time.time()
     db = get_db()
@@ -382,7 +581,7 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
     )
 
     # Per-minute cap — group by minute bucket
-    minute_bucket = int(now // 60) * 60  # start of current minute
+    minute_bucket = int(now // 60) * 60
     minute_key = f"{ip}:minute"
     db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (minute_key, minute_bucket))
     minute_row = db.execute(
@@ -403,7 +602,7 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
     db.commit()
     db.close()
 
-# ── App persistence (SQLite) ──────────────────────────────────────────────────
+# ── App persistence ────────────────────────────────────────────────────────
 
 def db_get_users() -> dict:
     """Return all users as a dict (for backwards compat with existing code)."""
@@ -436,10 +635,11 @@ def db_get_cart(username: str) -> list[dict]:
 def db_add_to_cart(username: str, product_id: str, name: str, price: float,
                    store: str, store_name: str = "", quantity: int = 1, url: str = "") -> int:
     db = get_db()
-    c = db.execute(
-        "INSERT INTO app_carts (username, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
-        (username, product_id, name, price, store, store_name, quantity, url)
-    )
+    if USE_PG:
+        sql = "INSERT INTO app_carts (username, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?) RETURNING id"
+    else:
+        sql = "INSERT INTO app_carts (username, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)"
+    c = db.execute(sql, (username, product_id, name, price, store, store_name, quantity, url))
     cart_id = c.lastrowid
     db.commit()
     db.close()
@@ -519,10 +719,16 @@ def db_migrate_from_json() -> None:
             users = _json.loads(USERS_FILE.read_text())
             db = get_db()
             for username, data in users.items():
-                db.execute(
-                    "INSERT OR IGNORE INTO app_users (username, password_hash, token) VALUES (?,?,?)",
-                    (username, data.get("password", ""), data.get("token", ""))
-                )
+                if USE_PG:
+                    db.execute(
+                        "INSERT INTO app_users (username, password_hash, token) VALUES (?,?,?) ON CONFLICT(username) DO NOTHING",
+                        (username, data.get("password", ""), data.get("token", ""))
+                    )
+                else:
+                    db.execute(
+                        "INSERT OR IGNORE INTO app_users (username, password_hash, token) VALUES (?,?,?)",
+                        (username, data.get("password", ""), data.get("token", ""))
+                    )
             db.commit()
             db.close()
             logger.info("Migrated %d users from JSON", len(users))
@@ -553,11 +759,18 @@ def db_migrate_from_json() -> None:
             orders = _json.loads(ORDERS_FILE.read_text())
             db = get_db()
             for o in orders:
-                db.execute(
-                    "INSERT OR IGNORE INTO app_orders (order_id, username, payment_method, total, status, created_at) VALUES (?,?,?,?,?,?)",
-                    (o.get("order_id", ""), o.get("username", ""), o.get("payment_method", "yape"),
-                     o.get("total", 0), o.get("status", "completed"), o.get("created_at", ""))
-                )
+                if USE_PG:
+                    db.execute(
+                        "INSERT INTO app_orders (order_id, username, payment_method, total, status, created_at) VALUES (?,?,?,?,?,?) ON CONFLICT(order_id) DO NOTHING",
+                        (o.get("order_id", ""), o.get("username", ""), o.get("payment_method", "yape"),
+                         o.get("total", 0), o.get("status", "completed"), o.get("created_at", ""))
+                    )
+                else:
+                    db.execute(
+                        "INSERT OR IGNORE INTO app_orders (order_id, username, payment_method, total, status, created_at) VALUES (?,?,?,?,?,?)",
+                        (o.get("order_id", ""), o.get("username", ""), o.get("payment_method", "yape"),
+                         o.get("total", 0), o.get("status", "completed"), o.get("created_at", ""))
+                    )
                 for item in o.get("items", []):
                     db.execute(
                         "INSERT OR IGNORE INTO app_order_items (order_id, product_id, name, price, store, store_name, quantity, url) VALUES (?,?,?,?,?,?,?,?)",
@@ -573,27 +786,51 @@ def db_migrate_from_json() -> None:
 def save_price_snapshot(p: dict) -> None:
     try:
         db = get_db()
-        db.execute("""
-            INSERT INTO price_snapshots
-                (product_id, name, brand, price, list_price, discount,
-                 store, store_name, currency, line, line_name, category, stock, url)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (
-            p.get("id", p.get("product_id", "")),
-            p.get("name", ""),
-            p.get("brand", ""),
-            p.get("price", 0),
-            p.get("list_price", 0),
-            p.get("discount"),
-            p.get("store", ""),
-            p.get("store_name", ""),
-            p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
-            STORES.get(p.get("store", ""), {}).get("line", ""),
-            p.get("line_name", ""),
-            p.get("category", ""),
-            p.get("stock", 0),
-            p.get("url", ""),
-        ))
+        if USE_PG:
+            db.execute("""
+                INSERT INTO price_snapshots
+                    (product_id, name, brand, price, list_price, discount,
+                     store, store_name, currency, line, line_name, category, stock, url)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(product_id, store) DO NOTHING
+            """, (
+                p.get("id", p.get("product_id", "")),
+                p.get("name", ""),
+                p.get("brand", ""),
+                p.get("price", 0),
+                p.get("list_price", 0),
+                p.get("discount"),
+                p.get("store", ""),
+                p.get("store_name", ""),
+                p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
+                STORES.get(p.get("store", ""), {}).get("line", ""),
+                p.get("line_name", ""),
+                p.get("category", ""),
+                p.get("stock", 0),
+                p.get("url", ""),
+            ))
+        else:
+            db.execute("""
+                INSERT INTO price_snapshots
+                    (product_id, name, brand, price, list_price, discount,
+                     store, store_name, currency, line, line_name, category, stock, url)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                p.get("id", p.get("product_id", "")),
+                p.get("name", ""),
+                p.get("brand", ""),
+                p.get("price", 0),
+                p.get("list_price", 0),
+                p.get("discount"),
+                p.get("store", ""),
+                p.get("store_name", ""),
+                p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
+                STORES.get(p.get("store", ""), {}).get("line", ""),
+                p.get("line_name", ""),
+                p.get("category", ""),
+                p.get("stock", 0),
+                p.get("url", ""),
+            ))
         db.commit()
         db.close()
     except Exception as e:
