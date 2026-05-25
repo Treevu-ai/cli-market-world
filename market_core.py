@@ -849,4 +849,14 @@ def save_search_query(query: str, line: str | None, store: str | None, num_resul
         logger.warning("save_search_query failed: %s", e)
 
 # ── Initialize DB at import time ──────────────────────────────────────────────
-init_db()
+try:
+    init_db()
+except Exception as e:
+    logger.error("Database initialization failed: %s", e)
+    if USE_PG:
+        logger.warning("PostgreSQL unavailable — falling back to SQLite")
+        USE_PG = False
+        try:
+            init_db()
+        except Exception as e2:
+            logger.error("SQLite fallback also failed: %s", e2)
