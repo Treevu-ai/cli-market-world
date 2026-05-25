@@ -6,7 +6,7 @@ const es: Dict = {
   nav_pricing: "Precios", nav_faq: "FAQ", nav_agents: "Agentes", nav_cases: "Casos",
   hero_eye: "Comercio programable para agentes de IA",
   hero_h1a: "retailers. Una sola API.", hero_h1b: "Tus agentes compran solos.", hero_h1c_p: "", hero_h1c_s: "",
-  hero_sub: "Precios reales de góndola en 11 países. Actualizados cada 8 horas. Sin scraping. Sin integraciones.",
+  hero_sub: "Precios reales de 60 retailers en 11 países. Actualizados cada 8 horas. Sin scraping.",
   hero_install: "Empezá gratis", hero_cov: "Cómo funciona", hero_contact: "Hablar con ventas",
   hero_words: "comprar,comparar,buscar,analizar",
   stats_label: "Escala", stats_title: "60 retailers.\n3 plataformas. Un solo conector.", stats_sub: "VTEX, Shopify y Magento comparten la misma interfaz. Cada retailer es una línea de JSON. Sin integraciones por tienda.",

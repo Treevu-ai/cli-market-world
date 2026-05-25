@@ -86,12 +86,7 @@ export default function Hero() {
 
       <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 lg:px-12 py-32 lg:py-40">
         <div className="lg:max-w-[65%]">
-          <div className="hero-eyebrow mb-8">
-            <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40">
-              <span className="w-8 h-px bg-[#3cffd0]/40" />
-              {_t("hero_eye")}
-            </span>
-          </div>
+
           <div className="mb-12">
             <h1 className="hero-h1 text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white">
               <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">60</span> {_t("hero_h1a")}</span>
@@ -101,15 +96,10 @@ export default function Hero() {
           <div className="hero-sub mb-12">
             <p className="text-lg lg:text-xl text-white/50 leading-relaxed max-w-xl font-mono">{_t("hero_sub")}</p>
           </div>
-          <div className="hero-ph mb-6">
-            <a href="https://www.producthunt.com/products/cli-market?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cli-market" target="_blank" rel="noopener">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1150344&theme=neutral&t=1779222495059" alt="CLI Market on Product Hunt" className="h-[54px] w-auto" />
-            </a>
-          </div>
+
           <div className="hero-cta flex flex-col sm:flex-row gap-4">
             <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-flex items-center gap-2 px-8 py-4 bg-[#3cffd0] text-black font-medium hover:bg-[#309875] transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_install")}<span className="text-xs opacity-60">→</span></a>
-            <a href="#coverage" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_cov")}</a>
-            <a href="mailto:hello@cli-market.dev?subject=CLI%20Market&body=Hola%2C%20me%20interesa%20saber%20mas." className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_contact")}</a>
+            <a href="#terminal" className="inline-flex items-center gap-2 px-8 py-4 border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm font-mono uppercase tracking-widest">{_t("hero_cov")}</a>
           </div>
         </div>
       </div>
