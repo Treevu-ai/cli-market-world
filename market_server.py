@@ -835,12 +835,55 @@ def dashboard_data():
         ORDER BY queried_at DESC LIMIT 20
     """).fetchall()
     total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
+
+    # Collector status
+    last_run = db.execute(
+        "SELECT started_at, finished_at, stores_succeeded, stores_attempted, prices_collected "
+        "FROM collector_runs ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    collector_status = "unknown"
+    if last_run:
+        finished = last_run["finished_at"]
+        if finished:
+            try:
+                ft = datetime.fromisoformat(finished.replace("Z", "+00:00"))
+                age_h = (datetime.now(timezone.utc) - ft).total_seconds() / 3600
+                collector_status = "healthy" if age_h < 12 else ("stale" if age_h < 24 else "dead")
+            except Exception:
+                age_h = None
+        else:
+            collector_status = "running"
+
+    # Store health
+    failing_stores = db.execute(
+        "SELECT store, consecutive_failures FROM store_health WHERE consecutive_failures >= 3 ORDER BY consecutive_failures DESC"
+    ).fetchall()
+
+    # Price trend (last 7 days vs previous 7)
+    from datetime import timedelta
+    now7 = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    prev14 = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    recent = db.execute("SELECT COUNT(*) as n FROM price_snapshots WHERE queried_at >= ?", (now7,)).fetchone()["n"]
+    older = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE queried_at >= ? AND queried_at < ?",
+        (prev14, now7)
+    ).fetchone()["n"]
+
     db.close()
     return {
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country_list,
         "top_products": [dict(r) for r in top_products],
         "total_runs": total_runs,
+        "collector": {
+            "status": collector_status,
+            "last_run": last_run["started_at"] if last_run else None,
+            "last_finished": last_run["finished_at"] if last_run else None,
+            "stores_succeeded": last_run["stores_succeeded"] if last_run else 0,
+            "prices_collected": last_run["prices_collected"] if last_run else 0,
+        },
+        "failing_stores": [dict(r) for r in failing_stores],
+        "price_trend": {"recent_7d": recent, "previous_7d": older},
     }
 
 def dashboard_html():
@@ -871,12 +914,15 @@ td{padding:5px 8px;border-bottom:1px solid #1a1a1a}
 td.price{color:#3cffd0;text-align:right}
 .mono{font-size:0.55rem;color:#444}
 #updated{color:#444;font-size:0.6rem;text-align:right;margin-top:8px}
+.alert{background:#2d1a1a;border:1px solid #ff4444;color:#ff6b6b;border-radius:6px;padding:8px 14px;font-size:0.65rem;margin-bottom:6px}
+.alert b{color:#ff8888}
 </style>
 </head>
 <body>
 <h1>CLI Market <span>Data Moat</span></h1>
 <p class="subtitle">Precios recolectados de 30 retailers VTEX en 8 países · 6 líneas</p>
 <div class="kpi-row" id="kpis"></div>
+<div id="alerts"></div>
 <div class="grid">
   <div class="card"><h2>Precios por línea</h2><canvas id="chartLines"></canvas></div>
   <div class="card"><h2>Precios por país</h2><canvas id="chartCountries"></canvas></div>
@@ -888,6 +934,20 @@ async function load(){
   const r=await fetch('/dashboard/data');
   const d=await r.json();
 
+  // Alerts
+  const alerts=[];
+  if(d.collector&&d.collector.status&&d.collector.status!=='healthy'){
+    alerts.push(`⚠️ Collector: <b>${d.collector.status}</b> — última vez: ${d.collector.last_finished||'nunca'}`);
+  }
+  if(d.failing_stores&&d.failing_stores.length>0){
+    const names=d.failing_stores.map(s=>`${s.store} (×${s.consecutive_failures})`).join(', ');
+    alerts.push(`🔴 Tiendas caídas: ${names}`);
+  }
+  if(d.price_trend&&d.price_trend.recent_7d===0&&d.price_trend.previous_7d>0){
+    alerts.push('📉 0 precios nuevos en 7 días — ¿collector detenido?');
+  }
+  document.getElementById('alerts').innerHTML=alerts.map(a=>`<div class="alert">${a}</div>`).join('');
+
   // KPIs
   const total=d.by_line.reduce((s,x)=>s+x.count,0);
   const lines=d.by_line.length;
@@ -897,7 +957,7 @@ async function load(){
     <div class="kpi"><div class="val">${lines}</div><div class="lbl">Líneas</div></div>
     <div class="kpi"><div class="val">${countries}</div><div class="lbl">Países</div></div>
     <div class="kpi"><div class="val">${d.total_runs}</div><div class="lbl">Ciclos</div></div>
-    <div class="kpi"><div class="val">30</div><div class="lbl">Retailers</div></div>
+    <div class="kpi"><div class="val">${d.collector?d.collector.stores_succeeded||'?':'?'}</div><div class="lbl">Tiendas ok</div></div>
   `;
 
   // Lines chart
