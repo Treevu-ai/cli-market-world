@@ -34,7 +34,7 @@ from market_core import (
     STORES, LINES, COUNTRIES, DEFAULT_STORES, PAGE_SIZE,
     DATA_DIR, DB_FILE,
     get_db, save_price_snapshot, save_search_query,
-    parse_price, clean_name, fetch_store, product_from_json,
+    fetch_store, product_from_json,
     db_get_users, db_save_user,
     db_get_cart, db_add_to_cart, db_update_cart_item, db_remove_cart_item, db_clear_cart,
     db_get_orders, db_create_order,
