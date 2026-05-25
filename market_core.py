@@ -495,6 +495,17 @@ def init_db_pg(db: _DB) -> None:
         )
     """)
     db.execute("CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            username TEXT PRIMARY KEY,
+            tier TEXT NOT NULL DEFAULT 'free',
+            req_limit_day INTEGER NOT NULL DEFAULT 1000,
+            req_limit_min INTEGER NOT NULL DEFAULT 60,
+            started_at TIMESTAMPTZ,
+            expires_at TIMESTAMPTZ
+        )
+    """)
     db.commit()
 
 
@@ -624,6 +635,15 @@ _SQLITE_DDL = """\
             last_used_at TEXT
         );
         CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username);
+
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            username TEXT PRIMARY KEY,
+            tier TEXT NOT NULL DEFAULT 'free',
+            req_limit_day INTEGER NOT NULL DEFAULT 1000,
+            req_limit_min INTEGER NOT NULL DEFAULT 60,
+            started_at TEXT,
+            expires_at TEXT
+        );
 """
 
 
@@ -689,7 +709,7 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
     db.commit()
     db.close()
 
-# ── App persistence ────────────────────────────────────────────────────────
+# ── Subscriptions / Tiered pricing ──────────────────────────────────────────────
 
 def db_get_users() -> dict:
     """Return all users as a dict (for backwards compat with existing code)."""
@@ -994,6 +1014,81 @@ def db_validate_api_key(key: str) -> dict | None:
         db.commit()
     db.close()
     return dict(row) if row else None
+
+
+# ── Subscriptions / Tiered pricing ──────────────────────────────────────────────
+
+TIERS = {
+    "free":      {"req_min": 60,  "req_day": 1000, "api_keys": 1,  "checkout": False},
+    "pro":       {"req_min": 300, "req_day": 10000, "api_keys": 10, "checkout": True},
+    "enterprise": {"req_min": 0,  "req_day": 0,     "api_keys": 0,  "checkout": True},
+}
+
+def db_get_subscription(username: str) -> dict:
+    """Get user subscription. Falls back to free tier defaults."""
+    db = get_db()
+    row = db.execute(
+        "SELECT tier, req_limit_day, req_limit_min FROM subscriptions WHERE username=?",
+        (username,)
+    ).fetchone()
+    db.close()
+    if row:
+        return dict(row)
+    return {"tier": "free", "req_limit_day": TIERS["free"]["req_day"],
+            "req_limit_min": TIERS["free"]["req_min"]}
+
+def db_set_subscription(username: str, tier: str, req_day: int | None = None,
+                        req_min: int | None = None, expires_days: int | None = None) -> dict:
+    db = get_db()
+    t = TIERS.get(tier, TIERS["free"])
+    day = req_day if req_day is not None else t["req_day"]
+    mn = req_min if req_min is not None else t["req_min"]
+    db.execute(
+        "INSERT INTO subscriptions (username, tier, req_limit_day, req_limit_min) VALUES (?,?,?,?) "
+        "ON CONFLICT(username) DO UPDATE SET tier=?, req_limit_day=?, req_limit_min=?",
+        (username, tier, day, mn, tier, day, mn)
+    )
+    db.commit()
+    db.close()
+    return {"username": username, "tier": tier, "req_limit_day": day, "req_limit_min": mn}
+
+
+def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
+                            daily_max: int = 100) -> None:
+    """Rate limiter. Persists across restarts. Updated to support tiered limits."""
+    import time as _time
+    now = _time.time()
+    db = get_db()
+    # Daily cap
+    today_start = _time.mktime(_time.strptime(
+        _time.strftime("%Y-%m-%d", _time.gmtime(now)), "%Y-%m-%d"
+    ))
+    daily_key = f"{ip}:daily"
+    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (daily_key, today_start))
+    daily_row = db.execute(
+        "SELECT SUM(counter) as total FROM rate_limits WHERE key=? AND window_start = ?",
+        (daily_key, today_start)
+    ).fetchone()
+    daily_count = daily_row["total"] or 0
+    if daily_count >= daily_max:
+        db.close()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=429, detail=f"Daily limit reached ({daily_max} req/day).")
+    # Per-minute cap
+    window_key = f"{ip}:min"
+    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (window_key, now - window_secs))
+    min_count = db.execute(
+        "SELECT SUM(counter) as total FROM rate_limits WHERE key=? AND window_start >= ?",
+        (window_key, now - window_secs)
+    ).fetchone()["total"] or 0
+    if min_count >= max_req:
+        db.close()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=429, detail=f"Rate limit reached ({max_req} req/{window_secs}s).")
+    db.execute("INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1)", (daily_key, today_start))
+    db.execute("INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1)", (window_key, now))
+    db.commit()
+    db.close()
 
 
 # ── Initialize DB at import time ──────────────────────────────────────────────
