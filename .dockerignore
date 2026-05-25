@@ -27,7 +27,6 @@ venv
 .env
 *.svg
 demo.yml
-*.txt
 reddit-posts.txt
 social-post.txt
 twitter-thread.txt
