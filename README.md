@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/lines-6-blue" alt="6 lines">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-19-00d75f" alt="19 MCP tools">
+  <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build">
@@ -21,17 +22,17 @@
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Your AI agent can search, compare, and buy across 27 retailers in 8 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Your AI agent can search, compare, and buy across 30 retailers in 8 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
 ## What is CLI Market?
 
-**The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 27 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
+**The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 30 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One `pip install`. One API call across all 27 retailers. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across all 30 retailers. One JSON schema.
 
-- **Search** any product across 27 verified retailers in 8 countries
+- **Search** any product across 30 verified retailers in 8 countries
 - **Compare** prices cross-border — ARS, BRL, MXN, PEN, COP, CLP, EUR
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 4 hours
@@ -82,15 +83,15 @@ market --json
 
 | You | Your AI agent |
 |-----|---------------|
-| `pip install cli-market` | 17 MCP tools |
+| `pip install cli-market` | 19 MCP tools |
 | `market search "milk"` | REST API + JSON native |
 | Rich terminal tables | Cross-border price intelligence |
 | Spanish / English | Inflation tracking |
 | Cart, checkout, reorder | Autonomous workflows |
 
-### 17 MCP tools
+### 19 MCP tools
 
-`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories` `market_barcode` `market_enrich`
+`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories` `market_barcode` `market_enrich` `market_intel` `market_ticket`
 
 Compatible with **DeepSeek TUI, Claude, Cursor, Windsurf, Continue, and any MCP client.** [Registered on the MCP Registry.](https://registry.modelcontextprotocol.io)
 
@@ -114,7 +115,7 @@ Every retailer below has been verified. The VTEX API responds. No dead URLs.
 | **Whirlpool** | AR, IT, FR | Electronics | ARS, EUR |
 | **Sam's Club, Mambo** | BR | Supermarkets | BRL |
 
-**8 countries. 27 retailers. 4 lines.** All verified. Growing.
+**8 countries. 30 retailers. 6 lines.** All verified. Growing.
 
 ---
 
@@ -124,7 +125,7 @@ Every retailer below has been verified. The VTEX API responds. No dead URLs.
 python market_mcp.py
 ```
 
-17 tools ready for your AI agent.
+19 tools ready for your AI agent.
 
 ---
 
@@ -159,7 +160,7 @@ AI Agent
    │
 CLI Market API
    │
-27 verified VTEX retailers
+30 verified VTEX retailers
    │
 Data moat — prices every 4h, deduplicated, historical
 ```
@@ -168,7 +169,7 @@ Data moat — prices every 4h, deduplicated, historical
 
 ## Data Moat
 
-Price collector runs every 4 hours. Thousands of verified prices per day.
+Price collector runs every 8 hours with 228 seed queries expanded to ~900 via line-specific modifiers and a feedback loop from the data moat itself. Thousands of verified prices across 30 retailers.
 
 ```bash
 python collect_prices.py              # run once
@@ -176,6 +177,8 @@ python collect_prices.py --daemon     # continuous
 python collect_prices.py --status     # stats
 python collect_prices.py --report     # latest prices
 ```
+
+**Live dashboard:** [cli-market-api.onrender.com/dashboard](https://cli-market-api.onrender.com/dashboard) — KPIs, price trends by line and country, top products.
 
 PostgreSQL in production. SQLite for local dev. Circuit breaker. Parallel.
 
