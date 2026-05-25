@@ -96,10 +96,6 @@ export default function Hero() {
             <h1 className="hero-h1 text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white">
               <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">60</span> {_t("hero_h1a")}</span>
               <span className="block">{_t("hero_h1b")}</span>
-              <span className="block">{_t("hero_h1c_p")}{" "}
-                <BlurWord word={words[wordIdx]} trigger={wordIdx} />
-                {" "}{_t("hero_h1c_s")}
-              </span>
             </h1>
           </div>
           <div className="hero-sub mb-12">
