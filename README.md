@@ -146,10 +146,11 @@ GET  /v1/intel/competitor?product=leche&store_a=wong&store_b=plazavea
 GET  /categories/{store}
 ```
 
-| Tier | Requests/min | Requests/day |
-|------|-------------|-------------|
-| Free | 10 | 100 |
-| Enterprise | [Contact](mailto:hello@cli-market.dev) | |
+| Tier | Requests/min | Requests/day | API Keys | Checkout | Price |
+|------|-------------|-------------|----------|----------|-------|
+| Free | 60 | 1,000 | 1 (read) | — | $0 |
+| Pro | 300 | 10,000 | 10 (read+write) | ✓ | $49/mo |
+| Enterprise | Custom | Custom | Unlimited | ✓ | [Contact](mailto:hello@cli-market.dev) |
 
 ---
 

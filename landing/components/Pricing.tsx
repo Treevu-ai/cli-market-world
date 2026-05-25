@@ -3,16 +3,16 @@ import { useLang } from "@/lib/LanguageContext";
 
 const tiers = [
   { key:"free", title_es:"Free", title_en:"Free", price:"$0", period_es:"para siempre", period_en:"forever", color:"#3cffd0",
-    f_es:["CLI + 15 MCP tools","100 requests / dia","Busquedas ilimitadas","Carrito + checkout","Acceso API cloud"],
-    f_en:["CLI + 15 MCP tools","100 requests / day","Unlimited searches","Cart + checkout","Cloud API access"],
+    f_es:["30 MCP tools","60 req/min · 1,000 req/día","1 API key (read)","Dashboard en tiempo real","Health checks"],
+    f_en:["30 MCP tools","60 req/min · 1,000 req/day","1 API key (read)","Live dashboard","Health checks"],
     cta_es:"Empezar gratis", cta_en:"Start free", href:"https://github.com/Treevu-ai/cli-market-world" },
-  { key:"pro", title_es:"Pro", title_en:"Pro", price:"$29", period_es:"/ mes", period_en:"/ month", color:"#FFD600",
-    f_es:["Todo lo de Free","1,000 requests / dia","Data moat: historico de precios","Export CSV / JSON","Inflation tracker (API)","Soporte email prioritario"],
-    f_en:["Everything in Free","1,000 requests / day","Data moat: price history","CSV / JSON export","Inflation tracker (API)","Priority email support"],
-    cta_es:"Suscribirse", cta_en:"Subscribe", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro&body=Hola%2C%20quiero%20activar%20el%20plan%20Pro%20(USD%2029%2Fmes)." },
+  { key:"pro", title_es:"Pro", title_en:"Pro", price:"$49", period_es:"/ mes", period_en:"/ month", color:"#FFD600",
+    f_es:["Todo lo de Free","300 req/min · 10,000 req/día","10 API keys (read + write)","Checkout habilitado","Data moat export (JSON/CSV)","Soporte prioritario"],
+    f_en:["Everything in Free","300 req/min · 10,000 req/day","10 API keys (read + write)","Checkout enabled","Data moat export (JSON/CSV)","Priority support"],
+    cta_es:"Suscribirse", cta_en:"Subscribe", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro&body=Hola%2C%20quiero%20activar%20el%20plan%20Pro%20(USD%2049%2Fmes)." },
   { key:"enterprise", title_es:"Enterprise", title_en:"Enterprise", price_es:"Contactanos", price_en:"Contact us", period_es:"a medida", period_en:"custom", color:"#FF6B35",
-    f_es:["Todo lo de Pro","Rate limits custom","SLA 99.5%","Endpoints dedicados","Data feed tiempo real","White-label","Integracion custom"],
-    f_en:["Everything in Pro","Custom rate limits","SLA 99.5%","Dedicated endpoints","Real-time data feed","White-label","Custom integration"],
+    f_es:["Todo lo de Pro","Rate limits custom","API keys ilimitadas","Endpoints dedicados","Webhooks","SLA 99.5%"],
+    f_en:["Everything in Pro","Custom rate limits","Unlimited API keys","Dedicated endpoints","Webhooks","SLA 99.5%"],
     cta_es:"Contactar", cta_en:"Contact", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Enterprise&body=Hola%2C%20me%20interesa%20el%20plan%20Enterprise.%20Mi%20caso%20de%20uso%20es%3A" },
 ];
 
@@ -27,7 +27,7 @@ export default function Pricing() {
           {lang === "es" ? "Tres planes. Para cada etapa." : "Three plans. For every stage."}
         </h2>
         <p className="font-mono text-[12px] sm:text-[13px] md:text-[15px] text-[#666] tracking-[0.5px] leading-[1.6] max-w-[500px]">
-          {lang === "es" ? "15 MCP tools. 27 retailers verificados. Data moat real. Elige el plan que se ajusta a lo que estas construyendo." : "15 MCP tools. 27 verified retailers. Real data moat. Pick the plan that fits what you are building."}
+          {lang === "es" ? "30 MCP tools. 30 retailers verificados. Data moat real con 4,400+ precios. Elegí el plan que se ajusta a lo que estás construyendo." : "30 MCP tools. 30 verified retailers. Real data moat with 4,400+ prices. Pick the plan that fits what you are building."}
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export default function Pricing() {
       </div>
 
       <p className="font-mono text-[10px] text-[#444] tracking-[2px] text-center mt-4">
-        {lang==="es" ? "OPEN SOURCE · MIT · 15 MCP TOOLS · 27 RETAILERS · 8 PAISES" : "OPEN SOURCE · MIT · 15 MCP TOOLS · 27 RETAILERS · 8 COUNTRIES"}
+        {lang==="es" ? "OPEN SOURCE · MIT · 30 MCP TOOLS · 30 RETAILERS · 8 PAÍSES" : "OPEN SOURCE · MIT · 30 MCP TOOLS · 30 RETAILERS · 8 COUNTRIES"}
       </p>
     </section>
   );
