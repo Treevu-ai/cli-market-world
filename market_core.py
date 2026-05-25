@@ -194,54 +194,23 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
     except httpx.ConnectError:
         return {"error": "Server not running. Start: python market_server.py"}
 
-# ── VTEX helpers ──────────────────────────────────────────────────────────────
-
-def parse_price(price: Any) -> float:
-    try:
-        return float(price or 0)
-    except (ValueError, TypeError):
-        return 0.0
-
-def clean_name(name: str) -> str:
-    return name.replace("-", " ")
+# ── Multi-platform store access ────────────────────────────────────────────
 
 async def fetch_store(store: str, term: str, page: int = 1, limit: int = PAGE_SIZE) -> list[dict]:
-    """Search a VTEX store's public catalog API."""
-    base = STORES[store]["base"]
-    url = f"{base}/api/catalog_system/pub/products/search/{term}"
-    _from = (page - 1) * PAGE_SIZE
-    _to = min(_from + limit - 1, _from + PAGE_SIZE - 1)
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)})
-        resp.raise_for_status()
-        return resp.json()
+    """Search a store's catalog API. Platform-agnostic."""
+    store_config = STORES[store]
+    platform = store_config.get("platform", "vtex")
+    from market_connectors import get_connector
+    connector = get_connector(platform)
+    return await connector.search(store_config, term, page, limit)
 
 def product_from_json(p: dict, store: str) -> dict:
-    """Normalize a VTEX product JSON into a flat dict."""
-    items = p.get("items", [])
-    item = items[0] if items else {}
-    sellers = item.get("sellers", [])
-    seller = sellers[0] if sellers else {}
-    offer = seller.get("commertialOffer", {})
-    price = parse_price(offer.get("Price"))
-    list_price = parse_price(offer.get("ListPrice"))
-    discount = round((1 - price / list_price) * 100) if list_price > price > 0 else None
-
-    return {
-        "id": p.get("productReference", p.get("productId", "")),
-        "product_id": p.get("productReference", p.get("productId", "")),  # alias
-        "name": clean_name(p.get("productName", "")),
-        "brand": p.get("brand") or "—",
-        "category": p.get("categoryId", ""),
-        "price": price,
-        "list_price": list_price,
-        "discount": discount,
-        "stock": offer.get("AvailableQuantity", 0),
-        "store": store,
-        "store_name": STORES[store]["name"],
-        "currency": STORES[store]["currency"],
-        "url": f"{STORES[store]['base']}/{p.get('linkText', '')}/p",
-    }
+    """Normalize a product JSON into a flat dict. Platform-agnostic."""
+    store_config = STORES[store]
+    platform = store_config.get("platform", "vtex")
+    from market_connectors import get_connector
+    connector = get_connector(platform)
+    return connector.normalize(p, store, store_config)
 
 # ── Last-search cache (for CLI auto-fill via table #) ─────────────────────────
 

@@ -124,6 +124,10 @@ SEED_QUERIES = [
     ("calça","moda"),("sapato","moda"),("bermuda","moda"),
     ("blusa feminina","moda"),("jaqueta","moda"),("saia","moda"),
     ("camisa social","moda"),("tenis esportivo","moda"),("chinelo","moda"),
+    # Shopify
+    ("leggings","moda"),("sneakers","moda"),("hoodie","moda"),
+    ("running","moda"),("wool","moda"),("lipstick","moda"),
+    ("eyeshadow","moda"),("shorts","moda"),("sports bra","moda"),
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 🔨 Hogar (2 tiendas: Easy AR, Promart PE)
