@@ -1,15 +1,15 @@
 """market_connectors — Multi-platform e-commerce connectors."""
 from .vtex import VtexConnector
 from .shopify import ShopifyConnector
+from .magento import MagentoConnector
 
-# Registry: platform name → connector instance (singletons)
-_CONNECTORS: dict[str, VtexConnector | ShopifyConnector] = {
+_CONNECTORS = {
     "vtex": VtexConnector(),
     "shopify": ShopifyConnector(),
+    "magento": MagentoConnector(),
 }
 
 def get_connector(platform: str):
-    """Return the connector instance for a given platform."""
     conn = _CONNECTORS.get(platform)
     if not conn:
         raise ValueError(f"Unknown platform: {platform}. Known: {list(_CONNECTORS)}")

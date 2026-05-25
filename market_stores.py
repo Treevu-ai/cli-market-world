@@ -55,5 +55,26 @@ STORES = {
     "gymshark": {"name":"Gymshark","base":"https://www.gymshark.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
     "allbirds": {"name":"Allbirds","base":"https://www.allbirds.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
     "colourpop": {"name":"ColourPop","base":"https://colourpop.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "adidas": {"name":"Adidas","base":"https://www.adidas.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "alo_yoga": {"name":"Alo Yoga","base":"https://www.aloyoga.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "glossier": {"name":"Glossier","base":"https://www.glossier.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "fenty": {"name":"Fenty Beauty","base":"https://fentybeauty.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "kylie": {"name":"Kylie Cosmetics","base":"https://kyliecosmetics.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify"},
+    "brooklinen": {"name":"Brooklinen","base":"https://www.brooklinen.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"hogar","platform":"shopify"},
+    "parachute": {"name":"Parachute","base":"https://www.parachutehome.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"hogar","platform":"shopify"},
+    "casper": {"name":"Casper","base":"https://casper.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"hogar","platform":"shopify"},
+    "nomad": {"name":"Nomad","base":"https://nomadgoods.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"electro","platform":"shopify"},
+    "magicmind": {"name":"Magic Mind","base":"https://www.magicmind.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"supermercados","platform":"shopify"},
+    "on_running": {"name":"On Running","base":"https://www.on.com","country":"CH","currency":"CHF","emoji":"🇨🇭","line":"moda","platform":"shopify"},
+    "privalia_br": {"name":"Privalia BR","base":"https://www.privalia.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"shopify"},
+
+    # ── MAGENTO ──
+    "falabella_pe": {"name":"Falabella PE","base":"https://www.falabella.com.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"magento"},
+    "falabella_cl": {"name":"Falabella CL","base":"https://www.falabella.com","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
+    "falabella_co": {"name":"Falabella CO","base":"https://www.falabella.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"departamentales","platform":"magento"},
+    "paris_cl": {"name":"Paris CL","base":"https://www.paris.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
+    "ripley_cl": {"name":"Ripley CL","base":"https://www.ripley.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
+    "liverpool_mx": {"name":"Liverpool MX","base":"https://www.liverpool.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento"},
+    "elpalacio_mx": {"name":"El Palacio MX","base":"https://www.elpalaciodehierro.com","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento"},
 }
 
