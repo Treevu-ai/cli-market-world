@@ -14,5 +14,5 @@ ENV MARKET_DATA_DIR=/data
 
 EXPOSE 8765
 
-# exec form — signals (SIGTERM) reach uvicorn directly
-CMD ["python", "-m", "uvicorn", "market_server:app", "--host", "0.0.0.0", "--port", "8765"]
+# shell form so $PORT is expanded at runtime
+CMD python -m uvicorn market_server:app --host 0.0.0.0 --port $PORT
