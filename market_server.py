@@ -706,11 +706,15 @@ async def checkout_wise(authorization: str | None = Header(None)):
     db_clear_cart(username)
     from market_connectors.wise_payments import create_quote, WISE_API_TOKEN
     wise_ok = bool(WISE_API_TOKEN)
+    wise_pay_me = os.getenv("WISE_PAY_ME_URL", "https://wise.com/pay/me/ricardoantonioc68")
     return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"wise","status":"pending",
             "wise_available":wise_ok,
-            "instructions":{"email":os.getenv("WISE_BUSINESS_EMAIL","hello@cli-market.dev"),
-                            "reference":f"CLI-Market-{order_id}"} if wise_ok else None,
-            "message":"Complete el pago via Wise" if wise_ok else "Wise no configurado"}
+            "wise_pay_link": wise_pay_me,
+            "wise_qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={wise_pay_me}",
+            "instructions":{"pay_link": wise_pay_me,
+                            "reference":f"CLI-Market-{order_id}",
+                            "amount_usd": round(total * 0.27, 2)} if wise_ok else None,
+            "message":"Escanea el QR o usa el link de Wise para pagar"}
 
 
 @app.get("/checkout/rates")
