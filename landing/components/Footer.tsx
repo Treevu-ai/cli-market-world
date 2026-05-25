@@ -3,8 +3,8 @@ import { useLang } from "@/lib/LanguageContext";
 
 const productosES = ["Market Search", "Market Compare", "Market Checkout", "Market Ask", "Dashboard"];
 const productosEN = ["Market Search", "Market Compare", "Market Checkout", "Market Ask", "Dashboard"];
-const coberturaES = ["38 retailers", "9 países", "6 líneas", "36 MCP tools", "API keys + scopes"];
-const coberturaEN = ["38 retailers", "9 countries", "6 lines", "36 MCP tools", "API keys + scopes"];
+const coberturaES = ["60 retailers", "11 países", "6 líneas", "36 MCP tools", "API keys + scopes"];
+const coberturaEN = ["60 retailers", "11 countries", "6 lines", "36 MCP tools", "API keys + scopes"];
 const recursos = [
   { label: "GitHub", href: "https://github.com/Treevu-ai/cli-market-world" },
   { label: "Docs", href: "https://cli-market-api.onrender.com/docs" },
@@ -25,8 +25,8 @@ export default function Footer() {
           <span className="font-grotesk text-[16px] font-bold text-white tracking-tight">CLI Market</span>
           <p className="font-mono text-[10px] text-[#666] leading-[1.6] max-w-[240px]">
             {lang === "es"
-              ? "Infraestructura de comercio para agentes de IA. 38 retailers VTEX en 9 países. Una sola API."
-              : "Commerce infrastructure for AI agents. 30 VTEX retailers in 9 countries. One API."}
+              ? "Infraestructura de comercio para agentes de IA. 60 retailers VTEX en 11 países. Una sola API."
+              : "Commerce infrastructure for AI agents. 30 VTEX retailers in 11 countries. One API."}
           </p>
           <div className="flex gap-2">
             {[

@@ -7,7 +7,7 @@ import { useLang } from "@/lib/LanguageContext";
 gsap.registerPlugin(ScrollTrigger);
 
 const labels = ["stats_retailers", "stats_countries", "stats_lines", "stats_tools"];
-const ends = [38, 9, 6, 36];
+const ends = [60, 11, 6, 36];
 const suffixes = ["+", "", "", ""];
 
 function Counter({ end, suffix, label, delay }: { end: number; suffix: string; label: string; delay: number }) {

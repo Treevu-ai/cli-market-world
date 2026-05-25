@@ -38,7 +38,7 @@ TOOLS = [
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en 30 retailers VTEX verificados (8 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en 60 retailers VTEX verificados (11 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -197,12 +197,12 @@ TOOLS = [
     },
     {
         "name": "market_stores",
-        "description": "Listar todos los 30 retailers VTEX verificados con país, moneda, línea de negocio y emoji. Usar para descubrir qué tiendas están disponibles.",
+        "description": "Listar todos los 60 retailers VTEX verificados con país, moneda, línea de negocio y emoji. Usar para descubrir qué tiendas están disponibles.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "market_countries",
-        "description": "Listar los 8 países disponibles con sus retailers y conteo de tiendas por país.",
+        "description": "Listar los 11 países disponibles con sus retailers y conteo de tiendas por país.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     # ── New tools (20–30) ────────────────────────────────────────────────────

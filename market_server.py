@@ -1134,7 +1134,7 @@ td.price{color:#3cffd0;text-align:right}
 </head>
 <body>
 <h1>CLI Market <span>Data Moat</span></h1>
-<p class="subtitle">Precios recolectados de 30 retailers VTEX en 8 países · 6 líneas</p>
+<p class="subtitle">Precios recolectados de 60 retailers VTEX en 11 países · 6 líneas</p>
 <div class="kpi-row" id="kpis"></div>
 <div id="alerts"></div>
 <div class="grid">
