@@ -81,7 +81,7 @@ def check_auth_brute_force(username: str) -> None:
 
 # ── Auth (SQLite-backed) ───────────────────────────────────────────────────
 
-DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "oHC9ec3dPB5WEI1q1VPZJeQuv_yS9uTk1B38hl0HZ38")
+DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "")
 
 def auth_user(token: str) -> str:
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
@@ -97,7 +97,7 @@ def auth_user(token: str) -> str:
 app = FastAPI(
     title="CLI Market API",
     description="AI-native commerce infrastructure — 100 retailers across 12 verticals in 10 countries. MCP-native. Agent-ready.",
-    version="1.0.0",
+    version="1.0.25",
 )
 
 app.add_middleware(
@@ -105,7 +105,7 @@ app.add_middleware(
     allow_origins=os.getenv("CORS_ORIGINS", "https://cli-market.dev,http://localhost:3000").split(","),
     allow_credentials=True,
     allow_methods=["GET","POST","PUT","DELETE"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -154,6 +154,10 @@ class BasketRequest(BaseModel):
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
 
 @app.get("/")
 def root(request: Request):
