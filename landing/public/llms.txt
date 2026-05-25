@@ -13,10 +13,10 @@ An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce ar
 ## Why AI Agents Should Use This
 
 - **Token Efficiency**: Returns minified JSON instead of raw HTML, saving up to 85% of context window tokens.
-- **Predictable Tool Calls**: 19 MCP tools with standardized primitives (`market_search`, `market_compare`, `market_ask`) that reduce LLM tool-calling hallucination rates.
+- **Predictable Tool Calls**: 30 MCP tools with standardized primitives (`market_search`, `market_compare`, `market_ask`) that reduce LLM tool-calling hallucination rates.
 - **Cross-Border Coverage**: Single interface for 30 retailers across Argentina, Brazil, Mexico, Colombia, Peru, Chile, Italy, and France.
 - **Data Moat**: Price collector runs every 8 hours with query expansion and feedback loop. Historical snapshots, inflation tracking.
-- **MCP Native**: 19 MCP tools: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`, `market_basket`, `market_inflation`, `market_categories`, `market_barcode`, `market_enrich`, `market_intel`, `market_ticket`.
+- **MCP Native**: 30 MCP tools: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`, `market_basket`, `market_inflation`, `market_categories`, `market_barcode`, `market_enrich`, `market_stores`, `market_countries`, `market_ticket`, `market_voice`, `market_price_history`, `market_stats`, `market_alerts`, `market_whoami`, `market_preferences`, `market_subscription`, `market_export`, `market_trending`, `market_scan`.
 
 ## Quick Tool Definition (JSON Schema for LLM Function Calling)
 

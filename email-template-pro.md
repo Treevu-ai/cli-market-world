@@ -8,7 +8,7 @@ Gracias por tu interes en CLI Market Pro.
 - CLI open source
 - 60 req/min, 1,000 req/dia
 - 1 API key (scope: read)
-- 19 MCP tools
+- 30 MCP tools
 - Dashboard en tiempo real
 
 ### Pro ($49/mes)
