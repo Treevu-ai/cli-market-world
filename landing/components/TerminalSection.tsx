@@ -2,94 +2,146 @@
 import { useState, useEffect, useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
-const osData = [
-  { label: "Linux / macOS", prompt: "$", install: "pip install git+https://github.com/Treevu-ai/cli-market-world.git", server: "market-server &" },
-  { label: "PowerShell", prompt: ">", install: "pip install git+https://github.com/Treevu-ai/cli-market-world.git", server: 'Start-Process -NoNewWindow python -ArgumentList "-m", "market_server"' },
-  { label: "CMD", prompt: ">", install: "pip install git+https://github.com/Treevu-ai/cli-market-world.git", server: "start python -m market_server" },
+type CmdLine = { text: string; color?: string; delay: number };
+type Cell = { title: string; color: string; lines: CmdLine[]; results?: {text:string;color:string}[] };
+
+const cells: Cell[] = [
+  {
+    title: "Search",
+    color: "#3cffd0",
+    lines: [
+      { text: "market login", delay: 0 },
+      { text: 'market search "leche" --country PE', delay: 800, color: "#FFD600" },
+    ],
+    results: [
+      { text: "1. Leche Gloria 400ml  Wong  S/3.50", color: "#888" },
+      { text: "2. Leche Ideal 395g  Metro  S/3.20", color: "#888" },
+      { text: "3. Leche Laive 1L  PlazaVea  S/3.80", color: "#888" },
+    ],
+  },
+  {
+    title: "Compare",
+    color: "#4ADE80",
+    lines: [
+      { text: 'market compare "aceite"', delay: 1200 },
+      { text: "", delay: 400 },
+    ],
+    results: [
+      { text: "Aceite Primor 1L → S/8.90 Wong  🇵🇪", color: "#888" },
+      { text: "Aceite Natura 900ml → ARS 1250 Carrefour  🇦🇷", color: "#888" },
+      { text: "Aceite Liza 900ml → R$6.50 Carrefour BR  🇧🇷", color: "#888" },
+      { text: "→ Mejor precio: Wong 🇵🇪", color: "#4ADE80" },
+    ],
+  },
+  {
+    title: "Cart & Checkout",
+    color: "#FF6B35",
+    lines: [
+      { text: "market add 1 --qty 2", delay: 600 },
+      { text: "market cart", delay: 600 },
+      { text: "market checkout --payment yape", delay: 600 },
+    ],
+    results: [
+      { text: "✓ Agregado: 2x Leche Gloria 400ml", color: "#888" },
+      { text: "Total: S/7.00", color: "#888" },
+      { text: "✓ Pedido ORD-005 confirmado", color: "#28C840" },
+    ],
+  },
+  {
+    title: "Agent mode",
+    color: "#A78BFA",
+    lines: [
+      { text: 'market ask "compra arroz al mejor precio"', delay: 1000, color: "#A78BFA" },
+      { text: "", delay: 300 },
+    ],
+    results: [
+      { text: "→ Buscando arroz en 30 retailers...", color: "#888" },
+      { text: "→ Comparando precios en 8 países...", color: "#888" },
+      { text: "→ Mejor: Arroz Costeño 1kg Metro S/4.20", color: "#A78BFA" },
+      { text: "✓ Agregado al carrito", color: "#28C840" },
+    ],
+  },
 ];
 
-const stepDefs = [
-  { cmd: "market login", color: "#3cffd0", outKey: "terminal_step_login" },
-  { cmd: 'market search "leche" --country PE', color: "#FF6B35", isMulti: true, results: [{text:"1. Leche Gloria 400ml  Wong  S/3.50",color:"#CCC"}]},
-  { cmd: 'market compare "aceite"', color: "#4ADE80", isMulti: true, results: [{text:"Aceite Primor 1L → S/8.90 Wong 🇵🇪",color:"#888"},{text:"Aceite Natura 900ml → ARS 1,250 Carrefour 🇦🇷",color:"#888"},{text:"Aceite Liza 900ml → R$6.50 Carrefour BR 🇧🇷",color:"#888"}]},
-  { cmd: "market add 1 --qty 2", color: "#F5F5F0", outKey: "terminal_step_add" },
-  { cmd: "market checkout --payment yape", color: "#F5F5F0", outKey: "terminal_step_checkout" },
-];
+function MiniTerminal({ cell, active }: { cell: Cell; active: boolean }) {
+  const [visibleLines, setVisibleLines] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    if (!active) { setVisibleLines(0); setShowResults(false); return; }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    cell.lines.forEach((l, i) => {
+      timers.push(setTimeout(() => setVisibleLines(i + 1), l.delay));
+    });
+    const lastDelay = cell.lines.reduce((s, l) => s + l.delay + 400, 0);
+    timers.push(setTimeout(() => setShowResults(true), lastDelay));
+    timerRef.current = timers;
+    return () => timers.forEach(clearTimeout);
+  }, [active]);
+
+  const prompt = "$";
+
+  return (
+    <div className="bg-[#0c0c0c] border border-[#2d2d2d] overflow-hidden w-full">
+      <div className="flex items-center gap-1.5 px-3 py-2 bg-[#1a1a1a] border-b border-[#2d2d2d]">
+        <div className="w-[8px] h-[8px] rounded-full bg-[#FF5F57]"/>
+        <div className="w-[8px] h-[8px] rounded-full bg-[#FEBC2E]"/>
+        <div className="w-[8px] h-[8px] rounded-full bg-[#28C840]"/>
+        <span className="ml-2 text-[9px] font-mono text-[#555] tracking-wider">{cell.title}</span>
+        <span className="ml-auto w-[6px] h-[6px] rounded-full" style={{background: active ? cell.color : "#333", boxShadow: active ? `0 0 6px ${cell.color}40` : "none", transition: "all 0.5s ease"}}/>
+      </div>
+      <div className="p-3 sm:p-4 font-mono text-[9px] sm:text-[10px] leading-[1.8] min-h-[180px] text-[#666]">
+        {cell.lines.slice(0, visibleLines).map((l, i) => (
+          <div key={i} style={{ color: l.color || "#ccc" }}>
+            {l.text ? <><span style={{ color: "#3cffd0" }}>{prompt} </span>{l.text}</> : <>&nbsp;</>}
+          </div>
+        ))}
+        {showResults && cell.results?.map((r, i) => (
+          <div key={`r${i}`} style={{ color: r.color, animation: "fadeIn 0.5s ease forwards", opacity: 0, animationDelay: `${i * 0.15}s` }}>
+            {r.text}
+          </div>
+        ))}
+        {!showResults && visibleLines > 0 && (
+          <span className="inline-block w-[6px] h-[11px] bg-[#3cffd0] animate-pulse align-middle mt-0.5"/>
+        )}
+        {showResults && (
+          <div className="mt-1"><span className="text-[#3cffd0]">{prompt} </span><span className="inline-block w-[6px] h-[11px] bg-[#3cffd0] animate-pulse align-middle"/></div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function TerminalSection() {
   const { t } = useLang();
-  const [osIdx, setOsIdx] = useState(0);
   const [visible, setVisible] = useState(false);
-  const [stepIdx, setStepIdx] = useState(0);
-  const [typed, setTyped] = useState("");
-  const [showOut, setShowOut] = useState(false);
-  const [done, setDone] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, {threshold:0.3});
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, {threshold:0.2});
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => { setStepIdx(0); setTyped(""); setShowOut(false); setDone(false); }, [osIdx]);
-
-  useEffect(() => {
-    if (!visible || done) return;
-    const s = stepDefs[stepIdx];
-    if (!s) { setDone(true); return; }
-    setTyped(""); setShowOut(false);
-    let i = 0; const sp = 15 + Math.random() * 20;
-    const iv = setInterval(() => {
-      i++; setTyped(s.cmd.slice(0, i));
-      if (i >= s.cmd.length) { clearInterval(iv); setTimeout(() => setShowOut(true), 300); setTimeout(() => setStepIdx(p => p + 1), s.isMulti ? 1800 : 1200); }
-    }, sp);
-    return () => clearInterval(iv);
-  }, [visible, stepIdx, done, osIdx]);
-
-  const s = stepDefs[stepIdx];
-  const os = osData[osIdx];
-
   return (
-    <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-[#131313] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-[#090909] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{t("terminal_label")}</span>
-        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">{t("terminal_subtitle")}</h2>
+        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">{t("terminal_title")}</h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">{t("terminal_desc")}</p>
-        <div className="flex gap-1 mt-1">
-          {osData.map((o, i) => (
-            <button key={i} onClick={() => setOsIdx(i)} className="px-3 py-1.5 text-[10px] font-mono border transition-colors cursor-pointer" style={{color: i===osIdx ? "#3cffd0" : "#555", borderColor: i===osIdx ? "#3cffd0" : "#2d2d2d", background: i===osIdx ? "rgba(0,255,136,0.05)" : "transparent" }}>{o.label}</button>
-          ))}
-        </div>
       </div>
-      <div className="w-full max-w-[800px] bg-[#131313] border border-[#2d2d2d] overflow-x-auto font-mono text-[10px] sm:text-[11px] md:text-[12px] leading-[1.7]">
-        <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border-b border-[#2d2d2d]">
-          <div className="w-[10px] h-[10px] rounded-full bg-[#FF5F57]"/><div className="w-[10px] h-[10px] rounded-full bg-[#FEBC2E]"/><div className="w-[10px] h-[10px] rounded-full bg-[#28C840]"/>
-          <span className="ml-3 text-[10px] text-[#555]">{t("terminal_cli_label")}</span>
-        </div>
-        <div className="p-4 sm:p-6 min-h-[380px] text-[#888]">
-          <div className="mb-3">
-            <span style={{color:os.prompt === "$" ? "#3cffd0" : "#FF6B35"}}>{os.prompt} </span>
-            {stepDefs.map((sd, i) => (
-              <span key={i}>
-                {stepIdx > i && <span className="text-[#666]">{sd.cmd}<br/>{os.prompt} </span>}
-              </span>
-            ))}
-            {!done && <span style={{color: s?.color}}>{typed}{!showOut && <span className="inline-block w-[7px] h-[13px] bg-[#CCC] animate-pulse align-middle"/>}</span>}
-            {done && <span className="text-[#555]">█</span>}
-          </div>
-          {stepDefs.slice(0, stepIdx).map((sd, i) => (
-            <div key={i} className="mb-3">
-              {sd.results && sd.results.map((r, j) => <div key={j} className="text-[#888]">{r.text}</div>)}
-              {sd.outKey && <div className="text-[#444]">{t(sd.outKey)}</div>}
-            </div>
-          ))}
-          {showOut && s?.results && s.results.map((r, j) => <div key={j} className="text-[#888]">{r.text}</div>)}
-          {showOut && s?.outKey && <div className="text-[#444]">{t(s.outKey)}</div>}
-          {done && <div><span className="text-[#555]">{os.prompt}</span> <span className="inline-block w-[7px] h-[13px] bg-[#3cffd0] animate-pulse align-middle"/></div>}
-        </div>
+
+      <div className="w-full max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        {cells.map((cell, i) => (
+          <MiniTerminal key={i} cell={cell} active={visible} />
+        ))}
       </div>
-      <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">{t("terminal_footer")}</p>
+
+      <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest max-w-[800px]">{t("terminal_footer")}</p>
     </section>
   );
 }
