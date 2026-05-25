@@ -1,82 +1,48 @@
 "use client";
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 
-gsap.registerPlugin(ScrollTrigger);
+const stats = [
+  { end: 60, label: "retailers" },
+  { end: 11, label: "países" },
+  { end: 6, label: "líneas" },
+  { end: 36, label: "MCP tools" },
+];
 
-const labels = ["stats_retailers", "stats_countries", "stats_lines", "stats_tools"];
-const ends = [60, 11, 6, 36];
-const suffixes = ["+", "", "", ""];
-
-function Counter({ end, suffix, label, delay }: { end: number; suffix: string; label: string; delay: number }) {
-  const valRef = useRef<HTMLSpanElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+function Counter({ end, label, delay }: { end: number; label: string; delay: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const spring = useSpring(0, { stiffness: 60, damping: 20, duration: 2000 });
+  const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(containerRef.current,
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1, y: 0, duration: 0.8, delay: delay / 1000,
-          scrollTrigger: { trigger: containerRef.current, start: "top 85%", toggleActions: "play none none none" },
-        }
-      );
-      gsap.fromTo(valRef.current,
-        { textContent: 0 },
-        {
-          textContent: end, duration: 2.5, delay: (delay + 200) / 1000,
-          ease: "power2.out", snap: { textContent: 1 },
-          scrollTrigger: { trigger: containerRef.current, start: "top 85%", toggleActions: "play none none none" },
-        }
-      );
-    }, containerRef);
-    return () => ctx.revert();
-  }, [end, delay]);
+    if (inView) {
+      const timer = setTimeout(() => spring.set(end), delay);
+      return () => clearTimeout(timer);
+    }
+  }, [inView, end, delay, spring]);
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-2">
-      <span className="text-4xl lg:text-5xl font-grotesk font-bold text-white tabular-nums">
-        <span ref={valRef}>0</span>{suffix}
-      </span>
-      <span className="text-xs font-mono text-white/30 uppercase tracking-wider leading-tight">{label}</span>
+    <div className="flex flex-col items-center gap-1">
+      <motion.span ref={ref} className="text-[28px] font-medium text-black tracking-tight tabular-nums">{display}</motion.span>
+      <span className="text-xs text-[#a3a3a3] font-mono uppercase tracking-widest">{label}</span>
     </div>
   );
 }
 
 export default function StatsSection() {
   const { t: _t } = useLang();
-  const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const items = gridRef.current?.querySelectorAll(".region-item");
-      if (items) {
-        gsap.fromTo(items, { opacity: 0, y: 8 }, {
-          opacity: 1, y: 0, duration: 0.5, stagger: 0.08,
-          scrollTrigger: { trigger: gridRef.current, start: "top 90%", toggleActions: "play none none none" },
-        });
-      }
-    }, gridRef);
-    return () => ctx.revert();
-  }, []);
 
   return (
-    <section id="stats" className="relative flex flex-col w-full py-24 px-6 lg:px-12 md:py-[120px] gap-10" style={{ background: "linear-gradient(135deg, #131313 0%, #0d0d20 50%, #131313 100%)" }}>
-      <div className="absolute inset-0 opacity-[0.03] parallax-glow" style={{ backgroundImage: "radial-gradient(circle at 70% 30%, #3cffd0 0%, transparent 60%)" }} />
-      <div className="relative z-10 flex flex-col gap-3 max-w-[600px]">
-        <span className="inline-flex items-center gap-3 text-sm font-mono text-[#3cffd0]/60"><span className="w-8 h-px bg-[#3cffd0]/40" />{_t("stats_label")}</span>
-        <h2 className="text-[clamp(2rem,5vw,5rem)] font-grotesk font-bold text-white leading-[0.92] whitespace-pre-line">{_t("stats_title")}</h2>
-        <p className="text-white/40 font-mono text-sm leading-relaxed">{_t("stats_sub")}</p>
-      </div>
-      <div className="relative z-10 flex flex-wrap gap-8 sm:gap-12 lg:gap-20 max-w-[900px]">
-        {labels.map((lk, i) => <Counter key={i} end={ends[i]} suffix={suffixes[i]} label={_t(lk)} delay={i * 150} />)}
-      </div>
-      <div ref={gridRef} className="relative z-10 max-w-[900px] grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {["LATAM", "Europa", "Norteamérica", "Asia-Pacífico"].map((r, i) => (
-          <div key={r} className="region-item bg-white/[0.02] border border-white/[0.04] px-4 py-3 text-center font-mono text-[10px] text-white/30 uppercase tracking-widest hover:bg-white/[0.04] transition-colors">{r}</div>
-        ))}
+    <section id="stats" className="relative bg-white py-20 border-t border-[#e5e5e5]">
+      <div className="max-w-[720px] mx-auto px-6 text-center">
+        <p className="text-xs text-[#a3a3a3] font-mono uppercase tracking-[0.15em] mb-8">{_t("stats_label")}</p>
+        <h2 className="text-[24px] font-medium text-black mb-3 tracking-tight">{_t("stats_title")}</h2>
+        <p className="text-sm text-[#737373] max-w-md mx-auto mb-12">{_t("stats_sub")}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+          {stats.map((s, i) => (<Counter key={s.label} end={s.end} label={s.label} delay={i * 150} />))}
+        </div>
       </div>
     </section>
   );
