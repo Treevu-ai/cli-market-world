@@ -1,35 +1,38 @@
-# CLI Market - Unified E-Commerce Infrastructure for AI Agents
+# CLI Market — Unified E-Commerce Infrastructure for AI Agents
 
 > URL: https://cli-market.dev
 > GitHub: https://github.com/Treevu-ai/cli-market-world
-> API: https://cli-market-api-production.up.railway.app
-> Docs: https://cli-market-api-production.up.railway.app/docs
+> API: https://cli-market-api.onrender.com
+> Docs: https://cli-market-api.onrender.com/docs
+> Dashboard: https://cli-market-api.onrender.com/dashboard
 
 ## Core Purpose
 
-An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce architectures into clean, structured JSON payloads. Eliminates web scraping and browser automation for autonomous agents. 3,760+ retailers. 67 countries. 12 business lines. 1 API.
+An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce architectures into clean, structured JSON payloads. 30 verified retailers across 8 countries and 6 business lines. One API. Zero scraping.
 
 ## Why AI Agents Should Use This
 
 - **Token Efficiency**: Returns minified JSON instead of raw HTML, saving up to 85% of context window tokens.
-- **Predictable Tool Calls**: Features standardized primitives (`market ask`, `market compare`) that reduce LLM tool-calling hallucination rates.
-- **Global VTEX Coverage**: Single interface for 3,760+ retailers across 67 countries (Wong, Carrefour, Samsung, Nike, Prada, Louis Vuitton, Lamborghini, and more).
-- **MCP Native**: 12 MCP tools ready to use: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`.
+- **Predictable Tool Calls**: 19 MCP tools with standardized primitives (`market_search`, `market_compare`, `market_ask`) that reduce LLM tool-calling hallucination rates.
+- **Cross-Border Coverage**: Single interface for 30 retailers across Argentina, Brazil, Mexico, Colombia, Peru, Chile, Italy, and France.
+- **Data Moat**: Price collector runs every 8 hours with query expansion and feedback loop. Historical snapshots, inflation tracking.
+- **MCP Native**: 19 MCP tools: `market_login`, `market_lines`, `market_search`, `market_compare`, `market_add`, `market_cart`, `market_cart_update`, `market_cart_remove`, `market_checkout`, `market_orders`, `market_reorder`, `market_ask`, `market_basket`, `market_inflation`, `market_categories`, `market_barcode`, `market_enrich`, `market_intel`, `market_ticket`.
 
 ## Quick Tool Definition (JSON Schema for LLM Function Calling)
 
 ```
 {
-  "name": "market_ask",
-  "description": "Search products across 3,760+ retailers via unified VTEX connector",
+  "name": "market_search",
+  "description": "Search products across 30 retailers via unified VTEX connector",
   "parameters": {
     "type": "object",
     "properties": {
-      "product": {"type": "string", "description": "Product name or semantic query"},
+      "query": {"type": "string", "description": "Product name or semantic query"},
       "country": {"type": "string", "description": "ISO country code (e.g., PE, BR, AR)"},
-      "max_price": {"type": "number"}
+      "store": {"type": "string", "description": "Specific store key (e.g., wong, carrefour_br)"},
+      "line": {"type": "string", "description": "Business line filter"}
     },
-    "required": ["product", "country"]
+    "required": ["query"]
   }
 }
 ```
@@ -37,12 +40,11 @@ An open-source, agent-ready CLI and MCP server that abstracts VTEX e-commerce ar
 ## Installation
 
 ```bash
-pip install git+https://github.com/Treevu-ai/cli-market-world.git
-market-server &
+pip install cli-market
 market login
 market search "leche" --country PE
 ```
 
 ## Pricing
 
-Free tier: 10 req/min, 100 req/day. MIT License. Commercial plans available soon.
+Free tier: 60 req/min, 1,000 req/day. MIT License. Enterprise plans available.

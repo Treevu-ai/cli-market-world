@@ -3,18 +3,18 @@ HILO DE TWITTER — CLI MARKET
 5 tweets. Publicar en orden.
 
 TWEET 1:
-Stripe convirtio los pagos en APIs. Yo converti el comercio en APIs.
+Stripe convirtio los pagos en APIs. Nosotros convertimos el comercio en APIs.
 
-CLI Market: 3,760+ retailers VTEX en 67 paises. Una sola API. 12 herramientas MCP. Open source.
+CLI Market: 30 retailers VTEX en 8 paises. Una sola API. 19 herramientas MCP. Open source.
 
 Los agentes de IA ya pueden buscar, comparar y comprar solos.
 
 TWEET 2:
 El e-commerce esta optimizado para clicks, no para agentes.
 
-VTEX tiene 3,760+ retailers con la misma API publica. Nadie habia construido la capa de agregacion cross-retailer. Ahora existe.
+VTEX tiene cientos de retailers con la misma API publica. Nadie habia construido la capa de agregacion cross-retailer para LATAM. Ahora existe.
 
-Una linea de JSON por retailer. 67 paises. 12 lineas de negocio.
+30 retailers. 8 paises. 6 lineas de negocio. Un conector generico.
 
 TWEET 3:
 Como funciona en la terminal:
@@ -25,24 +25,25 @@ $ market search "leche" --country PE
 $ market compare "aceite"
 Aceite Primor 1L → S/8.90 Wong PE
 Aceite Natura 900ml → ARS 1,250 Carrefour AR
-Aceite Liza 900ml → R$6.50 Carrefour BR
 
 $ market checkout --payment yape
 
 TWEET 4:
-Para agentes de IA: 12 MCP tools listas.
+Para agentes de IA: 19 MCP tools listas.
 
-market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder, market_ask
+market_login, market_lines, market_search, market_compare, market_add, market_cart, market_checkout, market_orders, market_reorder, market_ask, market_basket, market_inflation, market_categories, market_barcode, market_enrich, market_intel, market_ticket
 
-Compatible con Claude, DeepSeek, GPT. JSON parseable. Token-efficient.
+Compatible con DeepSeek, Claude y cualquier MCP client.
 
 TWEET 5:
 Open source. MIT license. Python.
 
-pip install git+https://github.com/Treevu-ai/cli-market-world.git
-market-server &
+pip install cli-market
 market login
 
-https://cli-market.dev
+Dashboard en vivo: cli-market-api.onrender.com/dashboard
+API keys, rate limiting por tier, health checks.
 
 Si estas construyendo agentes de IA o infraestructura para el nuevo internet, el repo es publico.
+https://cli-market.dev
+https://github.com/Treevu-ai/cli-market-world

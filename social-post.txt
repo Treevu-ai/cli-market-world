@@ -1,17 +1,18 @@
 POST — X / LinkedIn — CLI Market
 =========================================
 HEADER:
-CLI Market — 3,760+ retailers. Una sola API.
+CLI Market — 30 retailers. Una sola API.
 
 BODY:
-Construi la capa de infraestructura que convierte 3,760+ comercios VTEX en 67 paises en APIs para agentes de IA.
+Infraestructura de comercio para agentes de IA. 30 retailers VTEX verificados en 8 países y 6 líneas de negocio.
 
 Busca, compara y compra desde la terminal:
 - market search "leche" --country PE
 - market compare "aceite"
 - market checkout --payment yape
 
-12 herramientas MCP listas para Claude, DeepSeek y GPT.
+19 herramientas MCP listas para DeepSeek, Claude y GPT.
+API keys con scopes. Dashboard en tiempo real.
 Open source. MIT license.
 https://cli-market.dev
 https://github.com/Treevu-ai/cli-market-world

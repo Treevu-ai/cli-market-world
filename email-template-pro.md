@@ -1,27 +1,36 @@
-# CLI Market Pro — Datos de pago
+# CLI Market Pro — Acceso Enterprise
 
-Gracias por tu interes en CLI Market Pro (USD 29/mes).
+Gracias por tu interes en CLI Market Pro.
 
-## Transferencia bancaria
+## Planes
 
-**Soles (PEN):**
-- Cuenta: 570-05165126053
-- CCI: 00257010516512605303
+### Free ($0/mes)
+- CLI open source
+- 60 req/min, 1,000 req/dia
+- 1 API key (scope: read)
+- 19 MCP tools
+- Dashboard en tiempo real
 
-**Dolares (USD):**
-- Cuenta: 57010004968182
-- CCI: 00257011000496818205
+### Pro ($49/mes)
+- 300 req/min, 10,000 req/dia
+- 10 API keys (scopes: read + read_write)
+- Checkout habilitado
+- Data moat historico (JSON/CSV)
+- Soporte prioritario (Slack/email)
+- SLA 99.5%
 
-Banco: BCP
+### Enterprise (contactar)
+- Rate limits custom
+- API keys ilimitadas
+- Endpoints dedicados
+- Webhooks
+- Onboarding dedicado
 
 ## Pasos
 
-1. Transfere USD 29 (o equivalente en soles al tipo de cambio del dia)
-2. Responde este correo con el comprobante
-3. Incluye el email con el que usas CLI Market
-4. Activamos tu acceso Pro en menos de 24h
-
-Que incluye Pro: 1,000 req/dia, data moat, export CSV/JSON, inflation tracker API, soporte prioritario.
+1. Responde este correo indicando el plan que te interesa
+2. Incluye el email/usuario con el que usas CLI Market
+3. Te enviamos la factura y activamos en menos de 24h
 
 ---
 CLI Market · cli-market.dev · hello@cli-market.dev
