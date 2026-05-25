@@ -4,12 +4,15 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn market_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: MARKET_API_TOKEN
         sync: false
         value: changeme-set-in-render-dashboard
       - key: MARKET_DATA_DIR
         value: /opt/render/project/src/.market
+      - key: CORS_ORIGINS
+        value: "https://cli-market.dev,https://procure-copilot.vercel.app,http://localhost:3000"
 
   - type: worker
     name: cli-market-collector
@@ -22,3 +25,5 @@ services:
         value: /opt/render/project/src/.market
       - key: COLLECT_INTERVAL_HOURS
         value: "8"
+      - key: COLLECT_PARALLEL
+        value: "50"
