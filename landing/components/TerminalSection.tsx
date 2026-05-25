@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "@/lib/LanguageContext";
+
+gsap.registerPlugin(ScrollTrigger);
 
 type CmdLine = { text: string; color?: string; delay: number };
 type Cell = { title: string; color: string; lines: CmdLine[]; results?: {text:string;color:string}[] };
@@ -117,7 +120,20 @@ function MiniTerminal({ cell, active }: { cell: Cell; active: boolean }) {
 export default function TerminalSection() {
   const { t } = useLang();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const cells = gridRef.current?.querySelectorAll(".term-cell");
+      if (cells) {
+        gsap.fromTo(cells, { opacity: 0, y: 24, scale: 0.97 }, {
+          opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.15,
+          scrollTrigger: { trigger: gridRef.current, start: "top 75%", toggleActions: "play none none none" },
+        });
+      }
+    }, gridRef);
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-[#090909] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
@@ -130,16 +146,11 @@ export default function TerminalSection() {
         <p className="text-white/50 font-mono text-sm leading-relaxed">{t("terminal_desc")}</p>
       </div>
 
-      <div className="w-full max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div ref={gridRef} className="w-full max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {cells.map((cell, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <MiniTerminal cell={cell} active={inView} />
-          </motion.div>
+          <div key={i} className="term-cell">
+            <MiniTerminal cell={cell} active={true} />
+          </div>
         ))}
       </div>
 
