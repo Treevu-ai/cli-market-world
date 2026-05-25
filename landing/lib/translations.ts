@@ -45,7 +45,6 @@ const es: Dict = {
   lines_title: "60 retailers.\n11 países. 6 líneas.",
   lines_stores_badge: "Comercios en 11 países",
   lines_connector_badge: "Conector VTEX genérico",
-  pricing_label: "Precios", pricing_title: "Empieza gratis.\nEscala cuando quieras.",
   pricing_free_title: "Free",
   pricing_free_price: "$0",
   pricing_free_period: "para siempre",
