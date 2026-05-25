@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 
 interface Tool {
@@ -96,33 +97,57 @@ export default function Features() {
                 <span className="text-[10px] font-mono text-[#555] ml-2">({cat.tools.length} tools)</span>
                 <span className="ml-auto text-xs font-mono" style={{ color: isOpen ? cat.color : "#444" }}>{isOpen ? "−" : "+"}</span>
               </button>
-              {isOpen && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 mt-1.5">
-                  {cat.tools.map((t) => {
-                    const isActive = activeTool === t.n;
-                    return (
-                      <div key={t.n}>
-                        <button
-                          onClick={() => setActiveTool(isActive ? null : t.n)}
-                          className="w-full text-left bg-[#0c0c0c] border p-2.5 flex flex-col gap-1 transition-all cursor-pointer"
-                          style={{ borderColor: isActive ? t.c : "#1f1f1f", background: isActive ? `${t.c}08` : "#0c0c0c" }}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full shrink-0" style={{ background: t.c }} />
-                            <span className="text-[9px] font-mono font-bold text-white/70 truncate">{t.n}</span>
-                          </div>
-                          <p className="text-[8px] font-mono text-[#555] leading-relaxed">{lang === "es" ? t.d_es : t.d_en}</p>
-                        </button>
-                        {isActive && (
-                          <div className="bg-[#080808] border border-t-0 px-2.5 py-2.5 font-mono text-[8px] leading-relaxed whitespace-pre-wrap" style={{ borderColor: `${t.c}30` }}>
-                            <span className="text-[#777]">{lang === "es" ? t.demo_es : t.demo_en}</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 mt-1.5">
+                      {cat.tools.map((t, j) => {
+                        const isActive = activeTool === t.n;
+                        return (
+                          <motion.div
+                            key={t.n}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: j * 0.04 }}
+                          >
+                            <button
+                              onClick={() => setActiveTool(isActive ? null : t.n)}
+                              className="w-full text-left bg-[#0c0c0c] border p-2.5 flex flex-col gap-1 transition-all cursor-pointer"
+                              style={{ borderColor: isActive ? t.c : "#1f1f1f", background: isActive ? `${t.c}08` : "#0c0c0c" }}
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-1 h-1 rounded-full shrink-0" style={{ background: t.c }} />
+                                <span className="text-[9px] font-mono font-bold text-white/70 truncate">{t.n}</span>
+                              </div>
+                              <p className="text-[8px] font-mono text-[#555] leading-relaxed">{lang === "es" ? t.d_es : t.d_en}</p>
+                            </button>
+                            <AnimatePresence>
+                              {isActive && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="bg-[#080808] border border-t-0 px-2.5 py-2.5 font-mono text-[8px] leading-relaxed whitespace-pre-wrap overflow-hidden"
+                                  style={{ borderColor: `${t.c}30` }}
+                                >
+                                  <span className="text-[#777]">{lang === "es" ? t.demo_es : t.demo_en}</span>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 
 type CmdLine = { text: string; color?: string; delay: number };
@@ -115,14 +116,8 @@ function MiniTerminal({ cell, active }: { cell: Cell; active: boolean }) {
 
 export default function TerminalSection() {
   const { t } = useLang();
-  const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, {threshold:0.2});
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <section ref={ref} id="terminal" className="relative flex flex-col w-full bg-[#090909] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
@@ -137,7 +132,14 @@ export default function TerminalSection() {
 
       <div className="w-full max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {cells.map((cell, i) => (
-          <MiniTerminal key={i} cell={cell} active={visible} />
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.1 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <MiniTerminal cell={cell} active={inView} />
+          </motion.div>
         ))}
       </div>
 
