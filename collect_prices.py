@@ -151,6 +151,158 @@ SEED_QUERIES = [
     ("notebook","departamentales"),("auriculares","departamentales"),
 ]
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔬 Query expansion — line-specific modifiers to increase surface area
+# ═══════════════════════════════════════════════════════════════════════════════
+
+EXPANSION_FACTOR = int(os.getenv("COLLECT_EXPANSION", "3"))
+
+QUERY_MODIFIERS: dict[str, list[str]] = {
+    "supermercados": [
+        "entero", "descremado", "light", "integral", "sin lactosa",
+        "organico", "premium", "familiar", "en polvo", "en lata",
+        "sin tacc", "zero", "clasico", "suave", "fuerte",
+        "x1", "x2", "x6", "pack",
+    ],
+    "farmacias": [
+        "500mg", "100mg", "infantil", "adulto", "forte",
+        "caja", "gel", "crema", "spray", "liquido",
+        "24hs", "12hs", "dosis unica",
+    ],
+    "electro": [
+        "5g", "128gb", "256gb", "pro", "lite", "ultra",
+        "smart", "inalambrico", "bluetooth", "usb",
+        "gamer", "4k", "portatil", "digital", "automatico",
+        "60hz", "144hz", "ips", "oled",
+    ],
+    "moda": [
+        "mujer", "hombre", "niño", "niña", "unisex",
+        "talle m", "talle l", "talle xl", "talle s",
+        "algodon", "jean", "cuero", "lino",
+        "estampado", "liso", "bordado",
+    ],
+    "hogar": [
+        "electrico", "manual", "profesional", "industrial",
+        "12v", "220v", "acero", "plastico", "madera",
+        "30cm", "50cm", "1m", "blanco", "negro",
+        "impermeable", "antideslizante",
+    ],
+    "departamentales": [
+        "2 plazas", "1 plaza", "king size", "queen",
+        "led", "smart tv", "inalambrico", "bluetooth",
+        "infantil", "adulto", "grande", "mediano",
+    ],
+}
+
+EXACT_QUERIES: set[str] = {
+    "moto g", "moto edge", "razr", "iphone", "xiaomi",
+    "samsung galaxy", "celular motorola", "monitor gamer",
+    "dipirona", "losartana", "omeprazol", "loratadina",
+    "frigorifero", "lavatrice", "aspirapolvere",
+    "réfrigérateur", "lave-linge", "aspirateur",
+}
+
+def expand_queries(base: list[tuple[str, str]], cycle: int = 0) -> list[tuple[str, str]]:
+    """Expand base queries with line-specific modifiers. Rotates modifier subset per cycle."""
+    if EXPANSION_FACTOR <= 0:
+        return list(base)
+    expanded = list(base)
+    seen: set[str] = {q for q, _ in base}
+    for query, line in base:
+        if query in EXACT_QUERIES:
+            continue
+        modifiers = QUERY_MODIFIERS.get(line, [])
+        if not modifiers:
+            continue
+        start = (cycle * EXPANSION_FACTOR) % max(len(modifiers), 1)
+        picked = [modifiers[(start + i) % len(modifiers)] for i in range(EXPANSION_FACTOR)]
+        for mod in picked:
+            variant = f"{query} {mod}"
+            if variant not in seen:
+                seen.add(variant)
+                expanded.append((variant, line))
+    return expanded
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🧠 Feedback loop — data-moat-driven queries from existing price_snapshots
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FEEDBACK_LIMIT = int(os.getenv("COLLECT_FEEDBACK", "30"))
+FEEDBACK_DAYS = int(os.getenv("COLLECT_FEEDBACK_DAYS", "7"))
+FEEDBACK_MIN_COUNT = int(os.getenv("COLLECT_FEEDBACK_MIN", "3"))
+
+def _dedup_seed_terms() -> set[str]:
+    terms: set[str] = set()
+    for q, _ in SEED_QUERIES:
+        terms.add(q.lower())
+        for word in q.lower().split():
+            if len(word) >= 3:
+                terms.add(word)
+    return terms
+
+def get_feedback_queries(db) -> list[tuple[str, str]]:
+    """Extract top product names from data moat — unified PG/SQLite path."""
+    feedback: list[tuple[str, str]] = []
+    seed_terms = _dedup_seed_terms()
+    per_line = max(1, FEEDBACK_LIMIT // max(len(QUERY_MODIFIERS), 1))
+    lines = list(QUERY_MODIFIERS.keys())
+    for line in lines:
+        try:
+            rows = db.execute("""
+                SELECT name, COUNT(*) as freq
+                FROM price_snapshots
+                WHERE line = ? AND price > 0
+                  AND queried_at >= datetime('now', ?)
+                GROUP BY name
+                HAVING COUNT(*) >= ?
+                ORDER BY freq DESC
+                LIMIT ?
+            """, (line, f"-{FEEDBACK_DAYS} days", FEEDBACK_MIN_COUNT, per_line + 2)).fetchall()
+        except Exception:
+            continue
+        for r in rows:
+            name = str(r["name"]).strip().lower()
+            query = " ".join(name.split()[:3])
+            if len(query) < 3:
+                continue
+            if query in seed_terms:
+                continue
+            words = set(query.split())
+            if len(words & seed_terms) >= len(words) * 0.75:
+                continue
+            if query not in seed_terms:
+                seed_terms.add(query)
+                feedback.append((query, line))
+    return feedback[:FEEDBACK_LIMIT]
+
+
+def build_query_list(db=None, cycle: int = 0) -> list[tuple[str, str]]:
+    """Build the full query list: expanded seed + feedback from data moat."""
+    queries = expand_queries(SEED_QUERIES, cycle)
+    if db and FEEDBACK_LIMIT > 0:
+        try:
+            fb = get_feedback_queries(db)
+            if fb:
+                logger.info("Feedback: %d data-moat queries injected", len(fb))
+                queries.extend(fb)
+        except Exception as e:
+            logger.warning("Feedback queries failed: %s", e)
+    return queries
+
+
+def _get_feedback_db():
+    """Get a DB connection for feedback queries. Returns None if DB unavailable."""
+    try:
+        from market_core import get_db
+        db = get_db()
+        # Verify the price_snapshots table exists
+        db.execute("SELECT 1 FROM price_snapshots LIMIT 1")
+        return db
+    except Exception:
+        return None
+
+
 # ── Database: PostgreSQL or SQLite ──────────────────────────────────────────
 
 USE_PG = bool(DATABASE_URL)
@@ -402,17 +554,28 @@ async def main():
     if args.status: do_status(); return
     if args.report: do_report(); return
     stores = list(STORES.keys())[:args.stores] if args.stores else list(STORES.keys())
-    queries = SEED_QUERIES[:args.queries] if args.queries else SEED_QUERIES
     label = "PostgreSQL" if USE_PG else "SQLite"
-    print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries")
+
     if args.daemon:
-        print(f"🔄 Daemon: every {args.interval}h")
+        print(f"🔄 Daemon: every {args.interval}h | expansion: ×{EXPANSION_FACTOR} | feedback: ≤{FEEDBACK_LIMIT}")
+        cycle = 0
         while True:
-            print(f"\n─── {datetime.now(timezone.utc).isoformat()} ───")
+            db = _get_feedback_db()
+            queries = build_query_list(db=db, cycle=cycle)
+            if db: db.close()
+            if args.queries: queries = queries[:args.queries]
+            print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
+            print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
             t0=time.monotonic(); r=await run_collection(stores, queries)
             print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
+            cycle += 1
             await asyncio.sleep(args.interval*3600)
     else:
+        db = _get_feedback_db()
+        queries = build_query_list(db=db, cycle=0)
+        if db: db.close()
+        if args.queries: queries = queries[:args.queries]
+        print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
         t0=time.monotonic(); r=await run_collection(stores, queries)
         print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']}/{r['stores_attempted']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
         do_status()
