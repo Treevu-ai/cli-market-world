@@ -22,6 +22,7 @@ STORES = {
     "farmatodo_mx": {"name":"Farmatodo MX","base":"https://www.farmatodo.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"farmacias"},
     "cruzverde_co": {"name":"Cruz Verde CO","base":"https://www.cruzverde.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias"},
     "cruzverde_cl": {"name":"Cruz Verde CL","base":"https://www.cruzverde.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"farmacias"},
+    "farmatodo_co": {"name":"Farmatodo CO","base":"https://www.farmatodo.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias"},
 
     # ── ELECTRO ──
     "electrolux_ar": {"name":"Electrolux AR","base":"https://www.electrolux.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro"},
@@ -33,6 +34,10 @@ STORES = {
     "motorola_cl": {"name":"Motorola CL","base":"https://www.motorola.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"electro"},
     "whirlpool_it": {"name":"Whirlpool IT","base":"https://www.whirlpool.it","country":"IT","currency":"EUR","emoji":"🇮🇹","line":"electro"},
     "whirlpool_fr": {"name":"Whirlpool FR","base":"https://www.whirlpool.fr","country":"FR","currency":"EUR","emoji":"🇫🇷","line":"electro"},
+    "motorola_es": {"name":"Motorola ES","base":"https://www.motorola.es","country":"ES","currency":"EUR","emoji":"🇪🇸","line":"electro"},
+    "electrolux_mx": {"name":"Electrolux MX","base":"https://www.electrolux.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro"},
+    "samsung_br": {"name":"Samsung BR","base":"https://www.samsung.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro"},
+    "samsung_mx": {"name":"Samsung MX","base":"https://www.samsung.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro"},
 
     # ── HOGAR ──
     "easy_ar": {"name":"Easy AR","base":"https://www.easy.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"hogar"},
@@ -40,6 +45,7 @@ STORES = {
 
     # ── DEPARTAMENTALES ──
     "coppel_ar": {"name":"Coppel AR","base":"https://www.coppel.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"departamentales"},
+    "ripley_pe": {"name":"Ripley PE","base":"https://www.ripley.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales"},
 
     # ── MODA ──
     "cea_br": {"name":"C&A BR","base":"https://www.cea.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda"},

@@ -497,6 +497,16 @@ def init_db_pg(db: _DB) -> None:
     db.execute("CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username)")
 
     db.execute("""
+        CREATE TABLE IF NOT EXISTS app_favorites (
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            name TEXT DEFAULT '',
+            store TEXT DEFAULT '',
+            PRIMARY KEY (username, product_id)
+        )
+    """)
+
+    db.execute("""
         CREATE TABLE IF NOT EXISTS subscriptions (
             username TEXT PRIMARY KEY,
             tier TEXT NOT NULL DEFAULT 'free',
@@ -635,6 +645,14 @@ _SQLITE_DDL = """\
             last_used_at TEXT
         );
         CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username);
+
+        CREATE TABLE IF NOT EXISTS app_favorites (
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            name TEXT DEFAULT '',
+            store TEXT DEFAULT '',
+            PRIMARY KEY (username, product_id)
+        );
 
         CREATE TABLE IF NOT EXISTS subscriptions (
             username TEXT PRIMARY KEY,

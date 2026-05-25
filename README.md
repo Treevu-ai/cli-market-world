@@ -1,10 +1,10 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-30-brightgreen" alt="30 retailers">
+  <img src="https://img.shields.io/badge/retailers-38-brightgreen" alt="38 retailers">
   <img src="https://img.shields.io/badge/lines-6-blue" alt="6 lines">
-  <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/MCP%20tools-30-00d75f" alt="30 MCP tools">
+  <img src="https://img.shields.io/badge/countries-9-orange" alt="9 countries">
+  <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
@@ -22,21 +22,21 @@
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Your AI agent can search, compare, and buy across 30 retailers in 8 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Your AI agent can search, compare, and buy across 38 retailers in 9 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
 ## What is CLI Market?
 
-**The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 30 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
+**The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 38 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One `pip install`. One API call across all 30 retailers. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across all 38 retailers. One JSON schema.
 
-- **Search** any product across 30 verified retailers in 8 countries
+- **Search** any product across 30 verified retailers in 9 countries
 - **Compare** prices cross-border — ARS, BRL, MXN, PEN, COP, CLP, EUR
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 4 hours
-- **Buy** — autonomous checkout with human approval (30 MCP tools)
+- **Buy** — autonomous checkout with human approval (36 MCP tools)
 - **Build** — data moat with thousands of verified prices, historical snapshots, SKU normalization
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
@@ -83,13 +83,13 @@ market --json
 
 | You | Your AI agent |
 |-----|---------------|
-| `pip install cli-market` | 30 MCP tools |
+| `pip install cli-market` | 36 MCP tools |
 | `market search "milk"` | REST API + JSON native |
 | Rich terminal tables | Cross-border price intelligence |
 | Spanish / English | Inflation tracking |
 | Cart, checkout, reorder | Autonomous workflows |
 
-### 30 MCP tools
+### 36 MCP tools
 
 `market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan`
 
@@ -115,7 +115,7 @@ Every retailer below has been verified. The VTEX API responds. No dead URLs.
 | **Whirlpool** | AR, IT, FR | Electronics | ARS, EUR |
 | **Sam's Club, Mambo** | BR | Supermarkets | BRL |
 
-**8 countries. 30 retailers. 6 lines.** All verified. Growing.
+**9 countries. 38 retailers. 6 lines.** All verified. Growing.
 
 ---
 
@@ -170,7 +170,7 @@ Data moat — prices every 4h, deduplicated, historical
 
 ## Data Moat
 
-Price collector runs every 8 hours with 228 seed queries expanded to ~900 via line-specific modifiers and a feedback loop from the data moat itself. Thousands of verified prices across 30 retailers.
+Price collector runs every 8 hours with 228 seed queries expanded to ~900 via line-specific modifiers and a feedback loop from the data moat itself. Thousands of verified prices across 38 retailers.
 
 ```bash
 python collect_prices.py              # run once
