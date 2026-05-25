@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/retailers-27-brightgreen" alt="27 retailers">
   <img src="https://img.shields.io/badge/lines-4-blue" alt="4 lines">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/MCP%20tools-15-00d75f" alt="15 MCP tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-17-00d75f" alt="17 MCP tools">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build">
@@ -35,7 +35,7 @@
 - **Compare** prices cross-border — ARS, BRL, MXN, PEN, COP, CLP, EUR
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 4 hours
-- **Buy** — autonomous checkout with human approval (15 MCP tools)
+- **Buy** — autonomous checkout with human approval (17 MCP tools)
 - **Build** — data moat with thousands of verified prices, historical snapshots, SKU normalization
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
@@ -82,15 +82,15 @@ market --json
 
 | You | Your AI agent |
 |-----|---------------|
-| `pip install cli-market` | 15 MCP tools |
+| `pip install cli-market` | 17 MCP tools |
 | `market search "milk"` | REST API + JSON native |
 | Rich terminal tables | Cross-border price intelligence |
 | Spanish / English | Inflation tracking |
 | Cart, checkout, reorder | Autonomous workflows |
 
-### 15 MCP tools
+### 17 MCP tools
 
-`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories`
+`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories` `market_barcode` `market_enrich`
 
 Compatible with **DeepSeek TUI, Claude, Cursor, Windsurf, Continue, and any MCP client.** [Registered on the MCP Registry.](https://registry.modelcontextprotocol.io)
 
@@ -124,7 +124,7 @@ Every retailer below has been verified. The VTEX API responds. No dead URLs.
 python market_mcp.py
 ```
 
-15 tools ready for your AI agent.
+17 tools ready for your AI agent.
 
 ---
 

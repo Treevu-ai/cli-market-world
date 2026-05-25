@@ -20,17 +20,19 @@ import argparse
 import json
 import os
 import sys
-from pathlib import Path
-from typing import Any
 
 import httpx
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-API = os.environ.get("MARKET_API_URL", "http://127.0.0.1:8765")
-SESSION_FILE = Path.home() / ".market" / "session.json"
-LANG_FILE = Path.home() / ".market" / "lang"
+from market_core import (
+    STORES, LINES, COUNTRIES, API, SESSION_FILE, LANG_FILE, LAST_SEARCH_FILE,
+    get_token, api,
+    CURRENCY_SYMBOLS, fmt_price, store_color, store_emoji,
+    save_last_search, load_last_search,
+)
+
 console = Console()
 
 # ── i18n ────────────────────────────────────────────────────────────────────
@@ -70,19 +72,19 @@ T = {
         "usage": "market <command> [options]",
         "login": "Authenticate", "search": "Search products", "compare": "Compare prices across stores",
         "add": "Add to cart (use table # or product_id)", "cart": "View cart",
-        "cart_remove": "Remove a product from cart", "cart_update": "Change quantity in cart",
-        "cart_clear": "Empty the entire cart", "checkout": "Complete purchase",
-        "orders": "Order history", "reorder": "Repeat an order (last one if no ID specified)",
-        "ask": "Purchase via natural language", "preferences": "View profile and purchase preferences",
-        "countries": "View available countries and stores", "lines": "View business lines and retailers",
+        "cart_remove": "Remove product from cart", "cart_update": "Change product quantity in cart",
+        "cart_clear": "Clear entire cart", "checkout": "Complete purchase",
+        "orders": "Order history", "reorder": "Repeat last order",
+        "ask": "Natural language purchase", "preferences": "View profile and preferences",
+        "countries": "View countries and stores", "lines": "View business lines and retailers",
         "about": "Business model", "whoami": "View active session", "lang": "Change language (es/en)",
-        "categories": "Browse store categories", "barcode": "Search product by barcode",
+        "categories": "Explore store categories", "barcode": "Search product by barcode",
         "enrich": "Search with Open Food Facts data",
-        "query": "Search term", "store": "Specific store", "country": "Filter by country",
+        "query": "Search products", "store": "Specific store", "country": "Filter by country",
         "line": "Filter by business line", "limit": "Number of results", "page": "Results page",
-        "product_id": "Table number from search (#) or product ID",
-        "product_name_help": "Product name (auto-filled if using #)",
-        "price_help": "Price (auto-filled if using #)", "qty": "Quantity",
+        "product_id": "Table # from search or product ID",
+        "product_name_help": "Product name (auto-fill if using #)",
+        "price_help": "Price (auto-fill if using #)", "qty": "Quantity",
         "payment": "Payment method", "order_id_help": "Order ID to repeat",
         "prompt": "E.g. 'buy milk', 'repeat last', 'compare rice'",
         "barcode_help": "EAN/UPC barcode",
@@ -95,93 +97,74 @@ T = {
     },
 }
 
-def _(key: str) -> str:
-    lang = get_lang()
-    return T.get(lang, T["es"]).get(key, key)
-
 def get_lang() -> str:
-    try: return LANG_FILE.read_text().strip()[:2]
-    except Exception: return "es"
+    if LANG_FILE.exists():
+        return LANG_FILE.read_text().strip()
+    return "es"
 
 def set_lang(code: str) -> None:
     LANG_FILE.parent.mkdir(parents=True, exist_ok=True)
     LANG_FILE.write_text(code)
 
-LANG = get_lang()
+def t(key: str) -> str:
+    lang = get_lang()
+    return T.get(lang, {}).get(key, key)
 
-# ── JSON-able business model (agent-friendly) ──────────────────────
+# ── Welcome banner ───────────────────────────────────────────────────────────
 
-BUSINESS_MODEL_JSON = {
-    "name": "CLI Market",
-    "version": "1.0",
-    "description": "Commerce infrastructure for humans and AI agents — 26 VTEX retailers, 8 countries, 4 lines, 15 MCP tools.",
-    "stats": {"retailers": 27, "countries": 8, "lines": 4, "mcp_tools": 15},
-    "capabilities": {"mcp_server": True, "cli": True, "rest_api": True, "json_output": True, "cross_border": True, "autonomous_checkout": True, "multi_retailer": True},
-    "pricing": "Free tier available. Contact for enterprise.",
-    "contact": "hello@cli-market.dev",
-    "license": "MIT",
-    "install": "pip install cli-market",
-    "github": "https://github.com/Treevu-ai/cli-market-world",
-    "landing": "https://cli-market.dev",
-    "api": "https://cli-market-api.onrender.com",
-}
+WELCOME_BANNER = """\n[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
+  │                                                               │
+     [#FFFFFF bold] C L I   M A R K E T[/]
+     [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
-WELCOME_BANNER = """\
-[#00FF88]  ─────────────────────────────────────────────────────────────
-                                                                   
-     [#FFFFFF bold] C L I   M A R K E T[/]                                   
-     [#888888]infraestructura de comercio para humanos y agentes IA[/]                       
-                                                                   
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas        
-     [#00FF88]●[/] 15 herramientas    [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo      
-     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomo         [#00FF88]●[/] open source      
-                                                                   
-     [#555555]pip install cli-market[/]                                    
-     [#555555]github.com/treevu-ai/cli-market-world[/]                     
-                                                                   
-     [#00FF88]market login[/]        [#888888]autentícate[/]                       
-     [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]           
-     [#00FF88]market compare[/]      [#888888]compara precios entre países[/]            
-     [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]           
-     [#00FF88]market checkout[/]     [#888888]completa la compra[/]                  
-     [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]        
-                                                                   
-  ─────────────────────────────────────────────────────────────[/]
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas
+     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo
+     [#00FF88]●[/] cross-border       [#00FF88]●[/] autónomo         [#00FF88]●[/] open source
 
+     [#555555]pip install cli-market[/]
+     [#555555]github.com/treevu-ai/cli-market-world[/]
+
+     [#00FF88]market login[/]        [#888888]autentícate[/]
+     [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]
+     [#00FF88]market compare[/]      [#888888]compara precios entre países[/]
+     [#00FF88]market ask[/]          [#888888]modo agente: lenguaje natural[/]
+     [#00FF88]market checkout[/]     [#888888]completa la compra[/]
+     [#00FF88]market --json[/]       [#888888]salida estructurada para agentes[/]
+
+  ╰───────────────────────────────────────────────────────────────╯[/]
 """
-
 
 WELCOME_BANNER_EN = """\n[#00FF88]  ╭───────────────────────────────────────────────────────────────╮
   │                                                               │
-     [#FFFFFF bold] C L I   M A R K E T[/]                                   
-     [#888888]commerce infrastructure for humans and ai agents[/]             
-                                                                   
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines         
-     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native      
-     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source      
-                                                                   
-     [#555555]pip install cli-market[/]                                    
-     [#555555]github.com/treevu-ai/cli-market-world[/]                     
-                                                                   
-     [#00FF88]market login[/]        [#888888]authenticate[/]                     
-     [#00FF88]market search[/]       [#888888]search across all retailers[/]        
-     [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]      
-     [#00FF88]market ask[/]          [#888888]agent mode: natural language[/]         
-     [#00FF88]market checkout[/]     [#888888]complete purchase[/]                 
-     [#00FF88]market --json[/]       [#888888]structured output for agents[/]         
-                                                                   
+     [#FFFFFF bold] C L I   M A R K E T[/]
+     [#888888]commerce infrastructure for humans and ai agents[/]
+
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines
+     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native
+     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source
+
+     [#555555]pip install cli-market[/]
+     [#555555]github.com/treevu-ai/cli-market-world[/]
+
+     [#00FF88]market login[/]        [#888888]authenticate[/]
+     [#00FF88]market search[/]       [#888888]search across all retailers[/]
+     [#00FF88]market compare[/]      [#888888]cross-country price comparison[/]
+     [#00FF88]market ask[/]          [#888888]agent mode: natural language[/]
+     [#00FF88]market checkout[/]     [#888888]complete purchase[/]
+     [#00FF88]market --json[/]       [#888888]structured output for agents[/]
+
   ╰───────────────────────────────────────────────────────────────╯[/]
 """
 
 def welcome_banner():
     banner = WELCOME_BANNER_EN if get_lang() == "en" else WELCOME_BANNER
-    from rich.panel import Panel
     return Panel(banner.strip(), border_style="#00FF88", padding=(1, 2))
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
-def get_token() -> str:
-    if not SESSION_FILE.exists():
+def get_token_with_prompt() -> str:
+    token = get_token()
+    if not token:
         console.print(Panel.fit(
             "[bold #FFD600]No estás autenticado aún.[/]\n\n"
             "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
@@ -195,257 +178,83 @@ def get_token() -> str:
             border_style="#FFD600"
         ))
         sys.exit(1)
-    data = json.loads(SESSION_FILE.read_text())
-    return data["token"]
+    return token
 
-
-def api(method: str, path: str, json_data: dict | None = None) -> dict:
-    token = None
-    if path not in ("/auth/login", "/"):
-        token = get_token()
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    try:
-        if method == "GET":
-            resp = httpx.get(f"{API}{path}", headers=headers, timeout=30)
-        elif method == "POST":
-            resp = httpx.post(f"{API}{path}", headers=headers, json=json_data, timeout=30)
-        elif method == "PUT":
-            resp = httpx.put(f"{API}{path}", headers=headers, json=json_data, timeout=30)
-        elif method == "DELETE":
-            resp = httpx.delete(f"{API}{path}", headers=headers, timeout=30)
+def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
+    result = api(method, path, json_data)
+    if isinstance(result, dict) and "error" in result:
+        if result.get("status") == 401:
+            console.print(f"[red]Sesión expirada. Ejecutá: market login[/]")
+            console.print("[dim]Si usás MARK_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
         else:
-            raise ValueError(f"Unknown method: {method}")
-        if resp.status_code >= 400:
-            detail = resp.json().get("detail", resp.text)
-            if resp.status_code == 401:
-                console.print(f"[red]Sesión expirada. Ejecutá: market login[/]")
-                console.print("[dim]Si usás MARK_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
-            else:
-                console.print(f"[red]Error: {detail}[/]")
-            sys.exit(1)
-        return resp.json()
-    except httpx.ConnectError:
-        console.print("[red]Error: No se pudo conectar al servidor. Ejecuta primero: python market_server.py[/]")
+            console.print(f"[red]Error: {result['error']}[/]")
         sys.exit(1)
+    return result
 
-
-# ── Currency symbols ─────────────────────────────────────────────────────────
-
-CURRENCY_SYMBOLS = {
-    "PEN": "S/", "ARS": "ARS", "BRL": "R$", "MXN": "MXN", "COP": "COP",
-    "CLP": "CLP", "EUR": "€", "GBP": "£",
-}
-
-
-def fmt_price(price: float, currency: str = "PEN") -> str:
-    symbol = CURRENCY_SYMBOLS.get(currency, currency)
-    return f"{symbol} {price:,.2f}"
-
-
-def store_color(store: str) -> str:
-    colors = {
-        "wong": "#3cffd0", "metro": "#5200ff", "plazavea": "#ffe600",
-        "carrefour": "#3cffd0", "jumbo_ar": "#00FF88", "carrefour_br": "#3cffd0",
-        "chedraui": "#FF6B35", "heb": "#FF6B35",
-        "olimpica": "#60A5FA", "exito": "#60A5FA",
-        "drogaraia": "#FF6B35", "drogasil": "#FF6B35",
-        "magazineluiza": "#A78BFA", "motorola_br": "#A78BFA",
-        "renner": "#FFD600", "centauro": "#4ADE80", "homecenter": "#F5F5F0",
-        "carrefour_es": "#FFD600", "decathlon_fr": "#4ADE80",
-    }
-    return colors.get(store, "#e9e9e9")
-
-
-def store_emoji(store: str) -> str:
-    if store in STORES:
-        return STORES[store].get("emoji", "📦")
-    return "📦"
-
-
-# ── Last-search cache (for market add auto-fill) ─────────────────────────────
-
-LAST_SEARCH_FILE = Path.home() / ".market" / "last_search.json"
-
-
-def save_last_search(results: list[dict]) -> None:
-    slim = []
-    for p in results[:50]:
-        slim.append({
-            "product_id": p.get("id", p.get("product_id", "")),
-            "name": p.get("name", ""),
-            "price": p.get("price", 0),
-            "store": p.get("store", ""),
-            "store_name": p.get("store_name", ""),
-            "currency": p.get("currency", "PEN"),
-            "brand": p.get("brand", ""),
-        })
-    LAST_SEARCH_FILE.parent.mkdir(parents=True, exist_ok=True)
-    LAST_SEARCH_FILE.write_text(json.dumps(slim, ensure_ascii=False))
-
-
-def load_last_search() -> list[dict]:
-    if LAST_SEARCH_FILE.exists():
-        try:
-            return json.loads(LAST_SEARCH_FILE.read_text())
-        except (json.JSONDecodeError, KeyError):
-            pass
-    return []
-
-
-# ── Comandos ───────────────────────────────────────────────────────────────
-
-def cmd_lang(args):
-    if not args.lang_code:
-        from rich.panel import Panel
-        g=get_lang()
-        msg = f"Idioma actual: [#00FF88]{g}[/]\n\n"
-        msg += "[#888888]Idiomas disponibles:[/]\n"
-        msg += "  [#00FF88]es[/] espanol\n"
-        msg += "  [#00FF88]en[/] english\n\n"
-        msg += "[dim]Usa: market lang es  o  market lang en[/]"
-        console.print(Panel.fit(msg, border_style="#00FF88"))
-        return
-    code=args.lang_code.strip()[:2]
-    if code not in ("es","en"):
-        console.print("[red]Idioma no valido. Usa es o en.[/]")
-        return
-    set_lang(code)
-    global LANG
-    LANG=code
-    console.print(f"[#00FF88]Idioma cambiado a {code}[/]")
+# ── Commands ─────────────────────────────────────────────────────────────────
 
 def cmd_login(args):
-    """Autentica al usuario contra el servidor."""
-    username = args.username
-    password = args.password
-
-    # Interactive mode — guide the newbie
-    if not username:
-        console.print(Panel.fit(
-            "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
-            "[#888888]Vas a crear tu token de acceso.[/]\n"
-            "[#888888]Es un solo paso y queda guardado en tu equipo.[/]\n\n"
-            "[#888888]Si eres un agente IA: este token activa 15 herramientas MCP.[/]\n\n"
-            "[dim]Credenciales por defecto:[/]\n"
-            "  Usuario: [#FFFFFF bold]admin[/]\n"
-            "  Password: [#FFFFFF bold]market[/]",
-            border_style="#00FF88"
-        ))
-        username = console.input("[#00FF88]Usuario:[/] ")
-        if not username:
-            console.print("[red]Cancelado.[/]")
-            return
-
-    if not password:
-        password = console.input("[#00FF88]Password:[/] ", password=True)
-        if not password:
-            console.print("[red]Cancelado.[/]")
-            return
-
-    data = api("POST", "/auth/login", {"username": username, "password": password})
-    console.print(f"\n[#00FF88]✓ Autenticado como [bold]{data['username']}[/][/]")
-    console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
-    console.print(f"\n[#888888]Ahora puedes buscar productos:[/]")
-    console.print(f"  [#00FF88]market search[/] [dim]\"leche\" --country PE[/]")
-    console.print(f"\n[dim]Tip para agentes:[/] [#00FF88]market --json[/] [dim]te da salida estructurada[/]")
-
+    data = cli_api("POST", "/auth/login", {"username": args.username, "password": args.password})
+    console.print(f"[#00FF88]✓ {data.get('message', 'OK')}[/]")
+    console.print(f"[dim]Usuario: {data.get('username')}[/]")
 
 def cmd_search(args):
-    """Busca productos. Soporta --country, --line, --store, --page, --json."""
-    if not args.query:
-        console.print("[yellow]USO: market search <término> [--line LINEA] [--country PAIS] [--store TIENDA] [--limit N] [--page N][/]")
-        console.print("[dim]Ej: market search \"leche\" --line supermercados --country PE[/]")
+    if not args.query.strip():
+        console.print(welcome_banner())
         return
-
-    stores_to_search = [args.store] if args.store else None
-    if args.country and not args.store:
-        country_stores = [k for k, v in STORES.items() if v["country"] == args.country]
-        stores_to_search = country_stores
-
-    label = args.store or args.country or args.line or "todas"
-    if args.line:
-        label = LINES[args.line]["name"]
-    with console.status(f"[cyan]Buscando '{args.query}' en {label}..."):
-        data = api("POST", "/products/search", {
-            "query": args.query,
-            "store": args.store,
-            "line": args.line,
-            "limit": args.limit,
-            "page": getattr(args, "page", 1),
-        })
-        if args.country and not args.store:
-            data["results"] = [p for p in data["results"] if p["store"] in stores_to_search]
-            data["total"] = len(data["results"])
-
-    results = data["results"]
-
+    params = {"query": args.query, "limit": args.limit, "page": args.page}
+    if args.store: params["store"] = args.store
+    if args.country:
+        params["store"] = [k for k, v in STORES.items() if v["country"] == args.country][0] if [k for k, v in STORES.items() if v["country"] == args.country] else None
+    if args.line: params["line"] = args.line
+    with console.status(f"[cyan]Buscando '{args.query}'..."):
+        data = cli_api("POST", "/products/search", params)
+    results = data.get("results", [])
     if getattr(args, "json", False):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
-
+    save_last_search(results)
     if not results:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
-
-    # Cache results for market add auto-fill
-    save_last_search(results)
-
-    table = Table(
-        title=f'[bold white]"{args.query}" — {len(results)} resultados[/]',
-        border_style="dim blue",
-        show_lines=False,
-    )
+    table = Table(title=f'[bold white]Resultados: "{args.query}" ({data["total"]})[/]', border_style="dim blue")
     table.add_column("#", style="dim", width=3, justify="right")
-    table.add_column("Producto", style="white", max_width=38, no_wrap=False)
-    table.add_column("Marca", style="blue", max_width=14)
+    table.add_column("Producto", style="white", max_width=36, no_wrap=False)
+    table.add_column("Marca", style="blue", max_width=12)
     table.add_column("Tienda", max_width=12)
-    table.add_column("Precio", style="bold yellow", justify="right", width=12)
-    table.add_column("Desc.", justify="center", width=7)
-    table.add_column("ID", style="dim", max_width=20)
-
+    table.add_column("Precio", style="yellow", justify="right")
+    table.add_column("Desc.", justify="center", width=6)
+    table.add_column("ID", style="dim", max_width=14)
     for i, p in enumerate(results, 1):
-        color = store_color(p["store"])
+        color = store_color(p.get("store", ""))
         disc = p.get("discount")
-        currency = p.get("currency", "PEN")
-        price_str = fmt_price(p["price"], currency)
+        price_str = fmt_price(p.get("price", 0), p.get("currency", "PEN"))
         if disc:
             price_str = f"[bold yellow]{price_str}[/]"
             disc_str = f"[#3cffd0]{disc}%[/]"
         else:
             disc_str = "—"
-
         table.add_row(
-            str(i),
-            p["name"],
-            p["brand"],
-            f"[{color}]{p['store_name']}[/]",
-            price_str,
-            disc_str,
+            str(i), p["name"], p.get("brand", "—"),
+            f"[{color}]{p.get('store_name', p.get('store', '?'))}[/]",
+            price_str, disc_str,
             p.get("id", p.get("product_id", "")),
         )
-
     console.print()
     console.print(table)
     console.print(f"\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
     console.print(f"[dim]Ej: market add 3 --qty 2  (el #3 de la tabla)[/]")
 
-
 def cmd_compare(args):
-    """Compara precios. Columnas dinámicas según los stores en los resultados."""
     with console.status(f"[cyan]Comparando '{args.query}'..."):
-        data = api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
-
-    comp = data["comparison"]
-
+        data = cli_api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
+    comp = data.get("comparison", [])
     if getattr(args, "json", False):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
-
     if not comp:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
-
-    # Extraer todas las tiendas que aparecen en los resultados (columnas dinámicas)
     all_stores: list[str] = []
     seen = set()
     for item in comp:
@@ -453,16 +262,8 @@ def cmd_compare(args):
             if sk not in seen:
                 all_stores.append(sk)
                 seen.add(sk)
-
-    # Limitar a 6 columnas máximo en pantalla
     display_stores = all_stores[:6]
-    if len(all_stores) > 6:
-        console.print(f"[dim]Mostrando {len(display_stores)} de {len(all_stores)} tiendas.[/]")
-
-    table = Table(
-        title=f'[bold white]Comparativa: "{args.query}"[/]',
-        border_style="dim blue",
-    )
+    table = Table(title=f'[bold white]Comparativa: "{args.query}"[/]', border_style="dim blue")
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=30, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=12)
@@ -470,36 +271,28 @@ def cmd_compare(args):
         store_name = STORES.get(sk, {}).get("name", sk)
         table.add_column(store_name, justify="right", width=11)
     table.add_column("Mejor", justify="center", width=10)
-
     for i, item in enumerate(comp, 1):
-        prices = item["prices"]
-        best = item["best_store"]
+        prices = item.get("prices", {})
+        best = item.get("best_store", "")
         best_color = store_color(best) if best else "dim"
-
         def pcell(sk):
             if sk in prices:
                 currency = STORES.get(sk, {}).get("currency", "PEN")
                 return f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
             return "[dim]—[/]"
-
-        row = [str(i), item["name"], item["brand"]]
+        row = [str(i), item.get("name", ""), item.get("brand", "")]
         for sk in display_stores:
             row.append(pcell(sk))
-        row.append(f"[bold {best_color}]{STORES[best]['name']}[/]" if best else "—")
+        row.append(f"[bold {best_color}]{STORES.get(best, {}).get('name', best)}[/]" if best else "—")
         table.add_row(*row)
-
     console.print()
     console.print(table)
 
-
 def cmd_add(args):
-    """Agrega un producto al carrito. Auto-fill desde último search si se usa # de tabla."""
-    # Si el product_id es un número de tabla (1-based), buscar en cache
     pid = args.product_id
     name = args.name
     price = args.price
     store = args.store
-
     if pid.isdigit() and not name and not price:
         idx = int(pid) - 1
         cache = load_last_search()
@@ -509,31 +302,25 @@ def cmd_add(args):
             name = name or p["name"]
             price = price if price else p["price"]
             store = store or p["store"]
-
-    data = api("POST", "/cart/add", {
-        "product_id": pid,
-        "name": name or pid,
-        "price": price or 0,
-        "store": store or "wong",
+    data = cli_api("POST", "/cart/add", {
+        "product_id": pid, "name": name or pid,
+        "price": price or 0, "store": store or "wong",
         "quantity": args.qty,
     })
-    cart = data["cart"]
+    cart = data.get("cart", [])
     total = sum(i["price"] * i["quantity"] for i in cart)
     console.print(f"[#3cffd0]✓ Agregado al carrito[/] ({len(cart)} items, total: {fmt_price(total)})")
 
-
 def cmd_cart(args):
-    """Muestra el carrito actual."""
-    data = api("GET", "/cart")
+    data = cli_api("GET", "/cart")
     if getattr(args, "json", False):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
-    cart = data["cart"]
+    cart = data.get("cart", [])
     if not cart:
         console.print("[yellow]Carrito vacío[/]")
         console.print("[dim]market search <término> → market add <ID>[/]")
         return
-
     table = Table(title="[bold white]Carrito[/]", border_style="dim blue")
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=36, no_wrap=False)
@@ -541,220 +328,108 @@ def cmd_cart(args):
     table.add_column("Precio", style="yellow", justify="right")
     table.add_column("Cant.", justify="center", width=5)
     table.add_column("Subtotal", style="bold yellow", justify="right")
-
     for i, item in enumerate(cart, 1):
         color = store_color(item.get("store", ""))
         sub = item["price"] * item["quantity"]
         table.add_row(
-            str(i),
-            item["name"],
+            str(i), item["name"],
             f"[{color}]{item.get('store_name', '?')}[/]",
-            fmt_price(item["price"]),
-            str(item["quantity"]),
-            fmt_price(sub),
+            fmt_price(item["price"]), str(item["quantity"]), fmt_price(sub),
         )
-
     console.print()
     console.print(table)
-
-    total = data["total"]
-    console.print(f"\n[bold]Total: [bold yellow]{fmt_price(total)}[/] — {data['items']} items[/]")
+    total = data.get("total", 0)
+    console.print(f"\n[bold]Total: [bold yellow]{fmt_price(total)}[/] — {data.get('items', 0)} items[/]")
     console.print("[dim]market checkout → finalizar compra[/]")
 
-
 def cmd_cart_remove(args):
-    """Elimina un producto del carrito."""
-    data = api("DELETE", f"/cart/{args.product_id}")
+    data = cli_api("DELETE", f"/cart/{args.product_id}")
     console.print(f"[#3cffd0]✓ {data.get('message', 'Eliminado')}[/]")
-    if "cart" in data:
-        console.print(f"[dim]Carrito: {data.get('items', 0)} items, total: {fmt_price(data.get('total', 0))}[/]")
-
 
 def cmd_cart_update(args):
-    """Cambia la cantidad de un producto del carrito."""
-    data = api("PUT", "/cart/update", {"product_id": args.product_id, "quantity": args.quantity})
+    data = cli_api("PUT", "/cart/update", {"product_id": args.product_id, "quantity": args.quantity})
     console.print(f"[#3cffd0]✓ {data.get('message', 'Actualizado')}[/]")
-    if "cart" in data:
-        total = sum(i["price"] * i["quantity"] for i in data["cart"])
-        console.print(f"[dim]Carrito: {len(data['cart'])} items, total: {fmt_price(total)}[/]")
-
 
 def cmd_cart_clear(args):
-    """Vacía el carrito completo."""
-    data = api("GET", "/cart")
+    data = cli_api("GET", "/cart")
     cart = data.get("cart", [])
     if not cart:
         console.print("[yellow]Carrito ya está vacío[/]")
         return
     for item in cart:
-        api("DELETE", f"/cart/{item.get('cart_id', item.get('product_id', ''))}")
-    console.print(f"[#3cffd0]✓ Carrito vaciado ({len(cart)} items eliminados)[/]")
-
+        cli_api("DELETE", f"/cart/{item['product_id']}")
+    console.print("[#3cffd0]✓ Carrito vaciado[/]")
 
 def cmd_checkout(args):
-    """Finaliza la compra."""
-    payment = args.payment or "yape"
-    data = api("POST", "/checkout", {"payment_method": payment})
-    order = data["order"]
-    console.print(Panel.fit(
-        f"[bold #3cffd0]✓ Compra completada[/]\n\n"
-        f"Orden: [bold]{order['order_id']}[/]\n"
-        f"Total: [bold yellow]{fmt_price(order['total'])}[/]\n"
-        f"Pago: {order['payment_method']}\n"
-        f"Items: {len(order['items'])}",
-        title="Checkout",
-        border_style="green",
-    ))
-
+    data = cli_api("POST", "/checkout", {"payment_method": args.payment})
+    order = data.get("order", {})
+    console.print(f"[#00FF88]✓ {data.get('message', 'Compra completada')}[/]")
+    console.print(f"[bold]Orden: {order.get('order_id', '?')}[/] — Total: {fmt_price(order.get('total', 0))}")
 
 def cmd_orders(args):
-    """Historial de órdenes con detalle de ítems."""
-    data = api("GET", "/orders")
-    if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
-        return
-    orders = data["orders"]
+    data = cli_api("GET", "/orders")
+    orders = data.get("orders", [])
     if not orders:
         console.print("[yellow]Sin órdenes previas[/]")
         return
-
     table = Table(title="[bold white]Historial de órdenes[/]", border_style="dim blue")
-    table.add_column("Orden", style="bold", width=10)
-    table.add_column("Fecha", style="dim", width=12)
-    table.add_column("Ítems", style="white", max_width=45, no_wrap=False)
+    table.add_column("ID", style="bold")
+    table.add_column("Fecha", style="dim", max_width=20)
+    table.add_column("Items", max_width=40)
     table.add_column("Total", style="bold yellow", justify="right")
-    table.add_column("Pago", width=10)
-
+    table.add_column("Pago", style="dim")
     for o in reversed(orders):
-        date = o["created_at"][:10] if "created_at" in o else "?"
-        item_names = ", ".join(f"{i.get('quantity',1)}× {i.get('name','?')[:20]}" for i in o.get("items", [])[:4])
-        if len(o.get("items", [])) > 4:
-            item_names += f" +{len(o['items']) - 4} más"
-        table.add_row(
-            o["order_id"],
-            date,
-            item_names,
-            fmt_price(o["total"]),
-            o.get("payment_method", "?"),
-        )
-
-    console.print()
+        items_str = ", ".join(f"{i['quantity']}x {i['name'][:15]}" for i in o.get("items", [])[:3])
+        table.add_row(o.get("order_id", "?"), o.get("created_at", "")[:19], items_str,
+                       fmt_price(o.get("total", 0)), o.get("payment_method", "?"))
     console.print(table)
-    console.print(f"\n[dim]{len(orders)} órdenes — market reorder [orden_id] para repetir una específica[/]")
-
 
 def cmd_reorder(args):
-    """Repite una orden. Si se pasa ID, repite esa; si no, la última."""
-    if getattr(args, "order_id", None):
-        # Buscar la orden específica y restaurar sus ítems al carrito
-        data = api("GET", "/orders")
-        orders = data.get("orders", [])
-        target = next((o for o in orders if o["order_id"] == args.order_id), None)
-        if not target:
-            console.print(f"[yellow]Orden '{args.order_id}' no encontrada[/]")
-            return
-        # Limpiar carrito y agregar los ítems de la orden
-        current = api("GET", "/cart")
-        for item in current.get("cart", []):
-            api("DELETE", f"/cart/{item.get('cart_id', item.get('product_id', ''))}")
-        for item in target.get("items", []):
-            api("POST", "/cart/add", {
-                "product_id": item["product_id"],
-                "name": item["name"],
-                "price": item["price"],
-                "store": item.get("store", "wong"),
-                "quantity": item.get("quantity", 1),
-            })
-        cart = api("GET", "/cart")
-        total = sum(i["price"] * i["quantity"] for i in cart.get("cart", []))
-        console.print(f"[#3cffd0]✓ Orden {args.order_id} restaurada al carrito[/] ({len(cart.get('cart', []))} items, {fmt_price(total)})")
-    else:
-        data = api("POST", "/orders/reorder")
-        cart = data["cart"]
-        total = sum(i["price"] * i["quantity"] for i in cart)
-        console.print(f"[#3cffd0]✓ Última orden restaurada al carrito[/] ({len(cart)} items, {fmt_price(total)})")
-    console.print("[dim]market cart → market checkout[/]")
-
+    data = cli_api("POST", "/orders/reorder")
+    console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_ask(args):
-    """Compra por lenguaje natural."""
-    with console.status("[cyan]Pensando..."):
-        data = api("POST", "/agent/ask", {"prompt": args.prompt})
-    if "message" in data:
-        console.print(f"[#3cffd0]{data['message']}[/]")
-    if "cart" in data:
-        cart = data["cart"]
-        total = sum(i["price"] * i["quantity"] for i in cart)
-        console.print(f"[dim]Carrito: {len(cart)} items, {fmt_price(total)}[/]")
-    if "comparison" in data:
-        comp = data["comparison"][:5]
-        for c in comp:
-            stores = ", ".join(f"{s}: {fmt_price(p)}" for s, p in c["prices"].items())
-            console.print(f"  {c['name'][:50]} | {stores}")
-    if "results" in data:
-        for p in data["results"][:5]:
-            console.print(f"  {p['name'][:50]} | {p['store_name']} | {fmt_price(p['price'])}")
-
+    data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+    console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_preferences(args):
-    """Muestra preferencias inferidas del historial."""
-    data = api("GET", "/agent/preferences")
-    console.print(f"[bold]Perfil de compra:[/] {data['username']}")
-    console.print(f"  Órdenes: {data['total_orders']}")
-    console.print(f"  Total gastado: {fmt_price(data['total_spent'])}")
-    if data.get("favorite_store"):
-        console.print(f"  Tienda favorita: [bold]{data['favorite_store']}[/]")
-    if data.get("last_order_date"):
-        console.print(f"  Última compra: {data['last_order_date'][:10]}")
-
+    data = cli_api("GET", "/agent/preferences")
+    console.print(f"[bold]Total gastado:[/] {fmt_price(data.get('total_spent', 0))}")
+    console.print(f"[bold]Órdenes:[/] {data.get('total_orders', 0)}")
 
 def cmd_countries(args):
-    """Lista países y tiendas disponibles."""
-    data = api("GET", "/countries")
+    data = cli_api("GET", "/countries")
     countries = data.get("countries", {})
-    table = Table(title="[bold #3cffd0]Países y supermercados[/]", border_style="dim blue")
-    table.add_column("Pais", style="bold")
+    table = Table(title="[bold #3cffd0]Países[/]", border_style="dim blue")
+    table.add_column("País", style="bold")
     table.add_column("Tiendas")
     table.add_column("Cant.", justify="center")
-
-    for code, info in countries.items():
-        stores_list = ", ".join(STORES[s]["name"] for s in info["stores"] if s in STORES)
-        emoji = STORES.get(info["stores"][0], {}).get("emoji", "")
-        table.add_row(f"{emoji} {info['name']}", stores_list, str(info["count"]))
-
+    for code, info in sorted(countries.items()):
+        table.add_row(info["name"], ", ".join(info["stores"]), str(info["count"]))
     console.print()
     console.print(table)
     console.print(f"\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
 
-
 def cmd_lines(args):
-    """Lista líneas de negocio con sus retailers."""
-    data = api("GET", "/lines")
+    data = cli_api("GET", "/lines")
     lines = data.get("lines", {})
-
     table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style="dim blue")
-    table.add_column("Línea", style="bold", )
+    table.add_column("Línea", style="bold")
     table.add_column("Retailers")
     table.add_column("Cant.", justify="center")
-
     for line_id, info in lines.items():
         stores_str = ", ".join(s["name"] for s in info["stores"].values())
         table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
-
     console.print()
     console.print(table)
-    console.print(f"\n[dim]market search --line farmacias \"paracetamol\"[/] [dim]para buscar en una línea[/]")
-
 
 def cmd_categories(args):
-    """Muestra el árbol de categorías de una tienda."""
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
-        data = api("GET", f"/categories/{args.store}")
+        data = cli_api("GET", f"/categories/{args.store}")
     if isinstance(data, list):
         _print_cat_tree(data, indent=0)
     else:
         console.print(f"[yellow]Sin categorías para {args.store}[/]")
-
 
 def _print_cat_tree(cats, indent):
     for c in cats[:15]:
@@ -765,24 +440,20 @@ def _print_cat_tree(cats, indent):
         if children and indent < 1:
             _print_cat_tree(children, indent + 1)
 
-
 def cmd_barcode(args):
-    """Busca un producto por código de barras."""
     with console.status(f"[cyan]Buscando código {args.code}..."):
-        data = api("GET", f"/products/barcode/{args.code}")
+        data = cli_api("GET", f"/products/barcode/{args.code}")
     table = Table(title=f"[bold #3cffd0]Código: {args.code}[/]", border_style="dim blue")
     for k, v in data.items():
         if v:
             table.add_row(k, str(v)[:100])
     console.print(table)
 
-
 def cmd_enrich(args):
-    """Busca productos en Open Food Facts."""
     with console.status(f"[cyan]Buscando '{args.query}' en Open Food Facts..."):
-        data = api("GET", f"/products/enrich?query={args.query}&limit={args.limit}")
+        data = cli_api("GET", f"/products/enrich?query={args.query}&limit={args.limit}")
     results = data.get("results", [])
-    table = Table(title=f"[bold #3cffd0]Open Food Facts: {args.query} ({data['total']:,} total)[/]", border_style="dim blue")
+    table = Table(title=f"[bold #3cffd0]Open Food Facts: {args.query} ({data.get('total', 0):,} total)[/]", border_style="dim blue")
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=35, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=15)
@@ -795,9 +466,7 @@ def cmd_enrich(args):
     console.print()
     console.print(table)
 
-
 def cmd_basket(args):
-    """Compara canasta completa entre retailers."""
     items = []
     for arg in args.items:
         if ":" in arg:
@@ -807,9 +476,9 @@ def cmd_basket(args):
             items.append({"name": arg, "qty": 1})
     stores = []
     if args.country:
-        stores = [k for k,v in STORES.items() if v["country"] == args.country]
+        stores = [k for k, v in STORES.items() if v["country"] == args.country]
     with console.status("[cyan]Comparando canasta..."):
-        data = api("POST", "/v1/basket/compare", {"items": items, "stores": stores or None})
+        data = cli_api("POST", "/v1/basket/compare", {"items": items, "stores": stores or None})
     if getattr(args, "json", False):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
@@ -829,15 +498,13 @@ def cmd_basket(args):
     if best:
         console.print(f"\n[#00FF88]✓ Mejor opción: {comp[best]['store_name']} — {comp[best]['currency']} {comp[best]['total']:.2f}[/]")
 
-
 def cmd_inflation(args):
-    """Muestra la inflación desde el data moat."""
     params = []
     if args.country: params.append(f"country={args.country}")
     if args.line: params.append(f"line={args.line}")
     qs = "&".join(params)
     with console.status("[cyan]Calculando inflación..."):
-        data = api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
+        data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
     if getattr(args, "json", False):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
@@ -856,229 +523,138 @@ def cmd_inflation(args):
             table.add_row(i["product"][:35], f"{i['currency']} {i['first_price']:.2f}", f"{i['currency']} {i['last_price']:.2f}", f"[{c}]{i['delta_pct']:+.1f}%[/]")
         console.print(table)
 
-
 def cmd_alerts(args):
-    """Maneja alertas de precio."""
     if args.action == "list":
-        data = api("POST", "/v1/alerts", {"product": "", "action": "list"})
+        data = cli_api("POST", "/v1/alerts", {"product": "", "action": "list"})
         alerts_list = data.get("alerts", [])
         if not alerts_list:
             console.print("[yellow]No hay alertas configuradas.[/]")
             return
         for a in alerts_list:
-            console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}% | {a.get('country','todas')} | {a.get('created_at','')[:10]}")
-        return
-    if args.action == "check":
-        data = api("GET", "/v1/alerts/check")
-        triggered = data.get("triggered", [])
-        if not triggered:
-            console.print("[dim]Sin alertas disparadas.[/]")
-            return
-        for t in triggered:
-            dir_emoji = "🔻" if t["direction"] == "down" else "🔺"
-            console.print(f"  {dir_emoji} {t['product']} | {t['store']} | {t['currency']} {t['prev_price']} → {t['curr_price']} ({t['delta_pct']:+.1f}%)")
-        return
-    if not args.product:
-        console.print("[yellow]USO: market alerts create <producto> [--country AR] [--threshold 5][/]")
-        return
-    data = api("POST", "/v1/alerts", {"product": args.product, "country": args.country, "threshold_pct": args.threshold, "action": args.action})
-    console.print(f"[#00FF88]{data.get('message','')}[/]")
-
-
-def cmd_ticket(args):
-    """Escanea ticket y compara precios."""
-    import httpx
-    with open(args.file, "rb") as f:
-        resp = httpx.post(f"{API}/v1/ticket/scan", files={"file": f}, timeout=30)
-    data = resp.json()
-    if data.get("items"):
-        table = Table(title="[bold white]Comparativa ticket vs data moat[/]", border_style="dim blue")
-        table.add_column("Ticket", max_width=35)
-        table.add_column("Mejor precio", max_width=30)
-        table.add_column("Tienda", max_width=12)
-        table.add_column("Precio", justify="right")
-        for i in data["items"]:
-            table.add_row(i["ticket_text"][:35], i["best_match"][:30], i["store"], f"{i['currency']} {i['price']:.2f}")
-        console.print(table)
-        console.print(f"\nAhorro potencial: [#00FF88]{data['currency'] if data.get('items') else ''} {data['potential_savings']:.2f}[/]")
+            console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}%")
     else:
-        console.print(f"[yellow]{data.get('message','No se detectaron productos.')}[/]")
+        data = cli_api("POST", "/v1/alerts", {"product": args.product, "threshold_pct": args.threshold, "action": "create"})
+        console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
 
-
-def cmd_voice(args):
-    """Transcribe audio y ejecuta market ask."""
-    import httpx
-    with open(args.file, "rb") as f:
-        resp = httpx.post(f"{API}/v1/voice/transcribe", files={"file": f}, timeout=30)
-    data = resp.json()
-    transcript = data.get("transcript", "").strip()
-    if not transcript or transcript.startswith("["):
-        console.print(f"[yellow]{transcript}[/]")
-        return
-    console.print(f"[dim]Transcripción: {transcript}[/]")
-    # Execute market ask with transcript
-    with console.status("[cyan]Ejecutando..."):
-        ask_data = api("POST", "/agent/ask", {"prompt": transcript})
-    if "message" in ask_data:
-        console.print(f"[#3cffd0]{ask_data['message']}[/]")
-    if "comparison" in ask_data:
-        for c in ask_data.get("comparison", [])[:3]:
-            stores = ", ".join(f"{s}: {fmt_price(p)}" for s, p in c.get("prices", {}).items())
-            console.print(f"  {c['name'][:40]} | {stores}")
-    if "results" in ask_data:
-        for p in ask_data.get("results", [])[:3]:
-            console.print(f"  {p['name'][:40]} | {p['store_name']} | {fmt_price(p['price'])}")
-
+def cmd_about(args):
+    console.print(Panel.fit(
+        "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
+        "[#888888]Un solo pip install. Una API. 27 retailers en 8 países.[/]\n"
+        "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
+        "[#888888]Open source (MIT). Gratis para developers.[/]\n\n"
+        "[dim]github.com/Treevu-ai/cli-market-world[/]",
+        border_style="#00FF88"
+    ))
 
 def cmd_whoami(args):
-    """Muestra el usuario autenticado."""
-    try:
-        data = api("GET", "/auth/whoami")
-        console.print(f"[#3cffd0]Sesión activa: [bold]{data['username']}[/][/]")
-    except SystemExit:
-        pass
+    data = cli_api("GET", "/auth/whoami")
+    console.print(f"[#3cffd0]✓ {data.get('username', '?')}[/]")
 
-
-# ── Store config (duplicated for CLI standalone use) ───────────────────────
-
-STORES = {
-    "wong":      {"name": "Wong",       "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
-    "metro":     {"name": "Metro",      "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
-    "plazavea":  {"name": "Plaza Vea",  "country": "PE", "currency": "PEN", "emoji": "🇵🇪", "line": "supermercados"},
-    "carrefour": {"name": "Carrefour",  "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
-    "jumbo_ar":  {"name": "Jumbo",      "country": "AR", "currency": "ARS", "emoji": "🇦🇷", "line": "supermercados"},
-    "carrefour_br": {"name": "Carrefour", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "supermercados"},
-    "chedraui":  {"name": "Chedraui",   "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
-    "heb":       {"name": "HEB",        "country": "MX", "currency": "MXN", "emoji": "🇲🇽", "line": "supermercados"},
-    "olimpica":  {"name": "Olímpica",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
-    "exito":     {"name": "Éxito",      "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "supermercados"},
-    "drogaraia": {"name": "Droga Raia",  "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
-    "drogasil":  {"name": "Drogasil",    "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "farmacias"},
-    "magazineluiza": {"name": "Magazine Luiza", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
-    "motorola_br":   {"name": "Motorola",       "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "electro"},
-    "renner":    {"name": "Lojas Renner", "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "moda"},
-    "centauro":  {"name": "Centauro",     "country": "BR", "currency": "BRL", "emoji": "🇧🇷", "line": "deportes"},
-    "homecenter":{"name": "Homecenter",   "country": "CO", "currency": "COP", "emoji": "🇨🇴", "line": "hogar"},
-    "carrefour_es": {"name": "Carrefour España", "country": "ES", "currency": "EUR", "emoji": "🇪🇸", "line": "supermercados"},
-    "decathlon_fr":  {"name": "Decathlon",       "country": "FR", "currency": "EUR", "emoji": "🇫🇷", "line": "deportes"},
-}
-
-LINES = {
-    "supermercados": {"name": "Supermercados",       "emoji": "🛒"},
-    "farmacias":     {"name": "Farmacias y Salud",   "emoji": "💊"},
-    "electro":       {"name": "Electro y Tecnología","emoji": "📱"},
-    "hogar":         {"name": "Hogar y Construcción", "emoji": "🏠"},
-}
-
-COUNTRIES = {
-    "AR": "Argentina",
-    "BR": "Brasil",
-    "MX": "México",
-    "CO": "Colombia",
-    "PE": "Perú",
-    "CL": "Chile",
-    "IT": "Italia",
-    "FR": "Francia",
-}
-
+def cmd_lang(args):
+    if args.lang_code:
+        set_lang(args.lang_code)
+        console.print(f"[#3cffd0]Idioma cambiado a {args.lang_code}[/]")
+    else:
+        current = get_lang()
+        console.print(f"[dim]Idioma actual: {current}. Usá market lang en para inglés.[/]")
 
 # ── Main ────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(
-        description=_("desc"),
-        usage=_("usage"),
-    )
+    parser = argparse.ArgumentParser(description=t("desc"), usage=t("usage"))
+    parser.add_argument("--json", action="store_true", help=t("json_help"))
     sub = parser.add_subparsers(dest="command")
 
     # login
-    p = sub.add_parser("login", help=_("login"))
-    p.add_argument("--username", default="admin")
-    p.add_argument("--password", default="market")
+    p = sub.add_parser("login", help=t("login"))
+    p.add_argument("--username", default="admin", help=t("username"))
+    p.add_argument("--password", default="market", help=t("password"))
 
     # search
-    p = sub.add_parser("search", help=_("search"))
+    p = sub.add_parser("search", help=t("search"))
     p.add_argument("query", nargs="?", default="")
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--line", choices=list(LINES.keys()), default=None, help=_("line"))
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
-    p.add_argument("--page", "-p", type=int, default=1, help=_("page"))
+    p.add_argument("--page", "-p", type=int, default=1)
 
     # compare
-    p = sub.add_parser("compare", help=_("compare"))
+    p = sub.add_parser("compare", help=t("compare"))
     p.add_argument("query", nargs="?", default="")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None, help=_("country"))
-    p.add_argument("--line", choices=list(LINES.keys()), default=None, help=_("line"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
 
     # add
-    p = sub.add_parser("add", help=_("add"))
-    p.add_argument("product_id", help=_("product_id"))
-    p.add_argument("--name", help=_("product_name_help"))
-    p.add_argument("--price", type=float, default=None, help=_("price_help"))
+    p = sub.add_parser("add", help=t("add"))
+    p.add_argument("product_id")
+    p.add_argument("--name")
+    p.add_argument("--price", type=float, default=None)
     p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--qty", type=int, default=1)
 
     # cart
-    sub.add_parser("cart", help=_("cart"))
+    sub.add_parser("cart", help=t("cart"))
 
     # cart-remove
-    p = sub.add_parser("cart-remove", help=_("cart_remove"))
-    p.add_argument("product_id", help=_("product_remove_help"))
+    p = sub.add_parser("cart-remove", help=t("cart_remove"))
+    p.add_argument("product_id")
 
     # cart-update
-    p = sub.add_parser("cart-update", help=_("cart_update"))
-    p.add_argument("product_id", help=_("product_update_help"))
-    p.add_argument("quantity", type=int, help=_("quantity_help"))
+    p = sub.add_parser("cart-update", help=t("cart_update"))
+    p.add_argument("product_id")
+    p.add_argument("quantity", type=int)
 
     # cart-clear
-    sub.add_parser("cart-clear", help=_("cart_clear"))
+    sub.add_parser("cart-clear", help=t("cart_clear"))
 
     # checkout
-    p = sub.add_parser("checkout", help=_("checkout"))
+    p = sub.add_parser("checkout", help=t("checkout"))
     p.add_argument("--payment", choices=["yape", "plin", "tarjeta"], default="yape")
 
     # orders
-    sub.add_parser("orders", help=_("orders"))
+    sub.add_parser("orders", help=t("orders"))
 
     # reorder
-    p = sub.add_parser("reorder", help=_("reorder"))
-    p.add_argument("order_id", nargs="?", default=None, help=_("order_id_help"))
+    p = sub.add_parser("reorder", help=t("reorder"))
+    p.add_argument("order_id", nargs="?", default=None)
 
     # ask
-    p = sub.add_parser("ask", help=_("ask"))
-    p.add_argument("prompt", help=_("prompt"))
+    p = sub.add_parser("ask", help=t("ask"))
+    p.add_argument("prompt")
 
     # preferences
-    sub.add_parser("preferences", help=_("preferences"))
+    sub.add_parser("preferences", help=t("preferences"))
 
     # categories
-    p = sub.add_parser("categories", help=_("categories"))
-    p.add_argument("store", choices=list(STORES.keys()), help=_("store"))
+    p = sub.add_parser("categories", help=t("categories"))
+    p.add_argument("store", choices=list(STORES.keys()))
 
     # barcode
-    p = sub.add_parser("barcode", help=_("barcode"))
-    p.add_argument("code", help=_("barcode_help"))
+    p = sub.add_parser("barcode", help=t("barcode"))
+    p.add_argument("code")
 
     # enrich
-    p = sub.add_parser("enrich", help=_("enrich"))
-    p.add_argument("query", help=_("query"))
+    p = sub.add_parser("enrich", help=t("enrich"))
+    p.add_argument("query")
     p.add_argument("--limit", "-l", type=int, default=5)
 
     # countries
-    sub.add_parser("countries", help=_("countries"))
+    sub.add_parser("countries", help=t("countries"))
 
     # lines
-    sub.add_parser("lines", help=_("lines"))
+    sub.add_parser("lines", help=t("lines"))
 
     # about
-    sub.add_parser("about", help=_("about"))
+    sub.add_parser("about", help=t("about"))
 
     # whoami
-    sub.add_parser("whoami", help=_("whoami"))
-    p_lang=sub.add_parser("lang", help=_("lang"))
-    p_lang.add_argument("lang_code", nargs="?", help=_("lang_code_help"))
+    sub.add_parser("whoami", help=t("whoami"))
+
+    # lang
+    p_lang = sub.add_parser("lang", help=t("lang"))
+    p_lang.add_argument("lang_code", nargs="?")
 
     # basket
     p = sub.add_parser("basket", help="Comparar canasta completa entre retailers")
@@ -1091,76 +667,32 @@ def main():
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
 
     # alerts
-    p = sub.add_parser("alerts", help="Alertas de precio: create, list, delete, check")
-    p.add_argument("action", choices=["create", "list", "delete", "check"], help="Acción")
-    p.add_argument("product", nargs="?", help="Producto a monitorear")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--threshold", type=float, default=5.0, help="% de cambio (default 5)")
-
-    # ticket
-    p = sub.add_parser("ticket", help="Escanear ticket y comparar precios")
-    p.add_argument("action", choices=["scan"], help="Acción")
-    p.add_argument("file", help="Ruta a la foto del ticket")
-
-    # voice
-    p = sub.add_parser("voice", help="Transcribir audio y ejecutar market ask")
-    p.add_argument("file", help="Ruta al archivo de audio (.ogg, .mp3, .wav)")
-
-    parser.add_argument("--json", action="store_true", help=_("json_help"))
+    p = sub.add_parser("alerts", help="Gestionar alertas de precios")
+    p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
+    p.add_argument("--product")
+    p.add_argument("--threshold", type=float, default=5.0)
 
     args = parser.parse_args()
-
-    if args.command is None:
-        if args.json:
-            import json as _json
-            console.print(_json.dumps(BUSINESS_MODEL_JSON, indent=2, ensure_ascii=False))
-        else:
-            console.print(welcome_banner())
-            console.print(Panel.fit(
-                "[#888888]¿Es tu primera vez?[/] [#00FF88]market login[/] [#888888]→ autentícate (usuario: admin, password: market)[/]\n"
-                "[#888888]¿Quieres buscar algo?[/] [#00FF88]market search[/] [#888888]\"producto\" --country PE[/]\n"
-                "[#888888]¿Eres un agente IA?[/] [#00FF88]market --json[/] [#888888]→ salida estructurada MCP para LLMs[/]\n"
-                "[#888888]¿No sabes por donde empezar?[/] [#00FF88]market --help[/] [#888888]→ todos los comandos[/]",
-                border_style="#1A1A1A"
-            ))
+    if not args.command:
+        console.print(welcome_banner())
         return
 
-    if args.json and args.command == "about":
-        import json as _json
-        console.print(_json.dumps(BUSINESS_MODEL_JSON, indent=2, ensure_ascii=False))
-        return
-
-    commands = {
-        "login":    cmd_login,
-        "search":   cmd_search,
-        "compare":  cmd_compare,
-        "add":      cmd_add,
-        "cart":     cmd_cart,
-        "cart-remove": cmd_cart_remove,
-        "cart-update": cmd_cart_update,
-        "cart-clear":  cmd_cart_clear,
-        "checkout": cmd_checkout,
-        "orders":   cmd_orders,
-        "reorder":  cmd_reorder,
-        "ask":      cmd_ask,
-        "preferences": cmd_preferences,
-        "countries": cmd_countries,
-        "lines":     cmd_lines,
-        "categories": cmd_categories,
-        "basket":    cmd_basket,
-        "inflation": cmd_inflation,
-        "alerts":    cmd_alerts,
-        "ticket":    cmd_ticket,
-        "voice":     cmd_voice,
-        "barcode":  cmd_barcode,
-        "enrich":   cmd_enrich,
-        "about":    lambda a: console.print(BUSINESS_MODEL_BANNER),
-        "lang":     cmd_lang,
-        "whoami":   cmd_whoami,
+    handlers = {
+        "login": cmd_login, "search": cmd_search, "compare": cmd_compare,
+        "add": cmd_add, "cart": cmd_cart,
+        "cart-remove": cmd_cart_remove, "cart-update": cmd_cart_update,
+        "cart-clear": cmd_cart_clear, "checkout": cmd_checkout,
+        "orders": cmd_orders, "reorder": cmd_reorder,
+        "ask": cmd_ask, "preferences": cmd_preferences,
+        "countries": cmd_countries, "lines": cmd_lines,
+        "categories": cmd_categories, "barcode": cmd_barcode,
+        "enrich": cmd_enrich, "basket": cmd_basket,
+        "inflation": cmd_inflation, "alerts": cmd_alerts,
+        "about": cmd_about, "whoami": cmd_whoami, "lang": cmd_lang,
     }
-
-    commands[args.command](args)
-
+    handler = handlers.get(args.command)
+    if handler:
+        handler(args)
 
 if __name__ == "__main__":
     main()

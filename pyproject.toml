@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cli-market"
 version = "1.0.25"
-description = "CLI Market — 3,760+ retailers VTEX, 67 countries, 12 lines. Commerce infrastructure for AI agents."
+description = "CLI Market — 27 verified VTEX retailers across 8 countries, 4 lines. Commerce infrastructure for AI agents."
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{name = "CLI Market", email = "hello@cli-market.dev"}]
@@ -25,10 +25,13 @@ dependencies = [
     "pydantic>=2.0",
 ]
 
+[project.optional-dependencies]
+pg = ["asyncpg"]
+
 [project.scripts]
 market = "market_cli:main"
 market-server = "market_server:main"
 wongcli = "wongcli:main"
 
 [tool.setuptools]
-py-modules = ["market_cli", "market_server", "market_mcp", "wongcli", "market_stores"]
+py-modules = ["market_cli", "market_server", "market_mcp", "wongcli", "market_stores", "market_core"]
