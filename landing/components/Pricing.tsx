@@ -3,8 +3,8 @@ import { useLang } from "@/lib/LanguageContext";
 
 const tiers = [
   { key:"free", title_es:"Free", title_en:"Free", price:"$0", period_es:"para siempre", period_en:"forever", color:"#3cffd0",
-    f_es:["30 MCP tools","60 req/min · 1,000 req/día","1 API key (read)","Dashboard en tiempo real","Health checks"],
-    f_en:["30 MCP tools","60 req/min · 1,000 req/day","1 API key (read)","Live dashboard","Health checks"],
+    f_es:["36 MCP tools","60 req/min · 1,000 req/día","1 API key (read)","Dashboard en tiempo real","Health checks"],
+    f_en:["36 MCP tools","60 req/min · 1,000 req/day","1 API key (read)","Live dashboard","Health checks"],
     cta_es:"Empezar gratis", cta_en:"Start free", href:"https://github.com/Treevu-ai/cli-market-world" },
   { key:"pro", title_es:"Pro", title_en:"Pro", price:"$49", period_es:"/ mes", period_en:"/ month", color:"#FFD600",
     f_es:["Todo lo de Free","300 req/min · 10,000 req/día","10 API keys (read + write)","Checkout habilitado","Data moat export (JSON/CSV)","Soporte prioritario"],
@@ -27,7 +27,7 @@ export default function Pricing() {
           {lang === "es" ? "Tres planes. Para cada etapa." : "Three plans. For every stage."}
         </h2>
         <p className="font-mono text-[12px] sm:text-[13px] md:text-[15px] text-[#666] tracking-[0.5px] leading-[1.6] max-w-[500px]">
-          {lang === "es" ? "30 MCP tools. 30 retailers verificados. Data moat real con 4,400+ precios. Elegí el plan que se ajusta a lo que estás construyendo." : "30 MCP tools. 30 verified retailers. Real data moat with 4,400+ prices. Pick the plan that fits what you are building."}
+          {lang === "es" ? "36 MCP tools. 38 retailers verificados. Data moat real con 4,400+ precios. Elegí el plan que se ajusta a lo que estás construyendo." : "36 MCP tools. 30 verified retailers. Real data moat with 4,400+ prices. Pick the plan that fits what you are building."}
         </p>
       </div>
 
