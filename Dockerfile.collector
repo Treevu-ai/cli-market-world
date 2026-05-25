@@ -3,5 +3,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY collect_prices.py market_stores.py market_core.py ./
+COPY market_connectors/ ./market_connectors/
 ENV PYTHONUNBUFFERED=1
 CMD ["python", "collect_prices.py", "--daemon", "--interval", "8"]
