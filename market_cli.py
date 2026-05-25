@@ -117,7 +117,7 @@ WELCOME_BANNER = """\n[#00FF88]  ╭──────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 4 líneas
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 11 países       [#00FF88]●[/] 4 líneas
      [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autónomo         [#00FF88]●[/] open source
 
@@ -139,7 +139,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]commerce infrastructure for humans and ai agents[/]
 
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 4 lines
+     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 11 countries    [#00FF88]●[/] 4 lines
      [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source
 
@@ -539,7 +539,7 @@ def cmd_alerts(args):
 def cmd_about(args):
     console.print(Panel.fit(
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
-        "[#888888]Un solo pip install. Una API. 27 retailers en 8 países.[/]\n"
+        "[#888888]Un solo pip install. Una API. 27 retailers en 11 países.[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
         "[#888888]Open source (MIT). Gratis para developers.[/]\n\n"
         "[dim]github.com/Treevu-ai/cli-market-world[/]",

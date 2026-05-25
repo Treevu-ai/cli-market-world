@@ -27,7 +27,7 @@ export default function Pricing() {
           {lang === "es" ? "Tres planes. Para cada etapa." : "Three plans. For every stage."}
         </h2>
         <p className="font-mono text-[12px] sm:text-[13px] md:text-[15px] text-[#666] tracking-[0.5px] leading-[1.6] max-w-[500px]">
-          {lang === "es" ? "36 MCP tools. 38 retailers verificados. Data moat real con 4,400+ precios. Elegí el plan que se ajusta a lo que estás construyendo." : "36 MCP tools. 30 verified retailers. Real data moat with 4,400+ prices. Pick the plan that fits what you are building."}
+          {lang === "es" ? "36 MCP tools. 60 retailers verificados. Data moat real con 4,400+ precios. Elegí el plan que se ajusta a lo que estás construyendo." : "36 MCP tools. 30 verified retailers. Real data moat with 4,400+ prices. Pick the plan that fits what you are building."}
         </p>
       </div>
 

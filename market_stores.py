@@ -1,4 +1,4 @@
-# Auto-generated — 38 verified retailers (35 VTEX + 3 Shopify)
+# 60 verified retailers — 38 VTEX + 15 Shopify + 7 Magento
 STORES = {
 
     # ── SUPERMERCADOS ──

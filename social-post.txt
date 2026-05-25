@@ -1,10 +1,10 @@
 POST — X / LinkedIn — CLI Market
 =========================================
 HEADER:
-CLI Market — 30 retailers. Una sola API.
+CLI Market — 60 retailers. Una sola API.
 
 BODY:
-Infraestructura de comercio para agentes de IA. 30 retailers VTEX verificados en 8 países y 6 líneas de negocio.
+Infraestructura de comercio para agentes de IA. 60 retailers VTEX verificados en 11 países y 6 líneas de negocio.
 
 Busca, compara y compra desde la terminal:
 - market search "leche" --country PE

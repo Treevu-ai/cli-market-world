@@ -1,4 +1,4 @@
-# Auto-generated — 30 retailers
+# Auto-generated — 60 retailers
 STORES = {
 
     # ── SUPERMERCADOS ──

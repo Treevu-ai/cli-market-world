@@ -1,9 +1,9 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-38-brightgreen" alt="38 retailers">
+  <img src="https://img.shields.io/badge/retailers-60-brightgreen" alt="60 retailers">
   <img src="https://img.shields.io/badge/lines-6-blue" alt="6 lines">
-  <img src="https://img.shields.io/badge/countries-9-orange" alt="9 countries">
+  <img src="https://img.shields.io/badge/countries-11-orange" alt="11 countries">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
@@ -22,7 +22,7 @@
 <!-- mcp-name: io.github.Treevu-ai/cli-market -->
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Your AI agent can search, compare, and buy across 38 retailers in 9 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Your AI agent can search, compare, and buy across 60 retailers in 11 countries.</b><br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -30,7 +30,7 @@
 
 **The problem:** AI agents can't comparison-shop. Carrefour, Wong, Motorola, HEB — 38 retailers across Latin America and Europe share the same e-commerce engine (VTEX). But every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One `pip install`. One API call across all 38 retailers. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across all 60 retailers. One JSON schema.
 
 - **Search** any product across 30 verified retailers in 9 countries
 - **Compare** prices cross-border — ARS, BRL, MXN, PEN, COP, CLP, EUR

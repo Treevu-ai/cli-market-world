@@ -15,7 +15,7 @@ So I built one.
 
 Technical details:
 - Single Python connector that maps VTEX's public search/catalog endpoints
-- 30 retailers = 30 config lines: {domain, country, currency, line}
+- 60 retailers = 30 config lines: {domain, country, currency, line}
 - SQLite/PostgreSQL price snapshots for historical data (data moat)
 - Query expansion with line-specific modifiers + feedback loop
 - Rich terminal UI + REST API + MCP server (19 tools)
@@ -38,7 +38,7 @@ REDDIT — r/Python
 RULES: Must be Python-related. Show your work.
 STRATEGY: Python-first, code-first.
 
-TITLE: CLI Market — a Python CLI + MCP server that queries 30 retailers in 8 countries
+TITLE: CLI Market — a Python CLI + MCP server that queries 60 retailers in 11 countries
 
 BODY:
 Built with Python. Works from the terminal.
@@ -68,7 +68,7 @@ TITLE: 19 MCP tools for autonomous commerce across 30 VTEX retailers
 BODY:
 market_login, market_lines, market_search, market_compare, market_add, market_cart, market_cart_update, market_cart_remove, market_checkout, market_orders, market_reorder, market_ask, market_basket, market_inflation, market_categories, market_barcode, market_enrich, market_intel, market_ticket
 
-All 19 tools via MCP stdio. Your agent searches products, compares prices cross-border, and completes purchases across 30 retailers in 8 countries.
+All 19 tools via MCP stdio. Your agent searches products, compares prices cross-border, and completes purchases across 60 retailers in 11 countries.
 
 Python. MIT. pip install cli-market.
 
