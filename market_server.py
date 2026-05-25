@@ -594,6 +594,95 @@ def data_export(body: dict):
     return {"format": "json", "data": data, "total": len(data)}
 
 
+@app.post("/v1/data/export-history")
+def data_export_history(body: dict):
+    """Export historical price data with date range and filters."""
+    from datetime import timedelta
+    days = body.get("days", 30)
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    line = body.get("line"); store = body.get("store")
+    fmt = body.get("format", "json"); limit = min(body.get("limit", 500), 5000)
+    db = get_db()
+    q = "SELECT * FROM price_snapshots WHERE price > 0 AND queried_at >= ?"
+    params: list = [since]
+    if line: q += " AND line = ?"; params.append(line)
+    if store: q += " AND store = ?"; params.append(store)
+    q += " ORDER BY queried_at DESC LIMIT ?"; params.append(limit)
+    rows = db.execute(q, params).fetchall(); db.close()
+    data = [dict(r) for r in rows]
+    prices = [r["price"] for r in data if r.get("price")]
+    if fmt == "csv":
+        import io, csv as _csv
+        buf = io.StringIO()
+        if data:
+            w = _csv.DictWriter(buf, fieldnames=data[0].keys()); w.writeheader(); w.writerows(data)
+        return {"format":"csv","data":buf.getvalue(),"total":len(data),"since":since}
+    return {"format":"json","total":len(data),"since":since,
+            "data":data[:100],
+            "stats":{"avg_price":round(sum(prices)/len(prices),2),"min_price":min(prices),"max_price":max(prices)} if prices else {}}
+
+
+@app.get("/dashboard/usage")
+def dashboard_usage(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    from market_core import db_get_subscription, TIERS
+    sub = db_get_subscription(username); tier = sub.get("tier","free")
+    limits = TIERS.get(tier, TIERS["free"])
+    db = get_db()
+    today_reqs = db.execute("SELECT SUM(counter) as n FROM rate_limits WHERE key LIKE ? AND window_start >= ?",
+        ("%:daily", datetime.now(timezone.utc).strftime("%Y-%m-%d"))).fetchone()["n"] or 0
+    keys = db.execute("SELECT COUNT(*) as n FROM api_keys WHERE username=?",(username,)).fetchone()["n"]
+    db.close()
+    return {"username":username,"tier":tier,
+            "limits":{"req_min":limits["req_min"] or "unlimited","req_day":limits["req_day"] or "unlimited","checkout":limits["checkout"]},
+            "usage":{"requests_today":today_reqs,"api_keys_used":keys}}
+
+
+@app.post("/checkout/yape")
+def checkout_yape(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    cart = db_get_cart(username)
+    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
+    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    from market_core import db_create_order as _co
+    _co(username, cart, "yape", total, status="pending", order_id=order_id)
+    db_clear_cart(username)
+    qr_ref = f"yape-{order_id.lower()}"
+    return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"yape",
+            "qr_reference":qr_ref,"qr_url":f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={qr_ref}",
+            "status":"pending","message":"Escanea el QR con Yape/Plin para completar el pago."}
+
+
+@app.post("/checkout/webhook")
+def checkout_webhook(order_id: str = "", status: str = "paid"):
+    if not order_id: raise HTTPException(status_code=400, detail="order_id required")
+    db = get_db()
+    db.execute("UPDATE app_orders SET status=? WHERE order_id=?", (status, order_id))
+    db.commit(); db.close()
+    return {"order_id":order_id,"status":status,"message":f"Payment {status}"}
+
+
+@app.post("/billing/checkout")
+def billing_checkout(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    import os as _os
+    stripe_key = _os.getenv("STRIPE_SECRET_KEY","")
+    if not stripe_key: raise HTTPException(status_code=501, detail="Stripe not configured")
+    try:
+        import stripe; stripe.api_key = stripe_key
+        session = stripe.checkout.Session.create(payment_method_types=["card"],
+            line_items=[{"price":_os.getenv("STRIPE_PRICE_PRO","price_pro"),"quantity":1}],
+            mode="subscription",success_url="https://cli-market.dev?upgraded=true",
+            cancel_url="https://cli-market.dev?upgraded=false",client_reference_id=username)
+        return {"url":session.url}
+    except ImportError: raise HTTPException(status_code=501, detail="pip install stripe")
+    except Exception as e: raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/auth/subscription")
 def auth_subscription(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
