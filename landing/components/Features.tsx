@@ -74,7 +74,7 @@ export default function Features() {
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{_t("features_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">
-          {lang === "es" ? "19 herramientas.\nUn ecosistema." : "19 tools.\nOne ecosystem."}
+          {lang === "es" ? "30 herramientas.\nUn ecosistema." : "30 tools.\nOne ecosystem."}
         </h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">
           {lang === "es" ? "Clickea cualquier tool para ver como funciona." : "Click any tool to see how it works."}

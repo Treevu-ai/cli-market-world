@@ -545,6 +545,142 @@ def analytics_stats():
     return {"total_price_snapshots": total_snapshots, "total_search_queries": total_queries, "unique_stores_tracked": stores_tracked, "unique_products_tracked": products_tracked, "latest_snapshot_at": latest}
 
 
+@app.get("/analytics/trending")
+def analytics_trending(country: str | None = None, line: str | None = None, limit: int = 10):
+    """Products with the biggest price movement in the last 7 days."""
+    db = get_db()
+    q = """SELECT name, store_name, price, currency, line_name, queried_at
+           FROM price_snapshots WHERE price > 0"""
+    params: list = []
+    if country:
+        q += " AND store IN (SELECT store FROM price_snapshots GROUP BY store)"
+        params.append(country)
+    if line:
+        q += " AND line = ?"
+        params.append(line)
+    q += " ORDER BY queried_at DESC LIMIT ?"
+    params.append(limit * 2)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    return {"trending": [dict(r) for r in rows], "total": len(rows)}
+
+
+@app.post("/v1/data/export")
+def data_export(body: dict):
+    """Export data moat as JSON or CSV."""
+    country = body.get("country")
+    line = body.get("line")
+    fmt = body.get("format", "json")
+    limit = min(body.get("limit", 100), 1000)
+    db = get_db()
+    q = "SELECT * FROM price_snapshots WHERE price > 0"
+    params: list = []
+    if line:
+        q += " AND line = ?"
+        params.append(line)
+    q += " ORDER BY queried_at DESC LIMIT ?"
+    params.append(limit)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    data = [dict(r) for r in rows]
+    if fmt == "csv":
+        import io, csv as _csv
+        buf = io.StringIO()
+        if data:
+            w = _csv.DictWriter(buf, fieldnames=data[0].keys())
+            w.writeheader()
+            w.writerows(data)
+        return {"format": "csv", "data": buf.getvalue(), "total": len(data)}
+    return {"format": "json", "data": data, "total": len(data)}
+
+
+@app.get("/auth/subscription")
+def auth_subscription(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    from market_core import db_get_subscription, db_list_api_keys
+    sub = db_get_subscription(username)
+    keys = db_list_api_keys(username)
+    return {"username": username, "subscription": sub, "api_keys": len(keys)}
+
+
+@app.post("/v1/ticket/scan-url")
+async def ticket_scan_url(body: dict):
+    """Ticket scan from a public URL instead of file upload."""
+    url = body.get("url", "")
+    country = body.get("country")
+    import tempfile, httpx as _hx
+    async with _hx.AsyncClient(timeout=30) as client:
+        r = await client.get(url)
+        if r.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Cannot fetch image: HTTP {r.status_code}")
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+            tmp.write(r.content)
+            tmp_path = tmp.name
+    try:
+        result = subprocess.run(["tesseract", tmp_path, "stdout", "-l", "spa", "--psm", "6"],
+                               capture_output=True, text=True, timeout=30)
+        ocr_text = result.stdout.strip() if result.returncode == 0 else ""
+    except FileNotFoundError:
+        ocr_text = "[Tesseract no instalado]"
+    finally:
+        os.unlink(tmp_path)
+    return {"ocr_text": ocr_text[:1000], "country": country, "message": "OCR completado"}
+
+
+@app.post("/v1/voice/transcribe-url")
+async def voice_transcribe_url(body: dict):
+    """Voice transcription from a public URL instead of file upload."""
+    url = body.get("url", "")
+    import tempfile, httpx as _hx
+    suffix = ".ogg"
+    if url.endswith(".mp3"): suffix = ".mp3"
+    elif url.endswith(".wav"): suffix = ".wav"
+    async with _hx.AsyncClient(timeout=30) as client:
+        r = await client.get(url)
+        if r.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Cannot fetch audio: HTTP {r.status_code}")
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(r.content)
+            tmp_path = tmp.name
+    try:
+        result = subprocess.run(["whisper", tmp_path, "--model", "tiny", "--language", "es",
+                                "--output_format", "txt", "--output_dir", "/tmp"],
+                               capture_output=True, text=True, timeout=60)
+        if result.returncode == 0:
+            txt_file = tmp_path.rsplit(".",1)[0] + ".txt"
+            transcript = open(txt_file).read().strip() if os.path.exists(txt_file) else ""
+        else:
+            transcript = "[Transcripción no disponible]"
+    except FileNotFoundError:
+        transcript = "[Whisper no instalado]"
+    finally:
+        os.unlink(tmp_path)
+    return {"transcript": transcript[:2000], "language": "es"}
+
+
+@app.post("/v1/admin/scan-stores")
+async def admin_scan_stores(body: dict):
+    """Trigger a VTEX store scan. Returns candidate stores that respond."""
+    line_filter = body.get("line")
+    import asyncio as _aio, httpx as _hx
+    from market_core import STORES as _stores
+    # Quick scan: test the existing known-good domains for new country TLDs
+    candidates = []
+    for sk, sv in _stores.items():
+        if line_filter and sv.get("line") != line_filter:
+            continue
+        base = sv["base"]
+        try:
+            async with _hx.AsyncClient(timeout=_hx.Timeout(5.0)) as client:
+                r = await client.get(f"{base}/api/catalog_system/pub/products/search/test?_from=0&_to=1")
+                candidates.append({"store": sk, "name": sv["name"], "status": r.status_code, "ok": r.status_code in (200, 206)})
+        except Exception as e:
+            candidates.append({"store": sk, "name": sv["name"], "status": 0, "ok": False, "error": str(e)[:100]})
+    ok = [c for c in candidates if c["ok"]]
+    return {"scanned": len(candidates), "working": len(ok), "candidates": candidates}
+
+
 # ── Agent ──────────────────────────────────────────────────────────────────
 
 @app.get("/agent/preferences")

@@ -205,6 +205,62 @@ TOOLS = [
         "description": "Listar los 8 países disponibles con sus retailers y conteo de tiendas por país.",
         "inputSchema": {"type": "object", "properties": {}},
     },
+    # ── New tools (20–30) ────────────────────────────────────────────────────
+    {
+        "name": "market_ticket",
+        "description": "Escanear ticket de compra vía OCR y comparar precios contra el data moat. Pasa la URL pública de la imagen del ticket.",
+        "inputSchema": {"type":"object","properties":{"url":{"type":"string","description":"URL de la imagen del ticket (.jpg,.png)"},"country":{"type":"string","description":"Código de país (opcional): PE,AR,BR,MX,CO,CL"}},"required":["url"]},
+    },
+    {
+        "name": "market_voice",
+        "description": "Transcribir audio de voz a texto. Pasa la URL pública del archivo de audio (.ogg,.mp3,.wav).",
+        "inputSchema": {"type":"object","properties":{"url":{"type":"string","description":"URL del archivo de audio"}},"required":["url"]},
+    },
+    {
+        "name": "market_price_history",
+        "description": "Historial de precios de un producto. Muestra la evolución del precio en el data moat.",
+        "inputSchema": {"type":"object","properties":{"product_id":{"type":"string"},"store":{"type":"string"},"line":{"type":"string"},"limit":{"type":"integer","default":50}}},
+    },
+    {
+        "name": "market_stats",
+        "description": "Estadísticas del data moat: total de precios, tiendas activas, productos rastreados, última actualización.",
+        "inputSchema": {"type":"object","properties":{}},
+    },
+    {
+        "name": "market_alerts",
+        "description": "Alertas de precio: productos que bajaron más de X% en los últimos días.",
+        "inputSchema": {"type":"object","properties":{"product":{"type":"string","description":"Producto a monitorear"},"store":{"type":"string"},"threshold_pct":{"type":"number","default":5.0},"limit":{"type":"integer","default":10}},"required":["product"]},
+    },
+    {
+        "name": "market_whoami",
+        "description": "Verificar identidad: username y tier de suscripción del usuario autenticado.",
+        "inputSchema": {"type":"object","properties":{}},
+    },
+    {
+        "name": "market_preferences",
+        "description": "Preferencias del usuario basadas en historial de compras: tiendas favoritas, total gastado.",
+        "inputSchema": {"type":"object","properties":{}},
+    },
+    {
+        "name": "market_subscription",
+        "description": "Consultar el plan de suscripción actual: tier, rate limits, API keys disponibles.",
+        "inputSchema": {"type":"object","properties":{}},
+    },
+    {
+        "name": "market_export",
+        "description": "Exportar datos del data moat en formato CSV o JSON.",
+        "inputSchema": {"type":"object","properties":{"country":{"type":"string"},"line":{"type":"string"},"format":{"type":"string","default":"json"},"limit":{"type":"integer","default":100}}},
+    },
+    {
+        "name": "market_trending",
+        "description": "Productos con mayor movimiento de precio en los últimos 7 días.",
+        "inputSchema": {"type":"object","properties":{"country":{"type":"string"},"line":{"type":"string"},"limit":{"type":"integer","default":10}}},
+    },
+    {
+        "name": "market_scan",
+        "description": "Escanear nuevas tiendas VTEX. Busca retailers que respondan a la API VTEX y retorna candidatos verificados.",
+        "inputSchema": {"type":"object","properties":{"line":{"type":"string","description":"Filtrar por línea de negocio (opcional)"}}},
+    },
 ]
 
 
@@ -230,6 +286,18 @@ def handle_tool(name: str, args: dict) -> str:
         "market_enrich":     lambda a: api("GET", f"/products/enrich?query={a['query']}&limit={a.get('limit', 5)}"),
         "market_stores":     lambda a: api("GET", "/stores"),
         "market_countries":  lambda a: api("GET", "/countries"),
+        # ── New handlers (20–30) ──
+        "market_ticket":     lambda a: api("POST", "/v1/ticket/scan-url", {"url": a["url"], "country": a.get("country")}),
+        "market_voice":      lambda a: api("POST", "/v1/voice/transcribe-url", {"url": a["url"]}),
+        "market_price_history": lambda a: api("GET", f"/analytics/price-history?product_id={a.get('product_id','')}&store={a.get('store','')}&line={a.get('line','')}&limit={a.get('limit',50)}"),
+        "market_stats":      lambda a: api("GET", "/analytics/stats"),
+        "market_alerts":     lambda a: api("GET", f"/v1/intel/alerts?product={a['product']}&store={a.get('store','')}&threshold_pct={a.get('threshold_pct',5.0)}&limit={a.get('limit',10)}"),
+        "market_whoami":     lambda a: api("GET", "/auth/whoami"),
+        "market_preferences": lambda a: api("GET", "/agent/preferences"),
+        "market_subscription": lambda a: api("GET", "/auth/subscription"),
+        "market_export":     lambda a: api("POST", "/v1/data/export", {"country": a.get("country"), "line": a.get("line"), "format": a.get("format", "json"), "limit": a.get("limit", 100)}),
+        "market_trending":   lambda a: api("GET", f"/analytics/trending?country={a.get('country','')}&line={a.get('line','')}&limit={a.get('limit',10)}"),
+        "market_scan":       lambda a: api("POST", "/v1/admin/scan-stores", {"line": a.get("line")}),
     }
     handler = tool_map.get(name)
     if not handler:

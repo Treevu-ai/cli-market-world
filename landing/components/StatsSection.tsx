@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const labels = ["stats_retailers","stats_countries","stats_lines","stats_tools"];
-const ends = [30, 8, 6, 19];
+const ends = [30, 8, 6, 30];
 const suffixes = ["+", "", "", ""];
 
 function Counter({ end, suffix, label, delay }: { end: number; suffix: string; label: string; delay: number }) {
