@@ -20,6 +20,8 @@ STORES = {
     # ── FARMACIAS ──
     "pacheco_br": {"name":"Drogaria Pacheco","base":"https://www.drogariaspacheco.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"farmacias"},
     "farmatodo_mx": {"name":"Farmatodo MX","base":"https://www.farmatodo.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"farmacias"},
+    "cruzverde_co": {"name":"Cruz Verde CO","base":"https://www.cruzverde.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias"},
+    "cruzverde_cl": {"name":"Cruz Verde CL","base":"https://www.cruzverde.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"farmacias"},
 
     # ── ELECTRO ──
     "electrolux_ar": {"name":"Electrolux AR","base":"https://www.electrolux.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro"},
