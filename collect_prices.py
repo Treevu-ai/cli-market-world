@@ -91,6 +91,10 @@ SEED_QUERIES = [
     ("lavaplatos","electro"),("freezer","electro"),("aire acondicionado","electro"),
     ("purificador","electro"),("cafetera","electro"),("licuadora","electro"),
     ("plancha","electro"),("tostadora","electro"),("batidora","electro"),
+    # Samsung
+    ("galaxy","electro"),("samsung tv","electro"),("samsung monitor","electro"),
+    ("galaxy watch","electro"),("galaxy buds","electro"),("samsung tablet","electro"),
+    ("samsung notebook","electro"),("samsung soundbar","electro"),
     # English
     ("fridge","electro"),("washer","electro"),("dryer","electro"),
     ("dishwasher","electro"),("stove","electro"),("vacuum","electro"),

@@ -681,6 +681,84 @@ async def admin_scan_stores(body: dict):
     return {"scanned": len(candidates), "working": len(ok), "candidates": candidates}
 
 
+@app.get("/products/stock/{product_id}")
+def product_stock(product_id: str, store: str):
+    """Check stock for a product in a specific store."""
+    db = get_db()
+    row = db.execute(
+        "SELECT stock, name, store_name FROM price_snapshots WHERE product_id=? AND store=? ORDER BY queried_at DESC LIMIT 1",
+        (product_id, store)
+    ).fetchone()
+    db.close()
+    if not row:
+        return {"product_id": product_id, "store": store, "stock": None, "message": "No data"}
+    return {"product_id": product_id, "store": store, "stock": row["stock"], "name": row["name"], "store_name": row["store_name"]}
+
+
+@app.get("/analytics/brands")
+def analytics_brands(line: str | None = None, country: str | None = None, limit: int = 20):
+    """Top brands in the data moat."""
+    db = get_db()
+    q = "SELECT brand, COUNT(*) as count FROM price_snapshots WHERE brand != '' AND price > 0"
+    params: list = []
+    if line:
+        q += " AND line = ?"
+        params.append(line)
+    q += " GROUP BY brand ORDER BY count DESC LIMIT ?"
+    params.append(limit)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    return {"brands": [dict(r) for r in rows], "total": len(rows)}
+
+
+@app.post("/favorites")
+def favorites(body: dict, authorization: str | None = Header(None)):
+    """Manage favorite products (list, add, remove)."""
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    action = body.get("action", "list")
+    db = get_db()
+    if action == "add":
+        db.execute("INSERT OR IGNORE INTO app_favorites (username, product_id, name, store) VALUES (?,?,?,?)",
+                   (username, body.get("product_id",""), body.get("name",""), body.get("store","")))
+        db.commit()
+    elif action == "remove":
+        db.execute("DELETE FROM app_favorites WHERE username=? AND product_id=?",
+                   (username, body.get("product_id","")))
+        db.commit()
+    rows = db.execute("SELECT product_id, name, store FROM app_favorites WHERE username=? ORDER BY product_id", (username,)).fetchall()
+    db.close()
+    return {"favorites": [dict(r) for r in rows], "total": len(rows)}
+
+
+@app.post("/v1/utils/exchange")
+def utils_exchange(body: dict):
+    """Static exchange rates between supported currencies."""
+    rates = {
+        "PEN": 1.0, "ARS": 0.0027, "BRL": 1.02, "MXN": 0.29,
+        "COP": 0.0013, "CLP": 0.0053, "EUR": 4.05, "USD": 3.70,
+    }
+    amount = body.get("amount", 0)
+    frm = body.get("from", "PEN").upper()
+    to = body.get("to", "PEN").upper()
+    if frm not in rates or to not in rates:
+        raise HTTPException(status_code=400, detail=f"Unsupported currency. Supported: {list(rates.keys())}")
+    converted = round(amount * rates[to] / rates[frm], 2)
+    return {"amount": amount, "from": frm, "to": to, "converted": converted, "rate": round(rates[to]/rates[frm], 6)}
+
+
+@app.get("/products/delivery/{product_id}")
+def product_delivery(product_id: str, store: str, zipcode: str = ""):
+    """Delivery options placeholder — returns store base URL for the product."""
+    store_info = STORES.get(store, {})
+    return {
+        "product_id": product_id, "store": store, "store_name": store_info.get("name", store),
+        "delivery_available": True, "estimated_days": "2-5",
+        "message": "Delivery integration pending. Check the store directly.",
+        "store_url": f"{store_info.get('base','')}/{product_id}/p",
+    }
+
+
 # ── Agent ──────────────────────────────────────────────────────────────────
 
 @app.get("/agent/preferences")

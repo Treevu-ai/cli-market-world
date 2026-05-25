@@ -261,6 +261,36 @@ TOOLS = [
         "description": "Escanear nuevas tiendas VTEX. Busca retailers que respondan a la API VTEX y retorna candidatos verificados.",
         "inputSchema": {"type":"object","properties":{"line":{"type":"string","description":"Filtrar por línea de negocio (opcional)"}}},
     },
+    {
+        "name": "market_stock",
+        "description": "Verificar disponibilidad de stock de un producto en una tienda específica.",
+        "inputSchema": {"type":"object","properties":{"product_id":{"type":"string"},"store":{"type":"string"}},"required":["product_id","store"]},
+    },
+    {
+        "name": "market_brands",
+        "description": "Listar las marcas más frecuentes en el data moat. Filtrar por línea o país.",
+        "inputSchema": {"type":"object","properties":{"line":{"type":"string"},"country":{"type":"string"},"limit":{"type":"integer","default":20}}},
+    },
+    {
+        "name": "market_favorites",
+        "description": "Gestionar productos favoritos: listar, agregar o eliminar. Sin action=list retorna la lista.",
+        "inputSchema": {"type":"object","properties":{"action":{"type":"string","description":"list, add, remove"},"product_id":{"type":"string"},"name":{"type":"string"},"store":{"type":"string"}}},
+    },
+    {
+        "name": "market_notify",
+        "description": "Configurar alertas de precio. Recibir notificación cuando un producto baje del umbral.",
+        "inputSchema": {"type":"object","properties":{"product":{"type":"string"},"store":{"type":"string"},"threshold_pct":{"type":"number","default":5.0}},"required":["product"]},
+    },
+    {
+        "name": "market_exchange",
+        "description": "Convertir montos entre monedas de los países donde operamos (PEN, ARS, BRL, MXN, COP, CLP, EUR).",
+        "inputSchema": {"type":"object","properties":{"amount":{"type":"number"},"from_currency":{"type":"string"},"to_currency":{"type":"string"}},"required":["amount","from_currency","to_currency"]},
+    },
+    {
+        "name": "market_delivery",
+        "description": "Consultar opciones de entrega disponibles para un producto y código postal.",
+        "inputSchema": {"type":"object","properties":{"product_id":{"type":"string"},"store":{"type":"string"},"zipcode":{"type":"string"}},"required":["product_id","store"]},
+    },
 ]
 
 
@@ -298,6 +328,12 @@ def handle_tool(name: str, args: dict) -> str:
         "market_export":     lambda a: api("POST", "/v1/data/export", {"country": a.get("country"), "line": a.get("line"), "format": a.get("format", "json"), "limit": a.get("limit", 100)}),
         "market_trending":   lambda a: api("GET", f"/analytics/trending?country={a.get('country','')}&line={a.get('line','')}&limit={a.get('limit',10)}"),
         "market_scan":       lambda a: api("POST", "/v1/admin/scan-stores", {"line": a.get("line")}),
+        "market_stock":      lambda a: api("GET", f"/products/stock/{a['product_id']}?store={a['store']}"),
+        "market_brands":     lambda a: api("GET", f"/analytics/brands?line={a.get('line','')}&country={a.get('country','')}&limit={a.get('limit',20)}"),
+        "market_favorites":  lambda a: api("POST", "/favorites", {"action": a.get("action","list"), "product_id": a.get("product_id",""), "name": a.get("name",""), "store": a.get("store","")}),
+        "market_notify":     lambda a: api("GET", f"/v1/intel/alerts?product={a['product']}&store={a.get('store','')}&threshold_pct={a.get('threshold_pct',5.0)}"),
+        "market_exchange":   lambda a: api("POST", "/v1/utils/exchange", {"amount": a["amount"], "from": a["from_currency"], "to": a["to_currency"]}),
+        "market_delivery":   lambda a: api("GET", f"/products/delivery/{a['product_id']}?store={a['store']}&zipcode={a.get('zipcode','')}"),
     }
     handler = tool_map.get(name)
     if not handler:
