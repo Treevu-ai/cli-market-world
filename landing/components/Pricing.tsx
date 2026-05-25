@@ -9,7 +9,7 @@ const tiers = [
   { key:"pro", title_es:"Pro", title_en:"Pro", price:"$49", period_es:"/ mes", period_en:"/ month", color:"#FFD600",
     f_es:["Todo lo de Free","300 req/min · 10,000 req/día","10 API keys (read + write)","Checkout habilitado","Data moat export (JSON/CSV)","Soporte prioritario"],
     f_en:["Everything in Free","300 req/min · 10,000 req/day","10 API keys (read + write)","Checkout enabled","Data moat export (JSON/CSV)","Priority support"],
-    cta_es:"Suscribirse", cta_en:"Subscribe", href:"mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro&body=Hola%2C%20quiero%20activar%20el%20plan%20Pro%20(USD%2049%2Fmes)." },
+    cta_es:"Pagar con Wise", cta_en:"Pay with Wise", href:"https://wise.com/pay/me/ricardoantonioc68" },
   { key:"enterprise", title_es:"Enterprise", title_en:"Enterprise", price_es:"Contactanos", price_en:"Contact us", period_es:"a medida", period_en:"custom", color:"#FF6B35",
     f_es:["Todo lo de Pro","Rate limits custom","API keys ilimitadas","Endpoints dedicados","Webhooks","SLA 99.5%"],
     f_en:["Everything in Pro","Custom rate limits","Unlimited API keys","Dedicated endpoints","Webhooks","SLA 99.5%"],
