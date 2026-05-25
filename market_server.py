@@ -708,10 +708,21 @@ def dashboard_data():
         GROUP BY line ORDER BY count DESC
     """).fetchall()
     by_country = db.execute("""
-        SELECT country, COUNT(*) as count, COUNT(DISTINCT store) as stores
+        SELECT store, COUNT(*) as count
         FROM price_snapshots WHERE price > 0
-        GROUP BY country ORDER BY count DESC
+        GROUP BY store ORDER BY count DESC
     """).fetchall()
+    # Derive country from STORES dict
+    country_agg: dict[str, dict] = {}
+    for r in by_country:
+        country = STORES.get(r["store"], {}).get("country", "??")
+        c = country_agg.setdefault(country, {"country": country, "count": 0, "stores": set()})
+        c["count"] += r["count"]
+        c["stores"].add(r["store"])
+    by_country_list = sorted(
+        [{"country": c["country"], "count": c["count"], "stores": len(c["stores"])} for c in country_agg.values()],
+        key=lambda x: x["count"], reverse=True
+    )
     top_products = db.execute("""
         SELECT name, store_name, price, currency, line_name, queried_at
         FROM price_snapshots WHERE price > 0 AND price < 999999
@@ -721,7 +732,7 @@ def dashboard_data():
     db.close()
     return {
         "by_line": [dict(r) for r in by_line],
-        "by_country": [dict(r) for r in by_country],
+        "by_country": by_country_list,
         "top_products": [dict(r) for r in top_products],
         "total_runs": total_runs,
     }
