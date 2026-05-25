@@ -94,7 +94,7 @@ export default function Hero() {
           </div>
           <div className="mb-12">
             <h1 className="hero-h1 text-left text-[clamp(2rem,5.5vw,6rem)] font-grotesk leading-[0.92] tracking-tight text-white">
-              <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">30</span> {_t("hero_h1a").replace("27 ", "").replace("27+ ", "").replace("30 ", "")}</span>
+              <span className="block"><span className="text-[clamp(3rem,8vw,10rem)] leading-[0.85] block">38</span> {_t("hero_h1a").replace("27 ", "").replace("27+ ", "").replace("30 ", "").replace("38 ", "")}</span>
               <span className="block">{_t("hero_h1b")}</span>
               <span className="block">{_t("hero_h1c_p")}{" "}
                 <BlurWord word={words[wordIdx]} trigger={wordIdx} />

@@ -17,7 +17,7 @@ const categories: Category[] = [
     id: "shop", label_es: "Shop", label_en: "Shop", color: "#3cffd0",
     tools: [
       { n: "market_login",   d_es: "Autentica al agente para operar", d_en: "Authenticate the agent session", demo_es: "market login\n→ Token guardado en ~/.market/session.json", demo_en: "market login\n→ Token stored in ~/.market/session.json", c: "#3cffd0" },
-      { n: "market_search",  d_es: "Busca en 30 retailers VTEX", d_en: "Search across 30 VTEX retailers", demo_es: 'market search "leche" --country PE\n→ 1. Leche Gloria 400ml Wong S/3.50\n→ 2. Leche Ideal 395g Metro S/3.20', demo_en: 'market search "milk" --country AR\n→ 1. Milk 1L Carrefour ARS 1,200\n→ 2. Milk 1L Jumbo ARS 1,150', c: "#FFD600" },
+      { n: "market_search",  d_es: "Busca en 38 retailers VTEX", d_en: "Search across 30 VTEX retailers", demo_es: 'market search "leche" --country PE\n→ 1. Leche Gloria 400ml Wong S/3.50\n→ 2. Leche Ideal 395g Metro S/3.20', demo_en: 'market search "milk" --country AR\n→ 1. Milk 1L Carrefour ARS 1,200\n→ 2. Milk 1L Jumbo ARS 1,150', c: "#FFD600" },
       { n: "market_compare", d_es: "Compara precios entre países", d_en: "Cross-country price comparison", demo_es: 'market compare "aceite"\n→ Primor 1L: S/8.90 Wong\n→ Natura 900ml: ARS 1,250 Carrefour AR', demo_en: 'market compare "oil"\n→ Oil 1L: PEN 8.90 Wong\n→ Oil 1L: ARS 1,250 Carrefour AR', c: "#4ADE80" },
       { n: "market_add",     d_es: "Agrega al carrito", d_en: "Add to cart", demo_es: "market add 3 --qty 2\n→ Agregado: 2x Leche Gloria 400ml", demo_en: "market add 3 --qty 2\n→ Added: 2x Milk 1L", c: "#FF6B35" },
       { n: "market_cart",    d_es: "Ver carrito actual", d_en: "View current cart", demo_es: "market cart\n→ 1. 2x Leche S/3.50\n→ Total: S/11.20", demo_en: "market cart\n→ 1. 2x Milk ARS 1,200\n→ Total: ARS 3,380", c: "#FF6B35" },
@@ -51,8 +51,8 @@ const categories: Category[] = [
     id: "platform", label_es: "Platform", label_en: "Platform", color: "#FF6B35",
     tools: [
       { n: "market_lines",   d_es: "6 líneas con sus retailers", d_en: "6 business lines", demo_es: "market lines\n→ supermercados (14) · electro (9) · farmacias (4) · moda (2)", demo_en: "market lines\n→ supermarkets (14) · electronics (9) · pharmacies (4) · fashion (2)", c: "#3cffd0" },
-      { n: "market_stores",  d_es: "30 retailers verificados", d_en: "30 verified retailers", demo_es: "market_stores\n→ Wong 🇵🇪 · Carrefour 🇦🇷 · Motorola 🇧🇷 ...", demo_en: "market_stores\n→ Wong 🇵🇪 · Carrefour 🇦🇷 · Motorola 🇧🇷 ...", c: "#3cffd0" },
-      { n: "market_countries", d_es: "8 países con cobertura", d_en: "8 countries covered", demo_es: "market_countries\n→ AR (8) · BR (7) · PE (4) · CO (3) ...", demo_en: "market_countries\n→ AR (8) · BR (7) · PE (4) · CO (3) ...", c: "#3cffd0" },
+      { n: "market_stores",  d_es: "38 retailers verificados", d_en: "30 verified retailers", demo_es: "market_stores\n→ Wong 🇵🇪 · Carrefour 🇦🇷 · Motorola 🇧🇷 ...", demo_en: "market_stores\n→ Wong 🇵🇪 · Carrefour 🇦🇷 · Motorola 🇧🇷 ...", c: "#3cffd0" },
+      { n: "market_countries", d_es: "9 países con cobertura", d_en: "9 countries covered", demo_es: "market_countries\n→ AR (8) · BR (7) · PE (4) · CO (3) ...", demo_en: "market_countries\n→ AR (8) · BR (7) · PE (4) · CO (3) ...", c: "#3cffd0" },
       { n: "market_categories", d_es: "Árbol de categorías VTEX", d_en: "VTEX category tree", demo_es: "market_categories wong\n→ Alimentos\n  Lácteos\n  Panadería", demo_en: "market_categories carrefour\n→ Food\n  Dairy\n  Bakery", c: "#34D399" },
       { n: "market_ticket",  d_es: "Escanea ticket de compra", d_en: "Scan purchase receipt", demo_es: "market_ticket url=<imagen>\n→ OCR: Leche Gloria 400ml S/3.50", demo_en: "market_ticket url=<image>\n→ OCR: Milk 1L 3.50", c: "#60A5FA" },
       { n: "market_voice",   d_es: "Transcribe audio a texto", d_en: "Transcribe voice to text", demo_es: "market_voice url=<audio>\n→ \"compra leche y arroz\"", demo_en: "market_voice url=<audio>\n→ \"buy milk and rice\"", c: "#60A5FA" },
@@ -75,7 +75,7 @@ export default function Features() {
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{_t("features_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">
-          {lang === "es" ? "30 herramientas.\nUn ecosistema." : "30 tools.\nOne ecosystem."}
+          {lang === "es" ? "36 herramientas.\nUn ecosistema." : "36 tools.\nOne ecosystem."}
         </h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">
           {lang === "es" ? "4 categorías. Clickeá para expandir y ver cada tool." : "4 categories. Click to expand and explore each tool."}
