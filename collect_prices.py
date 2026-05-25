@@ -38,17 +38,35 @@ LINES = {
 }
 
 SEED_QUERIES = [
+    # ── Supermercados (genéricos, corren en todas las tiendas) ──
     ("leche",None),("arroz",None),("aceite",None),("azucar",None),("huevos",None),
     ("pan",None),("cafe",None),("pollo",None),("carne",None),("queso",None),
     ("yogur",None),("mantequilla",None),("detergente",None),("jabon",None),
     ("papel higienico",None),("pasta",None),("agua",None),("cerveza",None),("vino",None),
     ("milk",None),("bread",None),("eggs",None),("rice",None),("chicken",None),
-    ("coffee",None),("oil",None),
+    ("coffee",None),("oil",None),("sugar",None),("butter",None),
+    # ── Farmacias ──
     ("paracetamol","farmacias"),("ibuprofeno","farmacias"),("vitamina c","farmacias"),
-    ("zapatillas","deportes"),("camiseta","moda"),("jeans","moda"),
-    ("televisor","electro"),("celular","electro"),("laptop","electro"),
-    ("taladro","hogar"),("sarten","hogar"),("silla","hogar"),
-    ("libro","libros"),("mochila","viajes"),
+    ("protector solar","farmacias"),("shampoo","farmacias"),("crema","farmacias"),
+    ("jabon liquido","farmacias"),("pañales","farmacias"),
+    # ── Electro ──
+    ("celular","electro"),("telefono","electro"),("laptop","electro"),
+    ("auriculares","electro"),("tablet","electro"),("parlante","electro"),
+    ("cargador","electro"),("funda","electro"),("phone","electro"),("headphones","electro"),
+    ("cable","electro"),("bateria","electro"),
+    # ── Moda ──
+    ("camiseta","moda"),("jeans","moda"),("vestido","moda"),("chaqueta","moda"),
+    ("zapatos","moda"),("pantalon","moda"),("camisa","moda"),("short","moda"),
+    ("tshirt","moda"),("dress","moda"),("shoes","moda"),
+    # ── Hogar ──
+    ("taladro","hogar"),("sarten","hogar"),("silla","hogar"),("lampara","hogar"),
+    ("cortina","hogar"),("pintura","hogar"),("martillo","hogar"),("destornillador","hogar"),
+    ("toalla","hogar"),("sabana","hogar"),
+    # ── Departamentales ──
+    ("sofa","departamentales"),("cama","departamentales"),("perfume","departamentales"),
+    ("reloj","departamentales"),("bolso","departamentales"),("mochila","departamentales"),
+    ("juguete","departamentales"),("maquillaje","departamentales"),
+    ("cama","hogar"),("mueble","hogar"),
 ]
 
 # ── Database: PostgreSQL or SQLite ──────────────────────────────────────────

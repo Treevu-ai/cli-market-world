@@ -3,3 +3,9 @@ rich>=13.0
 fastapi>=0.115
 uvicorn>=0.30
 pydantic>=2.0
+python-multipart>=0.0.9
+psycopg2-binary>=2.9
+asyncpg>=0.29
+
+[pg]
+asyncpg

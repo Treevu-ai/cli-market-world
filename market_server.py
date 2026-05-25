@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import httpx
+from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, HTTPException, Header, Body, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
@@ -688,6 +689,116 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
     savings = sum((i.get("price", 0) or 0) for i in items_found) if items_found else 0
     return {"ocr_text": ocr_text[:500], "items_detected": len(lines), "items_matched": len(items_found), "potential_savings": round(savings, 2), "items": items_found, "message": "Compara contra los precios mas baratos de nuestro data moat." if items_found else "No se detectaron productos."}
 
+
+# ── Dashboard ───────────────────────────────────────────────────────────────
+
+@app.get("/dashboard")
+def dashboard():
+    return HTMLResponse(dashboard_html())
+
+@app.get("/dashboard/data")
+def dashboard_data():
+    db = get_db()
+    by_line = db.execute("""
+        SELECT line, line_name, COUNT(*) as count,
+               ROUND(AVG(price), 2) as avg_price,
+               ROUND(MIN(price), 2) as min_price,
+               ROUND(MAX(price), 2) as max_price
+        FROM price_snapshots WHERE price > 0 AND price < 999999
+        GROUP BY line ORDER BY count DESC
+    """).fetchall()
+    by_country = db.execute("""
+        SELECT country, COUNT(*) as count, COUNT(DISTINCT store) as stores
+        FROM price_snapshots WHERE price > 0
+        GROUP BY country ORDER BY count DESC
+    """).fetchall()
+    top_products = db.execute("""
+        SELECT name, store_name, price, currency, line_name, queried_at
+        FROM price_snapshots WHERE price > 0 AND price < 999999
+        ORDER BY queried_at DESC LIMIT 20
+    """).fetchall()
+    total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
+    db.close()
+    return {
+        "by_line": [dict(r) for r in by_line],
+        "by_country": [dict(r) for r in by_country],
+        "top_products": [dict(r) for r in top_products],
+        "total_runs": total_runs,
+    }
+
+def dashboard_html():
+    return """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLI Market — Data Moat</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#131313;color:#fff;font-family:'IBM Plex Mono',monospace;padding:20px}
+h1{font-size:1.5rem;margin-bottom:4px}
+h1 span{color:#3cffd0}
+.subtitle{color:#949494;font-size:0.75rem;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:8px;padding:16px}
+.card h2{font-size:0.7rem;color:#3cffd0;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+canvas{max-height:260px}
+.kpi-row{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.kpi{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:8px;padding:12px 20px;text-align:center;min-width:100px}
+.kpi .val{font-size:1.8rem;font-weight:700;color:#3cffd0}
+.kpi .lbl{font-size:0.6rem;color:#555;text-transform:uppercase;letter-spacing:1px}
+table{width:100%;font-size:0.65rem;border-collapse:collapse}
+th{text-align:left;color:#555;text-transform:uppercase;font-weight:400;padding:6px 8px;border-bottom:1px solid #2d2d2d}
+td{padding:5px 8px;border-bottom:1px solid #1a1a1a}
+td.price{color:#3cffd0;text-align:right}
+.mono{font-size:0.55rem;color:#444}
+#updated{color:#444;font-size:0.6rem;text-align:right;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>CLI Market <span>Data Moat</span></h1>
+<p class="subtitle">Precios recolectados de 30 retailers VTEX en 8 países · 6 líneas</p>
+<div class="kpi-row" id="kpis"></div>
+<div class="grid">
+  <div class="card"><h2>Precios por línea</h2><canvas id="chartLines"></canvas></div>
+  <div class="card"><h2>Precios por país</h2><canvas id="chartCountries"></canvas></div>
+  <div class="card" style="grid-column:span 2"><h2>Últimos productos indexados</h2><table><thead><tr><th>Producto</th><th>Tienda</th><th class="price">Precio</th><th>Línea</th></tr></thead><tbody id="topProducts"></tbody></table></div>
+</div>
+<p id="updated"></p>
+<script>
+async function load(){
+  const r=await fetch('/dashboard/data');
+  const d=await r.json();
+
+  // KPIs
+  const total=d.by_line.reduce((s,x)=>s+x.count,0);
+  const lines=d.by_line.length;
+  const countries=d.by_country.length;
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="val">${total.toLocaleString()}</div><div class="lbl">Precios</div></div>
+    <div class="kpi"><div class="val">${lines}</div><div class="lbl">Líneas</div></div>
+    <div class="kpi"><div class="val">${countries}</div><div class="lbl">Países</div></div>
+    <div class="kpi"><div class="val">${d.total_runs}</div><div class="lbl">Ciclos</div></div>
+    <div class="kpi"><div class="val">30</div><div class="lbl">Retailers</div></div>
+  `;
+
+  // Lines chart
+  new Chart(document.getElementById('chartLines'),{type:'bar',data:{labels:d.by_line.map(x=>x.line_name||x.line||'?'),datasets:[{label:'Precios',data:d.by_line.map(x=>x.count),backgroundColor:'#3cffd0',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#2d2d2d'},ticks:{color:'#555'}},x:{ticks:{color:'#555'}}}}});
+
+  // Countries chart
+  new Chart(document.getElementById('chartCountries'),{type:'doughnut',data:{labels:d.by_country.map(x=>x.country),datasets:[{data:d.by_country.map(x=>x.count),backgroundColor:['#3cffd0','#5200ff','#FFD600','#FF6B35','#60A5FA','#F472B6','#A78BFA','#FB923C']}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{color:'#949494',font:{size:10}}}}}});
+
+  // Top products table
+  document.getElementById('topProducts').innerHTML=d.top_products.map(p=>`<tr><td>${p.name||'?'}</td><td>${p.store_name||'?'}</td><td class="price">${p.currency||''} ${(p.price||0).toFixed(2)}</td><td class="mono">${p.line_name||'?'}</td></tr>`).join('');
+
+  document.getElementById('updated').textContent='Actualizado: '+new Date().toLocaleString();
+}
+load();
+setInterval(load,300000);
+</script>
+</body>
+</html>"""
 
 # ── Run ────────────────────────────────────────────────────────────────────
 
