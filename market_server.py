@@ -693,6 +693,36 @@ def auth_subscription(authorization: str | None = Header(None)):
     return {"username": username, "subscription": sub, "api_keys": len(keys)}
 
 
+@app.post("/checkout/wise")
+async def checkout_wise(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    cart = db_get_cart(username)
+    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
+    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    from market_core import db_create_order as _co
+    _co(username, cart, "wise", total, status="pending", order_id=order_id)
+    db_clear_cart(username)
+    from market_connectors.wise_payments import create_quote, WISE_API_TOKEN
+    wise_ok = bool(WISE_API_TOKEN)
+    return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"wise","status":"pending",
+            "wise_available":wise_ok,
+            "instructions":{"email":os.getenv("WISE_BUSINESS_EMAIL","hello@cli-market.dev"),
+                            "reference":f"CLI-Market-{order_id}"} if wise_ok else None,
+            "message":"Complete el pago via Wise" if wise_ok else "Wise no configurado"}
+
+
+@app.get("/checkout/rates")
+async def checkout_rates():
+    try:
+        from market_connectors.wise_payments import get_rates
+        rates = await get_rates("PEN")
+        return {"base":"PEN","rates":rates}
+    except Exception:
+        return {"base":"PEN","rates":{"USD":0.27,"EUR":0.25,"ARS":0.0027,"BRL":0.27,"MXN":0.078,"COP":0.00035,"CLP":0.0014,"PEN":1.0},"source":"fallback"}
+
+
 @app.post("/v1/ticket/scan-url")
 async def ticket_scan_url(body: dict):
     """Ticket scan from a public URL instead of file upload."""
