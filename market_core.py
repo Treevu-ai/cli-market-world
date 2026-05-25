@@ -786,13 +786,15 @@ def db_get_orders(username: str) -> list[dict]:
     db.close()
     return result
 
-def db_create_order(username: str, items: list[dict], payment_method: str, total: float) -> dict:
+def db_create_order(username: str, items: list[dict], payment_method: str, total: float,
+                    status: str = "completed", order_id: str | None = None) -> dict:
     import uuid
-    order_id = str(uuid.uuid4())[:8]
+    if order_id is None:
+        order_id = str(uuid.uuid4())[:8]
     db = get_db()
     db.execute(
         "INSERT INTO app_orders (order_id, username, payment_method, total, status) VALUES (?,?,?,?,?)",
-        (order_id, username, payment_method, total, "completed")
+        (order_id, username, payment_method, total, status)
     )
     for item in items:
         db.execute(
@@ -802,7 +804,7 @@ def db_create_order(username: str, items: list[dict], payment_method: str, total
         )
     db.commit()
     db.close()
-    return {"order_id": order_id, "username": username, "payment_method": payment_method, "total": total, "status": "completed"}
+    return {"order_id": order_id, "username": username, "payment_method": payment_method, "total": total, "status": status}
 
 def db_migrate_from_json() -> None:
     """One-time migration: import existing JSON data into SQLite tables."""
