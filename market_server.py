@@ -48,10 +48,16 @@ logger = log.getChild("server")
 db_migrate_from_json()
 
 # ── Security: rate limiter (SQLite-backed, persists across restarts) ──────────
+# Configurable via env vars: RATE_LIMIT_MIN, RATE_LIMIT_DAY, RATE_LIMIT_WINDOW
+
+RATE_LIMIT_MIN = int(os.getenv("RATE_LIMIT_MIN", "60"))
+RATE_LIMIT_DAY = int(os.getenv("RATE_LIMIT_DAY", "1000"))
+RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
 def check_rate_limit(ip: str) -> None:
     from market_core import check_rate_limit_sqlite
-    check_rate_limit_sqlite(ip, window_secs=60, max_req=10, daily_max=100)
+    check_rate_limit_sqlite(ip, window_secs=RATE_LIMIT_WINDOW,
+                            max_req=RATE_LIMIT_MIN, daily_max=RATE_LIMIT_DAY)
 
 # ── Security: password hashing ───────────────────────────────────────────────
 
@@ -87,6 +93,13 @@ DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "")
 def auth_user(token: str) -> str:
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
         return "admin"
+    # Try API keys first (sk-...)
+    if token.startswith("sk-"):
+        from market_core import db_validate_api_key
+        key_data = db_validate_api_key(token)
+        if key_data:
+            return key_data["username"]
+    # Fall back to legacy tokens
     users = db_get_users()
     for username, data in users.items():
         if data.get("token") == token:
@@ -160,6 +173,58 @@ class BasketRequest(BaseModel):
 def health():
     return {"status": "healthy"}
 
+@app.get("/health/collector")
+def health_collector():
+    """Collector health: last run, staleness, store coverage."""
+    try:
+        db = get_db()
+        last = db.execute(
+            "SELECT started_at, finished_at, stores_attempted, stores_succeeded, prices_collected "
+            "FROM collector_runs ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
+        active_stores = db.execute(
+            "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+        ).fetchone()["n"]
+        db.close()
+    except Exception:
+        return {"status": "unknown", "error": "Database not initialized"}
+
+    if not last:
+        return {"status": "unknown", "message": "No collector runs yet", "runs_total": 0}
+
+    finished = last["finished_at"]
+    now = datetime.now(timezone.utc).isoformat()
+    if finished:
+        try:
+            from datetime import timedelta
+            ft = datetime.fromisoformat(finished.replace("Z", "+00:00"))
+            age_h = (datetime.now(timezone.utc) - ft).total_seconds() / 3600
+        except Exception:
+            age_h = 999
+        if age_h > 24:
+            status = "dead"
+        elif age_h > 12:
+            status = "stale"
+        else:
+            status = "healthy"
+    else:
+        status = "running"
+        age_h = None
+
+    return {
+        "status": status,
+        "last_run": last["started_at"],
+        "last_finished": finished,
+        "age_hours": round(age_h, 1) if age_h is not None else None,
+        "stores_attempted": last["stores_attempted"],
+        "stores_succeeded": last["stores_succeeded"],
+        "prices_collected": last["prices_collected"],
+        "stores_active": active_stores or 0,
+        "stores_total": len(STORES),
+        "runs_total": total_runs,
+    }
+
 @app.get("/")
 def root(request: Request):
     check_rate_limit(request.client.host if request.client else "unknown")
@@ -223,6 +288,47 @@ def whoami(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
     return {"username": username}
+
+
+# ── API Keys ──────────────────────────────────────────────────────────────────
+
+class CreateApiKeyRequest(BaseModel):
+    scopes: str = "read"
+    label: str = ""
+
+@app.post("/auth/keys")
+def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    if body.scopes not in ("read", "read_write"):
+        raise HTTPException(status_code=400, detail="Scopes must be 'read' or 'read_write'")
+    from market_core import db_create_api_key
+    result = db_create_api_key(username, body.scopes, body.label)
+    return {
+        "message": "API key created. Store it safely — it won't be shown again.",
+        "key": result["key"],
+        "prefix": result["prefix"],
+        "scopes": result["scopes"],
+        "label": result["label"],
+    }
+
+@app.get("/auth/keys")
+def list_api_keys(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    from market_core import db_list_api_keys
+    keys = db_list_api_keys(username)
+    return {"keys": keys, "total": len(keys)}
+
+@app.delete("/auth/keys/{key_id}")
+def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    from market_core import db_revoke_api_key
+    ok = db_revoke_api_key(username, key_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Key not found")
+    return {"message": "Key revoked"}
 
 
 # ── Search ─────────────────────────────────────────────────────────────────

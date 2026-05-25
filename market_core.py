@@ -20,7 +20,24 @@ import httpx
 # ── Database backend selection ──────────────────────────────────────────────
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-USE_PG = bool(DATABASE_URL)
+
+def _pg_host_reachable(url: str) -> bool:
+    """Quick check: can we resolve the PostgreSQL hostname?"""
+    import re, socket
+    m = re.search(r"@([^:/]+)", url) or re.search(r"://([^:/]+)", url)
+    if not m:
+        return True  # no hostname found, let it fail later
+    host = m.group(1)
+    # Skip known cross-platform dead-ends
+    if os.getenv("RENDER") and "railway.internal" in host:
+        return False
+    try:
+        socket.getaddrinfo(host, 5432, socket.AF_UNSPEC, socket.SOCK_STREAM)
+        return True
+    except socket.gaierror:
+        return False
+
+USE_PG = bool(DATABASE_URL) and _pg_host_reachable(DATABASE_URL)
 
 if USE_PG:
     try:
@@ -464,6 +481,20 @@ def init_db_pg(db: _DB) -> None:
             total_successes INT DEFAULT 0
         )
     """)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            key_hash TEXT UNIQUE NOT NULL,
+            key_prefix TEXT NOT NULL DEFAULT '',
+            scopes TEXT NOT NULL DEFAULT 'read',
+            label TEXT DEFAULT '',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            last_used_at TIMESTAMPTZ
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username)")
     db.commit()
 
 
@@ -581,6 +612,18 @@ _SQLITE_DDL = """\
             total_requests INT DEFAULT 0,
             total_successes INT DEFAULT 0
         );
+
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            key_hash TEXT UNIQUE NOT NULL,
+            key_prefix TEXT NOT NULL DEFAULT '',
+            scopes TEXT NOT NULL DEFAULT 'read',
+            label TEXT DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            last_used_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_api_user ON api_keys(username);
 """
 
 
@@ -891,6 +934,67 @@ def save_search_query(query: str, line: str | None, store: str | None, num_resul
         db.close()
     except Exception as e:
         logger.warning("save_search_query failed: %s", e)
+
+# ── API Keys ────────────────────────────────────────────────────────────────────
+
+def db_create_api_key(username: str, scopes: str = "read", label: str = "") -> dict:
+    """Generate a new API key. Returns {key, prefix, scopes, id}. The raw key is only shown once."""
+    import secrets, hashlib
+    raw = "sk-" + secrets.token_urlsafe(32)
+    prefix = raw[:10] + "..."
+    key_hash = hashlib.sha256(raw.encode()).hexdigest()
+    db = get_db()
+    if USE_PG:
+        db.execute(
+            "INSERT INTO api_keys (username, key_hash, key_prefix, scopes, label) VALUES (?,?,?,?,?) RETURNING id",
+            (username, key_hash, prefix, scopes, label)
+        )
+        key_id = db.execute("SELECT id FROM api_keys WHERE key_hash=?", (key_hash,)).fetchone()["id"]
+    else:
+        db.execute(
+            "INSERT INTO api_keys (username, key_hash, key_prefix, scopes, label) VALUES (?,?,?,?,?)",
+            (username, key_hash, prefix, scopes, label)
+        )
+        key_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+    db.commit()
+    db.close()
+    return {"id": key_id, "key": raw, "prefix": prefix, "scopes": scopes, "label": label}
+
+
+def db_list_api_keys(username: str) -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, key_prefix, scopes, label, created_at, last_used_at FROM api_keys WHERE username=? ORDER BY created_at DESC",
+        (username,)
+    ).fetchall()
+    db.close()
+    return [dict(r) for r in rows]
+
+
+def db_revoke_api_key(username: str, key_id: int) -> bool:
+    db = get_db()
+    db.execute("DELETE FROM api_keys WHERE id=? AND username=?", (key_id, username))
+    affected = db.execute("SELECT changes()").fetchone()[0] if not USE_PG else db._conn.cursor().rowcount
+    db.commit()
+    db.close()
+    return affected > 0
+
+
+def db_validate_api_key(key: str) -> dict | None:
+    """Validate an API key. Returns {username, scopes, key_id} or None."""
+    import hashlib
+    key_hash = hashlib.sha256(key.encode()).hexdigest()
+    db = get_db()
+    row = db.execute(
+        "SELECT username, scopes, id FROM api_keys WHERE key_hash=?",
+        (key_hash,)
+    ).fetchone()
+    if row:
+        db.execute("UPDATE api_keys SET last_used_at=datetime('now') WHERE id=?", (row["id"],))
+        db.commit()
+    db.close()
+    return dict(row) if row else None
+
 
 # ── Initialize DB at import time ──────────────────────────────────────────────
 try:
