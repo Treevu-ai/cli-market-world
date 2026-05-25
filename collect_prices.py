@@ -38,35 +38,117 @@ LINES = {
 }
 
 SEED_QUERIES = [
-    # ── Supermercados (genéricos, corren en todas las tiendas) ──
-    ("leche",None),("arroz",None),("aceite",None),("azucar",None),("huevos",None),
-    ("pan",None),("cafe",None),("pollo",None),("carne",None),("queso",None),
-    ("yogur",None),("mantequilla",None),("detergente",None),("jabon",None),
-    ("papel higienico",None),("pasta",None),("agua",None),("cerveza",None),("vino",None),
-    ("milk",None),("bread",None),("eggs",None),("rice",None),("chicken",None),
-    ("coffee",None),("oil",None),("sugar",None),("butter",None),
-    # ── Farmacias ──
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 🛒 Supermercados (14 tiendas)
+    # ═══════════════════════════════════════════════════════════════════════════
+    ("leche","supermercados"),("arroz","supermercados"),("aceite","supermercados"),("azucar","supermercados"),("huevos","supermercados"),
+    ("pan","supermercados"),("cafe","supermercados"),("pollo","supermercados"),("carne","supermercados"),("queso","supermercados"),
+    ("yogur","supermercados"),("mantequilla","supermercados"),("detergente","supermercados"),("jabon","supermercados"),
+    ("papel higienico","supermercados"),("pasta","supermercados"),("agua","supermercados"),("cerveza","supermercados"),("vino","supermercados"),
+    ("gaseosa","supermercados"),("atun","supermercados"),("fideos","supermercados"),
+    ("galletitas","supermercados"),("yerba","supermercados"),
+    ("desodorante","supermercados"),("shampoo","supermercados"),
+    ("jamon","supermercados"),("salchicha","supermercados"),
+    ("helado","supermercados"),("congelados","supermercados"),
+    ("harina","supermercados"),("salsa","supermercados"),("conservas","supermercados"),
+    ("milk","supermercados"),("bread","supermercados"),("eggs","supermercados"),
+    ("rice","supermercados"),("chicken","supermercados"),("coffee","supermercados"),
+    ("oil","supermercados"),("sugar","supermercados"),("butter","supermercados"),
+    ("leite","supermercados"),("açúcar","supermercados"),("queijo","supermercados"),
+    ("frango","supermercados"),("cerveja","supermercados"),("pão","supermercados"),
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 💊 Farmacias (2 tiendas: Pacheco BR, Farmatodo MX)
+    # ═══════════════════════════════════════════════════════════════════════════
     ("paracetamol","farmacias"),("ibuprofeno","farmacias"),("vitamina c","farmacias"),
     ("protector solar","farmacias"),("shampoo","farmacias"),("crema","farmacias"),
     ("jabon liquido","farmacias"),("pañales","farmacias"),
-    # ── Electro ──
-    ("celular","electro"),("telefono","electro"),("laptop","electro"),
-    ("auriculares","electro"),("tablet","electro"),("parlante","electro"),
-    ("cargador","electro"),("funda","electro"),("phone","electro"),("headphones","electro"),
-    ("cable","electro"),("bateria","electro"),
-    # ── Moda ──
+    ("aspirina","farmacias"),("omeprazol","farmacias"),("loratadina","farmacias"),
+    ("curitas","farmacias"),("alcohol","farmacias"),("termometro","farmacias"),
+    ("mascarilla","farmacias"),("gel antibacterial","farmacias"),
+    ("antigripal","farmacias"),("antidiarreico","farmacias"),
+    ("preservativos","farmacias"),("prueba embarazo","farmacias"),
+    ("agua oxigenada","farmacias"),("algodon","farmacias"),
+    ("dipirona","farmacias"),("losartana","farmacias"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ⚡ Electro (9 tiendas: Motorola AR/BR/MX/CL, Electrolux AR/CL, Whirlpool AR/IT/FR)
+    # ═══════════════════════════════════════════════════════════════════════════
+    # Smartphones / Motorola
+    ("moto g","electro"),("moto edge","electro"),("razr","electro"),
+    ("motorola","electro"),("celular","electro"),("telefono","electro"),
+    ("smartphone","electro"),("phone","electro"),("iphone","electro"),
+    ("xiaomi","electro"),("samsung galaxy","electro"),
+    # Accesorios
+    ("auriculares","electro"),("cargador","electro"),("funda","electro"),
+    ("cable","electro"),("bateria","electro"),("headphones","electro"),
+    ("parlante","electro"),("tablet","electro"),("laptop","electro"),
+    ("smartwatch","electro"),("monitor","electro"),("teclado","electro"),
+    ("mouse","electro"),("impresora","electro"),
+    # Línea blanca — Electrolux / Whirlpool
+    ("lavarropas","electro"),("heladera","electro"),("cocina","electro"),
+    ("aspiradora","electro"),("refrigerador","electro"),("horno","electro"),
+    ("microondas","electro"),("lavadora","electro"),("secarropas","electro"),
+    ("lavaplatos","electro"),("freezer","electro"),("aire acondicionado","electro"),
+    ("purificador","electro"),("cafetera","electro"),("licuadora","electro"),
+    ("plancha","electro"),("tostadora","electro"),("batidora","electro"),
+    # English
+    ("fridge","electro"),("washer","electro"),("dryer","electro"),
+    ("dishwasher","electro"),("stove","electro"),("vacuum","electro"),
+    # Italiano (Whirlpool IT)
+    ("frigorifero","electro"),("lavatrice","electro"),("aspirapolvere","electro"),
+    ("forno","electro"),
+    # Francés (Whirlpool FR)
+    ("réfrigérateur","electro"),("lave-linge","electro"),("aspirateur","electro"),
+    ("four","electro"),("téléphone","electro"),
+    # Portugués (Motorola BR)
+    ("celular motorola","electro"),("fone","electro"),("carregador","electro"),
+    ("geladeira","electro"),("fogão","electro"),("aspirador","electro"),
+    ("notebook","electro"),("monitor gamer","electro"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 👗 Moda (2 tiendas: C&A BR, Hering BR)
+    # ═══════════════════════════════════════════════════════════════════════════
     ("camiseta","moda"),("jeans","moda"),("vestido","moda"),("chaqueta","moda"),
     ("zapatos","moda"),("pantalon","moda"),("camisa","moda"),("short","moda"),
-    ("tshirt","moda"),("dress","moda"),("shoes","moda"),
-    # ── Hogar ──
+    ("blusa","moda"),("falda","moda"),("sueter","moda"),
+    ("bufanda","moda"),("traje baño","moda"),("gorra","moda"),
+    ("sandalias","moda"),("tenis","moda"),("accesorios","moda"),
+    ("bolso mujer","moda"),("cinturon","moda"),("calcetines","moda"),
+    ("ropa interior","moda"),("pijama","moda"),("bikini","moda"),
+    # English / Portuguese
+    ("tshirt","moda"),("dress","moda"),("shoes","moda"),("jacket","moda"),
+    ("calça","moda"),("sapato","moda"),("bermuda","moda"),
+    ("blusa feminina","moda"),("jaqueta","moda"),("saia","moda"),
+    ("camisa social","moda"),("tenis esportivo","moda"),("chinelo","moda"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 🔨 Hogar (2 tiendas: Easy AR, Promart PE)
+    # ═══════════════════════════════════════════════════════════════════════════
     ("taladro","hogar"),("sarten","hogar"),("silla","hogar"),("lampara","hogar"),
-    ("cortina","hogar"),("pintura","hogar"),("martillo","hogar"),("destornillador","hogar"),
-    ("toalla","hogar"),("sabana","hogar"),
-    # ── Departamentales ──
-    ("sofa","departamentales"),("cama","departamentales"),("perfume","departamentales"),
-    ("reloj","departamentales"),("bolso","departamentales"),("mochila","departamentales"),
+    ("cortina","hogar"),("pintura","hogar"),("martillo","hogar"),
+    ("destornillador","hogar"),("toalla","hogar"),("sabana","hogar"),
+    ("ceramica","hogar"),("griferia","hogar"),("inodoro","hogar"),
+    ("lavatorio","hogar"),("ducha","hogar"),("piso flotante","hogar"),
+    ("puerta","hogar"),("ventana","hogar"),("escalera","hogar"),
+    ("tornillo","hogar"),("tarugo","hogar"),("cinta","hogar"),
+    ("mueble","hogar"),("cama","hogar"),("colchon","hogar"),
+    ("jardin","hogar"),("maceta","hogar"),("manguera","hogar"),
+    ("pala","hogar"),("balde","hogar"),("clavo","hogar"),
+    ("bisagra","hogar"),("cerradura","hogar"),("enchufe","hogar"),
+    ("foco","hogar"),("cable electrico","hogar"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 🏬 Departamentales (1 tienda: Coppell AR)
+    # ═══════════════════════════════════════════════════════════════════════════
+    ("sofa","departamentales"),("cama","departamentales"),
+    ("perfume","departamentales"),("reloj","departamentales"),
+    ("bolso","departamentales"),("mochila","departamentales"),
     ("juguete","departamentales"),("maquillaje","departamentales"),
-    ("cama","hogar"),("mueble","hogar"),
+    ("televisor","departamentales"),("celular","departamentales"),
+    ("zapatillas","departamentales"),("ropa","departamentales"),
+    ("mueble","departamentales"),("colchon","departamentales"),
+    ("electrodomestico","departamentales"),("bicicleta","departamentales"),
+    ("notebook","departamentales"),("auriculares","departamentales"),
 ]
 
 # ── Database: PostgreSQL or SQLite ──────────────────────────────────────────
