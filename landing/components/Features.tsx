@@ -7,11 +7,11 @@ const tools = [
     demo_es: "market login\n→ Token guardado en ~/.market/session.json\n→ Todas las tools requieren este paso.",
     demo_en: "market login\n→ Token stored in ~/.market/session.json\n→ All tools require this step first.",
     c: "#3cffd0" },
-  { n: "market_lines",   d_es: "Lista las 4 lineas con sus retailers",   d_en: "List 4 business lines with retailers",
-    demo_es: "market lines\n→ supermercados (14) · electro (9) · farmacias (2) · hogar (1)",
-    demo_en: "market lines\n→ supermarkets (14) · electronics (9) · pharmacies (2) · home (1)",
+  { n: "market_lines",   d_es: "Lista las 6 lineas con sus retailers",   d_en: "List 6 business lines with retailers",
+    demo_es: "market lines\n→ supermercados (14) · electro (9) · farmacias (4) · moda (2) · hogar (2) · departamentales (1)",
+    demo_en: "market lines\n→ supermarkets (14) · electronics (9) · pharmacies (4) · fashion (2) · home (2) · department (1)",
     c: "#3cffd0" },
-  { n: "market_search",  d_es: "Busca productos en 27 retailers",        d_en: "Search products across 27 retailers",
+  { n: "market_search",  d_es: "Busca productos en 30 retailers",        d_en: "Search products across 30 retailers",
     demo_es: 'market search "leche" --country PE\n→ 1. Leche Gloria 400ml  Wong  S/3.50\n→ 2. Leche Ideal 395g  Metro  S/3.20',
     demo_en: 'market search "milk" --country AR\n→ 1. Milk 1L  Carrefour  ARS 1,200\n→ 2. Milk 1L  Jumbo  ARS 1,150',
     c: "#FFD600" },
@@ -74,7 +74,7 @@ export default function Features() {
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{_t("features_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">
-          {lang === "es" ? "15 herramientas.\nUn ecosistema." : "15 tools.\nOne ecosystem."}
+          {lang === "es" ? "19 herramientas.\nUn ecosistema." : "19 tools.\nOne ecosystem."}
         </h2>
         <p className="text-white/50 font-mono text-sm leading-relaxed">
           {lang === "es" ? "Clickea cualquier tool para ver como funciona." : "Click any tool to see how it works."}
