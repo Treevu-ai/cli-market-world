@@ -351,6 +351,13 @@ def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
 
 @app.post("/products/search")
 async def search_products(body: SearchRequest, authorization: str | None = Header(None)):
+    try:
+        return await _search_products(body)
+    except Exception as e:
+        logger.exception("search_products crashed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def _search_products(body: SearchRequest):
     stores = [body.store] if body.store else DEFAULT_STORES
     stores = [s for s in stores if s in STORES]
     if body.line and body.line in LINES:
