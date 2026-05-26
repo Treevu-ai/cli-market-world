@@ -39,7 +39,7 @@ export default function StatsSection() {
   const dict: Record<string, string> = isES ? labels_es : labels_en;
 
   return (
-    <section id="stats" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
+    <section id="stats" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">{_t("stats_label")}</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">{_t("stats_title")}</h2>
