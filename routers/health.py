@@ -59,6 +59,34 @@ def health():
     return {"status": "healthy"}
 
 
+@router.get("/health/db")
+def health_db():
+    """Database backend diagnostic — confirms PG vs SQLite."""
+    from market_core import USE_PG, DATABASE_URL, DB_FILE
+    db = get_db()
+    try:
+        db_type = "postgresql" if USE_PG else "sqlite"
+        snapshots = db.execute("SELECT COUNT(*) as n FROM price_snapshots").fetchone()["n"]
+        if not USE_PG:
+            tables = db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+            ).fetchall()
+        else:
+            tables = db.execute(
+                "SELECT tablename as name FROM pg_catalog.pg_tables WHERE schemaname='public' ORDER BY tablename"
+            ).fetchall()
+        db.close()
+        return {
+            "backend": db_type,
+            "database_url_set": bool(DATABASE_URL),
+            "db_file": str(DB_FILE) if not USE_PG else None,
+            "snapshots": snapshots,
+            "tables": [t["name"] for t in tables],
+        }
+    except Exception as e:
+        return {"backend": "error", "detail": str(e)}
+
+
 @router.get("/health/collector")
 def health_collector():
     """Collector health: last run, staleness, store coverage."""
