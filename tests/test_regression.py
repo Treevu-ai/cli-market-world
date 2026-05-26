@@ -235,3 +235,31 @@ def test_full_import_chain_works(isolated_db):
     import market_mcp  # noqa: F401
     # market_server has FastAPI app with lifespan; just verifying it imports
     import market_server  # noqa: F401
+
+
+# ── /health/collector timezone bug (the one Render exposed in the smoke test) ──
+
+def test_age_hours_parses_sqlite_naive_timestamps(isolated_db):
+    """SQLite stores datetime('now') as naive 'YYYY-MM-DD HH:MM:SS'.
+    The /health/collector and /dashboard/data endpoints used to crash on
+    those, reporting status 'dead' with age_hours=999."""
+    from routers.health import _age_hours
+    # SQLite native format: space separator, no tz
+    assert _age_hours("2026-05-26 17:44:07") is not None
+    # Postgres TIMESTAMPTZ format: T separator, +00:00 offset
+    assert _age_hours("2026-05-26T17:44:07+00:00") is not None
+    # ISO Z suffix
+    assert _age_hours("2026-05-26T17:44:07Z") is not None
+    # Garbage doesn't crash
+    assert _age_hours("not a date") is None
+    assert _age_hours(None) is None
+    assert _age_hours("") is None
+
+
+def test_age_hours_returns_close_to_zero_for_recent_timestamp(isolated_db):
+    from datetime import datetime, timezone
+    from routers.health import _age_hours
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    age = _age_hours(now_str)
+    assert age is not None
+    assert 0 <= age < 0.01, f"Expected near-zero age, got {age} hours"
