@@ -17,7 +17,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import httpx
 
-from market_core import STORES, DATA_DIR, DB_FILE, logger as log, product_from_json as _pfj
+from market_core import STORES, DATA_DIR, DB_FILE, logger as log, product_from_json as _pfj, fetch_store as _fetch_store
 
 logger = log.getChild("collector")
 
@@ -436,8 +436,7 @@ class CB:
 cb=CB()
 
 async def fetch_store_multi(client, store, term):
-    from market_core import fetch_store as _fs
-    return await _fs(store, term, page=1, limit=10)
+    return await _fetch_store(store, term, page=1, limit=10)
 
 # ── Collector core ──────────────────────────────────────────────────────────
 
