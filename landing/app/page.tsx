@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import QuickstartAPI from "@/components/QuickstartAPI";
 import CoverageSection from "@/components/CoverageSection";
 import DataSection from "@/components/DataSection";
+import AboutSection from "@/components/AboutSection";
 import TerminalSection from "@/components/TerminalSection";
 import AgentDispatch from "@/components/AgentDispatch";
 import HowItWorks from "@/components/HowItWorks";
@@ -38,6 +39,7 @@ export default function Home() {
         <Features />
         <CoverageSection />
         <DataSection />
+        <AboutSection />
         <Pricing />
         <FAQ />
         <AgentDispatch />
