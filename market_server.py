@@ -38,7 +38,9 @@ from market_core import (
     db_get_users, db_save_user,
     db_get_cart, db_add_to_cart, db_update_cart_item, db_remove_cart_item, db_clear_cart,
     db_get_orders, db_create_order,
-    db_migrate_from_json,
+    db_migrate_from_json, check_rate_limit_sqlite,
+    db_validate_api_key, db_create_api_key, db_list_api_keys, db_revoke_api_key,
+    db_get_subscription, db_set_subscription, TIERS,
     logger as log,
 )
 
@@ -55,7 +57,6 @@ RATE_LIMIT_DAY = int(os.getenv("RATE_LIMIT_DAY", "1000"))
 RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
 def check_rate_limit(ip: str) -> None:
-    from market_core import check_rate_limit_sqlite
     check_rate_limit_sqlite(ip, window_secs=RATE_LIMIT_WINDOW,
                             max_req=RATE_LIMIT_MIN, daily_max=RATE_LIMIT_DAY)
 
@@ -95,7 +96,6 @@ def auth_user(token: str) -> str:
         return "admin"
     # Try API keys first (sk-...)
     if token.startswith("sk-"):
-        from market_core import db_validate_api_key
         key_data = db_validate_api_key(token)
         if key_data:
             return key_data["username"]
@@ -302,7 +302,6 @@ def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header
     username = auth_user(authorization.replace("Bearer ", ""))
     if body.scopes not in ("read", "read_write"):
         raise HTTPException(status_code=400, detail="Scopes must be 'read' or 'read_write'")
-    from market_core import db_create_api_key
     result = db_create_api_key(username, body.scopes, body.label)
     return {
         "message": "API key created. Store it safely — it won't be shown again.",
@@ -316,7 +315,6 @@ def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header
 def list_api_keys(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
-    from market_core import db_list_api_keys
     keys = db_list_api_keys(username)
     return {"keys": keys, "total": len(keys)}
 
@@ -324,7 +322,6 @@ def list_api_keys(authorization: str | None = Header(None)):
 def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
-    from market_core import db_revoke_api_key
     ok = db_revoke_api_key(username, key_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Key not found")
@@ -664,7 +661,6 @@ def data_export_history(body: dict):
 def dashboard_usage(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
-    from market_core import db_get_subscription, TIERS
     sub = db_get_subscription(username); tier = sub.get("tier","free")
     limits = TIERS.get(tier, TIERS["free"])
     db = get_db()
@@ -685,7 +681,7 @@ async def checkout_lemon(authorization: str | None = Header(None)):
     if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
     total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    _co(username, cart, "lemon", total, status="pending", order_id=order_id)
+    db_create_order(username, cart, "lemon", total, status="pending", order_id=order_id)
     db_clear_cart(username)
     from market_connectors.lemon_payments import create_checkout
     try:
@@ -710,8 +706,7 @@ def checkout_yape(authorization: str | None = Header(None)):
     if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
     total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    from market_core import db_create_order as _co
-    _co(username, cart, "yape", total, status="pending", order_id=order_id)
+    db_create_order(username, cart, "yape", total, status="pending", order_id=order_id)
     db_clear_cart(username)
     qr_ref = f"yape-{order_id.lower()}"
     return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"yape",
@@ -732,8 +727,7 @@ def checkout_webhook(order_id: str = "", status: str = "paid"):
 def billing_checkout(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
-    import os as _os
-    stripe_key = _os.getenv("STRIPE_SECRET_KEY","")
+    stripe_key = os.getenv("STRIPE_SECRET_KEY","")
     if not stripe_key: raise HTTPException(status_code=501, detail="Stripe not configured")
     try:
         import stripe; stripe.api_key = stripe_key
@@ -750,7 +744,6 @@ def billing_checkout(authorization: str | None = Header(None)):
 def auth_subscription(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
-    from market_core import db_get_subscription, db_list_api_keys
     sub = db_get_subscription(username)
     keys = db_list_api_keys(username)
     return {"username": username, "subscription": sub, "api_keys": len(keys)}
@@ -764,7 +757,7 @@ async def checkout_paypal(authorization: str | None = Header(None)):
     if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
     total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    _co(username, cart, "paypal", total, status="pending", order_id=order_id)
+    db_create_order(username, cart, "paypal", total, status="pending", order_id=order_id)
     db_clear_cart(username)
     from market_connectors.paypal_payments import create_order
     try:
@@ -787,8 +780,7 @@ async def checkout_wise(authorization: str | None = Header(None)):
     if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
     total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    from market_core import db_create_order as _co
-    _co(username, cart, "wise", total, status="pending", order_id=order_id)
+    db_create_order(username, cart, "wise", total, status="pending", order_id=order_id)
     db_clear_cart(username)
     from market_connectors.wise_payments import create_quote, WISE_API_TOKEN
     wise_ok = bool(WISE_API_TOKEN)
