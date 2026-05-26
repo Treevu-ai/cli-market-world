@@ -1247,8 +1247,9 @@ async def admin_collect(stores: int = 0, queries: int = 0):
     from collect_prices import (
         build_query_list, _get_feedback_db, run_collection,
         STORES as _stores, init_schema_sqlite, sq_run_start, sq_run_end,
-        collect_one_sqlite, PARALLEL as _PARALLEL
+        collect_one_sqlite, PARALLEL as _PARALLEL, cb
     )
+    cb.reset()
     sl = list(_stores.keys())
     if stores: sl = sl[:stores]
     ql = build_query_list(db=None, cycle=0)
