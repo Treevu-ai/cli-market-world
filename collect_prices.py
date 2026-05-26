@@ -17,7 +17,11 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import httpx
 
-from market_core import STORES, DATA_DIR, DB_FILE, logger as log, product_from_json as _pfj, fetch_store as _fetch_store
+from market_core import (
+    STORES, DATA_DIR, DB_FILE, logger as log,
+    product_from_json as _pfj, fetch_store as _fetch_store,
+    ensure_db_initialized,
+)
 
 logger = log.getChild("collector")
 
@@ -333,30 +337,9 @@ if USE_PG:
         return _pg_pool
 
     async def init_schema():
-        pool = await get_pool()
-        async with pool.acquire() as c:
-            await c.execute("""
-                CREATE TABLE IF NOT EXISTS price_snapshots (
-                    id SERIAL PRIMARY KEY, product_id TEXT NOT NULL,
-                    name TEXT, brand TEXT, price DOUBLE PRECISION, list_price DOUBLE PRECISION,
-                    discount INTEGER, store TEXT NOT NULL, store_name TEXT, currency TEXT,
-                    line TEXT, line_name TEXT, category TEXT, stock INTEGER, url TEXT,
-                    queried_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                    UNIQUE(product_id, store)
-                );
-                CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
-                CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
-                CREATE TABLE IF NOT EXISTS collector_runs (
-                    id SERIAL PRIMARY KEY, started_at TIMESTAMPTZ DEFAULT NOW(),
-                    finished_at TIMESTAMPTZ, stores_attempted INT DEFAULT 0,
-                    stores_succeeded INT DEFAULT 0, prices_collected INT DEFAULT 0, errors TEXT
-                );
-                CREATE TABLE IF NOT EXISTS store_health (
-                    store TEXT PRIMARY KEY, last_success TIMESTAMPTZ, last_error TIMESTAMPTZ,
-                    consecutive_failures INT DEFAULT 0, total_requests INT DEFAULT 0,
-                    total_successes INT DEFAULT 0
-                );
-            """)
+        # Single source of truth: market_core.init_db() owns the DDL.
+        # We call it synchronously here — it's idempotent and only runs once.
+        ensure_db_initialized()
 
     async def pg_insert(conn, prod):
         await conn.execute("""
@@ -384,24 +367,49 @@ else:
         c.execute("PRAGMA journal_mode=WAL"); c.execute("PRAGMA busy_timeout=5000"); return c
 
     def init_schema_sqlite():
+        # Single source of truth: market_core.init_db() owns the DDL.
+        # Self-heal old DBs created before the UNIQUE constraint was added.
+        ensure_db_initialized()
         db = get_sqlite()
-        # Self-healing: add UNIQUE constraint if missing (fixes old DBs created before 2026-05-26)
         try:
-            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_ps_product_store ON price_snapshots(product_id, store)")
-        except Exception:
-            pass
-        db.executescript("""
-            CREATE TABLE IF NOT EXISTS price_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id TEXT NOT NULL, name TEXT, brand TEXT, price REAL, list_price REAL, discount INTEGER, store TEXT NOT NULL, store_name TEXT, currency TEXT, line TEXT, line_name TEXT, category TEXT, stock INTEGER, url TEXT, queried_at TEXT DEFAULT (datetime('now')), UNIQUE(product_id, store));
-            CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
-            CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
-            CREATE TABLE IF NOT EXISTS collector_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, started_at TEXT, finished_at TEXT, stores_attempted INT DEFAULT 0, stores_succeeded INT DEFAULT 0, prices_collected INT DEFAULT 0, errors TEXT);
-            CREATE TABLE IF NOT EXISTS store_health (store TEXT PRIMARY KEY, last_success TEXT, last_error TEXT, consecutive_failures INT DEFAULT 0, total_requests INT DEFAULT 0, total_successes INT DEFAULT 0);
-        """)
+            db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_ps_product_store "
+                "ON price_snapshots(product_id, store)"
+            )
+            db.commit()
+        except Exception as _e:
+            logger.warning("self-heal UNIQUE index: %s", _e)
         return db
 
     def sq_insert(db, prod):
-        db.execute("INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,queried_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(product_id,store) DO UPDATE SET price=excluded.price,list_price=excluded.list_price,discount=excluded.discount,stock=excluded.stock,queried_at=datetime('now')",
-            (prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],prod["discount"],prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"]))
+        db.execute(
+            "INSERT INTO price_snapshots "
+            "(product_id,name,brand,price,list_price,discount,store,store_name,"
+            " currency,line,line_name,category,stock,url,queried_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) "
+            "ON CONFLICT(product_id,store) DO UPDATE SET "
+            " price=excluded.price,"
+            " list_price=excluded.list_price,"
+            " discount=excluded.discount,"
+            " stock=excluded.stock,"
+            " queried_at=datetime('now')",
+            (
+                prod.get("product_id", prod.get("id", "")),
+                prod.get("name", ""),
+                prod.get("brand", ""),
+                prod.get("price", 0),
+                prod.get("list_price", 0),
+                prod.get("discount"),
+                prod.get("store", ""),
+                prod.get("store_name", ""),
+                prod.get("currency", ""),
+                prod.get("line", ""),
+                prod.get("line_name", ""),
+                prod.get("category", ""),
+                prod.get("stock", 0),
+                prod.get("url", ""),
+            ),
+        )
 
     def sq_health(db, store, ok):
         if ok: db.execute("INSERT INTO store_health (store,last_success,total_requests,total_successes) VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET last_success=datetime('now'),total_requests=total_requests+1,total_successes=total_successes+1",(store,))
@@ -469,7 +477,9 @@ async def collect_one_pg(pool, store, queries):
     return collected
 
 async def collect_one_sqlite(db, store, queries):
-    from market_core import save_price_snapshot
+    """Collect for one store, reusing a single SQLite connection across
+    all inserts (orders of magnitude cheaper than open-per-row, and avoids
+    `database is locked` storms under PARALLEL workers)."""
     line = STORES[store].get("line",""); collected=0
     for q, lf in queries:
         if lf and line!=lf: continue
@@ -480,7 +490,7 @@ async def collect_one_sqlite(db, store, queries):
                 prod["line"] = line
                 prod["line_name"] = LINES.get(line,{}).get("name","")
                 if prod.get("price", 0) and prod["price"] > 0:
-                    save_price_snapshot(prod)
+                    sq_insert(db, prod)
                     collected += 1
             await asyncio.sleep(REQUEST_DELAY)
         except Exception as _e:
@@ -569,6 +579,7 @@ async def main():
     ap.add_argument("--parallel", type=int, default=50)
     args = ap.parse_args()
     global PARALLEL; PARALLEL = args.parallel
+    ensure_db_initialized()
     if args.status: do_status(); return
     if args.report: do_report(); return
     stores = list(STORES.keys())[:args.stores] if args.stores else list(STORES.keys())
