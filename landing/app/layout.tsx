@@ -15,12 +15,12 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CLI Market — 60 retailers. Una API. Tus agentes compran solos.",
+  title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
   description:
-    "60 retailers en 11 países, 3 plataformas. 36 herramientas MCP. Precios reales de góndola actualizados cada 8 horas. Una API. Cero scraping.",
+    "60 retailers, 11 países, 3 plataformas. 36 herramientas MCP. Precios reales de góndola cada 8 horas. Una API. Cero scraping.",
   openGraph: {
-    title: "CLI Market — Comercio programable para agentes de IA",
-    description: "60 retailers, 11 países, 3 plataformas. 36 MCP tools. Precios reales. Sin scraping.",
+    title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
+    description: "60 retailers en 11 países. 36 MCP tools. Precios reales cada 8 horas. Checkout con Yape, Plin, Wise, PayPal o Lemon.",
     url: "https://cli-market.dev",
     siteName: "CLI Market",
     type: "website",
@@ -34,6 +34,27 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CLI Market",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "description": "Commerce infrastructure for AI agents. 60 retailers, 11 countries, 36 MCP tools. One API.",
+  "url": "https://cli-market.dev",
+  "author": {
+    "@type": "Organization",
+    "name": "SINAPSIS INNOVADORA S.A.C.",
+    "taxID": "20613045563",
+    "address": { "@type": "PostalAddress", "addressLocality": "Lima", "addressCountry": "PE" },
+    "founder": { "@type": "Person", "name": "Antonio Cuba", "jobTitle": "Founder & Product Owner" }
+  },
+  "offers": [
+    { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+    { "@type": "Offer", "name": "Pro", "price": "49", "priceCurrency": "USD" }
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -42,8 +63,9 @@ export default function RootLayout({
   return (
     <html lang="es" className="h-full">
       <body
-        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#131313] overflow-x-hidden`}
+        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#e8ebe6] overflow-x-hidden`}
       >
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
