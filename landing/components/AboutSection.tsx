@@ -12,7 +12,7 @@ export default function AboutSection() {
           {isES ? "Sobre nosotros" : "About us"}
         </p>
         <h2 className="text-[clamp(32px,5vw,48px)] leading-[1.1] font-black text-[#9fe870] mb-6 tracking-tight">
-          {isES ? "Construido en Lima.\nPara el mundo." : "Built in Lima.\nFor the world."}
+          {isES ? "Construido en Perú.\nPara el mundo." : "Built in Peru.\nFor the world."}
         </h2>
         <p className="text-base text-[#c5edab] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
@@ -34,6 +34,13 @@ export default function AboutSection() {
               <p className="text-sm text-[#454745]">
                 {isES ? "Gerente General · SINAPSIS INNOVADORA S.A.C." : "General Manager · SINAPSIS INNOVADORA S.A.C."}
               </p>
+              <a href="https://instagram.com/cli.market" target="_blank" rel="noopener"
+                 className="inline-flex items-center gap-1.5 mt-2 text-xs text-[#454745] hover:text-[#0e0f0c] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+                @cli.market
+              </a>
             </div>
           </div>
         </div>
