@@ -8,13 +8,13 @@ export default function AboutSection() {
   return (
     <section id="about" className="relative bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[var(--wise-body)] font-medium uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[var(--wise-green)] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Sobre nosotros" : "About us"}
         </p>
         <h2 className="text-[clamp(32px,5vw,48px)] leading-[1.1] font-black text-[#9fe870] mb-6 tracking-tight">
           {isES ? "Construido en Perú.\nPara el mundo." : "Built in Peru.\nFor the world."}
         </h2>
-        <p className="text-base text-[#c5edab] max-w-lg mx-auto mb-12 leading-relaxed">
+        <p className="text-base text-[#e2f6d5] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
             ? "CLI Market nace de una convicción simple: el comercio minorista en Latinoamérica necesita infraestructura programable. No otro marketplace. No otro agregador. Una capa de software que permita a cualquier agente de IA buscar, comparar y comprar en el retail físico como si fuera una API."
             : "CLI Market was born from a simple conviction: Latin American retail needs programmable infrastructure. Not another marketplace. Not another aggregator. A software layer that lets any AI agent search, compare, and buy from physical retail as if it were an API."}
@@ -46,6 +46,13 @@ export default function AboutSection() {
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
                   </svg>
                   Instagram
+                </a>
+                <a href="https://x.com/cli_market_dev" target="_blank" rel="noopener"
+                   className="inline-flex items-center gap-1.5 text-xs text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  X
                 </a>
                 <a href="https://www.linkedin.com/company/cli-market/" target="_blank" rel="noopener"
                    className="inline-flex items-center gap-1.5 text-xs text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
