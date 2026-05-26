@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 export default function AgentDispatch() {
-  const { t } = useLang();
-  const [open, setOpen] = useState(0); // 0 = all closed
+  const { t: _t, lang } = useLang();
+  const isES = lang === "es";
+  const [open, setOpen] = useState(0);
 
   const steps = [
     { titleKey: "agent_step1_title", descKey: "agent_step1_desc", num: "01" },
@@ -13,26 +14,43 @@ export default function AgentDispatch() {
   ];
 
   return (
-    <section id="agents" className="relative flex flex-col w-full bg-black py-16 px-6 lg:px-12 md:py-[80px] gap-8">
-      <div className="flex flex-col gap-3 max-w-[600px]">
-        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#3cffd0]/40"/>{t("agent_label")}</span>
-        <h2 className="text-[clamp(1.5rem,3vw,3rem)] font-grotesk font-bold text-white leading-[1.05]">{t("agent_title")}</h2>
-      </div>
-      <div className="flex flex-col gap-4 max-w-[900px]">
-        {steps.map((s, i) => (
-          <div key={i} className="bg-[#131313] border border-[#2d2d2d] overflow-hidden">
-            <button onClick={() => setOpen(open === i ? -1 : i)} className="w-full flex items-center gap-4 px-6 py-4 text-left">
-              <span className="text-[#3cffd0] font-mono text-sm font-bold">{s.num}</span>
-              <h3 className="font-grotesk text-base font-bold text-white">{t(s.titleKey)}</h3>
-              <span className="ml-auto text-[#3cffd0] text-lg" style={{transform: open===i ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.2s"}}>+</span>
-            </button>
-            {open === i && (
-              <div className="px-6 pb-5 pl-14">
-                <p className="text-[#888] text-sm font-sans leading-relaxed">{t(s.descKey)}</p>
-              </div>
-            )}
-          </div>
-        ))}
+    <section className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
+      <div className="max-w-[720px] mx-auto px-6">
+        <div className="text-center mb-12">
+          <p className="text-xs text-[#454745] font-medium uppercase tracking-[0.15em] mb-8">
+            {isES ? "Para agentes" : "For agents"}
+          </p>
+          <h2 className="text-[24px] font-medium text-[#0e0f0c] tracking-tight">
+            {isES ? "Infraestructura de comercio y precios para agentes." : "Commerce and pricing infrastructure for agents."}
+          </h2>
+        </div>
+
+        <div className="space-y-2 max-w-[560px] mx-auto">
+          {steps.map((s, i) => (
+            <div key={i}>
+              <button
+                onClick={() => setOpen(open === i ? -1 : i)}
+                className="w-full flex items-center gap-4 px-4 py-3 bg-white rounded-3xl border border-[#c5edab] hover:bg-[#e2f6d5] transition-colors text-left"
+              >
+                <span className="text-xs font-bold text-[#9fe870] font-mono w-6">{s.num}</span>
+                <span className="text-sm font-medium text-[#0e0f0c] flex-1">{_t(s.titleKey)}</span>
+                <svg className={`w-4 h-4 text-[#868685] transition-transform ${open === i ? "rotate-180" : ""}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {open === i && (
+                <div className="mt-1 px-4 py-3 text-sm text-[#454745] leading-relaxed">
+                  {_t(s.descKey)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-[#0e0f0c] font-semibold">
+          {isES ? "Tu agente puede comparar precios, optimizar canastas y comprar solo. Hoy." : "Your agent can compare prices, optimize baskets, and buy on its own. Today."}
+        </p>
       </div>
     </section>
   );

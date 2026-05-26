@@ -14,7 +14,6 @@ import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
-import { NoiseOverlay } from "@/components/AnimatedSphere";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
@@ -26,7 +25,6 @@ export default function Home() {
         backgroundSize: "64px 64px",
       }} aria-hidden="true" />
 
-      <NoiseOverlay />
       <Navbar />
 
       <ErrorBoundary>
