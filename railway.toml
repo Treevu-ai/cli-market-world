@@ -1,0 +1,25 @@
+# Railway deployment manifest for CLI Market
+#
+# Two services + PostgreSQL:
+#   1. api        Web service (FastAPI) — public, /health probe
+#   2. collector  Background worker — price collector daemon
+#
+# Add PostgreSQL from Railway dashboard → auto-injects DATABASE_URL
+# All services share the same private network — no DNS issues.
+
+[service "api"]
+[service.api.build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+[service.api.deploy]
+healthcheckPath = "/health"
+numReplicas = 1
+[service.api.network]
+port = 8000
+
+[service "collector"]
+[service.collector.build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.collector"
+[service.collector.deploy]
+numReplicas = 1
