@@ -474,7 +474,7 @@ async def collect_one_sqlite(db, store, queries):
                         if prod["price"]<=0: continue
                         sq_insert(db, prod); collected+=1
                     await asyncio.sleep(REQUEST_DELAY)
-                except Exception: cb.lose(store); sq_health(db, store, False)
+                except Exception as _e: cb.lose(store); sq_health(db, store, False); raise _e
     except Exception: cb.lose(store)
     return collected
 
