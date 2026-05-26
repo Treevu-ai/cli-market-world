@@ -435,13 +435,9 @@ class CB:
         if s.f[k]>=20: s.o[k]=time.time()+120
 cb=CB()
 
-async def fetch_store(client, store, term):
-    base = STORES[store]["base"]
-    url = f"{base}/api/catalog_system/pub/products/search/{term}"
-    resp = await client.get(url, params={"_from":"0","_to":"9"})
-    if resp.status_code>=500: raise Exception(f"HTTP {resp.status_code}")
-    resp.raise_for_status()
-    return resp.json()
+async def fetch_store_multi(client, store, term):
+    from market_core import fetch_store as _fs
+    return await _fs(store, term, page=1, limit=10)
 
 # ── Collector core ──────────────────────────────────────────────────────────
 
@@ -454,7 +450,7 @@ async def collect_one_pg(pool, store, queries):
                 for q, lf in queries:
                     if lf and line!=lf: continue
                     try:
-                        raw = await fetch_store(client, store, q)
+                        raw = await fetch_store_multi(client, store, q)
                         cb.win(store); await pg_health(conn, store, True)
                         for p in raw:
                             prod = product_from_json(p, store)
@@ -473,7 +469,7 @@ async def collect_one_sqlite(db, store, queries):
             for q, lf in queries:
                 if lf and line!=lf: continue
                 try:
-                    raw = await fetch_store(client, store, q)
+                    raw = await fetch_store_multi(client, store, q)
                     cb.win(store); sq_health(db, store, True)
                     for p in raw:
                         prod = product_from_json(p, store)
