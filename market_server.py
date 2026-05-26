@@ -128,13 +128,13 @@ COLLECTOR_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
 
 @app.on_event("startup")
 async def start_collector():
-    import threading
+    import threading, asyncio, time
+    logger.info("Collector background thread started (interval=%sh)", COLLECTOR_INTERVAL)
     def _run():
-        import time, subprocess, sys
-        logger.info("Collector background thread started (interval=%sh)", COLLECTOR_INTERVAL)
         while True:
             try:
-                subprocess.run([sys.executable, "collect_prices.py"], check=False, timeout=3600)
+                import collect_prices
+                asyncio.run(collect_prices.main())
             except Exception as e:
                 logger.error("Collector run failed: %s", e)
             time.sleep(COLLECTOR_INTERVAL * 3600)
