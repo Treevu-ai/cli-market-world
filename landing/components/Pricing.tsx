@@ -4,7 +4,7 @@ import { useLang } from "@/lib/LanguageContext";
 const tiers = [
   {
     name: "Free", price: "$0", period: "para siempre",
-    features: ["60 req/min · 1,000 req/día", "1 API key (read)", "30 retailers · 6 líneas", "Dashboard en tiempo real", "Pago con Yape, Plin o Wise"],
+    features: ["60 req/min · 1,000 req/día", "1 API key (read)", "Dashboard en tiempo real", "Pago con Yape, Plin, Wise o PayPal"],
     cta: "Empezar gratis", dark: false,
   },
   {

@@ -15,7 +15,7 @@ const es: Dict = {
   terminal_cli_label: "cli-market — bash",
   terminal_step_login: "Autentícate para acceder a los 60 retailers",
   terminal_step_add: "Agrega al carrito desde el resultado de búsqueda",
-  terminal_step_checkout: "Completa la compra con Yape, Plin o Wise",
+  terminal_step_checkout: "Completa la compra con Yape, Plin, Wise o PayPal",
   terminal_footer: "OPEN SOURCE · MIT LICENSE · pip install · 60 retailers · 11 países · 3 plataformas",
   how_label: "Cómo funciona", how_title: "4 pasos.\nDel install a la compra.",
   how_subtitle: "Search → Compare → Checkout → Agent mode. Cuatro pasos y tu agente ya está comprando en 60 retailers.",
