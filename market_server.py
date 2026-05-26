@@ -1229,6 +1229,26 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
     return {"ocr_text": ocr_text[:500], "items_detected": len(lines), "items_matched": len(items_found), "potential_savings": round(savings, 2), "items": items_found, "message": "Compara contra los precios mas baratos de nuestro data moat." if items_found else "No se detectaron productos."}
 
 
+# ── Admin: manual collection trigger ────────────────────────────────────────
+
+@app.post("/admin/collect")
+def admin_collect(stores: int = 0, queries: int = 0):
+    """Trigger a price collection run. Optional: limit stores and queries."""
+    import subprocess, sys as _sys
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    collector_path = os.path.join(script_dir, "collect_prices.py")
+    args = [_sys.executable, collector_path]
+    if stores: args.extend(["--stores", str(stores)])
+    if queries: args.extend(["--queries", str(queries)])
+    try:
+        result = subprocess.run(args, capture_output=True, text=True, timeout=600, cwd=script_dir)
+        return {"status": "ok", "stdout": result.stdout[-500:], "stderr": result.stderr[-200:]}
+    except subprocess.TimeoutExpired:
+        return {"status": "timeout", "message": "Collection still running"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 # ── Dashboard ───────────────────────────────────────────────────────────────
 
 @app.get("/dashboard")
@@ -1416,26 +1436,6 @@ def main():
     import uvicorn, threading, time, subprocess, sys as _sys
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8765"))
-    
-    # Start collector in background thread
-    def _collector():
-        time.sleep(15)
-        while True:
-            try:
-                from collect_prices import build_query_list, _get_feedback_db, run_collection, STORES as _stores
-                import asyncio as _aio
-                stores = list(_stores.keys())
-                db = _get_feedback_db()
-                queries = build_query_list(db=db, cycle=0)
-                if db: db.close()
-                logger.info("Collector: %d stores x %d queries", len(stores), len(queries))
-                _aio.run(run_collection(stores, queries))
-            except Exception as ex:
-                logger.error("Collector run failed: %s", ex)
-            time.sleep(COLLECTOR_INTERVAL * 3600)
-    
-    threading.Thread(target=_collector, daemon=True).start()
-    logger.info("Collector thread launched (interval=%sh)", COLLECTOR_INTERVAL)
     
     logger.info(f"CLI Market API starting on http://{host}:{port}")
     logger.info(f"  {len(STORES)} stores, {len(LINES)} lines, {len(COUNTRIES)} countries")
