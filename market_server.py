@@ -1243,39 +1243,29 @@ async def debug_fetch(store: str = "wong", query: str = "leche"):
 
 @app.post("/admin/collect")
 async def admin_collect(stores: int = 0, queries: int = 0):
-    """Trigger a price collection run directly (no subprocess)."""
-    import asyncio, time as _t, logging
-    _log = logging.getLogger("market.collector")
+    """Trigger a price collection run directly."""
+    import time
     from collect_prices import (
         build_query_list, _get_feedback_db, run_collection,
-        STORES as _stores, cb
+        STORES as _stores, init_schema_sqlite
     )
-    import httpx
-    
     sl = list(_stores.keys())
     if stores: sl = sl[:stores]
     
-    # Manual collection for debugging
-    db = _get_feedback_db()
-    total = 0; ok = 0
-    for store in sl[:1]:  # just first store for debug
-        _log.info("Trying store: %s", store)
-        ql = build_query_list(db=db, cycle=0)
-        if queries: ql = ql[:queries]
-        for q, line in ql[:1]:  # just first query
-            _log.info("Query: %s on %s", q, store)
-            try:
-                from market_core import fetch_store, product_from_json
-                raw = await fetch_store(store, q, page=1, limit=10)
-                _log.info("Store %s query %s: %d results", store, q, len(raw))
-                for p in raw[:1]:
-                    prod = product_from_json(p, store)
-                    _log.info("Product: %s price=%s", prod.get("name","?")[:40], prod.get("price",0))
-            except Exception as e:
-                _log.error("Failed: %s", e)
-        break
+    db = init_schema_sqlite()
+    ql = build_query_list(db=db, cycle=0)
+    if queries: ql = ql[:queries]
     
-    return {"status": "ok", "store": store, "query": q, "results": len(raw) if 'raw' in dir() else 0}
+    t0 = time.monotonic()
+    result = await run_collection(sl, ql)
+    
+    return {
+        "status": "ok",
+        "elapsed_s": round(time.monotonic() - t0, 1),
+        "stores_attempted": result["stores_attempted"],
+        "stores_succeeded": result["stores_succeeded"],
+        "prices_collected": result["prices_collected"],
+    }
 
 
 # ── Dashboard ───────────────────────────────────────────────────────────────
