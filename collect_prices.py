@@ -313,7 +313,14 @@ def _get_feedback_db():
 
 # ── Database: PostgreSQL or SQLite ──────────────────────────────────────────
 
-USE_PG = bool(DATABASE_URL)
+def _pg_host_ok(url: str) -> bool:
+    import re, socket as _sock
+    m = re.search(r"@([^:/]+)", url) or re.search(r"://([^:/]+)", url)
+    if not m: return False
+    try: _sock.getaddrinfo(m.group(1), 5432); return True
+    except _sock.gaierror: return False
+
+USE_PG = bool(DATABASE_URL) and _pg_host_ok(DATABASE_URL)
 
 if USE_PG:
     import asyncpg
