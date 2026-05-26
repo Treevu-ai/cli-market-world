@@ -18,19 +18,15 @@ Uso:
 
 import argparse
 import json
-import os
 import sys
 
-import httpx
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, API, SESSION_FILE, LANG_FILE, LAST_SEARCH_FILE,
-    get_token, api,
-    CURRENCY_SYMBOLS, fmt_price, store_color, store_emoji,
-    save_last_search, load_last_search,
+    STORES, LINES, COUNTRIES, LANG_FILE, get_token, api,
+    fmt_price, store_color, save_last_search, load_last_search,
 )
 
 console = Console()
@@ -184,7 +180,7 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
     result = api(method, path, json_data)
     if isinstance(result, dict) and "error" in result:
         if result.get("status") == 401:
-            console.print(f"[red]Sesión expirada. Ejecutá: market login[/]")
+            console.print("[red]Sesión expirada. Ejecutá: market login[/]")
             console.print("[dim]Si usás MARK_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
         else:
             console.print(f"[red]Error: {result['error']}[/]")
@@ -242,8 +238,8 @@ def cmd_search(args):
         )
     console.print()
     console.print(table)
-    console.print(f"\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
-    console.print(f"[dim]Ej: market add 3 --qty 2  (el #3 de la tabla)[/]")
+    console.print("\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
+    console.print("[dim]Ej: market add 3 --qty 2  (el #3 de la tabla)[/]")
 
 def cmd_compare(args):
     with console.status(f"[cyan]Comparando '{args.query}'..."):
@@ -271,18 +267,19 @@ def cmd_compare(args):
         store_name = STORES.get(sk, {}).get("name", sk)
         table.add_column(store_name, justify="right", width=11)
     table.add_column("Mejor", justify="center", width=10)
+    def _pcell(sk: str, prices: dict) -> str:
+        if sk in prices:
+            currency = STORES.get(sk, {}).get("currency", "PEN")
+            return f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
+        return "[dim]—[/]"
+
     for i, item in enumerate(comp, 1):
         prices = item.get("prices", {})
         best = item.get("best_store", "")
         best_color = store_color(best) if best else "dim"
-        def pcell(sk):
-            if sk in prices:
-                currency = STORES.get(sk, {}).get("currency", "PEN")
-                return f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
-            return "[dim]—[/]"
         row = [str(i), item.get("name", ""), item.get("brand", "")]
         for sk in display_stores:
-            row.append(pcell(sk))
+            row.append(_pcell(sk, prices))
         row.append(f"[bold {best_color}]{STORES.get(best, {}).get('name', best)}[/]" if best else "—")
         table.add_row(*row)
     console.print()
@@ -404,11 +401,11 @@ def cmd_countries(args):
     table.add_column("País", style="bold")
     table.add_column("Tiendas")
     table.add_column("Cant.", justify="center")
-    for code, info in sorted(countries.items()):
+    for _code, info in sorted(countries.items()):
         table.add_row(info["name"], ", ".join(info["stores"]), str(info["count"]))
     console.print()
     console.print(table)
-    console.print(f"\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
+    console.print("\n[dim]market search --country PE[/] [dim]para buscar en un solo país[/]")
 
 def cmd_lines(args):
     data = cli_api("GET", "/lines")
@@ -417,7 +414,7 @@ def cmd_lines(args):
     table.add_column("Línea", style="bold")
     table.add_column("Retailers")
     table.add_column("Cant.", justify="center")
-    for line_id, info in lines.items():
+    for _line_id, info in lines.items():
         stores_str = ", ".join(s["name"] for s in info["stores"].values())
         table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
     console.print()
@@ -490,7 +487,7 @@ def cmd_basket(args):
     table.add_column("Tienda", style="bold")
     table.add_column("Productos", max_width=50)
     table.add_column("Total", style="bold yellow", justify="right")
-    for store_key, info in sorted(comp.items(), key=lambda x: x[1]["total"]):
+    for _store_key, info in sorted(comp.items(), key=lambda x: x[1]["total"]):
         items_str = ", ".join(f"{i['qty']}x {i['name'][:15]}" for i in info["items"][:3])
         table.add_row(info["store_name"], items_str, f"{info['currency']} {info['total']:.2f}")
     console.print(table)

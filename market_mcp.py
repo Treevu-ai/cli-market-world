@@ -12,12 +12,12 @@ Uso:
 """
 
 import json
-import os
 import sys
 
-import httpx
 
-from market_core import API, SESSION_FILE, get_token, api
+# Re-exports kept for backwards compat — tests/test_server.py verifies these
+# are reachable through market_mcp. Ruff would otherwise drop the unused ones.
+from market_core import API, SESSION_FILE, api, get_token  # noqa: F401
 
 TOOLS = [
     {

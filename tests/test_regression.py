@@ -17,7 +17,6 @@ These tests would have caught — in <100ms each — every bug we hit this week:
 If any of these break again, the corresponding test fails BEFORE deploy, not 8h after.
 """
 
-import os
 import sys
 import sqlite3
 import tempfile

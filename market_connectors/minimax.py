@@ -4,7 +4,7 @@ TTS (text-to-speech), Music, Video, Image generation.
 API docs: https://platform.minimax.io
 """
 
-import os, httpx, json
+import os, httpx
 
 MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY", "")
 MINIMAX_GROUP_ID = os.getenv("MINIMAX_GROUP_ID", "")
