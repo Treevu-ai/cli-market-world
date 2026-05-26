@@ -149,70 +149,12 @@ from routers.health import router as health_router
 app.include_router(health_router)
 
 
-# ── Auth endpoints ─────────────────────────────────────────────────────────
+# ── Auth router ────────────────────────────────────────────────────────────
+# /auth/login, /auth/whoami, /auth/keys{,/x}, /auth/subscription
+# moved to routers/auth.py
 
-@app.post("/auth/login")
-def login(body: LoginRequest):
-    check_rate_limit("auth")
-    check_auth_brute_force(body.username)
-    users = db_get_users()
-    if not users:
-        admin_pass = os.getenv("MARKET_ADMIN_PASSWORD", "market")
-        db_save_user("admin", hash_password(admin_pass), str(uuid.uuid4()))
-        users = db_get_users()
-    user = users.get(body.username)
-    if not user or not verify_password(body.password, user["password"]):
-        _auth_attempts.setdefault(body.username, []).append(time.time())
-        raise HTTPException(status_code=401, detail="Credenciales inválidas")
-    token = user.get("token")
-    if not token:
-        token = str(uuid.uuid4())
-        db_save_user(body.username, user["password"], token)
-    return {"message": "Autenticado", "username": body.username, "token": token}
-
-@app.get("/auth/whoami")
-def whoami(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    return {"username": username}
-
-
-# ── API Keys ──────────────────────────────────────────────────────────────────
-
-class CreateApiKeyRequest(BaseModel):
-    scopes: str = "read"
-    label: str = ""
-
-@app.post("/auth/keys")
-def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    if body.scopes not in ("read", "read_write"):
-        raise HTTPException(status_code=400, detail="Scopes must be 'read' or 'read_write'")
-    result = db_create_api_key(username, body.scopes, body.label)
-    return {
-        "message": "API key created. Store it safely — it won't be shown again.",
-        "key": result["key"],
-        "prefix": result["prefix"],
-        "scopes": result["scopes"],
-        "label": result["label"],
-    }
-
-@app.get("/auth/keys")
-def list_api_keys(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    keys = db_list_api_keys(username)
-    return {"keys": keys, "total": len(keys)}
-
-@app.delete("/auth/keys/{key_id}")
-def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    ok = db_revoke_api_key(username, key_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Key not found")
-    return {"message": "Key revoked"}
+from routers.auth import router as auth_router
+app.include_router(auth_router)
 
 
 # ── Search ─────────────────────────────────────────────────────────────────
@@ -636,15 +578,6 @@ def billing_checkout(authorization: str | None = Header(None)):
         return {"url":session.url}
     except ImportError: raise HTTPException(status_code=501, detail="pip install stripe")
     except Exception as e: raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/auth/subscription")
-def auth_subscription(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    sub = db_get_subscription(username)
-    keys = db_list_api_keys(username)
-    return {"username": username, "subscription": sub, "api_keys": len(keys)}
 
 
 @app.post("/checkout/paypal")
