@@ -588,17 +588,23 @@ async def main():
     if args.daemon:
         print(f"🔄 Daemon: every {args.interval}h | expansion: ×{EXPANSION_FACTOR} | feedback: ≤{FEEDBACK_LIMIT}")
         cycle = 0
+        print(f"🚀 Collector daemon started — {label} backend — PID {os.getpid()}")
         while True:
-            db = _get_feedback_db()
-            queries = build_query_list(db=db, cycle=cycle)
-            if db: db.close()
-            if args.queries: queries = queries[:args.queries]
-            print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
-            print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
-            t0=time.monotonic(); r=await run_collection(stores, queries)
-            print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
+            try:
+                db = _get_feedback_db()
+                queries = build_query_list(db=db, cycle=cycle)
+                if db: db.close()
+                if args.queries: queries = queries[:args.queries]
+                print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
+                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
+                t0=time.monotonic(); r=await run_collection(stores, queries)
+                print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
+            except Exception as e:
+                print(f"  ✗ Cycle {cycle} crashed: {e}")
+                import traceback; traceback.print_exc()
             cycle += 1
-            await asyncio.sleep(args.interval*3600)
+            wait_s = max(args.interval*3600, 60)
+            await asyncio.sleep(wait_s)
     else:
         db = _get_feedback_db()
         queries = build_query_list(db=db, cycle=0)
