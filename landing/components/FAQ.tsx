@@ -24,18 +24,18 @@ export default function FAQ() {
   const faqs = lang === "es" ? faqs_es : faqs_en;
 
   return (
-    <section id="faq" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
+    <section id="faq" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">FAQ</p>
-        <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-12 tracking-tight">
+        <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">FAQ</p>
+        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-12 tracking-tight">
           {lang === "es" ? "Preguntas frecuentes." : "Frequently asked questions."}
         </h2>
 
         <div className="text-left divide-y divide-[#e5e5e5]">
           {faqs.map((faq, i) => (
             <div key={i} className="py-4">
-              <h3 className="text-sm font-medium text-[#0e0f0c] mb-1">{faq.q}</h3>
-              <p className="text-sm text-[#454745] leading-relaxed">{faq.a}</p>
+              <h3 className="text-sm font-medium text-[var(--wise-ink)] mb-1">{faq.q}</h3>
+              <p className="text-sm text-[var(--wise-body)] leading-relaxed">{faq.a}</p>
             </div>
           ))}
         </div>

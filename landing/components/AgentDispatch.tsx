@@ -14,13 +14,13 @@ export default function AgentDispatch() {
   ];
 
   return (
-    <section className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
+    <section className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6">
         <div className="text-center mb-12">
-          <p className="text-xs text-[#454745] font-medium uppercase tracking-[0.15em] mb-8">
+          <p className="text-xs text-[var(--wise-body)] font-medium uppercase tracking-[0.15em] mb-8">
             {isES ? "Para agentes" : "For agents"}
           </p>
-          <h2 className="text-[24px] font-medium text-[#0e0f0c] tracking-tight">
+          <h2 className="text-[24px] font-medium text-[var(--wise-ink)] tracking-tight">
             {isES ? "Infraestructura de comercio y precios para agentes." : "Commerce and pricing infrastructure for agents."}
           </h2>
         </div>
@@ -30,17 +30,17 @@ export default function AgentDispatch() {
             <div key={i}>
               <button
                 onClick={() => setOpen(open === i ? -1 : i)}
-                className="w-full flex items-center gap-4 px-4 py-3 bg-white rounded-3xl border border-[#c5edab] hover:bg-[#e2f6d5] transition-colors text-left"
+                className="w-full flex items-center gap-4 px-4 py-3 bg-white rounded-3xl border border-[#c5edab] hover:bg-[var(--wise-green-pale)] transition-colors text-left"
               >
                 <span className="text-xs font-bold text-[#9fe870] font-mono w-6">{s.num}</span>
-                <span className="text-sm font-medium text-[#0e0f0c] flex-1">{_t(s.titleKey)}</span>
-                <svg className={`w-4 h-4 text-[#868685] transition-transform ${open === i ? "rotate-180" : ""}`}
+                <span className="text-sm font-medium text-[var(--wise-ink)] flex-1">{_t(s.titleKey)}</span>
+                <svg className={`w-4 h-4 text-[var(--wise-mute)] transition-transform ${open === i ? "rotate-180" : ""}`}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
               {open === i && (
-                <div className="mt-1 px-4 py-3 text-sm text-[#454745] leading-relaxed">
+                <div className="mt-1 px-4 py-3 text-sm text-[var(--wise-body)] leading-relaxed">
                   {_t(s.descKey)}
                 </div>
               )}
@@ -48,7 +48,7 @@ export default function AgentDispatch() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-[#0e0f0c] font-semibold">
+        <p className="mt-8 text-center text-sm text-[var(--wise-ink)] font-semibold">
           {isES ? "Tu agente puede comparar precios, optimizar canastas y comprar solo. Hoy." : "Your agent can compare prices, optimize baskets, and buy on its own. Today."}
         </p>
       </div>

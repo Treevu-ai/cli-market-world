@@ -8,6 +8,22 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { lang, setLang, t: _t } = useLang();
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = stored === "dark" || (!stored && prefers);
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -22,12 +38,12 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      scrolled ? "bg-[#e8ebe6]/90 backdrop-blur-md border-b border-[#c5edab]" : "bg-[#e8ebe6] border-b border-transparent"
+      scrolled ? "bg-[var(--wise-canvas-soft)]/90 backdrop-blur-md border-b border-[#c5edab]" : "bg-[var(--wise-canvas-soft)] border-b border-transparent"
     }`}>
       <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between h-14">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 text-[#0e0f0c]">
-          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[#0e0f0c]">
+        <a href="/" className="flex items-center gap-2 text-[var(--wise-ink)]">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]">
             <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
             <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -45,13 +61,19 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-5">
           {linkKeys.map(k => (
             <a key={k} href={`#${k.replace("nav_","")}`}
-               className="text-[11px] font-medium text-[#454745] hover:text-[#0e0f0c] transition-colors">
+               className="text-[11px] font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
               {navLabels[k]}
             </a>
           ))}
           <span className="text-[#d4d4d4]">|</span>
+          <button onClick={toggleTheme}
+            className="text-sm font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors cursor-pointer"
+            title={dark ? "Light" : "Dark"}>
+            {dark ? "☀" : "☾"}
+          </button>
+          <span className="text-[#d4d4d4]">|</span>
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#454745] hover:text-[#0e0f0c] transition-colors cursor-pointer">
+            className="text-[11px] font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
         </div>
@@ -59,11 +81,11 @@ export default function Navbar() {
         {/* Mobile menu */}
         <div className="md:hidden flex items-center gap-3">
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#454745] cursor-pointer">
+            className="text-[11px] font-medium text-[var(--wise-body)] cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
           <button onClick={() => setOpen(!open)}
-            className="text-[#0e0f0c] text-lg cursor-pointer font-medium">
+            className="text-[var(--wise-ink)] text-lg cursor-pointer font-medium">
             {open ? "×" : "☰"}
           </button>
         </div>
@@ -71,10 +93,10 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden bg-[#e8ebe6] border-t border-[#c5edab] px-6 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] px-6 py-4 flex flex-col gap-3">
           {linkKeys.map(k => (
             <a key={k} href={`#${k.replace("nav_","")}`} onClick={() => setOpen(false)}
-               className="text-sm text-[#454745] hover:text-[#0e0f0c] transition-colors">
+               className="text-sm text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
               {navLabels[k]}
             </a>
           ))}
