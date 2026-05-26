@@ -1233,9 +1233,10 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
 
 @app.get("/admin/debug-fetch")
 async def debug_fetch(store: str = "wong", query: str = "leche"):
-    from market_core import fetch_store
+    from market_core import fetch_store, product_from_json
     raw = await fetch_store(store, query, page=1, limit=3)
-    return {"store": store, "query": query, "results": len(raw), "sample": raw[:2]}
+    products = [product_from_json(p, store) for p in raw[:3]]
+    return {"store": store, "query": query, "results": len(raw), "products": products}
 
 
 # ── Admin: manual collection trigger ────────────────────────────────────────
