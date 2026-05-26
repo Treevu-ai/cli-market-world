@@ -206,6 +206,8 @@ async def fetch_store(store: str, term: str, page: int = 1, limit: int = PAGE_SI
 
 def product_from_json(p: dict, store: str) -> dict:
     """Normalize a product JSON into a flat dict. Platform-agnostic."""
+    if not isinstance(p, dict):
+        return {"id": "", "name": str(p)[:80], "price": 0, "store": store, "store_name": store, "currency": "USD"}
     store_config = STORES[store]
     platform = store_config.get("platform", "vtex")
     from market_connectors import get_connector
