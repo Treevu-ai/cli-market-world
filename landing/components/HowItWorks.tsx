@@ -17,19 +17,19 @@ export default function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <section id="how" className="relative bg-white py-20 border-t border-[#e5e5e5]">
+    <section id="how" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#a3a3a3] font-mono uppercase tracking-[0.15em] mb-8">{_t("how_label")}</p>
-        <h2 className="text-[24px] font-medium text-black mb-3 tracking-tight">{_t("how_title")}</h2>
-        <p className="text-sm text-[#737373] max-w-md mx-auto mb-12">{_t("how_subtitle")}</p>
+        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">{_t("how_label")}</p>
+        <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">{_t("how_title")}</h2>
+        <p className="text-sm text-[#454745] max-w-md mx-auto mb-12">{_t("how_subtitle")}</p>
 
         {/* Single terminal flow */}
-        <div ref={ref} className="bg-white border border-[#e5e5e5] rounded-lg overflow-hidden text-left">
+        <div ref={ref} className="bg-[#e8ebe6] border border-[#c5edab] rounded-lg overflow-hidden text-left">
           <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-[#fafafa]">
             <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-            <span className="text-[10px] text-[#a3a3a3] font-mono ml-2 uppercase tracking-wider">
+            <span className="text-[10px] text-[#868685] font-mono ml-2 uppercase tracking-wider">
               cli-market — bash
             </span>
           </div>
@@ -37,23 +37,23 @@ export default function HowItWorks() {
             {steps.map((s, i) => (
               <div key={i} className="group">
                 <div className="flex items-start gap-2">
-                  <span className="text-[#a3a3a3] select-none shrink-0 mt-[1px]">$</span>
-                  <span className="text-[#525252]">{s.cmd}</span>
+                  <span className="text-[#868685] select-none shrink-0 mt-[1px]">$</span>
+                  <span className="text-[#454745]">{s.cmd}</span>
                 </div>
                 <div className="flex items-start gap-2 mt-0.5">
                   <span className="w-3 shrink-0" />
-                  <span className="text-[#a3a3a3] text-[11px]">{isES ? s.out_es : s.out_en}</span>
+                  <span className="text-[#868685] text-[11px]">{isES ? s.out_es : s.out_en}</span>
                 </div>
               </div>
             ))}
             <div className="flex items-center gap-2 pt-1">
-              <span className="text-[#a3a3a3]">$</span>
+              <span className="text-[#868685]">$</span>
               <span className="inline-block w-[6px] h-[14px] bg-[#a3a3a3] animate-pulse rounded-sm" />
             </div>
           </div>
         </div>
 
-        <p className="mt-8 text-[10px] text-[#a3a3a3] font-mono uppercase tracking-[0.15em]">{_t("how_footer")}</p>
+        <p className="mt-8 text-[10px] text-[#868685] font-mono uppercase tracking-[0.15em]">{_t("how_footer")}</p>
       </div>
     </section>
   );
