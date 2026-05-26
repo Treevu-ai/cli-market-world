@@ -60,7 +60,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : "https://wise.com/pay/me/ricardoantonioc68"}
+              <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : tier.name === "Pro" ? "https://wise.com/pay/me/ricardoantonioc68" : "https://cli-market-api.onrender.com/auth/keys"}
                  className={`inline-flex items-center justify-center rounded-full text-sm font-medium px-5 py-2.5 h-9 transition-colors w-full ${tier.dark ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]" : "bg-[#9fe870] text-[var(--wise-ink)] hover:bg-[#cdffad]"}`}>
                 {isES ? tier.cta_es : tier.cta_en}
               </a>

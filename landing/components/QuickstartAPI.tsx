@@ -8,9 +8,9 @@ export default function QuickstartAPI() {
   return (
     <section id="api" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">API</p>
+        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">API</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
-          {isES ? "API lista para tus agentes y backends." : "API ready for your agents and backends."}
+          {isES ? "API lista. Un solo endpoint para buscar, comparar y comprar." : "One endpoint to search, compare, and buy."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
           {isES ? "Todo lo que haces en la CLI está disponible vía HTTP. Tu agente puede buscar, comparar y crear órdenes con una API JSON simple." : "Everything you do in the CLI is available over HTTP. Your agent can search, compare, and create orders with a simple JSON API."}

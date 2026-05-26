@@ -36,7 +36,9 @@ export default function DataSection() {
   return (
     <section id="data" className="relative bg-[var(--wise-ink)] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">Data</p>
+        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">
+          {isES ? "Cobertura y datos" : "Coverage and data"}
+        </p>
         <h2 className="text-[clamp(28px,5vw,48px)] leading-[1.1] font-black text-[var(--wise-green)] mb-4 tracking-tight">
           {isES ? "Tu base de datos de precios reales." : "Your real-price database."}
         </h2>
