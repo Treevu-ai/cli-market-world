@@ -250,7 +250,23 @@ class _DB:
     """Unified DB connection: PostgreSQL or SQLite."""
     def __init__(self):
         if USE_PG:
-            self._conn = psycopg2.connect(DATABASE_URL)
+            from urllib.parse import urlparse, parse_qs
+            url = DATABASE_URL.strip()
+            parsed = urlparse(url)
+            kwargs = {
+                "host": parsed.hostname or "localhost",
+                "port": parsed.port or 5432,
+                "dbname": parsed.path.lstrip("/") or "postgres",
+                "user": parsed.username or "",
+                "password": parsed.password or "",
+                "connect_timeout": 10,
+            }
+            qs = parse_qs(parsed.query)
+            if "sslmode" in qs:
+                kwargs["sslmode"] = qs["sslmode"][0]
+            else:
+                kwargs["sslmode"] = "require"
+            self._conn = psycopg2.connect(**kwargs)
             self._pg = True
         else:
             self._conn = sqlite3.connect(str(DB_FILE))
