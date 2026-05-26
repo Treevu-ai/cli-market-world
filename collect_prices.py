@@ -465,6 +465,8 @@ async def collect_one_sqlite(db, store, queries):
             raw = await _fetch_store(store, q, page=1, limit=10)
             for p in raw:
                 prod = _pfj(p, store)
+                prod["line"] = line
+                prod["line_name"] = LINES.get(line,{}).get("name","")
                 if prod["price"]<=0: continue
                 sq_insert(db, prod); collected+=1
             await asyncio.sleep(REQUEST_DELAY)
