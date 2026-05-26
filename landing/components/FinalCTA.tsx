@@ -3,33 +3,18 @@ import { useLang } from "@/lib/LanguageContext";
 import ContactForm from "./ContactForm";
 
 export default function FinalCTA() {
-  const { t, lang } = useLang();
-  return (
-    <section className="flex flex-col items-center w-full bg-[#131313] py-16 px-4 sm:py-20 sm:px-6 md:py-[100px] gap-8 sm:gap-10 border-t border-[#2d2d2d]">
-      <div className="flex items-center justify-center gap-[6px] h-[28px] sm:h-[32px] px-[12px] sm:px-[16px] bg-[#2d2d2d] border border-[#3cffd0]">
-        <span className="font-mono text-[9px] sm:text-[11px] font-bold text-[#3cffd0] tracking-[1px]">
-          {t("cta_subtitle")}
-        </span>
-      </div>
-      <h2 className="font-grotesk text-[32px] sm:text-[44px] md:text-[72px] font-bold text-[#F5F5F0] tracking-[-1px] leading-none text-center whitespace-pre-line">
-        {t("cta_title")}
-      </h2>
+  const { lang } = useLang();
+  const isES = lang === "es";
 
-      {/* Contact form replaces old buttons */}
-      <div className="w-full max-w-[480px]">
+  return (
+    <section className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
+      <div className="max-w-[720px] mx-auto px-6 text-center">
+        <h2 className="text-[clamp(28px,4vw,40px)] leading-[1.1] font-black text-[#0e0f0c] mb-4 tracking-tight">
+          {isES ? "Tu agente puede comprar solo.\nHoy." : "Your agent can buy on its own.\nToday."}
+        </h2>
+        <p className="text-sm text-[#454745] mb-10">pip install cli-market</p>
         <ContactForm initial="pro" />
       </div>
-
-      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mt-4">
-        <a href="https://github.com/Treevu-ai/cli-market-world"
-          className="group inline-flex items-center gap-3 border border-[#333] px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-[#AAA] hover:border-[#3cffd0] hover:text-[#3cffd0] transition-all">
-          {t("cta_button")}
-          <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-        </a>
-      </div>
-      <p className="font-mono text-[10px] sm:text-[11px] text-[#555] tracking-[1px] text-center break-all px-4 max-w-full">
-        pip install cli-market
-      </p>
     </section>
   );
 }
