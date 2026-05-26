@@ -248,7 +248,10 @@ def health_collector():
 
 @app.get("/")
 def root(request: Request):
-    check_rate_limit(request.client.host if request.client else "unknown")
+    try:
+        check_rate_limit(request.client.host if request.client else "unknown")
+    except Exception as e:
+        logger.warning("Rate limit check failed: %s", e)
     return {
         "name": "CLI Market",
         "status": "running",
