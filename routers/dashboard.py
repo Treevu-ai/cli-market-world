@@ -197,6 +197,76 @@ def dashboard_data():
            GROUP BY store ORDER BY last_seen DESC LIMIT 20"""
     ).fetchall()
 
+    # ── Operacional: store health scores ─────────────────────────────────────
+    store_health = db.execute(
+        """SELECT store, total_requests, total_successes,
+                  CASE WHEN total_requests>0 THEN ROUND(total_successes*100.0/total_requests,1) ELSE 0 END as success_pct,
+                  consecutive_failures, last_success, last_error
+           FROM store_health ORDER BY success_pct ASC, consecutive_failures DESC"""
+    ).fetchall()
+
+    # ── Operacional: collector run history ───────────────────────────────────
+    collector_history = db.execute(
+        """SELECT started_at, finished_at, stores_attempted, stores_succeeded,
+                  prices_collected, errors
+           FROM collector_runs ORDER BY id DESC LIMIT 10"""
+    ).fetchall()
+
+    # ── Exploratoria: price distribution ─────────────────────────────────────
+    price_dist = db.execute(
+        """SELECT
+             CASE WHEN price<=10 THEN '0-10'
+                  WHEN price<=50 THEN '10-50'
+                  WHEN price<=100 THEN '50-100'
+                  WHEN price<=500 THEN '100-500'
+                  ELSE '500+'
+             END as bucket,
+             COUNT(*) as count
+           FROM price_snapshots WHERE price>0 AND price<999999
+           GROUP BY bucket ORDER BY MIN(price)"""
+    ).fetchall()
+
+    # ── Exploratoria: line-country matrix ────────────────────────────────────
+    line_country_raw = db.execute(
+        """SELECT ps.line, ps.store, COUNT(*) as n
+           FROM price_snapshots ps WHERE ps.price>0
+           GROUP BY ps.line, ps.store"""
+    ).fetchall()
+    line_country_map: dict[str, set] = {}
+    for r in line_country_raw:
+        country = STORES.get(r["store"], {}).get("country", "??")
+        key = f"{r['line']}|{country}"
+        line_country_map.setdefault(key, set()).add(r["store"])
+    line_country_matrix = [{"line": k.split("|")[0], "country": k.split("|")[1], "stores": len(v)}
+                           for k, v in line_country_map.items()]
+
+    # ── Exploratoria: products per store ─────────────────────────────────────
+    products_per_store = db.execute(
+        """SELECT store_name, store, COUNT(DISTINCT product_id) as unique_products,
+                  COUNT(*) as total_snapshots
+           FROM price_snapshots WHERE price>0
+           GROUP BY store ORDER BY unique_products DESC LIMIT 15"""
+    ).fetchall()
+
+    # ── Weak signal: outliers (price > 3× line average) ──────────────────────
+    outliers = []
+    for row in by_line:
+        if row["count"] < 5:
+            continue
+        threshold = row["avg_price"] * 3
+        try:
+            anoms = db.execute(
+                """SELECT name, store_name, price, currency, line_name
+                   FROM price_snapshots WHERE line=? AND price>0 AND price>?
+                   ORDER BY price DESC LIMIT 5""",
+                (row["line"], threshold)
+            ).fetchall()
+            for a in anoms:
+                outliers.append(dict(a))
+        except Exception:
+            pass
+    outliers = outliers[:10]
+
     db.close()
 
     return {
@@ -225,6 +295,15 @@ def dashboard_data():
         },
         "failing_stores": [dict(r) for r in failing_stores],
         "freshness": [dict(r) for r in freshness],
+        # ── Operacional ──────────────────────────────────────────────────────
+        "store_health": [dict(r) for r in store_health],
+        "collector_history": [dict(r) for r in collector_history],
+        # ── Exploratoria ─────────────────────────────────────────────────────
+        "price_distribution": [dict(r) for r in price_dist],
+        "line_country_matrix": line_country_matrix,
+        "products_per_store": [dict(r) for r in products_per_store],
+        # ── Weak signal ──────────────────────────────────────────────────────
+        "outliers": outliers,
     }
 
 
