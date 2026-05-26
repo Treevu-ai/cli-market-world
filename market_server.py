@@ -691,26 +691,11 @@ async def voice_transcribe_url(body: dict):
     return {"transcript": transcript[:2000], "language": "es"}
 
 
-@app.post("/v1/admin/scan-stores")
-async def admin_scan_stores(body: dict):
-    """Trigger a VTEX store scan. Returns candidate stores that respond."""
-    line_filter = body.get("line")
-    import asyncio as _aio, httpx as _hx
-    from market_core import STORES as _stores
-    # Quick scan: test the existing known-good domains for new country TLDs
-    candidates = []
-    for sk, sv in _stores.items():
-        if line_filter and sv.get("line") != line_filter:
-            continue
-        base = sv["base"]
-        try:
-            async with _hx.AsyncClient(timeout=_hx.Timeout(5.0)) as client:
-                r = await client.get(f"{base}/api/catalog_system/pub/products/search/test?_from=0&_to=1")
-                candidates.append({"store": sk, "name": sv["name"], "status": r.status_code, "ok": r.status_code in (200, 206)})
-        except Exception as e:
-            candidates.append({"store": sk, "name": sv["name"], "status": 0, "ok": False, "error": str(e)[:100]})
-    ok = [c for c in candidates if c["ok"]]
-    return {"scanned": len(candidates), "working": len(ok), "candidates": candidates}
+# ── Admin router ──────────────────────────────────────────────────────────
+# /admin/debug-fetch, /admin/collect, /v1/admin/scan-stores moved to routers/admin.py
+
+from routers.admin import router as admin_router
+app.include_router(admin_router)
 
 
 @app.get("/products/stock/{product_id}")
@@ -1043,43 +1028,6 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
 
 
 # ── Admin: debug fetch_store ────────────────────────────────────────────────
-
-@app.get("/admin/debug-fetch")
-async def debug_fetch(store: str = "wong", query: str = "leche"):
-    from market_core import fetch_store, product_from_json
-    raw = await fetch_store(store, query, page=1, limit=3)
-    products = [product_from_json(p, store) for p in raw[:3]]
-    return {"store": store, "query": query, "results": len(raw), "products": products}
-
-
-# ── Admin: manual collection trigger ────────────────────────────────────────
-
-@app.post("/admin/collect")
-async def admin_collect(stores: int = 0, queries: int = 0):
-    """Trigger a price collection run directly."""
-    import time
-    from collect_prices import (
-        build_query_list, _get_feedback_db, run_collection,
-        STORES as _stores, init_schema_sqlite
-    )
-    sl = list(_stores.keys())
-    if stores: sl = sl[:stores]
-    
-    db = init_schema_sqlite()
-    ql = build_query_list(db=db, cycle=0)
-    if queries: ql = ql[:queries]
-    
-    t0 = time.monotonic()
-    result = await run_collection(sl, ql)
-    
-    return {
-        "status": "ok",
-        "elapsed_s": round(time.monotonic() - t0, 1),
-        "stores_attempted": result["stores_attempted"],
-        "stores_succeeded": result["stores_succeeded"],
-        "prices_collected": result["prices_collected"],
-    }
-
 
 # ── Dashboard ───────────────────────────────────────────────────────────────
 
