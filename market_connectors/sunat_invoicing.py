@@ -16,6 +16,68 @@ PSE_API_KEY = os.getenv("SUNAT_PSE_API_KEY", "")
 PSE_API_URL = os.getenv("SUNAT_PSE_API_URL", "")
 SUNAT_MODE = os.getenv("SUNAT_MODE", "demo")
 
+# ── SUNAT Consulta Integrada (validation) ─────────────────────────────────
+SUNAT_CLIENT_ID = os.getenv("SUNAT_CLIENT_ID", "")
+SUNAT_CLIENT_SECRET = os.getenv("SUNAT_CLIENT_SECRET", "")
+SUNAT_TOKEN_URL = "https://api-seguridad.sunat.gob.pe/v1/clientesextranet"
+SUNAT_VALIDATE_URL = "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes"
+
+
+async def _get_sunat_token() -> str:
+    """Get OAuth2 token from SUNAT for consulta integrada."""
+    if not SUNAT_CLIENT_ID or not SUNAT_CLIENT_SECRET:
+        raise ValueError("SUNAT_CLIENT_ID and SUNAT_CLIENT_SECRET not configured")
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.post(
+            f"{SUNAT_TOKEN_URL}/{SUNAT_CLIENT_ID}/oauth2/token/",
+            data={"grant_type": "client_credentials",
+                  "scope": "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes",
+                  "client_id": SUNAT_CLIENT_ID, "client_secret": SUNAT_CLIENT_SECRET},
+        )
+        if resp.status_code == 200:
+            return resp.json()["access_token"]
+        raise Exception(f"SUNAT auth failed: {resp.text}")
+
+
+async def validate_receipt(num_ruc: str, cod_comp: str, serie: str,
+                           numero: int, fecha_emision: str, monto: float) -> dict:
+    """
+    Validate a receipt against SUNAT's database.
+
+    Parameters:
+    - num_ruc: RUC of the issuer (11 digits)
+    - cod_comp: 01=Factura, 03=Boleta de Venta
+    - serie: Series (e.g., "F001")
+    - numero: Invoice number (integer, up to 8 digits)
+    - fecha_emision: Date in dd/mm/yyyy format
+    - monto: Total amount (required for electronic receipts)
+    """
+    if not SUNAT_CLIENT_ID:
+        return {"status": "sin_credenciales",
+                "message": "SUNAT validation not configured. Set SUNAT_CLIENT_ID and SUNAT_CLIENT_SECRET."}
+    try:
+        token = await _get_sunat_token()
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                f"{SUNAT_VALIDATE_URL}/{num_ruc}/validarcomprobante",
+                json={"numRuc": num_ruc, "codComp": cod_comp, "numeroSerie": serie,
+                      "numero": numero, "fechaEmision": fecha_emision, "monto": monto},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                estado_map = {"0": "NO EXISTE", "1": "ACEPTADO", "2": "ANULADO",
+                              "3": "AUTORIZADO", "4": "NO AUTORIZADO"}
+                return {
+                    "success": data.get("success", False),
+                    "estado_comprobante": estado_map.get(str(data.get("data", {}).get("estadoCp", "")), "DESCONOCIDO"),
+                    "estado_contribuyente": data.get("data", {}).get("estadoRuc", ""),
+                    "observaciones": data.get("data", {}).get("Observaciones", []),
+                }
+            return {"success": False, "error": resp.text}
+    except ValueError as e:
+        return {"status": "sin_credenciales", "message": str(e)}
+
 
 def build_invoice_ubl(order: dict, items: list[dict]) -> dict:
     subtotal = round(sum(i["price"] * i["quantity"] for i in items), 2)
