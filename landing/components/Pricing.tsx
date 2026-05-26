@@ -42,7 +42,7 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {tiers.map((tier) => (
             <div key={tier.name}
-              className={`rounded-3xl border p-6 text-left flex flex-col ${tier.dark ? "bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] border-[#0e0f0c] text-white" : "bg-white border-[#c5edab]"}`}>
+              className={`rounded-3xl border p-6 text-left flex flex-col ${tier.dark ? "bg-[var(--wise-ink)] border-[var(--wise-ink)] text-white" : "bg-white border-[var(--wise-green-pale)]"}`}>
               <h3 className={`text-lg font-medium ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>{tier.name}</h3>
               <div className="mt-2 mb-4">
                 <span className={`text-2xl font-medium ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>{tier.price}</span>
