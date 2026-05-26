@@ -517,6 +517,11 @@ def order_status(order_id: str, authorization: str | None = Header(None)):
 
 @app.get("/orders/{order_id}/receipt")
 def order_receipt(order_id: str, authorization: str | None = Header(None)):
+    """
+    Comprobante de pago — emitido por SINAPSIS INNOVADORA S.A.C.
+    IMPORTANTE: Emisión MANUAL. No se envía automáticamente a SUNAT.
+    Para facturación electrónica oficial, configure SUNAT_PSE_API_KEY + PSE.
+    """
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
     username = auth_user(authorization.replace("Bearer ", ""))
     db = get_db()
@@ -534,7 +539,8 @@ def order_receipt(order_id: str, authorization: str | None = Header(None)):
             "items": [{"producto": i["name"], "cantidad": i["quantity"], "precio_unitario": i["price"],
                         "subtotal": round(i["price"] * i["quantity"], 2)} for i in items],
             "subtotal": total_calc, "igv": round(total_calc * 0.18, 2),
-            "total": round(total_calc * 1.18, 2), "moneda": "PEN"}
+            "total": round(total_calc * 1.18, 2), "moneda": "PEN",
+            "nota": "COMPROBANTE DE EMISIÓN MANUAL — No válido como factura electrónica SUNAT. Para facturación oficial contacte a SINAPSIS INNOVADORA S.A.C. RUC 20613045563."}
 
 @app.post("/orders/reorder")
 def reorder_last(authorization: str | None = Header(None)):
