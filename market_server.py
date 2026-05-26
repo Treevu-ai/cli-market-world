@@ -1229,6 +1229,15 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
     return {"ocr_text": ocr_text[:500], "items_detected": len(lines), "items_matched": len(items_found), "potential_savings": round(savings, 2), "items": items_found, "message": "Compara contra los precios mas baratos de nuestro data moat." if items_found else "No se detectaron productos."}
 
 
+# ── Admin: debug fetch_store ────────────────────────────────────────────────
+
+@app.get("/admin/debug-fetch")
+async def debug_fetch(store: str = "wong", query: str = "leche"):
+    from market_core import fetch_store
+    raw = await fetch_store(store, query, page=1, limit=3)
+    return {"store": store, "query": query, "results": len(raw), "sample": raw[:2]}
+
+
 # ── Admin: manual collection trigger ────────────────────────────────────────
 
 @app.post("/admin/collect")
