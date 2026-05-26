@@ -49,6 +49,19 @@ from market_core import (
 
 logger = log.getChild("server")
 
+# Server-only helpers (auth, rate limit, hashing) moved to server_deps.py to
+# keep this module focused on app wiring and endpoints. Re-exported below so
+# tests and external code that import them from market_server keep working.
+from server_deps import (
+    auth_user, hash_password, verify_password,
+    check_auth_brute_force, record_auth_failure, require_user,
+    check_rate_limit,
+    DEFAULT_TOKEN,
+    RATE_LIMIT_MIN, RATE_LIMIT_DAY, RATE_LIMIT_WINDOW,
+    AUTH_MAX_ATTEMPTS, AUTH_WINDOW,
+    _auth_attempts,
+)
+
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -62,63 +75,6 @@ async def lifespan(_app):
     except Exception as e:
         logger.warning("JSON migration skipped: %s", e)
     yield
-
-# ── Security: rate limiter (SQLite-backed, persists across restarts) ──────────
-# Configurable via env vars: RATE_LIMIT_MIN, RATE_LIMIT_DAY, RATE_LIMIT_WINDOW
-
-RATE_LIMIT_MIN = int(os.getenv("RATE_LIMIT_MIN", "60"))
-RATE_LIMIT_DAY = int(os.getenv("RATE_LIMIT_DAY", "1000"))
-RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
-
-def check_rate_limit(ip: str) -> None:
-    check_rate_limit_sqlite(ip, window_secs=RATE_LIMIT_WINDOW,
-                            max_req=RATE_LIMIT_MIN, daily_max=RATE_LIMIT_DAY)
-
-# ── Security: password hashing ───────────────────────────────────────────────
-
-def hash_password(password: str) -> str:
-    salt = os.urandom(16).hex()
-    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
-    return f"{salt}:{h.hex()}"
-
-def verify_password(password: str, stored: str) -> bool:
-    if ":" not in stored:
-        raise HTTPException(status_code=500, detail="Legacy plaintext password detected. Contact admin.")
-    salt, h = stored.split(":", 1)
-    return h == hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000).hex()
-
-# ── Security: brute-force protection ─────────────────────────────────────────
-
-_auth_attempts: dict[str, list[float]] = {}
-AUTH_MAX_ATTEMPTS = 5
-AUTH_WINDOW = 300  # 5 minutes
-
-def check_auth_brute_force(username: str) -> None:
-    now = time.time()
-    window_start = now - AUTH_WINDOW
-    _auth_attempts.setdefault(username, [])
-    _auth_attempts[username] = [t for t in _auth_attempts[username] if t > window_start]
-    if len(_auth_attempts[username]) >= AUTH_MAX_ATTEMPTS:
-        raise HTTPException(status_code=429, detail="Demasiados intentos. Esperá 5 minutos.")
-
-# ── Auth (SQLite-backed) ───────────────────────────────────────────────────
-
-DEFAULT_TOKEN = os.getenv("MARKET_API_TOKEN", "")
-
-def auth_user(token: str) -> str:
-    if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
-        return "admin"
-    # Try API keys first (sk-...)
-    if token.startswith("sk-"):
-        key_data = db_validate_api_key(token)
-        if key_data:
-            return key_data["username"]
-    # Fall back to legacy tokens
-    users = db_get_users()
-    for username, data in users.items():
-        if data.get("token") == token:
-            return username
-    raise HTTPException(status_code=401, detail="Token inválido. Usá 'market login'.")
 
 # ── FastAPI app ────────────────────────────────────────────────────────────
 
