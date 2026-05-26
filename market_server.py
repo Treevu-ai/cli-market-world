@@ -12,19 +12,13 @@ Ejecutar:
 """
 
 import asyncio
-import hashlib
-import json
 import os
 import re
 import subprocess
-import time
-import uuid
 from datetime import datetime, timezone
-from typing import Any
 
 import httpx
-from fastapi.responses import HTMLResponse
-from fastapi import FastAPI, HTTPException, Header, Body, Request, File, UploadFile
+from fastapi import FastAPI, HTTPException, Header, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 
@@ -34,16 +28,9 @@ from contextlib import asynccontextmanager
 
 from market_core import (
     STORES, LINES, COUNTRIES, DEFAULT_STORES, PAGE_SIZE,
-    DATA_DIR, DB_FILE,
     get_db, save_price_snapshot, save_search_query,
     fetch_store, product_from_json,
-    db_get_users, db_save_user,
-    db_get_cart, db_add_to_cart, db_update_cart_item, db_remove_cart_item, db_clear_cart,
-    db_get_orders, db_create_order,
-    db_migrate_from_json, check_rate_limit_sqlite,
-    db_validate_api_key, db_create_api_key, db_list_api_keys, db_revoke_api_key,
-    db_get_subscription, db_set_subscription, TIERS,
-    ensure_db_initialized,
+    db_get_orders, db_migrate_from_json, ensure_db_initialized,
     logger as log,
 )
 
@@ -53,13 +40,20 @@ logger = log.getChild("server")
 # keep this module focused on app wiring and endpoints. Re-exported below so
 # tests and external code that import them from market_server keep working.
 from server_deps import (
-    auth_user, hash_password, verify_password,
-    check_auth_brute_force, record_auth_failure, require_user,
-    check_rate_limit,
-    DEFAULT_TOKEN,
-    RATE_LIMIT_MIN, RATE_LIMIT_DAY, RATE_LIMIT_WINDOW,
-    AUTH_MAX_ATTEMPTS, AUTH_WINDOW,
-    _auth_attempts,
+    auth_user,
+    hash_password,  # noqa: F401  re-export for tests/test_server.py
+    verify_password,  # noqa: F401
+    check_auth_brute_force,  # noqa: F401
+    record_auth_failure,  # noqa: F401
+    require_user,  # noqa: F401
+    check_rate_limit,  # noqa: F401
+    DEFAULT_TOKEN,  # noqa: F401
+    RATE_LIMIT_MIN,  # noqa: F401
+    RATE_LIMIT_DAY,  # noqa: F401
+    RATE_LIMIT_WINDOW,  # noqa: F401
+    AUTH_MAX_ATTEMPTS,  # noqa: F401
+    AUTH_WINDOW,  # noqa: F401
+    _auth_attempts,  # noqa: F401
 )
 
 
@@ -261,7 +255,7 @@ async def compare_products(body: SearchRequest):
                     key_index[ka][sb] = key_index[best_kb][sb]; matched_b.add(best_kb)
 
     comparison = []
-    for k, sp in key_index.items():
+    for _k, sp in key_index.items():
         if len(sp) >= 1:
             prices = {s: p["price"] for s, p in sp.items() if p["price"] > 0}
             if prices:
@@ -331,7 +325,7 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
 
 @app.post("/v1/data/export")
 def data_export(body: dict):
-    """Export data moat as JSON or CSV."""
+    """Export data moat as JSON or CSV. Supports filters: country, line, limit (≤1000)."""
     country = body.get("country")
     line = body.get("line")
     fmt = body.get("format", "json")
@@ -342,6 +336,18 @@ def data_export(body: dict):
     if line:
         q += " AND line = ?"
         params.append(line)
+    if country:
+        country_stores = [
+            s for s, sv in STORES.items()
+            if sv.get("country", "").upper() == country.upper()
+        ]
+        if country_stores:
+            placeholders = ",".join("?" * len(country_stores))
+            q += f" AND store IN ({placeholders})"
+            params.extend(country_stores)
+        else:
+            db.close()
+            return {"format": fmt, "data": [], "total": 0, "filter": {"country": country}}
     q += " ORDER BY queried_at DESC LIMIT ?"
     params.append(limit)
     rows = db.execute(q, params).fetchall()
@@ -724,13 +730,13 @@ async def telegram_webhook(request: Request):
             c = sum(1 for v in STORES.values() if v["line"] == lk)
             reply += f"{LINES[lk]['emoji']} {LINES[lk]['name']}: {c}\n"
         reply += "\n<b>Por pais:</b>\n"
-        for ck, cv in COUNTRIES.items(): reply += f"{cv['name']}: {len(cv['stores'])}\n"
+        for _ck, cv in COUNTRIES.items(): reply += f"{cv['name']}: {len(cv['stores'])}\n"
     elif text in ("/pricing","pricing","precio","costo"):
         reply = "<b>Acceso:</b>\n\u2022 CLI: open source (MIT)\n\u2022 API: free tier (10/min, 100/día)\n\u2022 Planes pagos: pronto\n\nRepo: github.com/Treevu-ai/cli-market-latam"
     elif text in ("/docs","docs","api"):
         reply = "<b>Documentación:</b>\n\u2022 Swagger: /docs\n\u2022 llms.txt: cli-market.dev/llms.txt\n\u2022 README: github.com/Treevu-ai/cli-market-latam"
     else:
-        reply = f"<b>CLI Market Bot</b>\n\nComandos: /search /status /coverage /pricing /docs /help"
+        reply = "<b>CLI Market Bot</b>\n\nComandos: /search /status /coverage /pricing /docs /help"
     await send_telegram(chat_id, reply)
     return {"status": "ok", "reply": reply[:100]}
 
@@ -797,7 +803,7 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
 # ── Run ────────────────────────────────────────────────────────────────────
 
 def main():
-    import uvicorn, threading, time, subprocess, sys as _sys
+    import uvicorn
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8765"))
     

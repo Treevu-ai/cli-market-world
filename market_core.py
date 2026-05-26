@@ -9,11 +9,9 @@ STORES/LINES, get_token(), and price helpers.
 
 import json
 import os
-import sys
 import sqlite3
 import logging
 from pathlib import Path
-from typing import Any
 
 import httpx
 
@@ -646,57 +644,10 @@ def init_db() -> None:
     db.close()
 
 
-# ── Rate limiter ────────────────────────────────────────────────────────────
+# NOTE: rate limiter is defined further down (line ~1004) — it supports
+# tiered limits. An older, less accurate bucket-based version used to live
+# here and was silently shadowed by Python's name resolution. Removed.
 
-def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
-                            daily_max: int = 100) -> None:
-    """Rate limiter. Persists across restarts."""
-    import time as _time
-    now = _time.time()
-    db = get_db()
-
-    # Daily cap
-    today_start = _time.mktime(_time.strptime(
-        _time.strftime("%Y-%m-%d", _time.gmtime(now)), "%Y-%m-%d"
-    ))
-    daily_key = f"{ip}:daily"
-    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (daily_key, today_start))
-    daily_row = db.execute(
-        "SELECT SUM(counter) as total FROM rate_limits WHERE key=? AND window_start = ?",
-        (daily_key, today_start)
-    ).fetchone()
-    daily_count = daily_row["total"] or 0
-    if daily_count >= daily_max:
-        db.close()
-        from fastapi import HTTPException
-        raise HTTPException(status_code=429, detail="Límite diario alcanzado (free tier: 100 req/día).")
-    db.execute(
-        "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
-        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
-        (daily_key, today_start)
-    )
-
-    # Per-minute cap — group by minute bucket
-    minute_bucket = int(now // 60) * 60
-    minute_key = f"{ip}:minute"
-    db.execute("DELETE FROM rate_limits WHERE key=? AND window_start < ?", (minute_key, minute_bucket))
-    minute_row = db.execute(
-        "SELECT counter FROM rate_limits WHERE key=? AND window_start = ?",
-        (minute_key, minute_bucket)
-    ).fetchone()
-    minute_count = minute_row["counter"] if minute_row else 0
-    if minute_count >= max_req:
-        db.close()
-        from fastapi import HTTPException
-        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Free tier: 10 req/min.")
-
-    db.execute(
-        "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
-        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
-        (minute_key, minute_bucket)
-    )
-    db.commit()
-    db.close()
 
 # ── Subscriptions / Tiered pricing ──────────────────────────────────────────────
 
