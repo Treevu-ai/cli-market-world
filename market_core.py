@@ -20,15 +20,22 @@ import httpx
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 def _pg_host_reachable(url: str) -> bool:
-    """Quick check: can we resolve the PostgreSQL hostname?"""
+    """Quick check: can we resolve the PostgreSQL hostname?
+    
+    On Render, internal DNS between services is unreliable from Docker.
+    When DATABASE_URL is set, trust it and let psycopg2.connect()
+    handle the actual connection — don't pre-flight with DNS.
+    """
+    if not url:
+        return False
+    # If we're on Render (DATABASE_URL injected), skip DNS check
+    if os.getenv("RENDER"):
+        return True
     import re, socket
     m = re.search(r"@([^:/]+)", url) or re.search(r"://([^:/]+)", url)
     if not m:
-        return True  # no hostname found, let it fail later
+        return True
     host = m.group(1)
-    # Skip known cross-platform dead-ends
-    if os.getenv("RENDER") and "railway.internal" in host:
-        return False
     try:
         socket.getaddrinfo(host, 5432, socket.AF_UNSPEC, socket.SOCK_STREAM)
         return True
