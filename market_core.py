@@ -20,27 +20,13 @@ import httpx
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 def _pg_host_reachable(url: str) -> bool:
-    """Quick check: can we resolve the PostgreSQL hostname?
+    """When DATABASE_URL is set, always attempt PostgreSQL.
     
-    On Render, internal DNS between services is unreliable from Docker.
-    When DATABASE_URL is set, trust it and let psycopg2.connect()
-    handle the actual connection — don't pre-flight with DNS.
+    DNS pre-flight checks are unreliable inside Docker containers
+    on Render. Let psycopg2.connect() handle the actual connection
+    — market_core.init_db() will fall back to SQLite if it fails.
     """
-    if not url:
-        return False
-    # If we're on Render (DATABASE_URL injected), skip DNS check
-    if os.getenv("RENDER"):
-        return True
-    import re, socket
-    m = re.search(r"@([^:/]+)", url) or re.search(r"://([^:/]+)", url)
-    if not m:
-        return True
-    host = m.group(1)
-    try:
-        socket.getaddrinfo(host, 5432, socket.AF_UNSPEC, socket.SOCK_STREAM)
-        return True
-    except socket.gaierror:
-        return False
+    return bool(url)
 
 USE_PG = bool(DATABASE_URL) and _pg_host_reachable(DATABASE_URL)
 
