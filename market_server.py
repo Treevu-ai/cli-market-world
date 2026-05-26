@@ -376,6 +376,10 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
         except asyncio.TimeoutError:
             for s in batch: errors.append({"store": s, "error": "timeout"})
             break
+        except Exception as e:
+            logger.error("Search batch error: %s", e)
+            errors.append({"store": "batch", "error": str(e)})
+            break
         for store, raw, err in batch_results:
             if err:
                 errors.append({"store": store, "error": err})
