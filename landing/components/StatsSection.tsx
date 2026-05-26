@@ -32,7 +32,11 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
 }
 
 export default function StatsSection() {
-  const { t: _t } = useLang();
+  const { t: _t, lang } = useLang();
+  const isES = lang === "es";
+  const labels_es = { retailers: "comercios", países: "países", líneas: "líneas", "MCP tools": "herramientas MCP" };
+  const labels_en = { retailers: "retailers", países: "countries", líneas: "lines", "MCP tools": "MCP tools" };
+  const dict = isES ? labels_es : labels_en;
 
   return (
     <section id="stats" className="relative bg-white py-20 border-t border-[#e5e5e5]">
@@ -41,7 +45,7 @@ export default function StatsSection() {
         <h2 className="text-[24px] font-medium text-black mb-3 tracking-tight">{_t("stats_title")}</h2>
         <p className="text-sm text-[#737373] max-w-md mx-auto mb-12">{_t("stats_sub")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {stats.map((s, i) => (<Counter key={s.label} end={s.end} label={s.label} delay={i * 150} />))}
+          {stats.map((s, i) => (<Counter key={s.label} end={s.end} label={dict[s.label] || s.label} delay={i * 150} />))}
         </div>
       </div>
     </section>

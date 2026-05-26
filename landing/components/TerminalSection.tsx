@@ -5,7 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 
 type CmdLine = { text: string; color?: string; delay: number };
 
-const cells: { title: string; lines: CmdLine[] }[] = [
+const cells_es = [
   { title: "Search", lines: [
     { text: "$ market search \"leche\" --country PE", delay: 300 },
     { text: "Wong ......... S/ 4.20", color: "text-[#27c93f]", delay: 800 },
@@ -31,6 +31,35 @@ const cells: { title: string; lines: CmdLine[] }[] = [
     { text: "▸ Orden ORD-A7F3B91C creada", color: "text-[#27c93f]", delay: 700 },
     { text: "▸ QR Yape generado", color: "text-[#a3a3a3]", delay: 900 },
     { text: "▸ Escanea para completar el pago", color: "text-[#a3a3a3]", delay: 1100 },
+  ]},
+];
+
+const cells_en = [
+  { title: "Search", lines: [
+    { text: "$ market search \"milk\" --country PE", delay: 300 },
+    { text: "Wong ......... S/ 4.20", color: "text-[#27c93f]", delay: 800 },
+    { text: "Metro ........ S/ 3.90", color: "text-[#27c93f]", delay: 1000 },
+    { text: "Plaza Vea ..... S/ 4.50", color: "text-[#27c93f]", delay: 1200 },
+    { text: "▸ 3 results in 1.2s", color: "text-[#a3a3a3]", delay: 1500 },
+  ]},
+  { title: "Compare", lines: [
+    { text: "$ market compare \"rice\"", delay: 300 },
+    { text: "Best price: Metro (S/ 2.80)", color: "text-[#27c93f]", delay: 800 },
+    { text: "Max price: Wong (S/ 3.50)", color: "text-[#ff5f56]", delay: 1000 },
+    { text: "▸ Savings: S/ 0.70 per unit", color: "text-[#a3a3a3]", delay: 1300 },
+  ]},
+  { title: "Cart", lines: [
+    { text: "$ market basket milk:2 rice:1", delay: 300 },
+    { text: "▸ Basket compared in 3 stores", color: "text-[#a3a3a3]", delay: 600 },
+    { text: "Metro ....... S/ 11.70 total", color: "text-[#27c93f]", delay: 900 },
+    { text: "Wong ........ S/ 12.30 total", color: "text-[#ffbd2e]", delay: 1100 },
+    { text: "Plaza Vea ... S/ 13.20 total", color: "text-[#ffbd2e]", delay: 1300 },
+  ]},
+  { title: "Checkout", lines: [
+    { text: "$ market checkout --payment yape", delay: 300 },
+    { text: "▸ Order ORD-A7F3B91C created", color: "text-[#27c93f]", delay: 700 },
+    { text: "▸ Yape QR generated", color: "text-[#a3a3a3]", delay: 900 },
+    { text: "▸ Scan to complete payment", color: "text-[#a3a3a3]", delay: 1100 },
   ]},
 ];
 
@@ -73,7 +102,9 @@ function MiniTerminal({ title, lines }: { title: string; lines: CmdLine[] }) {
 }
 
 export default function TerminalSection() {
-  const { t: _t } = useLang();
+  const { t: _t, lang } = useLang();
+  const isES = lang === "es";
+  const cells = isES ? cells_es : cells_en;
 
   return (
     <section id="terminal" className="relative bg-white py-20 border-t border-[#e5e5e5]">
