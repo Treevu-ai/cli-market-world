@@ -108,10 +108,13 @@ async def _search_products(body: SearchRequest):
                 errors.append({"store": store, "error": err})
                 continue
             for p in raw:
-                prod = product_from_json(p, store)
-                prod["line"] = STORES[store]["line"]
-                prod["line_name"] = LINES[STORES[store]["line"]]["name"]
-                results.append(prod)
+                try:
+                    prod = product_from_json(p, store)
+                    prod["line"] = STORES[store]["line"]
+                    prod["line_name"] = LINES[STORES[store]["line"]]["name"]
+                    results.append(prod)
+                except Exception as pe:
+                    errors.append({"store": store, "product_id": str(p)[:80], "error": str(pe)})
 
     results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
     for p in results:
@@ -139,7 +142,14 @@ async def compare_products(body: SearchRequest):
         except Exception:
             all_raw[store] = []
 
-    all_products = {s: [product_from_json(p, s) for p in raw] for s, raw in all_raw.items()}
+    all_products = {}
+    for s, raw in all_raw.items():
+        all_products[s] = []
+        for p in raw:
+            try:
+                all_products[s].append(product_from_json(p, s))
+            except Exception:
+                pass
 
     def match_key(p: dict) -> str:
         name = re.sub(r"[^a-záéíóúñ0-9]", "", p["name"].lower())
