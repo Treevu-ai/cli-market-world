@@ -17,7 +17,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import httpx
 
-from market_core import STORES, DATA_DIR, DB_FILE, logger as log
+from market_core import STORES, DATA_DIR, DB_FILE, logger as log, product_from_json as _pfj
 
 logger = log.getChild("collector")
 
@@ -411,7 +411,7 @@ def parse_price(p):
     try: return float(p or 0)
     except: return 0.0
 
-def product_from_json(p, store):
+def _old_product_from_json(p, store):
     items = p.get("items",[]); item = items[0] if items else {}
     sellers = item.get("sellers",[]); seller = sellers[0] if sellers else {}
     offer = seller.get("commertialOffer",{})
@@ -453,7 +453,7 @@ async def collect_one_pg(pool, store, queries):
                         raw = await fetch_store_multi(client, store, q)
                         cb.win(store); await pg_health(conn, store, True)
                         for p in raw:
-                            prod = product_from_json(p, store)
+                            prod = _pfj(p, store)
                             if prod["price"]<=0: continue
                             await pg_insert(conn, prod); collected+=1
                         await asyncio.sleep(REQUEST_DELAY)
@@ -472,7 +472,7 @@ async def collect_one_sqlite(db, store, queries):
                     raw = await fetch_store_multi(client, store, q)
                     cb.win(store); sq_health(db, store, True)
                     for p in raw:
-                        prod = product_from_json(p, store)
+                        prod = _pfj(p, store)
                         if prod["price"]<=0: continue
                         sq_insert(db, prod); collected+=1
                     await asyncio.sleep(REQUEST_DELAY)
