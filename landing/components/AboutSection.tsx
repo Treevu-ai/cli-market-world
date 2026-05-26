@@ -6,7 +6,7 @@ export default function AboutSection() {
   const isES = lang === "es";
 
   return (
-    <section id="about" className="relative bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] py-24">
+    <section id="about" className="relative bg-[var(--wise-ink)] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <p className="text-xs text-[var(--wise-green)] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Sobre nosotros" : "About us"}
@@ -23,7 +23,7 @@ export default function AboutSection() {
         {/* Founder card */}
         <div className="bg-[var(--wise-green-pale)] rounded-3xl p-8 text-left max-w-[480px] mx-auto">
           <div className="flex items-start gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-full bg-[var(--wise-ink)] flex items-center justify-center shrink-0">
               <span className="text-[#9fe870] text-lg font-black">A</span>
             </div>
             <div>
