@@ -21,6 +21,7 @@ from market_core import STORES, TIERS, db_get_subscription, get_db
 from server_deps import require_user
 
 from .dashboard_html import DASHBOARD_HTML
+from .health import _age_hours
 
 router = APIRouter(tags=["dashboard"])
 
@@ -90,14 +91,11 @@ def dashboard_data():
     if last_run:
         finished = last_run["finished_at"]
         if finished:
-            try:
-                ft = datetime.fromisoformat(finished.replace("Z", "+00:00"))
-                age_h = (datetime.now(timezone.utc) - ft).total_seconds() / 3600
+            age_h = _age_hours(finished)
+            if age_h is not None:
                 collector_status = (
                     "healthy" if age_h < 12 else ("stale" if age_h < 24 else "dead")
                 )
-            except Exception:
-                pass
         else:
             collector_status = "running"
 

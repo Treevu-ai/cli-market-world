@@ -24,6 +24,36 @@ logger = logging.getLogger("market.server").getChild("health")
 router = APIRouter(tags=["health"])
 
 
+def _age_hours(timestamp_str: str | None) -> float | None:
+    """Parse a SQLite/Postgres timestamp and return hours since.
+
+    Handles both formats SQLite/PG emit:
+      - "2026-05-26 17:44:07"          (SQLite datetime('now') — naive UTC)
+      - "2026-05-26T17:44:07+00:00"    (Postgres TIMESTAMPTZ — tz-aware)
+      - "2026-05-26T17:44:07Z"         (ISO with Z suffix)
+
+    Returns None if parsing fails. UTC is assumed for naive values, since
+    that's what SQLite stores under our schema (datetime('now') is UTC).
+    """
+    if not timestamp_str:
+        return None
+    try:
+        s = timestamp_str.replace("Z", "+00:00")
+        # SQLite's datetime('now') uses space as separator; ISO uses T.
+        # datetime.fromisoformat handles both since Python 3.11; for 3.10
+        # we replace space → T defensively.
+        if " " in s and "T" not in s:
+            s = s.replace(" ", "T", 1)
+        dt = datetime.fromisoformat(s)
+        # Naive timestamps from SQLite are UTC by convention here.
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+    except Exception as e:
+        logger.warning("Could not parse timestamp %r: %s", timestamp_str, e)
+        return None
+
+
 @router.get("/health")
 def health():
     return {"status": "healthy"}
@@ -51,12 +81,10 @@ def health_collector():
 
     finished = last["finished_at"]
     if finished:
-        try:
-            ft = datetime.fromisoformat(finished.replace("Z", "+00:00"))
-            age_h = (datetime.now(timezone.utc) - ft).total_seconds() / 3600
-        except Exception:
-            age_h = 999
-        if age_h > 24:
+        age_h = _age_hours(finished)
+        if age_h is None:
+            status = "unknown"
+        elif age_h > 24:
             status = "dead"
         elif age_h > 12:
             status = "stale"
