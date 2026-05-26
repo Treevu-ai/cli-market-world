@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, LINES, TIERS, db_get_subscription, get_db
+from market_core import STORES, TIERS, db_get_subscription, get_db
 from server_deps import require_user
 
 from .dashboard_html import DASHBOARD_HTML
