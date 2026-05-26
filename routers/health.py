@@ -1,0 +1,149 @@
+"""Health checks, root, and catalog endpoints (lines / stores / countries).
+
+Endpoints:
+  GET /                  Service banner + counts
+  GET /health            Liveness check
+  GET /health/collector  Collector freshness (last run, age, store coverage)
+  GET /lines             Catalog of business lines with their stores
+  GET /stores            Catalog of retailers (filterable by country/line)
+  GET /countries         Catalog of countries with store lists
+"""
+
+from __future__ import annotations
+
+import logging
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Request
+
+from market_core import STORES, LINES, COUNTRIES, get_db
+from server_deps import check_rate_limit
+
+logger = logging.getLogger("market.server").getChild("health")
+
+router = APIRouter(tags=["health"])
+
+
+@router.get("/health")
+def health():
+    return {"status": "healthy"}
+
+
+@router.get("/health/collector")
+def health_collector():
+    """Collector health: last run, staleness, store coverage."""
+    try:
+        db = get_db()
+        last = db.execute(
+            "SELECT started_at, finished_at, stores_attempted, stores_succeeded, prices_collected "
+            "FROM collector_runs ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
+        active_stores = db.execute(
+            "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+        ).fetchone()["n"]
+        db.close()
+    except Exception:
+        return {"status": "unknown", "error": "Database not initialized"}
+
+    if not last:
+        return {"status": "unknown", "message": "No collector runs yet", "runs_total": 0}
+
+    finished = last["finished_at"]
+    if finished:
+        try:
+            ft = datetime.fromisoformat(finished.replace("Z", "+00:00"))
+            age_h = (datetime.now(timezone.utc) - ft).total_seconds() / 3600
+        except Exception:
+            age_h = 999
+        if age_h > 24:
+            status = "dead"
+        elif age_h > 12:
+            status = "stale"
+        else:
+            status = "healthy"
+    else:
+        status = "running"
+        age_h = None
+
+    return {
+        "status": status,
+        "last_run": last["started_at"],
+        "last_finished": finished,
+        "age_hours": round(age_h, 1) if age_h is not None else None,
+        "stores_attempted": last["stores_attempted"],
+        "stores_succeeded": last["stores_succeeded"],
+        "prices_collected": last["prices_collected"],
+        "stores_active": active_stores or 0,
+        "stores_total": len(STORES),
+        "runs_total": total_runs,
+    }
+
+
+@router.get("/")
+def root(request: Request):
+    try:
+        check_rate_limit(request.client.host if request.client else "unknown")
+    except Exception as e:
+        logger.warning("Rate limit check failed: %s", e)
+    return {
+        "name": "CLI Market",
+        "status": "running",
+        "stores": len(STORES),
+        "lines": len(LINES),
+        "countries": len(COUNTRIES),
+        "docs": "/docs",
+    }
+
+
+@router.get("/lines")
+def list_lines():
+    result: dict[str, dict] = {}
+    for line_id, line_meta in LINES.items():
+        line_stores: dict[str, dict] = {}
+        for sk, sv in STORES.items():
+            if sv["line"] == line_id:
+                line_stores[sk] = {
+                    "name": sv["name"],
+                    "country": sv["country"],
+                    "currency": sv["currency"],
+                    "base": sv.get("base", ""),
+                    "emoji": sv.get("emoji", ""),
+                }
+        result[line_id] = {
+            "name": line_meta["name"],
+            "emoji": line_meta["emoji"],
+            "description": line_meta["description"],
+            "stores": line_stores,
+            "total_stores": len(line_stores),
+        }
+    return {"lines": result, "total": len(result)}
+
+
+@router.get("/stores")
+def list_stores(country: str | None = None, line: str | None = None):
+    result = {}
+    for key, s in STORES.items():
+        if country and s["country"] != country.upper():
+            continue
+        if line and s["line"] != line:
+            continue
+        result[key] = {
+            "name": s["name"],
+            "country": s["country"],
+            "currency": s["currency"],
+            "line": s["line"],
+            "line_name": LINES[s["line"]]["name"],
+            "base": s["base"],
+        }
+    return {"stores": result, "total": len(result)}
+
+
+@router.get("/countries")
+def list_countries():
+    return {
+        "countries": {
+            code: {"name": c["name"], "stores": c["stores"], "count": len(c["stores"])}
+            for code, c in COUNTRIES.items()
+        }
+    }

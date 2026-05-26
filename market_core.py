@@ -881,58 +881,69 @@ def db_migrate_from_json() -> None:
         except Exception as e:
             logger.warning("Order migration skipped: %s", e)
 
-def save_price_snapshot(p: dict) -> None:
+def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
+    """Upsert one price snapshot.
+
+    If `db` is None, opens its own connection (used by `/search`).
+    If `db` is provided (collector batch), reuses it and does NOT commit/close —
+    that's the caller's responsibility.
+    """
+    owns_db = db is None
+    params = (
+        p.get("id", p.get("product_id", "")),
+        p.get("name", ""),
+        p.get("brand", ""),
+        p.get("price", 0),
+        p.get("list_price", 0),
+        p.get("discount"),
+        p.get("store", ""),
+        p.get("store_name", ""),
+        p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
+        STORES.get(p.get("store", ""), {}).get("line", ""),
+        p.get("line_name", ""),
+        p.get("category", ""),
+        p.get("stock", 0),
+        p.get("url", ""),
+    )
     try:
-        db = get_db()
+        if owns_db:
+            db = get_db()
         if USE_PG:
             db.execute("""
                 INSERT INTO price_snapshots
                     (product_id, name, brand, price, list_price, discount,
                      store, store_name, currency, line, line_name, category, stock, url)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                ON CONFLICT(product_id, store) DO NOTHING
-            """, (
-                p.get("id", p.get("product_id", "")),
-                p.get("name", ""),
-                p.get("brand", ""),
-                p.get("price", 0),
-                p.get("list_price", 0),
-                p.get("discount"),
-                p.get("store", ""),
-                p.get("store_name", ""),
-                p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
-                STORES.get(p.get("store", ""), {}).get("line", ""),
-                p.get("line_name", ""),
-                p.get("category", ""),
-                p.get("stock", 0),
-                p.get("url", ""),
-            ))
+                ON CONFLICT(product_id, store) DO UPDATE SET
+                    price=EXCLUDED.price,
+                    list_price=EXCLUDED.list_price,
+                    discount=EXCLUDED.discount,
+                    stock=EXCLUDED.stock,
+                    queried_at=NOW()
+            """, params)
         else:
             db.execute("""
                 INSERT INTO price_snapshots
                     (product_id, name, brand, price, list_price, discount,
                      store, store_name, currency, line, line_name, category, stock, url)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                p.get("id", p.get("product_id", "")),
-                p.get("name", ""),
-                p.get("brand", ""),
-                p.get("price", 0),
-                p.get("list_price", 0),
-                p.get("discount"),
-                p.get("store", ""),
-                p.get("store_name", ""),
-                p.get("currency", STORES.get(p.get("store", ""), {}).get("currency", "")),
-                STORES.get(p.get("store", ""), {}).get("line", ""),
-                p.get("line_name", ""),
-                p.get("category", ""),
-                p.get("stock", 0),
-                p.get("url", ""),
-            ))
-        db.commit()
-        db.close()
+                ON CONFLICT(product_id, store) DO UPDATE SET
+                    price=excluded.price,
+                    list_price=excluded.list_price,
+                    discount=excluded.discount,
+                    stock=excluded.stock,
+                    queried_at=datetime('now')
+            """, params)
+        if owns_db:
+            db.commit()
+            db.close()
     except Exception as e:
         logger.warning("save_price_snapshot failed: %s", e)
+        if owns_db and db is not None:
+            try:
+                db.close()
+            except Exception:
+                pass
 
 def save_search_query(query: str, line: str | None, store: str | None, num_results: int) -> None:
     try:
@@ -1082,15 +1093,33 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
     db.close()
 
 
-# ── Initialize DB at import time ──────────────────────────────────────────────
-try:
-    init_db()
-except Exception as e:
-    logger.error("Database initialization failed: %s", e)
-    if USE_PG:
-        logger.warning("PostgreSQL unavailable — falling back to SQLite")
-        USE_PG = False
-        try:
-            init_db()
-        except Exception as e2:
-            logger.error("SQLite fallback also failed: %s", e2)
+# ── Explicit init helper ──────────────────────────────────────────────────────
+# NOTE: init_db() is NO LONGER called at import time. Each entrypoint
+# (market_server lifespan, collect_prices.main, tests) MUST call
+# ensure_db_initialized() before performing DB operations. This eliminates the
+# race condition where the import order decided which schema "won".
+
+_db_initialized = False
+
+def ensure_db_initialized() -> None:
+    """Idempotent DB init. Safe to call many times; only runs init_db() once.
+
+    Handles the PG→SQLite fallback that used to live at import time.
+    """
+    global _db_initialized, USE_PG
+    if _db_initialized:
+        return
+    try:
+        init_db()
+        _db_initialized = True
+    except Exception as e:
+        logger.error("Database initialization failed: %s", e)
+        if USE_PG:
+            logger.warning("PostgreSQL unavailable — falling back to SQLite")
+            USE_PG = False
+            try:
+                init_db()
+                _db_initialized = True
+            except Exception as e2:
+                logger.error("SQLite fallback also failed: %s", e2)
+                raise
