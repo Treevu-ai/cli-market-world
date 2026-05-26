@@ -1,59 +1,44 @@
 "use client";
-import { useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const steps = [
-  { cmd: "pip install cli-market", out_es: "cl i-market 1.3.0 instalado correctamente", out_en: "Successfully installed cli-market 1.3.0", label: "Install" },
-  { cmd: "market login", out_es: "Autenticado — 60 comercios listos", out_en: "Authenticated — 60 retailers ready", label: "Login" },
-  { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search" },
-  { cmd: "market compare \"arroz\"", out_es: "Mejor: Metro S/2.80 · Ahorro: S/0.70/unidad", out_en: "Best: Metro S/2.80 · Savings: S/0.70/unit", label: "Compare" },
-  { cmd: "market add 1 --qty 2", out_es: "2x Leche Gloria → carrito", out_en: "2x Milk → cart", label: "Add" },
-  { cmd: "market checkout --payment yape", out_es: "✓ Orden confirmada · QR generado", out_en: "✓ Order confirmed · QR generated", label: "Checkout" },
+  { cmd: "pip install cli-market", out_es: "cli-market 1.4.0 instalado", out_en: "cli-market 1.4.0 installed", label: "Install", icon: "↓" },
+  { cmd: "market login", out_es: "Autenticado — 60 comercios listos", out_en: "Authenticated — 60 retailers ready", label: "Login", icon: "🔑" },
+  { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search", icon: "🔍" },
+  { cmd: "market compare \"arroz\"", out_es: "Mejor: Metro S/2.80 · Ahorro: S/0.70/unidad", out_en: "Best: Metro S/2.80 · Savings: S/0.70/unit", label: "Compare", icon: "📊" },
+  { cmd: "market add 1 --qty 2", out_es: "2x Leche Gloria → carrito", out_en: "2x Milk → cart", label: "Add", icon: "🛒" },
+  { cmd: "market checkout --payment yape", out_es: "✓ Orden confirmada · QR generado", out_en: "✓ Order confirmed · QR generated", label: "Checkout", icon: "💳" },
 ];
 
 export default function HowItWorks() {
-  const { t: _t, lang } = useLang();
+  const { lang } = useLang();
   const isES = lang === "es";
-  const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <section id="how" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
+    <section id="how" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[var(--wise-green-pale)]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">{_t("how_label")}</p>
-        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">{_t("how_title")}</h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">{_t("how_subtitle")}</p>
+        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">
+          {isES ? "Cómo funciona" : "How it works"}
+        </p>
+        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
+          {isES ? "Del install a la compra en menos de 1 minuto." : "From install to purchase in under 1 minute."}
+        </h2>
+        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
+          {isES ? "Una CLI. Un flujo. Sin fricción." : "One CLI. One flow. Zero friction."}
+        </p>
 
-        {/* Single terminal flow */}
-        <div ref={ref} className="bg-[var(--wise-canvas-soft)] border border-[#c5edab] rounded-lg overflow-hidden text-left">
-          <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-[#fafafa]">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-            <span className="text-[10px] text-[var(--wise-body)] font-mono ml-2 uppercase tracking-wider">
-              cli-market — bash
-            </span>
-          </div>
-          <div className="p-4 font-mono text-[12px] leading-relaxed space-y-2">
-            {steps.map((s, i) => (
-              <div key={i} className="group">
-                <div className="flex items-start gap-2">
-                  <span className="text-[var(--wise-body)] select-none shrink-0 mt-[1px]">$</span>
-                  <span className="text-[var(--wise-body)]">{s.cmd}</span>
-                </div>
-                <div className="flex items-start gap-2 mt-0.5">
-                  <span className="w-3 shrink-0" />
-                  <span className="text-[var(--wise-body)] text-[11px]">{isES ? s.out_es : s.out_en}</span>
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+          {steps.map((s, i) => (
+            <div key={i} className="bg-[var(--wise-canvas)] rounded-3xl border border-[var(--wise-green-pale)] p-4 flex items-start gap-4">
+              <span className="text-xl shrink-0">{s.icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-[var(--wise-ink)]">{s.label}</p>
+                <p className="text-xs text-[var(--wise-mute)] font-mono mt-1 truncate">{s.cmd}</p>
+                <p className="text-[11px] text-[var(--wise-body)] mt-1 truncate">{isES ? s.out_es : s.out_en}</p>
               </div>
-            ))}
-            <div className="flex items-center gap-2 pt-1">
-              <span className="text-[var(--wise-body)]">$</span>
-              <span className="inline-block w-[6px] h-[14px] bg-[#a3a3a3] animate-pulse rounded-sm" />
             </div>
-          </div>
+          ))}
         </div>
-
-        <p className="mt-8 text-[10px] text-[var(--wise-body)] font-mono uppercase tracking-[0.15em]">{_t("how_footer")}</p>
       </div>
     </section>
   );
