@@ -83,6 +83,12 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
     <div style="flex:1;min-width:200px"><h3 style="font-size:0.6rem;color:var(--green);text-transform:uppercase;margin-bottom:6px">&#9660; Bajaron</h3><table><thead><tr><th>Producto</th><th class="num">Antes</th><th class="num">Ahora</th><th class="num">Δ</th></tr></thead><tbody id="fallersTable"></tbody></table></div>
   </div></div>
   <div class="panel"><div class="panel-title">Frescura de datos</div><div class="panel-body"><table><thead><tr><th>Tienda</th><th>Último snapshot</th></tr></thead><tbody id="freshnessTable"></tbody></table></div></div>
+  <div class="panel"><div class="panel-title">Store health</div><div class="panel-body"><table><thead><tr><th>Tienda</th><th class="num">Éxito</th><th class="num">Fallos</th><th>Último</th></tr></thead><tbody id="healthTable"></tbody></table></div></div>
+  <div class="panel"><div class="panel-title">Collector history</div><div class="panel-body"><table><thead><tr><th>Inicio</th><th class="num">Tiendas</th><th class="num">Precios</th><th class="num">Errs</th></tr></thead><tbody id="historyTable"></tbody></table></div></div>
+  <div class="panel"><div class="panel-title">Distribución de precios</div><div class="panel-body"><canvas id="chartPriceDist"></canvas></div></div>
+  <div class="panel"><div class="panel-title">Line × Country</div><div class="panel-body" id="matrixTable" style="overflow-x:auto"></div></div>
+  <div class="panel"><div class="panel-title">Productos por tienda</div><div class="panel-body"><table><thead><tr><th>Tienda</th><th class="num">Productos</th><th class="num">Snapshots</th></tr></thead><tbody id="productsPerStoreTable"></tbody></table></div></div>
+  <div class="panel"><div class="panel-title">Outliers de precio</div><div class="panel-body"><table><thead><tr><th>Producto</th><th>Tienda</th><th class="num">Precio</th></tr></thead><tbody id="outliersTable"></tbody></table></div></div>
 </div>
 
 <p class="footer" id="footer"></p>
@@ -166,6 +172,55 @@ async function load(){
     `<tr><td>${(x.product_id||'?').slice(0,25)}</td><td class="num">${x.price_before?.toFixed(2)}</td><td class="num">${x.price_now?.toFixed(2)}</td><td class="num down">${x.delta_pct}%</td></tr>`
   ).join('')||'<tr><td colspan="4" style="color:var(--dim)">sin datos</td></tr>';
   document.getElementById('fallersTable').innerHTML=fallerRows;
+
+  // ── Store health ────────────────────────────────────────────────
+  const healthRows=(d.store_health||[]).slice(0,15).map(x=>{
+    const pct=x.success_pct||0;
+    const cls=pct>=90?'color:var(--green)':pct>=50?'color:var(--yellow)':'color:var(--red)';
+    return `<tr><td>${x.store}</td><td class="num" style="${cls}">${pct}%</td><td class="num">${x.consecutive_failures||0}</td><td style="font-size:0.5rem">${(x.last_success||'—').slice(0,16)}</td></tr>`;
+  }).join('');
+  document.getElementById('healthTable').innerHTML=healthRows||'<tr><td colspan="4" style="color:var(--dim)">sin datos</td></tr>';
+
+  // ── Collector history ────────────────────────────────────────────
+  const histRows=(d.collector_history||[]).map(x=>{
+    const start=((x.started_at||'')+'').slice(0,16);
+    return `<tr><td>${start}</td><td class="num">${x.stores_succeeded||0}/${x.stores_attempted||0}</td><td class="num">${(x.prices_collected||0).toLocaleString()}</td><td class="num">${x.errors||0}</td></tr>`;
+  }).join('');
+  document.getElementById('historyTable').innerHTML=histRows||'<tr><td colspan="4" style="color:var(--dim)">sin historial</td></tr>';
+
+  // ── Price distribution chart ─────────────────────────────────────
+  if(d.price_distribution&&d.price_distribution.length){
+    charts.push(new Chart(document.getElementById('chartPriceDist'),{type:'bar',data:{
+      labels:d.price_distribution.map(x=>x.bucket),
+      datasets:[{label:'Productos',data:d.price_distribution.map(x=>x.count),backgroundColor:colors,borderRadius:2}]
+    },options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#1a1a1a'},ticks:{color:'#444',font:{size:9}}},x:{ticks:{color:'#444',font:{size:9}}}}}}));
+  }
+
+  // ── Line × Country matrix ────────────────────────────────────────
+  if(d.line_country_matrix&&d.line_country_matrix.length){
+    const lines=[...new Set(d.line_country_matrix.map(x=>x.line))];
+    const countries=[...new Set(d.line_country_matrix.map(x=>x.country))].sort();
+    const map={};
+    d.line_country_matrix.forEach(x=>{map[x.line+'|'+x.country]=x.stores;});
+    let mhtml='<table><thead><tr><th></th>'+countries.map(c=>`<th class="num">${c}</th>`).join('')+'</tr></thead><tbody>';
+    lines.forEach(l=>{
+      mhtml+=`<tr><td>${l}</td>`+countries.map(c=>{
+        const v=map[l+'|'+c]||0;
+        const bg=v>0?'background:#0a2a1a;color:var(--green)':'';
+        return `<td class="num" style="${bg}">${v||'·'}</td>`;
+      }).join('')+'</tr>';
+    });
+    mhtml+='</tbody></table>';
+    document.getElementById('matrixTable').innerHTML=mhtml;
+  }
+
+  // ── Products per store ───────────────────────────────────────────
+  const ppsRows=(d.products_per_store||[]).map(x=>`<tr><td>${x.store_name||x.store}</td><td class="num">${(x.unique_products||0).toLocaleString()}</td><td class="num">${(x.total_snapshots||0).toLocaleString()}</td></tr>`).join('');
+  document.getElementById('productsPerStoreTable').innerHTML=ppsRows||'<tr><td colspan="3" style="color:var(--dim)">sin datos</td></tr>';
+
+  // ── Outliers ─────────────────────────────────────────────────────
+  const outRows=(d.outliers||[]).map(x=>`<tr><td>${(x.name||'?').slice(0,35)}</td><td>${x.store_name}</td><td class="num" style="color:var(--red)">${x.currency||''} ${x.price?.toFixed(2)}</td></tr>`).join('');
+  document.getElementById('outliersTable').innerHTML=outRows||'<tr><td colspan="3" style="color:var(--dim)">sin outliers detectados</td></tr>';
 
   // ── Freshness ───────────────────────────────────────────────────
   const freshRows=(d.freshness||[]).slice(0,15).map(x=>{
