@@ -55,9 +55,8 @@ services:
   # ── Collector (background worker, no public ports) ────────────────────────
   - type: worker
     name: cli-market-collector
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python collect_prices.py --daemon
+    runtime: docker
+    dockerfilePath: ./Dockerfile.collector
     envVars:
       - key: COLLECT_INTERVAL_HOURS
         value: "8"
