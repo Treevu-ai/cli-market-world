@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Lines from "@/components/Lines";
+import QuickstartAPI from "@/components/QuickstartAPI";
+import CoverageSection from "@/components/CoverageSection";
+import DataSection from "@/components/DataSection";
 import TerminalSection from "@/components/TerminalSection";
 import AgentDispatch from "@/components/AgentDispatch";
 import HowItWorks from "@/components/HowItWorks";
@@ -32,8 +34,10 @@ export default function Home() {
         <StatsSection />
         <HowItWorks />
         <TerminalSection />
+        <QuickstartAPI />
         <Features />
-        <Lines />
+        <CoverageSection />
+        <DataSection />
         <Pricing />
         <FAQ />
         <AgentDispatch />
