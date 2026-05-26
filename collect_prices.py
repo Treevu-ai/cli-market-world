@@ -458,24 +458,18 @@ async def collect_one_pg(pool, store, queries):
     return collected
 
 async def collect_one_sqlite(db, store, queries):
-    if not cb.ok(store): return 0
     line = STORES[store].get("line",""); collected=0
-    try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"CLI-Market-Collector/1.0"},follow_redirects=True) as client:
-            for q, lf in queries:
-                if lf and line!=lf: continue
-                try:
-                    raw = await fetch_store_multi(client, store, q)
-                    cb.win(store); sq_health(db, store, True)
-                    for p in raw:
-                        prod = _pfj(p, store)
-                        prod["line"] = STORES[store].get("line","")
-                        prod["line_name"] = LINES.get(STORES[store].get("line",""),{}).get("name","")
-                        if prod["price"]<=0: continue
-                        sq_insert(db, prod); collected+=1
-                    await asyncio.sleep(REQUEST_DELAY)
-                except Exception as _e: cb.lose(store); sq_health(db, store, False); raise _e
-    except Exception: cb.lose(store)
+    for q, lf in queries:
+        if lf and line!=lf: continue
+        try:
+            raw = await _fetch_store(store, q, page=1, limit=10)
+            for p in raw:
+                prod = _pfj(p, store)
+                if prod["price"]<=0: continue
+                sq_insert(db, prod); collected+=1
+            await asyncio.sleep(REQUEST_DELAY)
+        except Exception:
+            pass
     return collected
 
 async def run_collection(stores, queries):
