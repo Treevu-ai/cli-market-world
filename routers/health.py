@@ -63,6 +63,14 @@ def health():
 def health_db():
     """Database backend diagnostic — confirms PG vs SQLite."""
     from market_core import USE_PG, DATABASE_URL, DB_FILE
+    pg_error = None
+    if DATABASE_URL and not USE_PG:
+        # PG was attempted but fell back — try to get the connection error
+        try:
+            import psycopg2
+            psycopg2.connect(DATABASE_URL, connect_timeout=5)
+        except Exception as e:
+            pg_error = str(e)[:200]
     db = get_db()
     try:
         db_type = "postgresql" if USE_PG else "sqlite"
@@ -82,6 +90,7 @@ def health_db():
             "db_file": str(DB_FILE) if not USE_PG else None,
             "snapshots": snapshots,
             "tables": [t["name"] for t in tables],
+            "pg_error": pg_error,
         }
     except Exception as e:
         return {"backend": "error", "detail": str(e)}
