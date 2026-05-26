@@ -1417,14 +1417,19 @@ def main():
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8765"))
     
-    # Start collector in background thread before uvicorn
+    # Start collector in background thread
     def _collector():
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        collector_path = os.path.join(script_dir, "collect_prices.py")
         time.sleep(15)
         while True:
             try:
-                subprocess.run([_sys.executable, collector_path], check=False, timeout=3600, cwd=script_dir)
+                from collect_prices import build_query_list, _get_feedback_db, run_collection, STORES as _stores
+                import asyncio as _aio
+                stores = list(_stores.keys())
+                db = _get_feedback_db()
+                queries = build_query_list(db=db, cycle=0)
+                if db: db.close()
+                logger.info("Collector: %d stores x %d queries", len(stores), len(queries))
+                _aio.run(run_collection(stores, queries))
             except Exception as ex:
                 logger.error("Collector run failed: %s", ex)
             time.sleep(COLLECTOR_INTERVAL * 3600)
