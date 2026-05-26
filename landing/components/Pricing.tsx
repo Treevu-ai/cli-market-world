@@ -3,22 +3,22 @@ import { useLang } from "@/lib/LanguageContext";
 
 const tiers = [
   {
-    name: "Free", price: "$0", period_es: "para siempre", period_en: "forever",
-    f_es: ["60 req/min · 1,000 req/día", "1 API key (read)", "Dashboard en tiempo real", "Pago con Yape, Plin, Wise, PayPal o Lemon"],
-    f_en: ["60 req/min · 1,000 req/day", "1 API key (read)", "Live dashboard", "Pay with Yape, Plin, Wise, PayPal or Lemon"],
-    cta_es: "Empezar gratis", cta_en: "Start free", dark: false,
+    name: "Free", price: "$0", period_es: "sin costo", period_en: "no cost",
+    f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "Todos los métodos de pago"],
+    f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "All payment methods included"],
+    cta_es: "Comenzar ahora", cta_en: "Start now", dark: false,
   },
   {
-    name: "Pro", price: "$49", period_es: "/mes", period_en: "/month",
-    f_es: ["300 req/min · 10,000 req/día", "10 API keys (read + write)", "Checkout habilitado", "Data moat export (JSON/CSV)", "Soporte prioritario"],
-    f_en: ["300 req/min · 10,000 req/day", "10 API keys (read + write)", "Checkout enabled", "Data moat export (JSON/CSV)", "Priority support"],
-    cta_es: "Suscribirse", cta_en: "Subscribe", dark: false,
+    name: "Pro", price: "$49", period_es: "/ al mes", period_en: "/ month",
+    f_es: ["10,000 consultas / día", "10 claves API (lectura y escritura)", "Checkout automatizado", "Exportación de precios (JSON/CSV)", "Soporte prioritario por email"],
+    f_en: ["10,000 requests / day", "10 API keys (read + write)", "Automated checkout", "Price data export (JSON/CSV)", "Priority email support"],
+    cta_es: "Obtener Pro", cta_en: "Get Pro", dark: false,
   },
   {
-    name: "Enterprise", price: "Custom", period_es: "", period_en: "",
-    f_es: ["Rate limits custom", "API keys ilimitadas", "Endpoints dedicados", "Webhooks + SLA 99.5%", "Onboarding asistido"],
-    f_en: ["Custom rate limits", "Unlimited API keys", "Dedicated endpoints", "Webhooks + SLA 99.5%", "Assisted onboarding"],
-    cta_es: "Contactar", cta_en: "Contact", dark: true,
+    name: "Enterprise", price: "A medida", period_es: "", period_en: "",
+    f_es: ["Límites personalizados", "Claves API ilimitadas", "Endpoints dedicados + webhooks", "SLA 99.5 % + soporte 24/7", "Onboarding y consultoría"],
+    f_en: ["Custom rate limits", "Unlimited API keys", "Dedicated endpoints + webhooks", "99.5% SLA + 24/7 support", "Onboarding and consulting"],
+    cta_es: "Hablar con ventas", cta_en: "Talk to sales", dark: true,
   },
 ];
 
@@ -36,7 +36,7 @@ export default function Pricing() {
           {isES ? "Empieza gratis.\nEscala cuando quieras." : "Start free.\nScale when ready."}
         </h2>
         <p className="text-sm text-[#454745] max-w-md mx-auto mb-12">
-          {isES ? "Sin tarjeta de crédito. Sin compromiso. Cancela cuando quieras." : "No credit card. No commitment. Cancel anytime."}
+          {isES ? "Sin tarjeta. Sin permanencia. Cancela cuando quieras." : "No credit card. No lock-in. Cancel anytime."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
