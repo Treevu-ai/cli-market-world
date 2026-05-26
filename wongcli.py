@@ -224,9 +224,9 @@ def match_products(all_products: dict[str, list[Product]]) -> list[MatchPair]:
     used_keys: set[str] = set()
     pairs: list[MatchPair] = []
 
-    for ref, store_prods in ref_index.items():
+    for _ref, store_prods in ref_index.items():
         found_key = None
-        for store, p in store_prods.items():
+        for _store, p in store_prods.items():
             key = f"{p.brand.lower()} | {clean_for_match(p.name)}"
             if key in key_index:
                 found_key = key

@@ -5,7 +5,7 @@ Handles PayPal checkout for subscriptions and one-time purchases.
 Uses PayPal Orders API v2. Sandbox-ready.
 """
 
-import os, base64, httpx, json
+import os, base64, httpx
 
 PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "")
 PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET", "")

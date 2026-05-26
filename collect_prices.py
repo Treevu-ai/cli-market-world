@@ -12,13 +12,13 @@ Usage:
     python collect_prices.py --report     # latest prices per line
 """
 
-import asyncio, json, os, sqlite3, sys, time
+import asyncio, json, os, sqlite3, time
 from collections import defaultdict
 from datetime import datetime, timezone
 import httpx
 
 from market_core import (
-    STORES, DATA_DIR, DB_FILE, logger as log,
+    STORES, DB_FILE, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
