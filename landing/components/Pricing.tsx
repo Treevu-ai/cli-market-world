@@ -54,7 +54,7 @@ export default function Pricing() {
               </div>
               <ul className="space-y-2 mb-6 flex-1">
                 {(isES ? tier.f_es : tier.f_en).map((f, i) => (
-                  <li key={i} className={`flex items-start gap-2 text-sm ${tier.dark ? "text-white/60" : "text-[var(--wise-body)]"}`}>
+                  <li key={i} className={`flex items-start gap-2 text-sm ${tier.dark ? "text-white/80" : "text-[var(--wise-body)]"}`}>
                     <span className="mt-0.5 shrink-0">—</span>
                     {f}
                   </li>
