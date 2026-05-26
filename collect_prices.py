@@ -424,16 +424,10 @@ def _old_product_from_json(p, store):
 
 class CB:
     def __init__(s): s.f=defaultdict(int); s.o={}
-    def ok(s,k):
-        if k in s.o:
-            if time.time()<s.o[k]: return False
-            del s.o[k]; s.f[k]=0
-        return True
-    def win(s,k): s.f[k]=0
-    def lose(s,k):
-        s.f[k]+=1
-        if s.f[k]>=50: s.o[k]=time.time()+60
-    def reset(s): s.f.clear(); s.o.clear()
+    def ok(s,k): return True  # temporarily disabled
+    def win(s,k): pass
+    def lose(s,k): pass
+    def reset(s): pass
 cb=CB()
 
 async def fetch_store_multi(client, store, term):
