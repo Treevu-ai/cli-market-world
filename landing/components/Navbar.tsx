@@ -22,12 +22,12 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      scrolled ? "bg-white/90 backdrop-blur-md border-b border-[#e5e5e5]" : "bg-white border-b border-transparent"
+      scrolled ? "bg-[#e8ebe6]/90 backdrop-blur-md border-b border-[#c5edab]" : "bg-[#e8ebe6] border-b border-transparent"
     }`}>
       <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between h-14">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 text-black">
-          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-black">
+        <a href="/" className="flex items-center gap-2 text-[#0e0f0c]">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[#0e0f0c]">
             <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
             <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -45,13 +45,13 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-5">
           {linkKeys.map(k => (
             <a key={k} href={`#${k.replace("nav_","")}`}
-               className="text-[11px] font-medium text-[#737373] hover:text-black transition-colors">
+               className="text-[11px] font-medium text-[#454745] hover:text-[#0e0f0c] transition-colors">
               {navLabels[k]}
             </a>
           ))}
           <span className="text-[#d4d4d4]">|</span>
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#a3a3a3] hover:text-black transition-colors cursor-pointer">
+            className="text-[11px] font-medium text-[#868685] hover:text-[#0e0f0c] transition-colors cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
         </div>
@@ -59,11 +59,11 @@ export default function Navbar() {
         {/* Mobile menu */}
         <div className="md:hidden flex items-center gap-3">
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#a3a3a3] cursor-pointer">
+            className="text-[11px] font-medium text-[#868685] cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
           <button onClick={() => setOpen(!open)}
-            className="text-black text-lg cursor-pointer font-medium">
+            className="text-[#0e0f0c] text-lg cursor-pointer font-medium">
             {open ? "×" : "☰"}
           </button>
         </div>
@@ -71,10 +71,10 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden bg-white border-t border-[#e5e5e5] px-6 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-[#e8ebe6] border-t border-[#c5edab] px-6 py-4 flex flex-col gap-3">
           {linkKeys.map(k => (
             <a key={k} href={`#${k.replace("nav_","")}`} onClick={() => setOpen(false)}
-               className="text-sm text-[#737373] hover:text-black transition-colors">
+               className="text-sm text-[#454745] hover:text-[#0e0f0c] transition-colors">
               {navLabels[k]}
             </a>
           ))}
