@@ -693,6 +693,29 @@ def auth_subscription(authorization: str | None = Header(None)):
     return {"username": username, "subscription": sub, "api_keys": len(keys)}
 
 
+@app.post("/checkout/paypal")
+async def checkout_paypal(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    cart = db_get_cart(username)
+    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
+    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    _co(username, cart, "paypal", total, status="pending", order_id=order_id)
+    db_clear_cart(username)
+    from market_connectors.paypal_payments import create_order
+    try:
+        pp = await create_order(total, "USD", f"CLI-Market-{order_id}")
+        if "approve_url" in pp:
+            return {"order_id": order_id, "total": total, "currency": "USD",
+                    "payment_method": "paypal", "status": "pending",
+                    "paypal_order_id": pp["order_id"], "approve_url": pp["approve_url"],
+                    "message": "Completa el pago en PayPal."}
+        raise HTTPException(status_code=502, detail=pp.get("error", "PayPal error"))
+    except ValueError:
+        raise HTTPException(status_code=501, detail="PayPal no configurado. Set PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET.")
+
+
 @app.post("/checkout/wise")
 async def checkout_wise(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
