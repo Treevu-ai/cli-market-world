@@ -122,26 +122,9 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-# ── Background collector (runs every COLLECT_INTERVAL_HOURS, default 8h) ──────────
+# ── Background collector interval ──────────
 
 COLLECTOR_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
-
-@app.on_event("startup")
-async def start_collector():
-    import threading, time, os, subprocess, sys
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    collector_path = os.path.join(script_dir, "collect_prices.py")
-    logger.info("Collector thread starting (interval=%sh, path=%s)", COLLECTOR_INTERVAL, collector_path)
-    def _run():
-        time.sleep(10)  # let server fully start first
-        while True:
-            try:
-                subprocess.run([sys.executable, collector_path], check=False, timeout=3600, cwd=script_dir)
-            except Exception as e:
-                logger.error("Collector run failed: %s", e)
-            time.sleep(COLLECTOR_INTERVAL * 3600)
-    t = threading.Thread(target=_run, daemon=True)
-    t.start()
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────
@@ -1430,9 +1413,25 @@ setInterval(load,300000);
 # ── Run ────────────────────────────────────────────────────────────────────
 
 def main():
-    import uvicorn
+    import uvicorn, threading, time, subprocess, sys as _sys
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8765"))
+    
+    # Start collector in background thread before uvicorn
+    def _collector():
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        collector_path = os.path.join(script_dir, "collect_prices.py")
+        time.sleep(15)
+        while True:
+            try:
+                subprocess.run([_sys.executable, collector_path], check=False, timeout=3600, cwd=script_dir)
+            except Exception as ex:
+                logger.error("Collector run failed: %s", ex)
+            time.sleep(COLLECTOR_INTERVAL * 3600)
+    
+    threading.Thread(target=_collector, daemon=True).start()
+    logger.info("Collector thread launched (interval=%sh)", COLLECTOR_INTERVAL)
+    
     logger.info(f"CLI Market API starting on http://{host}:{port}")
     logger.info(f"  {len(STORES)} stores, {len(LINES)} lines, {len(COUNTRIES)} countries")
     uvicorn.run(app, host=host, port=port, log_level="info")
