@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """scan_stores.py — VTEX store scanner. Tests all candidate URLs and keeps only working ones."""
 
-import asyncio, json, sys, time
+import asyncio, time
 from pathlib import Path
 import httpx
 

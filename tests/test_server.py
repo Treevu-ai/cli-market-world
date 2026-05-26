@@ -15,8 +15,7 @@ os.environ["MARKET_DATA_DIR"] = TEST_DATA_DIR
 import pytest
 from fastapi.testclient import TestClient
 from market_core import (
-    get_db, db_get_users, db_get_cart, db_get_orders,
-    db_clear_cart, db_save_user,
+    get_db, db_save_user,
     ensure_db_initialized,
 )
 from market_server import app, hash_password

@@ -12,7 +12,6 @@ Endpoints:
 from __future__ import annotations
 
 import os
-import time
 import uuid
 
 from fastapi import APIRouter, Header, HTTPException

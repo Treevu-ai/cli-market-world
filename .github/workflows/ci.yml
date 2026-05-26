@@ -17,7 +17,9 @@ jobs:
       - name: Install dependencies
         run: pip install ruff
       - name: Lint
-        run: ruff check market_core.py market_server.py market_cli.py market_mcp.py collect_prices.py tests/
+        # Ruff config lives in pyproject.toml ([tool.ruff]).
+        # We check the whole tree minus landing/ (Next.js, JS only).
+        run: ruff check .
 
   test:
     runs-on: ubuntu-latest

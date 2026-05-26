@@ -6,7 +6,7 @@ Store config: base (domain), optional store_code (e.g. "default").
 """
 
 import httpx
-from .base import BaseConnector, parse_price, clean_name
+from .base import BaseConnector, clean_name
 
 
 class MagentoConnector(BaseConnector):
