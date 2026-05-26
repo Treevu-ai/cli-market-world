@@ -454,6 +454,8 @@ async def collect_one_pg(pool, store, queries):
                         cb.win(store); await pg_health(conn, store, True)
                         for p in raw:
                             prod = _pfj(p, store)
+                            prod["line"] = STORES[store].get("line","")
+                            prod["line_name"] = LINES.get(STORES[store].get("line",""),{}).get("name","")
                             if prod["price"]<=0: continue
                             await pg_insert(conn, prod); collected+=1
                         await asyncio.sleep(REQUEST_DELAY)
@@ -473,6 +475,8 @@ async def collect_one_sqlite(db, store, queries):
                     cb.win(store); sq_health(db, store, True)
                     for p in raw:
                         prod = _pfj(p, store)
+                        prod["line"] = STORES[store].get("line","")
+                        prod["line_name"] = LINES.get(STORES[store].get("line",""),{}).get("name","")
                         if prod["price"]<=0: continue
                         sq_insert(db, prod); collected+=1
                     await asyncio.sleep(REQUEST_DELAY)
