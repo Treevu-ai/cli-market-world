@@ -8,7 +8,7 @@ export default function QuickstartAPI() {
   return (
     <section id="api" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">API</p>
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">API</p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">
           {isES ? "API lista para tus agentes y backends." : "API ready for your agents and backends."}
         </h2>
@@ -21,7 +21,7 @@ export default function QuickstartAPI() {
           <div className="bg-[#e2f6d5] border border-[#c5edab] rounded-lg p-4 font-mono text-[11px] leading-relaxed">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[#c5edab]">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-              <span className="text-[10px] text-[#868685] ml-2 uppercase">POST /v1/search</span>
+              <span className="text-[10px] text-[#454745] ml-2 uppercase">POST /v1/search</span>
             </div>
             <pre className="text-[#454745] whitespace-pre-wrap">{`Content-Type: application/json
 Authorization: Bearer sk-xxxxxxxx
@@ -36,7 +36,7 @@ Authorization: Bearer sk-xxxxxxxx
           <div className="bg-[#e2f6d5] border border-[#c5edab] rounded-lg p-4 font-mono text-[11px] leading-relaxed">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[#c5edab]">
               <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-              <span className="text-[10px] text-[#868685] ml-1 uppercase">200 OK</span>
+              <span className="text-[10px] text-[#454745] ml-1 uppercase">200 OK</span>
             </div>
             <pre className="text-[#454745] whitespace-pre-wrap">{`{
   "results": [{

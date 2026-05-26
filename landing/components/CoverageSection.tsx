@@ -19,7 +19,7 @@ export default function CoverageSection() {
   return (
     <section id="coverage" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">
           {isES ? "Cobertura" : "Coverage"}
         </p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">
@@ -56,7 +56,7 @@ export default function CoverageSection() {
         {/* Country tags */}
         <div className="mt-8 flex flex-wrap justify-center gap-2">
           {countries.map((c) => (
-            <span key={c} className="text-[10px] font-mono text-[#868685] bg-[#e2f6d5] border border-[#c5edab] rounded-full px-2.5 py-1">{c}</span>
+            <span key={c} className="text-[10px] font-mono text-[#454745] bg-[#e2f6d5] border border-[#c5edab] rounded-full px-2.5 py-1">{c}</span>
           ))}
         </div>
       </div>

@@ -53,13 +53,13 @@ export default function Features() {
   return (
     <section id="features" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">
           {isES ? "Herramientas" : "Tools"}
         </p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">
           {isES ? "36 herramientas MCP.\nPara tu agente de IA." : "36 MCP tools.\nFor your AI agent."}
         </h2>
-        <p className="text-sm text-[#868685] max-w-md mx-auto mb-12">
+        <p className="text-sm text-[#454745] max-w-md mx-auto mb-12">
           {isES ? "4 categorías. Haz clic para expandir y ver cada herramienta." : "4 categories. Click to expand and explore each tool."}
         </p>
 
@@ -71,10 +71,10 @@ export default function Features() {
                 className="w-full flex items-center justify-between px-4 py-3 bg-[#e8ebe6] border border-[#c5edab] rounded-lg hover:bg-[#e2f6d5] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-[#868685] font-mono w-4 text-right">{cat.tools.length}</span>
+                  <span className="text-[10px] text-[#454745] font-mono w-4 text-right">{cat.tools.length}</span>
                   <span className="text-sm font-medium text-[#0e0f0c]">{isES ? cat.label_es : cat.label_en}</span>
                 </div>
-                <svg className={`w-4 h-4 text-[#868685] transition-transform ${open === cat.id ? "rotate-180" : ""}`}
+                <svg className={`w-4 h-4 text-[#454745] transition-transform ${open === cat.id ? "rotate-180" : ""}`}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
@@ -84,7 +84,7 @@ export default function Features() {
                   {cat.tools.map((t) => (
                     <div key={t.n} className="flex flex-col gap-0.5 px-3 py-2">
                       <code className="text-[12px] text-[#0e0f0c] font-mono">{t.n}</code>
-                      <span className="text-[11px] text-[#868685] leading-tight">{isES ? t.d_es : t.d_en}</span>
+                      <span className="text-[11px] text-[#454745] leading-tight">{isES ? t.d_es : t.d_en}</span>
                     </div>
                   ))}
                 </div>

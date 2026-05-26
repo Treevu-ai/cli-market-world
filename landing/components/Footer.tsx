@@ -22,13 +22,13 @@ export default function Footer() {
         </div>
 
         {/* Links */}
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#868685]">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#454745]">
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[#0e0f0c] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[#0e0f0c] transition-colors">PyPI</a>
           <a href="mailto:hello@cli-market.dev" className="hover:text-[#0e0f0c] transition-colors">{isES ? "Contacto" : "Contact"}</a>
         </div>
 
-        <p className="text-[10px] text-[#868685] font-mono">
+        <p className="text-[10px] text-[#454745] font-mono">
           {isES ? "60 comercios · 11 países · 3 plataformas · 36 herramientas MCP · MIT License" : "60 retailers · 11 countries · 3 platforms · 36 MCP tools · MIT License"}
         </p>
       </div>
