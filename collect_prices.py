@@ -458,6 +458,7 @@ async def collect_one_pg(pool, store, queries):
     return collected
 
 async def collect_one_sqlite(db, store, queries):
+    from market_core import save_price_snapshot
     line = STORES[store].get("line",""); collected=0
     for q, lf in queries:
         if lf and line!=lf: continue
@@ -467,8 +468,9 @@ async def collect_one_sqlite(db, store, queries):
                 prod = _pfj(p, store)
                 prod["line"] = line
                 prod["line_name"] = LINES.get(line,{}).get("name","")
-                if prod["price"]<=0: continue
-                sq_insert(db, prod); collected+=1
+                if prod.get("price", 0) and prod["price"] > 0:
+                    save_price_snapshot(prod)
+                    collected += 1
             await asyncio.sleep(REQUEST_DELAY)
         except Exception as _e:
             logger.warning("collect %s/%s: %s", store, q, _e)
