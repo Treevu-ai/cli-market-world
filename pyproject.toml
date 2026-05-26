@@ -38,3 +38,32 @@ wongcli = "wongcli:main"
 
 [tool.setuptools]
 py-modules = ["market_cli", "market_server", "market_mcp", "wongcli", "market_stores", "market_core"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "landing/",
+    ".market/",
+    "dist/",
+    "build/",
+    "*.egg-info/",
+]
+
+[tool.ruff.lint]
+# Focused on correctness, not style. Add rule families incrementally as the
+# codebase matures. Current scope:
+#   F   = pyflakes      (unused imports, undefined names, redefinitions)
+#   E9  = pycodestyle   (real syntax errors, IndentationError, etc.)
+#   W6  = pycodestyle   (deprecation warnings)
+#   B   = bugbear       (mutable default args, except-pass, etc.)
+select = ["F", "E9", "W6", "B"]
+ignore = [
+    "B008",   # FastAPI uses function calls in defaults (Header(None), Body(...))
+    "B904",   # raise from inside except — common pattern here, not always wrong
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests intentionally import market_core after env setup — the E402 rule
+# would force module-level imports to be reordered, breaking the test isolation.
+"tests/*" = ["E402", "F401"]
