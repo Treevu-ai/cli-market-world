@@ -34,9 +34,9 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
 export default function StatsSection() {
   const { t: _t, lang } = useLang();
   const isES = lang === "es";
-  const labels_es = { retailers: "comercios", países: "países", líneas: "líneas", "MCP tools": "herramientas MCP" };
-  const labels_en = { retailers: "retailers", países: "countries", líneas: "lines", "MCP tools": "MCP tools" };
-  const dict = isES ? labels_es : labels_en;
+  const labels_es: Record<string, string> = { retailers: "comercios", países: "países", líneas: "líneas", "MCP tools": "herramientas MCP" };
+  const labels_en: Record<string, string> = { retailers: "retailers", países: "countries", líneas: "lines", "MCP tools": "MCP tools" };
+  const dict: Record<string, string> = isES ? labels_es : labels_en;
 
   return (
     <section id="stats" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
