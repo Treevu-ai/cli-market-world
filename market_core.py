@@ -1093,15 +1093,33 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
     db.close()
 
 
-# ── Initialize DB at import time ──────────────────────────────────────────────
-try:
-    init_db()
-except Exception as e:
-    logger.error("Database initialization failed: %s", e)
-    if USE_PG:
-        logger.warning("PostgreSQL unavailable — falling back to SQLite")
-        USE_PG = False
-        try:
-            init_db()
-        except Exception as e2:
-            logger.error("SQLite fallback also failed: %s", e2)
+# ── Explicit init helper ──────────────────────────────────────────────────────
+# NOTE: init_db() is NO LONGER called at import time. Each entrypoint
+# (market_server lifespan, collect_prices.main, tests) MUST call
+# ensure_db_initialized() before performing DB operations. This eliminates the
+# race condition where the import order decided which schema "won".
+
+_db_initialized = False
+
+def ensure_db_initialized() -> None:
+    """Idempotent DB init. Safe to call many times; only runs init_db() once.
+
+    Handles the PG→SQLite fallback that used to live at import time.
+    """
+    global _db_initialized, USE_PG
+    if _db_initialized:
+        return
+    try:
+        init_db()
+        _db_initialized = True
+    except Exception as e:
+        logger.error("Database initialization failed: %s", e)
+        if USE_PG:
+            logger.warning("PostgreSQL unavailable — falling back to SQLite")
+            USE_PG = False
+            try:
+                init_db()
+                _db_initialized = True
+            except Exception as e2:
+                logger.error("SQLite fallback also failed: %s", e2)
+                raise

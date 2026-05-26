@@ -30,6 +30,8 @@ from pydantic import BaseModel, field_validator
 
 # ── Shared core ────────────────────────────────────────────────────────────
 
+from contextlib import asynccontextmanager
+
 from market_core import (
     STORES, LINES, COUNTRIES, DEFAULT_STORES, PAGE_SIZE,
     DATA_DIR, DB_FILE,
@@ -41,13 +43,25 @@ from market_core import (
     db_migrate_from_json, check_rate_limit_sqlite,
     db_validate_api_key, db_create_api_key, db_list_api_keys, db_revoke_api_key,
     db_get_subscription, db_set_subscription, TIERS,
+    ensure_db_initialized,
     logger as log,
 )
 
 logger = log.getChild("server")
 
-# ── One-time migration from JSON → SQLite ─────────────────────────────────
-db_migrate_from_json()
+
+@asynccontextmanager
+async def lifespan(_app):
+    """Initialize DB schema and migrate legacy JSON data on startup.
+
+    Replaces the previous side-effect-at-import pattern. Idempotent.
+    """
+    ensure_db_initialized()
+    try:
+        db_migrate_from_json()
+    except Exception as e:
+        logger.warning("JSON migration skipped: %s", e)
+    yield
 
 # ── Security: rate limiter (SQLite-backed, persists across restarts) ──────────
 # Configurable via env vars: RATE_LIMIT_MIN, RATE_LIMIT_DAY, RATE_LIMIT_WINDOW
@@ -112,6 +126,7 @@ app = FastAPI(
     title="CLI Market API",
     description="AI-native commerce infrastructure — 100 retailers across 12 verticals in 10 countries. MCP-native. Agent-ready.",
     version="1.0.25",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
