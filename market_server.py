@@ -122,6 +122,25 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+# ── Background collector (runs every COLLECT_INTERVAL_HOURS, default 8h) ──────────
+
+COLLECTOR_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
+
+@app.on_event("startup")
+async def start_collector():
+    import threading
+    def _run():
+        import time, subprocess, sys
+        logger.info("Collector background thread started (interval=%sh)", COLLECTOR_INTERVAL)
+        while True:
+            try:
+                subprocess.run([sys.executable, "collect_prices.py"], check=False, timeout=3600)
+            except Exception as e:
+                logger.error("Collector run failed: %s", e)
+            time.sleep(COLLECTOR_INTERVAL * 3600)
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
 
 # ── Schemas ────────────────────────────────────────────────────────────────
 
