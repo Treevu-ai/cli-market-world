@@ -527,7 +527,7 @@ def order_receipt(order_id: str, authorization: str | None = Header(None)):
     total_calc = round(sum(i["price"] * i["quantity"] for i in items), 2)
     return {"comprobante_id": f"SIM-{order_id}",
             "tipo": "BOLETA DE VENTA ELECTRÓNICA",
-            "emisor": {"razon_social": "SINAPSIS INNOVADORA S.A.C.", "ruc": "20612345678", "direccion": "Lima, Perú"},
+            "emisor": {"razon_social": "SINAPSIS INNOVADORA S.A.C.", "ruc": "20613045563", "direccion": "Lima, Perú"},
             "cliente": username, "orden_id": order_id,
             "fecha_emision": datetime.now(timezone.utc).isoformat(),
             "metodo_pago": order["payment_method"], "estado": order["status"],
