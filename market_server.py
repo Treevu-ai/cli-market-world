@@ -639,6 +639,31 @@ def dashboard_usage(authorization: str | None = Header(None)):
             "usage":{"requests_today":today_reqs,"api_keys_used":keys}}
 
 
+@app.post("/checkout/lemon")
+async def checkout_lemon(authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    cart = db_get_cart(username)
+    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
+    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    _co(username, cart, "lemon", total, status="pending", order_id=order_id)
+    db_clear_cart(username)
+    from market_connectors.lemon_payments import create_checkout
+    try:
+        lc = await create_checkout(total, "ARS", f"CLI-Market-{order_id}")
+        if "checkout_url" in lc:
+            return {"order_id": order_id, "total": total, "currency": "ARS",
+                    "payment_method": "lemon", "status": "pending",
+                    "lemon_checkout_id": lc["checkout_id"],
+                    "checkout_url": lc["checkout_url"],
+                    "qr_url": lc.get("qr_url",""),
+                    "message": "Completa el pago con Lemon."}
+        raise HTTPException(status_code=502, detail=lc.get("error","Lemon error"))
+    except Exception:
+        raise HTTPException(status_code=501, detail="Lemon no configurado. Set LEMON_API_KEY.")
+
+
 @app.post("/checkout/yape")
 def checkout_yape(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
