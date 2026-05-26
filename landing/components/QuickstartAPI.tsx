@@ -6,7 +6,7 @@ export default function QuickstartAPI() {
   const isES = lang === "es";
 
   return (
-    <section id="api" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
+    <section id="api" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">API</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">

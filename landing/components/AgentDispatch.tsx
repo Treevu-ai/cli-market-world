@@ -14,7 +14,7 @@ export default function AgentDispatch() {
   ];
 
   return (
-    <section className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
+    <section className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6">
         <div className="text-center mb-12">
           <p className="text-xs text-[var(--wise-body)] font-medium uppercase tracking-[0.15em] mb-8">

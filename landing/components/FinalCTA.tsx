@@ -7,7 +7,7 @@ export default function FinalCTA() {
   const isES = lang === "es";
 
   return (
-    <section className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
+    <section className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <h2 className="text-[clamp(28px,4vw,40px)] leading-[1.1] font-black text-[var(--wise-ink)] mb-4 tracking-tight">
           {isES ? "Tu agente puede comprar solo.\nHoy." : "Your agent can buy on its own.\nToday."}

@@ -17,7 +17,7 @@ export default function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <section id="how" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
+    <section id="how" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">{_t("how_label")}</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">{_t("how_title")}</h2>
