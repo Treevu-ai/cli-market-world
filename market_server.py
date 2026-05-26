@@ -273,125 +273,14 @@ async def compare_products(body: SearchRequest):
     return {"query": body.query, "comparison": comparison, "stores_compared": len(stores)}
 
 
-# ── Cart (SQLite-backed) ───────────────────────────────────────────────────
+# ── Cart + Orders + Checkout routers ──────────────────────────────────────
+# /cart{,/add,/update,/{id}}, /checkout, /orders{,/{id},/{id}/receipt,/reorder}
+# moved to routers/cart.py and routers/orders.py
 
-@app.post("/cart/add")
-def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    store_name = STORES.get(body.store, {}).get("name", body.store)
-    cart_id = db_add_to_cart(username, body.product_id, body.name, body.price, body.store, store_name, body.quantity, body.url or "")
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"message": "Agregado al carrito", "cart": cart, "total": total, "items": len(cart), "cart_id": str(cart_id)}
-
-@app.get("/cart")
-def view_cart(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"username": username, "cart": cart, "total": total, "items": len(cart)}
-
-@app.put("/cart/update")
-def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    item = next((i for i in cart if i["cart_id"] == body.product_id or i["product_id"] == body.product_id), None)
-    if not item: raise HTTPException(status_code=404, detail="Producto no encontrado en el carrito")
-    cart_id = int(item["cart_id"])
-    db_update_cart_item(username, cart_id, body.quantity)
-    cart = db_get_cart(username)
-    return {"message": "Carrito actualizado", "cart": cart}
-
-@app.delete("/cart/{product_id}")
-def cart_remove(product_id: str, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    item = next((i for i in cart if i["cart_id"] == product_id or i["product_id"] == product_id), None)
-    if not item: raise HTTPException(status_code=404, detail="Producto no encontrado en el carrito")
-    db_remove_cart_item(username, int(item["cart_id"]))
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"message": "Producto eliminado del carrito", "cart": cart, "total": total, "items": len(cart)}
-
-
-# ── Checkout (SQLite-backed) ───────────────────────────────────────────────
-
-@app.post("/checkout")
-def checkout(body: CheckoutRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order = db_create_order(username, cart, body.payment_method, total)
-    db_clear_cart(username)
-    return {"message": "Compra completada", "order": order}
-
-
-# ── Orders (SQLite-backed) ─────────────────────────────────────────────────
-
-@app.get("/orders")
-def order_history(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    user_orders = db_get_orders(username)
-    return {"username": username, "orders": user_orders, "total_orders": len(user_orders)}
-
-@app.get("/orders/{order_id}")
-def order_status(order_id: str, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    db = get_db()
-    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
-    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
-    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
-    db.close()
-    return {"order": dict(order), "items": [dict(i) for i in items]}
-
-@app.get("/orders/{order_id}/receipt")
-def order_receipt(order_id: str, authorization: str | None = Header(None)):
-    """
-    Comprobante de pago — emitido por SINAPSIS INNOVADORA S.A.C.
-    IMPORTANTE: Emisión MANUAL. No se envía automáticamente a SUNAT.
-    Para facturación electrónica oficial, configure SUNAT_PSE_API_KEY + PSE.
-    """
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    db = get_db()
-    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
-    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
-    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
-    db.close()
-    total_calc = round(sum(i["price"] * i["quantity"] for i in items), 2)
-    return {"comprobante_id": f"SIM-{order_id}",
-            "tipo": "BOLETA DE VENTA ELECTRÓNICA",
-            "emisor": {"razon_social": "SINAPSIS INNOVADORA S.A.C.", "ruc": "20613045563", "direccion": "Lima, Perú"},
-            "cliente": username, "orden_id": order_id,
-            "fecha_emision": datetime.now(timezone.utc).isoformat(),
-            "metodo_pago": order["payment_method"], "estado": order["status"],
-            "items": [{"producto": i["name"], "cantidad": i["quantity"], "precio_unitario": i["price"],
-                        "subtotal": round(i["price"] * i["quantity"], 2)} for i in items],
-            "subtotal": total_calc, "igv": round(total_calc * 0.18, 2),
-            "total": round(total_calc * 1.18, 2), "moneda": "PEN",
-            "nota": "COMPROBANTE DE EMISIÓN MANUAL — No válido como factura electrónica SUNAT. Para facturación oficial contacte a SINAPSIS INNOVADORA S.A.C. RUC 20613045563."}
-
-@app.post("/orders/reorder")
-def reorder_last(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    user_orders = db_get_orders(username)
-    if not user_orders: raise HTTPException(status_code=404, detail="Sin órdenes previas")
-    last = user_orders[-1]
-    db_clear_cart(username)
-    for item in last.get("items", []):
-        db_add_to_cart(username, item.get("product_id", ""), item.get("name", ""), item.get("price", 0),
-                       item.get("store", ""), item.get("store_name", ""), item.get("quantity", 1), item.get("url", ""))
-    cart = db_get_cart(username)
-    return {"message": "Última orden restaurada al carrito", "cart": cart}
+from routers.cart import router as cart_router
+from routers.orders import router as orders_router
+app.include_router(cart_router)
+app.include_router(orders_router)
 
 
 # ── Analytics ──────────────────────────────────────────────────────────────
@@ -504,127 +393,12 @@ from routers.dashboard import router as dashboard_router
 app.include_router(dashboard_router)
 
 
-@app.post("/checkout/lemon")
-async def checkout_lemon(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    db_create_order(username, cart, "lemon", total, status="pending", order_id=order_id)
-    db_clear_cart(username)
-    from market_connectors.lemon_payments import create_checkout
-    try:
-        lc = await create_checkout(total, "ARS", f"CLI-Market-{order_id}")
-        if "checkout_url" in lc:
-            return {"order_id": order_id, "total": total, "currency": "ARS",
-                    "payment_method": "lemon", "status": "pending",
-                    "lemon_checkout_id": lc["checkout_id"],
-                    "checkout_url": lc["checkout_url"],
-                    "qr_url": lc.get("qr_url",""),
-                    "message": "Completa el pago con Lemon."}
-        raise HTTPException(status_code=502, detail=lc.get("error","Lemon error"))
-    except Exception:
-        raise HTTPException(status_code=501, detail="Lemon no configurado. Set LEMON_API_KEY.")
+# ── Payments router ────────────────────────────────────────────────────────
+# /checkout/yape, /checkout/lemon, /checkout/paypal, /checkout/wise,
+# /checkout/webhook, /checkout/rates, /billing/checkout moved to routers/payments.py
 
-
-@app.post("/checkout/yape")
-def checkout_yape(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    db_create_order(username, cart, "yape", total, status="pending", order_id=order_id)
-    db_clear_cart(username)
-    qr_ref = f"yape-{order_id.lower()}"
-    return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"yape",
-            "qr_reference":qr_ref,"qr_url":f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={qr_ref}",
-            "status":"pending","message":"Escanea el QR con Yape/Plin para completar el pago."}
-
-
-@app.post("/checkout/webhook")
-def checkout_webhook(order_id: str = "", status: str = "paid"):
-    if not order_id: raise HTTPException(status_code=400, detail="order_id required")
-    db = get_db()
-    db.execute("UPDATE app_orders SET status=? WHERE order_id=?", (status, order_id))
-    db.commit(); db.close()
-    return {"order_id":order_id,"status":status,"message":f"Payment {status}"}
-
-
-@app.post("/billing/checkout")
-def billing_checkout(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    stripe_key = os.getenv("STRIPE_SECRET_KEY","")
-    if not stripe_key: raise HTTPException(status_code=501, detail="Stripe not configured")
-    try:
-        import stripe; stripe.api_key = stripe_key
-        session = stripe.checkout.Session.create(payment_method_types=["card"],
-            line_items=[{"price":_os.getenv("STRIPE_PRICE_PRO","price_pro"),"quantity":1}],
-            mode="subscription",success_url="https://cli-market.dev?upgraded=true",
-            cancel_url="https://cli-market.dev?upgraded=false",client_reference_id=username)
-        return {"url":session.url}
-    except ImportError: raise HTTPException(status_code=501, detail="pip install stripe")
-    except Exception as e: raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/checkout/paypal")
-async def checkout_paypal(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    db_create_order(username, cart, "paypal", total, status="pending", order_id=order_id)
-    db_clear_cart(username)
-    from market_connectors.paypal_payments import create_order
-    try:
-        pp = await create_order(total, "USD", f"CLI-Market-{order_id}")
-        if "approve_url" in pp:
-            return {"order_id": order_id, "total": total, "currency": "USD",
-                    "payment_method": "paypal", "status": "pending",
-                    "paypal_order_id": pp["order_id"], "approve_url": pp["approve_url"],
-                    "message": "Completa el pago en PayPal."}
-        raise HTTPException(status_code=502, detail=pp.get("error", "PayPal error"))
-    except ValueError:
-        raise HTTPException(status_code=501, detail="PayPal no configurado. Set PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET.")
-
-
-@app.post("/checkout/wise")
-async def checkout_wise(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    db_create_order(username, cart, "wise", total, status="pending", order_id=order_id)
-    db_clear_cart(username)
-    from market_connectors.wise_payments import create_quote, WISE_API_TOKEN
-    wise_ok = bool(WISE_API_TOKEN)
-    wise_pay_me = os.getenv("WISE_PAY_ME_URL", "https://wise.com/pay/me/ricardoantonioc68")
-    return {"order_id":order_id,"total":total,"currency":"PEN","payment_method":"wise","status":"pending",
-            "wise_available":wise_ok,
-            "wise_pay_link": wise_pay_me,
-            "wise_qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={wise_pay_me}",
-            "instructions":{"pay_link": wise_pay_me,
-                            "reference":f"CLI-Market-{order_id}",
-                            "amount_usd": round(total * 0.27, 2)} if wise_ok else None,
-            "message":"Escanea el QR o usa el link de Wise para pagar"}
-
-
-@app.get("/checkout/rates")
-async def checkout_rates():
-    try:
-        from market_connectors.wise_payments import get_rates
-        rates = await get_rates("PEN")
-        return {"base":"PEN","rates":rates}
-    except Exception:
-        return {"base":"PEN","rates":{"USD":0.27,"EUR":0.25,"ARS":0.0027,"BRL":0.27,"MXN":0.078,"COP":0.00035,"CLP":0.0014,"PEN":1.0},"source":"fallback"}
+from routers.payments import router as payments_router
+app.include_router(payments_router)
 
 
 @app.post("/v1/ticket/scan-url")
