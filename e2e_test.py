@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """E2E verification for CLI Market — calling handlers directly."""
-import sys, json, os, time, threading, tempfile, shutil
+import sys, os, time, threading, tempfile, shutil
 
 # ── Use temp dir to avoid lock conflicts ──
 TEST_DIR = tempfile.mkdtemp(prefix="market_e2e_")
@@ -69,7 +69,7 @@ print(f"  Tools registered: {len(market_mcp.TOOLS)}")
 for t in market_mcp.TOOLS:
     print(f"  · {t['name']}: {t['description'][:85]}")
 
-print(f"\n=== Config verification ===")
+print("\n=== Config verification ===")
 print(f"  STORES: {len(market_cli.STORES)}")
 print(f"  LINES: {list(market_cli.LINES.keys())}")
 print(f"  COUNTRIES: {list(market_cli.COUNTRIES.keys())}")
