@@ -41,7 +41,7 @@ export default function Hero() {
             {_t("hero_install")}
             <span className="opacity-50">→</span>
           </a>
-          <a href="#terminal"
+          <a href="#api"
              className="inline-flex items-center gap-2 rounded-full bg-white text-black text-sm font-medium px-5 py-2.5 h-9 border border-[#e5e5e5] hover:bg-[#fafafa] transition-colors">
             {_t("hero_cov")}
           </a>
