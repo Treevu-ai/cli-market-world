@@ -6,14 +6,25 @@
 }
 
 :root {
-  /* ── Wise deluxe palette ── */
   --wise-green: #9fe870;
   --wise-green-hover: #cdffad;
-  --wise-green-pale: #e2f6d5;
+  --wise-green-pale: #b8e6a0;
   --wise-ink: #0e0f0c;
   --wise-body: #454745;
   --wise-mute: #868685;
   --wise-canvas-soft: #e8ebe6;
+  --wise-canvas: #ffffff;
+}
+
+.dark {
+  --wise-green: #9fe870;
+  --wise-green-hover: #7dd65a;
+  --wise-green-pale: #1a2e15;
+  --wise-ink: #e8ebe6;
+  --wise-body: #c5edab;
+  --wise-mute: #868685;
+  --wise-canvas-soft: #1a1d19;
+  --wise-canvas: #0e0f0c;
 }
 
 /* ─── Mobile-first base fixes ─── */

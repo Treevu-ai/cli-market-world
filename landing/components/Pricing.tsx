@@ -27,41 +27,41 @@ export default function Pricing() {
   const isES = lang === "es";
 
   return (
-    <section id="pricing" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
+    <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">
           {isES ? "Planes" : "Plans"}
         </p>
-        <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">
+        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
           {isES ? "Empieza gratis.\nEscala cuando quieras." : "Start free.\nScale when ready."}
         </h2>
-        <p className="text-sm text-[#454745] max-w-md mx-auto mb-12">
+        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
           {isES ? "Sin tarjeta. Sin permanencia. Cancela cuando quieras." : "No credit card. No lock-in. Cancel anytime."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {tiers.map((tier) => (
             <div key={tier.name}
-              className={`rounded-3xl border p-6 text-left flex flex-col ${tier.dark ? "bg-[#0e0f0c] border-[#0e0f0c] text-white" : "bg-white border-[#c5edab]"}`}>
-              <h3 className={`text-lg font-medium ${tier.dark ? "text-white" : "text-[#0e0f0c]"}`}>{tier.name}</h3>
+              className={`rounded-3xl border p-6 text-left flex flex-col ${tier.dark ? "bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] border-[#0e0f0c] text-white" : "bg-white border-[#c5edab]"}`}>
+              <h3 className={`text-lg font-medium ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>{tier.name}</h3>
               <div className="mt-2 mb-4">
-                <span className={`text-2xl font-medium ${tier.dark ? "text-white" : "text-[#0e0f0c]"}`}>{tier.price}</span>
+                <span className={`text-2xl font-medium ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>{tier.price}</span>
                 {(isES ? tier.period_es : tier.period_en) && (
-                  <span className={`text-sm ${tier.dark ? "text-white/50" : "text-[#454745]"}`}>
+                  <span className={`text-sm ${tier.dark ? "text-white/50" : "text-[var(--wise-body)]"}`}>
                     {isES ? tier.period_es : tier.period_en}
                   </span>
                 )}
               </div>
               <ul className="space-y-2 mb-6 flex-1">
                 {(isES ? tier.f_es : tier.f_en).map((f, i) => (
-                  <li key={i} className={`flex items-start gap-2 text-sm ${tier.dark ? "text-white/60" : "text-[#454745]"}`}>
+                  <li key={i} className={`flex items-start gap-2 text-sm ${tier.dark ? "text-white/60" : "text-[var(--wise-body)]"}`}>
                     <span className="mt-0.5 shrink-0">—</span>
                     {f}
                   </li>
                 ))}
               </ul>
               <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : "https://wise.com/pay/me/ricardoantonioc68"}
-                 className={`inline-flex items-center justify-center rounded-full text-sm font-medium px-5 py-2.5 h-9 transition-colors w-full ${tier.dark ? "bg-white text-[#0e0f0c] hover:bg-[#e2f6d5]" : "bg-[#9fe870] text-[#0e0f0c] hover:bg-[#cdffad]"}`}>
+                 className={`inline-flex items-center justify-center rounded-full text-sm font-medium px-5 py-2.5 h-9 transition-colors w-full ${tier.dark ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]" : "bg-[#9fe870] text-[var(--wise-ink)] hover:bg-[#cdffad]"}`}>
                 {isES ? tier.cta_es : tier.cta_en}
               </a>
             </div>

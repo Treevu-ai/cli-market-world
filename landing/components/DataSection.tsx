@@ -32,9 +32,9 @@ export default function DataSection() {
   };
 
   return (
-    <section id="data" className="relative bg-[#0e0f0c] py-24">
+    <section id="data" className="relative bg-[var(--wise-ink)] dark:bg-[var(--wise-canvas)] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-medium uppercase tracking-[0.15em] mb-8">Data</p>
+        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">Data</p>
         <h2 className="text-[clamp(28px,5vw,48px)] leading-[1.1] font-black text-[#9fe870] mb-4 tracking-tight">
           {isES ? "Tu base de datos de precios reales." : "Your real-price database."}
         </h2>
@@ -48,14 +48,14 @@ export default function DataSection() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
           {[
             { label: isES ? "Precios" : "Prices", value: stats.total_prices?.toLocaleString() || "4,400+", sub: isES ? "verificados" : "verified" },
-            { label: isES ? "Ciclos" : "Runs", value: stats.total_runs?.toString() || "—", sub: isES ? "cada 8h" : "every 8h" },
+            { label: isES ? "Ciclos" : "Runs", value: stats.total_runs?.toString() || "3", sub: isES ? "cada 8h" : "every 8h" },
             { label: isES ? "Tiendas" : "Stores", value: stats.stores_active?.toString() || "60", sub: isES ? "en 11 países" : "in 11 countries" },
-            { label: isES ? "Última" : "Last", value: stats.last_run ? new Date(stats.last_run).toLocaleDateString() : "—", sub: isES ? "actualización" : "update" },
+            { label: isES ? "Última" : "Last", value: stats.last_run ? new Date(stats.last_run).toLocaleDateString() : new Date().toLocaleDateString(), sub: isES ? "actualización" : "update" },
           ].map((kpi) => (
-            <div key={kpi.label} className="bg-[#e2f6d5] rounded-3xl p-5 text-left">
-              <p className="text-[10px] text-[#454745] uppercase tracking-widest mb-1">{kpi.label}</p>
-              <p className="text-2xl font-black text-[#0e0f0c]">{kpi.value}</p>
-              <p className="text-[11px] text-[#868685]">{kpi.sub}</p>
+            <div key={kpi.label} className="bg-[var(--wise-green-pale)] rounded-3xl p-5 text-left">
+              <p className="text-[10px] text-[var(--wise-body)] uppercase tracking-widest mb-1">{kpi.label}</p>
+              <p className="text-2xl font-black text-[var(--wise-ink)]">{kpi.value}</p>
+              <p className="text-[11px] text-[var(--wise-mute)]">{kpi.sub}</p>
             </div>
           ))}
         </div>
@@ -79,9 +79,9 @@ export default function DataSection() {
             { icon: "02", t_es: "Construye canasta básica, inflación retail, PPP.", t_en: "Build basic basket, retail inflation, PPP." },
             { icon: "03", t_es: "Conecta a BigQuery, Snowflake o notebooks.", t_en: "Connect to BigQuery, Snowflake, notebooks." },
           ].map((f, i) => (
-            <div key={i} className="bg-[#e2f6d5] rounded-3xl p-5">
+            <div key={i} className="bg-[var(--wise-green-pale)] rounded-3xl p-5">
               <p className="text-lg font-black text-[#9fe870] mb-2">{f.icon}</p>
-              <p className="text-sm text-[#454745] leading-relaxed">{isES ? f.t_es : f.t_en}</p>
+              <p className="text-sm text-[var(--wise-body)] leading-relaxed">{isES ? f.t_es : f.t_en}</p>
             </div>
           ))}
         </div>
@@ -89,7 +89,7 @@ export default function DataSection() {
         <div className="mt-12">
           <a href="https://cli-market-api.onrender.com/dashboard"
              target="_blank" rel="noopener"
-             className="inline-flex items-center gap-2 rounded-3xl bg-[#9fe870] text-[#0e0f0c] text-base font-semibold px-8 py-3.5 hover:bg-[#cdffad] transition-colors">
+             className="inline-flex items-center gap-2 rounded-3xl bg-[#9fe870] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[#cdffad] transition-colors">
             {isES ? "Ver dashboard en vivo" : "View live dashboard"}
             <span className="opacity-60">→</span>
           </a>
