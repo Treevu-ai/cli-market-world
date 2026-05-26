@@ -128,13 +128,15 @@ COLLECTOR_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
 
 @app.on_event("startup")
 async def start_collector():
-    import threading, asyncio, time
-    logger.info("Collector background thread started (interval=%sh)", COLLECTOR_INTERVAL)
+    import threading, time, os, subprocess, sys
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    collector_path = os.path.join(script_dir, "collect_prices.py")
+    logger.info("Collector thread starting (interval=%sh, path=%s)", COLLECTOR_INTERVAL, collector_path)
     def _run():
+        time.sleep(10)  # let server fully start first
         while True:
             try:
-                import collect_prices
-                asyncio.run(collect_prices.main())
+                subprocess.run([sys.executable, collector_path], check=False, timeout=3600, cwd=script_dir)
             except Exception as e:
                 logger.error("Collector run failed: %s", e)
             time.sleep(COLLECTOR_INTERVAL * 3600)
