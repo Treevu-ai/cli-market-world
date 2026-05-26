@@ -273,125 +273,14 @@ async def compare_products(body: SearchRequest):
     return {"query": body.query, "comparison": comparison, "stores_compared": len(stores)}
 
 
-# ── Cart (SQLite-backed) ───────────────────────────────────────────────────
+# ── Cart + Orders + Checkout routers ──────────────────────────────────────
+# /cart{,/add,/update,/{id}}, /checkout, /orders{,/{id},/{id}/receipt,/reorder}
+# moved to routers/cart.py and routers/orders.py
 
-@app.post("/cart/add")
-def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    store_name = STORES.get(body.store, {}).get("name", body.store)
-    cart_id = db_add_to_cart(username, body.product_id, body.name, body.price, body.store, store_name, body.quantity, body.url or "")
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"message": "Agregado al carrito", "cart": cart, "total": total, "items": len(cart), "cart_id": str(cart_id)}
-
-@app.get("/cart")
-def view_cart(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"username": username, "cart": cart, "total": total, "items": len(cart)}
-
-@app.put("/cart/update")
-def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    item = next((i for i in cart if i["cart_id"] == body.product_id or i["product_id"] == body.product_id), None)
-    if not item: raise HTTPException(status_code=404, detail="Producto no encontrado en el carrito")
-    cart_id = int(item["cart_id"])
-    db_update_cart_item(username, cart_id, body.quantity)
-    cart = db_get_cart(username)
-    return {"message": "Carrito actualizado", "cart": cart}
-
-@app.delete("/cart/{product_id}")
-def cart_remove(product_id: str, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    item = next((i for i in cart if i["cart_id"] == product_id or i["product_id"] == product_id), None)
-    if not item: raise HTTPException(status_code=404, detail="Producto no encontrado en el carrito")
-    db_remove_cart_item(username, int(item["cart_id"]))
-    cart = db_get_cart(username)
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    return {"message": "Producto eliminado del carrito", "cart": cart, "total": total, "items": len(cart)}
-
-
-# ── Checkout (SQLite-backed) ───────────────────────────────────────────────
-
-@app.post("/checkout")
-def checkout(body: CheckoutRequest, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    cart = db_get_cart(username)
-    if not cart: raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
-    order = db_create_order(username, cart, body.payment_method, total)
-    db_clear_cart(username)
-    return {"message": "Compra completada", "order": order}
-
-
-# ── Orders (SQLite-backed) ─────────────────────────────────────────────────
-
-@app.get("/orders")
-def order_history(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    user_orders = db_get_orders(username)
-    return {"username": username, "orders": user_orders, "total_orders": len(user_orders)}
-
-@app.get("/orders/{order_id}")
-def order_status(order_id: str, authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    db = get_db()
-    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
-    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
-    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
-    db.close()
-    return {"order": dict(order), "items": [dict(i) for i in items]}
-
-@app.get("/orders/{order_id}/receipt")
-def order_receipt(order_id: str, authorization: str | None = Header(None)):
-    """
-    Comprobante de pago — emitido por SINAPSIS INNOVADORA S.A.C.
-    IMPORTANTE: Emisión MANUAL. No se envía automáticamente a SUNAT.
-    Para facturación electrónica oficial, configure SUNAT_PSE_API_KEY + PSE.
-    """
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    db = get_db()
-    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
-    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
-    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
-    db.close()
-    total_calc = round(sum(i["price"] * i["quantity"] for i in items), 2)
-    return {"comprobante_id": f"SIM-{order_id}",
-            "tipo": "BOLETA DE VENTA ELECTRÓNICA",
-            "emisor": {"razon_social": "SINAPSIS INNOVADORA S.A.C.", "ruc": "20613045563", "direccion": "Lima, Perú"},
-            "cliente": username, "orden_id": order_id,
-            "fecha_emision": datetime.now(timezone.utc).isoformat(),
-            "metodo_pago": order["payment_method"], "estado": order["status"],
-            "items": [{"producto": i["name"], "cantidad": i["quantity"], "precio_unitario": i["price"],
-                        "subtotal": round(i["price"] * i["quantity"], 2)} for i in items],
-            "subtotal": total_calc, "igv": round(total_calc * 0.18, 2),
-            "total": round(total_calc * 1.18, 2), "moneda": "PEN",
-            "nota": "COMPROBANTE DE EMISIÓN MANUAL — No válido como factura electrónica SUNAT. Para facturación oficial contacte a SINAPSIS INNOVADORA S.A.C. RUC 20613045563."}
-
-@app.post("/orders/reorder")
-def reorder_last(authorization: str | None = Header(None)):
-    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
-    username = auth_user(authorization.replace("Bearer ", ""))
-    user_orders = db_get_orders(username)
-    if not user_orders: raise HTTPException(status_code=404, detail="Sin órdenes previas")
-    last = user_orders[-1]
-    db_clear_cart(username)
-    for item in last.get("items", []):
-        db_add_to_cart(username, item.get("product_id", ""), item.get("name", ""), item.get("price", 0),
-                       item.get("store", ""), item.get("store_name", ""), item.get("quantity", 1), item.get("url", ""))
-    cart = db_get_cart(username)
-    return {"message": "Última orden restaurada al carrito", "cart": cart}
+from routers.cart import router as cart_router
+from routers.orders import router as orders_router
+app.include_router(cart_router)
+app.include_router(orders_router)
 
 
 # ── Analytics ──────────────────────────────────────────────────────────────
