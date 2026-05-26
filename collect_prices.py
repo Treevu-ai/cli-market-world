@@ -432,7 +432,7 @@ class CB:
     def win(s,k): s.f[k]=0
     def lose(s,k):
         s.f[k]+=1
-        if s.f[k]>=5: s.o[k]=time.time()+300
+        if s.f[k]>=20: s.o[k]=time.time()+120
 cb=CB()
 
 async def fetch_store(client, store, term):
