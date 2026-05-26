@@ -8,7 +8,7 @@ export default function AboutSection() {
   return (
     <section id="about" className="relative bg-[#0e0f0c] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-medium uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[#454745] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Sobre nosotros" : "About us"}
         </p>
         <h2 className="text-[clamp(32px,5vw,48px)] leading-[1.1] font-black text-[#9fe870] mb-6 tracking-tight">

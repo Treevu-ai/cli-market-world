@@ -26,7 +26,7 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
   return (
     <div className="flex flex-col items-center gap-1">
       <motion.span ref={ref} className="text-[28px] font-medium text-[#0e0f0c] tracking-tight tabular-nums">{display}</motion.span>
-      <span className="text-xs text-[#868685] font-mono uppercase tracking-widest">{label}</span>
+      <span className="text-xs text-[#454745] font-mono uppercase tracking-widest">{label}</span>
     </div>
   );
 }
@@ -41,7 +41,7 @@ export default function StatsSection() {
   return (
     <section id="stats" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">{_t("stats_label")}</p>
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">{_t("stats_label")}</p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">{_t("stats_title")}</h2>
         <p className="text-sm text-[#454745] max-w-md mx-auto mb-12">{_t("stats_sub")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">

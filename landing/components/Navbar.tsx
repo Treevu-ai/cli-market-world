@@ -51,7 +51,7 @@ export default function Navbar() {
           ))}
           <span className="text-[#d4d4d4]">|</span>
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#868685] hover:text-[#0e0f0c] transition-colors cursor-pointer">
+            className="text-[11px] font-medium text-[#454745] hover:text-[#0e0f0c] transition-colors cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
         </div>
@@ -59,7 +59,7 @@ export default function Navbar() {
         {/* Mobile menu */}
         <div className="md:hidden flex items-center gap-3">
           <button onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="text-[11px] font-medium text-[#868685] cursor-pointer">
+            className="text-[11px] font-medium text-[#454745] cursor-pointer">
             {lang === "es" ? "EN" : "ES"}
           </button>
           <button onClick={() => setOpen(!open)}

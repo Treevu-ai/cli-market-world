@@ -29,7 +29,7 @@ export default function Pricing() {
   return (
     <section id="pricing" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">
           {isES ? "Planes" : "Plans"}
         </p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">

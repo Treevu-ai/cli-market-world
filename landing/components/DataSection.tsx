@@ -8,7 +8,7 @@ export default function DataSection() {
   return (
     <section id="data" className="relative bg-[#e8ebe6] py-20 border-t border-[#c5edab]">
       <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[#868685] font-mono uppercase tracking-[0.15em] mb-8">Data</p>
+        <p className="text-xs text-[#454745] font-mono uppercase tracking-[0.15em] mb-8">Data</p>
         <h2 className="text-[24px] font-medium text-[#0e0f0c] mb-3 tracking-tight">
           {isES ? "Tu base de datos de precios de góndola." : "Your shelf-price database."}
         </h2>
