@@ -98,7 +98,9 @@ let charts = [];
 function destroyCharts(){charts.forEach(c=>c.destroy());charts=[]}
 
 async function load(){
+  try{
   const r=await fetch('/dashboard/data');
+  if(!r.ok) throw new Error('HTTP '+r.status);
   const d=await r.json();
 
   // ── Status bar ──────────────────────────────────────────────────
@@ -150,26 +152,26 @@ async function load(){
   }
 
   // ── Dispersion ──────────────────────────────────────────────────
-  const dispRows=(d.dispersion||[]).map(x=>`<tr><td>${x.line}</td><td class="num">${x.avg_price?.toFixed(2)||'—'}</td><td class="num">${x.spread_ratio>2?'<span style="color:#ffbd2e">':''}${x.spread_ratio.toFixed(2)}×${x.spread_ratio>2?'</span>':''}</td></tr>`).join('');
+  const dispRows=(d.dispersion||[]).map(x=>`<tr><td>${x.line}</td><td class="num">${(x.avg_price||0).toFixed(2)}</td><td class="num">${x.spread_ratio>2?'<span style="color:#ffbd2e">':''}${x.spread_ratio.toFixed(2)}×${x.spread_ratio>2?'</span>':''}</td></tr>`).join('');
   document.getElementById('dispersionTable').innerHTML=dispRows||'<tr><td colspan="3" style="color:var(--dim)">sin datos</td></tr>';
 
   // ── Cheapest by line ────────────────────────────────────────────
-  const cheapRows=(d.cheapest_by_line||[]).map(x=>`<tr><td>${x.line_name}</td><td>${x.store_name}</td><td class="num" style="color:var(--green)">${x.currency||''} ${x.avg_price?.toFixed(2)||'—'}</td></tr>`).join('');
+  const cheapRows=(d.cheapest_by_line||[]).map(x=>`<tr><td>${x.line_name}</td><td>${x.store_name}</td><td class="num" style="color:var(--green)">${x.currency||''} ${(x.avg_price||0).toFixed(2)}</td></tr>`).join('');
   document.getElementById('cheapestTable').innerHTML=cheapRows||'<tr><td colspan="3" style="color:var(--dim)">sin datos</td></tr>';
 
   // ── Top discounts ───────────────────────────────────────────────
-  const discRows=(d.top_discounts||[]).map(x=>`<tr><td>${(x.name||'?').slice(0,40)}</td><td>${x.store_name||'?'}</td><td class="num">${x.currency||''} ${x.price?.toFixed(2)||'—'}</td><td class="num" style="color:var(--green)">−${x.discount_pct}%</td></tr>`).join('');
+  const discRows=(d.top_discounts||[]).map(x=>`<tr><td>${(x.name||'?').slice(0,40)}</td><td>${x.store_name||'?'}</td><td class="num">${x.currency||''} ${(x.price||0).toFixed(2)}</td><td class="num" style="color:var(--green)">−${x.discount_pct}%</td></tr>`).join('');
   document.getElementById('discountsTable').innerHTML=discRows||'<tr><td colspan="4" style="color:var(--dim)">sin descuentos detectados</td></tr>';
 
   // ── Risers / Fallers ────────────────────────────────────────────
   const riserRows=(d.top_risers||[]).map(x=>{
-    const pname=d.by_line.reduce((acc,l)=>acc,[...d.top_discounts,...d.by_line]).find?.(p=>p?.product_id===x.product_id)?.name||x.product_id;
-    return `<tr><td>${(pname||x.product_id||'?').slice(0,25)}</td><td class="num">${x.price_before?.toFixed(2)}</td><td class="num">${x.price_now?.toFixed(2)}</td><td class="num up">+${x.delta_pct}%</td></tr>`;
+    const pid=x.product_id||'?';
+    return `<tr><td>${pid.slice(0,25)}</td><td class="num">${(x.price_before||0).toFixed(2)}</td><td class="num">${(x.price_now||0).toFixed(2)}</td><td class="num up">+${x.delta_pct}%</td></tr>`;
   }).join('')||'<tr><td colspan="4" style="color:var(--dim)">sin datos</td></tr>';
   document.getElementById('risersTable').innerHTML=riserRows;
 
   const fallerRows=(d.top_fallers||[]).map(x=>
-    `<tr><td>${(x.product_id||'?').slice(0,25)}</td><td class="num">${x.price_before?.toFixed(2)}</td><td class="num">${x.price_now?.toFixed(2)}</td><td class="num down">${x.delta_pct}%</td></tr>`
+    `<tr><td>${(x.product_id||'?').slice(0,25)}</td><td class="num">${(x.price_before||0).toFixed(2)}</td><td class="num">${(x.price_now||0).toFixed(2)}</td><td class="num down">${x.delta_pct}%</td></tr>`
   ).join('')||'<tr><td colspan="4" style="color:var(--dim)">sin datos</td></tr>';
   document.getElementById('fallersTable').innerHTML=fallerRows;
 
@@ -219,7 +221,7 @@ async function load(){
   document.getElementById('productsPerStoreTable').innerHTML=ppsRows||'<tr><td colspan="3" style="color:var(--dim)">sin datos</td></tr>';
 
   // ── Outliers ─────────────────────────────────────────────────────
-  const outRows=(d.outliers||[]).map(x=>`<tr><td>${(x.name||'?').slice(0,35)}</td><td>${x.store_name}</td><td class="num" style="color:var(--red)">${x.currency||''} ${x.price?.toFixed(2)}</td></tr>`).join('');
+  const outRows=(d.outliers||[]).map(x=>`<tr><td>${(x.name||'?').slice(0,35)}</td><td>${x.store_name}</td><td class="num" style="color:var(--red)">${x.currency||''} ${(x.price||0).toFixed(2)}</td></tr>`).join('');
   document.getElementById('outliersTable').innerHTML=outRows||'<tr><td colspan="3" style="color:var(--dim)">sin outliers detectados</td></tr>';
 
   // ── Freshness ───────────────────────────────────────────────────
@@ -234,6 +236,11 @@ async function load(){
   // ── Footer ──────────────────────────────────────────────────────
   document.getElementById('footer').textContent =
     `actualizado ${new Date().toLocaleString('es-PE')} · CLI Market Data Moat · PostgreSQL · auto-refresh 5min`;
+  }catch(err){
+    document.getElementById('statusRight').textContent='ERROR: '+err.message;
+    document.getElementById('kpis').innerHTML='<div class="alert">JS Error: '+err.message+'</div>';
+    console.error(err);
+  }
 }
 
 load();
