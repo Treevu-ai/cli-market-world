@@ -13,17 +13,7 @@ services:
         value: /opt/render/project/src/.market
       - key: CORS_ORIGINS
         value: "https://cli-market.dev,https://procure-copilot.vercel.app,http://localhost:3000"
-
-  - type: worker
-    name: cli-market-collector
-    runtime: docker
-    dockerfilePath: Dockerfile.collector
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: MARKET_DATA_DIR
-        value: /opt/render/project/src/.market
       - key: COLLECT_INTERVAL_HOURS
         value: "8"
       - key: COLLECT_PARALLEL
-        value: "50"
+        value: "30"
