@@ -504,6 +504,38 @@ def order_history(authorization: str | None = Header(None)):
     user_orders = db_get_orders(username)
     return {"username": username, "orders": user_orders, "total_orders": len(user_orders)}
 
+@app.get("/orders/{order_id}")
+def order_status(order_id: str, authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    db = get_db()
+    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
+    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
+    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
+    db.close()
+    return {"order": dict(order), "items": [dict(i) for i in items]}
+
+@app.get("/orders/{order_id}/receipt")
+def order_receipt(order_id: str, authorization: str | None = Header(None)):
+    if not authorization: raise HTTPException(status_code=401, detail="Sin token")
+    username = auth_user(authorization.replace("Bearer ", ""))
+    db = get_db()
+    order = db.execute("SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)).fetchone()
+    if not order: db.close(); raise HTTPException(status_code=404, detail="Order not found")
+    items = db.execute("SELECT * FROM app_order_items WHERE order_id=?", (order_id,)).fetchall()
+    db.close()
+    total_calc = round(sum(i["price"] * i["quantity"] for i in items), 2)
+    return {"comprobante_id": f"SIM-{order_id}",
+            "tipo": "BOLETA DE VENTA ELECTRÓNICA",
+            "emisor": {"razon_social": "SINAPSIS INNOVADORA S.A.C.", "ruc": "20612345678", "direccion": "Lima, Perú"},
+            "cliente": username, "orden_id": order_id,
+            "fecha_emision": datetime.now(timezone.utc).isoformat(),
+            "metodo_pago": order["payment_method"], "estado": order["status"],
+            "items": [{"producto": i["name"], "cantidad": i["quantity"], "precio_unitario": i["price"],
+                        "subtotal": round(i["price"] * i["quantity"], 2)} for i in items],
+            "subtotal": total_calc, "igv": round(total_calc * 0.18, 2),
+            "total": round(total_calc * 1.18, 2), "moneda": "PEN"}
+
 @app.post("/orders/reorder")
 def reorder_last(authorization: str | None = Header(None)):
     if not authorization: raise HTTPException(status_code=401, detail="Sin token")
