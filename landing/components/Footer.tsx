@@ -29,7 +29,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-[#a3a3a3] font-mono">
-          {isES ? "60 retailers · 11 países · 3 plataformas · 36 MCP tools · MIT License" : "60 retailers · 11 countries · 3 platforms · 36 MCP tools · MIT License"}
+          {isES ? "60 comercios · 11 países · 3 plataformas · 36 herramientas MCP · MIT License" : "60 retailers · 11 countries · 3 platforms · 36 MCP tools · MIT License"}
         </p>
       </div>
     </footer>

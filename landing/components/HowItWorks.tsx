@@ -3,9 +3,9 @@ import { useRef } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const steps = [
-  { cmd: "pip install cli-market", out: "Successfully installed cli-market 1.3.0", label: "Install" },
-  { cmd: "market login", out: "Authenticated — 60 retailers ready", label: "Login" },
-  { cmd: "market search \"leche\" --country PE", out: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search" },
+  { cmd: "pip install cli-market", out_es: "cl i-market 1.3.0 instalado correctamente", out_en: "Successfully installed cli-market 1.3.0", label: "Install" },
+  { cmd: "market login", out_es: "Autenticado — 60 comercios listos", out_en: "Authenticated — 60 retailers ready", label: "Login" },
+  { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search" },
   { cmd: "market compare \"arroz\"", out_es: "Mejor: Metro S/2.80 · Ahorro: S/0.70/unidad", out_en: "Best: Metro S/2.80 · Savings: S/0.70/unit", label: "Compare" },
   { cmd: "market add 1 --qty 2", out_es: "2x Leche Gloria → carrito", out_en: "2x Milk → cart", label: "Add" },
   { cmd: "market checkout --payment yape", out_es: "✓ Orden confirmada · QR generado", out_en: "✓ Order confirmed · QR generated", label: "Checkout" },
@@ -42,7 +42,7 @@ export default function HowItWorks() {
                 </div>
                 <div className="flex items-start gap-2 mt-0.5">
                   <span className="w-3 shrink-0" />
-                  <span className="text-[#a3a3a3] text-[11px]">{isES && s.out_es ? s.out_es : s.out_en || s.out}</span>
+                  <span className="text-[#a3a3a3] text-[11px]">{isES ? s.out_es : s.out_en}</span>
                 </div>
               </div>
             ))}

@@ -2,7 +2,8 @@
 import { useLang } from "@/lib/LanguageContext";
 
 export default function Hero() {
-  const { t: _t } = useLang();
+  const { t: _t, lang } = useLang();
+  const isES = lang === "es";
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center items-center bg-white overflow-hidden">
@@ -49,13 +50,13 @@ export default function Hero() {
 
         {/* Stats row */}
         <div className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-[#737373] font-mono">
-          <span><strong className="text-black">60</strong> retailers</span>
+          <span><strong className="text-black">60</strong> {isES ? "comercios" : "retailers"}</span>
           <span className="text-[#d4d4d4] hidden sm:inline">·</span>
-          <span><strong className="text-black">11</strong> países</span>
+          <span><strong className="text-black">11</strong> {isES ? "países" : "countries"}</span>
           <span className="text-[#d4d4d4] hidden sm:inline">·</span>
-          <span><strong className="text-black">36</strong> MCP tools</span>
+          <span><strong className="text-black">36</strong> {isES ? "herramientas MCP" : "MCP tools"}</span>
           <span className="text-[#d4d4d4] hidden sm:inline">·</span>
-          <span><strong className="text-black">3</strong> plataformas</span>
+          <span><strong className="text-black">3</strong> {isES ? "plataformas" : "platforms"}</span>
         </div>
       </div>
     </section>
