@@ -385,6 +385,11 @@ else:
 
     def init_schema_sqlite():
         db = get_sqlite()
+        # Self-healing: add UNIQUE constraint if missing (fixes old DBs created before 2026-05-26)
+        try:
+            db.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_ps_product_store ON price_snapshots(product_id, store)")
+        except Exception:
+            pass
         db.executescript("""
             CREATE TABLE IF NOT EXISTS price_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id TEXT NOT NULL, name TEXT, brand TEXT, price REAL, list_price REAL, discount INTEGER, store TEXT NOT NULL, store_name TEXT, currency TEXT, line TEXT, line_name TEXT, category TEXT, stock INTEGER, url TEXT, queried_at TEXT DEFAULT (datetime('now')), UNIQUE(product_id, store));
             CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
@@ -424,10 +429,16 @@ def _old_product_from_json(p, store):
 
 class CB:
     def __init__(s): s.f=defaultdict(int); s.o={}
-    def ok(s,k): return True  # temporarily disabled
-    def win(s,k): pass
-    def lose(s,k): pass
-    def reset(s): pass
+    def ok(s,k):
+        if k in s.o:
+            if time.time()<s.o[k]: return False
+            del s.o[k]; s.f[k]=0
+        return True
+    def win(s,k): s.f[k]=0
+    def lose(s,k):
+        s.f[k]+=1
+        if s.f[k]>=50: s.o[k]=time.time()+60
+    def reset(s): s.f.clear(); s.o.clear()
 cb=CB()
 
 async def fetch_store_multi(client, store, term):

@@ -515,9 +515,9 @@ _SQLITE_DDL = """\
             category TEXT,
             stock INTEGER,
             url TEXT,
-            queried_at TEXT NOT NULL DEFAULT (datetime('now'))
+            queried_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(product_id, store)
         );
-        CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store);
         CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
         CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
         CREATE INDEX IF NOT EXISTS idx_ps_queried ON price_snapshots(queried_at);
