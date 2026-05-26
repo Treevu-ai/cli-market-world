@@ -5,7 +5,7 @@ const es: Dict = {
   nav_stats: "Escala", nav_coverage: "Cobertura", nav_how: "Flujo", nav_terminal: "Terminal", nav_features: "Capacidades",
   nav_pricing: "Precios", nav_faq: "FAQ", nav_agents: "Agentes", nav_cases: "Casos",
   hero_h1: "Infraestructura de comercio y precios para agentes de IA.",
-  hero_sub: "60 retailers, 11 países, 3 plataformas. Precios reales de góndola cada 8 horas y checkout en un solo conector.",
+  hero_sub: "Precios reales de góndola cada 8 horas y checkout con único conector.",
   hero_install: "Empezar gratis", hero_cov: "Ver API",
   hero_words: "comprar,comparar,buscar,analizar",
   stats_label: "Escala", stats_title: "60 retailers.\n3 plataformas. Un solo conector.", stats_sub: "VTEX, Shopify y Magento comparten la misma interfaz. Cada retailer es una línea de JSON. Sin integraciones por tienda.",
