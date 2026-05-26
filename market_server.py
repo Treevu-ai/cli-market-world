@@ -1241,21 +1241,31 @@ async def debug_fetch(store: str = "wong", query: str = "leche"):
 # ── Admin: manual collection trigger ────────────────────────────────────────
 
 @app.post("/admin/collect")
-def admin_collect(stores: int = 0, queries: int = 0):
-    """Trigger a price collection run. Optional: limit stores and queries."""
-    import subprocess, sys as _sys
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    collector_path = os.path.join(script_dir, "collect_prices.py")
-    args = [_sys.executable, collector_path]
-    if stores: args.extend(["--stores", str(stores)])
-    if queries: args.extend(["--queries", str(queries)])
-    try:
-        result = subprocess.run(args, capture_output=True, text=True, timeout=600, cwd=script_dir)
-        return {"status": "ok", "stdout": result.stdout[-500:], "stderr": result.stderr[-200:]}
-    except subprocess.TimeoutExpired:
-        return {"status": "timeout", "message": "Collection still running"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+async def admin_collect(stores: int = 0, queries: int = 0):
+    """Trigger a price collection run directly (no subprocess)."""
+    import asyncio, time as _t
+    from collect_prices import (
+        build_query_list, _get_feedback_db, run_collection,
+        STORES as _stores, init_schema_sqlite, sq_run_start, sq_run_end,
+        collect_one_sqlite, PARALLEL as _PARALLEL
+    )
+    sl = list(_stores.keys())
+    if stores: sl = sl[:stores]
+    ql = build_query_list(db=None, cycle=0)
+    if queries: ql = ql[:queries]
+    
+    t0 = _t.monotonic()
+    result = await run_collection(sl, ql)
+    elapsed = _t.monotonic() - t0
+    
+    return {
+        "status": "ok",
+        "elapsed_s": round(elapsed, 1),
+        "stores_attempted": result["stores_attempted"],
+        "stores_succeeded": result["stores_succeeded"],
+        "prices_collected": result["prices_collected"],
+        "errors": result["errors"],
+    }
 
 
 # ── Dashboard ───────────────────────────────────────────────────────────────
