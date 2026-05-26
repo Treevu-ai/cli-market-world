@@ -363,8 +363,8 @@ async def _search_products(body: SearchRequest):
     if body.line and body.line in LINES:
         stores = [s for s in stores if STORES[s]["line"] == body.line]
     
-    PARALLEL_BATCH = 50
-    SEARCH_TIMEOUT = 8.0
+    PARALLEL_BATCH = 20
+    SEARCH_TIMEOUT = float(os.getenv("SEARCH_TIMEOUT", "15.0"))
 
     async def fetch_one(store):
         try:
