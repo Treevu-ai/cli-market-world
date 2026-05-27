@@ -6,3 +6,5 @@ stores_curated.csv
 cli_market.egg-info/
 dist/
 .market/
+.deepseek/
+VALIDATION_PLAN.md
