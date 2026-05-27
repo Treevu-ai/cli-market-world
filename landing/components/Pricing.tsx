@@ -75,7 +75,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : tier.name === "Pro" ? "https://wise.com/pay/me/ricardoantonioc68" : "https://cli-market-production.up.railway.app/auth/keys"}
+              <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : tier.name === "Pro" ? "mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro%20Upgrade" : "https://cli-market-production.up.railway.app/auth/keys"}
                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
                    tier.dark
                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
