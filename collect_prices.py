@@ -41,6 +41,15 @@ LINES = {
     "hogar_construccion":{"name":"Hogar y Construcción"}, "educacion":{"name":"Educación Ejecutiva"},
 }
 
+LINE_MAX_PRICE = {
+    "supermercados": 10_000,
+    "farmacias": 5_000,
+    "electro": 50_000,
+    "moda": 5_000,
+    "hogar": 20_000,
+    "departamentales": 10_000,
+}
+
 SEED_QUERIES = [
     # ═══════════════════════════════════════════════════════════════════════════
     # 🛒 Supermercados (14 tiendas)
@@ -467,6 +476,7 @@ async def collect_one_pg(pool, store, queries):
                             prod["line"] = STORES[store].get("line","")
                             prod["line_name"] = LINES.get(STORES[store].get("line",""),{}).get("name","")
                             if prod["price"]<=0: continue
+                            if prod["price"] > LINE_MAX_PRICE.get(prod["line"], 99_999_999): continue
                             await pg_insert(conn, prod); collected+=1
                         await asyncio.sleep(REQUEST_DELAY)
                     except Exception: cb.lose(store); await pg_health(conn, store, False)
@@ -487,6 +497,8 @@ async def collect_one_sqlite(db, store, queries):
                 prod["line"] = line
                 prod["line_name"] = LINES.get(line,{}).get("name","")
                 if prod.get("price", 0) and prod["price"] > 0:
+                    if prod["price"] > LINE_MAX_PRICE.get(prod.get("line",""), 99_999_999):
+                        continue
                     sq_insert(db, prod)
                     collected += 1
             await asyncio.sleep(REQUEST_DELAY)
