@@ -25,10 +25,15 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[var(--wise-body)]">
           <a href="#stats" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Escala" : "Scale"}</a>
           <a href="#how" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Flujo" : "Flow"}</a>
+          <a href="#terminal" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Terminal" : "Terminal"}</a>
+          <a href="#api" className="hover:text-[var(--wise-ink)] transition-colors">API</a>
           <a href="#features" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Capacidades" : "Capabilities"}</a>
           <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
+          <a href="#data" className="hover:text-[var(--wise-ink)] transition-colors">Data Moat</a>
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Precios" : "Pricing"}</a>
           <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
+          <a href="#about" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Acerca" : "About"}</a>
+          <span className="text-[#c5edab]">·</span>
           <a href="/retailers" className="hover:text-[var(--wise-ink)] transition-colors">For Retailers</a>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>

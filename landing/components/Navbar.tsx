@@ -2,16 +2,18 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
-const linkKeys = ["nav_stats", "nav_terminal", "nav_how", "nav_features", "nav_coverage", "nav_pricing", "nav_faq", "nav_lines"];
+const linkKeys = ["nav_stats", "nav_how", "nav_terminal", "nav_api", "nav_features", "nav_coverage", "nav_data", "nav_pricing", "nav_faq", "nav_about"];
 const linkLabels: Record<string, { es: string; en: string }> = {
   nav_stats: { es: "Escala", en: "Scale" },
-  nav_terminal: { es: "Terminal", en: "Terminal" },
   nav_how: { es: "Flujo", en: "Flow" },
+  nav_terminal: { es: "Terminal", en: "Terminal" },
+  nav_api: { es: "API", en: "API" },
   nav_features: { es: "Capacidades", en: "Capabilities" },
   nav_coverage: { es: "Cobertura", en: "Coverage" },
+  nav_data: { es: "Data Moat", en: "Data Moat" },
   nav_pricing: { es: "Precios", en: "Pricing" },
   nav_faq: { es: "FAQ", en: "FAQ" },
-  nav_lines: { es: "Líneas", en: "Lines" },
+  nav_about: { es: "Acerca", en: "About" },
 };
 
 export default function Navbar() {
