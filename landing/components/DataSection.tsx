@@ -3,11 +3,9 @@ import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 interface DataStats {
-  total_prices?: number;
-  total_runs?: number;
-  stores_active?: number;
-  last_run?: string;
-  by_line?: { line_name?: string; count?: number }[];
+  kpis?: { total_snapshots?: number; active_stores?: number; total_runs?: number; stores_24h?: number };
+  generated_at?: string;
+  by_country?: { country?: string; count?: number; stores?: number }[];
 }
 
 export default function DataSection() {
@@ -22,16 +20,18 @@ export default function DataSection() {
       .catch(() => {});
   }, []);
 
-  const lineNames: Record<string, string> = {
-    supermercados: isES ? "Supermercados" : "Supermarkets",
-    farmacias: isES ? "Farmacias" : "Pharmacies",
-    electro: isES ? "Electro" : "Electronics",
-    moda: isES ? "Moda" : "Fashion",
-    hogar: isES ? "Hogar" : "Home",
-    departamentales: isES ? "Departamentales" : "Department",
-  };
-
-  const today = new Date().toLocaleDateString(isES ? "es-PE" : "en-US", { day: "numeric", month: "short" });
+  const k = stats.kpis || {};
+  const snapshots = k.total_snapshots || 0;
+  const active = k.active_stores || 0;
+  const runs = k.total_runs || 0;
+  const live24h = k.stores_24h || 0;
+  const countries = stats.by_country?.length || 0;
+  
+  let freshness = "";
+  if (stats.generated_at) {
+    const mins = Math.round((Date.now() - new Date(stats.generated_at).getTime()) / 60000);
+    freshness = mins < 60 ? `${mins}min` : `${Math.round(mins/60)}h`;
+  }
 
   return (
     <section id="data" className="relative bg-[var(--wise-ink)] py-24">
@@ -48,12 +48,21 @@ export default function DataSection() {
             : "Our collector runs every 8 hours against 60 retailers and extracts real shelf prices."}
         </p>
 
+        {freshness && (
+          <div className="inline-flex items-center gap-2 mb-6 bg-[var(--wise-green-pale)] rounded-full px-4 py-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#2ead4b] animate-pulse" />
+            <span className="text-xs text-[var(--wise-ink)] font-medium">
+              {isES ? "Datos actualizados hace" : "Data refreshed"} {freshness}
+            </span>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
           {[
-            { label: isES ? "Precios" : "Prices", val: stats.total_prices?.toLocaleString() || "4,400+", sub: isES ? "verificados" : "verified" },
-            { label: isES ? "Ciclos" : "Runs", val: stats.total_runs?.toString() || "3", sub: isES ? "cada 8h" : "every 8h" },
-            { label: isES ? "Tiendas" : "Stores", val: stats.stores_active?.toString() || "60", sub: isES ? "activas" : "active" },
-            { label: isES ? "Última" : "Last", val: stats.last_run ? new Date(stats.last_run).toLocaleDateString(isES ? "es-PE" : "en-US", { day: "numeric", month: "short" }) : today, sub: isES ? "actualización" : "update" },
+            { label: isES ? "Precios" : "Prices", val: snapshots ? snapshots.toLocaleString() : "9,000+", sub: isES ? "indexados" : "indexed" },
+            { label: isES ? "Retailers" : "Retailers", val: active ? `${active}` : "27", sub: isES ? "activos" : "active" },
+            { label: isES ? "Países" : "Countries", val: countries ? `${countries}` : "7", sub: isES ? "con cobertura" : "covered" },
+            { label: isES ? "Ciclos" : "Cycles", val: runs ? `${runs}` : "4", sub: isES ? "cada 8h" : "every 8h" },
           ].map((kpi) => (
             <div key={kpi.label} className="bg-[var(--wise-green-pale)] rounded-3xl p-3 text-left overflow-hidden">
               <p className="text-[10px] text-[var(--wise-body)] uppercase tracking-widest mb-1 truncate">{kpi.label}</p>
@@ -63,12 +72,12 @@ export default function DataSection() {
           ))}
         </div>
 
-        {stats.by_line && stats.by_line.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-12">
-            {stats.by_line.map((l) => (
-              <div key={l.line_name} className="flex items-center justify-between bg-white/5 rounded-3xl px-3 py-2.5 truncate">
-                <span className="text-xs text-[var(--wise-body)] truncate">{lineNames[l.line_name || ""] || l.line_name}</span>
-                <span className="text-sm font-bold text-[var(--wise-green)] ml-2 shrink-0">{l.count?.toLocaleString()}</span>
+        {stats.by_country && stats.by_country.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-12">
+            {stats.by_country.slice(0, 8).map((c) => (
+              <div key={c.country} className="flex items-center justify-between bg-white/5 rounded-3xl px-3 py-2.5 truncate">
+                <span className="text-xs text-[var(--wise-body)] truncate">{c.country}</span>
+                <span className="text-sm font-bold text-[var(--wise-green)] ml-2 shrink-0">{c.count?.toLocaleString()}</span>
               </div>
             ))}
           </div>
