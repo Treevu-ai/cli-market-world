@@ -351,7 +351,7 @@ if USE_PG:
         await conn.execute("""
             INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-            ON CONFLICT (product_id,store) DO UPDATE SET price=EXCLUDED.price, list_price=EXCLUDED.list_price, discount=EXCLUDED.discount, stock=EXCLUDED.stock, queried_at=NOW()
+            ON CONFLICT (product_id,store,queried_at) DO NOTHING
         """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],prod["discount"],
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"])
 
@@ -393,12 +393,7 @@ else:
             "(product_id,name,brand,price,list_price,discount,store,store_name,"
             " currency,line,line_name,category,stock,url,queried_at) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) "
-            "ON CONFLICT(product_id,store) DO UPDATE SET "
-            " price=excluded.price,"
-            " list_price=excluded.list_price,"
-            " discount=excluded.discount,"
-            " stock=excluded.stock,"
-            " queried_at=datetime('now')",
+            "ON CONFLICT(product_id,store,queried_at) DO NOTHING",
             (
                 prod.get("product_id", prod.get("id", "")),
                 prod.get("name", ""),

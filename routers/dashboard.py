@@ -44,14 +44,17 @@ def dashboard_data():
 def _dashboard_data():
     db = get_db()
     now = datetime.now(timezone.utc)
+    cutoff_24h_sql = (now - timedelta(hours=24)).isoformat()
 
     # ── KPIs ──────────────────────────────────────────────────────────────────
-    total_snapshots = db.execute(
-        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0"
-    ).fetchone()["n"]
+    total_snapshots = len(db.execute(
+        "SELECT product_id, store FROM price_snapshots WHERE price > 0 AND queried_at >= ?",
+        (cutoff_24h_sql,),
+    ).fetchall())
 
     active_stores = db.execute(
-        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0 AND queried_at >= ?",
+        (cutoff_24h_sql,),
     ).fetchone()["n"]
 
     total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
@@ -60,7 +63,7 @@ def _dashboard_data():
     by_line = db.execute(
         """
         SELECT line, line_name,
-               COUNT(*) as count,
+               COUNT(DISTINCT product_id||store) as count,
                ROUND(AVG(price)::numeric, 2) as avg_price,
                ROUND(MIN(price)::numeric, 2) as min_price,
                ROUND(MAX(price)::numeric, 2) as max_price
