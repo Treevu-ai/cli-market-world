@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""CLI Market — Monday Ops Playbook.
+"""CLI Market — Monday Ops Playbook (v2).
 
-Fetches store health from dashboard, filters failing stores (<30% success),
-generates outreach drafts, writes a markdown report, optionally pings Slack.
+Fetches dashboard data. Produces a structured report with:
+  TL;DR · Inflation · Price Movers · Store Health · Freshness · Outreach Drafts.
 
 Usage:
-  python ops/monday.py                  # full run
-  python ops/monday.py --dry-run        # report only, no Slack
-  python ops/monday.py --slack <URL>    # override Slack webhook
+  python3 ops/monday.py                  # full run
+  python3 ops/monday.py --dry-run        # report only, no Slack
+  python3 ops/monday.py --slack <URL>    # override Slack webhook
 
 Env vars:
   DASHBOARD_DATA_URL   default: https://cli-market-production.up.railway.app/dashboard/data
@@ -16,7 +16,7 @@ Env vars:
 
 from __future__ import annotations
 
-import json, os, sys
+import os, sys
 from datetime import datetime, timezone
 from typing import Any
 
@@ -32,71 +32,224 @@ OUTREACH_ES = """Asunto: {store_name} — reactivar tienda en CLI Market
 Hola equipo de {store_name},
 
 CLI Market indexa precios de 27 retailers en 7 paises para agentes de IA.
-Tu tienda no responde en los ultimos {failures} ciclos (exito {pct:.0f}%).
+Tu tienda no responde en los ultimos {failures} consultas (exito {pct:.0f}%).
+{line} — {country}.
 
 Si la API cambio, avisanos. Reactivamos en minutos. Gratis, sin integracion.
 
 Saludos,
-Antonio Cuba
-CLI Market · cli-market.dev"""
+Antonio Cuba · CLI Market · cli-market.dev"""
 
 OUTREACH_EN = """Subject: {store_name} — your store on CLI Market needs attention
 
 Hi {store_name} team,
 
 CLI Market indexes prices from 27 retailers across 7 countries for AI agents.
-Your store hasn't responded in {failures} collection cycles ({pct:.0f}% success).
+Your store hasn't responded in {failures} queries ({pct:.0f}% success).
+{line} — {country}.
 
 If your API changed, let us know. We can reactivate in minutes.
-
 Listing is free. Zero integration. Visibility to AI agents.
 
 Best,
-Antonio Cuba
-CLI Market · cli-market.dev"""
+Antonio Cuba · CLI Market · cli-market.dev"""
 
 LOCALE_MAP = {
     "PE": "es", "AR": "es", "MX": "es", "CO": "es", "CL": "es",
     "ES": "es", "IT": "en", "FR": "en", "US": "en", "CH": "en", "BR": "en",
 }
 
+LINE_LABELS = {
+    "supermercados": "Supermercados",
+    "farmacias": "Farmacias y Salud",
+    "electro": "Electro",
+    "moda": "Moda",
+    "hogar": "Hogar",
+    "departamentales": "Departamentales",
+}
 
-def load_store_countries() -> dict[str, str]:
+
+def load_store_meta() -> dict[str, dict[str, str]]:
     try:
-        spec = __import__("importlib.util", fromlist=[""]).spec_from_file_location("ms", "market_stores.py")
-        mod = __import__("importlib.util", fromlist=[""]).module_from_spec(spec)
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("ms", "market_stores.py")
+        mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-        return {k: v.get("country", "??") for k, v in getattr(mod, "STORES", {}).items()}
+        stores = getattr(mod, "STORES", {})
+        return {
+            k: {"country": v.get("country", "??"), "line": v.get("line", "unknown")}
+            for k, v in stores.items()
+        }
     except Exception:
         return {}
 
 
-def fetch_health() -> dict[str, Any]:
+def fetch_data() -> dict[str, Any]:
     r = httpx.get(DASHBOARD_URL, timeout=30)
     r.raise_for_status()
     return r.json()
 
 
-def filter_critical(data: dict, countries: dict) -> list[dict]:
-    out = []
-    for h in data.get("store_health", []):
-        pct = float(h.get("success_pct", 0) or 0)
-        if pct < 30:
-            store_id = h.get("store", "")
-            country = countries.get(store_id, "??")
-            locale = LOCALE_MAP.get(country, "es")
-            out.append({**h, "pct": pct, "country": country, "locale": locale})
-    out.sort(key=lambda x: (x["pct"], -int(x.get("consecutive_failures", 0) or 0)))
-    return out[:5]
+def tldr(data: dict) -> str:
+    k = data.get("kpis", {})
+    snap = k.get("total_snapshots", 0)
+    active = k.get("active_stores", 0)
+    runs = k.get("total_runs", 0)
 
-
-def generate_draft(store: dict) -> str:
-    tpl = OUTREACH_ES if store["locale"] == "es" else OUTREACH_EN
-    return tpl.format(
-        store_name=store["store"],
-        pct=store["pct"],
-        failures=store.get("consecutive_failures", "?"),
+    inflation = data.get("inflation", [])
+    rising = [i for i in inflation if i.get("delta_pct", 0) > 0]
+    falling = [i for i in inflation if i.get("delta_pct", 0) < 0]
+    movers_up = len(data.get("top_risers", []))
+    movers_down = len(data.get("top_fallers", []))
+    critical_count = sum(
+        1 for h in data.get("store_health", [])
+        if float(h.get("success_pct", 0) or 0) < 30
     )
+
+    parts = [f"**{snap:,}** precios · **{active}** tiendas · **{runs}** ciclos."]
+    if rising:
+        parts.append(f"📈 Inflación al alza en {len(rising)} líneas (max +{max(i['delta_pct'] for i in rising)}%).")
+    if falling:
+        parts.append(f"📉 Deflación en {len(falling)} líneas (max {min(i['delta_pct'] for i in falling)}%).")
+    if movers_up or movers_down:
+        parts.append(f"📊 {movers_up}↑ subieron · {movers_down}↓ bajaron (últimas 24h).")
+    if critical_count:
+        parts.append(f"🔴 **{critical_count}** tiendas críticas (<30% éxito).")
+    else:
+        parts.append("✅ Sin tiendas críticas.")
+    return "  \n".join(parts)
+
+
+def build_report(data: dict, meta: dict) -> str:
+    now = datetime.now(timezone.utc)
+    ds = now.strftime("%Y-%m-%d")
+    k = data.get("kpis", {})
+
+    lines = [
+        f"# CLI Market — Monday Ops {ds}",
+        "",
+        "## TL;DR",
+        "",
+        tldr(data),
+        "",
+        "---",
+        "",
+        "## 📊 Inflación 7d",
+        "",
+    ]
+
+    inflation = data.get("inflation", [])
+    if inflation and any(i.get("delta_pct", 0) != 0 for i in inflation):
+        lines.append("| Línea | Avg ahora | Avg antes | Delta |")
+        lines.append("|---|---|---|---|")
+        for i in inflation:
+            delta = i.get("delta_pct", 0) or 0
+            lines.append(
+                f"| {i['line']} | {(i['avg_now'] or 0):.2f} | {(i['avg_before'] or 0):.2f} | "
+                f"{'+' if delta > 0 else ''}{delta:.1f}% |"
+            )
+    else:
+        lines.append("_Sin histórico suficiente (necesita 7+ días de datos)._")
+
+    lines += ["", "---", "", "## 📈 Price Movers (último ciclo)", ""]
+
+    risers = data.get("top_risers", [])[:3]
+    fallers = data.get("top_fallers", [])[:3]
+
+    if risers:
+        lines.append("### ▲ Subieron")
+        lines.append("| Producto | Antes | Ahora | Delta |")
+        lines.append("|---|---|---|---|")
+        for r in risers:
+            lines.append(
+                f"| {r['product_id'][:25]} | {(r['price_before'] or 0):.2f} | "
+                f"{(r['price_now'] or 0):.2f} | +{r['delta_pct']}% |"
+            )
+        lines.append("")
+    if fallers:
+        lines.append("### ▼ Bajaron")
+        lines.append("| Producto | Antes | Ahora | Delta |")
+        lines.append("|---|---|---|---|")
+        for r in fallers:
+            lines.append(
+                f"| {r['product_id'][:25]} | {(r['price_before'] or 0):.2f} | "
+                f"{(r['price_now'] or 0):.2f} | {r['delta_pct']}% |"
+            )
+        lines.append("")
+    if not risers and not fallers:
+        lines.append("_Sin datos (necesita 2+ ciclos separados)._")
+
+    lines += ["", "---", "", "## 🏪 Store Health", ""]
+
+    health = data.get("store_health", [])[:15]
+    lines.append("| Tienda | País | Línea | Éxito | Estado |")
+    lines.append("|---|---|---|---|---|")
+    for h in health:
+        pct = float(h.get("success_pct", 0) or 0)
+        store_id = h.get("store", "")
+        info = meta.get(store_id, {})
+        country = info.get("country", "??")
+        line = LINE_LABELS.get(info.get("line", ""), info.get("line", "?"))
+        badge = "✅ OK" if pct >= 90 else ("🟡 WARN" if pct >= 30 else "🔴 DEAD")
+        lines.append(f"| {store_id} | {country} | {line} | {pct:.0f}% | {badge} |")
+
+    lines += ["", "---", "", "## ⏱️ Frescura", ""]
+
+    freshness = data.get("freshness", [])[:10]
+    if freshness:
+        lines.append("| Tienda | Último snapshot |")
+        lines.append("|---|---|")
+        for f in freshness:
+            ts = str(f.get("last_seen", ""))[:19]
+            lines.append(f"| {f.get('store_name','?')} | {ts} |")
+    else:
+        lines.append("_Sin datos._")
+
+    # ── Critical + outreach ─────────────────────────────────────────────
+    critical = [
+        {**h, "pct": float(h.get("success_pct", 0) or 0)}
+        for h in data.get("store_health", [])
+        if float(h.get("success_pct", 0) or 0) < 30
+    ]
+
+    if critical:
+        lines += ["", "---", "", "## 🔴 Tiendas críticas (<30% éxito)", ""]
+        lines.append("| Tienda | País | Línea | Éxito | Fallos |")
+        lines.append("|---|---|---|---|---|")
+        for s in sorted(critical, key=lambda x: x["pct"]):
+            sid = s.get("store", "")
+            info = meta.get(sid, {})
+            country = info.get("country", "??")
+            line = LINE_LABELS.get(info.get("line", ""), info.get("line", "?"))
+            lines.append(
+                f"| {sid} | {country} | {line} | {s['pct']:.0f}% | "
+                f"{s.get('consecutive_failures','?')} |"
+            )
+
+        lines += ["", "---", "", "## ✉️ Outreach Drafts", ""]
+        for s in sorted(critical, key=lambda x: x["pct"])[:5]:
+            sid = s.get("store", "")
+            info = meta.get(sid, {})
+            country = info.get("country", "??")
+            line = LINE_LABELS.get(info.get("line", ""), info.get("line", "?"))
+            locale = LOCALE_MAP.get(country, "es")
+            tpl = OUTREACH_ES if locale == "es" else OUTREACH_EN
+            draft = tpl.format(
+                store_name=sid,
+                pct=s["pct"],
+                failures=s.get("consecutive_failures", "?"),
+                country=country,
+                line=line,
+            )
+            lines.append(f"### {sid} ({country}, {line}) — {s['pct']:.0f}%")
+            lines.append("```")
+            lines.append(draft)
+            lines.append("```")
+            lines.append("")
+    else:
+        lines += ["", "---", "", "## ✅ Sin tiendas críticas", ""]
+
+    return "\n".join(lines)
 
 
 def notify_slack(url: str, text: str) -> None:
@@ -111,63 +264,41 @@ def main() -> None:
             slack_url = sys.argv[i + 1]
 
     print("Fetching dashboard...")
-    data = fetch_health()
-    countries = load_store_countries()
-    critical = filter_critical(data, countries)
+    data = fetch_data()
+    meta = load_store_meta()
+    report = build_report(data, meta)
 
     now = datetime.now(timezone.utc)
     ds = now.strftime("%Y-%m-%d")
-    k = data.get("kpis", {})
-
-    lines = [
-        f"# CLI Market — Monday Ops {ds}",
-        "",
-        f"**Snapshot:** {k.get('total_snapshots',0):,} prices · "
-        f"{k.get('active_stores',0)} active stores · {k.get('total_runs',0)} cycles",
-        "",
-    ]
-
-    if not critical:
-        lines.append("## OK — no critical stores (<30% success)")
-    else:
-        lines.append(f"## {len(critical)} critical stores")
-        lines.append("")
-        lines.append("| Store | Country | Success | Failures |")
-        lines.append("|---|---|---|---|")
-        for s in critical:
-            lines.append(f"| {s['store']} | {s['country']} | {s['pct']:.0f}% | {s.get('consecutive_failures','?')} |")
-        lines.append("")
-        lines.append("---")
-        lines.append("")
-        lines.append("## Outreach drafts")
-        for s in critical:
-            lines.append(f"\n### {s['store']} ({s['country']}) — {s['pct']:.0f}%")
-            lines.append("```")
-            lines.append(generate_draft(s))
-            lines.append("```")
-
-    report = "\n".join(lines)
     os.makedirs("ops/reports", exist_ok=True)
     path = f"ops/reports/{ds}.md"
     with open(path, "w") as f:
         f.write(report)
 
-    if critical:
-        print(f"{len(critical)} critical stores. Report: {path}")
-    else:
-        print(f"No critical stores. Report: {path}")
+    critical_count = sum(
+        1 for h in data.get("store_health", [])
+        if float(h.get("success_pct", 0) or 0) < 30
+    )
+
+    print(f"Report written: {path}" + (" [dry-run]" if dry else ""))
 
     if slack_url and not dry:
+        k = data.get("kpis", {})
         msg = (
-            "CLI Market Monday Ops: all healthy"
-            if not critical
-            else f"CLI Market Monday Ops: {len(critical)} stores need attention\n" +
-                 "\n".join(f"• {s['store']} ({s['pct']:.0f}%)" for s in critical)
+            f"📊 CLI Market Monday Ops {ds}\n"
+            f"{k.get('total_snapshots',0):,} precios · {k.get('active_stores',0)} tiendas\n"
         )
+        if critical_count:
+            msg += f"🔴 {critical_count} tiendas críticas:\n"
+            for h in data.get("store_health", []):
+                pct = float(h.get("success_pct", 0) or 0)
+                if pct < 30:
+                    msg += f"• {h.get('store','?')} ({pct:.0f}%)\n"
+        else:
+            msg += "✅ Todas las tiendas saludables.\n"
+        msg += f"Reporte: {path}"
         notify_slack(slack_url, msg)
         print("Slack notified.")
-    elif slack_url and dry:
-        print("[dry-run] Slack notification skipped.")
 
 
 if __name__ == "__main__":
