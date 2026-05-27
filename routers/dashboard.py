@@ -30,6 +30,14 @@ def dashboard():
 @router.get("/dashboard/data")
 def dashboard_data():
     """Business-intelligence feed for the Data Moat dashboard."""
+    try:
+        return _dashboard_data()
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "trace": traceback.format_exc()[-400:]}
+
+
+def _dashboard_data():
     db = get_db()
     now = datetime.now(timezone.utc)
 
