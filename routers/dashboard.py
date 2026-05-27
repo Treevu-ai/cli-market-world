@@ -61,7 +61,7 @@ def _dashboard_data():
                ROUND(MIN(price)::numeric, 2) as min_price,
                ROUND(MAX(price)::numeric, 2) as max_price
         FROM price_snapshots WHERE price > 0 AND price < 999999
-        GROUP BY line ORDER BY count DESC
+        GROUP BY line, line_name ORDER BY count DESC
         """
     ).fetchall()
 
@@ -110,7 +110,7 @@ def _dashboard_data():
         """
         SELECT line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
         FROM price_snapshots WHERE price > 0 AND price < 999999
-        GROUP BY line, store ORDER BY line, avg_price ASC
+        GROUP BY line, line_name, store, store_name ORDER BY line, avg_price ASC
         """
     ).fetchall()
 
@@ -202,7 +202,7 @@ def _dashboard_data():
     freshness = db.execute(
         """SELECT store, store_name, MAX(queried_at) as last_seen
            FROM price_snapshots WHERE price > 0
-           GROUP BY store ORDER BY last_seen DESC LIMIT 20"""
+           GROUP BY store, store_name ORDER BY last_seen DESC LIMIT 20"""
     ).fetchall()
 
     # ── Operacional: store health scores ─────────────────────────────────────
@@ -253,7 +253,7 @@ def _dashboard_data():
         """SELECT store_name, store, COUNT(DISTINCT product_id) as unique_products,
                   COUNT(*) as total_snapshots
            FROM price_snapshots WHERE price>0
-           GROUP BY store ORDER BY unique_products DESC LIMIT 15"""
+           GROUP BY store, store_name ORDER BY unique_products DESC LIMIT 15"""
     ).fetchall()
 
     # ── Weak signal: outliers (price > 3× line average) ──────────────────────
