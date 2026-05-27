@@ -1,0 +1,6 @@
+{
+  "build": {
+    "command": "cd landing && npm install && npm run build",
+    "output_directory": "landing/out"
+  }
+}
