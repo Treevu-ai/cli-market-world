@@ -600,6 +600,7 @@ async def main():
         print(f"🚀 Collector daemon started — {label} backend — PID {os.getpid()}")
         while True:
             try:
+                cb.reset()
                 db = _get_feedback_db()
                 queries = build_query_list(db=db, cycle=cycle)
                 if db: db.close()
