@@ -413,6 +413,7 @@ def _static_dashboard() -> str:
         for r in data["store_health"][:10])
     
     matrix_html = ""
+    gaps = []
     if data["line_country_matrix"]:
         lines = list(dict.fromkeys(r["line"] for r in data["line_country_matrix"]))
         countries = sorted(set(r["country"] for r in data["line_country_matrix"]))
@@ -422,9 +423,12 @@ def _static_dashboard() -> str:
             matrix_html += f"<tr><td>{l}</td>"
             for c in countries:
                 v = lookup.get(f"{l}|{c}", 0)
+                if v == 0:
+                    gaps.append(f"{l}x{c}")
                 matrix_html += f"<td style='color:{'#3cffd0' if v>0 else '#333'}'>{v or '·'}</td>"
             matrix_html += "</tr>"
         matrix_html += "</table>"
+    gaps_html = f"<p style='color:#ffbd2e;font-size:10px'>BRECHAS: {', '.join(gaps[:15])}</p>" if gaps else ""
     
     canasta_html = "".join(
         f"<tr><td>{r['store_name']}</td><td>{r['items']}/10</td><td style='color:#3cffd0'>{r['currency']} {r['total']:.2f}</td></tr>"
@@ -483,7 +487,7 @@ td.num{{text-align:right}}
 
 <div class="section">[ LINE × COUNTRY ]</div>
 {matrix_html or '<p>sin datos</p>'}
-{"<p class='gap' style='color:#ffbd2e;font-size:10px;margin:4px 0'>BRECHAS: "+", ".join(f"{k.split('|')[0]}x{k.split('|')[1]}" for k,v in {(f"{r['line']}|{r['country']}"):r['stores'] for r in data.get('line_country_matrix',[])}.items() if v==0)[:15]+"</p>" if any(v==0 for v in {(f"{r['line']}|{r['country']}"):r['stores'] for r in data.get('line_country_matrix',[])}.values()) else ""}
+{gaps_html}
 
 <div class="section">[ CANASTA BÁSICA ]</div>
 <table><tr><th>Tienda</th><th>Productos</th><th>Total</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
