@@ -24,7 +24,12 @@ router = APIRouter(tags=["dashboard"])
 @router.get("/dashboard")
 def dashboard():
     from fastapi.responses import HTMLResponse
-    return HTMLResponse(_static_dashboard())
+    try:
+        html = _static_dashboard()
+    except Exception as e:
+        import traceback
+        html = f"<pre>STATIC DASHBOARD CRASH:\n{e}\n\n{traceback.format_exc()}</pre>"
+    return HTMLResponse(html)
 
 
 @router.get("/dashboard/data")
