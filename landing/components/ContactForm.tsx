@@ -23,7 +23,7 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
     if (!email || !useCase) { setError(isES ? "Completa todos los campos" : "Fill all fields"); return; }
     setLoading(true); setError("");
     try {
-      await fetch("https://cli-market-api.onrender.com/v1/contact", {
+      await fetch("https://cli-market-production.up.railway.app/v1/contact", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, email, use_case: useCase }),
       });

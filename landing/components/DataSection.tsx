@@ -16,7 +16,7 @@ export default function DataSection() {
   const [stats, setStats] = useState<DataStats>({});
 
   useEffect(() => {
-    fetch("https://cli-market-api.onrender.com/dashboard/data")
+    fetch("https://cli-market-production.up.railway.app/dashboard/data")
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});
@@ -88,7 +88,7 @@ export default function DataSection() {
         </div>
 
         <div className="mt-12">
-          <a href="https://cli-market-api.onrender.com/dashboard"
+          <a href="https://cli-market-production.up.railway.app/dashboard"
              target="_blank" rel="noopener"
              className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors">
             {isES ? "Ver dashboard en vivo" : "View live dashboard"}

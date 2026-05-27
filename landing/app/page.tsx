@@ -7,6 +7,8 @@ import TerminalSection from "@/components/TerminalSection";
 import AgentDispatch from "@/components/AgentDispatch";
 import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
+import Features from "@/components/Features";
+import CoverageSection from "@/components/CoverageSection";
 import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
@@ -24,6 +26,8 @@ export default function Home() {
           <HowItWorks />
           <TerminalSection />
           <QuickstartAPI />
+          <Features />
+          <CoverageSection />
           <DataSection />
           <Pricing />
           <AgentDispatch />

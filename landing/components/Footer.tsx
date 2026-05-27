@@ -23,6 +23,12 @@ export default function Footer() {
 
         {/* Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[var(--wise-body)]">
+          <a href="#stats" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Escala" : "Scale"}</a>
+          <a href="#how" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Flujo" : "Flow"}</a>
+          <a href="#features" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Capacidades" : "Capabilities"}</a>
+          <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
+          <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Precios" : "Pricing"}</a>
+          <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>
           <a href="mailto:hello@cli-market.dev" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Contacto" : "Contact"}</a>
