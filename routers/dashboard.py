@@ -22,11 +22,9 @@ router = APIRouter(tags=["dashboard"])
 
 
 @router.get("/dashboard")
-def dashboard(static: bool = False):
+def dashboard():
     from fastapi.responses import HTMLResponse
-    if static:
-        return HTMLResponse(_static_dashboard())
-    return HTMLResponse(DASHBOARD_HTML)
+    return HTMLResponse(_static_dashboard())
 
 
 @router.get("/dashboard/data")
