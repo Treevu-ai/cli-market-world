@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Cart body -->
+  <path d="M2 4l3 2 3 14h14l5-10H10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Wheels -->
+  <circle cx="11" cy="24" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+  <circle cx="21" cy="24" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Terminal lines inside cart -->
+  <rect x="11" y="10" width="8" height="1.5" rx="0.5" fill="currentColor"/>
+  <rect x="12" y="12.5" width="6" height="1.5" rx="0.5" fill="currentColor"/>
+  <rect x="13" y="15" width="4" height="1.5" rx="0.5" fill="currentColor"/>
+  <!-- Blinking cursor -->
+  <rect x="20" y="10" width="1.5" height="1.5" rx="0.5" fill="currentColor">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+</svg>
