@@ -341,7 +341,7 @@ def init_db_pg(db: _DB) -> None:
             stock INTEGER,
             url TEXT,
             queried_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            UNIQUE(product_id, store)
+            UNIQUE(product_id, store, queried_at)
         )
     """)
     for idx_sql in [
@@ -514,7 +514,7 @@ _SQLITE_DDL = """\
             stock INTEGER,
             url TEXT,
             queried_at TEXT NOT NULL DEFAULT (datetime('now')),
-            UNIQUE(product_id, store)
+            UNIQUE(product_id, store, queried_at)
         );
         CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store);
         CREATE INDEX IF NOT EXISTS idx_ps_line ON price_snapshots(line);
