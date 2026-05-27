@@ -12,7 +12,7 @@ export default function AboutSection() {
           {isES ? "Sobre nosotros" : "About us"}
         </p>
         <h2 className="text-[clamp(32px,5vw,48px)] leading-[1.1] font-black text-[#9fe870] mb-6 tracking-tight">
-          {isES ? "Construido en Perú.\nPara el mundo." : "Built in Peru.\nFor the world."}
+          {isES ? <>Construido en Perú.<br />Para el mundo.</> : <>Built in Peru.<br />For the world.</>}
         </h2>
         <p className="text-base text-[#e2f6d5] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
