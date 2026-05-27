@@ -1,4 +1,7 @@
 {
   "version": 2,
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "env": {
+    "VERCEL_ENV": "production"
+  }
 }

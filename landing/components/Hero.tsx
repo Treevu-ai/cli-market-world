@@ -41,7 +41,14 @@ export default function Hero() {
 
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
           <button
-            onClick={() => { navigator.clipboard.writeText("pip install cli-market && market login"); }}
+            onClick={(e) => {
+              navigator.clipboard.writeText("pip install cli-market && market login");
+              const btn = e.currentTarget;
+              const orig = btn.innerHTML;
+              btn.innerHTML = isES ? "¡Copiado!" : "Copied!";
+              btn.classList.add("pointer-events-none");
+              setTimeout(() => { btn.innerHTML = orig; btn.classList.remove("pointer-events-none"); }, 1800);
+            }}
             className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors cursor-pointer shadow-sm">
             {isES ? "Instalar CLI" : "Install CLI"}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
