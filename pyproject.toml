@@ -34,10 +34,9 @@ pg = ["asyncpg"]
 [project.scripts]
 market = "market_cli:main"
 market-server = "market_server:main"
-wongcli = "wongcli:main"
 
 [tool.setuptools]
-py-modules = ["market_cli", "market_server", "market_mcp", "wongcli", "market_stores", "market_core"]
+py-modules = ["market_cli", "market_server", "market_mcp", "market_stores", "market_core"]
 
 [tool.ruff]
 line-length = 120
