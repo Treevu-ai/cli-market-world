@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { ModeProvider } from "@/hooks/useMode";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -66,7 +67,7 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#e8ebe6] overflow-x-hidden`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <LanguageProvider>{children}</LanguageProvider>
+        <ModeProvider><LanguageProvider>{children}</LanguageProvider></ModeProvider>
       </body>
     </html>
   );
