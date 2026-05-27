@@ -90,7 +90,7 @@ export default function DataSection() {
             { icon: "03", t_es: "Conecta a BigQuery, Snowflake o notebooks.", t_en: "Connect to BigQuery, Snowflake, notebooks." },
           ].map((f, i) => (
             <div key={i} className="bg-[var(--wise-green-pale)] rounded-3xl p-4 text-left overflow-hidden">
-              <p className="text-lg font-black text-[var(--wise-green)] mb-1">{f.icon}</p>
+              <p className="text-lg font-black text-[var(--wise-ink)] mb-1">{f.icon}</p>
               <p className="text-xs sm:text-sm text-[var(--wise-body)] leading-relaxed break-words">{isES ? f.t_es : f.t_en}</p>
             </div>
           ))}
