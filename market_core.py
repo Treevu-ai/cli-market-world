@@ -344,6 +344,11 @@ def init_db_pg(db: _DB) -> None:
             UNIQUE(product_id, store, queried_at)
         )
     """)
+    # Migration: drop old (product_id, store) unique constraint if it exists
+    try:
+        db.execute("ALTER TABLE price_snapshots DROP CONSTRAINT IF EXISTS price_snapshots_product_id_store_key")
+    except Exception:
+        pass  # constraint doesn't exist or already dropped
     for idx_sql in [
         "CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store)",
         "CREATE INDEX IF NOT EXISTS idx_ps_store ON price_snapshots(store)",
