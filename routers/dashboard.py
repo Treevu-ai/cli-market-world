@@ -57,9 +57,9 @@ def _dashboard_data():
         """
         SELECT line, line_name,
                COUNT(*) as count,
-               ROUND(AVG(price), 2) as avg_price,
-               ROUND(MIN(price), 2) as min_price,
-               ROUND(MAX(price), 2) as max_price
+               ROUND(AVG(price)::numeric, 2) as avg_price,
+               ROUND(MIN(price)::numeric, 2) as min_price,
+               ROUND(MAX(price)::numeric, 2) as max_price
         FROM price_snapshots WHERE price > 0 AND price < 999999
         GROUP BY line ORDER BY count DESC
         """
@@ -97,7 +97,7 @@ def _dashboard_data():
     top_discounts = db.execute(
         """
         SELECT name, store_name, price, list_price,
-               ROUND((1 - price / NULLIF(list_price,0)) * 100) as discount_pct,
+               ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
                currency, line_name
         FROM price_snapshots
         WHERE list_price > price AND price > 0 AND list_price < 999999
@@ -108,7 +108,7 @@ def _dashboard_data():
     # ── Cheapest store by line ───────────────────────────────────────────────
     cheapest_by_line = db.execute(
         """
-        SELECT line_name, store_name, ROUND(AVG(price),2) as avg_price, currency, COUNT(*) as n
+        SELECT line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
         FROM price_snapshots WHERE price > 0 AND price < 999999
         GROUP BY line, store ORDER BY line, avg_price ASC
         """
@@ -208,7 +208,7 @@ def _dashboard_data():
     # ── Operacional: store health scores ─────────────────────────────────────
     store_health = db.execute(
         """SELECT store, total_requests, total_successes,
-                  CASE WHEN total_requests>0 THEN ROUND(total_successes*100.0/total_requests,1) ELSE 0 END as success_pct,
+                  CASE WHEN total_requests>0 THEN ROUND((total_successes*100.0/total_requests)::numeric,1) ELSE 0 END as success_pct,
                   consecutive_failures, last_success, last_error
            FROM store_health ORDER BY success_pct ASC, consecutive_failures DESC"""
     ).fetchall()
