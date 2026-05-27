@@ -319,7 +319,11 @@ def _dashboard_data():
 
 def _static_dashboard() -> str:
     """Server-rendered fallback dashboard — no JavaScript required."""
-    data = _dashboard_data()
+    try:
+        data = _dashboard_data()
+    except Exception as e:
+        import traceback
+        return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"
     if "error" in data:
         return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
     
