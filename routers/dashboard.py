@@ -110,7 +110,7 @@ def _dashboard_data():
         """
         SELECT line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
         FROM price_snapshots WHERE price > 0 AND price < 999999
-        GROUP BY line, line_name, store, store_name ORDER BY line, avg_price ASC
+        GROUP BY line, line_name, store, store_name, currency ORDER BY line, avg_price ASC
         """
     ).fetchall()
 
