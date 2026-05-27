@@ -77,7 +77,7 @@ export default function DataSection() {
             {stats.by_country.slice(0, 8).map((c) => (
               <div key={c.country} className="flex items-center justify-between bg-white/5 rounded-3xl px-3 py-2.5 truncate">
                 <span className="text-xs text-[var(--wise-body)] truncate">{c.country}</span>
-                <span className="text-sm font-bold text-[var(--wise-green)] ml-2 shrink-0">{c.count?.toLocaleString()}</span>
+                <span className="text-sm font-bold text-[var(--wise-green)] ml-2 shrink-0">{c.count?.toLocaleString()} <span className="text-[10px] font-normal text-[var(--wise-mute)]">precios</span></span>
               </div>
             ))}
           </div>
