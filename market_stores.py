@@ -35,9 +35,9 @@ STORES = {
     "whirlpool_it": {"name":"Whirlpool IT","base":"https://www.whirlpool.it","country":"IT","currency":"EUR","emoji":"🇮🇹","line":"electro","platform":"vtex"},
     "whirlpool_fr": {"name":"Whirlpool FR","base":"https://www.whirlpool.fr","country":"FR","currency":"EUR","emoji":"🇫🇷","line":"electro","platform":"vtex"},
     "motorola_es": {"name":"Motorola ES","base":"https://www.motorola.es","country":"ES","currency":"EUR","emoji":"🇪🇸","line":"electro","platform":"need_token"},
-    "electrolux_mx": {"name":"Electrolux MX","base":"https://www.electrolux.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"vtex"},
-    "samsung_br": {"name":"Samsung BR","base":"https://www.samsung.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"vtex"},
-    "samsung_mx": {"name":"Samsung MX","base":"https://www.samsung.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"vtex"},
+    "electrolux_mx": {"name":"Electrolux MX","base":"https://www.electrolux.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"need_token"},
+    "samsung_br": {"name":"Samsung BR","base":"https://www.samsung.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"need_token"},
+    "samsung_mx": {"name":"Samsung MX","base":"https://www.samsung.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"need_token"},
 
     # ── HOGAR ──
     "easy_ar": {"name":"Easy AR","base":"https://www.easy.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"hogar","platform":"vtex"},
