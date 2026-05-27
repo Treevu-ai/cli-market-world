@@ -22,8 +22,10 @@ router = APIRouter(tags=["dashboard"])
 
 
 @router.get("/dashboard")
-def dashboard():
+def dashboard(static: bool = False):
     from fastapi.responses import HTMLResponse
+    if static:
+        return HTMLResponse(_static_dashboard())
     return HTMLResponse(DASHBOARD_HTML)
 
 
@@ -313,6 +315,66 @@ def _dashboard_data():
         # ── Weak signal ──────────────────────────────────────────────────────
         "outliers": outliers,
     }
+
+
+def _static_dashboard() -> str:
+    """Server-rendered fallback dashboard — no JavaScript required."""
+    data = _dashboard_data()
+    if "error" in data:
+        return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
+    
+    k = data["kpis"]
+    rows = []
+    rows.append(f"<tr><td>Precios</td><td style='color:#3cffd0'>{k['total_snapshots']:,}</td></tr>")
+    rows.append(f"<tr><td>Tiendas</td><td style='color:#3cffd0'>{k['active_stores']}/{k['total_stores']}</td></tr>")
+    rows.append(f"<tr><td>Países</td><td style='color:#3cffd0'>{len(data['by_country'])}</td></tr>")
+    rows.append(f"<tr><td>Ciclos</td><td style='color:#3cffd0'>{k['total_runs']}</td></tr>")
+    rows.append(f"<tr><td>24h activas</td><td style='color:#3cffd0'>{k['stores_24h']}</td></tr>")
+    
+    lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{r['avg_price']:.2f}</td><td>{r['min_price']:.2f}</td><td>{r['max_price']:.2f}</td></tr>" for r in data["by_line"])
+    disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r['discount_pct']}%</td></tr>" for r in data["top_discounts"])
+    cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{r['avg_price']:.2f}</td></tr>" for r in data["cheapest_by_line"])
+    out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{r['price']:.2f}</td></tr>" for r in data["outliers"])
+    fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{r['last_seen'][:19]}</td></tr>" for r in data["freshness"][:10])
+    coll = data["collector"]
+    
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>CLI Market // Data Moat</title>
+<style>
+body{{background:#0a0a0a;color:#b0b0b0;font:12px 'JetBrains Mono',monospace;padding:12px 16px}}
+h1{{color:#3cffd0;font-size:14px;margin:0 0 4px}}
+.sub{{color:#444;font-size:10px;margin:0 0 16px}}
+table{{border-collapse:collapse;width:100%;max-width:800px;margin-bottom:16px}}
+th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #1a1a1a}}
+td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px}}
+td.num{{text-align:right}}
+.section{{color:#3cffd0;font-size:11px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:2px}}
+.footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
+</style></head><body>
+<h1>CLI Market Data Moat</h1>
+<p class="sub">Server-rendered · PostgreSQL · {coll['status']} · {coll['prices_collected']:,} prices · {coll['stores_succeeded']} stores · {data['generated_at'][:19]}</p>
+
+<div class="section">[ KPIs ]</div>
+<table><tr><th>Metric</th><th>Value</th></tr>{''.join(rows)}</table>
+
+<div class="section">[ PRECIOS POR LÍNEA ]</div>
+<table><tr><th>Línea</th><th>Precios</th><th>Avg</th><th>Min</th><th>Max</th></tr>{lines_html}</table>
+
+<div class="section">[ TIENDA MÁS BARATA POR LÍNEA ]</div>
+<table><tr><th>Línea</th><th>Tienda</th><th>Avg</th></tr>{cheap_html}</table>
+
+<div class="section">[ TOP DESCUENTOS ]</div>
+<table><tr><th>Producto</th><th>Tienda</th><th>Desc</th></tr>{disc_html}</table>
+
+<div class="section">[ OUTLIERS ]</div>
+<table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
+
+<div class="section">[ FRESCURA ]</div>
+<table><tr><th>Tienda</th><th>Último snapshot</th></tr>{fresh_html}</table>
+
+<p class="footer">actualizado {data['generated_at'][:19]} · CLI Market Data Moat · auto-refresh 5min</p>
+</body></html>"""
+    return html
 
 
 @router.get("/dashboard/usage")
