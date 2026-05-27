@@ -342,7 +342,7 @@ def _static_dashboard() -> str:
     disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r['discount_pct']}%</td></tr>" for r in data["top_discounts"])
     cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{r['avg_price']:.2f}</td></tr>" for r in data["cheapest_by_line"])
     out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{r['price']:.2f}</td></tr>" for r in data["outliers"])
-    fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{r['last_seen'][:19]}</td></tr>" for r in data["freshness"][:10])
+    fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{str(r['last_seen'])[:19]}</td></tr>" for r in data["freshness"][:10])
     coll = data["collector"]
     
     html = f"""<!DOCTYPE html>
