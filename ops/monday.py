@@ -77,7 +77,7 @@ def load_store_meta() -> dict[str, dict[str, str]]:
         spec.loader.exec_module(mod)
         stores = getattr(mod, "STORES", {})
         return {
-            k: {"country": v.get("country", "??"), "line": v.get("line", "unknown")}
+            k: {"country": v.get("country", "??"), "line": v.get("line", "unknown"), "name": v.get("name", k)}
             for k, v in stores.items()
         }
     except Exception:
@@ -227,21 +227,22 @@ def build_report(data: dict, meta: dict) -> str:
             )
 
         lines += ["", "---", "", "## ✉️ Outreach Drafts", ""]
-        for s in sorted(critical, key=lambda x: x["pct"])[:5]:
+        for s in sorted(critical, key=lambda x: x["pct"]):
             sid = s.get("store", "")
             info = meta.get(sid, {})
             country = info.get("country", "??")
             line = LINE_LABELS.get(info.get("line", ""), info.get("line", "?"))
             locale = LOCALE_MAP.get(country, "es")
             tpl = OUTREACH_ES if locale == "es" else OUTREACH_EN
+            store_name = info.get("name", sid)
             draft = tpl.format(
-                store_name=sid,
+                store_name=store_name,
                 pct=s["pct"],
                 failures=s.get("consecutive_failures", "?"),
                 country=country,
                 line=line,
             )
-            lines.append(f"### {sid} ({country}, {line}) — {s['pct']:.0f}%")
+            lines.append(f"### {store_name} ({country}, {line}) — {s['pct']:.0f}%")
             lines.append("```")
             lines.append(draft)
             lines.append("```")
