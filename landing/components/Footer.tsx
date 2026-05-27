@@ -29,6 +29,7 @@ export default function Footer() {
           <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Precios" : "Pricing"}</a>
           <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
+          <a href="/retailers" className="hover:text-[var(--wise-ink)] transition-colors">For Retailers</a>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>
           <a href="mailto:hello@cli-market.dev" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Contacto" : "Contact"}</a>
