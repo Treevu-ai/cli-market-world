@@ -373,6 +373,11 @@ def _static_dashboard() -> str:
         return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
     
     k = data["kpis"]
+    coll = data["collector"]
+    import os as _os
+    env = _os.getenv("RAILWAY_ENVIRONMENT", _os.getenv("ENV", "production"))
+    cov_pct = round(k["active_stores"] / max(k["total_stores"], 1) * 100)
+    cov_bar = "█" * (cov_pct // 5) + "░" * (20 - cov_pct // 5)
     rows = []
     rows.append(f"<tr><td>Precios</td><td style='color:#3cffd0'>{k['total_snapshots']:,}</td></tr>")
     rows.append(f"<tr><td>Tiendas</td><td style='color:#3cffd0'>{k['active_stores']}/{k['total_stores']}</td></tr>")
@@ -393,7 +398,7 @@ def _static_dashboard() -> str:
         for r in data["inflation"])
     
     disp_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{(r['avg_price'] or 0):.2f}</td><td style='color:{'#ffbd2e' if (r['spread_ratio'] or 0)>2 else 'var(--green)'}'>{(r['spread_ratio'] or 0)}x</td></tr>"
+        f"<tr><td>{r['line']}</td><td>{(r['avg_price'] or 0):.2f}</td><td style='color:{'#ff4444' if (r['spread_ratio'] or 0)>10 else ('#ffbd2e' if (r['spread_ratio'] or 0)>2 else '#3cffd0')}'>{(r['spread_ratio'] or 0):.1f}x {'CRIT' if (r['spread_ratio'] or 0)>10 else ''}</td></tr>"
         for r in data["dispersion"])
     
     riser_html = "".join(
@@ -436,13 +441,18 @@ th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4
 td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px}}
 td.num{{text-align:right}}
 .section{{color:#3cffd0;font-size:11px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:2px}}
+.coverage{{font:10px monospace;margin:8px 0;color:#555}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
 </style></head><body>
 <h1>CLI Market Data Moat</h1>
-<p class="sub">Server-rendered · PostgreSQL · {coll['status']} · {coll['prices_collected']:,} prices · {coll['stores_succeeded']} stores · {data['generated_at'][:19]}</p>
+<p class="sub">{env.upper()} · PostgreSQL · collector {coll['status']} · {k['total_snapshots']:,} precios · {k['active_stores']}/{k['total_stores']} tiendas · {data['generated_at'][:19]}</p>
+<p class="coverage">COBERTURA: {k['active_stores']}/{k['total_stores']} ({cov_pct}%) {cov_bar}</p>
 
 <div class="section">[ KPIs ]</div>
 <table><tr><th>Metric</th><th>Value</th></tr>{''.join(rows)}</table>
+
+<div class="section">[ STORE STATUS ]</div>
+<table><tr><th>Tienda</th><th>Exito</th><th>Fallos</th><th>Estado</th></tr>{"".join(f"<tr><td>{h['store']}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{(h.get('success_pct',0) or 0):.0f}%</td><td>{h.get('consecutive_failures',0) or 0}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{'OK' if (h.get('success_pct',0) or 0)>=90 else ('WARN' if (h.get('success_pct',0) or 0)>=30 else 'DEAD')}</td></tr>" for h in data.get("store_health",[])[:15]) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
 
 <div class="section">[ PRECIOS POR LÍNEA ]</div>
 <table><tr><th>Línea</th><th>Precios</th><th>Avg</th><th>Min</th><th>Max</th></tr>{lines_html}</table>
@@ -462,11 +472,18 @@ td.num{{text-align:right}}
 <div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
 <table><tr><th>Línea</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
 
+<div class="section">[ CANASTA BÁSICA - COMPLETITUD ]</div>
+<table><tr><th>Tienda</th><th>Completitud</th><th>%</th><th>Total</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+
+<div class="section">[ ALERTAS DE CALIDAD ]</div>
+{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}% — posible error de scraping</p>" for d in data.get("top_discounts",[]) if abs(d.get("discount_pct",0) or 0)>=90) or '<p>sin descuentos sospechosos</p>'}
+
 <div class="section">[ STORE RELIABILITY ]</div>
 <table><tr><th>Tienda</th><th>Éxito</th><th>Fallos</th></tr>{health_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
 
 <div class="section">[ LINE × COUNTRY ]</div>
 {matrix_html or '<p>sin datos</p>'}
+{"<p class='gap' style='color:#ffbd2e;font-size:10px;margin:4px 0'>BRECHAS: "+", ".join(f"{k.split('|')[0]}x{k.split('|')[1]}" for k,v in {(f"{r['line']}|{r['country']}"):r['stores'] for r in data.get('line_country_matrix',[])}.items() if v==0)[:15]+"</p>" if any(v==0 for v in {(f"{r['line']}|{r['country']}"):r['stores'] for r in data.get('line_country_matrix',[])}.values()) else ""}
 
 <div class="section">[ CANASTA BÁSICA ]</div>
 <table><tr><th>Tienda</th><th>Productos</th><th>Total</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
