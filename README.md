@@ -37,7 +37,7 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
-<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> · <a href="https://cli-market-api.onrender.com/docs"><b>API docs</b></a> · <a href="https://cli-market-api.onrender.com/dashboard"><b>Dashboard</b></a></p>
+<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> · <a href="https://cli-market-production.up.railway.app/docs"><b>API docs</b></a> · <a href="https://cli-market-production.up.railway.app/dashboard"><b>Dashboard</b></a></p>
 
 ---
 
@@ -45,7 +45,7 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 ```bash
 pip install cli-market
-export MARKET_API_URL=https://cli-market-api.onrender.com
+export MARKET_API_URL=https://cli-market-production.up.railway.app
 market login
 market search "leche" --country PE
 market compare "aceite"
