@@ -447,14 +447,15 @@ td.num{{text-align:right}}
 .coverage{{font:10px monospace;margin:8px 0;color:#555}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
 </style></head><body>
-<h1>CLI Market Data Moat</h1>
-<p class="sub">{env.upper()} · PostgreSQL · collector {coll['status']} · {k['total_snapshots']:,} precios · {k['active_stores']}/{k['total_stores']} tiendas · {data['generated_at'][:19]}</p>
-<p class="coverage">COBERTURA: {k['active_stores']}/{k['total_stores']} ({cov_pct}%) {cov_bar}</p>
+<h1>CLI Market · Monitor de Precios</h1>
+<p class="sub">✅ Sistema activo · <b>{k['total_snapshots']:,} precios</b> recolectados de <b>{k['active_stores']} tiendas</b> (de {k['total_stores']} monitoreadas) · Actualizado {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC</p>
+<p class="coverage">🔵 {k['active_stores']} tiendas con datos hoy · ⬜ {k['total_stores']-k['active_stores']} sin datos · Progreso: {cov_pct}% {cov_bar}</p>
 
 <div class="section">[ KPIs ]</div>
 <table><tr><th>Metric</th><th>Value</th></tr>{''.join(rows)}</table>
 
-<div class="section">[ STORE STATUS ]</div>
+<div class="section">[ ESTADO DE TIENDAS ]</div>
+<p style="color:#555;font-size:10px;margin:0 0 6px">¿Cada tienda esta respondiendo? 🟢 OK = sin errores · 🟡 WARN = intermitente · 🔴 DEAD = no se obtuvieron precios. Puede ser un cambio en el sitio de la tienda o un bloqueo temporal.</p>
 <table><tr><th>Tienda</th><th>Exito</th><th>Fallos</th><th>Estado</th></tr>{"".join(f"<tr><td>{h['store']}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{(h.get('success_pct',0) or 0):.0f}%</td><td>{h.get('consecutive_failures',0) or 0}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{'OK' if (h.get('success_pct',0) or 0)>=90 else ('WARN' if (h.get('success_pct',0) or 0)>=30 else 'DEAD')}</td></tr>" for h in data.get("store_health",[])[:15]) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
 
 <div class="section">[ PRECIOS POR LÍNEA ]</div>
@@ -470,9 +471,10 @@ td.num{{text-align:right}}
 <table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
 
 <div class="section">[ INFLACIÓN 7d ]</div>
-<table><tr><th>Línea</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=4>sin datos (necesita 2+ ciclos separados)</td></tr>'}</table>
+<table><tr><th>Línea</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=4>⚠ Sin datos historicos todavia — este indicador se activara cuando tengamos al menos 7 dias de datos continuos.</td></tr>'}</table>
 
 <div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
+<p style="color:#555;font-size:10px;margin:0 0 6px">¿Cuanta diferencia hay entre el producto mas barato y el mas caro de cada categoria? 1x-5x = normal · 5x-20x = alta · CRIT (+20x) = probable error o productos muy distintos mezclados.</p>
 <table><tr><th>Línea</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
 
 <div class="section">[ CANASTA BÁSICA - COMPLETITUD ]</div>
@@ -492,13 +494,13 @@ td.num{{text-align:right}}
 <table><tr><th>Tienda</th><th>Productos</th><th>Total</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
 
 <div class="section">[ PRICE MOVERS ]</div>
-<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>sin datos</td></tr>'}</table>
-<table><tr><th colspan=4 style="color:#3cffd0">▼ BAJARON</th></tr>{faller_html or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>⏳ Sin datos aun — se necesitan dos capturas consecutivas para detectar movimientos.</td></tr>'}</table>
+<table><tr><th colspan=4 style="color:#3cffd0">▼ BAJARON</th></tr>{faller_html or '<tr><td colspan=4></td></tr>'}</table>
 
 <div class="section">[ FRESCURA ]</div>
 <table><tr><th>Tienda</th><th>Último snapshot</th></tr>{fresh_html}</table>
 
-<p class="footer">actualizado {data['generated_at'][:19]} · CLI Market Data Moat · auto-refresh 5min</p>
+<p class="footer">Ultima actualizacion: {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC · Esta pagina se actualiza automaticamente · CLI Market · cli-market.dev</p>
 </body></html>"""
     return html
 
