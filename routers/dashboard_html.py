@@ -9,7 +9,7 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CLI Market // Data Moat</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="document.getElementById('statusRight').textContent='Chart.js CDN blocked'"></script>
 <style>
   :root {
     --bg: #0a0a0a;
@@ -94,6 +94,7 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
 <p class="footer" id="footer"></p>
 
 <script>
+document.getElementById('statusRight').textContent = 'JS loaded, fetching...';
 let charts = [];
 function destroyCharts(){charts.forEach(c=>c.destroy());charts=[]}
 
