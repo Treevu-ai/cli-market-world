@@ -1,7 +1,7 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schema.json",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents — 36 MCP tools to search, compare, and purchase across 60 verified retailers (VTEX + Shopify + Magento) in 11 countries.",
+  "description": "Commerce infrastructure for AI agents — 36 MCP tools to search, compare, and purchase across 30 retailers in 7 countries. 13,000+ real prices, refreshed every 8 hours. MIT.",
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
