@@ -23,12 +23,18 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
     if (!email || !useCase) { setError(isES ? "Completa todos los campos" : "Fill all fields"); return; }
     setLoading(true); setError("");
     try {
-      await fetch("https://cli-market-production.up.railway.app/v1/contact", {
+      const res = await fetch("https://cli-market-production.up.railway.app/v1/contact", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, email, use_case: useCase }),
       });
+      if (res.ok) { setSent(true); return; }
+      throw new Error("Server error");
+    } catch {
+      const subject = encodeURIComponent(`CLI Market ${plan} — ${email}`);
+      const body = encodeURIComponent(useCase);
+      window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
       setSent(true);
-    } catch { setSent(true); }
+    }
     setLoading(false);
   };
 
