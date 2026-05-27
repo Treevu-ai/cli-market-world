@@ -380,27 +380,27 @@ def _static_dashboard() -> str:
     rows.append(f"<tr><td>Ciclos</td><td style='color:#3cffd0'>{k['total_runs']}</td></tr>")
     rows.append(f"<tr><td>24h activas</td><td style='color:#3cffd0'>{k['stores_24h']}</td></tr>")
     
-    lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{r['avg_price']:.2f}</td><td>{r['min_price']:.2f}</td><td>{r['max_price']:.2f}</td></tr>" for r in data["by_line"])
-    disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r['discount_pct']}%</td></tr>" for r in data["top_discounts"])
-    cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{r['avg_price']:.2f}</td></tr>" for r in data["cheapest_by_line"])
-    out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{r['price']:.2f}</td></tr>" for r in data["outliers"])
+    lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{(r['avg_price'] or 0):.2f}</td><td>{(r['min_price'] or 0):.2f}</td><td>{(r['max_price'] or 0):.2f}</td></tr>" for r in data["by_line"])
+    disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r.get('discount_pct',0) or 0}%</td></tr>" for r in data["top_discounts"])
+    cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{(r['avg_price'] or 0):.2f}</td></tr>" for r in data["cheapest_by_line"])
+    out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{(r['price'] or 0):.2f}</td></tr>" for r in data["outliers"])
     fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{str(r['last_seen'])[:19]}</td></tr>" for r in data["freshness"][:10])
     coll = data["collector"]
 
     # ── New analytics HTML ──────────────────────────────────────────────────
     infl_html = "".join(
-        f"<tr><td>{r['line']}</td><td style='color:var(--green)'>{r['avg_now']:.2f}</td><td>{r['avg_before']:.2f}</td><td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
+        f"<tr><td>{r['line']}</td><td style='color:var(--green)'>{(r['avg_now'] or 0):.2f}</td><td>{(r['avg_before'] or 0):.2f}</td><td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
         for r in data["inflation"])
     
     disp_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{r['avg_price']:.2f}</td><td style='color:{'#ffbd2e' if r['spread_ratio']>2 else 'var(--green)'}'>{r['spread_ratio']}x</td></tr>"
+        f"<tr><td>{r['line']}</td><td>{(r['avg_price'] or 0):.2f}</td><td style='color:{'#ffbd2e' if (r['spread_ratio'] or 0)>2 else 'var(--green)'}'>{(r['spread_ratio'] or 0)}x</td></tr>"
         for r in data["dispersion"])
     
     riser_html = "".join(
-        f"<tr><td>{r['product_id'][:25]}</td><td>{r['price_before']:.2f}</td><td>{r['price_now']:.2f}</td><td style='color:#ff4444'>+{r['delta_pct']}%</td></tr>"
+        f"<tr><td>{r['product_id'][:25]}</td><td>{(r['price_before'] or 0):.2f}</td><td>{(r['price_now'] or 0):.2f}</td><td style='color:#ff4444'>+{r['delta_pct']}%</td></tr>"
         for r in data["top_risers"][:5])
     faller_html = "".join(
-        f"<tr><td>{r['product_id'][:25]}</td><td>{r['price_before']:.2f}</td><td>{r['price_now']:.2f}</td><td style='color:#3cffd0'>{r['delta_pct']}%</td></tr>"
+        f"<tr><td>{r['product_id'][:25]}</td><td>{(r['price_before'] or 0):.2f}</td><td>{(r['price_now'] or 0):.2f}</td><td style='color:#3cffd0'>{r['delta_pct']}%</td></tr>"
         for r in data["top_fallers"][:5])
     
     health_html = "".join(
