@@ -25,7 +25,7 @@ STORES = {
     "farmatodo_co": {"name":"Farmatodo CO","base":"https://www.farmatodo.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex"},
 
     # ── ELECTRO ──
-    "electrolux_ar": {"name":"Electrolux AR","base":"https://www.electrolux.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro","platform":"vtex"},
+    "electrolux_ar": {"name":"Electrolux AR","base":"https://www.tienda.electrolux.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro","platform":"vtex"},
     "motorola_ar": {"name":"Motorola AR","base":"https://www.motorola.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro","platform":"vtex"},
     "whirlpool_ar": {"name":"Whirlpool AR","base":"https://www.whirlpool.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro","platform":"vtex"},
     "motorola_br": {"name":"Motorola BR","base":"https://www.motorola.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"vtex"},
@@ -34,7 +34,7 @@ STORES = {
     "motorola_cl": {"name":"Motorola CL","base":"https://www.motorola.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"electro","platform":"vtex"},
     "whirlpool_it": {"name":"Whirlpool IT","base":"https://www.whirlpool.it","country":"IT","currency":"EUR","emoji":"🇮🇹","line":"electro","platform":"vtex"},
     "whirlpool_fr": {"name":"Whirlpool FR","base":"https://www.whirlpool.fr","country":"FR","currency":"EUR","emoji":"🇫🇷","line":"electro","platform":"vtex"},
-    "motorola_es": {"name":"Motorola ES","base":"https://www.motorola.es","country":"ES","currency":"EUR","emoji":"🇪🇸","line":"electro","platform":"vtex"},
+    "motorola_es": {"name":"Motorola ES","base":"https://www.motorola.es","country":"ES","currency":"EUR","emoji":"🇪🇸","line":"electro","platform":"need_token"},
     "electrolux_mx": {"name":"Electrolux MX","base":"https://www.electrolux.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"vtex"},
     "samsung_br": {"name":"Samsung BR","base":"https://www.samsung.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"vtex"},
     "samsung_mx": {"name":"Samsung MX","base":"https://www.samsung.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"vtex"},
