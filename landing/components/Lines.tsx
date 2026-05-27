@@ -11,7 +11,7 @@ const data=[
 export default function Lines() {
   const { t: _t } = useLang();
   return (
-    <section id="coverage" className="relative flex flex-col w-full bg-[#080808] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section id="lines" className="relative flex flex-col w-full bg-[#080808] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col gap-3 max-w-[600px]">
         <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#FFD600]/40"/>{_t("lines_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3.5rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">{_t("lines_title")}</h2>
