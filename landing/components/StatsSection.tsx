@@ -12,7 +12,7 @@ const stats = [
 
 function Counter({ end, label, delay }: { end: number; label: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "0px 0px -120px 0px" });
   const spring = useSpring(0, { stiffness: 60, damping: 20, duration: 2000 });
   const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
 
