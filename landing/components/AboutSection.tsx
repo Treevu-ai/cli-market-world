@@ -23,9 +23,11 @@ export default function AboutSection() {
         {/* Founder card */}
         <div className="bg-[var(--wise-green-pale)] rounded-3xl p-8 text-left max-w-[480px] mx-auto">
           <div className="flex items-start gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-[var(--wise-ink)] flex items-center justify-center shrink-0">
-              <span className="text-[#9fe870] text-lg font-black">A</span>
-            </div>
+            <img
+              src="/grok-image-b03d62b8-7a6d-4610-82f0-1475243924d3.png"
+              alt="Antonio Cuba"
+              className="w-12 h-12 rounded-full object-cover shrink-0"
+            />
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-lg font-bold text-[var(--wise-ink)]">Antonio Cuba</h3>
