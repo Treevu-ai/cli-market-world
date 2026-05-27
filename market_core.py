@@ -73,16 +73,7 @@ DB_FILE = DATA_DIR / "market.db"
 
 # ── Stores (VTEX retailers) ───────────────────────────────────────────────────
 
-# Canonical STORES source: market_stores.py (27 verified VTEX retailers with base URLs).
-# Set MARKET_STORES=expanded to use market_stores_cli.py (3,760 entries, display-only, no base URLs).
-# To add/remove retailers: edit stores_curated.csv, run: python3 gen_stores.py
-if os.getenv("MARKET_STORES", "") == "expanded":
-    try:
-        from market_stores_cli import STORES
-    except ImportError:
-        from market_stores import STORES
-else:
-    from market_stores import STORES
+from market_stores import STORES
 
 LINES = {
     "supermercados":   {"name": "Supermercados",          "emoji": "🛒", "description": "Alimentos, bebidas y consumo diario"},
