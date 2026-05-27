@@ -280,6 +280,45 @@ def _dashboard_data():
             pass
     outliers = outliers[:10]
 
+    # ── Inflation: avg price delta between last 7d and 7-14d ago ────────────
+    inflation = []
+    for row in by_line:
+        recent_avg = db.execute(
+            """SELECT ROUND(AVG(price)::numeric,2) as avg_price
+               FROM price_snapshots WHERE line=? AND price>0 AND price<999999 AND queried_at >= ?""",
+            (row["line"], now7)
+        ).fetchone()
+        older_avg = db.execute(
+            """SELECT ROUND(AVG(price)::numeric,2) as avg_price
+               FROM price_snapshots WHERE line=? AND price>0 AND price<999999 AND queried_at >= ? AND queried_at < ?""",
+            (row["line"], now14, now7)
+        ).fetchone()
+        r_avg = recent_avg["avg_price"] if recent_avg else 0
+        o_avg = older_avg["avg_price"] if older_avg else 0
+        delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg and o_avg > 0 else 0
+        inflation.append({
+            "line": row["line_name"] or row["line"],
+            "avg_now": r_avg, "avg_before": o_avg, "delta_pct": delta
+        })
+
+    # ── Canasta basica: fixed 10 products compared across top stores ─────────
+    canasta_products = ["leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon"]
+    canasta: dict[str, dict] = {}
+    for prod in canasta_products:
+        rows = db.execute(
+            """SELECT store_name, store, MIN(price) as best_price, currency
+               FROM price_snapshots WHERE price>0 AND price<999999 AND name LIKE ?
+               GROUP BY store_name, store, currency ORDER BY best_price ASC""",
+            (f"%{prod}%",)
+        ).fetchall()
+        for r in rows:
+            s = r["store_name"]
+            canasta.setdefault(s, {"store_name": s, "items": 0, "total": 0, "currency": r["currency"]})
+            canasta[s]["items"] += 1
+            canasta[s]["total"] = round(canasta[s]["total"] + r["best_price"], 2)
+    canasta_basica = sorted([v for v in canasta.values() if v["items"] >= 3],
+                            key=lambda x: x["total"])[:10]
+
     db.close()
 
     return {
@@ -317,6 +356,9 @@ def _dashboard_data():
         "products_per_store": [dict(r) for r in products_per_store],
         # ── Weak signal ──────────────────────────────────────────────────────
         "outliers": outliers,
+        # ── Analytics ────────────────────────────────────────────────────────
+        "inflation": inflation,
+        "canasta_basica": canasta_basica,
     }
 
 
@@ -344,6 +386,44 @@ def _static_dashboard() -> str:
     out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{r['price']:.2f}</td></tr>" for r in data["outliers"])
     fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{str(r['last_seen'])[:19]}</td></tr>" for r in data["freshness"][:10])
     coll = data["collector"]
+
+    # ── New analytics HTML ──────────────────────────────────────────────────
+    infl_html = "".join(
+        f"<tr><td>{r['line']}</td><td style='color:var(--green)'>{r['avg_now']:.2f}</td><td>{r['avg_before']:.2f}</td><td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
+        for r in data["inflation"])
+    
+    disp_html = "".join(
+        f"<tr><td>{r['line']}</td><td>{r['avg_price']:.2f}</td><td style='color:{'#ffbd2e' if r['spread_ratio']>2 else 'var(--green)'}'>{r['spread_ratio']}x</td></tr>"
+        for r in data["dispersion"])
+    
+    riser_html = "".join(
+        f"<tr><td>{r['product_id'][:25]}</td><td>{r['price_before']:.2f}</td><td>{r['price_now']:.2f}</td><td style='color:#ff4444'>+{r['delta_pct']}%</td></tr>"
+        for r in data["top_risers"][:5])
+    faller_html = "".join(
+        f"<tr><td>{r['product_id'][:25]}</td><td>{r['price_before']:.2f}</td><td>{r['price_now']:.2f}</td><td style='color:#3cffd0'>{r['delta_pct']}%</td></tr>"
+        for r in data["top_fallers"][:5])
+    
+    health_html = "".join(
+        f"<tr><td>{r['store']}</td><td style='color:{'#3cffd0' if r['success_pct']>=90 else ('#ffbd2e' if r['success_pct']>=50 else '#ff4444')}'>{r['success_pct']}%</td><td>{r['consecutive_failures']}</td></tr>"
+        for r in data["store_health"][:10])
+    
+    matrix_html = ""
+    if data["line_country_matrix"]:
+        lines = list(dict.fromkeys(r["line"] for r in data["line_country_matrix"]))
+        countries = sorted(set(r["country"] for r in data["line_country_matrix"]))
+        lookup = {f"{r['line']}|{r['country']}": r["stores"] for r in data["line_country_matrix"]}
+        matrix_html = "<table><tr><th></th>" + "".join(f"<th>{c}</th>" for c in countries) + "</tr>"
+        for l in lines:
+            matrix_html += f"<tr><td>{l}</td>"
+            for c in countries:
+                v = lookup.get(f"{l}|{c}", 0)
+                matrix_html += f"<td style='color:{'#3cffd0' if v>0 else '#333'}'>{v or '·'}</td>"
+            matrix_html += "</tr>"
+        matrix_html += "</table>"
+    
+    canasta_html = "".join(
+        f"<tr><td>{r['store_name']}</td><td>{r['items']}/10</td><td style='color:#3cffd0'>{r['currency']} {r['total']:.2f}</td></tr>"
+        for r in data["canasta_basica"])
     
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>CLI Market // Data Moat</title>
@@ -375,6 +455,25 @@ td.num{{text-align:right}}
 
 <div class="section">[ OUTLIERS ]</div>
 <table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
+
+<div class="section">[ INFLACIÓN 7d ]</div>
+<table><tr><th>Línea</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=4>sin datos (necesita 2+ ciclos separados)</td></tr>'}</table>
+
+<div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
+<table><tr><th>Línea</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
+
+<div class="section">[ STORE RELIABILITY ]</div>
+<table><tr><th>Tienda</th><th>Éxito</th><th>Fallos</th></tr>{health_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
+
+<div class="section">[ LINE × COUNTRY ]</div>
+{matrix_html or '<p>sin datos</p>'}
+
+<div class="section">[ CANASTA BÁSICA ]</div>
+<table><tr><th>Tienda</th><th>Productos</th><th>Total</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
+
+<div class="section">[ PRICE MOVERS ]</div>
+<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+<table><tr><th colspan=4 style="color:#3cffd0">▼ BAJARON</th></tr>{faller_html or '<tr><td colspan=4>sin datos</td></tr>'}</table>
 
 <div class="section">[ FRESCURA ]</div>
 <table><tr><th>Tienda</th><th>Último snapshot</th></tr>{fresh_html}</table>
