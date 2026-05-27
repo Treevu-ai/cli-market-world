@@ -38,15 +38,18 @@ async def admin_collect(stores: int = 0, queries: int = 0):
     """
     from collect_prices import (
         build_query_list,
-        init_schema_sqlite,
+        _get_feedback_db,
         run_collection,
     )
+    from market_core import ensure_db_initialized
+
+    ensure_db_initialized()
 
     sl = list(STORES.keys())
     if stores:
         sl = sl[:stores]
 
-    db = init_schema_sqlite()
+    db = _get_feedback_db()
     ql = build_query_list(db=db, cycle=0)
     if queries:
         ql = ql[:queries]
