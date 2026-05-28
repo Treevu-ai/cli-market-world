@@ -17,7 +17,7 @@ export default function Hero() {
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-32 lg:py-40 text-center">
         <h1 className="text-[clamp(36px,7vw,72px)] leading-[0.95] font-black text-[var(--wise-ink)] max-w-[720px] tracking-tight">
           {isES
-            ? "La economía agentiva ya empezó.\nTu negocio, adentro o afuera."
+            ? "La economía de los agentes ya empezó.\nTu negocio, adentro o afuera."
             : "The agent economy is here.\nIs your business inside or out."}
         </h1>
 
