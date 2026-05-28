@@ -684,21 +684,6 @@ def _migrate_payment_schema(db) -> None:
     """Add payment columns/tables on existing deployments."""
     if USE_PG:
         db.execute("""
-            CREATE TABLE IF NOT EXISTS billing_pending (
-                external_id TEXT PRIMARY KEY,
-                gateway TEXT NOT NULL,
-                username TEXT NOT NULL,
-                kind TEXT NOT NULL DEFAULT 'subscription',
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-        """)
-        db.execute(
-            "ALTER TABLE app_orders ADD COLUMN IF NOT EXISTS gateway_ref TEXT DEFAULT ''"
-        )
-        db.execute(
-            "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT DEFAULT ''"
-        )
-        db.execute("""
             CREATE TABLE IF NOT EXISTS subscription_requests (
                 id TEXT PRIMARY KEY,
                 username TEXT NOT NULL,
@@ -712,6 +697,23 @@ def _migrate_payment_schema(db) -> None:
         db.execute(
             "CREATE INDEX IF NOT EXISTS idx_sub_req_email ON subscription_requests(email)"
         )
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS billing_pending (
+                external_id TEXT PRIMARY KEY,
+                gateway TEXT NOT NULL,
+                username TEXT NOT NULL,
+                kind TEXT NOT NULL DEFAULT 'subscription',
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        for stmt in (
+            "ALTER TABLE app_orders ADD COLUMN IF NOT EXISTS gateway_ref TEXT DEFAULT ''",
+            "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT DEFAULT ''",
+        ):
+            try:
+                db.execute(stmt)
+            except Exception as e:
+                logger.warning("PG migration skipped: %s", e)
         return
     db.execute("""
         CREATE TABLE IF NOT EXISTS billing_pending (

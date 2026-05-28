@@ -448,30 +448,36 @@ def request_pro_subscription(body: dict, authorization: str | None = Header(None
 
     Default billing flow (no PayPal API friction). Requires subscriber email.
     """
-    check_rate_limit("billing-request-pro")
-    email = (body.get("email") or "").strip().lower()
-    lang = (body.get("lang") or "en").strip().lower()[:2]
-    force = bool(body.get("resend"))
-    note = (body.get("note") or body.get("use_case") or "").strip()
+    try:
+        check_rate_limit("billing-request-pro")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        force = bool(body.get("resend"))
+        note = (body.get("note") or body.get("use_case") or "").strip()
 
-    if not email or not _EMAIL_RE.match(email):
-        raise HTTPException(status_code=400, detail="valid email is required")
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
 
-    username = (body.get("username") or "").strip()
-    if authorization:
-        try:
-            username = require_user(authorization)
-        except HTTPException:
-            if not username:
-                raise
+        username = (body.get("username") or "").strip()
+        if authorization:
+            try:
+                username = require_user(authorization)
+            except HTTPException:
+                if not username:
+                    raise
 
-    return process_pro_subscription_request(
-        email=email,
-        lang=lang,
-        username=username,
-        force=force,
-        note=note,
-    )
+        return process_pro_subscription_request(
+            email=email,
+            lang=lang,
+            username=username,
+            force=force,
+            note=note,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("request-pro failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 @router.post("/billing/paypal")
