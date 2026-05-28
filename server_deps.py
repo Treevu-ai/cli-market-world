@@ -116,6 +116,21 @@ def require_user(authorization: str | None) -> str:
     return auth_user(authorization.replace("Bearer ", ""))
 
 
+def require_admin(authorization: str | None) -> str:
+    """Protect ops/admin routes with MARKET_API_TOKEN."""
+    if not DEFAULT_TOKEN:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin API disabled — set MARKET_API_TOKEN on the server.",
+        )
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Admin token required")
+    token = authorization.replace("Bearer ", "").strip()
+    if token != DEFAULT_TOKEN:
+        raise HTTPException(status_code=401, detail="Admin token invalid")
+    return "admin"
+
+
 def require_checkout_access(username: str) -> None:
     """Raise 403 if user's tier cannot use checkout (unless legacy bypass)."""
     from market_core import user_can_checkout

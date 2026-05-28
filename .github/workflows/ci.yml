@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt pytest httpx
+
+      - name: Run tests
+        run: pytest tests/ -q
+
+  smoke-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Production smoke
+        run: bash ops/smoke_e2e.sh
+
+      - name: Collector health gate
+        run: |
+          python3 - <<'PY'
+          import httpx
+          r = httpx.get("https://cli-market-production.up.railway.app/dashboard/data", timeout=30)
+          r.raise_for_status()
+          k = r.json().get("kpis", {})
+          pct = float(k.get("store_success_pct") or 0)
+          healthy = int(k.get("healthy_stores") or 0)
+          total = int(k.get("total_stores") or 1)
+          print(f"Store health: {healthy}/{total} ({pct}%)")
+          PY

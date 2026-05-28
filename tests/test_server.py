@@ -505,3 +505,22 @@ def test_activate_pro_by_request_id(monkeypatch):
     assert db_get_subscription("admin")["tier"] == "pro"
     req = db_find_subscription_request(request_id=req_id)
     assert req["status"] == "activated"
+
+
+def test_admin_requires_token_when_configured(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    r = client.get("/admin/debug-fetch")
+    assert r.status_code == 401
+
+    r = client.get("/admin/debug-fetch", headers={"Authorization": "Bearer ops-secret-token"})
+    assert r.status_code == 200
+
+
+def test_admin_disabled_without_token(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "")
+    r = client.get("/admin/debug-fetch")
+    assert r.status_code == 503

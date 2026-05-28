@@ -2,8 +2,8 @@ name: Monday Ops Playbook
 
 on:
   schedule:
-    - cron: "0 13 * * 1"  # 13:00 UTC = 08:00 Lima every Monday
-  workflow_dispatch:       # manual trigger from GitHub UI
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
 
 jobs:
   ops:
@@ -20,11 +20,15 @@ jobs:
       - name: Install dependencies
         run: pip install httpx
 
-      - name: Run Monday report
-        run: python3 ops/monday.py --dry-run
+      - name: Run Monday report and Price Pulse
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python3 ops/monday.py
 
-      - name: Upload report
+      - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: ops-report
-          path: ops/reports/
+          path: |
+            ops/reports/
+            docs/metrics/

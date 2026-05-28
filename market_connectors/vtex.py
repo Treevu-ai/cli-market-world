@@ -52,7 +52,11 @@ class VtexConnector(BaseConnector):
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)})
             resp.raise_for_status()
-            return resp.json()
+            ct = resp.headers.get("content-type", "")
+            if "json" not in ct:
+                return []
+            data = resp.json()
+            return data if isinstance(data, list) else []
 
     async def fetch_all_products(self, store_config: dict,
                                   max_pages: int = 10) -> list[dict]:

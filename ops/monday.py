@@ -31,7 +31,7 @@ OUTREACH_ES = """Asunto: {store_name} — reactivar tienda en CLI Market
 
 Hola equipo de {store_name},
 
-CLI Market indexa precios de 27 retailers en 7 paises para agentes de IA.
+CLI Market indexa precios de 30 retailers en 8 países para agentes de IA.
 Tu tienda no responde en los ultimos {failures} consultas (exito {pct:.0f}%).
 {line} — {country}.
 
@@ -44,7 +44,7 @@ OUTREACH_EN = """Subject: {store_name} — your store on CLI Market needs attent
 
 Hi {store_name} team,
 
-CLI Market indexes prices from 27 retailers across 7 countries for AI agents.
+CLI Market indexes prices from 30 retailers across 8 countries for AI agents.
 Your store hasn't responded in {failures} queries ({pct:.0f}% success).
 {line} — {country}.
 
@@ -253,6 +253,83 @@ def build_report(data: dict, meta: dict) -> str:
     return "\n".join(lines)
 
 
+def _iso_week(now: datetime) -> str:
+    return f"{now.isocalendar().year}-W{now.isocalendar().week:02d}"
+
+
+def build_price_pulse(data: dict, meta: dict) -> str:
+    """LinkedIn-ready weekly metrics file (GTM metrics/price-pulse-YYYY-WW.md)."""
+    now = datetime.now(timezone.utc)
+    week = _iso_week(now)
+    ds = now.strftime("%Y-%m-%d")
+    k = data.get("kpis", {})
+    total = k.get("total_stores") or len(meta)
+    healthy = k.get("healthy_stores", 0)
+    success_pct = k.get("store_success_pct", 0)
+    snapshots = k.get("total_snapshots", 0)
+    active = k.get("active_stores", 0)
+    runs = k.get("total_runs", 0)
+    coll = data.get("collector", {})
+
+    critical = [
+        h for h in data.get("store_health", [])
+        if float(h.get("success_pct", 0) or 0) < 30
+    ]
+
+    lines = [
+        "---",
+        f"week: {week}",
+        f"updated: {ds}",
+        "---",
+        "",
+        f"# Price Pulse — Semana {week.split('-W')[1]}",
+        "",
+        "## Collector",
+        f"- Stores success (≥80%): **{healthy} / {total}** ({success_pct}%)",
+        f"- Prices indexed (24h): **{snapshots:,}**",
+        f"- Active stores (24h): **{active}**",
+        f"- Collector runs: **{runs}**",
+        f"- Last run status: **{coll.get('status', 'unknown')}**",
+        "",
+        "## Data stories (auto)",
+        f"- Precios frescos esta semana: **{snapshots:,}**",
+        f"- Retailers con datos 24h: **{active}**",
+        "",
+        "## Marketing",
+        "- LinkedIn impressions:",
+        "- PyPI installs (week):",
+        "- Landing → Pro requests:",
+        "",
+        "## Product",
+        "- Self-serve signups:",
+        "- Pro activations (manual):",
+        "",
+        "## Tiendas críticas (<30%)",
+    ]
+    if critical:
+        for h in critical[:10]:
+            sid = h.get("store", "?")
+            info = meta.get(sid, {})
+            lines.append(
+                f"- {info.get('name', sid)} ({info.get('country', '??')}): "
+                f"{float(h.get('success_pct', 0) or 0):.0f}%"
+            )
+    else:
+        lines.append("- Ninguna en catálogo activo ✅")
+
+    lines += [
+        "",
+        "## Hook LinkedIn (copiar)",
+        "",
+        f"Esta semana: **{snapshots:,}** precios frescos · **{active}** retailers activos · "
+        f"**{healthy}/{total}** tiendas saludables. Un solo `pip install cli-market`.",
+        "",
+        "Fuente: `/dashboard/data` · [[GTM-Hub]]",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def notify_slack(url: str, text: str) -> None:
     httpx.post(url, json={"text": text}, timeout=10)
 
@@ -268,13 +345,19 @@ def main() -> None:
     data = fetch_data()
     meta = load_store_meta()
     report = build_report(data, meta)
+    pulse = build_price_pulse(data, meta)
 
     now = datetime.now(timezone.utc)
     ds = now.strftime("%Y-%m-%d")
+    week = _iso_week(now)
     os.makedirs("ops/reports", exist_ok=True)
+    os.makedirs("docs/metrics", exist_ok=True)
     path = f"ops/reports/{ds}.md"
+    pulse_path = f"docs/metrics/price-pulse-{week}.md"
     with open(path, "w") as f:
         f.write(report)
+    with open(pulse_path, "w") as f:
+        f.write(pulse)
 
     critical_count = sum(
         1 for h in data.get("store_health", [])
@@ -282,6 +365,7 @@ def main() -> None:
     )
 
     print(f"Report written: {path}" + (" [dry-run]" if dry else ""))
+    print(f"Price pulse: {pulse_path}" + (" [dry-run]" if dry else ""))
 
     if slack_url and not dry:
         k = data.get("kpis", {})
@@ -297,7 +381,7 @@ def main() -> None:
                     msg += f"• {h.get('store','?')} ({pct:.0f}%)\n"
         else:
             msg += "✅ Todas las tiendas saludables.\n"
-        msg += f"Reporte: {path}"
+        msg += f"Reporte: {path}\nPrice pulse: {pulse_path}"
         notify_slack(slack_url, msg)
         print("Slack notified.")
 
