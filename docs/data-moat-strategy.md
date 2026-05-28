@@ -58,7 +58,8 @@ flowchart LR
 |---------|-----|-----------|
 | `moat_summary.stores_fresh_24h` | Tiendas con datos <24h | ✅ “N retailers con refresh 8h” |
 | `moat_summary.coverage_7d_pct` | % catálogo activo con datos 7d | ✅ gate semana 2 |
-| `kpis.total_snapshots` (24h) | Volumen de observaciones | ✅ con fecha |
+| `kpis.total_indexed` | Precios en el moat (tabla actual) | ✅ headline dashboard |
+| `kpis.snapshots_24h` | Observaciones últimas 24h | ✅ refresh; puede ser 0 si collector pausado |
 | `canasta_basica` | Canasta reproducible | ✅ Day 9 |
 | `inflation` por línea | Trend interno | ⚠️ “según nuestro collector”, no INEI/INDEC |
 | `store_health.success_pct` (lifetime) | Ops / outreach | ❌ no marketing — sesgo histórico |
