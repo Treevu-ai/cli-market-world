@@ -1,0 +1,31 @@
+key,name,base,country,currency,line,status
+carrefour,Carrefour AR,https://www.carrefour.com.ar,AR,ARS,supermercados,live
+vea_ar,Vea AR,https://www.vea.com.ar,AR,ARS,supermercados,live
+jumbo_ar,Jumbo AR,https://www.jumbo.com.ar,AR,ARS,supermercados,live
+easy_ar,Easy AR,https://www.easy.com.ar,AR,ARS,hogar,live
+electrolux_ar,Electrolux AR,https://www.tienda.electrolux.com.ar,AR,ARS,electro,warn
+motorola_ar,Motorola AR,https://www.motorola.com.ar,AR,ARS,electro,live
+whirlpool_ar,Whirlpool AR,https://www.whirlpool.com.ar,AR,ARS,electro,live
+carrefour_br,Carrefour BR,https://www.carrefour.com.br,BR,BRL,supermercados,live
+sams_club_br,Sams Club BR,https://www.samsclub.com.br,BR,BRL,supermercados,live
+mambo_br,Mambo BR,https://www.mambo.com.br,BR,BRL,supermercados,live
+pacheco_br,Drogaria Pacheco,https://www.drogariaspacheco.com.br,BR,BRL,farmacias,warn
+motorola_br,Motorola BR,https://www.motorola.com.br,BR,BRL,electro,live
+chedraui,Chedraui,https://www.chedraui.com.mx,MX,MXN,supermercados,live
+heb_mx,HEB,https://www.heb.com.mx,MX,MXN,supermercados,live
+farmatodo_mx,Farmatodo MX,https://www.farmatodo.com.mx,MX,MXN,farmacias,warn
+motorola_mx,Motorola MX,https://www.motorola.com.mx,MX,MXN,electro,live
+exito,Exito,https://www.exito.com,CO,COP,supermercados,warn
+carulla,Carulla,https://www.carulla.com,CO,COP,supermercados,warn
+olimpica,Olimpica,https://www.olimpica.com,CO,COP,supermercados,live
+wong,Wong,https://www.wong.pe,PE,PEN,supermercados,live
+metro,Metro,https://www.metro.pe,PE,PEN,supermercados,live
+plazavea,Plaza Vea,https://www.plazavea.com.pe,PE,PEN,supermercados,live
+electrolux_cl,Electrolux CL,https://www.electrolux.cl,CL,CLP,electro,live
+motorola_cl,Motorola CL,https://www.motorola.cl,CL,CLP,electro,live
+whirlpool_it,Whirlpool IT,https://www.whirlpool.it,IT,EUR,electro,live
+whirlpool_fr,Whirlpool FR,https://www.whirlpool.fr,FR,EUR,electro,live
+promart,Promart,https://www.promart.pe,PE,PEN,hogar,warn
+coppel_ar,Coppel AR,https://www.coppel.com.ar,AR,ARS,departamentales,live
+cea_br,C&A BR,https://www.cea.com.br,BR,BRL,moda,live
+hering_br,Hering BR,https://www.hering.com.br,BR,BRL,moda,live
