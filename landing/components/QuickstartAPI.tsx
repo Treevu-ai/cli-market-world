@@ -53,9 +53,11 @@ Authorization: Bearer sk-xxxxxxxx
         <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[var(--wise-body)]">
           <span>{isES ? "REST simple con JSON plano" : "Simple REST with flat JSON"}</span>
           <span className="text-[#c5edab] hidden sm:inline">·</span>
-          <span>{isES ? "Precios actualizados cada 8 horas" : "Prices refreshed every 8 hours"}</span>
+          <a href="/tools" className="underline hover:text-[var(--wise-ink)]">
+            {isES ? "36 herramientas MCP → configs" : "36 MCP tools → configs"}
+          </a>
           <span className="text-[#c5edab] hidden sm:inline">·</span>
-          <span>{isES ? "Listo para agentes en Python, JS, etc." : "Ready for agents in Python, JS, etc."}</span>
+          <span>{isES ? "AI shopping API · price data API" : "AI shopping API · price data API"}</span>
         </div>
       </div>
     </section>

@@ -1,12 +1,12 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
-import PayPalButton from "@/components/PayPalButton";
+import ProSubscribeButton from "@/components/ProSubscribeButton";
 
 const tiers = [
   {
     name: "Free", price: "$0", period_es: "sin costo", period_en: "no cost",
-    f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "PayPal + QR Yape/Plin"],
-    f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "All payment methods included"],
+    f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "Búsqueda multi-retailer"],
+    f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "Multi-retailer search"],
     cta_es: "Instalar gratis", cta_en: "Install free", dark: false,
   },
   {
@@ -37,7 +37,9 @@ export default function Pricing() {
           {isES ? "Empieza gratis. Escala cuando quieras." : "Start free. Scale when ready."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
-          {isES ? "Sin tarjeta. Sin permanencia. Cancela cuando quieras." : "No credit card. No lock-in. Cancel anytime."}
+          {isES
+            ? "Sin tarjeta para Free. Pro: solicitud por email con link de pago."
+            : "No credit card for Free. Pro: request by email with payment link."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -76,7 +78,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              {tier.name === "Pro" ? <PayPalButton /> : (
+              {tier.name === "Pro" ? <ProSubscribeButton /> : (
                 <a href={tier.name === "Enterprise" ? "#contact" : "https://pypi.org/project/cli-market/"}
                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
                    tier.dark

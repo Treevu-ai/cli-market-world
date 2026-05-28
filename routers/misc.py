@@ -171,8 +171,9 @@ async def telegram_webhook(request: Request):
             f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n"
             f"\u2022 {len(STORES)} retailers en {len(LINES)} líneas\n"
             f"\u2022 {len(COUNTRIES)} países\n"
-            "\u2022 12 MCP tools\n"
-            "\u2022 API: cli-market-api.onrender.com"
+            "\u2022 36 MCP tools\n"
+            "\u2022 API: cli-market-production.up.railway.app\n"
+            "\u2022 Pro: cli-market.dev/#pricing"
         )
     elif text.startswith("/coverage") or text in ("coverage", "cobertura"):
         reply = "<b>Cobertura por línea:</b>\n"
@@ -184,18 +185,18 @@ async def telegram_webhook(request: Request):
             reply += f"{cv['name']}: {len(cv['stores'])}\n"
     elif text in ("/pricing", "pricing", "precio", "costo"):
         reply = (
-            "<b>Acceso:</b>\n"
-            "\u2022 CLI: open source (MIT)\n"
-            "\u2022 API: free tier (10/min, 100/día)\n"
-            "\u2022 Planes pagos: pronto\n\n"
-            "Repo: github.com/Treevu-ai/cli-market-latam"
+            "<b>Planes CLI Market:</b>\n"
+            "\u2022 Free: 1,000 req/día — pip install cli-market\n"
+            "\u2022 Pro: $49/mo — cli-market.dev/#pricing\n"
+            "\u2022 Enterprise: hello@cli-market.dev\n\n"
+            "Repo: github.com/Treevu-ai/cli-market-world"
         )
     elif text in ("/docs", "docs", "api"):
         reply = (
             "<b>Documentación:</b>\n"
             "\u2022 Swagger: /docs\n"
             "\u2022 llms.txt: cli-market.dev/llms.txt\n"
-            "\u2022 README: github.com/Treevu-ai/cli-market-latam"
+            "\u2022 README: github.com/Treevu-ai/cli-market-world"
         )
     else:
         reply = "<b>CLI Market Bot</b>\n\nComandos: /search /status /coverage /pricing /docs /help"

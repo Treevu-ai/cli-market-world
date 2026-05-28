@@ -30,6 +30,7 @@ export default function Footer() {
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Planes" : "Pricing"}</a>
           <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
           <span className="text-[#c5edab]">·</span>
+          <a href="/tools" className="hover:text-[var(--wise-ink)] transition-colors">MCP Tools</a>
           <a href="/retailers" className="hover:text-[var(--wise-ink)] transition-colors">For Retailers</a>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>
@@ -37,7 +38,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-[var(--wise-body)] font-mono">
-          {isES ? "41 retailers · 8 países · 2 plataformas · 13K precios · MIT License" : "41 retailers · 8 countries · 2 platforms · 13K prices · MIT License"}
+          {isES ? "30 retailers · 8 países · 36 MCP · 13K precios · MIT License" : "30 retailers · 8 countries · 36 MCP · 13K prices · MIT License"}
         </p>
       </div>
     </footer>

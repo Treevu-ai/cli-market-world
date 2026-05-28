@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Set temp dir BEFORE importing market_core
 TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
 os.environ["MARKET_DATA_DIR"] = TEST_DATA_DIR
+os.environ["MARKET_LEGACY_CHECKOUT"] = "1"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -30,7 +31,7 @@ client = TestClient(app)
 def clean_db():
     """Reset DB state before each test."""
     db = get_db()
-    for table in ["app_carts", "app_orders", "app_order_items", "rate_limits"]:
+    for table in ["app_carts", "app_orders", "app_order_items", "rate_limits", "billing_pending", "subscriptions", "subscription_requests"]:
         db.execute(f"DELETE FROM {table}")
     db.execute("DELETE FROM app_users")
     db.commit()
@@ -316,3 +317,191 @@ def test_mcp_module_has_get_token():
     """Verify mcp module has get_token() for session auth."""
     from market_mcp import get_token
     assert callable(get_token)
+
+
+# ── Payment / PayPal webhook tests ───────────────────────────────────────────
+
+def test_paypal_webhook_subscription_activated():
+    from unittest.mock import AsyncMock, patch
+    from market_core import db_save_billing_pending, db_get_subscription
+
+    db_save_billing_pending("I-SUB123", "paypal", "admin", "subscription")
+    event = {
+        "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
+        "resource": {"id": "I-SUB123", "custom_id": "admin", "status": "ACTIVE"},
+    }
+    with patch(
+        "market_connectors.paypal_payments.verify_webhook_signature",
+        new=AsyncMock(return_value=True),
+    ):
+        r = client.post("/checkout/paypal-webhook", json=event)
+    assert r.status_code == 200
+    assert "pro_activated:admin" in r.json()["actions"]
+    assert db_get_subscription("admin")["tier"] == "pro"
+
+
+def test_paypal_webhook_payment_capture_marks_order_paid():
+    from unittest.mock import AsyncMock, patch
+    from market_core import db_create_order
+
+    db_create_order(
+        "admin",
+        [{"product_id": "p1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1}],
+        "paypal",
+        5.0,
+        status="pending",
+        order_id="ORD-TEST01",
+        gateway_ref="PP-ORDER-99",
+    )
+    event = {
+        "event_type": "PAYMENT.CAPTURE.COMPLETED",
+        "resource": {
+            "id": "CAP-1",
+            "supplementary_data": {"related_ids": {"order_id": "PP-ORDER-99"}},
+        },
+    }
+    with patch(
+        "market_connectors.paypal_payments.verify_webhook_signature",
+        new=AsyncMock(return_value=True),
+    ):
+        r = client.post("/checkout/paypal-webhook", json=event)
+    assert r.status_code == 200
+    db = get_db()
+    row = db.execute("SELECT status FROM app_orders WHERE order_id=?", ("ORD-TEST01",)).fetchone()
+    db.close()
+    assert row["status"] == "paid"
+
+
+def test_checkout_yape_requires_pro_without_legacy(monkeypatch):
+    from market_core import db_set_subscription
+
+    monkeypatch.setenv("MARKET_LEGACY_CHECKOUT", "0")
+    db_set_subscription("admin", "free")
+    client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
+        "product_id": "p1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1,
+    })
+    r = client.post("/checkout/yape", headers={"Authorization": "Bearer test-token-123"})
+    assert r.status_code == 403
+    monkeypatch.setenv("MARKET_LEGACY_CHECKOUT", "1")
+
+
+def test_billing_paypal_saves_pending(monkeypatch):
+    from market_core import db_save_billing_pending, get_db
+
+    async def fake_sub(username, **kwargs):
+        return {
+            "subscription_id": "I-FAKE99",
+            "approve_url": "https://sandbox.paypal.com/subscribe",
+            "status": "APPROVAL_PENDING",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
+    r = client.post("/billing/paypal", headers={"Authorization": "Bearer test-token-123"})
+    assert r.status_code == 200
+    assert r.json()["approve_url"].startswith("https://")
+    db = get_db()
+    pending = db.execute(
+        "SELECT username FROM billing_pending WHERE external_id=?", ("I-FAKE99",)
+    ).fetchone()
+    db.close()
+    assert pending["username"] == "admin"
+
+
+def test_request_pro_creates_subscription_request(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": False, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": False},
+    )
+    r = client.post("/billing/request-pro", json={"email": "pro@test.com", "lang": "en"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["request_id"].startswith("PRO-")
+    assert data["email"] == "pro@test.com"
+    assert "payment_link" in data
+
+
+def test_request_pro_requires_valid_email(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    r = client.post("/billing/request-pro", json={"email": "not-an-email"})
+    assert r.status_code == 400
+
+
+def test_request_pro_duplicate_without_resend(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    payload = {"email": "dup@test.com", "lang": "es"}
+    r1 = client.post("/billing/request-pro", json=payload)
+    r2 = client.post("/billing/request-pro", json=payload)
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json().get("duplicate") is True
+
+
+def test_contact_pro_triggers_billing_request(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": False, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": False},
+    )
+    r = client.post(
+        "/v1/contact",
+        json={
+            "plan": "pro",
+            "email": "contact-pro@test.com",
+            "use_case": "Building a price comparison bot for LATAM grocery stores.",
+            "lang": "en",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["plan"] == "pro"
+    assert data["request_id"].startswith("PRO-")
+
+
+def test_activate_pro_by_request_id(monkeypatch):
+    import subprocess
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": False},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": False},
+    )
+    r = client.post(
+        "/billing/request-pro",
+        json={"email": "activate@test.com", "username": "admin", "lang": "en"},
+    )
+    req_id = r.json()["request_id"]
+    from market_core import db_find_subscription_request, db_get_subscription
+
+    assert db_get_subscription("admin")["tier"] == "free"
+    proc = subprocess.run(
+        [sys.executable, "ops/activate_pro.py", "admin", "--request-id", req_id],
+        cwd=str(Path(__file__).parent.parent),
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert db_get_subscription("admin")["tier"] == "pro"
+    req = db_find_subscription_request(request_id=req_id)
+    assert req["status"] == "activated"

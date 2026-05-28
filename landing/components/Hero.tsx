@@ -7,6 +7,7 @@ export default function Hero() {
   const isES = lang === "es";
 
   const chips = [
+    { num: "36", label: isES ? "herramientas MCP" : "MCP tools" },
     { num: "30", label: isES ? "comercios" : "retailers" },
     { num: "8", label: isES ? "países" : "countries" },
     { num: "13K", label: isES ? "precios reales" : "real prices" },

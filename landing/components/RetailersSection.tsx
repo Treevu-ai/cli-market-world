@@ -11,7 +11,7 @@ export default function RetailersSection() {
     { icon: "2", title: isES ? "30 segundos" : "30 seconds",
       desc: isES ? "Token de solo lectura. Sin acceso a clientes ni ventas." : "Read-only token. No customer or sales data access." },
     { icon: "3", title: isES ? "Apareces" : "You appear",
-      desc: isES ? "Tus productos comparados por agentes de IA junto a 41 retailers." : "Your products compared by AI agents alongside 41 retailers." },
+      desc: isES ? "Tus productos comparados por agentes de IA junto a 30 retailers." : "Your products compared by AI agents alongside 30 retailers." },
   ];
 
   const benefits = isES
