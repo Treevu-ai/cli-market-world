@@ -8,7 +8,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
   <img src="https://img.shields.io/badge/countries-7-orange" alt="7 countries">
   <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
-  <img src="https://img.shields.io/badge/payments-5-ffbd2e" alt="5 payments">
+  <img src="https://img.shields.io/badge/payments-PayPal_QR-ffbd2e" alt="PayPal + YapePlin QR">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
@@ -21,7 +21,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 7 countries. 3 platforms. 36 MCP tools. 5 payment methods.<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 7 countries. 3 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -35,7 +35,7 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 - **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 8 hours
-- **Buy** — checkout with Yape, Plin, Wise, PayPal, or Lemon
+- **Buy** — checkout with PayPal or QR (Yape/Plin)
 - **Build** — data moat with thousands of verified prices, historical snapshots, SKU normalization
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
@@ -76,13 +76,10 @@ market ask "compra arroz al mejor precio"
 
 ## Payments
 
-| Method | Countries | Endpoint |
+| Method | Region | Type |
 |---|---|---|
-| **Yape / Plin** | Peru | `POST /checkout/yape` |
-| **Wise** | Global | `POST /checkout/wise` |
-| **PayPal** | Global | `POST /checkout/paypal` |
-| **Lemon** | Argentina | `POST /checkout/lemon` |
-| **Stripe** | Global | `POST /billing/checkout` |
+| **PayPal** | Global | API (subscriptions, webhooks) |
+| **Yape / Plin** | Peru | QR code (manual payment) |
 
 ---
 
@@ -113,12 +110,10 @@ cli-market (PyPI)
 │   ├── vtex.py              → VTEX public API (38 stores)
 │   ├── shopify.py           → Shopify API (15 stores)
 │   ├── magento.py           → Magento REST API (7 stores)
-│   ├── wise_payments.py     → Wise + Pay Me
 │   ├── paypal_payments.py   → PayPal checkout
-│   ├── lemon_payments.py    → Lemon cash (Argentina)
 │   ├── sunat_invoicing.py   → SUNAT + PSE
 │   └── minimax.py           → TTS, image, video generation
-└── landing/                 → Next.js (Vercel, Wise design)
+└── landing/                 → Next.js (Cloudflare Pages)
 ```
 
 ---

@@ -12,7 +12,7 @@ const categories: {
     { n: "market_basket", d_es: "Comparar canasta completa entre retailers", d_en: "Compare full basket across retailers" },
     { n: "market_add", d_es: "Agregar productos al carrito", d_en: "Add products to cart" },
     { n: "market_cart", d_es: "Ver y editar el carrito", d_en: "View and edit cart" },
-    { n: "market_checkout", d_es: "Completar la compra (Yape, Plin, Wise)", d_en: "Complete purchase (Yape, Plin, Wise)" },
+    { n: "market_checkout", d_es: "Completar la compra (PayPal, Yape/Plin)", d_en: "Complete purchase (PayPal, Yape/Plin)" },
     { n: "market_stock", d_es: "Ver disponibilidad por tienda", d_en: "Check stock per store" },
   ]},
   { id: "intel", label_es: "Inteligencia de Precios", label_en: "Price Intelligence", tools: [

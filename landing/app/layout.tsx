@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     "30 retailers, 7 países, 3 plataformas. 13,000+ precios reales cada 8 horas. Una API. Cero scraping.",
   openGraph: {
     title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
-    description: "30 retailers en 7 países. 13K precios reales cada 8 horas. Checkout con Yape, Plin, Wise, PayPal o Lemon.",
+    description: "30 retailers en 7 países. 13K precios reales cada 8 horas. Checkout con PayPal + QR (Yape/Plin).",
     url: "https://cli-market.dev",
     siteName: "CLI Market",
     type: "website",
