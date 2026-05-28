@@ -1,35 +1,74 @@
 ---
 title: Day 26
-status: idea
+status: ready
 day: 26
-pillar: social-proof-cta
-lang: es
+pillar: social-proof
+lang: en
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 26
+# Day 26 — Agent-first vision EN
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+## Hooks (elegir 1)
 
-## Hooks
+1. **Hook 1:** The future of e-commerce isn't mobile-first. It's agent-first.
+2. **Hook 2:** PC → Mobile → Agent. The platform shift is here.
+3. **Hook 3:** Commerce infrastructure for the agent economy — not another chatbot.
 
-1. 
-2. 
-3. 
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
-## Post
+The future of e-commerce isn't mobile-first.
 
+It's **agent-first**.
 
+Platform shifts:
+
+PC → Mobile (2007)
+Mobile → Agent (2025+)
+
+What agents need:
+→ Structured product data (not HTML)
+→ Unified APIs (not 30 integrations)
+→ Real prices (not hallucinations)
+→ Checkout primitives (not "I can't purchase")
+
+Stripe turned payments into APIs.
+
+CLI Market turns commerce into APIs.
+
+30 retailers. 8 countries. 36 MCP tools. Open source.
+
+`pip install cli-market`
+
+Who's building agent-first commerce in your market?
 
 ## Primer comentario
 
+Get started 👇
+
 https://cli-market.dev
+
+## Hashtags
+
+#AI #ecommerce #agents #future #startup
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:

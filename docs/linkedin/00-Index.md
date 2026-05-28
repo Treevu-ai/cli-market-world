@@ -32,40 +32,40 @@ tags:
 
 | Día | Nota | Estado |
 |-----|------|--------|
-| 8 | [[Day-08]] | Arroz Lima +34% | `idea` |
-| 9 | [[Day-09]] | Canasta básica PE | `idea` |
-| 10 | [[Day-10]] | Inflación collector 8h | `idea` |
-| 11 | [[Day-11]] | Motorola / Electrolux scale | `idea` |
-| 12 | [[Day-12]] | Carousel top 10 búsquedas | `idea` |
-| 13 | [[Day-13]] | Retailers vs búsquedas IA | `idea` |
-| 14 | [[Day-14]] | 3 insights 12K precios | `idea` |
+| 8 | [[Day-08]] | Arroz Lima variación | `ready` ⚠️ [[linkedin/data-gate]] |
+| 9 | [[Day-09]] | Canasta básica PE | `ready` ⚠️ gate |
+| 10 | [[Day-10]] | Inflación collector 8h | `ready` |
+| 11 | [[Day-11]] | Electro scale | `ready` ⚠️ gate |
+| 12 | [[Day-12]] | Carousel top 10 | `ready` ⚠️ gate |
+| 13 | [[Day-13]] | Retailers vs IA (EN) | `ready` |
+| 14 | [[Day-14]] | 3 insights 8K+ | `ready` |
 
-> ⚠️ Días 8–14: publicar solo con datos en [[metrics/price-pulse-YYYY-WW]]
+> ⚠️ Días 8–14: publicar solo con datos en [[linkedin/data-gate]] + [[metrics/price-pulse-YYYY-WW]]
 
 ## Semana 3 — Build in public
 
 | Día | Nota | Estado |
 |-----|------|--------|
-| 15 | [[Day-15]] | De 1 conector VTEX a 30 retailers | `idea` |
-| 16 | [[Day-16]] | 30 APIs sincronizadas | `idea` |
-| 17 | [[Day-17]] | Por qué Python httpx asyncio | `idea` |
-| 18 | [[Day-18]] | 36 MCP MIT | `idea` |
-| 19 | [[Day-19]] | Collector PostgreSQL Railway | `idea` |
-| 20 | [[Day-20]] | Roadmap self-serve PayPal | `idea` |
-| 21 | [[Day-21]] | Error APIs VTEX inestables | `idea` |
+| 15 | [[Day-15]] | De 1 VTEX a 30 retailers | `ready` |
+| 16 | [[Day-16]] | 30 APIs sincronizadas | `ready` |
+| 17 | [[Day-17]] | Python httpx asyncio | `ready` |
+| 18 | [[Day-18]] | 36 MCP MIT | `ready` |
+| 19 | [[Day-19]] | Collector Railway | `ready` |
+| 20 | [[Day-20]] | Roadmap self-serve | `ready` |
+| 21 | [[Day-21]] | VTEX inestables | `ready` |
 
 ## Semana 4 — CTA
 
 | Día | Nota | Estado |
 |-----|------|--------|
-| 22 | [[Day-22]] | Case study retailer PE | `idea` |
-| 23 | [[Day-23]] | VTEX/Magento listado | `idea` |
-| 24 | [[Day-24]] | 3 razones listar tienda | `idea` |
-| 25 | [[Day-25]] | pip install CTA | `idea` |
-| 26 | [[Day-26]] | Agent-first vision (EN) | `idea` |
-| 27 | [[Day-27]] | 1000 agentes tiempo real | `idea` |
-| 28 | [[Day-28]] | Recap métricas | `idea` |
-| 29 | [[Day-29]] | Gracias retailers | `idea` |
-| 30 | [[Day-30]] | Milestone 30 días | `idea` |
+| 22 | [[Day-22]] | Case study retailer PE | `ready` |
+| 23 | [[Day-23]] | VTEX/Magento listado | `ready` |
+| 24 | [[Day-24]] | 3 razones listar | `ready` |
+| 25 | [[Day-25]] | pip install CTA | `ready` |
+| 26 | [[Day-26]] | Agent-first vision (EN) | `ready` |
+| 27 | [[Day-27]] | 1000 agentes | `ready` |
+| 28 | [[Day-28]] | Recap métricas | `ready` |
+| 29 | [[Day-29]] | Gracias retailers | `ready` |
+| 30 | [[Day-30]] | Milestone 30 días | `ready` |
 
 [[GTM-Hub]]

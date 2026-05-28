@@ -6,15 +6,16 @@ updated: 2026-05-28
 # Price Pulse — Semana 22
 
 ## Collector
-- Stores success (≥80%): **0 / 60** (0%)
-- Prices indexed (24h): **8,231**
+- Stores success (≥80%): **16 / 31** (51.6%)
+- Prices indexed (24h): **8,064**
 - Active stores (24h): **28**
-- Collector runs: **170**
-- Last run status: **unknown**
+- Collector runs: **173**
+- Last run status: **ok**
 
 ## Data stories (auto)
-- Precios frescos esta semana: **8,231**
+- Precios frescos esta semana: **8,064**
 - Retailers con datos 24h: **28**
+- Gate sem 2 LinkedIn: ver [[../linkedin/data-gate]]
 
 ## Marketing
 - LinkedIn impressions:

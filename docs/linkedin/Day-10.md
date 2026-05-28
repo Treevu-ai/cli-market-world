@@ -1,35 +1,78 @@
 ---
 title: Day 10
-status: idea
+status: ready
 day: 10
 pillar: data-stories
 lang: es
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 10
+# Day 10 — Inflación — señal cada 8 horas
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+## Hooks (elegir 1)
 
-## Hooks
+1. **Hook 1:** ¿Inflación real? Nuestro collector corre cada 8 horas. Esto es lo que vemos.
+2. **Hook 2:** No reemplazamos al INEI. Pero sí damos señal de mercado a agentes cada 8h.
+3. **Hook 3:** 8,000+ precios frescos. Un snapshot cada 8 horas. Así se ve el retail desde IA.
 
-1. 
-2. 
-3. 
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
-## Post
+¿Inflación real?
 
+No somos el INEI ni el INDEC. No publicamos un índice oficial.
 
+Pero sí tenemos algo que casi nadie tiene para agentes de IA: **8,000+ precios de góndola actualizados cada 8 horas** en 8 países.
+
+Nuestro collector:
+
+→ Corre automático en Railway + PostgreSQL
+→ Cero intervención humana
+→ APIs reales (VTEX + Magento), cero scraping
+→ Snapshots históricos para ver variación
+
+Herramienta MCP `market_inflation` devuelve delta de precios por país y línea.
+
+Para un agente, eso es oro: señal de mercado accionable, no un PDF trimestral.
+
+Para un retailer, es presión: ahora compites también en búsquedas de IA.
+
+Stripe convirtió pagos en APIs.
+
+Nosotros convertimos precios de góndola en APIs.
+
+¿Qué país te interesa monitorear primero?
 
 ## Primer comentario
 
+Stats en vivo 👇
+
 https://cli-market.dev
+
+```
+market stats
+```
+
+## Hashtags
+
+#AI #data #ecommerce #inflation #buildinpublic
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:
