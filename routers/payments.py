@@ -173,6 +173,24 @@ async def checkout_rates():
         }
 
 
+@router.get("/vtex-test")
+async def vtex_test():
+    """Test VTEX API connectivity from Railway."""
+    import httpx
+    stores = ["wong", "metro", "plazavea", "carrefour"]
+    results = {}
+    for store in stores[:2]:
+        try:
+            from market_stores import STORES
+            s = STORES[store]
+            url = f"{s['base']}/api/catalog_system/pub/products/search?_from=0&_to=1"
+            async with httpx.AsyncClient(timeout=10.0) as c:
+                r = await c.get(url, headers={"User-Agent":"Mozilla/5.0"})
+                results[store] = {"status": r.status_code, "size": len(r.text), "json": r.status_code == 200 and isinstance(r.json(), list)}
+        except Exception as e:
+            results[store] = {"error": str(e)[:200]}
+    return results
+
 @router.get("/paypal-status")
 def paypal_status():
     """Check if PayPal credentials are configured."""
