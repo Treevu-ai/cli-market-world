@@ -515,11 +515,12 @@ async def run_full_catalog_pg(pool, stores: list[str]) -> int:
 
 async def collect_one_pg(pool, store, queries):
     if not cb.ok(store): return 0
-    line = STORES[store].get("line",""); collected=0
+    line = STORES[store].get("line",""); collected=0; attempted=0
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"},follow_redirects=True) as client:
             async with pool.acquire() as conn:
                 for q, lf in queries:
+                    attempted += 1
                     if lf and line!=lf: continue
                     try:
                         raw = await fetch_store_multi(client, store, q)
@@ -558,6 +559,10 @@ async def collect_one_sqlite(db, store, queries):
         except Exception as _e:
             logger.warning("collect %s/%s: %s", store, q, str(_e)[:200])
             cb.lose(store)
+    if attempted > 0 and collected == 0:
+        logger.warning("store %s: tried %d queries, 0 results (line=%s)", store, attempted, line)
+    elif collected > 0:
+        logger.info("store %s: %d products from %d queries", store, collected, attempted)
     return collected
 
 async def run_collection(stores, queries):
