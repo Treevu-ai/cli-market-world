@@ -258,3 +258,24 @@ def test_age_hours_returns_close_to_zero_for_recent_timestamp(isolated_db):
     age = _age_hours(now_str)
     assert age is not None
     assert 0 <= age < 0.01, f"Expected near-zero age, got {age} hours"
+
+
+def test_age_hours_accepts_datetime_objects(isolated_db):
+    from datetime import datetime, timezone, timedelta
+    from routers.health import _age_hours
+    dt = datetime.now(timezone.utc) - timedelta(hours=2)
+    age = _age_hours(dt)
+    assert age is not None
+    assert 1.9 <= age <= 2.1
+
+
+def test_dashboard_data_includes_moat_guide(isolated_db):
+    from fastapi.testclient import TestClient
+    from market_server import app
+    with TestClient(app) as client:
+        r = client.get("/dashboard/data")
+    assert r.status_code == 200
+    body = r.json()
+    assert "moat_guide" in body
+    assert "layers" in body["moat_guide"]
+    assert any(layer.get("id") == "inventory" for layer in body["moat_guide"]["layers"])
