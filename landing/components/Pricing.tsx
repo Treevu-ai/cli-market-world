@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import PayPalButton from "@/components/PayPalButton";
 
 const tiers = [
   {
@@ -75,7 +76,8 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <a href={tier.name === "Enterprise" ? "#contact" : tier.name === "Pro" ? "#contact" : "https://pypi.org/project/cli-market/"}
+              {tier.name === "Pro" ? <PayPalButton /> : (
+                <a href={tier.name === "Enterprise" ? "#contact" : "https://pypi.org/project/cli-market/"}
                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
                    tier.dark
                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
@@ -85,6 +87,7 @@ export default function Pricing() {
                  }`}>
                 {isES ? tier.cta_es : tier.cta_en}
               </a>
+              )}
             </div>
           ))}
         </div>
