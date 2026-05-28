@@ -173,6 +173,18 @@ async def checkout_rates():
         }
 
 
+@router.get("/paypal-status")
+def paypal_status():
+    """Check if PayPal credentials are configured."""
+    client_id = os.getenv("PAYPAL_CLIENT_ID", "")
+    sandbox = os.getenv("PAYPAL_SANDBOX", "true").lower() == "true"
+    return {
+        "configured": bool(client_id),
+        "sandbox": sandbox,
+        "api_url": "https://api-m.sandbox.paypal.com" if sandbox else "https://api-m.paypal.com",
+        "endpoints": ["/checkout/paypal", "/billing/paypal", "/checkout/paypal-webhook"],
+    }
+
 @router.post("/billing/paypal")
 async def billing_paypal(authorization: str | None = Header(None)):
     """PayPal Subscription for Pro plan ($49/mo)."""
