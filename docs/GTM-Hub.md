@@ -48,7 +48,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 
 | Concepto | Mensaje acordado (paquete / README local) | Landing pública (verificar) |
 |----------|-------------------------------------------|-----------------------------|
-| Retailers | 30 verificados | ✅ 30 (alineado 2026-05-28) |
+| Retailers | 36 verificados | ✅ 36 (2026-05-28) |
 | Países | 8 | ✅ 8 |
 | MCP tools | 36 | ✅ 36 + `/tools` |
 | Precios indexados | ~13K, refresh 8h | ✅ |

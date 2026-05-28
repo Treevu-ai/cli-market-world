@@ -5,7 +5,17 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 
 interface DataStats {
-  kpis?: { total_snapshots?: number; active_stores?: number; total_runs?: number; stores_24h?: number };
+  kpis?: {
+    total_indexed?: number;
+    total_snapshots?: number;
+    snapshots_24h?: number;
+    stores_indexed?: number;
+    active_stores?: number;
+    total_runs?: number;
+    stores_24h?: number;
+    moat_age_hours?: number;
+  };
+  moat_summary?: { collector_stale?: boolean; total_indexed?: number };
   generated_at?: string;
   by_country?: { country?: string; count?: number; stores?: number }[];
 }
@@ -23,10 +33,11 @@ export default function DataSection() {
   }, []);
 
   const k = stats.kpis || {};
-  const snapshots = k.total_snapshots || 0;
-  const active = k.active_stores || 0;
+  const indexed = k.total_indexed || k.total_snapshots || 0;
+  const snap24 = k.snapshots_24h ?? k.total_snapshots ?? 0;
+  const storesIndexed = k.stores_indexed || k.active_stores || 0;
   const runs = k.total_runs || 0;
-  const live24h = k.stores_24h || 0;
+  const stale = stats.moat_summary?.collector_stale;
   const countries = stats.by_country?.length || 0;
   
   let freshness = "";
@@ -46,11 +57,19 @@ export default function DataSection() {
         </h2>
         <p className="text-base text-[var(--wise-body)] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
-            ? "Nuestro collector corre cada 8 horas contra 30 retailers y extrae precios reales de góndola."
-            : "Our collector runs every 8 hours against 30 retailers and extracts real shelf prices."}
+            ? "Nuestro collector corre cada 8 horas contra 36 retailers y extrae precios reales de góndola."
+            : "Our collector runs every 8 hours against 36 retailers and extracts real shelf prices."}
         </p>
 
-        {freshness && (
+        {stale && (
+          <div className="inline-flex items-center gap-2 mb-6 bg-amber-500/10 rounded-full px-4 py-1.5">
+            <span className="text-xs text-amber-200 font-medium">
+              {isES ? "Collector en pausa — moat con datos históricos" : "Collector paused — moat has historical data"}
+            </span>
+          </div>
+        )}
+
+        {!stale && freshness && (
           <div className="inline-flex items-center gap-2 mb-6 bg-[var(--wise-green-pale)] rounded-full px-4 py-1.5">
             <span className="w-2 h-2 rounded-full bg-[#2ead4b] animate-pulse" />
             <span className="text-xs text-[var(--wise-ink)] font-medium">
@@ -61,10 +80,10 @@ export default function DataSection() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
           {[
-            { label: isES ? "Precios" : "Prices", val: snapshots ? snapshots.toLocaleString() : "9,000+", sub: isES ? "indexados" : "indexed" },
-            { label: isES ? "Retailers" : "Retailers", val: active ? `${active}` : "27", sub: isES ? "activos" : "active" },
-            { label: isES ? "Países" : "Countries", val: countries ? `${countries}` : "7", sub: isES ? "con cobertura" : "covered" },
-            { label: isES ? "Ciclos" : "Cycles", val: runs ? `${runs}` : "4", sub: isES ? "cada 8h" : "every 8h" },
+            { label: isES ? "Precios" : "Prices", val: indexed ? indexed.toLocaleString() : "—", sub: isES ? "indexados en moat" : "indexed in moat" },
+            { label: isES ? "Refresh 24h" : "24h refresh", val: snap24.toLocaleString(), sub: isES ? "último ciclo" : "last cycle" },
+            { label: isES ? "Retailers" : "Retailers", val: storesIndexed ? `${storesIndexed}` : "—", sub: isES ? "con datos" : "with data" },
+            { label: isES ? "Países" : "Countries", val: countries ? `${countries}` : "—", sub: isES ? "con cobertura" : "covered" },
           ].map((kpi) => (
             <div key={kpi.label} className="bg-[var(--wise-green-pale)] rounded-3xl p-3 text-left overflow-hidden">
               <p className="text-[10px] text-[var(--wise-body)] uppercase tracking-widest mb-1 truncate">{kpi.label}</p>

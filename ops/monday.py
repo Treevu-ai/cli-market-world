@@ -92,8 +92,9 @@ def fetch_data() -> dict[str, Any]:
 
 def tldr(data: dict) -> str:
     k = data.get("kpis", {})
-    snap = k.get("total_snapshots", 0)
-    active = k.get("active_stores", 0)
+    indexed = k.get("total_indexed", k.get("total_snapshots", 0))
+    snap = k.get("snapshots_24h", k.get("total_snapshots", 0))
+    active = k.get("stores_indexed", k.get("active_stores", 0))
     runs = k.get("total_runs", 0)
 
     inflation = data.get("inflation", [])
@@ -106,7 +107,7 @@ def tldr(data: dict) -> str:
         if float(h.get("success_pct", 0) or 0) < 30
     )
 
-    parts = [f"**{snap:,}** precios · **{active}** tiendas · **{runs}** ciclos."]
+    parts = [f"**{indexed:,}** indexados · **{snap:,}** refresh 24h · **{active}** tiendas · **{runs}** ciclos."]
     if rising:
         parts.append(f"📈 Inflación al alza en {len(rising)} líneas (max +{max(i['delta_pct'] for i in rising)}%).")
     if falling:
@@ -265,8 +266,12 @@ def build_price_pulse(data: dict, meta: dict) -> str:
     total = k.get("total_stores") or len(meta)
     healthy = k.get("healthy_stores", 0)
     success_pct = k.get("store_success_pct", 0)
-    snapshots = k.get("total_snapshots", 0)
-    active = k.get("active_stores", 0)
+    indexed = k.get("total_indexed", k.get("total_snapshots", 0))
+    snapshots = k.get("snapshots_24h", k.get("total_snapshots", 0))
+    active = k.get("stores_indexed", k.get("active_stores", 0))
+    fresh_24h = k.get("stores_fresh_24h", k.get("active_stores", 0))
+    coverage_7d = k.get("coverage_7d_pct", 0)
+    moat = data.get("moat_summary", {})
     runs = k.get("total_runs", 0)
     coll = data.get("collector", {})
 
@@ -284,15 +289,17 @@ def build_price_pulse(data: dict, meta: dict) -> str:
         f"# Price Pulse — Semana {week.split('-W')[1]}",
         "",
         "## Collector",
-        f"- Stores success (≥80%): **{healthy} / {total}** ({success_pct}%)",
-        f"- Prices indexed (24h): **{snapshots:,}**",
-        f"- Active stores (24h): **{active}**",
+        f"- Moat indexado: **{indexed:,}** precios · **{active}** tiendas con datos",
+        f"- Refresh 24h: **{snapshots:,}** · tiendas fresh: **{fresh_24h}**",
+        f"- Coverage 7d: **{coverage_7d}%**",
+        f"- Stores success lifetime (≥80%): **{healthy} / {total}** ({success_pct}%)",
         f"- Collector runs: **{runs}**",
         f"- Last run status: **{coll.get('status', 'unknown')}**",
+        f"- Moat stale: **{moat.get('collector_stale', False)}**",
         "",
         "## Data stories (auto)",
-        f"- Precios frescos esta semana: **{snapshots:,}**",
-        f"- Retailers con datos 24h: **{active}**",
+        f"- Precios en moat: **{indexed:,}**",
+        f"- Refresh 24h: **{snapshots:,}** · retailers fresh: **{fresh_24h}**",
         "",
         "## Marketing",
         "- LinkedIn impressions:",
@@ -370,7 +377,9 @@ def main() -> None:
         k = data.get("kpis", {})
         msg = (
             f"📊 CLI Market Monday Ops {ds}\n"
-            f"{k.get('total_snapshots',0):,} precios · {k.get('active_stores',0)} tiendas\n"
+            f"{k.get('total_indexed', k.get('total_snapshots',0)):,} indexados · "
+            f"{k.get('snapshots_24h', k.get('total_snapshots',0)):,} 24h · "
+            f"{k.get('stores_indexed', k.get('active_stores',0))} tiendas\n"
         )
         if critical_count:
             msg += f"🔴 {critical_count} tiendas críticas:\n"
