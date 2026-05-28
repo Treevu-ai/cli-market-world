@@ -9,8 +9,8 @@
   "version": "1.4.3",
   "packages": [
     {
-      "registryType": "github",
-      "identifier": "Treevu-ai/cli-market-world",
+      "registryType": "pypi",
+      "identifier": "cli-market",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"
