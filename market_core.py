@@ -1342,12 +1342,12 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
         raise HTTPException(status_code=429, detail=f"Rate limit reached ({max_req} req/{window_secs}s).")
     db.execute(
         "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
-        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
+        "ON CONFLICT(key, window_start) DO UPDATE SET counter = rate_limits.counter + 1",
         (daily_key, today_start),
     )
     db.execute(
         "INSERT INTO rate_limits (key, window_start, counter) VALUES (?,?,1) "
-        "ON CONFLICT(key, window_start) DO UPDATE SET counter = counter + 1",
+        "ON CONFLICT(key, window_start) DO UPDATE SET counter = rate_limits.counter + 1",
         (window_key, now),
     )
     db.commit()
