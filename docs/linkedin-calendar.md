@@ -1,3 +1,12 @@
+---
+title: LinkedIn Calendar 30d
+tags:
+  - gtm
+  - linkedin
+hub: "[[GTM-Hub]]"
+index: "[[linkedin/00-Index]]"
+---
+
 # 💼 LinkedIn Content Calendar — CLI Market (30 días)
 **Author**: LinkedIn Content Creator (Agency Agent)  
 **Date**: 2026-05-28  
@@ -22,7 +31,7 @@
 | 4 | "Probé 5 agentes de IA. Ninguno podía decirme cuánto cuesta la leche en Wong vs Metro." | Personal story |
 | 5 | Carousel: "4 pasos para que tu agente compre solo" | Educational |
 | 6 | "¿Por qué 36 herramientas MCP? Porque un agente necesita buscar, comparar, añadir al carrito Y pagar." | Behind the scenes |
-| 7 | "Esta semana: 12,581 precios frescos. 41 retailers. 8 países. Un solo `pip install`." | Data brag |
+| 7 | "Esta semana: [N] precios frescos. 30 retailers. 8 países. Un solo `pip install`." | Data brag — usar [[metrics/price-pulse]] |
 
 ---
 
@@ -44,7 +53,7 @@
 
 | Día | Título | Hook |
 |-----|--------|------|
-| 15 | "Arranqué CLI Market con un solo conector VTEX. Hoy son 41 retailers en 8 países." | Journey |
+| 15 | "Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 8 países." | Journey |
 | 16 | "El mayor desafío técnico no fue el código. Fue mantener 30 APIs externas sincronizadas." | Vulnerability |
 | 17 | "¿Por qué Python? Porque `httpx` + `asyncio` + `FastAPI` es imbatible para fan-out a 30 APIs." | Tech deep |
 | 18 | "36 herramientas MCP. Todas documentadas. Open source. MIT." | Social proof |
@@ -64,8 +73,8 @@
 | 25 | "Probá CLI Market ahora: `pip install cli-market && market search \"leche\" --country PE`" | Try it |
 | 26 | "El futuro del e-commerce no es mobile-first. Es agent-first." | Vision |
 | 27 | "¿Qué pasa cuando 1,000 agentes comparan precios en tiempo real? Eso estamos construyendo." | Ambition |
-| 28 | "41 retailers. 8 países. 36 herramientas MCP. PayPal + QR. Open source. MIT." | Recap |
-| 29 | "Gracias a los 41 retailers que confiaron. A los que faltan: la puerta está abierta." | Gratitude |
+| 28 | "30 retailers. 8 países. 36 herramientas MCP. PayPal + QR. Open source. MIT." | Recap |
+| 29 | "Gracias a los 30 retailers que confiaron. A los que faltan: la puerta está abierta." | Gratitude |
 | 30 | "30 días. Esto es lo que construí. Esto es lo que viene." | Milestone |
 
 ---

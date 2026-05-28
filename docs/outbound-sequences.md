@@ -1,3 +1,12 @@
+---
+title: Outbound Sequences
+tags:
+  - gtm
+  - outbound
+  - sales
+hub: "[[GTM-Hub]]"
+---
+
 # 🎯 Outbound Sequences — CLI Market Retailer Outreach
 **Author**: Outbound Strategist (Agency Agent)  
 **Date**: 2026-05-28  
@@ -9,7 +18,7 @@
 
 | Día | Canal | Mensaje |
 |-----|-------|---------|
-| 1 | LinkedIn DM | [SCRAP: señal=VTEX, contexto=41 retailers ya onboard] |
+| 1 | LinkedIn DM | [SCRAP: señal=VTEX, contexto=30 retailers ya onboard] |
 | 3 | Email | [SCRAP completo — ver template abajo] |
 | 7 | LinkedIn | Dato de inflación: "El precio de la canasta básica en Perú varía 23% entre Wong y Metro esta semana. Tus competidores ya aparecen en estas comparaciones." |
 | 10 | Email | Social proof + CTA suave: "Metro, Wong y Plaza Vea ya están onboard. ¿Te sirve 15 min para ver si aplica?" |
@@ -44,7 +53,7 @@
 ## Template SCRAP — Día 1 LinkedIn DM
 
 **S** (Señal): Vi que [Retailer] usa [VTEX/Magento] para su e-commerce.  
-**C** (Contexto): CLI Market ya indexa 41 retailers en 8 países para agentes de IA. [Competidor cercano] ya aparece en búsquedas.  
+**C** (Contexto): CLI Market ya indexa 30 retailers en 8 países para agentes de IA. [Competidor cercano] ya aparece en búsquedas.  
 **R** (Relevancia): Tus productos pueden aparecer en comparaciones de precio junto a [Competidor 1], [Competidor 2] y [Competidor 3]. Sin costo. Sin integración. 30 segundos.  
 **A** (Ask): ¿Te sirve una llamada de 15 min para ver si aplica?  
 **P** (Prueba): [Competidor] ya está onboard — sus productos reciben búsquedas de agentes IA cada semana.
@@ -59,7 +68,7 @@ Hola [Nombre],
 
 Vi que [Retailer] tiene su tienda online en [VTEX/Magento]. Eso significa que técnicamente tus productos YA pueden aparecer en búsquedas de agentes de inteligencia artificial — en 30 segundos, sin desarrollo, sin costo.
 
-CLI Market es una capa de infraestructura que convierte APIs de retailers en herramientas para agentes IA. Ya indexamos 41 retailers en 8 países: [3 competidores de su país] están onboard. Cuando un agente busca "mejor precio de [producto típico]", tu catálogo aparece junto al de ellos.
+CLI Market es una capa de infraestructura que convierte APIs de retailers en herramientas para agentes IA. Ya indexamos 30 retailers en 8 países: [3 competidores de su país] están onboard. Cuando un agente busca "mejor precio de [producto típico]", tu catálogo aparece junto al de ellos.
 
 Cómo funciona:
 - Sin integración técnica. Solo necesitamos un token de API de solo lectura.

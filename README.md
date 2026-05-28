@@ -8,7 +8,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
-  <img src="https://img.shields.io/badge/payments-PayPal_QR-ffbd2e" alt="PayPal + YapePlin QR">
+  <img src="https://img.shields.io/badge/payments-PayPal_email-ffbd2e" alt="PayPal email billing">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
   <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
@@ -48,6 +48,7 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 ```bash
 pip install cli-market
+market hello          # post-install: stats + next steps
 export MARKET_API_URL=https://cli-market-production.up.railway.app
 market login
 market search "leche" --country PE
@@ -76,10 +77,28 @@ market ask "compra arroz al mejor precio"
 
 ## Payments
 
-| Method | Region | Type |
+**Pro plan (default):** request via email → PayPal Hosted Button → manual activation within 24 h.  
+See [ops/E2E_CLIENT_JOURNEY.md](ops/E2E_CLIENT_JOURNEY.md) and [ops/BILLING_MANUAL.md](ops/BILLING_MANUAL.md).
+
+| Method | Use | Type |
 |---|---|---|
-| **PayPal** | Global | API (subscriptions, webhooks) |
-| **Yape / Plin** | Peru | QR code (manual payment) |
+| **PayPal Hosted Button** | Pro subscription ($49/mo) | Email + link (manual activate) |
+| **PayPal REST** | Optional automation | Webhooks (future) |
+| **Yape / Plin** | Checkout orders (Pro tier) | QR code |
+
+### Upgrade to Pro
+
+```bash
+market login
+market upgrade --email you@example.com
+# Pay via link in email → reply with CLI username → ops activates Pro
+```
+
+Ops after payment confirmed:
+
+```bash
+python3 ops/activate_pro.py username --request-id PRO-XXXXXXXX
+```
 
 ---
 
@@ -90,7 +109,7 @@ market ask "compra arroz al mejor precio"
 | **Price** | $0 | $49/mo | Custom |
 | **Requests** | 1,000/day | 10,000/day | Unlimited |
 | **API keys** | 1 (read) | 10 (read+write) | Unlimited |
-| **Checkout** | — | ✅ | ✅ |
+| **Checkout** | — | ✅ (after email activation) | ✅ |
 | **Data export** | — | JSON/CSV | ✅ |
 | **Support** | Community | Email | 24/7 + onboarding |
 

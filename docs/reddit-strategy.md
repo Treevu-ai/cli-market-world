@@ -1,3 +1,11 @@
+---
+title: Reddit Strategy
+tags:
+  - gtm
+  - reddit
+hub: "[[GTM-Hub]]"
+---
+
 # 💬 Reddit Community Strategy — CLI Market
 **Author**: Reddit Community Builder (Agency Agent) · **Date**: 2026-05-28
 
@@ -25,7 +33,7 @@
 
 ## Phase 3: AMA Plan (Month 2)
 - **Subreddit**: r/aiagents or r/ecommerce
-- **Topic**: "I turned 41 retailers into APIs for AI agents. AMA."
+- **Topic**: "I turned 30 retailers into APIs for AI agents. AMA."
 - **Prep**: 20 anticipated questions + data-backed answers
 - **Promotion**: Crosspost to r/MCP, r/ClaudeAI
 

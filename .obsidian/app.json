@@ -1,0 +1,13 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "defaultViewMode": "source",
+  "attachmentFolderPath": "docs/assets",
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "docs/linkedin",
+  "showLineNumber": true,
+  "readableLineLength": true,
+  "foldHeading": true,
+  "foldIndent": true
+}

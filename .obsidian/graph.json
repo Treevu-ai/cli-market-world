@@ -1,0 +1,21 @@
+{
+  "collapse-filter": false,
+  "search": "tag:#gtm",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [],
+  "collapse-display": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.5,
+  "repelStrength": 8,
+  "linkStrength": 1,
+  "linkDistance": 220,
+  "scale": 0.9
+}

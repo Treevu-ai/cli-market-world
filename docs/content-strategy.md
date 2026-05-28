@@ -1,9 +1,17 @@
+---
+title: Content Strategy
+tags:
+  - gtm
+  - content
+hub: "[[GTM-Hub]]"
+---
+
 # ✍️ Content Strategy — CLI Market
 **Author**: Content Creator (Agency Agent) · **Date**: 2026-05-28
 
 ## Article 1: "Commerce Infrastructure for AI Agents"
 **Type**: Educational guide | **Target**: AI developers, CTOs
-**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 41 retailers, 36 tools, 8 countries
+**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 30 retailers, 36 tools, 8 countries
 
 ## Article 2: "Add Commerce to Your AI Agent in 4 Lines"
 **Type**: Tutorial | **Target**: Python developers
