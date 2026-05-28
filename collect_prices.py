@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import httpx
 
 from market_core import (
-    STORES, DB_FILE, logger as log,
+    STORES, LINES, DB_FILE, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
@@ -31,15 +31,6 @@ PARALLEL = int(os.getenv("COLLECT_PARALLEL", "20"))
 REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.5"))
 QUERY_TIMEOUT = 15.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
-
-LINES = {
-    "supermercados":{"name":"Supermercados"}, "farmacias":{"name":"Farmacias y Salud"},
-    "electro":{"name":"Electro y Tecnología"}, "moda":{"name":"Moda y Accesorios"},
-    "deportes":{"name":"Deportes y Outdoor"}, "hogar":{"name":"Hogar y Construcción"},
-    "financiero":{"name":"Financiero y Seguros"}, "automotriz":{"name":"Automotriz"},
-    "libros":{"name":"Libros y Educación"}, "viajes":{"name":"Viajes y Turismo"},
-    "hogar_construccion":{"name":"Hogar y Construcción"}, "educacion":{"name":"Educación Ejecutiva"},
-}
 
 LINE_MAX_PRICE = {
     "supermercados": 10_000,
