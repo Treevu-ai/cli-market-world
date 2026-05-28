@@ -9,3 +9,5 @@ dist/
 .deepseek/
 VALIDATION_PLAN.md
 registry/
+docs/agency-agents/
+docs/awesome-claude-code/
