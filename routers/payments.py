@@ -437,7 +437,9 @@ def process_pro_subscription_request(
         "email": email,
         "payment_link": PRO_PAYMENT_URL,
         "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
         "notify_sent": notify_mail.get("sent", False),
+        "notify_error": notify_mail.get("reason") if not notify_mail.get("sent") else None,
         "message": message,
     }
 
