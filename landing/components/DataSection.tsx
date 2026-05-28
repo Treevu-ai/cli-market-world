@@ -44,8 +44,8 @@ export default function DataSection() {
         </h2>
         <p className="text-base text-[var(--wise-body)] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
-            ? "Nuestro collector corre cada 8 horas contra los 60 retailers y extrae precios reales de góndola."
-            : "Our collector runs every 8 hours against 60 retailers and extracts real shelf prices."}
+            ? "Nuestro collector corre cada 8 horas contra los 30 retailers y extrae precios reales de góndola."
+            : "Our collector runs every 8 hours against 30 retailers and extracts real shelf prices."}
         </p>
 
         {freshness && (

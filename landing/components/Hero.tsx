@@ -6,10 +6,10 @@ export default function Hero() {
   const isES = lang === "es";
 
   const chips = [
-    { num: "60", label: isES ? "comercios" : "retailers" },
-    { num: "11", label: isES ? "países" : "countries" },
+    { num: "30", label: isES ? "comercios" : "retailers" },
+    { num: "7", label: isES ? "países" : "countries" },
     { num: "3", label: isES ? "plataformas" : "platforms" },
-    { num: "36", label: "MCP tools" },
+    { num: "13K", label: isES ? "precios" : "prices" },
   ];
 
   return (

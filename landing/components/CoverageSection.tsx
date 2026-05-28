@@ -23,10 +23,10 @@ export default function CoverageSection() {
           {isES ? "Cobertura" : "Coverage"}
         </p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
-          {isES ? "60 retailers, 11 países, 6 líneas." : "60 retailers, 11 countries, 6 lines."}
+          {isES ? "30 retailers, 7 países, 6 líneas." : "30 retailers, 7 countries, 6 lines."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
-          {isES ? "Un solo conector para supermercados, farmacias, electro, moda, hogar y tiendas por departamento en LatAm y Europa." : "A single connector for supermarkets, pharmacies, electronics, fashion, home, and department stores across LatAm and Europe."}
+          {isES ? "Un solo conector para supermercados, farmacias, electro, moda, hogar y tiendas por departamento en Latinoamérica." : "A single connector for supermarkets, pharmacies, electronics, fashion, home, and department stores across Latin America."}
         </p>
 
         {/* Bullets */}

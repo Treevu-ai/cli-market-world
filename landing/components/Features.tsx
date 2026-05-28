@@ -7,7 +7,7 @@ const categories: {
   tools: { n: string; d_es: string; d_en: string }[];
 }[] = [
   { id: "shop", label_es: "Búsqueda & Compra", label_en: "Search & Purchase", tools: [
-    { n: "market_search", d_es: "Buscar productos en 60 retailers", d_en: "Search products across 60 retailers" },
+    { n: "market_search", d_es: "Buscar productos en 30 retailers", d_en: "Search products across 30 retailers" },
     { n: "market_compare", d_es: "Comparar precios cross-border", d_en: "Cross-border price comparison" },
     { n: "market_basket", d_es: "Comparar canasta completa entre retailers", d_en: "Compare full basket across retailers" },
     { n: "market_add", d_es: "Agregar productos al carrito", d_en: "Add products to cart" },
@@ -34,7 +34,7 @@ const categories: {
     { n: "market_login", d_es: "Autenticación", d_en: "Authentication" },
     { n: "market_lines", d_es: "Listar líneas de negocio disponibles", d_en: "List available business lines" },
     { n: "market_countries", d_es: "Listar países con cobertura", d_en: "List countries with coverage" },
-    { n: "market_stores", d_es: "Listar 60 retailers verificados", d_en: "List 60 verified retailers" },
+    { n: "market_stores", d_es: "Listar 30 retailers verificados", d_en: "List 30 verified retailers" },
     { n: "market_ask", d_es: "Modo agente: lenguaje natural", d_en: "Agent mode: natural language" },
     { n: "market_voice", d_es: "Transcribir búsqueda por voz", d_en: "Voice search transcription" },
     { n: "market_enrich", d_es: "Enriquecer SKU con metadata", d_en: "Enrich SKU with metadata" },
