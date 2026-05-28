@@ -177,11 +177,14 @@ async def checkout_rates():
 def paypal_status():
     """Check if PayPal credentials are configured."""
     client_id = os.getenv("PAYPAL_CLIENT_ID", "")
+    client_secret = os.getenv("PAYPAL_CLIENT_SECRET", "")
     sandbox = os.getenv("PAYPAL_SANDBOX", "true").lower() == "true"
     return {
-        "configured": bool(client_id),
+        "configured": bool(client_id and client_secret),
         "sandbox": sandbox,
         "api_url": "https://api-m.sandbox.paypal.com" if sandbox else "https://api-m.paypal.com",
+        "client_id_preview": f"{client_id[:4]}...{client_id[-4:]}" if len(client_id) > 8 else "too_short",
+        "secret_preview": f"{client_secret[:4]}...{client_secret[-4:]}" if len(client_secret) > 8 else "too_short",
         "endpoints": ["/checkout/paypal", "/billing/paypal", "/checkout/paypal-webhook"],
     }
 
