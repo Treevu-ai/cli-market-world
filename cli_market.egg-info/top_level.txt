@@ -1,6 +1,0 @@
-market_cli
-market_core
-market_mcp
-market_server
-market_stores
-wongcli
