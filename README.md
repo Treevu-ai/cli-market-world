@@ -1,3 +1,5 @@
+mcp-name: io.github.Treevu-ai/cli-market-world
+
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
@@ -17,8 +19,6 @@
   <a href="https://pypi.org/project/cli-market/"><img src="https://img.shields.io/pypi/dm/cli-market?color=00FF88" alt="PyPI downloads"></a>
   <a href="https://github.com/Treevu-ai/cli-market-world"><img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=social" alt="GitHub stars"></a>
 </p>
-
-mcp-name: io.github.Treevu-ai/cli-market-world
 
 <h1 align="center">CLI Market</h1>
 <p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 7 countries. 3 platforms. 36 MCP tools. 5 payment methods.<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
