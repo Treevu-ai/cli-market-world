@@ -17,18 +17,18 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
   description:
-    "60 retailers, 11 países, 3 plataformas. 36 herramientas MCP. Precios reales de góndola cada 8 horas. Una API. Cero scraping.",
+    "30 retailers, 7 países, 3 plataformas. 13,000+ precios reales cada 8 horas. Una API. Cero scraping.",
   openGraph: {
     title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
-    description: "60 retailers en 11 países. 36 MCP tools. Precios reales cada 8 horas. Checkout con Yape, Plin, Wise, PayPal o Lemon.",
+    description: "30 retailers en 7 países. 13K precios reales cada 8 horas. Checkout con Yape, Plin, Wise, PayPal o Lemon.",
     url: "https://cli-market.dev",
     siteName: "CLI Market",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CLI Market — 60 retailers. Una API.",
-    description: "60 retailers en 11 países. 36 MCP tools. Precios reales cada 8 horas.",
+    title: "CLI Market — 30 retailers. Una API.",
+    description: "30 retailers en 7 países. 13K precios reales cada 8 horas. Cero scraping.",
   },
 };
 
@@ -41,7 +41,7 @@ const jsonLd = {
   "name": "CLI Market",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Linux, macOS, Windows",
-  "description": "Commerce infrastructure for AI agents. 60 retailers, 11 countries, 36 MCP tools. One API.",
+  "description": "Commerce infrastructure for AI agents. 30 retailers, 7 countries. 13,000+ real prices. One API. Cero scraping.",
   "url": "https://cli-market.dev",
   "author": {
     "@type": "Organization",
