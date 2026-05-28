@@ -194,9 +194,12 @@ async def billing_paypal(authorization: str | None = Header(None)):
         sub = await create_subscription()
         if "approve_url" in sub:
             return {"subscription_id": sub["subscription_id"], "approve_url": sub["approve_url"], "plan": "Pro", "amount": "$49/mo"}
-        raise HTTPException(status_code=502, detail=sub.get("error", "PayPal error"))
-    except ValueError:
-        raise HTTPException(status_code=501, detail="PayPal no configurado")
+        return {"error": sub.get("error", "PayPal error"), "details": sub}
+    except ValueError as e:
+        return {"error": "PayPal no configurado", "detail": str(e)}
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "trace": traceback.format_exc()[-400:]}
 
 @router.post("/billing/checkout")
 def billing_checkout(authorization: str | None = Header(None)):
