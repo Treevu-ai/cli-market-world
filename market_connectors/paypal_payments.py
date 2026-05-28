@@ -62,28 +62,39 @@ async def create_order(amount: float, currency: str = "USD", reference: str = ""
 async def create_subscription(amount: float = 49.0, currency: str = "USD",
                                return_url: str = "https://cli-market.dev?sub=success",
                                cancel_url: str = "https://cli-market.dev?sub=cancelled") -> dict:
-    """Create a PayPal subscription (Pro plan $49/mo)."""
+    """Create a PayPal subscription (Pro plan $49/mo) via 2-step API."""
     token = await _get_access_token()
-    body = {
-        "plan": {
-            "name": "CLI Market Pro",
-            "description": "Monthly subscription — 10,000 req/day, checkout, export",
-            "billing_cycles": [{
-                "frequency": {"interval_unit": "MONTH", "interval_count": 1},
-                "tenure_type": "REGULAR", "sequence": 1, "total_cycles": 0,
-                "pricing_scheme": {"fixed_price": {"value": f"{amount:.2f}", "currency_code": currency}},
-            }],
-            "payment_preferences": {"auto_bill_outstanding": True, "payment_failure_threshold": 3},
-        },
-        "application_context": {"return_url": return_url, "cancel_url": cancel_url, "brand_name": "CLI Market", "user_action": "SUBSCRIBE_NOW"},
-    }
     async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(
-            f"{PAYPAL_API}/v1/billing/subscriptions", json=body,
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        )
-        if resp.status_code in (200, 201):
-            data = resp.json()
+        h = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        # Step 1: Create product
+        p1 = await client.post(f"{PAYPAL_API}/v1/catalogs/products", json={
+            "name": "CLI Market Pro", "type": "SERVICE",
+            "description": "Monthly subscription — 10,000 req/day, checkout, export",
+        }, headers=h)
+        if p1.status_code not in (200, 201):
+            return {"error": f"Product failed: {p1.text}"}
+        product_id = p1.json()["id"]
+        # Step 2: Create plan
+        p2 = await client.post(f"{PAYPAL_API}/v1/billing/plans", json={
+            "product_id": product_id, "name": "CLI Market Pro Monthly",
+            "description": "$49/month", "status": "ACTIVE",
+            "billing_cycles": [{"frequency": {"interval_unit": "MONTH", "interval_count": 1},
+                                "tenure_type": "REGULAR", "sequence": 1, "total_cycles": 0,
+                                "pricing_scheme": {"fixed_price": {"value": f"{amount:.2f}", "currency_code": currency}}}],
+            "payment_preferences": {"auto_bill_outstanding": True, "payment_failure_threshold": 3},
+        }, headers=h)
+        if p2.status_code not in (200, 201):
+            return {"error": f"Plan failed: {p2.text}"}
+        plan_id = p2.json()["id"]
+        # Step 3: Create subscription
+        p3 = await client.post(f"{PAYPAL_API}/v1/billing/subscriptions", json={
+            "plan_id": plan_id,
+            "application_context": {"return_url": return_url, "cancel_url": cancel_url,
+                                     "brand_name": "CLI Market", "user_action": "SUBSCRIBE_NOW",
+                                     "shipping_preference": "NO_SHIPPING"},
+        }, headers=h)
+        if p3.status_code in (200, 201):
+            data = p3.json()
             approve_link = next((l["href"] for l in data.get("links", []) if l["rel"] == "approve"), None)
             return {"subscription_id": data["id"], "status": data["status"], "approve_url": approve_link}
-        return {"error": f"PayPal subscription failed: {resp.text}"}
+        return {"error": f"Subscription failed: {p3.text}"}
