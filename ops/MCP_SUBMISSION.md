@@ -1,19 +1,17 @@
 # CLI Market — Submit to MCP Registry
 
-## How to submit
+## Process (via mcp-publisher CLI)
 
-1. Go to https://registry.modelcontextprotocol.io
-2. Click "Submit a server"
-3. Paste https://github.com/Treevu-ai/cli-market-world
-4. The registry auto-discovers mcp.json at repo root
+```bash
+git clone https://github.com/modelcontextprotocol/registry
+cd registry
+make publisher
+./bin/mcp-publisher publish --repo https://github.com/Treevu-ai/cli-market-world
+```
 
-Or: PR to github.com/modelcontextprotocol/registry
+The mcp.json at repo root is auto-parsed. Uses GitHub OAuth for namespace verification.
 
-## Checklist
+## After publishing
 
-- [x] schema, type, command correct
-- [x] 36 tools documented
-- [x] MIT license
-- [x] Categories: commerce, data
-
-After: developers find CLI Market when searching "commerce" or "prices" MCP tools.
+Searchable at registry.modelcontextprotocol.io by: "commerce", "shopping", "prices", "retail".
+One-click install for Claude Desktop, DeepSeek, and any MCP client.
