@@ -7,7 +7,7 @@ export default function RetailersSection() {
 
   const steps = [
     { icon: "1", title: isES ? "Tu plataforma" : "Your platform",
-      desc: isES ? "VTEX, Shopify o Magento. Ya nos conectamos. Cero desarrollo." : "VTEX, Shopify, or Magento. We already connect. Zero dev work." },
+      desc: isES ? "VTEX y Magento. Ya nos conectamos. Cero desarrollo." : "VTEX and Magento. We already connect. Zero dev work." },
     { icon: "2", title: isES ? "30 segundos" : "30 seconds",
       desc: isES ? "Token de solo lectura. Sin acceso a clientes ni ventas." : "Read-only token. No customer or sales data access." },
     { icon: "3", title: isES ? "Apareces" : "You appear",
@@ -40,7 +40,7 @@ export default function RetailersSection() {
         <p className="text-sm text-[var(--wise-body)] max-w-[600px] mx-auto mb-4 text-center">
           {isES
             ? "Si usas VTEX, Shopify o Magento, tus productos YA pueden aparecer en busquedas de agentes de IA. En 30 segundos. Sin pagar un centavo."
-            : "If you use VTEX, Shopify, or Magento, your products can ALREADY appear in AI agent searches. 30 seconds. Zero cost."}
+            : "If you use VTEX or Magento, your products can ALREADY appear in AI agent searches. 30 seconds. Zero cost."}
         </p>
         <p className="text-[11px] text-[#ffbd2e] max-w-[600px] mx-auto mb-12 text-center font-medium">
           {isES

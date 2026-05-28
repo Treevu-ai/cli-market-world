@@ -56,8 +56,8 @@ export default function CoverageSection() {
         {/* Note: Shopify/Magento stores need outreach */}
         <p className="text-[10px] text-[var(--wise-mute)] mt-6 max-w-md mx-auto leading-relaxed">
           {isES
-            ? "+15 retailers adicionales en Shopify y Magento requieren token de API. Gratis para ellos."
-            : "+15 additional retailers on Shopify and Magento need API tokens. Free for them."}
+            ? "+8 retailers adicionales en Magento requieren token de API. Gratis para ellos."
+            : "+8 additional retailers on Magento need API tokens. Free for them."}
         </p>
       </div>
     </section>
