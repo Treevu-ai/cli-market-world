@@ -20,6 +20,108 @@ from .health import _age_hours
 router = APIRouter(tags=["dashboard"])
 
 
+def _build_moat_guide(
+    *,
+    total_indexed: int,
+    unique_products: int,
+    stores_indexed: int,
+    snapshots_24h: int,
+    stores_fresh_24h: int,
+    coverage_7d_pct: float,
+    fresh_24h_pct: float,
+    moat_age_h: float | None,
+    collector_status: str,
+    collector_age_h: float | None,
+    last_collected_at,
+    last_run,
+    catalog_stores: int,
+    marketing_gate_pass: bool,
+    stale_stores: list[str],
+) -> dict:
+    """Human-readable layers so agents and humans share one mental model."""
+    last_ts = str(last_collected_at)[:19] if last_collected_at else None
+    freshness_label = "fresh"
+    if moat_age_h is None:
+        freshness_label = "unknown"
+    elif moat_age_h >= 24:
+        freshness_label = "stale"
+    elif moat_age_h >= 8:
+        freshness_label = "aging"
+
+    return {
+        "headline": "Data Moat = inventario verificado + señales de mercado",
+        "mental_model": [
+            "Inventario: cuántos precios tenemos guardados (no caduca al instante).",
+            "Frescura: cuántos se actualizaron en las últimas 24h (¿confío hoy?).",
+            "Cobertura 7d: % del catálogo activo con al menos un snapshot reciente.",
+            "Ops: el collector corre cada ~4–8h; si falla, el inventario sigue pero envejece.",
+        ],
+        "layers": [
+            {
+                "id": "inventory",
+                "title": "1 · Inventario",
+                "question": "¿Cuánto tenemos acumulado?",
+                "metrics": {
+                    "total_indexed": total_indexed,
+                    "unique_products": unique_products,
+                    "stores_indexed": stores_indexed,
+                },
+                "note": "Stock de precios reales ya scrapeados. Sirve aunque el collector esté en pausa.",
+            },
+            {
+                "id": "freshness",
+                "title": "2 · Frescura",
+                "question": "¿Puedo confiar en el precio de hoy?",
+                "metrics": {
+                    "snapshots_24h": snapshots_24h,
+                    "stores_fresh_24h": stores_fresh_24h,
+                    "fresh_24h_pct": fresh_24h_pct,
+                    "moat_age_hours": round(moat_age_h, 1) if moat_age_h is not None else None,
+                    "last_collected_at": last_ts,
+                    "status": freshness_label,
+                },
+                "note": "Si snapshots_24h = 0 pero total_indexed > 0, hay datos históricos sin refresh reciente.",
+            },
+            {
+                "id": "coverage",
+                "title": "3 · Cobertura",
+                "question": "¿Qué tan completo está el catálogo activo?",
+                "metrics": {
+                    "stores_active_catalog": catalog_stores,
+                    "coverage_7d_pct": coverage_7d_pct,
+                    "marketing_gate_pct": 80,
+                    "marketing_gate_pass": marketing_gate_pass,
+                    "stale_stores_sample": stale_stores,
+                },
+                "note": "Gate LinkedIn semana 2: coverage_7d_pct ≥ 80%.",
+            },
+            {
+                "id": "agents",
+                "title": "4 · Para agentes",
+                "question": "¿Qué puedo hacer con esto?",
+                "surfaces": [
+                    {"cmd": "market compare <producto>", "use": "Mejor precio cross-retailer"},
+                    {"cmd": "market basket", "use": "Canasta básica por tienda"},
+                    {"cmd": "GET /v1/intel/inflation?days=7", "use": "Inflación retail por línea"},
+                    {"cmd": "GET /dashboard/data", "use": "Fuente única de KPIs y gates"},
+                ],
+            },
+            {
+                "id": "ops",
+                "title": "5 · Collector (ops)",
+                "question": "¿El pipeline de ingestión está sano?",
+                "metrics": {
+                    "collector_status": collector_status,
+                    "collector_age_hours": round(collector_age_h, 1) if collector_age_h is not None else None,
+                    "last_prices_collected": last_run["prices_collected"] if last_run else 0,
+                    "last_stores_succeeded": last_run["stores_succeeded"] if last_run else 0,
+                },
+                "note": "Distinto de frescura del moat: un run puede terminar con 0 precios si hay bloqueo o pool agotado.",
+            },
+        ],
+    }
+
+
 @router.get("/dashboard")
 def dashboard():
     from fastapi.responses import HTMLResponse
@@ -63,7 +165,7 @@ def _dashboard_data():
         "SELECT MAX(queried_at) as ts FROM price_snapshots WHERE price > 0"
     ).fetchone()
     last_collected_at = last_collected_row["ts"] if last_collected_row else None
-    moat_age_h = _age_hours(str(last_collected_at)) if last_collected_at else None
+    moat_age_h = _age_hours(last_collected_at) if last_collected_at else None
 
     snapshots_24h = db.execute(
         "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= "
@@ -362,6 +464,24 @@ def _dashboard_data():
 
     db.close()
 
+    moat_guide = _build_moat_guide(
+        total_indexed=total_indexed,
+        unique_products=unique_products,
+        stores_indexed=stores_indexed,
+        snapshots_24h=snapshots_24h,
+        stores_fresh_24h=len(stores_fresh_24h),
+        coverage_7d_pct=coverage_7d_pct,
+        fresh_24h_pct=fresh_24h_pct,
+        moat_age_h=moat_age_h,
+        collector_status=collector_status,
+        collector_age_h=collector_age_h,
+        last_collected_at=last_collected_at,
+        last_run=last_run,
+        catalog_stores=len(DEFAULT_STORES),
+        marketing_gate_pass=coverage_7d_pct >= 80,
+        stale_stores=moat_stale,
+    )
+
     return {
         "generated_at": now.isoformat(),
         "kpis": {
@@ -404,6 +524,7 @@ def _dashboard_data():
             "stale_stores": moat_stale,
             "agent_surfaces": ["market compare", "market basket", "/v1/intel/inflation", "MCP market_stats"],
         },
+        "moat_guide": moat_guide,
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
         "dispersion": dispersion,
@@ -448,6 +569,7 @@ def _static_dashboard() -> str:
     
     k = data["kpis"]
     m = data.get("moat_summary", {})
+    g = data.get("moat_guide", {})
     indexed = k.get("total_indexed", k.get("total_snapshots", 0))
     snap_24 = k.get("snapshots_24h", k.get("total_snapshots", 0))
     stores_with_data = k.get("stores_indexed", k.get("active_stores", 0))
@@ -455,16 +577,28 @@ def _static_dashboard() -> str:
     cov_bar = "█" * (cov_pct // 5) + "░" * (20 - cov_pct // 5)
     stale_note = ""
     if m.get("collector_stale"):
-        stale_note = f" · ⚠️ collector stale ({k.get('moat_age_hours', '?')}h sin refresh)"
-    rows = []
-    rows.append(f"<tr><td>Precios indexados (moat)</td><td style='color:#3cffd0'>{indexed:,}</td></tr>")
-    rows.append(f"<tr><td>Refresh 24h</td><td style='color:#3cffd0'>{snap_24:,}</td></tr>")
-    rows.append(f"<tr><td>Productos únicos</td><td style='color:#3cffd0'>{k.get('unique_products', 0):,}</td></tr>")
-    rows.append(f"<tr><td>Tiendas con datos</td><td style='color:#3cffd0'>{stores_with_data}/{k['total_stores']}</td></tr>")
-    rows.append(f"<tr><td>Tiendas fresh 24h</td><td style='color:#3cffd0'>{k.get('stores_fresh_24h', 0)}</td></tr>")
-    rows.append(f"<tr><td>Países</td><td style='color:#3cffd0'>{len(data['by_country'])}</td></tr>")
-    rows.append(f"<tr><td>Ciclos</td><td style='color:#3cffd0'>{k['total_runs']}</td></tr>")
-    rows.append(f"<tr><td>24h activas</td><td style='color:#3cffd0'>{k['stores_24h']}</td></tr>")
+        stale_note = f" · ⚠️ moat sin refresh reciente ({k.get('moat_age_hours', '?')}h)"
+    elif snap_24 == 0 and indexed > 0:
+        stale_note = " · ⚠️ inventario histórico — refresh 24h en cero"
+
+    guide_html = ""
+    for layer in g.get("layers", []):
+        metrics = layer.get("metrics") or {}
+        mrows = "".join(
+            f"<tr><td>{mk}</td><td style='color:#3cffd0'>{mv}</td></tr>"
+            for mk, mv in metrics.items()
+        )
+        surfaces = layer.get("surfaces") or []
+        srows = "".join(
+            f"<tr><td><code>{s['cmd']}</code></td><td>{s['use']}</td></tr>" for s in surfaces
+        )
+        guide_html += f"""<div class="section">{layer.get('title', layer.get('id', ''))}</div>
+<p class="layer-q">{layer.get('question', '')}</p>
+{f"<table><tr><th>Metric</th><th>Value</th></tr>{mrows}</table>" if mrows else ""}
+{f"<table><tr><th>Superficie</th><th>Uso</th></tr>{srows}</table>" if srows else ""}
+<p class="layer-note">{layer.get('note', '')}</p>"""
+
+    mental = "".join(f"<li>{x}</li>" for x in g.get("mental_model", []))
     
     lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{(r['avg_price'] or 0):.2f}</td><td>{(r['min_price'] or 0):.2f}</td><td>{(r['max_price'] or 0):.2f}</td></tr>" for r in data["by_line"])
     disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r.get('discount_pct',0) or 0}%</td></tr>" for r in data["top_discounts"])
@@ -525,15 +659,22 @@ th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4
 td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px}}
 td.num{{text-align:right}}
 .section{{color:#3cffd0;font-size:11px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:2px}}
+.layer-q{{color:#888;font-size:11px;margin:0 0 8px}}
+.layer-note{{color:#555;font-size:10px;margin:0 0 12px;font-style:italic}}
 .coverage{{font:10px monospace;margin:8px 0;color:#555}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
 </style></head><body>
-<h1>CLI Market · Monitor de Precios</h1>
-<p class="sub">✅ Moat activo · <b>{indexed:,} precios</b> indexados · <b>{snap_24:,}</b> en últimas 24h · <b>{stores_with_data}</b> tiendas con datos{stale_note} · Actualizado {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC</p>
-<p class="coverage">🔵 {stores_with_data} tiendas en el moat · ⬜ {k['total_stores']-stores_with_data} sin datos aún · Cobertura catálogo: {cov_pct}% {cov_bar}</p>
+<h1>CLI Market · Data Moat</h1>
+<p class="sub">{g.get('headline', 'Monitor de precios')} · <b>{indexed:,}</b> indexados · <b>{snap_24:,}</b> refresh 24h · {stores_with_data}/{k['total_stores']} tiendas{stale_note} · {data['generated_at'][:10]} {data['generated_at'][11:16]} UTC</p>
+<p class="coverage">Cobertura catálogo: {cov_pct}% {cov_bar}</p>
 
-<div class="section">[ KPIs ]</div>
-<table><tr><th>Metric</th><th>Value</th></tr>{''.join(rows)}</table>
+<div class="section">[ QUÉ ES ]</div>
+<ul style="color:#888;font-size:11px;line-height:1.6;margin:0 0 16px 18px">{mental or '<li>Moat = precios verificados cross-retailer</li>'}</ul>
+
+{guide_html}
+
+<div class="section">[ DETALLE ANALÍTICO ]</div>
+<p class="layer-note">Secciones siguientes: exploración (líneas, descuentos, inflación, movers). No confundir con inventario/frescura arriba.</p>
 
 <div class="section">[ ESTADO DE TIENDAS ]</div>
 <p style="color:#555;font-size:10px;margin:0 0 6px">¿Cada tienda esta respondiendo? 🟢 OK = sin errores · 🟡 WARN = intermitente · 🔴 DEAD = no se obtuvieron precios. Puede ser un cambio en el sitio de la tienda o un bloqueo temporal.</p>

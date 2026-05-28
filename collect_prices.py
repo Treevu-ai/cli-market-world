@@ -14,7 +14,7 @@ Usage:
 
 import asyncio, json, os, sqlite3, time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import httpx
 
 from market_core import (
@@ -27,10 +27,12 @@ logger = log.getChild("collector")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-PARALLEL = int(os.getenv("COLLECT_PARALLEL", "20"))
-REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.5"))
+PARALLEL = int(os.getenv("COLLECT_PARALLEL", "12"))
+REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.35"))
 QUERY_TIMEOUT = 15.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
+MAX_QUERIES_PER_LINE = int(os.getenv("COLLECT_MAX_QUERIES_PER_LINE", "24"))
+COLLECTOR_ADVISORY_LOCK = int(os.getenv("COLLECTOR_ADVISORY_LOCK", "84957231"))
 
 LINE_MAX_PRICE = {
     "supermercados": 10_000,
@@ -259,18 +261,19 @@ def get_feedback_queries(db) -> list[tuple[str, str]]:
     seed_terms = _dedup_seed_terms()
     per_line = max(1, FEEDBACK_LIMIT // max(len(QUERY_MODIFIERS), 1))
     lines = list(QUERY_MODIFIERS.keys())
+    since = (datetime.now(timezone.utc) - timedelta(days=FEEDBACK_DAYS)).isoformat()
     for line in lines:
         try:
             rows = db.execute("""
                 SELECT name, COUNT(*) as freq
                 FROM price_snapshots
                 WHERE line = ? AND price > 0
-                  AND queried_at >= datetime('now', ?)
+                  AND queried_at >= ?
                 GROUP BY name
                 HAVING COUNT(*) >= ?
                 ORDER BY freq DESC
                 LIMIT ?
-            """, (line, f"-{FEEDBACK_DAYS} days", FEEDBACK_MIN_COUNT, per_line + 2)).fetchall()
+            """, (line, since, FEEDBACK_MIN_COUNT, per_line + 2)).fetchall()
         except Exception:
             continue
         for r in rows:
@@ -289,6 +292,23 @@ def get_feedback_queries(db) -> list[tuple[str, str]]:
     return feedback[:FEEDBACK_LIMIT]
 
 
+def cap_queries_for_cycle(queries: list[tuple[str, str]], cycle: int = 0) -> list[tuple[str, str]]:
+    """Rotate a bounded query set per line so each cycle stays fast and pool-friendly."""
+    if MAX_QUERIES_PER_LINE <= 0:
+        return queries
+    by_line: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for q, line in queries:
+        by_line[line or "supermercados"].append((q, line))
+    capped: list[tuple[str, str]] = []
+    for line, items in by_line.items():
+        if not items:
+            continue
+        start = (cycle * MAX_QUERIES_PER_LINE) % len(items)
+        for i in range(min(MAX_QUERIES_PER_LINE, len(items))):
+            capped.append(items[(start + i) % len(items)])
+    return capped
+
+
 def build_query_list(db=None, cycle: int = 0) -> list[tuple[str, str]]:
     """Build the full query list: expanded seed + feedback from data moat."""
     queries = expand_queries(SEED_QUERIES, cycle)
@@ -300,6 +320,7 @@ def build_query_list(db=None, cycle: int = 0) -> list[tuple[str, str]]:
                 queries.extend(fb)
         except Exception as e:
             logger.warning("Feedback queries failed: %s", e)
+    queries = cap_queries_for_cycle(queries, cycle)
     return queries
 
 
@@ -330,8 +351,21 @@ if USE_PG:
     async def get_pool():
         global _pg_pool
         if _pg_pool is None:
-            _pg_pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+            pool_size = max(PARALLEL + 2, 15)
+            _pg_pool = await asyncpg.create_pool(
+                DATABASE_URL, min_size=2, max_size=pool_size, command_timeout=60,
+            )
         return _pg_pool
+
+    async def pg_try_daemon_lock(pool) -> bool:
+        async with pool.acquire() as conn:
+            return bool(await conn.fetchval(
+                "SELECT pg_try_advisory_lock($1)", COLLECTOR_ADVISORY_LOCK,
+            ))
+
+    async def pg_release_daemon_lock(pool) -> None:
+        async with pool.acquire() as conn:
+            await conn.execute("SELECT pg_advisory_unlock($1)", COLLECTOR_ADVISORY_LOCK)
 
     async def init_schema():
         # Single source of truth: market_core.init_db() owns the DDL.
@@ -502,7 +536,14 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
                 await conn.execute("""
                     INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-                    ON CONFLICT (product_id,store,queried_at) DO NOTHING
+                    ON CONFLICT (product_id,store) DO UPDATE SET
+                        name=EXCLUDED.name,
+                        brand=EXCLUDED.brand,
+                        price=EXCLUDED.price,
+                        list_price=EXCLUDED.list_price,
+                        discount=EXCLUDED.discount,
+                        stock=EXCLUDED.stock,
+                        queried_at=NOW()
                 """, prod["product_id"], prod["name"], prod["brand"], prod["price"],
                    prod.get("list_price", 0), prod.get("discount"), prod["store"],
                    prod["store_name"], prod["currency"], prod["line"], prod["line_name"],
@@ -531,31 +572,58 @@ async def run_full_catalog_pg(pool, stores: list[str]) -> int:
 # ── Collector core ──────────────────────────────────────────────────────────
 
 async def collect_one_pg(pool, store, queries):
-    if not cb.ok(store): return 0
-    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0
+    if not cb.ok(store):
+        logger.warning("circuit open — skipping %s", store)
+        return 0
+    line = STORES[store].get("line", "")
+    collected = 0
+    query_ok = 0
+    pending: list[dict] = []
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"},follow_redirects=True) as client:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(QUERY_TIMEOUT),
+            headers={"User-Agent": "Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"},
+            follow_redirects=True,
+        ) as client:
+            for q, lf in queries:
+                if lf and line != lf:
+                    continue
+                try:
+                    raw = await fetch_store_multi(client, store, q)
+                    cb.win(store)
+                    query_ok += 1
+                    for p in raw:
+                        prod = _pfj(p, store)
+                        prod["line"] = line
+                        prod["line_name"] = LINES.get(line, {}).get("name", "")
+                        if prod["price"] <= 0:
+                            continue
+                        if prod["price"] > LINE_MAX_PRICE.get(prod["line"], 99_999_999):
+                            continue
+                        pending.append(prod)
+                    await asyncio.sleep(REQUEST_DELAY)
+                except Exception as exc:
+                    logger.warning("collect %s/%s: %s", store, q, str(exc)[:120])
+                    cb.lose(store)
+        if pending:
             async with pool.acquire() as conn:
-                for q, lf in queries:
-                    attempted += 1
-                    if lf and line!=lf: continue
-                    try:
-                        raw = await fetch_store_multi(client, store, q)
-                        cb.win(store)
-                        query_ok += 1
-                        for p in raw:
-                            prod = _pfj(p, store)
-                            prod["line"] = STORES[store].get("line","")
-                            prod["line_name"] = LINES.get(STORES[store].get("line",""),{}).get("name","")
-                            if prod["price"]<=0: continue
-                            if prod["price"] > LINE_MAX_PRICE.get(prod["line"], 99_999_999): continue
-                            await pg_insert(conn, prod); collected+=1
-                        await asyncio.sleep(REQUEST_DELAY)
-                    except Exception:
-                        cb.lose(store)
-                await pg_health(conn, store, collected > 0 or query_ok > 0)
-    except Exception:
+                for prod in pending:
+                    await pg_insert(conn, prod)
+                    collected += 1
+                await pg_health(conn, store, True)
+        elif query_ok > 0:
+            async with pool.acquire() as conn:
+                await pg_health(conn, store, True)
+        else:
+            async with pool.acquire() as conn:
+                await pg_health(conn, store, False)
+    except Exception as exc:
+        logger.warning("collect_one_pg %s failed: %s", store, str(exc)[:160])
         cb.lose(store)
+    if query_ok > 0 and collected == 0:
+        logger.warning("store %s: %d queries OK but 0 prices saved", store, query_ok)
+    elif collected > 0:
+        logger.info("store %s: %d products from %d queries", store, collected, query_ok)
     return collected
 
 async def collect_one_sqlite(db, store, queries):
@@ -591,24 +659,45 @@ async def collect_one_sqlite(db, store, queries):
     return collected
 
 async def run_collection(stores, queries):
-    sl = list(stores); B = PARALLEL*2; total=0; ok=0; errs=[]
+    sl = list(stores)
+    batch_size = max(1, min(PARALLEL, len(sl)))
+    total = 0
+    ok = 0
+    errs: list[str] = []
     if USE_PG:
-        pool = await get_pool(); await init_schema()
-        async with pool.acquire() as c: rid = await pg_run_start(c, len(sl))
-        for i in range(0,len(sl),B):
-            batch = sl[i:i+B]; tasks = [collect_one_pg(pool, s, queries) for s in batch]
-            for r in await asyncio.gather(*tasks, return_exceptions=True):
-                if isinstance(r,Exception): errs.append(str(r))
-                elif r>0: total+=r; ok+=1
-        async with pool.acquire() as c: await pg_run_end(c, rid, ok, total, json.dumps(errs[:100]))
+        pool = await get_pool()
+        await init_schema()
+        async with pool.acquire() as c:
+            rid = await pg_run_start(c, len(sl))
+        for i in range(0, len(sl), batch_size):
+            batch = sl[i:i + batch_size]
+            tasks = [collect_one_pg(pool, s, queries) for s in batch]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for store, r in zip(batch, results):
+                if isinstance(r, Exception):
+                    errs.append(f"{store}: {r}")
+                    logger.warning("store %s exception: %s", store, str(r)[:160])
+                elif r > 0:
+                    total += r
+                    ok += 1
+        async with pool.acquire() as c:
+            await pg_run_end(c, rid, ok, total, json.dumps(errs[:100]))
     else:
-        db = init_schema_sqlite(); rid = sq_run_start(db, len(sl))
-        for i in range(0,len(sl),B):
-            batch = sl[i:i+B]; tasks = [collect_one_sqlite(db, s, queries) for s in batch]
-            for r in await asyncio.gather(*tasks, return_exceptions=True):
-                if isinstance(r,Exception): errs.append(str(r))
-                elif r>0: total+=r; ok+=1
-        sq_run_end(db, rid, ok, total, json.dumps(errs[:100])); db.commit()
+        db = init_schema_sqlite()
+        rid = sq_run_start(db, len(sl))
+        batch_size = max(1, min(PARALLEL, len(sl)))
+        for i in range(0, len(sl), batch_size):
+            batch = sl[i:i + batch_size]
+            for store in batch:
+                try:
+                    r = await collect_one_sqlite(db, store, queries)
+                    if r > 0:
+                        total += r
+                        ok += 1
+                except Exception as exc:
+                    errs.append(f"{store}: {exc}")
+        sq_run_end(db, rid, ok, total, json.dumps(errs[:100]))
+        db.commit()
     return {"stores_attempted":len(sl),"stores_succeeded":ok,"prices_collected":total,"errors":len(errs)}
 
 # ── Status / Report ─────────────────────────────────────────────────────────
@@ -680,30 +769,49 @@ async def main():
     label = "PostgreSQL" if USE_PG else "SQLite"
 
     if args.daemon:
-        print(f"🔄 Daemon: every {args.interval}h | expansion: ×{EXPANSION_FACTOR} | feedback: ≤{FEEDBACK_LIMIT}")
+        print(f"🔄 Daemon: every {args.interval}h | expansion: ×{EXPANSION_FACTOR} | max {MAX_QUERIES_PER_LINE}/line")
         cycle = 0
         print(f"🚀 Collector daemon started — {label} backend — PID {os.getpid()}")
         while True:
+            lock_ok = True
+            pool = None
             try:
                 cb.reset()
+                if USE_PG:
+                    pool = await get_pool()
+                    lock_ok = await pg_try_daemon_lock(pool)
+                    if not lock_ok:
+                        print(f"⏭ Another collector holds the lock — skipping cycle {cycle}")
+                        cycle += 1
+                        await asyncio.sleep(max(args.interval * 3600, 60))
+                        continue
                 db = _get_feedback_db()
                 queries = build_query_list(db=db, cycle=cycle)
-                if db: db.close()
-                if args.queries: queries = queries[:args.queries]
+                if db:
+                    db.close()
+                if args.queries:
+                    queries = queries[:args.queries]
                 print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
-                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
-                t0=time.monotonic(); r=await run_collection(stores, queries)
-                print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
-                # Full catalog pull (every 60 min by default)
-                if USE_PG:
-                    cat_count = await run_full_catalog_pg(await get_pool(), stores)
+                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (capped rotation)")
+                t0 = time.monotonic()
+                r = await run_collection(stores, queries)
+                print(
+                    f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']}/{r['stores_attempted']} stores | "
+                    f"{time.monotonic()-t0:.1f}s | {r['errors']} errors"
+                )
+                if USE_PG and pool:
+                    cat_count = await run_full_catalog_pg(pool, stores)
                     if cat_count:
                         print(f"  📦 Full catalog: {cat_count:,} new products")
             except Exception as e:
                 print(f"  ✗ Cycle {cycle} crashed: {e}")
-                import traceback; traceback.print_exc()
+                import traceback
+                traceback.print_exc()
+            finally:
+                if USE_PG and pool and lock_ok:
+                    await pg_release_daemon_lock(pool)
             cycle += 1
-            wait_s = max(args.interval*3600, 60)
+            wait_s = max(args.interval * 3600, 60)
             await asyncio.sleep(wait_s)
     else:
         db = _get_feedback_db()

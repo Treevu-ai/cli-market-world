@@ -24,17 +24,19 @@ logger = logging.getLogger("market.server").getChild("health")
 router = APIRouter(tags=["health"])
 
 
-def _age_hours(timestamp_str: str | None) -> float | None:
+def _age_hours(timestamp_str: str | datetime | None) -> float | None:
     """Parse a SQLite/Postgres timestamp and return hours since.
 
-    Handles both formats SQLite/PG emit:
-      - "2026-05-26 17:44:07"          (SQLite datetime('now') — naive UTC)
-      - "2026-05-26T17:44:07+00:00"    (Postgres TIMESTAMPTZ — tz-aware)
-      - "2026-05-26T17:44:07Z"         (ISO with Z suffix)
-
-    Returns None if parsing fails. UTC is assumed for naive values, since
-    that's what SQLite stores under our schema (datetime('now') is UTC).
+    Accepts ISO strings, SQLite naive strings, or datetime objects from asyncpg/psycopg.
+    Returns None if parsing fails. UTC is assumed for naive values.
     """
+    if timestamp_str is None:
+        return None
+    if isinstance(timestamp_str, datetime):
+        dt = timestamp_str
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
     if not timestamp_str:
         return None
     try:
