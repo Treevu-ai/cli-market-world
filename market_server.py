@@ -80,8 +80,8 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="CLI Market API",
     description=(
-        "AI-native commerce infrastructure — 60 retailers across 6 verticals in 11 "
-        "countries. MCP-native. Agent-ready."
+        "Commerce infrastructure for AI agents — 30 verified retailers, "
+        "36 MCP tools, 8 countries. Agent-ready."
     ),
     version="1.4.0",
     lifespan=lifespan,
@@ -113,6 +113,7 @@ from routers.media import router as media_router
 from routers.misc import router as misc_router
 from routers.orders import router as orders_router
 from routers.payments import router as payments_router
+from routers.retailers import router as retailers_router
 from routers.search import router as search_router
 
 # Order doesn't matter functionally — each router declares its own paths.
@@ -131,6 +132,7 @@ for r in (
     misc_router,
     orders_router,
     payments_router,
+    retailers_router,
     search_router,
 ):
     app.include_router(r)

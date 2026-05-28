@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
+import { API_URL } from "@/lib/api";
+
 interface DataStats {
   kpis?: { total_snapshots?: number; active_stores?: number; total_runs?: number; stores_24h?: number };
   generated_at?: string;
@@ -14,7 +16,7 @@ export default function DataSection() {
   const [stats, setStats] = useState<DataStats>({});
 
   useEffect(() => {
-    fetch("https://cli-market-production.up.railway.app/dashboard/data")
+    fetch(`${API_URL}/dashboard/data`)
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});
@@ -44,8 +46,8 @@ export default function DataSection() {
         </h2>
         <p className="text-base text-[var(--wise-body)] max-w-lg mx-auto mb-12 leading-relaxed">
           {isES
-            ? "Nuestro collector corre cada 8 horas contra los 41 retailers y extrae precios reales de góndola."
-            : "Our collector runs every 8 hours against 41 retailers and extracts real shelf prices."}
+            ? "Nuestro collector corre cada 8 horas contra 30 retailers y extrae precios reales de góndola."
+            : "Our collector runs every 8 hours against 30 retailers and extracts real shelf prices."}
         </p>
 
         {freshness && (
@@ -97,7 +99,7 @@ export default function DataSection() {
         </div>
 
         <div className="mt-12">
-          <a href="https://cli-market-production.up.railway.app/dashboard"
+          <a href={`${API_URL}/dashboard`}
              target="_blank" rel="noopener"
              className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors">
             {isES ? "Ver dashboard en vivo" : "View live dashboard"}

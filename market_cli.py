@@ -62,6 +62,9 @@ T = {
         "product_remove_help": "ID del producto a eliminar del carrito",
         "product_update_help": "ID del producto",
         "quantity_help": "Nueva cantidad (0 = eliminar)",
+        "hello": "Onboarding post-install y próximos pasos",
+        "share": "Link de referido para compartir CLI Market",
+        "upgrade": "Solicitar Pro — email con link de pago",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -90,6 +93,9 @@ T = {
         "product_remove_help": "Product ID to remove from cart",
         "product_update_help": "Product ID",
         "quantity_help": "New quantity (0 = remove)",
+        "hello": "Post-install onboarding and next steps",
+        "share": "Referral link to share CLI Market",
+        "upgrade": "Request Pro — email with payment link",
     },
 }
 
@@ -113,8 +119,7 @@ WELCOME_BANNER = """\n[#00FF88]  ╭──────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 11 países       [#00FF88]●[/] 4 líneas
-     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json nativo
+     [#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 36 mcp tools
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autónomo         [#00FF88]●[/] open source
 
      [#555555]pip install cli-market[/]
@@ -135,8 +140,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]commerce infrastructure for humans and ai agents[/]
 
-     [#00FF88]●[/] 27 retailers    [#00FF88]●[/] 11 countries    [#00FF88]●[/] 4 lines
-     [#00FF88]●[/] 15 mcp tools       [#00FF88]●[/] api rest        [#00FF88]●[/] json native
+     [#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 36 mcp tools
      [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source
 
      [#555555]pip install cli-market[/]
@@ -181,7 +185,7 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
     if isinstance(result, dict) and "error" in result:
         if result.get("status") == 401:
             console.print("[red]Sesión expirada. Ejecutá: market login[/]")
-            console.print("[dim]Si usás MARK_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
+            console.print("[dim]Si usás MARKET_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
         else:
             console.print(f"[red]Error: {result['error']}[/]")
         sys.exit(1)
@@ -358,10 +362,43 @@ def cmd_cart_clear(args):
     console.print("[#3cffd0]✓ Carrito vaciado[/]")
 
 def cmd_checkout(args):
-    data = cli_api("POST", "/checkout", {"payment_method": args.payment})
-    order = data.get("order", {})
-    console.print(f"[#00FF88]✓ {data.get('message', 'Compra completada')}[/]")
-    console.print(f"[bold]Orden: {order.get('order_id', '?')}[/] — Total: {fmt_price(order.get('total', 0))}")
+    routes = {
+        "yape": "/checkout/yape",
+        "plin": "/checkout/yape",
+        "tarjeta": "/checkout/paypal",
+        "paypal": "/checkout/paypal",
+    }
+    path = routes.get(args.payment, "/checkout/yape")
+    data = cli_api("POST", path, {})
+    order_id = data.get("order_id", "?")
+    total = data.get("total", 0)
+    currency = data.get("currency", "PEN")
+    status = data.get("status", "pending")
+
+    if data.get("approve_url"):
+        console.print(Panel.fit(
+            f"[bold]Orden {order_id}[/] — {currency} {total:.2f}\n\n"
+            f"Completa el pago en PayPal:\n[cyan underline]{data['approve_url']}[/]\n\n"
+            "[dim]Tras pagar, la orden pasa a 'paid' vía webhook.[/]",
+            title="Checkout PayPal",
+            border_style="#00FF88",
+        ))
+        return
+
+    if data.get("checkout_url"):
+        console.print(Panel.fit(
+            f"[bold]Orden {order_id}[/] — {currency} {total:.2f}\n\n"
+            f"[cyan underline]{data['checkout_url']}[/]",
+            title="Checkout",
+            border_style="#00FF88",
+        ))
+        return
+
+    msg = data.get("message", "Orden creada — pago pendiente")
+    console.print(f"[#00FF88]✓ {msg}[/]")
+    console.print(f"[bold]Orden: {order_id}[/] — Total: {currency} {total:.2f} — Estado: {status}")
+    if data.get("qr_url"):
+        console.print(f"[dim]QR: {data['qr_url']}[/]")
 
 def cmd_orders(args):
     data = cli_api("GET", "/orders")
@@ -536,7 +573,7 @@ def cmd_alerts(args):
 def cmd_about(args):
     console.print(Panel.fit(
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
-        "[#888888]Un solo pip install. Una API. 27 retailers en 11 países.[/]\n"
+        "[#888888]Un solo pip install. Una API. 30 retailers en 8 países. 36 MCP tools.[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
         "[#888888]Open source (MIT). Gratis para developers.[/]\n\n"
         "[dim]github.com/Treevu-ai/cli-market-world[/]",
@@ -554,6 +591,93 @@ def cmd_lang(args):
     else:
         current = get_lang()
         console.print(f"[dim]Idioma actual: {current}. Usá market lang en para inglés.[/]")
+
+
+def cmd_hello(args):
+    """Post-install activation: show next steps after pip install."""
+    is_en = get_lang() == "en"
+    if is_en:
+        console.print(Panel.fit(
+            "[bold #00FF88]Welcome to CLI Market[/]\n\n"
+            "Commerce API for AI agents — 30 retailers, 36 MCP tools.\n\n"
+            "[bold]Next steps:[/]\n"
+            "  1. [cyan]market login[/] — free API access (admin / market)\n"
+            "  2. [cyan]market search \"milk\" --country PE[/] — try a search\n"
+            "  3. Connect MCP in Cursor/Claude → [cyan]https://cli-market.dev/tools[/]\n"
+            "  4. [cyan]market share[/] — referral link\n\n"
+            "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
+            title="CLI Market",
+            border_style="#00FF88",
+        ))
+    else:
+        console.print(Panel.fit(
+            "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
+            "Infraestructura de comercio para agentes IA — 30 retailers, 36 herramientas MCP.\n\n"
+            "[bold]Próximos pasos:[/]\n"
+            "  1. [cyan]market login[/] — acceso gratis (admin / market)\n"
+            "  2. [cyan]market search \"leche\" --country PE[/] — prueba una búsqueda\n"
+            "  3. Conecta MCP en Cursor/Claude → [cyan]https://cli-market.dev/tools[/]\n"
+            "  4. [cyan]market share[/] — link de referido\n\n"
+            "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
+            title="CLI Market",
+            border_style="#00FF88",
+        ))
+
+
+def cmd_share(args):
+    """Generate referral link for growth tracking."""
+    import hashlib
+    seed = get_token() or "cli-market"
+    ref = hashlib.sha256(seed.encode()).hexdigest()[:8]
+    url = f"https://cli-market.dev/?ref={ref}"
+    if getattr(args, "json", False):
+        console.print(json.dumps({"referral_url": url, "ref": ref}, indent=2))
+        return
+    console.print(Panel.fit(
+        f"[bold]Share CLI Market[/]\n\n{url}\n\n"
+        "[dim]When developers install via your link, we track activation (opt-in).[/]",
+        border_style="#00FF88",
+    ))
+
+
+def cmd_upgrade(args):
+    """Request Pro — email with payment link from hello@cli-market.dev."""
+    get_token_with_prompt()
+    email = (getattr(args, "email", None) or "").strip()
+    if not email:
+        console.print("[yellow]Email required for Pro request.[/]")
+        console.print("Usage: [cyan]market upgrade --email you@example.com[/]")
+        return
+
+    payload = {"email": email, "lang": get_lang()}
+    if getattr(args, "resend", False):
+        payload["resend"] = True
+
+    data = cli_api("POST", "/billing/request-pro", payload)
+    link = data.get("payment_link", "")
+    req_id = data.get("request_id", "?")
+
+    if data.get("email_sent"):
+        msg = (
+            f"Revisa [cyan]{email}[/] — enviamos el link de pago (ref {req_id})."
+            if get_lang() == "es"
+            else f"Check [cyan]{email}[/] — payment link sent (ref {req_id})."
+        )
+    else:
+        msg = (
+            f"SMTP no configurado. Paga aquí:\n[cyan underline]{link}[/]"
+            if get_lang() == "es"
+            else f"SMTP not configured. Pay here:\n[cyan underline]{link}[/]"
+        )
+
+    console.print(Panel.fit(
+        f"[bold #00FF88]CLI Market Pro — $49/mo[/]\n\n{msg}\n\n"
+        "[dim]Tras pagar, responde al email con tu usuario CLI para activar Pro.[/]",
+        title="Upgrade",
+        border_style="#00FF88",
+    ))
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2))
 
 # ── Main ────────────────────────────────────────────────────────────────────
 
@@ -608,7 +732,7 @@ def main():
 
     # checkout
     p = sub.add_parser("checkout", help=t("checkout"))
-    p.add_argument("--payment", choices=["yape", "plin", "tarjeta"], default="yape")
+    p.add_argument("--payment", choices=["yape", "plin", "tarjeta", "paypal"], default="yape")
 
     # orders
     sub.add_parser("orders", help=t("orders"))
@@ -669,6 +793,12 @@ def main():
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
 
+    sub.add_parser("hello", help=t("hello"))
+    sub.add_parser("share", help=t("share"))
+    p = sub.add_parser("upgrade", help=t("upgrade"))
+    p.add_argument("--email", help="Email to receive payment link")
+    p.add_argument("--resend", action="store_true", help="Resend payment link email")
+
     args = parser.parse_args()
     if not args.command:
         console.print(welcome_banner())
@@ -686,6 +816,7 @@ def main():
         "enrich": cmd_enrich, "basket": cmd_basket,
         "inflation": cmd_inflation, "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "lang": cmd_lang,
+        "hello": cmd_hello, "share": cmd_share, "upgrade": cmd_upgrade,
     }
     handler = handlers.get(args.command)
     if handler:

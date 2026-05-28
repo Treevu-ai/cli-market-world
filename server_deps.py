@@ -114,3 +114,18 @@ def require_user(authorization: str | None) -> str:
     if not authorization:
         raise HTTPException(status_code=401, detail="Sin token")
     return auth_user(authorization.replace("Bearer ", ""))
+
+
+def require_checkout_access(username: str) -> None:
+    """Raise 403 if user's tier cannot use checkout (unless legacy bypass)."""
+    from market_core import user_can_checkout
+
+    if user_can_checkout(username):
+        return
+    raise HTTPException(
+        status_code=403,
+        detail=(
+            "Checkout requires CLI Market Pro ($49/mo). "
+            "Run: market upgrade"
+        ),
+    )

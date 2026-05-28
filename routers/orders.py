@@ -13,6 +13,7 @@ live in routers/payments.py.
 
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Header, HTTPException
@@ -27,6 +28,7 @@ from market_core import (
     get_db,
 )
 from server_deps import require_user
+from market_core import user_can_checkout
 
 router = APIRouter(tags=["orders"])
 
@@ -37,9 +39,24 @@ class CheckoutRequest(BaseModel):
 
 @router.post("/checkout")
 def checkout(body: CheckoutRequest, authorization: str | None = Header(None)):
-    """Generic checkout — creates an order and clears the cart. Use
-    /checkout/{yape,lemon,paypal,wise} for payment-gateway flows."""
+    """Generic checkout — legacy instant-complete when MARKET_LEGACY_CHECKOUT=1.
+
+    Production: use POST /checkout/yape, /checkout/paypal, etc.
+    """
     username = require_user(authorization)
+    if not user_can_checkout(username):
+        raise HTTPException(
+            status_code=403,
+            detail="Checkout requires Pro. Use: market upgrade — or gateway /checkout/yape",
+        )
+    if os.getenv("MARKET_LEGACY_CHECKOUT", "").lower() not in ("1", "true", "yes"):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Use a payment gateway: POST /checkout/yape, /checkout/paypal, "
+                "/checkout/wise, or /checkout/lemon"
+            ),
+        )
     cart = db_get_cart(username)
     if not cart:
         raise HTTPException(status_code=400, detail="Carrito vacío")

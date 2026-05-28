@@ -1,4 +1,5 @@
 import Footer from "@/components/Footer";
+import RetailerApplyForm from "@/components/RetailerApplyForm";
 
 export default function RetailersPage() {
   return (
@@ -25,7 +26,7 @@ export default function RetailersPage() {
           })
         }}
       />
-      <meta name="description" content="List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds. 13,000+ prices across 41 retailers in 8 countries. Your products visible to AI agents. No cost. MIT." />
+      {/* FAQ structured data for GEO — retailers page */}
 
       {/* Header */}
       <section className="py-24 px-6 text-center border-b border-[#c5edab]">
@@ -51,7 +52,7 @@ export default function RetailersPage() {
           {[
             { n: "30", l: "Retailers live" },
             { n: "13K+", l: "Prices indexed" },
-            { n: "7", l: "Countries" },
+            { n: "8", l: "Countries" },
             { n: "30s", l: "To integrate" },
           ].map((s) => (
             <div key={s.l}>
@@ -107,12 +108,16 @@ export default function RetailersPage() {
 
       {/* CTA */}
       <section className="py-24 px-6 text-center">
-        <div className="max-w-[480px] mx-auto">
+        <div className="max-w-[520px] mx-auto">
           <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-2">Ready to get listed?</h2>
-          <p className="text-sm text-[var(--wise-body)] mb-2">Free. Forever. No catch.</p>
-          <p className="text-[11px] text-[#ffbd2e] mb-8 font-medium">Limited spots per country — first come, first served.</p>
-          <a href="mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing" className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors">hello@cli-market.dev</a>
-          <p className="text-[10px] text-[var(--wise-mute)] mt-4">MIT License · Open source · No lock-in · No cost</p>
+          <p className="text-sm text-[var(--wise-body)] mb-8">Free. Forever. Self-serve form below.</p>
+          <RetailerApplyForm />
+          <p className="text-[10px] text-[var(--wise-mute)] mt-8">
+            Prefer email?{" "}
+            <a href="mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing" className="underline">
+              hello@cli-market.dev
+            </a>
+          </p>
         </div>
       </section>
 

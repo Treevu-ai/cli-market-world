@@ -13,7 +13,7 @@ Commerce infrastructure for AI agents. 30 verified retailers across 8 countries 
 
 ## Key Numbers
 
-- 41 retailers (22 VTEX + 19 Magento — need tokens for some)
+- 30 retailers (22 VTEX + 8 Magento — tokens required for some)
 - 8 countries (PE, AR, BR, MX, CO, CL, IT, FR)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
 - 36 MCP tools (search, compare, basket, checkout, inflation, voice, ticket, export)

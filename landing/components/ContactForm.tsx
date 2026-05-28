@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
+import { API_URL, PRO_PAYMENT_URL } from "@/lib/api";
+import PayPalHostedButton from "@/components/PayPalHostedButton";
 
 const PLANS = [
   { key: "free", es: "Free", en: "Free", price: "$0" },
@@ -14,6 +16,7 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
   const [email, setEmail] = useState("");
   const [useCase, setUseCase] = useState("");
   const [sent, setSent] = useState(false);
+  const [proResult, setProResult] = useState<{ request_id?: string; email_sent?: boolean; payment_link?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const isES = lang === "es";
@@ -22,13 +25,23 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
     e.preventDefault();
     if (!email || !useCase) { setError(isES ? "Completa todos los campos" : "Fill all fields"); return; }
     setLoading(true); setError("");
+    const endpoint = plan === "pro" ? `${API_URL}/billing/request-pro` : `${API_URL}/v1/contact`;
+    const payload =
+      plan === "pro"
+        ? { email, lang: isES ? "es" : "en", use_case: useCase }
+        : { plan, email, use_case: useCase, lang: isES ? "es" : "en" };
     try {
-      const res = await fetch("https://cli-market-production.up.railway.app/v1/contact", {
+      const res = await fetch(endpoint, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, email, use_case: useCase }),
+        body: JSON.stringify(payload),
       });
-      if (res.ok) { setSent(true); return; }
-      throw new Error("Server error");
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (plan === "pro") setProResult(data);
+        setSent(true);
+        return;
+      }
+      throw new Error(data.detail || "Server error");
     } catch {
       setLoading(false);
       const subject = encodeURIComponent(`CLI Market ${plan} — ${email}`);
@@ -38,8 +51,31 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
   };
 
   if (sent) return (
-    <div className="bg-[var(--wise-green-pale)] rounded-3xl p-8 text-center max-w-[480px] mx-auto">
-      <p className="text-lg font-semibold text-[var(--wise-ink)]">{isES ? "¡Gracias! Te escribiremos pronto." : "Thanks! We'll reach out soon."}</p>
+    <div className="bg-[var(--wise-green-pale)] rounded-3xl p-8 text-center max-w-[480px] mx-auto space-y-4">
+      <p className="text-lg font-semibold text-[var(--wise-ink)]">
+        {plan === "pro"
+          ? (isES
+            ? "Solicitud Pro recibida"
+            : "Pro request received")
+          : (isES ? "¡Gracias! Te escribiremos pronto." : "Thanks! We'll reach out soon.")}
+      </p>
+      {plan === "pro" && (
+        <>
+          <p className="text-sm text-[var(--wise-body)]">
+            {proResult?.email_sent
+              ? (isES ? `Revisa ${email} — link desde hello@cli-market.dev` : `Check ${email} — link from hello@cli-market.dev`)
+              : (isES ? "Paga abajo o usa el link de PayPal:" : "Pay below or use the PayPal link:")}
+          </p>
+          {proResult?.request_id && (
+            <p className="font-mono text-xs text-[var(--wise-mute)]">Ref: {proResult.request_id}</p>
+          )}
+          <PayPalHostedButton />
+          <a href={proResult?.payment_link || PRO_PAYMENT_URL} target="_blank" rel="noopener noreferrer"
+            className="text-xs underline text-[var(--wise-mute)]">
+            {isES ? "Abrir PayPal" : "Open PayPal"}
+          </a>
+        </>
+      )}
     </div>
   );
 

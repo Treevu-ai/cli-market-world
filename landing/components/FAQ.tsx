@@ -2,20 +2,20 @@
 import { useLang } from "@/lib/LanguageContext";
 
 const faqs_es = [
-  { q: "¿Qué es CLI Market?", a: "CLI Market es una API y CLI que permite a agentes de IA buscar, comparar y comprar productos en 41 retailers en 8 países. 13,000+ precios reales. Una sola API. Cero scraping." },
-  { q: "¿Con qué retailers funciona?", a: "Trabajamos con 41 retailers en 6 líneas: supermercados, farmacias, electro, moda, hogar y departamentales. Abarcamos VTEX y Magento en 8 países." },
+  { q: "¿Qué es CLI Market?", a: "CLI Market es una API y CLI que permite a agentes de IA buscar, comparar y comprar productos en 30 retailers verificados en 8 países. 13,000+ precios reales. Una sola API. Cero scraping." },
+  { q: "¿Con qué retailers funciona?", a: "Trabajamos con 30 retailers verificados en 6 líneas: supermercados, farmacias, electro, moda, hogar y departamentales. VTEX y Magento en 8 países." },
   { q: "¿Cómo funciona el pago?", a: "Aceptamos PayPal y QR (Yape/Plin). El checkout genera un QR que escaneas desde tu app de pagos. El webhook confirma la transacción y actualiza el estado de tu orden automáticamente." },
   { q: "¿Mis agentes pueden usar esto sin intervención humana?", a: "Sí. Las 36 herramientas MCP están diseñadas para que tu agente busque, compare, arme canastas y complete compras de forma autónoma. El pago requiere aprobación humana por ahora." },
-  { q: "¿Los precios son reales?", a: "Sí. Nuestro collector corre cada 8 horas contra 41 retailers y extrae precios reales de góndola. No son estimaciones. Tenemos más de 13,000 precios verificados." },
+  { q: "¿Los precios son reales?", a: "Sí. Nuestro collector corre cada 8 horas contra 30 retailers y extrae precios reales de góndola. No son estimaciones. Tenemos más de 13,000 precios verificados." },
   { q: "¿Cuánto cuesta?", a: "La CLI es open source y gratuita (licencia MIT). La API tiene un tier gratuito de 1,000 consultas al día. El plan Pro cuesta USD 49 al mes con checkout habilitado y data export. Si tienes un caso más grande, escríbenos." },
 ];
 
 const faqs_en = [
-  { q: "What is CLI Market?", a: "CLI Market is an API and CLI that lets AI agents search, compare, and buy products across 41 retailers in 8 countries. 13,000+ real prices. One API. Zero scraping." },
-  { q: "Which retailers do you support?", a: "41 retailers across 6 lines: supermarkets, pharmacies, electronics, fashion, home, and department stores. We cover VTEX and Magento in 8 countries." },
+  { q: "What is CLI Market?", a: "CLI Market is an API and CLI that lets AI agents search, compare, and buy products across 30 verified retailers in 8 countries. 13,000+ real prices. One API. Zero scraping." },
+  { q: "Which retailers do you support?", a: "30 verified retailers across 6 lines: supermarkets, pharmacies, electronics, fashion, home, and department stores. VTEX and Magento in 8 countries." },
   { q: "How does payment work?", a: "PayPal + QR (Yape/Plin). Checkout generates a QR code you scan from your payment app. A webhook confirms the transaction and updates your order status automatically." },
   { q: "Can my agents use this autonomously?", a: "Yes. All 36 MCP tools are designed for agents to search, compare, build baskets, and complete purchases autonomously. Payment requires human approval for now." },
-  { q: "Are the prices real?", a: "Yes. Our collector runs every 8 hours against 41 retailers and extracts real shelf prices. Not estimates. We have 13,000+ verified prices." },
+  { q: "Are the prices real?", a: "Yes. Our collector runs every 8 hours against 30 retailers and extracts real shelf prices. Not estimates. We have 13,000+ verified prices." },
   { q: "How much does it cost?", a: "The CLI is open source and free (MIT license). The API has a free tier of 1,000 requests per day. The Pro plan is USD 49/month with checkout enabled and data export. For larger use cases, contact us." },
 ];
 
