@@ -1,35 +1,68 @@
 ---
 title: Day 21
-status: idea
+status: ready
 day: 21
 pillar: build-in-public
 lang: es
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 21
+# Day 21 — Error APIs VTEX inestables
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+## Hooks (elegir 1)
 
-## Hooks
+1. **Hook 1:** Mi error más grande: asumir que las APIs VTEX eran estables. Spoiler: no lo son.
+2. **Hook 2:** 10 retailers desactivados. Lección aprendida en build in public.
+3. **Hook 3:** La integración feliz en demo ≠ producción con 30 APIs.
 
-1. 
-2. 
-3. 
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
-## Post
+Mi error más grande construyendo CLI Market:
 
+Asumir que las APIs VTEX eran estables.
 
+Spoiler: **no lo son**.
+
+→ Tokens que expiran sin aviso
+→ Endpoints que devuelven HTML en vez de JSON
+→ Rate limits opacos
+→ Catálogos que cambian de schema
+
+Resultado: desactivamos 10 tiendas del catálogo. Mejor 31 que funcionan parcialmente que 41 en paper.
+
+Dashboard en vivo muestra health por store — sin maquillaje.
+
+Lección: **agent commerce necesita observabilidad por retailer**, no un boolean "integrado".
+
+¿Has tenido APIs de terceros que rompen producción un domingo?
 
 ## Primer comentario
 
-https://cli-market.dev
+Store health 👇
+
+https://cli-market-production.up.railway.app/dashboard
+
+## Hashtags
+
+#buildinpublic #VTEX #ecommerce #failures #AI
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:

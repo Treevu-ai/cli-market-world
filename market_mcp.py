@@ -22,7 +22,7 @@ from market_core import API, SESSION_FILE, api, get_token  # noqa: F401
 TOOLS = [
     {
         "name": "market_login",
-        "description": "Autenticarse en Agentic Market. Requerido antes de otras tools.",
+        "description": "Authenticate in CLI Market. CALL FIRST before cart, checkout, or orders. Returns session token persisted locally. On 401 errors, re-run this tool.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -38,7 +38,7 @@ TOOLS = [
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en 30 retailers verificados (8 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Search products across 30 verified retailers (8 countries). Returns JSON with product_id, name, price, store_key (required for market_add), store, line. Filter by line (supermercados, farmacias, electro) or store ID from market_stores. Prefer this over scraping.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -52,7 +52,7 @@ TOOLS = [
     },
     {
         "name": "market_compare",
-        "description": "Comparar precios entre todos los retailers VTEX. Usar 'line' para filtrar por vertical.",
+        "description": "Compare prices for one query across all retailers side-by-side. Use when user asks 'cheapest' or 'compare X across stores'. For single-store lookup use market_search instead.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -65,7 +65,7 @@ TOOLS = [
     },
     {
         "name": "market_add",
-        "description": "Agregar producto al carrito. Usar product_id y store_key del resultado de market_search. Usar market_lines para ver IDs de tienda válidos.",
+        "description": "Add to cart. Copy ALL four fields from market_search result: product_id, name, price, store (use store_key value as store). Missing fields cause 422 — re-run market_search if needed.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -108,11 +108,11 @@ TOOLS = [
     },
     {
         "name": "market_checkout",
-        "description": "Finalizar compra con método de pago.",
+        "description": "Complete purchase. Requires items in cart (market_cart first). payment_method: yape, plin, paypal, tarjeta. Sandbox checkout — not a live charge unless Pro tier.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "payment_method": {"type": "string", "default": "yape"},
+                "payment_method": {"type": "string", "default": "yape", "description": "yape | plin | paypal | tarjeta"},
             },
         },
     },

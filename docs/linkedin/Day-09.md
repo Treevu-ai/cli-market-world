@@ -1,35 +1,73 @@
 ---
 title: Day 09
-status: idea
+status: ready
 day: 9
 pillar: data-stories
 lang: es
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 09
+# Day 09 — Canasta básica PE — comparación multi-tienda
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+> ⚠️ Verificar datos en [[linkedin/data-gate]] antes de publicar.
 
-## Hooks
+## Hooks (elegir 1)
 
-1. 
-2. 
-3. 
+1. **Hook 1:** Canasta básica: ¿cuánto cuesta realmente según el supermercado? Nuestro agente lo calcula.
+2. **Hook 2:** Arroz + leche + aceite. Tres productos. Precios distintos en cada cadena.
+3. **Hook 3:** La canasta no es abstracta — es JSON comparado en tiempo real.
 
-## Post
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
+¿Cuánto cuesta una canasta básica en Perú?
 
+Depende del supermercado.
+
+Con CLI Market un agente puede armar una canasta (arroz, leche, aceite, pan) y comparar el total entre Wong, Metro, Plaza Vea y más — en una sola llamada API.
+
+No es estimación. Son precios de góndola de retailers reales.
+
+→ Herramienta MCP: `market_basket`
+→ 30 retailers verificados en 8 países
+→ Refresh cada 8 horas
+
+Los comparadores de precio para humanos existen hace años.
+
+Los comparadores para agentes de IA casi no existen.
+
+Estamos construyendo esa capa.
+
+¿Qué productos incluirías en tu canasta de prueba?
 
 ## Primer comentario
 
+Probar canasta 👇
+
 https://cli-market.dev
+
+Ver [[linkedin/data-gate]] antes de publicar cifras exactas.
+
+## Hashtags
+
+#AI #ecommerce #Peru #data #MCP
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:

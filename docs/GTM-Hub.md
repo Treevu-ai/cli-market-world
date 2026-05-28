@@ -29,7 +29,15 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Outbound sequences | `ready` | Outbound Strategist | [[outbound-sequences]] |
 | Reddit strategy | `ready` | Reddit Community Builder | [[reddit-strategy]] |
 
-**Ops:** [[../ops/HN_POST|HN post (ops/)]] · Landing [[../landing/README|landing/]]
+| DX audit | `shipped` | Developer Advocate + MCP Builder | [[dx-audit]] |
+| AEO baseline | `baseline` | AI Citation Strategist | [[aeo-citation-baseline]] |
+| DEV calendar | `ready` | Growth Hacker + Content Creator | [[dev-calendar]] |
+| Alpha gates | `executed` | Product Manager | [[alpha-gates-2026-06-01]] |
+| Data gate (LI sem 2) | `active` | API Tester | [[linkedin/data-gate]] |
+| Repurpose top 5 | `ready` | Content Creator | [[linkedin/repurpose-top5]] |
+| Obsidian vault | `shipped` | — | [[obsidian-vault]] · `.obsidian/` |
+
+**Ops:** [[../ops/HN_POST|HN post (ops/)]] · Landing [[../landing/README|landing/]] · Benchmark [[../ops/benchmark_api.py]]
 
 ---
 
@@ -59,13 +67,16 @@ Si un post contradice esta tabla → **no publicar** hasta actualizar tabla o pr
 
 ### Checklist Alpha (antes del 1 jun)
 
-- [ ] Billing manual Pro — SMTP Railway + PayPal Hosted Button ([[../ops/BILLING_MANUAL|BILLING_MANUAL.md]], [[../ops/E2E_CLIENT_JOURNEY|E2E_CLIENT_JOURNEY.md]])
-- [x] Self-serve en [cli-market.dev/retailers](https://cli-market.dev/retailers) — form + `POST /v1/retailers/apply` (deploy para verificar)
-- [ ] Collector ≥ 41/41 stores (>80% success) — ops
+- [x] Billing manual Pro — SMTP Railway + PayPal Hosted Button ([[../ops/BILLING_MANUAL|BILLING_MANUAL.md]], [[../ops/E2E_CLIENT_JOURNEY|E2E_CLIENT_JOURNEY.md]])
+- [x] Self-serve en [cli-market.dev/retailers](https://cli-market.dev/retailers) — form + `POST /v1/retailers/apply`
+- [ ] Collector ≥ 80% store success — **51.6%** (31 activos, 16 healthy) — ver [[alpha-gates-2026-06-01]]
 - [x] SEO críticos: [[seo-audit#Critical Fixes (This Week)]] — ✅ 2026-05-28
 - [x] Mensaje 30/8/36 alineado en landing, llms.txt, Telegram bot, server.json
 - [x] PyPI: `market hello` + README quick start ([[growth-channels#Channel 1: PyPI as Growth Engine]])
-- [x] LinkedIn días 1–7 en `ready` ([[linkedin/00-Index]]) — día 7 requiere [[metrics/price-pulse-YYYY-WW]] antes de publicar
+- [x] MCP: `/tools` configs + descriptions mejoradas ([[dx-audit]])
+- [x] LinkedIn D1–30 en `ready` ([[linkedin/00-Index]]) — sem 2 requiere [[linkedin/data-gate]]
+- [x] Agency Cursor rules instaladas (184 rules en `.cursor/rules/`)
+- [x] API benchmark baseline: `python3 ops/benchmark_api.py` (p95 ~4.3s live — target 2s)
 
 ---
 

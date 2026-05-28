@@ -1,35 +1,82 @@
 ---
 title: Day 30
-status: idea
+status: ready
 day: 30
-pillar: social-proof-cta
+pillar: social-proof
 lang: es
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 30
+# Day 30 — Milestone 30 días
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+## Hooks (elegir 1)
 
-## Hooks
+1. **Hook 1:** 30 días. Esto es lo que construí. Esto es lo que viene.
+2. **Hook 2:** Cierre del calendario 30d — founder POV.
+3. **Hook 3:** De idea a infraestructura de comercio para agentes en un mes.
 
-1. 
-2. 
-3. 
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
-## Post
+30 días.
 
+Esto es lo que construí:
 
+Infraestructura de comercio para agentes de IA.
+
+`pip install cli-market`
+
+Esto es lo que viene:
+
+→ Beta pública (HN, Reddit, DEV)
+→ 10 retailers self-serve por semana
+→ Price Pulse reports para Pro
+→ Collector al 80%+ health
+→ Agent-first SEO en Claude/ChatGPT
+
+Stripe convirtió pagos en APIs.
+
+Estamos convirtiendo comercio en APIs.
+
+Si llegaste hasta aquí en el calendario — gracias.
+
+Si eres developer: prueba el CLI.
+
+Si eres retailer: lista tu tienda.
+
+Nos vemos en el mes 2.
 
 ## Primer comentario
 
-https://cli-market.dev
+Todo en un link 👇
+
+https://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin
+
+```
+pip install cli-market
+market hello
+```
+
+## Hashtags
+
+#AI #ecommerce #MCP #buildinpublic #milestone
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:

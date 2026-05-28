@@ -1,35 +1,70 @@
 ---
 title: Day 13
-status: idea
+status: ready
 day: 13
 pillar: data-stories
-lang: es
+lang: en
 published_at:
+link_comment: https://cli-market.dev
 tags:
   - linkedin
 ---
 
-# Day 13
+# Day 13 — Retailers vs búsquedas IA
 
-Ver [[linkedin-calendar]] y [[00-Index]].
+**Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
-**Hub:** [[GTM-Hub]]
+## Hooks (elegir 1)
 
-## Hooks
+1. **Hook 1:** Retailers don't just compete with retailers anymore. They compete in AI search results.
+2. **Hook 2:** When an agent compares prices, your store either shows up in JSON — or it doesn't exist.
+3. **Hook 3:** The next SEO is agent discoverability. Is your store in the API?
 
-1. 
-2. 
-3. 
+## Post (copiar a LinkedIn — sin link en cuerpo)
 
-## Post
+Retailers don't just compete with other retailers anymore.
 
+They compete in AI search results.
 
+When a user asks their agent "find the cheapest milk in Lima", your store either:
+
+→ Appears in structured JSON from a commerce API
+→ Or it doesn't exist for that agent
+
+CLI Market gives 30 verified retailers a unified API surface for AI agents — search, compare, cart, checkout.
+
+No scraping. No fragile HTML parsers. Real VTEX and Magento APIs.
+
+If you're a retailer on VTEX or Magento: your products can already appear in agent searches.
+
+List your store free: 30 seconds. No code.
+
+The next SEO is agent discoverability.
+
+Are you in the API?
 
 ## Primer comentario
 
-https://cli-market.dev
+List your store 👇
+
+https://cli-market.dev/retailers
+
+## Hashtags
+
+#AI #ecommerce #retail #VTEX #agents
+
+## Assets
+
+- [ ] GIF terminal / screenshot (si aplica)
+- [ ] Carousel Canva (días 5, 12)
 
 ## Checklist
 
-- [ ] Datos verificados ([[metrics/README]])
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
+- [ ] Datos verificados ([[linkedin/data-gate]] / [[metrics/price-pulse-YYYY-WW]]) si aplica
+- [ ] Responder comentarios 60 min post-publicación
+
+## Notas post-publicación
+
+- Impresiones:
+- Comentarios clave:
