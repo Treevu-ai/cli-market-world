@@ -132,6 +132,17 @@ async def checkout_wise(authorization: str | None = Header(None)):
     }
 
 
+@router.post("/checkout/paypal-webhook")
+async def paypal_webhook(request: dict):
+    """Receive PayPal payment notifications (IPN/webhook)."""
+    # In production, verify the webhook signature with PayPal's API
+    event_type = request.get("event_type", "")
+    resource = request.get("resource", {})
+    order_id = resource.get("id", "")
+    state = resource.get("state", resource.get("status", ""))
+    print(f"PayPal webhook: {event_type} — {order_id} → {state}")
+    return {"received": True, "order_id": order_id, "state": state}
+
 @router.post("/checkout/webhook")
 def checkout_webhook(order_id: str = "", status: str = "paid"):
     """Mark an order as paid/failed/etc. Called by external gateways."""
@@ -161,6 +172,19 @@ async def checkout_rates():
             "source": "fallback",
         }
 
+
+@router.post("/billing/paypal")
+async def billing_paypal(authorization: str | None = Header(None)):
+    """PayPal Subscription for Pro plan ($49/mo)."""
+    username = require_user(authorization)
+    try:
+        from market_connectors.paypal_payments import create_subscription
+        sub = await create_subscription()
+        if "approve_url" in sub:
+            return {"subscription_id": sub["subscription_id"], "approve_url": sub["approve_url"], "plan": "Pro", "amount": "$49/mo"}
+        raise HTTPException(status_code=502, detail=sub.get("error", "PayPal error"))
+    except ValueError:
+        raise HTTPException(status_code=501, detail="PayPal no configurado")
 
 @router.post("/billing/checkout")
 def billing_checkout(authorization: str | None = Header(None)):
