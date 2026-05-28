@@ -9,7 +9,7 @@
 
 ## Core Purpose
 
-Commerce infrastructure for AI agents. 30 verified retailers across 7 countries and 6 business lines — search, compare, and buy via a single API. 13,000+ real prices refreshed every 8 hours. Zero scraping. Multi-platform: VTEX, Shopify, Magento.
+Commerce infrastructure for AI agents. 30 verified retailers across 8 countries and 6 business lines — search, compare, and buy via a single API. 13,000+ real prices refreshed every 8 hours. Zero scraping. Multi-platform: VTEX + Magento.
 
 ## Key Numbers
 
@@ -24,7 +24,7 @@ Commerce infrastructure for AI agents. 30 verified retailers across 7 countries 
 
 - **Token Efficiency**: Returns minified JSON, saving 85% context window vs raw HTML.
 - **Predictable Tools**: 36 MCP tools with standardized primitives reduce hallucination.
-- **Cross-Border**: Single interface for 30 retailers across 7 countries.
+- **Cross-Border**: Single interface for 30 retailers across 8 countries.
 - **Data Moat**: Price collector every 8h. Historical snapshots, inflation tracking.
 - **Multi-Payment**: Checkout via Yape, Plin, Wise, PayPal, Lemon.
 - **Open Source**: MIT License. pip install cli-market.
