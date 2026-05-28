@@ -1,3 +1,12 @@
+---
+title: PRD CLI Market v2.0
+tags:
+  - gtm
+  - product
+  - prd
+hub: "[[GTM-Hub]]"
+---
+
 # PRD: CLI Market v2.0 — From Beta to Growth
 **Status**: Draft  
 **Author**: Product Manager 🧭 (Agency Agent)  

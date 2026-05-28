@@ -11,3 +11,8 @@ VALIDATION_PLAN.md
 registry/
 docs/agency-agents/
 docs/awesome-claude-code/
+
+# Obsidian — commit config; ignore machine-specific workspace
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/hotkeys.json

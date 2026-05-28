@@ -38,7 +38,7 @@ TOOLS = [
     },
     {
         "name": "market_search",
-        "description": "Buscar productos en 60 retailers VTEX verificados (11 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
+        "description": "Buscar productos en 30 retailers verificados (8 países, 6 líneas). Cada retailer tiene API real comprobada. Retorna product_id, name, price, store_key (para usar en market_add), store (nombre legible), line_key y line. Usar 'line' para filtrar por vertical.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -197,12 +197,12 @@ TOOLS = [
     },
     {
         "name": "market_stores",
-        "description": "Listar todos los 60 retailers VTEX verificados con país, moneda, línea de negocio y emoji. Usar para descubrir qué tiendas están disponibles.",
+        "description": "Listar los 30 retailers verificados con país, moneda, línea de negocio y emoji. Usar para descubrir qué tiendas están disponibles.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "market_countries",
-        "description": "Listar los 11 países disponibles con sus retailers y conteo de tiendas por país.",
+        "description": "Listar los 8 países disponibles con sus retailers y conteo de tiendas por país.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     # ── New tools (20–30) ────────────────────────────────────────────────────
@@ -294,6 +294,12 @@ TOOLS = [
 ]
 
 
+def _checkout_api(args: dict) -> dict:
+    pm = (args.get("payment_method") or "yape").lower()
+    routes = {"yape": "/checkout/yape", "plin": "/checkout/yape", "paypal": "/checkout/paypal", "tarjeta": "/checkout/paypal"}
+    return api("POST", routes.get(pm, "/checkout/yape"), {})
+
+
 def handle_tool(name: str, args: dict) -> str:
     """Dispatch MCP tool calls to the API."""
     tool_map = {
@@ -305,7 +311,7 @@ def handle_tool(name: str, args: dict) -> str:
         "market_cart":       lambda a: api("GET", "/cart"),
         "market_cart_update": lambda a: api("PUT", "/cart/update", {"product_id": a["product_id"], "quantity": a["quantity"]}),
         "market_cart_remove": lambda a: api("DELETE", f"/cart/{a['product_id']}"),
-        "market_checkout":   lambda a: api("POST", "/checkout", {"payment_method": a.get("payment_method", "yape")}),
+        "market_checkout":   lambda a: _checkout_api(a),
         "market_orders":     lambda a: api("GET", "/orders"),
         "market_reorder":    lambda a: api("POST", "/orders/reorder"),
         "market_ask":        lambda a: api("POST", "/agent/ask", {"prompt": a["prompt"]}),

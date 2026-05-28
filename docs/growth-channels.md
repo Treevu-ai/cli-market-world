@@ -1,3 +1,11 @@
+---
+title: Growth Channels
+tags:
+  - gtm
+  - growth
+hub: "[[GTM-Hub]]"
+---
+
 # 🚀 Growth Channels — CLI Market
 **Author**: Growth Hacker (Agency Agent)  
 **Date**: 2026-05-28  

@@ -9,7 +9,7 @@
   <text x="400" y="72" text-anchor="middle" font-family="monospace" font-size="32" font-weight="bold" fill="#00FF88" letter-spacing="8">CLI MARKET</text>
   <text x="400" y="98" text-anchor="middle" font-family="monospace" font-size="13" fill="#666">commerce infrastructure for humans and ai agents</text>
   <text x="400" y="128" text-anchor="middle" font-family="monospace" font-size="12" fill="#555">
-    <tspan fill="#00FF88">●</tspan> 3,760 retailers  <tspan fill="#00FF88">●</tspan> 67 countries  <tspan fill="#00FF88">●</tspan> 12 lines  <tspan fill="#00FF88">●</tspan> 12 mcp tools
+    <tspan fill="#00FF88">●</tspan> 30 retailers  <tspan fill="#00FF88">●</tspan> 8 countries  <tspan fill="#00FF88">●</tspan> 6 lines  <tspan fill="#00FF88">●</tspan> 36 mcp tools
   </text>
   <text x="400" y="158" text-anchor="middle" font-family="monospace" font-size="11" fill="#444">pip install cli-market  ·  github.com/Treevu-ai/cli-market-world  ·  MIT</text>
   <line x1="200" y1="172" x2="600" y2="172" stroke="#1A1A1A" stroke-width="0.5"/>
