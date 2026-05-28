@@ -61,3 +61,11 @@ section[id] {
 @utility font-ibm-mono {
   font-family: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
 }
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

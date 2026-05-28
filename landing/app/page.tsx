@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import QuickstartAPI from "@/components/QuickstartAPI";
 import DataSection from "@/components/DataSection";
@@ -19,7 +20,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 export default function Home() {
   return (
     <main className="relative min-h-screen bg-[var(--wise-canvas-soft)]">
+      <div className="grid-bg fixed inset-0 opacity-30 pointer-events-none" aria-hidden="true" />
       <Navbar />
+      <SideNav />
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
