@@ -34,22 +34,19 @@ import pytest
 
 @pytest.fixture
 def isolated_db(monkeypatch, tmp_path):
-    """Each test gets a fresh MARKET_DATA_DIR and fully reloaded modules.
+    """Fresh DB file for regression tests without reloading market_core."""
+    import market_core
 
-    This is the closest thing we have to module-level isolation given the
-    package layout. Forces re-import so module-level state is rebuilt.
-    """
     data_dir = tmp_path / "market_data"
     data_dir.mkdir()
+    db_file = data_dir / "market.db"
     monkeypatch.setenv("MARKET_DATA_DIR", str(data_dir))
-    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("DATABASE_URL", "")
+    monkeypatch.setattr(market_core, "DATA_DIR", data_dir)
+    monkeypatch.setattr(market_core, "DB_FILE", db_file)
+    monkeypatch.setattr(market_core, "USE_PG", False)
+    monkeypatch.setattr(market_core, "_db_initialized", False)
 
-    for mod in ("collect_prices", "market_core"):
-        if mod in sys.modules:
-            del sys.modules[mod]
-
-    import market_core
-    importlib.reload(market_core)
     return market_core, data_dir
 
 
@@ -177,7 +174,7 @@ def test_collector_sq_insert_upserts(isolated_db):
     but the UNIQUE constraint was missing, so it raised OperationalError."""
     market_core, _ = isolated_db
     import collect_prices
-    importlib.reload(collect_prices)
+
     db = collect_prices.init_schema_sqlite()
 
     collect_prices.sq_insert(db, _make_product(pid="cp1", price=10.0))
@@ -196,7 +193,7 @@ def test_collector_sq_insert_tolerates_missing_keys(isolated_db):
     sq_insert must not KeyError if `discount` or `list_price` are missing."""
     market_core, _ = isolated_db
     import collect_prices
-    importlib.reload(collect_prices)
+
     db = collect_prices.init_schema_sqlite()
 
     minimal = {
@@ -214,7 +211,7 @@ def test_collector_init_schema_delegates_to_market_core(isolated_db):
     It must reuse market_core.init_db()."""
     market_core, _ = isolated_db
     import collect_prices
-    importlib.reload(collect_prices)
+
     src = Path(collect_prices.__file__).read_text()
     init_block = src.split("def init_schema_sqlite")[1].split("def ")[0]
     assert "CREATE TABLE" not in init_block.upper(), (
@@ -231,9 +228,7 @@ def test_collector_init_schema_delegates_to_market_core(isolated_db):
 def test_full_import_chain_works(isolated_db):
     """Catch import cycles or accidental side effects across the codebase."""
     import collect_prices
-    importlib.reload(collect_prices)
     import market_mcp  # noqa: F401
-    # market_server has FastAPI app with lifespan; just verifying it imports
     import market_server  # noqa: F401
 
 

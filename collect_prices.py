@@ -342,7 +342,14 @@ if USE_PG:
         await conn.execute("""
             INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-            ON CONFLICT (product_id,store,queried_at) DO NOTHING
+            ON CONFLICT (product_id,store) DO UPDATE SET
+                name=EXCLUDED.name,
+                brand=EXCLUDED.brand,
+                price=EXCLUDED.price,
+                list_price=EXCLUDED.list_price,
+                discount=EXCLUDED.discount,
+                stock=EXCLUDED.stock,
+                queried_at=NOW()
         """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],prod["discount"],
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"])
 
@@ -365,26 +372,19 @@ else:
 
     def init_schema_sqlite():
         # Single source of truth: market_core.init_db() owns the DDL.
-        # Self-heal old DBs created before the UNIQUE constraint was added.
         ensure_db_initialized()
-        db = get_sqlite()
-        try:
-            db.execute(
-                "CREATE UNIQUE INDEX IF NOT EXISTS ux_ps_product_store "
-                "ON price_snapshots(product_id, store)"
-            )
-            db.commit()
-        except Exception as _e:
-            logger.warning("self-heal UNIQUE index: %s", _e)
-        return db
+        return get_sqlite()
 
     def sq_insert(db, prod):
         db.execute(
             "INSERT INTO price_snapshots "
             "(product_id,name,brand,price,list_price,discount,store,store_name,"
-            " currency,line,line_name,category,stock,url,queried_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) "
-            "ON CONFLICT(product_id,store,queried_at) DO NOTHING",
+            " currency,line,line_name,category,stock,url) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+            "ON CONFLICT(product_id,store) DO UPDATE SET "
+            "name=excluded.name, brand=excluded.brand, price=excluded.price, "
+            "list_price=excluded.list_price, discount=excluded.discount, "
+            "stock=excluded.stock, queried_at=datetime('now')",
             (
                 prod.get("product_id", prod.get("id", "")),
                 prod.get("name", ""),
@@ -532,9 +532,10 @@ async def collect_one_sqlite(db, store, queries):
     """Collect for one store, reusing a single SQLite connection across
     all inserts (orders of magnitude cheaper than open-per-row, and avoids
     `database is locked` storms under PARALLEL workers)."""
-    line = STORES[store].get("line",""); collected=0
+    line = STORES[store].get("line",""); collected=0; attempted=0
     for q, lf in queries:
         if lf and line!=lf: continue
+        attempted += 1
         try:
             raw = await _fetch_store(store, q, page=1, limit=10)
             for p in raw:

@@ -123,7 +123,6 @@ def tldr(data: dict) -> str:
 def build_report(data: dict, meta: dict) -> str:
     now = datetime.now(timezone.utc)
     ds = now.strftime("%Y-%m-%d")
-    k = data.get("kpis", {})
 
     lines = [
         f"# CLI Market — Monday Ops {ds}",

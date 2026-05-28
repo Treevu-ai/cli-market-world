@@ -45,7 +45,6 @@ from market_core import (
     db_clear_cart,
     db_create_order,
     db_get_cart,
-    get_db,
 )
 from server_deps import check_rate_limit, require_checkout_access, require_user
 

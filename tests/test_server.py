@@ -2,16 +2,13 @@
 
 import sys
 import os
-import tempfile
 import shutil
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Set temp dir BEFORE importing market_core
-TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
-os.environ["MARKET_DATA_DIR"] = TEST_DATA_DIR
-os.environ["MARKET_LEGACY_CHECKOUT"] = "1"
+# conftest.py sets MARKET_DATA_DIR + DATABASE_URL before collection
+TEST_DATA_DIR = os.environ["MARKET_DATA_DIR"]
 
 import pytest
 from fastapi.testclient import TestClient

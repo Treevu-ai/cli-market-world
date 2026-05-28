@@ -381,9 +381,6 @@ def _static_dashboard() -> str:
         return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
     
     k = data["kpis"]
-    coll = data["collector"]
-    import os as _os
-    env = _os.getenv("RAILWAY_ENVIRONMENT", _os.getenv("ENV", "production"))
     cov_pct = round(k["active_stores"] / max(k["total_stores"], 1) * 100)
     cov_bar = "█" * (cov_pct // 5) + "░" * (20 - cov_pct // 5)
     rows = []
@@ -398,7 +395,6 @@ def _static_dashboard() -> str:
     cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{(r['avg_price'] or 0):.2f}</td></tr>" for r in data["cheapest_by_line"])
     out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{(r['price'] or 0):.2f}</td></tr>" for r in data["outliers"])
     fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{str(r['last_seen'])[:19]}</td></tr>" for r in data["freshness"][:10])
-    coll = data["collector"]
 
     # ── New analytics HTML ──────────────────────────────────────────────────
     infl_html = "".join(
