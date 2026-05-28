@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
-const linkKeys = ["nav_stats", "nav_how", "nav_terminal", "nav_api", "nav_features", "nav_retailers", "nav_coverage", "nav_data", "nav_pricing", "nav_faq", "nav_about"];
+const linkKeys = ["nav_stats", "nav_terminal", "nav_retailers", "nav_coverage", "nav_pricing", "nav_faq"];
 const linkLabels: Record<string, { es: string; en: string }> = {
   nav_stats: { es: "Escala", en: "Scale" },
   nav_how: { es: "Flujo", en: "Flow" },
