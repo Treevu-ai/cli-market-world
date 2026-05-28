@@ -12,7 +12,7 @@ const CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`abcdefghijklmnopqrstuvwxyz0123456789
 
 export default function ScrambleText({ text, as: Tag = "span", className = "", duration = 0.6 }: Props) {
   const [display, setDisplay] = useState(text)
-  const timer = useRef<ReturnType<typeof setInterval>>()
+  const timer = useRef<ReturnType<typeof setInterval>>(undefined)
   const animating = useRef(false)
 
   const scramble = () => {
