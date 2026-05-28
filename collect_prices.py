@@ -27,9 +27,9 @@ logger = log.getChild("collector")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-PARALLEL = int(os.getenv("COLLECT_PARALLEL", "50"))
-REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.15"))
-QUERY_TIMEOUT = 10.0
+PARALLEL = int(os.getenv("COLLECT_PARALLEL", "20"))
+REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.5"))
+QUERY_TIMEOUT = 15.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
 
 LINES = {
@@ -517,7 +517,7 @@ async def collect_one_pg(pool, store, queries):
     if not cb.ok(store): return 0
     line = STORES[store].get("line",""); collected=0
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"CLI-Market-Collector/1.0"},follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"},follow_redirects=True) as client:
             async with pool.acquire() as conn:
                 for q, lf in queries:
                     if lf and line!=lf: continue
@@ -556,7 +556,8 @@ async def collect_one_sqlite(db, store, queries):
                     collected += 1
             await asyncio.sleep(REQUEST_DELAY)
         except Exception as _e:
-            logger.warning("collect %s/%s: %s", store, q, _e)
+            logger.warning("collect %s/%s: %s", store, q, str(_e)[:200])
+            cb.fail(store)
     return collected
 
 async def run_collection(stores, queries):
