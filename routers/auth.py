@@ -51,6 +51,15 @@ class CreateApiKeyRequest(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+@router.post("/auth/register")
+def register():
+    """Create a new API key. Public endpoint — rate limited."""
+    check_rate_limit("auth")
+    import uuid
+    token = "sk-" + uuid.uuid4().hex
+    db_save_user(token, "", token)
+    return {"api_key": token, "message": "API key generada. Guardala."}
+
 @router.post("/auth/login")
 def login(body: LoginRequest):
     check_rate_limit("auth")
