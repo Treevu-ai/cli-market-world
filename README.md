@@ -5,7 +5,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 <p align="center">
   <img src="https://img.shields.io/badge/retailers-30-brightgreen" alt="30 retailers">
   <img src="https://img.shields.io/badge/platforms-2-blue" alt="2 platforms">
-  <img src="https://img.shields.io/badge/countries-7-orange" alt="7 countries">
+  <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/payments-PayPal_QR-ffbd2e" alt="PayPal + YapePlin QR">
@@ -21,7 +21,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 7 countries. 2 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 8 countries. 2 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -31,7 +31,7 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 **CLI Market fixes this.** One `pip install`. One API call across 30 verified retailers. One JSON schema.
 
-- **Search** any product across 30 verified retailers in 7 countries
+- **Search** any product across 30 verified retailers in 8 countries
 - **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 8 hours
