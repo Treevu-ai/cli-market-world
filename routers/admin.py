@@ -5,8 +5,7 @@ Endpoints:
   POST /admin/collect         Trigger a price collection run synchronously
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
 
-These are intentionally NOT authenticated yet — they live on the same host
-as the API but should be moved behind admin-only auth before going public.
+Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicly.
 """
 
 from __future__ import annotations
@@ -14,15 +13,21 @@ from __future__ import annotations
 import time
 
 import httpx
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Header
 
 from market_core import STORES, fetch_store, product_from_json
+from server_deps import require_admin
 
 router = APIRouter(prefix="", tags=["admin"])
 
 
 @router.get("/admin/debug-fetch")
-async def debug_fetch(store: str = "wong", query: str = "leche"):
+async def debug_fetch(
+    store: str = "wong",
+    query: str = "leche",
+    authorization: str | None = Header(None),
+):
+    require_admin(authorization)
     """Smoke test the data pipeline for one store: raw fetch → normalize."""
     raw = await fetch_store(store, query, page=1, limit=3)
     products = [product_from_json(p, store) for p in raw[:3]]
@@ -30,7 +35,12 @@ async def debug_fetch(store: str = "wong", query: str = "leche"):
 
 
 @router.post("/admin/collect")
-async def admin_collect(stores: int = 0, queries: int = 0):
+async def admin_collect(
+    stores: int = 0,
+    queries: int = 0,
+    authorization: str | None = Header(None),
+):
+    require_admin(authorization)
     """Trigger a price collection run directly (synchronous).
 
     Useful for manual smoke testing on Render after deploys. Use ?stores=2&queries=2
@@ -66,7 +76,11 @@ async def admin_collect(stores: int = 0, queries: int = 0):
 
 
 @router.post("/v1/admin/scan-stores")
-async def admin_scan_stores(body: dict = Body(default_factory=dict)):
+async def admin_scan_stores(
+    body: dict = Body(default_factory=dict),
+    authorization: str | None = Header(None),
+):
+    require_admin(authorization)
     """Probe each known retailer with a tiny VTEX catalog query."""
     line_filter = body.get("line")
     candidates: list[dict] = []

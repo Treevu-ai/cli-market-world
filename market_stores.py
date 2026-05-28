@@ -20,9 +20,9 @@ STORES = {
     # ── FARMACIAS ──
     "pacheco_br": {"name":"Drogaria Pacheco","base":"https://www.drogariaspacheco.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"farmacias","platform":"vtex"},
     "farmatodo_mx": {"name":"Farmatodo MX","base":"https://www.farmatodo.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"farmacias","platform":"vtex"},
-    "cruzverde_co": {"name":"Cruz Verde CO","base":"https://www.cruzverde.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex"},
-    "cruzverde_cl": {"name":"Cruz Verde CL","base":"https://www.cruzverde.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"farmacias","platform":"vtex"},
-    "farmatodo_co": {"name":"Farmatodo CO","base":"https://www.farmatodo.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex"},
+    "cruzverde_co": {"name":"Cruz Verde CO","base":"https://www.cruzverde.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex","disabled":True,"disabled_reason":"search API returns HTML SPA"},
+    "cruzverde_cl": {"name":"Cruz Verde CL","base":"https://www.cruzverde.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"farmacias","platform":"vtex","disabled":True,"disabled_reason":"search API returns HTML SPA"},
+    "farmatodo_co": {"name":"Farmatodo CO","base":"https://www.farmatodo.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex","disabled":True,"disabled_reason":"search API returns HTML SPA"},
 
     # ── ELECTRO ──
     "electrolux_ar": {"name":"Electrolux AR","base":"https://www.tienda.electrolux.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"electro","platform":"vtex"},
@@ -45,7 +45,7 @@ STORES = {
 
     # ── DEPARTAMENTALES ──
     "coppel_ar": {"name":"Coppel AR","base":"https://www.coppel.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"departamentales","platform":"vtex"},
-    "ripley_pe": {"name":"Ripley PE","base":"https://www.ripley.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"vtex"},
+    "ripley_pe": {"name":"Ripley PE","base":"https://www.ripley.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"vtex","disabled":True,"disabled_reason":"VTEX catalog API 404"},
 
     # ── MODA ──
     "cea_br": {"name":"C&A BR","base":"https://www.cea.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"vtex"},
@@ -69,12 +69,12 @@ STORES = {
     "privalia_br": {"name":"Privalia BR","base":"https://www.privalia.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"shopify","disabled":True},
 
     # ── MAGENTO ──
-    "falabella_pe": {"name":"Falabella PE","base":"https://www.falabella.com.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"magento"},
-    "falabella_cl": {"name":"Falabella CL","base":"https://www.falabella.com","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
+    "falabella_pe": {"name":"Falabella PE","base":"https://www.falabella.com.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
+    "falabella_cl": {"name":"Falabella CL","base":"https://www.falabella.com","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
     "falabella_co": {"name":"Falabella CO","base":"https://www.falabella.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"departamentales","platform":"magento"},
-    "paris_cl": {"name":"Paris CL","base":"https://www.paris.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
-    "ripley_cl": {"name":"Ripley CL","base":"https://www.ripley.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento"},
-    "liverpool_mx": {"name":"Liverpool MX","base":"https://www.liverpool.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento"},
-    "elpalacio_mx": {"name":"El Palacio MX","base":"https://www.elpalaciodehierro.com","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento"},
+    "paris_cl": {"name":"Paris CL","base":"https://www.paris.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
+    "ripley_cl": {"name":"Ripley CL","base":"https://www.ripley.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
+    "liverpool_mx": {"name":"Liverpool MX","base":"https://www.liverpool.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST blocked (403)"},
+    "elpalacio_mx": {"name":"El Palacio MX","base":"https://www.elpalaciodehierro.com","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST 410 Gone"},
 }
 

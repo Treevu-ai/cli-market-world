@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, TIERS, db_get_subscription, get_db
+from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db
 from server_deps import require_user
 
 from .health import _age_hours
@@ -204,6 +204,7 @@ def _dashboard_data():
         "SELECT store, consecutive_failures FROM store_health "
         "WHERE consecutive_failures >= 3 ORDER BY consecutive_failures DESC"
     ).fetchall()
+    failing_stores = [r for r in failing_stores if r["store"] in DEFAULT_STORES]
 
     # ── Freshness ────────────────────────────────────────────────────────────
     freshness = db.execute(
@@ -212,13 +213,15 @@ def _dashboard_data():
            GROUP BY store, store_name ORDER BY last_seen DESC LIMIT 20"""
     ).fetchall()
 
-    # ── Operacional: store health scores ─────────────────────────────────────
-    store_health = db.execute(
+    # ── Operacional: store health scores (active catalog only) ───────────────
+    store_health_all = db.execute(
         """SELECT store, total_requests, total_successes,
                   CASE WHEN total_requests>0 THEN ROUND((total_successes*100.0/total_requests)::numeric,1) ELSE 0 END as success_pct,
                   consecutive_failures, last_success, last_error
            FROM store_health ORDER BY success_pct ASC, consecutive_failures DESC"""
     ).fetchall()
+    store_health = [r for r in store_health_all if r["store"] in DEFAULT_STORES]
+    healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
 
     # ── Operacional: collector run history ───────────────────────────────────
     collector_history = db.execute(
@@ -328,7 +331,10 @@ def _dashboard_data():
         "kpis": {
             "total_snapshots": total_snapshots,
             "active_stores": active_stores,
-            "total_stores": len(STORES),
+            "total_stores": len(DEFAULT_STORES),
+            "catalog_stores": len(STORES),
+            "healthy_stores": healthy_count,
+            "store_success_pct": round(healthy_count / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0,
             "total_runs": total_runs,
             "stores_24h": stores_24h,
         },

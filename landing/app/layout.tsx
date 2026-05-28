@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -54,6 +55,9 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ModeProvider } from "@/hooks/useMode";
+
+const cfBeaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -124,6 +128,22 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#e8ebe6] overflow-x-hidden`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        {cfBeaconToken ? (
+          <Script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token":"${cfBeaconToken}"}`}
+            strategy="afterInteractive"
+          />
+        ) : null}
+        {plausibleDomain ? (
+          <Script
+            defer
+            data-domain={plausibleDomain}
+            src="https://plausible.io/js/script.js"
+            strategy="afterInteractive"
+          />
+        ) : null}
         <ModeProvider><LanguageProvider>{children}</LanguageProvider></ModeProvider>
       </body>
     </html>
