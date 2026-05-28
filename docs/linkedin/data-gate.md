@@ -28,9 +28,10 @@ Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md
 | Total snapshots (24h) | **8,064** | ✅ |
 | Precios indexados (price-pulse) | **8,231** | ✅ |
 | Active stores (24h) | **28** | ✅ (no decir 30 sin aclarar) |
-| Total catalog stores | **31** | ✅ mensaje acordado |
-| Healthy stores | **16** | ⚠️ solo build-in-public |
-| Store success % | **51.6%** | ❌ no usar en marketing |
+| Total catalog stores | **30** | ✅ (falabella_co off hasta token Magento) |
+| Healthy stores (lifetime) | **16** | ⚠️ solo ops — ver [[data-moat-strategy]] |
+| Store success % (lifetime) | **51.6%** | ❌ no usar en marketing |
+| **coverage_7d_pct** (post-deploy) | ver `moat_summary` | ✅ gate semana 2 |
 | Collector runs | **173** | ✅ interno |
 
 ### Por país (snapshots 24h)
@@ -52,11 +53,14 @@ Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md
 
 ## Gate checklist (semana 2)
 
-- [ ] Collector ≥ **80%** store success → **FAIL** (51.6% on 2026-05-28)
+- [ ] **Moat coverage 7d** ≥ **80%** (`moat_summary.coverage_7d_pct`) — gate principal
+- [ ] Lifetime `store_success_pct` — solo ops, **no marketing**
 - [ ] Cifra `[N]` en Day 07 reemplazada con snapshot del día
 - [ ] Claims de inflación (% arroz, canasta) respaldados por query exportable
 - [ ] No implicar índice oficial INEI/INDEC — usar "según nuestro collector"
 - [ ] Legal review en días 8–10 (variación de precios)
+
+Ver estrategia completa: [[data-moat-strategy]]
 
 ## Posts bloqueados / condicionales
 

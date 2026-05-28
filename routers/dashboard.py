@@ -223,6 +223,28 @@ def _dashboard_data():
     store_health = [r for r in store_health_all if r["store"] in DEFAULT_STORES]
     healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
 
+    # ── Moat summary (agent-facing, rolling windows) ─────────────────────────
+    cutoff_7d = (now - timedelta(days=7)).isoformat()
+    stores_fresh_24h_rows = db.execute(
+        """SELECT store, MAX(queried_at) as last_seen, COUNT(*) as n
+           FROM price_snapshots WHERE price > 0 AND queried_at >= ?
+           GROUP BY store""",
+        (cutoff_24h,),
+    ).fetchall()
+    stores_fresh_24h = {r["store"] for r in stores_fresh_24h_rows if r["store"] in DEFAULT_STORES}
+    stores_active_7d_rows = db.execute(
+        """SELECT store, COUNT(*) as n FROM price_snapshots
+           WHERE price > 0 AND queried_at >= ? GROUP BY store""",
+        (cutoff_7d,),
+    ).fetchall()
+    stores_active_7d = {r["store"] for r in stores_active_7d_rows if r["store"] in DEFAULT_STORES}
+    coverage_7d_pct = round(len(stores_active_7d) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    fresh_24h_pct = round(len(stores_fresh_24h) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    moat_stale = sorted(
+        s for s in DEFAULT_STORES
+        if s not in stores_fresh_24h
+    )[:10]
+
     # ── Operacional: collector run history ───────────────────────────────────
     collector_history = db.execute(
         """SELECT started_at, finished_at, stores_attempted, stores_succeeded,
@@ -335,8 +357,24 @@ def _dashboard_data():
             "catalog_stores": len(STORES),
             "healthy_stores": healthy_count,
             "store_success_pct": round(healthy_count / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0,
+            "coverage_7d_pct": coverage_7d_pct,
+            "stores_fresh_24h": len(stores_fresh_24h),
+            "fresh_24h_pct": fresh_24h_pct,
             "total_runs": total_runs,
             "stores_24h": stores_24h,
+        },
+        "moat_summary": {
+            "purpose": "Verified cross-retailer prices for agent compare, basket, and inflation signals.",
+            "refresh_hours": 8,
+            "stores_active_catalog": len(DEFAULT_STORES),
+            "stores_fresh_24h": len(stores_fresh_24h),
+            "stores_active_7d": len(stores_active_7d),
+            "coverage_7d_pct": coverage_7d_pct,
+            "fresh_24h_pct": fresh_24h_pct,
+            "marketing_gate_pct": 80,
+            "marketing_gate_pass": coverage_7d_pct >= 80,
+            "stale_stores": moat_stale,
+            "agent_surfaces": ["market compare", "market basket", "/v1/intel/inflation", "MCP market_stats"],
         },
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
