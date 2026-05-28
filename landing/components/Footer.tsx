@@ -37,7 +37,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-[var(--wise-body)] font-mono">
-          {isES ? "30 comercios · 7 países · 3 plataformas · 13K precios · MIT License" : "30 retailers · 7 countries · 3 platforms · 13K prices · MIT License"}
+          {isES ? "41 retailers · 8 países · 2 plataformas · 13K precios · MIT License" : "41 retailers · 8 countries · 2 platforms · 13K prices · MIT License"}
         </p>
       </div>
     </footer>
