@@ -44,17 +44,35 @@ def dashboard_data():
 def _dashboard_data():
     db = get_db()
     now = datetime.now(timezone.utc)
-    cutoff_24h_sql = (now - timedelta(hours=24)).isoformat()
+    cutoff_24h_sql = "datetime('now', '-24 hours')"
 
-    # ── KPIs ──────────────────────────────────────────────────────────────────
-    total_snapshots = len(db.execute(
-        "SELECT product_id, store FROM price_snapshots WHERE price > 0 AND queried_at >= ?",
-        (cutoff_24h_sql,),
-    ).fetchall())
+    # ── KPIs: moat size vs 24h refresh (distinct metrics) ─────────────────────
+    total_indexed = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND price < 999999"
+    ).fetchone()["n"]
 
-    active_stores = db.execute(
-        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0 AND queried_at >= ?",
-        (cutoff_24h_sql,),
+    unique_products = db.execute(
+        "SELECT COUNT(DISTINCT product_id || store) as n FROM price_snapshots WHERE price > 0"
+    ).fetchone()["n"]
+
+    stores_indexed = db.execute(
+        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+    ).fetchone()["n"]
+
+    last_collected_row = db.execute(
+        "SELECT MAX(queried_at) as ts FROM price_snapshots WHERE price > 0"
+    ).fetchone()
+    last_collected_at = last_collected_row["ts"] if last_collected_row else None
+    moat_age_h = _age_hours(str(last_collected_at)) if last_collected_at else None
+
+    snapshots_24h = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= "
+        + cutoff_24h_sql
+    ).fetchone()["n"]
+
+    active_stores_24h = db.execute(
+        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0 AND queried_at >= "
+        + cutoff_24h_sql
     ).fetchone()["n"]
 
     total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
@@ -130,11 +148,7 @@ def _dashboard_data():
             cheapest_dedup.append(dict(r))
 
     # ── Coverage ─────────────────────────────────────────────────────────────
-    cutoff_24h = (now - timedelta(hours=24)).isoformat()
-    stores_24h = db.execute(
-        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE queried_at >= ?",
-        (cutoff_24h,),
-    ).fetchone()["n"]
+    stores_24h = active_stores_24h
 
     # ── Price trend 7d ───────────────────────────────────────────────────────
     now7 = (now - timedelta(days=7)).isoformat()
@@ -220,8 +234,30 @@ def _dashboard_data():
                   consecutive_failures, last_success, last_error
            FROM store_health ORDER BY success_pct ASC, consecutive_failures DESC"""
     ).fetchall()
-    store_health = [r for r in store_health_all if r["store"] in DEFAULT_STORES]
+    store_health = [{k: r[k] for k in r.keys()} for r in store_health_all if r["store"] in DEFAULT_STORES]
     healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
+
+    # ── Moat summary (agent-facing, rolling windows) ─────────────────────────
+    cutoff_7d = (now - timedelta(days=7)).isoformat()
+    stores_fresh_24h_rows = db.execute(
+        """SELECT store, MAX(queried_at) as last_seen, COUNT(*) as n
+           FROM price_snapshots WHERE price > 0 AND queried_at >= """
+        + cutoff_24h_sql
+        + " GROUP BY store"
+    ).fetchall()
+    stores_fresh_24h = {r["store"] for r in stores_fresh_24h_rows if r["store"] in DEFAULT_STORES}
+    stores_active_7d_rows = db.execute(
+        """SELECT store, COUNT(*) as n FROM price_snapshots
+           WHERE price > 0 AND queried_at >= ? GROUP BY store""",
+        (cutoff_7d,),
+    ).fetchall()
+    stores_active_7d = {r["store"] for r in stores_active_7d_rows if r["store"] in DEFAULT_STORES}
+    coverage_7d_pct = round(len(stores_active_7d) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    fresh_24h_pct = round(len(stores_fresh_24h) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    moat_stale = sorted(
+        s for s in DEFAULT_STORES
+        if s not in stores_fresh_24h
+    )[:10]
 
     # ── Operacional: collector run history ───────────────────────────────────
     collector_history = db.execute(
@@ -329,14 +365,44 @@ def _dashboard_data():
     return {
         "generated_at": now.isoformat(),
         "kpis": {
-            "total_snapshots": total_snapshots,
-            "active_stores": active_stores,
+            "total_indexed": total_indexed,
+            "unique_products": unique_products,
+            "stores_indexed": stores_indexed,
+            "total_snapshots": snapshots_24h,
+            "snapshots_24h": snapshots_24h,
+            "active_stores": active_stores_24h,
+            "active_stores_24h": active_stores_24h,
             "total_stores": len(DEFAULT_STORES),
             "catalog_stores": len(STORES),
             "healthy_stores": healthy_count,
             "store_success_pct": round(healthy_count / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0,
+            "coverage_7d_pct": coverage_7d_pct,
+            "stores_fresh_24h": len(stores_fresh_24h),
+            "fresh_24h_pct": fresh_24h_pct,
             "total_runs": total_runs,
             "stores_24h": stores_24h,
+            "last_collected_at": str(last_collected_at) if last_collected_at else None,
+            "moat_age_hours": round(moat_age_h, 1) if moat_age_h is not None else None,
+        },
+        "moat_summary": {
+            "purpose": "Verified cross-retailer prices for agent compare, basket, and inflation signals.",
+            "refresh_hours": 8,
+            "total_indexed": total_indexed,
+            "unique_products": unique_products,
+            "stores_indexed": stores_indexed,
+            "snapshots_24h": snapshots_24h,
+            "last_collected_at": str(last_collected_at) if last_collected_at else None,
+            "moat_age_hours": round(moat_age_h, 1) if moat_age_h is not None else None,
+            "collector_stale": moat_age_h is not None and moat_age_h >= 24,
+            "stores_active_catalog": len(DEFAULT_STORES),
+            "stores_fresh_24h": len(stores_fresh_24h),
+            "stores_active_7d": len(stores_active_7d),
+            "coverage_7d_pct": coverage_7d_pct,
+            "fresh_24h_pct": fresh_24h_pct,
+            "marketing_gate_pct": 80,
+            "marketing_gate_pass": coverage_7d_pct >= 80,
+            "stale_stores": moat_stale,
+            "agent_surfaces": ["market compare", "market basket", "/v1/intel/inflation", "MCP market_stats"],
         },
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
@@ -381,11 +447,21 @@ def _static_dashboard() -> str:
         return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
     
     k = data["kpis"]
-    cov_pct = round(k["active_stores"] / max(k["total_stores"], 1) * 100)
+    m = data.get("moat_summary", {})
+    indexed = k.get("total_indexed", k.get("total_snapshots", 0))
+    snap_24 = k.get("snapshots_24h", k.get("total_snapshots", 0))
+    stores_with_data = k.get("stores_indexed", k.get("active_stores", 0))
+    cov_pct = round(stores_with_data / max(k["total_stores"], 1) * 100)
     cov_bar = "█" * (cov_pct // 5) + "░" * (20 - cov_pct // 5)
+    stale_note = ""
+    if m.get("collector_stale"):
+        stale_note = f" · ⚠️ collector stale ({k.get('moat_age_hours', '?')}h sin refresh)"
     rows = []
-    rows.append(f"<tr><td>Precios</td><td style='color:#3cffd0'>{k['total_snapshots']:,}</td></tr>")
-    rows.append(f"<tr><td>Tiendas</td><td style='color:#3cffd0'>{k['active_stores']}/{k['total_stores']}</td></tr>")
+    rows.append(f"<tr><td>Precios indexados (moat)</td><td style='color:#3cffd0'>{indexed:,}</td></tr>")
+    rows.append(f"<tr><td>Refresh 24h</td><td style='color:#3cffd0'>{snap_24:,}</td></tr>")
+    rows.append(f"<tr><td>Productos únicos</td><td style='color:#3cffd0'>{k.get('unique_products', 0):,}</td></tr>")
+    rows.append(f"<tr><td>Tiendas con datos</td><td style='color:#3cffd0'>{stores_with_data}/{k['total_stores']}</td></tr>")
+    rows.append(f"<tr><td>Tiendas fresh 24h</td><td style='color:#3cffd0'>{k.get('stores_fresh_24h', 0)}</td></tr>")
     rows.append(f"<tr><td>Países</td><td style='color:#3cffd0'>{len(data['by_country'])}</td></tr>")
     rows.append(f"<tr><td>Ciclos</td><td style='color:#3cffd0'>{k['total_runs']}</td></tr>")
     rows.append(f"<tr><td>24h activas</td><td style='color:#3cffd0'>{k['stores_24h']}</td></tr>")
@@ -453,8 +529,8 @@ td.num{{text-align:right}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
 </style></head><body>
 <h1>CLI Market · Monitor de Precios</h1>
-<p class="sub">✅ Sistema activo · <b>{k['total_snapshots']:,} precios</b> recolectados de <b>{k['active_stores']} tiendas</b> (de {k['total_stores']} monitoreadas) · Actualizado {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC</p>
-<p class="coverage">🔵 {k['active_stores']} tiendas con datos hoy · ⬜ {k['total_stores']-k['active_stores']} sin datos · Progreso: {cov_pct}% {cov_bar}</p>
+<p class="sub">✅ Moat activo · <b>{indexed:,} precios</b> indexados · <b>{snap_24:,}</b> en últimas 24h · <b>{stores_with_data}</b> tiendas con datos{stale_note} · Actualizado {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC</p>
+<p class="coverage">🔵 {stores_with_data} tiendas en el moat · ⬜ {k['total_stores']-stores_with_data} sin datos aún · Cobertura catálogo: {cov_pct}% {cov_bar}</p>
 
 <div class="section">[ KPIs ]</div>
 <table><tr><th>Metric</th><th>Value</th></tr>{''.join(rows)}</table>

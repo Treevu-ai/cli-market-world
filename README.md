@@ -3,7 +3,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-30-brightgreen" alt="30 retailers">
+  <img src="https://img.shields.io/badge/retailers-36-brightgreen" alt="36 retailers">
   <img src="https://img.shields.io/badge/platforms-2-blue" alt="2 platforms">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">

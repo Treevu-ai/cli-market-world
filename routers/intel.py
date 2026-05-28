@@ -7,11 +7,17 @@ Endpoints:
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter
 
 from market_core import STORES, get_db
 
 router = APIRouter(tags=["intel"])
+
+
+def _since_iso(days: int) -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=max(1, days))).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @router.get("/v1/intel/inflation")
@@ -21,19 +27,20 @@ def inflation_tracker(
     days: int = 30,
     limit: int = 100,
 ):
-    """Compute per-product price deltas across the given window. Returns an
-    avg_inflation_pct across all tracked products plus the per-product
-    breakdown. Note: 'days' currently filters the SQL by LIMIT only — it
-    does NOT apply a date constraint. That's a known limitation kept for
-    backwards compat."""
+    """Compute per-product price deltas within the last `days` window.
+
+    Compares earliest vs latest snapshot per product name in the window.
+    Intended for agent-facing inflation signals — not official CPI indices.
+    """
     db = get_db()
+    since = _since_iso(days)
     q = (
         "SELECT name, store, store_name, currency, price, queried_at "
-        "FROM price_snapshots WHERE 1=1"
+        "FROM price_snapshots WHERE price > 0 AND queried_at >= ?"
     )
-    params: list = []
+    params: list = [since]
     if country:
-        cc_stores = [k for k, v in STORES.items() if v["country"] == country.upper()]
+        cc_stores = [k for k, v in STORES.items() if v["country"] == country.upper() and not v.get("disabled")]
         if cc_stores:
             q += f" AND store IN ({','.join('?' * len(cc_stores))})"
             params.extend(cc_stores)
@@ -41,13 +48,13 @@ def inflation_tracker(
         q += " AND line = ?"
         params.append(line)
     q += " ORDER BY queried_at DESC LIMIT ?"
-    params.append(limit * 2)
+    params.append(limit * 4)
     rows = db.execute(q, params).fetchall()
     db.close()
 
     prods: dict[str, list[dict]] = {}
     for r in rows:
-        k = r["name"].lower()[:40]
+        k = f"{r['store']}|{r['name'].lower()[:40]}"
         prods.setdefault(k, []).append(
             {
                 "price": r["price"],
@@ -58,34 +65,39 @@ def inflation_tracker(
         )
 
     items: list[dict] = []
-    for name, snaps in list(prods.items())[:limit]:
+    for _key, snaps in prods.items():
         snaps.sort(key=lambda s: s["date"])
         if len(snaps) >= 2:
-            f = snaps[0]
-            l = snaps[-1]
-            if f["price"] > 0:
-                d = round(l["price"] - f["price"], 2)
-                dp = round((d / f["price"]) * 100, 1)
+            first = snaps[0]
+            last = snaps[-1]
+            if first["price"] > 0:
+                d = round(last["price"] - first["price"], 2)
+                dp = round((d / first["price"]) * 100, 1)
                 items.append(
                     {
-                        "product": name,
-                        "first_price": f["price"],
-                        "last_price": l["price"],
-                        "first_date": f["date"],
-                        "last_date": l["date"],
+                        "product": _key.split("|", 1)[1],
+                        "first_price": first["price"],
+                        "last_price": last["price"],
+                        "first_date": first["date"],
+                        "last_date": last["date"],
                         "delta": d,
                         "delta_pct": dp,
-                        "currency": f["currency"],
+                        "currency": first["currency"],
+                        "store": first["store"],
                     }
                 )
+    items.sort(key=lambda x: abs(x["delta_pct"]), reverse=True)
+    items = items[:limit]
     avg = round(sum(i["delta_pct"] for i in items) / len(items), 1) if items else 0
     return {
         "country": country,
         "line": line,
         "days": days,
+        "since": since,
         "products_tracked": len(items),
         "avg_inflation_pct": avg,
         "items": items,
+        "disclaimer": "Internal collector signal — not an official inflation index.",
     }
 
 
