@@ -27,20 +27,20 @@ export default function SideNav() {
   }, [])
 
   return (
-    <nav className="fixed left-0 top-0 z-50 h-screen w-12 hidden md:flex flex-col justify-center bg-background/80 backdrop-blur-sm">
+    <nav className="fixed left-0 top-0 z-50 h-screen w-12 hidden md:flex flex-col justify-center bg-[var(--wise-canvas-soft)]/80 backdrop-blur-sm">
       <div className="flex flex-col gap-4 px-3">
         {items.map(({ id, es, en }) => (
           <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
             className="group relative flex items-center" aria-label={isES ? es : en}>
             <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
-              active === id ? "bg-[var(--wise-green)] scale-125" : "bg-white/20 group-hover:bg-white/50"}`} />
+              active === id ? "bg-[var(--wise-green)] scale-125" : "bg-[var(--wise-ink)]/15 group-hover:bg-[var(--wise-ink)]/30"}`} />
             <span className={`absolute left-6 font-mono text-[9px] uppercase tracking-widest opacity-0 group-hover:opacity-100 group-hover:left-7 transition-all duration-200 whitespace-nowrap ${
-              active === id ? "text-[var(--wise-green)]" : "text-white/40"}`}>
+              active === id ? "text-[var(--wise-green)]" : "text-[var(--wise-mute)]"}`}>
               {isES ? es : en}
             </span>
           </button>
         ))}
-        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-[8px] font-mono text-white/20 hover:text-white/40 transition-colors">
+        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-[8px] font-mono text-[var(--wise-mute)]/40 hover:text-[var(--wise-ink)]/60 transition-colors">
           {isES ? "EN" : "ES"}
         </button>
       </div>
