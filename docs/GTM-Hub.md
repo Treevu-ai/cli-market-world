@@ -34,6 +34,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | DEV calendar | `ready` | Growth Hacker + Content Creator | [[dev-calendar]] |
 | Alpha gates | `executed` | Product Manager | [[alpha-gates-2026-06-01]] |
 | Data gate (LI sem 2) | `active` | API Tester | [[linkedin/data-gate]] |
+| Data moat strategy | `active` | Product + Collector | [[data-moat-strategy]] |
 | Repurpose top 5 | `ready` | Content Creator | [[linkedin/repurpose-top5]] |
 | Obsidian vault | `shipped` | — | [[obsidian-vault]] · `.obsidian/` |
 
@@ -47,7 +48,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 
 | Concepto | Mensaje acordado (paquete / README local) | Landing pública (verificar) |
 |----------|-------------------------------------------|-----------------------------|
-| Retailers | 30 verificados | ✅ 30 (alineado 2026-05-28) |
+| Retailers | 36 verificados | ✅ 36 (2026-05-28) |
 | Países | 8 | ✅ 8 |
 | MCP tools | 36 | ✅ 36 + `/tools` |
 | Precios indexados | ~13K, refresh 8h | ✅ |
