@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cli-market"
-version = "1.4.0"
-description = "CLI Market — Commerce infrastructure for AI agents. 60 retailers, 11 countries, 3 platforms (VTEX+Shopify+Magento), 36 MCP tools, 5 payment methods. Deployed on Railway + PostgreSQL. Dashboard with 12 analytics sections."
+version = "1.4.1"
+description = "CLI Market — Commerce infrastructure for AI agents. 30 retailers, 7 countries, 3 platforms. 36 MCP tools. 13,000+ real prices every 8h. MIT."
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{name = "CLI Market", email = "hello@cli-market.dev"}]
