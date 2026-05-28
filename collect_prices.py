@@ -644,7 +644,8 @@ async def main():
     ensure_db_initialized()
     if args.status: do_status(); return
     if args.report: do_report(); return
-    stores = list(STORES.keys())[:args.stores] if args.stores else list(STORES.keys())
+    stores = [k for k in STORES if not STORES[k].get("disabled")]  # skip disabled stores
+    stores = stores[:args.stores] if args.stores else stores
     label = "PostgreSQL" if USE_PG else "SQLite"
 
     if args.daemon:
