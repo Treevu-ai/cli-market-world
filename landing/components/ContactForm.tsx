@@ -30,12 +30,11 @@ export default function ContactForm({ initial = "pro" }: { initial?: string }) {
       if (res.ok) { setSent(true); return; }
       throw new Error("Server error");
     } catch {
+      setLoading(false);
       const subject = encodeURIComponent(`CLI Market ${plan} — ${email}`);
       const body = encodeURIComponent(useCase);
       window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
-      setSent(true);
     }
-    setLoading(false);
   };
 
   if (sent) return (
