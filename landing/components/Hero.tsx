@@ -8,7 +8,7 @@ export default function Hero() {
 
   const chips = [
     { num: "30", label: isES ? "comercios" : "retailers" },
-    { num: "7", label: isES ? "países" : "countries" },
+    { num: "8", label: isES ? "países" : "countries" },
     { num: "13K", label: isES ? "precios reales" : "real prices" },
     { num: "8h", label: isES ? "actualización" : "refresh cycle" },
   ];

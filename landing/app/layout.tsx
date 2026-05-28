@@ -17,7 +17,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
   description:
-    "30 retailers, 7 países, 3 plataformas. 13,000+ precios reales cada 8 horas. Una API. Cero scraping.",
+    "30 retailers, 7 países, 2 plataformas. 13,000+ precios reales cada 8 horas. Una API. Cero scraping.",
   openGraph: {
     title: "CLI Market — Infraestructura de comercio y precios para agentes de IA",
     description: "30 retailers en 7 países. 13K precios reales cada 8 horas. Checkout con PayPal + QR (Yape/Plin).",
