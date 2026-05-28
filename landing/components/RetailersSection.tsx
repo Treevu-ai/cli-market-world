@@ -16,9 +16,9 @@ export default function RetailersSection() {
 
   const benefits = isES
     ? ["Sin costo. Siempre. La competencia cobra USD 500/mes por menos cobertura.",
-       "Sin integracion tecnica. Si ya vendes online, ya estas listo.",
-       "Visibilidad en un canal que no existia hace 6 meses: agentes autonomos que compran solos.",
-       "Cada dia sin estar aca es un dia que tu competidor aparece y vos no."]
+       "Sin integración técnica. Si ya vendés online, ya estás listo.",
+       "Visibilidad en un canal que no existía hace 6 meses: agentes autónomos que compran solos.",
+       "Cada día sin estar acá es un día que tu competidor aparece y vos no."]
     : ["Free. Forever. Competitors charge $500/mo for less coverage.",
        "Zero technical integration. If you sell online, you're already ready.",
        "Visibility in a channel that didn't exist 6 months ago: autonomous AI shopping agents.",
