@@ -70,6 +70,7 @@ flowchart LR
 - **31 tiendas activas** (`DEFAULT_STORES`) — VTEX/Magento probadas, alimentan el moat hoy.
 - **29 deshabilitadas** — Shopify POC, Magento sin token, farmacias SPA. No contaminan health ni KPIs.
 - Probe: `python3 ops/store_probe.py` — query por **marca/línea**, no “televisor” en Motorola.
+- **BR expansion (2026-05):** Aramis, Ri Happy, Oster, Decathlon, Drogaria Globo, Miess — VTEX público verificado.
 
 ## Operación
 
