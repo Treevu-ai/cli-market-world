@@ -453,6 +453,64 @@ cb=CB()
 async def fetch_store_multi(client, store, term):
     return await _fetch_store(store, term, page=1, limit=10)
 
+# ── Full catalog download ───────────────────────────────────────────────────
+
+CATALOG_INTERVAL_MINS = int(os.getenv("COLLECT_CATALOG_INTERVAL", "60"))
+_last_catalog_pull: float = 0.0
+
+async def collect_full_catalog_pg(pool, store: str) -> int:
+    from market_connectors.vtex import VtexConnector
+    cfg = STORES.get(store, {})
+    if cfg.get("platform") != "vtex":
+        return 0
+    vtex = VtexConnector()
+    try:
+        all_raw = await vtex.fetch_all_products(cfg, max_pages=20)
+    except Exception as e:
+        logger.warning("full catalog %s: %s", store, str(e)[:80])
+        return 0
+    collected = 0
+    line = cfg.get("line", "")
+    line_name = LINES.get(line, {}).get("name", "")
+    async with pool.acquire() as conn:
+        for p in all_raw:
+            prod = vtex.normalize(p, store, cfg)
+            prod["line"] = line
+            prod["line_name"] = line_name
+            if prod.get("price", 0) <= 0:
+                continue
+            if prod["price"] > LINE_MAX_PRICE.get(line, 99_999_999):
+                continue
+            try:
+                await conn.execute("""
+                    INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                    ON CONFLICT (product_id,store,queried_at) DO NOTHING
+                """, prod["product_id"], prod["name"], prod["brand"], prod["price"],
+                   prod.get("list_price", 0), prod.get("discount"), prod["store"],
+                   prod["store_name"], prod["currency"], prod["line"], prod["line_name"],
+                   prod.get("category", ""), prod.get("stock", 0), prod.get("url", ""))
+                collected += 1
+            except Exception:
+                pass
+            await asyncio.sleep(0.05)
+    return collected
+
+async def run_full_catalog_pg(pool, stores: list[str]) -> int:
+    global _last_catalog_pull
+    now = time.monotonic()
+    if now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
+        return 0
+    _last_catalog_pull = now
+    total = 0
+    for store in stores:
+        if STORES.get(store, {}).get("platform") != "vtex":
+            continue
+        n = await collect_full_catalog_pg(pool, store)
+        print(f"    📦 {store}: {n:,} products (full catalog)")
+        total += n
+    return total
+
 # ── Collector core ──────────────────────────────────────────────────────────
 
 async def collect_one_pg(pool, store, queries):
@@ -604,6 +662,11 @@ async def main():
                 print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
                 t0=time.monotonic(); r=await run_collection(stores, queries)
                 print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
+                # Full catalog pull (every 60 min by default)
+                if USE_PG:
+                    cat_count = await run_full_catalog_pg(await get_pool(), stores)
+                    if cat_count:
+                        print(f"  📦 Full catalog: {cat_count:,} new products")
             except Exception as e:
                 print(f"  ✗ Cycle {cycle} crashed: {e}")
                 import traceback; traceback.print_exc()
