@@ -113,7 +113,7 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-DEFAULT_STORES = list(STORES.keys())
+DEFAULT_STORES = [k for k, v in STORES.items() if not v.get("disabled")]
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
