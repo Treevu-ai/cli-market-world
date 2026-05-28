@@ -18,14 +18,14 @@ export default function RetailersPage() {
               { "@type": "Question", "name": "What platforms does CLI Market support?",
                 "acceptedAnswer": { "@type": "Answer", "text": "VTEX, Shopify, and Magento. We connect via public catalog APIs — zero development required from your side." }},
               { "@type": "Question", "name": "How many retailers are already on CLI Market?",
-                "acceptedAnswer": { "@type": "Answer", "text": "30 retailers across 7 countries: Peru, Argentina, Mexico, Colombia, Chile, Brazil, and the US. 13,000+ real prices refreshed every 8 hours." }},
+                "acceptedAnswer": { "@type": "Answer", "text": "30 retailers across 8 countries: Peru, Argentina, Mexico, Colombia, Chile, Brazil, and the US. 13,000+ real prices refreshed every 8 hours." }},
               { "@type": "Question", "name": "What is GEO and why does my store need it?",
                 "acceptedAnswer": { "@type": "Answer", "text": "GEO (Generative Engine Optimization) is the equivalent of SEO for AI agents. When AI assistants like ChatGPT and Claude search for products, they use structured data indexes like CLI Market. If your store isn't indexed, you're invisible to the fastest-growing shopping channel." }},
             ]
           })
         }}
       />
-      <meta name="description" content="List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds. 13,000+ prices across 30 retailers in 7 countries. Your products visible to AI agents. No cost. MIT." />
+      <meta name="description" content="List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds. 13,000+ prices across 41 retailers in 8 countries. Your products visible to AI agents. No cost. MIT." />
 
       {/* Header */}
       <section className="py-24 px-6 text-center border-b border-[#c5edab]">
