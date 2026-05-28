@@ -6,7 +6,7 @@ const tiers = [
     name: "Free", price: "$0", period_es: "sin costo", period_en: "no cost",
     f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "Todos los métodos de pago"],
     f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "All payment methods included"],
-    cta_es: "Comenzar ahora", cta_en: "Start now", dark: false,
+    cta_es: "Instalar gratis", cta_en: "Install free", dark: false,
   },
   {
     name: "Pro", price: "$49", period_es: "/ mes", period_en: "/ month",
@@ -18,7 +18,7 @@ const tiers = [
     name: "Enterprise", price: "A medida", period_es: "", period_en: "",
     f_es: ["Límites personalizados", "Claves API ilimitadas", "Endpoints dedicados + webhooks", "SLA 99.5 % + soporte 24/7", "Onboarding y consultoría"],
     f_en: ["Custom rate limits", "Unlimited API keys", "Dedicated endpoints + webhooks", "99.5% SLA + 24/7 support", "Onboarding and consulting"],
-    cta_es: "Hablar con ventas", cta_en: "Talk to sales", dark: true,
+    cta_es: "Contactar", cta_en: "Contact us", dark: true,
   },
 ];
 
@@ -75,7 +75,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <a href={tier.name === "Enterprise" ? "mailto:hello@cli-market.dev" : tier.name === "Pro" ? "mailto:hello@cli-market.dev?subject=CLI%20Market%20Pro%20Upgrade" : "https://cli-market-production.up.railway.app/docs"}
+              <a href={tier.name === "Enterprise" ? "#contact" : tier.name === "Pro" ? "#contact" : "https://pypi.org/project/cli-market/"}
                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
                    tier.dark
                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
