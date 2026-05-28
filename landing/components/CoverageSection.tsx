@@ -23,7 +23,7 @@ export default function CoverageSection() {
           {isES ? "Cobertura" : "Coverage"}
         </p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
-          {isES ? "30 retailers, 7 países, 6 líneas." : "30 retailers, 7 countries, 6 lines."}
+          {isES ? "41 retailers, 8 países, 6 líneas." : "41 retailers, 8 countries, 6 lines."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-10">
           {isES ? "VTEX públicos funcionando hoy. Sin scraping. Sin tokens." : "Public VTEX stores working today. No scraping. No tokens."}
