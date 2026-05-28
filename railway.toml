@@ -1,7 +1,7 @@
 # Railway config for the API service (FastAPI)
 #
-# For the collector service, create a separate service in the
-# Railway dashboard and set its Dockerfile path to "Dockerfile.collector".
+# COLLECTOR is a separate Railway service — use railway.collector.toml:
+#   Settings → Config-as-code → Config file path → /railway.collector.toml
 #
 # Add PostgreSQL from Railway dashboard → auto-injects DATABASE_URL
 
