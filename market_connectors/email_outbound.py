@@ -125,8 +125,9 @@ def _send(to_email: str, subject: str, text: str, html: str) -> dict:
     msg.attach(MIMEText(text, "plain", "utf-8"))
     msg.attach(MIMEText(html, "html", "utf-8"))
 
+    timeout = int(os.getenv("SMTP_TIMEOUT", "5"))
     try:
-        with smtplib.SMTP(host, port, timeout=20) as smtp:
+        with smtplib.SMTP(host, port, timeout=timeout) as smtp:
             if use_tls:
                 smtp.starttls()
             smtp.login(user, password)
