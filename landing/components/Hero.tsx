@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import ScrambleText from "@/components/ScrambleText";
 
 export default function Hero() {
   const { t: _t, lang } = useLang();
@@ -13,7 +14,13 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-screen flex flex-col bg-[var(--wise-canvas-soft)]">
+    <section id="hero" className="relative min-h-screen flex flex-col bg-[var(--wise-canvas-soft)]">
+      {/* Vertical label */}
+      <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
+        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--wise-mute)] -rotate-90 origin-left block whitespace-nowrap">
+          {isES ? "COMERCIO" : "COMMERCE"}
+        </span>
+      </div>
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-32 lg:py-40 text-center">
         <h1 className="text-[clamp(36px,7vw,72px)] leading-[0.95] font-black text-[var(--wise-ink)] max-w-[720px] tracking-tight">
           {isES
@@ -42,7 +49,7 @@ export default function Hero() {
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
           <a href="#retailers"
              className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm">
-            {isES ? "Agregar mi tienda →" : "List my store →"}
+            <ScrambleText text={isES ? "Agregar mi tienda →" : "List my store →"} />
           </a>
           <button
             onClick={(e) => {

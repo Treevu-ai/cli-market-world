@@ -31,7 +31,7 @@ export default function Navbar() {
   const close = () => setOpen(false);
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 md:hidden ${
       scrolled ? "bg-[var(--wise-canvas-soft)]/90 backdrop-blur-md border-b border-[var(--wise-green-pale)]" : "bg-[var(--wise-canvas-soft)] border-b border-transparent"
     }`}>
       <div className="max-w-[720px] mx-auto px-6 flex items-center justify-between h-14">
