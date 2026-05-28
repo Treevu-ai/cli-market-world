@@ -8,7 +8,7 @@
 
 **Solución:** Data licensing pack — precios históricos de 14 supermercados en Perú (Wong, Metro, Plaza Vea) y Colombia (Éxito, Carulla, Olímpica). Datos frescos cada 8 horas. Export JSON/CSV con series de 30, 60 o 90 días.
 
-**Resultado:** 4,400+ precios indexados. Modelo actualizado con datos reales de góndola. Costo: $500/mes vs $2,000+/mes alternativas. Time-to-data: 1 día vs 45 días.
+**Resultado:** 13,000+ precios indexados. Modelo actualizado con datos reales de góndola. Costo: $500/mes vs $2,000+/mes alternativas. Time-to-data: 1 día vs 45 días.
 
 ## Case 2: AI Agents para Procurement B2B
 
