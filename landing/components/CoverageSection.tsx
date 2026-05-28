@@ -2,15 +2,15 @@
 import { useLang } from "@/lib/LanguageContext";
 
 const lines = {
-  supermercados: ["Wong PE", "Metro PE", "Plaza Vea PE", "Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Éxito CO", "Carulla CO", "Olímpica CO", "Sam's Club BR", "Mambo BR"],
-  farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Farmatodo CO", "Cruz Verde CO", "Cruz Verde CL"],
-  electro: ["Motorola AR/BR/MX/CL/ES", "Electrolux AR/MX/CL", "Whirlpool AR/IT/FR", "Samsung BR/MX"],
-  moda: ["C&A Brasil", "Hering Brasil", "Gymshark US", "Allbirds US", "ColourPop US", "Alo Yoga US", "Glossier US", "Fenty Beauty US", "Kylie Cosmetics US", "On Running CH"],
-  hogar: ["Easy AR", "Promart PE", "Brooklinen US", "Parachute US", "Casper US"],
-  departamentales: ["Coppel AR", "Ripley PE", "Falabella PE/CL/CO", "Paris CL", "Liverpool MX", "El Palacio MX"],
+  supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
+  farmacias: ["Drogaria Pacheco BR", "Farmatodo MX"],
+  electro: ["Motorola AR/BR/MX/CL", "Electrolux AR/CL", "Whirlpool AR/IT/FR"],
+  moda: ["C&A Brasil", "Hering Brasil"],
+  hogar: ["Easy AR", "Promart PE"],
+  departamentales: ["Coppel AR", "Falabella PE/CL/CO", "Paris CL", "Ripley CL", "Liverpool MX", "El Palacio MX"],
 };
 
-const countries = ["PE", "AR", "BR", "MX", "CO", "CL", "ES", "IT", "FR", "US", "CH"];
+const countries = ["PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR", "US"];
 
 export default function CoverageSection() {
   const { lang } = useLang();
@@ -23,27 +23,20 @@ export default function CoverageSection() {
           {isES ? "Cobertura" : "Coverage"}
         </p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
-          {isES ? "30 retailers, 7 países, 6 líneas." : "30 retailers, 7 countries, 6 lines."}
+          {isES ? "30 retailers, 7 paises, 6 lineas." : "30 retailers, 7 countries, 6 lines."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
-          {isES ? "Un solo conector para supermercados, farmacias, electro, moda, hogar y tiendas por departamento en Latinoamérica." : "A single connector for supermarkets, pharmacies, electronics, fashion, home, and department stores across Latin America."}
+        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-10">
+          {isES ? "VTEX publicos funcionando hoy. Sin scraping. Sin tokens." : "Public VTEX stores working today. No scraping. No tokens."}
         </p>
-
-        {/* Bullets */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 text-xs text-[var(--wise-body)] mb-8">
-          <span className="bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg px-4 py-2">
-            {isES ? "Canasta básica · monitoreo de inflación · cross border" : "Basic basket · inflation tracking · cross border"}
-          </span>
-          <span className="bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg px-4 py-2">
-            {isES ? "Datos estructurados: retailer, país, línea, moneda · BI-ready" : "Structured data: retailer, country, line, currency · BI-ready"}
-          </span>
-        </div>
 
         {/* Lines grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
           {Object.entries(lines).map(([lineKey, stores]) => (
             <div key={lineKey} className="bg-[var(--wise-canvas-soft)] border border-[#c5edab] rounded-lg p-4">
-              <h3 className="text-xs font-medium text-[var(--wise-ink)] mb-2 uppercase tracking-wider">{lineKey}</h3>
+              <h3 className="text-xs font-bold text-[var(--wise-ink)] mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--wise-green)]"></span>
+                {lineKey}
+              </h3>
               <ul className="space-y-1">
                 {stores.map((s) => (
                   <li key={s} className="text-[11px] text-[var(--wise-body)] leading-relaxed">{s}</li>
@@ -59,6 +52,13 @@ export default function CoverageSection() {
             <span key={c} className="text-[10px] font-mono text-[var(--wise-body)] bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-full px-2.5 py-1">{c}</span>
           ))}
         </div>
+
+        {/* Note: Shopify/Magento stores need outreach */}
+        <p className="text-[10px] text-[var(--wise-mute)] mt-6 max-w-md mx-auto leading-relaxed">
+          {isES
+            ? "+15 retailers adicionales en Shopify y Magento requieren token de API. Gratis para ellos."
+            : "+15 additional retailers on Shopify and Magento need API tokens. Free for them."}
+        </p>
       </div>
     </section>
   );
