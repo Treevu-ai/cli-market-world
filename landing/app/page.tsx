@@ -9,6 +9,7 @@ import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
 import Features from "@/components/Features";
 import CoverageSection from "@/components/CoverageSection";
+import RetailersSection from "@/components/RetailersSection";
 import FAQ from "@/components/FAQ";
 import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
@@ -27,6 +28,7 @@ export default function Home() {
           <TerminalSection />
           <QuickstartAPI />
           <Features />
+          <RetailersSection />
           <CoverageSection />
           <DataSection />
           <Pricing />
