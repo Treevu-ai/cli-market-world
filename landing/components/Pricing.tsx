@@ -4,7 +4,7 @@ import { useLang } from "@/lib/LanguageContext";
 const tiers = [
   {
     name: "Free", price: "$0", period_es: "sin costo", period_en: "no cost",
-    f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "Todos los métodos de pago"],
+    f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "PayPal + QR Yape/Plin"],
     f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "All payment methods included"],
     cta_es: "Instalar gratis", cta_en: "Install free", dark: false,
   },
