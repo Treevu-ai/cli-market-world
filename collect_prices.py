@@ -355,9 +355,21 @@ if USE_PG:
 
     async def pg_health(conn, store, ok):
         if ok:
-            await conn.execute("INSERT INTO store_health (store,last_success,total_requests,total_successes) VALUES ($1,NOW(),1,1) ON CONFLICT(store) DO UPDATE SET last_success=NOW(),total_requests=store_health.total_requests+1,total_successes=store_health.total_successes+1", store)
+            await conn.execute(
+                "INSERT INTO store_health (store,last_success,total_requests,total_successes,consecutive_failures) "
+                "VALUES ($1,NOW(),1,1,0) ON CONFLICT(store) DO UPDATE SET "
+                "last_success=NOW(),total_requests=store_health.total_requests+1,"
+                "total_successes=store_health.total_successes+1,consecutive_failures=0",
+                store,
+            )
         else:
-            await conn.execute("INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) VALUES ($1,NOW(),1,1) ON CONFLICT(store) DO UPDATE SET last_error=NOW(),consecutive_failures=store_health.consecutive_failures+1,total_requests=store_health.total_requests+1", store)
+            await conn.execute(
+                "INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) "
+                "VALUES ($1,NOW(),1,1) ON CONFLICT(store) DO UPDATE SET "
+                "last_error=NOW(),consecutive_failures=store_health.consecutive_failures+1,"
+                "total_requests=store_health.total_requests+1",
+                store,
+            )
 
     async def pg_run_start(conn, n):
         return (await conn.fetchrow("INSERT INTO collector_runs (stores_attempted) VALUES ($1) RETURNING id", n))["id"]
@@ -404,8 +416,22 @@ else:
         )
 
     def sq_health(db, store, ok):
-        if ok: db.execute("INSERT INTO store_health (store,last_success,total_requests,total_successes) VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET last_success=datetime('now'),total_requests=total_requests+1,total_successes=total_successes+1",(store,))
-        else: db.execute("INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET last_error=datetime('now'),consecutive_failures=consecutive_failures+1,total_requests=total_requests+1",(store,))
+        if ok:
+            db.execute(
+                "INSERT INTO store_health (store,last_success,total_requests,total_successes,consecutive_failures) "
+                "VALUES (?,datetime('now'),1,1,0) ON CONFLICT(store) DO UPDATE SET "
+                "last_success=datetime('now'),total_requests=total_requests+1,"
+                "total_successes=total_successes+1,consecutive_failures=0",
+                (store,),
+            )
+        else:
+            db.execute(
+                "INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) "
+                "VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET "
+                "last_error=datetime('now'),consecutive_failures=consecutive_failures+1,"
+                "total_requests=total_requests+1",
+                (store,),
+            )
 
     def sq_run_start(db, n): return db.execute("INSERT INTO collector_runs (started_at,stores_attempted) VALUES (datetime('now'),?)",(n,)).lastrowid
     def sq_run_end(db, rid, ok, total, errs): db.execute("UPDATE collector_runs SET finished_at=datetime('now'), stores_succeeded=?, prices_collected=?, errors=? WHERE id=?",(ok,total,errs,rid))
@@ -506,7 +532,7 @@ async def run_full_catalog_pg(pool, stores: list[str]) -> int:
 
 async def collect_one_pg(pool, store, queries):
     if not cb.ok(store): return 0
-    line = STORES[store].get("line",""); collected=0; attempted=0
+    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(QUERY_TIMEOUT),headers={"User-Agent":"Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"},follow_redirects=True) as client:
             async with pool.acquire() as conn:
@@ -515,7 +541,8 @@ async def collect_one_pg(pool, store, queries):
                     if lf and line!=lf: continue
                     try:
                         raw = await fetch_store_multi(client, store, q)
-                        cb.win(store); await pg_health(conn, store, True)
+                        cb.win(store)
+                        query_ok += 1
                         for p in raw:
                             prod = _pfj(p, store)
                             prod["line"] = STORES[store].get("line","")
@@ -524,20 +551,24 @@ async def collect_one_pg(pool, store, queries):
                             if prod["price"] > LINE_MAX_PRICE.get(prod["line"], 99_999_999): continue
                             await pg_insert(conn, prod); collected+=1
                         await asyncio.sleep(REQUEST_DELAY)
-                    except Exception: cb.lose(store); await pg_health(conn, store, False)
-    except Exception: cb.lose(store)
+                    except Exception:
+                        cb.lose(store)
+                await pg_health(conn, store, collected > 0 or query_ok > 0)
+    except Exception:
+        cb.lose(store)
     return collected
 
 async def collect_one_sqlite(db, store, queries):
     """Collect for one store, reusing a single SQLite connection across
     all inserts (orders of magnitude cheaper than open-per-row, and avoids
     `database is locked` storms under PARALLEL workers)."""
-    line = STORES[store].get("line",""); collected=0; attempted=0
+    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0
     for q, lf in queries:
         if lf and line!=lf: continue
         attempted += 1
         try:
             raw = await _fetch_store(store, q, page=1, limit=10)
+            query_ok += 1
             for p in raw:
                 prod = _pfj(p, store)
                 prod["line"] = line
@@ -551,6 +582,8 @@ async def collect_one_sqlite(db, store, queries):
         except Exception as _e:
             logger.warning("collect %s/%s: %s", store, q, str(_e)[:200])
             cb.lose(store)
+    if attempted > 0:
+        sq_health(db, store, collected > 0 or query_ok > 0)
     if attempted > 0 and collected == 0:
         logger.warning("store %s: tried %d queries, 0 results (line=%s)", store, attempted, line)
     elif collected > 0:

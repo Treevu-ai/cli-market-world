@@ -71,7 +71,7 @@ STORES = {
     # ── MAGENTO ──
     "falabella_pe": {"name":"Falabella PE","base":"https://www.falabella.com.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
     "falabella_cl": {"name":"Falabella CL","base":"https://www.falabella.com","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
-    "falabella_co": {"name":"Falabella CO","base":"https://www.falabella.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"departamentales","platform":"magento"},
+    "falabella_co": {"name":"Falabella CO","base":"https://www.falabella.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
     "paris_cl": {"name":"Paris CL","base":"https://www.paris.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
     "ripley_cl": {"name":"Ripley CL","base":"https://www.ripley.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST requires token"},
     "liverpool_mx": {"name":"Liverpool MX","base":"https://www.liverpool.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"departamentales","platform":"magento","disabled":True,"disabled_reason":"Magento REST blocked (403)"},
