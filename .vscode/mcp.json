@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "cli-market": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "-m",
+        "market_mcp"
+      ],
+      "env": {
+        "MARKET_API_URL": "https://cli-market-production.up.railway.app"
+      }
+    }
+  }
+}
