@@ -1,4 +1,4 @@
-# 60 verified retailers — 38 VTEX + 15 Shopify + 7 Magento
+# 66 verified retailers — 44 VTEX + 15 Shopify + 7 Magento
 STORES = {
 
     # ── SUPERMERCADOS ──
@@ -19,6 +19,7 @@ STORES = {
 
     # ── FARMACIAS ──
     "pacheco_br": {"name":"Drogaria Pacheco","base":"https://www.drogariaspacheco.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"farmacias","platform":"vtex"},
+    "globo_br": {"name":"Drogaria Globo","base":"https://www.drogariaglobo.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"farmacias","platform":"vtex"},
     "farmatodo_mx": {"name":"Farmatodo MX","base":"https://www.farmatodo.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"farmacias","platform":"vtex"},
     "cruzverde_co": {"name":"Cruz Verde CO","base":"https://www.cruzverde.com.co","country":"CO","currency":"COP","emoji":"🇨🇴","line":"farmacias","platform":"vtex","disabled":True,"disabled_reason":"search API returns HTML SPA"},
     "cruzverde_cl": {"name":"Cruz Verde CL","base":"https://www.cruzverde.cl","country":"CL","currency":"CLP","emoji":"🇨🇱","line":"farmacias","platform":"vtex","disabled":True,"disabled_reason":"search API returns HTML SPA"},
@@ -38,6 +39,7 @@ STORES = {
     "electrolux_mx": {"name":"Electrolux MX","base":"https://www.electrolux.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"need_token","disabled":True},
     "samsung_br": {"name":"Samsung BR","base":"https://www.samsung.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"need_token","disabled":True},
     "samsung_mx": {"name":"Samsung MX","base":"https://www.samsung.com.mx","country":"MX","currency":"MXN","emoji":"🇲🇽","line":"electro","platform":"need_token","disabled":True},
+    "oster_br": {"name":"Oster BR","base":"https://www.oster.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"electro","platform":"vtex"},
 
     # ── HOGAR ──
     "easy_ar": {"name":"Easy AR","base":"https://www.easy.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"hogar","platform":"vtex"},
@@ -45,11 +47,24 @@ STORES = {
 
     # ── DEPARTAMENTALES ──
     "coppel_ar": {"name":"Coppel AR","base":"https://www.coppel.com.ar","country":"AR","currency":"ARS","emoji":"🇦🇷","line":"departamentales","platform":"vtex"},
+    "rihappy_br": {"name":"Ri Happy","base":"https://www.rihappy.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"departamentales","platform":"vtex"},
     "ripley_pe": {"name":"Ripley PE","base":"https://www.ripley.pe","country":"PE","currency":"PEN","emoji":"🇵🇪","line":"departamentales","platform":"vtex","disabled":True,"disabled_reason":"VTEX catalog API 404"},
 
     # ── MODA ──
     "cea_br": {"name":"C&A BR","base":"https://www.cea.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"vtex"},
     "hering_br": {"name":"Hering BR","base":"https://www.hering.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"vtex"},
+    "aramis_br": {"name":"Aramis","base":"https://www.aramis.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"vtex"},
+    "miess_br": {"name":"Miess","base":"https://www.miess.com.br","country":"BR","currency":"BRL","emoji":"🇧🇷","line":"moda","platform":"vtex"},
+    "decathlon_br": {
+        "name": "Decathlon BR",
+        "base": "https://decathlonstore.vtexcommercestable.com.br",
+        "link_base": "https://www.decathlon.com.br",
+        "country": "BR",
+        "currency": "BRL",
+        "emoji": "🇧🇷",
+        "line": "moda",
+        "platform": "vtex",
+    },
 
     # ── SHOPIFY (POC) ──
     "gymshark": {"name":"Gymshark","base":"https://www.gymshark.com","country":"US","currency":"USD","emoji":"🇺🇸","line":"moda","platform":"shopify","disabled":True},

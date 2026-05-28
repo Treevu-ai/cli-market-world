@@ -103,7 +103,7 @@ class VtexConnector(BaseConnector):
             "store": store_key,
             "store_name": store_config["name"],
             "currency": store_config["currency"],
-            "url": f"{store_config['base']}/{raw.get('linkText', '')}/p",
+            "url": f"{store_config.get('link_base', store_config['base'])}/{raw.get('linkText', '')}/p",
         }
 
     async def categories(self, store_config: dict) -> list[dict]:
