@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cli-market"
-version = "1.4.2"
+version = "1.4.3"
 description = "mcp-name: io.github.Treevu-ai/cli-market-world — CLI Market: Commerce infrastructure for AI agents. 30 retailers, 7 countries. 36 MCP tools. MIT."
 requires-python = ">=3.10"
 license = "MIT"
