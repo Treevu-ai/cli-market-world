@@ -58,7 +58,7 @@ export default function Pricing() {
                 {tier.name}
               </h3>
               <div className="mt-3 mb-5">
-                <span className={`text-3xl font-black ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>
+                <span className={`text-3xl font-black break-all ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>
                   {tier.price}
                 </span>
                 {(tier.period_es || tier.period_en) && (
