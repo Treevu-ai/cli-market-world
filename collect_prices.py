@@ -557,7 +557,7 @@ async def collect_one_sqlite(db, store, queries):
             await asyncio.sleep(REQUEST_DELAY)
         except Exception as _e:
             logger.warning("collect %s/%s: %s", store, q, str(_e)[:200])
-            cb.fail(store)
+            cb.lose(store)
     return collected
 
 async def run_collection(stores, queries):
