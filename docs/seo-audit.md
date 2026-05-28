@@ -1,0 +1,35 @@
+# 🔍 SEO Audit — cli-market.dev
+**Author**: SEO Specialist (Agency Agent) · **Date**: 2026-05-28
+
+## Current State
+**Score**: 55/100. Good foundation, missing key optimizations.
+
+## Critical Fixes (This Week)
+1. **Structured Data**: Add Schema.org `SoftwareApplication` + `WebApplication` to landing. Currently missing.
+2. **Sitemap**: Static export doesn't generate sitemap.xml. Add `next-sitemap`.
+3. **Title tags**: Homepage title is good. Missing unique titles for /retailers.
+4. **Meta descriptions**: Present but keyword density low for "AI commerce API", "MCP tools", "price data".
+5. **Canonical URLs**: Missing — risk of duplicate content if mirrored.
+
+## Keyword Strategy
+| Keyword | Volume | Difficulty | Current Rank | Action |
+|---------|--------|------------|-------------|--------|
+| commerce API for AI agents | Low/New | 0 | — | Target homepage |
+| MCP tools for e-commerce | Low/New | 0 | — | Target /tools page |
+| price data API | Medium | High | — | Target docs |
+| VTEX API integration | Low | Low | — | Blog post |
+| AI shopping API | Low/New | 0 | — | Create landing section |
+| Latin America retail data | Low | Medium | — | Blog + reports |
+
+## Technical Fixes
+- **Core Web Vitals**: Static export → LCP should be <1s. Verify in PageSpeed.
+- **Mobile**: Already responsive. Test with Lighthouse.
+- **HTTPS**: Cloudflare provides. Verify HSTS.
+- **robots.txt**: Add with sitemap reference.
+
+## Agent-First SEO (New Category)
+- **llms.txt**: Already exists ✅
+- **llms-full.txt**: Already exists ✅
+- **Structured MCP data**: Add `server.json` as linked data
+- **Claude visibility**: Submit to Claude's index via docs.anthropic.com
+- **ChatGPT plugin**: Prepare manifest for potential plugin submission
