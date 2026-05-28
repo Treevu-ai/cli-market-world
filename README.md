@@ -1,9 +1,10 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-60-brightgreen" alt="60 retailers">
+  <img src="https://img.shields.io/badge/retailers-30-brightgreen" alt="30 retailers">
   <img src="https://img.shields.io/badge/platforms-3-blue" alt="3 platforms">
-  <img src="https://img.shields.io/badge/countries-11-orange" alt="11 countries">
+  <img src="https://img.shields.io/badge/countries-7-orange" alt="7 countries">
+  <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/payments-5-ffbd2e" alt="5 payments">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
@@ -18,7 +19,7 @@
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>60 retailers. 11 countries. 3 platforms. 36 MCP tools. 5 payment methods.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 7 countries. 3 platforms. 36 MCP tools. 5 payment methods.<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -26,9 +27,9 @@
 
 AI agents can't comparison-shop in physical retail. Every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One `pip install`. One API call across all 60 retailers. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across 30 verified retailers. One JSON schema.
 
-- **Search** any product across 60 verified retailers in 11 countries
+- **Search** any product across 30 verified retailers in 7 countries
 - **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD
 - **Basket** — compare your full shopping cart across retailers, find the cheapest
 - **Inflation** — track real price changes from supermarket shelves, updated every 8 hours

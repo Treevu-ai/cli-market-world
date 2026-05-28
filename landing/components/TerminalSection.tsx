@@ -14,9 +14,21 @@ export default function TerminalSection() {
         <h2 className="text-[24px] font-medium text-white mb-3 tracking-tight">
           {isES ? "Pruébalo ahora mismo. En tu terminal." : "Try it now. In your terminal."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
+        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-8">
           {isES ? "Search, Compare, Cart y Checkout. Todo desde la línea de comandos." : "Search, Compare, Cart, and Checkout. All from the command line."}
         </p>
+
+        <div className="mb-10">
+          <img
+            src="/demo.gif"
+            alt="CLI Market agent receipt demo"
+            className="mx-auto rounded-xl border border-[#2a2d25] shadow-lg"
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+          <p className="text-[10px] text-[var(--wise-mute)] mt-2 font-mono">
+            {isES ? "🧾 Agente IA comprando canasta básica en Perú — 9 supermercados, 14 segundos" : "🧾 AI agent shops a basket in Peru — 9 supermarkets, 14 seconds"}
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           {[
