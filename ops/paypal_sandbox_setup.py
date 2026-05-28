@@ -72,7 +72,7 @@ async def cmd_register_webhook(url: str) -> int:
         print(json.dumps(result, indent=2))
         print("\nAdd to Railway (sandbox):")
         print(f"  PAYPAL_WEBHOOK_ID={result['webhook_id']}")
-        print(f"  PAYPAL_SANDBOX=true")
+        print("  PAYPAL_SANDBOX=true")
         return 0
     except Exception as e:
         print(f"✗ Webhook registration failed: {e}", file=sys.stderr)
