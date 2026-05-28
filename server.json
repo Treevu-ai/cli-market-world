@@ -11,6 +11,7 @@
     {
       "registryType": "pypi",
       "identifier": "cli-market",
+      "version": "1.4.3",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"
