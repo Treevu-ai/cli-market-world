@@ -70,9 +70,8 @@ Retailers: https://cli-market.dev/retailers
 
 ## Assets
 
-- [ ] Screenshot dashboard KPIs o terminal `market stats`
-- [ ] Gráfico simple: precios por país (si disponible en price-pulse)
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-07/day-07-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 7` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] **[N] verificado** — 36,935 (24h) / 41,856 (indexado) · [[metrics/price-pulse-2026-W22]]

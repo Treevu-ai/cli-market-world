@@ -189,6 +189,15 @@ def build_content_report(for_date: date) -> str:
             f"| Hora | {POST_UTC_HOUR}:00 UTC |",
             "",
         ]
+        asset_png = LINKEDIN_DIR / "assets" / f"day-{day:02d}" / f"day-{day:02d}-linkedin.png"
+        if asset_png.is_file():
+            rel_asset = asset_png.relative_to(ROOT).as_posix()
+            lines += [
+                f"| **Imagen LinkedIn** | `{rel_asset}` |",
+                "",
+                "> Copiar el **Post** abajo y adjuntar esa imagen. Carousel: ver carpeta `assets/day-{:02d}/`.".format(day),
+                "",
+            ]
         if today["hooks"]:
             lines += ["### Hooks", "", today["hooks"], ""]
         if today["post"]:

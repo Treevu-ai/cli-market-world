@@ -76,8 +76,8 @@ Docs for agents: https://cli-market.dev/llms.txt
 
 ## Assets
 
-- [ ] Logo + terminal screenshot side by side
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-03/day-03-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 3` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])

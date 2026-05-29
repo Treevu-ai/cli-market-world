@@ -60,9 +60,10 @@ Ver cuerpo del post — slides numerados.
 
 ## Assets
 
-- [ ] GIF terminal / screenshot (si aplica)
-- [ ] Carousel Canva (días 5, 12)
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-12/day-12-linkedin.png`
+**Carousel (8 imágenes):** subir en orden `day-12-slide-01.png` … `08.png` en la misma carpeta.
 
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 12` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
