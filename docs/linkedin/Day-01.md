@@ -65,7 +65,8 @@ GitHub: https://github.com/Treevu-ai/cli-market-world
 ## Assets
 
 **Adjuntar en LinkedIn:** `docs/linkedin/assets/day-01/day-01-linkedin.png`
-Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 1` · todos: `python3 ops/generate_all_linkedin_assets.py`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 1` 
+Todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]]) — 30 retailers, 36 MCP
