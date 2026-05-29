@@ -12,10 +12,14 @@ Usage:
   python3 ops/daily_briefing.py --dry-run    # write files, no Slack
 
 Env:
-  DASHBOARD_DATA_URL          — same as ops/monday.py
-  SLACK_WEBHOOK_URL           — optional summary
-  LINKEDIN_CAMPAIGN_START     — ISO date for Day 1 (default 2026-05-01)
-  LINKEDIN_POST_UTC_HOUR      — default 13 (from linkedin-calendar)
+  DASHBOARD_DATA_URL              — same as ops/monday.py
+  SLACK_BOT_TOKEN                 — bot con chat:write (recomendado)
+  SLACK_CHANNEL_BITACORA          — default C0B6V3Y9ZSP (bitácora producto)
+  SLACK_CHANNEL_PUBLICACIONES     — default C0B6ZJ1B9B8 (publicaciones redes)
+  SLACK_WEBHOOK_BITACORA          — alternativa: webhook solo bitácora
+  SLACK_WEBHOOK_PUBLICACIONES     — alternativa: webhook solo publicaciones
+  LINKEDIN_CAMPAIGN_START         — ISO date for Day 1 (default 2026-05-01)
+  LINKEDIN_POST_UTC_HOUR          — default 13 (from linkedin-calendar)
 """
 
 from __future__ import annotations
@@ -280,29 +284,130 @@ def build_content_report(for_date: date) -> str:
     return "\n".join(lines)
 
 
-def _slack_summary(
+def _repo_file_link(rel_path: str) -> str:
+    repo = os.getenv("GITHUB_REPOSITORY", "")
+    server = os.getenv("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
+    if repo:
+        return f"<{server}/{repo}/blob/main/{rel_path}|Ver reporte completo>"
+    return f"_Repo:_ `{rel_path}`"
+
+
+def _slack_configured() -> bool:
+    return bool(
+        os.getenv("SLACK_BOT_TOKEN")
+        or os.getenv("SLACK_WEBHOOK_BITACORA")
+        or os.getenv("SLACK_WEBHOOK_PUBLICACIONES")
+    )
+
+
+def build_slack_product_message(
     ds: str,
     data: dict,
+    meta: dict,
+    product_rel: str,
+) -> str:
+    monday = _load_monday()
+    k = data.get("kpis", {})
+    health = data.get("store_health", [])
+    critical = [
+        h for h in health if float(h.get("success_pct", 0) or 0) < 30
+    ]
+    warn = sorted(
+        [
+            h
+            for h in health
+            if 30 <= float(h.get("success_pct", 0) or 0) < 90
+        ],
+        key=lambda x: float(x.get("success_pct", 0) or 0),
+    )[:8]
+
+    lines = [
+        f"📊 *Bitácora producto* · {ds}",
+        "",
+        monday.tldr(data),
+        "",
+        f"• Indexados: *{k.get('total_indexed', 0):,}* · 24h: *{k.get('snapshots_24h', 0):,}* · "
+        f"Tiendas: *{k.get('stores_indexed', 0)}* · Coverage 7d: *{k.get('coverage_7d_pct', 0)}%*",
+        "",
+    ]
+
+    if critical:
+        lines.append("*🔴 Críticas (<30%)*")
+        for h in critical:
+            sid = h.get("store", "?")
+            info = meta.get(sid, {})
+            lines.append(
+                f"• {info.get('name', sid)} ({info.get('country', '??')}) — "
+                f"{float(h.get('success_pct', 0) or 0):.0f}%"
+            )
+        lines.append("")
+    else:
+        lines.append("✅ Sin tiendas críticas hoy.")
+        lines.append("")
+
+    if warn:
+        lines.append("*🟡 Vigilar*")
+        for h in warn:
+            sid = h.get("store", "?")
+            pct = float(h.get("success_pct", 0) or 0)
+            lines.append(f"• {sid} — {pct:.0f}%")
+        lines.append("")
+
+    coll = data.get("collector", {})
+    moat = data.get("moat_summary", {})
+    lines.append(
+        f"Collector: *{coll.get('status', '?')}* · Moat stale: *{moat.get('collector_stale', False)}*"
+    )
+    lines.append("")
+    lines.append(_repo_file_link(product_rel))
+    return "\n".join(lines)
+
+
+def build_slack_content_message(
+    ds: str,
     day: int,
     today: dict[str, Any] | None,
-    product_path: str,
-    content_path: str,
+    content_rel: str,
 ) -> str:
-    k = data.get("kpis", {})
-    critical = sum(
-        1 for h in data.get("store_health", [])
-        if float(h.get("success_pct", 0) or 0) < 30
-    )
-    title = today["title"] if today else f"Día {day} (sin archivo)"
-    pub = (today or {}).get("fm", {}).get("published_at", "") or "pendiente"
-    return (
-        f"📋 CLI Market Daily Briefing {ds}\n\n"
-        f"*Producto:* {k.get('total_indexed', 0):,} indexados · "
-        f"{k.get('snapshots_24h', 0):,} 24h · "
-        f"{critical} críticas\n"
-        f"*Contenido:* Día {day} — {title} · pub LI: {pub} · {POST_UTC_HOUR}:00 UTC\n\n"
-        f"Reportes:\n• {product_path}\n• {content_path}"
-    )
+    lines = [
+        f"📣 *Publicaciones redes* · {ds} · *Día {day}*",
+        f"Publicar *{POST_UTC_HOUR}:00 UTC* · sin link en cuerpo del post",
+        "",
+    ]
+
+    if not today:
+        lines.append(f"⚠️ No hay borrador `docs/linkedin/Day-{day:02d}.md`.")
+        lines.append(_repo_file_link(content_rel))
+        return "\n".join(lines)
+
+    fm = today["fm"]
+    pub = fm.get("published_at", "") or "⏳ pendiente"
+    lines += [
+        f"*{today['title']}*",
+        f"Estado: `{fm.get('status', '?')}` · Publicado: {pub} · Pilar: `{fm.get('pillar', '?')}`",
+        f"Archivo: `{today['path']}`",
+        "",
+    ]
+
+    if today["post"]:
+        lines += ["*Post (copiar a LinkedIn)*", "", today["post"], ""]
+    if today["comment"]:
+        lines += ["*Primer comentario*", "", today["comment"], ""]
+    if today["hashtags"]:
+        lines += ["*Hashtags*", "", today["hashtags"], ""]
+    if today["checklist"]:
+        lines += ["*Checklist*", "", today["checklist"], ""]
+
+    tomorrow = _load_day_doc(day + 1)
+    if tomorrow:
+        lines += [
+            "---",
+            f"*Mañana (Día {day + 1}):* {tomorrow['title']} · `{tomorrow['path']}`",
+            "",
+        ]
+
+    lines.append(_repo_file_link(content_rel))
+    return "\n".join(lines)
 
 
 def main() -> None:
@@ -310,11 +415,6 @@ def main() -> None:
     product_only = "--product" in sys.argv
     content_only = "--content" in sys.argv
     both = not product_only and not content_only
-
-    slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
-    for i, a in enumerate(sys.argv):
-        if a == "--slack" and i + 1 < len(sys.argv):
-            slack_url = sys.argv[i + 1]
 
     today = datetime.now(timezone.utc).date()
     ds = today.isoformat()
@@ -337,19 +437,26 @@ def main() -> None:
         content_path.write_text(build_content_report(today), encoding="utf-8")
         print(f"Content report: {content_path}" + (" [dry-run]" if dry else ""))
 
-    if slack_url and not dry and data is not None:
+    if _slack_configured() and not dry:
+        ops_dir = Path(__file__).resolve().parent
+        if str(ops_dir) not in sys.path:
+            sys.path.insert(0, str(ops_dir))
+        from slack_notify import deliver_to_bitacora, deliver_to_publicaciones
+
+        product_rel = product_path.relative_to(ROOT).as_posix()
+        content_rel = content_path.relative_to(ROOT).as_posix()
         day = _campaign_day(today)
         today_doc = _load_day_doc(day)
-        msg = _slack_summary(
-            ds,
-            data,
-            day,
-            today_doc,
-            product_path.relative_to(ROOT).as_posix(),
-            content_path.relative_to(ROOT).as_posix(),
-        )
-        monday.notify_slack(slack_url, msg)
-        print("Slack notified.")
+
+        if (both or product_only) and data is not None and meta is not None:
+            product_slack = build_slack_product_message(ds, data, meta, product_rel)
+            deliver_to_bitacora(product_slack)
+            print("Slack → bitácora (producto).")
+
+        if both or content_only:
+            content_slack = build_slack_content_message(ds, day, today_doc, content_rel)
+            deliver_to_publicaciones(content_slack)
+            print("Slack → publicaciones redes.")
 
     # Also refresh weekly price pulse when we fetched dashboard
     if data is not None and meta is not None and (both or product_only):
