@@ -18,7 +18,7 @@ tags:
 
 1. **Hook 1:** Un retailer peruano listó su tienda en CLI Market. 30 segundos. Sin código.
 2. **Hook 2:** Case study: de invisible para agentes → discoverable en búsquedas IA.
-3. **Hook 3:** ¿Tu tienda VTEX aparece cuando un agente busca 'leche'?
+3. **Hook 3:** ¿Su tienda VTEX aparece cuando un agente busca "leche"?
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 

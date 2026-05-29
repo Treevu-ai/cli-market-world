@@ -16,15 +16,15 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** Si tu tienda usa VTEX o Magento, tus productos YA pueden aparecer en búsquedas de IA.
-2. **Hook 2:** CTA directo: listá tu tienda. Gratis. 30 segundos.
-3. **Hook 3:** VTEX partners: sus agentes buscan productos. ¿Están los tuyos?
+1. **Hook 1:** Si su tienda usa VTEX o Magento, sus productos ya pueden aparecer en búsquedas de IA.
+2. **Hook 2:** CTA directo: registre su tienda. Gratis. 30 segundos.
+3. **Hook 3:** VTEX partners: sus agentes buscan productos. ¿Están los suyos?
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-Si tu tienda usa **VTEX** o **Magento**:
+Si su tienda usa **VTEX** o **Magento**:
 
-Tus productos **ya pueden** aparecer en búsquedas de agentes de IA.
+Sus productos **ya pueden** aparecer en búsquedas de agentes de IA.
 
 CLI Market unifica APIs de retail en una capa agent-ready:
 
@@ -32,17 +32,17 @@ CLI Market unifica APIs de retail en una capa agent-ready:
 → 36 herramientas MCP
 → 8 países LATAM + EU
 
-**Listar tu tienda:**
+**Registrar su tienda:**
 1. cli-market.dev/retailers
-2. Completa el form (30 seg)
+2. Complete el formulario (30 s)
 3. Validación automática
-4. Apareces en agent searches
+4. Aparece en búsquedas de agentes
 
 Gratis en Beta.
 
 No es marketplace. Es infraestructura.
 
-Los agentes no visitan tu web — llaman APIs.
+Los agentes no visitan su sitio web: llaman APIs.
 
 ¿Estás en la API?
 

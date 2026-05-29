@@ -7,7 +7,7 @@ tags:
 
 # LinkedIn 30 días — Índice
 
-**Fuente:** [[linkedin-calendar]] · **Reglas:** 13:00 UTC · link en primer comentario · 60 min engagement
+**Fuente:** [[linkedin-calendar]] · **Estilo ES:** [[linkedin/STYLE-es]] · **Reglas:** 13:00 UTC · link en primer comentario · 60 min engagement
 
 ## Pilares
 
