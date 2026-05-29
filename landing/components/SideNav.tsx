@@ -4,8 +4,8 @@ import { useLang } from "@/lib/LanguageContext"
 
 const items = [
   { id: "hero", es: "Inicio", en: "Home" },
-  { id: "stats", es: "Escala", en: "Scale" },
-  { id: "terminal", es: "Terminal", en: "Terminal" },
+  { id: "how", es: "Flujo", en: "Flow" },
+  { id: "api", es: "API", en: "API" },
   { id: "retailers", es: "Retailers", en: "Retailers" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "pricing", es: "Planes", en: "Pricing" },
@@ -27,7 +27,7 @@ export default function SideNav() {
   }, [])
 
   return (
-    <nav className="fixed left-0 top-0 z-50 h-screen w-12 hidden md:flex flex-col justify-center bg-[var(--wise-canvas-soft)]/80 backdrop-blur-sm">
+    <nav className="fixed left-0 top-0 z-50 h-screen w-12 hidden md:flex flex-col justify-center bg-[var(--wise-canvas-soft)]/80 backdrop-blur-sm" aria-label={isES ? "Navegación de secciones" : "Section navigation"}>
       <div className="flex flex-col gap-4 px-3">
         {items.map(({ id, es, en }) => (
           <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
