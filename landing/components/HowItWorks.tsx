@@ -16,7 +16,7 @@ export default function HowItWorks() {
   const isES = lang === "es";
 
   return (
-    <section id="how" className="relative bg-[var(--wise-ink)] py-16">
+    <section id="how" className="wise-on-dark relative bg-[var(--wise-ink)] py-16">
       <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
           {isES ? "Cómo funciona" : "How it works"}

@@ -10,10 +10,20 @@
   --wise-green-hover: #cdffad;
   --wise-green-pale: #b8e6a0;
   --wise-ink: #0e0f0c;
-  --wise-body: #454745;
-  --wise-mute: #868685;
+  /* Secondary text on light backgrounds (WCAG AA on canvas-soft / white) */
+  --wise-body: #3a3d3a;
+  --wise-mute: #565956;
+  /* Secondary text on dark backgrounds (ink, terminal cards, black sections) */
+  --wise-body-on-dark: #c5c9c5;
+  --wise-mute-on-dark: #9aa39a;
   --wise-canvas-soft: #e8ebe6;
   --wise-canvas: #ffffff;
+}
+
+/* Re-map body/mute tokens inside dark sections so existing utilities stay readable */
+.wise-on-dark {
+  --wise-body: var(--wise-body-on-dark);
+  --wise-mute: var(--wise-mute-on-dark);
 }
 
 html {
