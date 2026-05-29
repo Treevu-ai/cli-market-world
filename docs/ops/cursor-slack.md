@@ -67,7 +67,19 @@ El agente en la nube **no** lee tu `.env` local. Para que postee a Slack:
 2. El workflow `daily-briefing` (o uno que dispares) hace el envío.
 3. Pedí al agente: «al terminar, asegurate de que el workflow Daily Briefing pueda correr» o «commitea los reportes en ops/daily».
 
-## 5. Qué Cursor no hace solo
+## 5. Escribir órdenes en el canal del bot — ¿funciona?
+
+**No.** Si escribís en bitácora o publicaciones «empezá desde día 1» o «reestructurá los scripts», el bot **no** ejecuta nada.
+
+| Lo que parece | Lo que hace el bot hoy |
+|---------------|-------------------------|
+| Chat con el bot en Slack | Solo **envía** textos que genera el repo (briefing, posts manuales vía CLI) |
+| Pedir a Cursor en el canal | **No** hay Events API ni slash commands — nadie lee tus mensajes |
+| Pedir en **Cursor IDE** o Cloud Agent | Sí: corre `ops/slack_cli.py`, `daily_briefing.py`, `sync_linkedin_metrics.py` |
+
+Para publicar desde Día 1 con el producto actual: ver [[linkedin/catch-up-plan]] y `LINKEDIN_CAMPAIGN_START=2026-05-29`.
+
+## 6. Qué Cursor no hace solo
 
 - No reemplaza la **app de Slack** para conversar con el equipo.
 - No lee mensajes entrantes (solo envía) — para eso haría falta Events API + servidor.

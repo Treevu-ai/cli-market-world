@@ -7,6 +7,8 @@ tags:
 
 # LinkedIn 30 días — Índice
 
+**Inicio campaña (reset):** 2026-05-29 = Día 1 → [[linkedin/catch-up-plan]]
+
 **Fuente:** [[linkedin-calendar]] · **Estilo ES:** [[linkedin/STYLE-es]] · **Reglas:** 13:00 UTC · link en primer comentario · 60 min engagement
 
 ## Pilares

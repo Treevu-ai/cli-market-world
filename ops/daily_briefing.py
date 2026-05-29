@@ -38,7 +38,7 @@ DATA_GATE_PATH = ROOT / "docs" / "linkedin" / "data-gate.md"
 DEV_CALENDAR_PATH = ROOT / "docs" / "dev-calendar.md"
 DAILY_DIR = ROOT / "ops" / "daily"
 
-CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-01")
+CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-29")
 POST_UTC_HOUR = int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
 
 

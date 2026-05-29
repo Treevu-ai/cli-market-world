@@ -33,7 +33,7 @@ jobs:
           SLACK_CHANNEL_PUBLICACIONES: "C0B6ZJ1B9B8"
           SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
           SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
-          LINKEDIN_CAMPAIGN_START: "2026-05-01"
+          LINKEDIN_CAMPAIGN_START: "2026-05-29"
         run: python3 ops/daily_briefing.py
 
       - name: Commit daily reports

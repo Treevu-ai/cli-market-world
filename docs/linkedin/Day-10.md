@@ -18,7 +18,7 @@ tags:
 
 1. **Hook 1:** ¿Inflación real? Nuestro collector corre cada 8 horas. Esto es lo que vemos.
 2. **Hook 2:** No reemplazamos al INEI. Pero sí damos señal de mercado a agentes cada 8h.
-3. **Hook 3:** 8,000+ precios frescos. Un snapshot cada 8 horas. Así se ve el retail desde IA.
+3. **Hook 3:** 36K+ precios frescos. Un snapshot cada 8 horas. Así se ve el retail desde IA.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -26,7 +26,7 @@ tags:
 
 No somos el INEI ni el INDEC. No publicamos un índice oficial.
 
-Pero sí tenemos algo que casi nadie tiene para agentes de IA: **8,392 precios de góndola en las últimas 24 horas** y **19,452 indexados** en 8 países.
+Pero sí tenemos algo que casi nadie tiene para agentes de IA: **36,935 precios de góndola en las últimas 24 horas** y **41,856 indexados** en 8 países.
 
 Nuestro collector:
 

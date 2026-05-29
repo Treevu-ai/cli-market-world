@@ -26,7 +26,7 @@ tags:
 
 CLI Market no es solo supermercados.
 
-También indexamos electro, hogar, moda y farmacias — 6 líneas de negocio, 30 retailers.
+También indexamos electro, hogar, moda y farmacias — 6 líneas de negocio, 35 retailers.
 
 Esta semana en nuestro data moat:
 
