@@ -146,7 +146,7 @@ def health_collector():
         elif age_h > 12:
             status = "stale"
         else:
-            status = "healthy"
+            status = "ok"
     else:
         status = "running"
         age_h = None
