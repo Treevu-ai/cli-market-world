@@ -287,6 +287,23 @@ def test_dashboard_data_includes_moat_guide(isolated_db):
     assert "moat_guide" in body
     assert "layers" in body["moat_guide"]
     assert any(layer.get("id") == "inventory" for layer in body["moat_guide"]["layers"])
+    assert "metric_glossary" in body
+    inv = next(l for l in body["moat_guide"]["layers"] if l["id"] == "inventory")
+    assert "metric_help" in inv
+    assert inv["metric_help"]["total_indexed"]["label"]
+    assert inv["metric_help"]["total_indexed"]["description"]
+
+
+def test_dashboard_html_includes_metric_explanations(isolated_db):
+    from fastapi.testclient import TestClient
+    from market_server import app
+    with TestClient(app) as client:
+        r = client.get("/dashboard")
+    assert r.status_code == 200
+    html = r.text
+    assert "section-intro" in html
+    assert "metric-desc" in html
+    assert "Precios guardados" in html or "GUÍA POR CAPAS" in html
 
 
 def test_convert_currency_uses_pen_equivalent_rates(isolated_db):
