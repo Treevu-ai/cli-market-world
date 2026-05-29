@@ -9,6 +9,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   MARKET_DATA_DIR: /tmp/market-test-data
   DATABASE_URL: ""
+  MARKET_SKIP_LIVE: "1"
 
 jobs:
   lint:
