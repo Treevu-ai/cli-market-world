@@ -35,6 +35,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Alpha gates | `executed` | Product Manager | [[alpha-gates-2026-06-01]] |
 | Data gate (LI sem 2) | `active` | API Tester | [[linkedin/data-gate]] |
 | Data moat strategy | `active` | Product + Collector | [[data-moat-strategy]] |
+| Data moat reporting | `active` | Product + Content | [[data-moat-reporting]] |
 | Repurpose top 5 | `ready` | Content Creator | [[linkedin/repurpose-top5]] |
 | Obsidian vault | `shipped` | — | [[obsidian-vault]] · `.obsidian/` |
 

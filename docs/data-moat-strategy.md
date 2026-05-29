@@ -88,4 +88,4 @@ flowchart LR
 2. **Semana 2 (D8–14):** solo claims respaldados en [[linkedin/data-gate]] con query JSON guardada en `docs/metrics/`.
 3. **Build in public:** mostrar `coverage_7d_pct` y freshness, no lifetime health.
 
-Ver también: [[linkedin/data-gate]] · [[alpha-gates-2026-06-01]] · [[metrics/price-pulse-2026-W22]]
+Ver también: [[linkedin/data-gate]] · [[alpha-gates-2026-06-01]] · [[metrics/price-pulse-2026-W22]] · [[data-moat-reporting]]
