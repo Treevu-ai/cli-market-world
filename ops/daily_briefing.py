@@ -33,10 +33,29 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-LINKEDIN_DIR = ROOT / "docs" / "linkedin"
-DATA_GATE_PATH = ROOT / "docs" / "linkedin" / "data-gate.md"
-DEV_CALENDAR_PATH = ROOT / "docs" / "dev-calendar.md"
-DAILY_DIR = ROOT / "ops" / "daily"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from content_paths import calendar_dir, content_root, linkedin_dir, metrics_dir, rel_to_content  # noqa: E402
+
+
+def _daily_dir() -> Path:
+    gen = content_root() / "generated" / "daily"
+    if content_root().name != "docs":
+        gen.mkdir(parents=True, exist_ok=True)
+        return gen
+    legacy = ROOT / "ops" / "daily"
+    legacy.mkdir(parents=True, exist_ok=True)
+    return legacy
+
+
+def _data_gate_path() -> Path:
+    return linkedin_dir() / "data-gate.md"
+
+
+def _dev_calendar_path() -> Path:
+    cal = calendar_dir() / "dev-calendar.md"
+    if cal.is_file():
+        return cal
+    return ROOT / "docs" / "dev-calendar.md"
 
 CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-29")
 POST_UTC_HOUR = int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
@@ -78,10 +97,11 @@ def _campaign_day(for_date: date) -> int:
 
 
 def _day_file(day: int) -> Path | None:
-    primary = LINKEDIN_DIR / f"Day-{day:02d}.md"
+    ld = linkedin_dir()
+    primary = ld / f"Day-{day:02d}.md"
     if primary.is_file():
         return primary
-    alt = LINKEDIN_DIR / f"Day-{day}.md"
+    alt = ld / f"Day-{day}.md"
     return alt if alt.is_file() else None
 
 
@@ -107,9 +127,9 @@ def _load_day_doc(day: int) -> dict[str, Any] | None:
 
 
 def _gate_snippets() -> list[str]:
-    if not DATA_GATE_PATH.is_file():
+    if not _data_gate_path().is_file():
         return []
-    text = DATA_GATE_PATH.read_text(encoding="utf-8")
+    text = _data_gate_path().read_text(encoding="utf-8")
     lines: list[str] = []
     for line in text.splitlines():
         if "❌" in line or "BLOQUEADO" in line or "⛔" in line:
@@ -118,11 +138,11 @@ def _gate_snippets() -> list[str]:
 
 
 def _dev_calendar_this_week(for_date: date) -> list[str]:
-    if not DEV_CALENDAR_PATH.is_file():
+    if not _dev_calendar_path().is_file():
         return []
     rows: list[str] = []
     in_table = False
-    for line in DEV_CALENDAR_PATH.read_text(encoding="utf-8").splitlines():
+    for line in _dev_calendar_path().read_text(encoding="utf-8").splitlines():
         if line.startswith("|") and "Semana" in line:
             in_table = True
         if in_table and line.startswith("|") and not line.startswith("|--"):
@@ -189,9 +209,9 @@ def build_content_report(for_date: date) -> str:
             f"| Hora | {POST_UTC_HOUR}:00 UTC |",
             "",
         ]
-        asset_png = LINKEDIN_DIR / "assets" / f"day-{day:02d}" / f"day-{day:02d}-linkedin.png"
+        asset_png = linkedin_dir() / "assets" / f"day-{day:02d}" / f"day-{day:02d}-linkedin.png"
         if asset_png.is_file():
-            rel_asset = asset_png.relative_to(ROOT).as_posix()
+            rel_asset = rel_to_content(asset_png)
             lines += [
                 f"| **Imagen LinkedIn** | `{rel_asset}` |",
                 "",
@@ -223,7 +243,7 @@ def build_content_report(for_date: date) -> str:
 
     # Satellite: AR canasta on day 9
     if day == 9:
-        ar = LINKEDIN_DIR / "Day-09-AR.md"
+        ar = linkedin_dir() / "Day-09-AR.md"
         if ar.is_file():
             lines += [
                 "---",
@@ -424,13 +444,14 @@ def main() -> None:
 
     today = datetime.now(timezone.utc).date()
     ds = today.isoformat()
-    DAILY_DIR.mkdir(parents=True, exist_ok=True)
+    daily = _daily_dir()
+    daily.mkdir(parents=True, exist_ok=True)
 
     monday = _load_monday()
     data: dict | None = None
     meta: dict | None = None
-    product_path = DAILY_DIR / f"{ds}-product.md"
-    content_path = DAILY_DIR / f"{ds}-content.md"
+    product_path = daily / f"{ds}-product.md"
+    content_path = daily / f"{ds}-content.md"
 
     if both or product_only:
         print("Fetching dashboard (product)...")
@@ -467,7 +488,7 @@ def main() -> None:
     # Also refresh weekly price pulse when we fetched dashboard
     if data is not None and meta is not None and (both or product_only):
         week = monday._iso_week(datetime.now(timezone.utc))
-        pulse_path = ROOT / "docs" / "metrics" / f"price-pulse-{week}.md"
+        pulse_path = metrics_dir() / f"price-pulse-{week}.md"
         pulse_path.parent.mkdir(parents=True, exist_ok=True)
         pulse_path.write_text(monday.build_price_pulse(data, meta), encoding="utf-8")
         print(f"Price pulse updated: {pulse_path}")

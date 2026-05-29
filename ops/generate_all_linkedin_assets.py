@@ -23,13 +23,11 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from content_paths import assets_root, content_root, linkedin_dir, metrics_dir, rel_to_content
 from linkedin_asset_lib import (
-    ASSETS_ROOT,
     CAROUSEL_CFG,
     DAY_TEMPLATE,
     DIAGRAM_DAYS,
-    LINKEDIN_DIR,
-    METRICS_DIR,
     METRICS_DAYS,
     ROOT,
     TERMINAL_CFG,
@@ -53,7 +51,7 @@ def _load_monday():
 
 
 def fetch_compare(query: str, country: str) -> dict:
-    cache = METRICS_DIR / f"query-{query}-{country.lower()}.json"
+    cache = metrics_dir() / f"query-{query}-{country.lower()}.json"
     if cache.is_file():
         return json.loads(cache.read_text(encoding="utf-8"))
     print(f"  Fetching compare {query} {country}…", flush=True)
@@ -64,7 +62,7 @@ def fetch_compare(query: str, country: str) -> dict:
     )
     r.raise_for_status()
     data = r.json()
-    METRICS_DIR.mkdir(parents=True, exist_ok=True)
+    metrics_dir().mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return data
 
@@ -85,7 +83,7 @@ def template_for(day: int) -> str:
 
 def generate_day(day: int, kpis: dict) -> Path | None:
     meta = parse_day_md(day)
-    out_dir = ASSETS_ROOT / f"day-{day:02d}"
+    out_dir = assets_root() / f"day-{day:02d}"
     tpl = template_for(day)
 
     if tpl == "metrics":
@@ -103,11 +101,11 @@ def generate_day(day: int, kpis: dict) -> Path | None:
 
 
 def patch_day_assets_section(day: int, tpl: str) -> None:
-    path = LINKEDIN_DIR / f"Day-{day:02d}.md"
+    path = linkedin_dir() / f"Day-{day:02d}.md"
     if not path.is_file():
         return
     text = path.read_text(encoding="utf-8")
-    rel = f"docs/linkedin/assets/day-{day:02d}/day-{day:02d}-linkedin.png"
+    rel = rel_to_content(assets_root() / f"day-{day:02d}" / f"day-{day:02d}-linkedin.png")
     extra = ""
     if tpl == "carousel":
         n = len(CAROUSEL_CFG.get(day, []))
@@ -141,7 +139,7 @@ def write_index() -> None:
         "|-----|------------------|",
     ]
     for d in range(1, 31):
-        p = ASSETS_ROOT / f"day-{d:02d}" / f"day-{d:02d}-linkedin.png"
+        p = assets_root() / f"day-{d:02d}" / f"day-{d:02d}-linkedin.png"
         flag = "✅" if p.is_file() else "—"
         lines.append(f"| {d} | {flag} `assets/day-{d:02d}/day-{d:02d}-linkedin.png` |")
     lines += [
@@ -156,7 +154,7 @@ def write_index() -> None:
         "Requisitos: `pip install pillow httpx`",
         "",
     ]
-    (ASSETS_ROOT / "README.md").write_text("\n".join(lines), encoding="utf-8")
+    (assets_root() / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
 
 def main() -> int:
@@ -170,7 +168,7 @@ def main() -> int:
         global fetch_compare  # noqa: PLW0603
 
         def _cached_only(query: str, country: str) -> dict:
-            cache = METRICS_DIR / f"query-{query}-{country.lower()}.json"
+            cache = metrics_dir() / f"query-{query}-{country.lower()}.json"
             if not cache.is_file():
                 raise FileNotFoundError(cache)
             return json.loads(cache.read_text(encoding="utf-8"))
@@ -201,7 +199,8 @@ def main() -> int:
 
     if not args.day:
         write_index()
-        print(f"\nDone: {ok}/{len(days)} assets → {ASSETS_ROOT.relative_to(ROOT)}/")
+        cr = content_root()
+        print(f"\nDone: {ok}/{len(days)} assets → {assets_root().relative_to(cr)}/ (content: {cr})")
 
     return 0 if ok == len(days) else 1
 
