@@ -31,7 +31,7 @@ python3 ops/daily_briefing.py --dry-run # sin Slack
 | `SLACK_CHANNEL_PUBLICACIONES` | `C0B6ZJ1B9B8` | Canal publicaciones redes |
 | `SLACK_WEBHOOK_BITACORA` | — | Alternativa: Incoming Webhook solo bitácora |
 | `SLACK_WEBHOOK_PUBLICACIONES` | — | Alternativa: Incoming Webhook solo publicaciones |
-| `LINKEDIN_CAMPAIGN_START` | `2026-05-01` | Día 1 del calendario 30d |
+| `LINKEDIN_CAMPAIGN_START` | `2026-05-29` | Día 1 del calendario 30d ([[linkedin/catch-up-plan]]) |
 | `LINKEDIN_POST_UTC_HOUR` | `13` | Hora sugerida de publicación |
 
 ## Automatización (GitHub Actions)

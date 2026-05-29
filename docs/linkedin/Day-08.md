@@ -34,7 +34,7 @@ Lo que vemos en PE (arroz 750g, esta semana):
 → Wong y Metro compiten en el mismo SKU — el agente elige en <1s
 → No es índice INEI — es señal de góndola actualizada cada pocas horas
 
-**8,392** precios en refresh 24h · **19,452** indexados · **30** retailers fresh · **8** países.
+**36,935** precios en refresh 24h · **41,856** indexados · **35** retailers fresh · **8** países.
 
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 

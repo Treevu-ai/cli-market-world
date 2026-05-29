@@ -25,6 +25,10 @@ Regla detallada: `.cursor/rules/slack-ops.mdc`
 
 - `python3 ops/daily_briefing.py` — reportes producto + contenido
 - `docs/ops/daily-briefing.md`
+- Campaña LinkedIn desde Día 1 (2026-05-29): `docs/linkedin/catch-up-plan.md`
+- `python3 ops/slack_cli.py campaign status` · `campaign sync` — métricas + día N
+
+**Slack no ejecuta órdenes** escritas en el canal del bot; solo envía. Pedir cambios en Cursor o terminal.
 
 ## Español en copy
 
