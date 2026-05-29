@@ -112,6 +112,12 @@ flowchart LR
 
 Ambos usan el mismo endpoint de dashboard. El reporte diario de producto es el playbook ops con título "Daily Product Status".
 
+## Cursor + Slack
+
+Para pedir al agente de Cursor que publique o ejecute briefings desde el chat: [[cursor-slack]].
+
+CLI: `python3 ops/slack_cli.py briefing`
+
 ## Extender
 
 - **Nuevo calendario** (DEV.to, Reddit): añadir parser en `build_content_report()` leyendo `docs/dev-calendar.md`.
