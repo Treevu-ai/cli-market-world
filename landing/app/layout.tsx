@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { buildFaqJsonLd } from "@/lib/faqSchema";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -43,11 +44,22 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",
+    locale: "es_PE",
+    alternateLocale: ["en_US"],
+    images: [
+      {
+        url: "/og-preview.svg",
+        width: 800,
+        height: 200,
+        alt: "CLI Market — commerce infrastructure for AI agents",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "CLI Market — Commerce infrastructure for AI agents",
     description: `AI commerce API + MCP tools. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
+    images: ["/og-preview.svg"],
   },
 };
 
@@ -61,6 +73,25 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Organization",
+      name: "SINAPSIS INNOVADORA S.A.C.",
+      legalName: "SINAPSIS INNOVADORA S.A.C.",
+      taxID: "20613045563",
+      url: siteUrl,
+      logo: `${siteUrl}/logo.svg`,
+      founder: {
+        "@type": "Person",
+        name: "Antonio Cuba",
+        jobTitle: "Founder & Product Owner",
+      },
+      sameAs: [
+        "https://github.com/Treevu-ai/cli-market-world",
+        "https://pypi.org/project/cli-market/",
+        "https://www.linkedin.com/company/cli-market/",
+        "https://x.com/cli_market_dev",
+      ],
+    },
+    {
       "@type": "SoftwareApplication",
       name: "CLI Market",
       applicationCategory: "DeveloperApplication",
@@ -72,36 +103,13 @@ const jsonLd = {
       author: {
         "@type": "Organization",
         name: "SINAPSIS INNOVADORA S.A.C.",
-        taxID: "20613045563",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Lima",
-          addressCountry: "PE",
-        },
-        founder: {
-          "@type": "Person",
-          name: "Antonio Cuba",
-          jobTitle: "Founder & Product Owner",
-        },
       },
       offers: [
         { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
         { "@type": "Offer", name: "Pro", price: "49", priceCurrency: "USD" },
       ],
     },
-    {
-      "@type": "WebApplication",
-      name: "CLI Market",
-      url: siteUrl,
-      applicationCategory: "BusinessApplication",
-      browserRequirements: "Requires JavaScript",
-      description:
-        "Web presence for CLI Market — AI shopping API, MCP server registry, and retailer listing.",
-      sameAs: [
-        "https://github.com/Treevu-ai/cli-market-world",
-        "https://pypi.org/project/cli-market/",
-      ],
-    },
+    buildFaqJsonLd("es"),
     {
       "@type": "WebAPI",
       name: "CLI Market API",

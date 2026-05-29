@@ -2,22 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export interface LiveStats {
   indexed: number | null;
   snapshots24h: number | null;
-  stores: number | null;
+  storesInCatalog: number | null;
 }
 
-function formatCompact(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (n >= 10_000) return `${Math.round(n / 1_000)}K`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return n.toLocaleString();
+/** Consistent marketing price labels (chip + long) from the same rounded value. */
+export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
+  const fallback = 39_000;
+  const n = indexed ?? fallback;
+  const k = Math.max(Math.round(n / 1000), Math.round(fallback / 1000));
+  return {
+    chip: `${k}K+`,
+    long: `${k.toLocaleString()},000+`,
+  };
 }
 
-export function useLiveStats(): { stats: LiveStats; priceChip: string; priceLong: string } {
-  const [stats, setStats] = useState<LiveStats>({ indexed: null, snapshots24h: null, stores: null });
+export function refreshLabel(isES: boolean): string {
+  return isES
+    ? `cada ${MARKET_STATS.pricesRefreshHours} horas`
+    : `every ${MARKET_STATS.pricesRefreshHours} hours`;
+}
+
+export function useLiveStats() {
+  const [stats, setStats] = useState<LiveStats>({
+    indexed: null,
+    snapshots24h: null,
+    storesInCatalog: null,
+  });
 
   useEffect(() => {
     fetch(`${API_URL}/dashboard/data`)
@@ -27,16 +42,22 @@ export function useLiveStats(): { stats: LiveStats; priceChip: string; priceLong
         setStats({
           indexed: k.total_indexed ?? k.total_snapshots ?? null,
           snapshots24h: k.snapshots_24h ?? null,
-          stores: k.stores_indexed ?? k.active_stores ?? null,
+          storesInCatalog: k.stores_indexed ?? k.active_stores ?? null,
         });
       })
       .catch(() => {});
   }, []);
 
-  const indexed = stats.indexed ?? 39_000;
+  const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
+
   return {
     stats,
-    priceChip: formatCompact(indexed),
-    priceLong: indexed.toLocaleString(),
+    priceChip,
+    priceLong,
+    retailersDefined: MARKET_STATS.retailersDefined,
+    retailersVerified: MARKET_STATS.retailersVerified,
+    retailersPhraseEn: MARKET_STATS.retailersPhraseEn,
+    retailersPhraseEs: MARKET_STATS.retailersPhraseEs,
+    refreshHours: MARKET_STATS.pricesRefreshHours,
   };
 }

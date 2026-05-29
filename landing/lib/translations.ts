@@ -39,7 +39,7 @@ const es: Dict = {
   case_ecom_title: "E-commerce",
   case_ecom_desc: "Una sola integración para 60 retailers en VTEX, Shopify y Magento. Sin licitar APIs por tienda.",
   case_devs_title: "Desarrolladores",
-  case_devs_desc: "pip install y estás listo. Open source, MIT license. Contribuí al conector VTEX más grande del mundo.",
+  case_devs_desc: "pip install y estás listo. Open source, MIT license. Contribuye al conector multi-plataforma más grande del mundo.",
   lines_label: "[COBERTURA] // 60 retailers · 30 verificados · 6 líneas · 8 países",
   lines_title: "60 retailers.\n30 verificados. 8 países.",
   lines_stores_badge: "Comercios en 8 países",
