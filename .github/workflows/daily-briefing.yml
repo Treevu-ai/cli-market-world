@@ -1,0 +1,57 @@
+name: Daily Briefing
+
+on:
+  schedule:
+    # 13:00 UTC — aligned with LinkedIn posting window (docs/linkedin-calendar.md)
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Generate daily product + content reports
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
+          SLACK_CHANNEL_PUBLICACIONES: "C0B6ZJ1B9B8"
+          SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
+          SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
+          LINKEDIN_CAMPAIGN_START: "2026-05-01"
+        run: python3 ops/daily_briefing.py
+
+      - name: Commit daily reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ops/daily/ docs/metrics/price-pulse-*.md
+          if git diff --staged --quiet; then
+            echo "No report changes to commit."
+          else
+            git commit -m "chore(ops): daily briefing $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: daily-briefing-${{ github.run_id }}
+          path: |
+            ops/daily/
+            docs/metrics/price-pulse-*.md
