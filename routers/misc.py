@@ -13,7 +13,7 @@ import os
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Request
 
-from market_core import COUNTRIES, LINES, STORES, get_db
+from market_core import COUNTRIES, FX_PEN_PER_UNIT, LINES, STORES, convert_currency, get_db
 from server_deps import require_user
 
 router = APIRouter(tags=["misc"])
@@ -54,37 +54,27 @@ def favorites(body: dict, authorization: str | None = Header(None)):
 
 # ── Currency conversion (static table) ────────────────────────────────────────
 
-# Static rates in PEN-equivalent. For live rates use /checkout/rates (Wise-backed).
-_FX_RATES = {
-    "PEN": 1.0,
-    "ARS": 0.0027,
-    "BRL": 1.02,
-    "MXN": 0.29,
-    "COP": 0.0013,
-    "CLP": 0.0053,
-    "EUR": 4.05,
-    "USD": 3.70,
-}
-
-
 @router.post("/v1/utils/exchange")
 def utils_exchange(body: dict):
     """Static currency conversion. Use /checkout/rates for live Wise rates."""
     amount = body.get("amount", 0)
     frm = body.get("from", "PEN").upper()
     to = body.get("to", "PEN").upper()
-    if frm not in _FX_RATES or to not in _FX_RATES:
+    if frm not in FX_PEN_PER_UNIT or to not in FX_PEN_PER_UNIT:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported currency. Supported: {list(_FX_RATES.keys())}",
+            detail=f"Unsupported currency. Supported: {list(FX_PEN_PER_UNIT.keys())}",
         )
-    converted = round(amount * _FX_RATES[to] / _FX_RATES[frm], 2)
+    try:
+        converted = round(convert_currency(float(amount), frm, to), 2)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid amount")
     return {
         "amount": amount,
         "from": frm,
         "to": to,
         "converted": converted,
-        "rate": round(_FX_RATES[to] / _FX_RATES[frm], 6),
+        "rate": round(convert_currency(1.0, frm, to), 6),
     }
 
 

@@ -287,3 +287,53 @@ def test_dashboard_data_includes_moat_guide(isolated_db):
     assert "moat_guide" in body
     assert "layers" in body["moat_guide"]
     assert any(layer.get("id") == "inventory" for layer in body["moat_guide"]["layers"])
+
+
+def test_convert_currency_uses_pen_equivalent_rates(isolated_db):
+    from market_core import convert_currency
+    # ~1000 ARS ≈ 2.7 PEN at static table
+    pen = convert_currency(1000, "ARS", "PEN")
+    assert 2.0 < pen < 3.5
+    assert convert_currency(10, "USD", "PEN") == 37.0
+
+
+def test_dashboard_dispersion_groups_by_currency(isolated_db):
+    """Mixing ARS and PEN in one line used to produce false CRIT spreads."""
+    market_core, _ = isolated_db
+    market_core.ensure_db_initialized()
+    db = market_core.get_db()
+    db.execute(
+        "INSERT INTO price_snapshots (product_id,name,price,store,store_name,currency,line,line_name) "
+        "VALUES ('a1','cheap',10,'wong','Wong','PEN','supermercados','Supermercados')"
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id,name,price,store,store_name,currency,line,line_name) "
+        "VALUES ('a2','expensive',500000,'jumbo_ar','Jumbo','ARS','electro','Electro')"
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id,name,price,store,store_name,currency,line,line_name) "
+        "VALUES ('a2b','cheap ar',100000,'carrefour_ar','Carrefour','ARS','electro','Electro')"
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id,name,price,store,store_name,currency,line,line_name) "
+        "VALUES ('a3','phone',500,'motorola_br','Motorola','BRL','electro','Electro')"
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id,name,price,store,store_name,currency,line,line_name) "
+        "VALUES ('a3b','cable',50,'magazineluiza','Magalu','BRL','electro','Electro')"
+    )
+    db.commit()
+    db.close()
+
+    from routers.dashboard import _dashboard_data
+
+    data = _dashboard_data()
+    assert data["analytics_meta"]["dispersion_grouping"] == "line+currency"
+    electro_pen = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "PEN"]
+    electro_ars = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "ARS"]
+    electro_brl = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "BRL"]
+    assert len(electro_ars) == 1
+    assert len(electro_brl) == 1
+    assert len(electro_pen) == 0
+    # Same line, separate currency buckets — no single row mixing ARS nominals with BRL
+    assert {d["currency"] for d in data["dispersion"] if d["line_key"] == "electro"} == {"ARS", "BRL"}
