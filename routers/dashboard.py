@@ -14,6 +14,7 @@ from fastapi import APIRouter, Header
 
 from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
 from market_spread import CANASTA_ITEMS, build_spread_analytics, find_median_outliers, matches_canasta_item
+from market_units import is_standard_canasta_pack
 from dashboard_glossary import (
     LAYER_METRICS,
     build_metric_glossary,
@@ -500,12 +501,21 @@ def _dashboard_data():
             (f"%{prod}%",),
         ).fetchall()
         store_best: dict[tuple[str, str], float] = {}
+        store_fallback: dict[tuple[str, str], float] = {}
         for r in rows:
-            if not matches_canasta_item({"line": "supermercados", "name": r["name"]}, prod):
+            row = {"line": "supermercados", "name": r["name"]}
+            if not matches_canasta_item(row, prod):
                 continue
             key = (r["store_name"], r["currency"])
             price = float(r["price"])
-            if key not in store_best or price < store_best[key]:
+            if is_standard_canasta_pack(r["name"], prod):
+                if key not in store_best or price < store_best[key]:
+                    store_best[key] = price
+            elif key not in store_best:
+                if key not in store_fallback or price < store_fallback[key]:
+                    store_fallback[key] = price
+        for key, price in store_fallback.items():
+            if key not in store_best:
                 store_best[key] = price
         for (s, cur), best_price in store_best.items():
             canasta.setdefault(s, {"store_name": s, "items": 0, "total": 0, "currency": cur})
