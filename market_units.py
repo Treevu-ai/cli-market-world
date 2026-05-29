@@ -17,14 +17,23 @@ def parse_pack_size(name: str) -> tuple[float, str] | None:
         return None
     text = name.lower()
 
+    if re.search(r"\bmedia\s+docena\b", text):
+        return 6.0, "unit"
+    if re.search(r"\bdocena\b", text):
+        return 12.0, "unit"
+
     patterns: list[tuple[re.Pattern[str], str, float]] = [
-        (re.compile(rf"{_NUM}\s*(?:kg|kilo|kilos|kilogramo?s?)\b", re.I), "kg", 1.0),
-        (re.compile(rf"{_NUM}\s*g(?:ramos?)?\b", re.I), "kg", 0.001),
-        (re.compile(rf"{_NUM}\s*(?:l|lt|lts|litro?s?)\b", re.I), "L", 1.0),
-        (re.compile(rf"{_NUM}\s*ml\b", re.I), "L", 0.001),
-        (re.compile(rf"{_NUM}\s*(?:un|und|uni|u\.?)\b", re.I), "unit", 1.0),
-        (re.compile(rf"\bx\s*{_NUM}\b", re.I), "unit", 1.0),
-        (re.compile(rf"{_NUM}\s*x\s*{_NUM}\s*(?:g|ml|kg|l)\b", re.I), "unit", 1.0),
+        (re.compile(rf"{_NUM}\s*(?:kg|kilo|kilos|kilogramo?s?)\.?\b", re.I), "kg", 1.0),
+        (re.compile(rf"{_NUM}\s*(?:g(?:ramos?)?|grs?)\.?\b", re.I), "kg", 0.001),
+        (re.compile(rf"{_NUM}\s*(?:l|lt|lts|litro?s?)\.?\b", re.I), "L", 1.0),
+        (re.compile(rf"{_NUM}\s*ml\.?\b", re.I), "L", 0.001),
+        (re.compile(rf"{_NUM}\s*cc\.?\b", re.I), "L", 0.001),
+        (re.compile(rf"{_NUM}\s*(?:un|und|uni|u)\.?\b", re.I), "unit", 1.0),
+        (re.compile(rf"\bx\s*{_NUM}\.?\b", re.I), "unit", 1.0),
+        (re.compile(rf"maple\s+(?:x\s*)?{_NUM}\b", re.I), "unit", 1.0),
+        (re.compile(rf"bandeja\s+(?:x\s*)?{_NUM}\b", re.I), "unit", 1.0),
+        (re.compile(rf"cart[oó]n\s+{_NUM}\s*(?:uni|un|u)\.?\b", re.I), "unit", 1.0),
+        (re.compile(rf"{_NUM}\s*x\s*{_NUM}\s*(?:g|ml|cc|kg|l)\.?\b", re.I), "unit", 1.0),
     ]
 
     for pat, base, mult in patterns:
@@ -48,7 +57,9 @@ def price_per_base_unit(price: float, name: str) -> dict | None:
     }
 
 
-# Target ~1 kg / ~1 L (aceite often 900 ml).
+# Comparable retail packs — normalized via price_per_base_unit (per L / kg).
+_LIQUID_MIN_L = 0.85
+_LIQUID_MAX_L = 1.6
 _LIQUID_ITEMS = frozenset({"leche", "aceite"})
 _WEIGHT_1KG_ITEMS = frozenset({"arroz", "azucar"})
 
@@ -60,11 +71,11 @@ def is_standard_canasta_pack(name: str, item: str) -> bool:
         return False
     qty, base = parsed
     if item in _LIQUID_ITEMS:
-        return base == "L" and 0.85 <= qty <= 1.05
+        return base == "L" and _LIQUID_MIN_L <= qty <= _LIQUID_MAX_L
     if item in _WEIGHT_1KG_ITEMS:
         return base == "kg" and 0.9 <= qty <= 1.15
     if item == "pan":
-        return base == "kg" and 0.4 <= qty <= 1.15
+        return (base == "kg" and 0.4 <= qty <= 1.15) or (base == "unit" and 1 <= qty <= 2)
     if item in ("cafe", "queso"):
         return base == "kg" and 0.2 <= qty <= 1.15
     if item == "pollo":
