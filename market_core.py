@@ -315,6 +315,45 @@ def get_db() -> _DB:
                 raise
 
 
+def _migrate_price_snapshots_pg(db: _DB) -> None:
+    """Ensure upsert target exists on legacy Postgres deployments.
+
+    Older price_snapshots tables were created without UNIQUE(product_id, store).
+    Inserts using ON CONFLICT(product_id, store) then fail silently in callers.
+    """
+    try:
+        row = db.execute(
+            """
+            SELECT 1 FROM pg_indexes
+            WHERE tablename = 'price_snapshots'
+              AND indexdef ILIKE '%UNIQUE%'
+              AND indexdef ILIKE '%product_id%'
+              AND indexdef ILIKE '%store%'
+            LIMIT 1
+            """
+        ).fetchone()
+        if row:
+            return
+        db.execute(
+            """
+            DELETE FROM price_snapshots a
+            USING price_snapshots b
+            WHERE a.product_id = b.product_id
+              AND a.store = b.store
+              AND a.id < b.id
+            """
+        )
+        db.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_price_snapshots_product_store
+            ON price_snapshots (product_id, store)
+            """
+        )
+        logger.info("Migrated price_snapshots: added UNIQUE(product_id, store)")
+    except Exception as e:
+        logger.warning("price_snapshots migration skipped: %s", e)
+
+
 def init_db_pg(db: _DB) -> None:
     """PostgreSQL schema."""
     db.execute("""
@@ -355,6 +394,8 @@ def init_db_pg(db: _DB) -> None:
         "CREATE INDEX IF NOT EXISTS idx_ps_queried ON price_snapshots(queried_at)",
     ]:
         db.execute(idx_sql)
+
+    _migrate_price_snapshots_pg(db)
 
     db.execute("""
         CREATE TABLE IF NOT EXISTS search_queries (
@@ -1006,7 +1047,7 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
             db.commit()
             db.close()
     except Exception as e:
-        logger.warning("save_price_snapshot failed: %s", e)
+        logger.error("save_price_snapshot failed: %s", e)
         if owns_db and db is not None:
             try:
                 db.close()

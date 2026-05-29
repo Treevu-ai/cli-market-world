@@ -86,11 +86,29 @@ def health_db():
                 "SELECT tablename as name FROM pg_catalog.pg_tables WHERE schemaname='public' ORDER BY tablename"
             ).fetchall()
         db.close()
+        upsert_ready = None
+        if USE_PG:
+            try:
+                chk = get_db()
+                upsert_ready = bool(chk.execute(
+                    """
+                    SELECT 1 FROM pg_indexes
+                    WHERE tablename = 'price_snapshots'
+                      AND indexdef ILIKE '%UNIQUE%'
+                      AND indexdef ILIKE '%product_id%'
+                      AND indexdef ILIKE '%store%'
+                    LIMIT 1
+                    """
+                ).fetchone())
+                chk.close()
+            except Exception:
+                upsert_ready = False
         return {
             "backend": db_type,
             "database_url_set": bool(DATABASE_URL),
             "db_file": str(DB_FILE) if not USE_PG else None,
             "snapshots": snapshots,
+            "price_snapshots_upsert_ready": upsert_ready,
             "tables": [t["name"] for t in tables],
             "pg_error": pg_error,
         }
