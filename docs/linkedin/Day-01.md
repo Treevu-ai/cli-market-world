@@ -64,19 +64,8 @@ GitHub: https://github.com/Treevu-ai/cli-market-world
 
 ## Assets
 
-Generados con `python3 ops/generate_linkedin_asset.py --day 1` (datos: `docs/metrics/query-leche-pe.json`).
-
-| Archivo | Uso en LinkedIn |
-|---------|-----------------|
-| [[assets/day-01/day-01-linkedin]] | **Principal** — terminal + tabla + JSON (1200×1500) |
-| [[assets/day-01/day-01-terminal]] | Recorte superior / stories |
-| [[assets/day-01/day-01-terminal.gif]] | Animación terminal (<2s) |
-| [[assets/day-01/day-01-compare-json]] | Solo JSON (alternativa) |
-
-- [x] Asset principal listo (`day-01-linkedin.png`)
-- [x] GIF terminal (`day-01-terminal.gif`)
-- [x] Screenshot JSON (`day-01-compare-json.png`)
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-01/day-01-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 1` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]]) — 30 retailers, 36 MCP

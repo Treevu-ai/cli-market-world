@@ -75,9 +75,8 @@ MCP configs: https://cli-market.dev/tools
 
 ## Assets
 
-- [ ] Screenshot: respuestas genéricas vs JSON real de `market compare`
-- [ ] Terminal: búsqueda leche PE multi-store
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-04/day-04-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 4` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])

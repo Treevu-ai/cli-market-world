@@ -84,9 +84,10 @@ Tools: https://cli-market.dev/tools · Docs agentes: https://cli-market.dev/llms
 
 ## Assets
 
-- [ ] Carousel 4 slides (1080×1080, fondo oscuro + terminal green)
-- [ ] Opcional: GIF paso 3 `market compare`
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-05/day-05-linkedin.png`
+**Carousel (4 imágenes):** subir en orden `day-05-slide-01.png` … `04.png` en la misma carpeta.
 
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 5` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
