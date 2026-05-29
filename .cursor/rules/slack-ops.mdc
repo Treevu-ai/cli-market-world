@@ -13,10 +13,12 @@ When the user asks to post to Slack, send briefings, or get ops status in channe
 
 ## Canales (workspace climarketworspace)
 
-| Alias | Channel ID | Uso |
-|-------|------------|-----|
-| `bitacora` | `C0B6V3Y9ZSP` | Status producto, KPIs, tiendas críticas |
-| `publicaciones` | `C0B6ZJ1B9B8` | LinkedIn del día, post, comentario, checklist |
+| Alias | Canal Slack | Channel ID | Uso |
+|-------|-------------|------------|-----|
+| `bitacora` | `#bitácora-diaria-cli` | `C0B6V3Y9ZSP` | Status producto, KPIs, tiendas críticas |
+| `publicaciones` | `#publicaciones-redes` | `C0B6ZJ1B9B8` | LinkedIn del día, post, comentario, checklist |
+
+Setup: `docs/ops/slack-setup.md`
 
 ## Comandos (ejecutar en repo root)
 
