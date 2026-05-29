@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
