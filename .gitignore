@@ -16,4 +16,8 @@ docs/awesome-claude-code/
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/hotkeys.json
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+.env
+.env.local
