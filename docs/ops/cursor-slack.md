@@ -2,12 +2,16 @@
 
 CLI Market ya envía **briefings diarios** a Slack. Esta guía explica cómo pedirle a **Cursor** que te ayude en los mismos canales sin pegar tokens en el chat.
 
+**Configuración completa (app, secrets, migración de workspace):** [[slack-setup]].
+
 ## Canales
 
-| Canal | ID | Contenido |
-|-------|-----|-----------|
-| Bitácora (producto) | `C0B6V3Y9ZSP` | KPIs, tiendas críticas, collector |
-| Publicaciones (redes) | `C0B6ZJ1B9B8` | Post LinkedIn del día, hooks, checklist |
+Workspace: **climarketworspace** (`climarketworspace.slack.com`)
+
+| Canal en Slack | ID | Contenido |
+|----------------|-----|-----------|
+| `#bitácora-diaria-cli` | `C0B6V3Y9ZSP` | KPIs, tiendas críticas, collector |
+| `#publicaciones-redes` | `C0B6ZJ1B9B8` | Post LinkedIn del día, hooks, checklist |
 
 Bot: `cli_market_dev_bot` — debe estar invitado: `/invite @cli_market_dev_bot`
 
@@ -104,6 +108,24 @@ flowchart TB
   S --> P[Publicaciones]
 ```
 
+## Cambiar de cuenta o workspace
+
+Hay **tres** cosas distintas; confundirlas hace que “vaya a otra cuenta”:
+
+| Capa | Qué controla | Dónde se cambia |
+|------|----------------|-----------------|
+| **Cursor MCP Slack** | Con qué usuario lee/busca Cursor en Slack | Cursor → Settings → MCP → **Slack** → desconectar y volver a autorizar |
+| **`SLACK_BOT_TOKEN`** | Quién **publica** briefings (`ops/slack_cli.py`, GitHub Actions) | [api.slack.com/apps](https://api.slack.com/apps) → **Install to Workspace** → `xoxb-...` |
+| **IDs de canal** | A qué `#canal` llegan los posts | `.env` o secrets: `SLACK_CHANNEL_BITACORA`, `SLACK_CHANNEL_PUBLICACIONES` |
+
+Pasos detallados: [[slack-setup#Cambiar de workspace o cuenta]].
+
+```bash
+export SLACK_BOT_TOKEN=xoxb-tu-token
+python3 ops/verify_slack.py          # confirma workspace y URL
+python3 ops/verify_slack.py --send-test
+```
+
 ## Troubleshooting
 
 | Error | Solución |
@@ -111,6 +133,8 @@ flowchart TB
 | `invalid_auth` | Token `xoxb-...` válido; Reinstall app en Slack |
 | `not_in_channel` | `/invite @cli_market_dev_bot` en el canal |
 | `missing_scope` | Scope `chat:write` + Reinstall |
+| `channel_not_found` | Token de un workspace y canal ID de otro → alinear token + `SLACK_CHANNEL_*` |
 | Cursor no envía | ¿`SLACK_BOT_TOKEN` exportado en esa terminal? |
+| MCP ve otro Slack | Reautorizar Slack en Cursor MCP (no usa `SLACK_BOT_TOKEN` del repo) |
 
-[[daily-briefing]] · [[linkedin/STYLE-es]]
+[[slack-setup]] · [[daily-briefing]] · [[linkedin/STYLE-es]]

@@ -45,10 +45,12 @@ Workflow: [`.github/workflows/daily-briefing.yml`](../../.github/workflows/daily
 
 ## Slack (dos canales)
 
-| Canal | ID | Qué recibe |
-|-------|-----|------------|
-| **Bitácora** | `C0B6V3Y9ZSP` | Status producto: KPIs, críticas, WARN, link al reporte |
-| **Publicaciones redes** | `C0B6ZJ1B9B8` | Calendario del día: post, primer comentario, hashtags, checklist |
+Workspace **climarketworspace**. Guía completa: [[slack-setup]].
+
+| Canal en Slack | ID | Qué recibe |
+|--------------|-----|------------|
+| `#bitácora-diaria-cli` | `C0B6V3Y9ZSP` | Status producto: KPIs, críticas, WARN, link al reporte |
+| `#publicaciones-redes` | `C0B6ZJ1B9B8` | Calendario del día: post, primer comentario, hashtags, checklist |
 
 ### Configuración recomendada (Bot Token)
 
