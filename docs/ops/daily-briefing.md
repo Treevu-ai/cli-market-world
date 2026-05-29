@@ -26,7 +26,11 @@ python3 ops/daily_briefing.py --dry-run # sin Slack
 | Variable | Default | Uso |
 |----------|---------|-----|
 | `DASHBOARD_DATA_URL` | Railway prod `/dashboard/data` | Métricas producto |
-| `SLACK_WEBHOOK_URL` | — | Resumen corto a Slack |
+| `SLACK_BOT_TOKEN` | — | Bot con `chat:write` (recomendado, un token → dos canales) |
+| `SLACK_CHANNEL_BITACORA` | `C0B6V3Y9ZSP` | Canal bitácora producto |
+| `SLACK_CHANNEL_PUBLICACIONES` | `C0B6ZJ1B9B8` | Canal publicaciones redes |
+| `SLACK_WEBHOOK_BITACORA` | — | Alternativa: Incoming Webhook solo bitácora |
+| `SLACK_WEBHOOK_PUBLICACIONES` | — | Alternativa: Incoming Webhook solo publicaciones |
 | `LINKEDIN_CAMPAIGN_START` | `2026-05-01` | Día 1 del calendario 30d |
 | `LINKEDIN_POST_UTC_HOUR` | `13` | Hora sugerida de publicación |
 
@@ -38,7 +42,31 @@ Workflow: [`.github/workflows/daily-briefing.yml`](../../.github/workflows/daily
 - **Manual:** Actions → Daily Briefing → Run workflow
 - **Commit automático** de `ops/daily/*.md` y price pulse semanal
 
-Secret opcional en el repo: `SLACK_WEBHOOK_URL` (mismo que Monday Ops).
+## Slack (dos canales)
+
+| Canal | ID | Qué recibe |
+|-------|-----|------------|
+| **Bitácora** | `C0B6V3Y9ZSP` | Status producto: KPIs, críticas, WARN, link al reporte |
+| **Publicaciones redes** | `C0B6ZJ1B9B8` | Calendario del día: post, primer comentario, hashtags, checklist |
+
+### Configuración recomendada (Bot Token)
+
+1. [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → From scratch → workspace `climarketworspace`.
+2. **OAuth & Permissions** → Bot Token Scopes: `chat:write`, `chat:write.public` (si el bot no está en el canal).
+3. **Install to Workspace** → copiar **Bot User OAuth Token** (`xoxb-...`).
+4. En cada canal (`#bitacora`, `#publicaciones-redes` o como se llamen): `/invite @nombre-del-bot`.
+5. GitHub repo → **Settings → Secrets → Actions** → `SLACK_BOT_TOKEN` = el token.
+
+Los IDs de canal ya están por defecto en el workflow; solo cambiarlos si movés los canales.
+
+### Alternativa (webhooks)
+
+Crear un Incoming Webhook por canal y guardar en secrets:
+
+- `SLACK_WEBHOOK_BITACORA` → canal bitácora
+- `SLACK_WEBHOOK_PUBLICACIONES` → canal publicaciones
+
+No hace falta bot si usás webhooks (menos flexible).
 
 ## Flujo operativo recomendado
 
@@ -47,7 +75,8 @@ flowchart LR
   A[13:00 UTC cron] --> B[daily_briefing.py]
   B --> C[product.md]
   B --> D[content.md]
-  B --> E[Slack opcional]
+  B --> E1[Slack bitácora]
+  B --> E2[Slack publicaciones]
   C --> F[Revisar tiendas críticas]
   D --> G[Publicar LinkedIn]
   G --> H[published_at en Day-XX.md]

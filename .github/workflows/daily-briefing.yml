@@ -28,7 +28,11 @@ jobs:
 
       - name: Generate daily product + content reports
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
+          SLACK_CHANNEL_PUBLICACIONES: "C0B6ZJ1B9B8"
+          SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
+          SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
           LINKEDIN_CAMPAIGN_START: "2026-05-01"
         run: python3 ops/daily_briefing.py
 
