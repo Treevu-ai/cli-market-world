@@ -81,7 +81,7 @@ const jsonLd = {
       logo: `${siteUrl}/logo.svg`,
       founder: {
         "@type": "Person",
-        name: "Antonio Cuba",
+        name: "Ricardo Cuba",
         jobTitle: "Founder & Product Owner",
       },
       sameAs: [
