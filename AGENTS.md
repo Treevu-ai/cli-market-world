@@ -6,7 +6,8 @@ Instrucciones para agentes (Cursor, Cloud Agent, CI).
 
 Cuando el usuario pida apoyo en Slack, briefings, o publicar en bitácora/publicaciones:
 
-1. Leer `docs/ops/cursor-slack.md`
+1. Configuración / migración: `docs/ops/slack-setup.md`
+2. Uso con Cursor: `docs/ops/cursor-slack.md`
 2. Usar `python3 ops/slack_cli.py` (nunca commitear tokens)
 3. Canales: **bitácora** `C0B6V3Y9ZSP` · **publicaciones** `C0B6ZJ1B9B8`
 
