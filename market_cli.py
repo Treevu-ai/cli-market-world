@@ -25,7 +25,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, LANG_FILE, get_token, api,
+    STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, api,
     fmt_price, store_color, save_last_search, load_last_search,
 )
 
@@ -197,6 +197,7 @@ def cmd_login(args):
     data = cli_api("POST", "/auth/login", {"username": args.username, "password": args.password})
     console.print(f"[#00FF88]✓ {data.get('message', 'OK')}[/]")
     console.print(f"[dim]Usuario: {data.get('username')}[/]")
+    console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
 
 def cmd_search(args):
     if not args.query.strip():
