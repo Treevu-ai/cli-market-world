@@ -83,7 +83,9 @@ export default function Pricing() {
                 ))}
               </ul>
               {tier.name === "Pro" ? (
-                <ProSubscribeButton />
+                <div id="pro-checkout" className="scroll-mt-24">
+                  <ProSubscribeButton />
+                </div>
               ) : (
                 <a
                   href={tier.name === "Enterprise" ? "#contact" : "https://pypi.org/project/cli-market/"}
@@ -102,16 +104,19 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div id="contact" className="w-full max-w-lg mx-auto scroll-mt-20 min-w-0 px-0">
+        <div id="contact" className="w-full max-w-lg mx-auto scroll-mt-24 min-w-0 border-t border-[#c5edab] pt-12">
+          <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-2">
+            Enterprise
+          </p>
           <h3 className="text-lg font-bold text-[var(--wise-ink)] mb-2">
-            {isES ? "¿Necesitas Pro o Enterprise?" : "Need Pro or Enterprise?"}
+            {isES ? "¿Volumen alto o integración a medida?" : "High volume or custom integration?"}
           </h3>
           <p className="text-sm text-[var(--wise-body)] mb-6">
             {isES
-              ? "Pro: email + link PayPal. Activamos en 24 h tras confirmar pago."
-              : "Pro: email + PayPal link. We activate within 24 h after payment."}
+              ? "Free: instala desde la tarjeta de arriba. Pro: solicítalo en la tarjeta Pro. Aquí solo casos Enterprise."
+              : "Free: install from the card above. Pro: request in the Pro card. This form is for Enterprise only."}
           </p>
-          <ContactForm initial="pro" />
+          <ContactForm />
         </div>
       </div>
     </section>
