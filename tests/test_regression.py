@@ -303,7 +303,22 @@ def test_dashboard_html_includes_metric_explanations(isolated_db):
     html = r.text
     assert "section-intro" in html
     assert "metric-desc" in html
-    assert "Precios guardados" in html or "GUÍA POR CAPAS" in html
+    assert "hero-panel" in html
+    assert "Precios guardados" in html or "precios reales" in html.lower()
+
+
+def test_dashboard_data_includes_dashboard_view(isolated_db):
+    from fastapi.testclient import TestClient
+    from market_server import app
+
+    with TestClient(app) as client:
+        r = client.get("/dashboard/data")
+    assert r.status_code == 200
+    body = r.json()
+    assert "dashboard_view" in body
+    view = body["dashboard_view"]
+    assert view["blocks"]["hero"]["title"]
+    assert "reading_order" in view
 
 
 def test_convert_currency_uses_pen_equivalent_rates(isolated_db):
