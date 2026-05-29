@@ -7,7 +7,7 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="relative bg-[var(--wise-ink)] py-16">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-green)] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Sobre nosotros" : "About us"}
         </p>

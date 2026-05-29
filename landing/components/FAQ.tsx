@@ -70,7 +70,7 @@ export default function FAQ() {
 
   return (
     <section id="faq" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">FAQ</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-12 tracking-tight">
           {lang === "es" ? "Preguntas frecuentes." : "Frequently asked questions."}

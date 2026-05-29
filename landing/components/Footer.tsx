@@ -10,7 +10,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-8" role="contentinfo">
-      <div className="landing-container px-6 flex flex-col items-center gap-4 text-center">
+      <div className="landing-container flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-2 text-[var(--wise-ink)]">
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]" aria-hidden="true">
             <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
