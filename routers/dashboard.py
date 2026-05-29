@@ -13,43 +13,12 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Header
 
 from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
+from market_spread import build_spread_analytics
 from server_deps import require_user
 
 from .health import _age_hours
 
 router = APIRouter(tags=["dashboard"])
-
-
-def _spread_metrics(
-    *,
-    line: str,
-    line_name: str,
-    currency: str,
-    count: int,
-    avg_price: float,
-    min_price: float,
-    max_price: float,
-) -> dict:
-    avg = float(avg_price or 0)
-    mn = float(min_price or 0)
-    mx = float(max_price or 0)
-    if avg > 0:
-        spread = round((mx - mn) / avg, 2)
-    else:
-        spread = 0.0
-    status = "crit" if spread > 10 else ("warn" if spread > 2 else "ok")
-    return {
-        "line": line_name or line,
-        "line_key": line,
-        "currency": currency or "???",
-        "count": count,
-        "avg_price": avg,
-        "min_price": mn,
-        "max_price": mx,
-        "spread_ratio": spread,
-        "status": status,
-        "avg_price_usd": price_to_usd(avg, currency) if currency else None,
-    }
 
 
 def _build_moat_guide(
@@ -241,7 +210,20 @@ def _dashboard_data():
         key=lambda x: x["count"], reverse=True,
     )
 
-    # ── Dispersión por línea + moneda (no mezclar ARS con PEN) ───────────────
+    # ── Dispersión por subcategoría + moneda (+ precio unitario cuando aplica) ─
+    spread_rows = db.execute(
+        """
+        SELECT line, line_name, currency, category, name, brand, price, store, store_name
+        FROM price_snapshots WHERE price > 0 AND price < 999999
+        """
+    ).fetchall()
+    spread_analytics = build_spread_analytics([dict(r) for r in spread_rows])
+    dispersion = spread_analytics["dispersion"]
+    canasta_spreads = spread_analytics["canasta_spreads"]
+    marketing_spreads = spread_analytics["marketing_spreads"]
+    for d in dispersion:
+        d["avg_price_usd"] = price_to_usd(d.get("avg_price", 0), d.get("currency", ""))
+
     by_line_currency = db.execute(
         """
         SELECT line, line_name, currency,
@@ -253,19 +235,6 @@ def _dashboard_data():
         GROUP BY line, line_name, currency ORDER BY line, currency
         """
     ).fetchall()
-
-    dispersion = [
-        _spread_metrics(
-            line=row["line"],
-            line_name=row["line_name"],
-            currency=row["currency"],
-            count=row["count"],
-            avg_price=row["avg_price"],
-            min_price=row["min_price"],
-            max_price=row["max_price"],
-        )
-        for row in by_line_currency
-    ]
 
     # ── Top discounts ────────────────────────────────────────────────────────
     top_discounts = db.execute(
@@ -451,20 +420,26 @@ def _dashboard_data():
            GROUP BY store, store_name ORDER BY unique_products DESC LIMIT 15"""
     ).fetchall()
 
-    # ── Weak signal: outliers (>3× avg within same line + currency) ───────────
+    # ── Weak signal: outliers (>3× avg within spread group) ─────────────────
     outliers = []
-    for row in by_line_currency:
+    for row in dispersion:
         if row["count"] < 5:
             continue
         threshold = float(row["avg_price"] or 0) * 3
         if threshold <= 0:
             continue
+        sub = row.get("subcategory")
+        params: list = [row["line_key"], row["currency"], threshold]
+        sub_sql = ""
+        if sub and sub != "otros" and not str(sub).startswith("cat:"):
+            sub_sql = " AND name LIKE ?"
+            params.insert(2, f"%{sub}%")
         anoms = db.execute(
-            """SELECT name, store_name, price, currency, line_name
+            f"""SELECT name, store_name, price, currency, line_name
                FROM price_snapshots
-               WHERE line=? AND currency=? AND price>0 AND price>?
+               WHERE line=? AND currency=?{sub_sql} AND price>0 AND price>?
                ORDER BY price DESC LIMIT 5""",
-            (row["line"], row["currency"], threshold),
+            tuple(params),
         ).fetchall()
         for a in anoms:
             item = dict(a)
@@ -587,11 +562,14 @@ def _dashboard_data():
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
         "dispersion": dispersion,
+        "canasta_spreads": canasta_spreads,
+        "marketing_spreads": marketing_spreads,
         "analytics_meta": {
             "fx_reference": "USD",
             "fx_source": "static_pen_table",
-            "dispersion_grouping": "line+currency",
-            "dispersion_crit_count": sum(1 for d in dispersion if d["status"] == "crit"),
+            "dispersion_grouping": "line+currency+subcategory",
+            "dispersion_crit_count": spread_analytics["dispersion_crit_count"],
+            "marketing_crit_count": spread_analytics["marketing_crit_count"],
         },
         "top_discounts": [dict(r) for r in top_discounts],
         "cheapest_by_line": cheapest_dedup,
@@ -681,12 +659,19 @@ def _static_dashboard() -> str:
         for r in data["inflation"])
 
     disp_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{r.get('currency','')}</td>"
+        f"<tr><td>{r['line']}</td><td>{r.get('subcategory') or '—'}</td><td>{r.get('currency','')}</td>"
+        f"<td>{r.get('price_basis','nominal')}</td>"
         f"<td>{(r['avg_price'] or 0):.2f}</td>"
         f"<td style='color:{'#ff4444' if r.get('status')=='crit' else ('#ffbd2e' if r.get('status')=='warn' else '#3cffd0')}'>"
         f"{(r['spread_ratio'] or 0):.1f}x"
         f"{' CRIT' if r.get('status')=='crit' else ''}</td></tr>"
-        for r in data["dispersion"])
+        for r in data["dispersion"][:25])
+
+    mkt_html = "".join(
+        f"<tr><td>{r['seed']}</td><td>{r.get('currency','')}</td><td>{r.get('price_basis','')}</td>"
+        f"<td>{(r['spread_ratio'] or 0):.1f}x</td><td>{r.get('stores',0)} tiendas</td>"
+        f"<td>{r.get('sample_name','')[:40]}</td></tr>"
+        for r in data.get("marketing_spreads", [])[:10])
     
     riser_html = "".join(
         f"<tr><td>{r['product_id'][:25]}</td><td>{(r['price_before'] or 0):.2f}</td><td>{(r['price_now'] or 0):.2f}</td><td style='color:#ff4444'>+{r['delta_pct']}%</td></tr>"
@@ -769,8 +754,12 @@ td.num{{text-align:right}}
 <table><tr><th>Línea</th><th>Moneda</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=5>⚠ Sin datos historicos todavia — este indicador se activara cuando tengamos al menos 7 dias de datos continuos.</td></tr>'}</table>
 
 <div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
-<p style="color:#555;font-size:10px;margin:0 0 6px">Spread por línea y moneda (no mezcla ARS/PEN/BRL). 1x-2x = normal · 2x-10x = alta · CRIT (&gt;10x) = productos distintos en la misma línea o señal real (ej. farmacias).</p>
-<table><tr><th>Línea</th><th>Moneda</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
+<p style="color:#555;font-size:10px;margin:0 0 6px">Por subcategoría + moneda. Usa precio unitario (kg/L) cuando el nombre lo permite. CRIT (&gt;10x) excluye bucket &quot;otros&quot;.</p>
+<table><tr><th>Línea</th><th>Subcat</th><th>Moneda</th><th>Base</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
+
+<div class="section">[ SPREADS LISTOS PARA COPY ]</div>
+<p style="color:#555;font-size:10px;margin:0 0 6px">Canasta + farmacia: mismo producto (fuzzy), misma unidad, 2+ tiendas, CRIT verificado.</p>
+<table><tr><th>Ítem</th><th>Moneda</th><th>Base</th><th>Spread</th><th>Tiendas</th><th>Ejemplo</th></tr>{mkt_html or '<tr><td colspan=6>sin CRIT marketing-ready</td></tr>'}</table>
 
 <div class="section">[ CANASTA BÁSICA - COMPLETITUD ]</div>
 <table><tr><th>Tienda</th><th>Completitud</th><th>%</th><th>Total</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>

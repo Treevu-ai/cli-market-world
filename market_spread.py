@@ -1,0 +1,298 @@
+"""Moat spread analytics: subcategory buckets, unit prices, marketing-ready spreads."""
+
+from __future__ import annotations
+
+import difflib
+import re
+from collections import defaultdict
+
+from market_units import price_per_base_unit
+
+CANASTA_ITEMS = [
+    "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
+]
+
+WIDE_LINES = frozenset({"supermercados", "farmacias", "electro", "hogar", "departamentales"})
+
+# line -> (keyword, bucket) longest keywords first
+_SUBCATEGORY_KEYWORDS: dict[str, list[tuple[str, str]]] = {
+    "supermercados": [
+        ("leche en polvo", "leche"), ("sin lactosa", "leche"), ("leche", "leche"),
+        ("arroz", "arroz"), ("aceite", "aceite"), ("azucar", "azucar"), ("açúcar", "azucar"),
+        ("huevos", "huevos"), ("huevo", "huevos"), ("pan", "pan"), ("pão", "pan"),
+        ("cafe", "cafe"), ("café", "cafe"), ("pollo", "pollo"), ("frango", "pollo"),
+        ("queso", "queso"), ("queijo", "queso"), ("jabon", "jabon"), ("harina", "harina"),
+        ("yogurt", "yogurt"), ("yogur", "yogurt"), ("pasta", "pasta"), ("fideos", "pasta"),
+        ("atun", "conservas"), ("atún", "conservas"), ("conserva", "conservas"),
+        ("agua", "bebidas"), ("gaseosa", "bebidas"), ("cerveza", "bebidas"), ("cerveja", "bebidas"),
+        ("milk", "leche"), ("rice", "arroz"), ("bread", "pan"), ("eggs", "huevos"),
+        ("oil", "aceite"), ("sugar", "azucar"), ("coffee", "cafe"), ("chicken", "pollo"),
+        ("leite", "leche"), ("frango", "pollo"),
+    ],
+    "farmacias": [
+        ("paracetamol", "paracetamol"), ("ibuprofeno", "ibuprofeno"), ("aspirina", "aspirina"),
+        ("omeprazol", "omeprazol"), ("loratadina", "loratadina"), ("dipirona", "dipirona"),
+        ("losartana", "losartana"), ("vitamina c", "vitaminas"), ("protector solar", "dermocosmetica"),
+        ("shampoo", "higiene"), ("jabon liquido", "higiene"), ("pañales", "bebes"),
+        ("gel antibacterial", "higiene"), ("antigripal", "otc"),
+    ],
+    "electro": [
+        ("lavarropas", "linea_blanca"), ("heladera", "linea_blanca"), ("refrigerador", "linea_blanca"),
+        ("microondas", "linea_blanca"), ("lavaplatos", "linea_blanca"), ("freezer", "linea_blanca"),
+        ("celular", "telefonia"), ("smartphone", "telefonia"), ("telefono", "telefonia"),
+        ("motorola", "telefonia"), ("moto g", "telefonia"), ("iphone", "telefonia"),
+        ("auriculares", "accesorios"), ("cargador", "accesorios"), ("cable", "accesorios"),
+        ("funda", "accesorios"), ("tablet", "computacion"), ("notebook", "computacion"),
+        ("monitor", "computacion"), ("televisor", "tv"), ("smart tv", "tv"),
+    ],
+    "hogar": [
+        ("taladro", "herramientas"), ("martillo", "herramientas"), ("destornillador", "herramientas"),
+        ("tornillo", "ferreteria"), ("tarugo", "ferreteria"), ("pintura", "construccion"),
+        ("ceramica", "construccion"), ("griferia", "banos"), ("inodoro", "banos"),
+        ("sarten", "cocina"), ("olla", "cocina"), ("mueble", "muebles"), ("colchon", "muebles"),
+        ("sabana", "textil"), ("toalla", "textil"), ("lampara", "iluminacion"),
+    ],
+    "departamentales": [
+        ("perfume", "perfumeria"), ("reloj", "accesorios"), ("televisor", "electro"),
+        ("celular", "electro"), ("juguete", "juguetes"), ("maquillaje", "belleza"),
+    ],
+}
+
+FUZZY_THRESHOLD = 0.70
+
+
+def _norm_name(name: str) -> str:
+    return re.sub(r"[^a-záéíóúñ0-9]", "", (name or "").lower())
+
+
+def compare_key(name: str, brand: str = "") -> str:
+    return f"{(brand or '').lower()}|{_norm_name(name)}"
+
+
+def infer_subcategory(line: str, name: str, category: str = "") -> str:
+    text = (name or "").lower()
+    for kw, bucket in _SUBCATEGORY_KEYWORDS.get(line, []):
+        if kw in text:
+            return bucket
+    cat = str(category or "").strip()
+    if cat:
+        return f"cat:{cat}"
+    return "otros"
+
+
+def _spread_status(ratio: float) -> str:
+    if ratio > 10:
+        return "crit"
+    if ratio > 2:
+        return "warn"
+    return "ok"
+
+
+def _spread_from_prices(prices: list[float]) -> dict:
+    if not prices:
+        return {"spread_ratio": 0.0, "status": "ok", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0}
+    mn, mx = min(prices), max(prices)
+    avg = sum(prices) / len(prices)
+    ratio = round((mx - mn) / avg, 2) if avg > 0 else 0.0
+    return {
+        "avg_price": round(avg, 2),
+        "min_price": round(mn, 2),
+        "max_price": round(mx, 2),
+        "spread_ratio": ratio,
+        "status": _spread_status(ratio),
+    }
+
+
+def _effective_price(row: dict) -> tuple[float, str]:
+    """Return (value, basis) using unit price when parseable."""
+    ppu = price_per_base_unit(float(row.get("price") or 0), row.get("name") or "")
+    if ppu:
+        return ppu["price_per"], f"per_{ppu['basis']}"
+    return float(row.get("price") or 0), "nominal"
+
+
+def compute_dispersion(products: list[dict]) -> list[dict]:
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+    for row in products:
+        line = row.get("line") or ""
+        currency = row.get("currency") or "???"
+        if line in WIDE_LINES:
+            sub = infer_subcategory(line, row.get("name") or "", row.get("category") or "")
+            key = (line, row.get("line_name") or line, currency, sub)
+        else:
+            key = (line, row.get("line_name") or line, currency, "")
+        groups[key].append(row)
+
+    out: list[dict] = []
+    for (line, line_name, currency, sub), rows in groups.items():
+        if len(rows) < 3:
+            continue
+        by_basis: dict[str, list[float]] = defaultdict(list)
+        for r in rows:
+            val, basis = _effective_price(r)
+            if val > 0:
+                by_basis[basis].append(val)
+
+        # Prefer unit-price basis if most rows share the same non-nominal basis
+        basis_pick = "nominal"
+        best_n = 0
+        for basis, vals in by_basis.items():
+            if basis != "nominal" and len(vals) > best_n:
+                basis_pick = basis
+                best_n = len(vals)
+        if basis_pick == "nominal" or best_n < max(3, len(rows) // 4):
+            prices = by_basis.get("nominal") or [float(r["price"]) for r in rows if r.get("price")]
+            basis_pick = "nominal"
+        else:
+            prices = by_basis[basis_pick]
+
+        stats = _spread_from_prices(prices)
+        out.append({
+            "line": line_name,
+            "line_key": line,
+            "currency": currency,
+            "subcategory": sub or None,
+            "count": len(rows),
+            "price_basis": basis_pick,
+            **stats,
+        })
+    out.sort(key=lambda x: (-x["spread_ratio"], x["line"], x.get("subcategory") or ""))
+    return out
+
+
+def compute_canasta_spreads(products: list[dict]) -> list[dict]:
+    results: list[dict] = []
+    for item in CANASTA_ITEMS:
+        matches = [
+            p for p in products
+            if item in (p.get("name") or "").lower()
+        ]
+        by_currency: dict[str, list[dict]] = defaultdict(list)
+        for m in matches:
+            by_currency[m.get("currency") or "???"].append(m)
+
+        for currency, rows in by_currency.items():
+            store_best: dict[str, dict] = {}
+            for r in rows:
+                store = r.get("store") or r.get("store_name") or "?"
+                cur = store_best.get(store)
+                val, basis = _effective_price(r)
+                if val <= 0:
+                    continue
+                if not cur or val < cur["_val"]:
+                    store_best[store] = {**r, "_val": val, "_basis": basis}
+
+            vals = [v["_val"] for v in store_best.values()]
+            if len(vals) < 2:
+                continue
+            stats = _spread_from_prices(vals)
+            bases = {v["_basis"] for v in store_best.values()}
+            results.append({
+                "item": item,
+                "currency": currency,
+                "stores": len(vals),
+                "price_basis": bases.pop() if len(bases) == 1 else "mixed",
+                **stats,
+            })
+    results.sort(key=lambda x: -x["spread_ratio"])
+    return results
+
+
+def _fuzzy_clusters(rows: list[dict]) -> list[list[dict]]:
+    """Cluster products by fuzzy name match within one currency bucket."""
+    keys: dict[str, dict] = {}
+    order: list[str] = []
+    for r in rows:
+        k = compare_key(r.get("name") or "", r.get("brand") or "")
+        keys[k] = r
+        order.append(k)
+
+    clusters: list[list[dict]] = []
+    used: set[str] = set()
+    for i, ka in enumerate(order):
+        if ka in used:
+            continue
+        cluster = [keys[ka]]
+        used.add(ka)
+        for kb in order[i + 1 :]:
+            if kb in used:
+                continue
+            score = difflib.SequenceMatcher(None, ka, kb).ratio()
+            if score >= FUZZY_THRESHOLD:
+                cluster.append(keys[kb])
+                used.add(kb)
+        clusters.append(cluster)
+    return clusters
+
+
+def compute_marketing_spreads(products: list[dict]) -> list[dict]:
+    """CRIT spreads safe for copy: same subcategory, unit basis, fuzzy cluster, 2+ stores."""
+    seeds = CANASTA_ITEMS + ["paracetamol", "ibuprofeno"]
+    out: list[dict] = []
+
+    for seed in seeds:
+        line_hint = "farmacias" if seed in ("paracetamol", "ibuprofeno") else "supermercados"
+        candidates = [
+            p for p in products
+            if seed in (p.get("name") or "").lower()
+            and (p.get("line") == line_hint or infer_subcategory(p.get("line") or "", p.get("name") or "") == seed)
+        ]
+        by_currency: dict[str, list[dict]] = defaultdict(list)
+        for c in candidates:
+            by_currency[c.get("currency") or "???"].append(c)
+
+        for currency, rows in by_currency.items():
+            for cluster in _fuzzy_clusters(rows):
+                if len(cluster) < 2:
+                    continue
+                store_rows: dict[str, dict] = {}
+                for r in cluster:
+                    st = r.get("store") or "?"
+                    val, basis = _effective_price(r)
+                    if val <= 0:
+                        continue
+                    prev = store_rows.get(st)
+                    if not prev or val < prev["_val"]:
+                        store_rows[st] = {**r, "_val": val, "_basis": basis}
+
+                if len(store_rows) < 2:
+                    continue
+                bases = {v["_basis"] for v in store_rows.values()}
+                if len(bases) != 1:
+                    continue
+                vals = [v["_val"] for v in store_rows.values()]
+                stats = _spread_from_prices(vals)
+                if stats["status"] != "crit":
+                    continue
+                rep = next(iter(store_rows.values()))
+                out.append({
+                    "seed": seed,
+                    "line": rep.get("line_name") or rep.get("line"),
+                    "currency": currency,
+                    "subcategory": infer_subcategory(rep.get("line") or "", rep.get("name") or ""),
+                    "price_basis": bases.pop(),
+                    "stores": len(store_rows),
+                    "products": len(cluster),
+                    "sample_name": (rep.get("name") or "")[:60],
+                    "marketing_ready": True,
+                    **stats,
+                })
+    out.sort(key=lambda x: -x["spread_ratio"])
+    return out[:20]
+
+
+def build_spread_analytics(products: list[dict]) -> dict:
+    dispersion = compute_dispersion(products)
+    canasta_spreads = compute_canasta_spreads(products)
+    marketing_spreads = compute_marketing_spreads(products)
+    crit = [
+        d for d in dispersion
+        if d["status"] == "crit" and (d.get("subcategory") or "") not in ("", "otros")
+    ]
+    return {
+        "dispersion": dispersion,
+        "canasta_spreads": canasta_spreads,
+        "marketing_spreads": marketing_spreads,
+        "dispersion_crit_count": len(crit),
+        "marketing_crit_count": len(marketing_spreads),
+    }
