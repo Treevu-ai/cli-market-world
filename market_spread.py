@@ -16,9 +16,9 @@ CANASTA_ITEMS = [
 # Substrings that indicate a title is NOT the canasta SKU (validated against live compare data).
 _CANASTA_EXCLUDE: dict[str, frozenset[str]] = {
     "leche": frozenset({
-        "chocolate", "condensada", "crema de leche", "dulce de leche", "caramelo", "mayonesa",
-        "leche de tigre", "saborizante", "saborizador", "tableta", "snickers", "hershey",
-        "nesquik", "bombon", "bombón",
+        "chocolate", "chocolatada", "condensada", "crema de leche", "dulce de leche", "caramelo",
+        "mayonesa", "leche de tigre", "saborizante", "saborizador", "tableta", "snickers",
+        "hershey", "nesquik", "bombon", "bombón", "espumador", "yogur",
     }),
     "pollo": frozenset({
         "apollo", "alimento para", "gato", "perro", "churu", "consome", "consomé", "cubo",
@@ -35,7 +35,7 @@ _CANASTA_EXCLUDE: dict[str, frozenset[str]] = {
     }),
     "jabon": frozenset({"dispensador", "jabonera", "porta"}),
     "aceite": frozenset({"atun", "atún", "filete", "conserva", "esencial", "corporal", "motor"}),
-    "huevos": frozenset({"chocolate", "kinder", "pascua"}),
+    "huevos": frozenset({"chocolate", "kinder", "pascua", "organizador", "pintar"}),
     "cafe": frozenset({"cafetera", "saborizante", "licor", "filtro"}),
     "azucar": frozenset({"sin azucar", "sin azúcar", "edulcorante", "splenda", "stevia"}),
     "arroz": frozenset({
