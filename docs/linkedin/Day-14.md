@@ -16,13 +16,13 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** 3 cosas que aprendí indexando 8,000+ precios esta semana.
+1. **Hook 1:** 3 cosas que aprendí indexando **19,000+** precios esta semana.
 2. **Hook 2:** Los precios cambian más rápido de lo que crees. Tres insights del collector.
 3. **Hook 3:** Farmacia vs supermercado: el spread más alto que vimos en el data moat.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-3 cosas que aprendí indexando 8,000+ precios esta semana:
+3 cosas que aprendí indexando **19,452** precios en el moat (**8,392** fresh en 24h):
 
 **1. Los precios cambian más rápido de lo que crees.**
 Con refresh cada 8 horas ya vemos variación significativa en SKUs de alta rotación.

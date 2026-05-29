@@ -26,19 +26,19 @@ tags:
 | 4 | [[Day-04]] | 5 agentes, leche Wong vs Metro | `ready` |
 | 5 | [[Day-05]] | Carousel: 4 pasos agente compra | `ready` |
 | 6 | [[Day-06]] | Por qué 36 herramientas MCP | `ready` |
-| 7 | [[Day-07]] | [N] precios · 30 retailers (metrics) | `ready` ⚠️ gate datos |
+| 7 | [[Day-07]] | [N] precios · 30 retailers (metrics) | `ready` ✅ [[metrics/price-pulse-2026-W22]] |
 
 ## Semana 2 — Data stories
 
 | Día | Nota | Estado |
 |-----|------|--------|
-| 8 | [[Day-08]] | Arroz Lima variación | `ready` ⚠️ [[linkedin/data-gate]] |
-| 9 | [[Day-09]] | Canasta básica PE | `ready` ⚠️ gate |
-| 10 | [[Day-10]] | Inflación collector 8h | `ready` |
-| 11 | [[Day-11]] | Electro scale | `ready` ⚠️ gate |
-| 12 | [[Day-12]] | Carousel top 10 | `ready` ⚠️ gate |
+| 8 | [[Day-08]] | Arroz PE variación | `ready` ✅ [[linkedin/data-gate]] |
+| 9 | [[Day-09]] | Canasta básica PE | `ready` ✅ cualitativo |
+| 10 | [[Day-10]] | Inflación collector 8h | `ready` ✅ |
+| 11 | [[Day-11]] | Electro scale | `ready` ✅ |
+| 12 | [[Day-12]] | Carousel top 10 | `ready` ⚠️ armar assets |
 | 13 | [[Day-13]] | Retailers vs IA (EN) | `ready` |
-| 14 | [[Day-14]] | 3 insights 8K+ | `ready` |
+| 14 | [[Day-14]] | 3 insights 19K+ | `ready` ✅ |
 
 > ⚠️ Días 8–14: publicar solo con datos en [[linkedin/data-gate]] + [[metrics/price-pulse-YYYY-WW]]
 

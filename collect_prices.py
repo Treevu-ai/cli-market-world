@@ -43,6 +43,42 @@ LINE_MAX_PRICE = {
     "departamentales": 10_000,
 }
 
+# Nominal caps differ by currency (ARS/CLP/COP use much larger face values).
+CURRENCY_LINE_MAX = {
+    ("ARS", "supermercados"): 2_000_000,
+    ("ARS", "farmacias"): 500_000,
+    ("ARS", "electro"): 3_000_000,
+    ("ARS", "hogar"): 2_000_000,
+    ("ARS", "moda"): 500_000,
+    ("ARS", "departamentales"): 2_000_000,
+    ("CLP", "supermercados"): 200_000,
+    ("CLP", "farmacias"): 100_000,
+    ("CLP", "electro"): 5_000_000,
+    ("CLP", "hogar"): 3_000_000,
+    ("CLP", "moda"): 200_000,
+    ("COP", "supermercados"): 500_000,
+    ("COP", "farmacias"): 200_000,
+    ("COP", "electro"): 20_000_000,
+    ("COP", "hogar"): 5_000_000,
+    ("MXN", "supermercados"): 50_000,
+    ("MXN", "farmacias"): 20_000,
+    ("MXN", "electro"): 200_000,
+    ("MXN", "hogar"): 100_000,
+}
+
+# Extra pause for stores that rate-limit under parallel load.
+STORE_EXTRA_DELAY = {
+    "globo_br": 2.0,
+}
+
+
+def max_allowed_price(store: str, line: str) -> float:
+    currency = STORES.get(store, {}).get("currency", "")
+    return CURRENCY_LINE_MAX.get(
+        (currency, line),
+        LINE_MAX_PRICE.get(line, 99_999_999),
+    )
+
 SEED_QUERIES = [
     # ═══════════════════════════════════════════════════════════════════════════
     # 🛒 Supermercados (14 tiendas)
@@ -533,7 +569,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             prod["line_name"] = line_name
             if prod.get("price", 0) <= 0:
                 continue
-            if prod["price"] > LINE_MAX_PRICE.get(line, 99_999_999):
+            if prod["price"] > max_allowed_price(store, line):
                 continue
             try:
                 await conn.execute("""
@@ -603,13 +639,33 @@ async def collect_one_pg(pool, store, queries):
                         prod["line_name"] = LINES.get(line, {}).get("name", "")
                         if prod["price"] <= 0:
                             continue
-                        if prod["price"] > LINE_MAX_PRICE.get(prod["line"], 99_999_999):
+                        if prod["price"] > max_allowed_price(store, line):
                             continue
                         pending.append(prod)
-                    await asyncio.sleep(REQUEST_DELAY)
+                    await asyncio.sleep(REQUEST_DELAY + STORE_EXTRA_DELAY.get(store, 0.0))
                 except Exception as exc:
                     query_fail += 1
-                    logger.warning("collect %s/%s: %s", store, q, str(exc)[:120])
+                    err = str(exc)
+                    if "429" in err:
+                        await asyncio.sleep(5.0)
+                        try:
+                            raw = await fetch_store_multi(client, store, q)
+                            cb.win(store)
+                            query_ok += 1
+                            for p in raw:
+                                prod = _pfj(p, store)
+                                prod["line"] = line
+                                prod["line_name"] = LINES.get(line, {}).get("name", "")
+                                if prod["price"] <= 0:
+                                    continue
+                                if prod["price"] > max_allowed_price(store, line):
+                                    continue
+                                pending.append(prod)
+                            await asyncio.sleep(REQUEST_DELAY + STORE_EXTRA_DELAY.get(store, 0.0))
+                            continue
+                        except Exception as retry_exc:
+                            err = str(retry_exc)
+                    logger.warning("collect %s/%s: %s", store, q, err[:120])
                     cb.lose(store)
         if pending:
             async with pool.acquire() as conn:
@@ -656,7 +712,7 @@ async def collect_one_sqlite(db, store, queries):
                 prod["line"] = line
                 prod["line_name"] = LINES.get(line,{}).get("name","")
                 if prod.get("price", 0) and prod["price"] > 0:
-                    if prod["price"] > LINE_MAX_PRICE.get(prod.get("line",""), 99_999_999):
+                    if prod["price"] > max_allowed_price(store, prod.get("line", "")):
                         continue
                     sq_insert(db, prod)
                     collected += 1
