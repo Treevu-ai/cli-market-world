@@ -17,7 +17,7 @@ export default function FinalCTA() {
             ? "Pro: email + link PayPal. Activamos en 24 h tras confirmar pago."
             : "Pro: email + PayPal link. We activate within 24 h after payment."}
         </p>
-        <ContactForm initial="pro" />
+        <ContactForm />
       </div>
     </section>
   );
