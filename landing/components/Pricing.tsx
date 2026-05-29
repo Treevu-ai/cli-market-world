@@ -69,7 +69,7 @@ export default function Pricing() {
                   {tier.price}
                 </span>
                 {(tier.period_es || tier.period_en) && (
-                  <span className={`text-sm ml-1 ${tier.dark ? "text-white/60" : "text-[var(--wise-mute)]"}`}>
+                  <span className={`text-sm ml-1 ${tier.dark ? "text-white/80" : "text-[var(--wise-mute)]"}`}>
                     {isES ? tier.period_es : tier.period_en}
                   </span>
                 )}

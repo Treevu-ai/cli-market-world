@@ -28,7 +28,7 @@ export default function RetailersSection() {
        "Every day you're not here, your competitor is — and you stay invisible."];
 
   return (
-    <section id="retailers" className="relative bg-[var(--wise-ink)] py-16" itemScope itemType="https://schema.org/Service">
+    <section id="retailers" className="wise-on-dark relative bg-[var(--wise-ink)] py-16" itemScope itemType="https://schema.org/Service">
       <meta itemProp="name" content="CLI Market Retailer Listing" />
       <meta itemProp="description" content={isES ? "Lista tu tienda gratis en CLI Market. VTEX, Shopify o Magento. 30 segundos. Sin costo." : "List your store on CLI Market free. VTEX, Shopify, or Magento. 30 seconds. No cost."} />
       <meta itemProp="offers" content='{"@type":"Offer","price":"0","priceCurrency":"USD"}' />

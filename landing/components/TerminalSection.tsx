@@ -6,7 +6,7 @@ export default function TerminalSection() {
   const isES = lang === "es";
 
   return (
-    <section id="terminal" className="relative bg-[var(--wise-ink)] py-24">
+    <section id="terminal" className="wise-on-dark relative bg-[var(--wise-ink)] py-24">
       <div className="max-w-[720px] mx-auto px-6 text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Terminal" : "Terminal"}
