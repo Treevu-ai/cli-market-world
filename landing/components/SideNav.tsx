@@ -40,7 +40,7 @@ export default function SideNav() {
             </span>
           </button>
         ))}
-        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-[8px] font-mono text-[var(--wise-mute)]/40 hover:text-[var(--wise-ink)]/60 transition-colors">
+        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-[8px] font-mono text-[var(--wise-mute)] hover:text-[var(--wise-ink)] transition-colors">
           {isES ? "EN" : "ES"}
         </button>
       </div>

@@ -11,9 +11,9 @@ const data=[
 export default function Lines() {
   const { t: _t } = useLang();
   return (
-    <section id="lines" className="relative flex flex-col w-full bg-[#080808] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
+    <section id="lines" className="wise-on-dark relative flex flex-col w-full bg-[#080808] py-16 px-6 lg:px-12 md:py-[80px] gap-8">
       <div className="flex flex-col gap-3 max-w-[600px]">
-        <span className="inline-flex items-center gap-3 text-sm font-mono text-white/40"><span className="w-8 h-px bg-[#FFD600]/40"/>{_t("lines_label")}</span>
+        <span className="inline-flex items-center gap-3 text-sm font-mono text-[var(--wise-mute)]"><span className="w-8 h-px bg-[#FFD600]/40"/>{_t("lines_label")}</span>
         <h2 className="text-[clamp(1.5rem,3vw,3.5rem)] font-grotesk font-bold text-white leading-[1.05] whitespace-pre-line">{_t("lines_title")}</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[1100px]">
@@ -25,15 +25,15 @@ export default function Lines() {
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-grotesk font-bold text-white">{l.c}</span>
-              <span className="text-[9px] font-mono text-[#555] uppercase">{_t("lines_stores")}</span>
+              <span className="text-[9px] font-mono text-[var(--wise-mute)] uppercase">{_t("lines_stores")}</span>
             </div>
-            <p className="text-[10px] font-mono text-[#555] leading-relaxed">{l.s}</p>
+            <p className="text-[10px] font-mono text-[var(--wise-mute)] leading-relaxed">{l.s}</p>
           </div>
         ))}
       </div>
       <div className="flex gap-4 max-w-[1100px] flex-wrap">
-        <div className="bg-[#131313] border border-[#2d2d2d] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">30</span><span className="text-[10px] font-mono text-[#555] uppercase tracking-wider">{_t("lines_stores_badge")}</span></div>
-        <div className="bg-[#131313] border border-[#2d2d2d] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">1</span><span className="text-[10px] font-mono text-[#555] uppercase tracking-wider">{_t("lines_connector_badge")}</span></div>
+        <div className="bg-[#131313] border border-[#2d2d2d] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">30</span><span className="text-[10px] font-mono text-[var(--wise-mute)] uppercase tracking-wider">{_t("lines_stores_badge")}</span></div>
+        <div className="bg-[#131313] border border-[#2d2d2d] px-6 py-3 flex items-center gap-3"><span className="text-2xl font-grotesk font-bold text-white">1</span><span className="text-[10px] font-mono text-[var(--wise-mute)] uppercase tracking-wider">{_t("lines_connector_badge")}</span></div>
       </div>
     </section>
   );
