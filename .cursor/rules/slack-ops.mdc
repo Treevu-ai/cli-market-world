@@ -1,0 +1,53 @@
+---
+description: Slack ops for CLI Market — bitácora, publicaciones, briefings
+globs:
+  - ops/**
+  - docs/ops/**
+  - .github/workflows/daily-briefing.yml
+alwaysApply: false
+---
+
+# Slack + Cursor (CLI Market)
+
+When the user asks to post to Slack, send briefings, or get ops status in channels:
+
+## Canales (workspace climarketworspace)
+
+| Alias | Channel ID | Uso |
+|-------|------------|-----|
+| `bitacora` | `C0B6V3Y9ZSP` | Status producto, KPIs, tiendas críticas |
+| `publicaciones` | `C0B6ZJ1B9B8` | LinkedIn del día, post, comentario, checklist |
+
+## Comandos (ejecutar en repo root)
+
+```bash
+# Verificar token (no commitear xoxb-...)
+export SLACK_BOT_TOKEN=xoxb-...
+python3 ops/verify_slack.py --send-test
+
+# Briefing diario → archivos + Slack
+python3 ops/slack_cli.py briefing
+
+# Mensaje manual
+python3 ops/slack_cli.py post --bitacora "texto"
+python3 ops/slack_cli.py post --publicaciones --file docs/linkedin/Day-29.md
+
+# Solo generar .md sin Slack
+python3 ops/daily_briefing.py --dry-run
+```
+
+## Reglas
+
+1. **Nunca** pedir ni commitear `SLACK_BOT_TOKEN`, Client Secret, ni webhooks.
+2. Token local: `.env` (gitignored) o `export` en shell del usuario.
+3. CI: secret `SLACK_BOT_TOKEN` en GitHub; workflow `daily-briefing.yml` a las 13:00 UTC.
+4. Copy en Slack: castellano estándar (`docs/linkedin/STYLE-es.md`).
+5. Tras publicar LinkedIn, ofrecer actualizar `published_at` en el `Day-XX.md` correspondiente.
+
+## Cuando el usuario pide "apoyo en Slack"
+
+- Resumen de producto → `post --bitacora` o `briefing` (incluye producto).
+- Post del día / redes → `post --publicaciones` o leer `ops/daily/*-content.md`.
+- Fallo de envío → `verify_slack.py`; revisar bot invitado (`/invite @cli_market_dev_bot`).
+
+Ver `docs/ops/cursor-slack.md` y `AGENTS.md`.
