@@ -7,7 +7,7 @@ export default function QuickstartAPI() {
 
   return (
     <section id="api" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">API</p>
         <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
           {isES ? "Una llamada. Datos verificados." : "One call. Verified data."}
@@ -18,22 +18,22 @@ export default function QuickstartAPI() {
             : "Everything in the CLI is available over HTTP. Search, compare baskets, and create orders with flat JSON."}
         </p>
 
-        <div className="text-left space-y-4 max-w-[560px] mx-auto">
-          <div className="bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg p-4 font-mono text-[11px] leading-relaxed">
+        <div className="text-left space-y-4 w-full max-w-[560px] min-w-0 mx-auto">
+          <div className="code-snippet-box bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg px-5 py-4 font-mono text-[11px] leading-relaxed">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[#c5edab]">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-              <span className="text-[10px] text-[var(--wise-body)] ml-2 uppercase">bash · canasta AR</span>
+              <span className="text-[10px] text-[var(--wise-body)] ml-2 uppercase break-words">bash · canasta AR</span>
             </div>
-            <pre className="text-[var(--wise-body)] whitespace-pre-wrap">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
+            <pre className="code-snippet text-[var(--wise-body)]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
 # Carrefour vs Jumbo vs Vea · total por cadena · precio normalizado`}</pre>
           </div>
 
-          <div className="bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg p-4 font-mono text-[11px] leading-relaxed">
+          <div className="code-snippet-box bg-[var(--wise-green-pale)] border border-[#c5edab] rounded-lg px-5 py-4 font-mono text-[11px] leading-relaxed">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[#c5edab]">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-              <span className="text-[10px] text-[var(--wise-body)] ml-2 uppercase">POST /products/compare</span>
+              <span className="text-[10px] text-[var(--wise-body)] ml-2 uppercase break-words">POST /products/compare</span>
             </div>
-            <pre className="text-[var(--wise-body)] whitespace-pre-wrap">{`{
+            <pre className="code-snippet text-[var(--wise-body)]">{`{
   "query": "aceite de girasol 900ml",
   "country": "AR",
   "limit": 8

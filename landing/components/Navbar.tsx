@@ -29,7 +29,7 @@ export default function Navbar() {
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 md:hidden ${
       scrolled ? "bg-[var(--wise-canvas-soft)]/90 backdrop-blur-md border-b border-[var(--wise-green-pale)]" : "bg-[var(--wise-canvas-soft)] border-b border-transparent"
     }`} aria-label={isES ? "Navegación principal" : "Main navigation"}>
-      <div className="landing-container px-6 flex items-center justify-between h-14">
+      <div className="landing-container flex items-center justify-between h-14">
         <a href="/" className="flex items-center gap-2 text-[var(--wise-ink)]" aria-label="CLI Market home">
           <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]" aria-hidden="true">
             <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

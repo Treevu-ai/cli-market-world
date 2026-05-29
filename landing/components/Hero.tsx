@@ -25,7 +25,7 @@ export default function Hero() {
           {isES ? "COMERCIO" : "COMMERCE"}
         </span>
       </div>
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-24 lg:py-32 text-center">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container py-24 lg:py-32 text-center min-w-0">
         <h1 className="text-[clamp(36px,7vw,72px)] leading-[0.95] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight">
           {isES
             ? "La economía de los agentes ya empezó.\nTu negocio, adentro o afuera."

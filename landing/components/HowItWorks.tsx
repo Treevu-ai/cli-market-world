@@ -17,7 +17,7 @@ export default function HowItWorks() {
 
   return (
     <section id="how" className="relative bg-[var(--wise-ink)] py-16">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
           {isES ? "Cómo funciona" : "How it works"}
         </p>
@@ -28,14 +28,14 @@ export default function HowItWorks() {
           {isES ? "Search → Compare → Cart → Checkout. Demo en vivo abajo." : "Search → Compare → Cart → Checkout. Live demo below."}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left mb-10 min-w-0">
           {steps.map((s, i) => (
-            <div key={i} className="bg-[#1a1d19] rounded-2xl border border-[#2a2d25] p-4 flex items-start gap-3">
+            <div key={i} className="bg-[#1a1d19] rounded-2xl border border-[#2a2d25] px-5 py-4 flex items-start gap-3 min-w-0 overflow-hidden">
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>
-                <p className="text-xs text-[var(--wise-mute)] font-mono mt-1 truncate">{s.cmd}</p>
-                <p className="text-[11px] text-[var(--wise-body)] mt-1 truncate">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-xs text-[var(--wise-mute)] font-mono mt-1 demo-step-text">{s.cmd}</p>
+                <p className="text-[11px] text-[var(--wise-body)] mt-1 demo-step-text">{isES ? s.out_es : s.out_en}</p>
               </div>
             </div>
           ))}
