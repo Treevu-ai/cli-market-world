@@ -51,11 +51,28 @@ Workflow: [`.github/workflows/daily-briefing.yml`](../../.github/workflows/daily
 
 ### Configuración recomendada (Bot Token)
 
-1. [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → From scratch → workspace `climarketworspace`.
-2. **OAuth & Permissions** → Bot Token Scopes: `chat:write`, `chat:write.public` (si el bot no está en el canal).
-3. **Install to Workspace** → copiar **Bot User OAuth Token** (`xoxb-...`).
-4. En cada canal (`#bitacora`, `#publicaciones-redes` o como se llamen): `/invite @nombre-del-bot`.
-5. GitHub repo → **Settings → Secrets → Actions** → `SLACK_BOT_TOKEN` = el token.
+> **No uses App ID / Client ID / Client Secret en el script.** Esos sirven para OAuth en apps web.  
+> Para GitHub Actions y `daily_briefing.py` necesitás el **Bot User OAuth Token** (`xoxb-...`).
+
+1. [api.slack.com/apps](https://api.slack.com/apps) → tu app → **OAuth & Permissions**.
+2. **Bot Token Scopes:** `chat:write`, `chat:write.public` (si el bot aún no está en el canal).
+3. **Install to Workspace** (o Reinstall) → copiar **Bot User OAuth Token** (`xoxb-...`).
+4. En Slack, en cada canal: `/invite @nombre-del-bot`.
+5. Guardar el token **solo** como secret (nunca en el repo ni en el chat):
+
+```bash
+# En tu máquina, con gh autenticado al repo Treevu-ai/cli-market-world
+echo "xoxb-TU-TOKEN" | gh secret set SLACK_BOT_TOKEN --repo Treevu-ai/cli-market-world
+```
+
+6. Verificar (local, el token no se commitea):
+
+```bash
+export SLACK_BOT_TOKEN=xoxb-...
+cd /ruta/al/repo && python3 ops/verify_slack.py --send-test
+```
+
+**No pegues Client Secret en issues, PRs ni en Cursor.** Si ya lo expusiste, revócalo en Slack → Basic Information → App Credentials → Regenerate.
 
 Los IDs de canal ya están por defecto en el workflow; solo cambiarlos si movés los canales.
 
