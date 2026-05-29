@@ -92,7 +92,7 @@ Hola [Nombre],
 
 Te escribí hace un par de semanas sobre listar [Retailer] en CLI Market — sin costo, en 30 segundos, tus productos visibles para agentes IA junto a [Competidores].
 
-No he tenido respuesta, así que asumo que no es prioridad ahora. Lo dejo aquí. Si en algún momento querés explorarlo, mi bandeja está abierta.
+No he tenido respuesta, así que asumo que no es prioridad ahora. Lo dejo aquí. Si en algún momento quiere explorarlo, mi bandeja está abierta.
 
 Saludos,
 Antonio

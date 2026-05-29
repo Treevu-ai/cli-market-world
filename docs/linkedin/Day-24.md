@@ -16,13 +16,13 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** 3 razones para listar tu tienda en CLI Market hoy.
+1. **Hook 1:** 3 razones para registrar su tienda en CLI Market hoy.
 2. **Hook 2:** Gratis. 30 segundos. Agentes IA ya buscan productos.
 3. **Hook 3:** List post para retailers: por qué aparecer en agent commerce.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-3 razones para listar tu tienda en CLI Market:
+3 razones para registrar su tienda en CLI Market:
 
 **1. Gratis** (Beta)
 Sin costo de integración. Sin revenue share en Beta.
@@ -31,7 +31,7 @@ Sin costo de integración. Sin revenue share en Beta.
 Formulario self-serve. Sin código. Sin llamada de ventas.
 
 **3. Agentes IA ya buscan**
-Cuando un usuario pide a su agente "compara precios de leche", tu tienda aparece — o no.
+Cuando un usuario pide a su agente "compara precios de leche", su tienda aparece — o no.
 
 VTEX. Magento. Retail LATAM.
 
@@ -41,7 +41,7 @@ El e-commerce no es solo mobile-first.
 
 Es **agent-first**.
 
-¿Listamos la tuya esta semana?
+¿Registramos su tienda esta semana?
 
 ## Primer comentario
 

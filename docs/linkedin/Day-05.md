@@ -54,7 +54,7 @@ Stripe convirtió pagos en APIs. Nosotros convertimos comercio en APIs.
 
 Guarda el carousel si estás construyendo agentes con capacidad de compra real.
 
-¿En qué paso se te trabó tu agente?
+¿En qué paso se detuvo su agente?
 
 ## Carousel — copy por slide
 
