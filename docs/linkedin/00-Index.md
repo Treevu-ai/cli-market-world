@@ -34,6 +34,7 @@ tags:
 |-----|------|--------|
 | 8 | [[Day-08]] | Arroz PE variación | `ready` ✅ [[linkedin/data-gate]] |
 | 9 | [[Day-09]] | Canasta básica PE | `ready` ✅ cualitativo |
+| 9b | [[Day-09-AR]] | Canasta AR trío | `draft` ⛔ gate AR |
 | 10 | [[Day-10]] | Inflación collector 8h | `ready` ✅ |
 | 11 | [[Day-11]] | Electro scale | `ready` ✅ |
 | 12 | [[Day-12]] | Carousel top 10 | `ready` ⚠️ armar assets |

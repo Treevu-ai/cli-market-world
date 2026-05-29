@@ -40,6 +40,8 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
+Posicionamiento en español (API / landing / ventas): [`docs/api-positioning-es.md`](docs/api-positioning-es.md)
+
 <p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> · <a href="https://cli-market-production.up.railway.app/docs"><b>API docs</b></a> · <a href="https://cli-market-production.up.railway.app/dashboard"><b>Dashboard</b></a></p>
 
 ---
