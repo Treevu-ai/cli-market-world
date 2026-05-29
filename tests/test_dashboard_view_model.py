@@ -17,7 +17,7 @@ def test_global_system_status_ok():
         freshness_label="fresh",
     )
     assert st["state"] == "ok"
-    assert st["icon"] == "🟢"
+    assert "ok" in st["label"]
 
 
 def test_build_dashboard_view_model_blocks():
@@ -47,9 +47,21 @@ def test_build_dashboard_view_model_blocks():
         "top_risers": [],
         "top_fallers": [],
         "analytics_meta": {"marketing_canasta_min_spread": 2.5},
+        "quality_funnel": {
+            "captured": 38464,
+            "flagged": 100,
+            "clean": 38364,
+            "citable": 1,
+            "filters": ["discount>=90%"],
+        },
+        "store_health": [],
+        "suspect_discounts": [],
+        "outliers": [],
+        "dispersion": [],
+        "by_line_currency": [],
     }
     view = build_dashboard_view_model(data)
-    assert view["spec_version"] == "1.0"
+    assert view["spec_version"] == "1.1"
     assert view["locale"] == "es"
     assert "hero" in view["blocks"]
     hero = view["blocks"]["hero"]
@@ -68,3 +80,8 @@ def test_build_dashboard_view_model_blocks():
     infl = view["blocks"]["inflation"]
     assert infl["state"] == "measuring"
     assert "Midiendo" in infl["measuring_copy"]
+
+    assert "global_bar" in view["blocks"]
+    assert "portada" in view["blocks"]
+    assert "quality_funnel" in view["blocks"]
+    assert view["blocks"]["portada"]["cards"][0]["label"] == "INVENTORY"
