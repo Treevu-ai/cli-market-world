@@ -6,7 +6,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
   <img src="https://img.shields.io/badge/retailers-36-brightgreen" alt="36 retailers">
   <img src="https://img.shields.io/badge/platforms-2-blue" alt="2 platforms">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/prices-13k-3cffd0" alt="13,000 prices">
+  <img src="https://img.shields.io/badge/prices-39k-3cffd0" alt="39,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/payments-PayPal_email-ffbd2e" alt="PayPal email billing">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
@@ -21,7 +21,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 8 countries. 2 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>13,000+ real prices, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 8 countries. 2 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>39,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -32,11 +32,11 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 **CLI Market fixes this.** One `pip install`. One API call across 30 verified retailers. One JSON schema.
 
 - **Search** any product across 30 verified retailers in 8 countries
-- **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD
-- **Basket** — compare your full shopping cart across retailers, find the cheapest
+- **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
+- **Basket** — compare your full shopping cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - **Inflation** — track real price changes from supermarket shelves, updated every 8 hours
 - **Buy** — checkout with PayPal or QR (Yape/Plin)
-- **Build** — data moat with thousands of verified prices, historical snapshots, SKU normalization
+- **Build** — data moat with quality-filtered spreads, canasta matching, and live dashboard
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 
@@ -54,7 +54,8 @@ market hello          # post-install: stats + next steps
 export MARKET_API_URL=https://cli-market-production.up.railway.app
 market login
 market search "leche" --country PE
-market compare "aceite"
+market compare "aceite de girasol 900ml" --country AR
+market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "compra arroz al mejor precio"
 ```

@@ -1,16 +1,18 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
+import { useLiveStats } from "@/hooks/useLiveStats";
 
 export default function Hero() {
   const { t: _t, lang } = useLang();
   const isES = lang === "es";
+  const { priceChip } = useLiveStats();
 
   const chips = [
     { num: "36", label: isES ? "herramientas MCP" : "MCP tools" },
     { num: "30", label: isES ? "comercios" : "retailers" },
     { num: "8", label: isES ? "países" : "countries" },
-    { num: "13K", label: isES ? "precios reales" : "real prices" },
+    { num: priceChip, label: isES ? "precios reales" : "real prices" },
     { num: "8h", label: isES ? "actualización" : "refresh cycle" },
   ];
 

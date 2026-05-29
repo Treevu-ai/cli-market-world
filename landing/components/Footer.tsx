@@ -1,9 +1,11 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { useLiveStats } from "@/hooks/useLiveStats";
 
 export default function Footer() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const { priceChip } = useLiveStats();
 
   return (
     <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-12">
@@ -26,7 +28,8 @@ export default function Footer() {
           <a href="#stats" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Escala" : "Scale"}</a>
           <a href="#terminal" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Terminal" : "Terminal"}</a>
           <a href="#retailers" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Retailers" : "Retailers"}</a>
-          <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
+          <a href="#api" className="hover:text-[var(--wise-ink)] transition-colors">API</a>
+          <a href="#quality" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Calidad" : "Quality"}</a>
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Planes" : "Pricing"}</a>
           <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
           <span className="text-[#c5edab]">·</span>
@@ -38,7 +41,9 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-[var(--wise-body)] font-mono">
-          {isES ? "30 retailers · 8 países · 36 MCP · 13K precios · MIT License" : "30 retailers · 8 countries · 36 MCP · 13K prices · MIT License"}
+          {isES
+            ? `30 retailers · 8 países · 36 MCP · ${priceChip} precios · MIT License`
+            : `30 retailers · 8 countries · 36 MCP · ${priceChip} prices · MIT License`}
         </p>
       </div>
     </footer>

@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import QuickstartAPI from "@/components/QuickstartAPI";
+import QualitySection from "@/components/QualitySection";
 import DataSection from "@/components/DataSection";
 import AboutSection from "@/components/AboutSection";
 import TerminalSection from "@/components/TerminalSection";
@@ -30,6 +31,7 @@ export default function Home() {
           <HowItWorks />
           <TerminalSection />
           <QuickstartAPI />
+          <QualitySection />
           <Features />
           <RetailersSection />
           <CoverageSection />
