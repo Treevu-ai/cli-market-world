@@ -55,7 +55,7 @@ Workflow: [`.github/workflows/daily-briefing.yml`](../../.github/workflows/daily
 > Para GitHub Actions y `daily_briefing.py` necesitás el **Bot User OAuth Token** (`xoxb-...`).
 
 1. [api.slack.com/apps](https://api.slack.com/apps) → tu app → **OAuth & Permissions**.
-2. **Bot Token Scopes:** `chat:write`, `chat:write.public` (si el bot aún no está en el canal).
+2. **Bot Token Scopes (mínimo):** `chat:write`. Opcional: `chat:write.public` si el bot no está invitado al canal. No hace falta `channels:read`.
 3. **Install to Workspace** (o Reinstall) → copiar **Bot User OAuth Token** (`xoxb-...`).
 4. En Slack, en cada canal: `/invite @nombre-del-bot`.
 5. Guardar el token **solo** como secret (nunca en el repo ni en el chat):
