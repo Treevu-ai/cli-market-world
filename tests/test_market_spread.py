@@ -4,6 +4,7 @@ from market_spread import (
     build_spread_analytics,
     compute_canasta_spreads,
     infer_subcategory,
+    matches_canasta_item,
 )
 from market_units import is_standard_canasta_pack, parse_pack_size, price_per_base_unit
 
@@ -81,3 +82,22 @@ def test_marketing_spreads_canasta_at_2_5x():
     assert len(mkt) == 1
     assert mkt[0]["seed"] == "arroz"
     assert mkt[0]["spread_ratio"] >= 2.5
+
+
+def test_canasta_matcher_rejects_documented_false_positives():
+    sm = {"line": "supermercados"}
+    assert not matches_canasta_item({**sm, "name": "Desodorante Axe Apollo 150ml"}, "pollo")
+    assert not matches_canasta_item({**sm, "name": "Chocolate con leche Hershey tableta"}, "leche")
+    assert not matches_canasta_item({**sm, "name": "Doritos Queso Nacho 150g"}, "queso")
+    assert not matches_canasta_item({**sm, "name": "Atún en Aceite Flor 170g"}, "aceite")
+    assert not matches_canasta_item({**sm, "name": "Dispensador de Jabón líquido"}, "jabon")
+    assert not matches_canasta_item({**sm, "name": "Lavavajillas Ña Pancha 750ml"}, "pan")
+    assert not matches_canasta_item({**sm, "name": "Anello panel decorativo"}, "pan")
+    assert not matches_canasta_item({**sm, "name": "Alimento para Gato Pollo 85g"}, "pollo")
+    assert matches_canasta_item({**sm, "name": "Leche Gloria entera 1L"}, "leche")
+    assert matches_canasta_item({**sm, "name": "Pollo entero fresco kg"}, "pollo")
+    assert matches_canasta_item({**sm, "name": "Pan de molde Bimbo 450g"}, "pan")
+
+
+def test_canasta_matcher_rejects_non_supermercados():
+    assert not matches_canasta_item({"line": "electro", "name": "Lavadora Whirlpool 10kg"}, "leche")
