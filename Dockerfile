@@ -17,6 +17,5 @@ ENV MARKET_DATA_DIR=/data
 
 EXPOSE 8765
 
-# shell form so $PORT is expanded at runtime
-# Collector daemon runs in background (sleeps 8h between cycles)
-CMD python collect_prices.py --daemon & python -m uvicorn market_server:app --host 0.0.0.0 --port $PORT
+# API only — collector runs as a separate Railway service (Dockerfile.collector)
+CMD python -m uvicorn market_server:app --host 0.0.0.0 --port $PORT

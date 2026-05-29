@@ -5,6 +5,8 @@ Implements BaseConnector for VTEX public catalog API.
 Supports standard (/api/) and VTEX IO (/io/api/) path auto-detection.
 """
 
+import asyncio
+
 import httpx
 from .base import BaseConnector, parse_price, clean_name
 
@@ -51,6 +53,9 @@ class VtexConnector(BaseConnector):
         _to = min(_from + limit - 1, _from + PAGE_SIZE - 1)
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)})
+            if resp.status_code == 429:
+                await asyncio.sleep(2.0)
+                resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)})
             resp.raise_for_status()
             ct = resp.headers.get("content-type", "")
             if "json" not in ct:
