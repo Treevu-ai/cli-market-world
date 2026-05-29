@@ -7,17 +7,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from datetime import datetime
 from market_stores import STORES
 
-DM_ES = """Hola! 👋
+DM_ES = """Hola:
 
-CLI Market indexa precios de 30 retailers en 7 paises de LATAM para agentes de IA. Ya tenemos Wong, Metro, Carrefour, Chedraui, HEB y otros.
+CLI Market indexa precios de 30 retailers en 7 países de LATAM para agentes de IA. Ya tenemos Wong, Metro, Carrefour, Chedraui, HEB y otros.
 
-{store_name} esta en nuestra lista de prioridades.
+{store_name} está en nuestra lista de prioridades.
 
-Solo necesitamos un token de API de solo lectura (catalogo). Son 30 segundos de setup. Sin costo, sin integracion, sin acceso a datos de clientes.
+Solo necesitamos un token de API de solo lectura (catálogo). Son 30 segundos de configuración. Sin costo, sin integración, sin acceso a datos de clientes.
 
-A cambio, sus productos aparecen en busquedas y comparaciones de agentes autonomos, junto a 30 retailers.
+A cambio, sus productos aparecen en búsquedas y comparaciones de agentes autónomos, junto a 30 retailers.
 
-Te interesa charlarlo?
+¿Le interesa conversarlo?
 
 Antonio Cuba
 CLI Market · cli-market.dev"""

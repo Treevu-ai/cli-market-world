@@ -46,7 +46,7 @@ Si llegaste hasta aquí en el calendario — gracias.
 
 Si eres developer: prueba el CLI.
 
-Si eres retailer: lista tu tienda.
+Si es retailer: registre su tienda.
 
 Nos vemos en el mes 2.
 
