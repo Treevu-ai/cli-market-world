@@ -64,8 +64,18 @@ GitHub: https://github.com/Treevu-ai/cli-market-world
 
 ## Assets
 
-- [ ] GIF terminal: `market search` multi-retailer (<2s)
-- [ ] Screenshot JSON con precios comparados
+Generados con `python3 ops/generate_linkedin_asset.py --day 1` (datos: `docs/metrics/query-leche-pe.json`).
+
+| Archivo | Uso en LinkedIn |
+|---------|-----------------|
+| [[assets/day-01/day-01-linkedin]] | **Principal** — terminal + tabla + JSON (1200×1500) |
+| [[assets/day-01/day-01-terminal]] | Recorte superior / stories |
+| [[assets/day-01/day-01-terminal.gif]] | Animación terminal (<2s) |
+| [[assets/day-01/day-01-compare-json]] | Solo JSON (alternativa) |
+
+- [x] Asset principal listo (`day-01-linkedin.png`)
+- [x] GIF terminal (`day-01-terminal.gif`)
+- [x] Screenshot JSON (`day-01-compare-json.png`)
 
 ## Checklist
 
