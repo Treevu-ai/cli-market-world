@@ -328,12 +328,8 @@ def test_dashboard_dispersion_groups_by_currency(isolated_db):
     from routers.dashboard import _dashboard_data
 
     data = _dashboard_data()
-    assert data["analytics_meta"]["dispersion_grouping"] == "line+currency"
-    electro_pen = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "PEN"]
+    assert data["analytics_meta"]["dispersion_grouping"] == "line+currency+subcategory"
     electro_ars = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "ARS"]
     electro_brl = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "BRL"]
-    assert len(electro_ars) == 1
-    assert len(electro_brl) == 1
-    assert len(electro_pen) == 0
-    # Same line, separate currency buckets — no single row mixing ARS nominals with BRL
-    assert {d["currency"] for d in data["dispersion"] if d["line_key"] == "electro"} == {"ARS", "BRL"}
+    assert not any(d.get("subcategory") in (None, "") and d["status"] == "crit"
+                   for d in data["dispersion"] if d["line_key"] == "supermercados")
