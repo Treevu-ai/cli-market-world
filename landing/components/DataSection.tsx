@@ -4,12 +4,19 @@ import { useLang } from "@/lib/LanguageContext";
 
 import { API_URL } from "@/lib/api";
 
+interface MetricHelp {
+  label?: string;
+  description?: string;
+  example?: string;
+}
+
 interface MoatLayer {
   id?: string;
   title?: string;
   question?: string;
   note?: string;
   metrics?: Record<string, string | number | boolean | null>;
+  metric_help?: Record<string, MetricHelp>;
   surfaces?: { cmd?: string; use?: string }[];
 }
 
@@ -110,6 +117,11 @@ export default function DataSection() {
             <p className="text-xs text-[var(--wise-mute)] mt-1">
               {storesIndexed} retailers · {isES ? "precios indexados" : "indexed prices"}
             </p>
+            {inventoryLayer?.metric_help?.total_indexed?.description && (
+              <p className="text-[10px] text-[var(--wise-mute)] mt-2 leading-relaxed">
+                {inventoryLayer.metric_help.total_indexed.description}
+              </p>
+            )}
           </div>
           <div className="bg-[var(--wise-green-pale)] rounded-3xl p-5">
             <p className="text-[10px] uppercase tracking-widest text-[var(--wise-mute)] mb-1">
@@ -124,6 +136,11 @@ export default function DataSection() {
               {isES ? "snapshots últimas 24h" : "snapshots in last 24h"}
               {k.moat_age_hours != null && ` · ${Math.round(k.moat_age_hours)}h ${isES ? "desde último dato" : "since last data"}`}
             </p>
+            {freshnessLayer?.metric_help?.snapshots_24h?.description && (
+              <p className="text-[10px] text-[var(--wise-mute)] mt-2 leading-relaxed">
+                {freshnessLayer.metric_help.snapshots_24h.description}
+              </p>
+            )}
           </div>
         </div>
 

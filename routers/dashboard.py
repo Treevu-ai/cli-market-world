@@ -14,6 +14,14 @@ from fastapi import APIRouter, Header
 
 from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
 from market_spread import build_spread_analytics
+from dashboard_glossary import (
+    LAYER_METRICS,
+    build_metric_glossary,
+    metric_description,
+    metric_label,
+    section_summary,
+    section_title,
+)
 from server_deps import require_user
 
 from .health import _age_hours
@@ -52,10 +60,10 @@ def _build_moat_guide(
     return {
         "headline": "Data Moat = inventario verificado + señales de mercado",
         "mental_model": [
-            "Inventario: cuántos precios tenemos guardados (no caduca al instante).",
-            "Frescura: cuántos se actualizaron en las últimas 24h (¿confío hoy?).",
-            "Cobertura 7d: % del catálogo activo con al menos un snapshot reciente.",
-            "Ops: el collector corre cada ~4–8h; si falla, el inventario sigue pero envejece.",
+            "Inventario: cuántos precios tenemos guardados en total (como un archivo histórico).",
+            "Frescura: cuántos de esos precios se actualizaron en las últimas 24 h (¿sirven para decidir hoy?).",
+            "Cobertura 7 días: de las tiendas que monitoreamos, ¿cuántas respondieron al menos una vez esta semana?",
+            "Collector: robot que visita las tiendas cada pocas horas; si falla, el archivo sigue existiendo pero envejece.",
         ],
         "layers": [
             {
@@ -67,7 +75,8 @@ def _build_moat_guide(
                     "unique_products": unique_products,
                     "stores_indexed": stores_indexed,
                 },
-                "note": "Stock de precios reales ya scrapeados. Sirve aunque el collector esté en pausa.",
+                "metric_help": LAYER_METRICS["inventory"],
+                "note": "Stock de precios reales ya leídos de las webs de las tiendas. Sigue disponible aunque el collector esté en pausa.",
             },
             {
                 "id": "freshness",
@@ -81,7 +90,8 @@ def _build_moat_guide(
                     "last_collected_at": last_ts,
                     "status": freshness_label,
                 },
-                "note": "Si snapshots_24h = 0 pero total_indexed > 0, hay datos históricos sin refresh reciente.",
+                "metric_help": LAYER_METRICS["freshness"],
+                "note": "Si «actualizaciones 24 h» es 0 pero hay inventario, los números son viejos — conviene esperar un refresh.",
             },
             {
                 "id": "coverage",
@@ -94,17 +104,18 @@ def _build_moat_guide(
                     "marketing_gate_pass": marketing_gate_pass,
                     "stale_stores_sample": stale_stores,
                 },
-                "note": "Gate LinkedIn semana 2: coverage_7d_pct ≥ 80%.",
+                "metric_help": LAYER_METRICS["coverage"],
+                "note": "Meta interna: al menos 80 % de tiendas con datos en 7 días antes de campañas públicas.",
             },
             {
                 "id": "agents",
                 "title": "4 · Para agentes",
                 "question": "¿Qué puedo hacer con esto?",
                 "surfaces": [
-                    {"cmd": "market compare <producto>", "use": "Mejor precio cross-retailer"},
-                    {"cmd": "market basket", "use": "Canasta básica por tienda"},
-                    {"cmd": "GET /v1/intel/inflation?days=7", "use": "Inflación retail por línea"},
-                    {"cmd": "GET /dashboard/data", "use": "Fuente única de KPIs y gates"},
+                    {"cmd": "market compare <producto>", "use": "Buscar el precio más bajo del mismo producto en varias tiendas"},
+                    {"cmd": "market basket", "use": "Calcular cuánto cuesta la canasta básica en cada tienda"},
+                    {"cmd": "GET /v1/intel/inflation?days=7", "use": "Ver si los precios subieron o bajaron en la última semana"},
+                    {"cmd": "GET /dashboard/data", "use": "Descargar todos los KPIs y explicaciones en JSON"},
                 ],
             },
             {
@@ -117,7 +128,8 @@ def _build_moat_guide(
                     "last_prices_collected": last_run["prices_collected"] if last_run else 0,
                     "last_stores_succeeded": last_run["stores_succeeded"] if last_run else 0,
                 },
-                "note": "Distinto de frescura del moat: un run puede terminar con 0 precios si hay bloqueo o pool agotado.",
+                "metric_help": LAYER_METRICS["ops"],
+                "note": "Distinto de frescura: una corrida puede terminar con 0 precios si una tienda bloqueó el acceso.",
             },
         ],
     }
@@ -559,6 +571,7 @@ def _dashboard_data():
             "agent_surfaces": ["market compare", "market basket", "/v1/intel/inflation", "MCP market_stats"],
         },
         "moat_guide": moat_guide,
+        "metric_glossary": build_metric_glossary(),
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
         "dispersion": dispersion,
@@ -610,6 +623,25 @@ def _static_dashboard() -> str:
         return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"
     if "error" in data:
         return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
+
+    def sec(section_id: str, title: str | None = None) -> str:
+        t = title or section_title(section_id, section_id)
+        summary = section_summary(section_id)
+        intro = f'<p class="section-intro">{summary}</p>' if summary else ""
+        return f'<div class="section">[ {t.upper()} ]</div>{intro}'
+
+    def metric_cell(layer_id: str, key: str) -> str:
+        label = metric_label(layer_id, key, key)
+        desc = metric_description(layer_id, key)
+        if desc:
+            return f'<span class="metric-label">{label}</span><br><span class="metric-desc">{desc}</span>'
+        return f'<span class="metric-label">{label}</span>'
+
+    glossary = data.get("metric_glossary", {})
+    status_legend = glossary.get("status_legend", {})
+    legend_html = "".join(
+        f"<li><b>{k}</b> — {v}</li>" for k, v in status_legend.items()
+    )
     
     k = data["kpis"]
     m = data.get("moat_summary", {})
@@ -627,9 +659,10 @@ def _static_dashboard() -> str:
 
     guide_html = ""
     for layer in g.get("layers", []):
+        layer_id = layer.get("id", "")
         metrics = layer.get("metrics") or {}
         mrows = "".join(
-            f"<tr><td>{mk}</td><td style='color:#3cffd0'>{mv}</td></tr>"
+            f"<tr><td>{metric_cell(layer_id, mk)}</td><td style='color:#3cffd0'>{mv}</td></tr>"
             for mk, mv in metrics.items()
         )
         surfaces = layer.get("surfaces") or []
@@ -638,11 +671,12 @@ def _static_dashboard() -> str:
         )
         guide_html += f"""<div class="section">{layer.get('title', layer.get('id', ''))}</div>
 <p class="layer-q">{layer.get('question', '')}</p>
-{f"<table><tr><th>Metric</th><th>Value</th></tr>{mrows}</table>" if mrows else ""}
-{f"<table><tr><th>Superficie</th><th>Uso</th></tr>{srows}</table>" if srows else ""}
+{f"<table><tr><th>Métrica</th><th>Valor</th></tr>{mrows}</table>" if mrows else ""}
+{f"<table><tr><th>Comando / API</th><th>Para qué sirve</th></tr>{srows}</table>" if srows else ""}
 <p class="layer-note">{layer.get('note', '')}</p>"""
 
     mental = "".join(f"<li>{x}</li>" for x in g.get("mental_model", []))
+    header_intro = section_summary("header")
     
     lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{(r['avg_price'] or 0):.2f}</td><td>{(r['min_price'] or 0):.2f}</td><td>{(r['max_price'] or 0):.2f}</td></tr>" for r in data["by_line"])
     disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r.get('discount_pct',0) or 0}%</td></tr>" for r in data["top_discounts"])
@@ -667,6 +701,11 @@ def _static_dashboard() -> str:
         f"{(r['spread_ratio'] or 0):.1f}x"
         f"{' CRIT' if r.get('status')=='crit' else ''}</td></tr>"
         for r in data["dispersion"][:25])
+
+    canasta_spread_html = "".join(
+        f"<tr><td>{r['item']}</td><td>{r.get('currency','')}</td><td>{r.get('stores',0)}</td>"
+        f"<td>{(r['spread_ratio'] or 0):.1f}x</td><td>{r.get('sample_name','')[:40]}</td></tr>"
+        for r in data.get("canasta_spreads", [])[:15])
 
     mkt_html = "".join(
         f"<tr><td>{r['seed']}</td><td>{r.get('currency','')}</td><td>{r.get('price_basis','')}</td>"
@@ -701,11 +740,18 @@ def _static_dashboard() -> str:
                 matrix_html += f"<td style='color:{'#3cffd0' if v>0 else '#333'}'>{v or '·'}</td>"
             matrix_html += "</tr>"
         matrix_html += "</table>"
-    gaps_html = f"<p style='color:#ffbd2e;font-size:10px'>BRECHAS: {', '.join(gaps[:15])}</p>" if gaps else ""
+    gaps_html = f"<p class='metric-desc'>Sin cobertura aún: {', '.join(gaps[:15])}</p>" if gaps else ""
     
     canasta_html = "".join(
         f"<tr><td>{r['store_name']}</td><td>{r['items']}/10</td><td style='color:#3cffd0'>{r['currency']} {r['total']:.2f}</td></tr>"
         for r in data["canasta_basica"])
+
+    am = data.get("analytics_meta", {})
+    meta_html = f"""<div class="help-box">
+<b>Resumen analítico:</b> {am.get('dispersion_crit_count', 0)} grupos con brecha crítica (&gt;10x) ·
+{am.get('marketing_crit_count', 0)} listos para copy (canasta ≥{am.get('marketing_canasta_min_spread', '?')}x) ·
+agrupación: {am.get('dispersion_grouping', '—')}
+</div>"""
     
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>CLI Market // Data Moat</title>
@@ -715,77 +761,91 @@ h1{{color:#3cffd0;font-size:14px;margin:0 0 4px}}
 .sub{{color:#444;font-size:10px;margin:0 0 16px}}
 table{{border-collapse:collapse;width:100%;max-width:800px;margin-bottom:16px}}
 th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #1a1a1a}}
-td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px}}
+td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px;vertical-align:top}}
 td.num{{text-align:right}}
 .section{{color:#3cffd0;font-size:11px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:2px}}
+.section-intro{{color:#777;font-size:11px;line-height:1.55;margin:0 0 10px;max-width:720px}}
 .layer-q{{color:#888;font-size:11px;margin:0 0 8px}}
-.layer-note{{color:#555;font-size:10px;margin:0 0 12px;font-style:italic}}
+.layer-note{{color:#555;font-size:10px;margin:0 0 12px;font-style:italic;max-width:720px;line-height:1.45}}
+.metric-label{{color:#ccc;font-size:11px}}
+.metric-desc{{color:#555;font-size:10px;line-height:1.4}}
+.help-box{{background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:10px 12px;margin:0 0 14px;max-width:720px;font-size:10px;color:#666;line-height:1.5}}
 .coverage{{font:10px monospace;margin:8px 0;color:#555}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
+ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max-width:720px}}
 </style></head><body>
 <h1>CLI Market · Data Moat</h1>
-<p class="sub">{g.get('headline', 'Monitor de precios')} · <b>{indexed:,}</b> indexados · <b>{snap_24:,}</b> refresh 24h · {stores_with_data}/{k['total_stores']} tiendas{stale_note} · {data['generated_at'][:10]} {data['generated_at'][11:16]} UTC</p>
+<p class="sub">{g.get('headline', 'Monitor de precios')} · <b>{indexed:,}</b> {metric_label('inventory', 'total_indexed', 'indexados')} · <b>{snap_24:,}</b> refresh 24h · {stores_with_data}/{k['total_stores']} tiendas{stale_note} · {data['generated_at'][:10]} {data['generated_at'][11:16]} UTC</p>
+<p class="section-intro">{header_intro}</p>
 <p class="coverage">Cobertura catálogo: {cov_pct}% {cov_bar}</p>
 
-<div class="section">[ QUÉ ES ]</div>
-<ul style="color:#888;font-size:11px;line-height:1.6;margin:0 0 16px 18px">{mental or '<li>Moat = precios verificados cross-retailer</li>'}</ul>
+{sec('mental_model', 'Qué es el data moat')}
+<ul style="color:#888;font-size:11px;line-height:1.6;margin:0 0 16px 18px;max-width:720px">{mental or '<li>Moat = precios verificados de muchas tiendas en un solo lugar</li>'}</ul>
 
+<div class="section">[ GUÍA POR CAPAS ]</div>
+<p class="section-intro">Cinco capas para entender el moat sin jerga financiera. Cada fila explica qué significa el número.</p>
 {guide_html}
 
+<div class="section">[ LEYENDA DE ESTADOS ]</div>
+<ul class="glossary">{legend_html}</ul>
+
 <div class="section">[ DETALLE ANALÍTICO ]</div>
-<p class="layer-note">Secciones siguientes: exploración (líneas, descuentos, inflación, movers). No confundir con inventario/frescura arriba.</p>
+<p class="section-intro">Exploración de precios por categoría, ofertas, cambios semanales y diferencias entre tiendas. Complementa — no reemplaza — inventario y frescura.</p>
+{meta_html}
 
-<div class="section">[ ESTADO DE TIENDAS ]</div>
-<p style="color:#555;font-size:10px;margin:0 0 6px">¿Cada tienda esta respondiendo? 🟢 OK = sin errores · 🟡 WARN = intermitente · 🔴 DEAD = no se obtuvieron precios. Puede ser un cambio en el sitio de la tienda o un bloqueo temporal.</p>
-<table><tr><th>Tienda</th><th>Exito</th><th>Fallos</th><th>Estado</th></tr>{"".join(f"<tr><td>{h['store']}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{(h.get('success_pct',0) or 0):.0f}%</td><td>{h.get('consecutive_failures',0) or 0}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{'OK' if (h.get('success_pct',0) or 0)>=90 else ('WARN' if (h.get('success_pct',0) or 0)>=30 else 'DEAD')}</td></tr>" for h in data.get("store_health",[])[:15]) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+{sec('store_health')}
+<table><tr><th>Tienda</th><th>{metric_label('store_health', 'success_pct', 'Éxito')}</th><th>{metric_label('store_health', 'consecutive_failures', 'Fallos')}</th><th>Estado</th></tr>{"".join(f"<tr><td>{h['store']}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{(h.get('success_pct',0) or 0):.0f}%</td><td>{h.get('consecutive_failures',0) or 0}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{'OK' if (h.get('success_pct',0) or 0)>=90 else ('WARN' if (h.get('success_pct',0) or 0)>=30 else 'DEAD')}</td></tr>" for h in data.get("store_health",[])[:15]) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
 
-<div class="section">[ PRECIOS POR LÍNEA ]</div>
-<table><tr><th>Línea</th><th>Precios</th><th>Avg</th><th>Min</th><th>Max</th></tr>{lines_html}</table>
+{sec('by_line')}
+<table><tr><th>Categoría</th><th>{metric_label('by_line', 'count', 'Precios')}</th><th>{metric_label('by_line', 'avg_price', 'Promedio')}</th><th>{metric_label('by_line', 'min_price', 'Mín')}</th><th>{metric_label('by_line', 'max_price', 'Máx')}</th></tr>{lines_html}</table>
 
-<div class="section">[ TIENDA MÁS BARATA POR LÍNEA ]</div>
-<table><tr><th>Línea</th><th>Tienda</th><th>Avg</th></tr>{cheap_html}</table>
+{sec('cheapest_by_line')}
+<table><tr><th>Categoría</th><th>Tienda más barata</th><th>Precio promedio</th></tr>{cheap_html}</table>
 
-<div class="section">[ TOP DESCUENTOS ]</div>
-<table><tr><th>Producto</th><th>Tienda</th><th>Desc</th></tr>{disc_html}</table>
+{sec('top_discounts')}
+<table><tr><th>Producto</th><th>Tienda</th><th>{metric_label('top_discounts', 'discount_pct', 'Descuento')}</th></tr>{disc_html}</table>
 
-<div class="section">[ OUTLIERS ]</div>
+{sec('outliers')}
 <table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
 
-<div class="section">[ INFLACIÓN 7d ]</div>
-<table><tr><th>Línea</th><th>Moneda</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=5>⚠ Sin datos historicos todavia — este indicador se activara cuando tengamos al menos 7 dias de datos continuos.</td></tr>'}</table>
+{sec('inflation')}
+<table><tr><th>Categoría</th><th>Moneda</th><th>{metric_label('inflation', 'avg_now', 'Hoy')}</th><th>{metric_label('inflation', 'avg_before', 'Hace 7d')}</th><th>{metric_label('inflation', 'delta_pct', 'Cambio')}</th></tr>{infl_html or '<tr><td colspan=5>Sin historial de 7 días aún — se activará cuando tengamos lecturas en fechas distintas.</td></tr>'}</table>
 
-<div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
-<p style="color:#555;font-size:10px;margin:0 0 6px">Por subcategoría + moneda. Usa precio unitario (kg/L) cuando el nombre lo permite. CRIT (&gt;10x) excluye bucket &quot;otros&quot;.</p>
-<table><tr><th>Línea</th><th>Subcat</th><th>Moneda</th><th>Base</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
+{sec('dispersion')}
+<table><tr><th>Categoría</th><th>{metric_label('dispersion', 'subcategory', 'Subcat')}</th><th>Moneda</th><th>{metric_label('dispersion', 'price_basis', 'Base')}</th><th>Promedio</th><th>{metric_label('dispersion', 'spread_ratio', 'Brecha')}</th></tr>{disp_html or '<tr><td colspan=6>sin datos</td></tr>'}</table>
 
-<div class="section">[ SPREADS LISTOS PARA COPY ]</div>
-<p style="color:#555;font-size:10px;margin:0 0 6px">Canasta + farmacia: mismo producto (fuzzy), misma unidad, 2+ tiendas, CRIT verificado.</p>
-<table><tr><th>Ítem</th><th>Moneda</th><th>Base</th><th>Spread</th><th>Tiendas</th><th>Ejemplo</th></tr>{mkt_html or '<tr><td colspan=6>sin CRIT marketing-ready</td></tr>'}</table>
+{sec('canasta_spreads')}
+<table><tr><th>Ítem</th><th>Moneda</th><th>Tiendas</th><th>Brecha</th><th>Ejemplo</th></tr>{canasta_spread_html or '<tr><td colspan=5>sin datos</td></tr>'}</table>
 
-<div class="section">[ CANASTA BÁSICA - COMPLETITUD ]</div>
-<table><tr><th>Tienda</th><th>Completitud</th><th>%</th><th>Total</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+{sec('marketing_spreads')}
+<table><tr><th>Ítem</th><th>Moneda</th><th>Base</th><th>{metric_label('marketing_spreads', 'spread_ratio', 'Brecha')}</th><th>{metric_label('marketing_spreads', 'stores', 'Tiendas')}</th><th>Ejemplo</th></tr>{mkt_html or '<tr><td colspan=6>Ninguna brecha supera el umbral verificado todavía</td></tr>'}</table>
+
+{sec('canasta_basica', 'Canasta básica — completitud')}
+<table><tr><th>Tienda</th><th>{metric_label('canasta_basica', 'items', 'Encontrados')}</th><th>%</th><th>{metric_label('canasta_basica', 'total', 'Total')}</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
 
 <div class="section">[ ALERTAS DE CALIDAD ]</div>
-{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}% — posible error de scraping</p>" for d in data.get("top_discounts",[]) if abs(d.get("discount_pct",0) or 0)>=90) or '<p>sin descuentos sospechosos</p>'}
+<p class="section-intro">Descuentos de 90 % o más suelen ser errores al leer la web (precio tachado mal interpretado), no ofertas reales.</p>
+{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}%</p>" for d in data.get("top_discounts",[]) if abs(d.get("discount_pct",0) or 0)>=90) or '<p class="metric-desc">sin descuentos sospechosos</p>'}
 
-<div class="section">[ STORE RELIABILITY ]</div>
-<table><tr><th>Tienda</th><th>Éxito</th><th>Fallos</th></tr>{health_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
+<div class="section">[ CONFIABILIDAD DEL RECOLECTOR ]</div>
+<p class="section-intro">Historial de éxito al leer cada tienda (distinto del estado operativo de arriba — aquí miramos más intentos).</p>
+<table><tr><th>Tienda</th><th>Éxito</th><th>Fallos seguidos</th></tr>{health_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
 
-<div class="section">[ LINE × COUNTRY ]</div>
-{matrix_html or '<p>sin datos</p>'}
+{sec('line_country_matrix')}
+{matrix_html or '<p class="metric-desc">sin datos</p>'}
 {gaps_html}
 
-<div class="section">[ CANASTA BÁSICA ]</div>
-<table><tr><th>Tienda</th><th>Productos</th><th>Total</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
+{sec('canasta_basica')}
+<table><tr><th>Tienda</th><th>Productos / 10</th><th>Total estimado</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
 
-<div class="section">[ PRICE MOVERS ]</div>
-<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>⏳ Sin datos aun — se necesitan dos capturas consecutivas para detectar movimientos.</td></tr>'}</table>
+{sec('price_movers')}
+<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>Sin datos — se necesitan dos capturas en días distintos.</td></tr>'}</table>
 <table><tr><th colspan=4 style="color:#3cffd0">▼ BAJARON</th></tr>{faller_html or '<tr><td colspan=4></td></tr>'}</table>
 
-<div class="section">[ FRESCURA ]</div>
-<table><tr><th>Tienda</th><th>Último snapshot</th></tr>{fresh_html}</table>
+{sec('freshness_table', 'Frescura por tienda')}
+<table><tr><th>Tienda</th><th>Último precio guardado</th></tr>{fresh_html}</table>
 
-<p class="footer">Ultima actualizacion: {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC · Esta pagina se actualiza automaticamente · CLI Market · cli-market.dev</p>
+<p class="footer">Ultima actualizacion: {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC · Glosario completo en GET /dashboard/data → metric_glossary · CLI Market · cli-market.dev</p>
 </body></html>"""
     return html
 
