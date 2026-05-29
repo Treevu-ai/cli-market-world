@@ -61,7 +61,7 @@ def main() -> None:
     ):
         print(f"  {label} ({cid})")
         if not send_test:
-            print(f"    → dry-run (usa --send-test para postear)")
+            print("    → dry-run (usa --send-test para postear)")
             continue
 
         data = _call(

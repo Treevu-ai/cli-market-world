@@ -28,7 +28,7 @@ import importlib.util
 import os
 import re
 import sys
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -120,9 +120,6 @@ def _gate_snippets() -> list[str]:
 def _dev_calendar_this_week(for_date: date) -> list[str]:
     if not DEV_CALENDAR_PATH.is_file():
         return []
-    # Simple: return lines from "## Jun 2026" table mentioning current ISO week
-    week = for_date.isocalendar()
-    week_label = f"W{week.week}"
     rows: list[str] = []
     in_table = False
     for line in DEV_CALENDAR_PATH.read_text(encoding="utf-8").splitlines():
@@ -182,8 +179,8 @@ def build_content_report(for_date: date) -> str:
         lines += [
             f"## Hoy — Día {day}: {today['title']}",
             "",
-            f"| Campo | Valor |",
-            f"|-------|-------|",
+            "| Campo | Valor |",
+            "|-------|-------|",
             f"| Archivo | `{today['path']}` |",
             f"| Estado | `{status}` |",
             f"| Publicado | {pub_label} |",
