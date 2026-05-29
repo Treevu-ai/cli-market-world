@@ -54,13 +54,18 @@ class CreateApiKeyRequest(BaseModel):
 @router.post("/auth/register")
 def register():
     """Create a new API key. Public endpoint — rate limited."""
-    import uuid, traceback
-    try:
-        token = "sk-" + uuid.uuid4().hex
-        db_save_user(token, "no-password", token)
-        return {"api_key": token, "message": "API key generada. Guardala."}
-    except Exception as e:
-        return {"error": str(e), "trace": traceback.format_exc()[-300:]}
+    check_rate_limit("auth")
+    username = f"user-{uuid.uuid4().hex[:12]}"
+    # Random password — access is via sk- API key, not password login.
+    db_save_user(username, hash_password(uuid.uuid4().hex), None)
+    result = db_create_api_key(username, "read_write", "register")
+    return {
+        "username": username,
+        "api_key": result["key"],
+        "prefix": result["prefix"],
+        "scopes": result["scopes"],
+        "message": "API key generada. Guardala — no se vuelve a mostrar.",
+    }
 
 @router.post("/auth/login")
 def login(body: LoginRequest):

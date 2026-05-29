@@ -178,17 +178,38 @@ def store_emoji(store: str) -> str:
 
 # ── Session / auth helpers ────────────────────────────────────────────────────
 
+_AUTH_PUBLIC_PATHS = {"/", "/auth/login", "/auth/register"}
+
+
+def save_session(username: str, token: str) -> None:
+    """Persist bearer token locally for CLI and MCP clients."""
+    if not token:
+        return
+    SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SESSION_FILE.write_text(
+        json.dumps({"username": username, "token": token}, indent=2),
+        encoding="utf-8",
+    )
+
+
 def get_token() -> str:
     if not SESSION_FILE.exists():
         return ""
-    data = json.loads(SESSION_FILE.read_text())
+    data = json.loads(SESSION_FILE.read_text(encoding="utf-8"))
     return data.get("token", "")
+
+
+def get_session_username() -> str:
+    if not SESSION_FILE.exists():
+        return ""
+    data = json.loads(SESSION_FILE.read_text(encoding="utf-8"))
+    return data.get("username", "")
 
 # ── API client (sync — used by CLI and MCP) ───────────────────────────────────
 
 def api(method: str, path: str, json_data: dict | None = None) -> dict:
     token = None
-    if path not in ("/auth/login", "/"):
+    if path not in _AUTH_PUBLIC_PATHS:
         token = get_token()
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     try:
@@ -205,7 +226,14 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
         if resp.status_code >= 400:
             detail = resp.json().get("detail", resp.text)
             return {"error": detail, "status": resp.status_code}
-        return resp.json()
+        data = resp.json()
+        if path == "/auth/login" and data.get("token"):
+            save_session(data.get("username", ""), data["token"])
+        elif path == "/auth/register":
+            key = data.get("api_key") or data.get("key")
+            if key:
+                save_session(data.get("username", ""), key)
+        return data
     except httpx.ConnectError:
         return {"error": "Server not running. Start: python market_server.py"}
 
