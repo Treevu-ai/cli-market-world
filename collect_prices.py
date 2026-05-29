@@ -27,11 +27,11 @@ logger = log.getChild("collector")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-PARALLEL = int(os.getenv("COLLECT_PARALLEL", "12"))
-REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.35"))
+PARALLEL = int(os.getenv("COLLECT_PARALLEL", "6"))
+REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.75"))
 QUERY_TIMEOUT = 15.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
-MAX_QUERIES_PER_LINE = int(os.getenv("COLLECT_MAX_QUERIES_PER_LINE", "24"))
+MAX_QUERIES_PER_LINE = int(os.getenv("COLLECT_MAX_QUERIES_PER_LINE", "12"))
 COLLECTOR_ADVISORY_LOCK = int(os.getenv("COLLECTOR_ADVISORY_LOCK", "84957231"))
 
 LINE_MAX_PRICE = {
@@ -373,6 +373,9 @@ if USE_PG:
         ensure_db_initialized()
 
     async def pg_insert(conn, prod):
+        discount = prod.get("discount")
+        if discount is not None:
+            discount = int(round(float(discount)))
         await conn.execute("""
             INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
@@ -384,7 +387,7 @@ if USE_PG:
                 discount=EXCLUDED.discount,
                 stock=EXCLUDED.stock,
                 queried_at=NOW()
-        """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],prod["discount"],
+        """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],discount,
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"])
 
     async def pg_health(conn, store, ok):
@@ -578,7 +581,9 @@ async def collect_one_pg(pool, store, queries):
     line = STORES[store].get("line", "")
     collected = 0
     query_ok = 0
+    query_fail = 0
     pending: list[dict] = []
+    insert_errors: list[str] = []
     try:
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(QUERY_TIMEOUT),
@@ -603,14 +608,19 @@ async def collect_one_pg(pool, store, queries):
                         pending.append(prod)
                     await asyncio.sleep(REQUEST_DELAY)
                 except Exception as exc:
+                    query_fail += 1
                     logger.warning("collect %s/%s: %s", store, q, str(exc)[:120])
                     cb.lose(store)
         if pending:
             async with pool.acquire() as conn:
                 for prod in pending:
-                    await pg_insert(conn, prod)
-                    collected += 1
-                await pg_health(conn, store, True)
+                    try:
+                        await pg_insert(conn, prod)
+                        collected += 1
+                    except Exception as exc:
+                        insert_errors.append(str(exc)[:120])
+                        logger.warning("insert %s: %s", store, str(exc)[:120])
+                await pg_health(conn, store, collected > 0 or query_ok > 0)
         elif query_ok > 0:
             async with pool.acquire() as conn:
                 await pg_health(conn, store, True)
@@ -620,10 +630,14 @@ async def collect_one_pg(pool, store, queries):
     except Exception as exc:
         logger.warning("collect_one_pg %s failed: %s", store, str(exc)[:160])
         cb.lose(store)
-    if query_ok > 0 and collected == 0:
+    if query_fail and query_ok == 0 and collected == 0:
+        logger.warning("store %s: %d query failures, 0 successes", store, query_fail)
+    elif query_ok > 0 and collected == 0:
         logger.warning("store %s: %d queries OK but 0 prices saved", store, query_ok)
     elif collected > 0:
         logger.info("store %s: %d products from %d queries", store, collected, query_ok)
+    if insert_errors:
+        logger.warning("store %s: %d insert errors (first: %s)", store, len(insert_errors), insert_errors[0])
     return collected
 
 async def collect_one_sqlite(db, store, queries):

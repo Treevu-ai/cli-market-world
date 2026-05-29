@@ -20,3 +20,10 @@ watchPatterns = [
 [deploy]
 restartPolicyType = "ON_FAILURE"
 numReplicas = 1
+
+# Suggested Variables on this service:
+#   DATABASE_URL=${{Postgres.DATABASE_URL}}
+#   COLLECT_PARALLEL=6
+#   COLLECT_DELAY=0.75
+#   COLLECT_MAX_QUERIES_PER_LINE=12
+#   COLLECT_INTERVAL_HOURS=4
