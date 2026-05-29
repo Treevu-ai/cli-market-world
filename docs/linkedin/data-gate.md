@@ -83,4 +83,46 @@ curl -sS -X POST https://cli-market-production.up.railway.app/products/compare \
 
 **Semana 2 desbloqueada.** Publicar días 7–14 con cifras agregadas verificadas. Day 8: variación arroz PE con rango real, sin % inflación inventado. Day 9: cualitativo + demo basket, sin totales ficticios.
 
+## Gate AR — canasta (bloque cero)
+
+**Post LinkedIn AR:** [[linkedin/Day-09-AR]] · **Copy API:** [[api-positioning-es]]
+
+**Regla:** No publicar brecha `[X]`% hasta que las tres cadenas del trío ARS sean comparables.
+
+### Snapshot prod — 2026-05-29 (post PR #16–#18, pre/post-deploy según Railway)
+
+| Tienda | Ítems canasta | Total ARS | ¿Publicable? |
+|--------|---------------|-----------|--------------|
+| Carrefour AR | **6/10** | 37,854 | ⚠️ parcial |
+| Jumbo AR | **3/10** | 3,471 | ❌ bajo umbral 6/10 |
+| Vea AR | *(ausente en canasta_basica)* | — | ❌ <3 ítems o sin match |
+
+**Gate AR:** ❌ **BLOQUEADO** — falta completitud ≥6/10 en las 3 cadenas y total comparable.
+
+### marketing_spreads ARS (referencia — por ítem, no canasta total)
+
+| Ítem | spread_ratio | stores | Nota |
+|------|--------------|--------|------|
+| queso | 2.93x | 3 | OK umbral 2.5x — titular **por ítem**, no % canasta |
+| pan | 2.75x | 3 | idem |
+| aceite | 2.65x | 3 | idem — post parser cc/1.5L |
+
+**No confundir** `spread_ratio` (brecha min–max / promedio dentro del ítem) con `% más cara vs más barata` entre cadenas en canasta total.
+
+### Comando de verificación
+
+```bash
+curl -sS https://cli-market-production.up.railway.app/dashboard/data | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for c in d.get('canasta_basica',[]):
+    if 'AR' in c.get('store_name',''):
+        print(c)
+print('--- marketing ARS ---')
+for m in d.get('marketing_spreads',[]):
+    if m.get('currency')=='ARS':
+        print(m['seed'], m['spread_ratio'], m['stores'])
+"
+```
+
 [[GTM-Hub]] · [[metrics/price-pulse-2026-W22]] · [[linkedin/00-Index]]
