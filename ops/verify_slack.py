@@ -52,7 +52,17 @@ def main() -> None:
         sys.exit(1)
 
     bot_user = auth.get("user", "bot")
-    print(f"✅ Bot: {bot_user} · team: {auth.get('team')}")
+    team = auth.get("team", "?")
+    team_id = auth.get("team_id", "")
+    url = (auth.get("url") or "").rstrip("/")
+    print(f"✅ Workspace: {team}" + (f" ({team_id})" if team_id else ""))
+    if url:
+        print(f"   URL: {url}/")
+    print(f"   Bot user: {bot_user}")
+    print(
+        "\nSi este workspace no es el correcto, generá un token nuevo en la app "
+        "instalada en el workspace deseado (api.slack.com/apps → Reinstall)."
+    )
 
     failed = False
     for label, cid in (

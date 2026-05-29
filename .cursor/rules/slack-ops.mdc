@@ -50,4 +50,4 @@ python3 ops/daily_briefing.py --dry-run
 - Post del día / redes → `post --publicaciones` o leer `ops/daily/*-content.md`.
 - Fallo de envío → `verify_slack.py`; revisar bot invitado (`/invite @cli_market_dev_bot`).
 
-Ver `docs/ops/cursor-slack.md` y `AGENTS.md`.
+Ver `docs/ops/slack-setup.md`, `docs/ops/cursor-slack.md` y `AGENTS.md`.
