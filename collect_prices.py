@@ -694,8 +694,15 @@ async def run_collection(stores, queries):
                 elif r > 0:
                     total += r
                     ok += 1
+                elif r == 0:
+                    errs.append(f"{store}: 0 prices")
         async with pool.acquire() as c:
             await pg_run_end(c, rid, ok, total, json.dumps(errs[:100]))
+        if total == 0 and len(sl) > 0:
+            logger.warning(
+                "collection cycle saved 0 prices for %d stores (%d query errors logged)",
+                len(sl), len(errs),
+            )
     else:
         db = init_schema_sqlite()
         rid = sq_run_start(db, len(sl))
