@@ -12,6 +12,7 @@ Workspace: **climarketworspace** (`climarketworspace.slack.com`)
 |----------------|-----|-----------|
 | `#bitácora-diaria-cli` | `C0B6V3Y9ZSP` | KPIs, tiendas críticas, collector |
 | `#publicaciones-redes` | `C0B6ZJ1B9B8` | Post LinkedIn del día, hooks, checklist |
+| `#revisiones-cursor` | `C0B723TQS78` | Resúmenes de PR, revisiones Cloud Agent |
 
 Bot: `cli_market_dev_bot` — debe estar invitado: `/invite @cli_market_dev_bot`
 
@@ -23,6 +24,7 @@ Crea `.env` en la raíz del repo (no se sube a git):
 SLACK_BOT_TOKEN=xoxb-tu-token
 SLACK_CHANNEL_BITACORA=C0B6V3Y9ZSP
 SLACK_CHANNEL_PUBLICACIONES=C0B6ZJ1B9B8
+SLACK_CHANNEL_REVISIONES_CURSOR=C0B723TQS78
 ```
 
 En **PowerShell**:
@@ -54,6 +56,7 @@ Cursor usará la regla `.cursor/rules/slack-ops.mdc` y estos comandos:
 | Solo archivos, sin Slack | `python3 ops/slack_cli.py briefing --dry-run` |
 | Mensaje corto bitácora | `python3 ops/slack_cli.py post --bitacora "..."` |
 | Archivo a publicaciones | `python3 ops/slack_cli.py post --publicaciones --file ops/daily/YYYY-MM-DD-content.md` |
+| Resumen a revisiones | `python3 ops/slack_cli.py post --revisiones-cursor "..."` |
 | Test de token | `python3 ops/slack_cli.py verify --send-test` |
 
 ## 3. Automático sin Cursor (GitHub Actions)

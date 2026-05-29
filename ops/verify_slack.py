@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify Slack bot can post to bitácora and publicaciones channels.
+"""Verify Slack bot can post to bitácora, publicaciones, and revisiones-cursor.
 
 Requires Bot Token scopes: chat:write (and chat:write.public if needed).
 Does NOT require channels:read — uses chat.postMessage only.
@@ -17,7 +17,11 @@ import sys
 import httpx
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from slack_notify import channel_bitacora, channel_publicaciones
+from slack_notify import (
+    channel_bitacora,
+    channel_publicaciones,
+    channel_revisiones_cursor,
+)
 
 HINTS = {
     "not_in_channel": "En Slack, en ese canal: /invite @{bot}",
@@ -68,6 +72,7 @@ def main() -> None:
     for label, cid in (
         ("Bitácora", channel_bitacora()),
         ("Publicaciones", channel_publicaciones()),
+        ("Revisiones Cursor", channel_revisiones_cursor()),
     ):
         print(f"  {label} ({cid})")
         if not send_test:
