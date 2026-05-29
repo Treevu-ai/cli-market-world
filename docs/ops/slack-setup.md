@@ -10,12 +10,13 @@ Guía de referencia para instalar, verificar y cambiar la integración Slack del
 | App / bot | `cli_market_dev_bot` |
 | Bitácora producto | `#bitácora-diaria-cli` → `C0B6V3Y9ZSP` |
 | Publicaciones redes | `#publicaciones-redes` → `C0B6ZJ1B9B8` |
+| Revisiones Cursor | `#revisiones-cursor` → `C0B723TQS78` |
 | Envío automático | GitHub Actions `daily-briefing.yml` (13:00 UTC) + scripts locales |
 | Último briefing en canales | 2026-05-29 (producto + contenido Día 1) |
 
 Los IDs `C0B6V3Y9ZSP` y `C0B6ZJ1B9B8` son **específicos de este workspace**. Si creás canales nuevos o migrás de workspace, hay que actualizarlos en `.env` y en el workflow.
 
-**No automatizado por el bot:** canales como `#revisiones-cursor` (`C0B723TQS78`) sirven para revisiones humanas / Cursor MCP; el bot no publica ahí salvo que uses `slack_cli.py post --channel C0B723TQS78`.
+**Revisiones Cursor:** `#revisiones-cursor` (`C0B723TQS78`) — resúmenes de PR y Cloud Agent; no entra en el briefing diario automático. CLI: `python3 ops/slack_cli.py post --revisiones-cursor "..."`.
 
 ## Arquitectura
 
@@ -138,8 +139,10 @@ python3 ops/slack_cli.py briefing --dry-run
 | `SLACK_BOT_TOKEN` | — | Token bot `xoxb-...` |
 | `SLACK_CHANNEL_BITACORA` | `C0B6V3Y9ZSP` | Canal bitácora producto |
 | `SLACK_CHANNEL_PUBLICACIONES` | `C0B6ZJ1B9B8` | Canal publicaciones / LinkedIn |
+| `SLACK_CHANNEL_REVISIONES_CURSOR` | `C0B723TQS78` | Canal revisiones Cursor / Cloud Agent |
 | `SLACK_WEBHOOK_BITACORA` | — | Webhook opcional (sustituye bot en bitácora) |
 | `SLACK_WEBHOOK_PUBLICACIONES` | — | Webhook opcional (sustituye bot en publicaciones) |
+| `SLACK_WEBHOOK_REVISIONES_CURSOR` | — | Webhook opcional (sustituye bot en revisiones-cursor) |
 
 Defaults definidos en `ops/slack_notify.py` y repetidos en `.github/workflows/daily-briefing.yml`.
 
@@ -159,6 +162,7 @@ python3 ops/slack_cli.py verify --send-test
 python3 ops/slack_cli.py briefing
 python3 ops/slack_cli.py post --bitacora "Resumen manual"
 python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
+python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
 python3 ops/slack_cli.py campaign status
 ```
 
@@ -166,7 +170,7 @@ python3 ops/slack_cli.py campaign status
 
 - No lee mensajes del canal (no hay Events API).
 - No ejecuta órdenes escritas en Slack (“publicá día 2”) — hay que pedirlo en Cursor o correr el CLI.
-- No publica en `#revisiones-cursor` por defecto.
+- No incluye `#revisiones-cursor` en el briefing diario automático (solo vía `post --revisiones-cursor`).
 
 ## Troubleshooting
 
