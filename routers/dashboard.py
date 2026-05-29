@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Header
 
 from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
-from market_spread import build_spread_analytics
+from market_spread import CANASTA_ITEMS, build_spread_analytics, find_median_outliers, matches_canasta_item
 from dashboard_glossary import (
     LAYER_METRICS,
     build_metric_glossary,
@@ -249,15 +249,35 @@ def _dashboard_data():
         """
     ).fetchall()
 
-    # ── Top discounts ────────────────────────────────────────────────────────
+    # ── Top discounts (public: sane retail range only) ───────────────────────
     top_discounts = db.execute(
         """
-        SELECT name, store_name, price, list_price,
-               ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
-               currency, line_name
-        FROM price_snapshots
-        WHERE list_price > price AND price > 0 AND list_price < 999999
+        SELECT name, store_name, price, list_price, discount_pct, currency, line_name
+        FROM (
+            SELECT name, store_name, price, list_price,
+                   ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
+                   currency, line_name
+            FROM price_snapshots
+            WHERE list_price > price AND price > 0 AND list_price < 999999
+        ) discounted
+        WHERE discount_pct BETWEEN 5 AND 80
         ORDER BY discount_pct DESC LIMIT 10
+        """
+    ).fetchall()
+
+    suspect_discounts = db.execute(
+        """
+        SELECT name, store_name, price, list_price, discount_pct, currency, line_name, confidence
+        FROM (
+            SELECT name, store_name, price, list_price,
+                   ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
+                   currency, line_name,
+                   'suspect' as confidence
+            FROM price_snapshots
+            WHERE list_price > price AND price > 0 AND list_price < 999999
+        ) discounted
+        WHERE discount_pct >= 90
+        ORDER BY discount_pct DESC LIMIT 20
         """
     ).fetchall()
 
@@ -433,32 +453,11 @@ def _dashboard_data():
            GROUP BY store, store_name ORDER BY unique_products DESC LIMIT 15"""
     ).fetchall()
 
-    # ── Weak signal: outliers (>3× avg within spread group) ─────────────────
-    outliers = []
-    for row in dispersion:
-        if row["count"] < 5:
-            continue
-        threshold = float(row["avg_price"] or 0) * 3
-        if threshold <= 0:
-            continue
-        sub = row.get("subcategory")
-        params: list = [row["line_key"], row["currency"], threshold]
-        sub_sql = ""
-        if sub and sub != "otros" and not str(sub).startswith("cat:"):
-            sub_sql = " AND name LIKE ?"
-            params.insert(2, f"%{sub}%")
-        anoms = db.execute(
-            f"""SELECT name, store_name, price, currency, line_name
-               FROM price_snapshots
-               WHERE line=? AND currency=?{sub_sql} AND price>0 AND price>?
-               ORDER BY price DESC LIMIT 5""",
-            tuple(params),
-        ).fetchall()
-        for a in anoms:
-            item = dict(a)
-            item["price_usd"] = price_to_usd(item.get("price", 0), item.get("currency", ""))
-            outliers.append(item)
-    outliers = outliers[:10]
+    # ── Outliers: bidirectional vs group median (not mean) ───────────────────
+    spread_products = [dict(r) for r in spread_rows]
+    outliers = find_median_outliers(spread_products, min_group=5, band=5.0, limit=10)
+    for item in outliers:
+        item["price_usd"] = price_to_usd(item.get("price", 0), item.get("currency", ""))
 
     # ── Inflation 7d: per line + currency (nominal + USD-normalized) ────────
     inflation = []
@@ -492,20 +491,26 @@ def _dashboard_data():
         })
 
     # ── Canasta basica: fixed 10 products compared across top stores ─────────
-    canasta_products = ["leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon"]
     canasta: dict[str, dict] = {}
-    for prod in canasta_products:
+    for prod in CANASTA_ITEMS:
         rows = db.execute(
-            """SELECT store_name, store, MIN(price) as best_price, currency
-               FROM price_snapshots WHERE price>0 AND price<999999 AND name LIKE ?
-               GROUP BY store_name, store, currency ORDER BY best_price ASC""",
-            (f"%{prod}%",)
+            """SELECT store_name, store, name, price, currency
+               FROM price_snapshots
+               WHERE line='supermercados' AND price>0 AND price<999999 AND name LIKE ?""",
+            (f"%{prod}%",),
         ).fetchall()
+        store_best: dict[tuple[str, str], float] = {}
         for r in rows:
-            s = r["store_name"]
-            canasta.setdefault(s, {"store_name": s, "items": 0, "total": 0, "currency": r["currency"]})
+            if not matches_canasta_item({"line": "supermercados", "name": r["name"]}, prod):
+                continue
+            key = (r["store_name"], r["currency"])
+            price = float(r["price"])
+            if key not in store_best or price < store_best[key]:
+                store_best[key] = price
+        for (s, cur), best_price in store_best.items():
+            canasta.setdefault(s, {"store_name": s, "items": 0, "total": 0, "currency": cur})
             canasta[s]["items"] += 1
-            canasta[s]["total"] = round(canasta[s]["total"] + r["best_price"], 2)
+            canasta[s]["total"] = round(canasta[s]["total"] + best_price, 2)
     canasta_basica = sorted([v for v in canasta.values() if v["items"] >= 3],
                             key=lambda x: x["total"])[:10]
 
@@ -587,6 +592,7 @@ def _dashboard_data():
             "marketing_canasta_min_spread": spread_analytics.get("marketing_canasta_min_spread"),
         },
         "top_discounts": [dict(r) for r in top_discounts],
+        "suspect_discounts": [dict(r) for r in suspect_discounts],
         "cheapest_by_line": cheapest_dedup,
         "top_risers": top_risers,
         "top_fallers": top_fallers,
@@ -910,7 +916,7 @@ ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max
 
 <div class="section">[ ALERTAS DE CALIDAD ]</div>
 <p class="section-intro">Descuentos de 90 % o más suelen ser errores al leer la web (precio tachado mal interpretado), no ofertas reales.</p>
-{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}%</p>" for d in data.get("top_discounts",[]) if abs(d.get("discount_pct",0) or 0)>=90) or '<p class="metric-desc">sin descuentos sospechosos</p>'}
+{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}%</p>" for d in data.get("suspect_discounts",[])) or '<p class="metric-desc">sin descuentos sospechosos</p>'}
 
 <div class="section">[ CONFIABILIDAD DEL RECOLECTOR ]</div>
 <p class="section-intro">Historial de éxito al leer cada tienda (distinto del estado operativo de arriba — aquí miramos más intentos).</p>

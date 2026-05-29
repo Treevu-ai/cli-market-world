@@ -7,10 +7,59 @@ import re
 from collections import defaultdict
 
 from market_units import is_standard_canasta_pack, price_per_base_unit
+from price_confidence import spread_public_ok
 
 CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
 ]
+
+# Substrings that indicate a title is NOT the canasta SKU (validated against live compare data).
+_CANASTA_EXCLUDE: dict[str, frozenset[str]] = {
+    "leche": frozenset({
+        "chocolate", "condensada", "crema de leche", "dulce de leche", "caramelo", "mayonesa",
+        "leche de tigre", "saborizante", "saborizador", "tableta", "snickers", "hershey",
+        "nesquik", "bombon", "bombón",
+    }),
+    "pollo": frozenset({
+        "apollo", "alimento para", "gato", "perro", "churu", "consome", "consomé", "cubo",
+        "rostizado", "broaster", "+ papas", "caldo", "desodorante", "sabonete", "crema",
+    }),
+    "queso": frozenset({
+        "doritos", "cheetos", "pringles", "ritz", "galleta", "mani", "maní", "snack",
+        "tortilla chips", "cortador", "especiero", "easy", "sqweezy", "palito", "bolitas",
+        "doypack",
+    }),
+    "pan": frozenset({
+        "pannello", "anello", "panel", "suavipan", "pancha", "lavavajilla", "bolinho",
+        "croissant", "cachito", "rosquita", "brioche", "baguette",
+    }),
+    "jabon": frozenset({"dispensador", "jabonera", "porta"}),
+    "aceite": frozenset({"atun", "atún", "filete", "conserva", "esencial", "corporal", "motor"}),
+    "huevos": frozenset({"chocolate", "kinder", "pascua"}),
+    "cafe": frozenset({"cafetera", "saborizante", "licor", "filtro"}),
+    "azucar": frozenset({"sin azucar", "sin azúcar", "edulcorante", "splenda", "stevia"}),
+    "arroz": frozenset({
+        "vinagre", "leche de arroz", "pasta de arroz", "harina", "fideo", "yamani",
+        "risotto", "carnaroli",
+    }),
+}
+
+# Word-boundary patterns (accent variants) — blocks apollo/pannello/suavipan false hits.
+_CANASTA_ITEM_PATTERNS: dict[str, re.Pattern[str]] = {
+    item: re.compile(pat, re.I)
+    for item, pat in {
+        "leche": r"\bleche\b",
+        "arroz": r"\barroz\b",
+        "aceite": r"\baceite\b",
+        "azucar": r"\b(azucar|açúcar)\b",
+        "huevos": r"\b(huevos|huevo)\b",
+        "pan": r"\b(pan|pão)\b",
+        "cafe": r"\b(cafe|café)\b",
+        "pollo": r"\b(pollo|frango)\b",
+        "queso": r"\b(queso|queijo)\b",
+        "jabon": r"\b(jabon|jabón|sabon)\b",
+    }.items()
+}
 
 MARKETING_CANASTA_MIN_SPREAD = 2.5
 MARKETING_FARMACIA_MIN_SPREAD = 10.0
@@ -83,6 +132,17 @@ def infer_subcategory(line: str, name: str, category: str = "") -> str:
     return "otros"
 
 
+def _median(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    n = len(ordered)
+    mid = n // 2
+    if n % 2:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2
+
+
 def _spread_status(ratio: float) -> str:
     if ratio > 10:
         return "crit"
@@ -106,11 +166,35 @@ def _spread_from_prices(prices: list[float]) -> dict:
     }
 
 
+def _canasta_name_matches(name: str, item: str) -> bool:
+    """Word-boundary match + exclusion list for one canasta seed."""
+    text = (name or "").lower()
+    pat = _CANASTA_ITEM_PATTERNS.get(item)
+    if not pat or not pat.search(text):
+        return False
+    for ex in _CANASTA_EXCLUDE.get(item, ()):
+        if ex in text:
+            return False
+    return True
+
+
+def matches_canasta_item(row: dict, item: str, *, standard_pack_only: bool = False) -> bool:
+    """True when a product row is a comparable canasta SKU (supermercados only)."""
+    if (row.get("line") or "") != "supermercados":
+        return False
+    name = row.get("name") or ""
+    if not _canasta_name_matches(name, item):
+        return False
+    if standard_pack_only and not is_standard_canasta_pack(name, item):
+        return False
+    return True
+
+
 def _canasta_matches(products: list[dict], item: str, *, standard_pack_only: bool) -> list[dict]:
-    matches = [p for p in products if item in (p.get("name") or "").lower()]
-    if standard_pack_only:
-        matches = [p for p in matches if is_standard_canasta_pack(p.get("name") or "", item)]
-    return matches
+    return [
+        p for p in products
+        if matches_canasta_item(p, item, standard_pack_only=standard_pack_only)
+    ]
 
 
 def _canasta_store_best(rows: list[dict]) -> dict[str, dict]:
@@ -181,6 +265,79 @@ def compute_dispersion(products: list[dict]) -> list[dict]:
         })
     out.sort(key=lambda x: (-x["spread_ratio"], x["line"], x.get("subcategory") or ""))
     return out
+
+
+def find_median_outliers(
+    products: list[dict],
+    *,
+    min_group: int = 5,
+    band: float = 5.0,
+    limit: int = 10,
+) -> list[dict]:
+    """Bidirectional outliers vs group median (line + currency + subcategory)."""
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+    for row in products:
+        line = row.get("line") or ""
+        currency = row.get("currency") or "???"
+        if line in WIDE_LINES:
+            sub = infer_subcategory(line, row.get("name") or "", row.get("category") or "")
+            key = (line, currency, sub)
+        else:
+            key = (line, currency, "")
+        groups[key].append(row)
+
+    outliers: list[dict] = []
+    for (_line, currency, sub), rows in groups.items():
+        if len(rows) < min_group:
+            continue
+        by_basis: dict[str, list[tuple[dict, float]]] = defaultdict(list)
+        for r in rows:
+            val, basis = _effective_price(r)
+            if val > 0:
+                by_basis[basis].append((r, val))
+
+        basis_pick = "nominal"
+        best_n = 0
+        for basis, pairs in by_basis.items():
+            if basis != "nominal" and len(pairs) > best_n:
+                basis_pick = basis
+                best_n = len(pairs)
+        if basis_pick == "nominal" or best_n < max(3, len(rows) // 4):
+            pairs = by_basis.get("nominal") or []
+            basis_pick = "nominal"
+        else:
+            pairs = by_basis[basis_pick]
+
+        if len(pairs) < min_group:
+            continue
+        median = _median([v for _, v in pairs])
+        if median <= 0:
+            continue
+        lo, hi = median / band, median * band
+        for r, val in pairs:
+            if lo <= val <= hi:
+                continue
+            ratio = max(val / median, median / val)
+            outliers.append({
+                "name": r.get("name"),
+                "store_name": r.get("store_name"),
+                "store": r.get("store"),
+                "price": r.get("price"),
+                "currency": currency,
+                "line_name": r.get("line_name") or r.get("line"),
+                "line_key": _line,
+                "subcategory": sub or None,
+                "price_basis": basis_pick,
+                "group_median": round(median, 2),
+                "confidence": "suspect",
+                "deviation": "low" if val < lo else "high",
+                "_extreme_ratio": ratio,
+            })
+
+    outliers.sort(key=lambda x: x["_extreme_ratio"], reverse=True)
+    for item in outliers:
+        item.pop("_extreme_ratio", None)
+    return outliers[:limit]
 
 
 def compute_canasta_spreads(products: list[dict]) -> list[dict]:
@@ -260,6 +417,8 @@ def compute_marketing_spreads(products: list[dict]) -> list[dict]:
             stats = _spread_from_prices(vals)
             if stats["spread_ratio"] < MARKETING_CANASTA_MIN_SPREAD:
                 continue
+            if not spread_public_ok(stats["spread_ratio"]):
+                continue
             rep = min(store_best.values(), key=lambda x: x["_val"])
             out.append({
                 "seed": item,
@@ -312,6 +471,8 @@ def compute_marketing_spreads(products: list[dict]) -> list[dict]:
                 vals = [v["_val"] for v in store_rows.values()]
                 stats = _spread_from_prices(vals)
                 if stats["spread_ratio"] < MARKETING_FARMACIA_MIN_SPREAD:
+                    continue
+                if not spread_public_ok(stats["spread_ratio"]):
                     continue
                 rep = next(iter(store_rows.values()))
                 out.append({

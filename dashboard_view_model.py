@@ -319,11 +319,11 @@ def build_dashboard_view_model(data: dict) -> dict:
             "name": d.get("name"),
             "store_name": d.get("store_name"),
             "discount_pct": d.get("discount_pct"),
+            "confidence": d.get("confidence", "suspect"),
             "copy": f"{(d.get('name') or '')[:40]} ({d.get('store_name')}) — posible error de scraping",
-            "source": "top_discounts",
+            "source": "suspect_discounts",
         }
-        for d in (data.get("top_discounts") or [])
-        if abs(float(d.get("discount_pct") or 0)) >= 90
+        for d in (data.get("suspect_discounts") or [])
     ]
 
     matrix = data.get("line_country_matrix") or []
@@ -367,7 +367,7 @@ def build_dashboard_view_model(data: dict) -> dict:
                 "id": "quality_alerts",
                 "title": "Alertas de calidad",
                 "intro": "Precios detectados como probables errores y excluidos de las comparaciones.",
-                "source": "top_discounts (discount_pct >= 90)",
+                "source": "suspect_discounts (discount_pct >= 90)",
                 "items": quality_alerts,
             },
             {
