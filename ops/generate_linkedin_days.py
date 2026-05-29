@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Generate LinkedIn Day-08..Day-30 publish-ready drafts from calendar."""
 
+import sys
 from pathlib import Path
 
-DOCS = Path(__file__).resolve().parent.parent / "docs" / "linkedin"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from content_paths import linkedin_dir  # noqa: E402
+
+DOCS = linkedin_dir()
 
 DAYS = {
     8: {

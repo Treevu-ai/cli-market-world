@@ -34,15 +34,17 @@ jobs:
           SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
           SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
           LINKEDIN_CAMPAIGN_START: "2026-05-29"
+          # Optional: GitHub secret CLI_MARKET_CONTENT_DIR if content repo is checked out alongside
+          CLI_MARKET_CONTENT_DIR: ${{ secrets.CLI_MARKET_CONTENT_DIR }}
         run: python3 ops/daily_briefing.py
 
       - name: Commit daily reports
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ops/daily/ docs/metrics/price-pulse-*.md
+          git add ops/daily/ 2>/dev/null || true
           if git diff --staged --quiet; then
-            echo "No report changes to commit."
+            echo "No report changes to commit (product briefings may be gitignored)."
           else
             git commit -m "chore(ops): daily briefing $(date -u +%Y-%m-%d)"
             git push

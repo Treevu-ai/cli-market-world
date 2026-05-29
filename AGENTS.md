@@ -27,8 +27,9 @@ Regla detallada: `.cursor/rules/slack-ops.mdc`
 - `docs/ops/daily-briefing.md`
 - Campaña LinkedIn desde Día 1 (2026-05-29): `docs/linkedin/catch-up-plan.md`
 - `python3 ops/slack_cli.py campaign status` · `campaign sync` · `campaign assets`
-- Publicar LinkedIn: `docs/linkedin/PUBLISH.md` · imágenes en `docs/linkedin/assets/day-NN/`
-- `python3 ops/generate_all_linkedin_assets.py` — regenera los 30 PNG
+- Contenido GTM: repo privado **`cli-market-content`** — ver `docs/CONTENT.md`
+- `python3 ops/init_content_repo.py` · `CLI_MARKET_CONTENT_DIR=../cli-market-content`
+- `python3 ops/generate_all_linkedin_assets.py` — regenera PNG en content repo
 
 **Slack no ejecuta órdenes** escritas en el canal del bot; solo envía. Pedir cambios en Cursor o terminal.
 

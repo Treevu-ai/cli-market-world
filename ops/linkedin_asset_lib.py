@@ -10,10 +10,21 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
+from content_paths import assets_root, linkedin_dir, metrics_dir
+
 ROOT = Path(__file__).resolve().parent.parent
-ASSETS_ROOT = ROOT / "docs" / "linkedin" / "assets"
-LINKEDIN_DIR = ROOT / "docs" / "linkedin"
-METRICS_DIR = ROOT / "docs" / "metrics"
+
+
+def _linkedin_dir() -> Path:
+    return linkedin_dir()
+
+
+def _assets_root() -> Path:
+    return assets_root()
+
+
+def _metrics_dir() -> Path:
+    return metrics_dir()
 
 PE_STORES = frozenset(
     {"wong", "metro", "plazavea", "promart", "vivanda", "tottus", "plaza_vea"}
@@ -40,7 +51,7 @@ def load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFo
 
 
 def parse_day_md(day: int) -> dict[str, Any]:
-    path = LINKEDIN_DIR / f"Day-{day:02d}.md"
+    path = _linkedin_dir() / f"Day-{day:02d}.md"
     raw = path.read_text(encoding="utf-8")
     fm: dict[str, str] = {}
     body = raw

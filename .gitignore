@@ -21,3 +21,17 @@ docs/awesome-claude-code/
 !.cursor/rules/**
 .env
 .env.local
+
+# GTM / LinkedIn content lives in private cli-market-content (see docs/CONTENT.md)
+cli-market-content/
+
+# Legacy paths (if content was ever generated inside product repo)
+docs/linkedin/assets/**/*.png
+docs/linkedin/assets/**/*.gif
+ops/daily/*.md
+!ops/daily/.gitkeep
+ops/reports/*.md
+!ops/reports/.gitkeep
+
+# Unrelated / heavy local files
+docs/sunat_manual.pdf

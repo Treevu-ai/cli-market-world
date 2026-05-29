@@ -83,7 +83,7 @@ def cmd_campaign_status() -> int:
         print(f"Post: {day_file.relative_to(ROOT)}")
     else:
         print(f"Post: (no existe Day-{day:02d}.md)")
-    print("Plan: docs/linkedin/catch-up-plan.md")
+    print("Content: set CLI_MARKET_CONTENT_DIR — see docs/CONTENT.md")
     return 0
 
 

@@ -16,11 +16,16 @@ Env vars:
 
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import httpx
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from content_paths import content_root, metrics_dir  # noqa: E402
 
 DASHBOARD_URL = os.getenv(
     "DASHBOARD_DATA_URL",
@@ -356,14 +361,13 @@ def main() -> None:
     now = datetime.now(timezone.utc)
     ds = now.strftime("%Y-%m-%d")
     week = _iso_week(now)
-    os.makedirs("ops/reports", exist_ok=True)
-    os.makedirs("docs/metrics", exist_ok=True)
-    path = f"ops/reports/{ds}.md"
-    pulse_path = f"docs/metrics/price-pulse-{week}.md"
-    with open(path, "w") as f:
-        f.write(report)
-    with open(pulse_path, "w") as f:
-        f.write(pulse)
+    reports_dir = content_root() / "generated" / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    metrics_dir().mkdir(parents=True, exist_ok=True)
+    path = reports_dir / f"{ds}.md"
+    pulse_path = metrics_dir() / f"price-pulse-{week}.md"
+    path.write_text(report, encoding="utf-8")
+    pulse_path.write_text(pulse, encoding="utf-8")
 
     critical_count = sum(
         1 for h in data.get("store_health", [])
