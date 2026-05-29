@@ -17,8 +17,16 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA_GATE = ROOT / "docs" / "linkedin" / "data-gate.md"
-LINKEDIN_DIR = ROOT / "docs" / "linkedin"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from content_paths import linkedin_dir  # noqa: E402
+
+
+def _data_gate() -> Path:
+    return linkedin_dir() / "data-gate.md"
+
+
+def _linkedin_dir() -> Path:
+    return linkedin_dir()
 
 # Day files that embed aggregate KPIs (not full regenerate)
 METRIC_DAYS = (7, 8, 10, 11, 14, 28, 30)
@@ -90,11 +98,12 @@ def _replace_block(text: str, header: str, new_body: str) -> str:
 
 
 def update_data_gate(m: dict[str, str], dry_run: bool) -> bool:
-    if not DATA_GATE.is_file():
-        print("Missing data-gate.md", file=sys.stderr)
+    gate = _data_gate()
+    if not gate.is_file():
+        print(f"Missing {gate}", file=sys.stderr)
         return False
 
-    text = DATA_GATE.read_text(encoding="utf-8")
+    text = gate.read_text(encoding="utf-8")
     table = (
         "| Métrica | Valor | OK para LI? |\n"
         "|---------|-------|-------------|\n"
@@ -137,7 +146,7 @@ def update_data_gate(m: dict[str, str], dry_run: bool) -> bool:
         print("data-gate: no changes")
         return False
     if not dry_run:
-        DATA_GATE.write_text(new_text, encoding="utf-8")
+        gate.write_text(new_text, encoding="utf-8")
     print(f"data-gate: updated ({'dry-run' if dry_run else 'written'})")
     return True
 
@@ -179,7 +188,7 @@ def _patch_day_file(path: Path, m: dict[str, str], dry_run: bool) -> bool:
 def update_day_files(m: dict[str, str], dry_run: bool) -> int:
     n = 0
     for day in METRIC_DAYS:
-        path = LINKEDIN_DIR / f"Day-{day:02d}.md"
+        path = _linkedin_dir() / f"Day-{day:02d}.md"
         if _patch_day_file(path, m, dry_run):
             n += 1
     return n
