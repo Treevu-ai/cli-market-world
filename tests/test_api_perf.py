@@ -20,7 +20,11 @@ API_BASE = os.getenv(
 
 def _skip_live_latency_benchmark() -> None:
     """Production latency checks are for local/ops runs, not merge-blocking CI."""
-    if os.getenv("MARKET_SKIP_LIVE") == "1" or os.getenv("CI"):
+    if (
+        os.getenv("MARKET_SKIP_LIVE") == "1"
+        or os.getenv("CI")
+        or os.getenv("GITHUB_ACTIONS")
+    ):
         pytest.skip("live API latency benchmarks disabled in CI")
 
 
