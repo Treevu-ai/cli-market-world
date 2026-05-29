@@ -570,6 +570,7 @@ def _dashboard_data():
             "dispersion_grouping": "line+currency+subcategory",
             "dispersion_crit_count": spread_analytics["dispersion_crit_count"],
             "marketing_crit_count": spread_analytics["marketing_crit_count"],
+            "marketing_canasta_min_spread": spread_analytics.get("marketing_canasta_min_spread"),
         },
         "top_discounts": [dict(r) for r in top_discounts],
         "cheapest_by_line": cheapest_dedup,

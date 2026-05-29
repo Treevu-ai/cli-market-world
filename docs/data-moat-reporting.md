@@ -87,7 +87,7 @@ Estas son las métricas que **definen vuestro moat**. No están en las plantilla
 | **fresh_24h_pct** | % tiendas activas con refresh < 24h | Complemento a coverage |
 | **spread_ratio** | max/min en **subcategoría + moneda** (precio unitario si aplica) | >10x y ≠ `otros` → revisar o copy |
 | **canasta_spreads** | Spread por ítem canasta (10 productos) | ✅ basket homologado |
-| **marketing_spreads** | CRIT con fuzzy + misma unidad + 2+ tiendas | ✅ único gate para LinkedIn |
+| **marketing_spreads** | CRIT canasta ≥5x (pack 1kg/1L) o farmacia ≥10x + fuzzy | ✅ único gate para LinkedIn |
 | **canasta_match_rate** | `items/10` en `canasta_basica` por tienda | Honestidad en copy (“3/10 ítems”) |
 | **inflation_delta_pct** | Δ promedio 7d por línea (collector) | Siempre “según nuestro collector” |
 | **stores_succeeded / run** | Tiendas con precios en último ciclo | Ops; no confundir con coverage 7d |
