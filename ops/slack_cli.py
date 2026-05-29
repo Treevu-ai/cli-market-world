@@ -4,6 +4,8 @@
 Usage:
   python3 ops/slack_cli.py briefing              # daily_briefing + Slack
   python3 ops/slack_cli.py briefing --dry-run    # solo archivos
+  python3 ops/slack_cli.py campaign status       # día N, archivo, backlog
+  python3 ops/slack_cli.py campaign sync         # sync_linkedin_metrics.py
   python3 ops/slack_cli.py post --bitacora "Hola"
   python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
   python3 ops/slack_cli.py verify [--send-test]
@@ -12,8 +14,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -67,6 +71,29 @@ def cmd_briefing(dry_run: bool) -> int:
     return subprocess.call(args, cwd=ROOT)
 
 
+def cmd_campaign_status() -> int:
+    start_s = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-29")
+    start = date.fromisoformat(start_s)
+    today = date.today()
+    day = (today - start).days + 1
+    day_file = ROOT / "docs" / "linkedin" / f"Day-{day:02d}.md"
+    print(f"LINKEDIN_CAMPAIGN_START={start_s}")
+    print(f"Hoy {today.isoformat()} → Día {day} de 30")
+    if day_file.is_file():
+        print(f"Post: {day_file.relative_to(ROOT)}")
+    else:
+        print(f"Post: (no existe Day-{day:02d}.md)")
+    print("Plan: docs/linkedin/catch-up-plan.md")
+    return 0
+
+
+def cmd_campaign_sync(dry_run: bool) -> int:
+    args = [sys.executable, str(ROOT / "ops" / "sync_linkedin_metrics.py")]
+    if dry_run:
+        args.append("--dry-run")
+    return subprocess.call(args, cwd=ROOT)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="CLI Market Slack helper for Cursor")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -84,12 +111,23 @@ def main() -> int:
     p_brief = sub.add_parser("briefing", help="Run daily briefing (+ Slack unless --dry-run)")
     p_brief.add_argument("--dry-run", action="store_true")
 
+    p_camp = sub.add_parser("campaign", help="LinkedIn 30d campaign helpers")
+    camp_sub = p_camp.add_subparsers(dest="camp_cmd", required=True)
+    camp_sub.add_parser("status", help="Show campaign day and Day-XX file")
+    p_sync = camp_sub.add_parser("sync", help="Refresh metrics in data-gate + Day-*.md")
+    p_sync.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args()
 
     if args.command == "verify":
         return cmd_verify(args.send_test)
     if args.command == "briefing":
         return cmd_briefing(args.dry_run)
+    if args.command == "campaign":
+        if args.camp_cmd == "status":
+            return cmd_campaign_status()
+        if args.camp_cmd == "sync":
+            return cmd_campaign_sync(args.dry_run)
     if args.command == "post":
         if args.channel:
             ch = args.channel

@@ -18,9 +18,9 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Data brag:** Esta semana: **8,392** precios frescos (24h). **19,452** indexados. **30** retailers fresh. Un solo `pip install`.
-2. **Numbers:** **19K+** precios indexados. Refresh cada ~4–8 horas. Cero scraping.
-3. **Build in public:** Semana 1 de CLI Market en público — el collector volvió a correr con **94.4%** cobertura 7d.
+1. **Data brag:** Esta semana: **36,935** precios frescos (24h). **41,856** indexados. **35** retailers fresh. Un solo `pip install`.
+2. **Numbers:** **41K+** precios indexados. Refresh cada ~4–8 horas. Cero scraping.
+3. **Build in public:** Semana 1 de CLI Market en público — el collector volvió a correr con **97.2%** cobertura 7d.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -28,11 +28,11 @@ Semana 1 construyendo infraestructura de comercio para agentes de IA.
 
 Los números de esta semana:
 
-→ **8,392 precios en refresh 24h** · **19,452 indexados** en el moat
-→ **30 retailers** con datos frescos hoy · **34** con histórico
+→ **36,935 precios en refresh 24h** · **41,856 indexados** en el moat
+→ **35 retailers** con datos frescos hoy · **35** con histórico
 → **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
 → **36 herramientas MCP**
-→ **94.4% cobertura 7d** del catálogo activo
+→ **97.2% cobertura 7d** del catálogo activo
 
 Cada precio viene de APIs de retailers reales (VTEX + Magento).
 
@@ -75,9 +75,9 @@ Retailers: https://cli-market.dev/retailers
 
 ## Checklist
 
-- [x] **[N] verificado** — 8,392 (24h) / 19,452 (indexado) · [[metrics/price-pulse-2026-W22]]
+- [x] **[N] verificado** — 36,935 (24h) / 41,856 (indexado) · [[metrics/price-pulse-2026-W22]]
 - [x] Mensaje base alineado ([[GTM-Hub#Mensaje público acordado]])
-- [x] Coverage 7d ≥80% (94.4%)
+- [x] Coverage 7d ≥80% (97.2%)
 - [ ] Responder comentarios 60 min post-publicación
 
 ## Placeholder hasta export metrics
