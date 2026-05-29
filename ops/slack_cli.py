@@ -116,6 +116,7 @@ def main() -> int:
     camp_sub.add_parser("status", help="Show campaign day and Day-XX file")
     p_sync = camp_sub.add_parser("sync", help="Refresh metrics in data-gate + Day-*.md")
     p_sync.add_argument("--dry-run", action="store_true")
+    camp_sub.add_parser("assets", help="Regenerate all 30 LinkedIn PNG assets")
 
     args = parser.parse_args()
 
@@ -128,6 +129,11 @@ def main() -> int:
             return cmd_campaign_status()
         if args.camp_cmd == "sync":
             return cmd_campaign_sync(args.dry_run)
+        if args.camp_cmd == "assets":
+            return subprocess.call(
+                [sys.executable, str(ROOT / "ops" / "generate_all_linkedin_assets.py"), "--patch"],
+                cwd=ROOT,
+            )
     if args.command == "post":
         if args.channel:
             ch = args.channel

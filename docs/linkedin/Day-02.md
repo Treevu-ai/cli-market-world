@@ -65,8 +65,8 @@ https://github.com/Treevu-ai/cli-market-world
 
 ## Assets
 
-- [ ] Diagrama simple: Agente → CLI Market → N retailers (opcional)
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-02/day-02-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 2` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])

@@ -56,9 +56,8 @@ https://cli-market.dev
 
 ## Assets
 
-- [ ] GIF terminal / screenshot (si aplica)
-- [ ] Carousel Canva (días 5, 12)
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-28/day-28-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 28` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])
