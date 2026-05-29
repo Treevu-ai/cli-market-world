@@ -112,17 +112,8 @@ curl -sS -X POST https://cli-market-production.up.railway.app/products/compare \
 ### Comando de verificación
 
 ```bash
-curl -sS https://cli-market-production.up.railway.app/dashboard/data | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-for c in d.get('canasta_basica',[]):
-    if 'AR' in c.get('store_name',''):
-        print(c)
-print('--- marketing ARS ---')
-for m in d.get('marketing_spreads',[]):
-    if m.get('currency')=='ARS':
-        print(m['seed'], m['spread_ratio'], m['stores'])
-"
+python3 ops/check_ar_canasta_gate.py
+python3 ops/check_ar_canasta_gate.py --watch --interval 300   # poll cada 5 min
 ```
 
 [[GTM-Hub]] · [[metrics/price-pulse-2026-W22]] · [[linkedin/00-Index]]
