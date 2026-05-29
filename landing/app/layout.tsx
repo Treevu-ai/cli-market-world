@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | CLI Market",
   },
   description:
-    "Commerce API for AI agents. 36 MCP tools, 30 retailers, 8 countries. 13,000+ price data points refreshed every 8 hours. pip install cli-market — zero scraping.",
+    "Commerce API for AI agents. 36 MCP tools, 30 retailers, 8 countries. 39,000+ verified shelf prices refreshed every 8 hours. Normalized per kg/L, quality-filtered. pip install cli-market.",
   keywords: [
     "commerce API for AI agents",
     "AI shopping API",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "CLI Market — AI commerce API & MCP tools for agents",
     description:
-      "30 retailers in 8 countries. 36 MCP tools. 13K+ real prices every 8 hours. Checkout with PayPal + QR.",
+      "30 retailers in 8 countries. 36 MCP tools. 39K+ verified prices every 8 hours. Quality-filtered spreads and basket compare.",
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",
