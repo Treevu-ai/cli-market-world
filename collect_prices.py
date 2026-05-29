@@ -336,7 +336,7 @@ def cap_queries_for_cycle(queries: list[tuple[str, str]], cycle: int = 0) -> lis
     for q, line in queries:
         by_line[line or "supermercados"].append((q, line))
     capped: list[tuple[str, str]] = []
-    for line, items in by_line.items():
+    for _line, items in by_line.items():
         if not items:
             continue
         start = (cycle * MAX_QUERIES_PER_LINE) % len(items)
@@ -743,7 +743,7 @@ async def run_collection(stores, queries):
             batch = sl[i:i + batch_size]
             tasks = [collect_one_pg(pool, s, queries) for s in batch]
             results = await asyncio.gather(*tasks, return_exceptions=True)
-            for store, r in zip(batch, results):
+            for store, r in zip(batch, results, strict=True):
                 if isinstance(r, Exception):
                     errs.append(f"{store}: {r}")
                     logger.warning("store %s exception: %s", store, str(r)[:160])
