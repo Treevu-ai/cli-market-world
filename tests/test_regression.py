@@ -346,7 +346,5 @@ def test_dashboard_dispersion_groups_by_currency(isolated_db):
 
     data = _dashboard_data()
     assert data["analytics_meta"]["dispersion_grouping"] == "line+currency+subcategory"
-    electro_ars = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "ARS"]
-    electro_brl = [d for d in data["dispersion"] if d["line_key"] == "electro" and d["currency"] == "BRL"]
     assert not any(d.get("subcategory") in (None, "") and d["status"] == "crit"
                    for d in data["dispersion"] if d["line_key"] == "supermercados")
