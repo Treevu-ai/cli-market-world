@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libpq-dev tesseract-ocr tesseract-ocr-spa && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY market_server.py market_mcp.py market_cli.py market_stores.py market_core.py server_deps.py pyproject.toml collect_prices.py market_spread.py market_units.py ./
+COPY market_server.py market_mcp.py market_cli.py market_stores.py market_core.py server_deps.py pyproject.toml collect_prices.py market_spread.py market_units.py dashboard_glossary.py ./
 COPY routers/ ./routers/
 COPY market_connectors/ ./market_connectors/
 
