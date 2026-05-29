@@ -1,9 +1,10 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const steps = [
-  { cmd: "pip install cli-market", out_es: "cli-market 1.4.0 instalado", out_en: "cli-market 1.4.0 installed", label: "Install", icon: "↓" },
-  { cmd: "market login", out_es: "Autenticado — 30 retailers listos", out_en: "Authenticated — 30 retailers ready", label: "Login", icon: "🔑" },
+  { cmd: "pip install cli-market", out_es: `cli-market ${MARKET_STATS.packageVersion} instalado`, out_en: `cli-market ${MARKET_STATS.packageVersion} installed`, label: "Install", icon: "↓" },
+  { cmd: "market login", out_es: `Autenticado — ${MARKET_STATS.retailersVerified} retailers verificados listos`, out_en: `Authenticated — ${MARKET_STATS.retailersVerified} verified retailers ready`, label: "Login", icon: "🔑" },
   { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search", icon: "🔍" },
   { cmd: "market compare \"arroz\"", out_es: "Mejor: Metro S/2.80 · Ahorro: S/0.70/unidad", out_en: "Best: Metro S/2.80 · Savings: S/0.70/unit", label: "Compare", icon: "📊" },
   { cmd: "market add 1 --qty 2", out_es: "2x Leche Gloria → carrito", out_en: "2x Milk → cart", label: "Add", icon: "🛒" },

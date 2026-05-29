@@ -1,27 +1,72 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
-const faqs_es = [
-  { q: "¿Qué es CLI Market?", a: "CLI Market es una API y CLI que permite a agentes de IA buscar, comparar y comprar productos en 30 retailers verificados en 8 países. Precios de góndola normalizados por unidad. Una sola API. Cero scraping." },
-  { q: "¿Con qué retailers funciona?", a: "Trabajamos con 30 retailers verificados en 6 líneas: supermercados, farmacias, electro, moda, hogar y departamentales. VTEX y Magento en 8 países." },
-  { q: "¿Cómo funciona el pago?", a: "Aceptamos PayPal y QR (Yape/Plin). El checkout genera un QR que escaneas desde tu app de pagos. El webhook confirma la transacción y actualiza el estado de tu orden automáticamente." },
-  { q: "¿Mis agentes pueden usar esto sin intervención humana?", a: "Sí. Las 36 herramientas MCP están diseñadas para que tu agente busque, compare, arme canastas y complete compras de forma autónoma. El pago requiere aprobación humana por ahora." },
-  { q: "¿Los precios son reales?", a: "Sí. Nuestro collector corre cada 8 horas contra 30 retailers y extrae precios reales de góndola. Normalizamos por kilo/litro, filtramos descuentos imposibles y brechas anómalas antes de publicar comparaciones." },
-  { q: "¿Cuánto cuesta?", a: "La CLI es open source y gratuita (licencia MIT). La API tiene un tier gratuito de 1,000 consultas al día. El plan Pro cuesta USD 49 al mes con checkout habilitado y data export. Si tienes un caso más grande, escríbenos." },
-];
+function faqsFor(lang: "es" | "en") {
+  const isES = lang === "es";
+  const rp = isES ? MARKET_STATS.retailersPhraseEs : MARKET_STATS.retailersPhraseEn;
+  const pp = isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn;
 
-const faqs_en = [
-  { q: "What is CLI Market?", a: "CLI Market is an API and CLI that lets AI agents search, compare, and buy products across 30 verified retailers in 8 countries. Unit-normalized shelf prices. One API. Zero scraping." },
-  { q: "Which retailers do you support?", a: "30 verified retailers across 6 lines: supermarkets, pharmacies, electronics, fashion, home, and department stores. VTEX and Magento in 8 countries." },
-  { q: "How does payment work?", a: "PayPal + QR (Yape/Plin). Checkout generates a QR code you scan from your payment app. A webhook confirms the transaction and updates your order status automatically." },
-  { q: "Can my agents use this autonomously?", a: "Yes. All 36 MCP tools are designed for agents to search, compare, build baskets, and complete purchases autonomously. Payment requires human approval for now." },
-  { q: "Are the prices real?", a: "Yes. Our collector runs every 8 hours against 30 retailers and extracts real shelf prices. We normalize per kg/L and filter impossible discounts and outlier spreads before publishing comparisons." },
-  { q: "How much does it cost?", a: "The CLI is open source and free (MIT license). The API has a free tier of 1,000 requests per day. The Pro plan is USD 49/month with checkout enabled and data export. For larger use cases, contact us." },
-];
+  if (isES) {
+    return [
+      {
+        q: "¿Qué es CLI Market?",
+        a: `CLI Market es una API y CLI que permite a agentes de IA buscar, comparar y comprar productos en ${rp}. Precios de góndola normalizados por unidad. Una sola API. Cero scraping.`,
+      },
+      {
+        q: "¿Con qué retailers funciona?",
+        a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos en ${MARKET_STATS.businessLines} líneas. ${pp}. VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} marcas moda/beauty), Magento (${MARKET_STATS.platformMagento}).`,
+      },
+      {
+        q: "¿Cómo funciona el pago?",
+        a: `Aceptamos ${MARKET_STATS.paymentsLabel}. El checkout genera un QR que escaneas desde tu app de pagos. El webhook confirma la transacción y actualiza el estado de tu orden automáticamente.`,
+      },
+      {
+        q: "¿Mis agentes pueden usar esto sin intervención humana?",
+        a: `Sí. Las ${MARKET_STATS.mcpTools} herramientas MCP están diseñadas para que tu agente busque, compare, arme canastas y complete compras de forma autónoma. El pago requiere aprobación humana por ahora.`,
+      },
+      {
+        q: "¿Los precios son reales?",
+        a: `Sí. Nuestro collector corre cada ${MARKET_STATS.pricesRefreshHours} horas contra ${MARKET_STATS.retailersVerified} retailers verificados y extrae precios reales de góndola. ${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kilo/litro, filtrados antes de publicar comparaciones.`,
+      },
+      {
+        q: "¿Cuánto cuesta?",
+        a: "La CLI es open source y gratuita (licencia MIT). La API tiene un tier gratuito de 1,000 consultas al día. El plan Pro cuesta USD 49 al mes con checkout habilitado y data export. Si tienes un caso más grande, escríbenos.",
+      },
+    ];
+  }
+
+  return [
+    {
+      q: "What is CLI Market?",
+      a: `CLI Market is an API and CLI that lets AI agents search, compare, and buy products across ${rp}. Unit-normalized shelf prices. One API. Zero scraping.`,
+    },
+    {
+      q: "Which retailers do you support?",
+      a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active across ${MARKET_STATS.businessLines} lines. ${pp}. VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} fashion/beauty brands), Magento (${MARKET_STATS.platformMagento}).`,
+    },
+    {
+      q: "How does payment work?",
+      a: `${MARKET_STATS.paymentsLabel}. Checkout generates a QR code you scan from your payment app. A webhook confirms the transaction and updates your order status automatically.`,
+    },
+    {
+      q: "Can my agents use this autonomously?",
+      a: `Yes. All ${MARKET_STATS.mcpTools} MCP tools are designed for agents to search, compare, build baskets, and complete purchases autonomously. Payment requires human approval for now.`,
+    },
+    {
+      q: "Are the prices real?",
+      a: `Yes. Our collector runs every ${MARKET_STATS.pricesRefreshHours} hours against ${MARKET_STATS.retailersVerified} verified retailers and extracts real shelf prices. ${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L and filtered before publishing comparisons.`,
+    },
+    {
+      q: "How much does it cost?",
+      a: "The CLI is open source and free (MIT license). The API has a free tier of 1,000 requests per day. The Pro plan is USD 49/month with checkout enabled and data export. For larger use cases, contact us.",
+    },
+  ];
+}
 
 export default function FAQ() {
   const { lang } = useLang();
-  const faqs = lang === "es" ? faqs_es : faqs_en;
+  const faqs = faqsFor(lang);
 
   return (
     <section id="faq" className="relative bg-[var(--wise-canvas-soft)] py-24 border-t border-[#c5edab]">
