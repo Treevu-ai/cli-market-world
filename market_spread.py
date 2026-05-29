@@ -12,7 +12,7 @@ CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
 ]
 
-MARKETING_CANASTA_MIN_SPREAD = 5.0
+MARKETING_CANASTA_MIN_SPREAD = 2.5
 MARKETING_FARMACIA_MIN_SPREAD = 10.0
 
 WIDE_LINES = frozenset({"supermercados", "farmacias", "electro", "hogar", "departamentales"})
@@ -240,7 +240,7 @@ def _fuzzy_clusters(rows: list[dict]) -> list[list[dict]]:
 
 
 def compute_marketing_spreads(products: list[dict]) -> list[dict]:
-    """Spreads safe for copy: standard canasta packs (≥5x) or farmacia fuzzy (≥10x)."""
+    """Spreads safe for copy: standard canasta packs (≥2.5x) or farmacia fuzzy (≥10x)."""
     out: list[dict] = []
 
     for item in CANASTA_ITEMS:
