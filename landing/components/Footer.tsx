@@ -1,11 +1,13 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function Footer() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { priceChip } = useLiveStats();
+  const prices = priceChip || MARKET_STATS.pricesVerifiedLabel;
 
   return (
     <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-12">
@@ -42,8 +44,8 @@ export default function Footer() {
 
         <p className="text-[10px] text-[var(--wise-body)] font-mono">
           {isES
-            ? `30 retailers · 8 países · 36 MCP · ${priceChip} precios · MIT License`
-            : `30 retailers · 8 countries · 36 MCP · ${priceChip} prices · MIT License`}
+            ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.countries} países · ${MARKET_STATS.mcpTools} MCP · ${prices} precios · MIT`
+            : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.countries} countries · ${MARKET_STATS.mcpTools} MCP · ${prices} prices · MIT`}
         </p>
       </div>
     </footer>

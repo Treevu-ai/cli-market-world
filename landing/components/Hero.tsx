@@ -2,6 +2,7 @@
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function Hero() {
   const { t: _t, lang } = useLang();
@@ -9,11 +10,15 @@ export default function Hero() {
   const { priceChip } = useLiveStats();
 
   const chips = [
-    { num: "36", label: isES ? "herramientas MCP" : "MCP tools" },
-    { num: "30", label: isES ? "comercios" : "retailers" },
-    { num: "8", label: isES ? "países" : "countries" },
-    { num: priceChip, label: isES ? "precios reales" : "real prices" },
-    { num: "8h", label: isES ? "actualización" : "refresh cycle" },
+    { num: String(MARKET_STATS.mcpTools), label: isES ? "herramientas MCP" : "MCP tools" },
+    {
+      num: String(MARKET_STATS.retailersDefined),
+      label: isES ? `retailers (${MARKET_STATS.retailersVerified} verificados)` : `retailers (${MARKET_STATS.retailersVerified} verified)`,
+    },
+    { num: String(MARKET_STATS.countries), label: isES ? "países" : "countries" },
+    { num: String(MARKET_STATS.platforms), label: isES ? "plataformas" : "platforms" },
+    { num: priceChip || MARKET_STATS.pricesVerifiedLabel, label: isES ? "precios reales" : "real prices" },
+    { num: `${MARKET_STATS.pricesRefreshHours}h`, label: isES ? "actualización" : "refresh cycle" },
   ];
 
   return (

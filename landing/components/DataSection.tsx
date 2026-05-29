@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 import { API_URL } from "@/lib/api";
 
@@ -115,7 +116,7 @@ export default function DataSection() {
             </p>
             <p className="text-3xl font-black text-[var(--wise-ink)]">{indexed ? indexed.toLocaleString() : "—"}</p>
             <p className="text-xs text-[var(--wise-mute)] mt-1">
-              {storesIndexed} retailers · {isES ? "precios indexados" : "indexed prices"}
+              {storesIndexed || MARKET_STATS.retailersVerified} {isES ? "retailers verificados" : "verified retailers"} · {isES ? "precios indexados" : "indexed prices"}
             </p>
             {inventoryLayer?.metric_help?.total_indexed?.description && (
               <p className="text-[10px] text-[var(--wise-mute)] mt-2 leading-relaxed">
