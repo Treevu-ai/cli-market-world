@@ -6,8 +6,8 @@ export default function AboutSection() {
   const isES = lang === "es";
 
   return (
-    <section id="about" className="relative bg-[var(--wise-ink)] py-24">
-      <div className="max-w-[720px] mx-auto px-6 text-center">
+    <section id="about" className="relative bg-[var(--wise-ink)] py-16">
+      <div className="landing-container px-6 text-center">
         <p className="text-xs text-[var(--wise-green)] font-medium uppercase tracking-[0.15em] mb-8">
           {isES ? "Sobre nosotros" : "About us"}
         </p>

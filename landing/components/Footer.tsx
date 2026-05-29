@@ -7,15 +7,12 @@ export default function Footer() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { priceChip } = useLiveStats();
-  const prices = priceChip || MARKET_STATS.pricesVerifiedLabel;
 
   return (
-    <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-12">
-      <div className="max-w-[720px] mx-auto px-6 flex flex-col items-center gap-6 text-center">
-
-        {/* Logo */}
+    <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-8" role="contentinfo">
+      <div className="landing-container px-6 flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-2 text-[var(--wise-ink)]">
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]" aria-hidden="true">
             <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
             <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -25,18 +22,15 @@ export default function Footer() {
           <span className="font-medium text-xs tracking-tight">CLI Market</span>
         </div>
 
-        {/* Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[var(--wise-body)]">
-          <a href="#stats" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Escala" : "Scale"}</a>
-          <a href="#terminal" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Terminal" : "Terminal"}</a>
-          <a href="#retailers" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Retailers" : "Retailers"}</a>
+          <a href="#how" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Flujo" : "Flow"}</a>
           <a href="#api" className="hover:text-[var(--wise-ink)] transition-colors">API</a>
-          <a href="#quality" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Calidad" : "Quality"}</a>
+          <a href="#retailers" className="hover:text-[var(--wise-ink)] transition-colors">Retailers</a>
+          <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Planes" : "Pricing"}</a>
           <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
           <span className="text-[#c5edab]">·</span>
           <a href="/tools" className="hover:text-[var(--wise-ink)] transition-colors">MCP Tools</a>
-          <a href="/retailers" className="hover:text-[var(--wise-ink)] transition-colors">For Retailers</a>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
           <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>
           <a href="mailto:hello@cli-market.dev" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Contacto" : "Contact"}</a>
@@ -44,8 +38,8 @@ export default function Footer() {
 
         <p className="text-[10px] text-[var(--wise-body)] font-mono">
           {isES
-            ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.countries} países · ${MARKET_STATS.mcpTools} MCP · ${prices} precios · MIT`
-            : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.countries} countries · ${MARKET_STATS.mcpTools} MCP · ${prices} prices · MIT`}
+            ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.countries} países · ${MARKET_STATS.mcpTools} MCP · ${priceChip} precios · MIT`
+            : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.countries} countries · ${MARKET_STATS.mcpTools} MCP · ${priceChip} prices · MIT`}
         </p>
       </div>
     </footer>

@@ -1,6 +1,8 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
+import ContactForm from "@/components/ContactForm";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const tiers = [
   {
@@ -28,32 +30,34 @@ export default function Pricing() {
   const isES = lang === "es";
 
   return (
-    <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-24">
-      <div className="max-w-[720px] mx-auto px-6 text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-8">
+    <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
+      <div className="landing-container px-6 text-center">
+        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
           {isES ? "Planes" : "Plans"}
         </p>
-        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-3 tracking-tight">
+        <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-[var(--wise-ink)] mb-2 tracking-tight">
           {isES ? "Empieza gratis. Escala cuando quieras." : "Start free. Scale when ready."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-md mx-auto mb-12">
+        <p className="text-sm text-[var(--wise-body)] max-w-xl mx-auto mb-10">
           {isES
-            ? "Sin tarjeta para Free. Pro: solicitud por email con link de pago."
-            : "No credit card for Free. Pro: request by email with payment link."}
+            ? `${MARKET_STATS.mcpTools} herramientas MCP · ${MARKET_STATS.retailersPhraseEs} · sin tarjeta para Free.`
+            : `${MARKET_STATS.mcpTools} MCP tools · ${MARKET_STATS.retailersPhraseEn} · no card for Free.`}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
           {tiers.map((tier) => (
-            <div key={tier.name}
+            <div
+              key={tier.name}
               className={`rounded-3xl p-6 text-left flex flex-col relative ${
                 tier.dark
                   ? "bg-[var(--wise-ink)] text-white"
                   : tier.featured
-                    ? "bg-[var(--wise-canvas)] border-2 border-[var(--wise-green)] shadow-lg"
+                    ? "bg-[var(--wise-canvas)] border-2 border-[var(--wise-ink)] shadow-lg"
                     : "bg-[var(--wise-canvas)] border border-[var(--wise-green-pale)]"
-              }`}>
+              }`}
+            >
               {tier.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--wise-green)] text-[var(--wise-ink)] text-[11px] font-semibold px-4 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--wise-ink)] text-[var(--wise-canvas)] text-[11px] font-semibold px-4 py-1 rounded-full">
                   {isES ? "Más popular" : "Most popular"}
                 </span>
               )}
@@ -61,7 +65,7 @@ export default function Pricing() {
                 {tier.name}
               </h3>
               <div className="mt-3 mb-5">
-                <span className={`text-3xl font-black break-all ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>
+                <span className={`text-3xl font-black break-all tabular-nums ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}>
                   {tier.price}
                 </span>
                 {(tier.period_es || tier.period_en) && (
@@ -73,25 +77,41 @@ export default function Pricing() {
               <ul className="space-y-2.5 mb-8 flex-1">
                 {(isES ? tier.f_es : tier.f_en).map((f, i) => (
                   <li key={i} className={`flex items-start gap-2.5 text-sm ${tier.dark ? "text-white/80" : "text-[var(--wise-body)]"}`}>
-                    <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke={tier.dark ? "#9fe870" : "var(--wise-green)"} strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke={tier.dark ? "#9fe870" : "var(--wise-ink)"} strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
                     {f}
                   </li>
                 ))}
               </ul>
-              {tier.name === "Pro" ? <ProSubscribeButton /> : (
-                <a href={tier.name === "Enterprise" ? "#contact" : "https://pypi.org/project/cli-market/"}
-                 className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
-                   tier.dark
-                     ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
-                     : tier.featured
-                       ? "bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
-                       : "bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:bg-[var(--wise-body)]"
-                 }`}>
-                {isES ? tier.cta_es : tier.cta_en}
-              </a>
+              {tier.name === "Pro" ? (
+                <ProSubscribeButton />
+              ) : (
+                <a
+                  href={tier.name === "Enterprise" ? "#contact" : "https://pypi.org/project/cli-market/"}
+                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
+                    tier.dark
+                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
+                      : tier.featured
+                        ? "bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
+                        : "bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:opacity-90"
+                  }`}
+                >
+                  {isES ? tier.cta_es : tier.cta_en}
+                </a>
               )}
             </div>
           ))}
+        </div>
+
+        <div id="contact" className="max-w-lg mx-auto scroll-mt-20">
+          <h3 className="text-lg font-bold text-[var(--wise-ink)] mb-2">
+            {isES ? "¿Necesitas Pro o Enterprise?" : "Need Pro or Enterprise?"}
+          </h3>
+          <p className="text-sm text-[var(--wise-body)] mb-6">
+            {isES
+              ? "Pro: email + link PayPal. Activamos en 24 h tras confirmar pago."
+              : "Pro: email + PayPal link. We activate within 24 h after payment."}
+          </p>
+          <ContactForm initial="pro" />
         </div>
       </div>
     </section>
