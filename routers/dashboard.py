@@ -12,12 +12,44 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db
+from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
 from server_deps import require_user
 
 from .health import _age_hours
 
 router = APIRouter(tags=["dashboard"])
+
+
+def _spread_metrics(
+    *,
+    line: str,
+    line_name: str,
+    currency: str,
+    count: int,
+    avg_price: float,
+    min_price: float,
+    max_price: float,
+) -> dict:
+    avg = float(avg_price or 0)
+    mn = float(min_price or 0)
+    mx = float(max_price or 0)
+    if avg > 0:
+        spread = round((mx - mn) / avg, 2)
+    else:
+        spread = 0.0
+    status = "crit" if spread > 10 else ("warn" if spread > 2 else "ok")
+    return {
+        "line": line_name or line,
+        "line_key": line,
+        "currency": currency or "???",
+        "count": count,
+        "avg_price": avg,
+        "min_price": mn,
+        "max_price": mx,
+        "spread_ratio": spread,
+        "status": status,
+        "avg_price_usd": price_to_usd(avg, currency) if currency else None,
+    }
 
 
 def _build_moat_guide(
@@ -209,16 +241,31 @@ def _dashboard_data():
         key=lambda x: x["count"], reverse=True,
     )
 
-    # ── Dispersión por línea ─────────────────────────────────────────────────
-    dispersion = []
-    for row in by_line:
-        if row["avg_price"] and row["avg_price"] > 0:
-            spread = round((row["max_price"] - row["min_price"]) / row["avg_price"], 2)
-        else:
-            spread = 0
-        dispersion.append({"line": row["line_name"] or row["line"],
-                           "avg_price": row["avg_price"],
-                           "spread_ratio": spread})
+    # ── Dispersión por línea + moneda (no mezclar ARS con PEN) ───────────────
+    by_line_currency = db.execute(
+        """
+        SELECT line, line_name, currency,
+               COUNT(DISTINCT product_id||store) as count,
+               ROUND(AVG(price)::numeric, 2) as avg_price,
+               ROUND(MIN(price)::numeric, 2) as min_price,
+               ROUND(MAX(price)::numeric, 2) as max_price
+        FROM price_snapshots WHERE price > 0 AND price < 999999
+        GROUP BY line, line_name, currency ORDER BY line, currency
+        """
+    ).fetchall()
+
+    dispersion = [
+        _spread_metrics(
+            line=row["line"],
+            line_name=row["line_name"],
+            currency=row["currency"],
+            count=row["count"],
+            avg_price=row["avg_price"],
+            min_price=row["min_price"],
+            max_price=row["max_price"],
+        )
+        for row in by_line_currency
+    ]
 
     # ── Top discounts ────────────────────────────────────────────────────────
     top_discounts = db.execute(
@@ -404,44 +451,56 @@ def _dashboard_data():
            GROUP BY store, store_name ORDER BY unique_products DESC LIMIT 15"""
     ).fetchall()
 
-    # ── Weak signal: outliers (price > 3× line average) ──────────────────────
+    # ── Weak signal: outliers (>3× avg within same line + currency) ───────────
     outliers = []
-    for row in by_line:
+    for row in by_line_currency:
         if row["count"] < 5:
             continue
-        threshold = row["avg_price"] * 3
-        try:
-            anoms = db.execute(
-                """SELECT name, store_name, price, currency, line_name
-                   FROM price_snapshots WHERE line=? AND price>0 AND price>?
-                   ORDER BY price DESC LIMIT 5""",
-                (row["line"], threshold)
-            ).fetchall()
-            for a in anoms:
-                outliers.append(dict(a))
-        except Exception:
-            pass
+        threshold = float(row["avg_price"] or 0) * 3
+        if threshold <= 0:
+            continue
+        anoms = db.execute(
+            """SELECT name, store_name, price, currency, line_name
+               FROM price_snapshots
+               WHERE line=? AND currency=? AND price>0 AND price>?
+               ORDER BY price DESC LIMIT 5""",
+            (row["line"], row["currency"], threshold),
+        ).fetchall()
+        for a in anoms:
+            item = dict(a)
+            item["price_usd"] = price_to_usd(item.get("price", 0), item.get("currency", ""))
+            outliers.append(item)
     outliers = outliers[:10]
 
-    # ── Inflation: avg price delta between last 7d and 7-14d ago ────────────
+    # ── Inflation 7d: per line + currency (nominal + USD-normalized) ────────
     inflation = []
-    for row in by_line:
+    for row in by_line_currency:
         recent_avg = db.execute(
             """SELECT ROUND(AVG(price)::numeric,2) as avg_price
-               FROM price_snapshots WHERE line=? AND price>0 AND price<999999 AND queried_at >= ?""",
-            (row["line"], now7)
+               FROM price_snapshots
+               WHERE line=? AND currency=? AND price>0 AND price<999999 AND queried_at >= ?""",
+            (row["line"], row["currency"], now7),
         ).fetchone()
         older_avg = db.execute(
             """SELECT ROUND(AVG(price)::numeric,2) as avg_price
-               FROM price_snapshots WHERE line=? AND price>0 AND price<999999 AND queried_at >= ? AND queried_at < ?""",
-            (row["line"], now14, now7)
+               FROM price_snapshots
+               WHERE line=? AND currency=? AND price>0 AND price<999999
+                 AND queried_at >= ? AND queried_at < ?""",
+            (row["line"], row["currency"], now14, now7),
         ).fetchone()
-        r_avg = recent_avg["avg_price"] if recent_avg else 0
-        o_avg = older_avg["avg_price"] if older_avg else 0
-        delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg and o_avg > 0 else 0
+        r_avg = float(recent_avg["avg_price"] or 0) if recent_avg else 0.0
+        o_avg = float(older_avg["avg_price"] or 0) if older_avg else 0.0
+        delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg > 0 else 0
+        cur = row["currency"] or ""
         inflation.append({
             "line": row["line_name"] or row["line"],
-            "avg_now": r_avg, "avg_before": o_avg, "delta_pct": delta
+            "line_key": row["line"],
+            "currency": cur,
+            "avg_now": r_avg,
+            "avg_before": o_avg,
+            "delta_pct": delta,
+            "avg_now_usd": price_to_usd(r_avg, cur),
+            "avg_before_usd": price_to_usd(o_avg, cur),
         })
 
     # ── Canasta basica: fixed 10 products compared across top stores ─────────
@@ -528,6 +587,12 @@ def _dashboard_data():
         "by_line": [dict(r) for r in by_line],
         "by_country": by_country,
         "dispersion": dispersion,
+        "analytics_meta": {
+            "fx_reference": "USD",
+            "fx_source": "static_pen_table",
+            "dispersion_grouping": "line+currency",
+            "dispersion_crit_count": sum(1 for d in dispersion if d["status"] == "crit"),
+        },
         "top_discounts": [dict(r) for r in top_discounts],
         "cheapest_by_line": cheapest_dedup,
         "top_risers": top_risers,
@@ -608,11 +673,19 @@ def _static_dashboard() -> str:
 
     # ── New analytics HTML ──────────────────────────────────────────────────
     infl_html = "".join(
-        f"<tr><td>{r['line']}</td><td style='color:var(--green)'>{(r['avg_now'] or 0):.2f}</td><td>{(r['avg_before'] or 0):.2f}</td><td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
+        f"<tr><td>{r['line']}</td><td>{r.get('currency','')}</td>"
+        f"<td style='color:var(--green)'>{(r['avg_now'] or 0):.2f}</td>"
+        f"<td>{(r['avg_before'] or 0):.2f}</td>"
+        f"<td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>"
+        f"{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
         for r in data["inflation"])
-    
+
     disp_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{(r['avg_price'] or 0):.2f}</td><td style='color:{'#ff4444' if (r['spread_ratio'] or 0)>10 else ('#ffbd2e' if (r['spread_ratio'] or 0)>2 else '#3cffd0')}'>{(r['spread_ratio'] or 0):.1f}x {'CRIT' if (r['spread_ratio'] or 0)>10 else ''}</td></tr>"
+        f"<tr><td>{r['line']}</td><td>{r.get('currency','')}</td>"
+        f"<td>{(r['avg_price'] or 0):.2f}</td>"
+        f"<td style='color:{'#ff4444' if r.get('status')=='crit' else ('#ffbd2e' if r.get('status')=='warn' else '#3cffd0')}'>"
+        f"{(r['spread_ratio'] or 0):.1f}x"
+        f"{' CRIT' if r.get('status')=='crit' else ''}</td></tr>"
         for r in data["dispersion"])
     
     riser_html = "".join(
@@ -693,11 +766,11 @@ td.num{{text-align:right}}
 <table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
 
 <div class="section">[ INFLACIÓN 7d ]</div>
-<table><tr><th>Línea</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=4>⚠ Sin datos historicos todavia — este indicador se activara cuando tengamos al menos 7 dias de datos continuos.</td></tr>'}</table>
+<table><tr><th>Línea</th><th>Moneda</th><th>Avg ahora</th><th>Avg antes</th><th>Delta</th></tr>{infl_html or '<tr><td colspan=5>⚠ Sin datos historicos todavia — este indicador se activara cuando tengamos al menos 7 dias de datos continuos.</td></tr>'}</table>
 
 <div class="section">[ DISPERSIÓN DE PRECIOS ]</div>
-<p style="color:#555;font-size:10px;margin:0 0 6px">¿Cuanta diferencia hay entre el producto mas barato y el mas caro de cada categoria? 1x-5x = normal · 5x-20x = alta · CRIT (+20x) = probable error o productos muy distintos mezclados.</p>
-<table><tr><th>Línea</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
+<p style="color:#555;font-size:10px;margin:0 0 6px">Spread por línea y moneda (no mezcla ARS/PEN/BRL). 1x-2x = normal · 2x-10x = alta · CRIT (&gt;10x) = productos distintos en la misma línea o señal real (ej. farmacias).</p>
+<table><tr><th>Línea</th><th>Moneda</th><th>Precio prom</th><th>Spread</th></tr>{disp_html}</table>
 
 <div class="section">[ CANASTA BÁSICA - COMPLETITUD ]</div>
 <table><tr><th>Tienda</th><th>Completitud</th><th>%</th><th>Total</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>

@@ -123,6 +123,39 @@ CURRENCY_SYMBOLS: dict[str, str] = {
     "CLP": "CLP", "EUR": "€", "GBP": "£",
 }
 
+# PEN value of 1 unit of each currency (static; live rates: /checkout/rates).
+FX_PEN_PER_UNIT: dict[str, float] = {
+    "PEN": 1.0,
+    "ARS": 0.0027,
+    "BRL": 1.02,
+    "MXN": 0.29,
+    "COP": 0.0013,
+    "CLP": 0.0053,
+    "EUR": 4.05,
+    "USD": 3.70,
+}
+
+
+def convert_currency(amount: float, frm: str, to: str) -> float:
+    """Convert amount using static PEN-equivalent rates."""
+    src = (frm or "PEN").upper()
+    dst = (to or "PEN").upper()
+    r_src = FX_PEN_PER_UNIT.get(src)
+    r_dst = FX_PEN_PER_UNIT.get(dst)
+    if r_src is None or r_dst is None:
+        raise ValueError(f"Unsupported currency. Supported: {list(FX_PEN_PER_UNIT)}")
+    return round(amount * r_src / r_dst, 6)
+
+
+def price_to_usd(price: float, currency: str) -> float | None:
+    if not price or price <= 0:
+        return None
+    cur = (currency or "").upper()
+    if cur not in FX_PEN_PER_UNIT:
+        return None
+    return round(convert_currency(price, cur, "USD"), 4)
+
+
 def fmt_price(price: float, currency: str = "PEN") -> str:
     symbol = CURRENCY_SYMBOLS.get(currency, currency)
     return f"{symbol} {price:,.2f}"
