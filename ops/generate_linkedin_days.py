@@ -507,11 +507,11 @@ La pregunta es si te encuentran.
         "pillar": "social-proof",
         "lang": "es",
         "hooks": [
-            "Si tu tienda usa VTEX o Magento, tus productos YA pueden aparecer en búsquedas de IA.",
-            "CTA directo: listá tu tienda. Gratis. 30 segundos.",
-            "VTEX partners: sus agentes buscan productos. ¿Están los tuyos?",
+            "Si su tienda usa VTEX o Magento, sus productos ya pueden aparecer en búsquedas de IA.",
+            "CTA directo: registre su tienda. Gratis. 30 segundos.",
+            "VTEX partners: sus agentes buscan productos. ¿Están los suyos?",
         ],
-        "post": """Si tu tienda usa **VTEX** o **Magento**:
+        "post": """Si su tienda usa **VTEX** o **Magento**:
 
 Tus productos **ya pueden** aparecer en búsquedas de agentes de IA.
 
@@ -521,7 +521,7 @@ CLI Market unifica APIs de retail en una capa agent-ready:
 → 36 herramientas MCP
 → 8 países LATAM + EU
 
-**Listar tu tienda:**
+**Registrar su tienda:**
 1. cli-market.dev/retailers
 2. Completa el form (30 seg)
 3. Validación automática
@@ -531,7 +531,7 @@ Gratis en Beta.
 
 No es marketplace. Es infraestructura.
 
-Los agentes no visitan tu web — llaman APIs.
+Los agentes no visitan su sitio web: llaman APIs.
 
 ¿Estás en la API?""",
         "comment": "Formulario 👇\n\nhttps://cli-market.dev/retailers?utm_source=linkedin&utm_campaign=30d-d23",
@@ -542,11 +542,11 @@ Los agentes no visitan tu web — llaman APIs.
         "pillar": "social-proof",
         "lang": "es",
         "hooks": [
-            "3 razones para listar tu tienda en CLI Market hoy.",
+            "3 razones para registrar su tienda en CLI Market hoy.",
             "Gratis. 30 segundos. Agentes IA ya buscan productos.",
             "List post para retailers: por qué aparecer en agent commerce.",
         ],
-        "post": """3 razones para listar tu tienda en CLI Market:
+        "post": """3 razones para registrar su tienda en CLI Market:
 
 **1. Gratis** (Beta)
 Sin costo de integración. Sin revenue share en Beta.
@@ -555,7 +555,7 @@ Sin costo de integración. Sin revenue share en Beta.
 Formulario self-serve. Sin código. Sin llamada de ventas.
 
 **3. Agentes IA ya buscan**
-Cuando un usuario pide a su agente "compara precios de leche", tu tienda aparece — o no.
+Cuando un usuario pide a su agente "compara precios de leche", su tienda aparece — o no.
 
 VTEX. Magento. Retail LATAM.
 
@@ -565,7 +565,7 @@ El e-commerce no es solo mobile-first.
 
 Es **agent-first**.
 
-¿Listamos la tuya esta semana?""",
+¿Registramos su tienda esta semana?""",
         "comment": "Empezar 👇\n\nhttps://cli-market.dev/retailers",
         "tags": "#retail #AI #ecommerce #VTEX #startup",
     },
@@ -574,11 +574,11 @@ Es **agent-first**.
         "pillar": "social-proof",
         "lang": "es",
         "hooks": [
-            "Probá CLI Market ahora: pip install + market search en 60 segundos.",
+            "Pruebe CLI Market ahora: pip install + market search en 60 segundos.",
             "Copy-paste challenge: ¿funciona en tu terminal?",
             "El CTA más simple del mundo developer-first.",
         ],
-        "post": """Probá CLI Market ahora.
+        "post": """Pruebe CLI Market ahora.
 
 Copy-paste en tu terminal:
 
@@ -738,7 +738,7 @@ VTEX. Magento. LATAM + EU.
 
 Los agentes no esperan.
 
-Listá tu tienda.""",
+Registre su tienda.""",
         "comment": "Formulario 👇\n\nhttps://cli-market.dev/retailers",
         "tags": "#retail #gratitude #AI #ecommerce #LATAM",
     },
@@ -775,7 +775,7 @@ Si llegaste hasta aquí en el calendario — gracias.
 
 Si eres developer: prueba el CLI.
 
-Si eres retailer: lista tu tienda.
+Si es retailer: registre su tienda.
 
 Nos vemos en el mes 2.""",
         "comment": "Todo en un link 👇\n\nhttps://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin\n\n```\npip install cli-market\nmarket hello\n```",

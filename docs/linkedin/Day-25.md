@@ -16,13 +16,13 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** Probá CLI Market ahora: pip install + market search en 60 segundos.
+1. **Hook 1:** Pruebe CLI Market ahora: pip install + market search en 60 segundos.
 2. **Hook 2:** Copy-paste challenge: ¿funciona en tu terminal?
 3. **Hook 3:** El CTA más simple del mundo developer-first.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-Probá CLI Market ahora.
+Pruebe CLI Market ahora.
 
 Copy-paste en tu terminal:
 

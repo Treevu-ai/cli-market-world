@@ -29,13 +29,13 @@ DASHBOARD_URL = os.getenv(
 
 OUTREACH_ES = """Asunto: {store_name} — reactivar tienda en CLI Market
 
-Hola equipo de {store_name},
+Hola, equipo de {store_name}:
 
 CLI Market indexa precios de 30 retailers en 8 países para agentes de IA.
-Tu tienda no responde en los ultimos {failures} consultas (exito {pct:.0f}%).
+Su tienda no responde en las últimas {failures} consultas (éxito {pct:.0f}%).
 {line} — {country}.
 
-Si la API cambio, avisanos. Reactivamos en minutos. Gratis, sin integracion.
+Si la API cambió, avísenos. Reactivamos en minutos. Gratis, sin integración.
 
 Saludos,
 Antonio Cuba · CLI Market · cli-market.dev"""
