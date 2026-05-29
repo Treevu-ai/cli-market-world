@@ -9,7 +9,7 @@ Cuando el usuario pida apoyo en Slack, briefings, o publicar en bitácora/public
 1. Configuración / migración: `docs/ops/slack-setup.md`
 2. Uso con Cursor: `docs/ops/cursor-slack.md`
 2. Usar `python3 ops/slack_cli.py` (nunca commitear tokens)
-3. Canales: **bitácora** `C0B6V3Y9ZSP` · **publicaciones** `C0B6ZJ1B9B8`
+3. Canales: **bitácora** `C0B6V3Y9ZSP` · **publicaciones** `C0B6ZJ1B9B8` · **revisiones-cursor** `C0B723TQS78`
 
 Comandos rápidos:
 
@@ -17,6 +17,7 @@ Comandos rápidos:
 python3 ops/slack_cli.py briefing
 python3 ops/slack_cli.py post --bitacora "mensaje"
 python3 ops/slack_cli.py post --publicaciones --file ops/daily/YYYY-MM-DD-content.md
+python3 ops/slack_cli.py post --revisiones-cursor "resumen de revisión"
 python3 ops/slack_cli.py verify --send-test
 ```
 

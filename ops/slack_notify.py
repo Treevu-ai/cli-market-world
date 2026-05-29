@@ -9,6 +9,7 @@ import httpx
 # CLI Market workspace — override via env if channels move
 DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
+DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
 
 MAX_SLACK_TEXT = 3900
 
@@ -19,6 +20,12 @@ def channel_publicaciones() -> str:
 
 def channel_bitacora() -> str:
     return os.getenv("SLACK_CHANNEL_BITACORA", DEFAULT_CHANNEL_BITACORA)
+
+
+def channel_revisiones_cursor() -> str:
+    return os.getenv(
+        "SLACK_CHANNEL_REVISIONES_CURSOR", DEFAULT_CHANNEL_REVISIONES_CURSOR
+    )
 
 
 def _chunk_text(text: str, limit: int = MAX_SLACK_TEXT) -> list[str]:
@@ -114,4 +121,12 @@ def deliver_to_publicaciones(text: str) -> None:
         text,
         channel=channel_publicaciones(),
         webhook_url=os.getenv("SLACK_WEBHOOK_PUBLICACIONES", ""),
+    )
+
+
+def deliver_to_revisiones_cursor(text: str) -> None:
+    deliver(
+        text,
+        channel=channel_revisiones_cursor(),
+        webhook_url=os.getenv("SLACK_WEBHOOK_REVISIONES_CURSOR", ""),
     )
