@@ -42,7 +42,7 @@ Los comparadores para agentes de IA casi no existen.
 
 Estamos construyendo esa capa.
 
-¿Qué productos incluirías en tu canasta de prueba?
+¿Qué productos incluiría en una canasta de prueba?
 
 ## Primer comentario
 

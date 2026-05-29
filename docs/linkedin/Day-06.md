@@ -54,7 +54,7 @@ Eso es lo que publicamos en MCP: schemas estrictos, descripciones accionables, r
 
 Un `pip install`. Un servidor MCP. Listo para Cursor, Claude Desktop, o tu propio runtime.
 
-¿Cuántas tools usa tu agente hoy para interactuar con comercio?
+¿Cuántas herramientas usa su agente hoy para interactuar con comercio?
 
 ## Primer comentario
 

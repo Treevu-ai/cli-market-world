@@ -20,7 +20,7 @@ tags:
 
 1. **Hook 1:** Data shock: el precio del arroz no es uno solo en Lima — varía fuerte entre cadenas esta semana.
 2. **Hook 2:** Mismo producto, distinto supermercado, distinto precio. Nuestro collector lo ve cada 8 horas.
-3. **Hook 3:** ¿Tu agente sabe comparar arroz en PE? El nuestro sí — con APIs reales, no scraping.
+3. **Hook 3:** ¿Su agente compara arroz en PE? El nuestro sí — con APIs reales, no scraping.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -38,7 +38,7 @@ Lo que vemos en PE (arroz 750g, esta semana):
 
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 
-¿Qué producto te gustaría ver comparado en PE la próxima semana?
+¿Qué producto le gustaría ver comparado en PE la próxima semana?
 
 ## Primer comentario
 

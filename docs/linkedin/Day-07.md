@@ -48,7 +48,7 @@ Nosotros convertimos comercio en APIs.
 
 Open source. MIT. Free para developers.
 
-Si eres retailer y quieres que los agentes te encuentren: la puerta está abierta.
+Si es retailer y quiere que los agentes lo encuentren: la puerta está abierta.
 
 ## Primer comentario
 

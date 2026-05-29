@@ -10,7 +10,7 @@ tags:
   - linkedin
 ---
 
-# Day 24 — 3 razones listar tienda
+# Day 24 — 3 razones para registrar su tienda
 
 **Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 

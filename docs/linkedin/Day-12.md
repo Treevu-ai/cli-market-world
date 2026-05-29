@@ -40,9 +40,9 @@ Esta semana analizamos las búsquedas más frecuentes en CLI Market:
 
 Los agentes no compran como humanos — buscan, comparan, optimizan.
 
-Si tu producto no aparece en APIs de retailers, no existe para ellos.
+Si su catálogo no aparece en APIs de retailers, no existe para los agentes.
 
-¿Qué buscarías tú con un agente conectado?
+¿Qué buscaría con un agente conectado?
 
 ## Primer comentario
 

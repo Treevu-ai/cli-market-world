@@ -51,9 +51,9 @@ Por eso construimos CLI Market:
 → Precios reales, refresh cada 8 horas
 → Una API, un schema, `pip install cli-market`
 
-La próxima vez que le preguntes a tu agente por la leche, que te responda con datos — no con suposiciones.
+La próxima vez que consulte a su agente por la leche, que responda con datos — no con suposiciones.
 
-¿Qué producto probarías primero con un agente?
+¿Qué producto probaría primero con un agente?
 
 ## Primer comentario
 

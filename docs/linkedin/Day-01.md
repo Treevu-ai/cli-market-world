@@ -40,9 +40,9 @@ Stripe convirtió los pagos en APIs.
 
 Nosotros estamos haciendo lo mismo con el comercio.
 
-Si estás construyendo agentes que necesitan comprar, comparar o recomendar productos reales — esto es para ti.
+Si construye agentes que necesitan comprar, comparar o recomendar productos reales — esto es para usted.
 
-¿Tu agente ya puede comprar solo? Cuéntame en comentarios.
+¿Su agente ya puede comprar solo? Comente abajo.
 
 ## Primer comentario
 

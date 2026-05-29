@@ -44,7 +44,7 @@ Transparencia total: collector hoy al 52% health — trabajando en llegar a 80%+
 
 Build in public = mostrar los números reales, no solo los buenos.
 
-¿Qué feature priorizarías?
+¿Qué función priorizaría?
 
 ## Primer comentario
 

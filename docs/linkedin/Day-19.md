@@ -42,7 +42,7 @@ No es un side project manual. Es infraestructura.
 
 El moat no es el código — es la **frecuencia y confiabilidad** del dato.
 
-¿Automatizas data pipelines en tu producto?
+¿Automatiza data pipelines en su producto?
 
 ## Primer comentario
 

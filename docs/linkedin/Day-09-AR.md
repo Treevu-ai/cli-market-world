@@ -46,7 +46,7 @@ Los comparadores que un agente de IA puede consultar por API casi no existen.
 
 Esa capa es la que estamos construyendo.
 
-¿Qué producto sumarías a la canasta de prueba?
+¿Qué producto sumaría a la canasta de prueba?
 
 ## Primer comentario
 

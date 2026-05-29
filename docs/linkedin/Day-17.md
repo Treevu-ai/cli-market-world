@@ -45,7 +45,7 @@ Alternativas que evaluamos:
 
 Python ganó por DX + async + ecosistema IA.
 
-¿Tu agent stack es Python-first también?
+¿Su stack de agentes es Python-first también?
 
 ## Primer comentario
 

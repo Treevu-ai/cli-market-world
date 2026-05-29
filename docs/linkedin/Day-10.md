@@ -39,13 +39,13 @@ Herramienta MCP `market_inflation` devuelve delta de precios por país y línea.
 
 Para un agente, eso es oro: señal de mercado accionable, no un PDF trimestral.
 
-Para un retailer, es presión: ahora compites también en búsquedas de IA.
+Para un retailer, es presión: ahora también compite en búsquedas de IA.
 
 Stripe convirtió pagos en APIs.
 
 Nosotros convertimos precios de góndola en APIs.
 
-¿Qué país te interesa monitorear primero?
+¿Qué país le interesa monitorear primero?
 
 ## Primer comentario
 

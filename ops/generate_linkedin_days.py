@@ -13,7 +13,7 @@ DAYS = {
         "hooks": [
             "Data shock: el precio del arroz no es uno solo en Lima — varía fuerte entre cadenas esta semana.",
             "Mismo producto, distinto supermercado, distinto precio. Nuestro collector lo ve cada 8 horas.",
-            "¿Tu agente sabe comparar arroz en PE? El nuestro sí — con APIs reales, no scraping.",
+            "¿Su agente compara arroz en PE? El nuestro sí — con APIs reales, no scraping.",
         ],
         "post": """El precio del arroz no es un solo número en Lima.
 
@@ -31,7 +31,7 @@ Esto no es un índice oficial de inflación. Es señal de mercado en tiempo casi
 
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 
-¿Qué producto te gustaría ver comparado en PE la próxima semana?""",
+¿Qué producto le gustaría ver comparado en PE la próxima semana?""",
         "comment": "Dashboard + comparar en terminal 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market\nmarket compare \"arroz\" --country PE\n```\n\nDatos: [[metrics/price-pulse-2026-W22]]",
         "tags": "#AI #ecommerce #data #retail #Peru",
         "gate": True,
@@ -63,7 +63,7 @@ Los comparadores para agentes de IA casi no existen.
 
 Estamos construyendo esa capa.
 
-¿Qué productos incluirías en tu canasta de prueba?""",
+¿Qué productos incluiría en una canasta de prueba?""",
         "comment": "Probar canasta 👇\n\nhttps://cli-market.dev\n\nVer [[linkedin/data-gate]] antes de publicar cifras exactas.",
         "tags": "#AI #ecommerce #Peru #data #MCP",
         "gate": True,
@@ -94,13 +94,13 @@ Herramienta MCP `market_inflation` devuelve delta de precios por país y línea.
 
 Para un agente, eso es oro: señal de mercado accionable, no un PDF trimestral.
 
-Para un retailer, es presión: ahora compites también en búsquedas de IA.
+Para un retailer, es presión: ahora también compite en búsquedas de IA.
 
 Stripe convirtió pagos en APIs.
 
 Nosotros convertimos precios de góndola en APIs.
 
-¿Qué país te interesa monitorear primero?""",
+¿Qué país le interesa monitorear primero?""",
         "comment": "Stats en vivo 👇\n\nhttps://cli-market.dev\n\n```\nmarket stats\n```",
         "tags": "#AI #data #ecommerce #inflation #buildinpublic",
         "gate": False,
@@ -112,7 +112,7 @@ Nosotros convertimos precios de góndola en APIs.
         "hooks": [
             "Motorola, Electrolux, Whirlpool — miles de precios indexados por retailer.",
             "No es un catálogo estático. Es un moat de datos que crece cada 8 horas.",
-            "Electro LATAM tiene spreads enormes. Los agentes pueden verlos. ¿Tú?",
+            "Electro LATAM tiene spreads enormes. Los agentes pueden verlos. ¿Y su vertical?",
         ],
         "post": """CLI Market no es solo supermercados.
 
@@ -130,7 +130,7 @@ Eso es infraestructura — no un chatbot que inventa precios.
 
 Open source. MIT. `pip install cli-market`
 
-¿En qué vertical retail te gustaría ver más cobertura?""",
+¿En qué vertical retail le gustaría ver más cobertura?""",
         "comment": "Explorar líneas 👇\n\nhttps://cli-market.dev\n\n```\nmarket lines\n```",
         "tags": "#AI #retail #data #LATAM #MCP",
         "gate": True,
@@ -160,9 +160,9 @@ Esta semana analizamos las búsquedas más frecuentes en CLI Market:
 
 Los agentes no compran como humanos — buscan, comparan, optimizan.
 
-Si tu producto no aparece en APIs de retailers, no existe para ellos.
+Si su catálogo no aparece en APIs de retailers, no existe para los agentes.
 
-¿Qué buscarías tú con un agente conectado?""",
+¿Qué buscaría con un agente conectado?""",
         "comment": "Conectar MCP 👇\n\nhttps://cli-market.dev/tools",
         "tags": "#AI #ecommerce #MCP #data #agents",
         "carousel": True,
@@ -225,7 +225,7 @@ Por eso construimos CLI Market: infraestructura de comercio para agentes.
 
 30 retailers. 36 herramientas MCP. 8 países. Open source.
 
-¿Cuál insight te sorprende más?""",
+¿Cuál insight le sorprende más?""",
         "comment": "Exportar datos (Pro) 👇\n\nhttps://cli-market.dev",
         "tags": "#AI #data #ecommerce #insights #buildinpublic",
         "gate": False,
@@ -259,7 +259,7 @@ Algunas tiendas fallaron. Las desactivamos. Las que funcionan, escalan.
 
 Build in public no es solo marketing — es filtro de calidad.
 
-¿Qué retailer te gustaría ver integrado?""",
+¿Qué retailer le gustaría ver integrado?""",
         "comment": "GitHub 👇\n\nhttps://github.com/Treevu-ai/cli-market-world",
         "tags": "#buildinpublic #AI #startup #ecommerce #opensource",
     },
@@ -296,7 +296,7 @@ No es 100%. Pero es honesto — y mejora cada semana.
 
 Los agentes merecen datos reales, no promesas.
 
-¿Qué stack usarías para fan-out a N APIs?""",
+¿Qué stack usaría para fan-out a N APIs?""",
         "comment": "Arquitectura 👇\n\nhttps://github.com/Treevu-ai/cli-market-world",
         "tags": "#python #asyncio #buildinpublic #ecommerce #AI",
     },
@@ -367,7 +367,7 @@ Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
 `pip install cli-market`
 
-¿Qué tool te falta para tu agente?""",
+¿Qué herramienta le falta a su agente?""",
         "comment": "Configs MCP 👇\n\nhttps://cli-market.dev/tools",
         "tags": "#MCP #opensource #AI #ecommerce #agents",
     },
@@ -400,7 +400,7 @@ No es un side project manual. Es infraestructura.
 
 El moat no es el código — es la **frecuencia y confiabilidad** del dato.
 
-¿Automatizas data pipelines en tu producto?""",
+¿Automatiza data pipelines en su producto?""",
         "comment": "Dashboard 👇\n\nhttps://cli-market-production.up.railway.app/dashboard",
         "tags": "#buildinpublic #data #postgresql #railway #AI",
     },
@@ -435,7 +435,7 @@ Transparencia total: collector hoy al 52% health — trabajando en llegar a 80%+
 
 Build in public = mostrar los números reales, no solo los buenos.
 
-¿Qué feature priorizarías?""",
+¿Qué función priorizaría?""",
         "comment": "Roadmap + PRD 👇\n\nhttps://cli-market.dev/retailers",
         "tags": "#buildinpublic #roadmap #startup #AI #ecommerce",
     },
@@ -465,7 +465,7 @@ Dashboard en vivo muestra health por store — sin maquillaje.
 
 Lección: **agent commerce necesita observabilidad por retailer**, no un boolean "integrado".
 
-¿Has tenido APIs de terceros que rompen producción un domingo?""",
+¿Le ha pasado que una API de terceros rompa producción un domingo?""",
         "comment": "Store health 👇\n\nhttps://cli-market-production.up.railway.app/dashboard",
         "tags": "#buildinpublic #VTEX #ecommerce #failures #AI",
     },
@@ -476,7 +476,7 @@ Lección: **agent commerce necesita observabilidad por retailer**, no un boolean
         "hooks": [
             "Un retailer peruano listó su tienda en CLI Market. 30 segundos. Sin código.",
             "Case study: de invisible para agentes → discoverable en búsquedas IA.",
-            "¿Tu tienda VTEX aparece cuando un agente busca 'leche'?",
+            "¿Su tienda VTEX aparece cuando un agente busca 'leche'?",
         ],
         "post": """Este retailer peruano listó su tienda en CLI Market.
 
@@ -492,14 +492,14 @@ Después: aparece en JSON cuando alguien pregunta "¿cuánto cuesta X en PE?"
 
 Gratis para retailers en Beta.
 
-VTEX, Magento, Shopify — si tienes API, podemos conectarte.
+VTEX, Magento, Shopify — si tiene API, podemos integrar su catálogo.
 
 Los agentes ya están comprando (o intentando).
 
-La pregunta es si te encuentran.
+La pregunta es si lo encuentran.
 
-¿Tienes tienda online en LATAM?""",
-        "comment": "Listar tienda 👇\n\nhttps://cli-market.dev/retailers",
+¿Tiene tienda online en LATAM?""",
+        "comment": "Registrar tienda 👇\n\nhttps://cli-market.dev/retailers",
         "tags": "#retail #VTEX #Peru #AI #ecommerce",
     },
     23: {
@@ -513,7 +513,7 @@ La pregunta es si te encuentran.
         ],
         "post": """Si su tienda usa **VTEX** o **Magento**:
 
-Tus productos **ya pueden** aparecer en búsquedas de agentes de IA.
+Sus productos **ya pueden** aparecer en búsquedas de agentes de IA.
 
 CLI Market unifica APIs de retail en una capa agent-ready:
 
@@ -523,9 +523,9 @@ CLI Market unifica APIs de retail en una capa agent-ready:
 
 **Registrar su tienda:**
 1. cli-market.dev/retailers
-2. Completa el form (30 seg)
+2. Complete el formulario (30 s)
 3. Validación automática
-4. Apareces en agent searches
+4. Aparece en búsquedas de agentes
 
 Gratis en Beta.
 
@@ -533,7 +533,7 @@ No es marketplace. Es infraestructura.
 
 Los agentes no visitan su sitio web: llaman APIs.
 
-¿Estás en la API?""",
+¿Está en la API?""",
         "comment": "Formulario 👇\n\nhttps://cli-market.dev/retailers?utm_source=linkedin&utm_campaign=30d-d23",
         "tags": "#VTEX #Magento #retail #AI #LATAM",
     },
@@ -597,9 +597,9 @@ Conectar MCP en Cursor: **cli-market.dev/tools**
 
 Open source. MIT. Gratis.
 
-Si eres developer: pruébalo y dime qué falta.
+Si es developer: pruébelo y comente qué falta.
 
-Si eres retailer: cli-market.dev/retailers
+Si es retailer: cli-market.dev/retailers
 
 El futuro del comercio es agent-first.
 
@@ -675,7 +675,7 @@ Estamos en día 30 del launch público.
 
 El hard part empieza ahora: escala + confiabilidad.
 
-¿Qué construirías encima de esta API?""",
+¿Qué construiría encima de esta API?""",
         "comment": "API docs 👇\n\nhttps://cli-market-production.up.railway.app/docs",
         "tags": "#AI #infrastructure #ecommerce #scale #agents",
     },
@@ -708,7 +708,7 @@ Próximo: Beta Jun 8, HN, 10 retailers self-serve, path $500 MRR.
 
 Gracias a quienes probaron, comentaron, listaron tiendas.
 
-¿Qué metric te importa más para el mes 2?""",
+¿Qué métrica le importa más para el mes 2?""",
         "comment": "Dashboard 👇\n\nhttps://cli-market.dev",
         "tags": "#buildinpublic #milestone #AI #ecommerce #startup",
     },
@@ -773,7 +773,7 @@ Estamos convirtiendo comercio en APIs.
 
 Si llegaste hasta aquí en el calendario — gracias.
 
-Si eres developer: prueba el CLI.
+Si es developer: pruebe el CLI.
 
 Si es retailer: registre su tienda.
 

@@ -39,7 +39,7 @@ Dashboard en vivo muestra health por store — sin maquillaje.
 
 Lección: **agent commerce necesita observabilidad por retailer**, no un boolean "integrado".
 
-¿Has tenido APIs de terceros que rompen producción un domingo?
+¿Le ha pasado que una API de terceros rompa producción un domingo?
 
 ## Primer comentario
 

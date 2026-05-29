@@ -20,7 +20,7 @@ tags:
 
 1. **Hook 1:** Motorola, Electrolux, Whirlpool — miles de precios indexados por retailer.
 2. **Hook 2:** No es un catálogo estático. Es un moat de datos que crece cada 8 horas.
-3. **Hook 3:** Electro LATAM tiene spreads enormes. Los agentes pueden verlos. ¿Tú?
+3. **Hook 3:** Electro LATAM tiene spreads enormes. Los agentes pueden verlos. ¿Y su vertical?
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -40,7 +40,7 @@ Eso es infraestructura — no un chatbot que inventa precios.
 
 Open source. MIT. `pip install cli-market`
 
-¿En qué vertical retail te gustaría ver más cobertura?
+¿En qué vertical retail le gustaría ver más cobertura?
 
 ## Primer comentario
 

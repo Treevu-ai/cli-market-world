@@ -37,7 +37,7 @@ Por eso construimos CLI Market: infraestructura de comercio para agentes.
 
 30 retailers. 36 herramientas MCP. 8 países. Open source.
 
-¿Cuál insight te sorprende más?
+¿Cuál insight le sorprende más?
 
 ## Primer comentario
 

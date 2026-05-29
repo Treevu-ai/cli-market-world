@@ -46,7 +46,7 @@ No es 100%. Pero es honesto — y mejora cada semana.
 
 Los agentes merecen datos reales, no promesas.
 
-¿Qué stack usarías para fan-out a N APIs?
+¿Qué stack usaría para fan-out a N APIs?
 
 ## Primer comentario
 

@@ -36,17 +36,17 @@ Después: aparece en JSON cuando alguien pregunta "¿cuánto cuesta X en PE?"
 
 Gratis para retailers en Beta.
 
-VTEX, Magento, Shopify — si tienes API, podemos conectarte.
+VTEX, Magento, Shopify — si tiene API, podemos integrar su catálogo.
 
 Los agentes ya están comprando (o intentando).
 
-La pregunta es si te encuentran.
+La pregunta es si lo encuentran.
 
-¿Tienes tienda online en LATAM?
+¿Tiene tienda online en LATAM?
 
 ## Primer comentario
 
-Listar tienda 👇
+Registrar tienda 👇
 
 https://cli-market.dev/retailers
 

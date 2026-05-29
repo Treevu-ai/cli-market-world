@@ -44,7 +44,7 @@ No es marketplace. Es infraestructura.
 
 Los agentes no visitan su sitio web: llaman APIs.
 
-¿Estás en la API?
+¿Está en la API?
 
 ## Primer comentario
 

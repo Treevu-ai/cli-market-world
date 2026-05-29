@@ -10,19 +10,19 @@ tags:
   - linkedin
 ---
 
-# Day 05 — Carousel: 4 pasos para que tu agente compre solo
+# Day 05 — Carousel: 4 pasos para que su agente compre solo
 
 **Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
 ## Hooks (elegir 1)
 
-1. **Educational:** 4 pasos para que tu agente de IA compre solo (sin scraping).
-2. **How-to:** Tu agente puede buscar. ¿Puede pagar? Este es el flujo completo.
+1. **Educational:** 4 pasos para que su agente de IA compre solo (sin scraping).
+2. **How-to:** Su agente puede buscar. ¿Puede pagar? Este es el flujo completo.
 3. **Listicle:** De `pip install` a checkout en 4 pasos.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo; adjuntar carousel)
 
-Tu agente puede escribir código.
+Su agente puede escribir código.
 
 ¿Puede comprar?
 

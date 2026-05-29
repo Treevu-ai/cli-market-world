@@ -15,7 +15,9 @@ Copy para LinkedIn, Slack, outreach y reportes ops en **castellano estándar**, 
 |----------|-------------|---------|
 | CTA retailers B2B | **usted** | Registre su tienda · Complete el formulario |
 | Métricas / datos | neutro | 19.452 precios indexados · 8 países |
-| Preguntas engagement | tú aceptable | ¿Qué producto le gustaría comparar en PE? |
+| Preguntas engagement | **usted** o impersonal | ¿Qué producto le gustaría comparar en PE? |
+| Posts developer (Day 25) | tú en terminal OK | `tu terminal` · `pruébalo` |
+| Founder 1ª persona | yo (construí, arranqué) | Narrativa build in public |
 | Ortografía | RAE / LATAM | éxito · países · integración · últimas · cambió · avísenos |
 
 ## Evitar (voseo / rioplatense)

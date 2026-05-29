@@ -42,7 +42,7 @@ Algunas tiendas fallaron. Las desactivamos. Las que funcionan, escalan.
 
 Build in public no es solo marketing — es filtro de calidad.
 
-¿Qué retailer te gustaría ver integrado?
+¿Qué retailer le gustaría ver integrado?
 
 ## Primer comentario
 

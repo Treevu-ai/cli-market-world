@@ -42,7 +42,7 @@ Próximo: Beta Jun 8, HN, 10 retailers self-serve, path $500 MRR.
 
 Gracias a quienes probaron, comentaron, listaron tiendas.
 
-¿Qué metric te importa más para el mes 2?
+¿Qué métrica le importa más para el mes 2?
 
 ## Primer comentario
 

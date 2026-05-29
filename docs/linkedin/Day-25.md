@@ -41,9 +41,9 @@ Conectar MCP en Cursor: **cli-market.dev/tools**
 
 Open source. MIT. Gratis.
 
-Si eres developer: pruébalo y dime qué falta.
+Si es developer: pruébelo y comente qué falta.
 
-Si eres retailer: cli-market.dev/retailers
+Si es retailer: cli-market.dev/retailers
 
 El futuro del comercio es agent-first.
 

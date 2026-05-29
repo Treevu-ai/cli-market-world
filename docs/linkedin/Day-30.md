@@ -44,7 +44,7 @@ Estamos convirtiendo comercio en APIs.
 
 Si llegaste hasta aquí en el calendario — gracias.
 
-Si eres developer: prueba el CLI.
+Si es developer: pruebe el CLI.
 
 Si es retailer: registre su tienda.
 

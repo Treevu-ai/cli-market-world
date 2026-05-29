@@ -45,7 +45,7 @@ Estamos en día 30 del launch público.
 
 El hard part empieza ahora: escala + confiabilidad.
 
-¿Qué construirías encima de esta API?
+¿Qué construiría encima de esta API?
 
 ## Primer comentario
 

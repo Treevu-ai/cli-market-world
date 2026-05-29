@@ -44,7 +44,7 @@ Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
 `pip install cli-market`
 
-¿Qué tool te falta para tu agente?
+¿Qué herramienta le falta a su agente?
 
 ## Primer comentario
 

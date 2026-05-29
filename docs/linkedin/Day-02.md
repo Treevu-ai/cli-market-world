@@ -17,7 +17,7 @@ tags:
 ## Hooks (elegir 1)
 
 1. **Reframe:** El problema no es que los agentes no sepan comprar. Es que no tienen dónde.
-2. **Contrarian:** Tu agente es brillante. Pero sigue siendo ciego en el supermercado.
+2. **Contrarian:** Su agente es brillante. Pero sigue ciego en el supermercado.
 3. **Question:** ¿Le pediste a ChatGPT que compare precios de leche en Wong vs Metro? ¿Qué te respondió?
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
@@ -47,7 +47,7 @@ Una capa. Una API. 30 retailers. 36 herramientas MCP.
 
 Los agentes ya saben pensar. Ahora pueden comprar.
 
-¿Qué use case de "agent + commerce" te gustaría ver resuelto primero?
+¿Qué caso de uso de "agent + commerce" le gustaría ver resuelto primero?
 
 ## Primer comentario
 
