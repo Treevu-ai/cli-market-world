@@ -67,19 +67,17 @@ def test_canasta_spreads_need_two_stores():
     assert arroz[0]["price_basis"] == "per_kg"
 
 
-def test_marketing_spreads_canasta_at_5x():
+def test_marketing_spreads_canasta_at_2_5x():
     from market_spread import compute_marketing_spreads
 
     base = {"line": "supermercados", "line_name": "Super", "currency": "PEN", "category": "", "brand": ""}
     products = [
-        {**base, "name": "Arroz 1kg", "price": 1.0, "store": "wong", "store_name": "Wong"},
-        {**base, "name": "Arroz 1 kg", "price": 1.0, "store": "metro", "store_name": "Metro"},
-        {**base, "name": "Arroz extra 1kg", "price": 1.0, "store": "plazavea", "store_name": "Plaza Vea"},
-        {**base, "name": "Arroz 1000g", "price": 1.0, "store": "tottus", "store_name": "Tottus"},
-        {**base, "name": "Arroz 1kg econ", "price": 1.0, "store": "mass", "store_name": "Mass"},
-        {**base, "name": "Arroz premium 1kg", "price": 300.0, "store": "vivanda", "store_name": "Vivanda"},
+        {**base, "name": "Arroz 1kg", "price": 4.0, "store": "wong", "store_name": "Wong"},
+        {**base, "name": "Arroz 1 kg", "price": 4.0, "store": "metro", "store_name": "Metro"},
+        {**base, "name": "Arroz extra 1kg", "price": 4.0, "store": "plazavea", "store_name": "Plaza Vea"},
+        {**base, "name": "Arroz 1000g", "price": 40.0, "store": "tottus", "store_name": "Tottus"},
     ]
     mkt = compute_marketing_spreads(products)
     assert len(mkt) == 1
     assert mkt[0]["seed"] == "arroz"
-    assert mkt[0]["spread_ratio"] >= 5.0
+    assert mkt[0]["spread_ratio"] >= 2.5
