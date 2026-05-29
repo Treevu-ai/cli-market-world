@@ -12,6 +12,8 @@ status: active
 
 # Data Moat — De métricas operativas a informe
 
+> **Copy y bloques del panel:** ver [dashboard-content-spec.md](./dashboard-content-spec.md) y JSON `dashboard_view` en `/dashboard/data`.
+
 Puente entre el **moat operativo** ([[data-moat-strategy]]) y la **entrega externa** (Price Pulse, LinkedIn, partners, inversores).  
 No reemplaza el collector ni el dashboard: define **qué exportar**, **cómo contarlo** y **qué plantillas FSI reutilizar** (sin vendor el repo completo).
 

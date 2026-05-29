@@ -22,6 +22,7 @@ from dashboard_glossary import (
     section_summary,
     section_title,
 )
+from dashboard_view_model import build_dashboard_view_model
 from server_deps import require_user
 
 from .health import _age_hours
@@ -528,7 +529,7 @@ def _dashboard_data():
         stale_stores=moat_stale,
     )
 
-    return {
+    result = {
         "generated_at": now.isoformat(),
         "kpis": {
             "total_indexed": total_indexed,
@@ -612,6 +613,98 @@ def _dashboard_data():
         "inflation": inflation,
         "canasta_basica": canasta_basica,
     }
+    result["dashboard_view"] = build_dashboard_view_model(result)
+    return result
+
+
+def _render_public_view_html(view: dict) -> str:
+    """HTML for content-spec blocks 1–5 (public-facing copy from dashboard_view)."""
+    blocks = view.get("blocks") or {}
+    hero = blocks.get("hero") or {}
+    moat = blocks.get("moat_narrative") or {}
+    canasta = blocks.get("canasta") or {}
+    spreads = blocks.get("price_spreads") or {}
+    inflation = blocks.get("inflation") or {}
+
+    badges = "".join(
+        f"""<div class="badge" title="{b.get('tooltip', '')}">
+<span class="badge-main">{b.get('label', '')}</span>
+<span class="badge-sub">{b.get('sublabel', '')}</span>
+</div>"""
+        for b in hero.get("trust_badges") or []
+    )
+
+    pillars = "".join(
+        f"""<div class="pillar">
+<b>{p.get('title', '')}</b><br>
+<span class="pillar-head">{p.get('headline', '')}</span>
+<p class="metric-desc">{p.get('microcopy', '')}</p>
+</div>"""
+        for p in moat.get("pillars") or []
+    )
+
+    canasta_rows = ""
+    for s in canasta.get("stores") or []:
+        warn = f"<br><span class='warn'>{s['warning']}</span>" if s.get("warning") else ""
+        total_cell = s.get("total_label", "—") if s.get("comparable") else "—"
+        canasta_rows += (
+            f"<tr><td>{s.get('store_name', '')}</td>"
+            f"<td>{s.get('completeness_label', '')}{warn}</td>"
+            f"<td style='color:#3cffd0'>{total_cell}</td></tr>"
+        )
+
+    cheap_rows = "".join(
+        f"<tr><td>{i.get('copy', '')}</td><td class='metric-desc'>{i.get('microcopy', '')}</td></tr>"
+        for i in (canasta.get("cheapest_by_line") or {}).get("items") or []
+    )
+
+    spread_rows = "".join(
+        f"<tr><td>{i.get('copy', '')}</td><td>{i.get('stores_label', '')}</td></tr>"
+        for i in spreads.get("items") or []
+    )
+    spread_empty = (
+        "<p class='metric-desc'>Aún no hay diferencias verificadas que superen el umbral mínimo.</p>"
+        if not spread_rows
+        else f"<table><tr><th>Diferencia</th><th>Cobertura</th></tr>{spread_rows}</table>"
+    )
+
+    if inflation.get("measuring"):
+        infl_block = f"<div class='help-box'>{inflation.get('measuring_copy', '')}</div>"
+    else:
+        infl_rows = "".join(
+            f"<tr><td>{r.get('copy', '')}</td></tr>" for r in inflation.get("rows") or []
+        )
+        infl_block = f"<table>{infl_rows}</table>" if infl_rows else "<p class='metric-desc'>Sin variación esta semana.</p>"
+
+    return f"""
+<div class="hero-panel">
+<h1 class="hero-title">{hero.get('title', 'CLI Market')}</h1>
+<p class="hero-sub">{hero.get('subtitle', '')}</p>
+<div class="badges">{badges}</div>
+</div>
+
+<div class="section">[ {moat.get('title', '').upper()} ]</div>
+<p class="section-intro">{moat.get('intro', '')}</p>
+<div class="pillars">{pillars}</div>
+<p class="metric-desc">{((moat.get('growth_chart') or {}).get('label', ''))}</p>
+
+<div class="section">[ {canasta.get('title', '').upper()} ]</div>
+<p class="section-intro">{canasta.get('subtitle', '')}</p>
+<p class="layer-note">{canasta.get('quality_note', '')}</p>
+<table><tr><th>Tienda</th><th>Completitud</th><th>Total canasta</th></tr>{canasta_rows or '<tr><td colspan=3>sin datos</td></tr>'}</table>
+<div class="section" style="margin-top:12px">[ {(canasta.get('cheapest_by_line') or {}).get('title', '').upper()} ]</div>
+<table><tr><th>Comparación</th><th>Nota</th></tr>{cheap_rows or '<tr><td colspan=2>sin datos</td></tr>'}</table>
+
+<div class="section">[ {spreads.get('title', '').upper()} ]</div>
+<p class="section-intro">{spreads.get('subtitle', '')}</p>
+<p class="layer-note">{spreads.get('quality_note', '')}</p>
+{spread_empty}
+
+<div class="section">[ {inflation.get('title', '').upper()} ]</div>
+<p class="section-intro">{inflation.get('term_tooltip', '')}</p>
+{infl_block}
+
+"""
 
 
 def _static_dashboard() -> str:
@@ -643,19 +736,7 @@ def _static_dashboard() -> str:
         f"<li><b>{k}</b> — {v}</li>" for k, v in status_legend.items()
     )
     
-    k = data["kpis"]
-    m = data.get("moat_summary", {})
     g = data.get("moat_guide", {})
-    indexed = k.get("total_indexed", k.get("total_snapshots", 0))
-    snap_24 = k.get("snapshots_24h", k.get("total_snapshots", 0))
-    stores_with_data = k.get("stores_indexed", k.get("active_stores", 0))
-    cov_pct = round(stores_with_data / max(k["total_stores"], 1) * 100)
-    cov_bar = "█" * (cov_pct // 5) + "░" * (20 - cov_pct // 5)
-    stale_note = ""
-    if m.get("collector_stale"):
-        stale_note = f" · ⚠️ moat sin refresh reciente ({k.get('moat_age_hours', '?')}h)"
-    elif snap_24 == 0 and indexed > 0:
-        stale_note = " · ⚠️ inventario histórico — refresh 24h en cero"
 
     guide_html = ""
     for layer in g.get("layers", []):
@@ -675,9 +756,6 @@ def _static_dashboard() -> str:
 {f"<table><tr><th>Comando / API</th><th>Para qué sirve</th></tr>{srows}</table>" if srows else ""}
 <p class="layer-note">{layer.get('note', '')}</p>"""
 
-    mental = "".join(f"<li>{x}</li>" for x in g.get("mental_model", []))
-    header_intro = section_summary("header")
-    
     lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{(r['avg_price'] or 0):.2f}</td><td>{(r['min_price'] or 0):.2f}</td><td>{(r['max_price'] or 0):.2f}</td></tr>" for r in data["by_line"])
     disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r.get('discount_pct',0) or 0}%</td></tr>" for r in data["top_discounts"])
     cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{(r['avg_price'] or 0):.2f}</td></tr>" for r in data["cheapest_by_line"])
@@ -752,12 +830,27 @@ def _static_dashboard() -> str:
 {am.get('marketing_crit_count', 0)} listos para copy (canasta ≥{am.get('marketing_canasta_min_spread', '?')}x) ·
 agrupación: {am.get('dispersion_grouping', '—')}
 </div>"""
+
+    view = data.get("dashboard_view") or {}
+    public_html = _render_public_view_html(view)
+    footer_stamp = view.get("footer_stamp") or f"Actualizado {data['generated_at'][:16]} UTC"
     
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>CLI Market // Data Moat</title>
 <style>
 body{{background:#0a0a0a;color:#b0b0b0;font:12px 'JetBrains Mono',monospace;padding:12px 16px}}
 h1{{color:#3cffd0;font-size:14px;margin:0 0 4px}}
+.hero-panel{{background:#111;border:1px solid #1a1a1a;border-radius:6px;padding:14px 16px;margin:0 0 20px;max-width:800px}}
+.hero-title{{color:#3cffd0;font-size:16px;margin:0 0 8px;line-height:1.35}}
+.hero-sub{{color:#888;font-size:12px;line-height:1.55;margin:0 0 12px;max-width:720px}}
+.badges{{display:flex;flex-wrap:wrap;gap:10px}}
+.badge{{background:#0a0a0a;border:1px solid #222;border-radius:4px;padding:8px 10px;min-width:140px}}
+.badge-main{{display:block;color:#ccc;font-size:11px}}
+.badge-sub{{display:block;color:#555;font-size:9px;margin-top:4px;text-transform:uppercase}}
+.pillars{{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;max-width:800px}}
+.pillar{{flex:1;min-width:180px;background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:10px 12px}}
+.pillar-head{{color:#3cffd0;font-size:13px}}
+.warn{{color:#ffbd2e;font-size:10px}}
 .sub{{color:#444;font-size:10px;margin:0 0 16px}}
 table{{border-collapse:collapse;width:100%;max-width:800px;margin-bottom:16px}}
 th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #1a1a1a}}
@@ -774,13 +867,7 @@ td.num{{text-align:right}}
 .footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
 ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max-width:720px}}
 </style></head><body>
-<h1>CLI Market · Data Moat</h1>
-<p class="sub">{g.get('headline', 'Monitor de precios')} · <b>{indexed:,}</b> {metric_label('inventory', 'total_indexed', 'indexados')} · <b>{snap_24:,}</b> refresh 24h · {stores_with_data}/{k['total_stores']} tiendas{stale_note} · {data['generated_at'][:10]} {data['generated_at'][11:16]} UTC</p>
-<p class="section-intro">{header_intro}</p>
-<p class="coverage">Cobertura catálogo: {cov_pct}% {cov_bar}</p>
-
-{sec('mental_model', 'Qué es el data moat')}
-<ul style="color:#888;font-size:11px;line-height:1.6;margin:0 0 16px 18px;max-width:720px">{mental or '<li>Moat = precios verificados de muchas tiendas en un solo lugar</li>'}</ul>
+{public_html}
 
 <div class="section">[ GUÍA POR CAPAS ]</div>
 <p class="section-intro">Cinco capas para entender el moat sin jerga financiera. Cada fila explica qué significa el número.</p>
@@ -789,8 +876,6 @@ ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max
 <div class="section">[ LEYENDA DE ESTADOS ]</div>
 <ul class="glossary">{legend_html}</ul>
 
-<div class="section">[ DETALLE ANALÍTICO ]</div>
-<p class="section-intro">Exploración de precios por categoría, ofertas, cambios semanales y diferencias entre tiendas. Complementa — no reemplaza — inventario y frescura.</p>
 {meta_html}
 
 {sec('store_health')}
@@ -845,7 +930,7 @@ ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max
 {sec('freshness_table', 'Frescura por tienda')}
 <table><tr><th>Tienda</th><th>Último precio guardado</th></tr>{fresh_html}</table>
 
-<p class="footer">Ultima actualizacion: {data['generated_at'][:10]} a las {data['generated_at'][11:16]} UTC · Glosario completo en GET /dashboard/data → metric_glossary · CLI Market · cli-market.dev</p>
+<p class="footer">{footer_stamp} · Glosario: <code>metric_glossary</code> · Vista pública: <code>dashboard_view</code> · CLI Market · cli-market.dev</p>
 </body></html>"""
     return html
 
