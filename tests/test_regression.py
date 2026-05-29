@@ -188,6 +188,14 @@ def test_collector_sq_insert_upserts(isolated_db):
     assert price == 15.0
 
 
+def test_max_allowed_price_ars_electro(isolated_db):
+    import collect_prices
+    cap = collect_prices.max_allowed_price("whirlpool_ar", "electro")
+    assert cap >= 1_000_000
+    assert collect_prices.max_allowed_price("whirlpool_ar", "electro") > 50_000
+    assert collect_prices.max_allowed_price("oster_br", "electro") == 50_000
+
+
 def test_collector_sq_insert_tolerates_missing_keys(isolated_db):
     """Defensive: connectors return slightly different dict shapes.
     sq_insert must not KeyError if `discount` or `list_price` are missing."""

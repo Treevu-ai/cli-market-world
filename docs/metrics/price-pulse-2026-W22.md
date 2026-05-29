@@ -1,45 +1,52 @@
 ---
 week: 2026-W22
-updated: 2026-05-28
+updated: 2026-05-29
 ---
 
 # Price Pulse — Semana 22
 
 ## Collector
-- Stores success (≥80%): **16 / 31** (51.6%)
-- Prices indexed (24h): **8,064**
-- Active stores (24h): **28**
-- Collector runs: **173**
-- Last run status: **ok**
+- Moat indexado: **19,452** precios · **34** tiendas con datos
+- Refresh 24h: **8,392** · tiendas fresh: **30**
+- Coverage 7d: **94.4%** ✅ gate LinkedIn semana 2
+- Stores success lifetime (≥80%): **20 / 36** (55.6%) — solo ops
+- Collector runs: **191**
+- Last run: **1,441** precios · **30/36** tiendas
+- Moat stale: **False**
 
-## Data stories (auto)
-- Precios frescos esta semana: **8,064**
-- Retailers con datos 24h: **28**
-- Gate sem 2 LinkedIn: ver [[../linkedin/data-gate]]
+## Por país (indexado total)
+
+| País | Precios | Tiendas |
+|------|---------|---------|
+| AR | 6,106 | 8 |
+| BR | 4,979 | 11 |
+| MX | 3,927 | 4 |
+| PE | 3,157 | 4 |
+| CO | 1,103 | 3 |
+| CL | 114 | 2 |
+| IT | 126 | 1 |
+| FR | 38 | 1 |
+
+## Data stories verificados
+
+### Arroz PE (Day 8)
+- Export: `docs/metrics/query-arroz-pe.json`
+- Rango observado: **S/ 2.90** (750g superior) — **S/ 4.40+** (marcas premium)
+- Tiendas: Metro, Plaza Vea, Wong
+- Copy: variación entre cadenas, **no** claim de +34% sin serie histórica
+
+### Canasta PE (Day 9)
+- Dashboard canasta (3+ items): Plaza Vea **S/ 435.20** (3/10 ítems matched)
+- Copy cualitativo: comparar arroz + leche + aceite multi-tienda vía `market_basket`
+- Evitar cifras S/147–182 del calendario original (ilustrativas)
 
 ## Marketing
 - LinkedIn impressions:
 - PyPI installs (week):
 - Landing → Pro requests:
 
-## Product
-- Self-serve signups:
-- Pro activations (manual):
-
-## Tiendas críticas (<30%)
-- Electrolux MX (MX): 0%
-- Motorola ES (ES): 0%
-- Samsung BR (BR): 0%
-- Samsung MX (MX): 0%
-- Nomad (US): 0%
-- Gymshark (US): 0%
-- Adidas (US): 0%
-- On Running (CH): 0%
-- Privalia BR (BR): 0%
-- Cruz Verde CO (CO): 0%
-
 ## Hook LinkedIn (copiar)
 
-Esta semana: **8,231** precios frescos · **28** retailers activos · **0/60** tiendas saludables. Un solo `pip install cli-market`.
+Esta semana: **8,392** precios frescos · **19,452** indexados · **30** retailers fresh · **94.4%** cobertura 7d. Un solo `pip install cli-market`.
 
 Fuente: `/dashboard/data` · [[GTM-Hub]]

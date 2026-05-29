@@ -28,15 +28,13 @@ El precio del arroz no es un solo número en Lima.
 
 Esta semana nuestro collector indexó miles de precios reales de góndola en supermercados peruanos — actualizados cada 8 horas vía APIs VTEX, sin scraping.
 
-Lo que vemos:
+Lo que vemos en PE (arroz 750g, esta semana):
 
-→ El mismo SKU puede variar significativamente entre cadenas
-→ Las farmacias y supermercados no compiten solo en promo — compiten en datos
-→ Un agente de IA puede comparar en menos de un segundo lo que a un humano le toma abrir 4 apps
+→ Desde **S/ 2.90** (Metro / Plaza Vea) hasta **S/ 4.40+** según marca
+→ Wong y Metro compiten en el mismo SKU — el agente elige en <1s
+→ No es índice INEI — es señal de góndola actualizada cada pocas horas
 
-Esto no es un índice oficial de inflación. Es señal de mercado en tiempo casi real — lo que un agente necesita para recomendar, comparar o comprar.
-
-8,000+ precios indexados. 28 retailers activos hoy. 8 países.
+**8,392** precios en refresh 24h · **19,452** indexados · **30** retailers fresh · **8** países.
 
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 

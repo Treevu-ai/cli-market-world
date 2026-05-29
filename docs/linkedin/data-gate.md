@@ -5,7 +5,7 @@ tags:
   - metrics
   - gate
 hub: "[[GTM-Hub]]"
-date: 2026-05-28
+date: 2026-05-29
 status: active
 ---
 
@@ -17,74 +17,70 @@ status: active
 
 ```bash
 curl -sS https://cli-market-production.up.railway.app/dashboard/data | python3 -m json.tool
+curl -sS https://cli-market-production.up.railway.app/health/db | python3 -m json.tool
 ```
 
 Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md`
 
-## Snapshot verificado — 2026-05-28
+## Snapshot verificado — 2026-05-29 ✅ GATE PASSED
 
 | Métrica | Valor | OK para LI? |
 |---------|-------|-------------|
-| Total snapshots (24h) | **8,064** | ✅ |
-| Precios indexados (price-pulse) | **8,231** | ✅ |
-| Active stores (24h) | **28** | ✅ (no decir 30 sin aclarar) |
-| Total catalog stores | **30** | ✅ (falabella_co off hasta token Magento) |
-| Healthy stores (lifetime) | **16** | ⚠️ solo ops — ver [[data-moat-strategy]] |
-| Store success % (lifetime) | **51.6%** | ❌ no usar en marketing |
-| **coverage_7d_pct** (post-deploy) | ver `moat_summary` | ✅ gate semana 2 |
-| Collector runs | **173** | ✅ interno |
+| Precios indexados (moat) | **19,452** | ✅ |
+| Refresh 24h | **8,392** | ✅ |
+| Tiendas fresh 24h | **30** | ✅ |
+| Tiendas con datos | **34** | ✅ |
+| **coverage_7d_pct** | **94.4%** | ✅ gate semana 2 |
+| Collector last run | **1,441** precios · 30/36 tiendas | ✅ |
+| `price_snapshots_upsert_ready` | **true** | ✅ |
+| Store success % (lifetime) | 55.6% | ❌ solo ops |
+| Moat stale | **false** | ✅ |
 
-### Por país (snapshots 24h)
+### Por país (indexado)
 
 | País | Precios | Tiendas |
 |------|---------|---------|
-| AR | 3,809 | 8 |
-| PE | 3,138 | 4 |
-| BR | 3,029 | 7 |
-| MX | (ver API) | — |
-
-### Por línea
-
-| Línea | Precios | Avg price |
-|-------|---------|-----------|
-| supermercados | 8,572 | — |
-| farmacias | 763 | — |
-| electro | 589 | — |
+| AR | 6,106 | 8 |
+| BR | 4,979 | 11 |
+| MX | 3,927 | 4 |
+| PE | 3,157 | 4 |
+| CO | 1,103 | 3 |
 
 ## Gate checklist (semana 2)
 
-- [ ] **Moat coverage 7d** ≥ **80%** (`moat_summary.coverage_7d_pct`) — gate principal
-- [ ] Lifetime `store_success_pct` — solo ops, **no marketing**
-- [ ] Cifra `[N]` en Day 07 reemplazada con snapshot del día
-- [ ] Claims de inflación (% arroz, canasta) respaldados por query exportable
-- [ ] No implicar índice oficial INEI/INDEC — usar "según nuestro collector"
-- [ ] Legal review en días 8–10 (variación de precios)
+- [x] **Moat coverage 7d** ≥ **80%** — **94.4%**
+- [x] Upsert Postgres operativo (`price_snapshots_upsert_ready: true`)
+- [x] Refresh 24h > 0
+- [ ] Cifra `[N]` en Day 07 → usar **8,392** (24h) o **19,452** (indexado)
+- [x] Claims agregados 8K+ / 19K+ — OK
+- [ ] Claims de inflación % por producto — posponer (sin serie 7–14d aún)
+- [ ] No implicar INEI/INDEC — usar "según nuestro collector"
 
-Ver estrategia completa: [[data-moat-strategy]]
+## Posts — estado de publicación
 
-## Posts bloqueados / condicionales
+| Día | Tema | Estado | Cifras a usar |
+|-----|------|--------|---------------|
+| 7 | Semana 1 wrap | ✅ publicar | 8,392 fresh · 19,452 indexados · 30 fresh |
+| 8 | Arroz PE variación | ✅ publicar | S/ 2.90–4.40+ · 8K+ fresh · ver [[metrics/query-arroz-pe.json]] |
+| 9 | Canasta PE | ✅ cualitativo | multi-tienda · evitar S/147–182 |
+| 10 | Collector 8h | ✅ publicar | 8,392 snapshots 24h · Railway + PG |
+| 11 | Electro/hogar | ✅ publicar | 591 electro · 11 países/líneas |
+| 12 | Top 10 carousel | ⚠️ | armar desde dashboard top_discounts |
+| 13 | Retailers EN | ✅ | sin cifras duras |
+| 14 | 3 insights | ✅ publicar | 19K+ indexados · 8K+ fresh |
 
-| Día | Claim del calendario | Estado | Acción |
-|-----|---------------------|--------|--------|
-| 8 | Arroz +34% Lima | ⚠️ ILUSTRATIVO | Publicar solo tras query `market_compare "arroz" --country PE` exportada |
-| 9 | Canasta S/147–182 | ⚠️ ILUSTRATIVO | Usar `market_basket` con items verificados |
-| 10 | Inflación real 8h | ✅ OK | Usar 8,064 snapshots + refresh 8h |
-| 11 | Motorola/Electrolux counts | ⚠️ | Verificar por tienda en dashboard |
-| 14 | 12K precios insights | ✅ OK | Usar ~8K+ con fecha |
-
-## Query reproducible (guardar output en metrics/)
+## Query reproducible
 
 ```bash
-# Comparar arroz PE — guardar JSON para Day 8
-market login
-market compare "arroz" --country PE --json > docs/metrics/query-arroz-pe.json
-
-# Canasta básica — Day 9
-market basket --items '[{"name":"arroz","qty":1},{"name":"leche","qty":2}]' --json
+# Day 8 — guardado en repo
+curl -sS -X POST https://cli-market-production.up.railway.app/products/compare \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"arroz","country":"PE","limit":20}' \
+  > docs/metrics/query-arroz-pe.json
 ```
 
-## Decisión 2026-05-28
+## Decisión 2026-05-29
 
-**Semana 2 LinkedIn:** publicar días 8–14 con copy **qualitativo** + cifras agregadas verificadas (8K+ precios, 28 retailers activos, refresh 8h). **Posponer** claims de % específicos por producto hasta collector ≥80%.
+**Semana 2 desbloqueada.** Publicar días 7–14 con cifras agregadas verificadas. Day 8: variación arroz PE con rango real, sin % inflación inventado. Day 9: cualitativo + demo basket, sin totales ficticios.
 
 [[GTM-Hub]] · [[metrics/price-pulse-2026-W22]] · [[linkedin/00-Index]]
