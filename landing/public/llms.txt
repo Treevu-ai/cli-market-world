@@ -74,4 +74,4 @@ GET  /dashboard/data        — Live KPIs: price by line, by country, top produc
 ## Business
 
 SINAPSIS INNOVADORA S.A.C. — RUC 20613045563 — Lima, Peru
-Founder: Antonio Cuba
+Founder: Ricardo Cuba
