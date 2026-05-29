@@ -75,9 +75,8 @@ Lista completa: https://cli-market.dev/llms.txt
 
 ## Assets
 
-- [ ] Diagrama 6 categorías × tools (o screenshot /tools page)
-- [ ] Screenshot Cursor con MCP conectado
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-06/day-06-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 6` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]]) — 36 MCP, 30 retailers

@@ -63,9 +63,8 @@ https://github.com/Treevu-ai/cli-market-world
 
 ## Assets
 
-- [ ] GIF terminal / screenshot (si aplica)
-- [ ] Carousel Canva (días 5, 12)
-
+**Adjuntar en LinkedIn:** `docs/linkedin/assets/day-25/day-25-linkedin.png`
+Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 25` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
 - [ ] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]])

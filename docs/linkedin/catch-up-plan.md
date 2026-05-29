@@ -25,20 +25,24 @@ El producto avanzó mucho en 48h **antes** de la primera publicación en LinkedI
 - No usar cifras de `data-gate` o Day-07 de hace 48h sin sincronizar (moat pasó de ~19K a **41K+** indexados).
 - No marcar días 1–28 como `published_at` retroactivamente si no se publicaron.
 
-## Flujo diario (humano + scripts)
+## Flujo diario (solo copiar y pegar)
+
+**Assets de los 30 días** ya están en `docs/linkedin/assets/day-01/` … `day-30/`.
+
+Ver [[linkedin/PUBLISH]].
 
 ```mermaid
 flowchart LR
-  A[sync_linkedin_metrics] --> B[daily_briefing / slack_cli briefing]
-  B --> C[Copiar post Day-NN a LinkedIn]
-  C --> D[Primer comentario con link]
+  A[Day-NN.md Post] --> B[LinkedIn publicación]
+  C[day-NN-linkedin.png] --> B
+  B --> D[Primer comentario]
   D --> E[published_at en Day-NN.md]
 ```
 
-1. `python3 ops/sync_linkedin_metrics.py` — alinea data-gate y posts con `/dashboard/data`.
-2. `LINKEDIN_CAMPAIGN_START=2026-05-29 python3 ops/slack_cli.py briefing` — reporte + Slack (si hay token).
-3. Publicar en LinkedIn el post del día N.
-4. Editar frontmatter: `published_at: YYYY-MM-DD` en el `Day-NN.md` correspondiente.
+1. Abrí `docs/linkedin/Day-NN.md` → copiá **Post** → adjuntá `assets/day-NN/day-NN-linkedin.png`.
+2. Opcional semanal: `python3 ops/sync_linkedin_metrics.py` + `python3 ops/generate_all_linkedin_assets.py --patch`.
+3. `python3 ops/slack_cli.py briefing` — recordatorio en Slack con ruta de imagen.
+4. `published_at: YYYY-MM-DD` en frontmatter cuando publiques.
 
 ## Semana 1 acelerada (opcional)
 
