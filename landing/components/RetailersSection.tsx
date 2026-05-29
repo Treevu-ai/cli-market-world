@@ -33,7 +33,7 @@ export default function RetailersSection() {
       <meta itemProp="description" content={isES ? "Lista tu tienda gratis en CLI Market. VTEX, Shopify o Magento. 30 segundos. Sin costo." : "List your store on CLI Market free. VTEX, Shopify, or Magento. 30 seconds. No cost."} />
       <meta itemProp="offers" content='{"@type":"Offer","price":"0","priceCurrency":"USD"}' />
 
-      <div className="landing-container px-6">
+      <div className="landing-container">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4 text-center">
           {isES ? "Para retailers" : "For retailers"}
         </p>

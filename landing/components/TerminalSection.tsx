@@ -37,15 +37,15 @@ export default function TerminalSection() {
             { title: "Cart", cmd: "market basket leche:2 arroz:1", out: isES ? "Canasta comparada en 3 tiendas · Metro S/11.70" : "Basket compared in 3 stores · Metro S/11.70" },
             { title: "Checkout", cmd: "market checkout --payment yape", out: isES ? "✓ Orden ORD-A7F3B91C · QR Yape generado" : "✓ Order ORD-A7F3B91C · Yape QR generated" },
           ].map((cell) => (
-            <div key={cell.title} className="bg-[#1a1d19] rounded-3xl p-4 border border-[#2a2d25] text-left">
+            <div key={cell.title} className="bg-[#1a1d19] rounded-3xl px-5 py-4 border border-[#2a2d25] text-left min-w-0 overflow-hidden">
               <div className="flex items-center gap-1.5 mb-3">
                 <span className="w-2 h-2 rounded-full bg-[#d03238]" />
                 <span className="w-2 h-2 rounded-full bg-[#ffd11a]" />
                 <span className="w-2 h-2 rounded-full bg-[#2ead4b]" />
                 <span className="text-[10px] text-[var(--wise-mute)] font-mono ml-2">{cell.title}</span>
               </div>
-              <p className="text-xs text-[var(--wise-green)] font-mono mb-2">$ {cell.cmd}</p>
-              <p className="text-[11px] text-[var(--wise-body)] font-mono">{cell.out}</p>
+              <p className="text-xs text-[var(--wise-green)] font-mono mb-2 demo-step-text">$ {cell.cmd}</p>
+              <p className="text-[11px] text-[var(--wise-body)] font-mono demo-step-text">{cell.out}</p>
             </div>
           ))}
         </div>

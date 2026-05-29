@@ -31,7 +31,7 @@ export default function Pricing() {
 
   return (
     <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
           {isES ? "Planes" : "Plans"}
         </p>

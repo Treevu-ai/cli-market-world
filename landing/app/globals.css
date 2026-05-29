@@ -39,6 +39,33 @@ section[id] {
   max-width: 1100px;
   margin-left: auto;
   margin-right: auto;
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  min-width: 0;
+}
+
+/* Long CLI/API strings on narrow viewports (320–360px) */
+.code-snippet-box {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.code-snippet {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.demo-step-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 .safe-left   { padding-left: env(safe-area-inset-left, 0px); }
