@@ -51,7 +51,7 @@ export default function ScaleCoverageSection() {
 
   return (
     <section id="coverage" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container px-6 text-center">
+      <div className="landing-container text-center">
         <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-4">
           {isES ? "Escala y cobertura" : "Scale and coverage"}
         </p>
