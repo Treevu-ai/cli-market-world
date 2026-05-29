@@ -8,6 +8,7 @@ Usage:
   python3 ops/slack_cli.py campaign sync         # sync_linkedin_metrics.py
   python3 ops/slack_cli.py post --bitacora "Hola"
   python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
+  python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
   python3 ops/slack_cli.py verify [--send-test]
 """
 
@@ -24,9 +25,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from slack_notify import (  # noqa: E402
     channel_bitacora,
     channel_publicaciones,
+    channel_revisiones_cursor,
     deliver,
     deliver_to_bitacora,
     deliver_to_publicaciones,
+    deliver_to_revisiones_cursor,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -58,6 +61,9 @@ def cmd_post(channel: str, text: str | None, file: Path | None) -> int:
     elif channel == "publicaciones":
         deliver_to_publicaciones(text)
         print(f"OK → publicaciones ({channel_publicaciones()})")
+    elif channel == "revisiones_cursor":
+        deliver_to_revisiones_cursor(text)
+        print(f"OK → revisiones-cursor ({channel_revisiones_cursor()})")
     else:
         deliver(text, channel=channel)
         print(f"OK → {channel}")
@@ -104,6 +110,12 @@ def main() -> int:
     p_post = sub.add_parser("post", help="Post message to a channel")
     p_post.add_argument("--bitacora", action="store_true", help="Bitácora producto")
     p_post.add_argument("--publicaciones", action="store_true", help="Publicaciones redes")
+    p_post.add_argument(
+        "--revisiones-cursor",
+        action="store_true",
+        dest="revisiones_cursor",
+        help="Revisiones Cursor / Cloud Agent",
+    )
     p_post.add_argument("--channel", help="Raw channel ID (override)")
     p_post.add_argument("--file", type=Path, help="Markdown file to post")
     p_post.add_argument("message", nargs="?", help="Message text")
@@ -141,8 +153,13 @@ def main() -> int:
             ch = "bitacora"
         elif args.publicaciones:
             ch = "publicaciones"
+        elif args.revisiones_cursor:
+            ch = "revisiones_cursor"
         else:
-            print("Error: use --bitacora, --publicaciones, or --channel ID", file=sys.stderr)
+            print(
+                "Error: use --bitacora, --publicaciones, --revisiones-cursor, or --channel ID",
+                file=sys.stderr,
+            )
             return 1
         return cmd_post(ch, args.message, args.file)
 
