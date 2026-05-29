@@ -1,0 +1,28 @@
+// AUTO-GENERATED — do not edit. Run: python3 ops/sync_market_stats.py
+
+export const MARKET_STATS = {
+  retailersDefined: 60,
+  retailersVerified: 30,
+  platforms: 3,
+  platformVtex: 38,
+  platformShopify: 15,
+  platformMagento: 7,
+  countries: 8,
+  countryCodes: ['PE', 'AR', 'BR', 'MX', 'CO', 'CL', 'IT', 'FR'],
+  mcpTools: 36,
+  pricesVerifiedLabel: "39,000+",
+  pricesRefreshHours: 8,
+  packageVersion: "1.5.0",
+  license: "MIT",
+  paymentsLabel: "PayPal + QR (Yape/Plin)",
+  businessLines: 6,
+  retailersPhraseEn: "60 retailers, 30 verified active",
+  retailersPhraseEs: "60 retailers, 30 verificados activos",
+  platformsPhraseEn: "3 platforms (VTEX · Shopify · Magento)",
+  platformsPhraseEs: "3 plataformas (VTEX · Shopify · Magento)",
+  headerEn: "CLI Market \u2014 Commerce infrastructure for AI agents.\n60 retailers across 3 platforms (VTEX \u00b7 Shopify \u00b7 Magento), 30 verified live.\n8 countries. 36 MCP tools. 39,000+ verified shelf prices, normalized per kg/L, refreshed every 8h.\nOne pip install. One API. Zero scraping. MIT.",
+  headerEs: "CLI Market \u2014 Infraestructura de comercio para agentes de IA.\n60 retailers en 3 plataformas (VTEX \u00b7 Shopify \u00b7 Magento), 30 verificados y activos.\n8 pa\u00edses. 36 herramientas MCP. 39,000+ precios reales de g\u00f3ndola, normalizados por kg/L, actualizados cada 8h.\nUn pip install. Una API. Cero scraping. MIT.",
+  shopifyBrands: ["Adidas", "Gymshark", "Allbirds", "Alo Yoga", "Glossier", "Fenty Beauty", "Kylie Cosmetics", "ColourPop", "Brooklinen", "Casper", "On Running", "Parachute", "Nomad", "Magic Mind", "Privalia BR"],
+  seoDescription: "Commerce API for AI agents. 36 MCP tools, 60 retailers, 30 verified active. 8 countries. 39,000+ verified shelf prices refreshed every 8 hours. Normalized per kg/L, quality-filtered. pip install cli-market.",
+  serverDescription: "Commerce for AI agents. 36 MCP tools. 60 retailers (30 verified), 8 countries, 3 platforms.",
+} as const;

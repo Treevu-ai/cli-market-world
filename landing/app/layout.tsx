@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -23,8 +24,7 @@ export const metadata: Metadata = {
     default: "CLI Market — AI commerce API & MCP tools for agents",
     template: "%s | CLI Market",
   },
-  description:
-    "Commerce API for AI agents. 36 MCP tools, 30 retailers, 8 countries. 39,000+ verified shelf prices refreshed every 8 hours. Normalized per kg/L, quality-filtered. pip install cli-market.",
+  description: MARKET_STATS.seoDescription,
   keywords: [
     "commerce API for AI agents",
     "AI shopping API",
@@ -39,8 +39,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CLI Market — AI commerce API & MCP tools for agents",
-    description:
-      "30 retailers in 8 countries. 36 MCP tools. 39K+ verified prices every 8 hours. Quality-filtered spreads and basket compare.",
+    description: `${MARKET_STATS.retailersPhraseEn}. ${MARKET_STATS.mcpTools} MCP tools. ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours. Quality-filtered spreads and basket compare.`,
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",
@@ -48,8 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "CLI Market — Commerce infrastructure for AI agents",
-    description:
-      "AI commerce API + MCP tools. 30 retailers. One pip install. Zero scraping.",
+    description: `AI commerce API + MCP tools. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
   },
 };
 
@@ -67,11 +65,10 @@ const jsonLd = {
       name: "CLI Market",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Linux, macOS, Windows",
-      description:
-        "Commerce infrastructure for AI agents. AI commerce API with 36 MCP tools across 30 retailers in 8 countries.",
+      description: MARKET_STATS.serverDescription,
       url: siteUrl,
       downloadUrl: "https://pypi.org/project/cli-market/",
-      softwareVersion: "1.4.3",
+      softwareVersion: MARKET_STATS.packageVersion,
       author: {
         "@type": "Organization",
         name: "SINAPSIS INNOVADORA S.A.C.",

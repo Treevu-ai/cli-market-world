@@ -3,8 +3,8 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 <p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/retailers-36-brightgreen" alt="36 retailers">
-  <img src="https://img.shields.io/badge/platforms-2-blue" alt="2 platforms">
+  <img src="https://img.shields.io/badge/retailers-60-brightgreen" alt="60 retailers">
+  <img src="https://img.shields.io/badge/platforms-3-blue" alt="3 platforms">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
   <img src="https://img.shields.io/badge/prices-39k-3cffd0" alt="39,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
@@ -21,7 +21,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>30 retailers. 8 countries. 2 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>39,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>60 retailers (30 verified). 8 countries. 3 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>39,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 
@@ -29,7 +29,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 AI agents can't comparison-shop in physical retail. Every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
 
-**CLI Market fixes this.** One `pip install`. One API call across 30 verified retailers. One JSON schema.
+**CLI Market fixes this.** One `pip install`. One API call across 60 retailers (30 verified). One JSON schema.
 
 - **Search** any product across 30 verified retailers in 8 countries
 - **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
