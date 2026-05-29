@@ -102,7 +102,7 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div id="contact" className="max-w-lg mx-auto scroll-mt-20">
+        <div id="contact" className="w-full max-w-lg mx-auto scroll-mt-20 min-w-0 px-0">
           <h3 className="text-lg font-bold text-[var(--wise-ink)] mb-2">
             {isES ? "¿Necesitas Pro o Enterprise?" : "Need Pro or Enterprise?"}
           </h3>
