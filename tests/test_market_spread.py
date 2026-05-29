@@ -5,7 +5,7 @@ from market_spread import (
     compute_canasta_spreads,
     infer_subcategory,
 )
-from market_units import parse_pack_size, price_per_base_unit
+from market_units import is_standard_canasta_pack, parse_pack_size, price_per_base_unit
 
 
 def test_parse_pack_size_grams_and_liters():
@@ -44,14 +44,42 @@ def test_dispersion_uses_subcategory_not_whole_supermercados():
     assert data["dispersion_crit_count"] == 0
 
 
+def test_is_standard_canasta_pack():
+    assert is_standard_canasta_pack("Arroz Costeño 1kg", "arroz")
+    assert is_standard_canasta_pack("Leche Gloria 1L", "leche")
+    assert is_standard_canasta_pack("Aceite 900 ml", "aceite")
+    assert not is_standard_canasta_pack("Arroz 5kg", "arroz")
+    assert not is_standard_canasta_pack("Arroz suelto", "arroz")
+
+
 def test_canasta_spreads_need_two_stores():
     products = [
         {"line": "supermercados", "line_name": "Super", "currency": "PEN", "category": "",
-         "name": "Arroz 1kg", "brand": "", "price": 4.0, "store": "wong", "store_name": "Wong"},
+         "name": "Arroz superior 1kg", "brand": "", "price": 4.0, "store": "wong", "store_name": "Wong"},
         {"line": "supermercados", "line_name": "Super", "currency": "PEN", "category": "",
-         "name": "Arroz 1kg", "brand": "", "price": 6.0, "store": "metro", "store_name": "Metro"},
+         "name": "Arroz 1 kg", "brand": "", "price": 6.0, "store": "metro", "store_name": "Metro"},
     ]
     spreads = compute_canasta_spreads(products)
     arroz = [s for s in spreads if s["item"] == "arroz"]
     assert len(arroz) == 1
     assert arroz[0]["stores"] == 2
+    assert arroz[0]["pack_filter"] == "standard_1kg_1L"
+    assert arroz[0]["price_basis"] == "per_kg"
+
+
+def test_marketing_spreads_canasta_at_5x():
+    from market_spread import compute_marketing_spreads
+
+    base = {"line": "supermercados", "line_name": "Super", "currency": "PEN", "category": "", "brand": ""}
+    products = [
+        {**base, "name": "Arroz 1kg", "price": 1.0, "store": "wong", "store_name": "Wong"},
+        {**base, "name": "Arroz 1 kg", "price": 1.0, "store": "metro", "store_name": "Metro"},
+        {**base, "name": "Arroz extra 1kg", "price": 1.0, "store": "plazavea", "store_name": "Plaza Vea"},
+        {**base, "name": "Arroz 1000g", "price": 1.0, "store": "tottus", "store_name": "Tottus"},
+        {**base, "name": "Arroz 1kg econ", "price": 1.0, "store": "mass", "store_name": "Mass"},
+        {**base, "name": "Arroz premium 1kg", "price": 300.0, "store": "vivanda", "store_name": "Vivanda"},
+    ]
+    mkt = compute_marketing_spreads(products)
+    assert len(mkt) == 1
+    assert mkt[0]["seed"] == "arroz"
+    assert mkt[0]["spread_ratio"] >= 5.0

@@ -46,3 +46,31 @@ def price_per_base_unit(price: float, name: str) -> dict | None:
         "pack_qty": qty,
         "price_per": round(price / qty, 4),
     }
+
+
+# Target ~1 kg / ~1 L (aceite often 900 ml).
+_LIQUID_ITEMS = frozenset({"leche", "aceite"})
+_WEIGHT_1KG_ITEMS = frozenset({"arroz", "azucar"})
+
+
+def is_standard_canasta_pack(name: str, item: str) -> bool:
+    """Keep canasta rows comparable: ~1 kg, ~1 L, or item-specific unit packs."""
+    parsed = parse_pack_size(name)
+    if not parsed:
+        return False
+    qty, base = parsed
+    if item in _LIQUID_ITEMS:
+        return base == "L" and 0.85 <= qty <= 1.05
+    if item in _WEIGHT_1KG_ITEMS:
+        return base == "kg" and 0.9 <= qty <= 1.15
+    if item == "pan":
+        return base == "kg" and 0.4 <= qty <= 1.15
+    if item in ("cafe", "queso"):
+        return base == "kg" and 0.2 <= qty <= 1.15
+    if item == "pollo":
+        return base == "kg" and 0.7 <= qty <= 2.5
+    if item == "huevos":
+        return base == "unit" and 6 <= qty <= 30
+    if item == "jabon":
+        return (base == "kg" and 0.07 <= qty <= 0.25) or (base == "unit" and qty <= 3)
+    return False

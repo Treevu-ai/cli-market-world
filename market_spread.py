@@ -6,11 +6,14 @@ import difflib
 import re
 from collections import defaultdict
 
-from market_units import price_per_base_unit
+from market_units import is_standard_canasta_pack, price_per_base_unit
 
 CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
 ]
+
+MARKETING_CANASTA_MIN_SPREAD = 5.0
+MARKETING_FARMACIA_MIN_SPREAD = 10.0
 
 WIDE_LINES = frozenset({"supermercados", "farmacias", "electro", "hogar", "departamentales"})
 
@@ -103,6 +106,26 @@ def _spread_from_prices(prices: list[float]) -> dict:
     }
 
 
+def _canasta_matches(products: list[dict], item: str, *, standard_pack_only: bool) -> list[dict]:
+    matches = [p for p in products if item in (p.get("name") or "").lower()]
+    if standard_pack_only:
+        matches = [p for p in matches if is_standard_canasta_pack(p.get("name") or "", item)]
+    return matches
+
+
+def _canasta_store_best(rows: list[dict]) -> dict[str, dict]:
+    store_best: dict[str, dict] = {}
+    for r in rows:
+        store = r.get("store") or r.get("store_name") or "?"
+        val, basis = _effective_price(r)
+        if val <= 0:
+            continue
+        cur = store_best.get(store)
+        if not cur or val < cur["_val"]:
+            store_best[store] = {**r, "_val": val, "_basis": basis}
+    return store_best
+
+
 def _effective_price(row: dict) -> tuple[float, str]:
     """Return (value, basis) using unit price when parseable."""
     ppu = price_per_base_unit(float(row.get("price") or 0), row.get("name") or "")
@@ -163,35 +186,26 @@ def compute_dispersion(products: list[dict]) -> list[dict]:
 def compute_canasta_spreads(products: list[dict]) -> list[dict]:
     results: list[dict] = []
     for item in CANASTA_ITEMS:
-        matches = [
-            p for p in products
-            if item in (p.get("name") or "").lower()
-        ]
+        matches = _canasta_matches(products, item, standard_pack_only=True)
         by_currency: dict[str, list[dict]] = defaultdict(list)
         for m in matches:
             by_currency[m.get("currency") or "???"].append(m)
 
         for currency, rows in by_currency.items():
-            store_best: dict[str, dict] = {}
-            for r in rows:
-                store = r.get("store") or r.get("store_name") or "?"
-                cur = store_best.get(store)
-                val, basis = _effective_price(r)
-                if val <= 0:
-                    continue
-                if not cur or val < cur["_val"]:
-                    store_best[store] = {**r, "_val": val, "_basis": basis}
-
+            store_best = _canasta_store_best(rows)
             vals = [v["_val"] for v in store_best.values()]
             if len(vals) < 2:
                 continue
             stats = _spread_from_prices(vals)
             bases = {v["_basis"] for v in store_best.values()}
+            rep = min(store_best.values(), key=lambda x: x["_val"])
             results.append({
                 "item": item,
                 "currency": currency,
                 "stores": len(vals),
                 "price_basis": bases.pop() if len(bases) == 1 else "mixed",
+                "pack_filter": "standard_1kg_1L",
+                "sample_name": (rep.get("name") or "")[:60],
                 **stats,
             })
     results.sort(key=lambda x: -x["spread_ratio"])
@@ -226,16 +240,51 @@ def _fuzzy_clusters(rows: list[dict]) -> list[list[dict]]:
 
 
 def compute_marketing_spreads(products: list[dict]) -> list[dict]:
-    """CRIT spreads safe for copy: same subcategory, unit basis, fuzzy cluster, 2+ stores."""
-    seeds = CANASTA_ITEMS + ["paracetamol", "ibuprofeno"]
+    """Spreads safe for copy: standard canasta packs (≥5x) or farmacia fuzzy (≥10x)."""
     out: list[dict] = []
 
-    for seed in seeds:
-        line_hint = "farmacias" if seed in ("paracetamol", "ibuprofeno") else "supermercados"
+    for item in CANASTA_ITEMS:
+        matches = _canasta_matches(products, item, standard_pack_only=True)
+        by_currency: dict[str, list[dict]] = defaultdict(list)
+        for m in matches:
+            by_currency[m.get("currency") or "???"].append(m)
+
+        for currency, rows in by_currency.items():
+            store_best = _canasta_store_best(rows)
+            if len(store_best) < 2:
+                continue
+            bases = {v["_basis"] for v in store_best.values()}
+            if len(bases) != 1:
+                continue
+            vals = [v["_val"] for v in store_best.values()]
+            stats = _spread_from_prices(vals)
+            if stats["spread_ratio"] < MARKETING_CANASTA_MIN_SPREAD:
+                continue
+            rep = min(store_best.values(), key=lambda x: x["_val"])
+            out.append({
+                "seed": item,
+                "line": rep.get("line_name") or rep.get("line"),
+                "currency": currency,
+                "subcategory": item,
+                "price_basis": bases.pop(),
+                "stores": len(store_best),
+                "products": len(rows),
+                "sample_name": (rep.get("name") or "")[:60],
+                "pack_filter": "standard_1kg_1L",
+                "marketing_threshold": MARKETING_CANASTA_MIN_SPREAD,
+                "marketing_ready": True,
+                **stats,
+            })
+
+    for seed in ("paracetamol", "ibuprofeno"):
+        line_hint = "farmacias"
         candidates = [
             p for p in products
             if seed in (p.get("name") or "").lower()
-            and (p.get("line") == line_hint or infer_subcategory(p.get("line") or "", p.get("name") or "") == seed)
+            and (
+                p.get("line") == line_hint
+                or infer_subcategory(p.get("line") or "", p.get("name") or "") == seed
+            )
         ]
         by_currency: dict[str, list[dict]] = defaultdict(list)
         for c in candidates:
@@ -262,7 +311,7 @@ def compute_marketing_spreads(products: list[dict]) -> list[dict]:
                     continue
                 vals = [v["_val"] for v in store_rows.values()]
                 stats = _spread_from_prices(vals)
-                if stats["status"] != "crit":
+                if stats["spread_ratio"] < MARKETING_FARMACIA_MIN_SPREAD:
                     continue
                 rep = next(iter(store_rows.values()))
                 out.append({
@@ -274,6 +323,8 @@ def compute_marketing_spreads(products: list[dict]) -> list[dict]:
                     "stores": len(store_rows),
                     "products": len(cluster),
                     "sample_name": (rep.get("name") or "")[:60],
+                    "pack_filter": "fuzzy_same_unit",
+                    "marketing_threshold": MARKETING_FARMACIA_MIN_SPREAD,
                     "marketing_ready": True,
                     **stats,
                 })
@@ -295,4 +346,6 @@ def build_spread_analytics(products: list[dict]) -> dict:
         "marketing_spreads": marketing_spreads,
         "dispersion_crit_count": len(crit),
         "marketing_crit_count": len(marketing_spreads),
+        "marketing_canasta_min_spread": MARKETING_CANASTA_MIN_SPREAD,
+        "marketing_farmacia_min_spread": MARKETING_FARMACIA_MIN_SPREAD,
     }
