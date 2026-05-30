@@ -161,6 +161,7 @@ PAYPAL_CLIENT_ID=<live>
 PAYPAL_CLIENT_SECRET=<live>
 PAYPAL_PLAN_ID=<live plan>
 PAYPAL_WEBHOOK_ID=<live webhook>
+CHECKOUT_WEBHOOK_SECRET=<random secret for POST /checkout/webhook>
 ```
 
 4. Probar con monto real pequeño antes de anunciar Alpha.
