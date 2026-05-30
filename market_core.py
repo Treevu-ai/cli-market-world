@@ -113,7 +113,7 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-from store_credentials import get_default_stores, resolve_store_config
+from store_credentials import get_default_stores, resolve_store_config  # noqa: F401
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
