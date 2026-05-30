@@ -15,7 +15,7 @@ export default function RetailersPage() {
               { "@type": "Question", "name": "How do I list my store on CLI Market?",
                 "acceptedAnswer": { "@type": "Answer", "text": "Generate a read-only API token from your Shopify, Magento, or VTEX admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever." }},
               { "@type": "Question", "name": "Is CLI Market free for retailers?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Yes. Completely free. MIT licensed. No hidden fees, no usage limits, no credit card required. Competitors charge $500/mo for less coverage." }},
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. Completely free. MIT licensed. No hidden fees, no usage limits, no credit card required." }},
               { "@type": "Question", "name": "What platforms does CLI Market support?",
                 "acceptedAnswer": { "@type": "Answer", "text": "VTEX, Shopify, and Magento. We connect via public catalog APIs — zero development required from your side." }},
               { "@type": "Question", "name": "How many retailers are already on CLI Market?",
@@ -38,7 +38,7 @@ export default function RetailersPage() {
             Your brand, inside AI agents.<br />Free. Today.
           </h1>
           <p className="text-[11px] text-[#ffbd2e] max-w-[500px] mx-auto mb-6 font-medium">
-            Competitors charge $500/month. We don't. But spots per country are filling.
+            Free forever. Limited spots per country.
           </p>
           <p className="text-base text-[var(--wise-body)] max-w-[500px] mx-auto leading-relaxed">
             When your products are indexed in CLI Market, AI agents discover, compare, and drive purchase traffic to your store. This is GEO — the SEO of the agent era.

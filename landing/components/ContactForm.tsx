@@ -3,8 +3,22 @@ import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 
-/** Enterprise / sales contact — Pro checkout lives in ProSubscribeButton on the Pro card. */
-export default function ContactForm() {
+type ContactFormProps = {
+  plan?: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  placeholder?: string;
+};
+
+/** Sales contact — Pro checkout lives in ProSubscribeButton on the Pro card. */
+export default function ContactForm({
+  plan = "enterprise",
+  eyebrow,
+  title,
+  subtitle,
+  placeholder,
+}: ContactFormProps) {
   const { lang } = useLang();
   const [email, setEmail] = useState("");
   const [useCase, setUseCase] = useState("");
@@ -26,7 +40,7 @@ export default function ContactForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plan: "enterprise",
+          plan,
           email,
           use_case: useCase,
           lang: isES ? "es" : "en",
@@ -40,7 +54,7 @@ export default function ContactForm() {
       throw new Error(data.detail || "Server error");
     } catch {
       setLoading(false);
-      const subject = encodeURIComponent(`CLI Market Enterprise — ${email}`);
+      const subject = encodeURIComponent(`CLI Market ${plan} — ${email}`);
       const body = encodeURIComponent(useCase);
       window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
     }
@@ -66,11 +80,12 @@ export default function ContactForm() {
     >
       <div className="text-center space-y-1">
         <span className="inline-block text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)]">
-          Enterprise
+          {eyebrow || "Enterprise"}
         </span>
         <h3 className="text-lg font-semibold text-[var(--wise-ink)]">
-          {isES ? "Cuéntanos tu caso" : "Tell us about your use case"}
+          {title || (isES ? "Cuéntanos tu caso" : "Tell us about your use case")}
         </h3>
+        {subtitle && <p className="text-sm text-[var(--wise-body)]">{subtitle}</p>}
       </div>
 
       <div>
@@ -93,9 +108,10 @@ export default function ContactForm() {
           rows={3}
           className="w-full min-w-0 rounded-3xl border border-[#c5edab] px-4 py-2.5 text-sm text-[var(--wise-ink)] bg-[var(--wise-canvas-soft)] focus:outline-none focus:border-[#9fe870] resize-none"
           placeholder={
-            isES
+            placeholder ||
+            (isES
               ? "Volumen, SLA, webhooks, integración..."
-              : "Volume, SLA, webhooks, integration..."
+              : "Volume, SLA, webhooks, integration...")
           }
         />
       </div>

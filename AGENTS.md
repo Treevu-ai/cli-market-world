@@ -35,6 +35,14 @@ Regla detallada: `.cursor/rules/slack-ops.mdc`
 
 **Slack no ejecuta órdenes** escritas en el canal del bot; solo envía. Pedir cambios en Cursor o terminal.
 
+## Ops GTM Intelligence
+
+- Índice: `docs/gtm/README.md`
+- One-pager piloto: `docs/gtm/intelligence-pilot-one-pager.md`
+- Outreach por vertical: `docs/gtm/outreach-intelligence-verticals.md`
+- Asset público: `landing/public/intelligence-pilot-es.md`
+
 ## Español en copy
 
-Castellano estándar (Perú / LATAM): `docs/linkedin/STYLE-es.md`
+Castellano estándar (Perú / LATAM): `tools/content-repo-template/linkedin/STYLE-es.md`
+

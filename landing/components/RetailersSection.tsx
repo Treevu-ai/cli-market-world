@@ -18,13 +18,13 @@ export default function RetailersSection() {
   ];
 
   const benefits = isES
-    ? ["Sin costo, siempre. La competencia cobra USD 500/mes por menos cobertura.",
-       "Sin integración técnica. Si ya vendes online, ya estás listo.",
-       "Canal nuevo (6 meses): agentes autónomos que compran solos.",
-       "Cada día fuera = ventaja para tu rival."]
-    : ["Free forever. Competitors charge $500/mo for less coverage.",
+    ? ["Sin costo, siempre. MIT. Sin letra chica.",
+       "Sin integración técnica. Si ya vende online, ya está listo.",
+       "Canal nuevo: agentes que comparan precios en tiempo real.",
+       "Cada día fuera = ventaja para su competidor."]
+    : ["Free forever. MIT. No fine print.",
        "Zero technical integration. If you sell online, you're already ready.",
-       "New channel (6 months): autonomous agents that buy on their own.",
+       "New channel: agents comparing prices in real time.",
        "Every day you're out = your rival's advantage."];
 
   return (
@@ -51,8 +51,8 @@ export default function RetailersSection() {
         </p>
         <p className="text-[11px] text-[#ffbd2e] max-w-2xl mx-auto mb-8 text-center font-medium">
           {isES
-            ? "La competencia cobra cientos de dólares al mes. Nosotros no. Plazas limitadas por país."
-            : "Competitors charge hundreds per month. We don't. Limited spots per country."}
+            ? "Gratis para siempre. Plazas limitadas por país."
+            : "Free forever. Limited spots per country."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
