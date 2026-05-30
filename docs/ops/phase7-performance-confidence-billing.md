@@ -44,7 +44,9 @@ Continúa `docs/ops/phase6-intelligence-api.md`. Cierra el backlog de **confiden
 
 ```bash
 # 1. Merge PR → redeploy API (migración automática en ensure_db_initialized)
-# 2. Backfill una vez (puede tardar ~1–2 min con 43K filas)
+# 2. Backfill una vez contra prod (local):
+pip install psycopg2-binary
+export DATABASE_URL='postgresql://...'   # Railway → Postgres → Connect (no commitear)
 python3 ops/backfill_confidence.py
 
 # 3. Verificar
