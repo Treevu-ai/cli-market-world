@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
+from market_core import STORES, TIERS, get_default_stores, db_get_subscription, get_db, price_to_usd
 from market_spread import CANASTA_ITEMS, build_spread_analytics, find_median_outliers, matches_canasta_item
 from market_units import is_standard_canasta_pack
 from dashboard_glossary import (
@@ -368,7 +368,7 @@ def _dashboard_data():
         "SELECT store, consecutive_failures FROM store_health "
         "WHERE consecutive_failures >= 3 ORDER BY consecutive_failures DESC"
     ).fetchall()
-    failing_stores = [r for r in failing_stores if r["store"] in DEFAULT_STORES]
+    failing_stores = [r for r in failing_stores if r["store"] in get_default_stores()]
 
     # ── Freshness ────────────────────────────────────────────────────────────
     freshness = db.execute(
@@ -384,7 +384,7 @@ def _dashboard_data():
                   consecutive_failures, last_success, last_error
            FROM store_health ORDER BY success_pct ASC, consecutive_failures DESC"""
     ).fetchall()
-    store_health = [{k: r[k] for k in r.keys()} for r in store_health_all if r["store"] in DEFAULT_STORES]
+    store_health = [{k: r[k] for k in r.keys()} for r in store_health_all if r["store"] in get_default_stores()]
     healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
 
     # ── Moat summary (agent-facing, rolling windows) ─────────────────────────
@@ -395,17 +395,17 @@ def _dashboard_data():
         + cutoff_24h_sql
         + " GROUP BY store"
     ).fetchall()
-    stores_fresh_24h = {r["store"] for r in stores_fresh_24h_rows if r["store"] in DEFAULT_STORES}
+    stores_fresh_24h = {r["store"] for r in stores_fresh_24h_rows if r["store"] in get_default_stores()}
     stores_active_7d_rows = db.execute(
         """SELECT store, COUNT(*) as n FROM price_snapshots
            WHERE price > 0 AND queried_at >= ? GROUP BY store""",
         (cutoff_7d,),
     ).fetchall()
-    stores_active_7d = {r["store"] for r in stores_active_7d_rows if r["store"] in DEFAULT_STORES}
-    coverage_7d_pct = round(len(stores_active_7d) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
-    fresh_24h_pct = round(len(stores_fresh_24h) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    stores_active_7d = {r["store"] for r in stores_active_7d_rows if r["store"] in get_default_stores()}
+    coverage_7d_pct = round(len(stores_active_7d) / len(get_default_stores()) * 100, 1) if get_default_stores() else 0
+    fresh_24h_pct = round(len(stores_fresh_24h) / len(get_default_stores()) * 100, 1) if get_default_stores() else 0
     moat_stale = sorted(
-        s for s in DEFAULT_STORES
+        s for s in get_default_stores()
         if s not in stores_fresh_24h
     )[:10]
 
@@ -547,7 +547,7 @@ def _dashboard_data():
         collector_age_h=collector_age_h,
         last_collected_at=last_collected_at,
         last_run=last_run,
-        catalog_stores=len(DEFAULT_STORES),
+        catalog_stores=len(get_default_stores()),
         marketing_gate_pass=coverage_7d_pct >= 80,
         stale_stores=moat_stale,
     )
@@ -562,10 +562,10 @@ def _dashboard_data():
             "snapshots_24h": snapshots_24h,
             "active_stores": active_stores_24h,
             "active_stores_24h": active_stores_24h,
-            "total_stores": len(DEFAULT_STORES),
+            "total_stores": len(get_default_stores()),
             "catalog_stores": len(STORES),
             "healthy_stores": healthy_count,
-            "store_success_pct": round(healthy_count / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0,
+            "store_success_pct": round(healthy_count / len(get_default_stores()) * 100, 1) if get_default_stores() else 0,
             "coverage_7d_pct": coverage_7d_pct,
             "stores_fresh_24h": len(stores_fresh_24h),
             "fresh_24h_pct": fresh_24h_pct,
@@ -584,7 +584,7 @@ def _dashboard_data():
             "last_collected_at": str(last_collected_at) if last_collected_at else None,
             "moat_age_hours": round(moat_age_h, 1) if moat_age_h is not None else None,
             "collector_stale": moat_age_h is not None and moat_age_h >= 24,
-            "stores_active_catalog": len(DEFAULT_STORES),
+            "stores_active_catalog": len(get_default_stores()),
             "stores_fresh_24h": len(stores_fresh_24h),
             "stores_active_7d": len(stores_active_7d),
             "coverage_7d_pct": coverage_7d_pct,

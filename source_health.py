@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from market_core import DEFAULT_STORES, STORES
+from market_core import get_default_stores, STORES
 
 
 def store_health_state(success_pct: float) -> str:
@@ -61,7 +61,7 @@ def build_sources_health(
     stores_out: list[dict] = []
     for row in health_rows:
         sid = row["store"]
-        if catalog_only and sid not in DEFAULT_STORES:
+        if catalog_only and sid not in get_default_stores():
             continue
         if store is not None and sid != store:
             continue
