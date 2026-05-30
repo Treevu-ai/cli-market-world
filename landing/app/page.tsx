@@ -23,10 +23,10 @@ export default function Home() {
           <Hero />
           <HowItWorks />
           <QuickstartAPI />
-          <UseCasesSection />
-          <RetailersSection />
           <ScaleCoverageSection />
+          <UseCasesSection />
           <Pricing />
+          <RetailersSection />
           <FAQ />
           <AboutSection />
           <Footer />

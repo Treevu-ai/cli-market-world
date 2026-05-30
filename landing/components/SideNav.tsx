@@ -6,10 +6,10 @@ const items = [
   { id: "hero", es: "Inicio", en: "Home" },
   { id: "how", es: "Flujo", en: "Flow" },
   { id: "api", es: "API", en: "API" },
-  { id: "casos", es: "Casos", en: "Use cases" },
-  { id: "retailers", es: "Retailers", en: "Retailers" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
+  { id: "casos", es: "Casos", en: "Use cases" },
   { id: "pricing", es: "Planes", en: "Pricing" },
+  { id: "retailers", es: "Retailers", en: "Retailers" },
   { id: "faq", es: "FAQ", en: "FAQ" },
 ]
 
