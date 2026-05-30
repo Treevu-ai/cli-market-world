@@ -16,15 +16,13 @@ export default function HowItWorks() {
   const isES = lang === "es";
 
   return (
-    <section id="how" className="wise-on-dark relative bg-[var(--wise-ink)] py-16">
-      <div className="landing-container text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
-          {isES ? "Cómo funciona" : "How it works"}
-        </p>
-        <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-white mb-2 tracking-tight">
+    <section id="how" className="landing-section landing-section-alt">
+      <div className="landing-container-wide text-center">
+        <p className="section-eyebrow mb-4">{isES ? "Cómo funciona" : "How it works"}</p>
+        <h2 className="section-title mb-2">
           {isES ? "Del install a datos verificados en minutos." : "From install to verified data in minutes."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-xl mx-auto mb-8">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-8">
           {isES
             ? "Search → Compare → export. Foco comercial: Intelligence (spreads, inflación, canasta). Demo Build con checkout en roadmap."
             : "Search → Compare → export. Commercial focus: Intelligence (spreads, inflation, basket). Build demo with checkout on the roadmap."}
@@ -32,12 +30,12 @@ export default function HowItWorks() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left mb-10 min-w-0">
           {steps.map((s, i) => (
-            <div key={i} className="bg-[#1a1d19] rounded-2xl border border-[#2a2d25] px-5 py-4 flex items-start gap-3 min-w-0 overflow-hidden">
+            <div key={i} className="card-cyber header-strip px-5 py-4 flex items-start gap-3 min-w-0 overflow-hidden hover:energy-border-active transition-all">
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>
-                <p className="text-xs text-[var(--wise-mute)] font-mono mt-1 demo-step-text">{s.cmd}</p>
-                <p className="text-[11px] text-[var(--wise-body)] mt-1 demo-step-text">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-xs text-[var(--cm-on-surface-variant)] font-mono mt-1 demo-step-text">{s.cmd}</p>
+                <p className="text-[11px] text-[var(--cm-on-surface-variant)]/80 mt-1 demo-step-text">{isES ? s.out_es : s.out_en}</p>
               </div>
             </div>
           ))}
@@ -47,19 +45,16 @@ export default function HowItWorks() {
           <img
             src="/demo.gif"
             alt={isES ? "Demo: agente de IA comprando canasta básica en supermercados peruanos con CLI Market" : "Demo: AI agent shopping a basic basket at Peruvian supermarkets with CLI Market"}
-            className="mx-auto rounded-xl border border-[#2a2d25] shadow-lg max-w-full h-auto"
+            className="mx-auto rounded-xl border border-[var(--cm-outline-variant)]/40 shadow-2xl max-w-full h-auto energy-border"
             width={960}
             height={540}
           />
-          <p className="text-[10px] text-[var(--wise-mute)] mt-2 font-mono">
+          <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono">
             {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
           </p>
         </div>
 
-        <a
-          href="https://pypi.org/project/cli-market/"
-          className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors"
-        >
+        <a href="https://pypi.org/project/cli-market/" className="btn-mint cyber-glow-mint">
           {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
         </a>
       </div>

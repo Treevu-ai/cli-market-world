@@ -146,6 +146,92 @@ section[id] {
   animation: pulse-mint 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Phase 2 — section & form patterns */
+.landing-section {
+  position: relative;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
+}
+
+.landing-section-alt {
+  background-color: var(--cm-surface-low);
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cm-on-surface-variant) 75%, transparent);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 4vw, 1.75rem);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.card-cyber {
+  backdrop-filter: blur(24px);
+  background: rgba(26, 26, 46, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+}
+
+.input-cyber {
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.25rem;
+  border: 1px solid var(--cm-outline-variant);
+  background: var(--cm-surface-lowest);
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--cm-on-surface);
+}
+
+.input-cyber:focus {
+  outline: none;
+  border-color: var(--cm-mint);
+}
+
+.btn-mint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cm-mint);
+  color: var(--cm-on-mint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  transition: box-shadow 0.2s, filter 0.2s;
+}
+
+.btn-mint:hover {
+  box-shadow: 0 0 25px rgba(58, 254, 207, 0.35);
+  filter: brightness(1.05);
+}
+
+.btn-mint:disabled {
+  opacity: 0.5;
+}
+
+.code-block-cyber {
+  background: var(--cm-surface-lowest);
+  border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 50%, transparent);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 .font-display {
   font-family: var(--font-display);
 }
