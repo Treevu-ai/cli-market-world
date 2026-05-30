@@ -783,7 +783,7 @@ _SQLITE_DDL = """\
 """
 
 
-from market_billing import (  # noqa: E402
+from market_billing import (  # noqa: E402, F401
     TIERS,
     _migrate_payment_schema,
     db_create_subscription_request,
