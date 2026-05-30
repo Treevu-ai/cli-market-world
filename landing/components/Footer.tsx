@@ -25,6 +25,7 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[var(--wise-body)]">
           <a href="#how" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Flujo" : "Flow"}</a>
           <a href="#api" className="hover:text-[var(--wise-ink)] transition-colors">API</a>
+          <a href="#casos" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Casos" : "Use cases"}</a>
           <a href="#retailers" className="hover:text-[var(--wise-ink)] transition-colors">Retailers</a>
           <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
           <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Planes" : "Pricing"}</a>

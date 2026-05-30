@@ -9,13 +9,15 @@ const tiers = [
     name: "Free", price: "$0", period_es: "sin costo", period_en: "no cost",
     f_es: ["1,000 consultas / día", "1 clave API (lectura)", "Dashboard de precios", "Búsqueda multi-retailer"],
     f_en: ["1,000 requests / day", "1 API key (read-only)", "Live price dashboard", "Multi-retailer search"],
-    cta_es: "Instalar gratis", cta_en: "Install free", dark: false,
+    cta_es: "Empezar", cta_en: "Get started", dark: false,
   },
   {
     name: "Pro", price: "$49", period_es: "/ mes", period_en: "/ month",
-    f_es: ["10,000 consultas / día", "10 claves API (lectura y escritura)", "Checkout automatizado", "Exportación de precios (JSON/CSV)", "Soporte prioritario por email"],
-    f_en: ["10,000 requests / day", "10 API keys (read + write)", "Automated checkout", "Price data export (JSON/CSV)", "Priority email support"],
+    f_es: ["10,000 consultas / día", "10 claves API (lectura y escritura)", "✦ Checkout automatizado", "✦ Exportación de precios (JSON/CSV)", "Soporte prioritario por email"],
+    f_en: ["10,000 requests / day", "10 API keys (read + write)", "✦ Automated checkout", "✦ Price data export (JSON/CSV)", "Priority email support"],
     cta_es: "Obtener Pro", cta_en: "Get Pro", dark: false, featured: true,
+    proNote_es: "Desbloquea checkout automatizado y export de datos — lo que un agente o un bureau necesita en producción.",
+    proNote_en: "Unlock automated checkout and data export — what an agent or bureau needs in production.",
   },
   {
     name: "Enterprise", price: "A medida", period_es: "", period_en: "",
@@ -75,16 +77,30 @@ export default function Pricing() {
                 )}
               </div>
               <ul className="space-y-2.5 mb-8 flex-1">
-                {(isES ? tier.f_es : tier.f_en).map((f, i) => (
-                  <li key={i} className={`flex items-start gap-2.5 text-sm ${tier.dark ? "text-white/80" : "text-[var(--wise-body)]"}`}>
-                    <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke={tier.dark ? "#9fe870" : "var(--wise-ink)"} strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                    {f}
-                  </li>
-                ))}
+                {(isES ? tier.f_es : tier.f_en).map((f, i) => {
+                  const isProFeature = f.startsWith("✦");
+                  return (
+                    <li key={i} className={`flex items-start gap-2.5 text-sm ${
+                      isProFeature
+                        ? "font-semibold text-[var(--wise-ink)]"
+                        : tier.dark ? "text-white/80" : "text-[var(--wise-body)]"
+                    }`}>
+                      {!isProFeature && (
+                        <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke={tier.dark ? "#9fe870" : "var(--wise-ink)"} strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                      )}
+                      {f}
+                    </li>
+                  );
+                })}
               </ul>
               {tier.name === "Pro" ? (
-                <div id="pro-checkout" className="scroll-mt-24">
+                <div id="pro-checkout" className="scroll-mt-24 space-y-3">
                   <ProSubscribeButton />
+                  {"proNote_es" in tier && (
+                    <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
+                      {isES ? tier.proNote_es : tier.proNote_en}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <a

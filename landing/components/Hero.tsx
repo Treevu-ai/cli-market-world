@@ -10,12 +10,11 @@ export default function Hero() {
   const { priceChip, retailersVerified, retailersDefined } = useLiveStats();
 
   const chips = [
-    { num: String(MARKET_STATS.mcpTools), label: isES ? "herramientas MCP" : "MCP tools", accent: false },
-    { num: String(retailersDefined), label: isES ? `retailers (${retailersVerified} verificados)` : `retailers (${retailersVerified} verified)`, accent: false },
+    { num: String(MARKET_STATS.mcpTools), label: isES ? "MCP" : "MCP", accent: false },
+    { num: String(retailersDefined), label: isES ? `retailers (${retailersVerified} verif.)` : `retailers (${retailersVerified} verif.)`, accent: false },
     { num: String(MARKET_STATS.countries), label: isES ? "países" : "countries", accent: false },
-    { num: String(MARKET_STATS.platforms), label: isES ? "plataformas" : "platforms", accent: false },
-    { num: priceChip, label: isES ? "precios verificados" : "verified prices", accent: false },
-    { num: `${MARKET_STATS.pricesRefreshHours}h`, label: isES ? "refresh" : "refresh", accent: false },
+    { num: priceChip, label: isES ? "precios" : "prices", accent: false },
+    { num: `${MARKET_STATS.pricesRefreshHours}h`, label: "refresh", accent: false },
   ];
 
   return (
@@ -25,20 +24,50 @@ export default function Hero() {
           {isES ? "COMERCIO" : "COMMERCE"}
         </span>
       </div>
-      <div className="flex-1 flex flex-col justify-center items-center landing-container py-24 lg:py-32 text-center min-w-0">
-        <h1 className="text-[clamp(36px,7vw,72px)] leading-[0.95] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0">
+        <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight">
           {isES
-            ? "La economía de los agentes ya empezó.\nTu negocio, adentro o afuera."
-            : "The agent economy is here.\nIs your business inside or out?"}
+            ? "La capa programable del retail físico de LatAm."
+            : "The programmable layer for physical retail in LatAm."}
         </h1>
 
-        <p className="mt-4 text-base sm:text-lg text-[var(--wise-body)] max-w-[560px] leading-relaxed">
+        <p className="mt-5 text-base sm:text-lg text-[var(--wise-body)] max-w-[620px] leading-relaxed">
           {isES
-            ? "Los agentes de IA ya buscan, comparan y compran productos sin intervención humana. CLI Market es el índice donde te encuentran. Si no estás aquí, no existes para ellos."
-            : "AI agents already search, compare, and buy products without human input. CLI Market is the index where they find you. If you're not here, you don't exist to them."}
+            ? "Los agentes de IA ya buscan, comparan y compran solos. CLI Market es la API que los conecta con 30 retailers verificados en 8 países — y el canal donde tu tienda aparece ante ellos."
+            : "AI agents already search, compare, and buy on their own. CLI Market is the API that connects them to 30 verified retailers across 8 countries — and the channel where your store appears to them."}
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[640px]">
+          <a
+            href="https://pypi.org/project/cli-market/"
+            className="group flex flex-col items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm text-left sm:items-start"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-ink)]/70">
+              {isES ? "Para builders / agentes" : "For builders / agents"}
+            </span>
+            <span className="text-base font-semibold">
+              <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
+            </span>
+            <code className="font-mono text-xs text-[var(--wise-ink)]/80">pip install cli-market</code>
+          </a>
+
+          <a
+            href="#retailers"
+            className="group flex flex-col items-center gap-2 rounded-3xl border-2 border-[var(--wise-ink)] bg-transparent text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-canvas)] transition-colors text-left sm:items-start"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)]">
+              {isES ? "Para retailers" : "For retailers"}
+            </span>
+            <span className="text-base font-semibold">
+              {isES ? "Listar mi tienda — gratis →" : "List my store — free →"}
+            </span>
+            <span className="text-xs text-[var(--wise-mute)]">
+              {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+            </span>
+          </a>
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
           {chips.map((c) => (
             <span key={c.label} className="inline-flex items-center gap-1.5 bg-[var(--wise-canvas)] rounded-3xl px-4 py-2 text-sm border border-[var(--wise-green-pale)]">
               <strong className="text-[var(--wise-ink)] tabular-nums">{c.num}</strong>
@@ -48,30 +77,6 @@ export default function Hero() {
           <span className="inline-flex items-center rounded-3xl px-4 py-2 text-sm border border-[var(--wise-green-pale)] bg-[var(--wise-canvas)]">
             <span className="text-[var(--wise-body)] font-medium">{isES ? "Open source · MIT" : "Open source · MIT"}</span>
           </span>
-        </div>
-
-        <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
-          <a
-            href="#retailers"
-            className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm"
-          >
-            <ScrambleText text={isES ? "Listar mi tienda →" : "List my store →"} />
-          </a>
-          <a
-            href="https://pypi.org/project/cli-market/"
-            className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-ink)] text-[var(--wise-canvas)] text-base font-semibold px-8 py-3.5 hover:opacity-90 transition-opacity"
-          >
-            {isES ? "Instalar gratis →" : "Install free →"}
-          </a>
-        </div>
-      </div>
-
-      <div className="pb-8 flex justify-center">
-        <div className="inline-flex items-center gap-2 bg-[var(--wise-canvas)] rounded-3xl px-5 py-3 shadow-sm border border-[var(--wise-green-pale)]">
-          <span className="w-3 h-3 rounded-full bg-[#d03238]" aria-hidden="true" />
-          <span className="w-3 h-3 rounded-full bg-[#ffd11a]" aria-hidden="true" />
-          <span className="w-3 h-3 rounded-full bg-[#2ead4b]" aria-hidden="true" />
-          <code className="font-mono text-sm text-[var(--wise-body)] ml-3">pip install cli-market</code>
         </div>
       </div>
     </section>

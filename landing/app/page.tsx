@@ -3,6 +3,7 @@ import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import QuickstartAPI from "@/components/QuickstartAPI";
+import UseCasesSection from "@/components/UseCasesSection";
 import RetailersSection from "@/components/RetailersSection";
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
 import Pricing from "@/components/Pricing";
@@ -22,6 +23,7 @@ export default function Home() {
           <Hero />
           <HowItWorks />
           <QuickstartAPI />
+          <UseCasesSection />
           <RetailersSection />
           <ScaleCoverageSection />
           <Pricing />
