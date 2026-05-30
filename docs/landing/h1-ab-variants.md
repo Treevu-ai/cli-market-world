@@ -142,7 +142,7 @@
 2. Runtime env: `HERO_AB=1` (para middleware en `landing/functions/_middleware.ts`)
 3. Redeploy una vez. Luego rotás pesos o pausás AB cambiando env sin tocar copy.
 
-**Override manual / QA:** `https://cli-market.dev/?hero=e`
+**Override manual / QA:** `https://cli-market.dev/?hero=e` — funciona **siempre**, con o sin `NEXT_PUBLIC_HERO_AB=1`.
 
 **Cookie:** `cm_hero_variant` · 30 días · `SameSite=Lax`
 
