@@ -5,6 +5,7 @@ Endpoints:
   GET /health            Liveness check
   GET /health/collector  Collector freshness (last run, age, store coverage)
   GET /v1/sources/health Per-store scraping health (success rate + freshness)
+  GET /v1/quality/flagged Paginated discount/outlier/spread anomalies
   GET /lines             Catalog of business lines with their stores
   GET /stores            Catalog of retailers (filterable by country/line)
   GET /countries         Catalog of countries with store lists
@@ -15,11 +16,14 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request
+from typing import Literal
+
+from fastapi import APIRouter, Query, Request
 
 from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
 from source_health import build_sources_health
+from quality_flagged import build_flagged_quality, DEFAULT_LIMIT, MAX_LIMIT
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -176,6 +180,23 @@ def sources_health(
     db = get_db()
     try:
         return build_sources_health(db, catalog_only=catalog_only, store=store)
+    finally:
+        db.close()
+
+
+@router.get("/v1/quality/flagged")
+def quality_flagged(
+    reason: Literal["discount", "outlier", "spread"] | None = Query(
+        default=None,
+        description="Filter by anomaly type: discount (≥90%), outlier (median 5x), spread (>10x).",
+    ),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    offset: int = Query(default=0, ge=0),
+):
+    """Paginated quality anomalies excluded from public marketing surfaces."""
+    db = get_db()
+    try:
+        return build_flagged_quality(db, reason=reason, limit=limit, offset=offset)
     finally:
         db.close()
 

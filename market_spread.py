@@ -272,7 +272,7 @@ def find_median_outliers(
     *,
     min_group: int = 5,
     band: float = 5.0,
-    limit: int = 10,
+    limit: int | None = 10,
 ) -> list[dict]:
     """Bidirectional outliers vs group median (line + currency + subcategory)."""
     groups: dict[tuple, list[dict]] = defaultdict(list)
@@ -337,6 +337,8 @@ def find_median_outliers(
     outliers.sort(key=lambda x: x["_extreme_ratio"], reverse=True)
     for item in outliers:
         item.pop("_extreme_ratio", None)
+    if limit is None:
+        return outliers
     return outliers[:limit]
 
 
