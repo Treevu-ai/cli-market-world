@@ -6,7 +6,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
   <img src="https://img.shields.io/badge/retailers-60-brightgreen" alt="60 retailers">
   <img src="https://img.shields.io/badge/platforms-3-blue" alt="3 platforms">
   <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/prices-39k-3cffd0" alt="39,000 prices">
+  <img src="https://img.shields.io/badge/prices-43k-3cffd0" alt="43,000 prices">
   <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
   <img src="https://img.shields.io/badge/payments-PayPal_email-ffbd2e" alt="PayPal email billing">
   <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
@@ -21,7 +21,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 </p>
 
 <h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>60 retailers (30 verified). 8 countries. 3 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>39,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+<p align="center"><b>Commerce infrastructure for AI agents.</b><br>60 retailers (30 verified). 8 countries. 3 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>43,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
 
 ---
 

@@ -9,7 +9,7 @@
   <rect x="48" y="48" width="1104" height="534" rx="24" fill="none" stroke="#1A1A1A" stroke-width="2"/>
   <text x="600" y="260" text-anchor="middle" font-family="monospace" font-size="72" font-weight="bold" fill="#9fe870" letter-spacing="12">CLI MARKET</text>
   <text x="600" y="320" text-anchor="middle" font-family="monospace" font-size="28" fill="#868685">Commerce infrastructure for AI agents</text>
-  <text x="600" y="390" text-anchor="middle" font-family="monospace" font-size="24" fill="#454745">60 retailers (30 verified) | 3 platforms | 8 countries | 39K+ prices</text>
+  <text x="600" y="390" text-anchor="middle" font-family="monospace" font-size="24" fill="#454745">60 retailers (30 verified) | 3 platforms | 8 countries | 43K+ prices</text>
   <text x="600" y="450" text-anchor="middle" font-family="monospace" font-size="22" fill="#666666">36 MCP tools | pip install cli-market | MIT</text>
   <line x1="300" y1="500" x2="900" y2="500" stroke="#2a2d25" stroke-width="1"/>
   <text x="600" y="540" text-anchor="middle" font-family="monospace" font-size="18" fill="#454745">cli-market.dev</text>
