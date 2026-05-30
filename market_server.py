@@ -36,6 +36,7 @@ from market_core import (
     ensure_db_initialized,
     logger as log,
 )
+from market_security import production_payment_config_warnings
 
 # Server-only helpers (auth, rate limit, hashing) live in server_deps.py.
 # Re-exported below — tests and external code import these from market_server.
@@ -72,6 +73,8 @@ async def lifespan(_app: FastAPI):
         db_migrate_from_json()
     except Exception as e:
         logger.warning("JSON migration skipped: %s", e)
+    for warning in production_payment_config_warnings():
+        logger.warning("Payment security: %s", warning)
     yield
 
 
