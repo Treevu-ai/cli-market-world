@@ -32,7 +32,7 @@ Una llamada. Un JSON. Precios reales de góndola — actualizados cada 8 horas.
 
 Esto es lo que construimos con CLI Market: infraestructura de comercio para agentes de IA.
 
-→ 30 retailers verificados en 8 países
+→ 60 retailers (30 verificados) en 8 países
 → 36 herramientas MCP (buscar, comparar, carrito, checkout)
 → `pip install cli-market` y listo
 
@@ -69,7 +69,7 @@ Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 1`
 Todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
-- [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]]) — 30 retailers, 36 MCP
+- [x] Mensaje alineado ([[GTM-Hub#Mensaje público acordado]]) — 60 retailers (30 verificados), 36 MCP
 - [ ] Asset adjunto antes de publicar
 - [ ] Responder comentarios 60 min post-publicación
 

@@ -63,6 +63,6 @@ python3 -c "import market_core, market_db; assert market_core.get_db is market_d
 | Item | Notas |
 |------|-------|
 | PayPal «Agotado» | Fix en panel PayPal Business (externo); landing ya tiene CTA verde |
-| Content repo privado | `campaign sync` tras merge de template (repo `cli-market-content`) |
-| Copy LinkedIn restante | Calendario Day-01…30 aún cita "30 retailers" en varios posts |
+| ~~Copy LinkedIn restante~~ | ✅ Fase 3 — ver `docs/ops/phase3-content-sync.md` |
+| Content repo privado | `campaign sync` tras merge de template (acción local, repo `cli-market-content`) |
 | Checkout autónomo | Roadmap Build — no prometer en copy comercial |

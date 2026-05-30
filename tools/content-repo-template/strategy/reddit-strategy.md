@@ -33,7 +33,7 @@ hub: "[[GTM-Hub]]"
 
 ## Phase 3: AMA Plan (Month 2)
 - **Subreddit**: r/aiagents or r/ecommerce
-- **Topic**: "I turned 30 retailers into APIs for AI agents. AMA."
+- **Topic**: "I turned 60 retailers (30 verified) into APIs for AI agents. AMA."
 - **Prep**: 20 anticipated questions + data-backed answers
 - **Promotion**: Crosspost to r/MCP, r/ClaudeAI
 
