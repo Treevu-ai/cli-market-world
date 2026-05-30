@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Sync LinkedIn copy + data-gate from production dashboard.
+"""Sync LinkedIn copy + data-gate + price-pulse from production dashboard.
 
-Run after major product jumps (e.g. moat 19K → 41K) so posts and gates match /dashboard/data.
+Run before publishing data-brags (Day-07/08/10/14) or after major moat jumps.
 
 Usage:
-  python3 ops/sync_linkedin_metrics.py           # update data-gate + metric-heavy Day-*.md
+  python3 ops/sync_linkedin_metrics.py           # data-gate + Day-*.md + price-pulse
   python3 ops/sync_linkedin_metrics.py --dry-run
 """
 
@@ -13,12 +13,12 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from content_paths import linkedin_dir  # noqa: E402
+from content_paths import content_root, linkedin_dir, metrics_dir  # noqa: E402
 
 
 def _data_gate() -> Path:
@@ -27,6 +27,7 @@ def _data_gate() -> Path:
 
 def _linkedin_dir() -> Path:
     return linkedin_dir()
+
 
 # Day files that embed aggregate KPIs (not full regenerate)
 METRIC_DAYS = (7, 8, 10, 11, 14, 28, 30)
@@ -52,6 +53,11 @@ def _short_k(n: int) -> str:
     if n >= 1000:
         return f"{n // 1000}K+"
     return str(n)
+
+
+def _iso_week(now: datetime | None = None) -> str:
+    now = now or datetime.now(timezone.utc)
+    return f"{now.isocalendar().year}-W{now.isocalendar().week:02d}"
 
 
 def metrics_from_dashboard(data: dict) -> dict[str, str]:
@@ -86,6 +92,7 @@ def metrics_from_dashboard(data: dict) -> dict[str, str]:
         "snap_k": _short_k(snap24),
         "run_line": run_line,
         "moat_stale": "false" if not moat.get("stale") else "true",
+        "week": _iso_week(),
     }
 
 
@@ -124,7 +131,6 @@ def update_data_gate(m: dict[str, str], dry_run: bool) -> bool:
         new_text,
         count=1,
     )
-    # Gate checklist lines with dynamic numbers
     new_text = re.sub(
         r"Cifra `\[N\]` en Day 07 → usar \*\*[\d,]+\*\*.*",
         f"Cifra `[N]` en Day 07 → usar **{m['snap24']}** (24h) o **{m['indexed']}** (indexado)",
@@ -135,12 +141,32 @@ def update_data_gate(m: dict[str, str], dry_run: bool) -> bool:
         f"Claims agregados {m['snap_k']} / {m['indexed_k']} — OK",
         new_text,
     )
-    for day_row, snap_label in ((7, "Semana 1 wrap"), (10, "Collector 8h"), (14, "3 insights")):
-        new_text = re.sub(
-            rf"(\| {day_row} \| {snap_label} \| ✅ publicar \| )[^|]+(\|)",
-            rf"\1{m['snap24']} fresh · {m['indexed']} indexados · {m['fresh']} fresh\2",
-            new_text,
-        )
+    new_text = re.sub(
+        r"(?m)^- \[x\] \*\*Moat coverage 7d\*\* ≥ \*\*80%\*\* — \*\*[\d.]+%\*\*",
+        f"- [x] **Moat coverage 7d** ≥ **80%** — **{m['coverage']}%**",
+        new_text,
+        count=1,
+    )
+
+    posts_table = (
+        "## Posts — estado de publicación\n\n"
+        "| Día | Tema | Estado | Cifras a usar |\n"
+        "|-----|------|--------|---------------|\n"
+        f"| 7 | Semana 1 wrap | ✅ publicar | {m['snap24']} fresh · {m['indexed']} indexados · {m['fresh']} fresh |\n"
+        "| 8 | Arroz PE variación | ✅ publicar | S/ 2.90–4.40+ · ver [[metrics/query-arroz-pe.json]] |\n"
+        "| 9 | Canasta PE | ✅ cualitativo | multi-tienda · evitar S/147–182 |\n"
+        f"| 10 | Collector 8h | ✅ publicar | {m['snap24']} fresh · {m['indexed']} indexados |\n"
+        "| 11 | Electro/hogar | ✅ publicar | 591 electro · 11 países/líneas |\n"
+        "| 12 | Top 10 carousel | ⚠️ | armar desde dashboard top_discounts |\n"
+        "| 13 | Retailers EN | ✅ | sin cifras duras |\n"
+        f"| 14 | 3 insights | ✅ publicar | {m['indexed']} moat · {m['snap24']} fresh |"
+    )
+    new_text = re.sub(
+        r"(?s)## Posts — estado de publicación\n\n\| Día \|.*?(?=\n## Query reproducible)",
+        posts_table + "\n\n",
+        new_text,
+        count=1,
+    )
 
     if new_text == text:
         print("data-gate: no changes")
@@ -158,6 +184,7 @@ def _patch_day_file(path: Path, m: dict[str, str], dry_run: bool) -> bool:
     orig = text
 
     subs = [
+        # Legacy 19K era
         (r"\b19,452\b", m["indexed"]),
         (r"\b19\.452\b", m["indexed"]),
         (r"\b8,392\b", m["snap24"]),
@@ -166,13 +193,24 @@ def _patch_day_file(path: Path, m: dict[str, str], dry_run: bool) -> bool:
         (r"\b8K\+", m["snap_k"]),
         (r"\b19K\+", m["indexed_k"]),
         (r"\b19,000\+", f"{m['indexed_k'].replace('+', '')}+"),
+        # W22 era (41K) — refresh to current pulse
+        (r"\b41,856\b", m["indexed"]),
+        (r"\b41\.856\b", m["indexed"]),
+        (r"\b36,935\b", m["snap24"]),
+        (r"\b36\.935\b", m["snap24"]),
+        (r"\b41K\+", m["indexed_k"]),
+        (r"\b37K\+", m["snap_k"]),
+        (r"\[\[metrics/price-pulse-2026-W22\]\]", f"[[metrics/price-pulse-{m['week']}]]"),
         (r"\b94\.4%", f"{m['coverage']}%"),
+        (r"\b97\.2%", f"{m['coverage']}%"),
         (r"\b30 retailers\b", f"{m['stores']} retailers"),
         (r"\*\*30\*\* retailers", f"**{m['stores']}** retailers"),
         (r"→ \*\*30\*\* retailers", f"→ **{m['stores']}** retailers"),
         (r"\b30 retailers fresh\b", f"{m['fresh']} retailers fresh"),
         (r"\b30 fresh\b", f"{m['fresh']} fresh"),
         (r"\b34\*\* con histórico", f"{m['stores']}** con histórico"),
+        (r"\b35\*\* retailers fresh", f"**{m['fresh']}** retailers fresh"),
+        (r"\*\*35\*\* retailers fresh", f"**{m['fresh']}** retailers fresh"),
     ]
     for pat, repl in subs:
         text = re.sub(pat, repl, text)
@@ -194,22 +232,40 @@ def update_day_files(m: dict[str, str], dry_run: bool) -> int:
     return n
 
 
+def update_price_pulse(data: dict, meta: dict, dry_run: bool) -> bool:
+    monday = _load_monday()
+    week = _iso_week()
+    pulse_path = metrics_dir() / f"price-pulse-{week}.md"
+    pulse = monday.build_price_pulse(data, meta)
+    if dry_run:
+        print(f"price-pulse: would write {pulse_path.relative_to(content_root())}")
+        return True
+    metrics_dir().mkdir(parents=True, exist_ok=True)
+    pulse_path.write_text(pulse, encoding="utf-8")
+    print(f"price-pulse: written {pulse_path.relative_to(content_root())}")
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sync LinkedIn metrics from production")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
     monday = _load_monday()
+    root = content_root()
+    print(f"Content root: {root}")
     print("Fetching dashboard...")
     data = monday.fetch_data()
+    meta = monday.load_store_meta()
     m = metrics_from_dashboard(data)
     print(
         f"  indexed={m['indexed']} snap24={m['snap24']} "
-        f"stores={m['stores']} coverage={m['coverage']}%"
+        f"stores={m['stores']} coverage={m['coverage']}% week={m['week']}"
     )
 
     update_data_gate(m, args.dry_run)
     count = update_day_files(m, args.dry_run)
+    update_price_pulse(data, meta, args.dry_run)
     print(f"Done — {count} day file(s) {'would change' if args.dry_run else 'updated'}")
     return 0
 
