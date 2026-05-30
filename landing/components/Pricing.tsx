@@ -135,30 +135,24 @@ function TierCard({
 }) {
   return (
     <div
-      className={`rounded-3xl p-6 text-left flex flex-col relative ${
-        tier.dark
-          ? "bg-[var(--wise-ink)] text-white"
-          : tier.featured
-            ? "bg-[var(--wise-canvas)] border-2 border-[var(--wise-ink)] shadow-lg"
-            : "bg-[var(--wise-canvas)] border border-[var(--wise-green-pale)]"
-      }`}
+      className={`card-cyber header-strip p-6 text-left flex flex-col relative ${
+        tier.featured ? "energy-border-active" : ""
+      } ${tier.dark ? "bg-[var(--cm-surface-high)]" : ""}`}
     >
       {tier.featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--wise-ink)] text-[var(--wise-canvas)] text-[11px] font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-[11px] font-semibold px-4 py-1 rounded-full whitespace-nowrap font-mono uppercase tracking-wider">
           {isES ? "Foco comercial" : "Commercial focus"}
         </span>
       )}
-      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--wise-green)]" : "text-[var(--wise-ink)]"}`}>
+      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
         {tier.name}
       </h3>
       <div className="mt-3 mb-5">
-        <span
-          className={`text-3xl font-black break-all tabular-nums ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}
-        >
+        <span className={`text-3xl font-black break-all tabular-nums ${tier.dark ? "text-white" : "text-[var(--cm-mint)]"}`}>
           {tier.price}
         </span>
         {(tier.period_es || tier.period_en) && (
-          <span className={`text-sm ml-1 ${tier.dark ? "text-white/80" : "text-[var(--wise-mute)]"}`}>
+          <span className={`text-sm ml-1 ${tier.dark ? "text-white/80" : "text-[var(--cm-on-surface-variant)]"}`}>
             {isES ? tier.period_es : tier.period_en}
           </span>
         )}
@@ -171,20 +165,14 @@ function TierCard({
               key={i}
               className={`flex items-start gap-2.5 text-sm ${
                 isHighlight
-                  ? "font-semibold text-[var(--wise-ink)]"
+                  ? "font-semibold text-[var(--cm-mint)]"
                   : tier.dark
                     ? "text-white/80"
-                    : "text-[var(--wise-body)]"
+                    : "text-[var(--cm-on-surface-variant)]"
               }`}
             >
               {!isHighlight && (
-                <svg
-                  className="w-4 h-4 mt-0.5 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={tier.dark ? "#9fe870" : "var(--wise-ink)"}
-                  strokeWidth="2.5"
-                >
+                <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#3afecf" strokeWidth="2.5">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
               )}
@@ -194,7 +182,7 @@ function TierCard({
         })}
       </ul>
       {(tier.anchor_es || tier.anchor_en) && (
-        <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed mb-4 border-t border-[var(--wise-green-pale)] pt-3">
+        <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed mb-4 border-t border-[var(--cm-outline-variant)]/30 pt-3">
           {isES ? tier.anchor_es : tier.anchor_en}
         </p>
       )}
@@ -208,15 +196,13 @@ export default function Pricing() {
   const isES = lang === "es";
 
   return (
-    <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
-          {isES ? "Planes" : "Plans"}
-        </p>
-        <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-[var(--wise-ink)] mb-2 tracking-tight">
+    <section id="pricing" className="landing-section landing-section-alt">
+      <div className="landing-container-wide text-center">
+        <p className="section-eyebrow mb-4">{isES ? "Planes" : "Plans"}</p>
+        <h2 className="section-title mb-2">
           {isES ? "Intelligence para equipos. Build gratis." : "Intelligence for teams. Build free."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-2xl mx-auto mb-12">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-12">
           {isES
             ? "Foco comercial este trimestre: datos de precios con capa de calidad (Puerta C). Build (Puerta A) para quien integra. Listado retailer (Puerta B) gratis — más abajo."
             : "Commercial focus this quarter: quality-filtered price data (Door C). Build (Door A) for integrators. Retailer listing (Door B) free — below."}
@@ -225,13 +211,13 @@ export default function Pricing() {
         {/* ── Intelligence (foco comercial) ── */}
         <div id="pricing-intelligence" className="scroll-mt-24 mb-16 text-left">
           <div className="mb-6">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
+            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Puerta C · Intelligence" : "Door C · Intelligence"}
             </p>
-            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
+            <h3 className="text-xl font-bold text-white">
               {isES ? "Datos de precios para equipos comerciales" : "Price data for commercial teams"}
             </h3>
-            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
+            <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 max-w-2xl">
               {isES
                 ? "Spreads, inflación, canasta y calidad verificable. Lo que vendemos este trimestre — no checkout autónomo."
                 : "Spreads, inflation, basket, and verifiable quality. What we sell this quarter — not autonomous checkout."}
@@ -242,10 +228,10 @@ export default function Pricing() {
               <TierCard key={tier.name} tier={tier} isES={isES}>
                 <a
                   href={tier.href || "#contact-intelligence"}
-                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
+                  className={`inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full font-mono uppercase tracking-wider text-[11px] ${
                     tier.dark
-                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
-                      : "bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
+                      ? "bg-white text-[var(--cm-on-mint)] hover:bg-[var(--cm-mint)]"
+                      : "btn-mint"
                   }`}
                 >
                   {isES ? tier.cta_es : tier.cta_en}
@@ -253,18 +239,18 @@ export default function Pricing() {
               </TierCard>
             ))}
           </div>
-          <p className="text-[11px] text-[var(--wise-mute)] mt-4 max-w-2xl mx-auto">
+          <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 mt-4 max-w-2xl mx-auto">
             {isES ? (
               <>
                 One-pager del piloto:{" "}
-                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
+                <a href="/intelligence-pilot-es.md" className="text-[var(--cm-mint)] underline hover:brightness-110">
                   intelligence-pilot-es.md
                 </a>
               </>
             ) : (
               <>
                 Pilot one-pager:{" "}
-                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
+                <a href="/intelligence-pilot-es.md" className="text-[var(--cm-mint)] underline hover:brightness-110">
                   intelligence-pilot-es.md
                 </a>
               </>
@@ -275,13 +261,13 @@ export default function Pricing() {
         {/* ── Build ── */}
         <div id="pricing-build" className="scroll-mt-24 mb-16 text-left">
           <div className="mb-6">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
+            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Puerta A · Build" : "Door A · Build"}
             </p>
-            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
+            <h3 className="text-xl font-bold text-white">
               {isES ? "API, MCP y CLI para builders" : "API, MCP, and CLI for builders"}
             </h3>
-            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
+            <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 max-w-2xl">
               {isES
                 ? "Integre agentes, automatice búsquedas y exporte datos. Sin tarjeta para Free."
                 : "Integrate agents, automate search, and export data. No card for Free."}
@@ -294,7 +280,7 @@ export default function Pricing() {
                   <div id="pro-checkout" className="scroll-mt-24 space-y-3">
                     <ProSubscribeButton />
                     {tier.proNote_es && (
-                      <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
+                      <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                         {isES ? tier.proNote_es : tier.proNote_en}
                       </p>
                     )}
@@ -302,7 +288,7 @@ export default function Pricing() {
                 ) : (
                   <a
                     href={tier.href}
-                    className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:opacity-90"
+                    className="inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--cm-surface-high)] text-white border border-[var(--cm-outline-variant)] hover:border-[var(--cm-mint)]/50 font-mono uppercase tracking-wider text-[11px]"
                   >
                     {isES ? tier.cta_es : tier.cta_en}
                   </a>
@@ -312,19 +298,19 @@ export default function Pricing() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--wise-green-pale)] bg-[var(--wise-canvas)] p-4 max-w-3xl mx-auto mb-16 text-left">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)] mb-2">
+        <div className="card-cyber p-4 max-w-3xl mx-auto mb-16 text-left">
+          <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-2">
             {isES ? "¿Build Pro o Intelligence?" : "Build Pro or Intelligence?"}
           </p>
-          <ul className="text-xs text-[var(--wise-body)] space-y-1.5">
+          <ul className="text-xs text-[var(--cm-on-surface-variant)] space-y-1.5">
             <li>
-              <strong className="text-[var(--wise-ink)]">Pro (USD 49)</strong>
+              <strong className="text-white">Pro (USD 49)</strong>
               {isES
                 ? " — usted integra API/MCP y exporta datos técnicos. Ideal para devs y agentes."
                 : " — you integrate API/MCP and export technical data. Best for devs and agents."}
             </li>
             <li>
-              <strong className="text-[var(--wise-ink)]">Intelligence (USD 300–500)</strong>
+              <strong className="text-white">Intelligence (USD 300–500)</strong>
               {isES
                 ? " — paquete comercial: spreads, inflación, canasta, calidad y SLA. Ideal para pricing y trade."
                 : " — commercial package: spreads, inflation, basket, quality, and SLA. Best for pricing and trade."}
@@ -334,7 +320,7 @@ export default function Pricing() {
 
         <div
           id="contact-intelligence"
-          className="w-full max-w-lg mx-auto scroll-mt-24 min-w-0 border-t border-[#c5edab] pt-12"
+          className="w-full max-w-lg mx-auto scroll-mt-24 min-w-0 border-t border-[var(--cm-outline-variant)]/30 pt-12"
         >
           <ContactForm
             plan="intelligence"
