@@ -20,6 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from market_core import fetch_store, STORES, DEFAULT_STORES
+from store_credentials import credential_summary
 
 LINE_DEFAULTS = {
     "supermercados": "leche",
@@ -105,7 +106,12 @@ async def main() -> int:
     if args.json:
         print(json.dumps({"ok": len(ok), "bad": len(bad), "pct": pct, "results": results}, indent=2))
     else:
+        creds = credential_summary()
         print(f"Active catalog: {len(DEFAULT_STORES)} stores")
+        if creds:
+            enabled = [c["store"] for c in creds if c.get("enabled_via_credentials")]
+            if enabled:
+                print(f"Credential-enabled: {', '.join(enabled)}")
         print(f"OK: {len(ok)}  FAIL/empty: {len(bad)}  ({pct}%)")
         if bad:
             print("\nNeeds attention:")
