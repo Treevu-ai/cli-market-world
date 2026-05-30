@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, field_validator
 
 from market_core import (
-    DEFAULT_STORES,
+    get_default_stores,
     LINES,
     PAGE_SIZE,
     STORES,
@@ -34,10 +34,19 @@ from market_core import (
     save_price_snapshot,
     save_search_query,
 )
+from store_credentials import get_store_profile, store_exists
 
 logger = logging.getLogger("market.server").getChild("search")
 
 router = APIRouter(tags=["search"])
+
+
+def _resolve_search_stores(body: SearchRequest) -> list[str]:
+    stores = [body.store] if body.store else get_default_stores()
+    stores = [s for s in stores if store_exists(s)]
+    if body.line and body.line in LINES:
+        stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
+    return stores
 
 
 class SearchRequest(BaseModel):
@@ -73,10 +82,7 @@ async def search_products(body: SearchRequest):
 
 
 async def _search_products(body: SearchRequest):
-    stores = [body.store] if body.store else DEFAULT_STORES
-    stores = [s for s in stores if s in STORES]
-    if body.line and body.line in LINES:
-        stores = [s for s in stores if STORES[s]["line"] == body.line]
+    stores = _resolve_search_stores(body)
 
     PARALLEL_BATCH = 20
     SEARCH_TIMEOUT = float(os.getenv("SEARCH_TIMEOUT", "15.0"))
@@ -131,10 +137,7 @@ async def _search_products(body: SearchRequest):
 @router.post("/products/compare")
 async def compare_products(body: SearchRequest):
     """Cross-store comparison with brand+name fuzzy matching."""
-    stores = [body.store] if body.store else DEFAULT_STORES
-    stores = [s for s in stores if s in STORES]
-    if body.line and body.line in LINES:
-        stores = [s for s in stores if STORES[s]["line"] == body.line]
+    stores = _resolve_search_stores(body)
     all_raw: dict[str, list] = {}
     for store in stores:
         try:

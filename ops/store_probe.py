@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from market_core import fetch_store, STORES, DEFAULT_STORES
+from market_core import fetch_store, STORES, get_default_stores
 from store_credentials import credential_summary
 
 LINE_DEFAULTS = {
@@ -98,16 +98,17 @@ async def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    results = await asyncio.gather(*[probe_store(s) for s in DEFAULT_STORES])
+    results = await asyncio.gather(*[probe_store(s) for s in get_default_stores()])
     ok = [r for r in results if r["ok"]]
     bad = [r for r in results if not r["ok"]]
-    pct = round(len(ok) / len(DEFAULT_STORES) * 100, 1) if DEFAULT_STORES else 0
+    catalog = get_default_stores()
+    pct = round(len(ok) / len(catalog) * 100, 1) if catalog else 0
 
     if args.json:
         print(json.dumps({"ok": len(ok), "bad": len(bad), "pct": pct, "results": results}, indent=2))
     else:
         creds = credential_summary()
-        print(f"Active catalog: {len(DEFAULT_STORES)} stores")
+        print(f"Active catalog: {len(catalog)} stores")
         if creds:
             enabled = [c["store"] for c in creds if c.get("enabled_via_credentials")]
             if enabled:

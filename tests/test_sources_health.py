@@ -57,14 +57,14 @@ def test_build_sources_health_summary_counts(isolated_db):
     market_core.ensure_db_initialized()
     db = market_core.get_db()
 
-    for sid in list(market_core.DEFAULT_STORES)[:3]:
-        _seed_store_health(db, sid, 90 if sid == market_core.DEFAULT_STORES[0] else 50 if sid == market_core.DEFAULT_STORES[1] else 10)
+    for sid in list(market_core.get_default_stores())[:3]:
+        _seed_store_health(db, sid, 90 if sid == market_core.get_default_stores()[0] else 50 if sid == market_core.get_default_stores()[1] else 10)
 
     recent = (datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
     db.execute(
         "INSERT INTO price_snapshots (product_id, store, store_name, name, price, currency, line, line_name, queried_at) "
         "VALUES ('p1', ?, 'Test', 'Item', 10, 'PEN', 'supermercados', 'Super', ?)",
-        (market_core.DEFAULT_STORES[0], recent),
+        (market_core.get_default_stores()[0], recent),
     )
     db.commit()
 
@@ -89,7 +89,7 @@ def test_sources_health_endpoint_matches_dashboard(isolated_db):
     market_core = isolated_db
     market_core.ensure_db_initialized()
     db = market_core.get_db()
-    sid = market_core.DEFAULT_STORES[0]
+    sid = market_core.get_default_stores()[0]
     _seed_store_health(db, sid, 95)
     db.commit()
     db.close()
@@ -117,7 +117,7 @@ def test_sources_health_filter_store(isolated_db):
     market_core = isolated_db
     market_core.ensure_db_initialized()
     db = market_core.get_db()
-    sid = market_core.DEFAULT_STORES[0]
+    sid = market_core.get_default_stores()[0]
     _seed_store_health(db, sid, 88)
     db.commit()
     db.close()
