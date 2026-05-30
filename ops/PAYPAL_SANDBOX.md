@@ -143,7 +143,9 @@ Credenciales en [Sandbox Accounts](https://developer.paypal.com/dashboard/accoun
 |---------|----------------|-----|
 | `PayPal no configurado` | Env vars faltan en Railway | Añadir CLIENT_ID/SECRET, redeploy |
 | `approve_url` OK pero tier sigue `free` | Webhook no llega o ID incorrecto | Verificar `PAYPAL_WEBHOOK_ID`, logs Railway en `/checkout/paypal-webhook` |
-| Webhook 401 | Firma inválida | `PAYPAL_WEBHOOK_ID` debe ser el de **la misma app** sandbox |
+| Webhook 401 | Firma inválida o sin configurar | `PAYPAL_WEBHOOK_ID` de la misma app; en prod nunca acepta webhooks sin firma |
+| Webhook 503 | Live sin `PAYPAL_WEBHOOK_ID` | Registrar webhook y fijar env var antes de `PAYPAL_SANDBOX=false` |
+| Sandbox local 401 | Tests sin webhook ID | Solo dev: `PAYPAL_ALLOW_UNVERIFIED_WEBHOOKS=1` (nunca en Railway prod) |
 | Plan duplicados | Sin `PAYPAL_PLAN_ID` | Ejecutar `create-plan` una vez y fijar env var |
 | Checkout 403 | Usuario free | Completar upgrade Pro primero |
 
