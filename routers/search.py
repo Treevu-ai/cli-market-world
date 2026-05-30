@@ -262,6 +262,7 @@ async def basket_compare(body: BasketRequest):
             }
     best = min(results, key=lambda s: results[s]["total"]) if results else None
     return {
+        "source": "live",
         "basket": body.items,
         "comparison": results,
         "best_store": best,
