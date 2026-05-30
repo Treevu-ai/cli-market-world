@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import html
-import json
 
 
 def _esc(value: object) -> str:

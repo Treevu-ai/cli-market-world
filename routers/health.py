@@ -4,6 +4,7 @@ Endpoints:
   GET /                  Service banner + counts
   GET /health            Liveness check
   GET /health/collector  Collector freshness (last run, age, store coverage)
+  GET /v1/sources/health Per-store scraping health (success rate + freshness)
   GET /lines             Catalog of business lines with their stores
   GET /stores            Catalog of retailers (filterable by country/line)
   GET /countries         Catalog of countries with store lists
@@ -18,6 +19,7 @@ from fastapi import APIRouter, Request
 
 from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
+from source_health import build_sources_health
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -163,6 +165,19 @@ def health_collector():
         "stores_total": len(STORES),
         "runs_total": total_runs,
     }
+
+
+@router.get("/v1/sources/health")
+def sources_health(
+    store: str | None = None,
+    catalog_only: bool = True,
+):
+    """Per-store scraping health: success rate, failures, and snapshot freshness."""
+    db = get_db()
+    try:
+        return build_sources_health(db, catalog_only=catalog_only, store=store)
+    finally:
+        db.close()
 
 
 @router.get("/")
