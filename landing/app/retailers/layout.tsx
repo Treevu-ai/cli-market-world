@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "List Your Store — Free GEO for AI Agents (VTEX, Shopify, Magento)",
   description:
-    "List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds, zero code. Your products visible in AI agent searches via MCP tools and commerce API. 30 retailers, 13K+ price data points.",
+    "List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds, zero code. Your products visible in AI agent searches via MCP tools and commerce API. 60 retailers, 43K+ verified price data points.",
   keywords: [
     "GEO generative engine optimization",
     "list store AI agents",

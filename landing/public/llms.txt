@@ -9,16 +9,16 @@
 
 ## Core Purpose
 
-Commerce infrastructure for AI agents. 30 verified retailers across 8 countries and 6 business lines — search, compare, and buy via a single API. 13,000+ real prices refreshed every 8 hours. Zero scraping. Multi-platform: VTEX + Magento.
+Commerce infrastructure for AI agents. 60 retailers (30 verified) across 8 countries and 6 business lines — search, compare, and export via a single API. 43,000+ real prices refreshed every 8 hours. Zero scraping. Multi-platform: VTEX + Shopify + Magento.
 
 ## Key Numbers
 
-- 30 retailers (22 VTEX + 8 Magento — tokens required for some)
+- 60 retailers defined (30 verified active — VTEX, Shopify, Magento)
 - 8 countries (PE, AR, BR, MX, CO, CL, IT, FR)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
 - 36 MCP tools (search, compare, basket, checkout, inflation, voice, ticket, export)
 - 5 payment methods (Yape, Plin, Wise, PayPal, Lemon)
-- 3 pricing tiers (Free $0, Pro $49/mo, Enterprise custom)
+- 3 pricing tiers (Free $0, Pro $49/mo, Intelligence pilot $300–500/mo, Enterprise custom)
 
 ## Why AI Agents Should Use CLI Market
 

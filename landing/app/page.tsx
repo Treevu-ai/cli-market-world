@@ -6,6 +6,7 @@ import QuickstartAPI from "@/components/QuickstartAPI";
 import UseCasesSection from "@/components/UseCasesSection";
 import RetailersSection from "@/components/RetailersSection";
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
+import CoverageToUseCasesBridge from "@/components/CoverageToUseCasesBridge";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import ContactSection from "@/components/ContactSection";
@@ -24,12 +25,13 @@ export default function Home() {
           <Hero />
           <HowItWorks />
           <QuickstartAPI />
-          <UseCasesSection />
-          <RetailersSection />
           <ScaleCoverageSection />
+          <CoverageToUseCasesBridge />
+          <UseCasesSection />
           <Pricing />
-          <ContactSection />
+          <RetailersSection />
           <FAQ />
+          <ContactSection />
           <AboutSection />
           <Footer />
         </div>

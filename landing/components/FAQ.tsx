@@ -11,7 +11,7 @@ function faqsFor(lang: "es" | "en") {
     return [
       {
         q: "¿Qué es CLI Market?",
-        a: `CLI Market es una API y CLI que permite a agentes de IA buscar, comparar y comprar productos en ${rp}. Precios de góndola normalizados por unidad. Una sola API. Cero scraping.`,
+        a: `CLI Market es infraestructura de comercio para agentes de IA y equipos comerciales: ${MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados por kg/L sobre ${rp}. Intelligence (piloto USD 300–500/mes) para spreads e inflación; Build (Free/Pro) para integrar API y MCP. Cero scraping.`,
       },
       {
         q: "¿Con qué retailers funciona?",
@@ -39,7 +39,7 @@ function faqsFor(lang: "es" | "en") {
   return [
     {
       q: "What is CLI Market?",
-      a: `CLI Market is an API and CLI that lets AI agents search, compare, and buy products across ${rp}. Unit-normalized shelf prices. One API. Zero scraping.`,
+      a: `CLI Market is commerce infrastructure for AI agents and commercial teams: ${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L across ${rp}. Intelligence (pilot USD 300–500/mo) for spreads and inflation; Build (Free/Pro) to integrate API and MCP. Zero scraping.`,
     },
     {
       q: "Which retailers do you support?",
