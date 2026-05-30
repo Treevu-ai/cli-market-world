@@ -29,7 +29,6 @@ from linkedin_asset_lib import (
     DAY_TEMPLATE,
     DIAGRAM_DAYS,
     METRICS_DAYS,
-    ROOT,
     TERMINAL_CFG,
     parse_day_md,
     render_carousel,
