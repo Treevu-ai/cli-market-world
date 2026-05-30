@@ -16,8 +16,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[var(--wise-canvas-soft)]">
-      <div className="grid-bg fixed inset-0 opacity-30 pointer-events-none" aria-hidden="true" />
+    <main className="relative min-h-screen bg-[var(--cm-background)]">
+      <div className="grid-bg fixed inset-0 opacity-40 pointer-events-none" aria-hidden="true" />
       <Navbar />
       <SideNav />
       <ErrorBoundary>
