@@ -9,6 +9,7 @@ const navItems = [
   { id: "pricing", es: "Precios", en: "Pricing" },
   { id: "retailers", es: "Listar tienda", en: "List store" },
   { id: "faq", es: "FAQ", en: "FAQ" },
+  { id: "docs", href: "/docs", es: "Docs", en: "Docs" },
 ];
 
 export default function Navbar() {
@@ -24,7 +25,7 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const consoleLabel = isES ? "Console" : "Console";
+  const docsCtaLabel = isES ? "Docs" : "Docs";
 
   return (
     <header
@@ -37,10 +38,10 @@ export default function Navbar() {
         </a>
 
         <nav className="hidden lg:flex items-center gap-8" aria-label={isES ? "Secciones" : "Sections"}>
-          {navItems.map(({ id, es, en }) => (
+          {navItems.map(({ id, es, en, href }) => (
             <a
               key={id}
-              href={`#${id}`}
+              href={href ?? `#${id}`}
               className="font-label-caps text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
             >
               {isES ? es : en}
@@ -65,12 +66,10 @@ export default function Navbar() {
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href="https://cli-market-production.up.railway.app/docs"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs"
             className="bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-2 font-label-caps hover:shadow-[0_0_10px_rgba(58,254,207,0.3)] transition-all"
           >
-            {consoleLabel}
+            {docsCtaLabel}
           </a>
         </div>
 
@@ -89,10 +88,10 @@ export default function Navbar() {
 
       {open && (
         <div className="md:hidden bg-[var(--cm-surface)] border-t border-[var(--cm-outline-variant)]/30 px-6 py-4 flex flex-col gap-3">
-          {navItems.map(({ id, es, en }) => (
+          {navItems.map(({ id, es, en, href }) => (
             <a
               key={id}
-              href={`#${id}`}
+              href={href ?? `#${id}`}
               onClick={close}
               className="font-label-caps text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors py-1"
             >
@@ -109,13 +108,11 @@ export default function Navbar() {
             GitHub
           </a>
           <a
-            href="https://cli-market-production.up.railway.app/docs"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs"
             onClick={close}
             className="inline-flex items-center justify-center bg-[var(--cm-mint)] text-[var(--cm-on-mint)] font-label-caps px-6 py-3 cyber-glow-mint"
           >
-            {consoleLabel}
+            {docsCtaLabel}
           </a>
           <button
             type="button"
