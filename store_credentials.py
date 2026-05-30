@@ -80,9 +80,11 @@ def _load_credentials_from_db() -> tuple[dict[str, dict[str, str]], dict[str, di
     except Exception:
         return {}, {}
 
-    creds: dict[str, dict[str, str]] = {}
-    profiles: dict[str, dict[str, Any]] = {}
-    db = get_db()
+    try:
+        db = get_db()
+    except Exception:
+        return {}, {}
+
     try:
         rows = db.execute(
             """
@@ -96,6 +98,8 @@ def _load_credentials_from_db() -> tuple[dict[str, dict[str, str]], dict[str, di
         db.close()
         return {}, {}
 
+    creds: dict[str, dict[str, str]] = {}
+    profiles: dict[str, dict[str, Any]] = {}
     for row in rows:
         r = dict(row)
         store_id = r["store_id"]
@@ -153,9 +157,12 @@ def store_exists(store_id: str) -> bool:
 
 
 def get_store_credentials(store_id: str) -> dict[str, str]:
-    _ensure_db_cache()
     merged: dict[str, str] = {}
-    merged.update(_db_credentials.get(store_id, {}))
+    try:
+        _ensure_db_cache()
+        merged.update(_db_credentials.get(store_id, {}))
+    except Exception:
+        pass
     merged.update(_ENV_CREDENTIALS.get(store_id, {}))
     return merged
 
