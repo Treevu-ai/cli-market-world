@@ -43,7 +43,8 @@ market upgrade --email tu@email.com
 ### 5. Confirmación (ops — tú)
 1. Email de notify en `hello@cli-market.dev` con ref + email + use case
 2. Verificar pago en PayPal dashboard
-3. Activar:
+3. **SLA:** activar Pro en ≤24 h hábiles (`docs/ops/phase0-mitigation.md`)
+4. Activar:
 ```bash
 python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
 # o
