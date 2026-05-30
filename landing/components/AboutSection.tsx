@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function AboutSection() {
   const { lang } = useLang();
@@ -10,13 +11,58 @@ export default function AboutSection() {
       <div className="landing-container-wide text-center">
         <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">{isES ? "Sobre nosotros" : "About us"}</p>
         <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-[1.1] font-bold text-[var(--cm-mint)] mb-6 tracking-tight">
-          {isES ? <>Construido en Perú.<br />Para el mundo.</> : <>Built in Peru.<br />For the world.</>}
+          {isES ? (
+            <>
+              Construido en Perú.
+              <br />
+              Operando en {MARKET_STATS.countries} países.
+            </>
+          ) : (
+            <>
+              Built in Peru.
+              <br />
+              Operating in {MARKET_STATS.countries} countries.
+            </>
+          )}
         </h2>
-        <p className="text-base text-[var(--cm-on-surface-variant)] max-w-lg mx-auto mb-12 leading-relaxed">
-          {isES
-            ? "CLI Market nace de una convicción simple: el comercio minorista en Latinoamérica necesita infraestructura programable. No otro marketplace. No otro agregador. Una capa de software que permita a cualquier agente de IA buscar, comparar y comprar en el retail físico como si fuera una API."
-            : "CLI Market was born from a simple conviction: Latin American retail needs programmable infrastructure. Not another marketplace. Not another aggregator. A software layer that lets any AI agent search, compare, and buy from physical retail as if it were an API."}
-        </p>
+
+        <div className="text-base text-[var(--cm-on-surface-variant)] max-w-lg mx-auto mb-12 leading-relaxed space-y-4">
+          <p>
+            {isES ? (
+              <>
+                CLI Market es un producto de Sinapsis Innovadora S.A.C. Construimos la capa programable del retail
+                físico de LatAm: una sola API sobre {MARKET_STATS.retailersVerified} retailers verificados en{" "}
+                {MARKET_STATS.countries} países, con {MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados
+                por kg/L y refrescados cada {MARKET_STATS.pricesRefreshHours} horas.
+              </>
+            ) : (
+              <>
+                CLI Market is a product of Sinapsis Innovadora S.A.C. We build the programmable layer for LatAm
+                physical retail: one API across {MARKET_STATS.retailersVerified} verified retailers in{" "}
+                {MARKET_STATS.countries} countries, with {MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per
+                kg/L and refreshed every {MARKET_STATS.pricesRefreshHours} hours.
+              </>
+            )}
+          </p>
+          <p>
+            {isES ? (
+              <>
+                Donde antes había scraping frágil y datos con semanas de retraso, entregamos precios verificados como
+                infraestructura — para equipos de pricing que necesitan spreads e inflación, y para builders que
+                integran agentes de IA.
+              </>
+            ) : (
+              <>
+                Where fragile scraping and weeks-old data used to be the norm, we deliver verified prices as
+                infrastructure — for pricing teams that need spreads and inflation, and for builders integrating AI
+                agents.
+              </>
+            )}
+          </p>
+          <p className="text-white font-medium">
+            {isES ? "Un solo moat de datos, dos productos: Intelligence y Build." : "One data moat, two products: Intelligence and Build."}
+          </p>
+        </div>
 
         <div className="card-cyber energy-border-active p-6 sm:p-8 w-full max-w-sm mx-auto min-w-0 overflow-hidden">
           <div className="flex flex-col items-center gap-4 text-center">
@@ -61,6 +107,12 @@ export default function AboutSection() {
             ))}
           </div>
         </div>
+
+        <p className="mt-6 font-mono text-xs text-[var(--cm-on-surface-variant)]/70">
+          {isES
+            ? "Sinapsis Innovadora S.A.C. · Perú · Infraestructura para agentes."
+            : "Sinapsis Innovadora S.A.C. · Peru · Infrastructure for agents."}
+        </p>
 
         <div className="mt-10">
           <a href="#contact" className="btn-mint cyber-glow-mint">
