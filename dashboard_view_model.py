@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-SPEC_VERSION = "1.1"
+from data_v1_service import intelligence_acceso_examples
+
+SPEC_VERSION = "1.2"
 CANASTA_TOTAL_ITEMS = 10
 CANASTA_PARTIAL_THRESHOLD = 6  # 60% — below this, totals are not comparable
 COLLECTOR_INTERVAL_HOURS = 8
@@ -159,7 +161,7 @@ def build_dashboard_view_model(data: dict) -> dict:
             },
         ],
         # Public dashboard omits curl/endpoints — see docs/ops/dashboard-api-access.md
-        "acceso": [],
+        "acceso": intelligence_acceso_examples(),
     }
 
     # ── Block 1 — Hero ───────────────────────────────────────────────────────

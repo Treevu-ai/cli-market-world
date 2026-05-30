@@ -94,6 +94,6 @@ rg "41,856|36,935" tools/content-repo-template/linkedin/Day-0[78].md  # debe que
 | Item | Notas |
 |------|-------|
 | PayPal live + «Agotado» | Panel PayPal Business (externo) |
-| Dashboard API `/v1/*` | Intelligence enablers — ver `docs/dashboard-redesign.md` Fase 3 |
+| ~~Dashboard API `/v1/*`~~ | ✅ Fase 6 — ver `docs/ops/phase6-intelligence-api.md` |
 | Propagar template → repo privado | `init_content_repo.py --force` local |
 | Checkout autónomo | Roadmap Build |
