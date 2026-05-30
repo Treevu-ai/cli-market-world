@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
@@ -69,59 +70,63 @@ def test_disabled_store_without_credentials_not_in_default():
     assert "falabella_pe" not in store_credentials.compute_default_stores()
 
 
-@pytest.mark.asyncio
-async def test_magento_connector_sends_bearer():
+def test_magento_connector_sends_bearer():
     from market_connectors.magento import MagentoConnector
 
-    connector = MagentoConnector()
-    store_config = {
-        "base": "https://example.com",
-        "magento_token": "secret",
-        "currency": "PEN",
-        "name": "Test",
-    }
+    async def run():
+        connector = MagentoConnector()
+        store_config = {
+            "base": "https://example.com",
+            "magento_token": "secret",
+            "currency": "PEN",
+            "name": "Test",
+        }
 
-    mock_resp = AsyncMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {"items": []}
+        mock_resp = AsyncMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"items": []}
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_resp)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("market_connectors.magento.httpx.AsyncClient", return_value=mock_client):
-        await connector.search(store_config, "leche", limit=5)
+        with patch("market_connectors.magento.httpx.AsyncClient", return_value=mock_client):
+            await connector.search(store_config, "leche", limit=5)
 
-    _, kwargs = mock_client.get.call_args
-    assert kwargs["headers"]["Authorization"] == "Bearer secret"
+        _, kwargs = mock_client.get.call_args
+        assert kwargs["headers"]["Authorization"] == "Bearer secret"
+
+    asyncio.run(run())
 
 
-@pytest.mark.asyncio
-async def test_vtex_connector_sends_app_headers():
+def test_vtex_connector_sends_app_headers():
     from market_connectors.vtex import VtexConnector
 
-    connector = VtexConnector()
-    store_config = {
-        "base": "https://example.vtex.com",
-        "vtex_app_key": "app-key",
-        "vtex_app_token": "app-token",
-        "_io_path": "",
-    }
+    async def run():
+        connector = VtexConnector()
+        store_config = {
+            "base": "https://example.vtex.com",
+            "vtex_app_key": "app-key",
+            "vtex_app_token": "app-token",
+            "_io_path": "",
+        }
 
-    mock_resp = AsyncMock()
-    mock_resp.status_code = 200
-    mock_resp.headers = {"content-type": "application/json"}
-    mock_resp.json.return_value = []
+        mock_resp = AsyncMock()
+        mock_resp.status_code = 200
+        mock_resp.headers = {"content-type": "application/json"}
+        mock_resp.json.return_value = []
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_resp)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("market_connectors.vtex.httpx.AsyncClient", return_value=mock_client):
-        await connector.search(store_config, "arroz", limit=5)
+        with patch("market_connectors.vtex.httpx.AsyncClient", return_value=mock_client):
+            await connector.search(store_config, "arroz", limit=5)
 
-    _, kwargs = mock_client.get.call_args
-    assert kwargs["headers"]["X-VTEX-API-AppKey"] == "app-key"
-    assert kwargs["headers"]["X-VTEX-API-AppToken"] == "app-token"
+        _, kwargs = mock_client.get.call_args
+        assert kwargs["headers"]["X-VTEX-API-AppKey"] == "app-key"
+        assert kwargs["headers"]["X-VTEX-API-AppToken"] == "app-token"
+
+    asyncio.run(run())
