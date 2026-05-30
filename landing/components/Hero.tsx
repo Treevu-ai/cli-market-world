@@ -33,11 +33,11 @@ export default function Hero() {
 
         <p className="mt-5 text-base sm:text-lg text-[var(--wise-body)] max-w-[620px] leading-relaxed">
           {isES
-            ? "Los agentes de IA ya buscan, comparan y compran solos. CLI Market es la API que los conecta con 30 retailers verificados en 8 países — y el canal donde tu tienda aparece ante ellos."
-            : "AI agents already search, compare, and buy on their own. CLI Market is the API that connects them to 30 verified retailers across 8 countries — and the channel where your store appears to them."}
+            ? "Los agentes de IA ya buscan y comparan en LATAM. CLI Market conecta builders con 30 retailers verificados — y entrega datos de precios para equipos comerciales."
+            : "AI agents already search and compare across LatAm. CLI Market connects builders to 30 verified retailers — and delivers price data for commercial teams."}
         </p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[640px]">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
           <a
             href="https://pypi.org/project/cli-market/"
             className="group flex flex-col items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm text-left sm:items-start"
@@ -49,6 +49,21 @@ export default function Hero() {
               <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
             </span>
             <code className="font-mono text-xs text-[var(--wise-ink)]/80">pip install cli-market</code>
+          </a>
+
+          <a
+            href="#pricing-intelligence"
+            className="group flex flex-col items-center gap-2 rounded-3xl bg-[var(--wise-ink)] text-[var(--wise-canvas)] px-6 py-5 hover:opacity-95 transition-colors shadow-sm text-left sm:items-start"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-green)]">
+              {isES ? "Para pricing / trade" : "For pricing / trade"}
+            </span>
+            <span className="text-base font-semibold">
+              {isES ? "Intelligence — piloto →" : "Intelligence — pilot →"}
+            </span>
+            <span className="text-xs text-white/70">
+              {isES ? "Desde USD 300/mes · datos verificados" : "From USD 300/mo · verified data"}
+            </span>
           </a>
 
           <a
