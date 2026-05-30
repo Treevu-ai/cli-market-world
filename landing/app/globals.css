@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-space-grotesk), "Space Grotesk", sans-serif;
-  --font-mono: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, sans-serif;
+  --font-display: var(--font-geist-sans), "Geist", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  --color-cm-bg: #0a0a0b;
+  --color-cm-surface: #131314;
+  --color-cm-surface-low: #1c1b1c;
+  --color-cm-surface-container: #201f20;
+  --color-cm-surface-high: #2a2a2b;
+  --color-cm-surface-highest: #353436;
+  --color-cm-mint: #3afecf;
+  --color-cm-mint-dim: #00e0b4;
+  --color-cm-on-mint: #002118;
+  --color-cm-on-surface: #e5e2e3;
+  --color-cm-on-surface-variant: #b9cac2;
+  --color-cm-outline-variant: #3b4a44;
+  --color-cm-secondary: #c6c4df;
+  --color-cm-secondary-container: #47475d;
 }
 
 :root {
-  --wise-green: #9fe870;
-  --wise-green-hover: #cdffad;
-  --wise-green-pale: #b8e6a0;
+  /* Cyber design system (primary) */
+  --cm-background: #0a0a0b;
+  --cm-surface: #131314;
+  --cm-surface-low: #1c1b1c;
+  --cm-surface-container: #201f20;
+  --cm-surface-high: #2a2a2b;
+  --cm-surface-highest: #353436;
+  --cm-mint: #3afecf;
+  --cm-mint-dim: #00e0b4;
+  --cm-on-mint: #002118;
+  --cm-on-surface: #e5e2e3;
+  --cm-on-surface-variant: #b9cac2;
+  --cm-outline-variant: #3b4a44;
+  --cm-secondary: #c6c4df;
+  --cm-secondary-container: #47475d;
+  --cm-gutter: 24px;
+  --cm-container-max: 1440px;
+
+  /* Legacy Wise tokens — kept for sections not yet migrated */
+  --wise-green: #3afecf;
+  --wise-green-hover: #5dffd9;
+  --wise-green-pale: rgba(58, 254, 207, 0.25);
   --wise-ink: #0e0f0c;
-  /* Secondary text on light backgrounds (WCAG AA on canvas-soft / white) */
   --wise-body: #3a3d3a;
   --wise-mute: #565956;
-  /* Secondary text on dark backgrounds (ink, terminal cards, black sections) */
   --wise-body-on-dark: #c5c9c5;
   --wise-mute-on-dark: #9aa39a;
   --wise-canvas-soft: #e8ebe6;
   --wise-canvas: #ffffff;
 }
 
-/* Re-map body/mute tokens inside dark sections so existing utilities stay readable */
 .wise-on-dark {
   --wise-body: var(--wise-body-on-dark);
   --wise-mute: var(--wise-mute-on-dark);
@@ -35,13 +67,18 @@ html {
 body {
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
+  background-color: var(--cm-background);
+  color: var(--cm-on-surface);
+  font-family: var(--font-sans);
 }
 
-.safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+::selection {
+  background: rgba(58, 254, 207, 0.35);
+  color: var(--cm-on-mint);
+}
 
-/* Offset for fixed navbar when scrolling to anchors */
 section[id] {
-  scroll-margin-top: 64px;
+  scroll-margin-top: 72px;
 }
 
 .landing-container {
@@ -54,7 +91,81 @@ section[id] {
   min-width: 0;
 }
 
-/* Long CLI/API strings on narrow viewports (320–360px) */
+.landing-container-wide {
+  width: 100%;
+  max-width: var(--cm-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(var(--cm-gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--cm-gutter), env(safe-area-inset-right, 0px));
+  min-width: 0;
+}
+
+/* Cyber design utilities */
+.glass-panel {
+  backdrop-filter: blur(24px);
+  background: rgba(26, 26, 46, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.energy-border {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.energy-border-active {
+  border: 1px solid rgba(58, 254, 207, 0.35);
+  box-shadow: 0 0 15px rgba(58, 254, 207, 0.15);
+}
+
+.cyber-glow-mint {
+  box-shadow: 0 0 15px rgba(58, 254, 207, 0.2);
+}
+
+.cyber-glow-mint:hover {
+  box-shadow: 0 0 25px rgba(58, 254, 207, 0.4);
+}
+
+.header-strip {
+  border-top: 2px solid var(--cm-secondary-container);
+}
+
+.terminal-scroll::-webkit-scrollbar {
+  width: 2px;
+}
+
+.terminal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(58, 254, 207, 0.3);
+}
+
+@keyframes pulse-mint {
+  0%, 100% { opacity: 1; filter: blur(2px); }
+  50% { opacity: 0.5; filter: blur(5px); }
+}
+
+.agent-pulse {
+  animation: pulse-mint 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-label-caps {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-left   { padding-left: env(safe-area-inset-left, 0px); }
+.safe-right  { padding-right: env(safe-area-inset-right, 0px); }
+.safe-mt { margin-top: env(safe-area-inset-top, 0px); }
+.safe-mb { margin-bottom: env(safe-area-inset-bottom, 0px); }
+
 .code-snippet-box {
   min-width: 0;
   max-width: 100%;
@@ -77,12 +188,6 @@ section[id] {
   word-break: break-word;
   white-space: normal;
 }
-.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
-.safe-left   { padding-left: env(safe-area-inset-left, 0px); }
-.safe-right  { padding-right: env(safe-area-inset-right, 0px); }
-
-.safe-mt { margin-top: env(safe-area-inset-top, 0px); }
-.safe-mb { margin-bottom: env(safe-area-inset-bottom, 0px); }
 
 @media (max-width: 767px) {
   a, button, [role="button"] {
@@ -99,22 +204,20 @@ section[id] {
 }
 
 @utility font-grotesk {
-  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  font-family: var(--font-display);
 }
 
 @utility font-ibm-mono {
-  font-family: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
 }
 
-/* Grid background */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(58, 254, 207, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 254, 207, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-/* PayPal Hosted Button — prevent 0-width collapse in flex pricing cards */
 .paypal-hosted-button-wrap,
 .paypal-hosted-button-wrap .paypal-hosted-button,
 .paypal-hosted-button-wrap [id^="paypal-form"],
@@ -135,7 +238,6 @@ section[id] {
   height: auto !important;
 }
 
-/* PayPal SDK injects a floating mini-cart on some pages — hide outside checkout */
 paypal-cart-button,
 body > div[class*="paypal-cart"],
 body > div[id*="paypal-cart"] {
