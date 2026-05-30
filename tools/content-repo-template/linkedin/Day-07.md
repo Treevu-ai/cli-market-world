@@ -18,9 +18,9 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Data brag:** Esta semana: **36,935** precios frescos (24h). **41,856** indexados. **35** retailers fresh. Un solo `pip install`.
-2. **Numbers:** **41K+** precios indexados. Refresh cada ~4–8 horas. Cero scraping.
-3. **Build in public:** Semana 1 de CLI Market en público — el collector volvió a correr con **97.2%** cobertura 7d.
+1. **Data brag:** Esta semana: **43,000+** precios verificados. **30** retailers activos. Refresh cada 8 h. Un solo `pip install`.
+2. **Numbers:** **43K+** precios indexados. Refresh cada 8 horas. Cero scraping.
+3. **Build in public:** Semana 1 de CLI Market en público — collector con cobertura verificable vía dashboard.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -28,11 +28,11 @@ Semana 1 construyendo infraestructura de comercio para agentes de IA.
 
 Los números de esta semana:
 
-→ **36,935 precios en refresh 24h** · **41,856 indexados** en el moat
-→ **35 retailers** con datos frescos hoy · **35** con histórico
+→ **43,000+ precios verificados** · refresh cada **8 h**
+→ **30 retailers verificados activos** · **60** en catálogo
 → **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
 → **36 herramientas MCP**
-→ **97.2% cobertura 7d** del catálogo activo
+→ Cobertura verificable en dashboard público
 
 Cada precio viene de APIs de retailers reales (VTEX + Magento).
 
@@ -81,7 +81,7 @@ Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 7` · todos: `pyth
 
 ## Placeholder hasta export metrics
 
-Si aún no hay price-pulse exportado, usar mensaje acordado **~13K precios** solo si el dashboard lo confirma el día de publicación.
+Si aún no hay price-pulse exportado, usar mensaje acordado **43K+ precios** (ver `python3 ops/sync_market_stats.py`) el día de publicación.
 
 ## Notas post-publicación
 

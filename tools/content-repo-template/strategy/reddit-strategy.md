@@ -21,7 +21,7 @@ hub: "[[GTM-Hub]]"
 | r/MachineLearning | 2M+ | Agent builders | "Commerce infrastructure for AI agents" |
 | r/dataisbeautiful | 20M+ | Data showcase | Weekly price heatmap of LATAM |
 | r/SideProject | 100K+ | Builders | "I built commerce infra for AI agents" |
-| r/programming | 4M+ | General dev | "How I index 13K prices from 30 retailers" |
+| r/programming | 4M+ | General dev | "How I index 43K prices from 60 retailers" |
 | r/latinoamerica | 100K+ | Regional | Retail price comparisons LATAM |
 
 ## Phase 2: Content Calendar (Week 1-4)
