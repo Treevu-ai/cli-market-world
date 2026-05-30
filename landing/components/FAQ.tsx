@@ -5,7 +5,6 @@ import { MARKET_STATS } from "@/lib/marketStats";
 function faqsFor(lang: "es" | "en") {
   const isES = lang === "es";
   const rp = isES ? MARKET_STATS.retailersPhraseEs : MARKET_STATS.retailersPhraseEn;
-  const pp = isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn;
 
   if (isES) {
     return [
@@ -15,7 +14,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Con qué retailers funciona?",
-        a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos en ${MARKET_STATS.businessLines} líneas. ${pp}. VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} marcas moda/beauty), Magento (${MARKET_STATS.platformMagento}).`,
+        a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos, en ${MARKET_STATS.countries} países. 3 plataformas: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} marcas moda/beauty) y Magento (${MARKET_STATS.platformMagento}).`,
       },
       {
         q: "¿Cómo funciona el pago?",
@@ -23,11 +22,11 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Mis agentes pueden usar esto sin intervención humana?",
-        a: `Sí. Las ${MARKET_STATS.mcpTools} herramientas MCP están diseñadas para que tu agente busque, compare, arme canastas y complete compras de forma autónoma. El pago requiere aprobación humana por ahora.`,
+        a: `En gran parte. Las ${MARKET_STATS.mcpTools} herramientas MCP permiten que tu agente busque, compare y arme canastas de forma autónoma. El pago aún requiere aprobación humana, y el checkout autónomo está en roadmap.`,
       },
       {
         q: "¿Los precios son reales?",
-        a: `Sí. Nuestro collector corre cada ${MARKET_STATS.pricesRefreshHours} horas contra ${MARKET_STATS.retailersVerified} retailers verificados y extrae precios reales de góndola. ${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kilo/litro, filtrados antes de publicar comparaciones.`,
+        a: `Sí. Nuestro collector se actualiza cada ${MARKET_STATS.pricesRefreshHours} horas contra ${MARKET_STATS.retailersVerified} retailers verificados, obteniendo precios reales de góndola a través de las APIs públicas de catálogo de cada plataforma (VTEX, Shopify, Magento), no por scraping de HTML. Más de ${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kilo/litro, filtrados antes de publicar comparaciones.`,
       },
       {
         q: "¿Cuánto cuesta?",
@@ -41,22 +40,22 @@ function faqsFor(lang: "es" | "en") {
       q: "What is CLI Market?",
       a: `CLI Market is commerce infrastructure for AI agents and commercial teams: ${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L across ${rp}. Intelligence (pilot USD 300–500/mo) for spreads and inflation; Build (Free/Pro) to integrate API and MCP. Zero scraping.`,
     },
-    {
-      q: "Which retailers do you support?",
-      a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active across ${MARKET_STATS.businessLines} lines. ${pp}. VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} fashion/beauty brands), Magento (${MARKET_STATS.platformMagento}).`,
-    },
+      {
+        q: "Which retailers do you support?",
+        a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active, across ${MARKET_STATS.countries} countries. 3 platforms: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} fashion/beauty brands), and Magento (${MARKET_STATS.platformMagento}).`,
+      },
     {
       q: "How does payment work?",
       a: `${MARKET_STATS.paymentsLabel}. Checkout generates a QR code you scan from your payment app. A webhook confirms the transaction and updates your order status automatically.`,
     },
-    {
-      q: "Can my agents use this autonomously?",
-      a: `Yes. All ${MARKET_STATS.mcpTools} MCP tools are designed for agents to search, compare, build baskets, and complete purchases autonomously. Payment requires human approval for now.`,
-    },
-    {
-      q: "Are the prices real?",
-      a: `Yes. Our collector runs every ${MARKET_STATS.pricesRefreshHours} hours against ${MARKET_STATS.retailersVerified} verified retailers and extracts real shelf prices. ${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L and filtered before publishing comparisons.`,
-    },
+      {
+        q: "Can my agents use this autonomously?",
+        a: `Mostly. All ${MARKET_STATS.mcpTools} MCP tools let your agent search, compare, and build baskets autonomously. Payment still requires human approval, and autonomous checkout is on the roadmap.`,
+      },
+      {
+        q: "Are the prices real?",
+        a: `Yes. Our collector refreshes every ${MARKET_STATS.pricesRefreshHours} hours against ${MARKET_STATS.retailersVerified} verified retailers, fetching real shelf prices through each platform's public catalog APIs (VTEX, Shopify, Magento), not HTML scraping. ${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L, filtered before publishing comparisons.`,
+      },
     {
       q: "How much does it cost?",
       a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for technical export and higher limits. Intelligence (commercial data): pilot from USD 300–500/mo — spreads, inflation, basket, and quality layer (see cli-market.dev/intelligence-pilot-es.md). Retailer listing: free forever.",
