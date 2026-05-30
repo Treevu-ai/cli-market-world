@@ -636,6 +636,10 @@ async def collect_one_pg(pool, store, queries):
                     continue
                 try:
                     raw = await fetch_store_multi(client, store, q)
+                    if not raw:
+                        query_fail += 1
+                        cb.lose(store)
+                        continue
                     cb.win(store)
                     query_ok += 1
                     for p in raw:
@@ -655,6 +659,10 @@ async def collect_one_pg(pool, store, queries):
                         await asyncio.sleep(5.0)
                         try:
                             raw = await fetch_store_multi(client, store, q)
+                            if not raw:
+                                query_fail += 1
+                                cb.lose(store)
+                                continue
                             cb.win(store)
                             query_ok += 1
                             for p in raw:
@@ -711,6 +719,9 @@ async def collect_one_sqlite(db, store, queries):
         attempted += 1
         try:
             raw = await _fetch_store(store, q, page=1, limit=10)
+            if not raw:
+                cb.lose(store)
+                continue
             query_ok += 1
             for p in raw:
                 prod = _pfj(p, store)

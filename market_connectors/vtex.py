@@ -12,6 +12,15 @@ from .base import BaseConnector, parse_price, clean_name
 
 PAGE_SIZE = 20
 CATALOG_PAGE_SIZE = 50
+_VTEX_UA = (
+    "Mozilla/5.0 (compatible; CLI-Market-Collector/1.0; +https://cli-market.dev)"
+)
+
+
+def _client_headers(store_config: dict) -> dict[str, str]:
+    headers = {"User-Agent": _VTEX_UA}
+    headers.update(_vtex_headers(store_config))
+    return headers
 
 
 def _vtex_headers(store_config: dict) -> dict[str, str]:
@@ -31,7 +40,7 @@ class VtexConnector(BaseConnector):
     async def _detect_io(self, store_config: dict) -> str:
         base = store_config["base"]
         async with httpx.AsyncClient(timeout=8.0) as c:
-            headers = _vtex_headers(store_config)
+            headers = _client_headers(store_config)
             try:
                 r = await c.get(f"{base}/api/catalog_system/pub/category/tree/10", headers=headers)
                 ct = r.headers.get("content-type", "")
@@ -63,7 +72,7 @@ class VtexConnector(BaseConnector):
         url = f"{self._api_url(store_config, 'catalog_system/pub/products/search')}/{term}"
         _from = (page - 1) * PAGE_SIZE
         _to = min(_from + limit - 1, _from + PAGE_SIZE - 1)
-        headers = _vtex_headers(store_config)
+        headers = _client_headers(store_config)
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(url, params={"_from": str(_from), "_to": str(_to)}, headers=headers)
             if resp.status_code == 429:
@@ -82,7 +91,7 @@ class VtexConnector(BaseConnector):
             await self._detect_io(store_config)
         url = self._api_url(store_config, "catalog_system/pub/products/search")
         all_products = []
-        headers = _vtex_headers(store_config)
+        headers = _client_headers(store_config)
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             for page in range(1, max_pages + 1):
                 _from = (page - 1) * CATALOG_PAGE_SIZE

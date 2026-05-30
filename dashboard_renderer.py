@@ -420,7 +420,7 @@ td.num{text-align:right}
 .footer{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}
 ul.glossary{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max-width:720px}
 .state-ok,.state-ok b{color:#3cffd0}
-.state-partial,.state-warn{color:#ffbd2e}
+.state-partial,.state-warn,.state-empty{color:#ffbd2e}
 .state-stale,.state-dead,.state-crit{color:#ff4444}
 .state-running{color:#888}
 body.clean-mode .dirty-section{display:none!important}
