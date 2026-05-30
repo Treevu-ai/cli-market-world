@@ -20,7 +20,9 @@ npm run build
 | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | PayPal Hosted Buttons SDK |
 | `NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID` | Button `B6YVFTG4MA73J` |
 | `NEXT_PUBLIC_PRO_PAYMENT_URL` | Fallback payment link |
-| `NEXT_PUBLIC_HERO_VARIANT` | Hero H1 A/B: `a`–`f` (default `a`). See [../docs/landing/h1-ab-variants.md](../docs/landing/h1-ab-variants.md) |
+| `NEXT_PUBLIC_HERO_VARIANT` | Hero H1 fixed variant `a`–`f` when AB off (default `a`) |
+| `NEXT_PUBLIC_HERO_AB` | Set `1` for runtime sticky split via cookie (`cm_hero_variant`) |
+| `HERO_AB` | Cloudflare Pages only — set `1` to enable edge middleware cookie |
 
 ## Pro flow components
 

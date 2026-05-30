@@ -129,18 +129,35 @@
 2. Registrar en bitácora: variante activa + clics Puerta A/B (PostHog, Plausible o evento `data-hero-variant` en analytics).
 3. Mínimo ~200 sesiones por variante antes de declarar ganador en tráfico orgánico bajo.
 
+### Modos de operación
+
+| Modo | Env | Comportamiento |
+|------|-----|----------------|
+| **Fijo** | `NEXT_PUBLIC_HERO_VARIANT=c` | Todos ven `c`. Cambiar = redeploy. |
+| **Runtime** | `NEXT_PUBLIC_HERO_AB=1` | Cookie sticky 30 días, random uniforme a–f. Sin redeploy. |
+
+**Runtime — activar en producción (Cloudflare Pages):**
+
+1. Build env: `NEXT_PUBLIC_HERO_AB=1`
+2. Runtime env: `HERO_AB=1` (para middleware en `landing/functions/_middleware.ts`)
+3. Redeploy una vez. Luego rotás pesos o pausás AB cambiando env sin tocar copy.
+
+**Override manual / QA:** `https://cli-market.dev/?hero=e`
+
+**Cookie:** `cm_hero_variant` · 30 días · `SameSite=Lax`
+
+**Analytics:** `#hero[data-hero-ab="1"]` · `data-hero-variant` · CTAs `data-cta=puerta-a|puerta-b`
+
+**Anti-FOUC:** script blocking en `<head>` actualiza `#hero-h1` antes del paint.
+
 ### Snippet para Hero
 
-Implementado en `landing/lib/heroVariants.ts` + `Hero.tsx`.
+Implementado en:
 
-```bash
-# Cloudflare Pages → Settings → Environment variables
-NEXT_PUBLIC_HERO_VARIANT=c   # agente primero
-```
-
-Variantes: `a` (control) · `b` concreta · `c` agente · `d` dual · `e` data moat · `f` checkout.
-
-El hero expone `data-hero-variant` en `#hero` y en CTAs (`data-cta=puerta-a|puerta-b`) para analytics.
+- `landing/lib/heroVariants.ts` — copy
+- `landing/lib/heroVariantAssign.ts` — cookie + URL override
+- `landing/hooks/useHeroVariant.ts` — hook cliente
+- `landing/functions/_middleware.ts` — cookie en edge (CF Pages)
 
 ---
 

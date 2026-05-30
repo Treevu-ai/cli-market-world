@@ -65,6 +65,8 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ModeProvider } from "@/hooks/useMode";
+import { HERO_AB_ENABLED } from "@/lib/heroVariants";
+import { buildHeroVariantInlineScript } from "@/lib/heroVariantInlineScript";
 
 const cfBeaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
 const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
@@ -128,6 +130,9 @@ export default function RootLayout({
     <html lang="es" className="h-full">
       <head>
         <link rel="alternate" type="application/json" href="/server.json" title="MCP server manifest" />
+        {HERO_AB_ENABLED ? (
+          <script dangerouslySetInnerHTML={{ __html: buildHeroVariantInlineScript() }} />
+        ) : null}
       </head>
       <body
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#e8ebe6] overflow-x-hidden`}

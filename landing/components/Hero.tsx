@@ -2,14 +2,16 @@
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import { useHeroVariant } from "@/hooks/useHeroVariant";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { ACTIVE_HERO_VARIANT, getHeroH1 } from "@/lib/heroVariants";
+import { getHeroH1 } from "@/lib/heroVariants";
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { priceChip, retailersVerified, retailersDefined } = useLiveStats();
-  const h1 = getHeroH1(ACTIVE_HERO_VARIANT, lang, priceChip);
+  const variant = useHeroVariant();
+  const h1 = getHeroH1(variant, lang, priceChip);
 
   const chips = [
     { num: String(MARKET_STATS.mcpTools), label: isES ? "MCP" : "MCP", accent: false },
@@ -22,7 +24,8 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      data-hero-variant={ACTIVE_HERO_VARIANT}
+      data-hero-variant={variant}
+      data-hero-ab={process.env.NEXT_PUBLIC_HERO_AB === "1" ? "1" : "0"}
       className="relative min-h-[90vh] flex flex-col bg-[var(--wise-canvas-soft)]"
     >
       <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
@@ -31,7 +34,11 @@ export default function Hero() {
         </span>
       </div>
       <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0">
-        <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight">
+        <h1
+          id="hero-h1"
+          suppressHydrationWarning
+          className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight"
+        >
           {h1}
         </h1>
 
@@ -45,7 +52,7 @@ export default function Hero() {
           <a
             href="https://pypi.org/project/cli-market/"
             data-cta="puerta-a"
-            data-hero-variant={ACTIVE_HERO_VARIANT}
+            data-hero-variant={variant}
             className="group flex flex-col items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-ink)]/70">
@@ -60,7 +67,7 @@ export default function Hero() {
           <a
             href="#retailers"
             data-cta="puerta-b"
-            data-hero-variant={ACTIVE_HERO_VARIANT}
+            data-hero-variant={variant}
             className="group flex flex-col items-center gap-2 rounded-3xl border-2 border-[var(--wise-ink)] bg-transparent text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-canvas)] transition-colors text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)]">
