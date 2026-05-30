@@ -158,20 +158,8 @@ def build_dashboard_view_model(data: dict) -> dict:
                 "source": "quality_funnel",
             },
         ],
-        "acceso": [
-            {
-                "cmd": "curl -s $BASE/dashboard/data | jq '.quality_funnel,.dashboard_view.blocks'",
-                "desc": "Payload completo + bloques render-ready",
-            },
-            {
-                "cmd": "curl -s $BASE/health/collector",
-                "desc": "Estado del collector (ok / stale / dead / running)",
-            },
-            {
-                "cmd": "curl -s '$BASE/analytics/price-history?sku=...'",
-                "desc": "Historial de precio por SKU",
-            },
-        ],
+        # Public dashboard omits curl/endpoints — see docs/ops/dashboard-api-access.md
+        "acceso": [],
     }
 
     # ── Block 1 — Hero ───────────────────────────────────────────────────────

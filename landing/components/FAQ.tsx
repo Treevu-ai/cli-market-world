@@ -31,7 +31,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "La CLI es open source y gratuita (licencia MIT). La API tiene un tier gratuito de 1,000 consultas al día. El plan Pro cuesta USD 49 al mes con checkout habilitado y data export. Si tienes un caso más grande, escríbenos.",
+        a: "Build (API/MCP): tier Free con 1,000 consultas/día sin costo; Pro USD 49/mes para export y límites altos. Intelligence (datos comerciales): piloto desde USD 300–500/mes — spreads, inflación, canasta y capa de calidad. Listado retailer: gratis siempre.",
       },
     ];
   }
@@ -59,7 +59,7 @@ function faqsFor(lang: "es" | "en") {
     },
     {
       q: "How much does it cost?",
-      a: "The CLI is open source and free (MIT license). The API has a free tier of 1,000 requests per day. The Pro plan is USD 49/month with checkout enabled and data export. For larger use cases, contact us.",
+      a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for export and higher limits. Intelligence (commercial data): pilot from USD 300–500/mo — spreads, inflation, basket, and quality layer. Retailer listing: free forever.",
     },
   ];
 }

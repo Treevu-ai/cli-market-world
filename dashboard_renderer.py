@@ -77,18 +77,21 @@ def _render_portada(view: dict) -> str:
         for c in cards
     )
     acceso = portada.get("acceso") or []
-    acceso_rows = "".join(
-        f"<tr><td><code>{_esc(a.get('cmd', ''))}</code></td><td class='metric-desc'>{_esc(a.get('desc', ''))}</td></tr>"
-        for a in acceso
-    )
-    return f"""
-<section class="portada">
-  <div class="portada-cards">{cards_html}</div>
+    acceso_html = ""
+    if acceso:
+        acceso_rows = "".join(
+            f"<tr><td><code>{_esc(a.get('cmd', ''))}</code></td><td class='metric-desc'>{_esc(a.get('desc', ''))}</td></tr>"
+            for a in acceso
+        )
+        acceso_html = f"""
   <div class="acceso-block">
     <div class="section">[ ACCESO ]</div>
     <p class="section-intro">Endpoints existentes — copiar y ejecutar contra la misma base que alimenta este panel.</p>
     <table><tr><th>Comando</th><th>Qué devuelve</th></tr>{acceso_rows}</table>
-  </div>
+  </div>"""
+    return f"""
+<section class="portada">
+  <div class="portada-cards">{cards_html}</div>{acceso_html}
 </section>
 """
 
