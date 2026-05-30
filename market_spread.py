@@ -13,6 +13,20 @@ CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
 ]
 
+# SQL pre-filter patterns (must be superset of _CANASTA_ITEM_PATTERNS; matcher refines).
+CANASTA_SQL_LIKE: dict[str, tuple[str, ...]] = {
+    "leche": ("%leche%",),
+    "arroz": ("%arroz%",),
+    "aceite": ("%aceite%",),
+    "azucar": ("%azucar%", "%azúcar%", "%açúcar%"),
+    "huevos": ("%huevo%", "%huevos%"),
+    "pan": ("%pan%", "%pão%"),
+    "cafe": ("%cafe%", "%café%"),
+    "pollo": ("%pollo%", "%frango%"),
+    "queso": ("%queso%", "%queijo%"),
+    "jabon": ("%jabon%", "%jabón%", "%sabon%"),
+}
+
 # Substrings that indicate a title is NOT the canasta SKU (validated against live compare data).
 _CANASTA_EXCLUDE: dict[str, frozenset[str]] = {
     "leche": frozenset({
@@ -51,7 +65,7 @@ _CANASTA_ITEM_PATTERNS: dict[str, re.Pattern[str]] = {
         "leche": r"\bleche\b",
         "arroz": r"\barroz\b",
         "aceite": r"\baceite\b",
-        "azucar": r"\b(azucar|açúcar)\b",
+        "azucar": r"\b(azucar|azúcar|açúcar)\b",
         "huevos": r"\b(huevos|huevo)\b",
         "pan": r"\b(pan|pão)\b",
         "cafe": r"\b(cafe|café)\b",

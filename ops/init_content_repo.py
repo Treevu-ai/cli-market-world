@@ -55,11 +55,12 @@ def main() -> int:
     print(f"Content repo ready: {target}")
     print(f"  Copied/updated {copied} file(s) from template.")
     print()
-    print("Next:")
+    print("Next (export en la misma shell):")
     print(f"  export CLI_MARKET_CONTENT_DIR={target}")
     print("  pip install pillow httpx")
-    print("  python3 ops/sync_linkedin_metrics.py")
     print("  python3 ops/generate_all_linkedin_assets.py --patch")
+    print("  python3 ops/sync_linkedin_metrics.py")
+    print("  python3 ops/slack_cli.py campaign sync")
     print(f"  cd {target} && git init  # luego remote a repo privado cli-market-content")
     return 0
 

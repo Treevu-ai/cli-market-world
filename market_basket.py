@@ -2,21 +2,31 @@
 
 from __future__ import annotations
 
-from market_spread import CANASTA_ITEMS, matches_canasta_item
+from market_spread import CANASTA_ITEMS, CANASTA_SQL_LIKE, matches_canasta_item
 from market_units import is_standard_canasta_pack
 
 CANASTA_TOTAL_ITEMS = 10
 CANASTA_PARTIAL_THRESHOLD = 6
 
 
+def _canasta_name_sql(prod: str) -> tuple[str, tuple]:
+    """Build WHERE fragment for canasta seed (handles accents + huevo/huevos)."""
+    patterns = CANASTA_SQL_LIKE.get(prod, (f"%{prod}%",))
+    if len(patterns) == 1:
+        return "name LIKE ?", (patterns[0],)
+    clause = " OR ".join("name LIKE ?" for _ in patterns)
+    return f"({clause})", patterns
+
+
 def _aggregate_canasta(db, *, store_filter: set[str] | None = None) -> dict[str, dict]:
     canasta: dict[str, dict] = {}
     for prod in CANASTA_ITEMS:
+        name_sql, name_params = _canasta_name_sql(prod)
         rows = db.execute(
-            """SELECT store_name, store, name, price, currency
+            f"""SELECT store_name, store, name, price, currency
                FROM price_snapshots
-               WHERE line='supermercados' AND price>0 AND price<999999 AND name LIKE ?""",
-            (f"%{prod}%",),
+               WHERE line='supermercados' AND price>0 AND price<999999 AND {name_sql}""",
+            name_params,
         ).fetchall()
         store_best: dict[tuple[str, str], float] = {}
         store_fallback: dict[tuple[str, str], float] = {}

@@ -20,6 +20,19 @@ def test_content_root_falls_back_to_template(monkeypatch, tmp_path):
     assert (root / "linkedin" / "data-gate.md").is_file()
 
 
+def test_display_path_outside_monorepo(monkeypatch, tmp_path):
+    from content_paths import display_path, rel_to_content
+
+    external = tmp_path / "cli-market-content" / "linkedin" / "assets" / "day-01"
+    external.mkdir(parents=True)
+    png = external / "day-01-linkedin.png"
+    png.write_bytes(b"x")
+
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(tmp_path / "cli-market-content"))
+    assert rel_to_content(png) == "linkedin/assets/day-01/day-01-linkedin.png"
+    assert display_path(png) == "linkedin/assets/day-01/day-01-linkedin.png"
+
+
 def test_metrics_from_dashboard_extracts_kpis():
     data = {
         "kpis": {
