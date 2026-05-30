@@ -37,6 +37,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_paths import calendar_dir, content_root, linkedin_dir, metrics_dir, rel_to_content  # noqa: E402
 
 
+def _path_label(path: Path) -> str:
+    """Path for reports/logs — relative to content root when using external repo."""
+    return rel_to_content(path)
+
+
+def _day_path_label(day: int) -> str:
+    return _path_label(linkedin_dir() / f"Day-{day:02d}.md")
+
+
 def _daily_dir() -> Path:
     gen = content_root() / "generated" / "daily"
     if content_root().name != "docs":
@@ -114,7 +123,7 @@ def _load_day_doc(day: int) -> dict[str, Any] | None:
     title_m = re.search(r"^# Day \d+ — (.+)$", body, re.MULTILINE)
     return {
         "day": day,
-        "path": path.relative_to(ROOT).as_posix(),
+        "path": _path_label(path),
         "fm": fm,
         "title": title_m.group(1).strip() if title_m else fm.get("title", f"Day {day}"),
         "hooks": _section(body, "Hooks (elegir 1)"),
@@ -237,7 +246,7 @@ def build_content_report(for_date: date) -> str:
         lines += [
             f"## Hoy — Día {day}",
             "",
-            f"⚠️ No existe `docs/linkedin/Day-{day:02d}.md`. Fin de calendario 30d o revisar `LINKEDIN_CAMPAIGN_START`.",
+            f"⚠️ No existe `{_day_path_label(day)}`. Fin de calendario 30d o revisar `LINKEDIN_CAMPAIGN_START`.",
             "",
         ]
 
@@ -251,7 +260,7 @@ def build_content_report(for_date: date) -> str:
                 "## Opcional mismo día — Day-09-AR",
                 "",
                 "⛔ Ver [[linkedin/data-gate]] — **no publicar** hasta gate AR PASSED.",
-                f"Archivo: `{ar.relative_to(ROOT).as_posix()}`",
+                f"Archivo: `{_path_label(ar)}`",
                 "",
             ]
 
@@ -301,7 +310,7 @@ def build_content_report(for_date: date) -> str:
         "",
         "## Acciones rápidas",
         "",
-        "1. Copiar post de `docs/linkedin/Day-XX.md` → LinkedIn (sin URL en cuerpo).",
+        f"1. Copiar post de `{_day_path_label(day)}` → LinkedIn (sin URL en cuerpo).",
         "2. Primer comentario con link UTM.",
         "3. Engagement 60 min.",
         "4. Marcar `published_at: YYYY-MM-DD` en frontmatter del día.",
@@ -402,7 +411,7 @@ def build_slack_content_message(
     ]
 
     if not today:
-        lines.append(f"⚠️ No hay borrador `docs/linkedin/Day-{day:02d}.md`.")
+        lines.append(f"⚠️ No hay borrador `{_day_path_label(day)}`.")
         lines.append(_repo_file_link(content_rel))
         return "\n".join(lines)
 
@@ -470,8 +479,8 @@ def main() -> None:
             sys.path.insert(0, str(ops_dir))
         from slack_notify import deliver_to_bitacora, deliver_to_publicaciones
 
-        product_rel = product_path.relative_to(ROOT).as_posix()
-        content_rel = content_path.relative_to(ROOT).as_posix()
+        product_rel = _path_label(product_path)
+        content_rel = _path_label(content_path)
         day = _campaign_day(today)
         today_doc = _load_day_doc(day)
 
