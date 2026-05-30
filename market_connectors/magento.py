@@ -9,6 +9,13 @@ import httpx
 from .base import BaseConnector, clean_name
 
 
+def _magento_headers(store_config: dict) -> dict[str, str]:
+    token = store_config.get("magento_token") or store_config.get("integration_token", "")
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+    return {}
+
+
 class MagentoConnector(BaseConnector):
     platform = "magento"
 
@@ -27,10 +34,11 @@ class MagentoConnector(BaseConnector):
             "searchCriteria[pageSize]": str(limit),
             "searchCriteria[currentPage]": str(page),
         }
+        headers = _magento_headers(store_config)
         async with httpx.AsyncClient(timeout=12.0) as client:
             for url in urls:
                 try:
-                    resp = await client.get(url, params=params)
+                    resp = await client.get(url, params=params, headers=headers)
                     if resp.status_code == 200:
                         return resp.json().get("items", [])
                 except Exception:
@@ -75,10 +83,11 @@ class MagentoConnector(BaseConnector):
         base = store_config["base"]
         store_code = store_config.get("store_code", "default")
         urls = [f"{base}/rest/{store_code}/V1/categories", f"{base}/rest/V1/categories"]
+        headers = _magento_headers(store_config)
         async with httpx.AsyncClient(timeout=8.0) as client:
             for url in urls:
                 try:
-                    resp = await client.get(url)
+                    resp = await client.get(url, headers=headers)
                     if resp.status_code == 200:
                         return resp.json()
                 except Exception:

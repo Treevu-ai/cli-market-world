@@ -550,7 +550,9 @@ _last_catalog_pull: float = 0.0
 
 async def collect_full_catalog_pg(pool, store: str) -> int:
     from market_connectors.vtex import VtexConnector
-    cfg = STORES.get(store, {})
+    from store_credentials import resolve_store_config
+
+    cfg = resolve_store_config(store)
     if cfg.get("platform") != "vtex":
         return 0
     vtex = VtexConnector()
@@ -595,13 +597,15 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
 async def run_full_catalog_pg(pool, stores: list[str]) -> int:
     global _last_catalog_pull
+    from store_credentials import resolve_store_config
+
     now = time.monotonic()
     if now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
         return 0
     _last_catalog_pull = now
     total = 0
     for store in stores:
-        if STORES.get(store, {}).get("platform") != "vtex":
+        if resolve_store_config(store).get("platform") != "vtex":
             continue
         n = await collect_full_catalog_pg(pool, store)
         print(f"    📦 {store}: {n:,} products (full catalog)")
