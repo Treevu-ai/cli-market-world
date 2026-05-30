@@ -61,7 +61,7 @@ def test_build_dashboard_view_model_blocks():
         "by_line_currency": [],
     }
     view = build_dashboard_view_model(data)
-    assert view["spec_version"] == "1.1"
+    assert view["spec_version"] == "1.2"
     assert view["locale"] == "es"
     assert "hero" in view["blocks"]
     hero = view["blocks"]["hero"]

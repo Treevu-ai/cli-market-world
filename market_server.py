@@ -105,6 +105,7 @@ from routers.agent import router as agent_router
 from routers.analytics import router as analytics_router
 from routers.auth import router as auth_router
 from routers.cart import router as cart_router
+from routers.data_v1 import router as data_v1_router
 from routers.dashboard import router as dashboard_router
 from routers.data_export import router as data_export_router
 from routers.health import router as health_router
@@ -126,6 +127,7 @@ for r in (
     auth_router,
     cart_router,
     dashboard_router,
+    data_v1_router,
     data_export_router,
     health_router,
     intel_router,
