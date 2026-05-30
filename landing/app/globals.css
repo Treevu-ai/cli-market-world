@@ -113,3 +113,31 @@ section[id] {
     linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* PayPal Hosted Button — prevent 0-width collapse in flex pricing cards */
+.paypal-hosted-button-wrap,
+.paypal-hosted-button-wrap .paypal-hosted-button,
+.paypal-hosted-button-wrap [id^="paypal-form"],
+.paypal-hosted-button-wrap [id^="form-container"],
+.paypal-hosted-button-wrap iframe {
+  width: 100% !important;
+  min-width: 280px !important;
+  max-width: 100% !important;
+}
+
+.paypal-hosted-button-wrap h3,
+.paypal-hosted-button-wrap .item-header {
+  width: auto !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  line-height: 1.3 !important;
+  height: auto !important;
+}
+
+/* PayPal SDK injects a floating mini-cart on some pages — hide outside checkout */
+paypal-cart-button,
+body > div[class*="paypal-cart"],
+body > div[id*="paypal-cart"] {
+  display: none !important;
+}
