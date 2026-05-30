@@ -62,7 +62,7 @@ export default function ProSubscribeButton() {
 
     return (
       <div className="space-y-4 text-left">
-        <div className="rounded-2xl bg-[var(--wise-green-pale)] p-4 text-sm text-[var(--wise-body)]">
+        <div className="rounded border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-4 text-sm text-[var(--cm-on-surface-variant)]">
           {result.email_sent ? (
             <p>
               {isES
@@ -77,7 +77,7 @@ export default function ProSubscribeButton() {
             </p>
           )}
           {ref && (
-            <p className="mt-2 font-mono text-xs text-[var(--wise-mute)]">
+            <p className="mt-2 font-mono text-xs text-[var(--cm-on-surface-variant)]/60">
               Ref: {ref}
             </p>
           )}
@@ -87,12 +87,12 @@ export default function ProSubscribeButton() {
           href={payLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
+          className="inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full btn-mint"
         >
           {isES ? "Pagar USD 49 con PayPal →" : "Pay USD 49 with PayPal →"}
         </a>
 
-        <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
+        <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
           {isES
             ? "Si el botón embebido muestra «Agotado», use el botón verde de arriba. Revise inventario del botón en PayPal Business."
             : "If the embedded button shows “Sold out”, use the green button above. Check button inventory in PayPal Business."}
@@ -104,13 +104,13 @@ export default function ProSubscribeButton() {
           href={payLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-center text-xs text-[var(--wise-mute)] underline hover:text-[var(--wise-ink)]"
+          className="block text-center text-xs text-[var(--cm-on-surface-variant)] underline hover:text-[var(--cm-mint)]"
         >
           {isES ? "Abrir link de pago en PayPal (alternativa)" : "Open PayPal payment link (fallback)"}
         </a>
 
-        <div className="rounded-2xl border border-[var(--wise-green-pale)] p-4 text-xs text-[var(--wise-body)] space-y-2">
-          <p className="font-semibold text-[var(--wise-ink)]">
+        <div className="card-cyber p-4 text-xs text-[var(--cm-on-surface-variant)] space-y-2">
+          <p className="font-semibold text-white">
             {isES ? "Después de pagar" : "After payment"}
           </p>
           <ol className="list-decimal list-inside space-y-1">
@@ -137,7 +137,7 @@ export default function ProSubscribeButton() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder={isES ? "tu@email.com" : "you@email.com"}
-        className="w-full rounded-2xl border border-[var(--wise-green-pale)] px-4 py-2.5 text-sm bg-[var(--wise-canvas-soft)]"
+        className="w-full input-cyber"
       />
       <input
         type="text"
@@ -148,13 +148,13 @@ export default function ProSubscribeButton() {
             ? "Usuario CLI (opcional, si ya hiciste market login)"
             : "CLI username (optional, if you ran market login)"
         }
-        className="w-full rounded-2xl border border-[var(--wise-green-pale)] px-4 py-2.5 text-sm bg-[var(--wise-canvas-soft)]"
+        className="w-full input-cyber"
       />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
       <button
         onClick={submit}
         disabled={loading}
-        className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)] disabled:opacity-50"
+        className="btn-mint w-full disabled:opacity-50"
       >
         {loading
           ? isES
