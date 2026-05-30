@@ -150,6 +150,17 @@
 
 **Anti-FOUC:** script blocking en `<head>` actualiza `#hero-h1` antes del paint.
 
+**Local (desde la raíz del repo):**
+
+```bash
+cp landing/.env.example landing/.env.local
+echo "NEXT_PUBLIC_HERO_AB=1" >> landing/.env.local
+npm run dev
+# → http://localhost:3000/?hero=e
+```
+
+`.env.local` va en **`landing/.env.local`**, no en la raíz. El script `dev` vive en `landing/package.json`; en la raíz usa `npm run dev` (wrapper) o `cd landing && npm run dev`.
+
 ### Snippet para Hero
 
 Implementado en:

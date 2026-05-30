@@ -2,6 +2,26 @@
 
 Static Next.js export → Cloudflare Pages.
 
+## Dev (local)
+
+Desde la **raíz del repo** o desde `landing/`:
+
+```bash
+# Opción A — raíz del repo (recomendado)
+cp landing/.env.example landing/.env.local
+# Editar landing/.env.local → NEXT_PUBLIC_HERO_AB=1
+npm run dev
+# → http://localhost:3000/?hero=b
+
+# Opción B — solo landing/
+cd landing
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+`.env.local` va en **`landing/.env.local`**, no en la raíz.
+
 ## Build
 
 ```bash

@@ -2,7 +2,9 @@
   "name": "cli-market-latam",
   "private": true,
   "scripts": {
-    "build": "cd landing && npm install && npm run build"
+    "build": "cd landing && npm install && npm run build",
+    "dev": "cd landing && npm install && npm run dev",
+    "dev:landing": "cd landing && npm run dev"
   },
   "dependencies": {
     "next": "^16.2.6",
