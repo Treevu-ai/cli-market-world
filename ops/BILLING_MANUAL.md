@@ -54,12 +54,17 @@ market upgrade --email tu@email.com
 
 ## Activar Pro tras pago confirmado
 
+**SLA:** activar en **≤24 h hábiles** tras confirmación de pago en PayPal (ver `docs/ops/phase0-mitigation.md`).
+
 ```bash
-cd /home/acuba/Proyectos/nuevo
-python3 ops/activate_pro.py admin
+python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
+# o por email si no hay request-id
+python3 ops/activate_pro.py USERNAME --email cliente@example.com
 ```
 
-O en Python:
+Ver journey completo: `ops/E2E_CLIENT_JOURNEY.md`.
+
+Alternativa manual en Python:
 
 ```python
 from market_core import ensure_db_initialized, db_set_subscription

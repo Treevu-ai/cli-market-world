@@ -214,55 +214,15 @@ export default function Pricing() {
           {isES ? "Planes" : "Plans"}
         </p>
         <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-[var(--wise-ink)] mb-2 tracking-tight">
-          {isES ? "Build gratis. Intelligence para equipos." : "Build free. Intelligence for teams."}
+          {isES ? "Intelligence para equipos. Build gratis." : "Intelligence for teams. Build free."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-2xl mx-auto mb-12">
           {isES
-            ? "Dos productos visibles: infraestructura para agentes (Build) y datos de precios con capa de calidad (Intelligence). Listado retailer sigue gratis en la sección de abajo."
-            : "Two visible products: agent infrastructure (Build) and quality-filtered price data (Intelligence). Retailer listing stays free in the section below."}
+            ? "Foco comercial este trimestre: datos de precios con capa de calidad (Puerta C). Build (Puerta A) para quien integra. Listado retailer (Puerta B) gratis — más abajo."
+            : "Commercial focus this quarter: quality-filtered price data (Door C). Build (Door A) for integrators. Retailer listing (Door B) free — below."}
         </p>
 
-        {/* ── Build ── */}
-        <div id="pricing-build" className="scroll-mt-24 mb-16 text-left">
-          <div className="mb-6">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
-              {isES ? "Puerta A · Build" : "Door A · Build"}
-            </p>
-            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
-              {isES ? "API, MCP y CLI para builders" : "API, MCP, and CLI for builders"}
-            </h3>
-            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
-              {isES
-                ? "Integre agentes, automatice búsquedas y exporte datos. Sin tarjeta para Free."
-                : "Integrate agents, automate search, and export data. No card for Free."}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-            {buildTiers.map((tier) => (
-              <TierCard key={tier.name} tier={tier} isES={isES}>
-                {tier.name === "Pro" ? (
-                  <div id="pro-checkout" className="scroll-mt-24 space-y-3">
-                    <ProSubscribeButton />
-                    {tier.proNote_es && (
-                      <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
-                        {isES ? tier.proNote_es : tier.proNote_en}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <a
-                    href={tier.href}
-                    className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:opacity-90"
-                  >
-                    {isES ? tier.cta_es : tier.cta_en}
-                  </a>
-                )}
-              </TierCard>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Intelligence ── */}
+        {/* ── Intelligence (foco comercial) ── */}
         <div id="pricing-intelligence" className="scroll-mt-24 mb-16 text-left">
           <div className="mb-6">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
@@ -310,6 +270,46 @@ export default function Pricing() {
               </>
             )}
           </p>
+        </div>
+
+        {/* ── Build ── */}
+        <div id="pricing-build" className="scroll-mt-24 mb-16 text-left">
+          <div className="mb-6">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
+              {isES ? "Puerta A · Build" : "Door A · Build"}
+            </p>
+            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
+              {isES ? "API, MCP y CLI para builders" : "API, MCP, and CLI for builders"}
+            </h3>
+            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
+              {isES
+                ? "Integre agentes, automatice búsquedas y exporte datos. Sin tarjeta para Free."
+                : "Integrate agents, automate search, and export data. No card for Free."}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            {buildTiers.map((tier) => (
+              <TierCard key={tier.name} tier={tier} isES={isES}>
+                {tier.name === "Pro" ? (
+                  <div id="pro-checkout" className="scroll-mt-24 space-y-3">
+                    <ProSubscribeButton />
+                    {tier.proNote_es && (
+                      <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
+                        {isES ? tier.proNote_es : tier.proNote_en}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <a
+                    href={tier.href}
+                    className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:opacity-90"
+                  >
+                    {isES ? tier.cta_es : tier.cta_en}
+                  </a>
+                )}
+              </TierCard>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-2xl border border-[var(--wise-green-pale)] bg-[var(--wise-canvas)] p-4 max-w-3xl mx-auto mb-16 text-left">
