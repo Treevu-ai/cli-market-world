@@ -39,14 +39,14 @@ def test_env_parses_magento_token(monkeypatch):
 def test_vtex_requires_key_and_token_pair(monkeypatch):
     import store_credentials
 
-    monkeypatch.setenv("STORE_WONG_VTEX_APP_KEY", "key-only")
+    monkeypatch.setenv("STORE_SAMSUNG_MX_VTEX_APP_KEY", "key-only")
     store_credentials.reload_credentials()
-    assert not store_credentials.has_store_credentials("wong")
+    assert not store_credentials.has_store_credentials("samsung_mx")
 
-    monkeypatch.setenv("STORE_WONG_VTEX_APP_TOKEN", "token-ok")
+    monkeypatch.setenv("STORE_SAMSUNG_MX_VTEX_APP_TOKEN", "token-ok")
     store_credentials.reload_credentials()
-    assert store_credentials.has_store_credentials("wong")
-    cfg = store_credentials.resolve_store_config("wong")
+    assert store_credentials.has_store_credentials("samsung_mx")
+    cfg = store_credentials.resolve_store_config("samsung_mx")
     assert cfg["vtex_app_key"] == "key-only"
     assert cfg["vtex_app_token"] == "token-ok"
 

@@ -113,9 +113,7 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-from store_credentials import compute_default_stores, resolve_store_config
-
-DEFAULT_STORES = compute_default_stores()
+from store_credentials import get_default_stores, resolve_store_config
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
@@ -611,6 +609,7 @@ def init_db_pg(db: _DB) -> None:
     """)
     db.execute("CREATE INDEX IF NOT EXISTS idx_retailer_apply_email ON retailer_applications(contact_email)")
     _migrate_payment_schema(db)
+    _migrate_store_credentials(db)
     db.commit()
 
 
@@ -852,6 +851,42 @@ def _migrate_payment_schema(db) -> None:
     )
 
 
+def _migrate_store_credentials(db) -> None:
+    """Store credentials + retailer application review columns."""
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS store_credentials (
+            store_id TEXT PRIMARY KEY,
+            platform TEXT NOT NULL,
+            store_name TEXT DEFAULT '',
+            base TEXT DEFAULT '',
+            country TEXT DEFAULT '',
+            currency TEXT DEFAULT '',
+            line TEXT DEFAULT 'supermercados',
+            magento_token TEXT DEFAULT '',
+            storefront_token TEXT DEFAULT '',
+            vtex_app_key TEXT DEFAULT '',
+            vtex_app_token TEXT DEFAULT '',
+            application_id TEXT DEFAULT '',
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_store_cred_active ON store_credentials(active)"
+    )
+    for col, typedef in (
+        ("api_token", "TEXT DEFAULT ''"),
+        ("store_id", "TEXT DEFAULT ''"),
+        ("reviewed_at", "TEXT"),
+        ("review_notes", "TEXT DEFAULT ''"),
+    ):
+        try:
+            db.execute(f"ALTER TABLE retailer_applications ADD COLUMN {col} {typedef}")
+        except Exception:
+            pass
+
+
 def init_db() -> None:
     db = get_db()
     if USE_PG:
@@ -859,6 +894,7 @@ def init_db() -> None:
     else:
         db.executescript(_SQLITE_DDL)
         _migrate_payment_schema(db)
+        _migrate_store_credentials(db)
     db.commit()
     db.close()
 
