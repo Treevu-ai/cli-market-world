@@ -65,10 +65,12 @@ MARKET_DATA_DIR=/tmp/m pytest tests/test_regression.py -q -k dashboard
 
 ## Pendiente Fase 7+
 
-| Item | Notas |
-|------|-------|
-| PayPal live + «Agotado» | Panel PayPal Business (externo) |
-| Propagar content template → repo privado | Local |
-| Índices SQL para `/v1/prices` a escala | Performance |
-| `confidence` persistida en DB | Dashboard Fase 4 |
-| Checkout autónomo | Roadmap Build |
+Ver `docs/ops/phase7-performance-confidence-billing.md`:
+
+| Item | Estado |
+|------|--------|
+| PayPal live + «Agotado» | Runbook ops (externo) |
+| Propagar content template → repo privado | ✅ `ops/sync_content_template.py` |
+| Índices SQL para `/v1/prices` | ✅ Fase 7 |
+| `confidence` persistida en DB | ✅ Fase 7 + `ops/backfill_confidence.py` |
+| Checkout autónomo | Roadmap Fase 8 |

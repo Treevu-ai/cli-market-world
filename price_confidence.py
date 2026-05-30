@@ -49,3 +49,16 @@ def spread_confidence(spread_ratio: float) -> str:
 def spread_public_ok(spread_ratio: float) -> bool:
     """Comparable spreads for marketing/API defaults."""
     return spread_confidence(spread_ratio) != "crit"
+
+
+def discount_pct(price: float, list_price: float | None) -> float | None:
+    if not list_price or list_price <= price or price <= 0:
+        return None
+    return round((1 - price / list_price) * 100, 1)
+
+
+def compute_snapshot_confidence(price: float, list_price: float | None) -> str:
+    """Row-level confidence at ingest (discount scrape errors → suspect)."""
+    if discount_is_scrape_error(discount_pct(price, list_price)):
+        return "suspect"
+    return "ok"

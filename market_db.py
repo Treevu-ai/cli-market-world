@@ -148,6 +148,50 @@ def _migrate_price_snapshots_pg(db: _DB) -> None:
         logger.warning("price_snapshots migration skipped: %s", e)
 
 
+def _migrate_price_snapshots_v7(db: _DB) -> None:
+    """Fase 7: confidence column + query indexes for /v1/prices."""
+    if market_core.USE_PG:
+        try:
+            db.execute(
+                "ALTER TABLE price_snapshots ADD COLUMN IF NOT EXISTS confidence TEXT NOT NULL DEFAULT 'ok'"
+            )
+        except Exception as e:
+            logger.warning("price_snapshots confidence column skipped: %s", e)
+    else:
+        try:
+            db.execute("ALTER TABLE price_snapshots ADD COLUMN confidence TEXT NOT NULL DEFAULT 'ok'")
+        except Exception:
+            pass
+
+    for idx_sql in [
+        "CREATE INDEX IF NOT EXISTS idx_ps_store_line_queried ON price_snapshots(store, line, queried_at DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_ps_line_currency ON price_snapshots(line, currency)",
+        "CREATE INDEX IF NOT EXISTS idx_ps_confidence ON price_snapshots(confidence) WHERE confidence != 'ok'",
+    ]:
+        try:
+            db.execute(idx_sql)
+        except Exception as e:
+            logger.warning("price_snapshots v7 index skipped: %s", e)
+
+
+def price_snapshots_has_confidence(db: _DB) -> bool:
+    """True when confidence column exists (post Fase 7 migration)."""
+    try:
+        if market_core.USE_PG:
+            row = db.execute(
+                """
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'price_snapshots' AND column_name = 'confidence'
+                LIMIT 1
+                """
+            ).fetchone()
+            return bool(row)
+        row = db.execute("PRAGMA table_info(price_snapshots)").fetchall()
+        return any(r["name"] == "confidence" for r in row)
+    except Exception:
+        return False
+
+
 def init_db_pg(db: _DB) -> None:
     """PostgreSQL schema."""
     db.execute("""
@@ -178,6 +222,7 @@ def init_db_pg(db: _DB) -> None:
             stock INTEGER,
             url TEXT,
             queried_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            confidence TEXT NOT NULL DEFAULT 'ok',
             UNIQUE(product_id, store)
         )
     """)
@@ -190,6 +235,7 @@ def init_db_pg(db: _DB) -> None:
         db.execute(idx_sql)
 
     _migrate_price_snapshots_pg(db)
+    _migrate_price_snapshots_v7(db)
 
     db.execute("""
         CREATE TABLE IF NOT EXISTS search_queries (
@@ -374,6 +420,7 @@ _SQLITE_DDL = """\
             stock INTEGER,
             url TEXT,
             queried_at TEXT NOT NULL DEFAULT (datetime('now')),
+            confidence TEXT NOT NULL DEFAULT 'ok',
             UNIQUE(product_id, store)
         );
         CREATE INDEX IF NOT EXISTS idx_ps_product ON price_snapshots(product_id, store);

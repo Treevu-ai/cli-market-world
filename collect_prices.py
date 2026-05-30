@@ -417,12 +417,19 @@ if USE_PG:
         ensure_db_initialized()
 
     async def pg_insert(conn, prod):
+        from price_confidence import compute_snapshot_confidence
+
         discount = prod.get("discount")
         if discount is not None:
             discount = int(round(float(discount)))
+        list_price = prod.get("list_price")
+        confidence = compute_snapshot_confidence(
+            float(prod["price"]),
+            float(list_price) if list_price else None,
+        )
         await conn.execute("""
-            INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+            INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,confidence)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
             ON CONFLICT (product_id,store) DO UPDATE SET
                 name=EXCLUDED.name,
                 brand=EXCLUDED.brand,
@@ -430,9 +437,10 @@ if USE_PG:
                 list_price=EXCLUDED.list_price,
                 discount=EXCLUDED.discount,
                 stock=EXCLUDED.stock,
+                confidence=EXCLUDED.confidence,
                 queried_at=NOW()
         """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],discount,
-           prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"])
+           prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"], confidence)
 
     async def pg_health(conn, store, ok):
         if ok:
@@ -469,32 +477,9 @@ else:
         return get_sqlite()
 
     def sq_insert(db, prod):
-        db.execute(
-            "INSERT INTO price_snapshots "
-            "(product_id,name,brand,price,list_price,discount,store,store_name,"
-            " currency,line,line_name,category,stock,url) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
-            "ON CONFLICT(product_id,store) DO UPDATE SET "
-            "name=excluded.name, brand=excluded.brand, price=excluded.price, "
-            "list_price=excluded.list_price, discount=excluded.discount, "
-            "stock=excluded.stock, queried_at=datetime('now')",
-            (
-                prod.get("product_id", prod.get("id", "")),
-                prod.get("name", ""),
-                prod.get("brand", ""),
-                prod.get("price", 0),
-                prod.get("list_price", 0),
-                prod.get("discount"),
-                prod.get("store", ""),
-                prod.get("store_name", ""),
-                prod.get("currency", ""),
-                prod.get("line", ""),
-                prod.get("line_name", ""),
-                prod.get("category", ""),
-                prod.get("stock", 0),
-                prod.get("url", ""),
-            ),
-        )
+        from market_core import save_price_snapshot
+
+        save_price_snapshot(prod, db=db)
 
     def sq_health(db, store, ok):
         if ok:
@@ -582,9 +567,16 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             if prod["price"] > max_allowed_price(store, line):
                 continue
             try:
+                from price_confidence import compute_snapshot_confidence
+
+                list_price = prod.get("list_price")
+                confidence = compute_snapshot_confidence(
+                    float(prod["price"]),
+                    float(list_price) if list_price else None,
+                )
                 await conn.execute("""
-                    INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                    INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,confidence)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
                     ON CONFLICT (product_id,store) DO UPDATE SET
                         name=EXCLUDED.name,
                         brand=EXCLUDED.brand,
@@ -592,11 +584,12 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
                         list_price=EXCLUDED.list_price,
                         discount=EXCLUDED.discount,
                         stock=EXCLUDED.stock,
+                        confidence=EXCLUDED.confidence,
                         queried_at=NOW()
                 """, prod["product_id"], prod["name"], prod["brand"], prod["price"],
                    prod.get("list_price", 0), prod.get("discount"), prod["store"],
                    prod["store_name"], prod["currency"], prod["line"], prod["line_name"],
-                   prod.get("category", ""), prod.get("stock", 0), prod.get("url", ""))
+                   prod.get("category", ""), prod.get("stock", 0), prod.get("url", ""), confidence)
                 collected += 1
             except Exception:
                 pass
