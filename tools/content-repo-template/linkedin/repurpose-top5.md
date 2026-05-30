@@ -32,7 +32,7 @@ Highest expected reach + technical depth + reusable demos.
 
 **Opening paragraph (adapt from LI):**
 
-> An AI agent just compared prices across 30 verified retailers in 0.8 seconds. No browser. No scraping. One JSON call.
+> An AI agent just compared prices across 30 verified retailers (60 in catalog) in 0.8 seconds. No browser. No scraping. One JSON call.
 
 **Embed:** Terminal GIF + `market search "leche" --country PE --json`
 

@@ -47,13 +47,16 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 
 > Antes de publicar LinkedIn, outbound, Reddit o DEV, alinear copy con esta fila. Actualizar aquí primero.
 
-| Concepto | Mensaje acordado (paquete / README local) | Landing pública (verificar) |
+| Concepto | Mensaje acordado (canónico: `landing/lib/marketStats.ts`) | Landing pública (verificar) |
 |----------|-------------------------------------------|-----------------------------|
-| Retailers | 36 verificados | ✅ 36 (2026-05-28) |
+| Retailers | 60 en catálogo (30 verificados activos) | ✅ 60 / 30 |
+| Plataformas | 3 (VTEX · Shopify · Magento) | ✅ 3 |
 | Países | 8 | ✅ 8 |
 | MCP tools | 36 | ✅ 36 + `/tools` |
-| Precios indexados | 43K+, refresh 8h | ✅ |
+| Precios indexados | 43,000+, refresh 8h | ✅ |
 | Pitch | Commerce infrastructure for AI agents · `pip install cli-market` | ✅ |
+
+> Fuente única: `python3 ops/sync_market_stats.py` regenera `landing/lib/marketStats.ts`. Alinear copy a esos valores.
 
 Si un post contradice esta tabla → **no publicar** hasta actualizar tabla o producto.
 
@@ -73,7 +76,7 @@ Si un post contradice esta tabla → **no publicar** hasta actualizar tabla o pr
 - [x] Self-serve en [cli-market.dev/retailers](https://cli-market.dev/retailers) — form + `POST /v1/retailers/apply`
 - [ ] Collector ≥ 80% store success — **51.6%** (31 activos, 16 healthy) — ver [[alpha-gates-2026-06-01]]
 - [x] SEO críticos: [[seo-audit#Critical Fixes (This Week)]] — ✅ 2026-05-28
-- [x] Mensaje 30/8/36 alineado en landing, llms.txt, Telegram bot, server.json
+- [x] Mensaje 60/30/8/3/36/43K alineado en landing, llms.txt, Telegram bot, server.json
 - [x] PyPI: `market hello` + README quick start ([[growth-channels#Channel 1: PyPI as Growth Engine]])
 - [x] MCP: `/tools` configs + descriptions mejoradas ([[dx-audit]])
 - [x] LinkedIn D1–30 en `ready` ([[linkedin/00-Index]]) — sem 2 requiere [[linkedin/data-gate]]
