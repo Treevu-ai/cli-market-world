@@ -60,9 +60,9 @@ Default del repo tras este reset: **opción A** con `LINKEDIN_CAMPAIGN_START=202
 
 | Herramienta | Cuándo |
 |-------------|--------|
-| `ops/sync_linkedin_metrics.py` | Tras saltos de moat, tiendas o coverage |
+| `ops/sync_linkedin_metrics.py` | Tras saltos de moat, tiendas o coverage — **data-gate + price-pulse + Day-*** |
 | `ops/generate_linkedin_days.py` | Regenerar borradores días 8–30 desde calendario |
-| `ops/monday.py` | `docs/metrics/price-pulse-YYYY-WW.md` semanal |
+| `ops/monday.py` | Reporte ops semanal + price-pulse (alternativa; preferir `campaign sync`) |
 | `docs/linkedin/STYLE-es.md` | Tono castellano estándar (no voseo) |
 
 ## Variables de entorno
