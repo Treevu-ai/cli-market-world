@@ -288,9 +288,11 @@ from market_db import (  # noqa: E402, F401
     _DB,
     _PgCursor,
     _migrate_price_snapshots_pg,
+    _migrate_price_snapshots_v7,
     _SQLITE_DDL,
     get_db,
     init_db_pg,
+    price_snapshots_has_confidence,
 )
 
 
@@ -359,6 +361,7 @@ def init_db() -> None:
         db.executescript(_SQLITE_DDL)
         _migrate_payment_schema(db)
         _migrate_store_credentials(db)
+        _migrate_price_snapshots_v7(db)
     db.commit()
     db.close()
 
@@ -561,12 +564,18 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
     that's the caller's responsibility.
     """
     owns_db = db is None
+    price = float(p.get("price", 0) or 0)
+    list_price_raw = p.get("list_price", 0)
+    list_price = float(list_price_raw) if list_price_raw else None
+    from price_confidence import compute_snapshot_confidence
+
+    confidence = p.get("confidence") or compute_snapshot_confidence(price, list_price)
     params = (
         p.get("id", p.get("product_id", "")),
         p.get("name", ""),
         p.get("brand", ""),
-        p.get("price", 0),
-        p.get("list_price", 0),
+        price,
+        list_price_raw or 0,
         p.get("discount"),
         p.get("store", ""),
         p.get("store_name", ""),
@@ -576,6 +585,7 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
         p.get("category", ""),
         p.get("stock", 0),
         p.get("url", ""),
+        confidence,
     )
     try:
         if owns_db:
@@ -584,26 +594,28 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
             db.execute("""
                 INSERT INTO price_snapshots
                     (product_id, name, brand, price, list_price, discount,
-                     store, store_name, currency, line, line_name, category, stock, url)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                     store, store_name, currency, line, line_name, category, stock, url, confidence)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(product_id, store) DO UPDATE SET
                     price=EXCLUDED.price,
                     list_price=EXCLUDED.list_price,
                     discount=EXCLUDED.discount,
                     stock=EXCLUDED.stock,
+                    confidence=EXCLUDED.confidence,
                     queried_at=NOW()
             """, params)
         else:
             db.execute("""
                 INSERT INTO price_snapshots
                     (product_id, name, brand, price, list_price, discount,
-                     store, store_name, currency, line, line_name, category, stock, url)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                     store, store_name, currency, line, line_name, category, stock, url, confidence)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(product_id, store) DO UPDATE SET
                     price=excluded.price,
                     list_price=excluded.list_price,
                     discount=excluded.discount,
                     stock=excluded.stock,
+                    confidence=excluded.confidence,
                     queried_at=datetime('now')
             """, params)
         if owns_db:

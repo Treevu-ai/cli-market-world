@@ -25,14 +25,24 @@ def isolated_db(monkeypatch, tmp_path):
     return market_core
 
 
-def _seed_snapshot(db, *, store="wong", name="Arroz 1kg", price=10.0, list_price=100.0, product_id="p1"):
+def _seed_snapshot(
+    db,
+    *,
+    store="wong",
+    name="Arroz 1kg",
+    price=10.0,
+    list_price=100.0,
+    product_id="p1",
+    confidence="ok",
+):
     db.execute(
         """
         INSERT INTO price_snapshots
-        (product_id, store, store_name, name, price, list_price, currency, line, line_name, queried_at)
-        VALUES (?, ?, 'Wong', ?, ?, ?, 'PEN', 'supermercados', 'Supermercados', datetime('now'))
+        (product_id, store, store_name, name, price, list_price, currency, line, line_name,
+         queried_at, confidence)
+        VALUES (?, ?, 'Wong', ?, ?, ?, 'PEN', 'supermercados', 'Supermercados', datetime('now'), ?)
         """,
-        (product_id, store, name, price, list_price),
+        (product_id, store, name, price, list_price, confidence),
     )
 
 
@@ -56,8 +66,8 @@ def test_prices_clean_excludes_scrape_error(isolated_db):
     market_core = isolated_db
     market_core.ensure_db_initialized()
     db = market_core.get_db()
-    _seed_snapshot(db, name="Bad discount", price=1.0, list_price=100.0, product_id="p-bad")
-    _seed_snapshot(db, name="Good item", price=12.0, list_price=15.0, product_id="p-good")
+    _seed_snapshot(db, name="Bad discount", price=1.0, list_price=100.0, product_id="p-bad", confidence="suspect")
+    _seed_snapshot(db, name="Good item", price=12.0, list_price=15.0, product_id="p-good", confidence="ok")
     db.commit()
 
     from data_v1_service import query_prices
@@ -66,6 +76,30 @@ def test_prices_clean_excludes_scrape_error(isolated_db):
     names = [i["name"] for i in payload["items"]]
     assert "Good item" in names
     assert "Bad discount" not in names
+    assert payload["items"][0]["confidence"] == "ok"
+    db.close()
+
+
+def test_prices_clean_sql_pagination_with_confidence(isolated_db):
+    market_core = isolated_db
+    market_core.ensure_db_initialized()
+    db = market_core.get_db()
+    for i in range(5):
+        _seed_snapshot(
+            db,
+            name=f"Ok item {i}",
+            price=10.0 + i,
+            list_price=12.0,
+            product_id=f"p-ok-{i}",
+            confidence="ok",
+        )
+    db.commit()
+
+    from data_v1_service import query_prices
+
+    page = query_prices(db, clean=True, limit=2, offset=1)
+    assert page["total"] == 5
+    assert len(page["items"]) == 2
     db.close()
 
 
@@ -77,8 +111,8 @@ def test_basket_snapshot_source(isolated_db):
         db.execute(
             """
             INSERT INTO price_snapshots
-            (product_id, store, store_name, name, price, currency, line, line_name, queried_at)
-            VALUES (?, 'wong', 'Wong', ?, 5, 'PEN', 'supermercados', 'Supermercados', datetime('now'))
+            (product_id, store, store_name, name, price, currency, line, line_name, queried_at, confidence)
+            VALUES (?, 'wong', 'Wong', ?, 5, 'PEN', 'supermercados', 'Supermercados', datetime('now'), 'ok')
             """,
             (prod, f"{prod} 1kg"),
         )

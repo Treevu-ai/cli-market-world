@@ -61,6 +61,7 @@ Cada entrypoint debe llamar `ensure_db_initialized()` antes de operaciones DB:
 | `_migrate_payment_schema` | `subscription_requests`, `billing_pending`, `app_orders.gateway_ref`, `subscriptions.paypal_subscription_id` |
 | `_migrate_store_credentials` | `store_credentials`, columnas review en `retailer_applications` |
 | `_migrate_price_snapshots_pg` | Índice UNIQUE upsert en PG para `price_snapshots` |
+| `_migrate_price_snapshots_v7` | Columna `confidence`, índices `/v1/prices` (Fase 7) |
 
 Todas usan `CREATE IF NOT EXISTS` / `ALTER ADD COLUMN IF NOT EXISTS` (PG) o try/except (SQLite legacy).
 
