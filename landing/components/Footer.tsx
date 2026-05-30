@@ -31,10 +31,7 @@ export default function Footer() {
 
         <div className="flex flex-col gap-3">
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">Developers</span>
-          <a
-            href="https://cli-market-production.up.railway.app/docs"
-            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
-          >
+          <a href="/docs" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             Quickstart API
           </a>
           <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
