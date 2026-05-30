@@ -22,10 +22,13 @@ export default function PayPalHostedButton({ className = "" }: Props) {
   const rendered = useRef(false);
 
   useEffect(() => {
+    rendered.current = false;
     const selector = `#${containerId}`;
+    const host = document.getElementById(containerId);
+    if (host) host.innerHTML = "";
 
     const renderButton = () => {
-      if (rendered.current || !window.paypal) return;
+      if (rendered.current || !window.paypal || !document.getElementById(containerId)) return;
       rendered.current = true;
       window.paypal
         .HostedButtons({ hostedButtonId: PAYPAL_HOSTED_BUTTON_ID })
@@ -52,9 +55,11 @@ export default function PayPalHostedButton({ className = "" }: Props) {
   }, [containerId]);
 
   return (
-    <div
-      id={containerId}
-      className={`paypal-hosted-button min-h-[48px] flex items-center justify-center ${className}`}
-    />
+    <div className={`paypal-hosted-button-wrap w-full min-w-0 ${className}`}>
+      <div
+        id={containerId}
+        className="paypal-hosted-button w-full min-w-[280px] min-h-[48px]"
+      />
+    </div>
   );
 }

@@ -75,7 +75,7 @@ export default function RetailersSection() {
         </div>
 
         <div className="text-center">
-          <a href="#contact" className="inline-block border-2 border-[var(--wise-green)] text-[var(--wise-green)] font-semibold text-sm px-8 py-3 rounded-full hover:bg-[var(--wise-green)] hover:text-[var(--wise-ink)] transition-colors">
+          <a href="#contact-retailers" className="inline-block border-2 border-[var(--wise-green)] text-[var(--wise-green)] font-semibold text-sm px-8 py-3 rounded-full hover:bg-[var(--wise-green)] hover:text-[var(--wise-ink)] transition-colors">
             {isES ? "Listar mi tienda — gratis →" : "List my store — free →"}
           </a>
           <p className="text-[10px] text-[var(--wise-mute)] mt-3 font-mono">
