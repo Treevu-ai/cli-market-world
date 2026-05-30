@@ -41,7 +41,7 @@ Extraído de `market_core.py`:
 | Item | Notas |
 |------|-------|
 | PayPal «Agotado» | Fix en panel PayPal Business (inventario ilimitado); landing ya tiene CTA link verde |
-| `market_db.py` split | Extraer `_DB`, `init_db_pg`, `_SQLITE_DDL` — mayor riesgo |
+| ~~`market_db.py` split~~ | ✅ Fase 2 — ver `docs/ops/phase2-db-split.md` |
 | Sync content repo privado | `CLI_MARKET_CONTENT_DIR=../cli-market-content` + `campaign sync` tras merge template |
 | Checkout autónomo | Roadmap Build — no prometer en copy comercial |
 
