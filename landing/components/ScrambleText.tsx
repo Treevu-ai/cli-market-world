@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 
 interface Props {
   text: string
@@ -41,6 +41,12 @@ export default function ScrambleText({ text, as: Tag = "span", className = "", d
       )
     }, 50)
   }
+
+  useEffect(() => {
+    if (timer.current) clearInterval(timer.current)
+    animating.current = false
+    setDisplay(text)
+  }, [text])
 
   return (
     <Tag className={className} onMouseEnter={scramble}>
