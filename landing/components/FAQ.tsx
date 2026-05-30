@@ -67,20 +67,21 @@ function faqsFor(lang: "es" | "en") {
 export default function FAQ() {
   const { lang } = useLang();
   const faqs = faqsFor(lang);
+  const isES = lang === "es";
 
   return (
-    <section id="faq" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container text-center">
-        <p className="text-xs text-[var(--wise-body)] font-mono uppercase tracking-[0.15em] mb-8">FAQ</p>
-        <h2 className="text-[24px] font-medium text-[var(--wise-ink)] mb-12 tracking-tight">
-          {lang === "es" ? "Preguntas frecuentes." : "Frequently asked questions."}
+    <section id="faq" className="landing-section">
+      <div className="landing-container-wide text-center max-w-3xl mx-auto">
+        <p className="section-eyebrow mb-4">FAQ</p>
+        <h2 className="section-title mb-12">
+          {isES ? "Preguntas frecuentes." : "Frequently asked questions."}
         </h2>
 
-        <div className="text-left divide-y divide-[#e5e5e5]">
+        <div className="text-left divide-y divide-[var(--cm-outline-variant)]/30">
           {faqs.map((faq, i) => (
             <div key={i} className="py-4">
-              <h3 className="text-sm font-medium text-[var(--wise-ink)] mb-1">{faq.q}</h3>
-              <p className="text-sm text-[var(--wise-body)] leading-relaxed">{faq.a}</p>
+              <h3 className="text-sm font-medium text-white mb-1">{faq.q}</h3>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{faq.a}</p>
             </div>
           ))}
         </div>

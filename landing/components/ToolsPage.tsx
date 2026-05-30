@@ -57,22 +57,20 @@ export default function ToolsPage() {
 
   return (
     <>
-      <section className="py-24 px-6 text-center border-b border-[#c5edab]">
+      <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
         <div className="max-w-[720px] mx-auto">
-          <p className="text-xs font-mono uppercase tracking-[0.15em] text-[var(--wise-body)] mb-4">
-            MCP · AI shopping API
-          </p>
-          <h1 className="text-[clamp(28px,5vw,48px)] font-black text-[var(--wise-ink)] mb-4 tracking-tight">
+          <p className="section-eyebrow mb-4">MCP · AI shopping API</p>
+          <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-white mb-4 tracking-tight">
             36 MCP tools for e-commerce agents
           </h1>
-          <p className="text-base text-[var(--wise-body)] max-w-[540px] mx-auto leading-relaxed">
+          <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
             Commerce API for AI agents — search, compare, basket, and checkout across 30 retailers.
-            Copy a config, run <code className="font-mono text-sm">pip install cli-market</code>, connect your IDE.
+            Copy a config, run <code className="font-mono text-sm text-[var(--cm-mint)]">pip install cli-market</code>, connect your IDE.
           </p>
         </div>
       </section>
 
-      <section className="py-16 px-6 border-b border-[#c5edab]">
+      <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
         <div className="max-w-[720px] mx-auto">
           <div className="flex flex-wrap gap-2 mb-4 justify-center">
             {(Object.keys(MCP_CONFIG) as (keyof typeof MCP_CONFIG)[]).map((k) => (
@@ -80,57 +78,43 @@ export default function ToolsPage() {
                 key={k}
                 type="button"
                 onClick={() => setTab(k)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize ${
+                className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
                   tab === k
-                    ? "bg-[var(--wise-green)] text-[var(--wise-ink)]"
-                    : "bg-white border border-[#c5edab] text-[var(--wise-body)]"
+                    ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-white"
                 }`}
               >
                 {k}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={copy}
-              className="rounded-full px-4 py-1.5 text-sm font-medium bg-[var(--wise-ink)] text-white"
-            >
+            <button type="button" onClick={copy} className="font-label-caps px-4 py-1.5 bg-[var(--cm-surface-high)] text-white border border-[var(--cm-outline-variant)] hover:border-[var(--cm-mint)]/50">
               {copied ? "Copied" : "Copy config"}
             </button>
           </div>
-          <pre className="text-left bg-[var(--wise-ink)] text-[#9fe870] rounded-2xl p-5 text-[11px] leading-relaxed overflow-x-auto font-mono">
+          <pre className="text-left code-block-cyber text-[var(--cm-mint)] p-5 overflow-x-auto">
             {MCP_CONFIG[tab]}
           </pre>
-          <p className="text-xs text-[var(--wise-mute)] mt-4 text-center">
-            Requires <code className="font-mono">pip install cli-market</code> · Manifest:{" "}
-            <a href="/server.json" className="underline">
-              server.json
-            </a>{" "}
-            · Docs:{" "}
-            <a href="/llms.txt" className="underline">
-              llms.txt
-            </a>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4 text-center">
+            Requires <code className="font-mono text-[var(--cm-mint)]">pip install cli-market</code> · Manifest:{" "}
+            <a href="/server.json" className="text-[var(--cm-mint)] underline">server.json</a>
+            {" "}· Docs:{" "}
+            <a href="/llms.txt" className="text-[var(--cm-mint)] underline">llms.txt</a>
           </p>
         </div>
       </section>
 
-      <section className="py-16 px-6">
+      <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
-          <h2 className="text-xl font-medium text-[var(--wise-ink)] mb-6">Popular MCP tools</h2>
+          <h2 className="section-title mb-6">Popular MCP tools</h2>
           <div className="flex flex-wrap justify-center gap-2">
             {TOOLS.map((t) => (
-              <span
-                key={t}
-                className="font-mono text-[11px] bg-white border border-[#c5edab] rounded-full px-3 py-1 text-[var(--wise-body)]"
-              >
+              <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-on-surface-variant)]">
                 {t}
               </span>
             ))}
           </div>
-          <p className="text-xs text-[var(--wise-mute)] mt-6">+ 24 more tools in the full registry</p>
-          <a
-            href="https://github.com/Treevu-ai/cli-market-world"
-            className="inline-block mt-8 text-sm font-semibold text-[var(--wise-green-hover)] underline"
-          >
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">+ 24 more tools in the full registry</p>
+          <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
             Full tool list on GitHub →
           </a>
         </div>
