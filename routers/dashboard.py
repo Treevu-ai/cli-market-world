@@ -18,11 +18,9 @@ from market_units import is_standard_canasta_pack
 from dashboard_glossary import (
     LAYER_METRICS,
     build_metric_glossary,
-    metric_description,
-    metric_label,
-    section_summary,
-    section_title,
 )
+from dashboard_quality import build_quality_funnel, count_flagged_discounts
+from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
 from server_deps import require_user
 
@@ -361,7 +359,7 @@ def _dashboard_data():
         if finished:
             collector_age_h = _age_hours(finished)
             if collector_age_h is not None:
-                collector_status = ("healthy" if collector_age_h < 12
+                collector_status = ("ok" if collector_age_h < 12
                                     else ("stale" if collector_age_h < 24 else "dead"))
         else:
             collector_status = "running"
@@ -524,7 +522,17 @@ def _dashboard_data():
     canasta_basica = sorted([v for v in canasta.values() if v["items"] >= 3],
                             key=lambda x: x["total"])[:10]
 
+    flagged_discounts = count_flagged_discounts(db)
+    flagged_outliers = len(outliers)
+
     db.close()
+
+    quality_funnel = build_quality_funnel(
+        captured=total_indexed,
+        flagged_discounts=flagged_discounts,
+        flagged_outliers=flagged_outliers,
+        citable=len(marketing_spreads),
+    )
 
     moat_guide = _build_moat_guide(
         total_indexed=total_indexed,
@@ -628,327 +636,27 @@ def _dashboard_data():
         # ── Analytics ────────────────────────────────────────────────────────
         "inflation": inflation,
         "canasta_basica": canasta_basica,
+        "quality_funnel": quality_funnel,
+        "by_line_currency": [dict(r) for r in by_line_currency],
     }
     result["dashboard_view"] = build_dashboard_view_model(result)
     return result
 
 
-def _render_public_view_html(view: dict) -> str:
-    """HTML for content-spec blocks 1–5 (public-facing copy from dashboard_view)."""
-    blocks = view.get("blocks") or {}
-    hero = blocks.get("hero") or {}
-    moat = blocks.get("moat_narrative") or {}
-    canasta = blocks.get("canasta") or {}
-    spreads = blocks.get("price_spreads") or {}
-    inflation = blocks.get("inflation") or {}
-
-    badges = "".join(
-        f"""<div class="badge" title="{b.get('tooltip', '')}">
-<span class="badge-main">{b.get('label', '')}</span>
-<span class="badge-sub">{b.get('sublabel', '')}</span>
-</div>"""
-        for b in hero.get("trust_badges") or []
-    )
-
-    pillars = "".join(
-        f"""<div class="pillar">
-<b>{p.get('title', '')}</b><br>
-<span class="pillar-head">{p.get('headline', '')}</span>
-<p class="metric-desc">{p.get('microcopy', '')}</p>
-</div>"""
-        for p in moat.get("pillars") or []
-    )
-
-    canasta_rows = ""
-    for s in canasta.get("stores") or []:
-        warn = f"<br><span class='warn'>{s['warning']}</span>" if s.get("warning") else ""
-        total_cell = s.get("total_label", "—") if s.get("comparable") else "—"
-        canasta_rows += (
-            f"<tr><td>{s.get('store_name', '')}</td>"
-            f"<td>{s.get('completeness_label', '')}{warn}</td>"
-            f"<td style='color:#3cffd0'>{total_cell}</td></tr>"
-        )
-
-    cheap_rows = "".join(
-        f"<tr><td>{i.get('copy', '')}</td><td class='metric-desc'>{i.get('microcopy', '')}</td></tr>"
-        for i in (canasta.get("cheapest_by_line") or {}).get("items") or []
-    )
-
-    spread_rows = "".join(
-        f"<tr><td>{i.get('copy', '')}</td><td>{i.get('stores_label', '')}</td></tr>"
-        for i in spreads.get("items") or []
-    )
-    spread_empty = (
-        "<p class='metric-desc'>Aún no hay diferencias verificadas que superen el umbral mínimo.</p>"
-        if not spread_rows
-        else f"<table><tr><th>Diferencia</th><th>Cobertura</th></tr>{spread_rows}</table>"
-    )
-
-    if inflation.get("measuring"):
-        infl_block = f"<div class='help-box'>{inflation.get('measuring_copy', '')}</div>"
-    else:
-        infl_rows = "".join(
-            f"<tr><td>{r.get('copy', '')}</td></tr>" for r in inflation.get("rows") or []
-        )
-        infl_block = f"<table>{infl_rows}</table>" if infl_rows else "<p class='metric-desc'>Sin variación esta semana.</p>"
-
-    return f"""
-<div class="hero-panel">
-<h1 class="hero-title">{hero.get('title', 'CLI Market')}</h1>
-<p class="hero-sub">{hero.get('subtitle', '')}</p>
-<div class="badges">{badges}</div>
-</div>
-
-<div class="section">[ {moat.get('title', '').upper()} ]</div>
-<p class="section-intro">{moat.get('intro', '')}</p>
-<div class="pillars">{pillars}</div>
-<p class="metric-desc">{((moat.get('growth_chart') or {}).get('label', ''))}</p>
-
-<div class="section">[ {canasta.get('title', '').upper()} ]</div>
-<p class="section-intro">{canasta.get('subtitle', '')}</p>
-<p class="layer-note">{canasta.get('quality_note', '')}</p>
-<table><tr><th>Tienda</th><th>Completitud</th><th>Total canasta</th></tr>{canasta_rows or '<tr><td colspan=3>sin datos</td></tr>'}</table>
-<div class="section" style="margin-top:12px">[ {(canasta.get('cheapest_by_line') or {}).get('title', '').upper()} ]</div>
-<table><tr><th>Comparación</th><th>Nota</th></tr>{cheap_rows or '<tr><td colspan=2>sin datos</td></tr>'}</table>
-
-<div class="section">[ {spreads.get('title', '').upper()} ]</div>
-<p class="section-intro">{spreads.get('subtitle', '')}</p>
-<p class="layer-note">{spreads.get('quality_note', '')}</p>
-{spread_empty}
-
-<div class="section">[ {inflation.get('title', '').upper()} ]</div>
-<p class="section-intro">{inflation.get('term_tooltip', '')}</p>
-{infl_block}
-
-"""
-
-
 def _static_dashboard() -> str:
-    """Server-rendered fallback dashboard — no JavaScript required."""
+    """Server-rendered dashboard — single renderer from dashboard_view + metric_glossary."""
     try:
         data = _dashboard_data()
     except Exception as e:
         import traceback
         return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"
     if "error" in data:
-        return f"<html><body style='background:#0a0a0a;color:#ff4444;font:12px monospace;padding:20px'><pre>{data['error']}\n{data.get('trace','')}</pre></body></html>"
-
-    def sec(section_id: str, title: str | None = None) -> str:
-        t = title or section_title(section_id, section_id)
-        summary = section_summary(section_id)
-        intro = f'<p class="section-intro">{summary}</p>' if summary else ""
-        return f'<div class="section">[ {t.upper()} ]</div>{intro}'
-
-    def metric_cell(layer_id: str, key: str) -> str:
-        label = metric_label(layer_id, key, key)
-        desc = metric_description(layer_id, key)
-        if desc:
-            return f'<span class="metric-label">{label}</span><br><span class="metric-desc">{desc}</span>'
-        return f'<span class="metric-label">{label}</span>'
-
-    glossary = data.get("metric_glossary", {})
-    status_legend = glossary.get("status_legend", {})
-    legend_html = "".join(
-        f"<li><b>{k}</b> — {v}</li>" for k, v in status_legend.items()
-    )
-    
-    g = data.get("moat_guide", {})
-
-    guide_html = ""
-    for layer in g.get("layers", []):
-        layer_id = layer.get("id", "")
-        metrics = layer.get("metrics") or {}
-        mrows = "".join(
-            f"<tr><td>{metric_cell(layer_id, mk)}</td><td style='color:#3cffd0'>{mv}</td></tr>"
-            for mk, mv in metrics.items()
+        return (
+            f"<html><body style='background:#0a0a0a;color:#ff4444;"
+            f"font:12px monospace;padding:20px'><pre>{data['error']}\n"
+            f"{data.get('trace', '')}</pre></body></html>"
         )
-        surfaces = layer.get("surfaces") or []
-        srows = "".join(
-            f"<tr><td><code>{s['cmd']}</code></td><td>{s['use']}</td></tr>" for s in surfaces
-        )
-        guide_html += f"""<div class="section">{layer.get('title', layer.get('id', ''))}</div>
-<p class="layer-q">{layer.get('question', '')}</p>
-{f"<table><tr><th>Métrica</th><th>Valor</th></tr>{mrows}</table>" if mrows else ""}
-{f"<table><tr><th>Comando / API</th><th>Para qué sirve</th></tr>{srows}</table>" if srows else ""}
-<p class="layer-note">{layer.get('note', '')}</p>"""
-
-    lines_html = "".join(f"<tr><td>{r['line_name']}</td><td style='color:#3cffd0'>{r['count']:,}</td><td>{(r['avg_price'] or 0):.2f}</td><td>{(r['min_price'] or 0):.2f}</td><td>{(r['max_price'] or 0):.2f}</td></tr>" for r in data["by_line"])
-    disc_html = "".join(f"<tr><td>{r['name'][:40]}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>-{r.get('discount_pct',0) or 0}%</td></tr>" for r in data["top_discounts"])
-    cheap_html = "".join(f"<tr><td>{r['line_name']}</td><td>{r['store_name']}</td><td style='color:#3cffd0'>{(r['avg_price'] or 0):.2f}</td></tr>" for r in data["cheapest_by_line"])
-    out_html = "".join(f"<tr><td>{r['name'][:35]}</td><td>{r['store_name']}</td><td style='color:#ff4444'>{(r['price'] or 0):.2f}</td></tr>" for r in data["outliers"])
-    fresh_html = "".join(f"<tr><td>{r['store_name']}</td><td>{str(r['last_seen'])[:19]}</td></tr>" for r in data["freshness"][:10])
-
-    # ── New analytics HTML ──────────────────────────────────────────────────
-    infl_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{r.get('currency','')}</td>"
-        f"<td style='color:var(--green)'>{(r['avg_now'] or 0):.2f}</td>"
-        f"<td>{(r['avg_before'] or 0):.2f}</td>"
-        f"<td style='color:{'#ff4444' if r['delta_pct']>0 else '#3cffd0'}'>"
-        f"{'+' if r['delta_pct']>0 else ''}{r['delta_pct']}%</td></tr>"
-        for r in data["inflation"])
-
-    disp_html = "".join(
-        f"<tr><td>{r['line']}</td><td>{r.get('subcategory') or '—'}</td><td>{r.get('currency','')}</td>"
-        f"<td>{r.get('price_basis','nominal')}</td>"
-        f"<td>{(r['avg_price'] or 0):.2f}</td>"
-        f"<td style='color:{'#ff4444' if r.get('status')=='crit' else ('#ffbd2e' if r.get('status')=='warn' else '#3cffd0')}'>"
-        f"{(r['spread_ratio'] or 0):.1f}x"
-        f"{' CRIT' if r.get('status')=='crit' else ''}</td></tr>"
-        for r in data["dispersion"][:25])
-
-    canasta_spread_html = "".join(
-        f"<tr><td>{r['item']}</td><td>{r.get('currency','')}</td><td>{r.get('stores',0)}</td>"
-        f"<td>{(r['spread_ratio'] or 0):.1f}x</td><td>{r.get('sample_name','')[:40]}</td></tr>"
-        for r in data.get("canasta_spreads", [])[:15])
-
-    mkt_html = "".join(
-        f"<tr><td>{r['seed']}</td><td>{r.get('currency','')}</td><td>{r.get('price_basis','')}</td>"
-        f"<td>{(r['spread_ratio'] or 0):.1f}x</td><td>{r.get('stores',0)} tiendas</td>"
-        f"<td>{r.get('sample_name','')[:40]}</td></tr>"
-        for r in data.get("marketing_spreads", [])[:10])
-    
-    riser_html = "".join(
-        f"<tr><td>{r['product_id'][:25]}</td><td>{(r['price_before'] or 0):.2f}</td><td>{(r['price_now'] or 0):.2f}</td><td style='color:#ff4444'>+{r['delta_pct']}%</td></tr>"
-        for r in data["top_risers"][:5])
-    faller_html = "".join(
-        f"<tr><td>{r['product_id'][:25]}</td><td>{(r['price_before'] or 0):.2f}</td><td>{(r['price_now'] or 0):.2f}</td><td style='color:#3cffd0'>{r['delta_pct']}%</td></tr>"
-        for r in data["top_fallers"][:5])
-    
-    health_html = "".join(
-        f"<tr><td>{r['store']}</td><td style='color:{'#3cffd0' if r['success_pct']>=90 else ('#ffbd2e' if r['success_pct']>=50 else '#ff4444')}'>{r['success_pct']}%</td><td>{r['consecutive_failures']}</td></tr>"
-        for r in data["store_health"][:10])
-    
-    matrix_html = ""
-    gaps = []
-    if data["line_country_matrix"]:
-        lines = list(dict.fromkeys(r["line"] for r in data["line_country_matrix"]))
-        countries = sorted(set(r["country"] for r in data["line_country_matrix"]))
-        lookup = {f"{r['line']}|{r['country']}": r["stores"] for r in data["line_country_matrix"]}
-        matrix_html = "<table><tr><th></th>" + "".join(f"<th>{c}</th>" for c in countries) + "</tr>"
-        for l in lines:
-            matrix_html += f"<tr><td>{l}</td>"
-            for c in countries:
-                v = lookup.get(f"{l}|{c}", 0)
-                if v == 0:
-                    gaps.append(f"{l}x{c}")
-                matrix_html += f"<td style='color:{'#3cffd0' if v>0 else '#333'}'>{v or '·'}</td>"
-            matrix_html += "</tr>"
-        matrix_html += "</table>"
-    gaps_html = f"<p class='metric-desc'>Sin cobertura aún: {', '.join(gaps[:15])}</p>" if gaps else ""
-    
-    canasta_html = "".join(
-        f"<tr><td>{r['store_name']}</td><td>{r['items']}/10</td><td style='color:#3cffd0'>{r['currency']} {r['total']:.2f}</td></tr>"
-        for r in data["canasta_basica"])
-
-    am = data.get("analytics_meta", {})
-    meta_html = f"""<div class="help-box">
-<b>Resumen analítico:</b> {am.get('dispersion_crit_count', 0)} grupos con brecha crítica (&gt;10x) ·
-{am.get('marketing_crit_count', 0)} listos para copy (canasta ≥{am.get('marketing_canasta_min_spread', '?')}x) ·
-agrupación: {am.get('dispersion_grouping', '—')}
-</div>"""
-
-    view = data.get("dashboard_view") or {}
-    public_html = _render_public_view_html(view)
-    footer_stamp = view.get("footer_stamp") or f"Actualizado {data['generated_at'][:16]} UTC"
-    
-    html = f"""<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>CLI Market // Data Moat</title>
-<style>
-body{{background:#0a0a0a;color:#b0b0b0;font:12px 'JetBrains Mono',monospace;padding:12px 16px}}
-h1{{color:#3cffd0;font-size:14px;margin:0 0 4px}}
-.hero-panel{{background:#111;border:1px solid #1a1a1a;border-radius:6px;padding:14px 16px;margin:0 0 20px;max-width:800px}}
-.hero-title{{color:#3cffd0;font-size:16px;margin:0 0 8px;line-height:1.35}}
-.hero-sub{{color:#888;font-size:12px;line-height:1.55;margin:0 0 12px;max-width:720px}}
-.badges{{display:flex;flex-wrap:wrap;gap:10px}}
-.badge{{background:#0a0a0a;border:1px solid #222;border-radius:4px;padding:8px 10px;min-width:140px}}
-.badge-main{{display:block;color:#ccc;font-size:11px}}
-.badge-sub{{display:block;color:#555;font-size:9px;margin-top:4px;text-transform:uppercase}}
-.pillars{{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;max-width:800px}}
-.pillar{{flex:1;min-width:180px;background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:10px 12px}}
-.pillar-head{{color:#3cffd0;font-size:13px}}
-.warn{{color:#ffbd2e;font-size:10px}}
-.sub{{color:#444;font-size:10px;margin:0 0 16px}}
-table{{border-collapse:collapse;width:100%;max-width:800px;margin-bottom:16px}}
-th{{text-align:left;color:#444;font-size:10px;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #1a1a1a}}
-td{{padding:3px 8px;border-bottom:1px solid #111;font-size:11px;vertical-align:top}}
-td.num{{text-align:right}}
-.section{{color:#3cffd0;font-size:11px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:2px}}
-.section-intro{{color:#777;font-size:11px;line-height:1.55;margin:0 0 10px;max-width:720px}}
-.layer-q{{color:#888;font-size:11px;margin:0 0 8px}}
-.layer-note{{color:#555;font-size:10px;margin:0 0 12px;font-style:italic;max-width:720px;line-height:1.45}}
-.metric-label{{color:#ccc;font-size:11px}}
-.metric-desc{{color:#555;font-size:10px;line-height:1.4}}
-.help-box{{background:#111;border:1px solid #1a1a1a;border-radius:4px;padding:10px 12px;margin:0 0 14px;max-width:720px;font-size:10px;color:#666;line-height:1.5}}
-.coverage{{font:10px monospace;margin:8px 0;color:#555}}
-.footer{{color:#333;font-size:9px;margin-top:20px;border-top:1px solid #1a1a1a;padding-top:8px}}
-ul.glossary{{color:#666;font-size:10px;line-height:1.55;margin:0 0 16px 18px;max-width:720px}}
-</style></head><body>
-{public_html}
-
-<div class="section">[ GUÍA POR CAPAS ]</div>
-<p class="section-intro">Cinco capas para entender el moat sin jerga financiera. Cada fila explica qué significa el número.</p>
-{guide_html}
-
-<div class="section">[ LEYENDA DE ESTADOS ]</div>
-<ul class="glossary">{legend_html}</ul>
-
-{meta_html}
-
-{sec('store_health')}
-<table><tr><th>Tienda</th><th>{metric_label('store_health', 'success_pct', 'Éxito')}</th><th>{metric_label('store_health', 'consecutive_failures', 'Fallos')}</th><th>Estado</th></tr>{"".join(f"<tr><td>{h['store']}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{(h.get('success_pct',0) or 0):.0f}%</td><td>{h.get('consecutive_failures',0) or 0}</td><td style='color:{'#3cffd0' if (h.get('success_pct',0) or 0)>=90 else ('#ffbd2e' if (h.get('success_pct',0) or 0)>=30 else '#ff4444')}'>{'OK' if (h.get('success_pct',0) or 0)>=90 else ('WARN' if (h.get('success_pct',0) or 0)>=30 else 'DEAD')}</td></tr>" for h in data.get("store_health",[])[:15]) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
-
-{sec('by_line')}
-<table><tr><th>Categoría</th><th>{metric_label('by_line', 'count', 'Precios')}</th><th>{metric_label('by_line', 'avg_price', 'Promedio')}</th><th>{metric_label('by_line', 'min_price', 'Mín')}</th><th>{metric_label('by_line', 'max_price', 'Máx')}</th></tr>{lines_html}</table>
-
-{sec('cheapest_by_line')}
-<table><tr><th>Categoría</th><th>Tienda más barata</th><th>Precio promedio</th></tr>{cheap_html}</table>
-
-{sec('top_discounts')}
-<table><tr><th>Producto</th><th>Tienda</th><th>{metric_label('top_discounts', 'discount_pct', 'Descuento')}</th></tr>{disc_html}</table>
-
-{sec('outliers')}
-<table><tr><th>Producto</th><th>Tienda</th><th>Precio</th></tr>{out_html}</table>
-
-{sec('inflation')}
-<table><tr><th>Categoría</th><th>Moneda</th><th>{metric_label('inflation', 'avg_now', 'Hoy')}</th><th>{metric_label('inflation', 'avg_before', 'Hace 7d')}</th><th>{metric_label('inflation', 'delta_pct', 'Cambio')}</th></tr>{infl_html or '<tr><td colspan=5>Sin historial de 7 días aún — se activará cuando tengamos lecturas en fechas distintas.</td></tr>'}</table>
-
-{sec('dispersion')}
-<table><tr><th>Categoría</th><th>{metric_label('dispersion', 'subcategory', 'Subcat')}</th><th>Moneda</th><th>{metric_label('dispersion', 'price_basis', 'Base')}</th><th>Promedio</th><th>{metric_label('dispersion', 'spread_ratio', 'Brecha')}</th></tr>{disp_html or '<tr><td colspan=6>sin datos</td></tr>'}</table>
-
-{sec('canasta_spreads')}
-<table><tr><th>Ítem</th><th>Moneda</th><th>Tiendas</th><th>Brecha</th><th>Ejemplo</th></tr>{canasta_spread_html or '<tr><td colspan=5>sin datos</td></tr>'}</table>
-
-{sec('marketing_spreads')}
-<table><tr><th>Ítem</th><th>Moneda</th><th>Base</th><th>{metric_label('marketing_spreads', 'spread_ratio', 'Brecha')}</th><th>{metric_label('marketing_spreads', 'stores', 'Tiendas')}</th><th>Ejemplo</th></tr>{mkt_html or '<tr><td colspan=6>Ninguna brecha supera el umbral verificado todavía</td></tr>'}</table>
-
-{sec('canasta_basica', 'Canasta básica — completitud')}
-<table><tr><th>Tienda</th><th>{metric_label('canasta_basica', 'items', 'Encontrados')}</th><th>%</th><th>{metric_label('canasta_basica', 'total', 'Total')}</th></tr>{"".join(f"<tr><td>{c['store_name']}</td><td style='color:{'#3cffd0' if c['items']>=7 else ('#ffbd2e' if c['items']>=4 else '#ff4444')}'>{'█'*(c['items'])+'░'*(10-c['items'])}</td><td>{c['items']*10}%</td><td>{c['currency']} {c['total']:.2f}</td></tr>" for c in data.get("canasta_basica",[])) or '<tr><td colspan=4>sin datos</td></tr>'}</table>
-
-<div class="section">[ ALERTAS DE CALIDAD ]</div>
-<p class="section-intro">Descuentos de 90 % o más suelen ser errores al leer la web (precio tachado mal interpretado), no ofertas reales.</p>
-{"".join(f"<p style='color:#ff4444;font-size:10px'>⚠ {d['name'][:40]} ({d['store_name']}) -{abs(d.get('discount_pct',0) or 0)}%</p>" for d in data.get("suspect_discounts",[])) or '<p class="metric-desc">sin descuentos sospechosos</p>'}
-
-<div class="section">[ CONFIABILIDAD DEL RECOLECTOR ]</div>
-<p class="section-intro">Historial de éxito al leer cada tienda (distinto del estado operativo de arriba — aquí miramos más intentos).</p>
-<table><tr><th>Tienda</th><th>Éxito</th><th>Fallos seguidos</th></tr>{health_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
-
-{sec('line_country_matrix')}
-{matrix_html or '<p class="metric-desc">sin datos</p>'}
-{gaps_html}
-
-{sec('canasta_basica')}
-<table><tr><th>Tienda</th><th>Productos / 10</th><th>Total estimado</th></tr>{canasta_html or '<tr><td colspan=3>sin datos</td></tr>'}</table>
-
-{sec('price_movers')}
-<table><tr><th colspan=4 style="color:#ff4444">▲ SUBIERON</th></tr>{riser_html or '<tr><td colspan=4>Sin datos — se necesitan dos capturas en días distintos.</td></tr>'}</table>
-<table><tr><th colspan=4 style="color:#3cffd0">▼ BAJARON</th></tr>{faller_html or '<tr><td colspan=4></td></tr>'}</table>
-
-{sec('freshness_table', 'Frescura por tienda')}
-<table><tr><th>Tienda</th><th>Último precio guardado</th></tr>{fresh_html}</table>
-
-<p class="footer">{footer_stamp} · Glosario: <code>metric_glossary</code> · Vista pública: <code>dashboard_view</code> · CLI Market · cli-market.dev</p>
-</body></html>"""
-    return html
+    return render_dashboard_html(data)
 
 
 @router.get("/dashboard/usage")

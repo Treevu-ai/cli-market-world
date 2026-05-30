@@ -294,17 +294,45 @@ def test_dashboard_data_includes_moat_guide(isolated_db):
     assert inv["metric_help"]["total_indexed"]["description"]
 
 
-def test_dashboard_html_includes_metric_explanations(isolated_db):
+def test_dashboard_data_includes_quality_funnel(isolated_db):
+    from fastapi.testclient import TestClient
+    from market_server import app
+
+    with TestClient(app) as client:
+        r = client.get("/dashboard/data")
+    assert r.status_code == 200
+    body = r.json()
+    assert "quality_funnel" in body
+    funnel = body["quality_funnel"]
+    assert "captured" in funnel
+    assert "clean" in funnel
+    assert body["collector"]["status"] in ("ok", "stale", "dead", "running", "unknown")
+
+
+def test_dashboard_html_uses_single_renderer(isolated_db):
     from fastapi.testclient import TestClient
     from market_server import app
     with TestClient(app) as client:
         r = client.get("/dashboard")
     assert r.status_code == 200
     html = r.text
-    assert "section-intro" in html
-    assert "metric-desc" in html
-    assert "hero-panel" in html
-    assert "Precios guardados" in html or "precios reales" in html.lower()
+    assert "global-bar" in html
+    assert "COLLECTOR" in html
+    assert "solo dato limpio" in html
+    assert "GUÍA POR CAPAS" not in html
+    assert html.count("Canasta básica") <= 2
+
+
+def test_health_collector_status_ok_not_healthy(isolated_db):
+    from fastapi.testclient import TestClient
+    from market_server import app
+    with TestClient(app) as client:
+        r = client.get("/health/collector")
+    assert r.status_code == 200
+    status = r.json().get("status")
+    assert status != "healthy"
+    if status not in ("unknown", "running"):
+        assert status in ("ok", "stale", "dead")
 
 
 def test_dashboard_data_includes_dashboard_view(isolated_db):

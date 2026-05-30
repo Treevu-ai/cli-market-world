@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-SPEC_VERSION = "1.0"
+SPEC_VERSION = "1.1"
 CANASTA_TOTAL_ITEMS = 10
 CANASTA_PARTIAL_THRESHOLD = 6  # 60% — below this, totals are not comparable
 COLLECTOR_INTERVAL_HOURS = 8
@@ -50,17 +50,17 @@ def _global_system_status(
     freshness_label: str,
 ) -> dict:
     if moat_age_h is None or total_indexed == 0:
-        return {"state": "unknown", "icon": "🟡", "label": "Actualización parcial"}
+        return {"state": "unknown", "label": "partial — sin datos recientes"}
     if moat_age_h >= 24 or (snapshots_24h == 0 and total_indexed > 0):
-        return {"state": "stale", "icon": "🔴", "label": "Datos envejeciendo"}
+        return {"state": "stale", "label": "stale — datos envejeciendo"}
     if (
         fresh_24h_pct >= 80
         and moat_age_h < 8
         and collector_status == "ok"
         and freshness_label == "fresh"
     ):
-        return {"state": "ok", "icon": "🟢", "label": "Sistema al día"}
-    return {"state": "partial", "icon": "🟡", "label": "Actualización parcial"}
+        return {"state": "ok", "label": "ok — sistema al día"}
+    return {"state": "partial", "label": "partial — actualización incompleta"}
 
 
 def _inflation_measuring(inflation: list[dict], top_risers: list, top_fallers: list) -> bool:
@@ -110,6 +110,70 @@ def build_dashboard_view_model(data: dict) -> dict:
         freshness_label=freshness_label,
     )
 
+    try:
+        gen_dt = datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+    except ValueError:
+        gen_dt = datetime.now(timezone.utc)
+
+    quality = data.get("quality_funnel") or {}
+    q_clean = int(quality.get("clean") or 0)
+    q_flagged = int(quality.get("flagged") or 0)
+    q_citable = int(quality.get("citable") or 0)
+
+    # ── Global bar (Capa 0) ──────────────────────────────────────────────────
+    block_global_bar = {
+        "id": "global_bar",
+        "collector_status": collector_status,
+        "collector_label": collector_status,
+        "fresh_24h_pct": fresh_24h_pct,
+        "utc_time": gen_dt.strftime("%H:%M"),
+        "source": "collector.status + kpis.fresh_24h_pct + generated_at",
+    }
+
+    # ── Portada (Capa 1) ─────────────────────────────────────────────────────
+    block_portada = {
+        "id": "portada",
+        "cards": [
+            {
+                "label": "INVENTORY",
+                "headline": (
+                    f"{_fmt_int(total_indexed)} precios · "
+                    f"{stores_indexed} tiendas · {country_count} países"
+                ),
+                "subline": "kpis.total_indexed, stores_indexed, by_country",
+                "source": "kpis + by_country",
+            },
+            {
+                "label": "FRESHNESS",
+                "headline": (
+                    f"{fresh_24h_pct:.1f}% <24h · último snapshot {_fmt_age_es(moat_age_h)}"
+                ),
+                "subline": "kpis.fresh_24h_pct, moat_age_hours",
+                "source": "kpis",
+            },
+            {
+                "label": "QUALITY",
+                "headline": f"{_fmt_int(q_clean)} clean / {_fmt_int(q_flagged)} flagged / {q_citable} citable",
+                "subline": "quality_funnel",
+                "source": "quality_funnel",
+            },
+        ],
+        "acceso": [
+            {
+                "cmd": "curl -s $BASE/dashboard/data | jq '.quality_funnel,.dashboard_view.blocks'",
+                "desc": "Payload completo + bloques render-ready",
+            },
+            {
+                "cmd": "curl -s $BASE/health/collector",
+                "desc": "Estado del collector (ok / stale / dead / running)",
+            },
+            {
+                "cmd": "curl -s '$BASE/analytics/price-history?sku=...'",
+                "desc": "Historial de precio por SKU",
+            },
+        ],
+    }
+
     # ── Block 1 — Hero ───────────────────────────────────────────────────────
     block_hero = {
         "id": "hero",
@@ -136,7 +200,7 @@ def build_dashboard_view_model(data: dict) -> dict:
                 "source": "kpis.moat_age_hours",
             },
             {
-                "label": f"{system_status['icon']} {system_status['label']}",
+                "label": system_status["label"],
                 "sublabel": "Estado global",
                 "tooltip": "Resumen de frescura del inventario y del collector.",
                 "value": system_status["state"],
@@ -277,10 +341,6 @@ def build_dashboard_view_model(data: dict) -> dict:
     # ── Block 5 — Inflation ──────────────────────────────────────────────────
     inflation = data.get("inflation") or []
     measuring = _inflation_measuring(inflation, data.get("top_risers") or [], data.get("top_fallers") or [])
-    try:
-        gen_dt = datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
-    except ValueError:
-        gen_dt = datetime.now(timezone.utc)
     eta = gen_dt + timedelta(hours=COLLECTOR_INTERVAL_HOURS * 2)
 
     inflation_rows = []
@@ -303,7 +363,7 @@ def build_dashboard_view_model(data: dict) -> dict:
         "term_tooltip": "Comparamos el precio promedio de esta semana contra el de la semana pasada.",
         "measuring": measuring,
         "measuring_copy": (
-            "⏳ Midiendo. Necesitamos una segunda captura para comparar. "
+            "Midiendo. Necesitamos una segunda captura para comparar. "
             f"Primera lectura de inflación disponible aproximadamente el {eta.strftime('%Y-%m-%d')}."
         ),
         "rows": inflation_rows,
@@ -336,6 +396,76 @@ def build_dashboard_view_model(data: dict) -> dict:
             for c in countries_m:
                 if lookup.get(f"{ln}|{c}", 0) == 0:
                     gaps.append(f"{ln}×{c}")
+
+    store_health_items = data.get("store_health") or []
+    dead_stores = [h for h in store_health_items if float(h.get("success_pct") or 0) < 30]
+    ok_stores = [h for h in store_health_items if float(h.get("success_pct") or 0) >= 80]
+    scraping_summary = (
+        f"{len(dead_stores)} DEAD · {len(ok_stores)}/{len(store_health_items)} OK"
+        if store_health_items
+        else "sin datos de salud"
+    )
+
+    flagged_samples = []
+    for d in (data.get("suspect_discounts") or [])[:8]:
+        flagged_samples.append({
+            "name": d.get("name"),
+            "store_name": d.get("store_name"),
+            "reason": f"discount>={int(d.get('discount_pct') or 90)}%",
+        })
+    for o in (data.get("outliers") or [])[:5]:
+        flagged_samples.append({
+            "name": o.get("name"),
+            "store_name": o.get("store_name"),
+            "reason": "median_outlier_5x",
+        })
+
+    block_quality_funnel = {
+        "id": "quality_funnel",
+        "captured": int(quality.get("captured") or total_indexed),
+        "flagged": q_flagged,
+        "clean": q_clean,
+        "citable": q_citable,
+        "filters": quality.get("filters") or [],
+        "flagged_samples": flagged_samples,
+        "scraping_health": {
+            "summary": scraping_summary,
+            "stores": [
+                {
+                    "store": h.get("store"),
+                    "success_pct": float(h.get("success_pct") or 0),
+                    "consecutive_failures": int(h.get("consecutive_failures") or 0),
+                    "state": (
+                        "dead" if float(h.get("success_pct") or 0) < 30
+                        else ("ok" if float(h.get("success_pct") or 0) >= 80 else "partial")
+                    ),
+                }
+                for h in store_health_items[:15]
+            ],
+        },
+        "source": "quality_funnel + store_health + suspect_discounts + outliers",
+    }
+
+    dispersion = data.get("dispersion") or []
+    crit_dispersion = [d for d in dispersion if d.get("status") == "crit"][:12]
+
+    block_exploration = {
+        "id": "exploration",
+        "clean_default": True,
+        "by_line_currency": [
+            {
+                "line_name": r.get("line_name") or r.get("line"),
+                "currency": r.get("currency"),
+                "count": int(r.get("count") or 0),
+                "avg_price": float(r.get("avg_price") or 0),
+                "min_price": float(r.get("min_price") or 0),
+                "max_price": float(r.get("max_price") or 0),
+            }
+            for r in data.get("by_line_currency") or []
+        ],
+        "dispersion_sample": crit_dispersion,
+        "source": "by_line_currency + dispersion (crit, collapsed when clean toggle ON)",
+    }
 
     block_ops = {
         "id": "ops",
@@ -403,12 +533,27 @@ def build_dashboard_view_model(data: dict) -> dict:
         "footer_stamp": footer_stamp,
         "tooltips": TOOLTIPS,
         "blocks": {
+            "global_bar": block_global_bar,
+            "portada": block_portada,
+            "quality_funnel": block_quality_funnel,
             "hero": block_hero,
             "moat_narrative": block_moat,
             "canasta": block_canasta,
             "price_spreads": block_spreads,
             "inflation": block_inflation,
+            "exploration": block_exploration,
             "ops": block_ops,
         },
-        "reading_order": ["hero", "moat_narrative", "canasta", "price_spreads", "inflation", "ops"],
+        "reading_order": [
+            "global_bar",
+            "portada",
+            "quality_funnel",
+            "hero",
+            "price_spreads",
+            "canasta",
+            "inflation",
+            "exploration",
+            "moat_narrative",
+            "ops",
+        ],
     }
