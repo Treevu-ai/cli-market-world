@@ -77,10 +77,14 @@ def _render_portada(view: dict) -> str:
         for c in cards
     )
     acceso = portada.get("acceso") or []
-    acceso_rows = "".join(
-        f"<tr><td><code>{_esc(a.get('cmd', ''))}</code></td><td class='metric-desc'>{_esc(a.get('desc', ''))}</td></tr>"
-        for a in acceso
-    )
+    acceso_rows = ""
+    for a in acceso:
+        src = a.get("source_field")
+        src_html = f'<br><span class="metric-desc">→ {_esc(src)}</span>' if src else ""
+        acceso_rows += (
+            f"<tr><td><code>{_esc(a.get('cmd', ''))}</code></td>"
+            f"<td class='metric-desc'>{_esc(a.get('desc', ''))}{src_html}</td></tr>"
+        )
     return f"""
 <section class="portada">
   <div class="portada-cards">{cards_html}</div>
@@ -286,6 +290,31 @@ def _render_exploration(view: dict) -> str:
 """
 
 
+def _render_coverage_map(view: dict) -> str:
+    cov = (view.get("blocks") or {}).get("coverage_map") or {}
+    if not cov.get("cells"):
+        return ""
+    lines = sorted({c.get("line") for c in cov.get("cells") or []})
+    countries = sorted({c.get("country") for c in cov.get("cells") or []})
+    lookup = {f"{c['line']}|{c['country']}": c.get("stores", 0) for c in cov.get("cells") or []}
+    matrix = "<table><tr><th></th>" + "".join(f"<th>{_esc(c)}</th>" for c in countries) + "</tr>"
+    for ln in lines:
+        matrix += f"<tr><td>{_esc(ln)}</td>"
+        for country in countries:
+            v = lookup.get(f"{ln}|{country}", 0)
+            matrix += f"<td class='num'>{v or '·'}</td>"
+        matrix += "</tr>"
+    matrix += "</table>"
+    gaps = ", ".join(cov.get("gaps") or [])[:500]
+    return f"""
+<details class="dirty-collapsed">
+  <summary>[ {_esc(cov.get('title', 'COBERTURA').upper())} ] — colapsado</summary>
+  <p class="layer-note">Fuente: snapshot DB · huecos: {_esc(gaps or 'ninguno')}</p>
+  {matrix}
+</details>
+"""
+
+
 def _render_ops(view: dict) -> str:
     ops = (view.get("blocks") or {}).get("ops") or {}
     collapsed = ops.get("collapsed_default", True)
@@ -460,6 +489,7 @@ def render_dashboard_html(data: dict) -> str:
         + _render_canasta(view)
         + _render_inflation(view)
         + _render_exploration(view)
+        + _render_coverage_map(view)
         + _render_moat(view)
         + _render_ops(view)
         + f'<p class="footer">{footer} · spec {view.get("spec_version", "?")} · cli-market.dev</p>'

@@ -33,7 +33,7 @@ def _clamp_limit(limit: int) -> int:
 def _load_products(db) -> list[dict]:
     rows = db.execute(
         """
-        SELECT line, line_name, currency, category, name, brand, price, store, store_name
+        SELECT line, line_name, currency, category, name, brand, price, store, store_name, product_id
         FROM price_snapshots
         WHERE price > 0 AND price < 999999
         """

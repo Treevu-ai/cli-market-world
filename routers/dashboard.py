@@ -13,8 +13,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Header
 
 from market_core import STORES, TIERS, DEFAULT_STORES, db_get_subscription, get_db, price_to_usd
-from market_spread import CANASTA_ITEMS, build_spread_analytics, find_median_outliers, matches_canasta_item
-from market_units import is_standard_canasta_pack
+from coverage_matrix import build_line_country_matrix
+from market_basket import build_canasta_basica
+from market_spread import build_spread_analytics, find_median_outliers
 from dashboard_glossary import (
     LAYER_METRICS,
     build_metric_glossary,
@@ -225,7 +226,7 @@ def _dashboard_data():
     # ── Dispersión por subcategoría + moneda (+ precio unitario cuando aplica) ─
     spread_rows = db.execute(
         """
-        SELECT line, line_name, currency, category, name, brand, price, store, store_name
+        SELECT line, line_name, currency, category, name, brand, price, store, store_name, product_id
         FROM price_snapshots WHERE price > 0 AND price < 999999
         """
     ).fetchall()
@@ -431,18 +432,7 @@ def _dashboard_data():
     ).fetchall()
 
     # ── Exploratoria: line-country matrix ────────────────────────────────────
-    line_country_raw = db.execute(
-        """SELECT ps.line, ps.store, COUNT(*) as n
-           FROM price_snapshots ps WHERE ps.price>0
-           GROUP BY ps.line, ps.store"""
-    ).fetchall()
-    line_country_map: dict[str, set] = {}
-    for r in line_country_raw:
-        country = STORES.get(r["store"], {}).get("country", "??")
-        key = f"{r['line']}|{country}"
-        line_country_map.setdefault(key, set()).add(r["store"])
-    line_country_matrix = [{"line": k.split("|")[0], "country": k.split("|")[1], "stores": len(v)}
-                           for k, v in line_country_map.items()]
+    line_country_matrix = build_line_country_matrix(db)
 
     # ── Exploratoria: products per store ─────────────────────────────────────
     products_per_store = db.execute(
@@ -490,37 +480,7 @@ def _dashboard_data():
         })
 
     # ── Canasta basica: fixed 10 products compared across top stores ─────────
-    canasta: dict[str, dict] = {}
-    for prod in CANASTA_ITEMS:
-        rows = db.execute(
-            """SELECT store_name, store, name, price, currency
-               FROM price_snapshots
-               WHERE line='supermercados' AND price>0 AND price<999999 AND name LIKE ?""",
-            (f"%{prod}%",),
-        ).fetchall()
-        store_best: dict[tuple[str, str], float] = {}
-        store_fallback: dict[tuple[str, str], float] = {}
-        for r in rows:
-            row = {"line": "supermercados", "name": r["name"]}
-            if not matches_canasta_item(row, prod):
-                continue
-            key = (r["store_name"], r["currency"])
-            price = float(r["price"])
-            if is_standard_canasta_pack(r["name"], prod):
-                if key not in store_best or price < store_best[key]:
-                    store_best[key] = price
-            elif key not in store_best:
-                if key not in store_fallback or price < store_fallback[key]:
-                    store_fallback[key] = price
-        for key, price in store_fallback.items():
-            if key not in store_best:
-                store_best[key] = price
-        for (s, cur), best_price in store_best.items():
-            canasta.setdefault(s, {"store_name": s, "items": 0, "total": 0, "currency": cur})
-            canasta[s]["items"] += 1
-            canasta[s]["total"] = round(canasta[s]["total"] + best_price, 2)
-    canasta_basica = sorted([v for v in canasta.values() if v["items"] >= 3],
-                            key=lambda x: x["total"])[:10]
+    canasta_basica = build_canasta_basica(db)
 
     flagged_discounts = count_flagged_discounts(db)
     flagged_outliers = len(outliers)

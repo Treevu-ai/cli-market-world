@@ -6,6 +6,9 @@ Endpoints:
   GET /health/collector  Collector freshness (last run, age, store coverage)
   GET /v1/sources/health Per-store scraping health (success rate + freshness)
   GET /v1/quality/flagged Paginated discount/outlier/spread anomalies
+  GET /v1/prices             Paginated snapshots with clean filter
+  GET /v1/dispersion         Subcategory spread groups
+  GET /v1/coverage/matrix    Country × line coverage gaps
   GET /lines             Catalog of business lines with their stores
   GET /stores            Catalog of retailers (filterable by country/line)
   GET /countries         Catalog of countries with store lists
@@ -24,6 +27,9 @@ from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
 from source_health import build_sources_health
 from quality_flagged import build_flagged_quality, DEFAULT_LIMIT, MAX_LIMIT
+from quality_prices import build_prices, DEFAULT_LIMIT as PRICES_DEFAULT, MAX_LIMIT as PRICES_MAX
+from quality_dispersion import build_dispersion, DEFAULT_LIMIT as DISP_DEFAULT, MAX_LIMIT as DISP_MAX
+from coverage_matrix import build_coverage_matrix
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -197,6 +203,66 @@ def quality_flagged(
     db = get_db()
     try:
         return build_flagged_quality(db, reason=reason, limit=limit, offset=offset)
+    finally:
+        db.close()
+
+
+@router.get("/v1/prices")
+def v1_prices(
+    clean: bool = Query(default=True, description="Exclude flagged discounts and median outliers."),
+    country: str | None = Query(default=None),
+    line: str | None = Query(default=None),
+    currency: str | None = Query(default=None),
+    store: str | None = Query(default=None),
+    limit: int = Query(default=PRICES_DEFAULT, ge=1, le=PRICES_MAX),
+    offset: int = Query(default=0, ge=0),
+):
+    """Paginated price snapshots with optional clean-data filter."""
+    db = get_db()
+    try:
+        return build_prices(
+            db,
+            clean=clean,
+            country=country,
+            line=line,
+            currency=currency,
+            store=store,
+            limit=limit,
+            offset=offset,
+        )
+    finally:
+        db.close()
+
+
+@router.get("/v1/dispersion")
+def v1_dispersion(
+    clean: bool = Query(default=True, description="Exclude spread groups with status=crit (>10x)."),
+    line: str | None = Query(default=None),
+    currency: str | None = Query(default=None),
+    limit: int = Query(default=DISP_DEFAULT, ge=1, le=DISP_MAX),
+    offset: int = Query(default=0, ge=0),
+):
+    """Dispersion by line + currency + subcategory."""
+    db = get_db()
+    try:
+        return build_dispersion(
+            db,
+            clean=clean,
+            line=line,
+            currency=currency,
+            limit=limit,
+            offset=offset,
+        )
+    finally:
+        db.close()
+
+
+@router.get("/v1/coverage/matrix")
+def v1_coverage_matrix(line: str | None = Query(default=None)):
+    """Coverage matrix: distinct stores with data per line × country."""
+    db = get_db()
+    try:
+        return build_coverage_matrix(db, line=line)
     finally:
         db.close()
 

@@ -320,6 +320,7 @@ def find_median_outliers(
             ratio = max(val / median, median / val)
             outliers.append({
                 "name": r.get("name"),
+                "product_id": r.get("product_id"),
                 "store_name": r.get("store_name"),
                 "store": r.get("store"),
                 "price": r.get("price"),

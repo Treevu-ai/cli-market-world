@@ -3,7 +3,8 @@
 Endpoints:
   POST /products/search                  Multi-store search (parallel batch)
   POST /products/compare                 Cross-store comparison + fuzzy match
-  POST /v1/basket/compare                Multi-item cart comparison across stores
+  POST /v1/basket/compare                Multi-item cart comparison across stores (live)
+  GET  /v1/basket                        Snapshot canasta from price_snapshots DB
   GET  /products/stock/{product_id}      Latest stock from price_snapshots
   GET  /products/delivery/{product_id}   Placeholder delivery info
   GET  /products/barcode/{code}          OpenFoodFacts barcode lookup
@@ -20,7 +21,7 @@ import os
 import re
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 from market_core import (
@@ -34,6 +35,7 @@ from market_core import (
     save_price_snapshot,
     save_search_query,
 )
+from market_basket import build_snapshot_basket, DEFAULT_MIN_ITEMS
 
 logger = logging.getLogger("market.server").getChild("search")
 
@@ -259,12 +261,33 @@ async def basket_compare(body: BasketRequest):
             }
     best = min(results, key=lambda s: results[s]["total"]) if results else None
     return {
+        "source": "live",
         "basket": body.items,
         "comparison": results,
         "best_store": best,
         "best_total": results[best]["total"] if best else None,
         "stores_compared": len(results),
     }
+
+
+@router.get("/v1/basket")
+def basket_snapshot(
+    stores: str | None = Query(
+        default=None,
+        description="Comma-separated store slugs (e.g. wong,metro).",
+    ),
+    min_items: int = Query(default=DEFAULT_MIN_ITEMS, ge=1, le=10),
+):
+    """Basic canasta totals from DB snapshots — same source as /dashboard canasta."""
+    store_keys = None
+    if stores:
+        store_keys = [s.strip() for s in stores.split(",") if s.strip()]
+        store_keys = [s for s in store_keys if s in STORES]
+    db = get_db()
+    try:
+        return build_snapshot_basket(db, store_keys=store_keys, min_items=min_items)
+    finally:
+        db.close()
 
 
 @router.get("/products/stock/{product_id}")

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-SPEC_VERSION = "1.1"
+SPEC_VERSION = "1.2"
 CANASTA_TOTAL_ITEMS = 10
 CANASTA_PARTIAL_THRESHOLD = 6  # 60% — below this, totals are not comparable
 COLLECTOR_INTERVAL_HOURS = 8
@@ -160,16 +160,39 @@ def build_dashboard_view_model(data: dict) -> dict:
         ],
         "acceso": [
             {
-                "cmd": "curl -s $BASE/dashboard/data | jq '.quality_funnel,.dashboard_view.blocks'",
-                "desc": "Payload completo + bloques render-ready",
+                "cmd": "curl -s $BASE/v1/sources/health | jq '.summary'",
+                "desc": "Salud scraping unificada (ok / partial / dead)",
+                "source_field": "dashboard_view.blocks.quality_funnel.scraping_health",
             },
             {
-                "cmd": "curl -s $BASE/health/collector",
-                "desc": "Estado del collector (ok / stale / dead / running)",
+                "cmd": "curl -s '$BASE/v1/quality/flagged?limit=5'",
+                "desc": "Anomalías paginadas (discount / outlier / spread)",
+                "source_field": "quality_funnel.flagged_samples",
             },
             {
-                "cmd": "curl -s '$BASE/analytics/price-history?sku=...'",
-                "desc": "Historial de precio por SKU",
+                "cmd": "curl -s '$BASE/v1/prices?clean=1&limit=10'",
+                "desc": "Precios snapshot sin flagged (moneda en cada fila)",
+                "source_field": "dashboard_view.blocks.exploration.by_line_currency",
+            },
+            {
+                "cmd": "curl -s '$BASE/v1/dispersion?clean=1&limit=10'",
+                "desc": "Brechas por subcategoría (sin crit >10x)",
+                "source_field": "dashboard_view.blocks.exploration.dispersion_sample",
+            },
+            {
+                "cmd": "curl -s $BASE/v1/basket | jq '.stores[]|{store_name,comparable,total}'",
+                "desc": "Canasta básica snapshot (DB) — no live scrape",
+                "source_field": "dashboard_view.blocks.canasta.stores",
+            },
+            {
+                "cmd": "curl -s $BASE/v1/coverage/matrix | jq '.gaps'",
+                "desc": "Huecos país × categoría sin cobertura",
+                "source_field": "dashboard_view.blocks.coverage_map.gaps",
+            },
+            {
+                "cmd": "curl -s '$BASE/v1/basket/compare' -H 'Content-Type: application/json' -d '{...}'",
+                "desc": "Canasta live scrape — source: live (distinto del dashboard)",
+                "source_field": "POST /v1/basket/compare",
             },
         ],
     }
@@ -467,6 +490,26 @@ def build_dashboard_view_model(data: dict) -> dict:
         "source": "by_line_currency + dispersion (crit, collapsed when clean toggle ON)",
     }
 
+    matrix = data.get("line_country_matrix") or []
+    coverage_gaps = []
+    if matrix:
+        lines_m = sorted({r["line"] for r in matrix})
+        countries_m = sorted({r["country"] for r in matrix})
+        lookup = {f"{r['line']}|{r['country']}": r["stores"] for r in matrix}
+        for ln in lines_m:
+            for c in countries_m:
+                if lookup.get(f"{ln}|{c}", 0) == 0:
+                    coverage_gaps.append(f"{ln}×{c}")
+
+    block_coverage_map = {
+        "id": "coverage_map",
+        "collapsed_default": True,
+        "title": "Cobertura país × categoría",
+        "cells": matrix,
+        "gaps": coverage_gaps[:30],
+        "source": "line_country_matrix / GET /v1/coverage/matrix",
+    }
+
     block_ops = {
         "id": "ops",
         "state": "ok",
@@ -542,6 +585,7 @@ def build_dashboard_view_model(data: dict) -> dict:
             "price_spreads": block_spreads,
             "inflation": block_inflation,
             "exploration": block_exploration,
+            "coverage_map": block_coverage_map,
             "ops": block_ops,
         },
         "reading_order": [
@@ -553,6 +597,7 @@ def build_dashboard_view_model(data: dict) -> dict:
             "canasta",
             "inflation",
             "exploration",
+            "coverage_map",
             "moat_narrative",
             "ops",
         ],
