@@ -20,6 +20,7 @@ npm run build
 | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | PayPal Hosted Buttons SDK |
 | `NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID` | Button `B6YVFTG4MA73J` |
 | `NEXT_PUBLIC_PRO_PAYMENT_URL` | Fallback payment link |
+| `NEXT_PUBLIC_HERO_VARIANT` | Hero H1 A/B: `a`–`f` (default `a`). See [../docs/landing/h1-ab-variants.md](../docs/landing/h1-ab-variants.md) |
 
 ## Pro flow components
 

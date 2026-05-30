@@ -129,16 +129,18 @@
 2. Registrar en bitácora: variante activa + clics Puerta A/B (PostHog, Plausible o evento `data-hero-variant` en analytics).
 3. Mínimo ~200 sesiones por variante antes de declarar ganador en tráfico orgánico bajo.
 
-### Snippet para Hero (futuro)
+### Snippet para Hero
 
-```tsx
-const H1_VARIANTS = {
-  a: { es: "La capa programable del retail físico de LatAm.", en: "..." },
-  b: { es: "Una API. 30 retailers verificados. 8 países.", en: "..." },
-  // ...
-} as const;
-// NEXT_PUBLIC_HERO_VARIANT=a|b|c|d|e|f
+Implementado en `landing/lib/heroVariants.ts` + `Hero.tsx`.
+
+```bash
+# Cloudflare Pages → Settings → Environment variables
+NEXT_PUBLIC_HERO_VARIANT=c   # agente primero
 ```
+
+Variantes: `a` (control) · `b` concreta · `c` agente · `d` dual · `e` data moat · `f` checkout.
+
+El hero expone `data-hero-variant` en `#hero` y en CTAs (`data-cta=puerta-a|puerta-b`) para analytics.
 
 ---
 

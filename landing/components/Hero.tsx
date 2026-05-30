@@ -3,11 +3,13 @@ import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { ACTIVE_HERO_VARIANT, getHeroH1 } from "@/lib/heroVariants";
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { priceChip, retailersVerified, retailersDefined } = useLiveStats();
+  const h1 = getHeroH1(ACTIVE_HERO_VARIANT, lang, priceChip);
 
   const chips = [
     { num: String(MARKET_STATS.mcpTools), label: isES ? "MCP" : "MCP", accent: false },
@@ -18,7 +20,11 @@ export default function Hero() {
   ];
 
   return (
-    <section id="hero" className="relative min-h-[90vh] flex flex-col bg-[var(--wise-canvas-soft)]">
+    <section
+      id="hero"
+      data-hero-variant={ACTIVE_HERO_VARIANT}
+      className="relative min-h-[90vh] flex flex-col bg-[var(--wise-canvas-soft)]"
+    >
       <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
         <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--wise-mute)] -rotate-90 origin-left block whitespace-nowrap">
           {isES ? "COMERCIO" : "COMMERCE"}
@@ -26,9 +32,7 @@ export default function Hero() {
       </div>
       <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0">
         <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-[var(--wise-ink)] max-w-[900px] tracking-tight">
-          {isES
-            ? "La capa programable del retail físico de LatAm."
-            : "The programmable layer for physical retail in LatAm."}
+          {h1}
         </h1>
 
         <p className="mt-5 text-base sm:text-lg text-[var(--wise-body)] max-w-[620px] leading-relaxed">
@@ -40,6 +44,8 @@ export default function Hero() {
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[640px]">
           <a
             href="https://pypi.org/project/cli-market/"
+            data-cta="puerta-a"
+            data-hero-variant={ACTIVE_HERO_VARIANT}
             className="group flex flex-col items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-green-hover)] transition-colors shadow-sm text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-ink)]/70">
@@ -53,6 +59,8 @@ export default function Hero() {
 
           <a
             href="#retailers"
+            data-cta="puerta-b"
+            data-hero-variant={ACTIVE_HERO_VARIANT}
             className="group flex flex-col items-center gap-2 rounded-3xl border-2 border-[var(--wise-ink)] bg-transparent text-[var(--wise-ink)] px-6 py-5 hover:bg-[var(--wise-canvas)] transition-colors text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)]">
