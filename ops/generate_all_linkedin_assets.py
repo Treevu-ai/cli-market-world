@@ -23,13 +23,12 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from content_paths import assets_root, content_root, linkedin_dir, metrics_dir, rel_to_content
+from content_paths import assets_root, content_root, linkedin_dir, metrics_dir, display_path, rel_to_content
 from linkedin_asset_lib import (
     CAROUSEL_CFG,
     DAY_TEMPLATE,
     DIAGRAM_DAYS,
     METRICS_DAYS,
-    ROOT,
     TERMINAL_CFG,
     parse_day_md,
     render_carousel,
@@ -180,6 +179,7 @@ def main() -> int:
         print("Day must be 1-30", file=sys.stderr)
         return 1
 
+    print(f"Content root: {content_root()}", flush=True)
     print("Loading dashboard KPIs…", flush=True)
     monday = _load_monday()
     data = monday.fetch_data()
@@ -190,7 +190,7 @@ def main() -> int:
         try:
             tpl = template_for(day)
             path = generate_day(day, kpis)
-            print(f"Day {day:02d} ({tpl}): {path.relative_to(ROOT)}")
+            print(f"Day {day:02d} ({tpl}): {display_path(path)}")
             if args.patch:
                 patch_day_assets_section(day, tpl)
             ok += 1

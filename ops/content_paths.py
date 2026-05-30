@@ -86,3 +86,14 @@ def rel_to_content(path: Path) -> str:
         return path.resolve().relative_to(content_root().resolve()).as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def display_path(path: Path) -> str:
+    """Human-readable path for logs (relative to content root, else absolute)."""
+    try:
+        return path.resolve().relative_to(content_root().resolve()).as_posix()
+    except ValueError:
+        try:
+            return path.resolve().relative_to(ROOT.resolve()).as_posix()
+        except ValueError:
+            return str(path.resolve())
