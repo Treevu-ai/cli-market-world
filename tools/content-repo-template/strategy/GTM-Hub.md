@@ -52,7 +52,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Retailers | 36 verificados | ✅ 36 (2026-05-28) |
 | Países | 8 | ✅ 8 |
 | MCP tools | 36 | ✅ 36 + `/tools` |
-| Precios indexados | ~13K, refresh 8h | ✅ |
+| Precios indexados | 43K+, refresh 8h | ✅ |
 | Pitch | Commerce infrastructure for AI agents · `pip install cli-market` | ✅ |
 
 Si un post contradice esta tabla → **no publicar** hasta actualizar tabla o producto.
