@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { buildFaqJsonLd } from "@/lib/faqSchema";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
 });
@@ -125,12 +126,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="h-full">
+    <html lang="es" className={`dark h-full ${GeistSans.variable}`}>
       <head>
         <link rel="alternate" type="application/json" href="/server.json" title="MCP server manifest" />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full bg-[#e8ebe6] overflow-x-hidden`}
+        className={`${inter.variable} ${jetbrainsMono.variable} h-full bg-[var(--cm-background)] text-[var(--cm-on-surface)] antialiased overflow-x-hidden`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {cfBeaconToken ? (

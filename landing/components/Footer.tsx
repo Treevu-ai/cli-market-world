@@ -7,41 +7,93 @@ export default function Footer() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { priceChip } = useLiveStats();
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[var(--wise-canvas-soft)] border-t border-[#c5edab] py-8" role="contentinfo">
-      <div className="landing-container flex flex-col items-center gap-4 text-center">
-        <div className="flex items-center gap-2 text-[var(--wise-ink)]">
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)]" aria-hidden="true">
-            <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
-            <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
-            <rect x="11" y="10" width="7" height="1.5" rx="0.5" fill="currentColor"/>
-            <rect x="12" y="13" width="5" height="1.5" rx="0.5" fill="currentColor"/>
-          </svg>
-          <span className="font-medium text-xs tracking-tight">CLI Market</span>
+    <footer
+      className="w-full py-12 bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/20"
+      role="contentinfo"
+    >
+      <div className="landing-container-wide grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="col-span-2 md:col-span-1">
+          <div className="font-display text-xl font-bold text-white mb-4">CLI Market</div>
+          <p className="font-mono text-sm text-[var(--cm-on-surface-variant)] opacity-80">
+            {isES
+              ? "© " + year + " CLI Market LatAm. Infraestructura para agentes."
+              : "© " + year + " CLI Market LatAm. Infrastructure for agents."}
+          </p>
+          <p className="font-mono text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-4">
+            {isES
+              ? `${MARKET_STATS.retailersPhraseEs} · ${priceChip} precios · MIT`
+              : `${MARKET_STATS.retailersPhraseEn} · ${priceChip} prices · MIT`}
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[var(--wise-body)]">
-          <a href="#how" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Flujo" : "Flow"}</a>
-          <a href="#api" className="hover:text-[var(--wise-ink)] transition-colors">API</a>
-          <a href="#casos" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Casos" : "Use cases"}</a>
-          <a href="#retailers" className="hover:text-[var(--wise-ink)] transition-colors">Retailers</a>
-          <a href="#coverage" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Cobertura" : "Coverage"}</a>
-          <a href="#pricing" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Planes" : "Pricing"}</a>
-          <a href="#faq" className="hover:text-[var(--wise-ink)] transition-colors">FAQ</a>
-          <span className="text-[#c5edab]">·</span>
-          <a href="/tools" className="hover:text-[var(--wise-ink)] transition-colors">MCP Tools</a>
-          <a href="https://github.com/Treevu-ai/cli-market-world" className="hover:text-[var(--wise-ink)] transition-colors">GitHub</a>
-          <a href="https://pypi.org/project/cli-market/" className="hover:text-[var(--wise-ink)] transition-colors">PyPI</a>
-          <a href="mailto:hello@cli-market.dev" className="hover:text-[var(--wise-ink)] transition-colors">{isES ? "Contacto" : "Contact"}</a>
+        <div className="flex flex-col gap-3">
+          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">Developers</span>
+          <a
+            href="https://cli-market-production.up.railway.app/docs"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            Quickstart API
+          </a>
+          <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            MCP Tool Reference
+          </a>
+          <a
+            href="https://github.com/Treevu-ai/cli-market-world"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            GitHub Repo
+          </a>
+          <a
+            href="https://pypi.org/project/cli-market/"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            PyPI
+          </a>
         </div>
 
-        <p className="text-[10px] text-[var(--wise-body)] font-mono">
-          {isES
-            ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.countries} países · ${MARKET_STATS.mcpTools} MCP · ${priceChip} precios · MIT`
-            : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.countries} countries · ${MARKET_STATS.mcpTools} MCP · ${priceChip} prices · MIT`}
-        </p>
+        <div className="flex flex-col gap-3">
+          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
+            {isES ? "Compañía" : "Company"}
+          </span>
+          <a href="#retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Listar mi tienda" : "List my store"}
+          </a>
+          <a href="#pricing-intelligence" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Inteligencia piloto" : "Intelligence pilot"}
+          </a>
+          <a href="#contact" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Contacto" : "Contact"}
+          </a>
+          <a href="mailto:hello@cli-market.dev" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            hello@cli-market.dev
+          </a>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
+            {isES ? "Producto" : "Product"}
+          </span>
+          <a href="#how" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Flujo" : "Flow"}
+          </a>
+          <a href="#coverage" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Cobertura" : "Coverage"}
+          </a>
+          <a href="#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            FAQ
+          </a>
+          <a
+            href="https://cli-market-production.up.railway.app/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            Dashboard
+          </a>
+        </div>
       </div>
     </footer>
   );
