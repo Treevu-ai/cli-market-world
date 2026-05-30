@@ -81,5 +81,5 @@ rg -n "36 verificados" tools/content-repo-template/       # sin resultados
 |------|-------|
 | PayPal «Agotado» / live | Panel PayPal Business: pasar de sandbox a live + inventario (externo) |
 | Regenerar price-pulse | Pipeline de métricas para data-brags (Day-07/08/09/10/14) |
-| i18n landing | Unificar copy inline vs `translations.ts` |
+| ~~i18n landing~~ | ✅ Fase 4 — ver `docs/ops/phase4-i18n-landing.md` |
 | Checkout autónomo | Roadmap Build |
