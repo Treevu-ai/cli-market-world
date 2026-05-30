@@ -33,6 +33,10 @@ def content_root() -> Path:
     if sibling.is_dir() and (sibling / "linkedin").is_dir():
         return sibling.resolve()
 
+    # Monorepo template (Cloud Agent / dev without private content repo)
+    if (_TEMPLATE / "linkedin").is_dir():
+        return _TEMPLATE.resolve()
+
     legacy = ROOT / "docs"
     if (legacy / "linkedin").is_dir():
         warnings.warn(

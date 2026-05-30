@@ -75,6 +75,6 @@ rg "translations\\.ts|from ['\"]@/lib/translations" landing/   # sin resultados
 | Item | Notas |
 |------|-------|
 | PayPal live + «Agotado» | Panel PayPal Business (externo) |
-| Regenerar price-pulse | Data-brags Day-07/08/09/10/14 |
-| i18n futuro | Si crece el copy, extraer por sección (`hero.i18n.ts`) — no un monolito global |
-| Checkout autónomo | Roadmap Build; no prometer en copy comercial |
+| ~~Regenerar price-pulse~~ | ✅ Fase 5 — ver `docs/ops/phase5-metrics-pipeline.md` |
+| i18n futuro | Si crece el copy, extraer por sección |
+| Checkout autónomo | Roadmap Build |

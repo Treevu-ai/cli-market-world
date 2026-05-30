@@ -78,18 +78,27 @@ def cmd_briefing(dry_run: bool) -> int:
 
 
 def cmd_campaign_status() -> int:
+    sys.path.insert(0, str(ROOT / "ops"))
+    from content_paths import content_root, linkedin_dir  # noqa: E402
+
     start_s = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-29")
     start = date.fromisoformat(start_s)
     today = date.today()
     day = (today - start).days + 1
-    day_file = ROOT / "docs" / "linkedin" / f"Day-{day:02d}.md"
+    day_file = linkedin_dir() / f"Day-{day:02d}.md"
+    root = content_root()
     print(f"LINKEDIN_CAMPAIGN_START={start_s}")
     print(f"Hoy {today.isoformat()} → Día {day} de 30")
+    print(f"Content root: {root}")
     if day_file.is_file():
-        print(f"Post: {day_file.relative_to(ROOT)}")
+        try:
+            rel = day_file.relative_to(ROOT)
+        except ValueError:
+            rel = day_file
+        print(f"Post: {rel}")
     else:
-        print(f"Post: (no existe Day-{day:02d}.md)")
-    print("Content: set CLI_MARKET_CONTENT_DIR — see docs/CONTENT.md")
+        print(f"Post: (no existe Day-{day:02d}.md en {linkedin_dir()})")
+    print("Sync métricas: python3 ops/slack_cli.py campaign sync")
     return 0
 
 
