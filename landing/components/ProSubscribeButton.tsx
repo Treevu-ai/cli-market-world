@@ -83,6 +83,21 @@ export default function ProSubscribeButton() {
           )}
         </div>
 
+        <a
+          href={payLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
+        >
+          {isES ? "Pagar USD 49 con PayPal →" : "Pay USD 49 with PayPal →"}
+        </a>
+
+        <p className="text-[11px] text-[var(--wise-mute)] leading-relaxed">
+          {isES
+            ? "Si el botón embebido muestra «Agotado», use el botón verde de arriba. Revise inventario del botón en PayPal Business."
+            : "If the embedded button shows “Sold out”, use the green button above. Check button inventory in PayPal Business."}
+        </p>
+
         <PayPalHostedButton className="w-full" />
 
         <a
@@ -91,7 +106,7 @@ export default function ProSubscribeButton() {
           rel="noopener noreferrer"
           className="block text-center text-xs text-[var(--wise-mute)] underline hover:text-[var(--wise-ink)]"
         >
-          {isES ? "Abrir link de pago en PayPal" : "Open PayPal payment link"}
+          {isES ? "Abrir link de pago en PayPal (alternativa)" : "Open PayPal payment link (fallback)"}
         </a>
 
         <div className="rounded-2xl border border-[var(--wise-green-pale)] p-4 text-xs text-[var(--wise-body)] space-y-2">

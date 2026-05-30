@@ -29,6 +29,14 @@ SMTP_USE_TLS=true
 
 Sin SMTP: el endpoint devuelve el `payment_link` en JSON/CLI pero no envía email.
 
+## PayPal Hosted Button — «Agotado» en landing
+
+Si el widget embebido muestra **Sold out / Agotado**:
+
+1. PayPal Business → **Payment links & buttons** → botón `B6YVFTG4MA73J`
+2. Verificar que el producto/plan Pro tenga **inventario ilimitado** o stock > 0
+3. Mientras tanto, el CTA principal en landing es el link directo `PRO_PAYMENT_URL` (botón verde post-solicitud)
+
 ## Probar
 
 ```bash

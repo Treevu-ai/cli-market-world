@@ -8,6 +8,7 @@ import RetailersSection from "@/components/RetailersSection";
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
+import ContactSection from "@/components/ContactSection";
 import AboutSection from "@/components/AboutSection";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -27,6 +28,7 @@ export default function Home() {
           <RetailersSection />
           <ScaleCoverageSection />
           <Pricing />
+          <ContactSection />
           <FAQ />
           <AboutSection />
           <Footer />

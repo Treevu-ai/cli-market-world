@@ -9,6 +9,7 @@ const navItems = [
   { id: "retailers", es: "Retailers", en: "Retailers" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "pricing", es: "Planes", en: "Pricing" },
+  { id: "contact", es: "Contacto", en: "Contact" },
   { id: "faq", es: "FAQ", en: "FAQ" },
 ];
 
