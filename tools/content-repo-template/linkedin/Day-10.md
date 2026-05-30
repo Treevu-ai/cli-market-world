@@ -26,7 +26,7 @@ tags:
 
 No somos el INEI ni el INDEC. No publicamos un índice oficial.
 
-Pero sí tenemos algo que casi nadie tiene para agentes de IA: **36,935 precios de góndola en las últimas 24 horas** y **41,856 indexados** en 8 países.
+Pero sí tenemos algo que casi nadie tiene para agentes de IA: **37,731 precios de góndola en las últimas 24 horas** y **43,415 indexados** en 8 países.
 
 Nuestro collector:
 

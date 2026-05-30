@@ -18,7 +18,7 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Data brag:** Esta semana: **43,000+** precios verificados. **30** retailers activos. Refresh cada 8 h. Un solo `pip install`.
+1. **Data brag:** Esta semana: **43,000+** precios verificados. **35** retailers activos. Refresh cada 8 h. Un solo `pip install`.
 2. **Numbers:** **43K+** precios indexados. Refresh cada 8 horas. Cero scraping.
 3. **Build in public:** Semana 1 de CLI Market en público — collector con cobertura verificable vía dashboard.
 
@@ -29,7 +29,7 @@ Semana 1 construyendo infraestructura de comercio para agentes de IA.
 Los números de esta semana:
 
 → **43,000+ precios verificados** · refresh cada **8 h**
-→ **30 retailers verificados activos** · **60** en catálogo
+→ **35 retailers verificados activos** · **60** en catálogo
 → **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
 → **36 herramientas MCP**
 → Cobertura verificable en dashboard público
@@ -74,7 +74,7 @@ Retailers: https://cli-market.dev/retailers
 Regenerar: `python3 ops/generate_all_linkedin_assets.py --day 7` · todos: `python3 ops/generate_all_linkedin_assets.py`
 ## Checklist
 
-- [x] **[N] verificado** — 36,935 (24h) / 41,856 (indexado) · [[metrics/price-pulse-2026-W22]]
+- [x] **[N] verificado** — 37,731 (24h) / 43,415 (indexado) · [[metrics/price-pulse-2026-W22]]
 - [x] Mensaje base alineado ([[GTM-Hub#Mensaje público acordado]])
 - [x] Coverage 7d ≥80% (97.2%)
 - [ ] Responder comentarios 60 min post-publicación

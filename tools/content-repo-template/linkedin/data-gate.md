@@ -5,7 +5,7 @@ tags:
   - metrics
   - gate
 hub: "[[GTM-Hub]]"
-date: 2026-05-29
+date: 2026-05-30
 status: active
 ---
 
@@ -20,14 +20,14 @@ curl -sS https://cli-market-production.up.railway.app/dashboard/data | python3 -
 curl -sS https://cli-market-production.up.railway.app/health/db | python3 -m json.tool
 ```
 
-Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md`
+Export semanal: `python3 ops/sync_linkedin_metrics.py` → `metrics/price-pulse-YYYY-WW.md`
 
-## Snapshot verificado — 2026-05-29 ✅ GATE PASSED
+## Snapshot verificado — 2026-05-30 ✅ GATE PASSED
 
 | Métrica | Valor | OK para LI? |
 |---------|-------|-------------|
-| Precios indexados (moat) | **41,856** | ✅ |
-| Refresh 24h | **36,935** | ✅ |
+| Precios indexados (moat) | **43,415** | ✅ |
+| Refresh 24h | **37,731** | ✅ |
 | Tiendas fresh 24h | **35** | ✅ |
 | Tiendas con datos | **35** | ✅ |
 | **coverage_7d_pct** | **97.2%** | ✅ gate semana 2 |
@@ -48,11 +48,11 @@ Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md
 
 ## Gate checklist (semana 2)
 
-- [x] **Moat coverage 7d** ≥ **80%** — **94.4%**
+- [x] **Moat coverage 7d** ≥ **80%** — **97.2%**
 - [x] Upsert Postgres operativo (`price_snapshots_upsert_ready: true`)
 - [x] Refresh 24h > 0
-- [ ] Cifra `[N]` en Day 07 → usar **36,935** (24h) o **41,856** (indexado)
-- [x] Claims agregados 36K+ / 41K+ — OK
+- [ ] Cifra `[N]` en Day 07 → usar **37,731** (24h) o **43,415** (indexado)
+- [x] Claims agregados 37K+ / 43K+ — OK
 - [ ] Claims de inflación % por producto — posponer (sin serie 7–14d aún)
 - [ ] No implicar INEI/INDEC — usar "según nuestro collector"
 
@@ -60,14 +60,15 @@ Export semanal: `python3 ops/monday.py` → `docs/metrics/price-pulse-YYYY-WW.md
 
 | Día | Tema | Estado | Cifras a usar |
 |-----|------|--------|---------------|
-^,935 fresh · 41,856 indexados · 35 fresh|
-| 8 | Arroz PE variación | ✅ publicar | S/ 2.90–4.40+ · 8K+ fresh · ver [[metrics/query-arroz-pe.json]] |
+| 7 | Semana 1 wrap | ✅ publicar | 37,731 fresh · 43,415 indexados · 35 fresh |
+| 8 | Arroz PE variación | ✅ publicar | S/ 2.90–4.40+ · ver [[metrics/query-arroz-pe.json]] |
 | 9 | Canasta PE | ✅ cualitativo | multi-tienda · evitar S/147–182 |
-^,935 fresh · 41,856 indexados · 35 fresh|
+| 10 | Collector 8h | ✅ publicar | 37,731 fresh · 43,415 indexados |
 | 11 | Electro/hogar | ✅ publicar | 591 electro · 11 países/líneas |
 | 12 | Top 10 carousel | ⚠️ | armar desde dashboard top_discounts |
 | 13 | Retailers EN | ✅ | sin cifras duras |
-^,935 fresh · 41,856 indexados · 35 fresh|
+| 14 | 3 insights | ✅ publicar | 43,415 moat · 37,731 fresh |
+
 
 ## Query reproducible
 
