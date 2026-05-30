@@ -50,7 +50,7 @@ export default function HowItWorks() {
             height={540}
           />
           <p className="text-[10px] text-[var(--wise-mute)] mt-2 font-mono">
-            {isES ? "Agente IA · canasta básica PE · 9 supermercados · 14 s" : "AI agent · PE basic basket · 9 supermarkets · 14 s"}
+            {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function HowItWorks() {
           href="https://pypi.org/project/cli-market/"
           className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-base font-semibold px-8 py-3.5 hover:bg-[var(--wise-green-hover)] transition-colors"
         >
-          {isES ? "Instalar gratis →" : "Install free →"}
+          {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
         </a>
       </div>
     </section>
