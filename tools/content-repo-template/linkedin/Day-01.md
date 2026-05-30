@@ -4,7 +4,7 @@ status: ready
 day: 1
 pillar: commerce-ai
 lang: es
-published_at:
+published_at: 2026-05-29
 link_comment: https://cli-market.dev
 tags:
   - linkedin
