@@ -114,7 +114,7 @@ const jsonLd = {
     {
       "@type": "WebAPI",
       name: "CLI Market API",
-      url: "https://cli-market-production.up.railway.app/docs",
+      url: `${siteUrl}/docs`,
       documentation: `${siteUrl}/llms-full.txt`,
     },
   ],
