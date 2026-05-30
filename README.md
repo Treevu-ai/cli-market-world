@@ -31,12 +31,13 @@ AI agents can't comparison-shop in physical retail. Every retailer requires sepa
 
 **CLI Market fixes this.** One `pip install`. One API call across 60 retailers (30 verified). One JSON schema.
 
-- **Search** any product across 30 verified retailers in 8 countries
+- **Search** any product across 60 retailers (30 verified) in 8 countries
 - **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - **Basket** — compare your full shopping cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - **Inflation** — track real price changes from supermarket shelves, updated every 8 hours
-- **Buy** — checkout with PayPal or QR (Yape/Plin)
-- **Build** — data moat with quality-filtered spreads, canasta matching, and live dashboard
+- **Intelligence** — commercial pilot (USD 300–500/mo): spreads, inflation, basket, quality layer
+- **Build** — Free/Pro API and MCP for agent integrators; checkout with PayPal or QR (Yape/Plin) on roadmap for autonomous agents
+- **Data moat** — quality-filtered spreads, canasta matching, and live dashboard
 
 > Stripe turned payments into APIs. We turn commerce into APIs.
 

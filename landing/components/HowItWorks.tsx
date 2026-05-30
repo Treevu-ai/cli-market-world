@@ -22,10 +22,12 @@ export default function HowItWorks() {
           {isES ? "Cómo funciona" : "How it works"}
         </p>
         <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-white mb-2 tracking-tight">
-          {isES ? "Del install a la compra en menos de 1 minuto." : "From install to purchase in under 1 minute."}
+          {isES ? "Del install a datos verificados en minutos." : "From install to verified data in minutes."}
         </h2>
         <p className="text-sm text-[var(--wise-body)] max-w-xl mx-auto mb-8">
-          {isES ? "Search → Compare → Cart → Checkout. Demo en vivo abajo." : "Search → Compare → Cart → Checkout. Live demo below."}
+          {isES
+            ? "Search → Compare → export. Foco comercial: Intelligence (spreads, inflación, canasta). Demo Build con checkout en roadmap."
+            : "Search → Compare → export. Commercial focus: Intelligence (spreads, inflation, basket). Build demo with checkout on the roadmap."}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left mb-10 min-w-0">
