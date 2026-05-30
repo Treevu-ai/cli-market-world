@@ -37,7 +37,7 @@ market-server = "market_server:main"
 market-mcp = "market_mcp:main"
 
 [tool.setuptools]
-py-modules = ["market_cli", "market_server", "market_mcp", "market_stores", "market_core", "market_billing", "store_credentials"]
+py-modules = ["market_cli", "market_server", "market_mcp", "market_stores", "market_core", "market_db", "market_billing", "store_credentials"]
 
 [tool.ruff]
 line-length = 120
