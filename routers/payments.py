@@ -46,6 +46,7 @@ from market_core import (
     db_create_order,
     db_get_cart,
 )
+from market_security import is_production_deploy, paypal_allow_unverified_webhooks
 from server_deps import check_rate_limit, require_checkout_access, require_user
 
 logger = logging.getLogger(__name__)
@@ -283,9 +284,20 @@ async def paypal_webhook(request: Request):
     headers = {k.lower(): v for k, v in request.headers.items()}
     from market_connectors.paypal_payments import PAYPAL_WEBHOOK_ID, verify_webhook_signature
 
-    if PAYPAL_WEBHOOK_ID or os.getenv("PAYPAL_SANDBOX", "true").lower() == "true":
+    if not PAYPAL_WEBHOOK_ID:
+        if is_production_deploy():
+            raise HTTPException(
+                status_code=503,
+                detail="PAYPAL_WEBHOOK_ID required in production",
+            )
+        if not paypal_allow_unverified_webhooks():
+            raise HTTPException(
+                status_code=401,
+                detail="PayPal webhook verification not configured",
+            )
+    else:
         verified = await verify_webhook_signature(headers, body)
-        if not verified and PAYPAL_WEBHOOK_ID:
+        if not verified:
             logger.warning("PayPal webhook signature verification failed")
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
@@ -298,7 +310,15 @@ async def paypal_webhook(request: Request):
 def checkout_webhook(order_id: str = "", status: str = "paid", secret: str = ""):
     """Mark an order paid/failed. Requires CHECKOUT_WEBHOOK_SECRET in production."""
     expected = os.getenv("CHECKOUT_WEBHOOK_SECRET", "")
-    if expected and secret != expected:
+    if is_production_deploy():
+        if not expected:
+            raise HTTPException(
+                status_code=503,
+                detail="CHECKOUT_WEBHOOK_SECRET required in production",
+            )
+        if secret != expected:
+            raise HTTPException(status_code=401, detail="Invalid webhook secret")
+    elif expected and secret != expected:
         raise HTTPException(status_code=401, detail="Invalid webhook secret")
     if not order_id:
         raise HTTPException(status_code=400, detail="order_id required")

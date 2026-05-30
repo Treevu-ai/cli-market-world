@@ -24,8 +24,24 @@ import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from market_core import get_db
+from market_security import validate_public_http_url
 
 router = APIRouter(tags=["media"])
+
+
+async def _fetch_public_url(url: str) -> bytes:
+    try:
+        safe_url = validate_public_http_url(url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
+        r = await client.get(safe_url)
+        if r.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot fetch resource: HTTP {r.status_code}",
+            )
+        return r.content
 
 
 # ── Ticket scanning (OCR via tesseract) ───────────────────────────────────────
@@ -91,13 +107,10 @@ async def ticket_scan_url(body: dict):
     """OCR from a public image URL. Same as /v1/ticket/scan but without upload."""
     url = body.get("url", "")
     country = body.get("country")
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.get(url)
-        if r.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Cannot fetch image: HTTP {r.status_code}")
-        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-            tmp.write(r.content)
-            tmp_path = tmp.name
+    content = await _fetch_public_url(url)
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
     try:
         result = subprocess.run(
             ["tesseract", tmp_path, "stdout", "-l", "spa", "--psm", "6"],
@@ -150,13 +163,10 @@ async def voice_transcribe_url(body: dict):
         suffix = ".mp3"
     elif url.endswith(".wav"):
         suffix = ".wav"
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.get(url)
-        if r.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Cannot fetch audio: HTTP {r.status_code}")
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-            tmp.write(r.content)
-            tmp_path = tmp.name
+    content = await _fetch_public_url(url)
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
     try:
         result = subprocess.run(
             ["whisper", tmp_path, "--model", "tiny", "--language", "es",
