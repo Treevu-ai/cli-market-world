@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dashboard_quality import QUALITY_FILTERS
 from market_core import STORES
+from market_db import price_snapshots_has_confidence
 from market_spread import build_spread_analytics, find_median_outliers
 from price_confidence import discount_is_scrape_error, spread_confidence
 
@@ -194,11 +195,63 @@ def query_prices(
         clauses.append("store = ?")
         params.append(store)
 
+    use_confidence = clean and price_snapshots_has_confidence(db)
+    if use_confidence:
+        clauses.append("confidence = 'ok'")
+
     where = " AND ".join(clauses)
+    select_cols = (
+        "product_id, name, store, store_name, price, list_price, currency, "
+        "line, line_name, queried_at"
+    )
+    if use_confidence:
+        select_cols += ", confidence"
+
+    if use_confidence:
+        total_row = db.execute(
+            f"SELECT COUNT(*) as n FROM price_snapshots WHERE {where}",
+            tuple(params),
+        ).fetchone()
+        total = int(total_row["n"] if total_row else 0)
+        rows = db.execute(
+            f"""
+            SELECT {select_cols}
+            FROM price_snapshots
+            WHERE {where}
+            ORDER BY queried_at DESC, store, name
+            LIMIT ? OFFSET ?
+            """,
+            tuple(params) + (limit, offset),
+        ).fetchall()
+        items = []
+        for r in rows:
+            row = dict(r)
+            price = float(row["price"])
+            list_price = float(row["list_price"]) if row.get("list_price") else None
+            items.append({
+                "product_id": row.get("product_id"),
+                "name": row["name"],
+                "store": row["store"],
+                "store_name": row["store_name"],
+                "price": price,
+                "currency": row["currency"],
+                "line": row["line"],
+                "line_name": row["line_name"],
+                "queried_at": row.get("queried_at"),
+                "discount_pct": _discount_pct(price, list_price),
+                "confidence": row.get("confidence") or "ok",
+            })
+        return {
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "clean": clean,
+            "items": items,
+        }
+
     rows = db.execute(
         f"""
-        SELECT product_id, name, store, store_name, price, list_price, currency,
-               line, line_name, queried_at
+        SELECT {select_cols}
         FROM price_snapshots
         WHERE {where}
         ORDER BY queried_at DESC, store, name

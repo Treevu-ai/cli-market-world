@@ -142,6 +142,7 @@ def main() -> int:
     p_sync = camp_sub.add_parser("sync", help="Refresh metrics in data-gate + Day-*.md")
     p_sync.add_argument("--dry-run", action="store_true")
     camp_sub.add_parser("assets", help="Regenerate all 30 LinkedIn PNG assets")
+    camp_sub.add_parser("template-sync", help="Sync content template → content repo (incremental)")
 
     args = parser.parse_args()
 
@@ -157,6 +158,11 @@ def main() -> int:
         if args.camp_cmd == "assets":
             return subprocess.call(
                 [sys.executable, str(ROOT / "ops" / "generate_all_linkedin_assets.py"), "--patch"],
+                cwd=ROOT,
+            )
+        if args.camp_cmd == "template-sync":
+            return subprocess.call(
+                [sys.executable, str(ROOT / "ops" / "sync_content_template.py")],
                 cwd=ROOT,
             )
     if args.command == "post":

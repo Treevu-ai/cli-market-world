@@ -1,9 +1,16 @@
 """Tests for price confidence flags and median outlier detection."""
 
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
 from market_spread import find_median_outliers
 from price_confidence import (
     DISCOUNT_PUBLIC_MAX,
     DISCOUNT_PUBLIC_MIN,
+    compute_snapshot_confidence,
     discount_is_scrape_error,
     discount_public_ok,
     spread_public_ok,
@@ -18,6 +25,12 @@ def test_discount_public_range():
     assert not discount_public_ok(2)
     assert discount_is_scrape_error(99)
     assert not discount_is_scrape_error(80)
+
+
+def test_compute_snapshot_confidence():
+    assert compute_snapshot_confidence(12.0, 15.0) == "ok"
+    assert compute_snapshot_confidence(1.0, 100.0) == "suspect"
+    assert compute_snapshot_confidence(10.0, None) == "ok"
 
 
 def test_spread_public_ok():
