@@ -31,8 +31,8 @@ export default function QuickstartAPI() {
         </h2>
         <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-md mx-auto mb-12">
           {isES
-            ? "Todo lo que haces en la CLI está disponible vía HTTP. Busca, compara canastas y crea órdenes con JSON plano."
-            : "Everything in the CLI is available over HTTP. Search, compare baskets, and create orders with flat JSON."}
+            ? "Todo lo que haces en la CLI está disponible vía HTTP. Busca, compara canastas y normaliza precios con JSON plano. (Creación de órdenes: en roadmap.)"
+            : "Everything in the CLI is available over HTTP. Search, compare baskets, and normalize prices with flat JSON. (Order creation: on the roadmap.)"}
         </p>
 
         <div className="text-left space-y-4 w-full max-w-[560px] min-w-0 mx-auto">
