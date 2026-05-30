@@ -113,7 +113,9 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-DEFAULT_STORES = [k for k, v in STORES.items() if not v.get("disabled")]
+from store_credentials import compute_default_stores, resolve_store_config
+
+DEFAULT_STORES = compute_default_stores()
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
@@ -241,7 +243,7 @@ def api(method: str, path: str, json_data: dict | None = None) -> dict:
 
 async def fetch_store(store: str, term: str, page: int = 1, limit: int = PAGE_SIZE) -> list[dict]:
     """Search a store's catalog API. Platform-agnostic."""
-    store_config = STORES[store]
+    store_config = resolve_store_config(store)
     platform = store_config.get("platform", "vtex")
     from market_connectors import get_connector
     connector = get_connector(platform)
@@ -251,7 +253,7 @@ def product_from_json(p: dict, store: str) -> dict:
     """Normalize a product JSON into a flat dict. Platform-agnostic."""
     if not isinstance(p, dict):
         return {"id": "", "name": str(p)[:80], "price": 0, "store": store, "store_name": store, "currency": "USD"}
-    store_config = STORES[store]
+    store_config = resolve_store_config(store)
     platform = store_config.get("platform", "vtex")
     from market_connectors import get_connector
     connector = get_connector(platform)
