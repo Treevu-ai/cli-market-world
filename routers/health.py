@@ -58,6 +58,34 @@ def _age_hours(timestamp_str: str | datetime | None) -> float | None:
         return None
 
 
+def derive_collector_status(
+    *,
+    finished_at: str | datetime | None,
+    prices_collected: int | None,
+    moat_age_h: float | None = None,
+) -> tuple[str, float | None]:
+    """Map last collector run + moat freshness to a dashboard/health status.
+
+    ``ok`` — finished recently and ingested prices.
+    ``empty`` — finished recently but saved zero prices (runner alive, ingest broken).
+    ``stale`` — run or moat data older than SLA (8h moat / 12h run).
+    ``dead`` — run or moat very old (24h+).
+    """
+    if finished_at is None:
+        return "running", None
+    age_h = _age_hours(finished_at)
+    if age_h is None:
+        return "unknown", None
+    collected = int(prices_collected or 0)
+    if age_h > 24 or (moat_age_h is not None and moat_age_h >= 24):
+        return "dead", age_h
+    if age_h > 12 or (moat_age_h is not None and moat_age_h >= 8):
+        return "stale", age_h
+    if collected > 0:
+        return "ok", age_h
+    return "empty", age_h
+
+
 @router.get("/health")
 def health():
     return {"status": "healthy"}
@@ -140,15 +168,10 @@ def health_collector():
 
     finished = last["finished_at"]
     if finished:
-        age_h = _age_hours(finished)
-        if age_h is None:
-            status = "unknown"
-        elif age_h > 24:
-            status = "dead"
-        elif age_h > 12:
-            status = "stale"
-        else:
-            status = "ok"
+        status, age_h = derive_collector_status(
+            finished_at=finished,
+            prices_collected=last["prices_collected"],
+        )
     else:
         status = "running"
         age_h = None
