@@ -332,7 +332,34 @@ def test_health_collector_status_ok_not_healthy(isolated_db):
     status = r.json().get("status")
     assert status != "healthy"
     if status not in ("unknown", "running"):
-        assert status in ("ok", "stale", "dead")
+        assert status in ("ok", "stale", "dead", "empty")
+
+
+def test_derive_collector_status_empty_run_recent_moat_stale(isolated_db):
+    from datetime import datetime, timezone, timedelta
+    from routers.health import derive_collector_status
+
+    finished = datetime.now(timezone.utc) - timedelta(minutes=30)
+    status, age = derive_collector_status(
+        finished_at=finished,
+        prices_collected=0,
+        moat_age_h=11.0,
+    )
+    assert status == "stale"
+    assert age is not None and age < 2
+
+
+def test_derive_collector_status_ok_when_prices_ingested(isolated_db):
+    from datetime import datetime, timezone, timedelta
+    from routers.health import derive_collector_status
+
+    finished = datetime.now(timezone.utc) - timedelta(hours=1)
+    status, _ = derive_collector_status(
+        finished_at=finished,
+        prices_collected=500,
+        moat_age_h=2.0,
+    )
+    assert status == "ok"
 
 
 def test_dashboard_data_includes_dashboard_view(isolated_db):

@@ -25,7 +25,7 @@ from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
 from server_deps import require_user
 
-from .health import _age_hours
+from .health import _age_hours, derive_collector_status
 
 router = APIRouter(tags=["dashboard"])
 
@@ -355,13 +355,16 @@ def _dashboard_data():
 
     collector_status = "unknown"
     collector_age_h = None
+    last_prices_collected = 0
     if last_run:
         finished = last_run["finished_at"]
+        last_prices_collected = int(last_run["prices_collected"] or 0)
         if finished:
-            collector_age_h = _age_hours(finished)
-            if collector_age_h is not None:
-                collector_status = ("ok" if collector_age_h < 12
-                                    else ("stale" if collector_age_h < 24 else "dead"))
+            collector_status, collector_age_h = derive_collector_status(
+                finished_at=finished,
+                prices_collected=last_prices_collected,
+                moat_age_h=moat_age_h,
+            )
         else:
             collector_status = "running"
 
@@ -591,7 +594,8 @@ def _dashboard_data():
             "last_run": last_run["started_at"] if last_run else None,
             "last_finished": last_run["finished_at"] if last_run else None,
             "stores_succeeded": last_run["stores_succeeded"] if last_run else 0,
-            "prices_collected": last_run["prices_collected"] if last_run else 0,
+            "prices_collected": last_prices_collected,
+            "last_prices_collected": last_prices_collected,
         },
         "failing_stores": [dict(r) for r in failing_stores],
         "freshness": [dict(r) for r in freshness],

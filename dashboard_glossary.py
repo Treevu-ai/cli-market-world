@@ -91,7 +91,8 @@ LAYER_METRICS: dict[str, dict[str, MetricHelp]] = {
         "collector_status": _m(
             "Estado del recolector",
             "Programa automático que visita las tiendas y guarda precios. "
-            "ok = última ejecución terminó bien · error = algo falló.",
+            "ok = última corrida guardó precios · empty = corrió pero 0 precios · "
+            "stale/dead = hace mucho o el moat superó 8h/24h.",
         ),
         "collector_age_hours": _m(
             "Horas desde la última ejecución",
