@@ -327,11 +327,12 @@ def test_paypal_webhook_subscription_activated():
         "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
         "resource": {"id": "I-SUB123", "custom_id": "admin", "status": "ACTIVE"},
     }
-    with patch(
-        "market_connectors.paypal_payments.verify_webhook_signature",
-        new=AsyncMock(return_value=True),
-    ):
-        r = client.post("/checkout/paypal-webhook", json=event)
+    with patch("market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID", "WH-TEST"):
+        with patch(
+            "market_connectors.paypal_payments.verify_webhook_signature",
+            new=AsyncMock(return_value=True),
+        ):
+            r = client.post("/checkout/paypal-webhook", json=event)
     assert r.status_code == 200
     assert "pro_activated:admin" in r.json()["actions"]
     assert db_get_subscription("admin")["tier"] == "pro"
@@ -357,11 +358,12 @@ def test_paypal_webhook_payment_capture_marks_order_paid():
             "supplementary_data": {"related_ids": {"order_id": "PP-ORDER-99"}},
         },
     }
-    with patch(
-        "market_connectors.paypal_payments.verify_webhook_signature",
-        new=AsyncMock(return_value=True),
-    ):
-        r = client.post("/checkout/paypal-webhook", json=event)
+    with patch("market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID", "WH-TEST"):
+        with patch(
+            "market_connectors.paypal_payments.verify_webhook_signature",
+            new=AsyncMock(return_value=True),
+        ):
+            r = client.post("/checkout/paypal-webhook", json=event)
     assert r.status_code == 200
     db = get_db()
     row = db.execute("SELECT status FROM app_orders WHERE order_id=?", ("ORD-TEST01",)).fetchone()

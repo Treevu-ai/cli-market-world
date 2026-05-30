@@ -40,9 +40,9 @@ async def _get_access_token() -> str:
 
 
 async def verify_webhook_signature(headers: dict, event: dict) -> bool:
-    """Verify PayPal webhook via REST API. Skips if PAYPAL_WEBHOOK_ID unset (dev only)."""
+    """Verify PayPal webhook via REST API. Returns False if webhook ID is not configured."""
     if not PAYPAL_WEBHOOK_ID:
-        return PAYPAL_SANDBOX
+        return False
     token = await _get_access_token()
     body = {
         "auth_algo": headers.get("paypal-auth-algo") or headers.get("PAYPAL-AUTH-ALGO", ""),
