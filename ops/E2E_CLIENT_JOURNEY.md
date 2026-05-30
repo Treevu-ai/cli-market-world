@@ -65,7 +65,9 @@ market checkout --payment yape   # ya no 403
 - [ ] `SMTP_*` configurado — ver `.env.example`
 - [ ] `PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/B6YVFTG4MA73J`
 - [ ] `BILLING_FROM_EMAIL=hello@cli-market.dev`
-- [ ] Test: `curl -X POST .../billing/request-pro -d '{"email":"test@you.com"}'`
+- [x] Test: `curl -X POST .../billing/request-pro -d '{"email":"test@you.com"}'`
+
+Ver también: [`docs/ops/database-migration.md`](../docs/ops/database-migration.md)
 
 ### Cloudflare Pages (landing)
 - [ ] `NEXT_PUBLIC_API_URL` apunta a Railway

@@ -71,16 +71,21 @@ python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
 
 ---
 
-## Pendiente (Fase 1+)
+## Pendiente (Fase 2+)
 
-No bloquea ventas Intelligence; planificar en sprints siguientes:
+Completado en Fase 1 — ver `docs/ops/phase1-debt-cleanup.md`:
+
+- ~~Componentes landing huérfanos~~ ✅
+- ~~Content template 13K → 43K~~ ✅ (sync repo privado pendiente)
+- ~~Dual SQLite/Postgres doc~~ ✅ → `docs/ops/database-migration.md`
+- ~~`market_core.py` split (billing)~~ ✅ → `market_billing.py`
+
+Queda para sprints siguientes:
 
 1. **PayPal inventory** — corregir «Agotado» en panel PayPal Hosted Button
 2. **Checkout autónomo** — roadmap Build; no prometer en copy comercial
-3. **`market_core.py` split** — extraer billing, collector health, credentials
-4. **Componentes landing huérfanos** — auditar y eliminar o integrar
-5. **Content repo LinkedIn** — actualizar posts Day-03/06/07 con 43K (repo separado)
-6. **Dual SQLite/Postgres** — documentar path de migración producción
+3. **`market_db.py` split** — extraer capa `_DB` + DDL monolito
+4. **Content repo privado** — `campaign sync` tras actualizar template
 
 ---
 

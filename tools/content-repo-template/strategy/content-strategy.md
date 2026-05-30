@@ -17,7 +17,7 @@ hub: "[[GTM-Hub]]"
 **Type**: Tutorial | **Target**: Python developers
 **Outline**: `pip install cli-market` → `market login` → `market search` → `market checkout` → MCP connect
 
-## Article 3: "What 13,000 Prices Tell Us About LATAM Retail"
+## Article 3: "What 43,000 Prices Tell Us About LATAM Retail"
 **Type**: Data journalism | **Target**: Analysts, fintech
 **Outline**: Data source → Price spreads → Pharmacy markup → PE/AR/BR comparison → Access
 
