@@ -28,17 +28,22 @@ def _insert_application(
     contact_email: str,
     contact_name: str = "",
     website: str = "",
+    api_token: str = "",
     api_token_hint: str = "",
     notes: str = "",
 ) -> str:
+    from retailer_onboarding import token_hint
+
     app_id = f"RET-{uuid.uuid4().hex[:8].upper()}"
+    secret = (api_token or "").strip()
+    hint = api_token_hint or token_hint(secret)
     db = get_db()
     db.execute(
         """
         INSERT INTO retailer_applications
             (id, store_name, platform, country, contact_email, contact_name,
-             website, api_token_hint, notes, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+             website, api_token, api_token_hint, notes, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
         """,
         (
             app_id,
@@ -48,7 +53,8 @@ def _insert_application(
             contact_email.strip().lower(),
             contact_name.strip(),
             website.strip(),
-            api_token_hint.strip(),
+            secret,
+            hint,
             notes.strip(),
         ),
     )
@@ -78,6 +84,8 @@ def apply_retailer(body: dict):
     if not contact_email or not _EMAIL_RE.match(contact_email):
         raise HTTPException(status_code=400, detail="valid contact_email is required")
 
+    api_token = (body.get("api_token") or body.get("api_token_hint") or "").strip()
+
     app_id = _insert_application(
         store_name=store_name,
         platform=platform,
@@ -85,7 +93,7 @@ def apply_retailer(body: dict):
         contact_email=contact_email,
         contact_name=contact_name,
         website=(body.get("website") or "").strip(),
-        api_token_hint=(body.get("api_token") or body.get("api_token_hint") or "")[:200],
+        api_token=api_token,
         notes=(body.get("notes") or "").strip(),
     )
 

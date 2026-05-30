@@ -22,6 +22,14 @@ from market_core import (
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
+from store_credentials import get_default_stores, resolve_store_config
+
+
+def _store_line(store: str) -> str:
+    try:
+        return resolve_store_config(store).get("line", "")
+    except KeyError:
+        return STORES.get(store, {}).get("line", "")
 
 logger = log.getChild("collector")
 
@@ -618,7 +626,7 @@ async def collect_one_pg(pool, store, queries):
     if not cb.ok(store):
         logger.warning("circuit open — skipping %s", store)
         return 0
-    line = STORES[store].get("line", "")
+    line = _store_line(store)
     collected = 0
     query_ok = 0
     query_fail = 0
@@ -845,7 +853,7 @@ async def main():
     ensure_db_initialized()
     if args.status: do_status(); return
     if args.report: do_report(); return
-    stores = [k for k in STORES if not STORES[k].get("disabled")]  # skip disabled stores
+    stores = get_default_stores()
     stores = stores[:args.stores] if args.stores else stores
     label = "PostgreSQL" if USE_PG else "SQLite"
 

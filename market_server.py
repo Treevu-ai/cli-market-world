@@ -114,6 +114,7 @@ from routers.misc import router as misc_router
 from routers.orders import router as orders_router
 from routers.payments import router as payments_router
 from routers.retailers import router as retailers_router
+from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 
 # Order doesn't matter functionally — each router declares its own paths.
@@ -133,6 +134,7 @@ for r in (
     orders_router,
     payments_router,
     retailers_router,
+    retailer_admin_router,
     search_router,
 ):
     app.include_router(r)
