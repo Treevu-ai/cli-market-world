@@ -28,7 +28,7 @@ Arranqué CLI Market con un solo conector VTEX y una pregunta:
 
 Hoy:
 
-→ 30 retailers verificados
+→ 60 retailers (30 verificados)
 → 8 países (PE, AR, BR, MX, CO, CL, IT, FR)
 → 36 herramientas MCP
 → Collector automático cada 8 horas
