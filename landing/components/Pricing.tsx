@@ -64,10 +64,8 @@ const buildTiers: Tier[] = [
     cta_es: "Obtener Pro",
     cta_en: "Get Pro",
     featured: true,
-    proNote_es:
-      "Para builders y agentes en producción. Checkout autónomo en roadmap — este trimestre el foco comercial es Intelligence.",
-    proNote_en:
-      "For builders and agents in production. Autonomous checkout is on the roadmap — this quarter we sell Intelligence.",
+    proNote_es: "Checkout autónomo en roadmap.",
+    proNote_en: "Autonomous checkout is on the roadmap.",
   },
 ];
 
@@ -96,9 +94,9 @@ const intelligenceTiers: Tier[] = [
     featured: true,
     href: "#contact-intelligence",
     anchor_es:
-      "Bureaus y herramientas legacy cobran USD 500+/mes por menos cobertura regional y sin filtros de calidad.",
+      "Frente a herramientas tradicionales, que suelen partir de USD 500/mes con menor cobertura regional.",
     anchor_en:
-      "Legacy bureaus and tools charge USD 500+/mo for less regional coverage and no quality filters.",
+      "Vs traditional tools that often start at USD 500/mo with less regional coverage.",
   },
   {
     name: "Enterprise",
@@ -139,9 +137,9 @@ function TierCard({
         tier.featured ? "energy-border-active" : ""
       } ${tier.dark ? "bg-[var(--cm-surface-high)]" : ""}`}
     >
-      {tier.featured && (
+      {tier.featured && tier.name === "Intelligence Pilot" && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-[11px] font-semibold px-4 py-1 rounded-full whitespace-nowrap font-mono uppercase tracking-wider">
-          {isES ? "Foco comercial" : "Commercial focus"}
+          {isES ? "Piloto" : "Pilot"}
         </span>
       )}
       <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
@@ -219,8 +217,8 @@ export default function Pricing() {
             </h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 max-w-2xl">
               {isES
-                ? "Spreads, inflación, canasta y calidad verificable. Lo que vendemos este trimestre — no checkout autónomo."
-                : "Spreads, inflation, basket, and verifiable quality. What we sell this quarter — not autonomous checkout."}
+                ? "Spreads, inflación, canasta y calidad verificable."
+                : "Spreads, inflation, basket, and verifiable quality."}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -296,26 +294,6 @@ export default function Pricing() {
               </TierCard>
             ))}
           </div>
-        </div>
-
-        <div className="card-cyber p-4 max-w-3xl mx-auto mb-16 text-left">
-          <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-2">
-            {isES ? "¿Build Pro o Intelligence?" : "Build Pro or Intelligence?"}
-          </p>
-          <ul className="text-xs text-[var(--cm-on-surface-variant)] space-y-1.5">
-            <li>
-              <strong className="text-white">Pro (USD 49)</strong>
-              {isES
-                ? " — usted integra API/MCP y exporta datos técnicos. Ideal para devs y agentes."
-                : " — you integrate API/MCP and export technical data. Best for devs and agents."}
-            </li>
-            <li>
-              <strong className="text-white">Intelligence (USD 300–500)</strong>
-              {isES
-                ? " — paquete comercial: spreads, inflación, canasta, calidad y SLA. Ideal para pricing y trade."
-                : " — commercial package: spreads, inflation, basket, quality, and SLA. Best for pricing and trade."}
-            </li>
-          </ul>
         </div>
 
         <div
