@@ -293,6 +293,43 @@ export default function Pricing() {
               </TierCard>
             ))}
           </div>
+          <p className="text-[11px] text-[var(--wise-mute)] mt-4 max-w-2xl mx-auto">
+            {isES ? (
+              <>
+                One-pager del piloto:{" "}
+                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
+                  intelligence-pilot-es.md
+                </a>
+              </>
+            ) : (
+              <>
+                Pilot one-pager:{" "}
+                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
+                  intelligence-pilot-es.md
+                </a>
+              </>
+            )}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--wise-green-pale)] bg-[var(--wise-canvas)] p-4 max-w-3xl mx-auto mb-16 text-left">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)] mb-2">
+            {isES ? "¿Build Pro o Intelligence?" : "Build Pro or Intelligence?"}
+          </p>
+          <ul className="text-xs text-[var(--wise-body)] space-y-1.5">
+            <li>
+              <strong className="text-[var(--wise-ink)]">Pro (USD 49)</strong>
+              {isES
+                ? " — usted integra API/MCP y exporta datos técnicos. Ideal para devs y agentes."
+                : " — you integrate API/MCP and export technical data. Best for devs and agents."}
+            </li>
+            <li>
+              <strong className="text-[var(--wise-ink)]">Intelligence (USD 300–500)</strong>
+              {isES
+                ? " — paquete comercial: spreads, inflación, canasta, calidad y SLA. Ideal para pricing y trade."
+                : " — commercial package: spreads, inflation, basket, quality, and SLA. Best for pricing and trade."}
+            </li>
+          </ul>
         </div>
 
         <div
@@ -309,8 +346,8 @@ export default function Pricing() {
             }
             subtitle={
               isES
-                ? "Cuéntenos país, categorías y volumen. Respondemos en 48 h con propuesta de piloto."
-                : "Tell us country, categories, and volume. We reply within 48 h with a pilot proposal."
+                ? "Cuéntenos país, categorías y volumen. Respondemos en 48 h con propuesta de piloto. Puede adjuntar contexto o referirse al one-pager público."
+                : "Tell us country, categories, and volume. We reply within 48 h with a pilot proposal. Attach context or refer to the public one-pager."
             }
             placeholder={
               isES
