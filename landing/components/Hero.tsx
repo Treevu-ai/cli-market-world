@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { useLiveStats } from "@/hooks/useLiveStats";
@@ -31,17 +32,17 @@ export default function Hero() {
         </span>
       </div>
       <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0 relative z-10">
-        <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-white max-w-[900px] tracking-tight">
+        <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-white max-w-[900px] tracking-tight">
           {isES
             ? "La capa programable del retail físico de LatAm."
             : "The programmable layer for physical retail in LatAm."}
-        </h1>
+        </motion.h1>
 
-        <p className="mt-5 text-base sm:text-lg text-[var(--cm-on-surface-variant)] max-w-[620px] leading-relaxed">
+        <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }} className="mt-5 text-base sm:text-lg text-[var(--cm-on-surface-variant)] max-w-[620px] leading-relaxed">
           {isES
             ? `Una API sobre 60 retailers en 8 países. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores de mercado y ${MARKET_STATS.pricesVerifiedLabel} precios verificados, normalizados por kg/L. Cero scraping.`
             : `One API across 60 retailers in 8 countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
-        </p>
+        </motion.p>
 
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
           <a
