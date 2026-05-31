@@ -18,7 +18,7 @@ export default function Hero() {
   ];
 
   return (
-    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col overflow-hidden animate-fade-in">
+    <section id="hero" className="landing-section animate-fade-in relative min-h-[90vh] flex flex-col overflow-hidden">
       {/* Aura glow behind title */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--cm-mint)]/5 blur-[120px]" />
@@ -39,8 +39,8 @@ export default function Hero() {
 
         <p className="mt-5 text-base sm:text-lg text-[var(--cm-on-surface-variant)] max-w-[620px] leading-relaxed">
           {isES
-            ? "Los agentes de IA ya buscan y comparan en LATAM. CLI Market conecta builders con 30 retailers verificados — y entrega datos de precios para equipos comerciales."
-            : "AI agents already search and compare across LatAm. CLI Market connects builders to 30 verified retailers — and delivers price data for commercial teams."}
+            ? `Una API sobre 60 retailers en 8 países. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores de mercado y ${MARKET_STATS.pricesVerifiedLabel} precios verificados, normalizados por kg/L. Cero scraping.`
+            : `One API across 60 retailers in 8 countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
         </p>
 
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
@@ -58,17 +58,19 @@ export default function Hero() {
           </a>
 
           <a
-            href="#pricing-intelligence"
+            href="https://cli-market-production.up.railway.app/dashboard"
+            target="_blank"
+            rel="noopener"
             className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-mint)]">
-              {isES ? "Para pricing / trade" : "For pricing / trade"}
+              {isES ? "Para equipos comerciales" : "For commercial teams"}
             </span>
             <span className="text-base font-semibold text-white">
-              {isES ? "Intelligence — piloto →" : "Intelligence — pilot →"}
+              {isES ? "Dashboard en vivo →" : "Live dashboard →"}
             </span>
             <span className="text-xs text-[var(--cm-on-surface-variant)]">
-              {isES ? "Desde USD 300/mes · datos verificados" : "From USD 300/mo · verified data"}
+              {isES ? `${MARKET_STATS.indicatorsCount} indicadores · fuentes públicas` : `${MARKET_STATS.indicatorsCount} indicators · public sources`}
             </span>
           </a>
 
