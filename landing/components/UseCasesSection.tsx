@@ -1,38 +1,39 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const cases = [
-  {
-    icon: "📊",
-    title_es: "Pricing & market intelligence",
-    title_en: "Pricing & market intelligence",
-    desc_es: "Spreads, inflación y canasta con capa clean/flagged/citable. Piloto Intelligence desde USD 300/mes.",
-    desc_en: "Spreads, inflation, and basket with clean/flagged/citable layer. Intelligence pilot from USD 300/mo.",
-    href: "#pricing-intelligence",
-  },
-  {
-    icon: "🏛",
-    title_es: "Bureaus & inteligencia comercial",
-    title_en: "Bureaus & commercial intelligence",
-    desc_es: "Multi-retailer y multi-país por una API — enriquece reportes sin panel legacy de USD 500+/mes.",
-    desc_en: "Multi-retailer, multi-country via one API — enrich reports without legacy USD 500+/mo panels.",
-    href: "#pricing-intelligence",
-  },
-  {
-    icon: "💳",
-    title_es: "Fintech & modelos de riesgo",
-    title_en: "Fintech & risk models",
-    desc_es: "Canasta e inflación alimentaria con refresh cada 8 h — alternativa a fuentes con 30–45 días de retraso.",
-    desc_en: "Basket and food inflation with 8 h refresh — alternative to sources lagging 30–45 days.",
-    href: "#pricing-intelligence",
-  },
   {
     icon: "🤖",
     title_es: "Agentes de compra",
     title_en: "Shopping agents",
-    desc_es: "Search, compare y canastas con 43 herramientas MCP. Build Free/Pro — checkout autónomo en roadmap.",
-    desc_en: "Search, compare, and baskets with 43 MCP tools. Build Free/Pro — autonomous checkout on the roadmap.",
-    href: "#pricing-build",
+    desc_es: `Search, compare y canastas con ${MARKET_STATS.mcpTools} herramientas MCP. Build Free/Pro — checkout vía PayPal/QR.`,
+    desc_en: `Search, compare, and baskets with ${MARKET_STATS.mcpTools} MCP tools. Build Free/Pro — checkout via PayPal/QR.`,
+    href: "#pricing",
+  },
+  {
+    icon: "📊",
+    title_es: "Datos de mercado",
+    title_en: "Market data",
+    desc_es: `${MARKET_STATS.pricesVerifiedLabel} precios normalizados, ${MARKET_STATS.indicatorsCount} indicadores, fuentes públicas (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
+    desc_en: `${MARKET_STATS.pricesVerifiedLabel} normalized prices, ${MARKET_STATS.indicatorsCount} indicators, public sources (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
+    href: "https://cli-market-production.up.railway.app/dashboard",
+  },
+  {
+    icon: "🧺",
+    title_es: "Canasta multi-retailer",
+    title_en: "Multi-retailer basket",
+    desc_es: "Compara tu carrito completo entre cadenas. Precios por kg/L para decisiones de compra informadas.",
+    desc_en: "Compare your full cart across chains. Per kg/L pricing for informed purchase decisions.",
+    href: "#api",
+  },
+  {
+    icon: "📈",
+    title_es: "Inflación desde góndola",
+    title_en: "Shelf-price inflation",
+    desc_es: `Cambios reales de precios actualizados cada ${MARKET_STATS.pricesRefreshHours} horas, no estimaciones con 30 días de retraso.`,
+    desc_en: `Real price changes refreshed every ${MARKET_STATS.pricesRefreshHours} hours, not 30-day-lagged estimates.`,
+    href: "https://cli-market-production.up.railway.app/dashboard",
   },
 ];
 
@@ -47,12 +48,12 @@ export default function UseCasesSection() {
           {isES ? "Casos de uso" : "Use cases"}
         </p>
         <h2 className="section-title mb-2">
-          {isES ? "Mismo moat. Dos caminos." : "Same moat. Two paths."}
+          {isES ? "Una API. Múltiples aplicaciones." : "One API. Multiple applications."}
         </h2>
         <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-10">
           {isES
-            ? "Intelligence para equipos comerciales; Build para quien integra agentes — sobre los mismos precios verificados."
-            : "Intelligence for commercial teams; Build for agent integrators — on the same verified prices."}
+            ? "Desde agentes de compra hasta equipos de datos: los mismos precios verificados para todos."
+            : "From shopping agents to data teams: the same verified prices for everyone."}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[800px] mx-auto text-left mb-10">
@@ -60,6 +61,8 @@ export default function UseCasesSection() {
             <a
               key={c.title_es}
               href={c.href}
+              target={c.href.startsWith("http") ? "_blank" : undefined}
+              rel={c.href.startsWith("http") ? "noopener" : undefined}
               className="card-cyber p-6 flex flex-col gap-3 hover:border-[var(--cm-mint)]/30 transition-colors"
             >
               <span className="text-2xl" aria-hidden="true">{c.icon}</span>
@@ -70,7 +73,7 @@ export default function UseCasesSection() {
                 {isES ? c.desc_es : c.desc_en}
               </p>
               <span className="text-xs font-mono text-[var(--cm-mint)]">
-                {isES ? "Ver planes →" : "View plans →"}
+                {isES ? "Explorar →" : "Explore →"}
               </span>
             </a>
           ))}
@@ -80,7 +83,7 @@ export default function UseCasesSection() {
           href="#pricing"
           className="btn-mint"
         >
-          {isES ? "Ver planes Build + Intelligence →" : "View Build + Intelligence plans →"}
+          {isES ? "Ver planes →" : "View plans →"}
         </a>
       </div>
     </section>
