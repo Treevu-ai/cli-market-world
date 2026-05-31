@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const cases = [
   {
@@ -30,8 +31,8 @@ const cases = [
     icon: "🤖",
     title_es: "Agentes de compra",
     title_en: "Shopping agents",
-    desc_es: "Search, compare y canastas con 36 herramientas MCP. Build Free/Pro — checkout autónomo en roadmap.",
-    desc_en: "Search, compare, and baskets with 36 MCP tools. Build Free/Pro — autonomous checkout on the roadmap.",
+    desc_es: `Search, compare y canastas con ${MARKET_STATS.mcpTools} herramientas MCP y ${MARKET_STATS.indicatorsCount} indicadores. Build Free/Pro — checkout autónomo en roadmap.`,
+    desc_en: `Search, compare, and baskets with ${MARKET_STATS.mcpTools} MCP tools and ${MARKET_STATS.indicatorsCount} indicators. Build Free/Pro — autonomous checkout on the roadmap.`,
     href: "#pricing-build",
   },
 ];

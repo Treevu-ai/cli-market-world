@@ -73,7 +73,7 @@ export default function ScaleCoverageSection() {
         </div>
 
         {/* Data moat snapshot — canonical labels only */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 text-left">
           <div className="card-cyber header-strip p-5">
             <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
@@ -92,6 +92,15 @@ export default function ScaleCoverageSection() {
             </p>
             <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
               {isES ? `snapshots 24h · collector ${refreshLabel(isES)}` : `24h snapshots · collector ${refreshLabel(isES)}`}
+            </p>
+          </div>
+          <div className="card-cyber header-strip p-5">
+            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-1">
+              {isES ? "Indicadores" : "Indicators"}
+            </p>
+            <p className="text-3xl font-black text-white tabular-nums">{MARKET_STATS.indicatorsCount}</p>
+            <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
+              {isES ? "moat + enrichment (OFF, IMF, Eurostat…)" : "moat + enrichment (OFF, IMF, Eurostat…)"}
             </p>
           </div>
           <div className="card-cyber header-strip p-5">
