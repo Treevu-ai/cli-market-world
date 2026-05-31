@@ -16,11 +16,11 @@ AI agents can't shop in physical retail. They need structured product data — p
 
 | Metric | Value |
 |---|---|
-| Retailers live | 27 (VTEX, Shopify-ready, Magento-ready) |
-| Prices indexed | 9,000+ |
+| Retailers live | 31 (VTEX, Shopify-ready, Magento-ready) |
+| Prices indexed | 43,000+ |
 | Products tracked | 8,000+ |
-| Countries | 7 (PE, AR, BR, MX, CO, CL, US) |
-| MCP tools | 36 (search, compare, basket, checkout) |
+| Countries | 8 (PE, AR, BR, MX, CO, CL, US, +) |
+| MCP tools | 43 (search, compare, basket, checkout, inflation, enrichment…) |
 | Refresh cycle | Every 8 hours |
 | License | MIT (open source) |
 
