@@ -52,14 +52,12 @@ const tiers: Tier[] = [
       "10 claves API (lectura y escritura)",
       "✦ Exportación de precios (JSON/CSV)",
       "Checkout (PayPal / QR) tras activación por email",
-      "Soporte prioritario por email",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
       "✦ Price data export (JSON/CSV)",
       "Checkout (PayPal / QR) after email activation",
-      "Priority email support",
     ],
     cta_es: "Obtener Pro",
     cta_en: "Get Pro",
@@ -104,7 +102,7 @@ function TierCard({
 }) {
   return (
     <div
-      className={`rounded-2xl p-6 text-left flex flex-col relative ${
+      className={`h-full rounded-2xl p-6 text-left flex flex-col relative ${
         tier.dark
           ? "energy-border-active card-cyber"
           : tier.featured
@@ -160,17 +158,10 @@ function TierCard({
       </ul>
       {children ? (
         children
-      ) : tier.dark ? (
-        <a
-          href={tier.href ?? "#"}
-          className="inline-flex items-center justify-center rounded-3xl border-2 border-[var(--cm-mint)] text-[var(--cm-mint)] text-sm font-semibold px-6 py-3 hover:bg-[var(--cm-mint)] hover:text-[var(--cm-on-mint)] transition-colors"
-        >
-          {isES ? tier.cta_es : tier.cta_en}
-        </a>
       ) : (
         <a
           href={tier.href ?? "#"}
-          className="btn-mint"
+          className="btn-mint w-full"
         >
           {isES ? tier.cta_es : tier.cta_en}
         </a>
