@@ -7,7 +7,7 @@ export default function AboutSection() {
   const isES = lang === "es";
 
   return (
-    <section id="about" className="landing-section landing-section-alt">
+    <section id="about" className="landing-section landing-section-alt animate-fade-in">
       <div className="landing-container-wide text-center">
         <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">{isES ? "Sobre nosotros" : "About us"}</p>
         <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-[1.1] font-bold text-[var(--cm-mint)] mb-6 tracking-tight">

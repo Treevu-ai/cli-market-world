@@ -50,7 +50,7 @@ export default function ScaleCoverageSection() {
   ];
 
   return (
-    <section id="coverage" className="landing-section">
+    <section id="coverage" className="landing-section animate-fade-in">
       <div className="landing-container text-center">
         <p className="section-eyebrow mb-4">
           {isES ? "Escala y cobertura" : "Scale and coverage"}

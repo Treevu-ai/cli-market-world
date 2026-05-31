@@ -18,7 +18,7 @@ export default function Hero() {
   ];
 
   return (
-    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col overflow-hidden">
+    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col overflow-hidden animate-fade-in">
       {/* Aura glow behind title */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--cm-mint)]/5 blur-[120px]" />

@@ -8,7 +8,7 @@ export default function CoverageToUseCasesBridge() {
 
   return (
     <div
-      className="landing-section-alt py-8"
+      className="landing-section-alt py-8 animate-fade-in"
       aria-label={isES ? "Puente entre cobertura y casos de uso" : "Bridge between coverage and use cases"}
     >
       <div className="landing-container max-w-2xl mx-auto text-center px-4">

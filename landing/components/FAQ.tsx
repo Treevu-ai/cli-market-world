@@ -69,7 +69,7 @@ export default function FAQ() {
   const isES = lang === "es";
 
   return (
-    <section id="faq" className="landing-section">
+    <section id="faq" className="landing-section animate-fade-in">
       <div className="landing-container-wide text-center max-w-3xl mx-auto">
         <p className="section-eyebrow mb-4">FAQ</p>
         <h2 className="section-title mb-12">
