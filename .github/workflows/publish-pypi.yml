@@ -13,7 +13,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: pypi
     steps:
       - uses: actions/checkout@v6
 

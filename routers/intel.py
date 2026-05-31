@@ -152,7 +152,7 @@ def intel_alerts(
         series.setdefault(k, []).append(r)
 
     alerts: list[dict] = []
-    for key, pts in series.items():
+    for _key, pts in series.items():
         if len(pts) < 2:
             continue
         pts.sort(key=lambda x: x["recorded_at"])
