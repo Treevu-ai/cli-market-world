@@ -28,6 +28,7 @@ from market_core import (
     STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, api,
     fmt_price, store_color, save_last_search, load_last_search,
 )
+from market_stats import COUNTRIES as MS_COUNTRIES, MCP_TOOLS, RETAILERS_VERIFIED
 
 console = Console()
 
@@ -558,6 +559,166 @@ def cmd_inflation(args):
             table.add_row(i["product"][:35], f"{i['currency']} {i['first_price']:.2f}", f"{i['currency']} {i['last_price']:.2f}", f"[{c}]{i['delta_pct']:+.1f}%[/]")
         console.print(table)
 
+def cmd_indicators(args):
+    if args.refresh:
+        qs = f"country={args.country}" if args.country else ""
+        with console.status("[cyan]Refrescando indicadores..."):
+            data = cli_api("POST", f"/v1/intel/refresh?{qs}" if qs else "/v1/intel/refresh")
+        if getattr(args, "json", False):
+            console.print(json.dumps(data, indent=2, ensure_ascii=False))
+            return
+        console.print(
+            f"[#3cffd0]✓ Indicadores actualizados — "
+            f"internal={data.get('internal_written', 0)} "
+            f"external={data.get('external_written', 0)} "
+            f"enrichment={data.get('enrichment_written', 0)}[/]"
+        )
+        return
+
+    with console.status("[cyan]Cargando catálogo de indicadores..."):
+        catalog = cli_api("GET", "/v1/intel/indicators")
+    items = catalog.get("indicators", [])
+    if getattr(args, "json", False):
+        if args.country:
+            latest = cli_api("GET", f"/v1/intel/scores?country={args.country}")
+            console.print(json.dumps({"catalog": catalog, "scores": latest}, indent=2, ensure_ascii=False))
+        else:
+            console.print(json.dumps(catalog, indent=2, ensure_ascii=False))
+        return
+
+    console.print(f"\n[bold]Data Moat — {len(items)} indicadores[/]")
+    table = Table(border_style="dim blue")
+    table.add_column("Key", style="cyan")
+    table.add_column("Categoría")
+    table.add_column("Fuente", max_width=28)
+    table.add_column("Refresh", justify="right")
+    for i in items:
+        table.add_row(i["key"], i["category"], i["source"][:28], f"{i.get('refresh_hours', 24)}h")
+    console.print(table)
+    if args.country:
+        scores = cli_api("GET", f"/v1/intel/scores?country={args.country}")
+        sc = scores.get("scores", {})
+        if sc:
+            console.print(f"\n[bold]Scores — {args.country}[/]")
+            for name, info in sc.items():
+                console.print(f"  {name}: [yellow]{info.get('score')}[/] ({info.get('label')})")
+    console.print("\n[dim]market indicators --refresh -c PE  ·  market scores -c PE[/]")
+
+
+def cmd_scores(args):
+    params = []
+    if args.country:
+        params.append(f"country={args.country}")
+    if args.line:
+        params.append(f"line={args.line}")
+    qs = "&".join(params)
+    with console.status("[cyan]Calculando scores compuestos..."):
+        data = cli_api("GET", f"/v1/intel/scores?{qs}" if qs else "/v1/intel/scores")
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+    scores = data.get("scores", {})
+    if not scores:
+        console.print("[yellow]Sin scores aún. Corré: market indicators --refresh -c PE[/]")
+        return
+    console.print(f"\n[bold]Scores compuestos[/] — {data.get('country') or 'global'}")
+    table = Table(border_style="dim blue")
+    table.add_column("Score", style="bold")
+    table.add_column("Valor", justify="right")
+    table.add_column("Señal")
+    for name, info in scores.items():
+        table.add_row(name, str(info.get("score", "—")), info.get("label", ""))
+    console.print(table)
+    console.print(f"[dim]{data.get('disclaimer', '')}[/]")
+
+
+def cmd_enrichment(args):
+    cc = args.country or "PE"
+    if args.refresh:
+        with console.status(f"[cyan]Refrescando enriquecimiento — {cc}..."):
+            refresh_data = cli_api("POST", f"/v1/intel/enrichment/refresh?country={cc}")
+        if getattr(args, "json", False):
+            console.print(json.dumps(refresh_data, indent=2, ensure_ascii=False))
+            return
+        console.print(
+            f"[#3cffd0]✓ Enriquecimiento actualizado — "
+            f"written={refresh_data.get('enrichment_written', 0)} · {cc}[/]"
+        )
+
+    with console.status(f"[cyan]Cargando enriquecimiento — {cc}..."):
+        data = cli_api("GET", f"/v1/intel/enrichment?country={cc}")
+    items = data.get("indicators", [])
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    console.print(f"\n[bold]Enriquecimiento — {cc}[/] ({len(items)} señales)")
+    if not items:
+        console.print("[yellow]Sin datos aún. Corré: market enrichment --refresh -c PE[/]")
+        return
+    table = Table(border_style="dim blue")
+    table.add_column("Indicador", style="cyan")
+    table.add_column("Valor", justify="right")
+    table.add_column("Unidad")
+    table.add_column("Actualizado", style="dim")
+    for i in items:
+        table.add_row(
+            i.get("key", ""),
+            str(i.get("value", "—")),
+            i.get("unit") or "",
+            (i.get("recorded_at") or "")[:16],
+        )
+    console.print(table)
+    try:
+        scores = cli_api("GET", f"/v1/intel/scores?country={cc}")
+        sc = scores.get("scores", {})
+        enrich_scores = {
+            k: sc[k]
+            for k in (
+                "food_premium",
+                "nutrition_quality",
+                "staple_demand",
+                "product_intelligence",
+                "macro_validation",
+                "labor_stress",
+                "growth_outlook",
+            )
+            if k in sc
+        }
+        if enrich_scores:
+            console.print(f"\n[bold]Scores enriquecimiento[/]")
+            for name, info in enrich_scores.items():
+                console.print(f"  {name}: [yellow]{info.get('score')}[/] ({info.get('label')})")
+    except Exception:
+        pass
+
+    try:
+        sub = cli_api("GET", f"/v1/intel/enrichment/subcategories?country={cc}")
+        sub_items = sub.get("items", [])
+        if sub_items:
+            console.print(f"\n[bold]Por subcategoría[/]")
+            st = Table(border_style="dim blue")
+            st.add_column("Subcat", style="cyan")
+            st.add_column("Δ precio 7d", justify="right")
+            st.add_column("Wiki mom.", justify="right")
+            st.add_column("Min precio", justify="right")
+            for row in sub_items:
+                sig = row.get("signals", {})
+                st.add_row(
+                    row.get("subcategory", ""),
+                    str(sig.get("subcat_price_momentum", {}).get("value", "—")),
+                    str(sig.get("subcat_wiki_momentum", {}).get("value", "—")),
+                    str(sig.get("subcat_min_price", {}).get("value", "—")),
+                )
+            console.print(st)
+    except Exception:
+        pass
+
+    sources = ", ".join(data.get("sources", []))
+    console.print(f"\n[dim]Fuentes: {sources}[/]")
+    console.print("[dim]market enrichment --refresh -c PE  ·  market scores -c PE[/]")
+
+
 def cmd_alerts(args):
     if args.action == "list":
         data = cli_api("POST", "/v1/alerts", {"product": "", "action": "list"})
@@ -574,7 +735,7 @@ def cmd_alerts(args):
 def cmd_about(args):
     console.print(Panel.fit(
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
-        "[#888888]Un solo pip install. Una API. 30 retailers en 8 países. 36 MCP tools.[/]\n"
+        f"[#888888]Un solo pip install. Una API. {RETAILERS_VERIFIED} retailers en {MS_COUNTRIES} países. {MCP_TOOLS} MCP tools.[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
         "[#888888]Open source (MIT). Gratis para developers.[/]\n\n"
         "[dim]github.com/Treevu-ai/cli-market-world[/]",
@@ -600,7 +761,7 @@ def cmd_hello(args):
     if is_en:
         console.print(Panel.fit(
             "[bold #00FF88]Welcome to CLI Market[/]\n\n"
-            "Commerce API for AI agents — 30 retailers, 36 MCP tools.\n\n"
+            f"Commerce API for AI agents — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} MCP tools.\n\n"
             "[bold]Next steps:[/]\n"
             "  1. [cyan]market login[/] — free API access (admin / market)\n"
             "  2. [cyan]market search \"milk\" --country PE[/] — try a search\n"
@@ -613,7 +774,7 @@ def cmd_hello(args):
     else:
         console.print(Panel.fit(
             "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
-            "Infraestructura de comercio para agentes IA — 30 retailers, 36 herramientas MCP.\n\n"
+            f"Infraestructura de comercio para agentes IA — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} herramientas MCP.\n\n"
             "[bold]Próximos pasos:[/]\n"
             "  1. [cyan]market login[/] — acceso gratis (admin / market)\n"
             "  2. [cyan]market search \"leche\" --country PE[/] — prueba una búsqueda\n"
@@ -788,6 +949,21 @@ def main():
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
 
+    # indicators
+    p = sub.add_parser("indicators", help="Catálogo y refresh de indicadores del data moat")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--refresh", action="store_true", help="Recalcular indicadores (internal + APIs públicas)")
+
+    # enrichment (data moat signals from public APIs)
+    p = sub.add_parser("enrichment", help="Indicadores de enriquecimiento (OFF, Wiki, clima, food CPI)")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--refresh", action="store_true", help="Solo refrescar enriquecimiento (sin recalcular todo el moat)")
+
+    # scores
+    p = sub.add_parser("scores", help="Scores compuestos del moat (fairness, stress, aggression)")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -815,7 +991,8 @@ def main():
         "countries": cmd_countries, "lines": cmd_lines,
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket,
-        "inflation": cmd_inflation, "alerts": cmd_alerts,
+        "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
+        "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "lang": cmd_lang,
         "hello": cmd_hello, "share": cmd_share, "upgrade": cmd_upgrade,
     }

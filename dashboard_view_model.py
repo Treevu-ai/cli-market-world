@@ -363,6 +363,63 @@ def build_dashboard_view_model(data: dict) -> dict:
         },
     }
 
+    # ── Block 5b — Enrichment indicators ─────────────────────────────────────
+    indicators_meta = data.get("indicators") or {}
+    enrichment_raw = indicators_meta.get("enrichment") or []
+    tier2_keys = {
+        "imf_inflation_yoy", "eurostat_food_hicp_yoy", "eurostat_headline_hicp_yoy",
+        "bcb_food_inflation_mom", "bcb_headline_inflation_mom", "macro_unemployment_rate",
+        "imf_wb_cpi_gap", "imf_gdp_growth_yoy", "imf_epi_inflation_yoy", "wb_gdp_growth_yoy",
+    }
+    enrichment_items = []
+    for row in enrichment_raw[:30]:
+        key = str(row.get("key") or "")
+        val = row.get("value")
+        unit = row.get("unit") or ""
+        name = row.get("name") or key.replace("_", " ")
+        cc = row.get("country") or "—"
+        tier = "tier2" if key in tier2_keys else "tier1"
+        if val is None:
+            val_label = "—"
+        else:
+            try:
+                fval = float(val)
+                if unit in ("pct", "%"):
+                    val_label = f"{fval:+.2f}%"
+                else:
+                    val_label = f"{fval:.2f}{(' ' + unit) if unit else ''}"
+            except (TypeError, ValueError):
+                val_label = str(val)
+        enrichment_items.append({
+            "key": key,
+            "name": name,
+            "country": cc,
+            "value_label": val_label,
+            "source": row.get("source") or "",
+            "tier": tier,
+            "copy": f"{name} ({cc}): {val_label}",
+            "recorded_at": row.get("recorded_at"),
+        })
+
+    block_enrichment = {
+        "id": "enrichment",
+        "state": "ok" if enrichment_items else "empty",
+        "title": "Señales enriquecidas (APIs públicas)",
+        "subtitle": (
+            "Indicadores derivados de fuentes abiertas — Open Food Facts, Wikimedia, "
+            "Open-Meteo, World Bank, IMF, Eurostat y BCB — combinados con el moat de precios."
+        ),
+        "indicator_count": len(enrichment_items) or None,
+        "docs": indicators_meta.get("docs") or "docs/DATA-MOAT-INDICATORS.md",
+        "endpoints": [
+            "GET /v1/intel/indicators",
+            "GET /v1/intel/enrichment",
+            "GET /v1/intel/enrichment/subcategories",
+            "POST /v1/intel/enrichment/refresh",
+        ],
+        "items": enrichment_items,
+    }
+
     # ── Block 6 — Ops (collapsed) ────────────────────────────────────────────
     quality_alerts = [
         {
@@ -531,6 +588,7 @@ def build_dashboard_view_model(data: dict) -> dict:
             "canasta": block_canasta,
             "price_spreads": block_spreads,
             "inflation": block_inflation,
+            "enrichment": block_enrichment,
             "exploration": block_exploration,
             "ops": block_ops,
         },
@@ -542,6 +600,7 @@ def build_dashboard_view_model(data: dict) -> dict:
             "price_spreads",
             "canasta",
             "inflation",
+            "enrichment",
             "exploration",
             "moat_narrative",
             "ops",

@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const MCP_CONFIG = {
   cursor: `{
@@ -61,7 +59,7 @@ export default function ToolsPage() {
         <div className="max-w-[720px] mx-auto">
           <p className="section-eyebrow mb-4">MCP · AI shopping API</p>
           <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-white mb-4 tracking-tight">
-            36 MCP tools for e-commerce agents
+            {MARKET_STATS.mcpTools} MCP tools for e-commerce agents
           </h1>
           <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
             Commerce API for AI agents — search, compare, basket, and checkout across 30 retailers.

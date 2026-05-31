@@ -162,6 +162,63 @@ TOOLS = [
         },
     },
     {
+        "name": "market_indicators",
+        "description": "Catálogo de indicadores del data moat (promo intensity, FX, CPI oficial, basket stress, etc.).",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_scores",
+        "description": "Scores compuestos del moat: retail_aggression, price_fairness, basket_stress, data_confidence, macro_alignment.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "line": {"type": "string", "description": "supermercados, farmacias, electro"},
+            },
+        },
+    },
+    {
+        "name": "market_intel_refresh",
+        "description": "Recalcular indicadores internos y fetch de APIs públicas (FX, World Bank CPI, OFF, Wikimedia, clima).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "market_enrichment",
+        "description": "Indicadores de enriquecimiento: Open Food Facts match rate, NOVA, Wikimedia demand, clima logístico, food CPI.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+            },
+        },
+    },
+    {
+        "name": "market_enrichment_subcategories",
+        "description": "Enriquecimiento por subcategoría de canasta (10 básicos): momentum precio, wiki, min precio.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+            },
+        },
+    },
+    {
+        "name": "market_enrichment_refresh",
+        "description": "Refrescar solo indicadores de enriquecimiento (OFF, Wiki, clima, food CPI) sin recalcular todo el moat.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+            },
+        },
+    },
+    {
         "name": "market_categories",
         "description": "Explorar el árbol de categorías de un retailer VTEX. Retorna la jerarquía completa de categorías y subcategorías.",
         "inputSchema": {
@@ -225,6 +282,18 @@ TOOLS = [
         "name": "market_stats",
         "description": "Estadísticas del data moat: total de precios, tiendas activas, productos rastreados, última actualización.",
         "inputSchema": {"type":"object","properties":{}},
+    },
+    {
+        "name": "market_analytics_indicators",
+        "description": "Últimos valores de indicadores del moat (promo intensity, FX, CPI, basket stress, scores inputs).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+                "limit": {"type": "integer", "default": 30},
+            },
+        },
     },
     {
         "name": "market_alerts",
@@ -317,6 +386,12 @@ def handle_tool(name: str, args: dict) -> str:
         "market_ask":        lambda a: api("POST", "/agent/ask", {"prompt": a["prompt"]}),
         "market_basket":     lambda a: api("POST", "/v1/basket/compare", {"items": a["items"], "stores": a.get("stores")}),
         "market_inflation":  lambda a: api("GET", f"/v1/intel/inflation?country={a.get('country', '')}&line={a.get('line', '')}"),
+        "market_indicators": lambda a: api("GET", "/v1/intel/indicators"),
+        "market_scores":     lambda a: api("GET", f"/v1/intel/scores?country={a.get('country', '')}&line={a.get('line', '')}"),
+        "market_intel_refresh": lambda a: api("POST", f"/v1/intel/refresh?country={a.get('country', '')}&line={a.get('line', '')}"),
+        "market_enrichment": lambda a: api("GET", f"/v1/intel/enrichment?country={a.get('country', '')}"),
+        "market_enrichment_refresh": lambda a: api("POST", f"/v1/intel/enrichment/refresh?country={a.get('country', '')}"),
+        "market_enrichment_subcategories": lambda a: api("GET", f"/v1/intel/enrichment/subcategories?country={a.get('country', 'PE')}"),
         "market_categories": lambda a: api("GET", f"/categories/{a['store']}"),
         "market_barcode":    lambda a: api("GET", f"/products/barcode/{a['code']}"),
         "market_enrich":     lambda a: api("GET", f"/products/enrich?query={a['query']}&limit={a.get('limit', 5)}"),
@@ -327,6 +402,10 @@ def handle_tool(name: str, args: dict) -> str:
         "market_voice":      lambda a: api("POST", "/v1/voice/transcribe-url", {"url": a["url"]}),
         "market_price_history": lambda a: api("GET", f"/analytics/price-history?product_id={a.get('product_id','')}&store={a.get('store','')}&line={a.get('line','')}&limit={a.get('limit',50)}"),
         "market_stats":      lambda a: api("GET", "/analytics/stats"),
+        "market_analytics_indicators": lambda a: api(
+            "GET",
+            f"/analytics/indicators?country={a.get('country', '')}&line={a.get('line', '')}&limit={a.get('limit', 30)}",
+        ),
         "market_alerts":     lambda a: api("GET", f"/v1/intel/alerts?product={a['product']}&store={a.get('store','')}&threshold_pct={a.get('threshold_pct',5.0)}&limit={a.get('limit',10)}"),
         "market_whoami":     lambda a: api("GET", "/auth/whoami"),
         "market_preferences": lambda a: api("GET", "/agent/preferences"),

@@ -54,6 +54,18 @@ def test_build_dashboard_view_model_blocks():
             "citable": 1,
             "filters": ["discount>=90%"],
         },
+        "indicators": {
+            "enrichment": [
+                {
+                    "key": "imf_inflation_yoy",
+                    "name": "IMF inflation YoY",
+                    "value": 3.5,
+                    "unit": "pct",
+                    "country": "PE",
+                    "source": "IMF",
+                },
+            ],
+        },
         "store_health": [],
         "suspect_discounts": [],
         "outliers": [],
@@ -85,3 +97,8 @@ def test_build_dashboard_view_model_blocks():
     assert "portada" in view["blocks"]
     assert "quality_funnel" in view["blocks"]
     assert view["blocks"]["portada"]["cards"][0]["label"] == "INVENTORY"
+
+    enrich = view["blocks"]["enrichment"]
+    assert enrich["state"] == "ok"
+    assert enrich["items"][0]["tier"] == "tier2"
+    assert "enrichment" in view["reading_order"]

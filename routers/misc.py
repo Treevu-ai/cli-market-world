@@ -14,6 +14,7 @@ import httpx
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from market_core import COUNTRIES, FX_PEN_PER_UNIT, LINES, STORES, convert_currency, get_db
+from market_stats import MCP_TOOLS
 from server_deps import require_user
 
 router = APIRouter(tags=["misc"])
@@ -161,7 +162,7 @@ async def telegram_webhook(request: Request):
             f"<b>CLI Market</b> — ONLINE\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n"
             f"\u2022 {len(STORES)} retailers en {len(LINES)} líneas\n"
             f"\u2022 {len(COUNTRIES)} países\n"
-            "\u2022 36 MCP tools\n"
+            f"\u2022 {MCP_TOOLS} MCP tools\n"
             "\u2022 API: cli-market-production.up.railway.app\n"
             "\u2022 Pro: cli-market.dev/#pricing"
         )

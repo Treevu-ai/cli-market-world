@@ -80,13 +80,15 @@ async def lifespan(_app: FastAPI):
 
 # ── App ──────────────────────────────────────────────────────────────────────
 
+from market_stats import MCP_TOOLS, PACKAGE_VERSION, RETAILERS_VERIFIED, COUNTRIES as MS_COUNTRIES
+
 app = FastAPI(
     title="CLI Market API",
     description=(
-        "Commerce infrastructure for AI agents — 30 verified retailers, "
-        "36 MCP tools, 8 countries. Agent-ready."
+        f"Commerce infrastructure for AI agents — {RETAILERS_VERIFIED} verified retailers, "
+        f"{MCP_TOOLS} MCP tools, {MS_COUNTRIES} countries. Agent-ready."
     ),
-    version="1.4.0",
+    version=PACKAGE_VERSION,
     lifespan=lifespan,
 )
 

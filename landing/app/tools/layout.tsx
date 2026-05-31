@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export const metadata: Metadata = {
-  title: "MCP Tools — 36 copy-paste configs for AI agents",
+  title: "MCP Tools — 43 copy-paste configs for AI agents",
   description:
-    "MCP tools for e-commerce and AI shopping API integration. Copy-paste configs for Cursor, Claude Desktop, and VS Code. 36 commerce tools across 30 retailers.",
+    "MCP tools for e-commerce and AI shopping API integration. Copy-paste configs for Cursor, Claude Desktop, and VS Code. 43 commerce tools across 30 retailers.",
   keywords: [
     "MCP tools for e-commerce",
     "commerce API for AI agents",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CLI Market MCP Tools — Agent commerce configs",
-    description: "36 MCP tools. Copy-paste server configs for Cursor and Claude.",
+    description: `${MARKET_STATS.mcpTools} MCP tools. Copy-paste server configs for Cursor and Claude.`,
     url: "https://cli-market.dev/tools",
     type: "website",
   },

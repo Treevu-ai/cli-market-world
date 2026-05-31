@@ -15,10 +15,12 @@ PLATFORM_SHOPIFY = 15
 PLATFORM_MAGENTO = 7
 COUNTRIES = 8
 COUNTRY_CODES = ("PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR")
-MCP_TOOLS = 36
+MCP_TOOLS = 43
+INDICATORS_COUNT = 34
+ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB"
 PRICES_VERIFIED_LABEL = "43,000+"
 PRICES_REFRESH_HOURS = 8
-PACKAGE_VERSION = "1.5.0"
+PACKAGE_VERSION = "1.6.1"
 LICENSE = "MIT"
 PAYMENTS_LABEL = "PayPal + QR (Yape/Plin)"
 BUSINESS_LINES = 6
@@ -53,10 +55,10 @@ def header_es() -> str:
 
 def pypi_summary() -> str:
     return (
-        f"mcp-name: io.github.Treevu-ai/cli-market-world — CLI Market: Commerce infrastructure for AI agents. "
-        f"{RETAILERS_DEFINED} retailers ({RETAILERS_VERIFIED} verified), {COUNTRIES} countries, "
-        f"{PLATFORMS} platforms, {MCP_TOOLS} MCP tools. "
-        f"{PRICES_VERIFIED_LABEL} verified shelf prices with unit normalization and quality filters. MIT."
+        "mcp-name: io.github.Treevu-ai/cli-market-world - "
+        "CLI Market: commerce API for AI agents. "
+        f"{MCP_TOOLS} MCP tools, {INDICATORS_COUNT} indicators, "
+        f"{RETAILERS_VERIFIED} verified retailers in {COUNTRIES} countries. MIT."
     )
 
 

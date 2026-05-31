@@ -1,57 +1,43 @@
 mcp-name: io.github.Treevu-ai/cli-market-world
 
-<p align="center"><img src="https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/social-preview.svg" alt="CLI Market" width="600"/></p>
+# 🛒 CLI Market
 
-<p align="center">
-  <img src="https://img.shields.io/badge/retailers-60-brightgreen" alt="60 retailers">
-  <img src="https://img.shields.io/badge/platforms-3-blue" alt="3 platforms">
-  <img src="https://img.shields.io/badge/countries-8-orange" alt="8 countries">
-  <img src="https://img.shields.io/badge/prices-43k-3cffd0" alt="43,000 prices">
-  <img src="https://img.shields.io/badge/MCP%20tools-36-00d75f" alt="36 MCP tools">
-  <img src="https://img.shields.io/badge/payments-PayPal_email-ffbd2e" alt="PayPal email billing">
-  <img src="https://img.shields.io/badge/dashboard-live-3cffd0" alt="dashboard">
-  <img src="https://img.shields.io/badge/python-3.10+-306998" alt="py">
-  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT">
-</p>
-
-<p align="center">
-  <a href="https://pypi.org/project/cli-market/"><img src="https://img.shields.io/pypi/v/cli-market?color=00FF88" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/cli-market/"><img src="https://img.shields.io/pypi/dm/cli-market?color=00FF88" alt="PyPI downloads"></a>
-  <a href="https://github.com/Treevu-ai/cli-market-world"><img src="https://img.shields.io/github/stars/Treevu-ai/cli-market-world?style=social" alt="GitHub stars"></a>
-</p>
-
-<h1 align="center">CLI Market</h1>
-<p align="center"><b>Commerce infrastructure for AI agents.</b><br>60 retailers (30 verified). 8 countries. 3 platforms. 36 MCP tools. PayPal + QR (Yape/Plin).<br>43,000+ verified shelf prices, normalized per kg/L, refreshed every 8 hours.<br>One <code>pip install</code>. One API. Zero scraping.</p>
+**🌐 [Español](#-español) · [English](#-english)**
 
 ---
 
-## What is CLI Market?
+## 🇪🇸 Español
 
-AI agents can't comparison-shop in physical retail. Every retailer requires separate auth, separate search logic, no unified cart. Agents fail before the first query.
+### Infraestructura de comercio para agentes de IA — un solo `pip install`, una API, cero scraping.
 
-**CLI Market fixes this.** One `pip install`. One API call across 60 retailers (30 verified). One JSON schema.
+> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio en una.**
 
-- **Search** any product across 60 retailers (30 verified) in 8 countries
-- **Compare** prices cross-border — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
-- **Basket** — compare your full shopping cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
-- **Inflation** — track real price changes from supermarket shelves, updated every 8 hours
-- **Intelligence** — commercial pilot (USD 300–500/mo): spreads, inflation, basket, quality layer
-- **Build** — Free/Pro API and MCP for agent integrators; checkout with PayPal or QR (Yape/Plin) on roadmap for autonomous agents
-- **Data moat** — quality-filtered spreads, canasta matching, and live dashboard
+Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exige su propia autenticación, su propia lógica de búsqueda y no comparten carrito — así que los agentes fallan antes de la primera consulta.
 
-> Stripe turned payments into APIs. We turn commerce into APIs.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **60 retailers (30 verificados)** en **8 países**. Un único esquema JSON.
 
-Posicionamiento en español (API / landing / ventas): [`docs/api-positioning-es.md`](docs/api-positioning-es.md)
+- 🌍 **60 retailers · 8 países · 3 plataformas · 43 herramientas MCP**
+- 💰 **Más de 39 000 precios de góndola verificados**, normalizados por kg/L, actualizados cada 8 horas
+- 💳 **Pago con PayPal + QR (Yape / Plin)** integrado
 
-<p align="center"><a href="https://cli-market.dev"><b>cli-market.dev</b></a> · <a href="https://cli-market-production.up.railway.app/docs"><b>API docs</b></a> · <a href="https://cli-market-production.up.railway.app/dashboard"><b>Dashboard</b></a></p>
+#### ✨ ¿Por qué CLI Market?
 
----
+- 🔎 **Busca** cualquier producto en 30 retailers verificados de 8 países
+- 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
+- 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
+- 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 8 horas
+- 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
+- 🛍️ **Compra** — checkout con PayPal o QR (Yape / Plin)
+- 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 
-## Quick start
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs de API](https://cli-market-production.up.railway.app/docs) · 📊 [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+
+#### 🚀 Inicio rápido
 
 ```bash
 pip install cli-market
-market hello          # post-install: stats + next steps
+market hello   # post-instalación: estadísticas + próximos pasos
+
 export MARKET_API_URL=https://cli-market-production.up.railway.app
 market login
 market search "leche" --country PE
@@ -59,57 +45,72 @@ market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "compra arroz al mejor precio"
+market indicators --country PE
+market enrichment --refresh -c PE
 ```
 
----
-
-## Multi-platform coverage
-
-| Platform | Count | Examples |
-|---|---|---|
-| **VTEX** | 38 | Wong, Metro, Plaza Vea, Carrefour, Jumbo, Motorola, Electrolux, Whirlpool, Samsung, HEB, Chedraui, Easy, Promart, Coppel, Ripley, C&A, Hering |
-| **Shopify** | 15 | Adidas, Gymshark, Allbirds, Alo Yoga, Glossier, Fenty Beauty, Kylie Cosmetics, ColourPop, Brooklinen, Casper, On Running |
-| **Magento** | 7 | Falabella PE/CL/CO, Paris CL, Ripley CL, Liverpool MX, El Palacio MX |
-
----
-
-## 36 MCP tools
-
-`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan` `market_stock` `market_intel` `market_notify` `market_brands` `market_favorites` `market_delivery`
-
----
-
-## Payments
-
-**Pro plan (default):** request via email → PayPal Hosted Button → manual activation within 24 h.  
-See [ops/E2E_CLIENT_JOURNEY.md](ops/E2E_CLIENT_JOURNEY.md) and [ops/BILLING_MANUAL.md](ops/BILLING_MANUAL.md).
-
-| Method | Use | Type |
-|---|---|---|
-| **PayPal Hosted Button** | Pro subscription ($49/mo) | Email + link (manual activate) |
-| **PayPal REST** | Optional automation | Webhooks (future) |
-| **Yape / Plin** | Checkout orders (Pro tier) | QR code |
-
-### Upgrade to Pro
-
-```bash
-market login
-market upgrade --email you@example.com
-# Pay via link in email → reply with CLI username → ops activates Pro
-```
-
-Ops after payment confirmed:
-
-```bash
-python3 ops/activate_pro.py username --request-id PRO-XXXXXXXX
-```
-
----
-
-## Pricing
+#### 💵 Planes
 
 | | Free | Pro | Enterprise |
-|---|---|---|---|
+| --- | --- | --- | --- |
+| **Precio** | $0 | $49/mes | A medida |
+| **Solicitudes** | 1 000/día | 10 000/día | Ilimitadas |
+| **API keys** | 1 (lectura) | 10 (lectura+escritura) | Ilimitadas |
+| **Checkout** | — | ✅ (tras activación por email) | ✅ |
+| **Exportar datos** | — | JSON/CSV | ✅ |
+| **Soporte** | Comunidad | Email | 24/7 + onboarding |
+
+> 📄 Posicionamiento en español (API / landing / ventas): [`docs/api-positioning-es.md`](docs/api-positioning-es.md)
+
+---
+
+## 🇬🇧 English
+
+### Commerce infrastructure for AI agents — one `pip install`, one API, zero scraping.
+
+> **Stripe turned payments into APIs. CLI Market turns commerce into one.**
+
+AI agents still can't shop in the real world. Every retailer means separate auth, separate search logic, no shared cart — so agents fail before the first query.
+
+**CLI Market fixes that.** One `pip install`. One API call across **60 retailers (30 verified)** in **8 countries**. One JSON schema.
+
+- 🌍 **60 retailers · 8 countries · 3 platforms · 43 MCP tools**
+- 💰 **39,000+ verified shelf prices**, normalized per kg/L, refreshed every 8 hours
+- 💳 **PayPal + QR (Yape / Plin)** checkout built in
+
+#### ✨ Why CLI Market?
+
+- 🔎 **Search** any product across 30 verified retailers in 8 countries
+- 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
+- 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
+- 📈 **Inflation** — track real shelf-price changes, updated every 8 hours
+- 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
+- 🛍️ **Buy** — checkout with PayPal or QR (Yape / Plin)
+- 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
+
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [API docs](https://cli-market-production.up.railway.app/docs) · 📊 [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+
+#### 🚀 Quick start
+
+```bash
+pip install cli-market
+market hello   # post-install: stats + next steps
+
+export MARKET_API_URL=https://cli-market-production.up.railway.app
+market login
+market search "leche" --country PE
+market compare "aceite de girasol 900ml" --country AR
+market basket "arroz:1 aceite:1 leche:1" --country AR
+market checkout --payment yape
+market ask "buy rice at the best price"
+market indicators --country PE
+market enrichment --refresh -c PE
+```
+
+#### 💵 Pricing
+
+| | Free | Pro | Enterprise |
+| --- | --- | --- | --- |
 | **Price** | $0 | $49/mo | Custom |
 | **Requests** | 1,000/day | 10,000/day | Unlimited |
 | **API keys** | 1 (read) | 10 (read+write) | Unlimited |
@@ -119,28 +120,13 @@ python3 ops/activate_pro.py username --request-id PRO-XXXXXXXX
 
 ---
 
-## Architecture
+## 🔧 43 MCP tools
 
-```
-cli-market (PyPI)
-├── market_cli.py            → CLI (rich tables, natural language)
-├── market_server.py         → FastAPI backend (54 endpoints)
-├── market_mcp.py            → MCP server (36 tools)
-├── market_core.py           → Shared core (SQLite/PG, connectors)
-├── collect_prices.py        → Price collector (8h daemon, 228 queries)
-├── market_stores.py         → 60 retailer definitions
-├── market_connectors/
-│   ├── vtex.py              → VTEX public API (38 stores)
-│   ├── shopify.py           → Shopify API (15 stores)
-│   ├── magento.py           → Magento REST API (7 stores)
-│   ├── paypal_payments.py   → PayPal checkout
-│   ├── sunat_invoicing.py   → SUNAT + PSE
-│   └── minimax.py           → TTS, image, video generation
-└── landing/                 → Next.js (Cloudflare Pages)
-```
+`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_indicators` `market_scores` `market_intel_refresh` `market_enrichment` `market_enrichment_subcategories` `market_enrichment_refresh` `market_analytics_indicators` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan` `market_stock` `market_notify` `market_brands` `market_favorites` `market_exchange` `market_delivery`
+
+Docs: [`docs/DATA-MOAT-INDICATORS.md`](docs/DATA-MOAT-INDICATORS.md) · GitHub: [Treevu-ai/cli-market-world](https://github.com/Treevu-ai/cli-market-world)
 
 ---
 
 **SINAPSIS INNOVADORA S.A.C.** — RUC 20613045563 — Lima, Peru  
-Founder: **Antonio Cuba**  
-[cli-market.dev](https://cli-market.dev) · [GitHub](https://github.com/Treevu-ai/cli-market-world)
+MIT License · [cli-market.dev](https://cli-market.dev)

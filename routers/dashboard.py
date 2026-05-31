@@ -499,6 +499,20 @@ def _dashboard_data():
     flagged_discounts = count_flagged_discounts(db)
     flagged_outliers = count_flagged_outliers(db)
 
+    indicator_latest: list[dict] = []
+    enrichment_latest: list[dict] = []
+    indicator_by_country: dict[str, list[dict]] = {}
+    try:
+        from market_indicators import ENRICHMENT_INDICATOR_KEYS, get_latest_values
+
+        indicator_latest = get_latest_values(db, limit=80)
+        enrichment_keys = set(ENRICHMENT_INDICATOR_KEYS)
+        enrichment_latest = [v for v in indicator_latest if v.get("key") in enrichment_keys]
+        for cc in sorted({c["country"] for c in by_country if c.get("country")}):
+            indicator_by_country[cc] = get_latest_values(db, country=cc, limit=20)
+    except Exception:
+        pass
+
     db.close()
 
     quality_funnel = build_quality_funnel(
@@ -566,7 +580,12 @@ def _dashboard_data():
             "marketing_gate_pct": 80,
             "marketing_gate_pass": coverage_7d_pct >= 80,
             "stale_stores": moat_stale,
-            "agent_surfaces": ["market compare", "market basket", "/v1/intel/inflation", "MCP market_stats"],
+            "agent_surfaces": [
+                "market compare", "market basket", "market indicators", "market scores",
+                "market enrichment", "market enrichment --refresh",
+                "/v1/intel/inflation", "/v1/intel/scores", "/v1/intel/enrichment",
+                "/v1/intel/enrichment/subcategories", "/analytics/indicators", "MCP market_stats",
+            ],
         },
         "moat_guide": moat_guide,
         "metric_glossary": build_metric_glossary(),
@@ -613,6 +632,13 @@ def _dashboard_data():
         "canasta_basica": canasta_basica,
         "quality_funnel": quality_funnel,
         "by_line_currency": [dict(r) for r in by_line_currency],
+        "indicators": {
+            "latest": indicator_latest,
+            "enrichment": enrichment_latest,
+            "by_country": indicator_by_country,
+            "auto_refresh": True,
+            "docs": "docs/DATA-MOAT-INDICATORS.md",
+        },
     }
     result["dashboard_view"] = build_dashboard_view_model(result)
     return result
