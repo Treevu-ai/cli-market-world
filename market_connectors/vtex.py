@@ -28,6 +28,27 @@ logger = logging.getLogger(__name__)
 PAGE_SIZE = 20
 CATALOG_PAGE_SIZE = 50
 
+_VTEX_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+
+def _vtex_headers(store_config: dict) -> dict[str, str]:
+    """Build VTEX app-key/app-token auth headers when credentials are present."""
+    key = store_config.get("vtex_app_key", "")
+    token = store_config.get("vtex_app_token", "")
+    if key and token:
+        return {
+            "X-VTEX-API-AppKey": key,
+            "X-VTEX-API-AppToken": token,
+        }
+    return {}
+
+
+def _client_headers(store_config: dict) -> dict[str, str]:
+    """Default request headers (User-Agent + optional VTEX auth)."""
+    headers = {"User-Agent": _VTEX_UA}
+    headers.update(_vtex_headers(store_config))
+    return headers
+
 # Global cookie cache with TTL (per-store thread-safe management)
 # Structure: {"store_key": {"cookies": [...], "expires_at": timestamp}}
 _STORE_COOKIE_CACHE = {}
@@ -176,9 +197,10 @@ class VtexConnector(BaseConnector):
 
     async def _detect_io(self, store_config: dict) -> str:
         base = store_config["base"]
+        headers = _client_headers(store_config)
         async with httpx.AsyncClient(timeout=8.0) as c:
             try:
-                r = await c.get(f"{base}/api/catalog_system/pub/category/tree/10")
+                r = await c.get(f"{base}/api/catalog_system/pub/category/tree/10", headers=headers)
                 ct = r.headers.get("content-type", "")
                 if r.status_code == 200 and "json" in ct:
                     store_config["_io_path"] = ""
@@ -186,7 +208,7 @@ class VtexConnector(BaseConnector):
             except Exception:
                 pass
             try:
-                r = await c.get(f"{base}/io/api/catalog_system/pub/category/tree/10")
+                r = await c.get(f"{base}/io/api/catalog_system/pub/category/tree/10", headers=headers)
                 ct = r.headers.get("content-type", "")
                 if r.status_code == 200 and "json" in ct:
                     store_config["_io_path"] = "/io"
@@ -215,6 +237,7 @@ class VtexConnector(BaseConnector):
             _from = (page - 1) * PAGE_SIZE
             _to = min(_from + limit - 1, _from + PAGE_SIZE - 1)
             params = {"_from": str(_from), "_to": str(_to)}
+            headers = _client_headers(store_config)
 
             # First attempt: Try with cached cookies (if available)
             cached_cookies = self._get_cached_cookies(store_key)
@@ -222,7 +245,7 @@ class VtexConnector(BaseConnector):
                 logger.debug(f"Attempting search with cached cookies for {store_key}")
                 try:
                     async with httpx.AsyncClient(timeout=15.0, follow_redirects=True, cookies=cached_cookies) as client:
-                        resp = await client.get(url, params=params)
+                        resp = await client.get(url, params=params, headers=headers)
                         if resp.status_code == 200:
                             ct = resp.headers.get("content-type", "")
                             if "json" in ct:
@@ -237,13 +260,13 @@ class VtexConnector(BaseConnector):
             logger.debug(f"Attempting direct HTTP search for {store_key}")
             try:
                 async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-                    resp = await client.get(url, params=params)
+                    resp = await client.get(url, params=params, headers=headers)
                     
                     # Handle rate limiting with retry
                     if resp.status_code == 429:
                         logger.warning(f"Rate limited (429) for {store_key}, retrying after delay")
                         await asyncio.sleep(2.0)
-                        resp = await client.get(url, params=params)
+                        resp = await client.get(url, params=params, headers=headers)
 
                     # Check for success
                     if resp.status_code == 200:
@@ -278,6 +301,7 @@ class VtexConnector(BaseConnector):
         store_key = store_config.get("_store_key", store_config.get("name", "unknown"))
         url = self._api_url(store_config, "catalog_system/pub/products/search")
         all_products = []
+        headers = _client_headers(store_config)
 
         async with _STORE_LOCKS[store_key]:
             # Try direct HTTP first
@@ -293,7 +317,7 @@ class VtexConnector(BaseConnector):
                             resp = await client.get(url, params={
                                 "_from": str(_from), "_to": str(_to),
                                 "O": "OrderByTopSaleDESC",
-                            })
+                            }, headers=headers)
                             if resp.status_code in (200, 206):
                                 data = resp.json()
                                 all_products.extend(data)
@@ -317,7 +341,7 @@ class VtexConnector(BaseConnector):
                         resp = await client.get(url, params={
                             "_from": str(_from), "_to": str(_to),
                             "O": "OrderByTopSaleDESC",
-                        })
+                        }, headers=headers)
                         if resp.status_code in (200, 206):
                             data = resp.json()
                             all_products.extend(data)
@@ -375,7 +399,8 @@ class VtexConnector(BaseConnector):
         if store_config.get("_io_path") is None:
             await self._detect_io(store_config)
         url = self._api_url(store_config, "catalog_system/pub/category/tree/10")
+        headers = _client_headers(store_config)
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-            resp = await client.get(url)
+            resp = await client.get(url, headers=headers)
             resp.raise_for_status()
             return resp.json()
