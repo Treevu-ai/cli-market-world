@@ -6,7 +6,7 @@ export default function QuickstartAPI() {
   const isES = lang === "es";
 
   return (
-    <section id="api" className="landing-section">
+    <section id="api" className="landing-section animate-fade-in">
       <div className="landing-container text-center">
         <p className="section-eyebrow mb-8">API</p>
         <h2 className="section-title mb-3">

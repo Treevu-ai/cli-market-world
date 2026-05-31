@@ -222,7 +222,7 @@ export default function Pricing() {
   const isES = lang === "es";
 
   return (
-    <section id="pricing" className="landing-section-alt">
+    <section id="pricing" className="landing-section-alt animate-fade-in">
       <div className="landing-container-wide text-center">
         <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">
           {isES ? "Planes" : "Plans"}

@@ -9,7 +9,7 @@ export default function ContactSection() {
   const isES = lang === "es";
 
   return (
-    <section id="contact" className="landing-section scroll-mt-24">
+    <section id="contact" className="landing-section scroll-mt-24 animate-fade-in">
       <div className="landing-container-wide">
         <p className="section-eyebrow mb-2 text-center">{isES ? "Contacto" : "Contact"}</p>
         <h2 className="section-title mb-2 text-center">{isES ? "Hablemos" : "Let's talk"}</h2>
