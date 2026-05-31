@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export const metadata: Metadata = {
   title: "API Docs — Quickstart, Compare, MCP",
   description:
-    "CLI Market API documentation. Quickstart, authentication, POST /products/compare, basket, Intelligence endpoints, rate limits. 36 MCP tools.",
+    `CLI Market API documentation. Quickstart, authentication, POST /products/compare, basket, Intelligence endpoints, rate limits. ${MARKET_STATS.mcpTools} MCP tools.`,
   keywords: ["CLI Market API", "commerce API docs", "MCP tools", "retail price API", "LatAm"],
   alternates: { canonical: "/docs" },
   openGraph: {

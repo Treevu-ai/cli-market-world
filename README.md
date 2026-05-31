@@ -17,7 +17,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **60 retailers (30 verificados)** en **8 países**. Un único esquema JSON.
 
 - 🌍 **60 retailers · 8 países · 3 plataformas · 43 herramientas MCP**
-- 💰 **Más de 39 000 precios de góndola verificados**, normalizados por kg/L, actualizados cada 8 horas
+- 💰 **Más de 43 000 precios de góndola verificados**, normalizados por kg/L, actualizados cada 8 horas
 - 💳 **Pago con PayPal + QR (Yape / Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -75,7 +75,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 **CLI Market fixes that.** One `pip install`. One API call across **60 retailers (30 verified)** in **8 countries**. One JSON schema.
 
 - 🌍 **60 retailers · 8 countries · 3 platforms · 43 MCP tools**
-- 💰 **39,000+ verified shelf prices**, normalized per kg/L, refreshed every 8 hours
+- 💰 **43,000+ verified shelf prices**, normalized per kg/L, refreshed every 8 hours
 - 💳 **PayPal + QR (Yape / Plin)** checkout built in
 
 #### ✨ Why CLI Market?

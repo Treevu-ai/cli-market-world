@@ -95,6 +95,14 @@ def sync_readme() -> None:
         "any product across 30 verified retailers in 8 countries",
         f"any product across {s.RETAILERS_VERIFIED} verified retailers in {s.COUNTRIES} countries",
     )
+    text = text.replace(
+        "**Más de 39 000 precios de góndola verificados**",
+        f"**Más de {s.PRICES_VERIFIED_LABEL.replace(',', ' ').replace('+', '')} precios de góndola verificados**",
+    )
+    text = text.replace(
+        "**39,000+ verified shelf prices**",
+        f"**{s.PRICES_VERIFIED_LABEL} verified shelf prices**",
+    )
     path.write_text(text, encoding="utf-8")
     print(f"Synced {path}")
 
@@ -174,6 +182,14 @@ def sync_og_svg() -> None:
     print(f"Synced {path}")
 
 
+def sync_og_preview_svg() -> None:
+    path = ROOT / "landing" / "public" / "og-preview.svg"
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(r"\d+ MCP", f"{s.MCP_TOOLS} MCP", text, count=1)
+    path.write_text(text, encoding="utf-8")
+    print(f"Synced {path}")
+
+
 def main() -> None:
     write_market_stats_ts()
     sync_readme()
@@ -181,6 +197,7 @@ def main() -> None:
     sync_server_json()
     sync_mcp_json()
     sync_og_svg()
+    sync_og_preview_svg()
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@
 
 AI agents can't comparison-shop in physical retail. Every store has its own auth, search logic, and checkout flow. Agents fail before the first query.
 
-CLI Market fixes this: one `pip install`, one API across 60 retailers (30 verified) in 8 countries. 36 MCP tools. 43,000+ real prices refreshed every 8 hours. Checkout via PayPal (API) or QR (Yape/Plin).
+CLI Market fixes this: one `pip install`, one API across 60 retailers (30 verified) in 8 countries. 43 MCP tools. 43,000+ real prices refreshed every 8 hours. Checkout via PayPal (API) or QR (Yape/Plin).
 
 ---
 
