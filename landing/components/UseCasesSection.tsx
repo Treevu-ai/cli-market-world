@@ -30,8 +30,8 @@ const cases = [
     icon: "🤖",
     title_es: "Agentes de compra",
     title_en: "Shopping agents",
-    desc_es: "Search, compare y canastas con 36 herramientas MCP. Build Free/Pro — checkout autónomo en roadmap.",
-    desc_en: "Search, compare, and baskets with 36 MCP tools. Build Free/Pro — autonomous checkout on the roadmap.",
+    desc_es: "Search, compare y canastas con 43 herramientas MCP. Build Free/Pro — checkout autónomo en roadmap.",
+    desc_en: "Search, compare, and baskets with 43 MCP tools. Build Free/Pro — autonomous checkout on the roadmap.",
     href: "#pricing-build",
   },
 ];

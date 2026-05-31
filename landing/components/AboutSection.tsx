@@ -84,7 +84,7 @@ export default function AboutSection() {
               <p className="pt-1 text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
                 {isES ? "Gerente General" : "General Manager"}
                 <br />
-                <span className="text-[var(--cm-mint)]/80">SINAPSIS INNOVADORA S.A.C.</span>
+                <span className="text-[var(--cm-mint)]/80">SINAPSIS INNOVADORA S.A.C. · RUC 20613045563</span>
               </p>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function AboutSection() {
 
         <p className="mt-6 font-mono text-xs text-[var(--cm-on-surface-variant)]/70">
           {isES
-            ? "Sinapsis Innovadora S.A.C. · Perú · Infraestructura para agentes."
+            ? "Sinapsis Innovadora S.A.C. · RUC 20613045563 · Lima, Perú · Infraestructura para agentes."
             : "Sinapsis Innovadora S.A.C. · Peru · Infrastructure for agents."}
         </p>
 

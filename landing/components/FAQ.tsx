@@ -30,7 +30,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "Build (API/MCP): tier Free con 1.000 consultas/día sin costo; Pro USD 49/mes para export técnico y límites altos. Intelligence (datos comerciales): piloto desde USD 300–500/mes — spreads, inflación, canasta y capa de calidad (detalle en cli-market.dev/intelligence-pilot-es.md). Listado retailer: gratis siempre.",
+        a: "Build (API/MCP): tier Free con 1.000 consultas/día sin costo; Pro USD 49/mes para export técnico y límites altos. Intelligence (datos comerciales): roadmap — próximamente. Listado retailer: gratis siempre.",
       },
     ];
   }
@@ -58,7 +58,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How much does it cost?",
-      a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for technical export and higher limits. Intelligence (commercial data): pilot from USD 300–500/mo — spreads, inflation, basket, and quality layer (see cli-market.dev/intelligence-pilot-es.md). Retailer listing: free forever.",
+      a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for technical export and higher limits. Intelligence (commercial data): roadmap — coming soon. Retailer listing: free forever.",
     },
   ];
 }

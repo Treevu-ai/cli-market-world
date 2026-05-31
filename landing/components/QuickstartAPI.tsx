@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function QuickstartAPI() {
   const { lang } = useLang();
@@ -46,7 +47,7 @@ export default function QuickstartAPI() {
           <span>{isES ? "REST simple con JSON plano" : "Simple REST with flat JSON"}</span>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
           <a href="/tools" className="underline hover:text-[var(--cm-mint)]">
-            {isES ? "36 herramientas MCP → configs" : "36 MCP tools → configs"}
+            {isES ? `${MARKET_STATS.mcpTools} herramientas MCP → configs` : `${MARKET_STATS.mcpTools} MCP tools → configs`}
           </a>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
           <a href="https://cli-market-production.up.railway.app/dashboard" target="_blank" rel="noopener" className="underline hover:text-[var(--cm-mint)]">

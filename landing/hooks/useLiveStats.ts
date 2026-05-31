@@ -12,7 +12,7 @@ export interface LiveStats {
 
 /** Consistent marketing price labels (chip + long) from the same rounded value. */
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = 43_000;
+  const fallback = 39_000;
   const n = indexed ?? fallback;
   const k = Math.max(Math.round(n / 1000), Math.round(fallback / 1000));
   return {
