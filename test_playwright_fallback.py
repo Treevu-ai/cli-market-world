@@ -31,7 +31,9 @@ async def test_playwright_availability():
     logger.info("=" * 60)
     
     try:
-        from playwright.async_api import async_playwright
+        import importlib.util
+        if importlib.util.find_spec("playwright.async_api") is None:
+            raise ImportError("playwright.async_api not found")
         logger.info("✅ Playwright is installed and importable")
         return True
     except ImportError:
@@ -69,14 +71,14 @@ async def test_cache_mechanism():
     if retrieved == test_cookies:
         logger.info(f"✅ Retrieved {len(retrieved)} cookies successfully")
     else:
-        logger.error(f"❌ Retrieved cookies don't match!")
+        logger.error("❌ Retrieved cookies don't match!")
         return False
     
     # Check cache structure
     if store_key in _STORE_COOKIE_CACHE:
         cache_entry = _STORE_COOKIE_CACHE[store_key]
         if "cookies" in cache_entry and "expires_at" in cache_entry:
-            logger.info(f"✅ Cache structure is correct:")
+            logger.info("✅ Cache structure is correct:")
             logger.info(f"   - TTL: {_COOKIE_CACHE_TTL}s")
             logger.info(f"   - Expires at: {datetime.fromtimestamp(cache_entry['expires_at'])}")
         else:
@@ -132,7 +134,7 @@ async def test_fallback_method_signature():
     logger.info("✅ Method _search_playwright_fallback exists")
     
     # Check method is async
-    method = getattr(connector, '_search_playwright_fallback')
+    method = connector._search_playwright_fallback
     if not asyncio.iscoroutinefunction(method):
         logger.error("❌ Method is not async!")
         return False
@@ -146,7 +148,7 @@ async def test_fallback_method_signature():
     if actual_params == expected_params:
         logger.info(f"✅ Method signature correct: {', '.join(actual_params)}")
     else:
-        logger.error(f"❌ Parameter mismatch!")
+        logger.error("❌ Parameter mismatch!")
         logger.error(f"   Expected: {expected_params}")
         logger.error(f"   Actual: {actual_params}")
         return False
@@ -172,7 +174,7 @@ async def test_search_method_flow():
     logger.info("✅ search method exists")
     
     # Check it's async
-    method = getattr(connector, 'search')
+    method = connector.search
     if not asyncio.iscoroutinefunction(method):
         logger.error("❌ search method is not async!")
         return False
@@ -217,7 +219,7 @@ async def test_fetch_all_products_flow():
     logger.info("✅ fetch_all_products method exists")
     
     # Check it's async
-    method = getattr(connector, 'fetch_all_products')
+    method = connector.fetch_all_products
     if not asyncio.iscoroutinefunction(method):
         logger.error("❌ fetch_all_products method is not async!")
         return False

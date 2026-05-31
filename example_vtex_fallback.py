@@ -174,13 +174,13 @@ async def example_5_normalize_products():
     raw_products = await connector.search(store_config, "chocolates", page=1, limit=2)
     
     if raw_products:
-        print(f"\n--- RAW PRODUCT (from API) ---")
+        print("\n--- RAW PRODUCT (from API) ---")
         raw = raw_products[0]
         print(f"Keys in raw: {list(raw.keys())[:5]}...")
         
-        print(f"\n--- NORMALIZED PRODUCT ---")
+        print("\n--- NORMALIZED PRODUCT ---")
         normalized = connector.normalize(raw, "globo_br", store_config)
-        print(f"Normalized product:")
+        print("Normalized product:")
         for key, value in normalized.items():
             if key != 'url':  # Skip URL for brevity
                 print(f"  {key}: {value}")
@@ -209,7 +209,7 @@ async def main():
         ("Product Normalization", example_5_normalize_products),
     ]
     
-    for example_name, example_func in examples:
+    for _example_name, example_func in examples:
         try:
             await example_func()
         except KeyboardInterrupt:
