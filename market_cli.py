@@ -686,7 +686,7 @@ def cmd_enrichment(args):
             if k in sc
         }
         if enrich_scores:
-            console.print(f"\n[bold]Scores enriquecimiento[/]")
+            console.print("\n[bold]Scores enriquecimiento[/]")
             for name, info in enrich_scores.items():
                 console.print(f"  {name}: [yellow]{info.get('score')}[/] ({info.get('label')})")
     except Exception:
@@ -696,7 +696,7 @@ def cmd_enrichment(args):
         sub = cli_api("GET", f"/v1/intel/enrichment/subcategories?country={cc}")
         sub_items = sub.get("items", [])
         if sub_items:
-            console.print(f"\n[bold]Por subcategoría[/]")
+            console.print("\n[bold]Por subcategoría[/]")
             st = Table(border_style="dim blue")
             st.add_column("Subcat", style="cyan")
             st.add_column("Δ precio 7d", justify="right")
