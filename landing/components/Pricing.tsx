@@ -201,22 +201,24 @@ export default function Pricing() {
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-12">
           {tiers.map((tier) => (
-            <TierCard key={tier.name} tier={tier} isES={isES}>
-              {tier.name === "Pro" ? (
-                <div id="pro-checkout" className="scroll-mt-24 space-y-3">
-                  <ProSubscribeButton />
-                  {tier.proNote_es && (
-                    <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
-                      {isES ? tier.proNote_es : tier.proNote_en}
-                    </p>
-                  )}
-                </div>
-              ) : tier.name === "Free" ? (
-                <a href={tier.href} className="btn-mint">
-                  {isES ? tier.cta_es : tier.cta_en}
-                </a>
-              ) : null}
-            </TierCard>
+            <div key={tier.name}>
+              <TierCard tier={tier} isES={isES}>
+                {tier.name === "Pro" ? (
+                  <div id="pro-checkout" className="scroll-mt-24">
+                    <ProSubscribeButton />
+                  </div>
+                ) : tier.name === "Free" ? (
+                  <a href={tier.href} className="btn-mint">
+                    {isES ? tier.cta_es : tier.cta_en}
+                  </a>
+                ) : null}
+              </TierCard>
+              {tier.name === "Pro" && tier.proNote_es && (
+                <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
+                  {isES ? tier.proNote_es : tier.proNote_en}
+                </p>
+              )}
+            </div>
           ))}
         </div>
 
