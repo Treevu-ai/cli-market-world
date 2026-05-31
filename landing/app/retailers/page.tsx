@@ -22,7 +22,7 @@ export default function RetailersPage() {
               { "@type": "Question", name: "What platforms does CLI Market support?",
                 acceptedAnswer: { "@type": "Answer", text: "VTEX, Shopify, and Magento. We connect via public catalog APIs — zero development required from your side." }},
               { "@type": "Question", name: "How many retailers are already on CLI Market?",
-                acceptedAnswer: { "@type": "Answer", text: "60 retailers across 8 countries (30 verified active): Peru, Argentina, Mexico, Colombia, Chile, Brazil, Italy, and France. 43,000+ real prices refreshed every 8 hours." }},
+                acceptedAnswer: { "@type": "Answer", text: "60 retailers across 8 countries (30 verified active): Peru, Argentina, Mexico, Colombia, Chile, Brazil, Italy, and France. 39,000+ real prices refreshed every 8 hours." }},
               { "@type": "Question", name: "What is GEO and why does my store need it?",
                 acceptedAnswer: { "@type": "Answer", text: "GEO (Generative Engine Optimization) is the equivalent of SEO for AI agents. When AI assistants like ChatGPT and Claude search for products, they use structured data indexes like CLI Market. If your store isn't indexed, you're invisible to the fastest-growing shopping channel." }},
             ],
@@ -50,7 +50,7 @@ export default function RetailersPage() {
           <div className="max-w-[720px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
               { n: "30", l: "Retailers live" },
-              { n: "43K+", l: "Prices indexed" },
+              { n: "39K+", l: "Prices indexed" },
               { n: "8", l: "Countries" },
               { n: "30s", l: "To integrate" },
             ].map((s) => (
