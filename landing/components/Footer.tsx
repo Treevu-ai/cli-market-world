@@ -11,7 +11,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="w-full py-12 bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/20"
+      className="w-full py-12 bg-gradient-to-b from-[var(--cm-surface-low)] to-[var(--cm-background)] border-t border-[var(--cm-outline-variant)]/20"
       role="contentinfo"
     >
       <div className="landing-container-wide grid grid-cols-2 md:grid-cols-4 gap-8">
