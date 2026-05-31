@@ -50,13 +50,13 @@ const tiers: Tier[] = [
     f_es: [
       "10,000 consultas / día",
       "10 claves API (lectura y escritura)",
-      "✦ Exportación de precios (JSON/CSV)",
+      "Exportación de precios (JSON/CSV)",
       "Checkout (PayPal / QR) tras activación por email",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
-      "✦ Price data export (JSON/CSV)",
+      "Price data export (JSON/CSV)",
       "Checkout (PayPal / QR) after email activation",
     ],
     cta_es: "Obtener Pro",
@@ -129,32 +129,20 @@ function TierCard({
         )}
       </div>
       <ul className="space-y-2.5 mb-6 flex-1">
-        {(isES ? tier.f_es : tier.f_en).map((f, i) => {
-          const isHighlight = f.startsWith("✦");
-          return (
-            <li
-              key={i}
-              className={`flex items-start gap-2.5 text-sm ${
-                isHighlight
-                  ? "font-semibold text-[var(--cm-mint)]"
-                  : "text-[var(--cm-on-surface-variant)]"
-              }`}
+        {(isES ? tier.f_es : tier.f_en).map((f, i) => (
+          <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--cm-on-surface-variant)]">
+            <svg
+              className="w-4 h-4 mt-0.5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--cm-mint)"
+              strokeWidth="2.5"
             >
-              {!isHighlight && (
-                <svg
-                  className="w-4 h-4 mt-0.5 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--cm-mint)"
-                  strokeWidth="2.5"
-                >
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              )}
-              {f}
-            </li>
-          );
-        })}
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            {f}
+          </li>
+        ))}
       </ul>
       {children ? (
         children
