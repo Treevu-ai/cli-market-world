@@ -15,7 +15,7 @@ const navItems = [
 
 function Logo() {
   return (
-    <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[var(--wise-ink)] shrink-0" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-[var(--cm-mint)] shrink-0" aria-hidden="true">
       <path d="M3 6l2 2 3 12h12l4-8H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <circle cx="11" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
       <circle cx="20" cy="24" r="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -43,18 +43,18 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      scrolled ? "bg-[var(--wise-canvas-soft)]/90 backdrop-blur-md border-b border-[var(--wise-green-pale)]" : "bg-[var(--wise-canvas-soft)] border-b border-transparent"
+      scrolled ? "bg-[var(--cm-background)]/90 backdrop-blur-md border-b border-[var(--cm-outline-variant)]/30" : "bg-[var(--cm-background)] border-b border-transparent"
     }`} aria-label={isES ? "Navegación principal" : "Main navigation"}>
-      <div className="landing-container flex items-center justify-between h-14 md:h-16 gap-4">
-        <a href="/" className="flex items-center gap-2 text-[var(--wise-ink)] shrink-0" aria-label="CLI Market home">
+      <div className="landing-container-wide flex items-center justify-between h-14 md:h-16 gap-4">
+        <a href="/" className="flex items-center gap-2 shrink-0" aria-label="CLI Market home">
           <Logo />
-          <span className="font-medium text-sm tracking-tight">CLI Market</span>
+          <span className="font-medium text-sm text-white tracking-tight">CLI Market</span>
         </a>
 
         <div className="hidden lg:flex items-center gap-5">
           {navItems.map(({ id, es, en }) => (
             <a key={id} href={`#${id}`}
-               className="text-xs font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors whitespace-nowrap">
+               className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors whitespace-nowrap">
               {isES ? es : en}
             </a>
           ))}
@@ -65,23 +65,23 @@ export default function Navbar() {
             href="https://github.com/Treevu-ai/cli-market-world"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors"
+            className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
           >
             GitHub
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
-            className="text-xs font-medium text-[var(--wise-mute)] hover:text-[var(--wise-ink)] cursor-pointer">
+            className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white cursor-pointer">
             {isES ? "EN" : "ES"}
           </button>
           <a
             href="https://pypi.org/project/cli-market/"
-            className="inline-flex items-center rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-xs font-semibold px-4 py-2 hover:bg-[var(--wise-green-hover)] transition-colors whitespace-nowrap"
+            className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-2 hover:brightness-110 transition-all whitespace-nowrap"
           >
             {primaryCta}
           </a>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden text-[var(--wise-ink)] p-2" aria-expanded={open} aria-label={isES ? "Menú" : "Menu"}>
+        <button onClick={() => setOpen(!open)} className="md:hidden text-white p-2" aria-expanded={open} aria-label={isES ? "Menú" : "Menu"}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             {open ? <path d="M18 6L6 18M6 6l12 12"/> : <path d="M3 12h18M3 6h18M3 18h18"/>}
           </svg>
@@ -89,23 +89,23 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden bg-[var(--wise-canvas-soft)] border-t border-[var(--wise-green-pale)] px-6 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 px-6 py-4 flex flex-col gap-3">
           {navItems.map(({ id, es, en }) => (
             <a key={id} href={`#${id}`} onClick={close}
-               className="text-sm font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
+               className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
               {isES ? es : en}
             </a>
           ))}
           <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener noreferrer" onClick={close}
-             className="text-sm font-medium text-[var(--wise-body)] hover:text-[var(--wise-ink)] transition-colors">
+             className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             GitHub
           </a>
           <a href="https://pypi.org/project/cli-market/" onClick={close}
-             className="inline-flex items-center justify-center rounded-3xl bg-[var(--wise-green)] text-[var(--wise-ink)] text-sm font-semibold px-6 py-3">
+             className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3">
             {primaryCta}
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
-            className="text-xs font-medium text-[var(--wise-body)] cursor-pointer text-left">
+            className="text-xs font-medium text-[var(--cm-on-surface-variant)] cursor-pointer text-left">
             {isES ? "EN" : "ES"}
           </button>
         </div>

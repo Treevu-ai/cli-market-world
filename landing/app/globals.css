@@ -324,11 +324,6 @@ section[id] {
   height: auto !important;
 }
 
-/* Force project fonts — override any Next.js default Geist injection */
-body {
-  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
-}
-
 /* PayPal SDK injects a floating mini-cart on some pages — hide outside checkout */
 paypal-cart-button,
 body > div[class*="paypal-cart"],
