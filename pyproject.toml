@@ -30,6 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pg = ["asyncpg"]
+playwright = ["playwright>=1.45.0"]
 
 [project.scripts]
 market = "market_cli:main"
