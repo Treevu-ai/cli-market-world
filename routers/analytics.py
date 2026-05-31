@@ -5,6 +5,7 @@ Endpoints:
   GET /analytics/stats           Totals + last snapshot timestamp
   GET /analytics/trending        Recent products (placeholder — sorted by queried_at)
   GET /analytics/brands          Top brands by snapshot count
+  GET /analytics/indicators      Latest moat indicator values
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from market_core import get_db
+from market_indicators import get_indicator_catalog, get_latest_values
 
 router = APIRouter(tags=["analytics"])
 
@@ -102,3 +104,22 @@ def analytics_brands(line: str | None = None, country: str | None = None, limit:
     rows = db.execute(q, params).fetchall()
     db.close()
     return {"brands": [dict(r) for r in rows], "total": len(rows)}
+
+
+@router.get("/analytics/indicators")
+def analytics_indicators(
+    country: str | None = None,
+    line: str | None = None,
+    limit: int = 50,
+):
+    """Latest indicator values from the data moat (internal + public API sources)."""
+    db = get_db()
+    values = get_latest_values(db, country=country, line=line, limit=limit)
+    db.close()
+    return {
+        "count": len(values),
+        "catalog_size": len(get_indicator_catalog()),
+        "country": country,
+        "line": line,
+        "indicators": values,
+    }

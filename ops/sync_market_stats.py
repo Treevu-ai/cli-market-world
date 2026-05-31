@@ -27,6 +27,8 @@ export const MARKET_STATS = {{
   countries: {s.COUNTRIES},
   countryCodes: {list(s.COUNTRY_CODES)!r},
   mcpTools: {s.MCP_TOOLS},
+  indicatorsCount: {s.INDICATORS_COUNT},
+  enrichmentSourcesLabel: "{s.ENRICHMENT_SOURCES_LABEL}",
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},
   packageVersion: "{s.PACKAGE_VERSION}",
@@ -62,11 +64,28 @@ def sync_readme() -> None:
         text,
     )
     text = re.sub(
+        r'<img src="https://img\.shields\.io/badge/MCP%20tools-\d+-00d75f" alt="[^"]*">',
+        f'<img src="https://img.shields.io/badge/MCP%20tools-{s.MCP_TOOLS}-00d75f" alt="{s.MCP_TOOLS} MCP tools">',
+        text,
+    )
+    text = re.sub(
+        r"## \d+ MCP tools",
+        f"## {s.MCP_TOOLS} MCP tools",
+        text,
+        count=1,
+    )
+    text = re.sub(
         r"<p align=\"center\"><b>Commerce infrastructure for AI agents\.</b><br>.*?</p>",
         f'<p align="center">{s.readme_tagline_html()}</p>',
         text,
         count=1,
         flags=re.DOTALL,
+    )
+    text = re.sub(
+        r"├── market_mcp\.py            → MCP server \(\d+ tools\)",
+        f"├── market_mcp.py            → MCP server ({s.MCP_TOOLS} tools)",
+        text,
+        count=1,
     )
     text = text.replace(
         "One API call across 30 verified retailers.",
@@ -83,6 +102,13 @@ def sync_readme() -> None:
 def sync_pyproject() -> None:
     path = ROOT / "pyproject.toml"
     text = path.read_text(encoding="utf-8")
+    text = re.sub(
+        r'^version = ".*"$',
+        f'version = "{s.PACKAGE_VERSION}"',
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
     desc = s.pypi_summary().replace('"', '\\"')
     text = re.sub(
         r'^description = ".*"$',
@@ -108,11 +134,53 @@ def sync_server_json() -> None:
         print(f"Synced {path}")
 
 
+def sync_mcp_json() -> None:
+    path = ROOT / "landing" / "public" / "mcp.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["description"] = (
+        f"Commerce infrastructure for AI agents — {s.MCP_TOOLS} MCP tools to search, compare, "
+        f"and purchase across {s.RETAILERS_VERIFIED} retailers in {s.COUNTRIES} countries. "
+        f"{s.PRICES_VERIFIED_LABEL} real prices, {s.INDICATORS_COUNT} market indicators, refreshed every {s.PRICES_REFRESH_HOURS} hours. MIT."
+    )
+    data["tools"] = [
+        "market_login", "market_lines", "market_search", "market_compare", "market_add",
+        "market_cart", "market_cart_update", "market_cart_remove", "market_checkout",
+        "market_orders", "market_reorder", "market_ask", "market_basket", "market_inflation",
+        "market_indicators", "market_scores", "market_intel_refresh", "market_enrichment",
+        "market_enrichment_subcategories", "market_enrichment_refresh", "market_analytics_indicators",
+        "market_categories", "market_barcode", "market_enrich", "market_stores", "market_countries",
+        "market_ticket", "market_voice", "market_price_history", "market_stats", "market_alerts",
+        "market_whoami", "market_preferences", "market_subscription", "market_export",
+        "market_trending", "market_scan", "market_stock", "market_brands", "market_favorites",
+        "market_notify", "market_exchange", "market_delivery",
+    ]
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Synced {path}")
+    root = ROOT / "mcp.json"
+    root.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"Synced {root}")
+
+
+def sync_og_svg() -> None:
+    path = ROOT / "landing" / "public" / "og.svg"
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(
+        r"\d+ MCP tools \| pip install",
+        f"{s.MCP_TOOLS} MCP tools | pip install",
+        text,
+        count=1,
+    )
+    path.write_text(text, encoding="utf-8")
+    print(f"Synced {path}")
+
+
 def main() -> None:
     write_market_stats_ts()
     sync_readme()
     sync_pyproject()
     sync_server_json()
+    sync_mcp_json()
+    sync_og_svg()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function QuickstartAPI() {
   const { lang } = useLang();
@@ -53,7 +54,7 @@ export default function QuickstartAPI() {
           <span>{isES ? "REST simple con JSON plano" : "Simple REST with flat JSON"}</span>
           <span className="text-[var(--cm-outline-variant)] hidden sm:inline">·</span>
           <a href="/tools" className="text-[var(--cm-mint)] hover:underline">
-            {isES ? "36 herramientas MCP → configs" : "36 MCP tools → configs"}
+            {isES ? `${MARKET_STATS.mcpTools} herramientas MCP → configs` : `${MARKET_STATS.mcpTools} MCP tools → configs`}
           </a>
           <span className="text-[var(--cm-outline-variant)] hidden sm:inline">·</span>
           <a

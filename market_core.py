@@ -353,15 +353,143 @@ def _migrate_store_credentials(db) -> None:
             pass
 
 
+def _migrate_indicator_schema(db) -> None:
+    """Indicator moat tables — safe to run on existing deployments."""
+    if USE_PG:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS indicator_definitions (
+                key TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                source TEXT NOT NULL,
+                unit TEXT DEFAULT '',
+                refresh_hours INTEGER NOT NULL DEFAULT 24,
+                description TEXT DEFAULT '',
+                formula TEXT DEFAULT ''
+            )
+        """)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS indicator_values (
+                id SERIAL PRIMARY KEY,
+                indicator_key TEXT NOT NULL,
+                scope TEXT NOT NULL DEFAULT 'global',
+                country TEXT DEFAULT '',
+                line TEXT DEFAULT '',
+                value DOUBLE PRECISION,
+                metadata_json TEXT DEFAULT '{}',
+                recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_iv_key_time ON indicator_values(indicator_key, recorded_at DESC)"
+        )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_iv_scope ON indicator_values(scope, country, line)"
+        )
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS price_history (
+                id SERIAL PRIMARY KEY,
+                product_id TEXT NOT NULL,
+                store TEXT NOT NULL,
+                price DOUBLE PRECISION,
+                list_price DOUBLE PRECISION,
+                discount INTEGER,
+                recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ph_product_store ON price_history(product_id, store, recorded_at DESC)"
+        )
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS enrichment_cache (
+                cache_key TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                payload_json TEXT DEFAULT '{}',
+                recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        db.execute("CREATE INDEX IF NOT EXISTS idx_enrich_cache_at ON enrichment_cache(recorded_at DESC)")
+    else:
+        db.executescript("""
+            CREATE TABLE IF NOT EXISTS indicator_definitions (
+                key TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                source TEXT NOT NULL,
+                unit TEXT DEFAULT '',
+                refresh_hours INTEGER NOT NULL DEFAULT 24,
+                description TEXT DEFAULT '',
+                formula TEXT DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS indicator_values (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                indicator_key TEXT NOT NULL,
+                scope TEXT NOT NULL DEFAULT 'global',
+                country TEXT DEFAULT '',
+                line TEXT DEFAULT '',
+                value REAL,
+                metadata_json TEXT DEFAULT '{}',
+                recorded_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_iv_key_time ON indicator_values(indicator_key, recorded_at);
+            CREATE INDEX IF NOT EXISTS idx_iv_scope ON indicator_values(scope, country, line);
+            CREATE TABLE IF NOT EXISTS price_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id TEXT NOT NULL,
+                store TEXT NOT NULL,
+                price REAL,
+                list_price REAL,
+                discount INTEGER,
+                recorded_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_ph_product_store ON price_history(product_id, store, recorded_at);
+            CREATE TABLE IF NOT EXISTS enrichment_cache (
+                cache_key TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                payload_json TEXT DEFAULT '{}',
+                recorded_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_enrich_cache_at ON enrichment_cache(recorded_at);
+        """)
+    try:
+        from market_indicators import seed_indicator_definitions
+
+        seed_indicator_definitions(db)
+    except Exception as e:
+        logger.warning("Indicator definition seed skipped: %s", e)
+
+
+def append_price_history(db, product_id: str, store: str, price: float, list_price: float, discount) -> None:
+    """Append to price_history when price changes vs last recorded point."""
+    try:
+        row = db.execute(
+            "SELECT price FROM price_history WHERE product_id = ? AND store = ? ORDER BY recorded_at DESC LIMIT 1",
+            (product_id, store),
+        ).fetchone()
+        if row and row["price"] is not None and price == row["price"]:
+            return
+        db.execute(
+            """
+            INSERT INTO price_history (product_id, store, price, list_price, discount)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (product_id, store, price, list_price, discount),
+        )
+    except Exception as e:
+        logger.debug("price_history append skipped: %s", e)
+
+
 def init_db() -> None:
     db = get_db()
     if USE_PG:
         init_db_pg(db)
+        _migrate_indicator_schema(db)
     else:
         db.executescript(_SQLITE_DDL)
         _migrate_payment_schema(db)
         _migrate_store_credentials(db)
         _migrate_price_snapshots_v7(db)
+        _migrate_indicator_schema(db)
     db.commit()
     db.close()
 
@@ -618,6 +746,14 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
                     confidence=excluded.confidence,
                     queried_at=datetime('now')
             """, params)
+        append_price_history(
+            db,
+            params[0],
+            params[6],
+            float(params[3] or 0),
+            float(params[4] or 0),
+            params[5],
+        )
         if owns_db:
             db.commit()
             db.close()
