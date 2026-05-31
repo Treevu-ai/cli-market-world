@@ -33,8 +33,8 @@ export default function ContactSection() {
             title={isES ? "¿Otra consulta o alianza?" : "Other inquiry or partnership?"}
             subtitle={
               isES
-                ? "Intelligence, volumen Enterprise o prensa — le respondemos en 48 h."
-                : "Intelligence, Enterprise volume, or press — we reply within 48 h."
+                ? "Intelligence, volumen Enterprise o prensa — le respondemos en menos de 30 min."
+                : "Intelligence, Enterprise volume, or press — we reply within 30 min."
             }
           />
         </div>

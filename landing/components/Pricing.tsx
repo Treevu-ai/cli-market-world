@@ -221,8 +221,8 @@ export default function Pricing() {
             title={isES ? "¿Volumen Enterprise o SLAs a medida?" : "Enterprise volume or custom SLAs?"}
             subtitle={
               isES
-                ? "Cuéntenos país, categorías y volumen. Respondemos en 48 h con propuesta."
-                : "Tell us country, categories, and volume. We reply within 48 h with a proposal."
+                ? "Cuéntenos país, categorías y volumen. Respondemos en menos de 30 min con propuesta."
+                : "Tell us country, categories, and volume. We reply within 30 min with a proposal."
             }
           />
         </div>
