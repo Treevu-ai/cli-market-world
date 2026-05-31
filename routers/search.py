@@ -18,6 +18,7 @@ import difflib
 import logging
 import os
 import re
+from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter, HTTPException
@@ -127,7 +128,12 @@ async def _search_products(body: SearchRequest):
         save_price_snapshot(p)
     save_search_query(body.query, body.line, body.store, len(results))
 
-    response: dict = {"query": body.query, "results": results, "total": len(results)}
+    response: dict = {
+        "query": body.query,
+        "results": results,
+        "total": len(results),
+        "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
     if errors:
         response["partial"] = True
         response["errors"] = errors
@@ -207,7 +213,12 @@ async def compare_products(body: SearchRequest):
                 )
 
     comparison.sort(key=lambda x: x["best_price"])
-    return {"query": body.query, "comparison": comparison, "stores_compared": len(stores)}
+    return {
+        "query": body.query,
+        "comparison": comparison,
+        "stores_compared": len(stores),
+        "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
 
 
 @router.post("/v1/basket/compare")
@@ -268,6 +279,7 @@ async def basket_compare(body: BasketRequest):
         "best_store": best,
         "best_total": results[best]["total"] if best else None,
         "stores_compared": len(results),
+        "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
 
@@ -276,7 +288,7 @@ def product_stock(product_id: str, store: str):
     """Latest stock snapshot for a product in a specific store."""
     db = get_db()
     row = db.execute(
-        "SELECT stock, name, store_name FROM price_snapshots "
+        "SELECT stock, name, store_name, queried_at FROM price_snapshots "
         "WHERE product_id=? AND store=? ORDER BY queried_at DESC LIMIT 1",
         (product_id, store),
     ).fetchone()
@@ -289,6 +301,7 @@ def product_stock(product_id: str, store: str):
         "stock": row["stock"],
         "name": row["name"],
         "store_name": row["store_name"],
+        "as_of": str(row["queried_at"]),
     }
 
 

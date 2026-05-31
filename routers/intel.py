@@ -116,6 +116,7 @@ def inflation_tracker(
         "products_tracked": len(items),
         "avg_inflation_pct": avg,
         "items": items,
+        "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "disclaimer": "Internal collector signal — not an official inflation index.",
     }
 
