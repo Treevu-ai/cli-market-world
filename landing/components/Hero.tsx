@@ -178,6 +178,21 @@ export default function Hero() {
             <div className="font-display text-[var(--cm-mint)] text-2xl font-bold">MIT</div>
           </div>
         </div>
+
+        {/* Product demo */}
+        <div className="mt-8 w-full max-w-[900px]">
+          <img
+            src="/demo.gif"
+            alt={isES ? "Demo: agente de IA comprando canasta básica en supermercados peruanos con CLI Market" : "Demo: AI agent shopping a basic basket at Peruvian supermarkets with CLI Market"}
+            className="mx-auto rounded-xl border border-[var(--wise-green-pale)] shadow-lg max-w-full h-auto"
+            width={960}
+            height={540}
+            loading="lazy"
+          />
+          <p className="text-[10px] text-[var(--wise-mute)] mt-2 font-mono text-center">
+            {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
+          </p>
+        </div>
       </div>
     </section>
   );
