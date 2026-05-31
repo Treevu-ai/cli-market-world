@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 
@@ -57,9 +58,13 @@ export default function UseCasesSection() {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[800px] mx-auto text-left mb-10">
-          {cases.map((c) => (
-            <a
+          {cases.map((c, i) => (
+            <motion.a
               key={c.title_es}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
               href={c.href}
               target={c.href.startsWith("http") ? "_blank" : undefined}
               rel={c.href.startsWith("http") ? "noopener" : undefined}
@@ -75,7 +80,7 @@ export default function UseCasesSection() {
               <span className="text-xs font-mono text-[var(--cm-mint)]">
                 {isES ? "Explorar →" : "Explore →"}
               </span>
-            </a>
+            </motion.a>
           ))}
         </div>
 

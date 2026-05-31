@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import ContactForm from "@/components/ContactForm";
@@ -179,8 +180,8 @@ export default function Pricing() {
 
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-12">
-          {tiers.map((tier) => (
-            <div key={tier.name}>
+          {tiers.map((tier, i) => (
+            <motion.div key={tier.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
               <TierCard tier={tier} isES={isES}>
                 {tier.name === "Pro" ? (
                   <div id="pro-checkout" className="scroll-mt-24">
@@ -197,7 +198,7 @@ export default function Pricing() {
                   {isES ? tier.proNote_es : tier.proNote_en}
                 </p>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
 
