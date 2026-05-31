@@ -19,7 +19,6 @@ export default function ProSubscribeButton() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [email, setEmail] = useState("");
-  const [cliUsername, setCliUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProResponse | null>(null);
   const [error, setError] = useState("");
@@ -32,16 +31,10 @@ export default function ProSubscribeButton() {
     }
     setLoading(true);
     try {
-      const payload: Record<string, string | boolean> = {
-        email: email.trim(),
-        lang: isES ? "es" : "en",
-      };
-      if (cliUsername.trim()) payload.username = cliUsername.trim();
-
       const r = await fetch(`${API_URL}/billing/request-pro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email: email.trim(), lang: isES ? "es" : "en" }),
       });
       const data: ProResponse = await r.json();
       if (!r.ok) {
@@ -61,8 +54,8 @@ export default function ProSubscribeButton() {
     const ref = result.request_id || "";
 
     return (
-      <div className="space-y-4 text-left">
-        <div className="rounded border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-4 text-sm text-[var(--cm-on-surface-variant)]">
+      <div className="space-y-3 text-left">
+        <div className="rounded border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-3 text-sm text-[var(--cm-on-surface-variant)]">
           {result.email_sent ? (
             <p>
               {isES
@@ -72,12 +65,12 @@ export default function ProSubscribeButton() {
           ) : (
             <p>
               {isES
-                ? "SMTP pendiente en servidor. Paga abajo o usa el link:"
+                ? "SMTP pendiente. Paga abajo o usa el link:"
                 : "Server SMTP pending. Pay below or use the link:"}
             </p>
           )}
           {ref && (
-            <p className="mt-2 font-mono text-xs text-[var(--cm-on-surface-variant)]/60">
+            <p className="mt-1 font-mono text-[11px] text-[var(--cm-on-surface-variant)]/60">
               Ref: {ref}
             </p>
           )}
@@ -92,40 +85,13 @@ export default function ProSubscribeButton() {
           {isES ? "Pagar USD 49 con PayPal →" : "Pay USD 49 with PayPal →"}
         </a>
 
-        <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
+        <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
           {isES
-            ? "Si el botón embebido muestra «Agotado», use el botón verde de arriba. Revise inventario del botón en PayPal Business."
-            : "If the embedded button shows “Sold out”, use the green button above. Check button inventory in PayPal Business."}
+            ? "Si el botón de PayPal aparece agotado, use el botón verde de arriba."
+            : "If the PayPal button shows sold out, use the green button above."}
         </p>
 
         <PayPalHostedButton className="w-full" />
-
-        <a
-          href={payLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-center text-xs text-[var(--cm-on-surface-variant)] underline hover:text-[var(--cm-mint)]"
-        >
-          {isES ? "Abrir link de pago en PayPal (alternativa)" : "Open PayPal payment link (fallback)"}
-        </a>
-
-        <div className="card-cyber p-4 text-xs text-[var(--cm-on-surface-variant)] space-y-2">
-          <p className="font-semibold text-white">
-            {isES ? "Después de pagar" : "After payment"}
-          </p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>
-              {isES
-                ? "Si aún no tienes cuenta: pip install cli-market && market login"
-                : "No account yet? pip install cli-market && market login"}
-            </li>
-            <li>
-              {isES
-                ? `Responde al email con tu usuario CLI${cliUsername ? ` (${cliUsername})` : ""} y ref ${ref}`
-                : `Reply to the email with your CLI username${cliUsername ? ` (${cliUsername})` : ""} and ref ${ref}`}
-            </li>
-          </ol>
-        </div>
       </div>
     );
   }
@@ -139,17 +105,6 @@ export default function ProSubscribeButton() {
         placeholder={isES ? "tu@email.com" : "you@email.com"}
         className="w-full input-cyber"
       />
-      <input
-        type="text"
-        value={cliUsername}
-        onChange={(e) => setCliUsername(e.target.value)}
-        placeholder={
-          isES
-            ? "Usuario CLI (opcional, si ya hiciste market login)"
-            : "CLI username (optional, if you ran market login)"
-        }
-        className="w-full input-cyber"
-      />
       {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
       <button
         onClick={submit}
@@ -161,7 +116,7 @@ export default function ProSubscribeButton() {
             ? "Enviando..."
             : "Sending..."
           : isES
-            ? "Solicitar Pro — $49/mo"
+            ? "Solicitar Pro — $49/mes"
             : "Request Pro — $49/mo"}
       </button>
     </div>
