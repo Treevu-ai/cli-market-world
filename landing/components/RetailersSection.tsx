@@ -8,9 +8,9 @@ export default function RetailersSection() {
 
   const steps = [
     { icon: "1", title: isES ? "Tu plataforma" : "Your platform",
-      desc: isES ? "VTEX, Shopify y Magento. Ya nos conectamos, cero desarrollo." : "VTEX, Shopify, and Magento. We already connect — zero dev work." },
+      desc: isES ? "VTEX, Shopify y Magento. Ya nos conectamos. Cero desarrollo." : "VTEX, Shopify, and Magento. We already connect. Zero dev work." },
     { icon: "2", title: isES ? "30 segundos" : "30 seconds",
-      desc: isES ? "Token de solo lectura. Sin acceso a tus clientes ni a tus ventas." : "Read-only token. No access to your customers or sales." },
+      desc: isES ? "Token de solo lectura. Sin acceso a clientes ni ventas." : "Read-only token. No customer or sales data access." },
     { icon: "3", title: isES ? "Apareces" : "You appear",
       desc: isES
         ? `Tus productos comparados por agentes de IA junto a ${MARKET_STATS.retailersVerified} retailers verificados.`
@@ -18,61 +18,69 @@ export default function RetailersSection() {
   ];
 
   const benefits = isES
-    ? [
-        "Sin costo. Licencia MIT, open source.",
-        "Sin integración técnica: si ya vendes online, ya está listo.",
-        "Canal nuevo: agentes que comparan precios en tiempo real.",
-      ]
-    : [
-        "No cost. MIT license, open source.",
-        "No technical integration: if you already sell online, you're ready.",
-        "New channel: agents comparing prices in real time.",
-      ];
+    ? ["Sin costo, siempre. MIT. Sin letra chica.",
+       "Sin integración técnica. Si ya vende online, ya está listo.",
+       "Canal nuevo: agentes que comparan precios en tiempo real.",
+       "Cada día fuera = ventaja para su competidor."]
+    : ["Free forever. MIT. No fine print.",
+       "Zero technical integration. If you sell online, you're already ready.",
+       "New channel: agents comparing prices in real time.",
+       "Every day you're out = your rival's advantage."];
 
   return (
-    <section id="retailers" className="landing-section landing-section-alt scroll-mt-24" itemScope itemType="https://schema.org/Service">
+    <section id="retailers" className="wise-on-dark relative bg-[var(--wise-ink)] py-14 border-t border-[#2a2d25]" itemScope itemType="https://schema.org/Service">
       <meta itemProp="name" content="CLI Market Retailer Listing" />
       <meta itemProp="description" content={isES ? "Lista tu tienda gratis en CLI Market. VTEX, Shopify o Magento. 30 segundos. Sin costo." : "List your store on CLI Market free. VTEX, Shopify, or Magento. 30 seconds. No cost."} />
       <meta itemProp="offers" content='{"@type":"Offer","price":"0","priceCurrency":"USD"}' />
 
-      <div className="landing-container-wide">
+      <div className="landing-container">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <span className="h-px w-12 bg-[var(--cm-outline-variant)]/40" aria-hidden="true" />
-          <p className="font-label-caps text-[var(--cm-mint)]">
+          <span className="h-px w-12 bg-[#2a2d25]" aria-hidden="true" />
+          <p className="text-[10px] text-[var(--wise-mute)] font-mono uppercase tracking-[0.2em]">
             {isES ? "Para retailers · Puerta B" : "For retailers · Door B"}
           </p>
-          <span className="h-px w-12 bg-[var(--cm-outline-variant)]/40" aria-hidden="true" />
+          <span className="h-px w-12 bg-[#2a2d25]" aria-hidden="true" />
         </div>
-        <h2 className="section-title mb-3 text-center">
-          {isES ? "Tu tienda en las búsquedas de agentes de IA." : "Your store in AI agent searches."}
+        <h2 className="text-[clamp(22px,4vw,32px)] leading-[1.1] font-bold text-white mb-3 text-center tracking-tight">
+          {isES ? "Tu tienda en las búsquedas de agentes. Gratis, desde hoy." : "Your store in agent searches. Free, starting today."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-8 text-center">
-          {isES ? "Gratis, en 30 segundos." : "Free, in 30 seconds."}
+        <p className="text-sm text-[var(--wise-body)] max-w-2xl mx-auto mb-4 text-center">
+          {isES
+            ? "Si usas VTEX, Shopify o Magento, tus productos ya pueden aparecer en búsquedas de agentes de IA. En 30 segundos. Sin pagar un centavo."
+            : "If you use VTEX, Shopify, or Magento, your products can already appear in AI agent searches. 30 seconds. Zero cost."}
+        </p>
+        <p className="text-xs text-[#ffbd2e] max-w-2xl mx-auto mb-8 text-center font-medium">
+          {isES
+            ? "Gratis para siempre. Plazas limitadas por país."
+            : "Free forever. Limited spots per country."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {steps.map((s) => (
-            <div key={s.icon} className="card-cyber header-strip p-5 text-left">
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black text-[var(--cm-on-mint)] bg-[var(--cm-mint)] mb-3">{s.icon}</span>
+            <div key={s.icon} className="bg-[#1a1d19] rounded-2xl p-5 border border-[#2a2d25] text-left">
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black text-[var(--wise-ink)] bg-[var(--wise-green)] mb-3">{s.icon}</span>
               <h3 className="text-white font-bold text-sm mb-1">{s.title}</h3>
-              <p className="text-[11px] text-[var(--cm-on-surface-variant)] leading-relaxed">{s.desc}</p>
+              <p className="text-xs text-[var(--wise-body)] leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 max-w-3xl mx-auto">
           {benefits.map((b, i) => (
-            <div key={i} className={`flex items-start gap-2 ${i === 2 ? "sm:col-span-2 sm:justify-center" : ""}`}>
-              <span className="text-[var(--cm-mint)] mt-0.5 shrink-0">✓</span>
-              <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{b}</p>
+            <div key={i} className="flex items-start gap-2">
+              <span className="text-[var(--wise-green)] mt-0.5 shrink-0">✓</span>
+              <p className="text-xs text-[var(--wise-body)] leading-relaxed">{b}</p>
             </div>
           ))}
         </div>
 
         <div className="text-center">
-          <a href="#contact-retailers" className="inline-block border border-[var(--cm-mint)] text-[var(--cm-mint)] font-semibold text-sm px-8 py-3 hover:bg-[var(--cm-mint)] hover:text-[var(--cm-on-mint)] transition-colors font-mono uppercase tracking-wider">
+          <a href="#contact-retailers" className="inline-block border-2 border-[var(--wise-green)] text-[var(--wise-green)] font-semibold text-sm px-8 py-3 rounded-full hover:bg-[var(--wise-green)] hover:text-[var(--wise-ink)] transition-colors">
             {isES ? "Listar mi tienda — gratis →" : "List my store — free →"}
           </a>
+          <p className="text-[10px] text-[var(--wise-mute)] mt-3 font-mono">
+            {isES ? "Gratis. Siempre. MIT. Sin letra chica." : "Free. Forever. MIT. No fine print."}
+          </p>
         </div>
       </div>
     </section>
