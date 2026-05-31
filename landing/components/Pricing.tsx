@@ -135,30 +135,30 @@ function TierCard({
 }) {
   return (
     <div
-      className={`rounded-3xl p-6 text-left flex flex-col relative ${
+      className={`rounded-2xl p-6 text-left flex flex-col relative ${
         tier.dark
-          ? "bg-[var(--wise-ink)] text-white"
+          ? "energy-border-active card-cyber"
           : tier.featured
-            ? "bg-[var(--wise-canvas)] border-2 border-[var(--wise-ink)] shadow-lg"
-            : "bg-[var(--wise-canvas)] border border-[var(--wise-green-pale)]"
+            ? "energy-border-active card-cyber"
+            : "card-cyber"
       }`}
     >
       {tier.featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--wise-ink)] text-[var(--wise-canvas)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
           {isES ? "Foco comercial" : "Commercial focus"}
         </span>
       )}
-      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--wise-green)]" : "text-[var(--wise-ink)]"}`}>
+      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
         {tier.name}
       </h3>
       <div className="mt-3 mb-5">
         <span
-          className={`text-3xl font-black break-all tabular-nums ${tier.dark ? "text-white" : "text-[var(--wise-ink)]"}`}
+          className={`text-3xl font-black break-all tabular-nums ${tier.dark ? "text-white" : "text-white"}`}
         >
           {tier.price}
         </span>
         {(tier.period_es || tier.period_en) && (
-          <span className={`text-sm ml-1 ${tier.dark ? "text-white/80" : "text-[var(--wise-mute)]"}`}>
+          <span className={`text-sm ml-1 ${tier.dark ? "text-[var(--cm-on-surface-variant)]" : "text-[var(--cm-on-surface-variant)]"}`}>
             {isES ? tier.period_es : tier.period_en}
           </span>
         )}
@@ -171,10 +171,8 @@ function TierCard({
               key={i}
               className={`flex items-start gap-2.5 text-sm ${
                 isHighlight
-                  ? "font-semibold text-[var(--wise-ink)]"
-                  : tier.dark
-                    ? "text-white/80"
-                    : "text-[var(--wise-body)]"
+                  ? "font-semibold text-[var(--cm-mint)]"
+                  : "text-[var(--cm-on-surface-variant)]"
               }`}
             >
               {!isHighlight && (
@@ -182,7 +180,7 @@ function TierCard({
                   className="w-4 h-4 mt-0.5 shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke={tier.dark ? "#9fe870" : "var(--wise-ink)"}
+                  stroke="var(--cm-mint)"
                   strokeWidth="2.5"
                 >
                   <path d="M20 6L9 17l-5-5" />
@@ -194,11 +192,27 @@ function TierCard({
         })}
       </ul>
       {(tier.anchor_es || tier.anchor_en) && (
-        <p className="text-xs text-[var(--wise-mute)] leading-relaxed mb-4 border-t border-[var(--wise-green-pale)] pt-3">
+        <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed mb-4 border-t border-[var(--cm-outline-variant)]/30 pt-3">
           {isES ? tier.anchor_es : tier.anchor_en}
         </p>
       )}
-      {children}
+      {children ? (
+        children
+      ) : tier.dark ? (
+        <a
+          href={tier.href ?? "#"}
+          className="inline-flex items-center justify-center rounded-3xl border-2 border-[var(--cm-mint)] text-[var(--cm-mint)] text-sm font-semibold px-6 py-3 hover:bg-[var(--cm-mint)] hover:text-[var(--cm-on-mint)] transition-colors"
+        >
+          {isES ? tier.cta_es : tier.cta_en}
+        </a>
+      ) : (
+        <a
+          href={tier.href ?? "#"}
+          className="btn-mint"
+        >
+          {isES ? tier.cta_es : tier.cta_en}
+        </a>
+      )}
     </div>
   );
 }
@@ -208,85 +222,25 @@ export default function Pricing() {
   const isES = lang === "es";
 
   return (
-    <section id="pricing" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
-      <div className="landing-container text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
+    <section id="pricing" className="landing-section-alt">
+      <div className="landing-container-wide text-center">
+        <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">
           {isES ? "Planes" : "Plans"}
         </p>
-        <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-[var(--wise-ink)] mb-2 tracking-tight">
-          {isES ? "Intelligence para equipos. Build gratis." : "Intelligence for teams. Build free."}
+        <h2 className="section-title mb-2">
+          {isES ? "Construido para escalar." : "Built to scale."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-2xl mx-auto mb-12">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-12">
           {isES
-            ? "Foco comercial este trimestre: datos de precios con capa de calidad (Puerta C). Build (Puerta A) para quien integra. Listado retailer (Puerta B) gratis — más abajo."
-            : "Commercial focus this quarter: quality-filtered price data (Door C). Build (Door A) for integrators. Retailer listing (Door B) free — below."}
+            ? "Elige tu punto de entrada. Migra cuando crezcas sin cambiar de integración."
+            : "Pick your entry point. Migrate as you grow without changing integrations."}
         </p>
 
-        {/* ── Intelligence (foco comercial) ── */}
-        <div id="pricing-intelligence" className="scroll-mt-24 mb-16 text-left">
-          <div className="mb-6">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
-              {isES ? "Puerta C · Intelligence" : "Door C · Intelligence"}
-            </p>
-            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
-              {isES ? "Datos de precios para equipos comerciales" : "Price data for commercial teams"}
-            </h3>
-            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
-              {isES
-                ? "Spreads, inflación, canasta y calidad verificable. Lo que vendemos este trimestre — no checkout autónomo."
-                : "Spreads, inflation, basket, and verifiable quality. What we sell this quarter — not autonomous checkout."}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-            {intelligenceTiers.map((tier) => (
-              <TierCard key={tier.name} tier={tier} isES={isES}>
-                <a
-                  href={tier.href || "#contact-intelligence"}
-                  className={`inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full ${
-                    tier.dark
-                      ? "bg-white text-[var(--wise-ink)] hover:bg-[var(--wise-green-pale)]"
-                      : "bg-[var(--wise-green)] text-[var(--wise-ink)] hover:bg-[var(--wise-green-hover)]"
-                  }`}
-                >
-                  {isES ? tier.cta_es : tier.cta_en}
-                </a>
-              </TierCard>
-            ))}
-          </div>
-          <p className="text-xs text-[var(--wise-mute)] mt-4 max-w-2xl mx-auto">
-            {isES ? (
-              <>
-                One-pager del piloto:{" "}
-                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
-                  intelligence-pilot-es.md
-                </a>
-              </>
-            ) : (
-              <>
-                Pilot one-pager:{" "}
-                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--wise-ink)]">
-                  intelligence-pilot-es.md
-                </a>
-              </>
-            )}
+        {/* Build Tiers */}
+        <div id="pricing-build" className="scroll-mt-24 mb-16">
+          <p className="font-label-caps text-[var(--cm-mint)] mb-6">
+            {isES ? "Build · API y MCP" : "Build · API and MCP"}
           </p>
-        </div>
-
-        {/* ── Build ── */}
-        <div id="pricing-build" className="scroll-mt-24 mb-16 text-left">
-          <div className="mb-6">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--wise-mute)] mb-1">
-              {isES ? "Puerta A · Build" : "Door A · Build"}
-            </p>
-            <h3 className="text-xl font-bold text-[var(--wise-ink)]">
-              {isES ? "API, MCP y CLI para builders" : "API, MCP, and CLI for builders"}
-            </h3>
-            <p className="text-sm text-[var(--wise-body)] mt-1 max-w-2xl">
-              {isES
-                ? "Integre agentes, automatice búsquedas y exporte datos. Sin tarjeta para Free."
-                : "Integrate agents, automate search, and export data. No card for Free."}
-            </p>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {buildTiers.map((tier) => (
               <TierCard key={tier.name} tier={tier} isES={isES}>
@@ -294,7 +248,7 @@ export default function Pricing() {
                   <div id="pro-checkout" className="scroll-mt-24 space-y-3">
                     <ProSubscribeButton />
                     {tier.proNote_es && (
-                      <p className="text-xs text-[var(--wise-mute)] leading-relaxed">
+                      <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
                         {isES ? tier.proNote_es : tier.proNote_en}
                       </p>
                     )}
@@ -302,7 +256,7 @@ export default function Pricing() {
                 ) : (
                   <a
                     href={tier.href}
-                    className="inline-flex items-center justify-center rounded-3xl text-sm font-semibold px-6 py-3 transition-colors w-full bg-[var(--wise-ink)] text-[var(--wise-canvas)] hover:opacity-90"
+                    className="btn-mint"
                   >
                     {isES ? tier.cta_es : tier.cta_en}
                   </a>
@@ -310,49 +264,52 @@ export default function Pricing() {
               </TierCard>
             ))}
           </div>
-        </div>
-
-        <div className="rounded-2xl border border-[var(--wise-green-pale)] bg-[var(--wise-canvas)] p-4 max-w-3xl mx-auto mb-16 text-left">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--wise-mute)] mb-2">
-            {isES ? "¿Build Pro o Intelligence?" : "Build Pro or Intelligence?"}
+          <p className="text-xs text-[var(--cm-on-surface-variant)] mt-6 max-w-2xl mx-auto">
+            {isES
+              ? "¿Builders buscando más escalabilidad? Pro elimina límites de exportación y da acceso a 10 API keys."
+              : "Builders looking for more scale? Pro removes export limits and gives you 10 API keys."}
           </p>
-          <ul className="text-xs text-[var(--wise-body)] space-y-1.5">
-            <li>
-              <strong className="text-[var(--wise-ink)]">Pro (USD 49)</strong>
-              {isES
-                ? " — usted integra API/MCP y exporta datos técnicos. Ideal para devs y agentes."
-                : " — you integrate API/MCP and export technical data. Best for devs and agents."}
-            </li>
-            <li>
-              <strong className="text-[var(--wise-ink)]">Intelligence (USD 300–500)</strong>
-              {isES
-                ? " — paquete comercial: spreads, inflación, canasta, calidad y SLA. Ideal para pricing y trade."
-                : " — commercial package: spreads, inflation, basket, quality, and SLA. Best for pricing and trade."}
-            </li>
-          </ul>
         </div>
 
-        <div
-          id="contact-intelligence"
-          className="w-full max-w-lg mx-auto scroll-mt-24 min-w-0 border-t border-[#c5edab] pt-12"
-        >
+        {/* Intelligence Tiers */}
+        <div id="pricing-intelligence" className="scroll-mt-24 mb-16">
+          <p className="font-label-caps text-[var(--cm-mint)] mb-6">
+            {isES ? "Intelligence · Datos comerciales" : "Intelligence · Commercial data"}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            {intelligenceTiers.map((tier) => (
+              <TierCard key={tier.name} tier={tier} isES={isES} />
+            ))}
+          </div>
+          <p className="text-xs text-[var(--cm-on-surface-variant)] mt-4 max-w-2xl mx-auto">
+            {isES ? (
+              <>
+                One-pager del piloto:{" "}
+                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--cm-mint)]">
+                  intelligence-pilot-es.md
+                </a>
+              </>
+            ) : (
+              <>
+                Pilot one-pager:{" "}
+                <a href="/intelligence-pilot-es.md" className="underline hover:text-[var(--cm-mint)]">
+                  intelligence-pilot-es.md
+                </a>
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Intelligence contact form */}
+        <div id="contact-intelligence" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12">
           <ContactForm
             plan="intelligence"
-            eyebrow={isES ? "Intelligence · Piloto" : "Intelligence · Pilot"}
-            title={
-              isES
-                ? "¿Pricing, trade marketing o inteligencia comercial?"
-                : "Pricing, trade marketing, or commercial intelligence?"
-            }
+            eyebrow={isES ? "Intelligence" : "Intelligence"}
+            title={isES ? "Solicitar piloto de Intelligence" : "Request Intelligence pilot"}
             subtitle={
               isES
                 ? "Cuéntenos país, categorías y volumen. Respondemos en 48 h con propuesta de piloto. Puede adjuntar contexto o referirse al one-pager público."
                 : "Tell us country, categories, and volume. We reply within 48 h with a pilot proposal. Attach context or refer to the public one-pager."
-            }
-            placeholder={
-              isES
-                ? "Ej.: spreads supermercados PE, 90 días histórico, equipo de pricing..."
-                : "E.g. grocery spreads Peru, 90-day history, pricing team..."
             }
           />
         </div>

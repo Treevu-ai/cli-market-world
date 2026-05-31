@@ -1,182 +1,97 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
+import { useLiveStats } from "@/hooks/useLiveStats";
 import { MARKET_STATS } from "@/lib/marketStats";
-
-const TERMINAL_LOOP_ES = [
-  "Sync node AR_BUE_09",
-  'market compare "arroz" --country MX',
-  "Sync node MX_CDMX_03",
-  'market search "aceite" --brand Natura',
-  "Sync node BR_SAO_11",
-];
-
-const TERMINAL_LOOP_EN = [
-  "Sync node AR_BUE_09",
-  'market compare "rice" --country MX',
-  "Sync node MX_CDMX_03",
-  'market search "oil" --brand Natura',
-  "Sync node BR_SAO_11",
-];
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const glowRef = useRef<HTMLDivElement>(null);
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const [lineIndex, setLineIndex] = useState(0);
-  const [visibleLines, setVisibleLines] = useState<string[]>([]);
+  const { priceChip, retailersVerified, retailersDefined } = useLiveStats();
 
-  useEffect(() => {
-    const logs = isES ? TERMINAL_LOOP_ES : TERMINAL_LOOP_EN;
-    setVisibleLines([]);
-    setLineIndex(0);
-
-    const interval = setInterval(() => {
-      setLineIndex((prev) => {
-        const next = (prev + 1) % logs.length;
-        setVisibleLines((lines) => [...lines.slice(-(logs.length - 1)), logs[prev]]);
-        return next;
-      });
-      if (terminalRef.current) {
-        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-      }
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, [isES]);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!glowRef.current) return;
-      glowRef.current.style.transform = `translate(-50%, -50%) translate(${e.clientX / 50}px, ${e.clientY / 50}px)`;
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
-  }, []);
+  const chips = [
+    { num: String(MARKET_STATS.mcpTools), label: isES ? "MCP" : "MCP", accent: false },
+    { num: String(retailersDefined), label: isES ? `retailers (${retailersVerified} verif.)` : `retailers (${retailersVerified} verif.)`, accent: false },
+    { num: String(MARKET_STATS.countries), label: isES ? "países" : "countries", accent: false },
+    { num: priceChip, label: isES ? "precios" : "prices", accent: false },
+    { num: `${MARKET_STATS.pricesRefreshHours}h`, label: "refresh", accent: false },
+  ];
 
   return (
-    <section id="hero" className="relative min-h-[90vh] flex flex-col items-center justify-center px-[var(--cm-gutter)] overflow-hidden pt-24 pb-12">
-      <div
-        ref={glowRef}
-        className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-[var(--cm-mint)]/5 rounded-full blur-[120px] pointer-events-none transition-transform duration-300"
-        aria-hidden="true"
-      />
-
-      <div className="relative z-10 text-center max-w-4xl mx-auto mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 border border-[var(--cm-mint)]/30 bg-[var(--cm-mint)]/5 rounded-full mb-6">
-          <span className="w-2 h-2 rounded-full bg-[var(--cm-mint)] agent-pulse" aria-hidden="true" />
-          <span className="font-label-caps text-[10px] text-[var(--cm-mint)] tracking-widest">
-            {isES ? "Network Engine Active" : "Network Engine Active"}
-          </span>
-        </div>
-
-        <h1 className="font-display text-[clamp(2rem,5vw,4.25rem)] leading-tight mb-8 tracking-tight text-white">
-          {isES ? (
-            <>
-              La capa programable del <span className="text-[var(--cm-mint)] italic">retail físico</span> de LatAm
-            </>
-          ) : (
-            <>
-              The programmable layer of <span className="text-[var(--cm-mint)] italic">physical retail</span> in LatAm
-            </>
-          )}
+    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col">
+      <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--cm-on-surface-variant)]/60 -rotate-90 origin-left block whitespace-nowrap">
+          {isES ? "COMERCIO" : "COMMERCE"}
+        </span>
+      </div>
+      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0">
+        <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-white max-w-[900px] tracking-tight">
+          {isES
+            ? "La capa programable del retail físico de LatAm."
+            : "The programmable layer for physical retail in LatAm."}
         </h1>
 
-        <p className="font-sans text-lg md:text-xl text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-10 leading-relaxed">
-          {isES ? (
-            <>
-              Agentes de IA y equipos de pricing buscan y comparan precios reales de góndola en{" "}
-              {MARKET_STATS.retailersVerified} retailers verificados —{MARKET_STATS.retailersDefined} en catálogo— de{" "}
-              {MARKET_STATS.countries} países, vía API, CLI y herramientas MCP.
-            </>
-          ) : (
-            <>
-              AI agents and pricing teams search and compare real shelf prices across{" "}
-              {MARKET_STATS.retailersVerified} verified retailers —{MARKET_STATS.retailersDefined} in catalog— in{" "}
-              {MARKET_STATS.countries} countries, via API, CLI, and MCP tools.
-            </>
-          )}
+        <p className="mt-5 text-base sm:text-lg text-[var(--cm-on-surface-variant)] max-w-[620px] leading-relaxed">
+          {isES
+            ? "Los agentes de IA ya buscan y comparan en LATAM. CLI Market conecta builders con 30 retailers verificados — y entrega datos de precios para equipos comerciales."
+            : "AI agents already search and compare across LatAm. CLI Market connects builders to 30 verified retailers — and delivers price data for commercial teams."}
         </p>
 
-        <div className="flex flex-col items-center justify-center gap-3">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
           <a
             href="https://pypi.org/project/cli-market/"
-            className="w-full sm:w-auto px-10 py-4 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] font-label-caps text-sm cyber-glow-mint transition-all text-center"
+            className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 transition-all text-left sm:items-start"
           >
-            <ScrambleText text={isES ? "Empezar gratis con la API" : "Start free with the API"} />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
+              {isES ? "Para builders / agentes" : "For builders / agents"}
+            </span>
+            <span className="text-base font-semibold">
+              <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
+            </span>
+            <code className="font-mono text-xs text-[var(--cm-on-mint)]/80">pip install cli-market</code>
           </a>
-          <p className="text-sm text-[var(--cm-on-surface-variant)]">
-            <a href="#pricing-intelligence" className="hover:text-[var(--cm-mint)] transition-colors">
-              {isES ? "Intelligence · piloto USD 300–500/mes" : "Intelligence · pilot USD 300–500/mo"}
-            </a>
-            <span className="mx-2 opacity-40">·</span>
-            <a href="#retailers" className="hover:text-[var(--cm-mint)] transition-colors">
-              {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
-            </a>
-          </p>
-        </div>
-      </div>
 
-      <div className="relative w-full max-w-5xl aspect-video mx-auto px-4 group">
-        <div className="glass-panel w-full h-full min-h-[280px] rounded-xl overflow-hidden energy-border relative shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]">
-          <div className="header-strip w-full h-8 bg-[var(--cm-surface-container)]/50 flex items-center px-4 gap-2 border-b border-white/5">
-            <div className="flex gap-1.5" aria-hidden="true">
-              <div className="w-2 h-2 rounded-full bg-white/20" />
-              <div className="w-2 h-2 rounded-full bg-white/20" />
-              <div className="w-2 h-2 rounded-full bg-white/20" />
-            </div>
-            <div className="mx-auto font-mono text-[10px] text-[var(--cm-on-surface-variant)] opacity-60">
-              market_agent_sh // real_time_stream
-            </div>
-          </div>
-          <div
-            ref={terminalRef}
-            className="p-6 font-mono text-sm text-[var(--cm-mint)]/80 terminal-scroll overflow-y-auto h-[calc(100%-2rem)] max-h-[320px] text-left"
+          <a
+            href="#pricing-intelligence"
+            className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 transition-colors text-left sm:items-start"
           >
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="opacity-40">❯</span>
-                <p>pip install cli-market</p>
-              </div>
-              <p className="text-[var(--cm-on-surface-variant)] opacity-40">
-                {isES ? "Installing dependencies... Done." : "Installing dependencies... Done."}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="opacity-40">❯</span>
-                <p>market search &quot;leche&quot; --country PE</p>
-              </div>
-              <div className="pl-4 border-l border-[var(--cm-mint)]/20 my-2 py-1 space-y-1">
-                <p className="text-[var(--cm-mint)] font-bold">Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50</p>
-                <p className="text-[10px] opacity-40">
-                  {isES ? "Found in 1.4s via Verified API" : "Found in 1.4s via Verified API"}
-                </p>
-              </div>
-              {visibleLines.map((line, i) => (
-                <div key={`${line}-${i}`} className="flex items-center gap-2">
-                  <span className="opacity-40">❯</span>
-                  <p>{line}</p>
-                </div>
-              ))}
-              <div className="flex items-center gap-2">
-                <span className="opacity-40">❯</span>
-                <p className="text-[var(--cm-on-surface-variant)] opacity-60 animate-pulse">
-                  {(isES ? TERMINAL_LOOP_ES : TERMINAL_LOOP_EN)[lineIndex]}
-                </p>
-              </div>
-            </div>
-          </div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-mint)]">
+              {isES ? "Para pricing / trade" : "For pricing / trade"}
+            </span>
+            <span className="text-base font-semibold text-white">
+              {isES ? "Intelligence — piloto →" : "Intelligence — pilot →"}
+            </span>
+            <span className="text-xs text-[var(--cm-on-surface-variant)]">
+              {isES ? "Desde USD 300/mes · datos verificados" : "From USD 300/mo · verified data"}
+            </span>
+          </a>
+
+          <a
+            href="#retailers"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 transition-colors text-left sm:items-start"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
+              {isES ? "Para retailers" : "For retailers"}
+            </span>
+            <span className="text-base font-semibold text-white">
+              {isES ? "Listar mi tienda — gratis →" : "List my store — free →"}
+            </span>
+            <span className="text-xs text-[var(--cm-on-surface-variant)]">
+              {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+            </span>
+          </a>
         </div>
 
-        <div
-          className="absolute -top-10 -right-10 w-48 h-48 glass-panel rounded-lg energy-border hidden md:flex items-center justify-center"
-          aria-hidden="true"
-        >
-          <div className="text-center">
-            <div className="font-mono text-[10px] opacity-50 uppercase">Open Source</div>
-            <div className="font-display text-[var(--cm-mint)] text-2xl font-bold">MIT</div>
-          </div>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+          {chips.map((c) => (
+            <span key={c.label} className="inline-flex items-center gap-1.5 bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-3xl px-4 py-2 text-sm">
+              <strong className="text-white tabular-nums">{c.num}</strong>
+              <span className="text-[var(--cm-on-surface-variant)]">{c.label}</span>
+            </span>
+          ))}
+          <span className="inline-flex items-center rounded-3xl px-4 py-2 text-sm border border-[var(--cm-outline-variant)]/30 bg-white/5">
+            <span className="text-[var(--cm-on-surface-variant)] font-medium">{isES ? "Open source · MIT" : "Open source · MIT"}</span>
+          </span>
         </div>
 
         {/* Product demo */}
@@ -184,12 +99,12 @@ export default function Hero() {
           <img
             src="/demo.gif"
             alt={isES ? "Demo: agente de IA comprando canasta básica en supermercados peruanos con CLI Market" : "Demo: AI agent shopping a basic basket at Peruvian supermarkets with CLI Market"}
-            className="mx-auto rounded-xl border border-[var(--wise-green-pale)] shadow-lg max-w-full h-auto"
+            className="mx-auto rounded-xl border border-[var(--cm-outline-variant)]/40 shadow-lg max-w-full h-auto"
             width={960}
             height={540}
             loading="lazy"
           />
-          <p className="text-[10px] text-[var(--wise-mute)] mt-2 font-mono text-center">
+          <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono text-center">
             {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
           </p>
         </div>

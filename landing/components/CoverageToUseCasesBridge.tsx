@@ -8,10 +8,10 @@ export default function CoverageToUseCasesBridge() {
 
   return (
     <div
-      className="relative bg-[var(--cm-surface-container)]/30 border-y border-[var(--cm-outline-variant)]/20 py-8"
+      className="landing-section-alt py-8"
       aria-label={isES ? "Puente entre cobertura y casos de uso" : "Bridge between coverage and use cases"}
     >
-      <div className="landing-container-wide max-w-2xl mx-auto text-center px-4">
+      <div className="landing-container max-w-2xl mx-auto text-center px-4">
         <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
           {isES ? (
             <>

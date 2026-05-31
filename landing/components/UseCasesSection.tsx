@@ -41,15 +41,15 @@ export default function UseCasesSection() {
   const isES = lang === "es";
 
   return (
-    <section id="casos" className="relative bg-[var(--wise-canvas-soft)] py-16 border-t border-[#c5edab]">
+    <section id="casos" className="landing-section">
       <div className="landing-container text-center">
-        <p className="text-xs text-[var(--wise-mute)] font-medium uppercase tracking-[0.15em] mb-4">
+        <p className="section-eyebrow mb-4">
           {isES ? "Casos de uso" : "Use cases"}
         </p>
-        <h2 className="text-[clamp(22px,4vw,28px)] font-medium text-[var(--wise-ink)] mb-2 tracking-tight">
+        <h2 className="section-title mb-2">
           {isES ? "Mismo moat. Dos caminos." : "Same moat. Two paths."}
         </h2>
-        <p className="text-sm text-[var(--wise-body)] max-w-xl mx-auto mb-10">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-10">
           {isES
             ? "Intelligence para equipos comerciales; Build para quien integra agentes — sobre los mismos precios verificados."
             : "Intelligence for commercial teams; Build for agent integrators — on the same verified prices."}
@@ -60,16 +60,16 @@ export default function UseCasesSection() {
             <a
               key={c.title_es}
               href={c.href}
-              className="bg-[var(--wise-canvas)] border border-[var(--wise-green-pale)] rounded-2xl p-6 flex flex-col gap-3 hover:border-[var(--wise-ink)]/20 transition-colors"
+              className="card-cyber p-6 flex flex-col gap-3 hover:border-[var(--cm-mint)]/30 transition-colors"
             >
               <span className="text-2xl" aria-hidden="true">{c.icon}</span>
-              <h3 className="text-sm font-bold text-[var(--wise-ink)]">
+              <h3 className="text-sm font-bold text-white">
                 {isES ? c.title_es : c.title_en}
               </h3>
-              <p className="text-sm text-[var(--wise-body)] leading-relaxed flex-1">
+              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed flex-1">
                 {isES ? c.desc_es : c.desc_en}
               </p>
-              <span className="text-xs font-mono text-[var(--wise-mute)]">
+              <span className="text-xs font-mono text-[var(--cm-mint)]">
                 {isES ? "Ver planes →" : "View plans →"}
               </span>
             </a>
@@ -78,7 +78,7 @@ export default function UseCasesSection() {
 
         <a
           href="#pricing"
-          className="inline-flex items-center gap-2 rounded-3xl bg-[var(--wise-ink)] text-[var(--wise-canvas)] text-sm font-semibold px-8 py-3 hover:opacity-90 transition-opacity"
+          className="btn-mint"
         >
           {isES ? "Ver planes Build + Intelligence →" : "View Build + Intelligence plans →"}
         </a>
