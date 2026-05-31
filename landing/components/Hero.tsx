@@ -18,13 +18,19 @@ export default function Hero() {
   ];
 
   return (
-    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col">
+    <section id="hero" className="landing-section relative min-h-[90vh] flex flex-col overflow-hidden">
+      {/* Aura glow behind title */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--cm-mint)]/5 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full bg-[var(--cm-mint)]/8 blur-[100px]" />
+      </div>
+
       <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--cm-on-surface-variant)]/60 -rotate-90 origin-left block whitespace-nowrap">
           {isES ? "COMERCIO" : "COMMERCE"}
         </span>
       </div>
-      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0 relative z-10">
         <h1 className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-white max-w-[900px] tracking-tight">
           {isES
             ? "La capa programable del retail físico de LatAm."
@@ -40,7 +46,7 @@ export default function Hero() {
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
           <a
             href="https://pypi.org/project/cli-market/"
-            className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 transition-all text-left sm:items-start"
+            className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
               {isES ? "Para builders / agentes" : "For builders / agents"}
@@ -53,7 +59,7 @@ export default function Hero() {
 
           <a
             href="#pricing-intelligence"
-            className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 transition-colors text-left sm:items-start"
+            className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-mint)]">
               {isES ? "Para pricing / trade" : "For pricing / trade"}
@@ -68,7 +74,7 @@ export default function Hero() {
 
           <a
             href="#retailers"
-            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 transition-colors text-left sm:items-start"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
               {isES ? "Para retailers" : "For retailers"}
