@@ -265,7 +265,7 @@ class VtexConnector(BaseConnector):
             try:
                 fallback_data = await self._search_playwright_fallback(url, params, store_key, store_config)
                 return fallback_data
-            except Exception as e:
+            except Exception:
                 logger.error(f"All search attempts failed for {store_key}, returning empty list")
                 return []
 
