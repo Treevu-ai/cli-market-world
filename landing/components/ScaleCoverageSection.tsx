@@ -90,21 +90,58 @@ export default function ScaleCoverageSection() {
               {isES ? "Frescura" : "Freshness"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">
-              {stats.snapshots24h != null ? stats.snapshots24h.toLocaleString() : "—"}
+              {stats.fresh24hPct != null ? `${stats.fresh24hPct.toFixed(0)}%` : "—"}
             </p>
             <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {isES ? `snapshots 24h · collector ${refreshLabel(isES)}` : `24h snapshots · collector ${refreshLabel(isES)}`}
+              {stats.snapshots24h != null ? `${stats.snapshots24h.toLocaleString()} snapshots 24h` : "—"}
+              {stats.moatAgeHours != null ? ` · ${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h` : ""}
             </p>
           </div>
           <div className="card-cyber p-5">
             <p className="text-[10px] uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
-              {isES ? "Retailers" : "Retailers"}
+              {isES ? "Cobertura" : "Coverage"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">{retailersVerified}</p>
+            <p className="text-3xl font-black text-white tabular-nums">
+              {stats.coverage7dPct != null ? `${stats.coverage7dPct.toFixed(0)}%` : "—"}
+            </p>
             <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {isES
-                ? `verificados activos (${retailersDefined} en catálogo)`
-                : `verified active (${retailersDefined} in catalog)`}
+              {retailersVerified} {isES ? "verificados ·" : "verified ·"} collector {stats.collectorStatus ?? "—"}
+            </p>
+          </div>
+        </div>
+
+        {/* Auditability bar */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8 text-left">
+          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
+            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+              {isES ? "Precios acumulados" : "Total snapshots"}
+            </p>
+            <p className="text-lg font-bold text-white tabular-nums">
+              {stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—"}
+            </p>
+          </div>
+          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
+            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+              {isES ? "Promedio diario (7d)" : "Daily avg (7d)"}
+            </p>
+            <p className="text-lg font-bold text-white tabular-nums">
+              {stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—"}
+            </p>
+          </div>
+          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
+            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+              {isES ? "Foso de datos" : "Data moat"}
+            </p>
+            <p className="text-lg font-bold text-white tabular-nums">
+              {stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—"}
+            </p>
+          </div>
+          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
+            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+              {isES ? "Intervalo collector" : "Collector interval"}
+            </p>
+            <p className="text-lg font-bold text-white tabular-nums">
+              {stats.collectorIntervalH != null ? `cada ${stats.collectorIntervalH}h` : `cada ${MARKET_STATS.pricesRefreshHours}h`}
             </p>
           </div>
         </div>
