@@ -304,7 +304,7 @@ def _render_enrichment(view: dict) -> str:
 
     # Rows
     rows = ""
-    for key, info in sorted(indicators.items()):
+    for _key, info in sorted(indicators.items()):
         rows += f"<tr><td>{_esc(info['name'])}</td><td class='metric-desc'>{_esc(info['source'])}</td>"
         for cc in country_order:
             val = info["countries"].get(cc, "—")
