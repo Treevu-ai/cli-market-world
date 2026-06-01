@@ -366,19 +366,30 @@ def _dashboard_data():
     # ── Cheapest store by line ───────────────────────────────────────────────
     cheapest_by_line = db.execute(
         """
-        SELECT line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
+        SELECT line, line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
         FROM price_snapshots WHERE price > 0 AND price < 999999
+          AND line_name IS NOT NULL AND line_name != ''
         GROUP BY line, line_name, store, store_name, currency ORDER BY line, avg_price ASC
         """
     ).fetchall()
 
+    line_display: dict[str, str] = {
+        "supermercados": "Supermercados",
+        "farmacias": "Farmacias",
+        "electro": "Electro",
+        "moda": "Moda",
+        "hogar": "Hogar",
+        "departamentales": "Departamentales",
+    }
     seen_lines: set[str] = set()
     cheapest_dedup: list[dict] = []
     for r in cheapest_by_line:
-        ln = r["line_name"] or "?"
-        if ln not in seen_lines:
+        ln = r["line_name"] or line_display.get(r.get("line", ""), r.get("line", "?"))
+        if ln and ln not in seen_lines:
             seen_lines.add(ln)
-            cheapest_dedup.append(dict(r))
+            item = dict(r)
+            item["line_name"] = ln
+            cheapest_dedup.append(item)
 
     # ── Coverage ─────────────────────────────────────────────────────────────
     stores_24h = active_stores_24h
