@@ -397,15 +397,33 @@ if USE_PG:
         global _pg_pool
         if _pg_pool is None:
             pool_size = max(PARALLEL + 2, 15)
-            # SSL: respect sslmode in DATABASE_URL; default to 'prefer' so it
-            # works on both Railway private networking (no SSL) and public URLs (SSL).
-            # Override with PG_SSL_MODE env var if needed.
-            ssl_mode = os.getenv("PG_SSL_MODE", "prefer")
-            ssl_arg: object = ssl_mode if ssl_mode not in ("disable", "false") else False
-            _pg_pool = await asyncpg.create_pool(
-                DATABASE_URL, min_size=2, max_size=pool_size, command_timeout=60,
-                ssl=ssl_arg,
-            )
+
+            async def _mk(ssl_arg):
+                return await asyncpg.create_pool(
+                    DATABASE_URL, min_size=2, max_size=pool_size,
+                    command_timeout=60, ssl=ssl_arg,
+                )
+
+            # asyncpg does NOT implement libpq-style 'prefer' fallback: passing
+            # ssl='prefer' makes it attempt an SSL upgrade and raise if the
+            # server rejects it. Railway private networking
+            # (postgres.railway.internal) offers NO SSL, while public proxy URLs
+            # require it. So try plaintext first (the proven private-net path),
+            # then fall back to SSL for public URLs.
+            mode = os.getenv("PG_SSL_MODE", "").lower()
+            if mode in ("require", "verify-ca", "verify-full", "true"):
+                _pg_pool = await _mk(True)
+            elif mode in ("disable", "false"):
+                _pg_pool = await _mk(False)
+            else:
+                try:
+                    _pg_pool = await _mk(False)
+                except Exception as e:
+                    logger.warning(
+                        "asyncpg plaintext connect failed (%s) — retrying with SSL",
+                        str(e)[:120],
+                    )
+                    _pg_pool = await _mk(True)
         return _pg_pool
 
     async def pg_try_daemon_lock(pool) -> bool:
