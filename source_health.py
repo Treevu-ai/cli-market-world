@@ -58,6 +58,29 @@ def build_sources_health(
     ).fetchall()
     last_seen_map = {r["store"]: r["last_seen"] for r in last_seen_rows}
 
+    # coverage_7d_pct: share of a store's catalog refreshed in the last 7 days.
+    # Representativeness signal (issue #72, P1) — Postgres date arithmetic.
+    coverage_7d_rows = db.execute(
+        """
+        SELECT store,
+               COUNT(*) AS total,
+               COUNT(*) FILTER (
+                   WHERE queried_at >= NOW() - INTERVAL '7 days'
+               ) AS fresh_7d
+        FROM price_snapshots
+        WHERE price > 0
+        GROUP BY store
+        """
+    ).fetchall()
+    coverage_7d_map = {
+        r["store"]: (
+            round(float(r["fresh_7d"]) * 100.0 / float(r["total"]), 1)
+            if (r["total"] or 0) > 0
+            else 0.0
+        )
+        for r in coverage_7d_rows
+    }
+
     stores_out: list[dict] = []
     for row in health_rows:
         sid = row["store"]
@@ -82,6 +105,7 @@ def build_sources_health(
             "last_error": row["last_error"],
             "last_seen": str(last_seen) if last_seen else None,
             "fresh_24h": _fresh_24h(last_seen, _age_hours),
+            "coverage_7d_pct": coverage_7d_map.get(sid, 0.0),
         })
 
     summary = {"ok": 0, "partial": 0, "dead": 0, "total": len(stores_out)}
