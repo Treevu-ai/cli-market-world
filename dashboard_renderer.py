@@ -274,28 +274,46 @@ def _render_enrichment(view: dict) -> str:
     items = enrichment.get("items") or []
     if not items:
         return ""
-    # Group by country
-    by_country: dict[str, list[dict]] = {}
+
+    # Cross-table: indicator → country → value
+    indicators: dict[str, dict] = {}
+    countries_seen: set[str] = set()
     for item in items:
+        key = item.get("key", "")
         cc = item.get("country", "—")
-        by_country.setdefault(cc, []).append(item)
+        countries_seen.add(cc)
+        if key not in indicators:
+            indicators[key] = {
+                "name": item.get("name", key),
+                "source": item.get("source", ""),
+                "countries": {},
+            }
+        indicators[key]["countries"][cc] = item.get("value_label", "—")
+
+    country_order = sorted(countries_seen)
+
+    # Header
+    header = "<tr><th>Indicador</th><th>Fuente</th>"
+    for cc in country_order:
+        header += f"<th class='num'>{_esc(cc)}</th>"
+    header += "</tr>"
+
+    # Rows
     rows = ""
-    for cc in sorted(by_country):
-        cc_items = by_country[cc]
-        for i, item in enumerate(cc_items):
-            tier_cls = "dirty-row" if item.get("tier") == "tier2" else ""
-            rows += (
-                f"<tr class='{tier_cls}'><td>{_esc(cc)}</td>"
-                f"<td>{_esc(item.get('name', ''))}</td>"
-                f"<td class='num'>{_esc(item.get('value_label', ''))}</td>"
-                f"<td class='metric-desc'>{_esc(item.get('source', ''))}</td></tr>"
-            )
+    for key, info in sorted(indicators.items()):
+        rows += f"<tr><td>{_esc(info['name'])}</td><td class='metric-desc'>{_esc(info['source'])}</td>"
+        for cc in country_order:
+            val = info["countries"].get(cc, "—")
+            rows += f"<td class='num'>{_esc(val)}</td>"
+        rows += "</tr>"
+
+    count = len(indicators)
     return f"""
 <section class="exploration-layer">
   <div class="section clean-section">[ {_esc(enrichment.get('title', 'SEÑALES ENRIQUECIDAS').upper())} ]</div>
   <p class="section-intro">{_esc(enrichment.get('subtitle', ''))}</p>
-  <table><tr><th>País</th><th>Indicador</th><th>Valor</th><th>Fuente</th></tr>{rows}</table>
-  <p class="layer-note">{enrichment.get('indicator_count', 0)} indicadores · {len(by_country)} países · {_esc(enrichment.get('docs', ''))}</p>
+  <div style="overflow-x:auto"><table>{header}{rows}</table></div>
+  <p class="layer-note">{count} indicadores · {len(country_order)} países · {_esc(enrichment.get('docs', ''))}</p>
 </section>
 """
 
