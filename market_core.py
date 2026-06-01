@@ -899,7 +899,7 @@ _last_pg_recovery_attempt = 0.0
 # Startup connection resilience: Postgres (e.g. Railway) often boots a few
 # seconds after the app container, so a single attempt would wrongly fall back
 # to an empty SQLite for the whole process lifetime. Retry with backoff.
-PG_CONNECT_RETRIES = int(os.getenv("PG_CONNECT_RETRIES", "8"))
+PG_CONNECT_RETRIES = int(os.getenv("PG_CONNECT_RETRIES", "15"))
 PG_CONNECT_BACKOFF = float(os.getenv("PG_CONNECT_BACKOFF", "2.0"))
 # When in fallback mode, retry Postgres at most this often (seconds).
 PG_RECOVERY_INTERVAL = float(os.getenv("PG_RECOVERY_INTERVAL", "30"))
