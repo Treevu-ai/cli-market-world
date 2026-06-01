@@ -58,6 +58,8 @@ def build_sources_health(
     ).fetchall()
     last_seen_map = {r["store"]: r["last_seen"] for r in last_seen_rows}
 
+    # coverage_7d_pct: share of a store's snapshots refreshed in the last 7 days.
+    # Representativeness signal (issue #72, P1) — cross-DB parameterized.
     cutoff_7d = (now - timedelta(days=7)).isoformat()
     coverage_rows = db.execute(
         """SELECT store,
