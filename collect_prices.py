@@ -17,6 +17,7 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 import httpx
 
+import market_core
 from market_core import (
     STORES, LINES, DB_FILE, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
@@ -399,6 +400,7 @@ if USE_PG:
             pool_size = max(PARALLEL + 2, 15)
             _pg_pool = await asyncpg.create_pool(
                 DATABASE_URL, min_size=2, max_size=pool_size, command_timeout=60,
+                ssl=False,  # Railway internal Postgres does not use SSL
             )
         return _pg_pool
 
@@ -467,41 +469,41 @@ if USE_PG:
     async def pg_run_end(conn, rid, ok, total, errs):
         await conn.execute("UPDATE collector_runs SET finished_at=NOW(), stores_succeeded=$1, prices_collected=$2, errors=$3 WHERE id=$4", ok, total, errs, rid)
 
-else:
-    def get_sqlite():
-        c = sqlite3.connect(str(DB_FILE)); c.row_factory = sqlite3.Row
-        c.execute("PRAGMA journal_mode=WAL"); c.execute("PRAGMA busy_timeout=5000"); return c
+# SQLite helpers — always defined (PostgreSQL helper block above is gated by USE_PG import)
+def get_sqlite():
+    c = sqlite3.connect(str(DB_FILE)); c.row_factory = sqlite3.Row
+    c.execute("PRAGMA journal_mode=WAL"); c.execute("PRAGMA busy_timeout=5000"); return c
 
-    def init_schema_sqlite():
-        # Single source of truth: market_core.init_db() owns the DDL.
-        ensure_db_initialized()
-        return get_sqlite()
+def init_schema_sqlite():
+    # Single source of truth: market_core.init_db() owns the DDL.
+    ensure_db_initialized()
+    return get_sqlite()
 
-    def sq_insert(db, prod):
-        from market_core import save_price_snapshot
+def sq_insert(db, prod):
+    from market_core import save_price_snapshot
 
-        save_price_snapshot(prod, db=db)
+    save_price_snapshot(prod, db=db)
 
-    def sq_health(db, store, ok):
-        if ok:
-            db.execute(
-                "INSERT INTO store_health (store,last_success,total_requests,total_successes,consecutive_failures) "
-                "VALUES (?,datetime('now'),1,1,0) ON CONFLICT(store) DO UPDATE SET "
-                "last_success=datetime('now'),total_requests=total_requests+1,"
-                "total_successes=total_successes+1,consecutive_failures=0",
-                (store,),
-            )
-        else:
-            db.execute(
-                "INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) "
-                "VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET "
-                "last_error=datetime('now'),consecutive_failures=consecutive_failures+1,"
-                "total_requests=total_requests+1",
-                (store,),
-            )
+def sq_health(db, store, ok):
+    if ok:
+        db.execute(
+            "INSERT INTO store_health (store,last_success,total_requests,total_successes,consecutive_failures) "
+            "VALUES (?,datetime('now'),1,1,0) ON CONFLICT(store) DO UPDATE SET "
+            "last_success=datetime('now'),total_requests=total_requests+1,"
+            "total_successes=total_successes+1,consecutive_failures=0",
+            (store,),
+        )
+    else:
+        db.execute(
+            "INSERT INTO store_health (store,last_error,consecutive_failures,total_requests) "
+            "VALUES (?,datetime('now'),1,1) ON CONFLICT(store) DO UPDATE SET "
+            "last_error=datetime('now'),consecutive_failures=consecutive_failures+1,"
+            "total_requests=total_requests+1",
+            (store,),
+        )
 
-    def sq_run_start(db, n): return db.execute("INSERT INTO collector_runs (started_at,stores_attempted) VALUES (datetime('now'),?)",(n,)).lastrowid
-    def sq_run_end(db, rid, ok, total, errs): db.execute("UPDATE collector_runs SET finished_at=datetime('now'), stores_succeeded=?, prices_collected=?, errors=? WHERE id=?",(ok,total,errs,rid))
+def sq_run_start(db, n): return db.execute("INSERT INTO collector_runs (started_at,stores_attempted) VALUES (datetime('now'),?)",(n,)).lastrowid
+def sq_run_end(db, rid, ok, total, errs): db.execute("UPDATE collector_runs SET finished_at=datetime('now'), stores_succeeded=?, prices_collected=?, errors=? WHERE id=?",(ok,total,errs,rid))
 
 # ── Price normalization ─────────────────────────────────────────────────────
 
@@ -854,8 +856,9 @@ async def main():
     ap.add_argument("--stores", type=int, default=0); ap.add_argument("--queries", type=int, default=0)
     ap.add_argument("--parallel", type=int, default=50)
     args = ap.parse_args()
-    global PARALLEL; PARALLEL = args.parallel
+    global PARALLEL, USE_PG; PARALLEL = args.parallel
     ensure_db_initialized()
+    USE_PG = market_core.USE_PG  # Respect PostgreSQL→SQLite fallback from ensure_db_initialized()
     if args.status: do_status(); return
     if args.report: do_report(); return
     stores = get_default_stores()
