@@ -8,7 +8,7 @@ export const MARKET_STATS = {
   platformShopify: 15,
   platformMagento: 7,
   countries: 11,
-  countryCodes: ['PE', 'AR', 'BR', 'MX', 'CO', 'CL', 'IT', 'FR', 'ES', 'CH', 'US'],
+  countryCodes: ['AR', 'BR', 'CH', 'CL', 'CO', 'ES', 'FR', 'IT', 'MX', 'PE', 'US'],
   mcpTools: 43,
   indicatorsCount: 34,
   enrichmentSourcesLabel: "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB",
@@ -24,7 +24,7 @@ export const MARKET_STATS = {
   platformsPhraseEs: "3 plataformas (VTEX · Shopify · Magento)",
   headerEn: "CLI Market \u2014 Commerce infrastructure for AI agents.\n66 retailers across 3 platforms (VTEX \u00b7 Shopify \u00b7 Magento), 36 verified live.\n11 countries. 43 MCP tools. 45,000+ verified shelf prices, normalized per kg/L, refreshed every 4h.\nOne pip install. One API. Zero scraping. MIT.",
   headerEs: "CLI Market \u2014 Infraestructura de comercio para agentes de IA.\n66 retailers en 3 plataformas (VTEX \u00b7 Shopify \u00b7 Magento), 36 verificados y activos.\n11 pa\u00edses. 43 herramientas MCP. 45,000+ precios reales de g\u00f3ndola, normalizados por kg/L, actualizados cada 4h.\nUn pip install. Una API. Cero scraping. MIT.",
-  shopifyBrands: ["Adidas", "Gymshark", "Allbirds", "Alo Yoga", "Glossier", "Fenty Beauty", "Kylie Cosmetics", "ColourPop", "Brooklinen", "Casper", "On Running", "Parachute", "Nomad", "Magic Mind", "Privalia BR"],
+  shopifyBrands: ["Adidas", "Allbirds", "Alo Yoga", "Brooklinen", "Casper", "ColourPop", "Fenty Beauty", "Glossier", "Gymshark", "Kylie Cosmetics", "Magic Mind", "Nomad", "On Running", "Parachute", "Privalia BR"],
   seoDescription: "Commerce API for AI agents. 43 MCP tools, 66 retailers, 36 verified active. 11 countries. 45,000+ verified shelf prices refreshed every 4 hours. Normalized per kg/L, quality-filtered. pip install cli-market.",
   serverDescription: "Commerce for AI agents. 43 MCP tools. 66 retailers (36 verified), 11 countries, 3 platforms.",
 } as const;
