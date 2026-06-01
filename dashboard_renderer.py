@@ -269,6 +269,37 @@ def _render_inflation(view: dict) -> str:
 """
 
 
+def _render_enrichment(view: dict) -> str:
+    enrichment = (view.get("blocks") or {}).get("enrichment") or {}
+    items = enrichment.get("items") or []
+    if not items:
+        return ""
+    # Group by country
+    by_country: dict[str, list[dict]] = {}
+    for item in items:
+        cc = item.get("country", "—")
+        by_country.setdefault(cc, []).append(item)
+    rows = ""
+    for cc in sorted(by_country):
+        cc_items = by_country[cc]
+        for i, item in enumerate(cc_items):
+            tier_cls = "dirty-row" if item.get("tier") == "tier2" else ""
+            rows += (
+                f"<tr class='{tier_cls}'><td>{_esc(cc)}</td>"
+                f"<td>{_esc(item.get('name', ''))}</td>"
+                f"<td class='num'>{_esc(item.get('value_label', ''))}</td>"
+                f"<td class='metric-desc'>{_esc(item.get('source', ''))}</td></tr>"
+            )
+    return f"""
+<section class="exploration-layer">
+  <div class="section clean-section">[ {_esc(enrichment.get('title', 'SEÑALES ENRIQUECIDAS').upper())} ]</div>
+  <p class="section-intro">{_esc(enrichment.get('subtitle', ''))}</p>
+  <table><tr><th>País</th><th>Indicador</th><th>Valor</th><th>Fuente</th></tr>{rows}</table>
+  <p class="layer-note">{enrichment.get('indicator_count', 0)} indicadores · {len(by_country)} países · {_esc(enrichment.get('docs', ''))}</p>
+</section>
+"""
+
+
 def _render_exploration(view: dict) -> str:
     expl = (view.get("blocks") or {}).get("exploration") or {}
     if not expl:
@@ -497,6 +528,7 @@ def render_dashboard_html(data: dict) -> str:
         + _render_spreads(view)
         + _render_canasta(view)
         + _render_inflation(view)
+        + _render_enrichment(view)
         + _render_exploration(view)
         + _render_moat(view)
         + _render_ops(view)

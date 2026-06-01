@@ -896,14 +896,15 @@ async def main():
                     cat_count = await run_full_catalog_pg(pool, stores)
                     if cat_count:
                         print(f"  📦 Full catalog: {cat_count:,} new products")
-                    # Refresh enrichment indicators every 6 cycles (24h)
+                    # Refresh enrichment indicators every 6 cycles (24h) for all countries
                     if cycle % 6 == 0:
                         try:
-                            from market_indicators import refresh_enrichment_only
-                            result = refresh_enrichment_only()
-                            print(f"  📡 Enrichment refreshed: {result['enrichment_written']} indicators")
+                            from market_indicators import refresh_after_collection
+                            result = refresh_after_collection()
+                            total = result.get("enrichment_written", 0)
+                            print(f"  📡 Indicators refreshed: {result.get('internal_written',0)} internal + {result.get('external_written',0)} external + {total} enrichment ({len(result.get('countries',[]))} countries)")
                         except Exception as e:
-                            print(f"  ⚠ Enrichment refresh skipped: {e}")
+                            print(f"  ⚠ Indicator refresh skipped: {e}")
             except Exception as e:
                 print(f"  ✗ Cycle {cycle} crashed: {e}")
                 import traceback
