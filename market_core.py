@@ -891,29 +891,100 @@ def check_rate_limit_sqlite(ip: str, window_secs: int = 60, max_req: int = 10,
 # race condition where the import order decided which schema "won".
 
 _db_initialized = False
+# True when DATABASE_URL is set but we are currently serving from the SQLite
+# fallback because Postgres was unreachable. Enables runtime self-healing.
+_pg_fell_back = False
+_last_pg_recovery_attempt = 0.0
+
+# Startup connection resilience: Postgres (e.g. Railway) often boots a few
+# seconds after the app container, so a single attempt would wrongly fall back
+# to an empty SQLite for the whole process lifetime. Retry with backoff.
+PG_CONNECT_RETRIES = int(os.getenv("PG_CONNECT_RETRIES", "8"))
+PG_CONNECT_BACKOFF = float(os.getenv("PG_CONNECT_BACKOFF", "2.0"))
+# When in fallback mode, retry Postgres at most this often (seconds).
+PG_RECOVERY_INTERVAL = float(os.getenv("PG_RECOVERY_INTERVAL", "30"))
+
+
+def _try_init_pg_with_retries() -> bool:
+    """Attempt init_db() against Postgres, retrying with capped linear backoff.
+
+    Returns True on success, False after exhausting retries. USE_PG is left
+    untouched so the caller decides whether to fall back.
+    """
+    import time as _time
+    for attempt in range(1, PG_CONNECT_RETRIES + 1):
+        try:
+            init_db()
+            if attempt > 1:
+                logger.info("PostgreSQL connected on attempt %d", attempt)
+            return True
+        except Exception as e:
+            if attempt >= PG_CONNECT_RETRIES:
+                logger.error(
+                    "PostgreSQL init failed after %d attempts: %s",
+                    PG_CONNECT_RETRIES, str(e)[:160],
+                )
+                return False
+            wait = min(PG_CONNECT_BACKOFF * attempt, 10.0)
+            logger.warning(
+                "PostgreSQL init attempt %d/%d failed: %s — retrying in %.0fs",
+                attempt, PG_CONNECT_RETRIES, str(e)[:160], wait,
+            )
+            _time.sleep(wait)
+    return False
+
+
+def recover_pg_if_needed() -> None:
+    """Self-heal: when we fell back to SQLite but DATABASE_URL is set, retry
+    Postgres (throttled). On success, switch back so the process recovers
+    without a manual restart. Cheap to call repeatedly — no-op until the
+    throttle window elapses.
+    """
+    global USE_PG, _pg_fell_back, _last_pg_recovery_attempt
+    if not _pg_fell_back:
+        return
+    import time as _time
+    now = _time.monotonic()
+    if now - _last_pg_recovery_attempt < PG_RECOVERY_INTERVAL:
+        return
+    _last_pg_recovery_attempt = now
+    USE_PG = True
+    try:
+        init_db()
+        _pg_fell_back = False
+        logger.warning("PostgreSQL recovered — switched back from SQLite fallback")
+    except Exception as e:
+        USE_PG = False  # stay on SQLite until the next attempt
+        logger.debug("PostgreSQL still unavailable: %s", str(e)[:120])
+
 
 def ensure_db_initialized() -> None:
     """Idempotent DB init. Safe to call many times; only runs init_db() once.
 
-    Handles the PG→SQLite fallback that used to live at import time.
-    Always applies payment schema migrations on existing databases.
+    Handles the PG→SQLite fallback (with startup retries) and runtime
+    self-healing back to Postgres. Always applies payment schema migrations.
     """
-    global _db_initialized, USE_PG
+    global _db_initialized, USE_PG, _pg_fell_back
     if not _db_initialized:
-        try:
-            init_db()
-            _db_initialized = True
-        except Exception as e:
-            logger.error("Database initialization failed: %s", e)
-            if USE_PG:
+        if USE_PG:
+            if _try_init_pg_with_retries():
+                _db_initialized = True
+            else:
                 logger.warning("PostgreSQL unavailable — falling back to SQLite")
                 USE_PG = False
+                _pg_fell_back = bool(DATABASE_URL)
                 try:
                     init_db()
                     _db_initialized = True
                 except Exception as e2:
                     logger.error("SQLite fallback also failed: %s", e2)
                     raise
+        else:
+            init_db()
+            _db_initialized = True
+    else:
+        # Already initialized — opportunistically try to climb back to Postgres.
+        recover_pg_if_needed()
     try:
         db = get_db()
         _migrate_payment_schema(db)

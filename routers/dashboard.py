@@ -41,6 +41,13 @@ _DASHBOARD_CACHE_TTL = 120  # seconds
 
 def _cached_dashboard_data() -> dict:
     global _dashboard_data_cache, _dashboard_data_cache_at
+    # Self-heal: if we fell back to SQLite but Postgres is reachable again,
+    # switch back so the dashboard reflects the real data moat (no restart).
+    try:
+        import market_core
+        market_core.recover_pg_if_needed()
+    except Exception:
+        pass
     now = time.monotonic()
     if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
         return _dashboard_data_cache
