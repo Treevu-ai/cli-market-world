@@ -7,18 +7,18 @@ Run: python3 ops/sync_market_stats.py
 from __future__ import annotations
 
 # ── Canonical figures (aligned to market_stores.py catalog) ─────────────────
-RETAILERS_DEFINED = 60
-RETAILERS_VERIFIED = 30
+RETAILERS_DEFINED = 66
+RETAILERS_VERIFIED = 36
 PLATFORMS = 3
-PLATFORM_VTEX = 38
+PLATFORM_VTEX = 44
 PLATFORM_SHOPIFY = 15
 PLATFORM_MAGENTO = 7
-COUNTRIES = 8
-COUNTRY_CODES = ("PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR")
+COUNTRIES = 11
+COUNTRY_CODES = ("PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR", "ES", "CH", "US")
 MCP_TOOLS = 43
 INDICATORS_COUNT = 34
 ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB"
-PRICES_VERIFIED_LABEL = "43,000+"  # live: dashboard kpis.total_indexed
+PRICES_VERIFIED_LABEL = "45,000+"  # live: dashboard kpis.total_indexed
 PRICES_REFRESH_HOURS = 4   # collector daemon interval
 PACKAGE_VERSION = "1.7.0"
 LICENSE = "MIT"
