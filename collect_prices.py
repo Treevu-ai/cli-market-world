@@ -17,7 +17,6 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 import httpx
 
-import market_core
 from market_core import (
     STORES, LINES, DB_FILE, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
