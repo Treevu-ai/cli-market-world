@@ -20,10 +20,12 @@ def _render_global_bar(view: dict, glossary: dict) -> str:
   <span class="bar-item">COLLECTOR <b class="state-{bar.get('collector_status', 'unknown')}">{collector}</b></span>
   <span class="bar-sep">|</span>
   <span class="bar-item">{fresh_label}</span>
-  <span class="bar-sep">|</span>
-  <span class="bar-item">UTC {utc}</span>
-  <span class="bar-sep">|</span>
-  <button type="button" class="bar-glossary-btn" id="glossary-toggle" aria-expanded="false">[?] glosario</button>
+   <span class="bar-sep">|</span>
+   <span class="bar-item">UTC {utc}</span>
+   <span class="bar-sep">|</span>
+   <button type="button" class="bar-refresh-btn" id="refresh-trigger" title="Disparar un ciclo del collector ahora">&#x1F504; Refresh</button>
+   <span class="bar-sep">|</span>
+   <button type="button" class="bar-glossary-btn" id="glossary-toggle" aria-expanded="false">[?] glosario</button>
 </header>
 <details class="glossary-panel" id="glossary-panel">
   <summary class="glossary-summary">Glosario de métricas</summary>
@@ -458,6 +460,9 @@ main{padding:12px 16px 24px;max-width:900px}
 .bar-item b{color:#3cffd0;font-weight:600;text-transform:uppercase}
 .bar-glossary-btn{background:none;border:1px solid #333;color:#666;padding:2px 8px;cursor:pointer;font:inherit}
 .bar-glossary-btn:hover{color:#3cffd0;border-color:#3cffd0}
+.bar-refresh-btn{background:none;border:1px solid #333;color:#ffbd2e;padding:2px 8px;cursor:pointer;font:inherit}
+.bar-refresh-btn:hover{color:#3cffd0;border-color:#3cffd0}
+.bar-refresh-btn:disabled{color:#444;border-color:#222;cursor:not-allowed}
 .glossary-panel{margin:0;border-bottom:1px solid #1a1a1a;background:#0a0a0a;padding:0 16px 12px}
 .glossary-panel[open]{padding-top:8px}
 .glossary-summary{cursor:pointer;color:#666;font-size:10px;list-style:none}
@@ -530,6 +535,41 @@ DASHBOARD_JS = """
       gBtn.setAttribute('aria-expanded', gPanel.open);
     });
   }
+  var adminToken = new URLSearchParams(window.location.search).get('token');
+  var rBtn = document.getElementById('refresh-trigger');
+  if (rBtn) {
+    if (!adminToken) {
+      rBtn.style.display = 'none';
+    } else {
+      rBtn.title = 'Refresh autorizado — disparar ciclo del collector';
+      rBtn.addEventListener('click', function(){
+        var orig = rBtn.textContent;
+        rBtn.disabled = true;
+        rBtn.textContent = '\u23f3 Solicitando...';
+        fetch('/dashboard/collector/trigger', {
+          method: 'POST',
+          headers: {'Authorization': 'Bearer ' + adminToken}
+        })
+          .then(function(r){
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .then(function(data){
+            if (data.triggered) {
+              rBtn.textContent = '\u2713 Trigger enviado';
+              setTimeout(function(){ rBtn.textContent = orig; rBtn.disabled = false; }, 4000);
+            } else {
+              rBtn.textContent = '\u23f3 Ya pendiente';
+              setTimeout(function(){ rBtn.textContent = orig; rBtn.disabled = false; }, 3000);
+            }
+          })
+          .catch(function(){
+            rBtn.textContent = '\u2717 No autorizado';
+            setTimeout(function(){ rBtn.textContent = orig; rBtn.disabled = false; }, 3000);
+          });
+      });
+    }
+  }
 })();
 """
 
@@ -552,7 +592,7 @@ def render_dashboard_html(data: dict) -> str:
         + _render_exploration(view)
         + _render_moat(view)
         + _render_ops(view)
-        + f'<p class="footer">{footer} · spec {view.get("spec_version", "?")} · cli-market.dev</p>'
+        + f'<p class="footer">{footer} · spec {view.get("spec_version", "?")} · cli-market.dev · v2026-06-01-refresh</p>'
     )
 
     return f"""<!DOCTYPE html>

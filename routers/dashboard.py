@@ -9,6 +9,7 @@ Endpoints:
 from __future__ import annotations
 
 import os
+import time
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
@@ -24,11 +25,29 @@ from dashboard_quality import build_quality_funnel, count_flagged_discounts
 from data_v1_service import count_flagged_outliers
 from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
-from server_deps import require_user
+from server_deps import require_admin, require_user
 
 from .health import _age_hours, derive_collector_status
 
 router = APIRouter(tags=["dashboard"])
+
+# In-memory cache so the dashboard loads instantly for most visitors.
+# _dashboard_data() is expensive (~15 SQL queries); caching for 120 s
+# means only the first hit in each 2-min window pays the cost.
+_dashboard_data_cache: dict | None = None
+_dashboard_data_cache_at: float = 0.0
+_DASHBOARD_CACHE_TTL = 120  # seconds
+
+
+def _cached_dashboard_data() -> dict:
+    global _dashboard_data_cache, _dashboard_data_cache_at
+    now = time.monotonic()
+    if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
+        return _dashboard_data_cache
+    data = _dashboard_data()
+    _dashboard_data_cache = data
+    _dashboard_data_cache_at = now
+    return data
 
 
 def _build_moat_guide(
@@ -152,10 +171,41 @@ def dashboard():
 def dashboard_data():
     """Business-intelligence feed for the Data Moat dashboard."""
     try:
-        return _dashboard_data()
+        return _cached_dashboard_data()
     except Exception as e:
         import traceback
         return {"error": str(e), "trace": traceback.format_exc()[-400:]}
+
+
+@router.post("/dashboard/collector/trigger")
+def collector_trigger(authorization: str | None = Header(None)):
+    """Signal the collector daemon to run a cycle as soon as possible.
+
+    Requires MARKET_API_TOKEN via Authorization: Bearer <token>.
+    The daemon polls collector_triggers every ~30 s between cycles.
+    Idempotent: duplicate triggers while one is pending are no-ops.
+    """
+    require_admin(authorization)
+    db = get_db()
+    # Check if there's already a pending (unfulfilled) trigger
+    existing = db.execute(
+        "SELECT id FROM collector_triggers WHERE fulfilled_at IS NULL ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    if existing:
+        return {
+            "triggered": False,
+            "message": "Ya hay un trigger pendiente. El collector lo procesara en el proximo ciclo.",
+            "pending_id": existing["id"],
+        }
+
+    db.execute(
+        "INSERT INTO collector_triggers (source) VALUES ('dashboard')"
+    )
+    db.commit()
+    return {
+        "triggered": True,
+        "message": "Trigger registrado. El collector ejecutara un ciclo en menos de 60 s (si el daemon esta corriendo).",
+    }
 
 
 def _dashboard_data():
@@ -830,7 +880,7 @@ def _dashboard_data():
 def _static_dashboard() -> str:
     """Server-rendered dashboard — single renderer from dashboard_view + metric_glossary."""
     try:
-        data = _dashboard_data()
+        data = _cached_dashboard_data()
     except Exception as e:
         import traceback
         return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"

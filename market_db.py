@@ -326,6 +326,15 @@ def init_db_pg(db: _DB) -> None:
     """)
 
     db.execute("""
+        CREATE TABLE IF NOT EXISTS collector_triggers (
+            id SERIAL PRIMARY KEY,
+            requested_at TIMESTAMPTZ DEFAULT NOW(),
+            source TEXT DEFAULT 'dashboard',
+            fulfilled_at TIMESTAMPTZ
+        )
+    """)
+
+    db.execute("""
         CREATE TABLE IF NOT EXISTS store_health (
             store TEXT PRIMARY KEY,
             last_success TEXT,
@@ -500,6 +509,13 @@ _SQLITE_DDL = """\
             stores_succeeded INT DEFAULT 0,
             prices_collected INT DEFAULT 0,
             errors TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS collector_triggers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            requested_at TEXT DEFAULT (datetime('now')),
+            source TEXT DEFAULT 'dashboard',
+            fulfilled_at TEXT
         );
 
         CREATE TABLE IF NOT EXISTS store_health (

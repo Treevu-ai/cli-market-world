@@ -22,6 +22,7 @@ from market_core import (
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
+from market_db import get_db
 from store_credentials import get_default_stores, resolve_store_config
 
 
@@ -914,7 +915,32 @@ async def main():
                     await pg_release_daemon_lock(pool)
             cycle += 1
             wait_s = max(args.interval * 3600, 60)
-            await asyncio.sleep(wait_s)
+            # Poll for dashboard refresh triggers every 30 s
+            poll_interval = 30
+            elapsed = 0
+            while elapsed < wait_s:
+                await asyncio.sleep(min(poll_interval, wait_s - elapsed))
+                elapsed += poll_interval
+                try:
+                    db_trig = get_db()
+                    pending = db_trig.execute(
+                        "SELECT id FROM collector_triggers WHERE fulfilled_at IS NULL ORDER BY id ASC LIMIT 1"
+                    ).fetchone()
+                    if pending:
+                        print(f"  ⚡ Dashboard trigger received (id={pending['id']}) — skipping wait, starting cycle now")
+                        db_trig.execute(
+                            "UPDATE collector_triggers SET fulfilled_at = NOW() WHERE id = %s",
+                            (pending["id"],),
+                        ) if USE_PG else db_trig.execute(
+                            "UPDATE collector_triggers SET fulfilled_at = datetime('now') WHERE id = ?",
+                            (pending["id"],),
+                        )
+                        db_trig.commit()
+                        db_trig.close()
+                        break
+                    db_trig.close()
+                except Exception:
+                    pass  # Don't crash the daemon over trigger polling
     else:
         db = _get_feedback_db()
         queries = build_query_list(db=db, cycle=0)
