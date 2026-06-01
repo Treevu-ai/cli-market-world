@@ -486,6 +486,7 @@ def build_dashboard_view_model(data: dict) -> dict:
                         "dead" if float(h.get("success_pct") or 0) < 30
                         else ("ok" if float(h.get("success_pct") or 0) >= 80 else "partial")
                     ),
+                    "coverage_7d_pct": float(h.get("coverage_7d_pct") or 0),
                 }
                 for h in store_health_items[:15]
             ],
