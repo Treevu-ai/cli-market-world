@@ -1,29 +1,66 @@
 """Canonical marketing stats — single source of truth for README, PyPI, landing.
 
 Always phrase retailers as: "60 retailers, 30 verified active" (defined vs live).
+Auto-derived from market_stores.py, market_mcp.py, store_credentials.py.
 Run: python3 ops/sync_market_stats.py
 """
 
 from __future__ import annotations
 
-# ── Canonical figures (aligned to market_stores.py catalog) ─────────────────
-RETAILERS_DEFINED = 66
-RETAILERS_VERIFIED = 36
+# ── Derived from codebase (never stale) ──────────────────────────────────────
+
+def _stores():
+    from market_stores import STORES
+    return STORES
+
+def _default_store_keys():
+    from store_credentials import get_default_stores
+    return get_default_stores()
+
+def _mcp_tools_count():
+    from market_mcp import TOOLS
+    return len(TOOLS)
+
+def _indicators_count():
+    from market_indicators import INDICATOR_DEFINITIONS
+    return len(INDICATOR_DEFINITIONS)
+
+
+# ── Canonical figures (computed at import time) ─────────────────────────────
+
+_stores = _stores()
+_defaults = frozenset(_default_store_keys())
+
+RETAILERS_DEFINED = len(_stores)
+RETAILERS_VERIFIED = len(_defaults)  # active = stores with credentials configured
 PLATFORMS = 3
-PLATFORM_VTEX = 44
-PLATFORM_SHOPIFY = 15
-PLATFORM_MAGENTO = 7
-COUNTRIES = 11
-COUNTRY_CODES = ("PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR", "ES", "CH", "US")
-MCP_TOOLS = 43
-INDICATORS_COUNT = 34
+PLATFORM_VTEX = sum(1 for s in _stores.values() if s.get("platform") == "vtex")
+PLATFORM_SHOPIFY = sum(1 for s in _stores.values() if s.get("platform") == "shopify")
+PLATFORM_MAGENTO = sum(1 for s in _stores.values() if s.get("platform") == "magento")
+COUNTRIES = len({s["country"] for s in _stores.values()})
+COUNTRY_CODES = tuple(sorted({s["country"] for s in _stores.values()}))
+MCP_TOOLS = _mcp_tools_count()
+INDICATORS_COUNT = _indicators_count()
 ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB"
-PRICES_VERIFIED_LABEL = "45,000+"  # live: dashboard kpis.total_indexed
-PRICES_REFRESH_HOURS = 4   # collector daemon interval
+PRICES_VERIFIED_LABEL = "45,000+"
+PRICES_REFRESH_HOURS = 4
 PACKAGE_VERSION = "1.7.0"
 LICENSE = "MIT"
 PAYMENTS_LABEL = "PayPal + QR (Yape/Plin)"
 BUSINESS_LINES = 6
+
+_SHOPIFY_DISPLAY: dict[str, str] = {
+    "adidas": "Adidas", "gymshark": "Gymshark", "allbirds": "Allbirds",
+    "alo_yoga": "Alo Yoga", "glossier": "Glossier", "fenty": "Fenty Beauty",
+    "kylie": "Kylie Cosmetics", "colourpop": "ColourPop", "brooklinen": "Brooklinen",
+    "casper": "Casper", "on_running": "On Running", "parachute": "Parachute",
+    "nomad": "Nomad", "magicmind": "Magic Mind", "privalia_br": "Privalia BR",
+}
+
+SHOPIFY_BRANDS = tuple(
+    _SHOPIFY_DISPLAY[k] for k in sorted(_stores)
+    if _stores[k].get("platform") == "shopify" and k in _SHOPIFY_DISPLAY
+)
 
 RETAILERS_PHRASE_EN = f"{RETAILERS_DEFINED} retailers, {RETAILERS_VERIFIED} verified active"
 RETAILERS_PHRASE_ES = f"{RETAILERS_DEFINED} retailers, {RETAILERS_VERIFIED} verificados activos"
@@ -85,22 +122,3 @@ def seo_description() -> str:
         f"{COUNTRIES} countries. {PRICES_VERIFIED_LABEL} verified shelf prices refreshed every {PRICES_REFRESH_HOURS} hours. "
         "Normalized per kg/L, quality-filtered. pip install cli-market."
     )
-
-
-SHOPIFY_BRANDS = (
-    "Adidas",
-    "Gymshark",
-    "Allbirds",
-    "Alo Yoga",
-    "Glossier",
-    "Fenty Beauty",
-    "Kylie Cosmetics",
-    "ColourPop",
-    "Brooklinen",
-    "Casper",
-    "On Running",
-    "Parachute",
-    "Nomad",
-    "Magic Mind",
-    "Privalia BR",
-)
