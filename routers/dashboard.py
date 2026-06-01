@@ -8,6 +8,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
@@ -226,7 +227,8 @@ def _dashboard_data():
     # ── Dispersión por subcategoría + moneda (+ precio unitario cuando aplica) ─
     spread_rows = db.execute(
         """
-        SELECT line, line_name, currency, category, name, brand, price, store, store_name
+        SELECT line, line_name, currency, category, name, brand, price,
+               store, store_name, queried_at, url, product_id
         FROM price_snapshots WHERE price > 0 AND price < 999999
         """
     ).fetchall()
@@ -237,17 +239,97 @@ def _dashboard_data():
     for d in dispersion:
         d["avg_price_usd"] = price_to_usd(d.get("avg_price", 0), d.get("currency", ""))
 
-    by_line_currency = db.execute(
-        """
-        SELECT line, line_name, currency,
-               COUNT(DISTINCT product_id||store) as count,
-               ROUND(AVG(price)::numeric, 2) as avg_price,
-               ROUND(MIN(price)::numeric, 2) as min_price,
-               ROUND(MAX(price)::numeric, 2) as max_price
-        FROM price_snapshots WHERE price > 0 AND price < 999999
-        GROUP BY line, line_name, currency ORDER BY line, currency
-        """
+    # ── By line + currency: Python-side percentiles (P25/P50/P75) ─────────────
+    price_rows = db.execute(
+        """SELECT line, line_name, currency, price, product_id, store
+           FROM price_snapshots WHERE price > 0 AND price < 999999
+           ORDER BY line, currency"""
     ).fetchall()
+
+    groups: dict[tuple[str, str], dict] = {}
+    for r in price_rows:
+        key = (r["line"], r["currency"])
+        if key not in groups:
+            groups[key] = {
+                "line": r["line"],
+                "line_name": r["line_name"],
+                "currency": r["currency"],
+                "prices": [],
+                "products": set(),
+            }
+        groups[key]["prices"].append(float(r["price"]))
+        groups[key]["products"].add(f"{r['product_id']}|{r['store']}")
+
+    def _percentile(sorted_prices: list[float], p: float) -> float:
+        """Linear-interpolated percentile (PERCENTILE_CONT semantics)."""
+        n = len(sorted_prices)
+        if n == 0:
+            return 0.0
+        if n == 1:
+            return round(sorted_prices[0], 2)
+        idx = p * (n - 1)
+        lo = int(idx)
+        hi = min(lo + 1, n - 1)
+        frac = idx - lo
+        return round(sorted_prices[lo] + frac * (sorted_prices[hi] - sorted_prices[lo]), 2)
+
+    by_line_currency: list[dict] = []
+    for key in sorted(groups):
+        g = groups[key]
+        prices = sorted(g["prices"])
+        by_line_currency.append({
+            "line": g["line"],
+            "line_name": g["line_name"],
+            "currency": g["currency"],
+            "count": len(g["products"]),
+            "p25": _percentile(prices, 0.25),
+            "p50": _percentile(prices, 0.50),
+            "p75": _percentile(prices, 0.75),
+            "min_price": round(prices[0], 2),
+            "max_price": round(prices[-1], 2),
+        })
+
+    # ── Normalized unit audit: per-category sample + non-normalizable counts ──
+    from market_units import parse_pack_size
+
+    unit_names_rows = db.execute(
+        """SELECT line, currency, name FROM price_snapshots
+           WHERE price > 0 AND price < 999999
+           GROUP BY line, currency, name"""
+    ).fetchall()
+
+    group_names: dict[tuple[str, str], list[str]] = {}
+    all_distinct: set[str] = set()
+    for r in unit_names_rows:
+        key = (r["line"], r["currency"])
+        group_names.setdefault(key, []).append(r["name"])
+        all_distinct.add(r["name"])
+
+    parseable_total = sum(1 for n in all_distinct if parse_pack_size(n))
+    non_normalizable_names = len(all_distinct) - parseable_total
+
+    group_unit_info: dict[tuple[str, str], dict] = {}
+    for key, names in group_names.items():
+        total = len(names)
+        parseable = sum(1 for n in names if parse_pack_size(n))
+        normalizable_pct = round(parseable / total * 100, 1) if total > 0 else 0.0
+        # Sample unit: first parseable name's base unit
+        sample_unit = None
+        for n in names:
+            parsed = parse_pack_size(n)
+            if parsed:
+                sample_unit = parsed[1]
+                break
+        group_unit_info[key] = {
+            "normalizable_pct": normalizable_pct,
+            "normalized_unit": sample_unit,
+        }
+
+    for row in by_line_currency:
+        key = (row["line"], row["currency"])
+        info = group_unit_info.get(key, {"normalizable_pct": 0.0, "normalized_unit": None})
+        row["normalizable_pct"] = info["normalizable_pct"]
+        row["normalized_unit"] = info["normalized_unit"]
 
     # ── Top discounts (public: sane retail range only) ───────────────────────
     top_discounts = db.execute(
@@ -368,6 +450,33 @@ def _dashboard_data():
         else:
             collector_status = "running"
 
+    # ── Inventory daily (growth chart data) ────────────────────────────────────
+    inventory_daily_rows = db.execute(
+        """SELECT DATE(queried_at) as day, COUNT(*) as snapshots
+           FROM price_snapshots WHERE price > 0
+           GROUP BY DATE(queried_at) ORDER BY day DESC LIMIT 90"""
+    ).fetchall()
+    inventory_daily: list[dict] = [
+        {"day": r["day"], "snapshots": int(r["snapshots"])}
+        for r in inventory_daily_rows
+    ]
+    inventory_daily.reverse()  # chronological order
+
+    # Derived growth stats
+    first_snapshot_row = db.execute(
+        "SELECT MIN(queried_at) as first FROM price_snapshots WHERE price > 0"
+    ).fetchone()
+    moat_start = first_snapshot_row["first"] if first_snapshot_row else None
+
+    total_snapshots_all = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0"
+    ).fetchone()["n"]
+
+    daily_last_7d = [d["snapshots"] for d in inventory_daily[-7:]] if len(inventory_daily) >= 7 else []
+    avg_daily_7d = round(sum(daily_last_7d) / 7, 1) if daily_last_7d else 0
+
+    collector_interval_h = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
+
     failing_stores = db.execute(
         "SELECT store, consecutive_failures FROM store_health "
         "WHERE consecutive_failures >= 3 ORDER BY consecutive_failures DESC"
@@ -391,8 +500,25 @@ def _dashboard_data():
     store_health = [{k: r[k] for k in r.keys()} for r in store_health_all if r["store"] in get_default_stores()]
     healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
 
-    # ── Moat summary (agent-facing, rolling windows) ─────────────────────────
+    # ── Per-store coverage 7d ─────────────────────────────────────────────────
     cutoff_7d = (now - timedelta(days=7)).isoformat()
+    store_coverage_rows = db.execute(
+        """SELECT store,
+                  COUNT(*) FILTER (WHERE queried_at >= ?) as snapshots_7d,
+                  COUNT(*) as total_snapshots
+           FROM price_snapshots WHERE price > 0
+           GROUP BY store""",
+        (cutoff_7d,),
+    ).fetchall()
+    store_coverage_map: dict[str, float] = {}
+    for r in store_coverage_rows:
+        sid = r["store"]
+        total = int(r["total_snapshots"] or 0)
+        store_coverage_map[sid] = round(int(r["snapshots_7d"] or 0) / total * 100, 1) if total > 0 else 0.0
+    for h in store_health:
+        h["coverage_7d_pct"] = store_coverage_map.get(h["store"], 0.0)
+
+    # ── Moat summary (agent-facing, rolling windows) ─────────────────────────
     stores_fresh_24h_rows = db.execute(
         """SELECT store, MAX(queried_at) as last_seen, COUNT(*) as n
            FROM price_snapshots WHERE price > 0 AND queried_at >= """
@@ -462,6 +588,28 @@ def _dashboard_data():
     for item in outliers:
         item["price_usd"] = price_to_usd(item.get("price", 0), item.get("currency", ""))
 
+    # Enrich outliers with store health state at capture time
+    outlier_stores = list({o["store"] for o in outliers if o.get("store")})
+    if outlier_stores:
+        store_health_lookup = {}
+        for sh in db.execute(
+            """SELECT store, total_requests, total_successes,
+                      CASE WHEN total_requests>0 THEN ROUND((total_successes*100.0/total_requests)::numeric,1)
+                           ELSE 0 END as success_pct,
+                      consecutive_failures
+               FROM store_health WHERE store IN ({})""".format(
+                ",".join("?" * len(outlier_stores))
+            ),
+            outlier_stores,
+        ).fetchall():
+            sid = sh["store"]
+            pct = float(sh["success_pct"] or 0)
+            store_health_lookup[sid] = (
+                "dead" if pct < 30 else ("ok" if pct >= 80 else "partial")
+            )
+        for o in outliers:
+            o["store_health_state"] = store_health_lookup.get(o.get("store", ""), "unknown")
+
     # ── Inflation 7d: per line + currency (nominal + USD-normalized) ────────
     inflation = []
     for row in by_line_currency:
@@ -499,6 +647,20 @@ def _dashboard_data():
     flagged_discounts = count_flagged_discounts(db)
     flagged_outliers = count_flagged_outliers(db)
 
+    # ── Confidence distribution (ok / suspect) ─────────────────────────────────
+    confidence_dist: dict[str, int] = {}
+    try:
+        from market_db import price_snapshots_has_confidence
+        if price_snapshots_has_confidence(db):
+            conf_rows = db.execute(
+                """SELECT confidence, COUNT(*) as n
+                   FROM price_snapshots WHERE price > 0
+                   GROUP BY confidence"""
+            ).fetchall()
+            confidence_dist = {r["confidence"]: r["n"] for r in conf_rows}
+    except Exception:
+        pass
+
     indicator_latest: list[dict] = []
     enrichment_latest: list[dict] = []
     indicator_by_country: dict[str, list[dict]] = {}
@@ -521,6 +683,8 @@ def _dashboard_data():
         flagged_outliers=flagged_outliers,
         citable=len(marketing_spreads),
     )
+    quality_funnel["non_normalizable_names"] = non_normalizable_names
+    quality_funnel["confidence_dist"] = confidence_dist
 
     moat_guide = _build_moat_guide(
         total_indexed=total_indexed,
@@ -610,12 +774,17 @@ def _dashboard_data():
         "collector": {
             "status": collector_status,
             "age_hours": round(collector_age_h, 1) if collector_age_h else None,
+            "interval_hours": collector_interval_h,
             "last_run": last_run["started_at"] if last_run else None,
             "last_finished": last_run["finished_at"] if last_run else None,
             "stores_succeeded": last_run["stores_succeeded"] if last_run else 0,
             "prices_collected": last_prices_collected,
             "last_prices_collected": last_prices_collected,
         },
+        "inventory_daily": inventory_daily,
+        "moat_start": moat_start,
+        "total_snapshots_all": total_snapshots_all,
+        "avg_daily_snapshots_7d": avg_daily_7d,
         "failing_stores": [dict(r) for r in failing_stores],
         "freshness": [dict(r) for r in freshness],
         # ── Operacional ──────────────────────────────────────────────────────
