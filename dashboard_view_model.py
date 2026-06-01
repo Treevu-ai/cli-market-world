@@ -417,7 +417,7 @@ def build_dashboard_view_model(data: dict) -> dict:
     block_enrichment = {
         "id": "enrichment",
         "state": "ok" if enrichment_items else "empty",
-        "title": "Indicadores de mercado (34 indicadores · 8 países)",
+        "title": "Indicadores de mercado (34 definidos · 8 países · 7 APIs públicas)",
         "subtitle": (
             "Indicadores derivados de fuentes abiertas — Open Food Facts, Wikimedia, "
             "Open-Meteo, World Bank, IMF, Eurostat y BCB — combinados con el moat de precios."
