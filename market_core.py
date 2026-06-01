@@ -917,6 +917,7 @@ def ensure_db_initialized() -> None:
     try:
         db = get_db()
         _migrate_payment_schema(db)
+        _migrate_price_snapshots_v7(db)
         db.commit()
         db.close()
     except Exception as e:
