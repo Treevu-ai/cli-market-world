@@ -94,6 +94,13 @@ def health():
 @router.get("/health/db")
 def health_db():
     """Database backend diagnostic — confirms PG vs SQLite."""
+    import market_core
+    # Hitting this endpoint also nudges a Postgres recovery attempt when we
+    # are in SQLite fallback mode (throttled internally).
+    try:
+        market_core.recover_pg_if_needed()
+    except Exception:
+        pass
     from market_core import USE_PG, DATABASE_URL, DB_FILE
     pg_error = None
     if DATABASE_URL and not USE_PG:
