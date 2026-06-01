@@ -232,10 +232,14 @@ def build_dashboard_view_model(data: dict) -> dict:
             },
         ],
         "growth_chart": {
-            "state": "placeholder",
+            "state": "live" if data.get("inventory_daily") else "empty",
             "label": "El foso se hace más profundo cada día",
-            "note": "Serie histórica de inventario — fase 2 (collector_history / snapshots diarios).",
-            "source": "future: inventory_daily[]",
+            "total_snapshots": int(data.get("total_snapshots_all") or total_indexed),
+            "moat_start": data.get("moat_start"),
+            "avg_daily_7d": float(data.get("avg_daily_snapshots_7d") or 0),
+            "collector_interval_h": int(data.get("collector", {}).get("interval_hours") or 8),
+            "days_tracked": len(data.get("inventory_daily") or []),
+            "source": "inventory_daily[] (daily snapshot counts)",
         },
     }
 
@@ -461,10 +465,12 @@ def build_dashboard_view_model(data: dict) -> dict:
             "reason": f"discount>={int(d.get('discount_pct') or 90)}%",
         })
     for o in (data.get("outliers") or [])[:5]:
+        group_n = o.get("group_n", "?")
+        band = o.get("band", "?")
         flagged_samples.append({
             "name": o.get("name"),
             "store_name": o.get("store_name"),
-            "reason": "median_outlier_5x",
+            "reason": f"median_outlier_{band}x (n={group_n}, {o.get('deviation', '?')})",
         })
 
     block_quality_funnel = {
@@ -473,6 +479,8 @@ def build_dashboard_view_model(data: dict) -> dict:
         "flagged": q_flagged,
         "clean": q_clean,
         "citable": q_citable,
+        "non_normalizable_names": int(quality.get("non_normalizable_names") or 0),
+        "confidence_dist": quality.get("confidence_dist") or {},
         "filters": quality.get("filters") or [],
         "flagged_samples": flagged_samples,
         "scraping_health": {
@@ -486,6 +494,7 @@ def build_dashboard_view_model(data: dict) -> dict:
                         "dead" if float(h.get("success_pct") or 0) < 30
                         else ("ok" if float(h.get("success_pct") or 0) >= 80 else "partial")
                     ),
+                    "coverage_7d_pct": float(h.get("coverage_7d_pct") or 0),
                 }
                 for h in store_health_items[:15]
             ],
@@ -504,9 +513,13 @@ def build_dashboard_view_model(data: dict) -> dict:
                 "line_name": r.get("line_name") or r.get("line"),
                 "currency": r.get("currency"),
                 "count": int(r.get("count") or 0),
-                "avg_price": float(r.get("avg_price") or 0),
+                "p25": float(r.get("p25") or 0),
+                "p50": float(r.get("p50") or 0),
+                "p75": float(r.get("p75") or 0),
                 "min_price": float(r.get("min_price") or 0),
                 "max_price": float(r.get("max_price") or 0),
+                "normalizable_pct": float(r.get("normalizable_pct") or 0),
+                "normalized_unit": r.get("normalized_unit"),
             }
             for r in data.get("by_line_currency") or []
         ],

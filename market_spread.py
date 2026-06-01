@@ -343,9 +343,17 @@ def find_median_outliers(
                 "subcategory": sub or None,
                 "price_basis": basis_pick,
                 "group_median": round(median, 2),
+                "group_n": len(pairs),
+                "band": band,
+                "lo": round(lo, 2),
+                "hi": round(hi, 2),
+                "trigger_price": r.get("price"),
                 "confidence": "suspect",
                 "deviation": "low" if val < lo else "high",
                 "_extreme_ratio": ratio,
+                "queried_at": r.get("queried_at"),
+                "url": r.get("url"),
+                "product_id": r.get("product_id"),
             })
 
     outliers.sort(key=lambda x: x["_extreme_ratio"], reverse=True)

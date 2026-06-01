@@ -125,7 +125,8 @@ def _render_quality_funnel(view: dict) -> str:
         f"<tr><td>{_esc(r.get('store', ''))}</td>"
         f"<td class='state-{_esc(r.get('state', 'unknown'))}'>{_esc(r.get('state', ''))}</td>"
         f"<td>{r.get('success_pct', 0):.0f}%</td>"
-        f"<td>{r.get('consecutive_failures', 0)}</td></tr>"
+        f"<td>{r.get('consecutive_failures', 0)}</td>"
+        f"<td>{r.get('coverage_7d_pct', 0):.1f}%</td></tr>"
         for r in health.get("stores") or []
     )
     return f"""
@@ -142,9 +143,11 @@ def _render_quality_funnel(view: dict) -> str:
     <div class="funnel-step funnel-citable"><span class="funnel-n">{citable:,}</span> citable</div>
   </div>
   <p class="layer-note">Filtros: {filters}</p>
+  <p class="layer-note">Nombres de producto con gramaje no parseable: {funnel.get('non_normalizable_names', 0):,}</p>
+  <p class="layer-note">Confianza por snapshot: {" · ".join(f"{k}: {v:,}" for k, v in sorted((funnel.get('confidence_dist') or {}).items())) or "sin datos"}</p>
   <div class="section" style="margin-top:12px">[ SALUD SCRAPING ]</div>
   <p class="layer-note">{_esc(health.get('summary', ''))}</p>
-  <table><tr><th>Tienda</th><th>Estado</th><th>Éxito</th><th>Fallos seguidos</th></tr>{health_rows or '<tr><td colspan=4>sin datos</td></tr>'}</table>
+  <table><tr><th>Tienda</th><th>Estado</th><th>Éxito</th><th>Fallos seguidos</th><th>Cobertura 7d</th></tr>{health_rows or '<tr><td colspan=5>sin datos</td></tr>'}</table>
   {flagged_table}
 </section>
 """
@@ -184,12 +187,25 @@ def _render_moat(view: dict) -> str:
 </div>"""
         for p in moat.get("pillars") or []
     )
-    growth = (moat.get("growth_chart") or {}).get("label", "")
+    growth = moat.get("growth_chart") or {}
+    growth_html = ""
+    if growth.get("state") == "live":
+        growth_html = (
+            f"""<p class="metric-desc">{_esc(growth.get('label', ''))}</p>"""
+            f"""<p class="layer-note">"""
+            f"""Snapshots acumulados: {growth.get('total_snapshots', 0):,} · """
+            f"""Promedio diario (7d): {growth.get('avg_daily_7d', 0):,.0f} · """
+            f"""Días con datos: {growth.get('days_tracked', 0)} · """
+            f"""Collector cada {growth.get('collector_interval_h', 8)}h"""
+            f"""</p>"""
+        )
+    else:
+        growth_html = f"""<p class="metric-desc">{_esc(growth.get('label', ''))}</p>"""
     return f"""
 <div class="section">[ {_esc(moat.get('title', '').upper())} ]</div>
 <p class="section-intro">{_esc(moat.get('intro', ''))}</p>
 <div class="pillars">{pillars}</div>
-<p class="metric-desc">{_esc(growth)}</p>
+{growth_html}
 """
 
 
@@ -260,9 +276,11 @@ def _render_exploration(view: dict) -> str:
     by_line_rows = "".join(
         f"<tr><td>{_esc(r.get('line_name', ''))}</td>"
         f"<td class='num'>{r.get('count', 0):,}</td>"
-        f"<td class='num'>{_esc(r.get('currency', ''))} {(r.get('avg_price') or 0):.2f}</td>"
-        f"<td class='num'>{(r.get('min_price') or 0):.2f}</td>"
-        f"<td class='num'>{(r.get('max_price') or 0):.2f}</td></tr>"
+        f"<td class='num'>{_esc(r.get('currency', ''))} {(r.get('p25') or 0):.2f}</td>"
+        f"<td class='num'>{(r.get('p50') or 0):.2f}</td>"
+        f"<td class='num'>{(r.get('p75') or 0):.2f}</td>"
+        f"<td class='num'>{_esc(r.get('normalized_unit') or '—')}</td>"
+        f"<td class='num'>{r.get('normalizable_pct', 0):.0f}%</td></tr>"
         for r in expl.get("by_line_currency") or []
     )
     dispersion_rows = "".join(
@@ -283,7 +301,7 @@ def _render_exploration(view: dict) -> str:
     <label class="toggle-clean"><input type="checkbox" id="clean-toggle" checked> solo dato limpio</label>
   </div>
   <div class="section clean-section">[ PRECIOS POR CATEGORÍA ]</div>
-  <table><tr><th>Categoría</th><th>Precios</th><th>Promedio</th><th>Mín</th><th>Máx</th></tr>{by_line_rows or '<tr><td colspan=5>sin datos</td></tr>'}</table>
+  <table><tr><th>Categoría</th><th>Precios</th><th>P25</th><th>Mediana</th><th>P75</th><th>Unidad</th><th>Normalizable</th></tr>{by_line_rows or '<tr><td colspan=7>sin datos</td></tr>'}</table>
   {disp_block if dispersion_rows else ''}
 </section>
 """
@@ -334,15 +352,32 @@ def _render_ops(view: dict) -> str:
                 f"<h4>{title}</h4><table><tr><th>Tienda</th><th>Último snapshot</th></tr>{rows}</table>"
             )
         elif sid in ("quality_alerts", "outliers"):
-            rows = "".join(
-                f"<tr class='dirty-row'><td>{_esc((item.get('name') or item.get('copy', ''))[:40])}</td>"
-                f"<td>{_esc(item.get('store_name', ''))}</td></tr>"
-                for item in sec.get("items") or []
-            )
-            sections_html.append(
-                f"<h4 class='dirty-section'>{title}</h4>{intro}"
-                f"<table><tr><th>Producto</th><th>Tienda</th></tr>{rows or '<tr><td colspan=2>sin datos</td></tr>'}</table>"
-            )
+            if sid == "outliers":
+                rows = "".join(
+                    f"<tr class='dirty-row'><td>{_esc((item.get('name') or '')[:35])}</td>"
+                    f"<td>{_esc(item.get('store_name', ''))}</td>"
+                    f"<td>{_esc(item.get('currency', ''))} {item.get('trigger_price', item.get('price', ''))}</td>"
+                    f"<td>n={item.get('group_n', '?')} · {item.get('band', '?')}x</td>"
+                    f"<td>{_esc(str(item.get('lo', '')))}–{_esc(str(item.get('hi', '')))}</td>"
+                    f"<td class='state-{_esc(item.get('store_health_state', 'unknown'))}'>{_esc(item.get('store_health_state', ''))}</td>"
+                    f"<td>{_esc(str(item.get('queried_at', ''))[:16])}</td></tr>"
+                    for item in sec.get("items") or []
+                )
+                sections_html.append(
+                    f"<h4 class='dirty-section'>{title}</h4>{intro}"
+                    f"<table><tr><th>Producto</th><th>Tienda</th><th>Precio</th><th>Grupo</th><th>Banda</th><th>Scraper</th><th>Captura</th></tr>"
+                    f"{rows or '<tr><td colspan=7>sin datos</td></tr>'}</table>"
+                )
+            else:
+                rows = "".join(
+                    f"<tr class='dirty-row'><td>{_esc((item.get('name') or item.get('copy', ''))[:40])}</td>"
+                    f"<td>{_esc(item.get('store_name', ''))}</td></tr>"
+                    for item in sec.get("items") or []
+                )
+                sections_html.append(
+                    f"<h4 class='dirty-section'>{title}</h4>{intro}"
+                    f"<table><tr><th>Producto</th><th>Tienda</th></tr>{rows or '<tr><td colspan=2>sin datos</td></tr>'}</table>"
+                )
         elif sid == "coverage_gaps":
             gaps = sec.get("gaps") or []
             sections_html.append(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from market_core import get_default_stores, STORES
 
@@ -58,6 +58,21 @@ def build_sources_health(
     ).fetchall()
     last_seen_map = {r["store"]: r["last_seen"] for r in last_seen_rows}
 
+    cutoff_7d = (now - timedelta(days=7)).isoformat()
+    coverage_rows = db.execute(
+        """SELECT store,
+                  COUNT(*) FILTER (WHERE queried_at >= ?) as snapshots_7d,
+                  COUNT(*) as total_snapshots
+           FROM price_snapshots WHERE price > 0
+           GROUP BY store""",
+        (cutoff_7d,),
+    ).fetchall()
+    coverage_map: dict[str, float] = {}
+    for r in coverage_rows:
+        sid = r["store"]
+        total = int(r["total_snapshots"] or 0)
+        coverage_map[sid] = round(int(r["snapshots_7d"] or 0) / total * 100, 1) if total > 0 else 0.0
+
     stores_out: list[dict] = []
     for row in health_rows:
         sid = row["store"]
@@ -82,6 +97,7 @@ def build_sources_health(
             "last_error": row["last_error"],
             "last_seen": str(last_seen) if last_seen else None,
             "fresh_24h": _fresh_24h(last_seen, _age_hours),
+            "coverage_7d_pct": coverage_map.get(sid, 0.0),
         })
 
     summary = {"ok": 0, "partial": 0, "dead": 0, "total": len(stores_out)}
