@@ -678,11 +678,14 @@ def _dashboard_data():
     try:
         from market_indicators import ENRICHMENT_INDICATOR_KEYS, get_latest_values
 
-        indicator_latest = get_latest_values(db, limit=80)
+        # Fetch per-country enrichment for all 8 countries
         enrichment_keys = set(ENRICHMENT_INDICATOR_KEYS)
-        enrichment_latest = [v for v in indicator_latest if v.get("key") in enrichment_keys]
-        for cc in sorted({c["country"] for c in by_country if c.get("country")}):
-            indicator_by_country[cc] = get_latest_values(db, country=cc, limit=20)
+        all_countries = sorted({s["country"] for s in STORES.values() if s.get("country")})
+        for cc in all_countries:
+            cc_vals = get_latest_values(db, country=cc, limit=30)
+            enrichment_latest.extend(v for v in cc_vals if v.get("key") in enrichment_keys)
+            indicator_by_country[cc] = cc_vals
+        indicator_latest = get_latest_values(db, limit=200)
     except Exception:
         pass
 
