@@ -369,7 +369,16 @@ def build_dashboard_view_model(data: dict) -> dict:
 
     # ── Block 5b — All indicators (internal + external + enrichment) ──────────
     indicators_meta = data.get("indicators") or {}
-    enrichment_raw = indicators_meta.get("latest") or indicators_meta.get("enrichment") or []
+    # Merge latest (global recent) + enrichment (per-country) — dedup by key+country
+    latest_raw = indicators_meta.get("latest") or []
+    enrichment_only = indicators_meta.get("enrichment") or []
+    seen_pairs: set[tuple[str, str]] = set()
+    enrichment_raw: list[dict] = []
+    for item in latest_raw + enrichment_only:
+        pair = (str(item.get("key") or ""), str(item.get("country") or ""))
+        if pair not in seen_pairs:
+            seen_pairs.add(pair)
+            enrichment_raw.append(item)
     tier2_keys = {
         "imf_inflation_yoy", "eurostat_food_hicp_yoy", "eurostat_headline_hicp_yoy",
         "bcb_food_inflation_mom", "bcb_headline_inflation_mom", "macro_unemployment_rate",
