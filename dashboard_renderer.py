@@ -280,7 +280,7 @@ def _render_enrichment(view: dict) -> str:
     countries_seen: set[str] = set()
     for item in items:
         key = item.get("key", "")
-        cc = item.get("country", "—")
+        cc = item.get("country") or "Global"
         countries_seen.add(cc)
         if key not in indicators:
             indicators[key] = {
@@ -290,7 +290,9 @@ def _render_enrichment(view: dict) -> str:
             }
         indicators[key]["countries"][cc] = item.get("value_label", "—")
 
-    country_order = sorted(countries_seen)
+    country_order = sorted(countries_seen - {"Global"})
+    if "Global" in countries_seen:
+        country_order.insert(0, "Global")
 
     # Header
     header = "<tr><th>Indicador</th><th>Fuente</th>"
@@ -310,7 +312,7 @@ def _render_enrichment(view: dict) -> str:
     count = len(indicators)
     return f"""
 <section class="exploration-layer">
-  <div class="section clean-section">[ {_esc(enrichment.get('title', 'SEÑALES ENRIQUECIDAS').upper())} ]</div>
+  <div class="section clean-section">[ {_esc(enrichment.get('title', 'INDICADORES DE MERCADO').upper())} ]</div>
   <p class="section-intro">{_esc(enrichment.get('subtitle', ''))}</p>
   <div style="overflow-x:auto"><table>{header}{rows}</table></div>
   <p class="layer-note">{count} indicadores · {len(country_order)} países · {_esc(enrichment.get('docs', ''))}</p>
