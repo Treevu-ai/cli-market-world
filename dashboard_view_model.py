@@ -367,9 +367,9 @@ def build_dashboard_view_model(data: dict) -> dict:
         },
     }
 
-    # ── Block 5b — Enrichment indicators ─────────────────────────────────────
+    # ── Block 5b — All indicators (internal + external + enrichment) ──────────
     indicators_meta = data.get("indicators") or {}
-    enrichment_raw = indicators_meta.get("enrichment") or []
+    enrichment_raw = indicators_meta.get("latest") or indicators_meta.get("enrichment") or []
     tier2_keys = {
         "imf_inflation_yoy", "eurostat_food_hicp_yoy", "eurostat_headline_hicp_yoy",
         "bcb_food_inflation_mom", "bcb_headline_inflation_mom", "macro_unemployment_rate",
