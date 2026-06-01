@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     playwright install chromium
 
-COPY collect_prices.py market_stores.py market_core.py market_db.py market_billing.py store_credentials.py ./
+COPY collect_prices.py market_stores.py market_core.py market_db.py market_billing.py store_credentials.py price_confidence.py ./
 COPY market_connectors/ ./market_connectors/
 
 ENV PYTHONUNBUFFERED=1
