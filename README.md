@@ -17,7 +17,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **60 retailers (30 verificados)** en **8 países**. Un único esquema JSON.
 
 - 🌍 **60 retailers (30 verificados) · 8 países · 3 plataformas · 43 herramientas MCP · 34 indicadores**
-- 💰 **Más de 39 000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 8 horas
+- 💰 **Más de 39 000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + QR (Yape / Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -25,7 +25,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 - 🔎 **Busca** cualquier producto en 60 retailers (30 verificados) de 8 países
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
-- 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 8 horas
+- 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas
 - 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — checkout con PayPal o QR (Yape / Plin)
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
@@ -75,7 +75,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 **CLI Market fixes that.** One `pip install`. One API call across **60 retailers (30 verified)** in **8 countries**. One JSON schema.
 
 - 🌍 **60 retailers (30 verified) · 8 countries · 3 platforms · 43 MCP tools · 34 indicators**
-- 💰 **39,000+ verified shelf prices**, normalized per kg/L, refreshed every 8 hours
+- 💰 **43,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + QR (Yape / Plin)** checkout built in
 
 #### ✨ Why CLI Market?
@@ -83,7 +83,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 - 🔎 **Search** any product across 60 retailers (30 verified) in 8 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
-- 📈 **Inflation** — track real shelf-price changes, updated every 8 hours
+- 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
 - 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — checkout with PayPal or QR (Yape / Plin)
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
@@ -117,6 +117,21 @@ market enrichment --refresh -c PE
 | **Checkout** | — | ✅ (after email activation) | ✅ |
 | **Data export** | — | JSON/CSV | ✅ |
 | **Support** | Community | Email | 24/7 + onboarding |
+
+---
+
+## 📊 Dashboard auditability
+
+Every price in CLI Market is traceable and verifiable. The [live dashboard](https://cli-market-production.up.railway.app/dashboard) exposes:
+
+- **Cobertura 7 días** — `coverage_7d_pct` per retailer: what % of each store's catalog refreshed in the last week
+- **Normalización por kg/L** — unit price visible next to shelf price (e.g. `PEN 4.20/kg`), with counter of non-parseable names
+- **Confianza por snapshot** — `ok` vs `suspect` distribution from scrape-quality heuristics
+- **Percentiles P25/P50/P75** — median replaces mean in category comparisons; eliminates outlier distortion (e.g. ARS 230K in departamentales)
+- **Trazabilidad de outliers** — group size, band (`median ± k·IQR`), acceptable bounds, scraper health state, capture timestamp
+- **Foso de datos** — `inventory_daily[]` time series + growth stats (total snapshots, daily avg, days tracked)
+
+All six capabilities are backed by the same 43,000+ verified shelf prices, refreshed every 4 hours by the collector daemon.
 
 ---
 
