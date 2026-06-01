@@ -49,7 +49,13 @@ class _DB:
             if "sslmode" in qs:
                 kwargs["sslmode"] = qs["sslmode"][0]
             else:
-                kwargs["sslmode"] = "require"
+                # 'prefer' (not 'require') so it works on Railway private
+                # networking (postgres.railway.internal offers no SSL) AND on
+                # public URLs (which do). 'require' broke the private path,
+                # silently falling back to an empty SQLite and serving 0 data.
+                # Override via PG_SSL_MODE env var if a stricter mode is needed.
+                import os
+                kwargs["sslmode"] = os.getenv("PG_SSL_MODE", "prefer")
             self._conn = psycopg2.connect(**kwargs)
             self._pg = True
         else:

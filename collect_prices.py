@@ -17,7 +17,6 @@ from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 import httpx
 
-import market_core
 from market_core import (
     STORES, LINES, DB_FILE, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
@@ -398,9 +397,14 @@ if USE_PG:
         global _pg_pool
         if _pg_pool is None:
             pool_size = max(PARALLEL + 2, 15)
+            # SSL: respect sslmode in DATABASE_URL; default to 'prefer' so it
+            # works on both Railway private networking (no SSL) and public URLs (SSL).
+            # Override with PG_SSL_MODE env var if needed.
+            ssl_mode = os.getenv("PG_SSL_MODE", "prefer")
+            ssl_arg: object = ssl_mode if ssl_mode not in ("disable", "false") else False
             _pg_pool = await asyncpg.create_pool(
                 DATABASE_URL, min_size=2, max_size=pool_size, command_timeout=60,
-                ssl=False,  # Railway internal Postgres does not use SSL
+                ssl=ssl_arg,
             )
         return _pg_pool
 
@@ -856,9 +860,11 @@ async def main():
     ap.add_argument("--stores", type=int, default=0); ap.add_argument("--queries", type=int, default=0)
     ap.add_argument("--parallel", type=int, default=50)
     args = ap.parse_args()
-    global PARALLEL, USE_PG; PARALLEL = args.parallel
+    global PARALLEL; PARALLEL = args.parallel
     ensure_db_initialized()
-    USE_PG = market_core.USE_PG  # Respect PostgreSQL→SQLite fallback from ensure_db_initialized()
+    # Do NOT reassign USE_PG from market_core here: the module-level USE_PG
+    # already reflects DATABASE_URL. Re-reading after ensure_db_initialized()
+    # could silently flip to SQLite if Postgres had a transient init error.
     if args.status: do_status(); return
     if args.report: do_report(); return
     stores = get_default_stores()
