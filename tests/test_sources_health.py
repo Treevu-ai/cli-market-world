@@ -33,6 +33,12 @@ def isolated_db(monkeypatch, tmp_path):
     monkeypatch.setattr(market_core, "DB_FILE", db_file)
     monkeypatch.setattr(market_core, "USE_PG", False)
     monkeypatch.setattr(market_core, "_db_initialized", False)
+
+    # Reset the dashboard's in-memory 120s cache so /dashboard/data reflects
+    # this test's fresh DB instead of stale data leaked from a prior test.
+    import routers.dashboard as dashboard_mod
+    monkeypatch.setattr(dashboard_mod, "_dashboard_data_cache", None)
+    monkeypatch.setattr(dashboard_mod, "_dashboard_data_cache_at", 0.0)
     return market_core
 
 
