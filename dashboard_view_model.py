@@ -376,7 +376,7 @@ def build_dashboard_view_model(data: dict) -> dict:
         "imf_wb_cpi_gap", "imf_gdp_growth_yoy", "imf_epi_inflation_yoy", "wb_gdp_growth_yoy",
     }
     enrichment_items = []
-    for row in enrichment_raw[:30]:
+    for row in enrichment_raw:
         key = str(row.get("key") or "")
         val = row.get("value")
         unit = row.get("unit") or ""
