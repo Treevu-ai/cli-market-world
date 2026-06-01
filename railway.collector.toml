@@ -15,6 +15,8 @@ watchPatterns = [
   "market_db.py",
   "market_billing.py",
   "store_credentials.py",
+  "price_confidence.py",
+  "requirements.txt",
   "market_connectors/**",
   "Dockerfile.collector",
   "railway.collector.toml",
