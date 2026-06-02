@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cli-market"
 version = "1.7.0"
-description = "mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. 43 MCP tools, 34 indicators, 36 verified retailers in 11 countries. MIT."
+description = "mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. 43 MCP tools, 0 indicators, 66 verified retailers in 11 countries. MIT."
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{name = "CLI Market", email = "hello@cli-market.dev"}]
@@ -38,7 +38,7 @@ market-server = "market_server:main"
 market-mcp = "market_mcp:main"
 
 [tool.setuptools]
-py-modules = ["market_cli", "market_server", "market_mcp", "market_stores", "market_core", "market_db", "market_billing", "store_credentials", "market_stats", "market_indicators", "market_enrich_sources", "market_enrich_subcategory", "market_spread"]
+py-modules = ["market_cli", "market_server", "market_mcp", "market_stores", "market_core", "market_db", "market_billing", "market_stats", "market_spread", "market_basket", "market_units", "market_security"]
 
 [tool.ruff]
 line-length = 120
