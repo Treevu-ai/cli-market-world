@@ -28,6 +28,7 @@ export default function ContactForm({
   const isNewsletter = plan === "newsletter";
   const isNewsletter = plan === "newsletter";
   const isNewsletter = plan === "newsletter";
+  const isNewsletter = plan === "newsletter";
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
