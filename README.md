@@ -51,14 +51,16 @@ market enrichment --refresh -c PE
 
 #### 💵 Planes
 
-| | Free | Pro | Enterprise |
+| | Free | Starter | Pro | Enterprise |
 | --- | --- | --- | --- |
-| **Precio** | $0 | $49/mes | A medida |
-| **Solicitudes** | 1 000/día | 10 000/día | Ilimitadas |
-| **API keys** | 1 (lectura) | 10 (lectura+escritura) | Ilimitadas |
-| **Checkout** | — | ✅ (tras activación por email) | ✅ |
-| **Exportar datos** | — | JSON/CSV | ✅ |
-| **Soporte** | Comunidad | Email | 24/7 + onboarding |
+| **Precio** | $0 | $9/mes (S/34) | $49/mes (S/185) | A medida |
+| **Solicitudes** | 1,000/día | 1,000/día | 10,000/día | Ilimitadas |
+| **API keys** | 1 (lectura) | 3 (lectura) | 10 (lectura+escritura) | Ilimitadas |
+| **Checkout** | — | — | ✅ (tras activacion) | ✅ |
+| **Exportar** | — | JSON | JSON/CSV | ✅ |
+| **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 |
+| **Trial** | — | 14 dias | 14 dias | — |
+| **Anual** | — | $90/ano (S/340) | $490/ano (S/1,850) | — |
 
 > 📄 Posicionamiento en español (API / landing / ventas): [`docs/api-positioning-es.md`](docs/api-positioning-es.md)
 
@@ -109,14 +111,16 @@ market enrichment --refresh -c PE
 
 #### 💵 Pricing
 
-| | Free | Pro | Enterprise |
+| | Free | Starter | Pro | Enterprise |
 | --- | --- | --- | --- |
-| **Price** | $0 | $49/mo | Custom |
-| **Requests** | 1,000/day | 10,000/day | Unlimited |
-| **API keys** | 1 (read) | 10 (read+write) | Unlimited |
-| **Checkout** | — | ✅ (after email activation) | ✅ |
-| **Data export** | — | JSON/CSV | ✅ |
-| **Support** | Community | Email | 24/7 + onboarding |
+| **Price** | $0 | $9/mo (S/34) | $49/mo (S/185) | Custom |
+| **Requests** | 1,000/day | 1,000/day | 10,000/day | Unlimited |
+| **API keys** | 1 (read) | 3 (read) | 10 (read+write) | Unlimited |
+| **Checkout** | — | — | ✅ (after email activation) | ✅ |
+| **Export** | — | JSON | JSON/CSV | ✅ |
+| **Support** | Community | Email 48h | Email 4h | 24/7 |
+| **Trial** | — | 14 days | 14 days | — |
+| **Annual** | — | $90/yr (S/340) | $490/yr (S/1,850) | — |
 
 ---
 
