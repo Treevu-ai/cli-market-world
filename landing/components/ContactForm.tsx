@@ -26,6 +26,7 @@ export default function ContactForm({
   const [error, setError] = useState("");
   const isES = lang === "es";
   const isNewsletter = plan === "newsletter";
+  const isNewsletter = plan === "newsletter";
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
