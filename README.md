@@ -143,7 +143,6 @@ All six capabilities are backed by the same 43,000+ verified shelf prices, refre
 
 `market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_indicators` `market_scores` `market_intel_refresh` `market_enrichment` `market_enrichment_subcategories` `market_enrichment_refresh` `market_analytics_indicators` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan` `market_stock` `market_notify` `market_brands` `market_favorites` `market_exchange` `market_delivery`
 
-Docs: [`docs/DATA-MOAT-INDICATORS.md`](docs/DATA-MOAT-INDICATORS.md) · GitHub: [Treevu-ai/cli-market-world](https://github.com/Treevu-ai/cli-market-world)
 
 ---
 
