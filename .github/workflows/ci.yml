@@ -48,8 +48,7 @@ jobs:
         run: pip install -r requirements.txt pytest httpx
 
       - name: Run tests
-        # Ignore backend-only tests (moved to cli-market-backend private repo).
-        run: pytest tests/ -q -m "not integration" --ignore=tests/test_api_perf.py --ignore=tests/test_sync_linkedin_metrics.py
+        run: pytest tests/ -q -m "not integration"
 
   test-pg:
     runs-on: ubuntu-latest
@@ -89,7 +88,7 @@ jobs:
         run: pip install -r requirements.txt pytest httpx psycopg2-binary
 
       - name: Run tests against PostgreSQL
-        run: pytest tests/ -q -m "not integration" --ignore=tests/test_api_perf.py --ignore=tests/test_sync_linkedin_metrics.py
+        run: pytest tests/ -q -m "not integration"
 
   smoke-production:
     runs-on: ubuntu-latest
