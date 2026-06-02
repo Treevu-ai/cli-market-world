@@ -64,7 +64,7 @@ export default function ToolsPage() {
             {MARKET_STATS.mcpTools} MCP tools for e-commerce agents
           </h1>
           <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
-            Commerce API for AI agents — search, compare, basket, and checkout across 30 retailers.
+            Commerce API for AI agents — search, compare, basket, and checkout across {MARKET_STATS.retailersVerified} retailers.
             Copy a config, run <code className="font-mono text-sm text-[var(--cm-mint)]">pip install cli-market</code>, connect your IDE.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function ToolsPage() {
               </span>
             ))}
           </div>
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">+ 24 more tools in the full registry</p>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">+ {MARKET_STATS.mcpTools - TOOLS.length} more tools in the full registry</p>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
             Full tool list on GitHub →
           </a>
