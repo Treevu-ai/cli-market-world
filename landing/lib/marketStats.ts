@@ -2,7 +2,7 @@
 
 export const MARKET_STATS = {
   retailersDefined: 66,
-  retailersVerified: 66,
+  retailersVerified: 36,
   platforms: 3,
   platformVtex: 44,
   platformShopify: 15,
@@ -10,9 +10,9 @@ export const MARKET_STATS = {
   countries: 11,
   countryCodes: ['AR', 'BR', 'CH', 'CL', 'CO', 'ES', 'FR', 'IT', 'MX', 'PE', 'US'],
   mcpTools: 43,
-  indicatorsCount: 0,
+  indicatorsCount: 34,
   enrichmentSourcesLabel: "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB",
-  pricesVerifiedLabel: "46,000+",
+  pricesVerifiedLabel: "45,000+",
   pricesRefreshHours: 4,
   packageVersion: "1.7.0",
   license: "MIT",
