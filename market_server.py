@@ -110,6 +110,7 @@ from routers.agent import router as agent_router
 from routers.auth import router as auth_router
 from routers.cart import router as cart_router
 from routers.health import router as health_router
+from routers.intel import router as intel_router
 from routers.media import router as media_router
 from routers.misc import router as misc_router
 from routers.orders import router as orders_router
@@ -125,6 +126,7 @@ for r in (
     auth_router,
     cart_router,
     health_router,
+    intel_router,
     media_router,
     misc_router,
     orders_router,
