@@ -26,14 +26,14 @@ export default function RetailersPage() {
     {
       t: isES ? "Ventaja competitiva" : "Competitive edge",
       d: isES
-        ? `Compar\u00e1 tus precios contra ${MARKET_STATS.retailersVerified} retailers en tiempo real. Segu\u00ed a tus competidores, ajust\u00e1 precios, y nunca pierdas una venta frente a un rival invisible.`
+        ? `Compara tus precios contra ${MARKET_STATS.retailersVerified} retailers en tiempo real. Sigue a tus competidores, ajusta precios, y nunca pierdas una venta frente a un rival invisible.`
         : `See how your prices compare to ${MARKET_STATS.retailersVerified} retailers in real time. Track competitors, adjust pricing, and never lose a sale to an unseen rival.`,
       i: "\ud83d\udcca",
     },
     {
       t: isES ? "Cero esfuerzo, cero costo" : "Zero effort, zero cost",
       d: isES
-        ? "Gener\u00e1 un token de API de solo lectura. 30 segundos. Sin SDK, sin integraci\u00f3n, sin mantenimiento. Gratis para siempre. MIT."
+        ? "Genera un token de API de solo lectura. 30 segundos. Sin SDK, sin integraci\u00f3n, sin mantenimiento. Gratis para siempre. MIT."
         : "Generate a read-only API token. 30 seconds. No SDK, no integration, no maintenance. Free forever. MIT.",
       i: "\u26a1",
     },
@@ -52,7 +52,7 @@ export default function RetailersPage() {
       step: "02",
       title: isES ? "Magento: integraci\u00f3n REST API" : "Magento: REST API integration",
       desc: isES
-        ? "Cre\u00e1 una integraci\u00f3n con cat\u00e1logo de solo lectura. Accedemos a /V1/products para indexar tu cat\u00e1logo."
+        ? "Crea una integraci\u00f3n con cat\u00e1logo de solo lectura. Accedemos a /V1/products para indexar tu cat\u00e1logo."
         : "Create an integration with catalog read-only. We access /V1/products to index your catalog.",
       cmd: "System \u2192 Integrations \u2192 Add New \u2192 Catalog (read only)",
     },
@@ -84,7 +84,7 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "Gener\u00e1 un token de API de solo lectura desde tu panel de Shopify, Magento o VTEX. Envianoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
+                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento o VTEX. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
                     : "Generate a read-only API token from your Shopify, Magento, or VTEX admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
                 },
               },
@@ -124,7 +124,7 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "GEO (Generative Engine Optimization) es el equivalente de SEO para agentes de IA. Cuando asistentes como ChatGPT y Claude buscan productos, usan \u00edndices de datos estructurados como CLI Market. Si tu tienda no est\u00e1 indexada, sos invisible para el canal de compras de mayor crecimiento."
+                    ? "GEO (Generative Engine Optimization) es el equivalente de SEO para agentes de IA. Cuando asistentes como ChatGPT y Claude buscan productos, usan \u00edndices de datos estructurados como CLI Market. Si tu tienda no est\u00e1 indexada, eres invisible para el canal de compras de mayor crecimiento."
                     : "GEO (Generative Engine Optimization) is the equivalent of SEO for AI agents. When AI assistants like ChatGPT and Claude search for products, they use structured data indexes like CLI Market. If your store isn't indexed, you're invisible to the fastest-growing shopping channel.",
                 },
               },
@@ -169,7 +169,7 @@ export default function RetailersPage() {
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
           <div className="max-w-[720px] mx-auto">
             <h2 className="section-title mb-12 text-center">
-              {isES ? "Lo que obten\u00e9s" : "What you get"}
+              {isES ? "Lo que obtienes" : "What you get"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {benefits.map((b) => (
@@ -186,7 +186,7 @@ export default function RetailersPage() {
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
           <div className="max-w-[560px] mx-auto">
             <h2 className="section-title mb-12 text-center">
-              {isES ? "C\u00f3mo listarte \u2014 30 segundos" : "How to get listed \u2014 30 seconds"}
+              {isES ? "C\u00f3mo aparecer \u2014 30 segundos" : "How to get listed \u2014 30 seconds"}
             </h2>
             <div className="space-y-4">
               {steps.map((s) => (
@@ -213,7 +213,7 @@ export default function RetailersPage() {
             </p>
             <RetailerApplyForm />
             <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-8">
-              {isES ? "\u00bfPrefer\u00eds email? " : "Prefer email? "}
+              {isES ? "\u00bfPrefieres email? " : "Prefer email? "}
               <a href="mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing" className="text-[var(--cm-mint)] underline">
                 hello@cli-market.dev
               </a>
