@@ -42,24 +42,32 @@ COUNTRY_CODES = tuple(sorted({s["country"] for s in _stores.values()}))
 MCP_TOOLS = _mcp_tools_count()
 INDICATORS_COUNT = _indicators_count()
 ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB"
-PRICES_VERIFIED_LABEL = "45,000+"
 PRICES_REFRESH_HOURS = 4
+
+def _live_price_label(fallback: str = "45,000+") -> str:
+    """Fetch total_indexed from live dashboard and round to nearest thousand."""
+    import os
+    try:
+        import httpx
+        api = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+        r = httpx.get(f"{api}/dashboard/data", timeout=10)
+        r.raise_for_status()
+        n = r.json().get("kpis", {}).get("total_indexed", 0)
+        if n and n > 0:
+            return f"{round(n / 1000) * 1000:,}+"
+    except Exception:
+        pass
+    return fallback
+
+PRICES_VERIFIED_LABEL = _live_price_label()
 PACKAGE_VERSION = "1.7.0"
 LICENSE = "MIT"
 PAYMENTS_LABEL = "PayPal + QR (Yape/Plin)"
 BUSINESS_LINES = 6
 
-_SHOPIFY_DISPLAY: dict[str, str] = {
-    "adidas": "Adidas", "gymshark": "Gymshark", "allbirds": "Allbirds",
-    "alo_yoga": "Alo Yoga", "glossier": "Glossier", "fenty": "Fenty Beauty",
-    "kylie": "Kylie Cosmetics", "colourpop": "ColourPop", "brooklinen": "Brooklinen",
-    "casper": "Casper", "on_running": "On Running", "parachute": "Parachute",
-    "nomad": "Nomad", "magicmind": "Magic Mind", "privalia_br": "Privalia BR",
-}
-
 SHOPIFY_BRANDS = tuple(
-    _SHOPIFY_DISPLAY[k] for k in sorted(_stores)
-    if _stores[k].get("platform") == "shopify" and k in _SHOPIFY_DISPLAY
+    _stores[k]["name"] for k in sorted(_stores)
+    if _stores[k].get("platform") == "shopify"
 )
 
 RETAILERS_PHRASE_EN = f"{RETAILERS_DEFINED} retailers, {RETAILERS_VERIFIED} verified active"
