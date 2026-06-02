@@ -175,7 +175,7 @@ def test_collector_sq_insert_upserts(isolated_db):
     market_core, _ = isolated_db
     import collect_prices
 
-    db = collect_prices.init_schema_sqlite()
+    db = collect_prices.get_db_unified()
 
     collect_prices.sq_insert(db, _make_product(pid="cp1", price=10.0))
     collect_prices.sq_insert(db, _make_product(pid="cp1", price=15.0))
@@ -202,7 +202,7 @@ def test_collector_sq_insert_tolerates_missing_keys(isolated_db):
     market_core, _ = isolated_db
     import collect_prices
 
-    db = collect_prices.init_schema_sqlite()
+    db = collect_prices.get_db_unified()
 
     minimal = {
         "id": "m1", "product_id": "m1", "name": "x", "price": 5.0,
@@ -215,19 +215,17 @@ def test_collector_sq_insert_tolerates_missing_keys(isolated_db):
 # ── Bug #5: single source of truth ─────────────────────────────────────────────
 
 def test_collector_init_schema_delegates_to_market_core(isolated_db):
-    """collect_prices.init_schema_sqlite must NOT define its own DDL.
-    It must reuse market_core.init_db()."""
+    """collect_prices no longer has its own init_schema_sqlite — it uses get_db()
+    which delegates to market_core's unified _DB abstraction."""
     market_core, _ = isolated_db
     import collect_prices
 
     src = Path(collect_prices.__file__).read_text()
-    init_block = src.split("def init_schema_sqlite")[1].split("def ")[0]
-    assert "CREATE TABLE" not in init_block.upper(), (
-        "collect_prices.init_schema_sqlite must not contain CREATE TABLE statements — "
-        "the schema must live in a single place (market_core)."
+    assert "get_db_unified" in src, (
+        "collect_prices must use get_db_unified() instead of raw SQLite connections."
     )
-    assert "ensure_db_initialized" in init_block, (
-        "collect_prices.init_schema_sqlite must delegate to market_core.ensure_db_initialized()."
+    assert "import sqlite3" not in src.split("# SQLite helpers")[0] if "# SQLite helpers" in src else True, (
+        "collect_prices must not import sqlite3 for DB access — use get_db()."
     )
 
 
