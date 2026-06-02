@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
+import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 export interface LiveStats {
@@ -16,14 +18,13 @@ export interface LiveStats {
   collectorIntervalH: number | null;
 }
 
-/** Consistent marketing price labels from MARKET_STATS. */
-export function formatMarketingPrices(_indexed: number | null): { chip: string; long: string } {
-  const label = MARKET_STATS.pricesVerifiedLabel.replace(",", "").replace("+", "");
-  const n = parseInt(label, 10) || 45_000;
+export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
+  const fallback = parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 45_000;
+  const n = indexed ?? fallback;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
-    long: `${k.toLocaleString()},000+`,
+    long: n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : n.toLocaleString(),
   };
 }
 
@@ -33,9 +34,12 @@ export function refreshLabel(isES: boolean): string {
     : `every ${MARKET_STATS.pricesRefreshHours}h`;
 }
 
-/** Static stats — no live dashboard fetch (dashboard lives in private backend). */
+const REFRESH_MS = 5 * 60 * 1000;
+
 export function useLiveStats() {
-  const stats: LiveStats = {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [stats, setStats] = useState<LiveStats>({
     indexed: null,
     snapshots24h: null,
     storesInCatalog: null,
@@ -47,9 +51,38 @@ export function useLiveStats() {
     moatStart: null,
     collectorStatus: null,
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
+  });
+
+  const fetchStats = () => {
+    fetch(`${API_URL}/health/db`)
+      .then((r) => r.json())
+      .then((d) => {
+        setStats({
+          indexed: d.snapshots ?? null,
+          snapshots24h: null,
+          storesInCatalog: null,
+          fresh24hPct: null,
+          coverage7dPct: null,
+          moatAgeHours: null,
+          totalSnapshotsAll: d.snapshots ?? null,
+          avgDaily7d: null,
+          moatStart: null,
+          collectorStatus: d.backend ?? null,
+          collectorIntervalH: MARKET_STATS.pricesRefreshHours,
+        });
+      })
+      .catch(() => {});
   };
 
-  const { chip: priceChip, long: priceLong } = formatMarketingPrices(null);
+  useEffect(() => {
+    fetchStats();
+    intervalRef.current = setInterval(fetchStats, REFRESH_MS);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
 
   return {
     stats,
