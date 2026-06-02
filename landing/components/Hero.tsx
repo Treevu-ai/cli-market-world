@@ -44,7 +44,7 @@ export default function Hero() {
             : `One API across ${MARKET_STATS.retailersDefined} retailers in ${MARKET_STATS.countries} countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
         </motion.p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[640px] mx-auto">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px] mx-auto">
           <a
             href="https://pypi.org/project/cli-market/"
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
@@ -70,6 +70,20 @@ export default function Hero() {
             </span>
             <span className="text-xs text-[var(--cm-on-surface-variant)]">
               {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+            </span>
+          </a>
+          <a
+            href="#contact"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
+          >
+            <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
+              {isES ? "Newsletter" : "Newsletter"}
+            </span>
+            <span className="text-base font-semibold text-white">
+              {isES ? "Price Pulse semanal →" : "Weekly Price Pulse →"}
+            </span>
+            <span className="text-xs text-[var(--cm-on-surface-variant)]">
+              {isES ? "Datos de mercado · gratis" : "Market data · free"}
             </span>
           </a>
         </div>
