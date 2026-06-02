@@ -51,8 +51,8 @@ market enrichment --refresh -c PE
 
 #### 💵 Planes
 
-| | Free | Starter | Pro | Enterprise |
-| --- | --- | --- | --- |
+| Plan | Free | Starter | Pro | Enterprise |
+|------|------|---------|-----|------------|
 | **Precio** | $0 | $9/mes (S/34) | $49/mes (S/185) | A medida |
 | **Solicitudes** | 1,000/día | 1,000/día | 10,000/día | Ilimitadas |
 | **API keys** | 1 (lectura) | 3 (lectura) | 10 (lectura+escritura) | Ilimitadas |
@@ -111,8 +111,8 @@ market enrichment --refresh -c PE
 
 #### 💵 Pricing
 
-| | Free | Starter | Pro | Enterprise |
-| --- | --- | --- | --- |
+| Plan | Free | Starter | Pro | Enterprise |
+|------|------|---------|-----|------------|
 | **Price** | $0 | $9/mo (S/34) | $49/mo (S/185) | Custom |
 | **Requests** | 1,000/day | 1,000/day | 10,000/day | Unlimited |
 | **API keys** | 1 (read) | 3 (read) | 10 (read+write) | Unlimited |
