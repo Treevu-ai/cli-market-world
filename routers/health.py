@@ -282,3 +282,40 @@ def list_countries():
             for code, c in COUNTRIES.items()
         }
     }
+
+@router.get("/health/stats")
+def health_stats():
+    """Live KPIs for the landing page — lightweight, no dashboard deps."""
+    db = get_db()
+    total = db.execute("SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0").fetchone()["n"]
+    snapshots_24h = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= datetime('now', '-1 day')"
+    ).fetchone()["n"]
+    stores_indexed = db.execute(
+        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+    ).fetchone()["n"]
+    latest = db.execute("SELECT MAX(queried_at) as t FROM price_snapshots").fetchone()["t"]
+    db.close()
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    moat_age_hours = None
+    if latest:
+        try:
+            if isinstance(latest, str):
+                latest_dt = datetime.fromisoformat(latest.replace("Z", "+00:00"))
+            else:
+                latest_dt = latest
+            moat_age_hours = round((now - latest_dt).total_seconds() / 3600, 1)
+        except Exception:
+            pass
+
+    fresh_24h_pct = round(snapshots_24h / total * 100, 1) if total > 0 else 0
+
+    return {
+        "total_indexed": total,
+        "snapshots_24h": snapshots_24h,
+        "stores_indexed": stores_indexed,
+        "fresh_24h_pct": fresh_24h_pct,
+        "moat_age_hours": moat_age_hours,
+    }

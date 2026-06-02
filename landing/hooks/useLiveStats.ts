@@ -54,20 +54,20 @@ export function useLiveStats() {
   });
 
   const fetchStats = () => {
-    fetch(`${API_URL}/dashboard/data`)
+    fetch(`${API_URL}/health/stats`)
       .then((r) => r.json())
       .then((d) => {
         setStats({
-          indexed: (d.kpis || {}).total_indexed ?? null,
-          snapshots24h: (d.kpis || {}).snapshots_24h ?? null,
-          storesInCatalog: (d.kpis || {}).stores_indexed ?? null,
-          fresh24hPct: (d.kpis || {}).fresh_24h_pct ?? null,
-          coverage7dPct: (d.kpis || {}).coverage_7d_pct ?? null,
-          moatAgeHours: (d.kpis || {}).moat_age_hours ?? null,
-          totalSnapshotsAll: (d.kpis || {}).total_indexed ?? null,
-          avgDaily7d: (d.kpis || {}).avg_daily_7d ?? null,
+          indexed: d.total_indexed ?? null,
+          snapshots24h: d.snapshots_24h ?? null,
+          storesInCatalog: d.stores_indexed ?? null,
+          fresh24hPct: d.fresh_24h_pct ?? null,
+          coverage7dPct: d.coverage_7d_pct ?? null,
+          moatAgeHours: d.moat_age_hours ?? null,
+          totalSnapshotsAll: d.total_indexed ?? null,
+          avgDaily7d: d.avg_daily_7d ?? null,
           moatStart: d.generated_at ?? null,
-          collectorStatus: (d.collector || {}).status ?? null,
+          collectorStatus: d.collector_status ?? null,
           collectorIntervalH: MARKET_STATS.pricesRefreshHours,
         });
       })

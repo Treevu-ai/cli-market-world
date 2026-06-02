@@ -116,6 +116,7 @@ from routers.orders import router as orders_router
 from routers.payments import router as payments_router
 from routers.retailers import router as retailers_router
 from routers.search import router as search_router
+from routers.dashboard import router as dashboard_router
 
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
@@ -131,6 +132,7 @@ for r in (
     payments_router,
     retailers_router,
     search_router,
+    dashboard_router,
 ):
     app.include_router(r)
 
