@@ -13,6 +13,22 @@ CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",
 ]
 
+# IPC category mapping (INEI — Perú, base 2021=100).
+# Maps each canasta item to its official CPI division and subclass.
+# Used in data products (Price Pulse PDF, dashboard view) for methodological traceability.
+CANASTA_IPC_MAP: dict[str, dict[str, str]] = {
+    "leche":   {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Leche, queso y huevos",      "ponderacion": "5.03%"},
+    "arroz":   {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Pan y cereales",              "ponderacion": "4.82%"},
+    "aceite":  {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Aceites y grasas",            "ponderacion": "3.41%"},
+    "azucar":  {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Azúcar, mermelada, chocolate","ponderacion": "2.78%"},
+    "huevos":  {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Leche, queso y huevos",      "ponderacion": "0.91%"},
+    "pan":     {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Pan y cereales",              "ponderacion": "3.52%"},
+    "cafe":    {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Café, té y cacao",           "ponderacion": "0.88%"},
+    "pollo":   {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Carne",                       "ponderacion": "7.12%"},
+    "queso":   {"division": "Alimentos y Bebidas No Alcohólicas", "subclass": "Leche, queso y huevos",      "ponderacion": "1.45%"},
+    "jabon":   {"division": "Bienes y Servicios Diversos",        "subclass": "Cuidado personal",            "ponderacion": "2.91%"},
+}
+
 # SQL pre-filter patterns (must be superset of _CANASTA_ITEM_PATTERNS; matcher refines).
 CANASTA_SQL_LIKE: dict[str, tuple[str, ...]] = {
     "leche": ("%leche%",),
