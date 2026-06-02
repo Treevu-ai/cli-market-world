@@ -113,11 +113,11 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
 
     # ── Header ─────────────────────────────────────────────────────────────
     lines += [
-        f"# CLI Market Price Pulse",
+        "# CLI Market Price Pulse",
         f"**Semana {week} · {ds}**",
         "",
-        f"*Reporte generado automáticamente desde datos de góndola verificados.*",
-        f"*CLI Market Intelligence — Piloto comercial · Confidencial*",
+        "*Reporte generado automáticamente desde datos de góndola verificados.*",
+        "*CLI Market Intelligence — Piloto comercial · Confidencial*",
         "",
         "---",
         "",
@@ -184,7 +184,7 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
     # ── Canasta Básica ─────────────────────────────────────────────────────
     canasta = data.get("canasta_basica", [])
     dashboard_blocks = dashboard_view.get("blocks", {}) if dashboard_view else {}
-    canasta_block = dashboard_blocks.get("canasta", {})
+    _canasta_block = dashboard_blocks.get("canasta", {})
 
     lines += [
         "---",
@@ -307,7 +307,7 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         "---",
         "",
         f"*Generado el {ds} · CLI Market Intelligence · hello@cli-market.dev*",
-        f"*Dashboard público: https://cli-market-production.up.railway.app/dashboard*",
+        "*Dashboard público: https://cli-market-production.up.railway.app/dashboard*",
         "",
     ]
 
