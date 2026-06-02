@@ -95,13 +95,59 @@ def sync_readme() -> None:
         "any product across 30 verified retailers in 8 countries",
         f"any product across {s.RETAILERS_VERIFIED} verified retailers in {s.COUNTRIES} countries",
     )
-    text = text.replace(
-        "**Más de 39 000 precios de góndola verificados**",
-        f"**Más de {s.PRICES_VERIFIED_LABEL.replace(',', ' ').replace('+', '')} precios de góndola verificados**",
+    # Spanish: verified prices label (catches both "39 000+" and "39,000+")
+    text = re.sub(
+        r"\*\*Más de [\d,. ]+\+? precios de góndola verificados\*\*",
+        f"**Más de {s.PRICES_VERIFIED_LABEL} precios de góndola verificados**",
+        text,
     )
-    text = text.replace(
-        "**39,000+ verified shelf prices**",
+    text = re.sub(
+        r"\*\*[\d,]+\+ verified shelf prices\*\*",
         f"**{s.PRICES_VERIFIED_LABEL} verified shelf prices**",
+        text,
+    )
+    # Spanish: retailers + countries in body text (bold and plain)
+    text = re.sub(
+        r"\d+ retailers \(\d+ verificados\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verificados)",
+        text,
+    )
+    text = re.sub(
+        r"\d+ retailers, \d+ verified active(?! en)",
+        f"{s.RETAILERS_DEFINED} retailers, {s.RETAILERS_VERIFIED} verified active",
+        text,
+    )
+    text = re.sub(
+        r"\d+ retailers \(\d+ verified\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified)",
+        text,
+    )
+    text = re.sub(
+        r"\d+ verified active\b",
+        f"{s.RETAILERS_VERIFIED} verified active",
+        text,
+    )
+    # Countries count (both bold and plain)
+    text = re.sub(
+        r"\b\d+ países\b",
+        f"{s.COUNTRIES} países",
+        text,
+    )
+    text = re.sub(
+        r"\b\d+ countries\b",
+        f"{s.COUNTRIES} countries",
+        text,
+    )
+    # Indicators count
+    text = re.sub(
+        r"· \d+ indicadores\b",
+        f"· {s.INDICATORS_COUNT} indicadores",
+        text,
+    )
+    text = re.sub(
+        r"· \d+ indicators\b",
+        f"· {s.INDICATORS_COUNT} indicators",
+        text,
     )
     path.write_text(text, encoding="utf-8")
     print(f"Synced {path}")
