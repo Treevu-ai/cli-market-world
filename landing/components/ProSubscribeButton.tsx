@@ -85,7 +85,7 @@ export default function ProSubscribeButton() {
           {isES ? "Pagar USD 49 con PayPal →" : "Pay USD 49 with PayPal →"}
         </a>
 
-        <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
+        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
           {isES
             ? "Si el botón de PayPal aparece agotado, use el botón verde de arriba."
             : "If the PayPal button shows sold out, use the green button above."}

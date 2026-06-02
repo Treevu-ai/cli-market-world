@@ -77,7 +77,7 @@ export default function ScaleCoverageSection() {
         {/* Data moat snapshot */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 text-left">
           <div className="card-cyber p-5">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">{priceLong}</p>
@@ -86,7 +86,7 @@ export default function ScaleCoverageSection() {
             </p>
           </div>
           <div className="card-cyber p-5">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Frescura" : "Freshness"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">
@@ -98,7 +98,7 @@ export default function ScaleCoverageSection() {
             </p>
           </div>
           <div className="card-cyber p-5">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Cobertura" : "Coverage"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">
@@ -113,7 +113,7 @@ export default function ScaleCoverageSection() {
         {/* Auditability bar */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8 text-left">
           <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
               {isES ? "Precios acumulados" : "Total snapshots"}
             </p>
             <p className="text-lg font-bold text-white tabular-nums">
@@ -121,7 +121,7 @@ export default function ScaleCoverageSection() {
             </p>
           </div>
           <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
               {isES ? "Promedio diario (7d)" : "Daily avg (7d)"}
             </p>
             <p className="text-lg font-bold text-white tabular-nums">
@@ -129,7 +129,7 @@ export default function ScaleCoverageSection() {
             </p>
           </div>
           <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
               {isES ? "Foso de datos" : "Data moat"}
             </p>
             <p className="text-lg font-bold text-white tabular-nums">
@@ -137,7 +137,7 @@ export default function ScaleCoverageSection() {
             </p>
           </div>
           <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-[10px] uppercase tracking-widest text-[var(--cm-mint)] mb-1">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
               {isES ? "Intervalo collector" : "Collector interval"}
             </p>
             <p className="text-lg font-bold text-white tabular-nums">
@@ -167,8 +167,8 @@ export default function ScaleCoverageSection() {
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(vtexLines).map(([line, stores]) => (
                 <div key={line} className="card-cyber p-3">
-                  <h3 className="text-[10px] font-bold uppercase text-white mb-1">{line}</h3>
-                  <p className="text-[10px] text-[var(--cm-on-surface-variant)] leading-relaxed">{stores.slice(0, 4).join(" · ")}{stores.length > 4 ? "…" : ""}</p>
+                  <h3 className="text-xs font-bold uppercase text-white mb-1">{line}</h3>
+                  <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{stores.slice(0, 4).join(" · ")}{stores.length > 4 ? "…" : ""}</p>
                 </div>
               ))}
             </div>
@@ -179,7 +179,7 @@ export default function ScaleCoverageSection() {
             </p>
             <div className="flex flex-wrap gap-2 mb-4">
               {MARKET_STATS.shopifyBrands.map((brand) => (
-                <span key={brand} className="text-[10px] font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                <span key={brand} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
                   {brand}
                 </span>
               ))}
@@ -187,7 +187,7 @@ export default function ScaleCoverageSection() {
             <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-2">Magento</p>
             <div className="flex flex-wrap gap-2">
               {magentoStores.map((store) => (
-                <span key={store} className="text-[10px] font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                <span key={store} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
                   {store}
                 </span>
               ))}
@@ -197,7 +197,7 @@ export default function ScaleCoverageSection() {
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {MARKET_STATS.countryCodes.map((c) => (
-            <span key={c} className="text-[10px] font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
+            <span key={c} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
           ))}
         </div>
 
