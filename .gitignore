@@ -36,3 +36,4 @@ ops/reports/*.md
 # Unrelated / heavy local files
 docs/sunat_manual.pdf
 docs/financial-services/
+.next/
