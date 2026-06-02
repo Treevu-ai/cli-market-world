@@ -19,7 +19,7 @@ const magentoStores = ["Falabella PE/CL/CO", "Paris CL", "Ripley CL", "Liverpool
 function Counter({ end, label, delay }: { end: number; label: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
-  const spring = useSpring(0, { stiffness: 60, damping: 20 });
+  const spring = useSpring(end, { stiffness: 60, damping: 20 });
   const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
 
   useEffect(() => {

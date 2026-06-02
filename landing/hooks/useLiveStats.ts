@@ -54,20 +54,20 @@ export function useLiveStats() {
   });
 
   const fetchStats = () => {
-    fetch(`${API_URL}/health/db`)
+    fetch(`${API_URL}/dashboard/data`)
       .then((r) => r.json())
       .then((d) => {
         setStats({
-          indexed: d.snapshots ?? null,
-          snapshots24h: null,
-          storesInCatalog: null,
-          fresh24hPct: null,
-          coverage7dPct: null,
-          moatAgeHours: null,
-          totalSnapshotsAll: d.snapshots ?? null,
-          avgDaily7d: null,
-          moatStart: null,
-          collectorStatus: d.backend ?? null,
+          indexed: (d.kpis || {}).total_indexed ?? null,
+          snapshots24h: (d.kpis || {}).snapshots_24h ?? null,
+          storesInCatalog: (d.kpis || {}).stores_indexed ?? null,
+          fresh24hPct: (d.kpis || {}).fresh_24h_pct ?? null,
+          coverage7dPct: (d.kpis || {}).coverage_7d_pct ?? null,
+          moatAgeHours: (d.kpis || {}).moat_age_hours ?? null,
+          totalSnapshotsAll: (d.kpis || {}).total_indexed ?? null,
+          avgDaily7d: (d.kpis || {}).avg_daily_7d ?? null,
+          moatStart: d.generated_at ?? null,
+          collectorStatus: (d.collector || {}).status ?? null,
           collectorIntervalH: MARKET_STATS.pricesRefreshHours,
         });
       })
