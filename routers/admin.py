@@ -46,11 +46,14 @@ async def admin_collect(
     Useful for manual smoke testing on Render after deploys. Use ?stores=2&queries=2
     for a quick sanity check; default runs the full catalog.
     """
-    from collect_prices import (
-        build_query_list,
-        _get_feedback_db,
-        run_collection,
-    )
+    try:
+        from collect_prices import (
+            build_query_list,
+            _get_feedback_db,
+            run_collection,
+        )
+    except ImportError:
+        return {"ok": False, "error": "collect_prices module not available (private backend not installed)"}
     from market_core import ensure_db_initialized
 
     ensure_db_initialized()
