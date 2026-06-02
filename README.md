@@ -62,7 +62,7 @@ market enrichment --refresh -c PE
 | **Trial** | — | 14 dias | 14 dias | — |
 | **Anual** | — | $90/ano (S/340) | $490/ano (S/1,850) | — |
 
-> 📄 Posicionamiento en español (API / landing / ventas): [`docs/api-positioning-es.md`](docs/api-positioning-es.md)
+> 📄 Posicionamiento en español (API / landing / ventas): [`../cli-market-content/strategy/api-positioning-es.md`](../cli-market-content/strategy/api-positioning-es.md)
 
 ---
 
