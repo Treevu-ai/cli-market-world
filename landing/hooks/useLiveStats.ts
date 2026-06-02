@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 export interface LiveStats {
@@ -18,10 +16,10 @@ export interface LiveStats {
   collectorIntervalH: number | null;
 }
 
-/** Consistent marketing price labels (chip + long) from the same rounded value. */
-export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = 43_000;
-  const n = indexed ?? fallback;
+/** Consistent marketing price labels from MARKET_STATS. */
+export function formatMarketingPrices(_indexed: number | null): { chip: string; long: string } {
+  const label = MARKET_STATS.pricesVerifiedLabel.replace(",", "").replace("+", "");
+  const n = parseInt(label, 10) || 45_000;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
@@ -35,13 +33,9 @@ export function refreshLabel(isES: boolean): string {
     : `every ${MARKET_STATS.pricesRefreshHours}h`;
 }
 
-/** Auto-refresh interval: re-fetch live KPIs every 5 minutes. */
-const REFRESH_MS = 5 * 60 * 1000;
-
+/** Static stats — no live dashboard fetch (dashboard lives in private backend). */
 export function useLiveStats() {
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const [stats, setStats] = useState<LiveStats>({
+  const stats: LiveStats = {
     indexed: null,
     snapshots24h: null,
     storesInCatalog: null,
@@ -52,41 +46,10 @@ export function useLiveStats() {
     avgDaily7d: null,
     moatStart: null,
     collectorStatus: null,
-    collectorIntervalH: null,
-  });
-
-  const fetchStats = () => {
-    fetch(`${API_URL}/dashboard/data`)
-      .then((r) => r.json())
-      .then((d) => {
-        const k = d.kpis || {};
-        const c = d.collector || {};
-        setStats({
-          indexed: k.total_indexed ?? k.total_snapshots ?? null,
-          snapshots24h: k.snapshots_24h ?? null,
-          storesInCatalog: k.stores_indexed ?? k.active_stores ?? null,
-          fresh24hPct: k.fresh_24h_pct ?? null,
-          coverage7dPct: k.coverage_7d_pct ?? null,
-          moatAgeHours: k.moat_age_hours ?? null,
-          totalSnapshotsAll: d.total_snapshots_all ?? null,
-          avgDaily7d: d.avg_daily_snapshots_7d ?? null,
-          moatStart: d.moat_start ?? null,
-          collectorStatus: c.status ?? null,
-          collectorIntervalH: c.interval_hours ?? MARKET_STATS.pricesRefreshHours,
-        });
-      })
-      .catch(() => {});
+    collectorIntervalH: MARKET_STATS.pricesRefreshHours,
   };
 
-  useEffect(() => {
-    fetchStats();
-    intervalRef.current = setInterval(fetchStats, REFRESH_MS);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
-
-  const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
+  const { chip: priceChip, long: priceLong } = formatMarketingPrices(null);
 
   return {
     stats,
