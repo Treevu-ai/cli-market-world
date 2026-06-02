@@ -49,10 +49,6 @@ export default function QuickstartAPI() {
           <a href="/tools" className="underline hover:text-[var(--cm-mint)]">
             {isES ? `${MARKET_STATS.mcpTools} herramientas MCP → configs` : `${MARKET_STATS.mcpTools} MCP tools → configs`}
           </a>
-          <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
-          <a href="https://cli-market-production.up.railway.app/dashboard" target="_blank" rel="noopener" className="underline hover:text-[var(--cm-mint)]">
-            {isES ? "Dashboard en vivo" : "Live dashboard"}
-          </a>
         </div>
       </div>
     </section>
