@@ -156,7 +156,7 @@ def build_prompt(agent: dict, data_slice: dict, last_section: str = "") -> str:
 
     # 4. Instruction
     parts.append("\n---\n")
-    parts.append(f"## ✏️ Instrucción\n")
+    parts.append("## ✏️ Instrucción\n")
     parts.append(f"Producí tu sección del reporte Price Pulse CLI Market ({agent['section']}).")
     parts.append("Formato: markdown. Solo tu sección, no el reporte completo.")
     parts.append("Incluí tus conclusiones en el formato especificado en tu contexto.")
@@ -217,11 +217,11 @@ def assemble_report(data: dict) -> str:
             outputs[agent["id"]] = f"*[{agent['id']}: output pendiente. Guardá la respuesta del agente en {out_path}]*"
 
     lines: list[str] = [
-        f"# CLI Market Price Pulse — Reporte Multi-Agente",
+        "# CLI Market Price Pulse — Reporte Multi-Agente",
         f"**Semana {week} · {ds}**",
         "",
-        f"*Reporte generado con 5 agentes financieros especializados.*",
-        f"*CLI Market Intelligence — Piloto comercial · Confidencial*",
+        "*Reporte generado con 5 agentes financieros especializados.*",
+        "*CLI Market Intelligence — Piloto comercial · Confidencial*",
         "",
         "---",
         "",
@@ -306,7 +306,7 @@ def report_status() -> None:
         print(f"  {agent['id']}: prompt {p_ok}  output {o_ok}")
     print(f"\nPrompts dir:  {PROMPTS_OUT}")
     print(f"Outputs dir:  {OUTPUTS_DIR}")
-    print(f"\nWorkflow:  1) --prepare  2) run agents manually  3) --assemble")
+    print("\nWorkflow:  1) --prepare  2) run agents manually  3) --assemble")
 
 
 def main() -> None:
