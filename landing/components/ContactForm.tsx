@@ -25,14 +25,10 @@ export default function ContactForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const isES = lang === "es";
-  const isNewsletter = plan === "newsletter";
-  const isNewsletter = plan === "newsletter";
-  const isNewsletter = plan === "newsletter";
-  const isNewsletter = plan === "newsletter";
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || (!isNewsletter && !useCase)) {
+    if (!email || !useCase) {
       setError(isES ? "Completa todos los campos" : "Fill all fields");
       return;
     }
@@ -103,9 +99,9 @@ export default function ContactForm({
       </div>
       <div>
         <label className="block text-sm font-medium text-white mb-1">
-          {isNewsletter ? "" : (isES ? "Qué necesitas" : "What you need")}
+          {isES ? "Qué necesitas" : "What you need"}
         </label>
-        {!isNewsletter && <textarea
+        <textarea
           value={useCase}
           onChange={(e) => setUseCase(e.target.value)}
           rows={3}
@@ -118,7 +114,7 @@ export default function ContactForm({
       </div>
       {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
       <button type="submit" disabled={loading} className="btn-mint w-full disabled:opacity-50">
-        {loading ? (isES ? "Enviando..." : "Sending...") : isNewsletter ? (isES ? "Suscribirme gratis" : "Subscribe free") : (isES ? "Contactar ventas" : "Contact sales")}
+        {loading ? (isES ? "Enviando..." : "Sending...") : (isES ? "Contactar ventas" : "Contact sales")}
       </button>
     </form>
   );
