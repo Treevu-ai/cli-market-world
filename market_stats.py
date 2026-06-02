@@ -52,14 +52,14 @@ ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF 
 PRICES_REFRESH_HOURS = 4
 
 def _live_price_label(fallback: str = "45,000+") -> str:
-    """Fetch total_indexed from live dashboard and round to nearest thousand."""
+    """Fetch total snapshots from health/db endpoint and round to nearest thousand."""
     import os
     try:
         import httpx
         api = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
-        r = httpx.get(f"{api}/dashboard/data", timeout=10)
+        r = httpx.get(f"{api}/health/db", timeout=10)
         r.raise_for_status()
-        n = r.json().get("kpis", {}).get("total_indexed", 0)
+        n = r.json().get("snapshots", 0)
         if n and n > 0:
             return f"{round(n / 1000) * 1000:,}+"
     except Exception:
