@@ -14,16 +14,23 @@ def _stores():
     return STORES
 
 def _default_store_keys():
-    from store_credentials import get_default_stores
-    return get_default_stores()
+    try:
+        from store_credentials import get_default_stores
+        return get_default_stores()
+    except ImportError:
+        # Fallback: return all stores when private package not installed
+        return tuple(_stores.keys())
 
 def _mcp_tools_count():
     from market_mcp import TOOLS
     return len(TOOLS)
 
 def _indicators_count():
-    from market_indicators import INDICATOR_DEFINITIONS
-    return len(INDICATOR_DEFINITIONS)
+    try:
+        from market_indicators import INDICATOR_DEFINITIONS
+        return len(INDICATOR_DEFINITIONS)
+    except ImportError:
+        return 0  # indicator definitions not available without backend
 
 
 # ── Canonical figures (computed at import time) ─────────────────────────────
