@@ -18,7 +18,7 @@ from datetime import datetime, timezone, timedelta
 import httpx
 
 from market_core import (
-    STORES, LINES, DB_FILE, logger as log,
+    STORES, LINES, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
