@@ -27,7 +27,7 @@ export default function Hero() {
       </div>
 
       <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 hidden md:block">
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--cm-on-surface-variant)]/60 -rotate-90 origin-left block whitespace-nowrap">
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--cm-on-surface-variant)]/60 -rotate-90 origin-left block whitespace-nowrap">
           {isES ? "COMERCIO" : "COMMERCE"}
         </span>
       </div>
@@ -44,12 +44,12 @@ export default function Hero() {
             : `One API across ${MARKET_STATS.retailersDefined} retailers in ${MARKET_STATS.countries} countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
         </motion.p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px] mx-auto">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[640px] mx-auto">
           <a
             href="https://pypi.org/project/cli-market/"
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
-            <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
               {isES ? "Para builders / agentes" : "For builders / agents"}
             </span>
             <span className="text-base font-semibold">
@@ -62,7 +62,7 @@ export default function Hero() {
             href="#retailers"
             className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
-            <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
               {isES ? "Para retailers" : "For retailers"}
             </span>
             <span className="text-base font-semibold text-white">
@@ -72,21 +72,7 @@ export default function Hero() {
               {isES ? "30 segundos · sin código" : "30 seconds · no code"}
             </span>
           </a>
-
-          <a
-            href="#newsletter"
-            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
-          >
-            <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
-              {isES ? "Newsletter" : "Newsletter"}
-            </span>
-            <span className="text-base font-semibold text-white">
-              {isES ? "Price Pulse semanal →" : "Weekly Price Pulse →"}
-            </span>
-            <span className="text-xs text-[var(--cm-on-surface-variant)]">
-              {isES ? "Datos de mercado · gratis" : "Market data · free"}
-            </span>
-          </a>
+        </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
           {chips.map((c) => (
@@ -110,7 +96,7 @@ export default function Hero() {
             height={540}
             loading="lazy"
           />
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono text-center">
+          <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono text-center">
             {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
           </p>
         </div>
