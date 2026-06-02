@@ -14,15 +14,15 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exige su propia autenticación, su propia lógica de búsqueda y no comparten carrito — así que los agentes fallan antes de la primera consulta.
 
-**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **60 retailers (30 verificados)** en **8 países**. Un único esquema JSON.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **66 retailers (66 verificados)** en **11 países**. Un único esquema JSON.
 
-- 🌍 **60 retailers (30 verificados) · 8 países · 3 plataformas · 43 herramientas MCP · 34 indicadores**
-- 💰 **Más de 39 000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 🌍 **66 retailers (66 verificados) · 11 países · 3 plataformas · 43 herramientas MCP · 0 indicadores**
+- 💰 **Más de 45,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + QR (Yape / Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
 
-- 🔎 **Busca** cualquier producto en 60 retailers (30 verificados) de 8 países
+- 🔎 **Busca** cualquier producto en 66 retailers (66 verificados) de 11 países
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas
@@ -72,15 +72,15 @@ market enrichment --refresh -c PE
 
 AI agents still can't shop in the real world. Every retailer means separate auth, separate search logic, no shared cart — so agents fail before the first query.
 
-**CLI Market fixes that.** One `pip install`. One API call across **60 retailers (30 verified)** in **8 countries**. One JSON schema.
+**CLI Market fixes that.** One `pip install`. One API call across **66 retailers (66 verified)** in **11 countries**. One JSON schema.
 
-- 🌍 **60 retailers (30 verified) · 8 countries · 3 platforms · 43 MCP tools · 34 indicators**
-- 💰 **43,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 🌍 **66 retailers (66 verified) · 11 countries · 3 platforms · 43 MCP tools · 0 indicators**
+- 💰 **45,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + QR (Yape / Plin)** checkout built in
 
 #### ✨ Why CLI Market?
 
-- 🔎 **Search** any product across 60 retailers (30 verified) in 8 countries
+- 🔎 **Search** any product across 66 retailers (66 verified) in 11 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
@@ -135,7 +135,7 @@ All six capabilities are backed by the same 43,000+ verified shelf prices, refre
 
 ---
 
-## 🔧 43 MCP tools · 34 indicators
+## 🔧 43 MCP tools · 0 indicators
 
 `market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_indicators` `market_scores` `market_intel_refresh` `market_enrichment` `market_enrichment_subcategories` `market_enrichment_refresh` `market_analytics_indicators` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan` `market_stock` `market_notify` `market_brands` `market_favorites` `market_exchange` `market_delivery`
 
