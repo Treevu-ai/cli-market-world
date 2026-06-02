@@ -59,23 +59,6 @@ export default function Hero() {
           </a>
 
           <a
-            href="https://cli-market-production.up.railway.app/dashboard"
-            target="_blank"
-            rel="noopener"
-            className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-mint)]">
-              {isES ? "Para equipos comerciales" : "For commercial teams"}
-            </span>
-            <span className="text-base font-semibold text-white">
-              {isES ? "Dashboard en vivo →" : "Live dashboard →"}
-            </span>
-            <span className="text-xs text-[var(--cm-on-surface-variant)]">
-              {isES ? `${MARKET_STATS.indicatorsCount} indicadores · fuentes públicas` : `${MARKET_STATS.indicatorsCount} indicators · public sources`}
-            </span>
-          </a>
-
-          <a
             href="#retailers"
             className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >

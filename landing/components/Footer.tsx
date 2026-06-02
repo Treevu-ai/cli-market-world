@@ -82,14 +82,6 @@ export default function Footer() {
           <a href="#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             FAQ
           </a>
-          <a
-            href="https://cli-market-production.up.railway.app/dashboard"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
-          >
-            Dashboard
-          </a>
         </div>
       </div>
     </footer>

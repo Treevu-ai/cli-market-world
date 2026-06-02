@@ -201,15 +201,9 @@ export default function ScaleCoverageSection() {
           ))}
         </div>
 
-        <a
-          href={`${API_URL}/dashboard`}
-          target="_blank"
-          rel="noopener"
-          className="btn-mint"
-        >
-          {isES ? "Ver dashboard en vivo" : "View live dashboard"}
-          <span className="opacity-60 tabular-nums ml-1">({priceChip})</span>
-        </a>
+        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-4">
+          {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}
+        </p>
       </div>
     </section>
   );
