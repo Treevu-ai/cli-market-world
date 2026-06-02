@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RetailerApplyForm from "@/components/RetailerApplyForm";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function RetailersPage() {
   return (
@@ -22,7 +23,7 @@ export default function RetailersPage() {
               { "@type": "Question", name: "What platforms does CLI Market support?",
                 acceptedAnswer: { "@type": "Answer", text: "VTEX, Shopify, and Magento. We connect via public catalog APIs — zero development required from your side." }},
               { "@type": "Question", name: "How many retailers are already on CLI Market?",
-                acceptedAnswer: { "@type": "Answer", text: "60 retailers across 8 countries (30 verified active): Peru, Argentina, Mexico, Colombia, Chile, Brazil, Italy, and France. 39,000+ real prices refreshed every 8 hours." }},
+                acceptedAnswer: { "@type": "Answer", text: `${MARKET_STATS.retailersDefined} retailers across ${MARKET_STATS.countries} countries (${MARKET_STATS.retailersVerified} verified active): ${MARKET_STATS.countryCodes.join(", ")}. ${MARKET_STATS.pricesVerifiedLabel} real prices refreshed every ${MARKET_STATS.pricesRefreshHours} hours.` }},
               { "@type": "Question", name: "What is GEO and why does my store need it?",
                 acceptedAnswer: { "@type": "Answer", text: "GEO (Generative Engine Optimization) is the equivalent of SEO for AI agents. When AI assistants like ChatGPT and Claude search for products, they use structured data indexes like CLI Market. If your store isn't indexed, you're invisible to the fastest-growing shopping channel." }},
             ],
@@ -49,9 +50,9 @@ export default function RetailersPage() {
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20 landing-section-alt">
           <div className="max-w-[720px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { n: "30", l: "Retailers live" },
-              { n: "39K+", l: "Prices indexed" },
-              { n: "8", l: "Countries" },
+              { n: String(MARKET_STATS.retailersVerified), l: "Retailers live" },
+              { n: MARKET_STATS.pricesVerifiedLabel, l: "Prices indexed" },
+              { n: String(MARKET_STATS.countries), l: "Countries" },
               { n: "30s", l: "To integrate" },
             ].map((s) => (
               <div key={s.l}>
@@ -68,7 +69,7 @@ export default function RetailersPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { t: "Agent-driven traffic", d: "AI agents search and compare autonomously. Your products appear in their results — just like SEO, but for the agent economy. Every day you're not here, your competitor is.", i: "🤖" },
-                { t: "Competitive edge", d: "See how your prices compare to 30 retailers in real time. Track competitors, adjust pricing, and never lose a sale to an unseen rival.", i: "📊" },
+                { t: "Competitive edge", d: `See how your prices compare to ${MARKET_STATS.retailersVerified} retailers in real time. Track competitors, adjust pricing, and never lose a sale to an unseen rival.`, i: "📊" },
                 { t: "Zero effort, zero cost", d: "Generate a read-only API token. 30 seconds. No SDK, no integration, no maintenance. Free forever. MIT.", i: "⚡" },
               ].map((b) => (
                 <div key={b.t} className="card-cyber header-strip p-6">
