@@ -107,8 +107,12 @@ app.add_middleware(
 
 from routers.admin import router as admin_router
 from routers.agent import router as agent_router
+from routers.analytics import router as analytics_router
 from routers.auth import router as auth_router
 from routers.cart import router as cart_router
+from routers.data_v1 import router as data_v1_router
+from routers.dashboard import router as dashboard_router
+from routers.data_export import router as data_export_router
 from routers.health import router as health_router
 from routers.intel import router as intel_router
 from routers.media import router as media_router
@@ -116,6 +120,7 @@ from routers.misc import router as misc_router
 from routers.orders import router as orders_router
 from routers.payments import router as payments_router
 from routers.retailers import router as retailers_router
+from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 
 # Order doesn't matter functionally — each router declares its own paths.
@@ -123,8 +128,12 @@ from routers.search import router as search_router
 for r in (
     admin_router,
     agent_router,
+    analytics_router,
     auth_router,
     cart_router,
+    dashboard_router,
+    data_v1_router,
+    data_export_router,
     health_router,
     intel_router,
     media_router,
@@ -132,6 +141,7 @@ for r in (
     orders_router,
     payments_router,
     retailers_router,
+    retailer_admin_router,
     search_router,
 ):
     app.include_router(r)
