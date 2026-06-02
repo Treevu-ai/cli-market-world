@@ -59,13 +59,13 @@ export default function SideNav() {
             className="group relative flex items-center z-10" aria-label={isES ? es : en}>
             <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
               active === id ? "bg-[var(--cm-mint)] scale-125 shadow-[0_0_6px_var(--cm-mint)]" : "bg-white/15 group-hover:bg-white/30"}`} />
-            <span className={`absolute left-6 font-mono text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 group-hover:left-7 transition-all duration-200 whitespace-nowrap ${
+            <span className={`absolute left-6 font-mono text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 group-hover:left-7 transition-all duration-200 whitespace-nowrap ${
               active === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)]"}`}>
               {isES ? es : en}
             </span>
           </button>
         ))}
-        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-[10px] font-mono text-[var(--cm-on-surface-variant)] hover:text-white transition-colors z-10">
+        <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-xs font-mono text-[var(--cm-on-surface-variant)] hover:text-white transition-colors z-10">
           {isES ? "EN" : "ES"}
         </button>
       </div>
