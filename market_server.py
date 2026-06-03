@@ -106,6 +106,7 @@ app.add_middleware(
 # ── Routers ──────────────────────────────────────────────────────────────────
 
 from routers.admin import router as admin_router
+from routers.alerts import router as alerts_router
 from routers.agent import router as agent_router
 from routers.analytics import router as analytics_router
 from routers.auth import router as auth_router
@@ -128,6 +129,7 @@ from routers.search import router as search_router
 for r in (
     admin_router,
     agent_router,
+    alerts_router,
     analytics_router,
     auth_router,
     cart_router,

@@ -811,6 +811,16 @@ async def run_collection(stores, queries):
                     errs.append(f"{store}: {exc}")
         sq_run_end(db, rid, ok, total, json.dumps(errs[:100]))
         db.commit()
+
+    if total > 0:
+        try:
+            from market_alerts import evaluate_alerts
+            fired = evaluate_alerts()
+            if fired:
+                logger.info("Alerts: %d fired after collection cycle", fired)
+        except Exception as _ae:
+            logger.warning("Alert evaluation failed (non-fatal): %s", _ae)
+
     return {"stores_attempted":len(sl),"stores_succeeded":ok,"prices_collected":total,"errors":len(errs)}
 
 # ── Status / Report ─────────────────────────────────────────────────────────
