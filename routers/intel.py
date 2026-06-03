@@ -17,9 +17,10 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from market_core import STORES, get_db, price_to_usd
+from server_deps import require_api_key, require_pro
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
     get_indicator_catalog,
@@ -34,8 +35,9 @@ router = APIRouter(prefix="/v1/intel", tags=["intelligence"])
 # ── Catalog ────────────────────────────────────────────────────────────────────
 
 @router.get("/indicators")
-def list_indicators():
+def list_indicators(authorization: str | None = Header(None)):
     """Return the full indicator catalog (34 definitions)."""
+    require_api_key(authorization)
     db = get_db()
     try:
         catalog = get_indicator_catalog(db)
@@ -49,8 +51,10 @@ def get_indicator(
     key: str,
     country: str | None = Query(None),
     line: str | None = Query(None),
+    authorization: str | None = Header(None),
 ):
     """Single indicator definition + latest values (optionally scoped)."""
+    require_api_key(authorization)
     db = get_db()
     try:
         catalog = get_indicator_catalog(db)
@@ -70,8 +74,10 @@ def get_indicator(
 def list_scores(
     country: str | None = Query(None),
     line: str | None = Query(None),
+    authorization: str | None = Header(None),
 ):
     """Composite scores derived from indicators (14 scores)."""
+    require_api_key(authorization)
     db = get_db()
     try:
         return get_scores(db, country=country, line=line)
@@ -86,8 +92,10 @@ def get_inflation(
     country: str | None = Query(None),
     line: str | None = Query(None),
     days: int = Query(7, ge=1, le=90),
+    authorization: str | None = Header(None),
 ):
     """Price change over `days` by line + currency, from price_snapshots."""
+    require_api_key(authorization)
     db = get_db()
     try:
         now = datetime.now(timezone.utc)
@@ -171,8 +179,10 @@ def get_alerts(
     store: str | None = Query(None),
     threshold_pct: float = Query(5.0, ge=0.1, le=100.0),
     limit: int = Query(10, ge=1, le=50),
+    authorization: str | None = Header(None),
 ):
     """Alert when a product's price changed beyond threshold_pct."""
+    require_api_key(authorization)
     db = get_db()
     try:
         params: list = [f"%{product}%"]
@@ -199,6 +209,7 @@ def get_alerts(
 def refresh_indicators(
     country: str | None = Query(None),
     line: str | None = Query(None),
+    authorization: str | None = Header(None),
 ):
     """Trigger indicator recomputation from price_snapshots data.
 
@@ -206,6 +217,7 @@ def refresh_indicators(
     from price_snapshots. External indicators (World Bank, IMF, etc.) require the
     collector backend and are returned as 0 when not available.
     """
+    require_pro(authorization)
     db = get_db()
     try:
         internal_written = _refresh_internal_indicators(db, country=country, line=line)
@@ -226,8 +238,10 @@ def refresh_indicators(
 @router.post("/enrichment/refresh")
 def refresh_enrichment(
     country: str = Query("PE"),
+    authorization: str | None = Header(None),
 ):
     """Refresh enrichment indicators only (OFF, Wiki, Open-Meteo, etc.)."""
+    require_pro(authorization)
     db = get_db()
     try:
         # Enrichment indicators currently come from the collector backend.
@@ -249,8 +263,10 @@ def refresh_enrichment(
 @router.get("/enrichment")
 def get_enrichment(
     country: str | None = Query(None),
+    authorization: str | None = Header(None),
 ):
     """Enrichment indicators: OFF, Wiki, Open-Meteo, World Bank food CPI."""
+    require_api_key(authorization)
     db = get_db()
     try:
         values = get_latest_values(db, country=country, limit=100)
@@ -268,8 +284,10 @@ def get_enrichment(
 @router.get("/enrichment/subcategories")
 def get_enrichment_subcategories(
     country: str = Query("PE"),
+    authorization: str | None = Header(None),
 ):
     """Subcategory-level enrichment (10 canasta items × Wiki momentum)."""
+    require_api_key(authorization)
     db = get_db()
     try:
         values = get_latest_values(db, country=country, limit=200)
