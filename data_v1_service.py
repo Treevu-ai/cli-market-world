@@ -6,7 +6,7 @@ from dashboard_quality import QUALITY_FILTERS
 from market_core import STORES
 from market_db import price_snapshots_has_confidence
 from market_spread import build_spread_analytics, find_median_outliers
-from price_confidence import discount_is_scrape_error, spread_confidence
+from backend_interface import discount_is_scrape_error, spread_confidence
 
 MAX_LIMIT = 500
 DEFAULT_LIMIT = 50

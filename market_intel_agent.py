@@ -21,11 +21,12 @@ import os
 
 import httpx
 
-from data_v1_service import query_dispersion, query_prices
-from market_indicators import (
+from backend_interface import (
     compute_internal_inflation_avg,
     compute_staple_price_momentum,
     get_latest_values,
+    query_dispersion,
+    query_prices,
 )
 
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
