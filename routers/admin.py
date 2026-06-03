@@ -4,6 +4,7 @@ Endpoints:
   GET  /admin/debug-fetch     Test fetch_store + product_from_json for one store/query
   POST /admin/collect         Trigger a price collection run synchronously
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
+  POST /v1/admin/set-tier     Set a user's subscription tier (free|pro|enterprise)
 
 Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicly.
 """
@@ -13,9 +14,17 @@ from __future__ import annotations
 import time
 
 import httpx
-from fastapi import APIRouter, Body, Header
+from fastapi import APIRouter, Body, Header, HTTPException
 
-from market_core import STORES, fetch_store, product_from_json
+from market_core import (
+    STORES,
+    db_get_subscription,
+    db_get_users,
+    db_set_subscription,
+    fetch_store,
+    product_from_json,
+)
+from market_billing import TIERS
 from server_deps import require_admin
 
 router = APIRouter(prefix="", tags=["admin"])
@@ -32,6 +41,32 @@ async def debug_fetch(
     raw = await fetch_store(store, query, page=1, limit=3)
     products = [product_from_json(p, store) for p in raw[:3]]
     return {"store": store, "query": query, "results": len(raw), "products": products}
+
+
+@router.post("/v1/admin/set-tier")
+def admin_set_tier(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Set a user's subscription tier. Admin-only (MARKET_API_TOKEN).
+
+    Body: {"username": "...", "tier": "free|pro|enterprise"}
+    Use for manual Pro grants, comps, refunds, and testing without PayPal.
+    """
+    require_admin(authorization)
+    username = (body.get("username") or "").strip()
+    tier = (body.get("tier") or "").strip().lower()
+    if not username:
+        raise HTTPException(status_code=400, detail="username required")
+    if tier not in TIERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"tier must be one of {sorted(TIERS)}",
+        )
+    if username not in db_get_users():
+        raise HTTPException(status_code=404, detail=f"user not found: {username}")
+    db_set_subscription(username, tier)
+    return {"username": username, "subscription": db_get_subscription(username)}
 
 
 @router.post("/admin/collect")
