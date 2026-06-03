@@ -18,6 +18,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header, HTTPException, Query
+from pydantic import BaseModel, field_validator
 
 from market_core import STORES, get_db, price_to_usd
 from server_deps import require_api_key, require_pro
@@ -54,6 +55,43 @@ def _catalog(db) -> list[dict]:
         return get_indicator_catalog(db)
     except TypeError:
         return get_indicator_catalog()
+
+
+# ── Conversational agent ─────────────────────────────────────────────────────
+
+class AskRequest(BaseModel):
+    question: str
+
+    @field_validator("question")
+    @classmethod
+    def _clean(cls, v: str) -> str:
+        v = (v or "").strip()[:500]
+        if not v:
+            raise ValueError("La pregunta no puede estar vacía")
+        return v
+
+
+@router.post("/ask")
+def intel_ask(body: AskRequest, authorization: str | None = Header(None)):
+    """Natural-language Q&A over the data moat. Pro-only (consumes LLM tokens).
+
+    Runs a Claude tool-use loop against the live intelligence functions
+    (inflation, indicators, prices, dispersion, staple momentum) and returns a
+    grounded answer. Returns 503 if the agent isn't configured on the server.
+    """
+    require_pro(authorization)
+    from market_intel_agent import AgentUnavailable, ask_intel
+
+    db = get_db()
+    try:
+        return ask_intel(body.question, db)
+    except AgentUnavailable as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Intel agent unavailable: {e}",
+        )
+    finally:
+        db.close()
 
 
 # ── Catalog ────────────────────────────────────────────────────────────────────
