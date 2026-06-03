@@ -525,3 +525,103 @@ def test_admin_disabled_without_token(monkeypatch):
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "")
     r = client.get("/admin/debug-fetch")
     assert r.status_code == 503
+
+
+# ── Conversational intel agent (/v1/intel/ask) ──────────────────────────────
+
+def test_intel_ask_requires_auth():
+    r = client.post("/v1/intel/ask", json={"question": "inflación?"})
+    assert r.status_code == 401
+
+
+def test_intel_ask_free_tier_forbidden():
+    from market_core import db_set_subscription
+
+    db_set_subscription("admin", "free")
+    r = client.post(
+        "/v1/intel/ask",
+        headers={"Authorization": "Bearer test-token-123"},
+        json={"question": "¿inflación en PE?"},
+    )
+    assert r.status_code == 403
+
+
+def test_intel_ask_empty_question_rejected():
+    from market_core import db_set_subscription
+
+    db_set_subscription("admin", "pro")
+    r = client.post(
+        "/v1/intel/ask",
+        headers={"Authorization": "Bearer test-token-123"},
+        json={"question": "   "},
+    )
+    assert r.status_code == 422
+
+
+def test_intel_ask_unavailable_without_api_key(monkeypatch):
+    from market_core import db_set_subscription
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    db_set_subscription("admin", "pro")
+    r = client.post(
+        "/v1/intel/ask",
+        headers={"Authorization": "Bearer test-token-123"},
+        json={"question": "¿inflación en PE?"},
+    )
+    assert r.status_code == 503
+
+
+def test_intel_ask_runs_tool_loop(monkeypatch):
+    """Pro user + mocked LLM: tool_use → tool_result → final answer."""
+    from market_core import db_set_subscription
+    import market_intel_agent as agent
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    db_set_subscription("admin", "pro")
+
+    class FakeResp:
+        status_code = 200
+
+        def __init__(self, payload):
+            self._p = payload
+
+        def json(self):
+            return self._p
+
+    class FakeClient:
+        def __init__(self, *a, **k):
+            self.calls = 0
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def post(self, url, headers=None, json=None):
+            self.calls += 1
+            if self.calls == 1:
+                return FakeResp({
+                    "stop_reason": "tool_use",
+                    "content": [{
+                        "type": "tool_use", "id": "t1",
+                        "name": "get_inflation", "input": {"country": "PE", "days": 30},
+                    }],
+                })
+            return FakeResp({
+                "stop_reason": "end_turn",
+                "content": [{"type": "text", "text": "Inflación observada en PE: 4.2% (prueba)."}],
+            })
+
+    monkeypatch.setattr(agent.httpx, "Client", FakeClient)
+    monkeypatch.setattr(agent, "_dispatch", lambda name, args, db: {"avg_inflation_pct": 4.2})
+
+    r = client.post(
+        "/v1/intel/ask",
+        headers={"Authorization": "Bearer test-token-123"},
+        json={"question": "¿cuál fue la inflación en PE?"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert "get_inflation" in data["tools_used"]
+    assert "PE" in data["answer"]
