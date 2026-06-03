@@ -21,7 +21,8 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 from market_core import STORES, get_db, price_to_usd
-from server_deps import require_api_key, require_pro
+from market_billing import db_get_subscription
+from server_deps import require_api_key, require_pro, require_starter
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
     get_indicator_catalog,
@@ -71,20 +72,78 @@ class AskRequest(BaseModel):
         return v
 
 
+def _check_agent_quota(username: str, db) -> None:
+    """Enforce monthly agent query quota for Starter tier (50/month).
+
+    Pro and Enterprise have agent_queries_month == -1 (unlimited).
+    Free has 0 — blocked upstream by require_starter.
+    """
+    sub = db_get_subscription(username)
+    monthly_limit = sub.get("agent_queries_month", 0)
+    if monthly_limit == -1:
+        return  # unlimited
+    if monthly_limit == 0:
+        raise HTTPException(status_code=403, detail="Agent access not included in your plan.")
+    from datetime import timezone as tz
+    now = datetime.now(tz.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    row = db.execute(
+        "SELECT COUNT(*) as n FROM agent_queries WHERE username=? AND queried_at>=?",
+        (username, month_start),
+    ).fetchone()
+    used = row["n"] if row else 0
+    remaining = monthly_limit - used
+    if remaining <= 0:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Monthly agent quota exhausted ({monthly_limit} queries/month on Starter). "
+                "Upgrade to Pro for unlimited access: /billing/paypal"
+            ),
+        )
+
+
+def _record_agent_query(username: str, db) -> int:
+    """Log an agent query and return remaining quota (-1 if unlimited)."""
+    from datetime import timezone as tz
+    sub = db_get_subscription(username)
+    monthly_limit = sub.get("agent_queries_month", 0)
+    db.execute(
+        "INSERT INTO agent_queries (username, queried_at) VALUES (?, ?)",
+        (username, datetime.now(tz.utc).isoformat()),
+    )
+    db.commit()
+    if monthly_limit == -1:
+        return -1
+    now = datetime.now(tz.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    row = db.execute(
+        "SELECT COUNT(*) as n FROM agent_queries WHERE username=? AND queried_at>=?",
+        (username, month_start),
+    ).fetchone()
+    used = row["n"] if row else 1
+    return max(0, monthly_limit - used)
+
+
 @router.post("/ask")
 def intel_ask(body: AskRequest, authorization: str | None = Header(None)):
-    """Natural-language Q&A over the data moat. Pro-only (consumes LLM tokens).
+    """Natural-language Q&A over the data moat. Starter+ (50 queries/month) or Pro/Enterprise (unlimited).
 
     Runs a Claude tool-use loop against the live intelligence functions
     (inflation, indicators, prices, dispersion, staple momentum) and returns a
     grounded answer. Returns 503 if the agent isn't configured on the server.
     """
-    require_pro(authorization)
+    username = require_starter(authorization)
     from market_intel_agent import AgentUnavailable, ask_intel
 
     db = get_db()
     try:
-        return ask_intel(body.question, db)
+        _check_agent_quota(username, db)
+        result = ask_intel(body.question, db)
+        remaining = _record_agent_query(username, db)
+        if remaining != -1:
+            result["agent_queries_remaining"] = remaining
+        return result
     except AgentUnavailable as e:
         raise HTTPException(
             status_code=503,
