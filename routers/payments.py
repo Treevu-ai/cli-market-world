@@ -17,7 +17,7 @@ Endpoints:
   GET  /checkout/rates      FX rates with PEN base (Wise; fallback if down)
   POST /billing/request-pro  Email payment link (manual Pro — default)
   POST /billing/paypal      PayPal Subscription (optional automation)
-  POST /billing/checkout    Stripe Checkout for Pro subscription
+  POST /billing/checkout    Stripe Checkout — DISABLED (no activation webhook yet)
   GET  /paypal-status       PayPal config diagnostic
 """
 
@@ -528,25 +528,17 @@ async def billing_paypal(authorization: str | None = Header(None)):
 
 @router.post("/billing/checkout")
 def billing_checkout(authorization: str | None = Header(None)):
-    """Stripe Checkout for Pro subscription upgrade."""
-    username = require_user(authorization)
-    stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
-    if not stripe_key:
-        raise HTTPException(status_code=501, detail="Stripe not configured")
-    try:
-        import stripe
+    """Stripe Checkout — DISABLED until the activation loop is complete.
 
-        stripe.api_key = stripe_key
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{"price": os.getenv("STRIPE_PRICE_PRO", "price_pro"), "quantity": 1}],
-            mode="subscription",
-            success_url="https://cli-market.dev?upgraded=true",
-            cancel_url="https://cli-market.dev?upgraded=false",
-            client_reference_id=username,
-        )
-        return {"url": session.url}
-    except ImportError:
-        raise HTTPException(status_code=501, detail="pip install stripe")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    Intentionally disabled: a Stripe Checkout session has no corresponding
+    webhook to run ``db_set_subscription(username, "pro")`` on
+    ``checkout.session.completed``. Re-enabling it without that handler would
+    charge customers without granting Pro. Use PayPal (/billing/paypal), whose
+    BILLING.SUBSCRIPTION.ACTIVATED webhook closes the loop, until the Stripe
+    webhook + ``stripe`` dependency + real price id are wired up.
+    """
+    require_user(authorization)
+    raise HTTPException(
+        status_code=501,
+        detail="Stripe checkout is temporarily unavailable. Use PayPal at /billing/paypal for Pro.",
+    )
