@@ -23,6 +23,7 @@ from market_core import (
     db_get_users,
     db_validate_api_key,
 )
+from market_billing import db_get_subscription
 
 
 # ── Auth tokens ───────────────────────────────────────────────────────────────
@@ -129,6 +130,48 @@ def require_admin(authorization: str | None) -> str:
     if token != DEFAULT_TOKEN:
         raise HTTPException(status_code=401, detail="Admin token invalid")
     return "admin"
+
+
+def require_api_key(authorization: str | None) -> str:
+    """Enforce API key auth + per-tier rate limiting on data endpoints.
+
+    Accepts: sk-... API key or Bearer token (session token / MARKET_API_TOKEN).
+    Applies the caller's subscription tier limits (free: 60/min, pro: 300/min).
+    Returns the resolved username.
+    Raises 401 if no credentials, 429 if rate limited.
+    """
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail=(
+                "API key required. Register at /auth/register to get a free key "
+                "or upgrade to Pro at /billing/paypal."
+            ),
+        )
+    username = auth_user(authorization.replace("Bearer ", ""))
+    sub = db_get_subscription(username)
+    check_rate_limit_sqlite(
+        username,
+        window_secs=RATE_LIMIT_WINDOW,
+        max_req=sub["req_limit_min"],
+        daily_max=sub["req_limit_day"],
+    )
+    return username
+
+
+def require_pro(authorization: str | None) -> str:
+    """Require Pro (or higher) tier for premium data endpoints."""
+    username = require_api_key(authorization)
+    sub = db_get_subscription(username)
+    if sub.get("tier", "free") not in ("pro", "enterprise"):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "This endpoint requires CLI Market Pro ($49/mo). "
+                "Run: market upgrade  or visit /billing/paypal"
+            ),
+        )
+    return username
 
 
 def require_checkout_access(username: str) -> None:
