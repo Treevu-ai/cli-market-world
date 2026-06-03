@@ -57,6 +57,7 @@ TIERS = {
 def _migrate_payment_schema(db) -> None:
     """Add payment columns/tables on existing deployments."""
     if market_core.USE_PG:
+        db.execute("SET lock_timeout = '5s'")
         db.execute("""
             CREATE TABLE IF NOT EXISTS subscription_requests (
                 id TEXT PRIMARY KEY,
