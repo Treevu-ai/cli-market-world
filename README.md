@@ -59,7 +59,7 @@ market enrichment --refresh -c PE
 | **Checkout** | — | — | ✅ (tras activacion) | ✅ |
 | **Exportar** | — | JSON | JSON/CSV | ✅ |
 | **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 |
-| **Trial** | — | 14 dias | 14 dias | — |
+| **Trial** | — | 14 dias gratis | 14 dias gratis | — |
 | **Anual** | — | $90/ano (S/340) | $490/ano (S/1,850) | — |
 
 > 📄 Posicionamiento en español (API / landing / ventas): [`../cli-market-content/strategy/api-positioning-es.md`](../cli-market-content/strategy/api-positioning-es.md)
@@ -119,7 +119,7 @@ market enrichment --refresh -c PE
 | **Checkout** | — | — | ✅ (after email activation) | ✅ |
 | **Export** | — | JSON | JSON/CSV | ✅ |
 | **Support** | Community | Email 48h | Email 4h | 24/7 |
-| **Trial** | — | 14 days | 14 days | — |
+| **Trial** | — | 14 days free | 14 days free | — |
 | **Annual** | — | $90/yr (S/340) | $490/yr (S/1,850) | — |
 
 ---
