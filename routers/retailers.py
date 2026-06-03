@@ -130,7 +130,7 @@ def contact_request(body: dict):
     db.execute(
         """
         INSERT INTO contacts (chat_id, first_name, username, last_message, created_at, updated_at)
-        VALUES (?, ?, ?, ?, NOW(), NOW())
+        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
         """,
         (chat_id, plan, email, f"[{plan}] {use_case[:2000]}"),
     )

@@ -4,14 +4,35 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Header, HTTPException
 
-from retailer_onboarding import (
-    approve_retailer_application,
-    db_get_retailer_application,
-    db_list_retailer_applications,
-    db_public_application,
-    guess_store_id,
-    reject_retailer_application,
-)
+try:
+    from retailer_onboarding import (
+        approve_retailer_application,
+        db_get_retailer_application,
+        db_list_retailer_applications,
+        db_public_application,
+        guess_store_id,
+        reject_retailer_application,
+    )
+    _RETAILER_ONBOARDING_AVAILABLE = True
+except ImportError:
+    # retailer_onboarding lives in the private cli-market-backend package.
+    # When it's not installed (e.g. local/OSS checkouts), the app must still
+    # boot — these admin endpoints return 503 instead of crashing at import.
+    _RETAILER_ONBOARDING_AVAILABLE = False
+
+    def _unavailable(*_args, **_kwargs):
+        raise HTTPException(
+            status_code=503,
+            detail="retailer onboarding unavailable (private backend not installed)",
+        )
+
+    approve_retailer_application = _unavailable
+    db_get_retailer_application = _unavailable
+    db_list_retailer_applications = _unavailable
+    db_public_application = _unavailable
+    guess_store_id = _unavailable
+    reject_retailer_application = _unavailable
+
 from server_deps import require_admin
 from store_credentials import credential_summary, get_default_stores, invalidate_credential_cache
 
