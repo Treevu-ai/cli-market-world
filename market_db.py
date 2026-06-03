@@ -205,6 +205,10 @@ def price_snapshots_has_confidence(db: _DB) -> bool:
 
 def init_db_pg(db: _DB) -> None:
     """PostgreSQL schema."""
+    # Fail fast on lock contention instead of blocking the deployment indefinitely.
+    # Migrations are non-fatal (wrapped in try/except by callers), so a 5s timeout
+    # lets the app start even if a table already has an exclusive lock held.
+    db.execute("SET lock_timeout = '5s'")
     db.execute("""
         CREATE TABLE IF NOT EXISTS contacts (
             chat_id TEXT PRIMARY KEY,
