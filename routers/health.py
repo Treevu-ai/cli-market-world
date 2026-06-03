@@ -289,7 +289,7 @@ def health_stats():
     db = get_db()
     total = db.execute("SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0").fetchone()["n"]
     snapshots_24h = db.execute(
-        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= datetime('now', '-1 day')"
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= NOW() - INTERVAL '1 day'"
     ).fetchone()["n"]
     stores_indexed = db.execute(
         "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
