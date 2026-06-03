@@ -28,7 +28,6 @@ from backend_interface import (
     get_indicator_catalog,
     get_latest_values,
     get_scores,
-    _SCORES_AVAILABLE,
 )
 
 logger = logging.getLogger("market.server").getChild("intel")
