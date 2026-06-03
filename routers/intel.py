@@ -23,26 +23,13 @@ from pydantic import BaseModel, field_validator
 from market_core import STORES, get_db, price_to_usd
 from market_billing import db_get_subscription
 from server_deps import require_api_key, require_pro, require_starter
-from market_indicators import (
+from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
     get_indicator_catalog,
     get_latest_values,
+    get_scores,
+    _SCORES_AVAILABLE,
 )
-
-# get_scores lives in the private backend (cli-market-backend). When that package
-# isn't installed, the /scores endpoint degrades to 503 instead of crashing the
-# whole app at import time (which is why this router was historically unmounted).
-try:
-    from market_indicators import get_scores  # type: ignore
-    _SCORES_AVAILABLE = True
-except ImportError:
-    _SCORES_AVAILABLE = False
-
-    def get_scores(*_args, **_kwargs):  # type: ignore
-        raise HTTPException(
-            status_code=503,
-            detail="Composite scores unavailable (private indicators backend not installed).",
-        )
 
 logger = logging.getLogger("market.server").getChild("intel")
 router = APIRouter(prefix="/v1/intel", tags=["intelligence"])

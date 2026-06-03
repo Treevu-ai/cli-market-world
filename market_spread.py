@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 
 from market_units import is_standard_canasta_pack, price_per_base_unit
-from price_confidence import spread_public_ok
+from backend_interface import spread_public_ok
 
 CANASTA_ITEMS = [
     "leche", "arroz", "aceite", "azucar", "huevos", "pan", "cafe", "pollo", "queso", "jabon",

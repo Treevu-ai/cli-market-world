@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Header, Query
 
-from data_v1_service import (
+from backend_interface import (
     build_coverage_matrix,
     query_dispersion,
     query_flagged,
