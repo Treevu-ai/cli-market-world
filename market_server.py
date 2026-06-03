@@ -75,6 +75,13 @@ async def lifespan(_app: FastAPI):
         logger.warning("JSON migration skipped: %s", e)
     for warning in production_payment_config_warnings():
         logger.warning("Payment security: %s", warning)
+    # Watchdog: alert ops if we started on a SQLite fallback or with a stale/
+    # empty moat (non-fatal, cooldown-gated).
+    try:
+        from market_health_alert import alert_if_unhealthy
+        alert_if_unhealthy(source="api-startup")
+    except Exception as e:
+        logger.warning("Moat health check failed (non-fatal): %s", e)
     yield
 
 

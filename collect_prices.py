@@ -929,6 +929,13 @@ async def main():
             finally:
                 if USE_PG and pool and lock_ok:
                     await pg_release_daemon_lock(pool)
+            # Watchdog: alert ops if the moat is stale, empty, or on SQLite
+            # fallback after this cycle (non-fatal, cooldown-gated).
+            try:
+                from market_health_alert import alert_if_unhealthy
+                alert_if_unhealthy(source="collector")
+            except Exception as _he:
+                logger.warning("Moat health check failed (non-fatal): %s", _he)
             cycle += 1
             wait_s = max(args.interval * 3600, 60)
             # Poll for dashboard refresh triggers every 30 s
