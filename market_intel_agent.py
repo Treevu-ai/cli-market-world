@@ -30,6 +30,7 @@ from market_indicators import (
 
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_VERSION = "2023-06-01"
+ANTHROPIC_BETA_CACHE = "prompt-caching-2024-07-31"
 DEFAULT_MODEL = os.getenv("INTEL_AGENT_MODEL", "claude-haiku-4-5")
 MAX_TOOL_ITERATIONS = int(os.getenv("INTEL_AGENT_MAX_ITERS", "5"))
 MAX_TOKENS = int(os.getenv("INTEL_AGENT_MAX_TOKENS", "1024"))
@@ -39,16 +40,25 @@ class AgentUnavailable(RuntimeError):
     """Raised when the agent cannot run (e.g. no API key configured)."""
 
 
-SYSTEM_PROMPT = (
-    "Sos el analista de datos de CLI Market, una plataforma de inteligencia de "
-    "precios de retail en LatAm. Respondés preguntas sobre precios, inflación de "
-    "góndola, indicadores y dispersión usando EXCLUSIVAMENTE las herramientas "
-    "disponibles. Nunca inventes números: si una herramienta devuelve vacío o "
-    "null, decilo claramente. Sé conciso y concreto, en español. Cuando cites "
-    "inflación, aclará que es inflación observada online y no reemplaza el IPC "
-    "oficial. Si la pregunta no se puede responder con los datos, explicá qué "
-    "falta."
-)
+# System prompt as a list block so we can attach cache_control.
+# Anthropic caches this across calls — tokens after the cache breakpoint
+# are charged at 10% of normal input price on cache hit.
+SYSTEM_PROMPT_BLOCKS = [
+    {
+        "type": "text",
+        "text": (
+            "Sos el analista de datos de CLI Market, una plataforma de inteligencia de "
+            "precios de retail en LatAm. Respondés preguntas sobre precios, inflación de "
+            "góndola, indicadores y dispersión usando EXCLUSIVAMENTE las herramientas "
+            "disponibles. Nunca inventes números: si una herramienta devuelve vacío o "
+            "null, decilo claramente. Sé conciso y concreto, en español. Cuando cites "
+            "inflación, aclará que es inflación observada online y no reemplaza el IPC "
+            "oficial. Si la pregunta no se puede responder con los datos, explicá qué "
+            "falta."
+        ),
+        "cache_control": {"type": "ephemeral"},
+    }
+]
 
 # ── Tool schemas (Anthropic format) ───────────────────────────────────────────
 
@@ -116,6 +126,7 @@ TOOLS = [
                 "limit": {"type": "integer", "description": "Máximo de grupos (default 20)."},
             },
         },
+        "cache_control": {"type": "ephemeral"},
     },
 ]
 
@@ -188,6 +199,7 @@ def ask_intel(question: str, db, *, model: str | None = None) -> dict:
     headers = {
         "x-api-key": api_key,
         "anthropic-version": ANTHROPIC_VERSION,
+        "anthropic-beta": ANTHROPIC_BETA_CACHE,
         "content-type": "application/json",
     }
     messages: list[dict] = [{"role": "user", "content": question}]
@@ -198,7 +210,7 @@ def ask_intel(question: str, db, *, model: str | None = None) -> dict:
             payload = {
                 "model": model,
                 "max_tokens": MAX_TOKENS,
-                "system": SYSTEM_PROMPT,
+                "system": SYSTEM_PROMPT_BLOCKS,
                 "tools": TOOLS,
                 "messages": messages,
             }
