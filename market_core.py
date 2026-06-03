@@ -494,6 +494,10 @@ def append_price_history(db, product_id: str, store: str, price: float, list_pri
 def init_db() -> None:
     db = get_db()
     if USE_PG:
+        # Best-effort DDL: autocommit + skip lock-timeout failures so a busy
+        # existing deployment can't block the new one's startup. The schema
+        # already exists in that case, so skipped statements are no-ops.
+        db.begin_resilient_init()
         init_db_pg(db)
         _migrate_indicator_schema(db)
     else:
@@ -999,6 +1003,7 @@ def ensure_db_initialized() -> None:
         recover_pg_if_needed()
     try:
         db = get_db()
+        db.begin_resilient_init()
         _migrate_payment_schema(db)
         _migrate_price_snapshots_v7(db)
         db.commit()

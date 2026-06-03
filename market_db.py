@@ -58,12 +58,29 @@ class _DB:
                 kwargs["sslmode"] = os.getenv("PG_SSL_MODE", "prefer")
             self._conn = psycopg2.connect(**kwargs)
             self._pg = True
+            self._skip_lock_errors = False
         else:
             self._conn = sqlite3.connect(str(market_core.DB_FILE))
             self._conn.row_factory = sqlite3.Row
             self._conn.execute("PRAGMA journal_mode=WAL")
             self._conn.execute("PRAGMA busy_timeout=5000")
             self._pg = False
+            self._skip_lock_errors = False
+
+    def begin_resilient_init(self):
+        """Switch the (PG) connection into best-effort DDL mode.
+
+        Used only during schema init/migration. Each statement runs in its own
+        autocommit transaction so a single failure can't poison the rest, and
+        lock-timeout failures are swallowed instead of raised. A lock timeout
+        only occurs when the object already exists and another process holds a
+        lock (i.e. an existing deployment) — so skipping that statement is safe.
+        On a genuinely fresh DB there is no contention, so real schema errors
+        still surface. No-op on SQLite.
+        """
+        if self._pg:
+            self._conn.autocommit = True
+            self._skip_lock_errors = True
 
     def execute(self, sql, params=None):
         if self._pg:
@@ -80,7 +97,16 @@ class _DB:
             sql = sql.replace("INSERT OR REPLACE", "INSERT")
             sql = sql.replace("INSERT OR IGNORE", "INSERT")
             cur = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cur.execute(sql, params)
+            try:
+                cur.execute(sql, params)
+            except psycopg2.Error as e:
+                # During resilient init, a lock timeout (55P03) means the object
+                # already exists and is in use — skip it instead of aborting the
+                # whole startup. Autocommit keeps prior statements committed.
+                if self._skip_lock_errors and getattr(e, "pgcode", "") == "55P03":
+                    logger.warning("DDL skipped (lock timeout): %s", sql.split("(")[0].strip()[:80])
+                    return _PgCursor(cur)
+                raise
             wrapper = _PgCursor(cur)
             # Capture lastrowid from RETURNING clause
             if "RETURNING" in sql.upper():
