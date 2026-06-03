@@ -23,7 +23,7 @@ from market_core import (
     ensure_db_initialized,
 )
 from market_db import get_db
-from store_credentials import get_default_stores, resolve_store_config
+from backend_interface import get_default_stores, resolve_store_config
 
 
 def _store_line(store: str) -> str:
@@ -442,7 +442,7 @@ if USE_PG:
         ensure_db_initialized()
 
     async def pg_insert(conn, prod):
-        from price_confidence import compute_snapshot_confidence
+        from backend_interface import compute_snapshot_confidence
 
         discount = prod.get("discount")
         if discount is not None:
@@ -563,7 +563,7 @@ _last_catalog_pull: float = 0.0
 
 async def collect_full_catalog_pg(pool, store: str) -> int:
     from market_connectors.vtex import VtexConnector
-    from store_credentials import resolve_store_config
+    from backend_interface import resolve_store_config
 
     cfg = resolve_store_config(store)
     if cfg.get("platform") != "vtex":
@@ -587,7 +587,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             if prod["price"] > max_allowed_price(store, line):
                 continue
             try:
-                from price_confidence import compute_snapshot_confidence
+                from backend_interface import compute_snapshot_confidence
 
                 list_price = prod.get("list_price")
                 confidence = compute_snapshot_confidence(
@@ -618,7 +618,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
 async def run_full_catalog_pg(pool, stores: list[str]) -> int:
     global _last_catalog_pull
-    from store_credentials import resolve_store_config
+    from backend_interface import resolve_store_config
 
     now = time.monotonic()
     if now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
@@ -811,6 +811,16 @@ async def run_collection(stores, queries):
                     errs.append(f"{store}: {exc}")
         sq_run_end(db, rid, ok, total, json.dumps(errs[:100]))
         db.commit()
+
+    if total > 0:
+        try:
+            from market_alerts import evaluate_alerts
+            fired = evaluate_alerts()
+            if fired:
+                logger.info("Alerts: %d fired after collection cycle", fired)
+        except Exception as _ae:
+            logger.warning("Alert evaluation failed (non-fatal): %s", _ae)
+
     return {"stores_attempted":len(sl),"stores_succeeded":ok,"prices_collected":total,"errors":len(errs)}
 
 # ── Status / Report ─────────────────────────────────────────────────────────
@@ -906,7 +916,7 @@ async def main():
                     # Refresh enrichment indicators every 6 cycles (24h) for all countries
                     if cycle % 6 == 0:
                         try:
-                            from market_indicators import refresh_after_collection
+                            from backend_interface import refresh_after_collection
                             result = refresh_after_collection()
                             total = result.get("enrichment_written", 0)
                             print(f"  📡 Indicators refreshed: {result.get('internal_written',0)} internal + {result.get('external_written',0)} external + {total} enrichment ({len(result.get('countries',[]))} countries)")

@@ -205,6 +205,10 @@ def price_snapshots_has_confidence(db: _DB) -> bool:
 
 def init_db_pg(db: _DB) -> None:
     """PostgreSQL schema."""
+    # Fail fast on lock contention instead of blocking the deployment indefinitely.
+    # Migrations are non-fatal (wrapped in try/except by callers), so a 5s timeout
+    # lets the app start even if a table already has an exclusive lock held.
+    db.execute("SET lock_timeout = '5s'")
     db.execute("""
         CREATE TABLE IF NOT EXISTS contacts (
             chat_id TEXT PRIMARY KEY,
@@ -419,6 +423,44 @@ def init_db_pg(db: _DB) -> None:
         "CREATE INDEX IF NOT EXISTS idx_agent_queries_user_month ON agent_queries(username, queried_at)"
     )
 
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS price_alerts (
+            id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            name TEXT NOT NULL DEFAULT '',
+            condition TEXT NOT NULL,
+            product_query TEXT NOT NULL,
+            store TEXT DEFAULT '',
+            threshold_pct REAL NOT NULL DEFAULT 5.0,
+            notify_email TEXT NOT NULL DEFAULT '',
+            notify_webhook TEXT DEFAULT '',
+            active INTEGER NOT NULL DEFAULT 1,
+            cooldown_hours INTEGER NOT NULL DEFAULT 24,
+            last_fired_at TIMESTAMPTZ DEFAULT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_price_alerts_username ON price_alerts(username)")
+    db.execute("CREATE INDEX IF NOT EXISTS idx_price_alerts_active ON price_alerts(active)")
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS alert_events (
+            id BIGSERIAL PRIMARY KEY,
+            alert_id TEXT NOT NULL,
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            store TEXT NOT NULL,
+            product_name TEXT DEFAULT '',
+            condition TEXT NOT NULL,
+            price_now REAL NOT NULL,
+            price_before REAL NOT NULL,
+            delta_pct REAL NOT NULL,
+            notified INTEGER NOT NULL DEFAULT 0,
+            fired_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute("CREATE INDEX IF NOT EXISTS idx_alert_events_alert ON alert_events(alert_id, fired_at DESC)")
+
     from market_billing import _migrate_payment_schema
     _migrate_payment_schema(db)
     market_core._migrate_store_credentials(db)
@@ -608,4 +650,38 @@ _SQLITE_DDL = """\
         );
         CREATE INDEX IF NOT EXISTS idx_agent_queries_user_month
             ON agent_queries(username, queried_at);
+
+        CREATE TABLE IF NOT EXISTS price_alerts (
+            id TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            name TEXT NOT NULL DEFAULT '',
+            condition TEXT NOT NULL,
+            product_query TEXT NOT NULL,
+            store TEXT DEFAULT '',
+            threshold_pct REAL NOT NULL DEFAULT 5.0,
+            notify_email TEXT NOT NULL DEFAULT '',
+            notify_webhook TEXT DEFAULT '',
+            active INTEGER NOT NULL DEFAULT 1,
+            cooldown_hours INTEGER NOT NULL DEFAULT 24,
+            last_fired_at TEXT DEFAULT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_price_alerts_username ON price_alerts(username);
+        CREATE INDEX IF NOT EXISTS idx_price_alerts_active ON price_alerts(active);
+
+        CREATE TABLE IF NOT EXISTS alert_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            alert_id TEXT NOT NULL,
+            username TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            store TEXT NOT NULL,
+            product_name TEXT DEFAULT '',
+            condition TEXT NOT NULL,
+            price_now REAL NOT NULL,
+            price_before REAL NOT NULL,
+            delta_pct REAL NOT NULL,
+            notified INTEGER NOT NULL DEFAULT 0,
+            fired_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_alert_events_alert ON alert_events(alert_id, fired_at DESC);
 """

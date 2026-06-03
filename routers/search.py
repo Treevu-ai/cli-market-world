@@ -36,11 +36,7 @@ from market_core import (
 )
 from server_deps import require_api_key
 
-try:
-    from store_credentials import get_store_profile, store_exists
-except ImportError:
-    get_store_profile = None  # type: ignore[assignment]
-    store_exists = None  # type: ignore[assignment]
+from backend_interface import get_store_profile, store_exists, _STORE_CREDENTIALS_AVAILABLE
 
 logger = logging.getLogger("market.server").getChild("search")
 
@@ -49,9 +45,9 @@ router = APIRouter(tags=["search"])
 
 def _resolve_search_stores(body: SearchRequest) -> list[str]:
     stores = [body.store] if body.store else get_default_stores()
-    if store_exists is not None and callable(store_exists):
+    if _STORE_CREDENTIALS_AVAILABLE and callable(store_exists):
         stores = [s for s in stores if store_exists(s)]
-    if body.line and body.line in LINES and get_store_profile is not None:
+    if body.line and body.line in LINES and _STORE_CREDENTIALS_AVAILABLE:
         stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
     return stores
 
