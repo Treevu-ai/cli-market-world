@@ -25,11 +25,35 @@ from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
     get_indicator_catalog,
     get_latest_values,
-    get_scores,
 )
+
+# get_scores lives in the private backend (cli-market-backend). When that package
+# isn't installed, the /scores endpoint degrades to 503 instead of crashing the
+# whole app at import time (which is why this router was historically unmounted).
+try:
+    from market_indicators import get_scores  # type: ignore
+    _SCORES_AVAILABLE = True
+except ImportError:
+    _SCORES_AVAILABLE = False
+
+    def get_scores(*_args, **_kwargs):  # type: ignore
+        raise HTTPException(
+            status_code=503,
+            detail="Composite scores unavailable (private indicators backend not installed).",
+        )
 
 logger = logging.getLogger("market.server").getChild("intel")
 router = APIRouter(prefix="/v1/intel", tags=["intelligence"])
+
+
+def _catalog(db) -> list[dict]:
+    """Tolerate both catalog signatures: the public repo exposes
+    get_indicator_catalog() (no args); the private backend exposes
+    get_indicator_catalog(db). Call whichever the installed version provides."""
+    try:
+        return get_indicator_catalog(db)
+    except TypeError:
+        return get_indicator_catalog()
 
 
 # ── Catalog ────────────────────────────────────────────────────────────────────
@@ -40,7 +64,7 @@ def list_indicators(authorization: str | None = Header(None)):
     require_api_key(authorization)
     db = get_db()
     try:
-        catalog = get_indicator_catalog(db)
+        catalog = _catalog(db)
         return {"indicators": catalog, "total": len(catalog)}
     finally:
         db.close()
@@ -57,7 +81,7 @@ def get_indicator(
     require_api_key(authorization)
     db = get_db()
     try:
-        catalog = get_indicator_catalog(db)
+        catalog = _catalog(db)
         match = next((i for i in catalog if i["key"] == key), None)
         if not match:
             raise HTTPException(status_code=404, detail=f"Indicator '{key}' not found")
