@@ -118,7 +118,7 @@ async def telegram_webhook(request: Request):
         db = get_db()
         db.execute(
             "INSERT OR REPLACE INTO contacts (chat_id, first_name, username, last_message, created_at) "
-            "VALUES (?,?,?,?,NOW())",
+            "VALUES (?,?,?,?,datetime('now'))",
             (chat_id, first_name, chat.get("username", ""), text),
         )
         db.commit()
