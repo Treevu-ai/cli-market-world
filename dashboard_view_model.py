@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from data_v1_service import intelligence_acceso_examples
+from backend_interface import intelligence_acceso_examples
 
 SPEC_VERSION = "1.2"
 CANASTA_TOTAL_ITEMS = 10

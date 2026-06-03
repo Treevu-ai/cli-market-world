@@ -19,10 +19,7 @@ from fastapi import APIRouter, Request
 
 from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
-try:
-    from source_health import build_sources_health
-except ImportError:
-    build_sources_health = None  # type: ignore[assignment]
+from backend_interface import build_sources_health, _SOURCE_HEALTH_AVAILABLE
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -206,7 +203,7 @@ def sources_health(
     catalog_only: bool = True,
 ):
     """Per-store scraping health: success rate, failures, and snapshot freshness."""
-    if build_sources_health is None:
+    if not _SOURCE_HEALTH_AVAILABLE:
         return {"error": "source_health module not available (private backend not installed)"}
     db = get_db()
     try:
