@@ -625,3 +625,43 @@ def test_intel_ask_runs_tool_loop(monkeypatch):
     data = r.json()
     assert "get_inflation" in data["tools_used"]
     assert "PE" in data["answer"]
+
+
+# ── Admin set-tier ──────────────────────────────────────────────────────────
+
+def test_admin_set_tier_requires_admin(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    r = client.post("/v1/admin/set-tier", json={"username": "admin", "tier": "pro"})
+    assert r.status_code == 401
+
+
+def test_admin_set_tier_sets_pro(monkeypatch):
+    import server_deps
+    from market_core import db_get_subscription
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post("/v1/admin/set-tier", headers=h, json={"username": "admin", "tier": "pro"})
+    assert r.status_code == 200
+    assert r.json()["subscription"]["tier"] == "pro"
+    assert db_get_subscription("admin")["tier"] == "pro"
+
+
+def test_admin_set_tier_rejects_bad_tier(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post("/v1/admin/set-tier", headers=h, json={"username": "admin", "tier": "platinum"})
+    assert r.status_code == 400
+
+
+def test_admin_set_tier_unknown_user(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post("/v1/admin/set-tier", headers=h, json={"username": "ghost", "tier": "pro"})
+    assert r.status_code == 404
