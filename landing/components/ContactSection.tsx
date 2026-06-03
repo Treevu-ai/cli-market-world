@@ -39,6 +39,20 @@ export default function ContactSection() {
           />
         </div>
       </div>
-    </section>
+    
+        <div id="newsletter" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12">
+          <ContactForm
+            plan="newsletter"
+            eyebrow={isES ? "Newsletter" : "Newsletter"}
+            title={isES ? "Price Pulse semanal" : "Weekly Price Pulse"}
+            subtitle={
+              isES
+                ? "Datos de mercado LATAM cada martes. Sin spam. Gratis."
+                : "LATAM market data every Tuesday. No spam. Free."
+            }
+            placeholder={isES ? "Solo tu email para suscribirte" : "Just your email to subscribe"}
+          />
+        </div>
+  </section>
   );
 }

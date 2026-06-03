@@ -19,7 +19,10 @@ from fastapi import APIRouter, Request
 
 from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
-from source_health import build_sources_health
+try:
+    from source_health import build_sources_health
+except ImportError:
+    build_sources_health = None  # type: ignore[assignment]
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -203,6 +206,8 @@ def sources_health(
     catalog_only: bool = True,
 ):
     """Per-store scraping health: success rate, failures, and snapshot freshness."""
+    if build_sources_health is None:
+        return {"error": "source_health module not available (private backend not installed)"}
     db = get_db()
     try:
         return build_sources_health(db, catalog_only=catalog_only, store=store)
@@ -276,4 +281,41 @@ def list_countries():
             code: {"name": c["name"], "stores": c["stores"], "count": len(c["stores"])}
             for code, c in COUNTRIES.items()
         }
+    }
+
+@router.get("/health/stats")
+def health_stats():
+    """Live KPIs for the landing page — lightweight, no dashboard deps."""
+    db = get_db()
+    total = db.execute("SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0").fetchone()["n"]
+    snapshots_24h = db.execute(
+        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= NOW() - INTERVAL '1 day'"
+    ).fetchone()["n"]
+    stores_indexed = db.execute(
+        "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
+    ).fetchone()["n"]
+    latest = db.execute("SELECT MAX(queried_at) as t FROM price_snapshots").fetchone()["t"]
+    db.close()
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    moat_age_hours = None
+    if latest:
+        try:
+            if isinstance(latest, str):
+                latest_dt = datetime.fromisoformat(latest.replace("Z", "+00:00"))
+            else:
+                latest_dt = latest
+            moat_age_hours = round((now - latest_dt).total_seconds() / 3600, 1)
+        except Exception:
+            pass
+
+    fresh_24h_pct = round(snapshots_24h / total * 100, 1) if total > 0 else 0
+
+    return {
+        "total_indexed": total,
+        "snapshots_24h": snapshots_24h,
+        "stores_indexed": stores_indexed,
+        "fresh_24h_pct": fresh_24h_pct,
+        "moat_age_hours": moat_age_hours,
     }

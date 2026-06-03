@@ -41,18 +41,60 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Configure git for private repos
+        run: git config --global url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest httpx
+        run: pip install -r requirements-railway.txt pytest httpx
 
       - name: Run tests
-        # Unit tests only on PR/push; live API + latency live on main (smoke-production).
+        run: pytest tests/ -q -m "not integration"
+
+  test-pg:
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 10
+    env:
+      CI: "true"
+      GITHUB_ACTIONS: "true"
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      MARKET_SKIP_LIVE: "1"
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Configure git for private repos
+        run: git config --global url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Install dependencies
+        run: pip install -r requirements-railway.txt pytest httpx psycopg2-binary
+
+      - name: Run tests against PostgreSQL
         run: pytest tests/ -q -m "not integration"
 
   smoke-production:
     runs-on: ubuntu-latest
-    # Must run on PRs too — skipped jobs do not satisfy required branch protection checks.
     needs: test
     timeout-minutes: 8
+    continue-on-error: true  # Railway dependency — don't block merges on transient infra issues
 
     steps:
       - uses: actions/checkout@v6

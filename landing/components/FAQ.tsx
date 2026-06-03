@@ -18,7 +18,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cómo funciona el pago?",
-        a: `Aceptamos ${MARKET_STATS.paymentsLabel}. El checkout genera un QR que escaneas desde tu app de pagos. El webhook confirma la transacción y actualiza el estado de tu orden automáticamente.`,
+        a: `Aceptamos ${MARKET_STATS.paymentsLabel}. Checkout con tarjeta vía PayPal para pagos internacionales, y QR de Yape/Plin para pagos locales en Perú. El webhook confirma la transacción y actualiza tu orden automáticamente.`,
       },
       {
         q: "¿Mis agentes pueden usar esto sin intervención humana?",
@@ -46,7 +46,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How does payment work?",
-      a: `${MARKET_STATS.paymentsLabel}. Checkout generates a QR code you scan from your payment app. A webhook confirms the transaction and updates your order status automatically.`,
+      a: `${MARKET_STATS.paymentsLabel}. Card checkout via PayPal for international payments, and Yape/Plin QR for local payments in Peru. A webhook confirms the transaction and updates your order status automatically.`,
     },
       {
         q: "Can my agents use this autonomously?",

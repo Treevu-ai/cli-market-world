@@ -22,7 +22,7 @@ export default function Footer() {
               ? "© " + year + " CLI Market LatAm. Infraestructura para agentes."
               : "© " + year + " CLI Market LatAm. Infrastructure for agents."}
           </p>
-          <p className="font-mono text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-4">
+          <p className="font-mono text-xs text-[var(--cm-on-surface-variant)]/60 mt-4">
             {isES
               ? `${MARKET_STATS.retailersPhraseEs} · ${priceChip} precios · MIT`
               : `${MARKET_STATS.retailersPhraseEn} · ${priceChip} prices · MIT`}
@@ -81,14 +81,6 @@ export default function Footer() {
           </a>
           <a href="#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             FAQ
-          </a>
-          <a
-            href="https://cli-market-production.up.railway.app/dashboard"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
-          >
-            Dashboard
           </a>
         </div>
       </div>

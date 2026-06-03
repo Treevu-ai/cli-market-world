@@ -34,7 +34,11 @@ from market_core import (
     save_price_snapshot,
     save_search_query,
 )
-from store_credentials import get_store_profile, store_exists
+try:
+    from store_credentials import get_store_profile, store_exists
+except ImportError:
+    get_store_profile = None  # type: ignore[assignment]
+    store_exists = None  # type: ignore[assignment]
 
 logger = logging.getLogger("market.server").getChild("search")
 
@@ -43,8 +47,9 @@ router = APIRouter(tags=["search"])
 
 def _resolve_search_stores(body: SearchRequest) -> list[str]:
     stores = [body.store] if body.store else get_default_stores()
-    stores = [s for s in stores if store_exists(s)]
-    if body.line and body.line in LINES:
+    if store_exists is not None and callable(store_exists):
+        stores = [s for s in stores if store_exists(s)]
+    if body.line and body.line in LINES and get_store_profile is not None:
         stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
     return stores
 

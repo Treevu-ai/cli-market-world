@@ -8,6 +8,11 @@ import { MARKET_STATS } from "@/lib/marketStats";
 type Tier = {
   name: string;
   price: string;
+  latamPrice?: string;
+  annualPrice?: string;
+  annualLatamPrice?: string;
+  trial_es?: string;
+  trial_en?: string;
   period_es?: string;
   period_en?: string;
   f_es: string[];
@@ -25,6 +30,7 @@ const tiers: Tier[] = [
   {
     name: "Free",
     price: "$0",
+    latamPrice: "S/0",
     period_es: "sin costo",
     period_en: "no cost",
     f_es: [
@@ -44,21 +50,51 @@ const tiers: Tier[] = [
     href: "https://pypi.org/project/cli-market/",
   },
   {
+    name: "Starter",
+    price: "$9",
+    latamPrice: "S/34",
+    annualPrice: "$90",
+    annualLatamPrice: "S/340",
+    period_es: "/ mes",
+    period_en: "/ month",
+    trial_es: "14 dias gratis",
+    trial_en: "14 days free",
+    f_es: [
+      "1,000 consultas / dia",
+      "3 claves API (lectura)",
+      "Exportacion JSON",
+      "Soporte email 48h",
+    ],
+    f_en: [
+      "1,000 requests / day",
+      "3 API keys (read-only)",
+      "JSON export",
+      "Email support 48h",
+    ],
+    cta_es: "Probar gratis",
+    cta_en: "Try free",
+  },
+  {
     name: "Pro",
     price: "$49",
+    latamPrice: "S/185",
+    annualPrice: "$490",
+    annualLatamPrice: "S/1,850",
+    trial_es: "14 dias gratis",
+    trial_en: "14 days free",
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [
       "10,000 consultas / día",
       "10 claves API (lectura y escritura)",
       "Exportación de precios (JSON/CSV)",
-      "Checkout (PayPal / QR) tras activación por email",
+      "Checkout con PayPal + Yape/Plin",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
       "Price data export (JSON/CSV)",
-      "Checkout (PayPal / QR) after email activation",
+      "Checkout with PayPal + Yape/Plin",
     ],
     cta_es: "Obtener Pro",
     cta_en: "Get Pro",
@@ -179,7 +215,7 @@ export default function Pricing() {
         </p>
 
         {/* Pricing cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-12">
           {tiers.map((tier, i) => (
             <motion.div key={tier.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
               <TierCard tier={tier} isES={isES}>
@@ -187,6 +223,10 @@ export default function Pricing() {
                   <div id="pro-checkout" className="scroll-mt-24">
                     <ProSubscribeButton />
                   </div>
+                ) : tier.name === "Starter" ? (
+                  <a href={tier.href || "#pricing"} className="btn-mint">
+                    {isES ? tier.cta_es : tier.cta_en}
+                  </a>
                 ) : tier.name === "Free" ? (
                   <a href={tier.href} className="btn-mint">
                     {isES ? tier.cta_es : tier.cta_en}
@@ -194,7 +234,7 @@ export default function Pricing() {
                 ) : null}
               </TierCard>
               {tier.name === "Pro" && tier.proNote_es && (
-                <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
+                <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
                   {isES ? tier.proNote_es : tier.proNote_en}
                 </p>
               )}

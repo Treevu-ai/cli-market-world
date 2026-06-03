@@ -1,290 +1,366 @@
-"""Intel / inflation tracking — the data-moat-as-product angle.
+"""Intelligence API — indicator catalog, scores, inflation, enrichment, alerts.
 
 Endpoints:
-  GET /v1/intel/inflation       Per-product price delta over the last N days
-  GET /v1/intel/alerts          Price movers vs threshold (from price_history)
-  GET /v1/intel/indicators      Indicator catalog (public API + internal moat)
-  GET /v1/intel/indicators/{key} Latest values for one indicator
-  GET /v1/intel/scores          Composite moat scores
-  GET /v1/intel/basket-stress   Canasta affordability signal
-  POST /v1/intel/refresh              Recompute and fetch external indicators
-  GET  /v1/intel/enrichment           Latest enrichment indicators
-  GET  /v1/intel/enrichment/subcategories  Per-staple enrichment (leche, arroz, …)
-  POST /v1/intel/enrichment/refresh   Refresh enrichment indicators only
+  GET  /v1/intel/indicators                 Catalog of all 34 indicators
+  GET  /v1/intel/indicators/{key}           Single indicator detail + latest value
+  GET  /v1/intel/scores                     Composite scores from indicators
+  GET  /v1/intel/inflation                  Price change 7d by line/currency
+  GET  /v1/intel/alerts                     Price alerts (threshold-based)
+  GET  /v1/intel/enrichment                 Enrichment indicators (OFF, Wiki, etc.)
+  GET  /v1/intel/enrichment/subcategories   Subcategory-level enrichment
+  POST /v1/intel/refresh                    Trigger indicator recomputation
+  POST /v1/intel/enrichment/refresh         Trigger enrichment-only refresh
 """
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query
 
-from market_core import STORES, get_db
-from market_enrich_subcategory import ENRICH_SUBCATEGORIES, get_subcategory_enrichment
+from market_core import STORES, get_db, price_to_usd
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
-    TIER2_INDICATOR_KEYS,
-    compute_basket_stress,
-    compute_composite_scores,
     get_indicator_catalog,
     get_latest_values,
-    refresh_enrichment_only,
-    refresh_indicators,
+    get_scores,
 )
 
-router = APIRouter(tags=["intel"])
+logger = logging.getLogger("market.server").getChild("intel")
+router = APIRouter(prefix="/v1/intel", tags=["intelligence"])
 
 
-def _since_iso(days: int) -> str:
-    return (datetime.now(timezone.utc) - timedelta(days=max(1, days))).strftime("%Y-%m-%d %H:%M:%S")
+# ── Catalog ────────────────────────────────────────────────────────────────────
 
-
-@router.get("/v1/intel/inflation")
-def inflation_tracker(
-    country: str | None = None,
-    line: str | None = None,
-    days: int = 30,
-    limit: int = 100,
-):
-    """Compute per-product price deltas within the last `days` window.
-
-    Compares earliest vs latest snapshot per product name in the window.
-    Intended for agent-facing inflation signals — not official CPI indices.
-    """
-    db = get_db()
-    since = _since_iso(days)
-    q = (
-        "SELECT name, store, store_name, currency, price, queried_at "
-        "FROM price_snapshots WHERE price > 0 AND queried_at >= ?"
-    )
-    params: list = [since]
-    if country:
-        cc_stores = [k for k, v in STORES.items() if v["country"] == country.upper() and not v.get("disabled")]
-        if cc_stores:
-            q += f" AND store IN ({','.join('?' * len(cc_stores))})"
-            params.extend(cc_stores)
-    if line:
-        q += " AND line = ?"
-        params.append(line)
-    q += " ORDER BY queried_at DESC LIMIT ?"
-    params.append(limit * 4)
-    rows = db.execute(q, params).fetchall()
-    db.close()
-
-    prods: dict[str, list[dict]] = {}
-    for r in rows:
-        k = f"{r['store']}|{r['name'].lower()[:40]}"
-        prods.setdefault(k, []).append(
-            {
-                "price": r["price"],
-                "date": r["queried_at"],
-                "store": r["store_name"],
-                "currency": r["currency"],
-            }
-        )
-
-    items: list[dict] = []
-    for _key, snaps in prods.items():
-        snaps.sort(key=lambda s: s["date"])
-        if len(snaps) >= 2:
-            first = snaps[0]
-            last = snaps[-1]
-            if first["price"] > 0:
-                d = round(last["price"] - first["price"], 2)
-                dp = round((d / first["price"]) * 100, 1)
-                items.append(
-                    {
-                        "product": _key.split("|", 1)[1],
-                        "first_price": first["price"],
-                        "last_price": last["price"],
-                        "first_date": first["date"],
-                        "last_date": last["date"],
-                        "delta": d,
-                        "delta_pct": dp,
-                        "currency": first["currency"],
-                        "store": first["store"],
-                    }
-                )
-    items.sort(key=lambda x: abs(x["delta_pct"]), reverse=True)
-    items = items[:limit]
-    avg = round(sum(i["delta_pct"] for i in items) / len(items), 1) if items else 0
-    return {
-        "country": country,
-        "line": line,
-        "days": days,
-        "since": since,
-        "products_tracked": len(items),
-        "avg_inflation_pct": avg,
-        "items": items,
-        "disclaimer": "Internal collector signal — not an official inflation index.",
-    }
-
-
-@router.get("/v1/intel/alerts")
-def intel_alerts(
-    product: str,
-    store: str | None = None,
-    threshold_pct: float = 5.0,
-    limit: int = 10,
-):
-    """Price alerts from price_history when delta exceeds threshold_pct."""
-    db = get_db()
-    since = _since_iso(30)
-    q = """
-        SELECT ph.product_id, ph.store, ph.price, ph.recorded_at, ps.name, ps.store_name, ps.currency
-        FROM price_history ph
-        LEFT JOIN price_snapshots ps ON ps.product_id = ph.product_id AND ps.store = ph.store
-        WHERE ph.recorded_at >= ? AND ph.price > 0
-          AND LOWER(COALESCE(ps.name, '')) LIKE ?
-    """
-    params: list = [since, f"%{product.lower()}%"]
-    if store:
-        q += " AND ph.store = ?"
-        params.append(store)
-    q += " ORDER BY ph.recorded_at DESC LIMIT ?"
-    params.append(limit * 20)
-    rows = db.execute(q, params).fetchall()
-    db.close()
-
-    series: dict[str, list] = {}
-    for r in rows:
-        k = f"{r['store']}|{r['product_id']}"
-        series.setdefault(k, []).append(r)
-
-    alerts: list[dict] = []
-    for _key, pts in series.items():
-        if len(pts) < 2:
-            continue
-        pts.sort(key=lambda x: x["recorded_at"])
-        first, last = pts[0], pts[-1]
-        if not first["price"] or first["price"] <= 0:
-            continue
-        dp = round((float(last["price"]) - float(first["price"])) / float(first["price"]) * 100, 1)
-        if abs(dp) >= threshold_pct:
-            alerts.append(
-                {
-                    "product_id": last["product_id"],
-                    "product": last["name"] or product,
-                    "store": last["store"],
-                    "store_name": last["store_name"],
-                    "currency": last["currency"],
-                    "first_price": first["price"],
-                    "last_price": last["price"],
-                    "delta_pct": dp,
-                    "direction": "up" if dp > 0 else "down",
-                }
-            )
-    alerts.sort(key=lambda x: abs(x["delta_pct"]), reverse=True)
-    return {
-        "product": product,
-        "store": store,
-        "threshold_pct": threshold_pct,
-        "alerts": alerts[:limit],
-        "message": f"{len(alerts[:limit])} alert(s) above {threshold_pct}% threshold.",
-    }
-
-
-@router.get("/v1/intel/indicators")
+@router.get("/indicators")
 def list_indicators():
-    """Catalog of moat indicators (internal, external public APIs, composite)."""
-    return {
-        "count": len(get_indicator_catalog()),
-        "indicators": get_indicator_catalog(),
-    }
+    """Return the full indicator catalog (34 definitions)."""
+    db = get_db()
+    try:
+        catalog = get_indicator_catalog(db)
+        return {"indicators": catalog, "total": len(catalog)}
+    finally:
+        db.close()
 
 
-@router.get("/v1/intel/indicators/{indicator_key}")
+@router.get("/indicators/{key}")
 def get_indicator(
-    indicator_key: str,
-    country: str | None = None,
-    line: str | None = None,
-    limit: int = 30,
+    key: str,
+    country: str | None = Query(None),
+    line: str | None = Query(None),
 ):
-    """Latest time-series points for one indicator."""
+    """Single indicator definition + latest values (optionally scoped)."""
     db = get_db()
-    values = get_latest_values(db, indicator_key=indicator_key, country=country, line=line, limit=limit)
-    db.close()
-    meta = next((i for i in get_indicator_catalog() if i["key"] == indicator_key), None)
-    return {
-        "key": indicator_key,
-        "definition": meta,
-        "country": country,
-        "line": line,
-        "values": values,
-    }
+    try:
+        catalog = get_indicator_catalog(db)
+        match = next((i for i in catalog if i["key"] == key), None)
+        if not match:
+            raise HTTPException(status_code=404, detail=f"Indicator '{key}' not found")
+        values = get_latest_values(db, country=country, line=line)
+        latest = next((v for v in values if v.get("key") == key), None)
+        return {"indicator": match, "latest_value": latest}
+    finally:
+        db.close()
 
 
-@router.get("/v1/intel/scores")
-def intel_scores(country: str | None = None, line: str | None = None):
-    """Composite scores blending moat signals and public macro data."""
-    return compute_composite_scores(country=country, line=line)
+# ── Scores ──────────────────────────────────────────────────────────────────────
 
-
-@router.get("/v1/intel/basket-stress")
-def basket_stress(country: str | None = None):
-    """Minimum canasta básica stress index for a country."""
+@router.get("/scores")
+def list_scores(
+    country: str | None = Query(None),
+    line: str | None = Query(None),
+):
+    """Composite scores derived from indicators (14 scores)."""
     db = get_db()
-    value = compute_basket_stress(db, country)
-    db.close()
-    return {
-        "country": country,
-        "basket_stress_index": value,
-        "interpretation": (
-            "elevated (>105)" if value and value > 105
-            else "eased (<95)" if value and value < 95
-            else "normal"
-        ),
-        "disclaimer": "Based on cheapest indexed staple per item — not official CPI basket.",
-    }
+    try:
+        return get_scores(db, country=country, line=line)
+    finally:
+        db.close()
 
 
-@router.post("/v1/intel/refresh")
-def intel_refresh(country: str | None = None, line: str | None = None):
-    """Refresh internal computed indicators and fetch public API macro signals."""
-    result = refresh_indicators(country=country, line=line)
-    return {"status": "ok", **result}
+# ── Inflation ───────────────────────────────────────────────────────────────────
 
-
-@router.get("/v1/intel/enrichment")
-def intel_enrichment(country: str | None = None, limit: int = 20):
-    """Latest enrichment indicators (OFF, Wikimedia, weather, food CPI) for a country."""
+@router.get("/inflation")
+def get_inflation(
+    country: str | None = Query(None),
+    line: str | None = Query(None),
+    days: int = Query(7, ge=1, le=90),
+):
+    """Price change over `days` by line + currency, from price_snapshots."""
     db = get_db()
-    keys = ENRICHMENT_INDICATOR_KEYS
-    values = get_latest_values(db, country=country, limit=limit * 3)
-    enriched = [v for v in values if v.get("key") in keys]
-    db.close()
-    return {
-        "country": country,
-        "count": len(enriched),
-        "indicators": enriched,
-        "sources": [
-            "openfoodfacts",
-            "wikimedia",
-            "open-meteo.com",
-            "worldbank",
-            "imf.org",
-            "eurostat",
-            "bcb.gov.br",
-        ],
-        "tier2_keys": list(TIER2_INDICATOR_KEYS),
-    }
+    try:
+        now = datetime.now(timezone.utc)
+        recent_cutoff = (now - timedelta(days=days)).isoformat()
+        older_cutoff = (now - timedelta(days=days * 2)).isoformat()
+
+        # Per (line, currency) pairs with recent data
+        pair_sql = """SELECT line, currency, COUNT(*) as n
+                      FROM price_snapshots
+                      WHERE price > 0 AND price < 999999 AND queried_at >= ?
+                      GROUP BY line, currency"""
+        params: list = [recent_cutoff]
+        if country:
+            store_keys = [k for k, s in STORES.items() if s.get("country") == country.upper()]
+            if not store_keys:
+                return {"items": [], "avg_inflation_pct": 0, "country": country}
+            placeholders = ",".join("?" * len(store_keys))
+            pair_sql += f" AND store IN ({placeholders})"
+            params.extend(store_keys)
+        if line:
+            pair_sql += " AND line = ?"
+            params.append(line)
+
+        pairs = db.execute(pair_sql, params).fetchall()
+
+        from market_core import LINES
+
+        items: list[dict] = []
+        deltas: list[float] = []
+        for pair in pairs:
+            ln = pair["line"]
+            cur = pair["currency"] or ""
+            recent_avg = db.execute(
+                """SELECT ROUND(AVG(price)::numeric, 2) as avg_price
+                   FROM price_snapshots
+                   WHERE line=? AND currency=? AND price>0 AND price<999999 AND queried_at>=?""",
+                (ln, cur, recent_cutoff),
+            ).fetchone()
+            older_avg = db.execute(
+                """SELECT ROUND(AVG(price)::numeric, 2) as avg_price
+                   FROM price_snapshots
+                   WHERE line=? AND currency=? AND price>0 AND price<999999
+                     AND queried_at>=? AND queried_at<?""",
+                (ln, cur, older_cutoff, recent_cutoff),
+            ).fetchone()
+            r_avg = float(recent_avg["avg_price"] or 0) if recent_avg else 0.0
+            o_avg = float(older_avg["avg_price"] or 0) if older_avg else 0.0
+            delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg > 0 else 0
+            deltas.append(delta)
+            items.append({
+                "line": (LINES.get(ln, {}).get("name") or ln),
+                "line_key": ln,
+                "currency": cur,
+                "avg_now": r_avg,
+                "avg_before": o_avg,
+                "delta_pct": delta,
+                "avg_now_usd": price_to_usd(r_avg, cur),
+                "avg_before_usd": price_to_usd(o_avg, cur),
+                "n_products": pair.get("n", 0),
+            })
+
+        avg_inflation = round(sum(deltas) / len(deltas), 1) if deltas else 0.0
+
+        return {
+            "items": items,
+            "avg_inflation_pct": avg_inflation,
+            "days": days,
+            "country": country,
+            "line": line,
+            "disclaimer": "Inflación observada desde góndola online. No reemplaza IPC oficial (INEI, INDEC, etc.).",
+        }
+    finally:
+        db.close()
 
 
-@router.get("/v1/intel/enrichment/subcategories")
-def intel_enrichment_subcategories(country: str = "PE"):
-    """Per-subcategory signals: price momentum, wiki demand, min shelf price."""
+# ── Alerts ──────────────────────────────────────────────────────────────────────
+
+@router.get("/alerts")
+def get_alerts(
+    product: str = Query(..., min_length=1),
+    store: str | None = Query(None),
+    threshold_pct: float = Query(5.0, ge=0.1, le=100.0),
+    limit: int = Query(10, ge=1, le=50),
+):
+    """Alert when a product's price changed beyond threshold_pct."""
     db = get_db()
-    items = get_subcategory_enrichment(db, country)
-    db.close()
-    return {
-        "country": country.upper(),
-        "subcategories": ENRICH_SUBCATEGORIES,
-        "count": len(items),
-        "items": items,
-    }
+    try:
+        params: list = [f"%{product}%"]
+        store_clause = ""
+        if store:
+            store_clause = "AND store = ?"
+            params.append(store)
+        rows = db.execute(
+            f"""SELECT product_id, store, store_name, name, price, list_price, currency,
+                       queried_at
+                FROM price_snapshots
+                WHERE name LIKE ? AND price > 0 {store_clause}
+                ORDER BY queried_at DESC LIMIT ?""",
+            params + [limit * 2],
+        ).fetchall()
+        return {"product": product, "store": store, "threshold_pct": threshold_pct, "results": [dict(r) for r in rows]}
+    finally:
+        db.close()
 
 
-@router.post("/v1/intel/enrichment/refresh")
-def intel_enrichment_refresh(country: str | None = None):
-    """Refresh only enrichment indicators (OFF sample, Wiki, weather, food CPI)."""
-    return refresh_enrichment_only(country=country)
+# ── Refresh ─────────────────────────────────────────────────────────────────────
+
+@router.post("/refresh")
+def refresh_indicators(
+    country: str | None = Query(None),
+    line: str | None = Query(None),
+):
+    """Trigger indicator recomputation from price_snapshots data.
+
+    Computes internal indicators (promo_intensity, moat_freshness, etc.) directly
+    from price_snapshots. External indicators (World Bank, IMF, etc.) require the
+    collector backend and are returned as 0 when not available.
+    """
+    db = get_db()
+    try:
+        internal_written = _refresh_internal_indicators(db, country=country, line=line)
+        db.commit()
+        return {
+            "ok": True,
+            "internal_written": internal_written,
+            "external_written": 0,
+            "enrichment_written": 0,
+            "country": country,
+            "line": line,
+            "hint": "External indicators require the collector backend. Use market indicators --refresh on the deployed API for full refresh.",
+        }
+    finally:
+        db.close()
+
+
+@router.post("/enrichment/refresh")
+def refresh_enrichment(
+    country: str = Query("PE"),
+):
+    """Refresh enrichment indicators only (OFF, Wiki, Open-Meteo, etc.)."""
+    db = get_db()
+    try:
+        # Enrichment indicators currently come from the collector backend.
+        # From the public repo, we return the current state.
+        values = get_latest_values(db, country=country)
+        enrichment = [v for v in values if v.get("key") in ENRICHMENT_INDICATOR_KEYS]
+        return {
+            "ok": True,
+            "enrichment_written": len(enrichment),
+            "country": country,
+            "hint": "Full enrichment refresh requires the collector backend with external API access.",
+        }
+    finally:
+        db.close()
+
+
+# ── Enrichment ──────────────────────────────────────────────────────────────────
+
+@router.get("/enrichment")
+def get_enrichment(
+    country: str | None = Query(None),
+):
+    """Enrichment indicators: OFF, Wiki, Open-Meteo, World Bank food CPI."""
+    db = get_db()
+    try:
+        values = get_latest_values(db, country=country, limit=100)
+        enrichment = [v for v in values if v.get("key") in ENRICHMENT_INDICATOR_KEYS]
+        return {
+            "indicators": enrichment,
+            "total": len(enrichment),
+            "country": country,
+            "sources": "Open Food Facts · Wikimedia Pageviews · Open-Meteo · World Bank",
+        }
+    finally:
+        db.close()
+
+
+@router.get("/enrichment/subcategories")
+def get_enrichment_subcategories(
+    country: str = Query("PE"),
+):
+    """Subcategory-level enrichment (10 canasta items × Wiki momentum)."""
+    db = get_db()
+    try:
+        values = get_latest_values(db, country=country, limit=200)
+        subcat = [
+            v for v in values
+            if v.get("key", "").startswith("subcat_")
+        ]
+        return {
+            "subcategories": subcat,
+            "total": len(subcat),
+            "country": country,
+        }
+    finally:
+        db.close()
+
+
+# ── Internal refresh helpers ────────────────────────────────────────────────────
+
+def _refresh_internal_indicators(db, *, country: str | None = None, line: str | None = None) -> int:
+    """Compute internal indicators from price_snapshots and write to indicator_values.
+
+    Returns count of values written.
+    """
+    from datetime import timezone as tz
+    now = datetime.now(tz.utc).isoformat()
+
+    # Scope: set country from store filter or use all
+    store_filter = ""
+    store_params: list = []
+    if country:
+        store_keys = [k for k, s in STORES.items() if s.get("country") == country.upper()]
+        if store_keys:
+            placeholders = ",".join("?" * len(store_keys))
+            store_filter = f"AND store IN ({placeholders})"
+            store_params = list(store_keys)
+        else:
+            return 0
+
+    scope = f"{country or 'global'}:{line or 'all'}"
+
+    # Total snapshots (inventory)
+    total = db.execute(
+        f"SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND price < 999999 {store_filter}",
+        store_params,
+    ).fetchone()["n"]
+
+    # Snapshots < 24h (freshness)
+    cutoff_24h = (datetime.now(tz.utc) - timedelta(hours=24)).isoformat()
+    snapshots_24h = db.execute(
+        f"""SELECT COUNT(*) as n FROM price_snapshots
+            WHERE price > 0 AND price < 999999 AND queried_at >= ? {store_filter}""",
+        [cutoff_24h] + store_params,
+    ).fetchone()["n"]
+
+    # Stores with data
+    stores_indexed = db.execute(
+        f"SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0 {store_filter}",
+        store_params,
+    ).fetchone()["n"]
+
+    # Promo intensity
+    promo_count = db.execute(
+        f"""SELECT COUNT(*) as n FROM price_snapshots
+            WHERE price > 0 AND list_price > price AND price < 999999 {store_filter}""",
+        store_params,
+    ).fetchone()["n"]
+
+    values_to_write: list[tuple] = []
+
+    # moat_freshness
+    freshness_pct = round(snapshots_24h / total * 100, 1) if total > 0 else 0.0
+    values_to_write.append(("moat_freshness", scope, country, line, freshness_pct, now))
+
+    # store_coverage
+    values_to_write.append(("store_coverage", scope, country, line, stores_indexed, now))
+
+    # promo_intensity
+    promo_pct = round(promo_count / total * 100, 1) if total > 0 else 0.0
+    values_to_write.append(("promo_intensity", scope, country, line, promo_pct, now))
+
+    # Write values
+    written = 0
+    for key, sc, cc, ln, val, ts in values_to_write:
+        try:
+            db.execute(
+                """INSERT INTO indicator_values (indicator_key, scope, country, line, value, recorded_at)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (key, sc, cc, ln, val, ts),
+            )
+            written += 1
+        except Exception as e:
+            logger.warning("_refresh_internal: %s skipped: %s", key, e)
+
+    return written

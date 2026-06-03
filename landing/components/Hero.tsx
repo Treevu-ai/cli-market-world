@@ -40,11 +40,11 @@ export default function Hero() {
 
         <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }} className="mt-5 text-base sm:text-lg text-[var(--cm-on-surface-variant)] max-w-[620px] leading-relaxed">
           {isES
-            ? `Una API sobre 60 retailers en 8 países. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores de mercado y ${MARKET_STATS.pricesVerifiedLabel} precios verificados, normalizados por kg/L. Cero scraping.`
-            : `One API across 60 retailers in 8 countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
+            ? `Una API sobre ${MARKET_STATS.retailersDefined} retailers en ${MARKET_STATS.countries} países. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores de mercado y ${MARKET_STATS.pricesVerifiedLabel} precios verificados, normalizados por kg/L. Cero scraping.`
+            : `One API across ${MARKET_STATS.retailersDefined} retailers in ${MARKET_STATS.countries} countries. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} market indicators, and ${MARKET_STATS.pricesVerifiedLabel} verified prices, normalized per kg/L. Zero scraping.`}
         </motion.p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px]">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px] mx-auto">
           <a
             href="https://pypi.org/project/cli-market/"
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
@@ -59,23 +59,6 @@ export default function Hero() {
           </a>
 
           <a
-            href="https://cli-market-production.up.railway.app/dashboard"
-            target="_blank"
-            rel="noopener"
-            className="group flex flex-col items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-6 py-5 hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-mint)]">
-              {isES ? "Para equipos comerciales" : "For commercial teams"}
-            </span>
-            <span className="text-base font-semibold text-white">
-              {isES ? "Dashboard en vivo →" : "Live dashboard →"}
-            </span>
-            <span className="text-xs text-[var(--cm-on-surface-variant)]">
-              {isES ? `${MARKET_STATS.indicatorsCount} indicadores · fuentes públicas` : `${MARKET_STATS.indicatorsCount} indicators · public sources`}
-            </span>
-          </a>
-
-          <a
             href="#retailers"
             className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
@@ -87,6 +70,20 @@ export default function Hero() {
             </span>
             <span className="text-xs text-[var(--cm-on-surface-variant)]">
               {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+            </span>
+          </a>
+          <a
+            href="#contact"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
+          >
+            <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
+              {isES ? "Newsletter" : "Newsletter"}
+            </span>
+            <span className="text-base font-semibold text-white">
+              {isES ? "Price Pulse semanal →" : "Weekly Price Pulse →"}
+            </span>
+            <span className="text-xs text-[var(--cm-on-surface-variant)]">
+              {isES ? "Datos de mercado · gratis" : "Market data · free"}
             </span>
           </a>
         </div>

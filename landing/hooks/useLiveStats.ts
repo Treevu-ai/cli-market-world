@@ -18,14 +18,13 @@ export interface LiveStats {
   collectorIntervalH: number | null;
 }
 
-/** Consistent marketing price labels (chip + long) from the same rounded value. */
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = 43_000;
+  const fallback = parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 45_000;
   const n = indexed ?? fallback;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
-    long: `${k.toLocaleString()},000+`,
+    long: n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : n.toLocaleString(),
   };
 }
 
@@ -35,7 +34,6 @@ export function refreshLabel(isES: boolean): string {
     : `every ${MARKET_STATS.pricesRefreshHours}h`;
 }
 
-/** Auto-refresh interval: re-fetch live KPIs every 5 minutes. */
 const REFRESH_MS = 5 * 60 * 1000;
 
 export function useLiveStats() {
@@ -52,27 +50,25 @@ export function useLiveStats() {
     avgDaily7d: null,
     moatStart: null,
     collectorStatus: null,
-    collectorIntervalH: null,
+    collectorIntervalH: MARKET_STATS.pricesRefreshHours,
   });
 
   const fetchStats = () => {
-    fetch(`${API_URL}/dashboard/data`)
+    fetch(`${API_URL}/health/stats`)
       .then((r) => r.json())
       .then((d) => {
-        const k = d.kpis || {};
-        const c = d.collector || {};
         setStats({
-          indexed: k.total_indexed ?? k.total_snapshots ?? null,
-          snapshots24h: k.snapshots_24h ?? null,
-          storesInCatalog: k.stores_indexed ?? k.active_stores ?? null,
-          fresh24hPct: k.fresh_24h_pct ?? null,
-          coverage7dPct: k.coverage_7d_pct ?? null,
-          moatAgeHours: k.moat_age_hours ?? null,
-          totalSnapshotsAll: d.total_snapshots_all ?? null,
-          avgDaily7d: d.avg_daily_snapshots_7d ?? null,
-          moatStart: d.moat_start ?? null,
-          collectorStatus: c.status ?? null,
-          collectorIntervalH: c.interval_hours ?? MARKET_STATS.pricesRefreshHours,
+          indexed: d.total_indexed ?? null,
+          snapshots24h: d.snapshots_24h ?? null,
+          storesInCatalog: d.stores_indexed ?? null,
+          fresh24hPct: d.fresh_24h_pct ?? null,
+          coverage7dPct: d.coverage_7d_pct ?? null,
+          moatAgeHours: d.moat_age_hours ?? null,
+          totalSnapshotsAll: d.total_indexed ?? null,
+          avgDaily7d: d.avg_daily_7d ?? null,
+          moatStart: d.generated_at ?? null,
+          collectorStatus: d.collector_status ?? null,
+          collectorIntervalH: MARKET_STATS.pricesRefreshHours,
         });
       })
       .catch(() => {});
