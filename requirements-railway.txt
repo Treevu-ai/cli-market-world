@@ -7,4 +7,4 @@ python-multipart>=0.0.9
 psycopg2-binary>=2.9
 asyncpg
 playwright>=1.45.0
-cli-market-backend @ git+https://github.com/Treevu-ai/cli-market-backend.git@main
+cli-market-backend @ git+https://github.com/Treevu-ai/cli-market-backend.git@treevu-ai-main
