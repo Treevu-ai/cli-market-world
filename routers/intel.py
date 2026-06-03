@@ -21,7 +21,7 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 from market_core import STORES, get_db, price_to_usd
-from market_billing import db_get_subscription, TIERS
+from market_billing import db_get_subscription
 from server_deps import require_api_key, require_pro, require_starter
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
