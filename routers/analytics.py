@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Header
 
 from market_core import get_db
-from market_indicators import get_indicator_catalog, get_latest_values
+from backend_interface import get_indicator_catalog, get_latest_values
 from server_deps import require_api_key
 
 router = APIRouter(tags=["analytics"])

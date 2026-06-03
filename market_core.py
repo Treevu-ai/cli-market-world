@@ -111,11 +111,7 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-try:
-    from store_credentials import get_default_stores, resolve_store_config  # noqa: F401
-except ImportError:
-    get_default_stores = lambda: frozenset()  # type: ignore[assignment]
-    resolve_store_config = lambda s: STORES.get(s, {})  # type: ignore[assignment]
+from backend_interface import get_default_stores, resolve_store_config  # noqa: F401  (re-exported)
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
@@ -468,7 +464,7 @@ def _migrate_indicator_schema(db) -> None:
             CREATE INDEX IF NOT EXISTS idx_enrich_cache_at ON enrichment_cache(recorded_at);
         """)
     try:
-        from market_indicators import seed_indicator_definitions
+        from backend_interface import seed_indicator_definitions
 
         seed_indicator_definitions(db)
     except Exception as e:
@@ -711,7 +707,7 @@ def save_price_snapshot(p: dict, db: "_DB | None" = None) -> None:
     price = float(p.get("price", 0) or 0)
     list_price_raw = p.get("list_price", 0)
     list_price = float(list_price_raw) if list_price_raw else None
-    from price_confidence import compute_snapshot_confidence
+    from backend_interface import compute_snapshot_confidence
 
     confidence = p.get("confidence") or compute_snapshot_confidence(price, list_price)
     params = (

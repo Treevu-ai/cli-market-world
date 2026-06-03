@@ -22,7 +22,7 @@ from dashboard_glossary import (
     build_metric_glossary,
 )
 from dashboard_quality import build_quality_funnel, count_flagged_discounts
-from data_v1_service import count_flagged_outliers
+from backend_interface import count_flagged_outliers
 from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
 from server_deps import require_admin, require_user
@@ -733,7 +733,7 @@ def _dashboard_data():
     enrichment_latest: list[dict] = []
     indicator_by_country: dict[str, list[dict]] = {}
     try:
-        from market_indicators import ENRICHMENT_INDICATOR_KEYS, get_latest_values
+        from backend_interface import ENRICHMENT_INDICATOR_KEYS, get_latest_values
 
         # Fetch per-country enrichment for all 8 countries
         enrichment_keys = set(ENRICHMENT_INDICATOR_KEYS)

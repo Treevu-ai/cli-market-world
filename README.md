@@ -53,16 +53,17 @@ market enrichment --refresh -c PE
 
 | Plan | Free | Starter | Pro | Enterprise |
 |------|------|---------|-----|------------|
-| **Precio** | $0 | $9/mes (S/34) | $49/mes (S/185) | A medida |
-| **Solicitudes** | 1,000/día | 1,000/día | 10,000/día | Ilimitadas |
-| **API keys** | 1 (lectura) | 3 (lectura) | 10 (lectura+escritura) | Ilimitadas |
-| **Checkout** | — | — | ✅ (tras activacion) | ✅ |
-| **Exportar** | — | JSON | JSON/CSV | ✅ |
-| **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 |
-| **Trial** | — | 14 dias gratis | 14 dias gratis | — |
-| **Anual** | — | $90/ano (S/340) | $490/ano (S/1,850) | — |
-
-> 📄 Posicionamiento en español (API / landing / ventas): [`../cli-market-content/strategy/api-positioning-es.md`](../cli-market-content/strategy/api-positioning-es.md)
+| **Precio** | $0 | $9/mes | $49/mes | A medida |
+| **Solicitudes/día** | 1,000 | 5,000 | 10,000 | Ilimitadas |
+| **Solicitudes/min** | 60 | 120 | 300 | Ilimitadas |
+| **API keys** | 1 | 3 | 10 | Ilimitadas |
+| **Agente intel** | — | 50 consultas/mes | Ilimitado | Ilimitado + white-label |
+| **Alertas de precio** | — | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
+| **Historial de precios** | 7 días | 30 días | 12 meses | Completo |
+| **Exportar datos** | — | CSV básico (10k filas) | CSV ilimitado + cron | Feed directo S3/webhook |
+| **Checkout** | — | — | ✅ PayPal / Yape / Wise | ✅ |
+| **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 + SLA escrito |
+| **Anual** | — | $90/año | $490/año | — |
 
 ---
 
@@ -113,14 +114,17 @@ market enrichment --refresh -c PE
 
 | Plan | Free | Starter | Pro | Enterprise |
 |------|------|---------|-----|------------|
-| **Price** | $0 | $9/mo (S/34) | $49/mo (S/185) | Custom |
-| **Requests** | 1,000/day | 1,000/day | 10,000/day | Unlimited |
-| **API keys** | 1 (read) | 3 (read) | 10 (read+write) | Unlimited |
-| **Checkout** | — | — | ✅ (after email activation) | ✅ |
-| **Export** | — | JSON | JSON/CSV | ✅ |
-| **Support** | Community | Email 48h | Email 4h | 24/7 |
-| **Trial** | — | 14 days free | 14 days free | — |
-| **Annual** | — | $90/yr (S/340) | $490/yr (S/1,850) | — |
+| **Price** | $0 | $9/mo | $49/mo | Custom |
+| **Requests/day** | 1,000 | 5,000 | 10,000 | Unlimited |
+| **Requests/min** | 60 | 120 | 300 | Unlimited |
+| **API keys** | 1 | 3 | 10 | Unlimited |
+| **Intel agent** | — | 50 queries/month | Unlimited | Unlimited + white-label |
+| **Price alerts** | — | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |
+| **Price history** | 7 days | 30 days | 12 months | Full dataset |
+| **Export** | — | CSV basic (10k rows) | CSV unlimited + cron | Direct S3/webhook feed |
+| **Checkout** | — | — | ✅ PayPal / Yape / Wise | ✅ |
+| **Support** | Community | Email 48h | Email 4h | 24/7 + written SLA |
+| **Annual** | — | $90/yr | $490/yr | — |
 
 ---
 
