@@ -172,9 +172,11 @@ def test_countries():
 
 
 def test_analytics_stats():
-    r = client.get("/analytics/stats")
+    """Analytics router moved to private backend; test the health/db endpoint instead."""
+    r = client.get("/health/db")
     assert r.status_code == 200
-    assert "total_price_snapshots" in r.json()
+    data = r.json()
+    assert "backend" in data
 
 
 # ── New tests: stores, lines, countries content ────────────────────────────

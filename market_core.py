@@ -111,7 +111,11 @@ _country_names: dict[str, str] = {
 for _cc in COUNTRIES:
     COUNTRIES[_cc]["name"] = _country_names.get(_cc, _cc)
 
-from store_credentials import get_default_stores, resolve_store_config  # noqa: F401
+try:
+    from store_credentials import get_default_stores, resolve_store_config  # noqa: F401
+except ImportError:
+    get_default_stores = lambda: frozenset()  # type: ignore[assignment]
+    resolve_store_config = lambda s: STORES.get(s, {})  # type: ignore[assignment]
 PAGE_SIZE = 20
 
 # ── Currency ──────────────────────────────────────────────────────────────────
@@ -241,9 +245,12 @@ async def fetch_store(store: str, term: str, page: int = 1, limit: int = PAGE_SI
     """Search a store's catalog API. Platform-agnostic."""
     store_config = resolve_store_config(store)
     platform = store_config.get("platform", "vtex")
-    from market_connectors import get_connector
-    connector = get_connector(platform)
-    return await connector.search(store_config, term, page, limit)
+    try:
+        from market_connectors import get_connector
+        connector = get_connector(platform)
+        return await connector.search(store_config, term, page, limit)
+    except ImportError:
+        raise RuntimeError("cli-market-backend package not installed — cannot fetch stores directly")
 
 def product_from_json(p: dict, store: str) -> dict:
     """Normalize a product JSON into a flat dict. Platform-agnostic."""
@@ -251,9 +258,18 @@ def product_from_json(p: dict, store: str) -> dict:
         return {"id": "", "name": str(p)[:80], "price": 0, "store": store, "store_name": store, "currency": "USD"}
     store_config = resolve_store_config(store)
     platform = store_config.get("platform", "vtex")
-    from market_connectors import get_connector
-    connector = get_connector(platform)
-    return connector.normalize(p, store, store_config)
+    try:
+        from market_connectors import get_connector
+        connector = get_connector(platform)
+        return connector.normalize(p, store, store_config)
+    except ImportError:
+        # Fallback: basic normalization without platform connector
+        return {
+            "id": str(p.get("id", "")), "name": str(p.get("name", ""))[:200],
+            "price": float(p.get("price", 0) or 0), "store": store,
+            "store_name": STORES.get(store, {}).get("name", store),
+            "currency": STORES.get(store, {}).get("currency", "USD"),
+        }
 
 # ── Last-search cache (for CLI auto-fill via table #) ─────────────────────────
 

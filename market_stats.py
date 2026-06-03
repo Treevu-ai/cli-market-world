@@ -1,29 +1,81 @@
 """Canonical marketing stats — single source of truth for README, PyPI, landing.
 
 Always phrase retailers as: "60 retailers, 30 verified active" (defined vs live).
+Auto-derived from market_stores.py, market_mcp.py, store_credentials.py.
 Run: python3 ops/sync_market_stats.py
 """
 
 from __future__ import annotations
 
-# ── Canonical figures (aligned to market_stores.py catalog) ─────────────────
-RETAILERS_DEFINED = 60
-RETAILERS_VERIFIED = 30
+# ── Derived from codebase (never stale) ──────────────────────────────────────
+
+def _stores():
+    from market_stores import STORES
+    return STORES
+
+def _default_store_keys():
+    try:
+        from store_credentials import get_default_stores
+        return get_default_stores()
+    except ImportError:
+        # Fallback: return all stores when private package not installed
+        return tuple(_stores.keys())
+
+def _mcp_tools_count():
+    from market_mcp import TOOLS
+    return len(TOOLS)
+
+def _indicators_count():
+    try:
+        from market_indicators import INDICATOR_DEFINITIONS
+        return len(INDICATOR_DEFINITIONS)
+    except ImportError:
+        return 0  # indicator definitions not available without backend
+
+
+# ── Canonical figures (computed at import time) ─────────────────────────────
+
+_stores = _stores()
+_defaults = frozenset(_default_store_keys())
+
+RETAILERS_DEFINED = len(_stores)
+RETAILERS_VERIFIED = len(_defaults)  # active = stores with credentials configured
 PLATFORMS = 3
-PLATFORM_VTEX = 38
-PLATFORM_SHOPIFY = 15
-PLATFORM_MAGENTO = 7
-COUNTRIES = 8
-COUNTRY_CODES = ("PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR")
-MCP_TOOLS = 43
-INDICATORS_COUNT = 34
+PLATFORM_VTEX = sum(1 for s in _stores.values() if s.get("platform") == "vtex")
+PLATFORM_SHOPIFY = sum(1 for s in _stores.values() if s.get("platform") == "shopify")
+PLATFORM_MAGENTO = sum(1 for s in _stores.values() if s.get("platform") == "magento")
+COUNTRIES = len({s["country"] for s in _stores.values()})
+COUNTRY_CODES = tuple(sorted({s["country"] for s in _stores.values()}))
+MCP_TOOLS = _mcp_tools_count()
+INDICATORS_COUNT = _indicators_count()
 ENRICHMENT_SOURCES_LABEL = "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB"
-PRICES_VERIFIED_LABEL = "43,000+"  # live: dashboard kpis.total_indexed
-PRICES_REFRESH_HOURS = 4   # collector daemon interval
+PRICES_REFRESH_HOURS = 4
+
+def _live_price_label(fallback: str = "45,000+") -> str:
+    """Fetch total snapshots from health/db endpoint and round to nearest thousand."""
+    import os
+    try:
+        import httpx
+        api = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+        r = httpx.get(f"{api}/health/db", timeout=10)
+        r.raise_for_status()
+        n = r.json().get("snapshots", 0)
+        if n and n > 0:
+            return f"{round(n / 1000) * 1000:,}+"
+    except Exception:
+        pass
+    return fallback
+
+PRICES_VERIFIED_LABEL = _live_price_label()
 PACKAGE_VERSION = "1.7.0"
 LICENSE = "MIT"
 PAYMENTS_LABEL = "PayPal + QR (Yape/Plin)"
 BUSINESS_LINES = 6
+
+SHOPIFY_BRANDS = tuple(
+    _stores[k]["name"] for k in sorted(_stores)
+    if _stores[k].get("platform") == "shopify"
+)
 
 RETAILERS_PHRASE_EN = f"{RETAILERS_DEFINED} retailers, {RETAILERS_VERIFIED} verified active"
 RETAILERS_PHRASE_ES = f"{RETAILERS_DEFINED} retailers, {RETAILERS_VERIFIED} verificados activos"
@@ -85,22 +137,3 @@ def seo_description() -> str:
         f"{COUNTRIES} countries. {PRICES_VERIFIED_LABEL} verified shelf prices refreshed every {PRICES_REFRESH_HOURS} hours. "
         "Normalized per kg/L, quality-filtered. pip install cli-market."
     )
-
-
-SHOPIFY_BRANDS = (
-    "Adidas",
-    "Gymshark",
-    "Allbirds",
-    "Alo Yoga",
-    "Glossier",
-    "Fenty Beauty",
-    "Kylie Cosmetics",
-    "ColourPop",
-    "Brooklinen",
-    "Casper",
-    "On Running",
-    "Parachute",
-    "Nomad",
-    "Magic Mind",
-    "Privalia BR",
-)

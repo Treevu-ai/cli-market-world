@@ -12,13 +12,13 @@ Usage:
     python collect_prices.py --report     # latest prices per line
 """
 
-import asyncio, json, os, sqlite3, time
+import asyncio, json, os, time
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 import httpx
 
 from market_core import (
-    STORES, LINES, DB_FILE, logger as log,
+    STORES, LINES, logger as log,
     product_from_json as _pfj, fetch_store as _fetch_store,
     ensure_db_initialized,
 )
@@ -491,15 +491,10 @@ if USE_PG:
     async def pg_run_end(conn, rid, ok, total, errs):
         await conn.execute("UPDATE collector_runs SET finished_at=NOW(), stores_succeeded=$1, prices_collected=$2, errors=$3 WHERE id=$4", ok, total, errs, rid)
 
-# SQLite helpers — always defined (PostgreSQL helper block above is gated by USE_PG import)
-def get_sqlite():
-    c = sqlite3.connect(str(DB_FILE)); c.row_factory = sqlite3.Row
-    c.execute("PRAGMA journal_mode=WAL"); c.execute("PRAGMA busy_timeout=5000"); return c
-
-def init_schema_sqlite():
-    # Single source of truth: market_core.init_db() owns the DDL.
+def get_db_unified():
+    """Return a unified DB handle (_DB) — works with both PG and SQLite."""
     ensure_db_initialized()
-    return get_sqlite()
+    return get_db()
 
 def sq_insert(db, prod):
     from market_core import save_price_snapshot
@@ -801,7 +796,7 @@ async def run_collection(stores, queries):
                 len(sl), len(errs),
             )
     else:
-        db = init_schema_sqlite()
+        db = get_db_unified()
         rid = sq_run_start(db, len(sl))
         batch_size = max(1, min(PARALLEL, len(sl)))
         for i in range(0, len(sl), batch_size):
@@ -820,53 +815,37 @@ async def run_collection(stores, queries):
 
 # ── Status / Report ─────────────────────────────────────────────────────────
 
-async def status_pg():
-    pool=await get_pool()
-    async with pool.acquire() as c:
-        total=await c.fetchval("SELECT COUNT(*) FROM price_snapshots")
-        stores=await c.fetchval("SELECT COUNT(DISTINCT store) FROM price_snapshots")
-        latest=await c.fetchval("SELECT MAX(queried_at) FROM price_snapshots")
-        runs=await c.fetchval("SELECT COUNT(*) FROM collector_runs")
-        print(f"═══ Price Collector (PostgreSQL) ═══\n  Prices: {total:,} | Stores: {stores}/{len(STORES)} | Latest: {latest or 'never'} | Runs: {runs}")
-        top=await c.fetch("SELECT store_name, COUNT(*) n FROM price_snapshots GROUP BY store_name ORDER BY n DESC LIMIT 5")
-        if top: print("  Top:"); [print(f"    {r['store_name'][:25]:<25} {r['n']:>6}") for r in top]
-
-def status_sqlite():
-    db=get_sqlite()
-    total=db.execute("SELECT COUNT(*) c FROM price_snapshots").fetchone()["c"]
-    stores=db.execute("SELECT COUNT(DISTINCT store) c FROM price_snapshots").fetchone()["c"]
-    latest=db.execute("SELECT MAX(queried_at) m FROM price_snapshots").fetchone()["m"]
-    runs=db.execute("SELECT COUNT(*) c FROM collector_runs").fetchone()["c"]
-    print(f"═══ Price Collector (SQLite) ═══\n  Prices: {total:,} | Stores: {stores}/{len(STORES)} | Latest: {latest or 'never'} | Runs: {runs}")
-    top=db.execute("SELECT store_name, COUNT(*) n FROM price_snapshots GROUP BY store_name ORDER BY n DESC LIMIT 5").fetchall()
-    if top: print("  Top:"); [print(f"    {r['store_name'][:25]:<25} {r['n']:>6}") for r in top]
-
 def do_status():
-    if USE_PG: asyncio.run(status_pg())
-    else: status_sqlite()
+    """Print collector status — works with both PG and SQLite via unified DB."""
+    db = get_db()
+    backend = "PostgreSQL" if USE_PG else "SQLite"
+    total = db.execute("SELECT COUNT(*) c FROM price_snapshots").fetchone()["c"]
+    stores = db.execute("SELECT COUNT(DISTINCT store) c FROM price_snapshots").fetchone()["c"]
+    latest = db.execute("SELECT MAX(queried_at) m FROM price_snapshots").fetchone()["m"]
+    runs = db.execute("SELECT COUNT(*) c FROM collector_runs").fetchone()["c"]
+    print(f"═══ Price Collector ({backend}) ═══\n  Prices: {total:,} | Stores: {stores}/{len(STORES)} | Latest: {latest or 'never'} | Runs: {runs}")
+    top = db.execute("SELECT store_name, COUNT(*) n FROM price_snapshots GROUP BY store_name ORDER BY n DESC LIMIT 5").fetchall()
+    if top: print("  Top:"); [print(f"    {r['store_name'][:25]:<25} {r['n']:>6}") for r in top]
+    db.close()
 
 def do_report():
-    if USE_PG:
-        async def r():
-            pool=await get_pool()
-            async with pool.acquire() as c:
-                rows=await c.fetch("SELECT line,line_name,COUNT(*) c,MIN(price) mn,MAX(price) mx,AVG(price) av,MAX(queried_at) lt FROM price_snapshots WHERE price>0 GROUP BY line,line_name ORDER BY c DESC")
-                print("═══ Latest Prices by Line ═══\n")
-                for r in rows:
-                    print(f"[{r['line_name']}]  {r['c']:,} prices | {r['mn']:.2f}–{r['mx']:.2f} | avg {r['av']:.2f} | {r['lt']}")
-                    ch=await c.fetch("SELECT name,store_name,price,currency FROM price_snapshots WHERE line=$1 AND price>0 ORDER BY price ASC LIMIT 3", r["line"])
-                    for p in ch: print(f"    ↓ {p['name'][:45]:<45} {p['store_name'][:15]:<15} {p['currency']} {p['price']:.2f}")
-                    print()
-        asyncio.run(r())
-    else:
-        db=get_sqlite()
-        rows=db.execute("SELECT line,line_name,COUNT(*) c,MIN(price) mn,MAX(price) mx,AVG(price) av,MAX(queried_at) lt FROM price_snapshots WHERE price>0 GROUP BY line ORDER BY c DESC").fetchall()
-        print("═══ Latest Prices by Line ═══\n")
-        for r in rows:
-            print(f"[{r['line_name']}]  {r['c']:,} prices | {r['mn']:.2f}–{r['mx']:.2f} | avg {r['av']:.2f} | {r['lt']}")
-            ch=db.execute("SELECT name,store_name,price,currency FROM price_snapshots WHERE line=? AND price>0 ORDER BY price ASC LIMIT 3",(r["line"],)).fetchall()
-            for p in ch: print(f"    ↓ {p['name'][:45]:<45} {p['store_name'][:15]:<15} {p['currency']} {p['price']:.2f}")
-            print()
+    """Print latest prices by line — works with both PG and SQLite via unified DB."""
+    db = get_db()
+    rows = db.execute(
+        "SELECT line,line_name,COUNT(*) c,MIN(price) mn,MAX(price) mx,AVG(price) av,MAX(queried_at) lt "
+        "FROM price_snapshots WHERE price>0 GROUP BY line,line_name ORDER BY c DESC"
+    ).fetchall()
+    print("═══ Latest Prices by Line ═══\n")
+    for row in rows:
+        print(f"[{row['line_name']}]  {row['c']:,} prices | {row['mn']:.2f}–{row['mx']:.2f} | avg {row['av']:.2f} | {row['lt']}")
+        ch = db.execute(
+            "SELECT name,store_name,price,currency FROM price_snapshots WHERE line=? AND price>0 ORDER BY price ASC LIMIT 3",
+            (row["line"],)
+        ).fetchall()
+        for p in ch:
+            print(f"    ↓ {p['name'][:45]:<45} {p['store_name'][:15]:<15} {p['currency']} {p['price']:.2f}")
+        print()
+    db.close()
 
 # ── Main ────────────────────────────────────────────────────────────────────
 

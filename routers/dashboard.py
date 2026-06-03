@@ -218,7 +218,7 @@ def collector_trigger(authorization: str | None = Header(None)):
 def _dashboard_data():
     db = get_db()
     now = datetime.now(timezone.utc)
-    cutoff_24h_sql = "datetime('now', '-24 hours')"
+    cutoff_24h_sql = "NOW() - INTERVAL '24 hours'"
 
     # ── KPIs: moat size vs 24h refresh (distinct metrics) ─────────────────────
     total_indexed = db.execute(

@@ -18,10 +18,10 @@ const cases = [
     title_en: "Market data",
     desc_es: `${MARKET_STATS.pricesVerifiedLabel} precios normalizados, ${MARKET_STATS.indicatorsCount} indicadores, fuentes públicas (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
     desc_en: `${MARKET_STATS.pricesVerifiedLabel} normalized prices, ${MARKET_STATS.indicatorsCount} indicators, public sources (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
-    href: "https://cli-market-production.up.railway.app/dashboard",
+    href: "#scale",
   },
   {
-    icon: "🧺",
+    icon: "\ud83e\uddfa",
     title_es: "Canasta multi-retailer",
     title_en: "Multi-retailer basket",
     desc_es: "Compara tu carrito completo entre cadenas. Precios por kg/L para decisiones de compra informadas.",
@@ -34,7 +34,7 @@ const cases = [
     title_en: "Shelf-price inflation",
     desc_es: `Cambios reales de precios actualizados cada ${MARKET_STATS.pricesRefreshHours} horas, no estimaciones con 30 días de retraso.`,
     desc_en: `Real price changes refreshed every ${MARKET_STATS.pricesRefreshHours} hours, not 30-day-lagged estimates.`,
-    href: "https://cli-market-production.up.railway.app/dashboard",
+    href: "#scale",
   },
 ];
 

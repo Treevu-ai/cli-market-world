@@ -69,10 +69,15 @@ class _DB:
         if self._pg:
             import psycopg2.extras
             sql = sql.replace("?", "%s")
-            sql = sql.replace("datetime('now')", "NOW()")
-            sql = sql.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
-            sql = sql.replace("datetime('now', '-7 days')", "NOW() - INTERVAL '7 days'")
+            # Replace longer datetime patterns FIRST so the generic datetime('now')
+            # doesn't swallow the interval variants.
             sql = sql.replace("datetime('now', '-14 days')", "NOW() - INTERVAL '14 days'")
+            sql = sql.replace("datetime('now', '-7 days')", "NOW() - INTERVAL '7 days'")
+            sql = sql.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
+            sql = sql.replace("datetime('now', '-30 days')", "NOW() - INTERVAL '30 days'")
+            sql = sql.replace("datetime('now', '-1 day')", "NOW() - INTERVAL '1 day'")
+            sql = sql.replace("datetime('now')", "NOW()")
+            sql = sql.replace("INSERT OR REPLACE", "INSERT")
             sql = sql.replace("INSERT OR IGNORE", "INSERT")
             cur = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cur.execute(sql, params)
