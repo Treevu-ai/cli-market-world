@@ -20,7 +20,7 @@ import os
 import re
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, field_validator
 
 from market_core import (
@@ -34,6 +34,8 @@ from market_core import (
     save_price_snapshot,
     save_search_query,
 )
+from server_deps import require_api_key
+
 try:
     from store_credentials import get_store_profile, store_exists
 except ImportError:
@@ -76,9 +78,10 @@ class BasketRequest(BaseModel):
 
 
 @router.post("/products/search")
-async def search_products(body: SearchRequest):
+async def search_products(body: SearchRequest, authorization: str | None = Header(None)):
     """Multi-store parallel search. Stores are queried in batches of PARALLEL_BATCH;
     a per-batch timeout prevents a slow store from holding up the whole response."""
+    require_api_key(authorization)
     try:
         return await _search_products(body)
     except Exception as e:
@@ -140,8 +143,9 @@ async def _search_products(body: SearchRequest):
 
 
 @router.post("/products/compare")
-async def compare_products(body: SearchRequest):
+async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
     """Cross-store comparison with brand+name fuzzy matching."""
+    require_api_key(authorization)
     stores = _resolve_search_stores(body)
     all_raw: dict[str, list] = {}
     for store in stores:
@@ -216,10 +220,11 @@ async def compare_products(body: SearchRequest):
 
 
 @router.post("/v1/basket/compare")
-async def basket_compare(body: BasketRequest):
+async def basket_compare(body: BasketRequest, authorization: str | None = Header(None)):
     """Take a list of items + optional stores list, return the cheapest store
     for the combined basket. Each item is searched in each store; missing
     items are skipped."""
+    require_api_key(authorization)
     stores = body.stores or list(STORES.keys())
     stores = [s for s in stores if s in STORES]
     results: dict[str, dict] = {}
@@ -277,8 +282,9 @@ async def basket_compare(body: BasketRequest):
 
 
 @router.get("/products/stock/{product_id}")
-def product_stock(product_id: str, store: str):
+def product_stock(product_id: str, store: str, authorization: str | None = Header(None)):
     """Latest stock snapshot for a product in a specific store."""
+    require_api_key(authorization)
     db = get_db()
     row = db.execute(
         "SELECT stock, name, store_name FROM price_snapshots "
