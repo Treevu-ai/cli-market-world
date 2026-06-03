@@ -150,12 +150,29 @@ def require_api_key(authorization: str | None) -> str:
         )
     username = auth_user(authorization.replace("Bearer ", ""))
     sub = db_get_subscription(username)
-    check_rate_limit_sqlite(
-        username,
-        window_secs=RATE_LIMIT_WINDOW,
-        max_req=sub["req_limit_min"],
-        daily_max=sub["req_limit_day"],
-    )
+    # -1 means unlimited (enterprise); skip rate limiting entirely.
+    if sub["req_limit_min"] != -1:
+        check_rate_limit_sqlite(
+            username,
+            window_secs=RATE_LIMIT_WINDOW,
+            max_req=sub["req_limit_min"],
+            daily_max=sub["req_limit_day"] if sub["req_limit_day"] != -1 else 10_000_000,
+        )
+    return username
+
+
+def require_starter(authorization: str | None) -> str:
+    """Require Starter tier or higher."""
+    username = require_api_key(authorization)
+    sub = db_get_subscription(username)
+    if sub.get("tier", "free") not in ("starter", "pro", "enterprise"):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "This endpoint requires CLI Market Starter ($9/mo) or higher. "
+                "Visit /billing/paypal to upgrade."
+            ),
+        )
     return username
 
 
