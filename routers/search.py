@@ -355,4 +355,7 @@ async def categories(store: str):
     url = f"{base}/api/catalog_system/pub/category/tree/10"
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.get(url)
+    try:
         return resp.json()
+    except Exception:
+        raise HTTPException(status_code=502, detail="Upstream returned non-JSON response")
