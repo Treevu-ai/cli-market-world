@@ -408,6 +408,17 @@ def init_db_pg(db: _DB) -> None:
     """)
     db.execute("CREATE INDEX IF NOT EXISTS idx_retailer_apply_email ON retailer_applications(contact_email)")
 
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS agent_queries (
+            id BIGSERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            queried_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_agent_queries_user_month ON agent_queries(username, queried_at)"
+    )
+
     from market_billing import _migrate_payment_schema
     _migrate_payment_schema(db)
     market_core._migrate_store_credentials(db)
@@ -589,4 +600,12 @@ _SQLITE_DDL = """\
             kind TEXT NOT NULL DEFAULT 'subscription',
             created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS agent_queries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            queried_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_agent_queries_user_month
+            ON agent_queries(username, queried_at);
 """

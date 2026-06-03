@@ -11,9 +11,46 @@ import market_core
 logger = market_core.logger
 
 TIERS = {
-    "free": {"req_min": 60, "req_day": 1000, "api_keys": 1, "checkout": False},
-    "pro": {"req_min": 300, "req_day": 10000, "api_keys": 10, "checkout": True},
-    "enterprise": {"req_min": 0, "req_day": 0, "api_keys": 0, "checkout": True},
+    "free": {
+        "req_min": 60,
+        "req_day": 1_000,
+        "api_keys": 1,
+        "checkout": False,
+        "agent_queries_month": 0,
+        "history_days": 7,
+        "alerts": 0,
+        "export": False,
+    },
+    "starter": {
+        "req_min": 120,
+        "req_day": 5_000,
+        "api_keys": 3,
+        "checkout": False,
+        "agent_queries_month": 50,
+        "history_days": 30,
+        "alerts": 0,
+        "export": True,        # CSV básico hasta 10k filas
+    },
+    "pro": {
+        "req_min": 300,
+        "req_day": 10_000,
+        "api_keys": 10,
+        "checkout": True,
+        "agent_queries_month": -1,   # -1 = ilimitado
+        "history_days": 365,
+        "alerts": 10,
+        "export": True,
+    },
+    "enterprise": {
+        "req_min": -1,               # -1 = sin límite
+        "req_day": -1,
+        "api_keys": -1,
+        "checkout": True,
+        "agent_queries_month": -1,
+        "history_days": -1,
+        "alerts": -1,
+        "export": True,
+    },
 }
 
 
@@ -94,12 +131,20 @@ def db_get_subscription(username: str) -> dict:
     ).fetchone()
     db.close()
     if row:
-        return dict(row)
-    return {
-        "tier": "free",
-        "req_limit_day": TIERS["free"]["req_day"],
-        "req_limit_min": TIERS["free"]["req_min"],
-    }
+        base = dict(row)
+    else:
+        base = {
+            "tier": "free",
+            "req_limit_day": TIERS["free"]["req_day"],
+            "req_limit_min": TIERS["free"]["req_min"],
+        }
+    # Enrich with tier capabilities so callers don't need to re-lookup TIERS.
+    tier_cfg = TIERS.get(base["tier"], TIERS["free"])
+    base.setdefault("agent_queries_month", tier_cfg["agent_queries_month"])
+    base.setdefault("history_days", tier_cfg["history_days"])
+    base.setdefault("alerts", tier_cfg["alerts"])
+    base.setdefault("export", tier_cfg["export"])
+    return base
 
 
 def db_set_subscription(
