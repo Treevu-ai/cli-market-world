@@ -34,7 +34,7 @@ except ImportError:
     reject_retailer_application = _unavailable
 
 from server_deps import require_admin
-from store_credentials import credential_summary, get_default_stores, invalidate_credential_cache
+from backend_interface import credential_summary, get_default_stores, invalidate_credential_cache
 
 router = APIRouter(prefix="/admin", tags=["admin-retailers"])
 
