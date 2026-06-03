@@ -74,6 +74,8 @@ class _DB:
             sql = sql.replace("datetime('now', '-14 days')", "NOW() - INTERVAL '14 days'")
             sql = sql.replace("datetime('now', '-7 days')", "NOW() - INTERVAL '7 days'")
             sql = sql.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
+            sql = sql.replace("datetime('now', '-30 days')", "NOW() - INTERVAL '30 days'")
+            sql = sql.replace("datetime('now', '-1 day')", "NOW() - INTERVAL '1 day'")
             sql = sql.replace("datetime('now')", "NOW()")
             sql = sql.replace("INSERT OR REPLACE", "INSERT")
             sql = sql.replace("INSERT OR IGNORE", "INSERT")
