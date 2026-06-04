@@ -1,8 +1,10 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import ContactForm from "@/components/ContactForm";
+import FreeSignupModal from "@/components/FreeSignupModal";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 type Tier = {
@@ -198,6 +200,7 @@ function TierCard({
 export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const [freeModalOpen, setFreeModalOpen] = useState(false);
 
   return (
     <section id="pricing" className="landing-section-alt animate-fade-in">
@@ -228,9 +231,12 @@ export default function Pricing() {
                     {isES ? tier.cta_es : tier.cta_en}
                   </a>
                 ) : tier.name === "Free" ? (
-                  <a href={tier.href} className="btn-mint">
+                  <button
+                    onClick={() => setFreeModalOpen(true)}
+                    className="btn-mint w-full"
+                  >
                     {isES ? tier.cta_es : tier.cta_en}
-                  </a>
+                  </button>
                 ) : null}
               </TierCard>
               {tier.name === "Pro" && tier.proNote_es && (
@@ -241,6 +247,8 @@ export default function Pricing() {
             </motion.div>
           ))}
         </div>
+
+        <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
 
         {/* Enterprise contact form */}
         <div id="contact-enterprise" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12 max-w-2xl mx-auto">
