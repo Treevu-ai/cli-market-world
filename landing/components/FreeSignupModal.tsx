@@ -49,7 +49,6 @@ export default function FreeSignupModal({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
-  const [newsletter, setNewsletter] = useState(true);
   const [legal, setLegal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -62,7 +61,6 @@ export default function FreeSignupModal({
       setEmail("");
       setName("");
       setCompany("");
-      setNewsletter(true);
       setLegal(false);
       setLoading(false);
       setDone(false);
@@ -90,7 +88,6 @@ export default function FreeSignupModal({
       profile ? `profile=${profile}` : "",
       name ? `name=${name}` : "",
       company ? `company=${company}` : "",
-      `newsletter=${newsletter}`,
     ].filter(Boolean);
 
     try {
@@ -104,7 +101,6 @@ export default function FreeSignupModal({
           name: name || undefined,
           company: company || undefined,
           use_case: useCaseParts.join(" · "),
-          newsletter_optin: newsletter,
           lang: isES ? "es" : "en",
         }),
       });
@@ -255,20 +251,6 @@ export default function FreeSignupModal({
                 />
               </div>
             )}
-
-            <label className="flex items-start gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={newsletter}
-                onChange={(e) => setNewsletter(e.target.checked)}
-                className="mt-0.5 accent-[var(--cm-mint)] shrink-0"
-              />
-              <span className="text-sm text-[var(--cm-on-surface-variant)]">
-                {isES
-                  ? "Suscribirme al Price Pulse semanal — datos de mercado LATAM cada martes. Sin spam."
-                  : "Subscribe to the weekly Price Pulse — LATAM market data every Tuesday. No spam."}
-              </span>
-            </label>
 
             <label className="flex items-start gap-3 cursor-pointer select-none">
               <input
