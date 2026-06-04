@@ -94,8 +94,15 @@ class _DB:
             sql = sql.replace("datetime('now', '-30 days')", "NOW() - INTERVAL '30 days'")
             sql = sql.replace("datetime('now', '-1 day')", "NOW() - INTERVAL '1 day'")
             sql = sql.replace("datetime('now')", "NOW()")
-            sql = sql.replace("INSERT OR REPLACE", "INSERT")
-            sql = sql.replace("INSERT OR IGNORE", "INSERT")
+            # INSERT OR IGNORE must keep its conflict guard on PG: a bare INSERT
+            # raises UniqueViolation and aborts the txn instead of skipping. Append
+            # ON CONFLICT DO NOTHING unless the statement already has its own clause.
+            if "INSERT OR IGNORE" in sql:
+                sql = sql.replace("INSERT OR IGNORE", "INSERT")
+                if "ON CONFLICT" not in sql.upper():
+                    sql += " ON CONFLICT DO NOTHING"
+            else:
+                sql = sql.replace("INSERT OR REPLACE", "INSERT")
             cur = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             try:
                 cur.execute(sql, params)
