@@ -16,7 +16,7 @@ export default function CoverageToUseCasesBridge() {
           {isES ? (
             <>
               Con esta cobertura,{" "}
-              <a href="#pricing-intelligence" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+              <a href="#intelligence" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 equipos de pricing y trade
               </a>{" "}
               validan spreads e inflación;{" "}
@@ -28,7 +28,7 @@ export default function CoverageToUseCasesBridge() {
           ) : (
             <>
               With this coverage,{" "}
-              <a href="#pricing-intelligence" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+              <a href="#intelligence" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 pricing and trade teams
               </a>{" "}
               validate spreads and inflation;{" "}
