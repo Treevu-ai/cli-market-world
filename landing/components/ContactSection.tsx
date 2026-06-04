@@ -1,8 +1,8 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
-import ContactForm from "@/components/ContactForm";
 import RetailerApplyForm from "@/components/RetailerApplyForm";
+import UnifiedContactForm from "@/components/UnifiedContactForm";
 
 export default function ContactSection() {
   const { lang } = useLang();
@@ -15,10 +15,11 @@ export default function ContactSection() {
         <h2 className="section-title mb-2 text-center">{isES ? "Hablemos" : "Let's talk"}</h2>
         <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-12 text-center">
           {isES
-            ? "Listado retailer gratis abajo. Intelligence, Enterprise o alianzas — formulario general."
-            : "Free retailer listing below. Intelligence, Enterprise, or partnerships — general form."}
+            ? "Listado retailer gratis abajo. Enterprise, prensa o consulta general — formulario unificado."
+            : "Free retailer listing below. Enterprise, press, or general inquiry — unified form."}
         </p>
 
+        {/* Door B — Retailers */}
         <div id="contact-retailers" className="scroll-mt-24 mb-16">
           <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3 text-center">
             {isES ? "Puerta B · Retailers" : "Door B · Retailers"}
@@ -26,33 +27,11 @@ export default function ContactSection() {
           <RetailerApplyForm />
         </div>
 
+        {/* Unified contact form */}
         <div id="contact-general" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12">
-          <ContactForm
-            plan="enterprise"
-            eyebrow={isES ? "General" : "General"}
-            title={isES ? "¿Otra consulta o alianza?" : "Other inquiry or partnership?"}
-            subtitle={
-              isES
-                ? "Intelligence, volumen Enterprise o prensa — le respondemos en menos de 30 min."
-                : "Intelligence, Enterprise volume, or press — we reply within 30 min."
-            }
-          />
+          <UnifiedContactForm />
         </div>
       </div>
-    
-        <div id="newsletter" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12">
-          <ContactForm
-            plan="newsletter"
-            eyebrow={isES ? "Newsletter" : "Newsletter"}
-            title={isES ? "Price Pulse semanal" : "Weekly Price Pulse"}
-            subtitle={
-              isES
-                ? "Datos de mercado LATAM cada martes. Sin spam. Gratis."
-                : "LATAM market data every Tuesday. No spam. Free."
-            }
-            placeholder={isES ? "Solo tu email para suscribirte" : "Just your email to subscribe"}
-          />
-        </div>
-  </section>
+    </section>
   );
 }
