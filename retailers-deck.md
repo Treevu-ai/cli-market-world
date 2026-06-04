@@ -16,12 +16,12 @@ AI agents can't shop in physical retail. They need structured product data — p
 
 | Metric | Value |
 |---|---|
-| Retailers live | 31 (VTEX, Shopify-ready, Magento-ready) |
-| Prices indexed | 43,000+ |
+| Retailers live | 36 verified active (66 in catalog) |
+| Prices indexed | 45,000+ |
 | Products tracked | 8,000+ |
-| Countries | 8 (PE, AR, BR, MX, CO, CL, US, +) |
+| Countries | 11 (PE, AR, BR, MX, CO, CL, US, +) |
 | MCP tools | 43 (search, compare, basket, checkout, inflation, enrichment…) |
-| Refresh cycle | Every 8 hours |
+| Refresh cycle | Every 4 hours |
 | License | MIT (open source) |
 
 ## What you get
@@ -37,7 +37,7 @@ AI agents can't shop in physical retail. They need structured product data — p
 
 1. **You**: Generate a read-only API token (Shopify Storefront token, Magento integration, or VTEX public endpoint)
 2. **Us**: Add your store config to our collector (1 line of code)
-3. **Automated**: Every 8 hours, our collector indexes your catalog into PostgreSQL
+3. **Automated**: Every 4 hours, our collector indexes your catalog into PostgreSQL
 4. **Agents**: AI agents discover your products via MCP tools, CLI, or REST API
 
 ## Integration guides

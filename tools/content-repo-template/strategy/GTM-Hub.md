@@ -49,11 +49,11 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 
 | Concepto | Mensaje acordado (canónico: `landing/lib/marketStats.ts`) | Landing pública (verificar) |
 |----------|-------------------------------------------|-----------------------------|
-| Retailers | 60 en catálogo (30 verificados activos) | ✅ 60 / 30 |
+| Retailers | 66 en catálogo (36 verificados activos) | ✅ 66 / 36 |
 | Plataformas | 3 (VTEX · Shopify · Magento) | ✅ 3 |
-| Países | 8 | ✅ 8 |
-| MCP tools | 36 | ✅ 36 + `/tools` |
-| Precios indexados | 43,000+, refresh 8h | ✅ |
+| Países | 11 | ✅ 11 |
+| MCP tools | 43 | ✅ 43 + `/tools` |
+| Precios indexados | 45,000+, refresh 4h | ✅ |
 | Pitch | Commerce infrastructure for AI agents · `pip install cli-market` | ✅ |
 
 > Fuente única: `python3 ops/sync_market_stats.py` regenera `landing/lib/marketStats.ts`. Alinear copy a esos valores.
