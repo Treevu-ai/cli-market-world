@@ -54,58 +54,82 @@ const tiers: Tier[] = [
   },
   {
     name: "Starter",
-    price: "$9",
-    latamPrice: "S/34",
-    annualPrice: "$90",
-    annualLatamPrice: "S/340",
+    price: "$29",
+    latamPrice: "S/109",
+    annualPrice: "$290",
+    annualLatamPrice: "S/1,090",
     period_es: "/ mes",
     period_en: "/ month",
-    trial_es: "14 dias gratis",
+    trial_es: "14 días gratis",
     trial_en: "14 days free",
     f_es: [
       "5,000 consultas / día",
       "3 claves API (lectura)",
-      "Exportación CSV básico",
-      "Soporte email 48h",
+      "3 alertas de precio",
+      "Exportación CSV · soporte 48h",
     ],
     f_en: [
       "5,000 requests / day",
       "3 API keys (read-only)",
-      "Basic CSV export",
-      "Email support 48h",
+      "3 price alerts",
+      "CSV export · email support 48h",
     ],
     cta_es: "Probar gratis",
     cta_en: "Try free",
   },
   {
     name: "Pro",
-    price: "$49",
-    latamPrice: "S/185",
-    annualPrice: "$490",
-    annualLatamPrice: "S/1,850",
-    trial_es: "14 dias gratis",
+    price: "$79",
+    latamPrice: "S/299",
+    annualPrice: "$790",
+    annualLatamPrice: "S/2,990",
+    trial_es: "14 días gratis",
     trial_en: "14 days free",
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [
       "10,000 consultas / día",
       "10 claves API (lectura y escritura)",
-      "Exportación de precios (JSON/CSV)",
-      "Checkout con PayPal + Yape/Plin",
+      "Checkout PayPal + Yape/Plin",
+      "10 alertas · historial 12 meses",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
-      "Price data export (JSON/CSV)",
-      "Checkout with PayPal + Yape/Plin",
+      "Checkout PayPal + Yape/Plin",
+      "10 alerts · 12-month history",
     ],
     cta_es: "Obtener Pro",
     cta_en: "Get Pro",
     featured: true,
     proNote_es:
-      "Para builders y agentes en producción. Facturación en soles con RUC 20613045563.",
+      "Para agentes en producción. Facturación en soles con RUC 20613045563.",
     proNote_en:
-      "For builders and agents in production. Invoicing in PEN with tax ID 20613045563.",
+      "For agents in production. Invoicing in PEN with tax ID 20613045563.",
+  },
+  {
+    name: "Builder",
+    price: "$149",
+    latamPrice: "S/565",
+    annualPrice: "$1,490",
+    annualLatamPrice: "S/5,650",
+    period_es: "/ mes",
+    period_en: "/ month",
+    f_es: [
+      "50,000 consultas / día",
+      "25 claves API · white-label",
+      "Intelligence API completa (34 indicadores)",
+      "Alertas y exportación ilimitadas",
+    ],
+    f_en: [
+      "50,000 requests / day",
+      "25 API keys · white-label",
+      "Full Intelligence API (34 indicators)",
+      "Unlimited alerts & export",
+    ],
+    cta_es: "Construir con CLI Market",
+    cta_en: "Build with CLI Market",
+    href: "#contact-general",
   },
   {
     name: "Enterprise",
@@ -268,7 +292,7 @@ export default function Pricing() {
         </div>
 
         {/* Pricing cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-7xl mx-auto mb-12">
           {tiers.map((tier, i) => (
             <motion.div key={tier.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
               <TierCard tier={tier} isES={isES} billing={billing}>
