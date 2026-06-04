@@ -6,6 +6,8 @@ import ProSubscribeButton from "@/components/ProSubscribeButton";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import { MARKET_STATS } from "@/lib/marketStats";
 
+type Billing = "monthly" | "annual";
+
 type Tier = {
   name: string;
   price: string;
@@ -132,12 +134,21 @@ const tiers: Tier[] = [
 function TierCard({
   tier,
   isES,
+  billing,
   children,
 }: {
   tier: Tier;
   isES: boolean;
+  billing: Billing;
   children?: React.ReactNode;
 }) {
+  const isAnnual = billing === "annual";
+  const displayPrice = isAnnual && tier.annualPrice ? tier.annualPrice : tier.price;
+  const displayLatam = isAnnual && tier.annualLatamPrice ? tier.annualLatamPrice : tier.latamPrice;
+  const period = isAnnual && tier.annualPrice
+    ? (isES ? "/ año" : "/ year")
+    : (isES ? tier.period_es : tier.period_en);
+
   return (
     <div
       className={`h-full rounded-2xl p-6 text-left flex flex-col relative ${
@@ -156,16 +167,27 @@ function TierCard({
       <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
         {tier.name}
       </h3>
-      <div className="mt-3 mb-5">
+      <div className="mt-3 mb-1">
         <span className="text-3xl font-black break-all tabular-nums text-white">
-          {tier.price}
+          {displayPrice}
         </span>
-        {(tier.period_es || tier.period_en) && (
+        {period && (
           <span className="text-sm ml-1 text-[var(--cm-on-surface-variant)]">
-            {isES ? tier.period_es : tier.period_en}
+            {period}
           </span>
         )}
       </div>
+      {displayLatam && displayLatam !== "S/0" && (
+        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mb-1 font-mono">
+          {displayLatam}{period ? ` ${period}` : ""}
+        </p>
+      )}
+      {isAnnual && tier.annualPrice && (
+        <p className="text-xs text-[var(--cm-mint)] mb-4 font-mono">
+          {isES ? "2 meses gratis" : "2 months free"}
+        </p>
+      )}
+      {!isAnnual && <div className="mb-4" />}
       <ul className="space-y-2.5 mb-6 flex-1">
         {(isES ? tier.f_es : tier.f_en).map((f, i) => (
           <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--cm-on-surface-variant)]">
@@ -199,6 +221,7 @@ function TierCard({
 export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const [billing, setBilling] = useState<Billing>("monthly");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [starterModalOpen, setStarterModalOpen] = useState(false);
 
@@ -211,17 +234,44 @@ export default function Pricing() {
         <h2 className="section-title mb-2">
           {isES ? "Construido para escalar." : "Built to scale."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-12">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-8">
           {isES
             ? "Elige tu punto de entrada. Migra cuando crezcas sin cambiar de integración."
             : "Pick your entry point. Migrate as you grow without changing integrations."}
         </p>
 
+        {/* Billing toggle */}
+        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-10">
+          <button
+            onClick={() => setBilling("monthly")}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+              billing === "monthly"
+                ? "bg-[var(--cm-surface-high)] text-white"
+                : "text-[var(--cm-on-surface-variant)] hover:text-white"
+            }`}
+          >
+            {isES ? "Mensual" : "Monthly"}
+          </button>
+          <button
+            onClick={() => setBilling("annual")}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+              billing === "annual"
+                ? "bg-[var(--cm-surface-high)] text-white"
+                : "text-[var(--cm-on-surface-variant)] hover:text-white"
+            }`}
+          >
+            {isES ? "Anual" : "Annual"}
+            <span className="text-[10px] font-bold text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 px-1.5 py-0.5 rounded-full">
+              −17%
+            </span>
+          </button>
+        </div>
+
         {/* Pricing cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-12">
           {tiers.map((tier, i) => (
             <motion.div key={tier.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
-              <TierCard tier={tier} isES={isES}>
+              <TierCard tier={tier} isES={isES} billing={billing}>
                 {tier.name === "Pro" ? (
                   <div id="pro-checkout" className="scroll-mt-24">
                     <ProSubscribeButton />
