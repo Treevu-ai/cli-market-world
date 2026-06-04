@@ -2,6 +2,8 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/cli-market?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/cli-market)
+
 **🌐 [Español](#-español) · [English](#-english)**
 
 ---
