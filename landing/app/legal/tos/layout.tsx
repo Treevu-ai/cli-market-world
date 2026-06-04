@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — CLI Market",
-  description: "CLI Market Terms of Service. Governs use of the API, MCP tools, CLI client, and data services.",
+  title: "Términos de Servicio / Terms of Service — CLI Market",
+  description: "CLI Market Terms of Service / Términos de Servicio. Governs use of the API, MCP tools, CLI client, and data services.",
   alternates: { canonical: "/legal/tos" },
 };
 
