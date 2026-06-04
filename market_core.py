@@ -831,8 +831,16 @@ def db_list_api_keys(username: str) -> list[dict]:
 
 def db_revoke_api_key(username: str, key_id: int) -> bool:
     db = get_db()
+    if USE_PG:
+        row = db.execute(
+            "DELETE FROM api_keys WHERE id=? AND username=? RETURNING id",
+            (key_id, username),
+        ).fetchone()
+        db.commit()
+        db.close()
+        return row is not None
     db.execute("DELETE FROM api_keys WHERE id=? AND username=?", (key_id, username))
-    affected = db.execute("SELECT changes()").fetchone()[0] if not USE_PG else db._conn.cursor().rowcount
+    affected = db.execute("SELECT changes()").fetchone()[0]
     db.commit()
     db.close()
     return affected > 0
