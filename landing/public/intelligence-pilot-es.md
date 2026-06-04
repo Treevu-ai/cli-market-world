@@ -14,7 +14,7 @@ Equipos de **pricing**, **trade marketing**, **inteligencia comercial**, **finte
 - Inflación por línea y país (7 / 30 / 90 días según piloto)
 - Canasta básica con reglas de comparabilidad explícitas
 - Capa **clean / flagged / citable** — sin publicar outliers sin filtrar
-- **43.000+** precios verificados · **30** retailers activos · **8** países · refresh **8 h**
+- **45.000+** precios verificados · **36** retailers activos · **11** países · refresh **4 h**
 
 ## Por qué ahora
 
