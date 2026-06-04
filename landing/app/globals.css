@@ -359,3 +359,14 @@ body > div[class*="paypal-cart"],
 body > div[id*="paypal-cart"] {
   display: none !important;
 }
+
+/* Legal pages */
+.prose-legal { color: var(--cm-on-surface-variant); line-height: 1.75; }
+.prose-legal h2 { color: #fff; font-size: 1rem; font-weight: 700; margin: 2rem 0 0.5rem; }
+.prose-legal h3 { color: #fff; font-size: 0.875rem; font-weight: 600; margin: 1.5rem 0 0.25rem; }
+.prose-legal p { margin-bottom: 0.875rem; font-size: 0.875rem; }
+.prose-legal ul { margin: 0.5rem 0 0.875rem 1.25rem; list-style: disc; font-size: 0.875rem; }
+.prose-legal li { margin-bottom: 0.25rem; }
+.prose-legal a { color: var(--cm-mint); text-decoration: underline; text-underline-offset: 2px; }
+.prose-legal hr { border-color: color-mix(in srgb, var(--cm-outline-variant) 40%, transparent); margin: 2rem 0; }
+.prose-legal strong { color: #fff; font-weight: 600; }
