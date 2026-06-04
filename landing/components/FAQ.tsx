@@ -30,7 +30,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "Build (API/MCP): tier Free con 1.000 consultas/día sin costo; Pro USD 49/mes para export técnico y límites altos. Intelligence (datos comerciales): roadmap — próximamente. Listado retailer: gratis siempre.",
+        a: "Build (API/MCP): tier Free con 1.000 consultas/día sin costo; Pro USD 49/mes para export técnico y límites altos. Intelligence (datos comerciales para equipos de pricing y trade): en desarrollo — únete a la lista de espera en la sección Intelligence. Listado retailer: gratis siempre.",
       },
     ];
   }
@@ -58,7 +58,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How much does it cost?",
-      a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for technical export and higher limits. Intelligence (commercial data): roadmap — coming soon. Retailer listing: free forever.",
+      a: "Build (API/MCP): Free tier at 1,000 requests/day; Pro at USD 49/mo for technical export and higher limits. Intelligence (commercial data for pricing and trade teams): in development — join the waitlist in the Intelligence section. Retailer listing: free forever.",
     },
   ];
 }
