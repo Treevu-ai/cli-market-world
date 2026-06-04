@@ -63,7 +63,7 @@ market enrichment --refresh -c PE
 | **Alertas de precio** | — | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
 | **Historial de precios** | 7 días | 30 días | 12 meses | Completo |
 | **Exportar datos** | — | CSV básico (10k filas) | CSV ilimitado + cron | Feed directo S3/webhook |
-| **Checkout** | — | — | ✅ PayPal / Yape / Wise | ✅ |
+| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 + SLA escrito |
 | **Anual** | — | $90/año | $490/año | — |
 
@@ -124,7 +124,7 @@ market enrichment --refresh -c PE
 | **Price alerts** | — | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |
 | **Price history** | 7 days | 30 days | 12 months | Full dataset |
 | **Export** | — | CSV basic (10k rows) | CSV unlimited + cron | Direct S3/webhook feed |
-| **Checkout** | — | — | ✅ PayPal / Yape / Wise | ✅ |
+| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Support** | Community | Email 48h | Email 4h | 24/7 + written SLA |
 | **Annual** | — | $90/yr | $490/yr | — |
 
