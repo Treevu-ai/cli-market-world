@@ -125,7 +125,7 @@ const tiers: Tier[] = [
     cta_es: "Contactar",
     cta_en: "Contact us",
     dark: true,
-    href: "#contact-enterprise",
+    href: "#contact-general",
   },
 ];
 
@@ -200,6 +200,7 @@ export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [freeModalOpen, setFreeModalOpen] = useState(false);
+  const [starterModalOpen, setStarterModalOpen] = useState(false);
 
   return (
     <section id="pricing" className="landing-section-alt animate-fade-in">
@@ -226,9 +227,12 @@ export default function Pricing() {
                     <ProSubscribeButton />
                   </div>
                 ) : tier.name === "Starter" ? (
-                  <a href={tier.href || "#pricing"} className="btn-mint">
+                  <button
+                    onClick={() => setStarterModalOpen(true)}
+                    className="btn-mint w-full"
+                  >
                     {isES ? tier.cta_es : tier.cta_en}
-                  </a>
+                  </button>
                 ) : tier.name === "Free" ? (
                   <button
                     onClick={() => setFreeModalOpen(true)}
@@ -248,6 +252,7 @@ export default function Pricing() {
         </div>
 
         <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
+        <FreeSignupModal open={starterModalOpen} onClose={() => setStarterModalOpen(false)} plan="starter" />
 
         {/* Enterprise CTA */}
         <div className="border-t border-[var(--cm-outline-variant)]/30 pt-10 text-center">

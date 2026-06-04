@@ -37,9 +37,11 @@ const PROFILES = [
 export default function FreeSignupModal({
   open,
   onClose,
+  plan = "free",
 }: {
   open: boolean;
   onClose: () => void;
+  plan?: string;
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
@@ -95,7 +97,7 @@ export default function FreeSignupModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plan: "free",
+          plan,
           profile,
           email,
           name: name || undefined,
@@ -109,10 +111,12 @@ export default function FreeSignupModal({
     }
 
     setDone(true);
-    setTimeout(() => {
-      onClose();
-      window.open(PYPI_URL, "_blank", "noopener,noreferrer");
-    }, 1400);
+    if (plan === "free") {
+      setTimeout(() => {
+        onClose();
+        window.open(PYPI_URL, "_blank", "noopener,noreferrer");
+      }, 1400);
+    }
   };
 
   if (!open) return null;
@@ -140,13 +144,20 @@ export default function FreeSignupModal({
               {isES ? "¡Listo!" : "All set!"}
             </p>
             <p className="text-sm text-[var(--cm-on-surface-variant)]">
-              {isES ? "Redirigiendo a PyPI…" : "Redirecting to PyPI…"}
+              {plan === "free"
+                ? isES ? "Redirigiendo a PyPI…" : "Redirecting to PyPI…"
+                : isES ? "Te escribiremos pronto con el acceso de prueba." : "We'll reach out shortly with your trial access."}
             </p>
+            {plan !== "free" && (
+              <button onClick={onClose} className="btn-mint mt-4">
+                {isES ? "Cerrar" : "Close"}
+              </button>
+            )}
           </div>
         ) : step === 1 ? (
           <>
             <div className="mb-6 text-center">
-              <p className="section-eyebrow text-[var(--cm-mint)] mb-2">Free</p>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-2">{plan.charAt(0).toUpperCase() + plan.slice(1)}</p>
               <h3 className="text-lg font-bold text-white">
                 {isES ? "¿Cómo usarás CLI Market?" : "How will you use CLI Market?"}
               </h3>
@@ -188,7 +199,7 @@ export default function FreeSignupModal({
               >
                 ← {isES ? "Volver" : "Back"}
               </button>
-              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Free</p>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">{plan.charAt(0).toUpperCase() + plan.slice(1)}</p>
               <h3 className="text-lg font-bold text-white">
                 {isES ? "Casi listo" : "Almost there"}
               </h3>
@@ -320,13 +331,15 @@ export default function FreeSignupModal({
             >
               {loading
                 ? isES ? "Procesando…" : "Processing…"
-                : isES ? "Continuar a PyPI →" : "Continue to PyPI →"}
+                : plan === "free"
+                  ? isES ? "Continuar a PyPI →" : "Continue to PyPI →"
+                  : isES ? "Solicitar acceso de prueba →" : "Request trial access →"}
             </button>
 
             <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
-              {isES
-                ? "Gratuito para siempre · MIT · Sin tarjeta de crédito"
-                : "Free forever · MIT · No credit card required"}
+              {plan === "free"
+                ? isES ? "Gratuito para siempre · MIT · Sin tarjeta de crédito" : "Free forever · MIT · No credit card required"
+                : isES ? "14 días gratis · Sin tarjeta de crédito" : "14-day free trial · No credit card required"}
             </p>
           </form>
         )}
