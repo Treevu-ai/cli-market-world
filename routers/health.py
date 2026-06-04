@@ -283,18 +283,39 @@ def list_countries():
 @router.get("/health/stats")
 def health_stats():
     """Live KPIs for the landing page — lightweight, no dashboard deps."""
+    from market_core import USE_PG
+
+    # Date arithmetic differs between PG and SQLite
+    interval_1d = "NOW() - INTERVAL '1 day'" if USE_PG else "datetime('now', '-1 day')"
+    interval_7d = "NOW() - INTERVAL '7 days'" if USE_PG else "datetime('now', '-7 days')"
+
     db = get_db()
     total = db.execute("SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0").fetchone()["n"]
     snapshots_24h = db.execute(
-        "SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= NOW() - INTERVAL '1 day'"
+        f"SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= {interval_1d}"
+    ).fetchone()["n"]
+    snapshots_7d = db.execute(
+        f"SELECT COUNT(*) as n FROM price_snapshots WHERE price > 0 AND queried_at >= {interval_7d}"
     ).fetchone()["n"]
     stores_indexed = db.execute(
         "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
     ).fetchone()["n"]
+    stores_7d = db.execute(
+        f"SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0 AND queried_at >= {interval_7d}"
+    ).fetchone()["n"]
     latest = db.execute("SELECT MAX(queried_at) as t FROM price_snapshots").fetchone()["t"]
+
+    # Collector status from last run
+    collector_status = "unknown"
+    try:
+        last_run = db.execute(
+            "SELECT finished_at, prices_collected FROM collector_runs ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    except Exception:
+        last_run = None
+
     db.close()
 
-    from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
     moat_age_hours = None
     if latest:
@@ -303,11 +324,22 @@ def health_stats():
                 latest_dt = datetime.fromisoformat(latest.replace("Z", "+00:00"))
             else:
                 latest_dt = latest
+            if latest_dt.tzinfo is None:
+                latest_dt = latest_dt.replace(tzinfo=timezone.utc)
             moat_age_hours = round((now - latest_dt).total_seconds() / 3600, 1)
         except Exception:
             pass
 
+    if last_run:
+        collector_status, _ = derive_collector_status(
+            finished_at=last_run["finished_at"],
+            prices_collected=last_run["prices_collected"],
+            moat_age_h=moat_age_hours,
+        )
+
     fresh_24h_pct = round(snapshots_24h / total * 100, 1) if total > 0 else 0
+    coverage_7d_pct = round(stores_7d / stores_indexed * 100, 1) if stores_indexed > 0 else 0
+    avg_daily_7d = round(snapshots_7d / 7) if snapshots_7d else 0
 
     return {
         "total_indexed": total,
@@ -315,4 +347,8 @@ def health_stats():
         "stores_indexed": stores_indexed,
         "fresh_24h_pct": fresh_24h_pct,
         "moat_age_hours": moat_age_hours,
+        "coverage_7d_pct": coverage_7d_pct,
+        "avg_daily_7d": avg_daily_7d,
+        "generated_at": now.isoformat(),
+        "collector_status": collector_status,
     }
