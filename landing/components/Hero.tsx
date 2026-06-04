@@ -73,17 +73,17 @@ export default function Hero() {
             </span>
           </a>
           <a
-            href="#contact"
+            href="#intelligence"
             className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cm-outline-variant)]/40 bg-transparent px-6 py-5 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-xs font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]">
-              {isES ? "Newsletter" : "Newsletter"}
+              {isES ? "Intelligence" : "Intelligence"}
             </span>
             <span className="text-base font-semibold text-white">
-              {isES ? "Price Pulse semanal →" : "Weekly Price Pulse →"}
+              {isES ? "Datos para equipos comerciales →" : "Data for commercial teams →"}
             </span>
             <span className="text-xs text-[var(--cm-on-surface-variant)]">
-              {isES ? "Datos de mercado · gratis" : "Market data · free"}
+              {isES ? "Lista de espera · gratis" : "Waitlist · free"}
             </span>
           </a>
         </div>

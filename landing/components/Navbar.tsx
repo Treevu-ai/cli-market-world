@@ -7,6 +7,7 @@ const navItems = [
   { id: "api", es: "API", en: "API" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "casos", es: "Casos", en: "Use cases" },
+  { id: "intelligence", es: "Intelligence", en: "Intelligence" },
   { id: "pricing", es: "Planes", en: "Pricing" },
   { id: "retailers", es: "Retailers", en: "Retailers" },
   { id: "faq", es: "FAQ", en: "FAQ" },
