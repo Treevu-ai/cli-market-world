@@ -125,7 +125,7 @@ const tiers: Tier[] = [
     cta_es: "Contactar",
     cta_en: "Contact us",
     dark: true,
-    href: "#contact-enterprise",
+    href: "#contact-general",
   },
 ];
 
