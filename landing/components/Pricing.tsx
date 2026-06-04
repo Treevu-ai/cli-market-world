@@ -3,7 +3,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
-import ContactForm from "@/components/ContactForm";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import { MARKET_STATS } from "@/lib/marketStats";
 
@@ -250,18 +249,16 @@ export default function Pricing() {
 
         <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
 
-        {/* Enterprise contact form */}
-        <div id="contact-enterprise" className="scroll-mt-24 border-t border-[var(--cm-outline-variant)]/30 pt-12 max-w-2xl mx-auto">
-          <ContactForm
-            plan="enterprise"
-            eyebrow={isES ? "Enterprise" : "Enterprise"}
-            title={isES ? "¿Volumen Enterprise o SLAs a medida?" : "Enterprise volume or custom SLAs?"}
-            subtitle={
-              isES
-                ? "Cuéntenos país, categorías y volumen. Respondemos en menos de 30 min con propuesta."
-                : "Tell us country, categories, and volume. We reply within 30 min with a proposal."
-            }
-          />
+        {/* Enterprise CTA */}
+        <div className="border-t border-[var(--cm-outline-variant)]/30 pt-10 text-center">
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-3">
+            {isES
+              ? "¿Necesitas límites, SLAs o licencia de datos personalizados?"
+              : "Need custom limits, SLAs, or a data license?"}
+          </p>
+          <a href="#contact-general" className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all">
+            {isES ? "Contáctanos →" : "Contact us →"}
+          </a>
         </div>
       </div>
     </section>
