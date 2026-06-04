@@ -6,7 +6,7 @@
 
 ## 1. Resumen ejecutivo
 
-CLI Market Intelligence entrega **precios de góndola verificables** de retailers en LATAM: spreads, inflación por línea, canasta básica comparable y capa de calidad (clean / flagged / citable). Actualización cada **8 horas** sobre **30 retailers verificados** en **8 países**.
+CLI Market Intelligence entrega **precios de góndola verificables** de retailers en LATAM: spreads, inflación por línea, canasta básica comparable y capa de calidad (clean / flagged / citable). Actualización cada **4 horas** sobre **36 retailers verificados** en **11 países**.
 
 **Piloto recomendado:** 30–90 días · **USD 300–500/mes** según país, categorías y profundidad histórica.
 
@@ -18,11 +18,11 @@ CLI Market Intelligence entrega **precios de góndola verificables** de retailer
 
 | Dolor | Situación típica | Con Intelligence |
 |-------|------------------|------------------|
-| Datos tardíos | INEI / DANE / fuentes oficiales con 30–45 días de retraso | Snapshots cada 8 h desde góndola online |
+| Datos tardíos | INEI / DANE / fuentes oficiales con 30–45 días de retraso | Snapshots cada 4 h desde góndola online |
 | Costo alto | Nielsen, panel propio, scraping manual | Piloto desde USD 300/mes |
 | Comparabilidad | Precios por unidad distinta (kg/L/pack) | Normalización por kg/L + canasta con reglas explícitas |
 | Confianza | Outliers y promos distorsionan decisiones | Funnel clean → flagged → citable documentado |
-| Cobertura LATAM | Proveedores globales débiles en PE/CO/CL secundario | 8 países, 6 líneas, VTEX + Shopify + Magento |
+| Cobertura LATAM | Proveedores globales débiles en PE/CO/CL secundario | 11 países, 6 líneas, VTEX + Shopify + Magento |
 
 ---
 
@@ -33,7 +33,7 @@ CLI Market Intelligence entrega **precios de góndola verificables** de retailer
 - **Spreads** — mismo SKU / seed comparable entre tiendas (ratio min–max documentado)
 - **Inflación** — variación por línea y país (ventana configurable, ej. 7 / 30 días)
 - **Canasta básica** — total comparable cuando ≥60% ítems encontrados por tienda
-- **Inventario indexado** — 43.000+ precios verificados (crece con collector)
+- **Inventario indexado** — 45.000+ precios verificados (crece con collector)
 - **Freshness** — % precios &lt;24 h y antigüedad del último snapshot
 
 ### Capa de calidad
@@ -120,7 +120,7 @@ Resultado referencial: 13.000+ precios indexados · time-to-data 1 día vs 45 ·
 
 ## 9. Stack y confianza
 
-- Collector programado cada **8 h** contra APIs públicas / acordadas
+- Collector programado cada **4 h** contra APIs públicas / acordadas
 - Dashboard de moat (freshness, cobertura, salud por tienda) — demo en vivo bajo NDA si aplica
 - Licencia de datos: ver `legal/Data_License_Agreement.md`
 - Sin acceso a PII de clientes finales de retailers
