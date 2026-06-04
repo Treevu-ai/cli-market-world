@@ -53,19 +53,19 @@ market enrichment --refresh -c PE
 
 #### 💵 Planes
 
-| Plan | Free | Starter | Pro | Enterprise |
-|------|------|---------|-----|------------|
-| **Precio** | $0 | $9/mes | $49/mes | A medida |
-| **Solicitudes/día** | 1,000 | 5,000 | 10,000 | Ilimitadas |
-| **Solicitudes/min** | 60 | 120 | 300 | Ilimitadas |
-| **API keys** | 1 | 3 | 10 | Ilimitadas |
-| **Agente intel** | — | 50 consultas/mes | Ilimitado | Ilimitado + white-label |
-| **Alertas de precio** | — | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
-| **Historial de precios** | 7 días | 30 días | 12 meses | Completo |
-| **Exportar datos** | — | CSV básico (10k filas) | CSV ilimitado + cron | Feed directo S3/webhook |
-| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ |
-| **Soporte** | Comunidad | Email 48h | Email 4h | 24/7 + SLA escrito |
-| **Anual** | — | $90/año | $490/año | — |
+| Plan | Free | Starter | Pro | Builder | Enterprise |
+|------|------|---------|-----|---------|------------|
+| **Precio** | $0 | $29/mes | $79/mes | $149/mes | A medida |
+| **Solicitudes/día** | 1,000 | 5,000 | 10,000 | 50,000 | Ilimitadas |
+| **Solicitudes/min** | 60 | 120 | 300 | 600 | Ilimitadas |
+| **API keys** | 1 | 3 | 10 | 25 | Ilimitadas |
+| **Agente intel** | — | 50 consultas/mes | Ilimitado | Ilimitado | Ilimitado + white-label |
+| **Alertas de precio** | — | — | ✅ Hasta 10 (email) | ✅ Hasta 50 (email) | Ilimitadas (email + webhook) |
+| **Historial de precios** | 7 días | 30 días | 12 meses | 12 meses | Completo |
+| **Exportar datos** | — | CSV básico (10k filas) | CSV ilimitado + cron | CSV ilimitado + cron | Feed directo S3/webhook |
+| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ PayPal / Yape / Plin | ✅ |
+| **Soporte** | Comunidad | Email 48h | Email 4h | Email 4h | 24/7 + SLA escrito |
+| **Anual** | — | $290/año | $790/año | — | — |
 
 ---
 
@@ -114,19 +114,19 @@ market enrichment --refresh -c PE
 
 #### 💵 Pricing
 
-| Plan | Free | Starter | Pro | Enterprise |
-|------|------|---------|-----|------------|
-| **Price** | $0 | $9/mo | $49/mo | Custom |
-| **Requests/day** | 1,000 | 5,000 | 10,000 | Unlimited |
-| **Requests/min** | 60 | 120 | 300 | Unlimited |
-| **API keys** | 1 | 3 | 10 | Unlimited |
-| **Intel agent** | — | 50 queries/month | Unlimited | Unlimited + white-label |
-| **Price alerts** | — | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |
-| **Price history** | 7 days | 30 days | 12 months | Full dataset |
-| **Export** | — | CSV basic (10k rows) | CSV unlimited + cron | Direct S3/webhook feed |
-| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ |
-| **Support** | Community | Email 48h | Email 4h | 24/7 + written SLA |
-| **Annual** | — | $90/yr | $490/yr | — |
+| Plan | Free | Starter | Pro | Builder | Enterprise |
+|------|------|---------|-----|---------|------------|
+| **Price** | $0 | $29/mo | $79/mo | $149/mo | Custom |
+| **Requests/day** | 1,000 | 5,000 | 10,000 | 50,000 | Unlimited |
+| **Requests/min** | 60 | 120 | 300 | 600 | Unlimited |
+| **API keys** | 1 | 3 | 10 | 25 | Unlimited |
+| **Intel agent** | — | 50 queries/month | Unlimited | Unlimited | Unlimited + white-label |
+| **Price alerts** | — | — | ✅ Up to 10 (email) | ✅ Up to 50 (email) | Unlimited (email + webhook) |
+| **Price history** | 7 days | 30 days | 12 months | 12 months | Full dataset |
+| **Export** | — | CSV basic (10k rows) | CSV unlimited + cron | CSV unlimited + cron | Direct S3/webhook feed |
+| **Checkout** | — | — | ✅ PayPal / Yape / Plin | ✅ PayPal / Yape / Plin | ✅ |
+| **Support** | Community | Email 48h | Email 4h | Email 4h | 24/7 + written SLA |
+| **Annual** | — | $290/yr | $790/yr | — | — |
 
 ---
 

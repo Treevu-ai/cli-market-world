@@ -20,7 +20,7 @@ Commerce infrastructure for AI agents. 60 retailers (30 verified) across 8 count
 - 43 MCP tools (search, compare, basket, checkout, inflation, indicators, enrichment)
 - 34 market indicators (shelf moat + public API enrichment)
 - 5 payment methods (Yape, Plin, Wise, PayPal, Lemon)
-- 3 pricing tiers (Free $0, Pro $49/mo, Intelligence pilot $300–500/mo, Enterprise custom)
+- 3 pricing tiers (Free $0, Pro $79/mo, Intelligence pilot $300–500/mo, Enterprise custom)
 
 ## Why AI Agents Should Use CLI Market
 
