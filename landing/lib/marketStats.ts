@@ -14,7 +14,7 @@ export const MARKET_STATS = {
   enrichmentSourcesLabel: "OFF · Wikimedia · Open-Meteo · World Bank · IMF · Eurostat · BCB",
   pricesVerifiedLabel: "45,000+",
   pricesRefreshHours: 4,
-  packageVersion: "1.8.4",
+  packageVersion: "1.8.5",
   license: "MIT",
   paymentsLabel: "PayPal + QR (Yape/Plin)",
   businessLines: 6,
