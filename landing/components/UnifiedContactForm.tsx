@@ -7,23 +7,33 @@ const TOPICS_ES = [
   { value: "enterprise", label: "Enterprise / Volumen personalizado" },
   { value: "press",      label: "Prensa / Alianza" },
   { value: "general",    label: "Consulta general" },
+  { value: "retailer",   label: "Listar mi tienda (gratis)" },
 ];
 const TOPICS_EN = [
   { value: "enterprise", label: "Enterprise / Custom volume" },
   { value: "press",      label: "Press / Partnership" },
   { value: "general",    label: "General inquiry" },
+  { value: "retailer",   label: "List my store (free)" },
 ];
 
-const PLACEHOLDERS_ES: Record<string, string> = {
+const MSG_PLACEHOLDERS_ES: Record<string, string> = {
   enterprise: "País, categorías, volumen estimado, SLA esperado…",
   press:      "Medio, tema de la nota, fecha de publicación…",
   general:    "¿En qué podemos ayudarte?",
 };
-const PLACEHOLDERS_EN: Record<string, string> = {
+const MSG_PLACEHOLDERS_EN: Record<string, string> = {
   enterprise: "Country, categories, estimated volume, expected SLA…",
   press:      "Publication, story topic, publish date…",
   general:    "How can we help?",
 };
+
+const PLATFORMS = [
+  { value: "vtex",     label: "VTEX" },
+  { value: "shopify",  label: "Shopify" },
+  { value: "magento",  label: "Magento" },
+  { value: "other",    label: "Other" },
+];
+const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
 
 export default function UnifiedContactForm() {
   const { lang } = useLang();
@@ -31,64 +41,109 @@ export default function UnifiedContactForm() {
 
   const topics = isES ? TOPICS_ES : TOPICS_EN;
   const [topic, setTopic] = useState("enterprise");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // General contact fields
+  const [email, setEmail]     = useState("");
+  const [message, setMessage] = useState("");
+
+  // Retailer fields
+  const [storeName,     setStoreName]     = useState("");
+  const [platform,      setPlatform]      = useState("vtex");
+  const [country,       setCountry]       = useState("PE");
+  const [contactName,   setContactName]   = useState("");
+  const [contactEmail,  setContactEmail]  = useState("");
+  const [website,       setWebsite]       = useState("");
+  const [apiToken,      setApiToken]      = useState("");
+  const [appId,         setAppId]         = useState("");
+
+  const [sent,    setSent]    = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState("");
+
+  const isRetailer = topic === "retailer";
+
+  const submitContact = async () => {
     if (!email.includes("@")) {
       setError(isES ? "Email inválido" : "Invalid email");
-      return;
+      return false;
     }
     if (!message.trim() || message.trim().length < 10) {
       setError(isES ? "Escribe al menos 10 caracteres" : "Write at least 10 characters");
-      return;
+      return false;
     }
+    const res = await fetch(`${API_URL}/v1/contact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: topic, email, use_case: message, lang: isES ? "es" : "en" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || "error");
+    return true;
+  };
+
+  const submitRetailer = async () => {
+    const res = await fetch(`${API_URL}/v1/retailers/apply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        store_name: storeName,
+        platform,
+        country,
+        contact_name: contactName,
+        contact_email: contactEmail,
+        website,
+        api_token: apiToken || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Request failed");
+    setAppId(data.application_id || "");
+    return true;
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API_URL}/v1/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan: topic,
-          email,
-          use_case: message,
-          lang: isES ? "es" : "en",
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) { setSent(true); return; }
-      throw new Error(data.detail || "error");
+      const ok = isRetailer ? await submitRetailer() : await submitContact();
+      if (ok && !appId) setSent(true);
     } catch {
       setLoading(false);
-      const subject = encodeURIComponent(`CLI Market ${topic} — ${email}`);
-      const body = encodeURIComponent(message);
-      window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
+      if (isRetailer) {
+        const subject = encodeURIComponent(`CLI Market retailer — ${storeName}`);
+        const body = encodeURIComponent(`Store: ${storeName}\nPlatform: ${platform}\nCountry: ${country}\nEmail: ${contactEmail}\nWebsite: ${website}`);
+        window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
+      } else {
+        const subject = encodeURIComponent(`CLI Market ${topic} — ${email}`);
+        window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${encodeURIComponent(message)}`;
+      }
+      return;
     }
+    setLoading(false);
   };
 
-  if (sent) {
+  if (sent || appId) {
+    const confirmEmail = isRetailer ? contactEmail : email;
     return (
       <div className="card-cyber energy-border-active p-6 sm:p-8 text-center w-full max-w-lg mx-auto space-y-3">
         <p className="text-lg font-semibold text-white">
           {isES ? "¡Gracias! Te escribiremos pronto." : "Thanks! We'll reach out soon."}
         </p>
+        {appId && (
+          <p className="text-xs font-mono text-[var(--cm-mint)]">
+            ID: {appId}
+          </p>
+        )}
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
-          {isES ? `Respondemos a ${email} en menos de 30 min.` : `We'll reply to ${email} within 30 min.`}
+          {isES ? `Respondemos a ${confirmEmail} en menos de 30 min.` : `We'll reply to ${confirmEmail} within 30 min.`}
         </p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={submit}
-      className="card-cyber p-5 sm:p-8 w-full max-w-lg mx-auto space-y-5 text-left"
-    >
+    <form onSubmit={submit} className="card-cyber p-5 sm:p-8 w-full max-w-lg mx-auto space-y-5 text-left">
       <div className="text-center space-y-1">
         <span className="inline-block font-label-caps text-[var(--cm-on-surface-variant)]/60">
           {isES ? "Contacto" : "Contact"}
@@ -104,55 +159,99 @@ export default function UnifiedContactForm() {
       {/* Topic selector */}
       <div>
         <label className="block text-sm font-medium text-white mb-1">
-          {isES ? "Tema" : "Topic"}
+          {isES ? "Motivo" : "Topic"}
         </label>
-        <select
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          className="input-cyber"
-        >
+        <select value={topic} onChange={(e) => { setTopic(e.target.value); setError(""); }} className="input-cyber">
           {topics.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-white mb-1">Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input-cyber"
-          placeholder="tu@email.com"
-        />
-      </div>
+      {/* Retailer fields */}
+      {isRetailer && (
+        <>
+          <div>
+            <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+              {isES ? "Nombre de la tienda" : "Store name"}
+            </label>
+            <input required value={storeName} onChange={(e) => setStoreName(e.target.value)} className="input-cyber" placeholder="Metro Perú" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Platform</label>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="input-cyber">
+                {PLATFORMS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">{isES ? "País" : "Country"}</label>
+              <select value={country} onChange={(e) => setCountry(e.target.value)} className="input-cyber">
+                {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+              {isES ? "Email de contacto" : "Contact email"}
+            </label>
+            <input required type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="input-cyber" placeholder="ecommerce@yourstore.com" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+              {isES ? "Nombre de contacto (opcional)" : "Contact name (optional)"}
+            </label>
+            <input value={contactName} onChange={(e) => setContactName(e.target.value)} className="input-cyber" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+              {isES ? "URL de la tienda (opcional)" : "Store URL (optional)"}
+            </label>
+            <input value={website} onChange={(e) => setWebsite(e.target.value)} className="input-cyber" placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+              {isES ? "API token de solo lectura (opcional)" : "Read-only API token (optional)"}
+            </label>
+            <input type="password" value={apiToken} onChange={(e) => setApiToken(e.target.value)} className="input-cyber font-mono" placeholder="shpat_... or integration token" />
+            <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">
+              {isES ? "Catálogos VTEX públicos generalmente no requieren token." : "VTEX public catalogs often need no token."}
+            </p>
+          </div>
+        </>
+      )}
 
-      <div>
-        <label className="block text-sm font-medium text-white mb-1">
-          {isES ? "Mensaje" : "Message"}
-        </label>
-        <textarea
-          required
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={3}
-          className="input-cyber resize-none"
-          placeholder={(isES ? PLACEHOLDERS_ES : PLACEHOLDERS_EN)[topic]}
-        />
-      </div>
+      {/* General contact fields */}
+      {!isRetailer && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">Email</label>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-cyber" placeholder="tu@email.com" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              {isES ? "Mensaje" : "Message"}
+            </label>
+            <textarea
+              required
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={3}
+              className="input-cyber resize-none"
+              placeholder={(isES ? MSG_PLACEHOLDERS_ES : MSG_PLACEHOLDERS_EN)[topic]}
+            />
+          </div>
+        </>
+      )}
 
       {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-mint w-full disabled:opacity-50"
-      >
+      <button type="submit" disabled={loading} className="btn-mint w-full disabled:opacity-50">
         {loading
-          ? isES ? "Enviando…" : "Sending…"
-          : isES ? "Enviar →" : "Send →"}
+          ? (isES ? "Enviando…" : "Sending…")
+          : isRetailer
+            ? (isES ? "Enviar aplicación — gratis →" : "Submit — free listing →")
+            : (isES ? "Enviar →" : "Send →")}
       </button>
     </form>
   );
