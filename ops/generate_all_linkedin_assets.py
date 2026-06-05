@@ -16,10 +16,14 @@ import argparse
 import importlib.util
 import json
 import re
+import signal
 import sys
 from pathlib import Path
 
 import httpx
+
+MAX_INPUT_LEN = 100000  # Prevent ReDoS with large inputs
+REGEX_TIMEOUT = 5  # seconds
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -41,12 +45,63 @@ from linkedin_asset_lib import (
 COMPARE_URL = "https://cli-market-production.up.railway.app/products/compare"
 
 
+class RegexTimeoutError(Exception):
+    """Raised when regex operation times out."""
+    pass
+
+
+def timeout_handler(signum, frame):
+    raise RegexTimeoutError("Regex operation timed out")
+
+
+def safe_re_search(pattern: str, text: str, flags: int = 0, timeout: int = REGEX_TIMEOUT) -> re.Match | None:
+    """Safe regex search with timeout protection."""
+    # Limit input size
+    if len(text) > MAX_INPUT_LEN:
+        text = text[:MAX_INPUT_LEN]
+    
+    # Use timeout on Unix systems
+    try:
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout)
+        try:
+            return re.search(pattern, text, flags)
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
+    except (ValueError, AttributeError):
+        # Windows doesn't support SIGALRM, use simple search
+        return re.search(pattern, text, flags)
+
+
+def safe_re_sub(pattern: str, repl: str, text: str, count: int = 0, 
+                flags: int = 0, timeout: int = REGEX_TIMEOUT) -> str:
+    """Safe regex substitution with timeout protection."""
+    # Limit input size
+    if len(text) > MAX_INPUT_LEN:
+        text = text[:MAX_INPUT_LEN]
+    
+    try:
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout)
+        try:
+            return re.sub(pattern, repl, text, count, flags=flags)
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
+    except (ValueError, AttributeError):
+        # Windows doesn't support SIGALRM
+        return re.sub(pattern, repl, text, count, flags=flags)
+
+
 def sanitize_filename(name: str) -> str:
     """Sanitize string for safe filename usage."""
-    # Remove path traversal characters and limit length
+    # Limit length and remove dangerous characters
+    if len(name) > 100:
+        name = name[:100]
     sanitized = re.sub(r'[^\w\s-]', '', name)
     sanitized = re.sub(r'\s+', '-', sanitized)
-    return sanitized[:50]
+    return sanitized
 
 
 def _load_monday():
@@ -128,7 +183,8 @@ def patch_day_assets_section(day: int, tpl: str) -> None:
 **Adjuntar en LinkedIn:** `{rel}`{extra}
 Regenerar: `python3 ops/generate_all_linkedin_assets.py --day {day}` · todos: `python3 ops/generate_all_linkedin_assets.py`
 """
-    patched, n = re.subn(
+    # Use safer regex with timeout protection
+    patched, n = safe_re_sub(
         r"(?ms)^## Assets\s*\n.*?(?=^## |\Z)",
         new_section,
         text,

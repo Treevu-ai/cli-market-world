@@ -5,14 +5,44 @@ from __future__ import annotations
 
 import re
 import shutil
+import signal
 from pathlib import Path
 from typing import Any
+
+MAX_INPUT_LEN = 100000  # Prevent ReDoS
+REGEX_TIMEOUT = 5  # seconds
 
 from PIL import Image, ImageDraw, ImageFont
 
 from content_paths import assets_root, linkedin_dir, metrics_dir
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+class RegexTimeoutError(Exception):
+    """Raised when regex operation times out."""
+    pass
+
+
+def timeout_handler(signum, frame):
+    raise RegexTimeoutError("Regex operation timed out")
+
+
+def safe_re_search(pattern: str, text: str, flags: int = 0, timeout: int = REGEX_TIMEOUT) -> re.Match | None:
+    """Safe regex search with timeout protection."""
+    if len(text) > MAX_INPUT_LEN:
+        text = text[:MAX_INPUT_LEN]
+    
+    try:
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout)
+        try:
+            return re.search(pattern, text, flags)
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
+    except (ValueError, AttributeError):
+        return re.search(pattern, text, flags)
 
 
 def _linkedin_dir() -> Path:
@@ -63,12 +93,12 @@ def parse_day_md(day: int) -> dict[str, Any]:
                     k, v = line.split(":", 1)
                     fm[k.strip()] = v.strip()
             body = parts[2]
-    title_m = re.search(rf"^# Day {day} — (.+)$", body, re.MULTILINE)
+    title_m = safe_re_search(rf"^# Day {day} — (.+)$", body, re.MULTILINE)
     title = title_m.group(1).strip() if title_m else f"Día {day}"
 
     def section(name: str) -> str:
         pat = rf"(?m)^## {re.escape(name)}\s*\n(.*?)(?=^## |\Z)"
-        m = re.search(pat, body, re.DOTALL)
+        m = safe_re_search(pat, body, re.DOTALL)
         return m.group(1).strip() if m else ""
 
     hooks = section("Hooks (elegir 1)")
