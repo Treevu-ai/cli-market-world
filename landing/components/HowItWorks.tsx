@@ -54,6 +54,12 @@ export default function HowItWorks() {
         >
           {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
         </a>
+
+        <p className="mt-6">
+          <a href="/docs/demo" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Demo completa de 8 pasos →" : "Full 8-step walkthrough →"}
+          </a>
+        </p>
       </div>
     </section>
   );

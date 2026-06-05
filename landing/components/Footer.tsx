@@ -37,23 +37,26 @@ export default function Footer() {
           <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             MCP Tool Reference
           </a>
-          <a
-            href="https://github.com/Treevu-ai/cli-market-world"
-            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
-          >
+          <a href="/docs/demo" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Demo en terminal" : "Terminal demo"}
+          </a>
+          <a href="/docs/use-cases" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Casos de uso" : "Use cases"}
+          </a>
+          <a href="https://github.com/Treevu-ai/cli-market-world#-ecosystem-architecture" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Arquitectura" : "Architecture"}
+          </a>
+          <a href="https://github.com/Treevu-ai/cli-market-world" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             GitHub Repo
           </a>
-          <a
-            href="https://pypi.org/project/cli-market/"
-            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
-          >
+          <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             PyPI
           </a>
         </div>
 
         <div className="flex flex-col gap-3">
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
-            {isES ? "Compañía" : "Company"}
+            {isES ? "Compania" : "Company"}
           </span>
           <a href="#retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Listar mi tienda" : "List my store"}
@@ -75,6 +78,9 @@ export default function Footer() {
           </span>
           <a href="#how" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Flujo" : "Flow"}
+          </a>
+          <a href="#casos" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Casos de uso" : "Use cases"}
           </a>
           <a href="#coverage" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Cobertura" : "Coverage"}
