@@ -5,11 +5,11 @@ startCommand:
     properties:
       apiKey:
         type: string
-        description: "CLI Market API key (get one at cli-market.dev). Leave empty to use the public free tier."
+        description: "CLI Market API key (get one at cli-market.dev). Leave empty to use the free tier."
     required: []
   commandFunction: |-
     (config) => ({
-      command: "market-mcp",
-      args: [],
+      command: "uvx",
+      args: ["--from", "cli-market", "market-mcp"],
       env: config.apiKey ? { MARKET_API_KEY: config.apiKey } : {}
     })
