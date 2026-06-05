@@ -169,8 +169,10 @@ def dashboard():
     try:
         html = _static_dashboard()
     except Exception as e:
-        import traceback
-        html = f"<pre>STATIC DASHBOARD CRASH:\n{e}\n\n{traceback.format_exc()}</pre>"
+        # Log full error server-side, return generic message to client
+        import logging
+        logging.exception("Dashboard generation failed")
+        html = "<pre>Dashboard unavailable. Please try again later.</pre>"
     return HTMLResponse(html)
 
 
@@ -180,8 +182,10 @@ def dashboard_data():
     try:
         return _cached_dashboard_data()
     except Exception as e:
-        import traceback
-        return {"error": str(e), "trace": traceback.format_exc()[-400:]}
+        # Log full error server-side, return generic message to client
+        import logging
+        logging.exception("Dashboard data generation failed")
+        return {"error": "Dashboard data unavailable", "detail": "Please try again later"}
 
 
 @router.post("/dashboard/collector/trigger")

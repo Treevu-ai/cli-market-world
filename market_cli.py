@@ -171,8 +171,8 @@ def get_token_with_prompt() -> str:
             "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
             "[#888888]Es gratis. Toma 5 segundos:[/]\n\n"
             "  [#00FF88 bold]1.[/] Ejecuta:  [#00FF88]market login[/]\n"
-            "  [#00FF88 bold]2.[/] Usuario: [#FFFFFF bold]admin[/]\n"
-            "  [#00FF88 bold]3.[/] Password: [#FFFFFF bold]market[/]\n\n"
+            "  [#00FF88 bold]2.[/] Usuario: [#FFFFFF bold]<tu_usuario>[/]\n"
+            "  [#00FF88 bold]3.[/] Password: [#FFFFFF bold]<tu_password>[/]\n\n"
             "[dim]El servidor genera tu token automaticamente.[/]\n"
             "[dim]Si eres un agente IA: usa market --json para integrarte.[/]",
             title="CLI Market",
@@ -850,8 +850,8 @@ def main():
 
     # login
     p = sub.add_parser("login", help=t("login"))
-    p.add_argument("--username", default="admin", help=t("username"))
-    p.add_argument("--password", default="market", help=t("password"))
+    p.add_argument("--username", default="", help=t("username"))
+    p.add_argument("--password", default="", help=t("password"))
 
     # search
     p = sub.add_parser("search", help=t("search"))
