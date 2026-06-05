@@ -82,7 +82,7 @@ export default function ProSubscribeButton() {
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full btn-mint"
         >
-          {isES ? "Pagar USD 49 con PayPal →" : "Pay USD 49 with PayPal →"}
+          {isES ? "Pagar USD 79 con PayPal →" : "Pay USD 79 with PayPal →"}
         </a>
 
         <p className="text-xs text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
@@ -116,8 +116,8 @@ export default function ProSubscribeButton() {
             ? "Enviando..."
             : "Sending..."
           : isES
-            ? "Solicitar Pro — $49/mes"
-            : "Request Pro — $49/mo"}
+            ? "Solicitar Pro — $79/mes"
+            : "Request Pro — $79/mo"}
       </button>
     </div>
   );
