@@ -1,0 +1,62 @@
+{
+  "name": "CLI Market",
+  "description": "Commerce infrastructure for AI agents — 43 MCP tools to search, compare, and purchase across 36 verified retailers in 8 countries. 45,000+ real shelf prices refreshed every 4 hours. MIT.",
+  "version": "1.8.0",
+  "license": "MIT",
+  "homepage": "https://cli-market.dev",
+  "repository": "https://github.com/Treevu-ai/cli-market-world",
+  "tools": [
+    { "name": "market_search", "description": "Search products across retailers by query, country, category" },
+    { "name": "market_compare", "description": "Compare prices for a product across multiple retailers" },
+    { "name": "market_basket", "description": "Optimize a multi-item basket across retailers" },
+    { "name": "market_cart", "description": "View current cart contents" },
+    { "name": "market_cart_update", "description": "Add or update items in cart" },
+    { "name": "market_cart_remove", "description": "Remove items from cart" },
+    { "name": "market_checkout", "description": "Initiate checkout via PayPal or QR (Yape/Plin)" },
+    { "name": "market_orders", "description": "List past orders" },
+    { "name": "market_reorder", "description": "Reorder a previous order" },
+    { "name": "market_ask", "description": "Natural language product query" },
+    { "name": "market_inflation", "description": "Shelf-price inflation by category and country" },
+    { "name": "market_indicators", "description": "34 market indicators from public sources" },
+    { "name": "market_scores", "description": "Retailer quality scores" },
+    { "name": "market_intel_refresh", "description": "Refresh market intelligence data" },
+    { "name": "market_enrichment", "description": "Product enrichment data" },
+    { "name": "market_enrichment_subcategories", "description": "Subcategory enrichment data" },
+    { "name": "market_enrichment_refresh", "description": "Refresh enrichment cache" },
+    { "name": "market_analytics_indicators", "description": "Analytics-grade market indicators" },
+    { "name": "market_categories", "description": "List product categories" },
+    { "name": "market_barcode", "description": "Look up product by barcode" },
+    { "name": "market_enrich", "description": "Enrich a product with metadata" },
+    { "name": "market_stores", "description": "List available retailers" },
+    { "name": "market_countries", "description": "List supported countries" },
+    { "name": "market_ticket", "description": "Create a support ticket" },
+    { "name": "market_voice", "description": "Voice/speech product search" },
+    { "name": "market_price_history", "description": "Historical price data for a product" },
+    { "name": "market_stats", "description": "Platform statistics and coverage" },
+    { "name": "market_alerts", "description": "Create or manage price alerts" },
+    { "name": "market_whoami", "description": "Current user and plan info" },
+    { "name": "market_preferences", "description": "User preferences" },
+    { "name": "market_subscription", "description": "Subscription and quota info" },
+    { "name": "market_export", "description": "Export data as CSV or JSON" },
+    { "name": "market_trending", "description": "Trending products by category" },
+    { "name": "market_scan", "description": "Scan shelf image for products" },
+    { "name": "market_stock", "description": "Check product stock availability" },
+    { "name": "market_brands", "description": "List available brands" },
+    { "name": "market_favorites", "description": "Manage favorite products" },
+    { "name": "market_notify", "description": "Configure notifications" },
+    { "name": "market_exchange", "description": "Currency exchange rates" },
+    { "name": "market_delivery", "description": "Delivery estimates by retailer" },
+    { "name": "market_login", "description": "Authenticate with CLI Market" },
+    { "name": "market_lines", "description": "List business lines" }
+  ],
+  "config": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "CLI Market API key (optional — free tier available at cli-market.dev)"
+      }
+    },
+    "required": []
+  }
+}
