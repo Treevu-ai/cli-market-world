@@ -55,13 +55,33 @@ Cada vez que cambien precios, tiers o payment methods, esta lista debe quedar 10
 - [ ] `app/dashboard/page.tsx` — PLANS local y CURRENT_PLAN
 - [ ] `app/api/procurement/run/route.ts` — validación de slugs y upgrade strings
 
-## 7. PyPI (hacer al final)
+## 7. PyPI (hacer al final — desde tu máquina local)
+
+```bash
+# 1. Sincronizar repo local con main ANTES de buildear
+git fetch origin && git checkout origin/main -- README.md
+
+# 2. Verificar que el README tenga los precios correctos
+grep "Starter\|Pro\|Builder" README.md | grep "\$"
+# Debe mostrar $29, $79, $149 — si no, NO continuar
+
+# 3. Bump de versión (elegir el próximo número)
+sed -i 's/version = "X.X.X"/version = "X.X.Y"/' pyproject.toml
+
+# 4. Build y upload
+python3 -m build
+twine upload dist/cli_market-X.X.Y*
+
+# 5. Verificar en PyPI que el README muestre los precios correctos
+# https://pypi.org/project/cli-market/
+```
 
 - [ ] `pyproject.toml` version bumpeado (paso 5)
 - [ ] `market_stats.py` PACKAGE_VERSION bumpeado (paso 1)
-- [ ] Ejecutar `python3 ops/sync_market_stats.py` para regenerar `marketStats.ts`
-- [ ] Publicar: `python3 -m build && twine upload dist/*`
-- [ ] Verificar en https://pypi.org/project/cli-market/ que el README muestre los precios nuevos
+- [ ] `git fetch origin && git checkout origin/main -- README.md` ejecutado
+- [ ] `grep "Starter\|Pro\|Builder" README.md | grep "\$"` muestra $29/$79/$149
+- [ ] `python3 -m build && twine upload dist/cli_market-NUEVA_VERSION*`
+- [ ] https://pypi.org/project/cli-market/ muestra precios correctos
 
 ## 8. Content (cli-market-content)
 
