@@ -85,7 +85,7 @@ def safe_re_sub(pattern: str, repl: str, text: str, count: int = 0,
         old_handler = signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(timeout)
         try:
-            return re.sub(pattern, repl, text, count, flags=flags)
+            return re.sub(pattern, repl, text, count=count, flags=flags)
         finally:
             signal.alarm(0)
             signal.signal(signal.SIGALRM, old_handler)

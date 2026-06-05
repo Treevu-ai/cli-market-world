@@ -168,7 +168,7 @@ def dashboard():
     from fastapi.responses import HTMLResponse
     try:
         html = _static_dashboard()
-    except Exception as e:
+    except Exception:
         # Log full error server-side, return generic message to client
         import logging
         logging.exception("Dashboard generation failed")
@@ -181,7 +181,7 @@ def dashboard_data():
     """Business-intelligence feed for the Data Moat dashboard."""
     try:
         return _cached_dashboard_data()
-    except Exception as e:
+    except Exception:
         # Log full error server-side, return generic message to client
         import logging
         logging.exception("Dashboard data generation failed")
@@ -913,7 +913,7 @@ def _static_dashboard() -> str:
     """Server-rendered dashboard — single renderer from dashboard_view + metric_glossary."""
     try:
         data = _cached_dashboard_data()
-    except Exception as e:
+    except Exception:
         import traceback
         return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"
     if "error" in data:
