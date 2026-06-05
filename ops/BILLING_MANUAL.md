@@ -13,7 +13,7 @@ Sin integración PayPal directa. Flujo:
 ```bash
 # Link de pago — PayPal Hosted Button (recomendado)
 PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/B6YVFTG4MA73J
-PRO_PRICE_LABEL=$49/month
+PRO_PRICE_LABEL=$79/month
 
 # Email saliente
 BILLING_FROM_EMAIL=hello@cli-market.dev

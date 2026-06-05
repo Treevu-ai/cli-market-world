@@ -26,7 +26,7 @@ PAYPAL_WEBHOOK_ID=WH-...
 
 Redeploy después de guardar.
 
-## 3. Crear plan Pro ($49/mo) — script
+## 3. Crear plan Pro ($79/mo) — script
 
 Desde tu máquina (con credenciales sandbox en env):
 
