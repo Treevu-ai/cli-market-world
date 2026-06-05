@@ -130,7 +130,16 @@ market enrichment --refresh -c PE
 
 ---
 
+## 📖 Learn more
+
+- **[Use Cases](docs/use-cases.md)** — AI agent builders, data scientists, retailers. Who is this for?
+- **[Terminal Demo](docs/demo-walkthrough.md)** — 8-command walkthrough: search → compare → basket → checkout.
+
+---
+
 ## 🏗️ Ecosystem architecture
+
+![Ecosystem Pipeline](docs/assets/ecosystem-pipeline.svg)
 
 CLI Market is composed of 4 specialized repositories, each with a single responsibility:
 
