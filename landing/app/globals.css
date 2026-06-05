@@ -24,6 +24,7 @@
 :root {
   /* Cyber design system (primary) */
   --cm-background: #0a0a0b;
+  --cm-surface-lowest: #0f0f10;
   --cm-surface: #131314;
   --cm-surface-low: #1c1b1c;
   --cm-surface-container: #201f20;
@@ -231,6 +232,11 @@ select.input-cyber {
   background-position: right 0.75rem center;
   padding-right: 2.25rem;
   cursor: pointer;
+}
+
+select.input-cyber option {
+  background-color: #1c1b1c;
+  color: #e5e2e3;
 }
 
 .input-cyber:focus {
