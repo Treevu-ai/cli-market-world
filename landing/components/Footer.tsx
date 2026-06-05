@@ -37,10 +37,10 @@ export default function Footer() {
           <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             MCP Tool Reference
           </a>
-          <a href="/docs/demo" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/demo-walkthrough.md" target="_blank" rel="noopener" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo en terminal" : "Terminal demo"}
           </a>
-          <a href="/docs/use-cases" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/use-cases.md" target="_blank" rel="noopener" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Casos de uso" : "Use cases"}
           </a>
           <a href="https://github.com/Treevu-ai/cli-market-world#-ecosystem-architecture" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">

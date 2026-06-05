@@ -56,7 +56,7 @@ export default function HowItWorks() {
         </a>
 
         <p className="mt-6">
-          <a href="/docs/demo" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
+          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/demo-walkthrough.md" target="_blank" rel="noopener" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo completa de 8 pasos →" : "Full 8-step walkthrough →"}
           </a>
         </p>
