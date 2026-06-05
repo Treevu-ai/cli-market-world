@@ -23,7 +23,7 @@ Set these on the **API** service (the one serving HTTP, with `PORT=8080`):
 | `PAYPAL_CLIENT_SECRET` | same app → "Secret" → Show | Keep secret; never commit |
 | `PAYPAL_SANDBOX` | set to `false` | Defaults to `true`; **must be `false`** for real money |
 | `PAYPAL_WEBHOOK_ID` | created in step 3 below | Required in production — webhook returns 503 without it |
-| `PAYPAL_PLAN_ID` | the Pro billing plan id (`P-xxxxx`) | The $49/mo subscription plan |
+| `PAYPAL_PLAN_ID` | the Pro billing plan id (`P-xxxxx`) | The $79/mo subscription plan |
 | `CHECKOUT_WEBHOOK_SECRET` | any strong random string | Guards the legacy `/checkout/webhook` |
 
 Leave the collector service alone — it doesn't serve HTTP and needs no PayPal vars.
@@ -36,7 +36,7 @@ Leave the collector service alone — it doesn't serve HTTP and needs no PayPal 
 
 ## 2. Create the Live subscription plan (one-time)
 
-If `PAYPAL_PLAN_ID` doesn't exist yet, create a $49/mo plan under the Live app
+If `PAYPAL_PLAN_ID` doesn't exist yet, create a $79/mo plan under the Live app
 (PayPal Dashboard → Pay & Get Paid → Subscriptions → Plans, or via API). Copy the
 resulting `P-...` id into `PAYPAL_PLAN_ID`.
 

@@ -44,7 +44,7 @@ git diff landing/lib/marketStats.ts
 
 | Puerta | Producto | Precio | Canal |
 |--------|----------|--------|-------|
-| A | Build (Free / Pro) | $0 / $49/mo | PyPI, landing `#pricing-build` |
+| A | Build (Free / Pro) | $0 / $79/mo | PyPI, landing `#pricing-build` |
 | B | Retailer listing | Gratis | `/retailers`, `#contact-retailers` |
 | C | Intelligence | USD 300–500/mo piloto | `#pricing-intelligence`, one-pager |
 
