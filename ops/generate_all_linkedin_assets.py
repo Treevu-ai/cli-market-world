@@ -91,7 +91,7 @@ def safe_re_sub(pattern: str, repl: str, text: str, count: int = 0,
             signal.signal(signal.SIGALRM, old_handler)
     except (ValueError, AttributeError):
         # Windows doesn't support SIGALRM
-        return re.sub(pattern, repl, text, count, flags=flags)
+        return re.sub(pattern, repl, text, count=count, flags=flags)
 
 
 def sanitize_filename(name: str) -> str:
