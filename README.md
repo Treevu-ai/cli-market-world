@@ -130,6 +130,32 @@ market enrichment --refresh -c PE
 
 ---
 
+## 🏗️ Ecosystem architecture
+
+CLI Market is composed of 4 specialized repositories, each with a single responsibility:
+
+```
+cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 66 retailers, 45k prices
+       |
+       v  raw snapshots
+cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
+       |
+       v  canonical identities
+cli-market-core      Intelligence — indicators, stats, billing, connectors, 43 MCP tools
+       |
+       v  structured intelligence
+cli-market-world     Exposure — landing, docs, MCP registry, deployment configs (THIS REPO)
+```
+
+| Repo | GitHub | Role |
+|---|---|---|
+| `cli-market-backend` | [Treevu-ai/cli-market-backend](https://github.com/Treevu-ai/cli-market-backend) | Scrapers + FastAPI API |
+| `cli-market-index` | [Treevu-ai/cli-market-index](https://github.com/Treevu-ai/cli-market-index) | Entity resolution engine |
+| `cli-market-core` | [Treevu-ai/cli-market-core](https://github.com/Treevu-ai/cli-market-core) | Intelligence + MCP tools |
+| `cli-market-world` | [Treevu-ai/cli-market-world](https://github.com/Treevu-ai/cli-market-world) | Landing + docs (this repo) |
+
+---
+
 ## 📊 Dashboard auditability
 
 Every price in CLI Market is traceable and verifiable. The [live dashboard](https://cli-market-production.up.railway.app/dashboard) exposes:
