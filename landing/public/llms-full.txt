@@ -37,6 +37,6 @@ market_login, market_lines, market_search, market_compare, market_basket, market
 
 ## Countries: PE AR BR MX CO CL IT FR
 ## Lines: supermercados farmacias electro moda hogar departamentales
-## Payments: Yape Plin Wise PayPal Lemon
+## Payments: PayPal · QR Yape/Plin (Peru)
 ## Indicators: 34 catalogued (internal moat + OFF/Wikimedia/IMF/Eurostat/BCB/World Bank)
 ## License: MIT · pip install cli-market · cli-market.dev
