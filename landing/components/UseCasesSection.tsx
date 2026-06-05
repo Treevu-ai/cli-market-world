@@ -18,7 +18,7 @@ const cases = [
     title_en: "Market data",
     desc_es: `${MARKET_STATS.pricesVerifiedLabel} precios normalizados, ${MARKET_STATS.indicatorsCount} indicadores, fuentes públicas (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
     desc_en: `${MARKET_STATS.pricesVerifiedLabel} normalized prices, ${MARKET_STATS.indicatorsCount} indicators, public sources (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
-    href: "#scale",
+    href: "#coverage",
   },
   {
     icon: "\ud83e\uddfa",
@@ -34,7 +34,7 @@ const cases = [
     title_en: "Shelf-price inflation",
     desc_es: `Cambios reales de precios actualizados cada ${MARKET_STATS.pricesRefreshHours} horas, no estimaciones con 30 días de retraso.`,
     desc_en: `Real price changes refreshed every ${MARKET_STATS.pricesRefreshHours} hours, not 30-day-lagged estimates.`,
-    href: "#scale",
+    href: "#coverage",
   },
 ];
 
