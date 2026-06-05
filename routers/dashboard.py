@@ -914,8 +914,10 @@ def _static_dashboard() -> str:
     try:
         data = _cached_dashboard_data()
     except Exception:
-        import traceback
-        return f"<pre>ERROR: {e}\n{traceback.format_exc()}</pre>"
+        # Log full error server-side, return generic message to client
+        import logging
+        logging.exception("Dashboard data fetch failed")
+        return "<pre>Dashboard data unavailable. Please try again later.</pre>"
     if "error" in data:
         return (
             f"<html><body style='background:#0a0a0a;color:#ff4444;"
