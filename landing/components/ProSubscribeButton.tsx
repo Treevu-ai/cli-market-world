@@ -15,6 +15,16 @@ type ProResponse = {
   detail?: string;
 };
 
+// Sanitize user input to prevent XSS
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "\u0026amp;")
+    .replace(/</g, "\u0026lt;")
+    .replace(/>/g, "\u0026gt;")
+    .replace(/\"/g, "\u0026quot;")
+    .replace(/'/g, "\u0026#039;");
+}
+
 export default function ProSubscribeButton() {
   const { lang } = useLang();
   const isES = lang === "es";
@@ -51,7 +61,8 @@ export default function ProSubscribeButton() {
 
   if (result?.ok) {
     const payLink = result.payment_link || PRO_PAYMENT_URL;
-    const ref = result.request_id || "";
+    const ref = String(result.request_id || "");
+    const safeEmail = String(email.trim());
 
     return (
       <div className="space-y-3 text-left">
@@ -59,8 +70,8 @@ export default function ProSubscribeButton() {
           {result.email_sent ? (
             <p>
               {isES
-                ? `Revisa ${email} — enviamos el link desde hello@cli-market.dev`
-                : `Check ${email} — link sent from hello@cli-market.dev`}
+                ? `Revisa ${escapeHtml(safeEmail)} — enviamos el link desde hello@cli-market.dev`
+                : `Check ${escapeHtml(safeEmail)} — link sent from hello@cli-market.dev`}
             </p>
           ) : (
             <p>
