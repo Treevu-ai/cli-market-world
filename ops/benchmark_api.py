@@ -9,11 +9,31 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import statistics
 import time
 import urllib.error
 import urllib.request
 import json
+
+
+def validate_url(url: str) -> bool:
+    """Validate URL to prevent SSRF attacks. Only allow https:// URLs with valid hostnames."""
+    allowed_hosts = [
+        "cli-market-production.up.railway.app",
+        "localhost",
+        "127.0.0.1",
+    ]
+    # Check if URL starts with https://
+    if not url.startswith("https://"):
+        # Allow http:// only for localhost in development
+        if not url.startswith("http://localhost") and not url.startswith("http://127.0.0.1"):
+            return False
+    # Check for allowed hosts
+    for host in allowed_hosts:
+        if host in url:
+            return True
+    return False
 
 
 def percentile(values: list[float], pct: float) -> float:
@@ -80,6 +100,12 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=10, help="Search iterations")
     parser.add_argument("--query", default="leche", help="Search query")
     args = parser.parse_args()
+
+    # Validate URL to prevent SSRF
+    if not validate_url(args.base):
+        print(f"ERROR: Invalid or unauthorized URL: {args.base}")
+        print("Allowed URLs: https://cli-market-production.up.railway.app, localhost, 127.0.0.1")
+        raise SystemExit(1)
 
     print(f"Benchmark: {args.base}")
     health = bench_health(args.base)

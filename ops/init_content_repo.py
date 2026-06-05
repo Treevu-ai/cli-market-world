@@ -19,6 +19,20 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "tools" / "content-repo-template"
 
 
+def validate_path(target: Path) -> bool:
+    """Validate that target path is safe and within expected bounds."""
+    try:
+        resolved = target.resolve()
+        # Prevent path traversal to sensitive directories
+        sensitive = ["/etc", "/usr", "/bin", "/sbin", "/lib", "/sys", "/proc", "/dev"]
+        for s in sensitive:
+            if str(resolved).startswith(s):
+                return False
+        return True
+    except (OSError, ValueError):
+        return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize cli-market-content directory")
     parser.add_argument(
@@ -34,6 +48,11 @@ def main() -> int:
         env = os.getenv("CLI_MARKET_CONTENT_DIR", "").strip()
         target = Path(env) if env else ROOT.parent / "cli-market-content"
     target = target.expanduser().resolve()
+
+    # Validate path to prevent path traversal
+    if not validate_path(target):
+        print(f"ERROR: Invalid or unsafe target path: {target}", file=sys.stderr)
+        return 1
 
     if not TEMPLATE.is_dir():
         print(f"Missing template: {TEMPLATE}", file=sys.stderr)

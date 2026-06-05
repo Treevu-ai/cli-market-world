@@ -41,6 +41,14 @@ from linkedin_asset_lib import (
 COMPARE_URL = "https://cli-market-production.up.railway.app/products/compare"
 
 
+def sanitize_filename(name: str) -> str:
+    """Sanitize string for safe filename usage."""
+    # Remove path traversal characters and limit length
+    sanitized = re.sub(r'[^\w\s-]', '', name)
+    sanitized = re.sub(r'\s+', '-', sanitized)
+    return sanitized[:50]
+
+
 def _load_monday():
     path = Path(__file__).parent / "monday.py"
     spec = importlib.util.spec_from_file_location("monday_ops", path)
@@ -50,7 +58,10 @@ def _load_monday():
 
 
 def fetch_compare(query: str, country: str) -> dict:
-    cache = metrics_dir() / f"query-{query}-{country.lower()}.json"
+    # Sanitize inputs to prevent path traversal and ReDoS
+    safe_query = sanitize_filename(query)
+    safe_country = country.lower() if country.isalpha() else "pe"
+    cache = metrics_dir() / f"query-{safe_query}-{safe_country}.json"
     if cache.is_file():
         return json.loads(cache.read_text(encoding="utf-8"))
     print(f"  Fetching compare {query} {country}…", flush=True)
