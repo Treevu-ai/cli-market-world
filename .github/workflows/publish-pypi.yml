@@ -28,16 +28,8 @@ jobs:
           ref: ${{ github.ref_type == 'tag' && github.ref_name || 'main' }}
           path: cli-market-core
 
-      - name: Build cli-market-core
-        working-directory: cli-market-core
-        run: |
-          pip install build
-          python -m build
-
-      - name: Publish cli-market-core to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: cli-market-core/dist/
+      - name: Vendor cli-market-core into package
+        run: bash ops/vendor_core_for_pypi.sh cli-market-core
 
       - name: Build cli-market
         run: |
