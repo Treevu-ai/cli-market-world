@@ -16,7 +16,13 @@
         "type": "stdio",
         "command": "market-mcp"
       },
-      "environmentVariables": []
+      "environmentVariables": [
+        {
+          "name": "MARKET_API_URL",
+          "description": "CLI Market API base URL",
+          "default": "https://cli-market-production.up.railway.app"
+        }
+      ]
     }
   ]
 }

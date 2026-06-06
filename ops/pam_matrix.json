@@ -26,7 +26,7 @@
       "phase": "manual",
       "tier": 1,
       "name": "CLI journey básico",
-      "steps": "market login → market search leche --country PE → market compare → market whoami"
+      "steps": "market register → market search leche --country PE → market compare → market whoami (tier free)"
     },
     {
       "id": "mcp.cursor",

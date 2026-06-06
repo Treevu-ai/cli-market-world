@@ -1,6 +1,6 @@
 # CLI Market — Terminal Demo
 
-> **What happens in 60 seconds.** Copy-paste-able. Every command works with the free tier.
+> **What happens in 60 seconds.** Copy-paste-able. Free tier commands marked clearly.
 
 ---
 
@@ -17,15 +17,28 @@ pip install cli-market
 ```bash
 $ market hello
 
-  CLI Market v1.8.0
-  ---------------
-  45,000+ verified shelf prices  66 retailers (36 active)  8 countries
+  Welcome to CLI Market
+  Next steps:
+    1. market register — free API key (recommended)
+    2. market search "leche" --country PE
+    3. MCP: market-mcp + cli-market.dev/tools
+```
 
-  Your API key is ready.
-  Plan: Free — 1,000 requests/day
+```bash
+$ market register
 
-  Try:
-    market search "leche" --country PE
+  Cuenta creada
+  Usuario: user-abc123...
+  API key: sk-...   ← save it now (shown once)
+```
+
+Or, if you already have credentials: `market login`
+
+```bash
+$ market whoami
+
+  ✓ user-abc123...  tier: free
+  limits: 1,000/day · 60/min · alerts: 0 · checkout: no
 ```
 
 ---
@@ -66,7 +79,6 @@ $ market compare "aceite de girasol 900ml" --country AR
   └──────────────┴────────────┴──────────────┘
 
   Best: Vea at ARS 1,180 (saves 14% vs Jumbo)
-  prod_primor_aceites_0.9l · 4 retailers
 ```
 
 ---
@@ -76,36 +88,18 @@ $ market compare "aceite de girasol 900ml" --country AR
 ```bash
 $ market basket "arroz:1 aceite:1 leche:2" --country AR
 
-  Your basket × Argentina
-  ┌──────────┬─────────┬──────────┬──────────┬──────────┬──────────┐
-  │ Item     │ Qty     │ Vea      │ Carrefour│ Jumbo    │ Dia      │
-  ├──────────┼─────────┼──────────┼──────────┼──────────┼──────────┤
-  │ Arroz    │ 1       │ 890      │ 920      │ 950      │ 880      │
-  │ Aceite   │ 1       │ 1,180    │ 1,200    │ 1,350    │ 1,220    │
-  │ Leche    │ 2       │ 1,560    │ 1,580    │ 1,640    │ 1,600    │
-  ├──────────┼─────────┼──────────┼──────────┼──────────┼──────────┤
-  │ TOTAL    │         │ 3,630    │ 3,700    │ 3,940    │ 3,700    │
-  └──────────┴─────────┴──────────┴──────────┴──────────┴──────────┘
-
   Best: Vea at ARS 3,630 · Save 8% vs Jumbo
 ```
 
 ---
 
-## 5. Checkout
+## 5. Checkout (Pro plan)
 
 ```bash
 $ market checkout --payment yape
-
-  Order #ORD-2026-0605-001
-  Total: ARS 3,630 (~USD 3.85)
-  Store: Vea
-
-  [QR code generated]
-
-  Scan with Yape to pay.
-  You'll receive confirmation at hello@cli-market.dev
 ```
+
+Requires **Pro** tier (`market upgrade --email you@example.com`). Free tier returns 403 with upgrade hint.
 
 ---
 
@@ -114,40 +108,12 @@ $ market checkout --payment yape
 ```bash
 $ market ask "what's the cheapest rice in Peru under 5 soles per kilo"
 
-  Arroz Extra Costeño 1kg — PEN 4.20/kg at Plaza Vea
-  Arroz Superior Paisana 1kg — PEN 4.50/kg at Metro
-  Arroz Extra Molinera 1kg — PEN 4.80/kg at Tottus
-
   Cheapest: Costeño at PEN 4.20/kg (Plaza Vea)
-  5 more results above PEN 5.00/kg available on Pro plan.
 ```
 
 ---
 
-## 7. Set a price alert
-
-```bash
-$ market alerts create \
-  --product "aceite de girasol 900ml" \
-  --country AR \
-  --below 1100
-
-  Alert created.
-  We'll email you when any retailer drops below ARS 1,100.
-
-$ market alerts list
-
-  Alerts (1)
-  ┌──────────────────────────────┬────────┬──────────┬─────────┐
-  │ Product                      │ Country│ Threshold│ Channel │
-  ├──────────────────────────────┼────────┼──────────┼─────────┤
-  │ Aceite de Girasol 900ml      │ AR     │ < 1,100  │ email   │
-  └──────────────────────────────┴────────┴──────────┴─────────┘
-```
-
----
-
-## 8. Get platform stats
+## 7. Platform stats
 
 ```bash
 $ market stats
@@ -155,15 +121,25 @@ $ market stats
   CLI Market Stats
   ────────────────
   Prices tracked:    45,387
-  Retailers active:  36 of 66
+  Retailers active:  38 of 68
   Countries:         8
   MCP tools:         43
-  Last refresh:      June 5, 2026 14:00 UTC
-  Your API key:      Free tier · 1,000 req/day · 892 remaining today
+  Last refresh:      every 4h
 ```
 
 ---
 
-**Try it.** `pip install cli-market` · `market hello` · No credit card.
+## Appendix — Starter+ only
+
+**Price alerts** (Starter plan and above):
+
+```bash
+$ market alerts create --product "aceite" --country AR --threshold 1100
+$ market alerts list
+```
+
+---
+
+**Try it.** `pip install cli-market` · `market register` · No credit card.
 
 [cli-market.dev](https://cli-market.dev)

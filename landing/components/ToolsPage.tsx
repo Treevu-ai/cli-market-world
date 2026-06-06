@@ -2,13 +2,17 @@
 import { useState } from "react";
 import { MARKET_STATS } from "@/lib/marketStats";
 
+const MCP_API_URL = "https://cli-market-production.up.railway.app";
+
 const MCP_CONFIG = {
   cursor: `{
   "mcpServers": {
     "cli-market": {
       "command": "market-mcp",
       "args": [],
-      "env": {}
+      "env": {
+        "MARKET_API_URL": "${MCP_API_URL}"
+      }
     }
   }
 }`,
@@ -16,7 +20,10 @@ const MCP_CONFIG = {
   "mcpServers": {
     "cli-market": {
       "command": "market-mcp",
-      "args": []
+      "args": [],
+      "env": {
+        "MARKET_API_URL": "${MCP_API_URL}"
+      }
     }
   }
 }`,
@@ -24,16 +31,26 @@ const MCP_CONFIG = {
   "servers": {
     "cli-market": {
       "type": "stdio",
-      "command": "market-mcp"
+      "command": "market-mcp",
+      "env": {
+        "MARKET_API_URL": "${MCP_API_URL}"
+      }
     }
   }
 }`,
 };
 
-const TOOLS = [
+const STARTER_TOOLS = [
   "market_search",
   "market_compare",
   "market_basket",
+  "market_cart",
+  "market_whoami",
+  "market_subscription",
+  "market_stats",
+];
+
+const TOOLS = [
   "market_add",
   "market_cart",
   "market_checkout",
@@ -105,7 +122,19 @@ export default function ToolsPage() {
 
       <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
-          <h2 className="section-title mb-6">Popular MCP tools</h2>
+          <h2 className="section-title mb-2">Starter MCP tools</h2>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6">
+            Run <code className="font-mono text-[var(--cm-mint)]">market register</code> or{" "}
+            <code className="font-mono text-[var(--cm-mint)]">market login</code>, then try these first.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 mb-10">
+            {STARTER_TOOLS.map((t) => (
+              <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-mint)]/90 border border-[var(--cm-mint)]/20">
+                {t}
+              </span>
+            ))}
+          </div>
+          <h3 className="text-sm font-semibold text-white mb-4">More tools</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {TOOLS.map((t) => (
               <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-on-surface-variant)]">
@@ -113,7 +142,9 @@ export default function ToolsPage() {
               </span>
             ))}
           </div>
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">+ {MARKET_STATS.mcpTools - TOOLS.length} more tools in the full registry</p>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">
+            + {MARKET_STATS.mcpTools - STARTER_TOOLS.length - TOOLS.length} more in the full registry
+          </p>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
             Full tool list on GitHub →
           </a>
