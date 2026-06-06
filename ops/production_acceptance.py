@@ -316,6 +316,13 @@ def run_case(
         headers["Content-Type"] = "application/json"
 
     timeout = float(case.get("timeout_s") or matrix["defaults"].get("timeout_s", 30))
+    latency_cap = case.get("expect", {}).get("latency_ms_max")
+    if latency_cap is not None:
+        try:
+            cap_ms = float(render_template(latency_cap, ctx))
+            timeout = max(timeout, cap_ms / 1000.0 + 5.0)
+        except (TypeError, ValueError):
+            pass
     if case["id"] == "public.dashboard_html":
         timeout = max(timeout, 60.0)
     req = urllib.request.Request(url, data=data_bytes, headers=headers, method=method)
