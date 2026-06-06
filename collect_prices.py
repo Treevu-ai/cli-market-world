@@ -23,7 +23,7 @@ from market_core import (
     ensure_db_initialized,
 )
 from market_db import get_db
-from backend_interface import get_default_stores, resolve_store_config
+from store_credentials import get_default_stores, resolve_store_config
 
 
 def _store_line(store: str) -> str:
@@ -79,6 +79,50 @@ CURRENCY_LINE_MAX = {
 STORE_EXTRA_DELAY = {
     "globo_br": 2.0,
 }
+# Appliance-brand stores miss the global electro rotation (Motorola-first).
+# Stable per-store queries keep them contributing every batch cycle.
+STORE_QUERY_OVERRIDES: dict[str, list[tuple[str, str]]] = {
+    "electrolux_ar": [
+        ("lavarropas", "electro"), ("heladera", "electro"), ("microondas", "electro"),
+        ("refrigerador", "electro"), ("horno", "electro"), ("aspiradora", "electro"),
+        ("cocina", "electro"), ("lavadora", "electro"), ("secarropas", "electro"),
+        ("freezer", "electro"), ("cafetera", "electro"), ("licuadora", "electro"),
+    ],
+    "whirlpool_ar": [
+        ("lavarropas", "electro"), ("heladera", "electro"), ("microondas", "electro"),
+        ("refrigerador", "electro"), ("horno", "electro"), ("aspiradora", "electro"),
+        ("cocina", "electro"), ("lavadora", "electro"), ("secarropas", "electro"),
+        ("freezer", "electro"), ("lavaplatos", "electro"), ("purificador", "electro"),
+    ],
+    "electrolux_cl": [
+        ("microondas", "electro"), ("refrigerador", "electro"), ("lavadora", "electro"),
+        ("aspiradora", "electro"), ("horno", "electro"), ("heladera", "electro"),
+        ("freezer", "electro"), ("cocina", "electro"), ("lavarropas", "electro"),
+        ("plancha", "electro"), ("tostadora", "electro"), ("batidora", "electro"),
+    ],
+    "whirlpool_fr": [
+        ("lave-linge", "electro"), ("réfrigérateur", "electro"), ("four", "electro"),
+        ("aspirateur", "electro"), ("micro-ondes", "electro"), ("lave vaisselle", "electro"),
+        ("sèche-linge", "electro"), ("congélateur", "electro"), ("cafetière", "electro"),
+        ("mixeur", "electro"), ("bouilloire", "electro"), ("cuisinière", "electro"),
+    ],
+    "oster_br": [
+        ("liquidificador", "electro"), ("batedeira", "electro"), ("cafeteira", "electro"),
+        ("torradeira", "electro"), ("aspirador", "electro"), ("geladeira", "electro"),
+        ("microondas", "electro"), ("panela", "electro"), ("mixer", "electro"),
+        ("sanduicheira", "electro"), ("chaleira", "electro"), ("fogão", "electro"),
+    ],
+}
+
+
+def queries_for_store(store: str, global_queries: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    overrides = STORE_QUERY_OVERRIDES.get(store)
+    if overrides:
+        if MAX_QUERIES_PER_LINE > 0:
+            return overrides[:MAX_QUERIES_PER_LINE]
+        return overrides
+    return global_queries
+
 
 
 def max_allowed_price(store: str, line: str) -> float:
@@ -397,33 +441,15 @@ if USE_PG:
         global _pg_pool
         if _pg_pool is None:
             pool_size = max(PARALLEL + 2, 15)
-
-            async def _mk(ssl_arg):
-                return await asyncpg.create_pool(
-                    DATABASE_URL, min_size=2, max_size=pool_size,
-                    command_timeout=60, ssl=ssl_arg,
-                )
-
-            # asyncpg does NOT implement libpq-style 'prefer' fallback: passing
-            # ssl='prefer' makes it attempt an SSL upgrade and raise if the
-            # server rejects it. Railway private networking
-            # (postgres.railway.internal) offers NO SSL, while public proxy URLs
-            # require it. So try plaintext first (the proven private-net path),
-            # then fall back to SSL for public URLs.
-            mode = os.getenv("PG_SSL_MODE", "").lower()
-            if mode in ("require", "verify-ca", "verify-full", "true"):
-                _pg_pool = await _mk(True)
-            elif mode in ("disable", "false"):
-                _pg_pool = await _mk(False)
-            else:
-                try:
-                    _pg_pool = await _mk(False)
-                except Exception as e:
-                    logger.warning(
-                        "asyncpg plaintext connect failed (%s) — retrying with SSL",
-                        str(e)[:120],
-                    )
-                    _pg_pool = await _mk(True)
+            # SSL: respect sslmode in DATABASE_URL; default to 'prefer' so it
+            # works on both Railway private networking (no SSL) and public URLs (SSL).
+            # Override with PG_SSL_MODE env var if needed.
+            ssl_mode = os.getenv("PG_SSL_MODE", "prefer")
+            ssl_arg: object = ssl_mode if ssl_mode not in ("disable", "false") else False
+            _pg_pool = await asyncpg.create_pool(
+                DATABASE_URL, min_size=2, max_size=pool_size, command_timeout=60,
+                ssl=ssl_arg,
+            )
         return _pg_pool
 
     async def pg_try_daemon_lock(pool) -> bool:
@@ -442,7 +468,7 @@ if USE_PG:
         ensure_db_initialized()
 
     async def pg_insert(conn, prod):
-        from backend_interface import compute_snapshot_confidence
+        from price_confidence import compute_snapshot_confidence
 
         discount = prod.get("discount")
         if discount is not None:
@@ -563,7 +589,7 @@ _last_catalog_pull: float = 0.0
 
 async def collect_full_catalog_pg(pool, store: str) -> int:
     from market_connectors.vtex import VtexConnector
-    from backend_interface import resolve_store_config
+    from store_credentials import resolve_store_config
 
     cfg = resolve_store_config(store)
     if cfg.get("platform") != "vtex":
@@ -587,7 +613,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             if prod["price"] > max_allowed_price(store, line):
                 continue
             try:
-                from backend_interface import compute_snapshot_confidence
+                from price_confidence import compute_snapshot_confidence
 
                 list_price = prod.get("list_price")
                 confidence = compute_snapshot_confidence(
@@ -618,7 +644,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
 async def run_full_catalog_pg(pool, stores: list[str]) -> int:
     global _last_catalog_pull
-    from backend_interface import resolve_store_config
+    from store_credentials import resolve_store_config
 
     now = time.monotonic()
     if now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
@@ -639,6 +665,7 @@ async def collect_one_pg(pool, store, queries):
     if not cb.ok(store):
         logger.warning("circuit open — skipping %s", store)
         return 0
+    queries = queries_for_store(store, queries)
     line = _store_line(store)
     collected = 0
     query_ok = 0
@@ -738,6 +765,7 @@ async def collect_one_sqlite(db, store, queries):
     """Collect for one store, reusing a single SQLite connection across
     all inserts (orders of magnitude cheaper than open-per-row, and avoids
     `database is locked` storms under PARALLEL workers)."""
+    queries = queries_for_store(store, queries)
     line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0
     for q, lf in queries:
         if lf and line!=lf: continue
@@ -816,16 +844,6 @@ async def run_collection(stores, queries):
                     errs.append(f"{store}: {exc}")
         sq_run_end(db, rid, ok, total, json.dumps(errs[:100]))
         db.commit()
-
-    if total > 0:
-        try:
-            from market_alerts import evaluate_alerts
-            fired = evaluate_alerts()
-            if fired:
-                logger.info("Alerts: %d fired after collection cycle", fired)
-        except Exception as _ae:
-            logger.warning("Alert evaluation failed (non-fatal): %s", _ae)
-
     return {"stores_attempted":len(sl),"stores_succeeded":ok,"prices_collected":total,"errors":len(errs)}
 
 # ── Status / Report ─────────────────────────────────────────────────────────
@@ -914,6 +932,14 @@ async def main():
                     f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']}/{r['stores_attempted']} stores | "
                     f"{time.monotonic()-t0:.1f}s | {r['errors']} errors"
                 )
+                # Evaluate price alerts after every collection cycle
+                try:
+                    from market_alerts import evaluate_alerts
+                    fired = evaluate_alerts()
+                    if fired:
+                        print(f"  🔔 Alerts: {fired} fired")
+                except Exception as _ae:
+                    print(f"  ⚠ Alert evaluation skipped: {_ae}")
                 if USE_PG and pool:
                     cat_count = await run_full_catalog_pg(pool, stores)
                     if cat_count:
@@ -921,7 +947,7 @@ async def main():
                     # Refresh enrichment indicators every 6 cycles (24h) for all countries
                     if cycle % 6 == 0:
                         try:
-                            from backend_interface import refresh_after_collection
+                            from market_indicators import refresh_after_collection
                             result = refresh_after_collection()
                             total = result.get("enrichment_written", 0)
                             print(f"  📡 Indicators refreshed: {result.get('internal_written',0)} internal + {result.get('external_written',0)} external + {total} enrichment ({len(result.get('countries',[]))} countries)")
@@ -934,13 +960,6 @@ async def main():
             finally:
                 if USE_PG and pool and lock_ok:
                     await pg_release_daemon_lock(pool)
-            # Watchdog: alert ops if the moat is stale, empty, or on SQLite
-            # fallback after this cycle (non-fatal, cooldown-gated).
-            try:
-                from market_health_alert import alert_if_unhealthy
-                alert_if_unhealthy(source="collector")
-            except Exception as _he:
-                logger.warning("Moat health check failed (non-fatal): %s", _he)
             cycle += 1
             wait_s = max(args.interval * 3600, 60)
             # Poll for dashboard refresh triggers every 30 s
