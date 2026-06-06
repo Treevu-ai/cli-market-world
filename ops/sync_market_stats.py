@@ -7,9 +7,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+CORE_ROOT = ROOT.parent / "cli-market-core"
+for p in (ROOT, CORE_ROOT):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
-import market_stats as s
+from market_core import market_stats as s
 
 OUT_TS = ROOT / "landing" / "lib" / "marketStats.ts"
 
@@ -24,6 +27,8 @@ export const MARKET_STATS = {{
   platformVtex: {s.PLATFORM_VTEX},
   platformShopify: {s.PLATFORM_SHOPIFY},
   platformMagento: {s.PLATFORM_MAGENTO},
+  platformWooCommerce: {s.PLATFORM_WOOCOMMERCE},
+  woocommerceStores: {json.dumps(list(s.WOOCOMMERCE_STORES))},
   countries: {s.COUNTRIES},
   countryCodes: {list(s.COUNTRY_CODES)!r},
   mcpTools: {s.MCP_TOOLS},

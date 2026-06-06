@@ -8,7 +8,7 @@ export default function RetailersSection() {
 
   const steps = [
     { icon: "1", title: isES ? "Tu plataforma" : "Your platform",
-      desc: isES ? "VTEX, Shopify y Magento. Ya nos conectamos. Cero desarrollo." : "VTEX, Shopify, and Magento. We already connect. Zero dev work." },
+      desc: isES ? "VTEX, Shopify, Magento y WooCommerce. Ya nos conectamos. Cero desarrollo." : "VTEX, Shopify, Magento, and WooCommerce. We already connect. Zero dev work." },
     { icon: "2", title: isES ? "30 segundos" : "30 seconds",
       desc: isES ? "Token de solo lectura. Sin acceso a clientes ni ventas." : "Read-only token. No customer or sales data access." },
     { icon: "3", title: isES ? "Apareces" : "You appear",
@@ -30,7 +30,7 @@ export default function RetailersSection() {
   return (
     <section id="retailers" className="landing-section-alt animate-fade-in" itemScope itemType="https://schema.org/Service">
       <meta itemProp="name" content="CLI Market Retailer Listing" />
-      <meta itemProp="description" content={isES ? "Lista tu tienda gratis en CLI Market. VTEX, Shopify o Magento. 30 segundos. Sin costo." : "List your store on CLI Market free. VTEX, Shopify, or Magento. 30 seconds. No cost."} />
+      <meta itemProp="description" content={isES ? "Lista tu tienda gratis en CLI Market. VTEX, Shopify, Magento o WooCommerce. 30 segundos. Sin costo." : "List your store on CLI Market free. VTEX, Shopify, Magento, or WooCommerce. 30 seconds. No cost."} />
       <meta itemProp="offers" content='{"@type":"Offer","price":"0","priceCurrency":"USD"}' />
 
       <div className="landing-container">
@@ -46,8 +46,8 @@ export default function RetailersSection() {
         </h2>
         <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-4 text-center">
           {isES
-            ? "Si usas VTEX, Shopify o Magento, tus productos ya pueden aparecer en búsquedas de agentes de IA. En 30 segundos. Sin pagar un centavo."
-            : "If you use VTEX, Shopify, or Magento, your products can already appear in AI agent searches. 30 seconds. Zero cost."}
+            ? "Si usas VTEX, Shopify, Magento o WooCommerce, tus productos ya pueden aparecer en búsquedas de agentes de IA. En 30 segundos. Sin pagar un centavo."
+            : "If you use VTEX, Shopify, Magento, or WooCommerce, your products can already appear in AI agent searches. 30 seconds. Zero cost."}
         </p>
         <p className="text-xs text-[var(--cm-mint)] max-w-2xl mx-auto mb-8 text-center font-medium">
           {isES

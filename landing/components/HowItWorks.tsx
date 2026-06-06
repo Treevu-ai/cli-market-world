@@ -45,7 +45,7 @@ export default function HowItWorks() {
         </div>
 
         <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mb-6 font-mono">
-          {isES ? "Checkout con PayPal o QR (Yape/Plin) · requiere plan Pro + activación por email" : "Checkout via PayPal or QR (Yape/Plin) · requires Pro plan + email activation"}
+          {isES ? `Checkout ${MARKET_STATS.paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${MARKET_STATS.paymentsLabel} · requires Pro plan + email activation`}
         </p>
 
         <a

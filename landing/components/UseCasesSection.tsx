@@ -8,8 +8,8 @@ const cases = [
     icon: "🤖",
     title_es: "Agentes de compra",
     title_en: "Shopping agents",
-    desc_es: `Search, compare y canastas con ${MARKET_STATS.mcpTools} herramientas MCP. Build Free/Pro — checkout vía PayPal/QR.`,
-    desc_en: `Search, compare, and baskets with ${MARKET_STATS.mcpTools} MCP tools. Build Free/Pro — checkout via PayPal/QR.`,
+    desc_es: `Search, compare y canastas con ${MARKET_STATS.mcpTools} herramientas MCP. Build Free/Pro — checkout vía PayPal/Mercado Pago/QR.`,
+    desc_en: `Search, compare, and baskets with ${MARKET_STATS.mcpTools} MCP tools. Build Free/Pro — checkout via PayPal/Mercado Pago/QR.`,
     href: "#pricing",
   },
   {
