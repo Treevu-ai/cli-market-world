@@ -1,0 +1,694 @@
+# Production Acceptance Matrix (PAM) — CLI Market
+# Edit this file, then: python ops/production_acceptance.py --sync-json
+# Run:     python ops/production_acceptance.py
+# Phases:  --phase public|user|admin|landing|manual
+# Tier:    --tier 1  (default: tier 1 only)
+
+version: "1.0.0"
+product: CLI Market
+updated: "2026-06-06"
+
+defaults:
+  api_base: https://cli-market-production.up.railway.app
+  landing_base: https://cli-market.dev
+  timeout_s: 30
+
+# Thresholds used by assertions (override via env if needed)
+thresholds:
+  min_indexed: 1000
+  min_collector_succeeded: 30
+  max_collector_age_hours: 12
+  max_search_latency_ms: 15000
+
+manual_checklist:
+  - id: cli.pip_install
+    phase: manual
+    tier: 1
+    name: "pip install cli-market en venv limpio"
+    steps: "python -m venv /tmp/pam-venv && pip install -U cli-market && market hello"
+  - id: cli.journey
+    phase: manual
+    tier: 1
+    name: "CLI journey básico"
+    steps: "market login → market search leche --country PE → market compare → market whoami"
+  - id: mcp.cursor
+    phase: manual
+    tier: 1
+    name: "MCP desde mcp.json de cli-market.dev"
+    steps: "Conectar MCP, market_search + market_compare + market_cart_list"
+  - id: landing.visual
+    phase: manual
+    tier: 1
+    name: "Landing pricing + contact + stats"
+    steps: "Abrir cli-market.dev — números alineados con /dashboard/data"
+  - id: billing.pro
+    phase: manual
+    tier: 2
+    name: "E2E Pro request + PayPal sandbox"
+    steps: "Ver ops/E2E_CLIENT_JOURNEY.md — request-pro → activate_pro → market checkout"
+  - id: payments.mp
+    phase: manual
+    tier: 2
+    name: "Mercado Pago checkout sandbox"
+    steps: "market checkout con MP en cuenta Pro de prueba"
+
+cases:
+  # ── PUBLIC / TIER 1 ───────────────────────────────────────────────────────
+  - id: public.root
+    tier: 1
+    phase: public
+    name: API root banner
+    method: GET
+    path: /
+    expect:
+      status: 200
+      json:
+        status: running
+
+  - id: public.health
+    tier: 1
+    phase: public
+    name: Liveness /health
+    method: GET
+    path: /health
+    expect:
+      status: 200
+      json:
+        status: healthy
+
+  - id: public.health_db
+    tier: 1
+    phase: public
+    name: Database backend diagnostic
+    method: GET
+    path: /health/db
+    expect:
+      status: 200
+      json_has: [backend]
+
+  - id: public.health_collector
+    tier: 1
+    phase: public
+    name: Collector freshness + batch success
+    method: GET
+    path: /health/collector
+    expect:
+      status: 200
+      json:
+        status: ok
+        in_progress: false
+      json_min:
+        stores_succeeded: "{{threshold.min_collector_succeeded}}"
+      json_max:
+        age_hours: "{{threshold.max_collector_age_hours}}"
+
+  - id: public.lines
+    tier: 1
+    phase: public
+    name: Business lines catalog
+    method: GET
+    path: /lines
+    expect:
+      status: 200
+      json_has: [lines, total]
+      json_path_min_count:
+        lines: 6
+
+  - id: public.stores
+    tier: 1
+    phase: public
+    name: Retailers catalog (no 500)
+    method: GET
+    path: /stores
+    expect:
+      status: 200
+      json_has: [stores, total]
+      json_path_min_count:
+        stores: 30
+
+  - id: public.stores_pe
+    tier: 1
+    phase: public
+    name: Stores filtered by country PE
+    method: GET
+    path: /stores?country=PE
+    expect:
+      status: 200
+      json_path_min_count:
+        stores: 1
+
+  - id: public.countries
+    tier: 1
+    phase: public
+    name: Countries catalog
+    method: GET
+    path: /countries
+    expect:
+      status: 200
+      json_has: [countries]
+      json_path_min_count:
+        countries: 5
+
+  - id: public.sources_health
+    tier: 1
+    phase: public
+    name: Per-store source health
+    method: GET
+    path: /v1/sources/health
+    expect:
+      status: 200
+      json_has: [stores]
+
+  - id: public.dashboard_data
+    tier: 1
+    phase: public
+    name: Dashboard BI JSON feed
+    method: GET
+    path: /dashboard/data
+    timeout_s: 120
+    expect:
+      status: 200
+      json_has: [kpis, store_health, collector_history]
+      json_min:
+        kpis.total_indexed: "{{threshold.min_indexed}}"
+
+  - id: public.dashboard_html
+    tier: 1
+    phase: public
+    name: Dashboard HTML page
+    method: GET
+    path: /dashboard
+    expect:
+      status: 200
+      content_type_contains: text/html
+
+  - id: public.openapi
+    tier: 1
+    phase: public
+    name: OpenAPI schema
+    method: GET
+    path: /openapi.json
+    expect:
+      status: 200
+      json_has: [paths, info]
+      json_path_min_count:
+        paths: 50
+
+  - id: public.checkout_rates
+    tier: 1
+    phase: public
+    name: FX rates for checkout
+    method: GET
+    path: /checkout/rates
+    expect:
+      status: 200
+      json_has: [base, rates]
+
+  - id: public.paypal_status
+    tier: 1
+    phase: public
+    name: PayPal configuration probe
+    method: GET
+    path: /paypal-status
+    expect:
+      status: 200
+      json_has: [configured, sandbox]
+
+  - id: public.mercadopago_status
+    tier: 1
+    phase: public
+    name: Mercado Pago configuration probe
+    method: GET
+    path: /mercadopago-status
+    expect:
+      status: 200
+      json_has: [configured]
+
+  - id: public.billing_request_pro
+    tier: 1
+    phase: public
+    name: Pro upgrade funnel (request-pro)
+    method: POST
+    path: /billing/request-pro
+    body:
+      email: "pam+{{run_id}}@cli-market.dev"
+      lang: es
+    expect:
+      status: 200
+      json:
+        ok: true
+      json_has: [payment_link, request_id]
+
+  - id: public.contact
+    tier: 1
+    phase: public
+    name: Contact form lead
+    method: POST
+    path: /v1/contact
+    body:
+      name: PAM Bot
+      email: "pam+{{run_id}}@cli-market.dev"
+      message: "Production acceptance matrix automated probe"
+    expect:
+      status_in: [200, 201]
+      json_has: [ok]
+
+  - id: public.retailer_apply
+    tier: 2
+    phase: public
+    name: Retailer onboarding application
+    method: POST
+    path: /v1/retailers/apply
+    body:
+      store_name: "PAM Test Store {{run_id}}"
+      website: https://example.com
+      country: PE
+      platform: woocommerce
+      contact_email: "pam+{{run_id}}@cli-market.dev"
+      catalog_size: small
+    expect:
+      status_in: [200, 201]
+      json_has: [application_id]
+
+  - id: public.utils_exchange
+    tier: 2
+    phase: public
+    name: FX conversion utility
+    method: POST
+    path: /v1/utils/exchange
+    body:
+      amount: 100
+      from: USD
+      to: PEN
+    expect:
+      status: 200
+      json_has: [converted, rate]
+
+  - id: public.barcode
+    tier: 2
+    phase: public
+    name: Barcode lookup (OFF proxy)
+    method: GET
+    path: /products/barcode/7501000655349
+    expect:
+      status_in: [200, 404]
+
+  - id: public.agent_ask
+    tier: 2
+    phase: public
+    name: NL agent intent (unauthenticated)
+    method: POST
+    path: /agent/ask
+    body:
+      message: "buscar leche en peru"
+    expect:
+      status_in: [200, 401, 422]
+    notes: "Documentar si debe quedar público; 401 = auth añadida"
+
+  - id: public.mp_webhook_get
+    tier: 2
+    phase: public
+    name: Mercado Pago webhook endpoint reachable
+    method: GET
+    path: /checkout/mercadopago-webhook
+    expect:
+      status_in: [200, 400, 401, 405]
+
+  # ── LANDING / TIER 1 ──────────────────────────────────────────────────────
+  - id: landing.home
+    tier: 1
+    phase: landing
+    name: Landing home
+    base: landing
+    method: GET
+    path: /
+    expect:
+      status: 200
+
+  - id: landing.llms_txt
+    tier: 1
+    phase: landing
+    name: llms.txt for agents
+    base: landing
+    method: GET
+    path: /llms.txt
+    expect:
+      status: 200
+      content_type_contains: text/plain
+      body_contains: CLI Market
+
+  - id: landing.mcp_json
+    tier: 1
+    phase: landing
+    name: MCP server descriptor
+    base: landing
+    method: GET
+    path: /mcp.json
+    expect:
+      status: 200
+      json_has: [name, command, repository]
+
+  - id: landing.server_json
+    tier: 2
+    phase: landing
+    name: HTTP server descriptor for agents
+    base: landing
+    method: GET
+    path: /server.json
+    expect:
+      status: 200
+      json_has: [name]
+
+  # ── USER / TIER 1 (auto-register if no MARKET_USER_TOKEN) ─────────────────
+  - id: user.auth_register
+    tier: 1
+    phase: user
+    name: Register ephemeral API user
+    method: POST
+    path: /auth/register
+    expect:
+      status: 200
+      json_has: [api_key, username]
+    capture:
+      user_api_key: api_key
+      username: username
+
+  - id: user.whoami
+    tier: 1
+    phase: user
+    name: Auth whoami
+    method: GET
+    path: /auth/whoami
+    auth: user
+    expect:
+      status: 200
+      json_has: [username]
+
+  - id: user.search
+    tier: 1
+    phase: user
+    name: Multi-store product search
+    method: POST
+    path: /products/search
+    auth: user
+    body:
+      query: leche
+      country: PE
+      limit: 5
+    expect:
+      status: 200
+      json_has: [products]
+      latency_ms_max: "{{threshold.max_search_latency_ms}}"
+    capture:
+      first_product: "products.0"
+
+  - id: user.compare
+    tier: 1
+    phase: user
+    name: Price compare
+    method: POST
+    path: /products/compare
+    auth: user
+    body:
+      query: leche
+      country: PE
+      limit: 3
+    expect:
+      status: 200
+      json_has: [comparisons]
+
+  - id: user.index_stats
+    tier: 1
+    phase: user
+    name: Golden record index stats
+    method: GET
+    path: /index/stats
+    auth: user
+    expect:
+      status: 200
+      json_has: [total_products, stores]
+
+  - id: user.index_resolve
+    tier: 1
+    phase: user
+    name: Entity resolution
+    method: POST
+    path: /index/resolve
+    auth: user
+    body:
+      name: "Leche Gloria entera 1L"
+      brand: Gloria
+      line: supermercados
+    expect:
+      status: 200
+      json_has: [matches]
+
+  - id: user.v1_prices
+    tier: 1
+    phase: user
+    name: Intel prices feed
+    method: GET
+    path: /v1/prices?limit=5&line=supermercados
+    auth: user
+    expect:
+      status: 200
+      json_has: [prices]
+
+  - id: user.v1_dispersion
+    tier: 1
+    phase: user
+    name: Price dispersion analytics
+    method: GET
+    path: /v1/dispersion?line=supermercados
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.v1_basket
+    tier: 1
+    phase: user
+    name: Basket cost index
+    method: GET
+    path: /v1/basket?country=PE
+    auth: user
+    expect:
+      status: 200
+      json_has: [items]
+
+  - id: user.v1_coverage
+    tier: 1
+    phase: user
+    name: Coverage matrix
+    method: GET
+    path: /v1/coverage/matrix
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.intel_inflation
+    tier: 1
+    phase: user
+    name: Inflation intel
+    method: GET
+    path: /v1/intel/inflation?country=PE
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.analytics_stats
+    tier: 1
+    phase: user
+    name: Analytics stats
+    method: GET
+    path: /analytics/stats
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.cart_view
+    tier: 1
+    phase: user
+    name: View cart (empty ok)
+    method: GET
+    path: /cart
+    auth: user
+    expect:
+      status: 200
+      json_has: [cart, items]
+
+  - id: user.cart_add
+    tier: 1
+    phase: user
+    name: Add to cart from search result
+    method: POST
+    path: /cart/add
+    auth: user
+    requires: [user.search]
+    skip_if_missing: [first_product]
+    body:
+      product_id: "{{first_product.product_id}}"
+      name: "{{first_product.name}}"
+      price: "{{first_product.price}}"
+      store: "{{first_product.store}}"
+      quantity: 1
+      url: "{{first_product.url}}"
+    expect:
+      status: 200
+      json_has: [cart, items]
+
+  - id: user.categories
+    tier: 2
+    phase: user
+    name: Store category tree
+    method: GET
+    path: /categories/wong
+    auth: user
+    expect:
+      status_in: [200, 404, 502]
+
+  - id: user.alerts_list
+    tier: 2
+    phase: user
+    name: Price alerts list
+    method: GET
+    path: /v1/alerts
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.data_export_history
+    tier: 2
+    phase: user
+    name: Data export history
+    method: POST
+    path: /v1/data/export-history
+    auth: user
+    body: {}
+    expect:
+      status_in: [200, 422]
+
+  - id: user.orders_list
+    tier: 2
+    phase: user
+    name: Orders list
+    method: GET
+    path: /orders
+    auth: user
+    expect:
+      status: 200
+
+  - id: user.dashboard_usage
+    tier: 2
+    phase: user
+    name: Per-user API usage
+    method: GET
+    path: /dashboard/usage
+    auth: user
+    expect:
+      status: 200
+
+  # ── ADMIN / TIER 1 (read-only) ────────────────────────────────────────────
+  - id: admin.contacts
+    tier: 1
+    phase: admin
+    name: Admin contacts inbox
+    method: GET
+    path: /admin/contacts
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+
+  - id: admin.retailer_applications
+    tier: 1
+    phase: admin
+    name: Retailer applications queue
+    method: GET
+    path: /admin/retailer-applications
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+
+  - id: admin.store_credentials
+    tier: 2
+    phase: admin
+    name: Store credentials summary
+    method: GET
+    path: /admin/store-credentials
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+
+  - id: admin.debug_fetch
+    tier: 2
+    phase: admin
+    name: Debug VTEX fetch pipeline
+    method: GET
+    path: /admin/debug-fetch?store=wong&query=leche
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json_has: [results]
+
+  - id: admin.scan_stores
+    tier: 2
+    phase: admin
+    name: VTEX store scan (electro sample)
+    method: POST
+    path: /v1/admin/scan-stores
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    body:
+      line: electro
+    expect:
+      status: 200
+      json_has: [scanned]
+    latency_ms_max: 120000
+
+  # ── ADMIN / DESTRUCTIVE (opt-in --include-destructive) ────────────────────
+  - id: admin.collector_trigger
+    tier: 2
+    phase: admin
+    name: Collector on-demand trigger
+    method: POST
+    path: /dashboard/collector/trigger
+    auth: admin
+    destructive: true
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json_has: [triggered]
+
+  - id: admin.collect_smoke
+    tier: 2
+    phase: admin
+    name: Synchronous collect (2 stores × 2 queries)
+    method: POST
+    path: /admin/collect?stores=2&queries=2
+    auth: admin
+    destructive: true
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json:
+        status: ok
+      json_min:
+        stores_succeeded: 1
+    latency_ms_max: 180000
+
+  - id: admin.index_backfill
+    tier: 2
+    phase: admin
+    name: Index backfill batch
+    method: POST
+    path: /index/backfill?limit=50&batches=1
+    auth: admin
+    destructive: true
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json_has: [totals]
+    latency_ms_max: 120000
