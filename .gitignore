@@ -31,6 +31,7 @@ docs/linkedin/assets/**/*.gif
 ops/daily/*.md
 !ops/daily/.gitkeep
 ops/reports/*.md
+ops/reports/pam-*.json
 !ops/reports/.gitkeep
 
 # Unrelated / heavy local files

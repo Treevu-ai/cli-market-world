@@ -1,7 +1,8 @@
 # Production Acceptance Matrix (PAM) — CLI Market
 # Edit this file, then: python ops/production_acceptance.py --sync-json
 # Run:     python ops/production_acceptance.py
-# Phases:  --phase public|user|admin|landing|manual
+# Phases:  --phase public|user|admin|landing|post|manual
+# Tier 2 auto-includes `post` (collector batch check after destructive smoke).
 # Tier:    --tier 1  (default: tier 1 only)
 
 version: "1.0.0"
@@ -89,18 +90,14 @@ cases:
   - id: public.health_collector
     tier: 1
     phase: public
-    name: Collector freshness + batch success
+    run_order: 5
+    name: Collector endpoint reachable (lite — no batch counts)
     method: GET
     path: /health/collector
     expect:
       status: 200
-      json:
-        status: ok
-        in_progress: false
-      json_min:
-        stores_succeeded: "{{threshold.min_collector_succeeded}}"
-      json_max:
-        age_hours: "{{threshold.max_collector_age_hours}}"
+      json_has: [status, stores_total]
+    notes: "Batch 38/38 validated in post.health_collector_batch"
 
   - id: public.lines
     tier: 1
@@ -606,6 +603,7 @@ cases:
   - id: admin.contacts
     tier: 1
     phase: admin
+    run_order: 10
     name: Admin contacts inbox
     method: GET
     path: /admin/contacts
@@ -617,6 +615,7 @@ cases:
   - id: admin.retailer_applications
     tier: 1
     phase: admin
+    run_order: 11
     name: Retailer applications queue
     method: GET
     path: /admin/retailer-applications
@@ -628,6 +627,7 @@ cases:
   - id: admin.store_credentials
     tier: 2
     phase: admin
+    run_order: 20
     name: Store credentials summary
     method: GET
     path: /admin/store-credentials
@@ -639,6 +639,7 @@ cases:
   - id: admin.debug_fetch
     tier: 2
     phase: admin
+    run_order: 21
     name: Debug VTEX fetch pipeline
     method: GET
     path: /admin/debug-fetch?store=wong&query=leche
@@ -651,6 +652,7 @@ cases:
   - id: admin.scan_stores
     tier: 2
     phase: admin
+    run_order: 22
     name: VTEX store scan (electro sample)
     method: POST
     path: /v1/admin/scan-stores
@@ -664,14 +666,17 @@ cases:
     latency_ms_max: 120000
 
   # ── ADMIN / DESTRUCTIVE (opt-in --include-destructive) ────────────────────
+  # run_order 90+ so collect_smoke runs last and does not poison early health checks.
   - id: admin.collector_trigger
     tier: 2
     phase: admin
+    run_order: 90
     name: Collector on-demand trigger
     method: POST
     path: /dashboard/collector/trigger
     auth: admin
     destructive: true
+    skip_if_post_phase: true
     skip_if_env_missing: [MARKET_API_TOKEN]
     expect:
       status: 200
@@ -680,12 +685,14 @@ cases:
   - id: admin.collect_smoke
     tier: 2
     phase: admin
+    run_order: 91
     name: Synchronous collect (2 stores × 2 queries)
     method: POST
     path: /admin/collect?stores=2&queries=2
     auth: admin
     timeout_s: 180
     destructive: true
+    skip_if_post_phase: true
     skip_if_env_missing: [MARKET_API_TOKEN]
     expect:
       status: 200
@@ -694,10 +701,12 @@ cases:
       json_min:
         stores_succeeded: 1
     latency_ms_max: 180000
+    notes: "Omitido cuando tier≥2 incluye fase post (evita envenenar /health/collector)"
 
   - id: admin.index_backfill
     tier: 2
     phase: admin
+    run_order: 92
     name: Index backfill batch
     method: POST
     path: /index/backfill?limit=50&batches=1
@@ -709,3 +718,25 @@ cases:
       status: 200
       json_has: [totals]
     latency_ms_max: 120000
+
+  # ── POST (strict batch check — runs after admin, sin collect_smoke) ───────
+  - id: post.health_collector_batch
+    tier: 1
+    phase: post
+    run_order: 0
+    name: Collector batch success (38-store production cycle)
+    method: GET
+    path: /health/collector
+    poll_until_match:
+      interval_s: 10
+      max_wait_s: 180
+    expect:
+      status: 200
+      json:
+        status: ok
+        in_progress: false
+      json_min:
+        stores_succeeded: "{{threshold.min_collector_succeeded}}"
+        stores_attempted: "{{threshold.min_collector_succeeded}}"
+      json_max:
+        age_hours: "{{threshold.max_collector_age_hours}}"
