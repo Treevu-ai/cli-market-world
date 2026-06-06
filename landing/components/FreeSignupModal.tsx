@@ -46,7 +46,7 @@ export default function FreeSignupModal({
   const { lang } = useLang();
   const isES = lang === "es";
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | "dev-fast" | "starter-dev">(1);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -55,6 +55,7 @@ export default function FreeSignupModal({
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [requestId, setRequestId] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -67,6 +68,7 @@ export default function FreeSignupModal({
       setLoading(false);
       setDone(false);
       setError("");
+      setRequestId("");
     }
   }, [open]);
 
@@ -93,7 +95,7 @@ export default function FreeSignupModal({
     ].filter(Boolean);
 
     try {
-      await fetch(`${API_URL}/v1/contact`, {
+      const r = await fetch(`${API_URL}/v1/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,6 +108,10 @@ export default function FreeSignupModal({
           lang: isES ? "es" : "en",
         }),
       });
+      if (r.ok) {
+        const data = await r.json().catch(() => ({}));
+        if (data.request_id) setRequestId(data.request_id);
+      }
     } catch {
       // Never block the user on network failure
     }
@@ -146,7 +152,9 @@ export default function FreeSignupModal({
             <p className="text-sm text-[var(--cm-on-surface-variant)]">
               {plan === "free"
                 ? isES ? "Redirigiendo a PyPI…" : "Redirecting to PyPI…"
-                : isES ? "Te escribiremos pronto con el acceso de prueba." : "We'll reach out shortly with your trial access."}
+                : isES
+                  ? `Recibimos su solicitud Starter${requestId ? ` (${requestId})` : ""}. Activación manual ≤24h hábiles.`
+                  : `We received your Starter request${requestId ? ` (${requestId})` : ""}. Manual activation within 24 business hours.`}
             </p>
             {plan !== "free" && (
               <button onClick={onClose} className="btn-mint mt-4">
@@ -162,16 +170,25 @@ export default function FreeSignupModal({
                 {isES ? "¿Cómo usarás CLI Market?" : "How will you use CLI Market?"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1">
-                {isES
-                  ? "Nos ayuda a darte la mejor experiencia."
-                  : "Helps us give you the best experience."}
+                {plan === "starter"
+                  ? isES
+                    ? "Starter requiere activación manual (≤24h hábiles). No hay checkout instantáneo."
+                    : "Starter requires manual activation (≤24 business hours). No instant checkout."
+                  : isES
+                    ? "Nos ayuda a darte la mejor experiencia."
+                    : "Helps us give you the best experience."}
               </p>
             </div>
             <div className="space-y-3">
               {PROFILES.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { setProfile(p.id); setStep(2); }}
+                  onClick={() => {
+                    setProfile(p.id);
+                    if (p.id === "dev" && plan === "free") setStep("dev-fast");
+                    else if (p.id === "dev" && plan === "starter") setStep("starter-dev");
+                    else setStep(2);
+                  }}
                   className="w-full text-left rounded-xl border border-[var(--cm-outline-variant)]/40 hover:border-[var(--cm-mint)]/60 hover:bg-white/5 transition-all p-4"
                 >
                   <div className="flex items-center gap-3">
@@ -189,6 +206,74 @@ export default function FreeSignupModal({
               ))}
             </div>
           </>
+        ) : step === "dev-fast" ? (
+          <div className="space-y-5">
+            <div>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-xs text-[var(--cm-on-surface-variant)] hover:text-white flex items-center gap-1 mb-5 transition-colors"
+              >
+                ← {isES ? "Volver" : "Back"}
+              </button>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Developer</p>
+              <h3 className="text-lg font-bold text-white">
+                {isES ? "Cuenta API instantánea (terminal)" : "Instant API account (terminal)"}
+              </h3>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
+                {isES
+                  ? "Este formulario no crea su API key. La cuenta gratuita se genera en su máquina con market register o market init."
+                  : "This form does not create your API key. The free account is generated locally with market register or market init."}
+              </p>
+            </div>
+            <div className="code-block-cyber px-4 py-3 text-left">
+              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
+market init
+market doctor`}</pre>
+            </div>
+            <div className="flex flex-col gap-2">
+              <a href="/docs#quickstart" className="btn-mint text-center" onClick={onClose}>
+                {isES ? "Ver quickstart →" : "View quickstart →"}
+              </a>
+              <button
+                type="button"
+                className="text-sm text-[var(--cm-on-surface-variant)] hover:text-white"
+                onClick={() => { onClose(); window.open(PYPI_URL, "_blank", "noopener,noreferrer"); }}
+              >
+                {isES ? "Ir a PyPI →" : "Go to PyPI →"}
+              </button>
+            </div>
+          </div>
+
+        ) : step === "starter-dev" ? (
+          <div className="space-y-5">
+            <div>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-xs text-[var(--cm-on-surface-variant)] hover:text-white flex items-center gap-1 mb-5 transition-colors"
+              >
+                ← {isES ? "Volver" : "Back"}
+              </button>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Starter</p>
+              <h3 className="text-lg font-bold text-white">
+                {isES ? "Primero cuenta Free, luego Starter" : "Free account first, then Starter"}
+              </h3>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
+                {isES
+                  ? "Starter no se activa al instante. Cree su cuenta gratuita en terminal y envíe la solicitud de upgrade."
+                  : "Starter is not instant. Create your free terminal account, then submit the upgrade request."}
+              </p>
+            </div>
+            <div className="code-block-cyber px-4 py-3 text-left">
+              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
+market register
+market whoami`}</pre>
+            </div>
+            <button type="button" className="btn-mint w-full" onClick={() => setStep(2)}>
+              {isES ? "Continuar solicitud Starter →" : "Continue Starter request →"}
+            </button>
+          </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div>
@@ -333,13 +418,17 @@ export default function FreeSignupModal({
                 ? isES ? "Procesando…" : "Processing…"
                 : plan === "free"
                   ? isES ? "Continuar a PyPI →" : "Continue to PyPI →"
-                  : isES ? "Solicitar acceso de prueba →" : "Request trial access →"}
+                  : plan === "starter"
+                  ? isES ? "Solicitar Starter →" : "Request Starter →"
+                  : isES ? "Solicitar acceso →" : "Request access →"}
             </button>
 
             <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
               {plan === "free"
-                ? isES ? "Gratuito para siempre · MIT · Sin tarjeta de crédito" : "Free forever · MIT · No credit card required"
-                : isES ? "14 días gratis · Sin tarjeta de crédito" : "14-day free trial · No credit card required"}
+                ? isES ? "La API key se crea con market register · MIT · Sin tarjeta" : "API key via market register · MIT · No card"
+                : plan === "starter"
+                ? isES ? "Sin tarjeta ahora · activación manual ≤24h hábiles · email de confirmación" : "No card now · manual activation ≤24h · confirmation email"
+                : isES ? "Solicitud de acceso · activación manual ≤24h hábiles" : "Access request · manual activation ≤24h"}
             </p>
           </form>
         )}

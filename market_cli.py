@@ -18,17 +18,27 @@ Uso:
 
 import argparse
 import json
+import os
 import sys
 
 from rich.console import Console
 from rich.panel import Panel
+from rich import box
+from rich.align import Align
+from rich.text import Text
+from rich.columns import Columns
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, api,
+    STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, api, API,
     fmt_price, store_color, save_last_search, load_last_search,
 )
-from market_stats import COUNTRIES as MS_COUNTRIES, MCP_TOOLS, RETAILERS_VERIFIED
+import market_ui as ui
+from market_stats import (
+    COUNTRIES as MS_COUNTRIES, MCP_TOOLS, RETAILERS_VERIFIED,
+    PRICES_VERIFIED_LABEL, INDICATORS_COUNT, PLATFORM_LIST_ES, PLATFORM_LIST_EN,
+    PRICES_REFRESH_HOURS, PACKAGE_VERSION,
+)
 
 console = Console()
 
@@ -46,7 +56,7 @@ T = {
         "orders": "Historial de órdenes", "reorder": "Repetir una orden (última si no se especifica ID)",
         "ask": "Compra por lenguaje natural", "preferences": "Ver perfil y preferencias de compra",
         "countries": "Ver países y tiendas disponibles", "lines": "Ver líneas de negocio y sus retailers",
-        "about": "Modelo de negocio", "whoami": "Ver sesión activa", "lang": "Cambiar idioma (es/en)",
+        "about": "Modelo de negocio", "whoami": "Ver sesión activa", "account": "Dashboard tier, uso y upgrade", "lang": "Cambiar idioma (es/en)",
         "categories": "Explorar categorías de una tienda", "barcode": "Buscar producto por código de barras",
         "enrich": "Buscar con datos de Open Food Facts",
         "query": "Buscar productos", "store": "Tienda específica", "country": "Filtrar por país",
@@ -67,6 +77,9 @@ T = {
         "register": "Crear cuenta free y API key (sk-)",
         "share": "Link de referido para compartir CLI Market",
         "upgrade": "Solicitar Pro — email con link de pago",
+        "doctor": "Diagnóstico: API, auth, tier y MCP",
+        "init": "Onboarding completo: API, cuenta, MCP",
+        "shell": "Sesión interactiva tipo agente (REPL)",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -78,7 +91,7 @@ T = {
         "orders": "Order history", "reorder": "Repeat last order",
         "ask": "Natural language purchase", "preferences": "View profile and preferences",
         "countries": "View countries and stores", "lines": "View business lines and retailers",
-        "about": "Business model", "whoami": "View active session", "lang": "Change language (es/en)",
+        "about": "Business model", "whoami": "View active session", "account": "Account dashboard: tier, usage, upgrade", "lang": "Change language (es/en)",
         "categories": "Explore store categories", "barcode": "Search product by barcode",
         "enrich": "Search with Open Food Facts data",
         "query": "Search products", "store": "Specific store", "country": "Filter by country",
@@ -99,6 +112,9 @@ T = {
         "register": "Create free account and API key (sk-)",
         "share": "Referral link to share CLI Market",
         "upgrade": "Request Pro — email with payment link",
+        "doctor": "Diagnostics: API, auth, tier, and MCP",
+        "init": "Full onboarding: API, account, MCP",
+        "shell": "Interactive agent-style session (REPL)",
     },
 }
 
@@ -122,8 +138,8 @@ WELCOME_BANNER = """\n[#00FF88]  ╭──────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
-     [#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 36 mcp tools
-     [#00FF88]●[/] cross-border       [#00FF88]●[/] autónomo         [#00FF88]●[/] open source
+     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] 36 mcp tools
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autónomo         [#00FF88]>[/] open source
 
      [#555555]pip install cli-market[/]
      [#555555]github.com/treevu-ai/cli-market-world[/]
@@ -143,8 +159,8 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]commerce infrastructure for humans and ai agents[/]
 
-     [#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 36 mcp tools
-     [#00FF88]●[/] cross-border       [#00FF88]●[/] autonomous       [#00FF88]●[/] open source
+     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] 36 mcp tools
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autonomous       [#00FF88]>[/] open source
 
      [#555555]pip install cli-market[/]
      [#555555]github.com/treevu-ai/cli-market-world[/]
@@ -163,13 +179,13 @@ def welcome_banner():
     is_en = get_lang() == "en"
     n_countries = len(MS_COUNTRIES)
     stats = (
-        f"[#00FF88]●[/] {RETAILERS_VERIFIED} retailers    "
-        f"[#00FF88]●[/] {n_countries} {'countries' if is_en else 'países'}    "
-        f"[#00FF88]●[/] {MCP_TOOLS} mcp tools"
+        f"[#00FF88]>[/] {RETAILERS_VERIFIED} retailers    "
+        f"[#00FF88]>[/] {n_countries} {'countries' if is_en else 'países'}    "
+        f"[#00FF88]>[/] {MCP_TOOLS} mcp tools"
     )
     if is_en:
         body = WELCOME_BANNER_EN.replace(
-            "[#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 36 mcp tools",
+            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] 36 mcp tools",
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]authenticate[/]",
@@ -178,7 +194,7 @@ def welcome_banner():
         )
     else:
         body = WELCOME_BANNER.replace(
-            "[#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 36 mcp tools",
+            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] 36 mcp tools",
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]autentícate[/]",
@@ -192,28 +208,48 @@ def welcome_banner():
 def get_token_with_prompt() -> str:
     token = get_token()
     if not token:
-        console.print(Panel.fit(
-            "[bold #FFD600]No estás autenticado aún.[/]\n\n"
-            "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
-            "[#888888]Es gratis. Toma 5 segundos:[/]\n\n"
-            "  [#00FF88 bold]1.[/] Nuevo:     [#00FF88]market register[/]  [#888888](API key gratis)[/]\n"
-            "  [#00FF88 bold]2.[/] Existente: [#00FF88]market login[/]     [#888888](usuario + password)[/]\n\n"
-            "[dim]El token se guarda en tu sesion local.[/]\n"
-            "[dim]Si eres un agente IA: usa market --json para integrarte.[/]",
-            title="CLI Market",
-            border_style="#FFD600"
-        ))
+        if ui.is_json_mode():
+            ui.json_exit(
+                console,
+                False,
+                error="Not authenticated",
+                hint="register or login",
+                next_commands=["market register", "market login", "market doctor"],
+                status=401,
+            )
+        en = ui.is_en()
+        ui.print_actionable_error(
+            console,
+            "No esta autenticado." if not en else "Not authenticated.",
+            status=401,
+            title="Auth" if en else "Autenticacion",
+        )
         sys.exit(1)
     return token
 
 def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
     result = api(method, path, json_data)
     if isinstance(result, dict) and "error" in result:
-        if result.get("status") == 401:
-            console.print("[red]Sesión expirada. Ejecutá: market login[/]")
-            console.print("[dim]Si usás MARKET_API_URL, asegurate de haber hecho login contra ese servidor.[/]")
+        err = str(result.get("error", "Unknown error"))
+        status = result.get("status")
+        cmds = ui.error_next_commands(status, err)
+        if ui.is_json_mode():
+            ui.json_exit(
+                console,
+                False,
+                error=err,
+                next_commands=cmds,
+                status=status,
+            )
+        if status == 401:
+            ui.print_actionable_error(
+                console,
+                "Sesion expirada o token invalido." if not ui.is_en() else "Session expired or invalid token.",
+                status=401,
+            )
         else:
-            console.print(f"[red]Error: {result['error']}[/]")
+            ui.print_actionable_error(console, err, status=status)
+        ui.print_hints(console, cmds)
         sys.exit(1)
     return result
 
@@ -238,13 +274,16 @@ def cmd_search(args):
         data = cli_api("POST", "/products/search", params)
     results = data.get("results", [])
     if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        ui.emit_json(ui.json_response(True, data, next_commands=[
+            f'market compare "{args.query}"',
+            "market add 1 --qty 2",
+        ]), console)
         return
     save_last_search(results)
     if not results:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
-    table = Table(title=f'[bold white]Resultados: "{args.query}" ({data["total"]})[/]', border_style="dim blue")
+    table = Table(title=f'[bold white]Resultados: "{args.query}" ({data["total"]})[/]', border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=36, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=12)
@@ -269,15 +308,26 @@ def cmd_search(args):
         )
     console.print()
     console.print(table)
-    console.print("\n[dim]Para agregar al carrito: market add [bold]#[/] [--qty N][/]")
-    console.print("[dim]Ej: market add 3 --qty 2  (el #3 de la tabla)[/]")
+    ui.price_data_footer(console)
+    if args.country:
+        ui.set_default_country(args.country)
+    q = args.query.replace('"', '\\"')
+    cc = f" --country {args.country}" if args.country else f" --country {ui.get_default_country()}"
+    ui.print_hints(console, [
+        f'market compare "{q}"{cc}',
+        "market add 1 --qty 2",
+        "market basket leche:1",
+    ])
 
 def cmd_compare(args):
     with console.status(f"[cyan]Comparando '{args.query}'..."):
         data = cli_api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
     comp = data.get("comparison", [])
     if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        ui.emit_json(ui.json_response(True, data, next_commands=[
+            "market add 1 --qty 2",
+            f'market search "{args.query}"',
+        ]), console)
         return
     if not comp:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
@@ -290,7 +340,7 @@ def cmd_compare(args):
                 all_stores.append(sk)
                 seen.add(sk)
     display_stores = all_stores[:6]
-    table = Table(title=f'[bold white]Comparativa: "{args.query}"[/]', border_style="dim blue")
+    table = Table(title=f'[bold white]Comparativa: "{args.query}"[/]', border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=30, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=12)
@@ -349,7 +399,7 @@ def cmd_cart(args):
         console.print("[yellow]Carrito vacío[/]")
         console.print("[dim]market search <término> → market add <ID>[/]")
         return
-    table = Table(title="[bold white]Carrito[/]", border_style="dim blue")
+    table = Table(title="[bold white]Carrito[/]", border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=36, no_wrap=False)
     table.add_column("Tienda", max_width=10)
@@ -389,6 +439,8 @@ def cmd_cart_clear(args):
     console.print("[#3cffd0]✓ Carrito vaciado[/]")
 
 def cmd_checkout(args):
+    tier = ui.fetch_tier()
+    ui.tier_gate(console, "checkout", tier, json_args=args)
     routes = {
         "yape": "/checkout/yape",
         "plin": "/checkout/yape",
@@ -433,7 +485,7 @@ def cmd_orders(args):
     if not orders:
         console.print("[yellow]Sin órdenes previas[/]")
         return
-    table = Table(title="[bold white]Historial de órdenes[/]", border_style="dim blue")
+    table = Table(title="[bold white]Historial de órdenes[/]", border_style=ui.TABLE_BORDER)
     table.add_column("ID", style="bold")
     table.add_column("Fecha", style="dim", max_width=20)
     table.add_column("Items", max_width=40)
@@ -461,7 +513,7 @@ def cmd_preferences(args):
 def cmd_countries(args):
     data = cli_api("GET", "/countries")
     countries = data.get("countries", {})
-    table = Table(title="[bold #3cffd0]Países[/]", border_style="dim blue")
+    table = Table(title="[bold #3cffd0]Países[/]", border_style=ui.TABLE_BORDER)
     table.add_column("País", style="bold")
     table.add_column("Tiendas")
     table.add_column("Cant.", justify="center")
@@ -474,7 +526,7 @@ def cmd_countries(args):
 def cmd_lines(args):
     data = cli_api("GET", "/lines")
     lines = data.get("lines", {})
-    table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style="dim blue")
+    table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style=ui.TABLE_BORDER)
     table.add_column("Línea", style="bold")
     table.add_column("Retailers")
     table.add_column("Cant.", justify="center")
@@ -504,7 +556,7 @@ def _print_cat_tree(cats, indent):
 def cmd_barcode(args):
     with console.status(f"[cyan]Buscando código {args.code}..."):
         data = cli_api("GET", f"/products/barcode/{args.code}")
-    table = Table(title=f"[bold #3cffd0]Código: {args.code}[/]", border_style="dim blue")
+    table = Table(title=f"[bold #3cffd0]Código: {args.code}[/]", border_style=ui.TABLE_BORDER)
     for k, v in data.items():
         if v:
             table.add_row(k, str(v)[:100])
@@ -514,7 +566,7 @@ def cmd_enrich(args):
     with console.status(f"[cyan]Buscando '{args.query}' en Open Food Facts..."):
         data = cli_api("GET", f"/products/enrich?query={args.query}&limit={args.limit}")
     results = data.get("results", [])
-    table = Table(title=f"[bold #3cffd0]Open Food Facts: {args.query} ({data.get('total', 0):,} total)[/]", border_style="dim blue")
+    table = Table(title=f"[bold #3cffd0]Open Food Facts: {args.query} ({data.get('total', 0):,} total)[/]", border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=35, no_wrap=False)
     table.add_column("Marca", style="blue", max_width=15)
@@ -547,7 +599,7 @@ def cmd_basket(args):
     if not comp:
         console.print("[yellow]No se encontraron productos en ninguna tienda[/]")
         return
-    table = Table(title="[bold white]Comparativa de canasta[/]", border_style="dim blue")
+    table = Table(title="[bold white]Comparativa de canasta[/]", border_style=ui.TABLE_BORDER)
     table.add_column("Tienda", style="bold")
     table.add_column("Productos", max_width=50)
     table.add_column("Total", style="bold yellow", justify="right")
@@ -574,7 +626,7 @@ def cmd_inflation(args):
     color = "#FF6B35" if avg > 0 else "#00FF88"
     console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({len(items)} productos rastreados)[/]")
     if items:
-        table = Table(title="[bold white]Variación de precios[/]", border_style="dim blue")
+        table = Table(title="[bold white]Variación de precios[/]", border_style=ui.TABLE_BORDER)
         table.add_column("Producto", max_width=35)
         table.add_column("Desde", style="dim")
         table.add_column("Hasta", style="dim")
@@ -611,23 +663,40 @@ def cmd_indicators(args):
             console.print(json.dumps(catalog, indent=2, ensure_ascii=False))
         return
 
-    console.print(f"\n[bold]Data Moat — {len(items)} indicadores[/]")
-    table = Table(border_style="dim blue")
-    table.add_column("Key", style="cyan")
-    table.add_column("Categoría")
-    table.add_column("Fuente", max_width=28)
-    table.add_column("Refresh", justify="right")
-    for i in items:
-        table.add_row(i["key"], i["category"], i["source"][:28], f"{i.get('refresh_hours', 24)}h")
-    console.print(table)
+    cc = args.country or ui.get_default_country()
+    meta = (
+        f"{len(items)} indicadores · país {cc}"
+        if not ui.is_en()
+        else f"{len(items)} indicators · country {cc}"
+    )
+    ui.print_section_header(
+        console,
+        "Data Moat",
+        subtitle=(
+            "Catálogo por capa (anaquel | macro)"
+            if not ui.is_en()
+            else "Catalog by layer (shelf | macro)"
+        ),
+        meta=meta,
+    )
+    ui.print_indicator_catalog(console, items)
+
     if args.country:
         scores = cli_api("GET", f"/v1/intel/scores?country={args.country}")
         sc = scores.get("scores", {})
-        if sc:
-            console.print(f"\n[bold]Scores — {args.country}[/]")
-            for name, info in sc.items():
-                console.print(f"  {name}: [yellow]{info.get('score')}[/] ({info.get('label')})")
-    console.print("\n[dim]market indicators --refresh -c PE  ·  market scores -c PE[/]")
+        panel = ui.scores_panel(sc, country=args.country, width=ui.layout_width(console))
+        if panel:
+            console.print()
+            console.print(panel)
+        elif not ui.is_en():
+            console.print("[yellow]Sin scores aún. Corré: market indicators --refresh -c PE[/]")
+        else:
+            console.print("[yellow]No scores yet. Run: market indicators --refresh -c PE[/]")
+
+    ui.print_intel_footer(
+        console,
+        ["market indicators --refresh -c PE", "market scores -c PE", "market enrichment -c PE"],
+    )
 
 
 def cmd_scores(args):
@@ -644,17 +713,26 @@ def cmd_scores(args):
         return
     scores = data.get("scores", {})
     if not scores:
-        console.print("[yellow]Sin scores aún. Corré: market indicators --refresh -c PE[/]")
+        msg = (
+            "Sin scores aún. Corré: market indicators --refresh -c PE"
+            if not ui.is_en()
+            else "No scores yet. Run: market indicators --refresh -c PE"
+        )
+        console.print(f"[yellow]{msg}[/]")
         return
-    console.print(f"\n[bold]Scores compuestos[/] — {data.get('country') or 'global'}")
-    table = Table(border_style="dim blue")
-    table.add_column("Score", style="bold")
-    table.add_column("Valor", justify="right")
-    table.add_column("Señal")
-    for name, info in scores.items():
-        table.add_row(name, str(info.get("score", "—")), info.get("label", ""))
-    console.print(table)
-    console.print(f"[dim]{data.get('disclaimer', '')}[/]")
+    country = data.get("country") or "global"
+    ui.print_section_header(
+        console,
+        "Scores compuestos" if not ui.is_en() else "Composite scores",
+        meta=f"{'país' if not ui.is_en() else 'country'} {country}",
+    )
+    panel = ui.scores_panel(scores, country=country, width=ui.layout_width(console))
+    if panel:
+        console.print(panel)
+    disclaimer = data.get("disclaimer", "")
+    if disclaimer:
+        console.print(f"[dim]{disclaimer}[/]")
+    ui.print_intel_footer(console, ["market indicators --refresh -c PE", "market enrichment -c PE"])
 
 
 def cmd_enrichment(args):
@@ -677,72 +755,92 @@ def cmd_enrichment(args):
         console.print(json.dumps(data, indent=2, ensure_ascii=False))
         return
 
-    console.print(f"\n[bold]Enriquecimiento — {cc}[/] ({len(items)} señales)")
     if not items:
-        console.print("[yellow]Sin datos aún. Corré: market enrichment --refresh -c PE[/]")
-        return
-    table = Table(border_style="dim blue")
-    table.add_column("Indicador", style="cyan")
-    table.add_column("Valor", justify="right")
-    table.add_column("Unidad")
-    table.add_column("Actualizado", style="dim")
-    for i in items:
-        table.add_row(
-            i.get("key", ""),
-            str(i.get("value", "—")),
-            i.get("unit") or "",
-            (i.get("recorded_at") or "")[:16],
+        msg = (
+            "Sin datos aún. Corré: market enrichment --refresh -c PE"
+            if not ui.is_en()
+            else "No data yet. Run: market enrichment --refresh -c PE"
         )
-    console.print(table)
+        console.print(f"[yellow]{msg}[/]")
+        return
+
+    ui.print_section_header(
+        console,
+        "Enriquecimiento" if not ui.is_en() else "Enrichment",
+        subtitle="OFF · Wiki · clima · food CPI",
+        meta=f"{len(items)} señales · {cc}" if not ui.is_en() else f"{len(items)} signals · {cc}",
+    )
+
+    col_w = ui.column_width(console)
+    score_panel = None
     try:
         scores = cli_api("GET", f"/v1/intel/scores?country={cc}")
         sc = scores.get("scores", {})
-        enrich_scores = {
-            k: sc[k]
-            for k in (
-                "food_premium",
-                "nutrition_quality",
-                "staple_demand",
-                "product_intelligence",
-                "macro_validation",
-                "labor_stress",
-                "growth_outlook",
-            )
-            if k in sc
-        }
-        if enrich_scores:
-            console.print("\n[bold]Scores enriquecimiento[/]")
-            for name, info in enrich_scores.items():
-                console.print(f"  {name}: [yellow]{info.get('score')}[/] ({info.get('label')})")
+        score_panel = ui.scores_panel(
+            sc,
+            country=cc,
+            width=col_w,
+            subset=ui.ENRICHMENT_SCORE_KEYS,
+        )
     except Exception:
         pass
+
+    ui.print_columns(
+        console,
+        [
+            ui.enrichment_values_panel(items, country=cc, width=col_w),
+            score_panel,
+        ],
+    )
 
     try:
         sub = cli_api("GET", f"/v1/intel/enrichment/subcategories?country={cc}")
         sub_items = sub.get("items", [])
-        if sub_items:
-            console.print("\n[bold]Por subcategoría[/]")
-            st = Table(border_style="dim blue")
-            st.add_column("Subcat", style="cyan")
-            st.add_column("Δ precio 7d", justify="right")
-            st.add_column("Wiki mom.", justify="right")
-            st.add_column("Min precio", justify="right")
-            for row in sub_items:
-                sig = row.get("signals", {})
-                st.add_row(
-                    row.get("subcategory", ""),
-                    str(sig.get("subcat_price_momentum", {}).get("value", "—")),
-                    str(sig.get("subcat_wiki_momentum", {}).get("value", "—")),
-                    str(sig.get("subcat_min_price", {}).get("value", "—")),
-                )
-            console.print(st)
+        sub_panel = ui.subcategories_panel(sub_items, width=ui.layout_width(console))
+        if sub_panel:
+            console.print()
+            console.print(sub_panel)
     except Exception:
         pass
 
     sources = ", ".join(data.get("sources", []))
-    console.print(f"\n[dim]Fuentes: {sources}[/]")
-    console.print("[dim]market enrichment --refresh -c PE  ·  market scores -c PE[/]")
+    if sources:
+        label = "Fuentes" if not ui.is_en() else "Sources"
+        console.print(f"\n[dim]{label}: {sources}[/]")
+    ui.print_intel_footer(
+        console,
+        ["market enrichment --refresh -c PE", "market scores -c PE", "market indicators -c PE"],
+    )
 
+
+
+
+def cmd_tools(args):
+    """Catálogo MCP agrupado (43 tools) — misma superficie que market-mcp tools/list."""
+    if getattr(args, "json", False):
+        try:
+            from market_core.market_mcp import TOOLS
+            console.print(json.dumps({"tools": TOOLS, "total": len(TOOLS)}, indent=2, ensure_ascii=False))
+        except ImportError:
+            console.print(json.dumps({"error": "market_mcp unavailable"}, indent=2))
+        return
+    from market_stats import MCP_TOOLS
+
+    ui.print_section_header(
+        console,
+        "MCP Tools" if ui.is_en() else "Herramientas MCP",
+        subtitle=(
+            "Grupos para Cursor / Claude / Codex — comando market-mcp"
+            if not ui.is_en()
+            else "Groups for Cursor / Claude / Codex — run market-mcp"
+        ),
+        meta=f"{MCP_TOOLS} tools · cli-market.dev/tools",
+    )
+    ui.print_mcp_tools_catalog(console)
+    ui.print_intel_footer(
+        console,
+        ["market init", "market doctor", "market indicators -c PE"],
+    )
 
 def cmd_alerts(args):
     if args.action == "list":
@@ -754,6 +852,8 @@ def cmd_alerts(args):
         for a in alerts_list:
             console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}%")
     else:
+        tier = ui.fetch_tier()
+        ui.tier_gate(console, "alerts_create", tier, json_args=args)
         data = cli_api("POST", "/v1/alerts", {"product": args.product, "threshold_pct": args.threshold, "action": "create"})
         console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
 
@@ -773,6 +873,23 @@ def _format_limit(value: int) -> str:
     return f"{value:,}"
 
 
+
+
+def cmd_account(args):
+    """Dashboard de cuenta: tier, uso, límites y siguiente upgrade."""
+    get_token_with_prompt()
+    lang = "en" if ui.is_en() else "es"
+    with console.status("[cyan]Cargando cuenta..." if lang == "es" else "[cyan]Loading account..."):
+        data = cli_api("GET", f"/auth/account?lang={lang}")
+    if getattr(args, "json", False):
+        ui.emit_json(ui.json_response(True, data), console)
+        return
+    if isinstance(data, dict) and data.get("error"):
+        ui.print_actionable_error(console, data["error"])
+        return
+    ui.print_account_dashboard(console, data)
+
+
 def cmd_whoami(args):
     get_token_with_prompt()
     data = cli_api("GET", "/auth/whoami")
@@ -781,9 +898,14 @@ def cmd_whoami(args):
     tier = sub.get("tier", "free")
     username = data.get("username", sub_data.get("username", "?"))
     if getattr(args, "json", False):
-        console.print(json.dumps({"username": username, "subscription": sub, "api_keys": sub_data.get("api_keys")}, indent=2))
+        ui.emit_json(ui.json_response(True, {
+            "username": username,
+            "subscription": sub,
+            "api_keys": sub_data.get("api_keys"),
+        }), console)
         return
-    console.print(f"[#3cffd0]✓ {username}[/]  [dim]tier:[/] [bold]{tier}[/]")
+    ui.print_context_bar(console, tier=tier, username=username)
+    console.print(f"[#3cffd0]OK {username}[/]  [dim]tier:[/] [bold]{tier}[/]")
     console.print(
         f"[dim]limits:[/] {sub.get('req_limit_day', '?')}/day · "
         f"{sub.get('req_limit_min', '?')}/min · "
@@ -791,17 +913,23 @@ def cmd_whoami(args):
         f"checkout: {'yes' if tier in ('pro', 'builder', 'enterprise') else 'no'}"
     )
     if tier == "free":
-        console.print("[dim]Upgrade: market upgrade --email you@example.com[/]")
+        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade[/]")
 
 
 def cmd_register(args):
     """Create a free account via POST /auth/register and persist API key locally."""
-    data = api("POST", "/auth/register")
+    with ui.run_with_status(console, "Creando cuenta..." if not ui.is_en() else "Creating account..."):
+        data = api("POST", "/auth/register")
     if isinstance(data, dict) and data.get("error"):
-        console.print(f"[red]Error: {data['error']}[/]")
+        if getattr(args, "json", False):
+            ui.json_exit(console, False, error=data["error"], next_commands=ui.error_next_commands(None, data["error"]))
+        ui.print_actionable_error(console, data["error"])
+        ui.print_hints(console, ui.error_next_commands(None, data["error"]))
         sys.exit(1)
     if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        ui.emit_json(ui.json_response(True, data, next_commands=[
+            'market search "leche" --country PE', "market whoami", "market doctor",
+        ]), console)
         return
     key = data.get("api_key", "")
     console.print(Panel.fit(
@@ -814,6 +942,86 @@ def cmd_register(args):
         title="CLI Market",
         border_style="#00FF88",
     ))
+    ui.print_hints(console, ['market search "leche" --country PE', "market whoami", "market init"])
+
+
+def cmd_doctor(args):
+    """Check API URL, connectivity, auth, tier, MCP, readiness score."""
+    import shutil
+    import httpx
+
+    checks: list[tuple[str, str, str]] = []
+    ok = True
+    en = ui.is_en()
+
+    env_url = os.environ.get("MARKET_API_URL")
+    checks.append(("API URL", API, "ok" if env_url else "default (production)"))
+
+    with ui.run_with_status(console, "Verificando API..." if not en else "Checking API..."):
+        try:
+            resp = httpx.get(f"{API}/health/db", timeout=10)
+            if resp.status_code == 200:
+                snaps = resp.json().get("snapshots", "?")
+                checks.append(("API health", f"200 OK - {snaps:,} snapshots", "ok"))
+            else:
+                checks.append(("API health", f"HTTP {resp.status_code}", "fail"))
+                ok = False
+        except httpx.ConnectError:
+            checks.append(("API health", "connection refused", "fail"))
+            ok = False
+        except Exception as exc:
+            checks.append(("API health", str(exc)[:80], "fail"))
+            ok = False
+
+    token = get_token()
+    if token:
+        who = api("GET", "/auth/whoami")
+        if who.get("error"):
+            checks.append(("Auth", who["error"], "warn"))
+        else:
+            checks.append(("Auth", who.get("username", "?"), "ok"))
+            sub = api("GET", "/auth/subscription")
+            tier = (sub.get("subscription") or {}).get("tier", "?")
+            checks.append(("Tier", tier, "ok"))
+    else:
+        checks.append(("Auth", "no token", "warn"))
+
+    checks.append(("País", ui.get_default_country(), "ok"))
+    checks.append(("Countries", str(len(COUNTRIES)), "ok"))
+    mcp_bin = shutil.which("market-mcp")
+    checks.append(("market-mcp", mcp_bin or "not in PATH", "ok" if mcp_bin else "warn"))
+    checks.append(("MCP snippet", "cli-market.dev/tools", "ok"))
+
+    pct, summary = ui.readiness_score(checks)
+
+    if getattr(args, "json", False):
+        ui.emit_json(ui.json_response(ok, {
+            "readiness_pct": pct,
+            "readiness_summary": summary,
+            "checks": [{"name": n, "detail": d, "status": s} for n, d, s in checks],
+        }, next_commands=["market init", "market register", "market hello"]), console)
+        sys.exit(0 if ok else 1)
+
+    table = Table(show_header=True, header_style=f"bold {ui.MINT}", box=ui.table_box(), border_style=ui.TABLE_BORDER)
+    table.add_column("Check")
+    table.add_column("Detail")
+    table.add_column("Status")
+    for name, detail, status in checks:
+        style = {"ok": "green", "fail": "red", "warn": "yellow"}.get(status, "dim")
+        table.add_row(name, detail, f"[{style}]{status}[/]")
+    console.print(table)
+    console.print(Panel(
+        f"[bold #00FF88]{pct}%[/] [dim]readiness[/]\n{summary}",
+        title="Readiness" if en else "Preparacion",
+        border_style=ui.MINT,
+    ))
+    if not ok:
+        ui.print_hints(console, ["market doctor", "market init"])
+        sys.exit(1)
+    if not token:
+        ui.print_hints(console, ["market register", "market init"])
+    else:
+        ui.print_hints(console, ['market search "leche" --country PE', "market hello"])
 
 def cmd_lang(args):
     if args.lang_code:
@@ -824,37 +1032,340 @@ def cmd_lang(args):
         console.print(f"[dim]Idioma actual: {current}. Usá market lang en para inglés.[/]")
 
 
+
+
+
+# ── market hello  -  agent-terminal UI (Antigravity / Codex / Claude style) ─────
+
+_HELLO_ASCII_WORDMARK = (
+    "        C L I   -   M A R K E T        ",
+)
+
+def _hello_color_art(lines: tuple[str, ...]) -> str:
+    return "\n".join(f"[bold #00FF88]{line}[/]" for line in lines)
+
+
+def _hello_api_host() -> str:
+    host = API.replace("https://", "").replace("http://", "").rstrip("/")
+    return host[:36] + ("..." if len(host) > 36 else "")
+
+
+def _hello_wordmark_panel(is_en: bool, width: int) -> Panel:
+    subtitle = (
+        "A G E N T - N A T I V E   C O M M E R C E   L A Y E R    -    L A T A M"
+    )
+    tag = (
+        "Programmable retail data for AI agents  -  one API  -  zero scraping"
+        if is_en
+        else "Datos de retail programables para agentes IA  -  una API  -  sin scraping"
+    )
+    art = _hello_color_art(_HELLO_ASCII_WORDMARK)
+    body = f"{art}\n\n[dim]{subtitle}[/]\n[dim italic]{tag}[/]"
+    return Panel(
+        Align.center(Text.from_markup(body)),
+        border_style="#00FF88",
+        box=box.DOUBLE_EDGE,
+        padding=(1, 1),
+        width=width,
+    )
+
+
+def _hello_status_bar(is_en: bool, width: int) -> Panel:
+    label = "EN LINEA" if not is_en else "ONLINE"
+    line = (
+        f"[dim]v{PACKAGE_VERSION}[/]  [#00FF88]|[/]  "
+        f"[dim]API[/]  [bold]{_hello_api_host()}[/]  [#00FF88]|[/]  "
+        f"[dim]MCP[/]  [bold #00FF88]{MCP_TOOLS}[/] tools  [#00FF88]|[/]  "
+        f"[dim]RETAILERS[/]  [bold #00FF88]{RETAILERS_VERIFIED}[/]  [#00FF88]|[/]  "
+        f"[dim]STATUS[/]  [bold #00FF88]{label}[/]"
+    )
+    return Panel(line, border_style="#00FF88", box=box.HEAVY, padding=(0, 1), width=width)
+
+
+def _hello_capabilities_panel(is_en: bool, width: int | None = None) -> Panel:
+    platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
+    if is_en:
+        body = (
+            f"[bold #00FF88]COVERAGE[/]\n"
+            f"  {RETAILERS_VERIFIED} verified retailers  -  {MS_COUNTRIES} countries\n"
+            f"  {PRICES_VERIFIED_LABEL} prices  -  refresh {PRICES_REFRESH_HOURS}h\n\n"
+            f"[bold #00FF88]PLATFORMS[/]\n"
+            f"  [dim]{platforms}[/]\n\n"
+            f"[bold #00FF88]DATA MOAT[/]\n"
+            f"  {INDICATORS_COUNT} indicators  -  kg/L normalized\n"
+            f"  Yape/Plin + PayPal  -  MIT open source"
+        )
+        title = "[bold #00FF88]CAPABILITIES[/]"
+    else:
+        body = (
+            f"[bold #00FF88]COBERTURA[/]\n"
+            f"  {RETAILERS_VERIFIED} retailers verificados  -  {MS_COUNTRIES} países\n"
+            f"  {PRICES_VERIFIED_LABEL} precios  -  actualización {PRICES_REFRESH_HOURS}h\n\n"
+            f"[bold #00FF88]PLATAFORMAS[/]\n"
+            f"  [dim]{platforms}[/]\n\n"
+            f"[bold #00FF88]DATA MOAT[/]\n"
+            f"  {INDICATORS_COUNT} indicadores  -  normalizado kg/L\n"
+            f"  Yape/Plin + PayPal  -  código abierto MIT"
+        )
+        title = "[bold #00FF88]CAPACIDADES[/]"
+    return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
+def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
+    if is_en:
+        body = (
+            "[bold #00FF88]ONBOARDING[/]\n"
+            "  [cyan]1.[/] [cyan]market init[/]         [dim]API + account + MCP[/]\n"
+            "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... shown once[/]\n"
+            '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n\n"
+            "[bold #00FF88]DOCS[/]\n"
+            "  cli-market.dev/docs#quickstart\n"
+            "  cli-market.dev/tools"
+        )
+        title = "[bold #00FF88]QUICK START[/]"
+    else:
+        body = (
+            "[bold #00FF88]INICIO RÁPIDO[/]\n"
+            "  [cyan]1.[/] [cyan]market init[/]         [dim]API + cuenta + MCP[/]\n"
+            "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... una sola vez[/]\n"
+            '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n\n"
+            "[bold #00FF88]DOCS[/]\n"
+            "  cli-market.dev/docs#quickstart\n"
+            "  cli-market.dev/tools"
+        )
+        title = "[bold #00FF88]INICIO RÁPIDO[/]"
+    return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
+
+def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
+    if is_en:
+        body = (
+            "[bold #00FF88]INTERMEDIATE[/]\n"
+            '  [cyan]market basket[/] [dim]"milk:2 rice:1" --country PE[/]\n'
+            '  [cyan]market compare[/] [dim]"sunflower oil" --country AR[/]\n'
+            "  [cyan]market inflation[/] [dim]--country PE[/]\n"
+            "  [cyan]market tools[/]            [dim]43 MCP grouped[/]\n"
+            "  [cyan]market indicators[/] [dim]--country PE[/]\n"
+            "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
+            "  [cyan]market alerts[/] [dim]--action list[/]"
+        )
+        title = "[bold #00FF88]USE CASES[/]"
+    else:
+        body = (
+            "[bold #00FF88]NIVEL INTERMEDIO[/]\n"
+            '  [cyan]market basket[/] [dim]"leche:2 arroz:1" --country PE[/]\n'
+            '  [cyan]market compare[/] [dim]"aceite de girasol" --country AR[/]\n'
+            "  [cyan]market inflation[/] [dim]--country PE[/]\n"
+            "  [cyan]market tools[/]            [dim]43 MCP agrupadas[/]\n"
+            "  [cyan]market indicators[/] [dim]--country PE[/]\n"
+            "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
+            "  [cyan]market alerts[/] [dim]--action list[/]"
+        )
+        title = "[bold #00FF88]CASOS DE USO[/]"
+    return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
+def _hello_insight_panel(is_en: bool, width: int) -> Panel:
+    if is_en:
+        hook = "[bold white]Your agent can reason. It still needs verified shelf prices.[/]"
+        gartner = (
+            "[dim]Gartner (Oct 2025): by 2030, 20% of monetary transactions will be programmable "
+            "for AI agents with economic agency  -  agentic traffic becomes structural.[/]"
+        )
+        title = "[bold #00FF88]INSIGHT[/]"
+    else:
+        hook = "[bold white]Su agente de IA ya puede razonar; aún requiere precios reales de góndola.[/]"
+        gartner = (
+            "[dim]Gartner (oct. 2025): hacia 2030, el 20% de las transacciones monetarias serán "
+            "programables para agentes de IA; el tráfico agéntico deja de ser marginal.[/]"
+        )
+        title = "[bold #00FF88]CONTEXTO[/]"
+    return Panel(
+        f"{hook}\n\n{gartner}",
+        title=title,
+        border_style="#00FF88",
+        box=box.HEAVY_HEAD,
+        padding=(1, 2),
+        width=width,
+    )
+
+
+def _hello_contact_panel(is_en: bool, width: int) -> Panel:
+    if is_en:
+        body = (
+            "[dim]CLI Market[/]  linkedin.com/company/cli-market   -   x.com/cli_market_dev   -   "
+            "instagram.com/cli.market\n\n"
+            "[#888888]- Ricardo Cuba[/]  [dim]Founder & Product Owner  -  Sinapsis Innovadora S.A.C.  -  Lima, Peru[/]\n"
+            "[dim]linkedin.com/in/ricardo-cuba-alvan   -   hello@cli-market.dev   -   cli-market.dev[/]"
+        )
+        title = "[dim]CONNECT[/]"
+    else:
+        body = (
+            "[dim]CLI Market[/]  linkedin.com/company/cli-market   -   x.com/cli_market_dev   -   "
+            "instagram.com/cli.market\n\n"
+            "[#888888]- Ricardo Cuba[/]  [dim]Founder y Product Owner  -  Sinapsis Innovadora S.A.C.  -  Lima, Perú[/]\n"
+            "[dim]linkedin.com/in/ricardo-cuba-alvan   -   hello@cli-market.dev   -   cli-market.dev[/]"
+        )
+        title = "[dim]CONTACTO[/]"
+    return Panel(body, title=title, border_style="dim", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
 def cmd_hello(args):
     """Post-install activation: show next steps after pip install."""
     is_en = get_lang() == "en"
-    if is_en:
-        console.print(Panel.fit(
-            "[bold #00FF88]Welcome to CLI Market[/]\n\n"
-            f"Commerce API for AI agents — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} MCP tools.\n\n"
-            "[bold]Next steps:[/]\n"
-            "  1. [cyan]market register[/] — free API key (recommended)\n"
-            "     or [cyan]market login[/] if you already have credentials\n"
-            "  2. [cyan]market search \"milk\" --country PE[/] — try a search\n"
-            "  3. MCP: [cyan]market-mcp[/] + config at [cyan]cli-market.dev/tools[/]\n"
-            "  4. [cyan]market whoami[/] — tier and limits · [cyan]market share[/]\n\n"
-            "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
-            title="CLI Market",
-            border_style="#00FF88",
-        ))
+    width = min(max(console.width, 80), 100)
+
+    console.print()
+    console.print(_hello_wordmark_panel(is_en, width))
+    console.print(_hello_status_bar(is_en, width))
+    col_w = max((width - 6) // 2, 36)
+    console.print(
+        Columns(
+            [
+                _hello_capabilities_panel(is_en, col_w),
+                _hello_quickstart_panel(is_en, col_w),
+            ],
+            equal=True,
+            expand=False,
+        )
+    )
+    console.print(_hello_intermediate_panel(is_en, width))
+    console.print(_hello_insight_panel(is_en, width))
+    console.print(_hello_contact_panel(is_en, width))
+    ui.mcp_snippet_panel(console, width)
+    hint = (
+        "run market init to begin"
+        if is_en
+        else "ejecute market init para comenzar"
+    )
+    console.print(
+        f"[bold #00FF88]market>[/] [dim]{hint}[/][bold #00FF88]_[/]"
+    )
+    console.print()
+
+
+
+
+def cmd_init(args):
+    """Full onboarding: API, auth, readiness, MCP snippet."""
+    en = ui.is_en()
+    steps = [
+        "API" if en else "API",
+        "Auth" if en else "Cuenta",
+        "Readiness" if en else "Preparacion",
+        "MCP" if en else "MCP",
+    ]
+    console.print()
+    console.print(Panel(
+        f"[bold]{'Zero-to-hero onboarding' if en else 'Onboarding completo'}[/]\n"
+        f"[dim]{'Steps' if en else 'Pasos'}:[/] {' -> '.join(steps)}",
+        border_style=ui.MINT,
+        box=box.DOUBLE_EDGE,
+    ))
+    with ui.run_with_status(console, steps[0] + "..."):
+        import httpx
+        try:
+            httpx.get(f"{API}/health/db", timeout=10).raise_for_status()
+            console.print(f"[{ui.MINT}]OK[/] API")
+        except Exception as exc:
+            ui.print_actionable_error(console, str(exc))
+            sys.exit(1)
+    if not get_token():
+        console.print(f"[dim]{'Creating free account...' if en else 'Creando cuenta gratuita...'}[/]")
+        reg_args = argparse.Namespace(json=getattr(args, "json", False))
+        cmd_register(reg_args)
     else:
-        console.print(Panel.fit(
-            "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
-            f"Infraestructura de comercio para agentes IA — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} herramientas MCP.\n\n"
-            "[bold]Próximos pasos:[/]\n"
-            "  1. [cyan]market register[/] — API key gratis (recomendado)\n"
-            "     o [cyan]market login[/] si ya tenés credenciales\n"
-            "  2. [cyan]market search \"leche\" --country PE[/] — prueba una búsqueda\n"
-            "  3. MCP: [cyan]market-mcp[/] + config en [cyan]cli-market.dev/tools[/]\n"
-            "  4. [cyan]market whoami[/] — tier y límites · [cyan]market share[/]\n\n"
-            "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
-            title="CLI Market",
-            border_style="#00FF88",
-        ))
+        console.print(f"[{ui.MINT}]OK[/] Auth (session exists)")
+    cmd_doctor(argparse.Namespace(json=False))
+    ui.mcp_snippet_panel(console)
+    ui.print_hints(console, [
+        'market search "leche" --country PE',
+        "market shell",
+        "market hello",
+    ])
+    console.print(f"{ui.PROMPT} [dim]{'ready' if en else 'listo'}[/][bold #00FF88]_[/]")
+
+
+def cmd_shell(args):
+    """Interactive REPL — agent-style session."""
+    import shlex
+    en = ui.is_en()
+    tier = ui.fetch_tier()
+    ui.print_context_bar(console, tier=tier)
+    console.print(Panel(
+        "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]whoami[/]  [dim]doctor[/]",
+        title="CLI Market Shell" if en else "Sesion CLI Market",
+        border_style=ui.MINT,
+    ))
+    while True:
+        try:
+            line = console.input(f"{ui.PROMPT} ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print()
+            break
+        if not line or line.lower() in ("exit", "quit", "q"):
+            break
+        if line.lower() == "help":
+            console.print("[cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]whoami[/]  [cyan]doctor[/]  [cyan]cart[/]  [cyan]hello[/]  [cyan]init[/]")
+            continue
+        try:
+            tokens = shlex.split(line)
+        except ValueError as exc:
+            console.print(f"[red]{exc}[/]")
+            continue
+        if not tokens:
+            continue
+        ns = argparse.Namespace(
+            command=tokens[0],
+            json=getattr(args, "json", False),
+            query="",
+            store=None,
+            country=None,
+            line=None,
+            limit=10,
+            page=1,
+            product_id="",
+            name=None,
+            price=None,
+            qty=1,
+            payment="yape",
+            order_id=None,
+            prompt="",
+            code="",
+            items=[],
+            action="list",
+            product=None,
+            threshold=5.0,
+            email=None,
+            resend=False,
+            username="",
+            password="",
+            lang_code=None,
+            refresh=False,
+        )
+        cmd = tokens[0]
+        rest = tokens[1:]
+        handlers = {
+            "search": cmd_search, "compare": cmd_compare, "account": cmd_account,
+        "whoami": cmd_whoami,
+            "doctor": cmd_doctor, "cart": cmd_cart, "hello": cmd_hello,
+            "register": cmd_register, "init": cmd_init, "countries": cmd_countries,
+            "lines": cmd_lines, "about": cmd_about,
+        }
+        if cmd not in handlers:
+            console.print(f"[yellow]Unknown: {cmd}[/]")
+            continue
+        if cmd in ("search", "compare") and rest:
+            ns.query = rest[0]
+            for i, tok in enumerate(rest):
+                if tok in ("--country", "-c") and i + 1 < len(rest):
+                    ns.country = rest[i + 1]
+        if cmd == "login" and len(rest) >= 2:
+            ns.username, ns.password = rest[0], rest[1]
+        handlers[cmd](ns)
 
 
 def cmd_share(args):
@@ -874,45 +1385,56 @@ def cmd_share(args):
 
 
 def cmd_upgrade(args):
-    """Request Pro — email with payment link from hello@cli-market.dev."""
+    """Upgrade to Pro via PayPal subscription (auto-activate webhook)."""
     get_token_with_prompt()
-    email = (getattr(args, "email", None) or "").strip()
-    if not email:
-        console.print("[yellow]Email required for Pro request.[/]")
-        console.print("Usage: [cyan]market upgrade --email you@example.com[/]")
+    es = get_lang() == "es"
+    manual = getattr(args, "resend", False) and getattr(args, "email", None)
+
+    if manual:
+        email = (args.email or "").strip()
+        payload = {"email": email, "lang": get_lang(), "resend": True}
+        data = cli_api("POST", "/billing/request-pro", payload)
+        if getattr(args, "json", False):
+            ui.emit_json(ui.json_response(True, data), console)
+            return
+        console.print(Panel.fit(
+            f"[bold #00FF88]Pro — fallback manual[/]\n{data.get('message', '')}",
+            title="Upgrade",
+            border_style="#00FF88",
+        ))
         return
 
-    payload = {"email": email, "lang": get_lang()}
-    if getattr(args, "resend", False):
-        payload["resend"] = True
-
-    data = cli_api("POST", "/billing/request-pro", payload)
-    link = data.get("payment_link", "")
-    req_id = data.get("request_id", "?")
-
-    if data.get("email_sent"):
-        msg = (
-            f"Revisa [cyan]{email}[/] — enviamos el link de pago (ref {req_id})."
-            if get_lang() == "es"
-            else f"Check [cyan]{email}[/] — payment link sent (ref {req_id})."
-        )
-    else:
-        msg = (
-            f"SMTP no configurado. Paga aquí:\n[cyan underline]{link}[/]"
-            if get_lang() == "es"
-            else f"SMTP not configured. Pay here:\n[cyan underline]{link}[/]"
-        )
-
+    with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
+        data = cli_api("POST", "/billing/paypal", {})
+    url = data.get("approve_url", "")
+    if getattr(args, "json", False):
+        ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
+        return
     console.print(Panel.fit(
-        f"[bold #00FF88]CLI Market Pro — $79/mo[/]\n\n{msg}\n\n"
-        "[dim]Tras pagar, responde al email con tu usuario CLI para activar Pro.[/]",
+        f"[bold #00FF88]CLI Market Pro — $79/mo[/]\n\n"
+        f"{data.get('message', '')}\n\n"
+        f"[cyan underline]{url}[/]\n\n"
+        + ("[dim]Pro se activa solo al confirmar en PayPal. Luego: market whoami[/]"
+           if es else "[dim]Pro activates on PayPal confirm. Then: market whoami[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))
-    if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2))
+    ui.print_hints(console, ["market whoami", "market doctor"])
 
 # ── Main ────────────────────────────────────────────────────────────────────
+
+
+def _report_install_event():
+    flag = SESSION_FILE.parent / "funnel_install"
+    if flag.exists():
+        return
+    try:
+        api("POST", "/v1/events", {"event": "install", "dedupe": True})
+        flag.parent.mkdir(parents=True, exist_ok=True)
+        flag.write_text("1", encoding="utf-8")
+    except Exception:
+        pass
+
 
 def main():
     parser = argparse.ArgumentParser(description=t("desc"), usage=t("usage"))
@@ -1004,10 +1526,16 @@ def main():
     sub.add_parser("about", help=t("about"))
 
     # whoami
+    sub.add_parser("account", help="Dashboard: tier, uso y upgrade")
     sub.add_parser("whoami", help=t("whoami"))
 
     # register
     sub.add_parser("register", help=t("register"))
+
+    # doctor
+    sub.add_parser("doctor", help=t("doctor"))
+    sub.add_parser("init", help=t("init"))
+    sub.add_parser("shell", help=t("shell"))
 
     # lang
     p_lang = sub.add_parser("lang", help=t("lang"))
@@ -1044,6 +1572,7 @@ def main():
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
 
+    sub.add_parser("tools", help="Catálogo MCP agrupado (43 tools)")
     sub.add_parser("hello", help=t("hello"))
     sub.add_parser("share", help=t("share"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
@@ -1051,8 +1580,11 @@ def main():
     p.add_argument("--resend", action="store_true", help="Resend payment link email")
 
     args = parser.parse_args()
+    ui.set_json_mode(getattr(args, "json", False))
+    _report_install_event()
+    ui.maybe_version_notice(console)
     if not args.command:
-        console.print(welcome_banner())
+        cmd_hello(argparse.Namespace(json=getattr(args, "json", False)))
         return
 
     handlers = {
@@ -1066,9 +1598,10 @@ def main():
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
+        "tools": cmd_tools,
         "alerts": cmd_alerts,
-        "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "lang": cmd_lang,
-        "hello": cmd_hello, "share": cmd_share, "upgrade": cmd_upgrade,
+        "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
+        "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
     }
     handler = handlers.get(args.command)
     if handler:

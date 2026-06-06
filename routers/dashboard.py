@@ -929,30 +929,8 @@ def _static_dashboard() -> str:
 
 @router.get("/dashboard/usage")
 def dashboard_usage(authorization: str | None = Header(None)):
-    """Per-user usage view."""
+    """Per-user usage view (alias of /auth/account)."""
     username = require_user(authorization)
-    sub = db_get_subscription(username)
-    tier = sub.get("tier", "free")
-    limits = TIERS.get(tier, TIERS["free"])
-    db = get_db()
-    today_reqs = (
-        db.execute(
-            "SELECT SUM(counter) as n FROM rate_limits "
-            "WHERE key LIKE ? AND window_start >= ?",
-            ("%:daily", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
-        ).fetchone()["n"] or 0
-    )
-    keys = db.execute(
-        "SELECT COUNT(*) as n FROM api_keys WHERE username=?", (username,)
-    ).fetchone()["n"]
-    db.close()
-    return {
-        "username": username,
-        "tier": tier,
-        "limits": {
-            "req_min": limits["req_min"] or "unlimited",
-            "req_day": limits["req_day"] or "unlimited",
-            "checkout": limits["checkout"],
-        },
-        "usage": {"requests_today": today_reqs, "api_keys_used": keys},
-    }
+    from account_service import build_account_summary
+
+    return build_account_summary(username, lang="es")

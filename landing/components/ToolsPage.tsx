@@ -41,13 +41,11 @@ const MCP_CONFIG = {
 };
 
 const STARTER_TOOLS = [
-  "market_search",
-  "market_compare",
-  "market_basket",
-  "market_cart",
-  "market_whoami",
-  "market_subscription",
-  "market_stats",
+  { id: "market_search", es: "Buscar productos por query y país", en: "Search products by query and country" },
+  { id: "market_compare", es: "Comparar precio del mismo SKU entre retailers", en: "Compare same SKU price across retailers" },
+  { id: "market_cart", es: "Ver y gestionar carrito", en: "View and manage cart" },
+  { id: "market_whoami", es: "Usuario, tier y límites", en: "User, tier, and limits" },
+  { id: "market_stats", es: "Estadísticas de red (retailers, snapshots)", en: "Network stats (retailers, snapshots)" },
 ];
 
 const TOOLS = [
@@ -122,18 +120,19 @@ export default function ToolsPage() {
 
       <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
-          <h2 className="section-title mb-2">Starter MCP tools</h2>
+          <h2 className="section-title mb-2">Starter MCP tools (5)</h2>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6">
-            Run <code className="font-mono text-[var(--cm-mint)]">market register</code> or{" "}
-            <code className="font-mono text-[var(--cm-mint)]">market login</code>, then try these first.
+            Run <code className="font-mono text-[var(--cm-mint)]">market init</code> or{" "}
+            <code className="font-mono text-[var(--cm-mint)]">market register</code>, then try these first.
           </p>
-          <div className="flex flex-wrap justify-center gap-2 mb-10">
-            {STARTER_TOOLS.map((t) => (
-              <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-mint)]/90 border border-[var(--cm-mint)]/20">
-                {t}
-              </span>
+          <ul className="text-left space-y-3 mb-10 max-w-md mx-auto">
+            {STARTER_TOOLS.map((tool) => (
+              <li key={tool.id} className="glass-panel rounded-lg px-4 py-3 border border-[var(--cm-mint)]/15">
+                <code className="font-mono text-sm text-[var(--cm-mint)]">{tool.id}</code>
+                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{tool.en}</p>
+              </li>
             ))}
-          </div>
+          </ul>
           <h3 className="text-sm font-semibold text-white mb-4">More tools</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {TOOLS.map((t) => (

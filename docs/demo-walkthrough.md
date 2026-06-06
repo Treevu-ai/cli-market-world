@@ -16,12 +16,14 @@ pip install cli-market
 
 ```bash
 $ market hello
+# or: market init   (guided onboarding — API + account + MCP)
+```
 
-  Welcome to CLI Market
-  Next steps:
-    1. market register — free API key (recommended)
-    2. market search "leche" --country PE
-    3. MCP: market-mcp + cli-market.dev/tools
+```bash
+$ market init
+
+  Onboarding completo
+  OK API → cuenta gratuita → doctor 95% readiness → snippet MCP
 ```
 
 ```bash
@@ -30,6 +32,12 @@ $ market register
   Cuenta creada
   Usuario: user-abc123...
   API key: sk-...   ← save it now (shown once)
+```
+
+```bash
+$ market doctor
+
+  95% readiness — Listo para search e integracion MCP
 ```
 
 Or, if you already have credentials: `market login`

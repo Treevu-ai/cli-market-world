@@ -16,9 +16,13 @@ Endpoints:
   POST /checkout/paypal-webhook  PayPal IPN/webhooks
   GET  /checkout/rates      FX rates with PEN base (Wise; fallback if down)
   POST /billing/request-pro  Email payment link (manual Pro — default)
-  POST /billing/paypal      PayPal Subscription (optional automation)
+  POST /billing/paypal      PayPal Subscription (authenticated CLI)
+  POST /billing/paypal-subscribe  PayPal Subscription (landing — auto-activate)
   POST /billing/checkout    Stripe Checkout — DISABLED (no activation webhook yet)
   GET  /paypal-status       PayPal config diagnostic
+  POST /checkout/mercadopago     Mercado Pago Checkout Pro (PEN)
+  GET/POST /checkout/mercadopago-webhook  Mercado Pago IPN/webhooks
+  GET  /mercadopago-status  Mercado Pago config diagnostic
 """
 
 from __future__ import annotations
@@ -35,8 +39,11 @@ from market_core import (
     db_find_order_by_gateway_ref,
     db_find_order_by_id,
     db_get_billing_pending,
+    db_get_user_email,
     db_create_subscription_request,
     db_mark_subscription_request_emailed,
+    db_mark_subscription_requests_activated_for_user,
+    db_find_subscription_request,
     db_recent_subscription_request,
     db_save_billing_pending,
     db_set_order_gateway_ref,
@@ -133,7 +140,36 @@ async def _handle_paypal_event(event: dict) -> dict:
             db_set_subscription(username, "pro", paypal_subscription_id=sub_id)
             if sub_id:
                 db_delete_billing_pending(sub_id)
+            marked = db_mark_subscription_requests_activated_for_user(username)
             actions.append(f"pro_activated:{username}")
+            try:
+                from market_funnel import record_funnel_event
+                record_funnel_event("activated", username=username, meta={"source": "paypal_webhook"}, dedupe=True)
+            except Exception:
+                pass
+            if marked:
+                actions.append(f"requests_closed:{marked}")
+            try:
+                from market_connectors.email_outbound import send_pro_activated_email
+
+                email = db_get_user_email(username) or ""
+                if email:
+                    lang = (resource.get("locale") or "es")[:2].lower()
+                    if lang not in ("es", "en"):
+                        lang = "es"
+                    mail = send_pro_activated_email(
+                        to_email=email,
+                        username=username,
+                        lang=lang,
+                        subscription_id=sub_id,
+                    )
+                    if mail.get("sent"):
+                        actions.append(f"activation_email:{email}")
+                    else:
+                        actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
+            except Exception:
+                logger.exception("pro activation email failed for %s", username)
+                actions.append("activation_email_failed")
         else:
             actions.append(f"subscription_no_user:{sub_id}")
 
@@ -384,6 +420,160 @@ async def paypal_status(test: bool = False):
     return out
 
 
+
+def _mercadopago_env_flags() -> dict[str, bool]:
+    keys = (
+        "MERCADOPAGO_ACCESS_TOKEN",
+        "MERCADOPAGO_ACCESS_TOKEN_SANDBOX",
+        "MERCADOPAGO_ACCESS_TOKEN_PRODUCTION",
+        "MERCADO_PAGO_ACCESS_TOKEN",
+        "MP_ACCESS_TOKEN",
+        "MERCADOPAGO_PUBLIC_KEY",
+        "MERCADOPAGO_SANDBOX",
+        "MERCADOPAGO_WEBHOOK_URL",
+        "MERCADOPAGO_WEBHOOK_SECRET",
+        "MERCADOPAGO_WEBHOOK_TOKEN",
+        "MERCADOPAGO_SECRET_SIGNATURE",
+        "MP_WEBHOOK_SECRET",
+        "RAILWAY_PUBLIC_DOMAIN",
+    )
+    return {k: bool(os.getenv(k, "").strip()) for k in keys}
+
+
+@router.get("/mercadopago-status")
+async def mercadopago_status(test: bool = False):
+    """Check Mercado Pago credentials. ?test=1 verifies API auth."""
+    from market_connectors.mercadopago_payments import (
+        access_token,
+        is_sandbox,
+        notification_url,
+        public_key,
+        webhook_secret,
+    )
+
+    token = access_token()
+    out = {
+        "configured": bool(token),
+        "sandbox": is_sandbox(),
+        "public_key_configured": bool(public_key()),
+        "currency": "PEN",
+        "notification_url": notification_url(),
+        "webhook_secret_configured": bool(webhook_secret()),
+        "env_keys": _mercadopago_env_flags(),
+        "endpoints": ["/checkout/mercadopago", "/checkout/mercadopago-webhook"],
+    }
+    if test and token:
+        try:
+            from market_connectors.mercadopago_payments import check_connection
+
+            out["auth_test"] = await check_connection()
+        except Exception as e:
+            out["auth_test"] = {"ok": False, "error": str(e)}
+    return out
+
+
+@router.post("/checkout/mercadopago")
+async def checkout_mercadopago(authorization: str | None = Header(None)):
+    """Mercado Pago Checkout Pro for PEN cart total."""
+    username = require_user(authorization)
+    _, total, order_id = _prepare_pending_order(username, "mercadopago")
+    from market_connectors.mercadopago_payments import create_preference
+
+    try:
+        mp = await create_preference(
+            total,
+            "PEN",
+            f"CLI-Market-{order_id}",
+            title=f"CLI Market {order_id}",
+        )
+        if mp.get("checkout_url"):
+            if mp.get("preference_id"):
+                db_set_order_gateway_ref(order_id, str(mp["preference_id"]))
+            return {
+                "order_id": order_id,
+                "total": total,
+                "currency": "PEN",
+                "payment_method": "mercadopago",
+                "status": "pending",
+                "preference_id": mp.get("preference_id", ""),
+                "checkout_url": mp["checkout_url"],
+                "sandbox": mp.get("sandbox", False),
+                "message": "Complete el pago en Mercado Pago.",
+            }
+        raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
+    except ValueError:
+        raise HTTPException(
+            status_code=501,
+            detail="Mercado Pago no configurado. Set MERCADOPAGO_ACCESS_TOKEN.",
+        )
+
+
+@router.api_route("/checkout/mercadopago-webhook", methods=["GET", "POST"])
+async def mercadopago_webhook(request: Request):
+    """Mercado Pago notifications — validate signature, mark order paid."""
+    from market_connectors.mercadopago_payments import (
+        get_payment,
+        parse_external_order_id,
+        parse_webhook_payment_id,
+        validate_webhook_signature,
+        webhook_secret,
+    )
+
+    query = dict(request.query_params)
+    body: dict = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+    x_sig = request.headers.get("x-signature", "")
+    x_req = request.headers.get("x-request-id", "")
+    payment_id, ntype = parse_webhook_payment_id(query_params=query, body=body)
+
+    secret = webhook_secret()
+    if secret:
+        data_id = payment_id or str(query.get("data.id") or query.get("id") or "")
+        if not validate_webhook_signature(
+            x_signature=x_sig,
+            x_request_id=x_req,
+            data_id=data_id,
+            secret=secret,
+        ):
+            raise HTTPException(status_code=401, detail="invalid x-signature")
+
+    if request.method == "GET" and not payment_id:
+        return {"ok": True, "message": "mercadopago webhook endpoint"}
+
+    if not payment_id:
+        return {"received": True, "action": "no_payment_id", "type": ntype}
+
+    pay = await get_payment(payment_id)
+    if pay.get("error"):
+        return {"received": True, "payment_id": payment_id, "error": pay.get("error")}
+
+    status = str(pay.get("status") or "").lower()
+    ext_ref = str(pay.get("external_reference") or "")
+    order_id = parse_external_order_id(ext_ref)
+    actions: list[str] = []
+
+    if status == "approved" and order_id:
+        if db_update_order_status(order_id, "paid"):
+            actions.append(f"paid:{order_id}")
+        else:
+            actions.append(f"order_not_found:{order_id}")
+    elif order_id:
+        actions.append(f"status:{status}:{order_id}")
+
+    return {
+        "received": True,
+        "payment_id": payment_id,
+        "type": ntype,
+        "status": status,
+        "actions": actions,
+    }
+
+
 def process_pro_subscription_request(
     *,
     email: str,
@@ -420,6 +610,11 @@ def process_pro_subscription_request(
             "duplicate": True,
         }
 
+    try:
+        from market_funnel import record_funnel_event
+        record_funnel_event("request_pro", username=username or None, meta={"email": email}, dedupe=False)
+    except Exception:
+        pass
     req = db_create_subscription_request(username, email, PRO_PAYMENT_URL)
     sub_mail = send_pro_payment_email(
         to_email=email,
@@ -501,29 +696,113 @@ def request_pro_subscription(body: dict, authorization: str | None = Header(None
         raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
+
+
+def _resolve_pro_username(
+    email: str,
+    *,
+    body_username: str = "",
+    auth_username: str = "",
+) -> str:
+    if auth_username:
+        return auth_username.strip()
+    if body_username.strip():
+        return body_username.strip()
+    prior = db_find_subscription_request(email=email.strip().lower())
+    if prior and prior.get("username"):
+        return prior["username"]
+    local = email.split("@")[0].lower()
+    safe = re.sub(r"[^a-z0-9_-]", "", local)[:32]
+    return safe or f"user-{uuid.uuid4().hex[:8]}"
+
+
+async def _start_paypal_pro_subscription(username: str, email: str) -> dict:
+    from market_connectors.paypal_payments import create_subscription
+
+    result = await create_subscription(username=username)
+    if "approve_url" not in result:
+        return {"error": result.get("error", "PayPal error"), "details": result}
+    sub_id = result["subscription_id"]
+    approve = result["approve_url"]
+    db_save_billing_pending(sub_id, "paypal", username, "subscription")
+    db_create_subscription_request(username, email, approve)
+    return {
+        "ok": True,
+        "subscription_id": sub_id,
+        "approve_url": approve,
+        "plan": "Pro",
+        "amount": "$79/mo",
+        "username": username,
+        "auto_activate": True,
+    }
+
 @router.post("/billing/paypal")
 async def billing_paypal(authorization: str | None = Header(None)):
-    """PayPal Subscription for Pro plan ($79/mo)."""
+    """PayPal Subscription for Pro plan ($79/mo) — authenticated CLI path."""
     username = require_user(authorization)
     try:
-        from market_connectors.paypal_payments import create_subscription
-
-        result = await create_subscription(username=username)
-        if "approve_url" in result:
-            db_save_billing_pending(result["subscription_id"], "paypal", username, "subscription")
-            return {
-                "subscription_id": result["subscription_id"],
-                "approve_url": result["approve_url"],
-                "plan": "Pro",
-                "amount": "$79/mo",
-                "username": username,
-            }
-        return {"error": result.get("error", "PayPal error"), "details": result}
+        email = db_get_user_email(username) or f"{username}@cli-market.dev"
+        out = await _start_paypal_pro_subscription(username, email)
+        if out.get("ok"):
+            out["message"] = (
+                "Pro se activa automáticamente al confirmar la suscripción en PayPal."
+            )
+            return out
+        raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
     except ValueError as e:
         return {"error": "PayPal no configurado", "detail": str(e)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("billing_paypal failed")
         return {"error": str(e)}
+
+
+@router.post("/billing/paypal-subscribe")
+async def billing_paypal_subscribe(body: dict, authorization: str | None = Header(None)):
+    """PayPal Subscription from landing — auto-activate via webhook."""
+    try:
+        check_rate_limit("billing-paypal-subscribe")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        auth_user = ""
+        if authorization:
+            try:
+                auth_user = require_user(authorization)
+            except HTTPException:
+                auth_user = ""
+
+        username = _resolve_pro_username(
+            email,
+            body_username=(body.get("username") or ""),
+            auth_username=auth_user,
+        )
+
+        out = await _start_paypal_pro_subscription(username, email)
+        if not out.get("ok"):
+            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+
+        if lang == "es":
+            out["message"] = (
+                "Confirme la suscripción en PayPal; Pro se activa en segundos (webhook). "
+                "Luego: market whoami"
+            )
+        else:
+            out["message"] = (
+                "Confirm subscription in PayPal; Pro activates in seconds (webhook). "
+                "Then: market whoami"
+            )
+        return out
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
+    except Exception as e:
+        logger.exception("billing_paypal_subscribe failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 @router.post("/billing/checkout")
