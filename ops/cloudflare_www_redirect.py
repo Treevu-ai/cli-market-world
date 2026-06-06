@@ -8,9 +8,16 @@ Usage:
   set CLOUDFLARE_API_TOKEN=...
   python ops/cloudflare_www_redirect.py
 
-Optional:
-  CLOUDFLARE_ZONE_ID   — skip zone lookup
-  CLOUDFLARE_ACCOUNT_ID — required to add Pages custom domain
+Token permissions (Custom Token):
+  Zone  → Zone            → Read
+  Zone  → Single Redirect → Edit
+  Account → Account Rulesets → Edit   (often required for rulesets API)
+  Zone Resources: Include → Specific zone → cli-market.dev
+  Account Resources: Include → your account
+
+Optional env:
+  CLOUDFLARE_ZONE_ID    — skip zone lookup
+  CLOUDFLARE_ACCOUNT_ID — Pages custom domain attach
   CLOUDFLARE_PAGES_PROJECT=cli-market-world
 """
 
@@ -51,6 +58,15 @@ def _request(method: str, path: str, body: dict | None = None) -> dict:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         payload = exc.read().decode("utf-8", errors="replace")
+        if exc.code == 403 and "rulesets" in path:
+            raise SystemExit(
+                f"Cloudflare API {method} {path} failed (403).\n"
+                "Token can read the zone but cannot edit Redirect Rules.\n"
+                "Add to your API token:\n"
+                "  Zone → Single Redirect → Edit\n"
+                "  Account → Account Rulesets → Edit\n"
+                f"Raw: {payload}"
+            ) from exc
         raise SystemExit(f"Cloudflare API {method} {path} failed ({exc.code}): {payload}") from exc
 
 
