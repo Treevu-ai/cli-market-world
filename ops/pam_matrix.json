@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "product": "CLI Market",
   "updated": "2026-06-06",
   "defaults": {
@@ -43,18 +43,39 @@
       "steps": "Abrir cli-market.dev — números alineados con /dashboard/data"
     },
     {
+      "id": "pam.destructive_admin",
+      "phase": "manual",
+      "tier": 3,
+      "name": "Admin destructive (trigger + collect smoke + backfill)",
+      "steps": "python ops/production_acceptance.py --phase admin --tier 3 --include-destructive"
+    },
+    {
       "id": "billing.pro",
       "phase": "manual",
-      "tier": 2,
+      "tier": 3,
       "name": "E2E Pro request + PayPal sandbox",
       "steps": "Ver ops/E2E_CLIENT_JOURNEY.md — request-pro → activate_pro → market checkout"
     },
     {
       "id": "payments.mp",
       "phase": "manual",
-      "tier": 2,
+      "tier": 3,
       "name": "Mercado Pago checkout sandbox",
       "steps": "market checkout con MP en cuenta Pro de prueba"
+    },
+    {
+      "id": "mcp.full_suite",
+      "phase": "manual",
+      "tier": 3,
+      "name": "MCP — recorrido ampliado de tools",
+      "steps": "Desde mcp.json: search, compare, cart, intel, alerts, export — al menos 10 tools distintas"
+    },
+    {
+      "id": "journey.pro_full",
+      "phase": "manual",
+      "tier": 3,
+      "name": "Journey Pro completo",
+      "steps": "ops/E2E_CLIENT_JOURNEY.md de punta a punta (login → checkout → verify tier Pro)"
     }
   ],
   "cases": [
@@ -906,7 +927,7 @@
     },
     {
       "id": "admin.collector_trigger",
-      "tier": 2,
+      "tier": 3,
       "phase": "admin",
       "run_order": 90,
       "name": "Collector on-demand trigger",
@@ -927,7 +948,7 @@
     },
     {
       "id": "admin.collect_smoke",
-      "tier": 2,
+      "tier": 3,
       "phase": "admin",
       "run_order": 91,
       "name": "Synchronous collect (2 stores × 2 queries)",
@@ -950,11 +971,11 @@
         }
       },
       "latency_ms_max": 180000,
-      "notes": "Omitido cuando tier≥2 incluye fase post (evita envenenar /health/collector)"
+      "notes": "Tier 3. Omitido en tier≤2 con fase post; corre en --phase admin aislado o tier 3 full"
     },
     {
       "id": "admin.index_backfill",
-      "tier": 2,
+      "tier": 3,
       "phase": "admin",
       "run_order": 92,
       "name": "Index backfill batch",

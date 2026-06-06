@@ -1,0 +1,66 @@
+name: PAM Tier 3 Weekly
+
+on:
+  schedule:
+    # Lunes 07:00 UTC — destructive admin + checklist manual (no nightly noise)
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What to run
+        type: choice
+        options:
+          - destructive-admin
+          - manual-checklist
+          - full-tier3
+        default: destructive-admin
+      include_destructive:
+        description: For full-tier3 — run destructive admin cases
+        type: boolean
+        default: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+  PAM_LANDING_URL: https://cli-market.dev
+
+jobs:
+  pam-tier3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PAM tier 3 — destructive admin (isolated)
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'destructive-admin'
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: python ops/production_acceptance.py --phase admin --tier 3 --include-destructive
+
+      - name: PAM tier 3 — manual checklist
+        if: github.event.inputs.mode == 'manual-checklist'
+        run: python ops/production_acceptance.py --phase manual --tier 3
+
+      - name: PAM tier 3 — full automated cert
+        if: github.event.inputs.mode == 'full-tier3'
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          ARGS="--phase public,landing,user,admin --tier 3"
+          if [ "${{ github.event.inputs.include_destructive }}" = "true" ]; then
+            ARGS="$ARGS --include-destructive"
+          fi
+          python ops/production_acceptance.py $ARGS
+
+      - name: Upload report
+        if: always() && github.event.inputs.mode != 'manual-checklist'
+        uses: actions/upload-artifact@v6
+        with:
+          name: pam-tier3-${{ github.run_id }}
+          path: ops/reports/pam-*.json
+          if-no-files-found: ignore

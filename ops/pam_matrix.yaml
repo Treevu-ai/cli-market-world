@@ -2,10 +2,9 @@
 # Edit this file, then: python ops/production_acceptance.py --sync-json
 # Run:     python ops/production_acceptance.py
 # Phases:  --phase public|user|admin|landing|post|manual
-# Tier 2 auto-includes `post` (collector batch check after destructive smoke).
-# Tier:    --tier 1  (default: tier 1 only)
+# Tier:    --tier 1|2|3  (default: 1). Tier 2 auto-incluye `post`. Tier 3 = destructive + manual pagos.
 
-version: "1.0.0"
+version: "1.1.0"
 product: CLI Market
 updated: "2026-06-06"
 
@@ -42,16 +41,31 @@ manual_checklist:
     tier: 1
     name: "Landing pricing + contact + stats"
     steps: "Abrir cli-market.dev — números alineados con /dashboard/data"
+  - id: pam.destructive_admin
+    phase: manual
+    tier: 3
+    name: "Admin destructive (trigger + collect smoke + backfill)"
+    steps: "python ops/production_acceptance.py --phase admin --tier 3 --include-destructive"
   - id: billing.pro
     phase: manual
-    tier: 2
+    tier: 3
     name: "E2E Pro request + PayPal sandbox"
     steps: "Ver ops/E2E_CLIENT_JOURNEY.md — request-pro → activate_pro → market checkout"
   - id: payments.mp
     phase: manual
-    tier: 2
+    tier: 3
     name: "Mercado Pago checkout sandbox"
     steps: "market checkout con MP en cuenta Pro de prueba"
+  - id: mcp.full_suite
+    phase: manual
+    tier: 3
+    name: "MCP — recorrido ampliado de tools"
+    steps: "Desde mcp.json: search, compare, cart, intel, alerts, export — al menos 10 tools distintas"
+  - id: journey.pro_full
+    phase: manual
+    tier: 3
+    name: "Journey Pro completo"
+    steps: "ops/E2E_CLIENT_JOURNEY.md de punta a punta (login → checkout → verify tier Pro)"
 
 cases:
   # ── PUBLIC / TIER 1 ───────────────────────────────────────────────────────
@@ -665,10 +679,10 @@ cases:
       json_has: [scanned]
     latency_ms_max: 120000
 
-  # ── ADMIN / DESTRUCTIVE (opt-in --include-destructive) ────────────────────
-  # run_order 90+ so collect_smoke runs last and does not poison early health checks.
+  # ── ADMIN / TIER 3 DESTRUCTIVE (--tier 3 --include-destructive) ───────────
+  # run_order 90+ so collect_smoke runs last. skip_if_post_phase solo en tier≤2.
   - id: admin.collector_trigger
-    tier: 2
+    tier: 3
     phase: admin
     run_order: 90
     name: Collector on-demand trigger
@@ -683,7 +697,7 @@ cases:
       json_has: [triggered]
 
   - id: admin.collect_smoke
-    tier: 2
+    tier: 3
     phase: admin
     run_order: 91
     name: Synchronous collect (2 stores × 2 queries)
@@ -701,10 +715,10 @@ cases:
       json_min:
         stores_succeeded: 1
     latency_ms_max: 180000
-    notes: "Omitido cuando tier≥2 incluye fase post (evita envenenar /health/collector)"
+    notes: "Tier 3. Omitido en tier≤2 con fase post; corre en --phase admin aislado o tier 3 full"
 
   - id: admin.index_backfill
-    tier: 2
+    tier: 3
     phase: admin
     run_order: 92
     name: Index backfill batch

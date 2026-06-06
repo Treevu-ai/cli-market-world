@@ -33,8 +33,15 @@ Para probar smoke aislado: `--phase admin --tier 2 --include-destructive` (sin `
 
 ## Tiers
 
-- **Tier 1** — Core del producto; debe estar 100% PASS antes de release.
-- **Tier 2** — Importante pero no bloqueante (alerts, export, retailer apply, destructive admin).
+| Tier | Bloquea release | Qué incluye |
+|------|-----------------|-------------|
+| **1** | Sí | API core, landing, user journey automatizado |
+| **2** | No | Extended API, admin read-only, fase `post` (38/38) |
+| **3** | No | Admin **destructive**, pagos/journeys **manuales**, MCP ampliado |
+
+- **Tier 1** — 0 FAIL antes de release.
+- **Tier 2** — Nightly diario; destructive admin se **omite** (validado en `post`).
+- **Tier 3** — Semanal (lunes) o manual; side-effects y billing real en sandbox.
 
 ## Uso rápido
 
@@ -57,11 +64,14 @@ python ops/production_acceptance.py --phase public,landing,user --tier 1
 export MARKET_API_TOKEN="..."
 python ops/production_acceptance.py --phase public,landing,user,admin --tier 1
 
-# Admin con side-effects (collector trigger, collect, backfill)
-python ops/production_acceptance.py --phase admin --tier 2 --include-destructive
+# Tier 3 — destructive admin aislado (sin fase post)
+python ops/production_acceptance.py --phase admin --tier 3 --include-destructive
 
-# Solo checklist manual CLI/MCP/billing
-python ops/production_acceptance.py --phase manual
+# Tier 3 — checklist manual (pagos, MCP full, journey Pro)
+python ops/production_acceptance.py --phase manual --tier 3
+
+# Tier 3 — certificación automatizada completa (avanzado)
+python ops/production_acceptance.py --phase public,landing,user,admin --tier 3 --include-destructive
 ```
 
 ## Variables de entorno
@@ -105,7 +115,9 @@ Workflow: `.github/workflows/pam-nightly.yml`
 | `pam-tier1` | Diario 06:00 UTC | `public,landing,user` tier 1 — sin secretos |
 | `pam-tier2` | Tras tier 1 | + `admin,post` tier 2 — `MARKET_API_TOKEN` en **Secrets** (o variable de repo) |
 
-Destructive (`--include-destructive`) solo vía `workflow_dispatch` manual.
+| `pam-tier3` | Lunes 07:00 UTC | Admin destructive aislado (`--tier 3`) |
+
+Destructive en nightly tier 2: **no** (SKIP). Tier 3 weekly o `workflow_dispatch` en **PAM Tier 3 Weekly**.
 
 ## Editar la matriz
 
