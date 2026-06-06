@@ -5,7 +5,9 @@
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
-  "env": {},
+  "env": {
+    "MARKET_API_URL": "https://cli-market-production.up.railway.app"
+  },
   "repository": "https://github.com/Treevu-ai/cli-market-world",
   "website": "https://cli-market.dev",
   "license": "MIT",

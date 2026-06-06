@@ -2,11 +2,8 @@
   "servers": {
     "cli-market": {
       "type": "stdio",
-      "command": "python",
-      "args": [
-        "-m",
-        "market_mcp"
-      ],
+      "command": "market-mcp",
+      "args": [],
       "env": {
         "MARKET_API_URL": "https://cli-market-production.up.railway.app"
       }

@@ -64,6 +64,7 @@ T = {
         "product_update_help": "ID del producto",
         "quantity_help": "Nueva cantidad (0 = eliminar)",
         "hello": "Onboarding post-install y próximos pasos",
+        "register": "Crear cuenta free y API key (sk-)",
         "share": "Link de referido para compartir CLI Market",
         "upgrade": "Solicitar Pro — email con link de pago",
     },
@@ -95,6 +96,7 @@ T = {
         "product_update_help": "Product ID",
         "quantity_help": "New quantity (0 = remove)",
         "hello": "Post-install onboarding and next steps",
+        "register": "Create free account and API key (sk-)",
         "share": "Referral link to share CLI Market",
         "upgrade": "Request Pro — email with payment link",
     },
@@ -158,8 +160,32 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
 """
 
 def welcome_banner():
-    banner = WELCOME_BANNER_EN if get_lang() == "en" else WELCOME_BANNER
-    return Panel(banner.strip(), border_style="#00FF88", padding=(1, 2))
+    is_en = get_lang() == "en"
+    n_countries = len(MS_COUNTRIES)
+    stats = (
+        f"[#00FF88]●[/] {RETAILERS_VERIFIED} retailers    "
+        f"[#00FF88]●[/] {n_countries} {'countries' if is_en else 'países'}    "
+        f"[#00FF88]●[/] {MCP_TOOLS} mcp tools"
+    )
+    if is_en:
+        body = WELCOME_BANNER_EN.replace(
+            "[#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 countries    [#00FF88]●[/] 36 mcp tools",
+            stats,
+        ).replace(
+            "[#00FF88]market login[/]        [#888888]authenticate[/]",
+            "[#00FF88]market register[/]     [#888888]free API key[/]\n"
+            "     [#00FF88]market login[/]        [#888888]existing account[/]",
+        )
+    else:
+        body = WELCOME_BANNER.replace(
+            "[#00FF88]●[/] 30 retailers    [#00FF88]●[/] 8 países       [#00FF88]●[/] 36 mcp tools",
+            stats,
+        ).replace(
+            "[#00FF88]market login[/]        [#888888]autentícate[/]",
+            "[#00FF88]market register[/]     [#888888]API key gratis[/]\n"
+            "     [#00FF88]market login[/]        [#888888]cuenta existente[/]",
+        )
+    return Panel(body.strip(), border_style="#00FF88", padding=(1, 2))
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -170,10 +196,9 @@ def get_token_with_prompt() -> str:
             "[bold #FFD600]No estás autenticado aún.[/]\n\n"
             "[#888888]Para usar CLI Market necesitas un token de acceso.[/]\n"
             "[#888888]Es gratis. Toma 5 segundos:[/]\n\n"
-            "  [#00FF88 bold]1.[/] Ejecuta:  [#00FF88]market login[/]\n"
-            "  [#00FF88 bold]2.[/] Usuario: [#FFFFFF bold]<tu_usuario>[/]\n"
-            "  [#00FF88 bold]3.[/] Password: [#FFFFFF bold]<tu_password>[/]\n\n"
-            "[dim]El servidor genera tu token automaticamente.[/]\n"
+            "  [#00FF88 bold]1.[/] Nuevo:     [#00FF88]market register[/]  [#888888](API key gratis)[/]\n"
+            "  [#00FF88 bold]2.[/] Existente: [#00FF88]market login[/]     [#888888](usuario + password)[/]\n\n"
+            "[dim]El token se guarda en tu sesion local.[/]\n"
             "[dim]Si eres un agente IA: usa market --json para integrarte.[/]",
             title="CLI Market",
             border_style="#FFD600"
@@ -742,9 +767,53 @@ def cmd_about(args):
         border_style="#00FF88"
     ))
 
+def _format_limit(value: int) -> str:
+    if value < 0:
+        return "unlimited"
+    return f"{value:,}"
+
+
 def cmd_whoami(args):
+    get_token_with_prompt()
     data = cli_api("GET", "/auth/whoami")
-    console.print(f"[#3cffd0]✓ {data.get('username', '?')}[/]")
+    sub_data = cli_api("GET", "/auth/subscription")
+    sub = sub_data.get("subscription") or {}
+    tier = sub.get("tier", "free")
+    username = data.get("username", sub_data.get("username", "?"))
+    if getattr(args, "json", False):
+        console.print(json.dumps({"username": username, "subscription": sub, "api_keys": sub_data.get("api_keys")}, indent=2))
+        return
+    console.print(f"[#3cffd0]✓ {username}[/]  [dim]tier:[/] [bold]{tier}[/]")
+    console.print(
+        f"[dim]limits:[/] {sub.get('req_limit_day', '?')}/day · "
+        f"{sub.get('req_limit_min', '?')}/min · "
+        f"alerts: {_format_limit(int(sub.get('alerts', 0) or 0))} · "
+        f"checkout: {'yes' if tier in ('pro', 'builder', 'enterprise') else 'no'}"
+    )
+    if tier == "free":
+        console.print("[dim]Upgrade: market upgrade --email you@example.com[/]")
+
+
+def cmd_register(args):
+    """Create a free account via POST /auth/register and persist API key locally."""
+    data = api("POST", "/auth/register")
+    if isinstance(data, dict) and data.get("error"):
+        console.print(f"[red]Error: {data['error']}[/]")
+        sys.exit(1)
+    if getattr(args, "json", False):
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+    key = data.get("api_key", "")
+    console.print(Panel.fit(
+        f"[bold #00FF88]Cuenta creada[/]\n\n"
+        f"Usuario: [cyan]{data.get('username', '?')}[/]\n"
+        f"API key: [bold white]{key}[/]\n\n"
+        "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n\n"
+        "Prueba: [cyan]market search \"leche\" --country PE[/]\n"
+        "MCP: [cyan]https://cli-market.dev/tools[/]",
+        title="CLI Market",
+        border_style="#00FF88",
+    ))
 
 def cmd_lang(args):
     if args.lang_code:
@@ -763,10 +832,11 @@ def cmd_hello(args):
             "[bold #00FF88]Welcome to CLI Market[/]\n\n"
             f"Commerce API for AI agents — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} MCP tools.\n\n"
             "[bold]Next steps:[/]\n"
-            "  1. [cyan]market login[/] — free API access (admin / market)\n"
+            "  1. [cyan]market register[/] — free API key (recommended)\n"
+            "     or [cyan]market login[/] if you already have credentials\n"
             "  2. [cyan]market search \"milk\" --country PE[/] — try a search\n"
-            "  3. Connect MCP in Cursor/Claude → [cyan]https://cli-market.dev/tools[/]\n"
-            "  4. [cyan]market share[/] — referral link\n\n"
+            "  3. MCP: [cyan]market-mcp[/] + config at [cyan]cli-market.dev/tools[/]\n"
+            "  4. [cyan]market whoami[/] — tier and limits · [cyan]market share[/]\n\n"
             "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
             title="CLI Market",
             border_style="#00FF88",
@@ -776,10 +846,11 @@ def cmd_hello(args):
             "[bold #00FF88]Bienvenido a CLI Market[/]\n\n"
             f"Infraestructura de comercio para agentes IA — {RETAILERS_VERIFIED} retailers, {MCP_TOOLS} herramientas MCP.\n\n"
             "[bold]Próximos pasos:[/]\n"
-            "  1. [cyan]market login[/] — acceso gratis (admin / market)\n"
+            "  1. [cyan]market register[/] — API key gratis (recomendado)\n"
+            "     o [cyan]market login[/] si ya tenés credenciales\n"
             "  2. [cyan]market search \"leche\" --country PE[/] — prueba una búsqueda\n"
-            "  3. Conecta MCP en Cursor/Claude → [cyan]https://cli-market.dev/tools[/]\n"
-            "  4. [cyan]market share[/] — link de referido\n\n"
+            "  3. MCP: [cyan]market-mcp[/] + config en [cyan]cli-market.dev/tools[/]\n"
+            "  4. [cyan]market whoami[/] — tier y límites · [cyan]market share[/]\n\n"
             "[dim]Docs: cli-market.dev/llms.txt · GitHub: Treevu-ai/cli-market-world[/]",
             title="CLI Market",
             border_style="#00FF88",
@@ -935,6 +1006,9 @@ def main():
     # whoami
     sub.add_parser("whoami", help=t("whoami"))
 
+    # register
+    sub.add_parser("register", help=t("register"))
+
     # lang
     p_lang = sub.add_parser("lang", help=t("lang"))
     p_lang.add_argument("lang_code", nargs="?")
@@ -993,7 +1067,7 @@ def main():
         "enrich": cmd_enrich, "basket": cmd_basket,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "alerts": cmd_alerts,
-        "about": cmd_about, "whoami": cmd_whoami, "lang": cmd_lang,
+        "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "lang": cmd_lang,
         "hello": cmd_hello, "share": cmd_share, "upgrade": cmd_upgrade,
     }
     handler = handlers.get(args.command)

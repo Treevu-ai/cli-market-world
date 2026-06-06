@@ -223,15 +223,15 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 
 ## 5. Backlog priorizado
 
-### P0 — Quick wins (impacto alto, esfuerzo bajo)
+### P0 — Quick wins ✅ (2026-06-06)
 
-| # | Acción | Persona | Esfuerzo |
-|---|--------|---------|----------|
-| 1 | Unificar comando MCP en `mcp.json`, `/tools`, README, llms.txt | Dev | S |
-| 2 | Arreglar `#contact-retailers` → `/retailers` o form visible | Retailer | S |
-| 3 | `market whoami` muestra tier + límites (`/auth/subscription`) | All | S |
-| 4 | `market hello` → sugerir `auth/register` o `login` con pasos claros | Dev | S |
-| 5 | Alinear `demo-walkthrough.md` con tiers (quitar alerts en free) | Dev | S |
+| # | Acción | Estado |
+|---|--------|--------|
+| 1 | MCP unificado: `market-mcp` + `MARKET_API_URL` en manifests y `/tools` | ✅ |
+| 2 | Retailer CTA → `/retailers` + bloque en `#contact-retailers` | ✅ |
+| 3 | `market whoami` con tier + límites | ✅ |
+| 4 | `market register` + `hello` actualizado | ✅ |
+| 5 | `demo-walkthrough.md` alineado (alerts → appendix Starter+) | ✅ |
 
 ### P1 — Onboarding v2 core (dev en 5 min garantizado)
 
