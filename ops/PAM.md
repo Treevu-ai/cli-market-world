@@ -69,7 +69,7 @@ python ops/production_acceptance.py --phase manual
 | Variable | Uso |
 |----------|-----|
 | `MARKET_API_URL` | Default: prod Railway |
-| `MARKET_API_TOKEN` | Admin Bearer |
+| `MARKET_API_TOKEN` | Admin Bearer (local: `$env:…`; GH: Secret o Variable de repo) |
 | `MARKET_USER_TOKEN` | Opcional `sk-…`; si falta, usa `/auth/register` |
 | `PAM_LANDING_URL` | Default: `https://cli-market.dev` |
 | `PAM_REPORT_DIR` | Default: `ops/reports/` |
@@ -103,7 +103,7 @@ Workflow: `.github/workflows/pam-nightly.yml`
 | Job | Cuándo | Qué corre |
 |-----|--------|-----------|
 | `pam-tier1` | Diario 06:00 UTC | `public,landing,user` tier 1 — sin secretos |
-| `pam-tier2` | Diario 06:30 UTC | + `admin,post` tier 2 — requiere `MARKET_API_TOKEN` |
+| `pam-tier2` | Tras tier 1 | + `admin,post` tier 2 — `MARKET_API_TOKEN` en **Secrets** (o variable de repo) |
 
 Destructive (`--include-destructive`) solo vía `workflow_dispatch` manual.
 

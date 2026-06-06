@@ -59,7 +59,8 @@ jobs:
 
       - name: PAM tier 2 (+ admin, post)
         env:
-          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+          # Prefer repository secret; fall back to repo variable if configured there.
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
         run: |
           ARGS="--phase public,landing,user,admin --tier 2"
           if [ "${{ github.event.inputs.include_destructive }}" = "true" ]; then
