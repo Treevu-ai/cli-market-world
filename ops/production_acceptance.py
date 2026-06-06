@@ -7,6 +7,7 @@ Usage:
     python ops/production_acceptance.py
     python ops/production_acceptance.py --phase public --tier 1
     python ops/production_acceptance.py --phase user,admin --tier 2
+    python ops/production_acceptance.py --phase admin --tier 3 --include-destructive
     python ops/production_acceptance.py --dry-run
     python ops/production_acceptance.py --sync-json
     python ops/production_acceptance.py --include-destructive
@@ -371,7 +372,8 @@ def run_case(
         result["skip_reason"] = "after_destructive (use --include-destructive)"
         return result
 
-    if case.get("skip_if_post_phase") and phases and "post" in phases:
+    max_tier = int(ctx.get("_max_tier", 2))
+    if case.get("skip_if_post_phase") and phases and "post" in phases and max_tier < 3:
         result["status"] = "SKIP"
         result["skip_reason"] = "skip_if_post_phase (batch validated in post.health_collector_batch)"
         return result
@@ -471,15 +473,36 @@ def run_case(
     return result
 
 
-def print_manual_checklist(matrix: dict) -> None:
+def should_auto_post(phases: set[str], tier: int) -> bool:
+    """Add post phase for batch validation; skip for tier 3 admin-only destructive runs."""
+    if tier < 2:
+        return False
+    if tier >= 3 and phases <= {"admin"}:
+        return False
+    return True
+
+
+def _console_print(text: str) -> None:
+    """Print safely on Windows consoles that lack Unicode (e.g. cp1252)."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(text.encode(enc, errors="replace").decode(enc, errors="replace"))
+
+
+def print_manual_checklist(matrix: dict, max_tier: int | None = None) -> None:
     items = matrix.get("manual_checklist") or []
     if not items:
         return
-    print("\n-- Manual checklist (not automated) --")
+    _console_print("\n-- Manual checklist (not automated) --")
     for item in items:
-        print(f"  [{item.get('tier', '?')}] {item['id']}: {item['name']}")
+        item_tier = int(item.get("tier", 2))
+        if max_tier is not None and item_tier > max_tier:
+            continue
+        _console_print(f"  [T{item_tier}] {item['id']}: {item['name']}")
         if item.get("steps"):
-            print(f"       {item['steps']}")
+            _console_print(f"       {item['steps']}")
 
 
 def print_summary(results: list[dict], matrix: dict, args: argparse.Namespace) -> int:
@@ -504,7 +527,7 @@ def print_summary(results: list[dict], matrix: dict, args: argparse.Namespace) -
             print(f"  FAIL {r['id']}: {', '.join(r['errors'])}")
 
     if args.phase == "manual" or "manual" in (args.phase or ""):
-        print_manual_checklist(matrix)
+        print_manual_checklist(matrix, max_tier=args.tier)
 
     tier1_fails = [r for r in results if r["status"] == "FAIL" and r.get("tier") == 1]
     return 1 if tier1_fails else 0
@@ -514,7 +537,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="CLI Market Production Acceptance Matrix")
     parser.add_argument("--matrix", type=Path, default=None, help="pam_matrix.yaml or .json")
     parser.add_argument("--phase", default="public,user,landing", help="Comma phases or 'all'")
-    parser.add_argument("--tier", type=int, default=1, help="Max tier to run (1=core)")
+    parser.add_argument(
+        "--tier",
+        type=int,
+        default=1,
+        help="Max tier: 1=release core, 2=extended+post, 3=destructive admin+manual payments",
+    )
     parser.add_argument("--include-destructive", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--sync-json", action="store_true")
@@ -532,11 +560,11 @@ def main() -> int:
     else:
         phases = {p.strip() for p in phases_raw.split(",")}
 
-    if args.tier >= 2:
+    if should_auto_post(phases, args.tier):
         phases.add("post")
 
     if "manual" in phases:
-        print_manual_checklist(matrix)
+        print_manual_checklist(matrix, max_tier=args.tier)
         if phases == {"manual"}:
             return 0
 
@@ -562,6 +590,7 @@ def main() -> int:
     ctx: dict[str, Any] = {
         "run_id": uuid.uuid4().hex[:8],
         "_thresholds": matrix.get("thresholds", {}),
+        "_max_tier": args.tier,
     }
 
     api_base = os.getenv("MARKET_API_URL", matrix["defaults"].get("api_base", ""))
@@ -572,7 +601,7 @@ def main() -> int:
         for c in cases:
             print(f"  [{c.get('tier')}] {c['phase']:8} {c['method']:4} {c.get('path', '/')}  {c['id']}")
         print(f"\n{len(cases)} automated cases")
-        print_manual_checklist(matrix)
+        print_manual_checklist(matrix, max_tier=args.tier)
         return 0
 
     results: list[dict] = []
