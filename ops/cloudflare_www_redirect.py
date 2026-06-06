@@ -25,15 +25,14 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import urllib.error
 import urllib.request
 
 API = "https://api.cloudflare.com/client/v4"
 ZONE_NAME = "cli-market.dev"
 WWW_HOST = "www.cli-market.dev"
-APEX = "https://cli-market.dev"
 RULE_DESC = "CLI Market www to apex"
+REDIRECT_PHASE = "http_request_dynamic_redirect"
 
 
 def _token() -> str:
@@ -41,7 +40,7 @@ def _token() -> str:
     if not token:
         raise SystemExit(
             "CLOUDFLARE_API_TOKEN is required. "
-            "Create a token with Zone:Read, Zone:Edit, Account:Read."
+            "Create a token with Zone:Read + Single Redirect:Edit + Account Rulesets:Edit."
         )
     return token
 
@@ -61,13 +60,35 @@ def _request(method: str, path: str, body: dict | None = None) -> dict:
         if exc.code == 403 and "rulesets" in path:
             raise SystemExit(
                 f"Cloudflare API {method} {path} failed (403).\n"
-                "Token can read the zone but cannot edit Redirect Rules.\n"
-                "Add to your API token:\n"
-                "  Zone → Single Redirect → Edit\n"
-                "  Account → Account Rulesets → Edit\n"
+                "Add: Zone → Single Redirect → Edit, Account → Account Rulesets → Edit\n"
                 f"Raw: {payload}"
             ) from exc
         raise SystemExit(f"Cloudflare API {method} {path} failed ({exc.code}): {payload}") from exc
+
+
+def _get_entrypoint_ruleset(zid: str, phase: str) -> dict | None:
+    """Return entrypoint ruleset, or None if no rules exist yet (404 is normal)."""
+    headers = {
+        "Authorization": f"Bearer {_token()}",
+        "Content-Type": "application/json",
+    }
+    path = f"/zones/{zid}/rulesets/phases/{phase}/entrypoint"
+    req = urllib.request.Request(f"{API}{path}", headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data.get("result") or None
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        payload = exc.read().decode("utf-8", errors="replace")
+        if exc.code == 403:
+            raise SystemExit(
+                f"Cloudflare API GET {path} failed (403).\n"
+                "Add: Zone → Single Redirect → Edit, Account → Account Rulesets → Edit\n"
+                f"Raw: {payload}"
+            ) from exc
+        raise SystemExit(f"Cloudflare API GET {path} failed ({exc.code}): {payload}") from exc
 
 
 def _verify_token() -> None:
@@ -103,51 +124,41 @@ def zone_id() -> str:
     names = [z.get("name", "?") for z in visible]
     raise SystemExit(
         f"Zone not found for {ZONE_NAME}.\n"
-        "Likely causes:\n"
-        "  1) Token created on a different Cloudflare account than the zone\n"
-        "  2) Token Zone Resources does not include cli-market.dev\n"
-        "  3) Missing permission: Zone → Zone → Read\n\n"
-        f"Zones this token can see ({len(names)}): {', '.join(names) or '(none)'}\n\n"
-        "Fix: recreate token with Zone Resources → Include → Specific zone → cli-market.dev\n"
-        "Or set CLOUDFLARE_ZONE_ID manually (Dashboard → cli-market.dev → Overview → right column)."
+        f"Zones this token can see ({len(names)}): {', '.join(names) or '(none)'}\n"
+        "Fix: Zone Resources → Include → Specific zone → cli-market.dev"
     )
 
 
+def _redirect_rule() -> dict:
+    return {
+        "description": RULE_DESC,
+        "expression": f'(http.host eq "{WWW_HOST}")',
+        "action": "redirect",
+        "action_parameters": {
+            "from_value": {
+                "status_code": 301,
+                "target_url": {
+                    "expression": 'concat("https://cli-market.dev", http.request.uri.path)',
+                },
+                "preserve_query_string": True,
+            }
+        },
+    }
+
+
 def ensure_redirect_rule(zid: str) -> None:
-    phase = "http_request_dynamic_redirect"
-    entrypoint = _request("GET", f"/zones/{zid}/rulesets/phases/{phase}/entrypoint")
-    ruleset = entrypoint.get("result") or {}
-    rules = list(ruleset.get("rules") or [])
+    ruleset = _get_entrypoint_ruleset(zid, REDIRECT_PHASE)
+    rules = list((ruleset or {}).get("rules") or [])
 
     for rule in rules:
         if rule.get("description") == RULE_DESC:
             print(f"Redirect rule already exists (id={rule.get('id')})")
             return
 
-    rules.insert(
-        0,
-        {
-            "description": RULE_DESC,
-            "expression": f'(http.host eq "{WWW_HOST}")',
-            "action": "redirect",
-            "action_parameters": {
-                "from_value": {
-                    "status_code": 301,
-                    "target_url": {
-                        "expression": 'concat("https://cli-market.dev", http.request.uri.path)',
-                    },
-                    "preserve_query_string": True,
-                }
-            },
-        },
-    )
+    rules.insert(0, _redirect_rule())
 
-    if ruleset.get("id"):
-        _request(
-            "PUT",
-            f"/zones/{zid}/rulesets/{ruleset['id']}",
-            {"rules": rules},
-        )
+    if ruleset and ruleset.get("id"):
+        _request("PUT", f"/zones/{zid}/rulesets/{ruleset['id']}", {"rules": rules})
         print("Updated zone redirect ruleset")
     else:
         _request(
@@ -156,7 +167,7 @@ def ensure_redirect_rule(zid: str) -> None:
             {
                 "name": "default",
                 "kind": "zone",
-                "phase": phase,
+                "phase": REDIRECT_PHASE,
                 "rules": rules,
             },
         )
