@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Any
 
 OPS_DIR = Path(__file__).resolve().parent
+PHASE_ORDER = ("public", "landing", "user", "admin")
 MATRIX_YAML = OPS_DIR / "pam_matrix.yaml"
 MATRIX_JSON = OPS_DIR / "pam_matrix.json"
 DEFAULT_REPORT_DIR = OPS_DIR / "reports"
@@ -111,7 +112,10 @@ def render_template(value: Any, ctx: dict[str, Any]) -> Any:
                 return str(th.get(key.split(".", 1)[1], m.group(0)))
             if key == "run_id":
                 return ctx.get("run_id", "")
-            return str(ctx.get(key, m.group(0)))
+            try:
+                return str(get_by_path(ctx, key))
+            except (KeyError, IndexError, TypeError):
+                return str(ctx.get(key, m.group(0)))
 
         return re.sub(r"\{\{([^}]+)\}\}", repl, value)
     if isinstance(value, dict):
@@ -434,7 +438,20 @@ def main() -> int:
         c for c in matrix.get("cases", [])
         if c.get("phase") in phases and int(c.get("tier", 2)) <= args.tier
     ]
-    cases.sort(key=lambda c: (c.get("phase", ""), c.get("tier", 9), c.get("id", "")))
+    def _phase_idx(phase: str) -> int:
+        try:
+            return PHASE_ORDER.index(phase)
+        except ValueError:
+            return len(PHASE_ORDER)
+
+    cases.sort(
+        key=lambda c: (
+            _phase_idx(c.get("phase", "")),
+            c.get("run_order", 50),
+            c.get("tier", 9),
+            c.get("id", ""),
+        )
+    )
 
     ctx: dict[str, Any] = {
         "run_id": uuid.uuid4().hex[:8],
