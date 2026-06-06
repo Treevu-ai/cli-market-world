@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import Any
 
 OPS_DIR = Path(__file__).resolve().parent
-PHASE_ORDER = ("public", "landing", "user", "admin")
+PHASE_ORDER = ("public", "landing", "user", "admin", "post")
 MATRIX_YAML = OPS_DIR / "pam_matrix.yaml"
 MATRIX_JSON = OPS_DIR / "pam_matrix.json"
 DEFAULT_REPORT_DIR = OPS_DIR / "reports"
@@ -250,12 +250,103 @@ def check_expect(
     return errors
 
 
+def _http_request(
+    url: str,
+    method: str,
+    headers: dict[str, str],
+    data_bytes: bytes | None,
+    timeout: float,
+) -> tuple[int, dict[str, str], str, Any, float]:
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method=method)
+    t0 = time.perf_counter()
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            latency_ms = (time.perf_counter() - t0) * 1000
+            raw = resp.read().decode("utf-8", errors="replace")
+            status = resp.status
+            resp_headers = {k: v for k, v in resp.headers.items()}
+    except urllib.error.HTTPError as exc:
+        latency_ms = (time.perf_counter() - t0) * 1000
+        raw = exc.read().decode("utf-8", errors="replace")
+        status = exc.code
+        resp_headers = {k: v for k, v in exc.headers.items()}
+    else:
+        parsed: Any = None
+        if raw.strip():
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                parsed = None
+        return status, resp_headers, raw, parsed, latency_ms
+    parsed = None
+    if raw.strip():
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            parsed = None
+    return status, resp_headers, raw, parsed, latency_ms
+
+
+def _poll_collector_batch(
+    case: dict,
+    matrix: dict,
+    ctx: dict[str, Any],
+    *,
+    url: str,
+    headers: dict[str, str],
+    timeout: float,
+    expect: dict,
+) -> tuple[int, dict[str, str], str, Any, float, list[str]]:
+    poll = case.get("poll_until_match") or case.get("poll_after_destructive") or {}
+    interval = float(poll.get("interval_s", 8))
+    max_wait = float(poll.get("max_wait_s", 180))
+    deadline = time.monotonic() + max_wait
+    last: tuple[int, dict[str, str], str, Any, float] = (0, {}, "", {}, 0.0)
+    while time.monotonic() < deadline:
+        status, resp_headers, raw, parsed, latency_ms = _http_request(
+            url, "GET", headers, None, timeout
+        )
+        last = (status, resp_headers, raw, parsed, latency_ms)
+        data = parsed if isinstance(parsed, dict) else {}
+        if data.get("in_progress"):
+            time.sleep(interval)
+            continue
+        errs = check_expect(
+            expect,
+            status=status,
+            headers=resp_headers,
+            body_text=raw,
+            data=data,
+            latency_ms=latency_ms,
+            ctx=ctx,
+        )
+        if not errs:
+            return status, resp_headers, raw, parsed, latency_ms, []
+        time.sleep(interval)
+    _, _, raw, parsed, latency_ms = last
+    data = parsed if isinstance(parsed, dict) else {}
+    errs = check_expect(
+        expect,
+        status=last[0],
+        headers=last[1],
+        body_text=raw,
+        data=data,
+        latency_ms=latency_ms,
+        ctx=ctx,
+    )
+    if not errs:
+        return last[0], last[1], raw, parsed, latency_ms, []
+    errs.append(f"poll timed out after {max_wait:.0f}s waiting for collector batch")
+    return last[0], last[1], raw, parsed, latency_ms, errs
+
+
 def run_case(
     case: dict,
     matrix: dict,
     ctx: dict[str, Any],
     *,
     include_destructive: bool,
+    phases: set[str] | None = None,
 ) -> dict[str, Any]:
     cid = case["id"]
     result: dict[str, Any] = {
@@ -273,6 +364,16 @@ def run_case(
     if case.get("destructive") and not include_destructive:
         result["status"] = "SKIP"
         result["skip_reason"] = "destructive (use --include-destructive)"
+        return result
+
+    if case.get("after_destructive") and not include_destructive:
+        result["status"] = "SKIP"
+        result["skip_reason"] = "after_destructive (use --include-destructive)"
+        return result
+
+    if case.get("skip_if_post_phase") and phases and "post" in phases:
+        result["status"] = "SKIP"
+        result["skip_reason"] = "skip_if_post_phase (batch validated in post.health_collector_batch)"
         return result
 
     for env_key in case.get("skip_if_env_missing") or []:
@@ -325,20 +426,28 @@ def run_case(
             pass
     if case["id"] == "public.dashboard_html":
         timeout = max(timeout, 60.0)
-    req = urllib.request.Request(url, data=data_bytes, headers=headers, method=method)
 
-    t0 = time.perf_counter()
+    expect = render_template(case.get("expect") or {}, ctx)
+    use_poll = bool(case.get("poll_until_match") or case.get("poll_after_destructive"))
+
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            latency_ms = (time.perf_counter() - t0) * 1000
-            raw = resp.read().decode("utf-8", errors="replace")
-            status = resp.status
-            resp_headers = {k: v for k, v in resp.headers.items()}
-    except urllib.error.HTTPError as exc:
-        latency_ms = (time.perf_counter() - t0) * 1000
-        raw = exc.read().decode("utf-8", errors="replace")
-        status = exc.code
-        resp_headers = {k: v for k, v in exc.headers.items()}
+        if use_poll and method == "GET":
+            status, resp_headers, raw, parsed, latency_ms, errs = _poll_collector_batch(
+                case, matrix, ctx, url=url, headers=headers, timeout=timeout, expect=expect
+            )
+        else:
+            status, resp_headers, raw, parsed, latency_ms = _http_request(
+                url, method, headers, data_bytes, timeout
+            )
+            errs = check_expect(
+                expect,
+                status=status,
+                headers=resp_headers,
+                body_text=raw,
+                data=parsed if isinstance(parsed, dict) else (parsed if isinstance(parsed, list) else {}),
+                latency_ms=latency_ms,
+                ctx=ctx,
+            )
     except Exception as exc:
         result["status"] = "FAIL"
         result["errors"] = [str(exc)[:200]]
@@ -346,29 +455,16 @@ def run_case(
 
     result["latency_ms"] = round(latency_ms, 1)
     result["http_status"] = status
+    if use_poll:
+        result["polled"] = True
 
-    parsed: Any = None
-    if raw.strip():
-        try:
-            parsed = json.loads(raw)
-        except json.JSONDecodeError:
-            parsed = None
-
-    expect = render_template(case.get("expect") or {}, ctx)
-    errs = check_expect(
-        expect,
-        status=status,
-        headers=resp_headers,
-        body_text=raw,
-        data=parsed if isinstance(parsed, dict) else {},
-        latency_ms=latency_ms,
-        ctx=ctx,
-    )
     if errs:
         result["status"] = "FAIL"
         result["errors"] = errs
     else:
         ctx[f"_done_{cid}"] = True
+        if case.get("destructive") and include_destructive:
+            ctx["_destructive_ran"] = True
         if isinstance(parsed, dict) and case.get("capture"):
             capture_values(parsed, case["capture"], ctx)
 
@@ -432,9 +528,12 @@ def main() -> int:
     matrix = load_matrix(args.matrix)
     phases_raw = args.phase
     if phases_raw == "all":
-        phases = {"public", "user", "admin", "landing", "manual"}
+        phases = {"public", "user", "admin", "landing", "post", "manual"}
     else:
         phases = {p.strip() for p in phases_raw.split(",")}
+
+    if args.tier >= 2:
+        phases.add("post")
 
     if "manual" in phases:
         print_manual_checklist(matrix)
@@ -481,7 +580,13 @@ def main() -> int:
         label = f"{case['id']}"
         sys.stdout.write(f"> {label} ... ")
         sys.stdout.flush()
-        res = run_case(case, matrix, ctx, include_destructive=args.include_destructive)
+        res = run_case(
+            case,
+            matrix,
+            ctx,
+            include_destructive=args.include_destructive,
+            phases=phases,
+        )
         results.append(res)
         icon = {"PASS": "OK", "FAIL": "FAIL", "SKIP": "SKIP"}.get(res["status"], "?")
         extra = ""

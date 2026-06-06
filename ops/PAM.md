@@ -20,8 +20,16 @@ Certificación integral del producto CLI Market: API pública, touchpoints priva
 | `public` | Health, catálogo, dashboard data, billing funnel, OpenAPI | Ninguna |
 | `landing` | cli-market.dev, llms.txt, mcp.json | Ninguna |
 | `user` | search, index, intel, cart, analytics | `sk-` (auto-register o `MARKET_USER_TOKEN`) |
-| `admin` | contacts, retailer apps, scan-stores | `MARKET_API_TOKEN` |
+| `admin` | contacts, retailer apps, scan-stores, destructive smoke | `MARKET_API_TOKEN` |
+| `post` | **Auto con tier≥2** — validación estricta batch 38/38 al final | Ninguna |
 | `manual` | pip install, MCP, PayPal/MP — solo checklist impresa | Humano |
+
+**Collector y destructive:** `admin.collect_smoke` pisa el último run a 2/2. Con tier≥2 (fase `post` auto):
+- `public.health_collector` — solo liveness (`status`, `stores_total`).
+- `admin.collector_trigger` y `admin.collect_smoke` — **SKIP** si `post` está en la corrida.
+- `post.health_collector_batch` — poll hasta 180s si el daemon está `in_progress`; validación 38/38.
+
+Para probar smoke aislado: `--phase admin --tier 2 --include-destructive` (sin `post`).
 
 ## Tiers
 
@@ -88,14 +96,16 @@ python ops/production_acceptance.py --phase manual
 - MCP 43 tools individuales
 - Journey Pro completo (`E2E_CLIENT_JOURNEY.md`)
 
-## CI sugerido (próximo paso)
+## CI
 
-```yaml
-# .github/workflows/pam-nightly.yml
-# schedule: cron 0 6 * * *
-# steps: pip install pyyaml && python ops/production_acceptance.py --phase public,landing,user --tier 1
-# secrets: MARKET_API_TOKEN (optional for admin job)
-```
+Workflow: `.github/workflows/pam-nightly.yml`
+
+| Job | Cuándo | Qué corre |
+|-----|--------|-----------|
+| `pam-tier1` | Diario 06:00 UTC | `public,landing,user` tier 1 — sin secretos |
+| `pam-tier2` | Diario 06:30 UTC | + `admin,post` tier 2 — requiere `MARKET_API_TOKEN` |
+
+Destructive (`--include-destructive`) solo vía `workflow_dispatch` manual.
 
 ## Editar la matriz
 

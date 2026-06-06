@@ -1,0 +1,76 @@
+name: PAM Nightly
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: Max tier (1 or 2)
+        type: choice
+        options: ["1", "2"]
+        default: "2"
+      include_destructive:
+        description: Run destructive admin cases (collector trigger, collect smoke, backfill)
+        type: boolean
+        default: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+  PAM_LANDING_URL: https://cli-market.dev
+
+jobs:
+  pam-tier1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    if: github.event_name == 'schedule' || github.event.inputs.tier == '1' || github.event.inputs.tier == '2'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PAM tier 1 (public, landing, user)
+        run: python ops/production_acceptance.py --phase public,landing,user --tier 1
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pam-tier1-${{ github.run_id }}
+          path: ops/reports/pam-*.json
+          if-no-files-found: ignore
+
+  pam-tier2:
+    runs-on: ubuntu-latest
+    needs: pam-tier1
+    timeout-minutes: 15
+    if: github.event_name == 'schedule' || github.event.inputs.tier == '2'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PAM tier 2 (+ admin, post)
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+        run: |
+          ARGS="--phase public,landing,user,admin --tier 2"
+          if [ "${{ github.event.inputs.include_destructive }}" = "true" ]; then
+            ARGS="$ARGS --include-destructive"
+          fi
+          python ops/production_acceptance.py $ARGS
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pam-tier2-${{ github.run_id }}
+          path: ops/reports/pam-*.json
+          if-no-files-found: ignore
