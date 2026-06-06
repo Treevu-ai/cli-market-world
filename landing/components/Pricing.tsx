@@ -90,13 +90,13 @@ const tiers: Tier[] = [
     f_es: [
       "10,000 consultas / día",
       "10 claves API (lectura y escritura)",
-      "Checkout PayPal + Yape/Plin",
+      `Checkout ${MARKET_STATS.paymentsLabel}`,
       "10 alertas · historial 12 meses",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
-      "Checkout PayPal + Yape/Plin",
+      `Checkout ${MARKET_STATS.paymentsLabel}`,
       "10 alerts · 12-month history",
     ],
     cta_es: "Obtener Pro",

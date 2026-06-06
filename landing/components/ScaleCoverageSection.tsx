@@ -147,11 +147,12 @@ export default function ScaleCoverageSection() {
         </div>
 
         {/* Platforms */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10 text-left">
           {[
             { name: "VTEX", count: MARKET_STATS.platformVtex, note: isES ? "supermercados, electro, moda LatAm" : "supermarkets, electronics, LatAm fashion" },
             { name: "Shopify", count: MARKET_STATS.platformShopify, note: isES ? "moda & beauty global" : "global fashion & beauty" },
             { name: "Magento", count: MARKET_STATS.platformMagento, note: isES ? "departamentales" : "department stores" },
+            { name: "WooCommerce", count: MARKET_STATS.platformWooCommerce, note: isES ? "FMCG organico PE (piloto)" : "organic FMCG PE (pilot)" },
           ].map((p) => (
             <div key={p.name} className="card-cyber p-4">
               <p className="text-lg font-bold text-white">{p.name}</p>

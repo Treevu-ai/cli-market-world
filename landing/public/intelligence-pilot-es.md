@@ -14,7 +14,8 @@ Equipos de **pricing**, **trade marketing**, **inteligencia comercial**, **finte
 - Inflación por línea y país (7 / 30 / 90 días según piloto)
 - Canasta básica con reglas de comparabilidad explícitas
 - Capa **clean / flagged / citable** — sin publicar outliers sin filtrar
-- **45.000+** precios verificados · **36** retailers activos · **11** países · refresh **4 h**
+- **46.000+** precios verificados · **68** retailers catálogo · **37** indexados · **8** países · refresh **4 h**
+- Piloto FMCG WooCommerce: **Nuna Orgánica** (406 SKUs orgánicos PE, Store API)
 
 ## Por qué ahora
 
