@@ -25,7 +25,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-core
-          ref: ${{ github.ref_type == 'tag' && github.ref_name || 'main' }}
+          # cli-market-core may not tag in lockstep with cli-market-world
+          ref: main
           path: cli-market-core
 
       - name: Vendor cli-market-core into package
