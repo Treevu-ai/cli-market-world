@@ -54,15 +54,47 @@ def _request(method: str, path: str, body: dict | None = None) -> dict:
         raise SystemExit(f"Cloudflare API {method} {path} failed ({exc.code}): {payload}") from exc
 
 
+def _verify_token() -> None:
+    data = _request("GET", "/user/tokens/verify")
+    status = (data.get("result") or {}).get("status")
+    if status != "active":
+        raise SystemExit(f"Token verify failed: {data}")
+
+
+def _list_accessible_zones(limit: int = 20) -> list[dict]:
+    data = _request("GET", f"/zones?per_page={limit}")
+    return list(data.get("result") or [])
+
+
 def zone_id() -> str:
     cached = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
     if cached:
         return cached
-    data = _request("GET", f"/zones?name={ZONE_NAME}&status=active")
-    zones = data.get("result") or []
-    if not zones:
-        raise SystemExit(f"Zone not found for {ZONE_NAME}")
-    return zones[0]["id"]
+
+    _verify_token()
+
+    for query in (
+        f"/zones?name={ZONE_NAME}",
+        f"/zones?name={ZONE_NAME}&status=active",
+        f"/zones?name={ZONE_NAME}&status=pending",
+    ):
+        data = _request("GET", query)
+        zones = data.get("result") or []
+        if zones:
+            return zones[0]["id"]
+
+    visible = _list_accessible_zones()
+    names = [z.get("name", "?") for z in visible]
+    raise SystemExit(
+        f"Zone not found for {ZONE_NAME}.\n"
+        "Likely causes:\n"
+        "  1) Token created on a different Cloudflare account than the zone\n"
+        "  2) Token Zone Resources does not include cli-market.dev\n"
+        "  3) Missing permission: Zone → Zone → Read\n\n"
+        f"Zones this token can see ({len(names)}): {', '.join(names) or '(none)'}\n\n"
+        "Fix: recreate token with Zone Resources → Include → Specific zone → cli-market.dev\n"
+        "Or set CLOUDFLARE_ZONE_ID manually (Dashboard → cli-market.dev → Overview → right column)."
+    )
 
 
 def ensure_redirect_rule(zid: str) -> None:
