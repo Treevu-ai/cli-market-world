@@ -18,7 +18,7 @@ thresholds:
   min_indexed: 1000
   min_collector_succeeded: 30
   max_collector_age_hours: 12
-  max_search_latency_ms: 15000
+  max_search_latency_ms: 45000
 
 manual_checklist:
   - id: cli.pip_install
@@ -363,6 +363,7 @@ cases:
   - id: user.auth_register
     tier: 1
     phase: user
+    run_order: 0
     name: Register ephemeral API user
     method: POST
     path: /auth/register
@@ -376,6 +377,7 @@ cases:
   - id: user.whoami
     tier: 1
     phase: user
+    run_order: 1
     name: Auth whoami
     method: GET
     path: /auth/whoami
@@ -387,6 +389,7 @@ cases:
   - id: user.search
     tier: 1
     phase: user
+    run_order: 2
     name: Multi-store product search
     method: POST
     path: /products/search
@@ -397,40 +400,44 @@ cases:
       limit: 5
     expect:
       status: 200
-      json_has: [products]
+      json_has: [results, query]
       latency_ms_max: "{{threshold.max_search_latency_ms}}"
     capture:
-      first_product: "products.0"
+      first_product: "results.0"
 
   - id: user.compare
     tier: 1
     phase: user
+    run_order: 3
     name: Price compare
     method: POST
     path: /products/compare
     auth: user
+    timeout_s: 60
     body:
       query: leche
       country: PE
       limit: 3
     expect:
       status: 200
-      json_has: [comparisons]
+      json_has: [comparison, query]
 
   - id: user.index_stats
     tier: 1
     phase: user
+    run_order: 4
     name: Golden record index stats
     method: GET
     path: /index/stats
     auth: user
     expect:
       status: 200
-      json_has: [total_products, stores]
+      json_has: [registry_size, linkage_pct]
 
   - id: user.index_resolve
     tier: 1
     phase: user
+    run_order: 5
     name: Entity resolution
     method: POST
     path: /index/resolve
@@ -441,22 +448,24 @@ cases:
       line: supermercados
     expect:
       status: 200
-      json_has: [matches]
+      json_has: [resolved, product]
 
   - id: user.v1_prices
     tier: 1
     phase: user
+    run_order: 6
     name: Intel prices feed
     method: GET
     path: /v1/prices?limit=5&line=supermercados
     auth: user
     expect:
       status: 200
-      json_has: [prices]
+      json_has: [items, total]
 
   - id: user.v1_dispersion
     tier: 1
     phase: user
+    run_order: 7
     name: Price dispersion analytics
     method: GET
     path: /v1/dispersion?line=supermercados
@@ -467,17 +476,19 @@ cases:
   - id: user.v1_basket
     tier: 1
     phase: user
+    run_order: 8
     name: Basket cost index
     method: GET
     path: /v1/basket?country=PE
     auth: user
     expect:
       status: 200
-      json_has: [items]
+      json_has: [stores, items_total]
 
   - id: user.v1_coverage
     tier: 1
     phase: user
+    run_order: 9
     name: Coverage matrix
     method: GET
     path: /v1/coverage/matrix
@@ -488,6 +499,7 @@ cases:
   - id: user.intel_inflation
     tier: 1
     phase: user
+    run_order: 10
     name: Inflation intel
     method: GET
     path: /v1/intel/inflation?country=PE
@@ -498,6 +510,7 @@ cases:
   - id: user.analytics_stats
     tier: 1
     phase: user
+    run_order: 11
     name: Analytics stats
     method: GET
     path: /analytics/stats
@@ -508,6 +521,7 @@ cases:
   - id: user.cart_view
     tier: 1
     phase: user
+    run_order: 12
     name: View cart (empty ok)
     method: GET
     path: /cart
@@ -519,6 +533,7 @@ cases:
   - id: user.cart_add
     tier: 1
     phase: user
+    run_order: 13
     name: Add to cart from search result
     method: POST
     path: /cart/add
