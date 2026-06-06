@@ -94,8 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     timeout-minutes: 8
-    continue-on-error: true  # Railway dependency — don't block merges on transient infra issues
-
+    
     steps:
       - uses: actions/checkout@v6
 
