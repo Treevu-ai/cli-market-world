@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cli-market"
-version = "1.8.9"
+version = "1.9.0"
 description = "mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. 43 MCP tools, 34 indicators, 68 retailers (38 verified) in 8 countries, 4 platforms. MIT."
 requires-python = ">=3.10"
 license = "MIT"
@@ -22,7 +22,7 @@ classifiers = [
 # NOTE: PyPI rejects direct git URLs in dependencies, so the exact commit pin
 # lives in requirements-railway.txt for the deploy; here we use a version range.
 dependencies = [
-    "cli-market-core>=0.1.0",
+    "cli-market-core>=1.9.0",
 ]
 
 [project.optional-dependencies]
