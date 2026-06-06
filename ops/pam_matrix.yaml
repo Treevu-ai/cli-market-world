@@ -684,6 +684,7 @@ cases:
     method: POST
     path: /admin/collect?stores=2&queries=2
     auth: admin
+    timeout_s: 180
     destructive: true
     skip_if_env_missing: [MARKET_API_TOKEN]
     expect:
@@ -701,6 +702,7 @@ cases:
     method: POST
     path: /index/backfill?limit=50&batches=1
     auth: admin
+    timeout_s: 120
     destructive: true
     skip_if_env_missing: [MARKET_API_TOKEN]
     expect:
