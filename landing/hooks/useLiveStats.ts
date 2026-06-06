@@ -54,21 +54,26 @@ export function useLiveStats() {
   });
 
   const fetchStats = () => {
-    fetch(`${API_URL}/health/stats`)
-      .then((r) => r.json())
+    fetch(`${API_URL}/dashboard/data`)
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json();
+      })
       .then((d) => {
+        const k = d.kpis ?? {};
+        const c = d.collector ?? {};
         setStats({
-          indexed: d.total_indexed ?? null,
-          snapshots24h: d.snapshots_24h ?? null,
-          storesInCatalog: d.stores_indexed ?? null,
-          fresh24hPct: d.fresh_24h_pct ?? null,
-          coverage7dPct: d.coverage_7d_pct ?? null,
-          moatAgeHours: d.moat_age_hours ?? null,
-          totalSnapshotsAll: d.total_indexed ?? null,
-          avgDaily7d: d.avg_daily_7d ?? null,
+          indexed: k.total_indexed ?? null,
+          snapshots24h: k.snapshots_24h ?? null,
+          storesInCatalog: k.stores_indexed ?? k.catalog_stores ?? null,
+          fresh24hPct: k.fresh_24h_pct ?? null,
+          coverage7dPct: k.coverage_7d_pct ?? null,
+          moatAgeHours: k.moat_age_hours ?? null,
+          totalSnapshotsAll: d.total_snapshots_all ?? k.total_indexed ?? null,
+          avgDaily7d: d.avg_daily_snapshots_7d ?? null,
           moatStart: d.generated_at ?? null,
-          collectorStatus: d.collector_status ?? null,
-          collectorIntervalH: MARKET_STATS.pricesRefreshHours,
+          collectorStatus: c.status ?? null,
+          collectorIntervalH: c.interval_hours ?? MARKET_STATS.pricesRefreshHours,
         });
       })
       .catch(() => {});

@@ -39,7 +39,7 @@ export default function IntelligenceSection() {
     setLoading(true);
     setError("");
     try {
-      await fetch(`${API_URL}/v1/contact`, {
+      const res = await fetch(`${API_URL}/v1/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,10 +49,18 @@ export default function IntelligenceSection() {
           lang: isES ? "es" : "en",
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "error");
+      }
+      setSent(true);
     } catch {
-      // Never block the user
+      setError(
+        isES
+          ? "No pudimos guardar tu email. Escribe a hello@cli-market.dev"
+          : "Could not save your email. Write to hello@cli-market.dev",
+      );
     }
-    setSent(true);
     setLoading(false);
   };
 
@@ -62,7 +70,6 @@ export default function IntelligenceSection() {
       className="landing-section animate-fade-in scroll-mt-20"
     >
       <div className="landing-container-wide">
-        {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-3">
             <p className="section-eyebrow text-[var(--cm-mint)]">Intelligence</p>
@@ -82,10 +89,7 @@ export default function IntelligenceSection() {
           </p>
         </div>
 
-        {/* Two-column: benefits + form */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
-
-          {/* Benefits */}
           <div className="space-y-4">
             {benefits.map((b) => (
               <div key={b.icon} className="flex items-start gap-3">
@@ -96,7 +100,6 @@ export default function IntelligenceSection() {
               </div>
             ))}
 
-            {/* Pain contrast */}
             <div className="mt-6 rounded-xl border border-[var(--cm-outline-variant)]/30 p-4 space-y-2">
               <p className="text-xs font-semibold text-[var(--cm-on-surface-variant)]/60 uppercase tracking-wider mb-3">
                 {isES ? "vs. el status quo" : "vs. the status quo"}
@@ -105,12 +108,12 @@ export default function IntelligenceSection() {
                 ["❌", "IPC oficial — 30 días de retraso"],
                 ["❌", "Encuestas de campo — costosas y puntuales"],
                 ["❌", "Scraping propio — frágil, legal gray zone"],
-                ["✅", "CLI Market Intelligence — 4h, 45k+ precios, APIs públicas"],
+                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} precios, APIs públicas`],
               ] : [
                 ["❌", "Official CPI — 30-day lag"],
                 ["❌", "Field price surveys — expensive and one-off"],
                 ["❌", "In-house scraping — fragile, legal gray zone"],
-                ["✅", "CLI Market Intelligence — 4h, 45k+ prices, public APIs"],
+                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} prices, public APIs`],
               ]).map(([icon, text]) => (
                 <div key={text} className="flex items-start gap-2">
                   <span className="text-sm shrink-0">{icon}</span>
@@ -122,8 +125,7 @@ export default function IntelligenceSection() {
             </div>
           </div>
 
-          {/* Waitlist form */}
-          <div className="card-cyber p-6 sm:p-8">
+          <div id="contact-intelligence" className="card-cyber p-6 sm:p-8 scroll-mt-24">
             {sent ? (
               <div className="text-center py-6 space-y-3">
                 <p className="text-2xl">✅</p>

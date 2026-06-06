@@ -294,7 +294,15 @@ export default function Pricing() {
         {/* Pricing cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-7xl mx-auto mb-12">
           {tiers.map((tier, i) => (
-            <motion.div key={tier.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
+            <motion.div
+              key={tier.name}
+              id={tier.name === "Builder" ? "pricing-build" : undefined}
+              className={tier.name === "Builder" ? "scroll-mt-24" : undefined}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+            >
               <TierCard tier={tier} isES={isES} billing={billing}>
                 {tier.name === "Pro" ? (
                   <div id="pro-checkout" className="scroll-mt-24">
