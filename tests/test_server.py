@@ -320,14 +320,25 @@ def test_mcp_module_has_get_token():
 
 # ── Payment / PayPal webhook tests ───────────────────────────────────────────
 
-def test_paypal_webhook_subscription_activated():
+def test_paypal_webhook_subscription_activated(monkeypatch):
     from unittest.mock import AsyncMock, patch
-    from market_core import db_save_billing_pending, db_get_subscription
+    from market_core import db_save_billing_pending, db_get_subscription, db_create_subscription_request
 
     db_save_billing_pending("I-SUB123", "paypal", "admin", "subscription")
+    db_create_subscription_request("admin", "activated@test.com", "https://paypal.test/approve")
+    sent = []
+
+    def fake_activation_email(**kw):
+        sent.append(kw)
+        return {"sent": True, "to": kw["to_email"]}
+
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        fake_activation_email,
+    )
     event = {
         "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
-        "resource": {"id": "I-SUB123", "custom_id": "admin", "status": "ACTIVE"},
+        "resource": {"id": "I-SUB123", "custom_id": "admin", "status": "ACTIVE", "locale": "es_ES"},
     }
     with patch("market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID", "WH-TEST"):
         with patch(
@@ -337,7 +348,9 @@ def test_paypal_webhook_subscription_activated():
             r = client.post("/checkout/paypal-webhook", json=event)
     assert r.status_code == 200
     assert "pro_activated:admin" in r.json()["actions"]
+    assert "activation_email:activated@test.com" in r.json()["actions"]
     assert db_get_subscription("admin")["tier"] == "pro"
+    assert sent and sent[0]["username"] == "admin"
 
 
 def test_paypal_webhook_payment_capture_marks_order_paid():
@@ -408,6 +421,28 @@ def test_billing_paypal_saves_pending(monkeypatch):
     assert pending["username"] == "admin"
 
 
+def test_paypal_subscribe_public(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+
+    async def fake_sub(username, **kwargs):
+        return {
+            "subscription_id": "I-LAND99",
+            "approve_url": "https://www.paypal.com/subscribe",
+            "status": "APPROVAL_PENDING",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
+    r = client.post(
+        "/billing/paypal-subscribe",
+        json={"email": "pro@cli-market.dev", "username": "admin", "lang": "en"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["auto_activate"] is True
+    assert data["approve_url"].startswith("https://")
+
+
 def test_request_pro_creates_subscription_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
@@ -450,6 +485,56 @@ def test_request_pro_duplicate_without_resend(monkeypatch):
     assert r2.status_code == 200
     assert r2.json().get("duplicate") is True
 
+
+
+
+
+
+def test_auth_account_returns_usage(monkeypatch):
+    from market_core import db_create_api_key, db_save_user
+    from server_deps import hash_password
+    import uuid
+
+    username = f"acct-{uuid.uuid4().hex[:8]}"
+    db_save_user(username, hash_password("x"), str(uuid.uuid4()))
+    key = db_create_api_key(username, "read", "test")["key"]
+
+    r = client.get("/auth/account?lang=en", headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["username"] == username
+    assert data["tier"] == "free"
+    assert "usage" in data
+    assert "limits" in data
+    assert data["upgrade"]["next_tier"] == "starter"
+
+def test_contact_starter_request(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_request_received_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/v1/contact",
+        json={
+            "plan": "starter",
+            "email": "starter@test.com",
+            "profile": "business",
+            "name": "Ana",
+            "use_case": "Need CSV export and price alerts for PE grocery monitoring.",
+            "lang": "es",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["plan"] == "starter"
+    assert data["request_id"].startswith("STR-")
+    assert data.get("email_sent") is True
 
 def test_contact_pro_triggers_billing_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)

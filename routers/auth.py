@@ -7,6 +7,7 @@ Endpoints:
   GET    /auth/keys               List user's API keys (prefix only, no secret)
   DELETE /auth/keys/{key_id}      Revoke an API key
   GET    /auth/subscription       Current tier + limits
+  GET    /auth/account            Tier + usage + upgrade next step
 """
 
 from __future__ import annotations
@@ -59,6 +60,11 @@ def register():
     # Random password — access is via sk- API key, not password login.
     db_save_user(username, hash_password(uuid.uuid4().hex), None)
     result = db_create_api_key(username, "read_write", "register")
+    try:
+        from market_funnel import record_funnel_event
+        record_funnel_event("register", username=username, dedupe=True)
+    except Exception:
+        pass
     return {
         "username": username,
         "api_key": result["key"],
@@ -84,6 +90,11 @@ def login(body: LoginRequest):
     if not token:
         token = str(uuid.uuid4())
         db_save_user(body.username, user["password"], token)
+    try:
+        from market_funnel import record_funnel_event
+        record_funnel_event("login", username=body.username, dedupe=False)
+    except Exception:
+        pass
     return {"message": "Autenticado", "username": body.username, "token": token}
 
 
@@ -123,6 +134,20 @@ def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
         raise HTTPException(status_code=404, detail="Key not found")
     return {"message": "Key revoked"}
 
+
+
+
+@router.get("/auth/account")
+def get_account(
+    authorization: str | None = Header(None),
+    lang: str = "es",
+):
+    """Customer dashboard payload: tier, usage, limits, upgrade CTA."""
+    username = require_user(authorization)
+    lang = (lang or "es").strip().lower()[:2]
+    from account_service import build_account_summary
+
+    return build_account_summary(username, lang=lang)
 
 @router.get("/auth/subscription")
 def get_subscription(authorization: str | None = Header(None)):

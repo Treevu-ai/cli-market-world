@@ -11,6 +11,7 @@ const SIDEBAR = {
   start: [
     { id: "quickstart", es: "Quickstart", en: "Quickstart" },
     { id: "auth", es: "Autenticación", en: "Authentication" },
+    { id: "doctor", es: "Doctor / readiness", en: "Doctor / readiness" },
   ],
   core: [
     { id: "compare", es: "Compare", en: "Compare" },
@@ -41,7 +42,10 @@ print(r.json())`,
   "mcpServers": {
     "cli-market": {
       "command": "market-mcp",
-      "args": []
+      "args": [],
+      "env": {
+        "MARKET_API_URL": "${API_URL}"
+      }
     }
   }
 }`,
@@ -100,8 +104,8 @@ export default function DocsPage() {
           </h1>
           <p className="text-[var(--cm-on-surface-variant)] leading-relaxed">
             {t(
-              "CLI Market entrega precios de retail verificados vía REST, CLI y MCP. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada 8 h.",
-              "CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with 8 h refresh.",
+              "CLI Market entrega precios de retail verificados vía REST, CLI y MCP. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada ${MARKET_STATS.pricesRefreshHours} h.",
+              "CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.",
             )}
           </p>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -120,21 +124,66 @@ export default function DocsPage() {
 
         <section className="mb-16 scroll-mt-24" id="quickstart">
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
-          <p className="text-[var(--cm-on-surface-variant)] mb-6">{t("Instala la CLI y autentica tu sesión.", "Install the CLI and authenticate your session.")}</p>
-          <CodeBlock>{`pip install cli-market\nmarket login`}</CodeBlock>
+          <p className="text-[var(--cm-on-surface-variant)] mb-6">
+            {t(
+              "De pip install a precios reales en ~5 min. Recomendado: onboarding guiado.",
+              "From pip install to real prices in ~5 min. Recommended: guided onboarding.",
+            )}
+          </p>
+          <CodeBlock>{`pip install cli-market
+market init
+market search "leche" --country PE
+market doctor`}</CodeBlock>
+          <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4">
+            {t(
+              "market init verifica API, crea cuenta gratuita si no hay sesión, muestra readiness % y snippet MCP.",
+              "market init checks API, creates a free account if needed, shows readiness % and MCP snippet.",
+            )}
+          </p>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="auth">
           <SectionHead n={2} title={t("Autenticación", "Authentication")} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
-            {t("Usa Bearer token en HTTP o sesión CLI tras ", "Use Bearer token over HTTP or CLI session after ")}
+            {t(
+              "Cuenta gratuita vía CLI o HTTP. La API key (sk-...) se muestra una sola vez.",
+              "Free account via CLI or HTTP. The API key (sk-...) is shown once.",
+            )}
+          </p>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
+          <CodeBlock>{`market register
+# Usuario: user-abc123...
+# API key: sk-...   ← guárdela ahora`}</CodeBlock>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mt-8 mb-3">HTTP</h3>
+          <CodeBlock>{`curl -X POST ${API_URL}/auth/register \\
+  -H "Content-Type: application/json"`}</CodeBlock>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mt-8 mb-3">{t("RESPONSE", "RESPONSE")}</h3>
+          <CodeBlock>{`{
+  "username": "user-abc123...",
+  "api_key": "sk-...",
+  "message": "Account created"
+}`}</CodeBlock>
+          <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4 mb-4">
+            {t("Si ya tiene credenciales: ", "If you already have credentials: ")}
             <code className="text-[var(--cm-mint)]">market login</code>.
           </p>
-          <CodeBlock>{`Authorization: Bearer <token-from-market-login>`}</CodeBlock>
+          <CodeBlock>{`Authorization: Bearer sk-...`}</CodeBlock>
+        </section>
+
+        <section className="mb-16 scroll-mt-24" id="doctor">
+          <SectionHead n={3} title={t("Doctor / readiness", "Doctor / readiness")} />
+          <p className="text-[var(--cm-on-surface-variant)] mb-4">
+            {t(
+              "Diagnóstico local: URL de API, salud, auth, tier, país por defecto y market-mcp en PATH.",
+              "Local diagnostics: API URL, health, auth, tier, default country, and market-mcp on PATH.",
+            )}
+          </p>
+          <CodeBlock>{`market doctor
+market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="compare">
-          <SectionHead n={3} title="Compare" />
+          <SectionHead n={4} title="Compare" />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             <code className="text-[var(--cm-mint)]">POST /products/compare</code>
             {t(" — fuzzy match multi-retailer.", " — multi-retailer fuzzy match.")}
@@ -155,7 +204,7 @@ export default function DocsPage() {
         </section>
 
         <section className="mb-16 scroll-mt-24" id="basket">
-          <SectionHead n={4} title="Basket" />
+          <SectionHead n={5} title="Basket" />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             <code className="text-[var(--cm-mint)]">POST /v1/basket/compare</code>
             {t(" — canasta multi-ítem por cadena.", " — multi-item basket by chain.")}
@@ -164,7 +213,7 @@ export default function DocsPage() {
         </section>
 
         <section className="mb-16 scroll-mt-24" id="intel">
-          <SectionHead n={5} title="Intelligence" />
+          <SectionHead n={6} title="Intelligence" />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t("Endpoints comerciales: ", "Commercial endpoints: ")}
             <code className="text-[var(--cm-mint)]">/v1/prices</code>,{" "}
@@ -177,7 +226,7 @@ export default function DocsPage() {
         </section>
 
         <section className="mb-16 scroll-mt-24" id="mcp">
-          <SectionHead n={6} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
+          <SectionHead n={7} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t("Configs listas en ", "Ready configs at ")}
             <a href="/tools" className="text-[var(--cm-mint)] underline">/tools</a>.
@@ -185,7 +234,7 @@ export default function DocsPage() {
         </section>
 
         <section className="mb-16 scroll-mt-24" id="limits">
-          <SectionHead n={7} title={t("Rate limits", "Rate limits")} />
+          <SectionHead n={8} title={t("Rate limits", "Rate limits")} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
             <li>Free: 1,000 {t("consultas/día", "requests/day")}</li>
             <li>Pro: 10,000 {t("consultas/día", "requests/day")}</li>
@@ -193,7 +242,7 @@ export default function DocsPage() {
         </section>
 
         <section className="mb-16 scroll-mt-24" id="errors">
-          <SectionHead n={8} title={t("Errores", "Errors")} />
+          <SectionHead n={9} title={t("Errores", "Errors")} />
           <p className="text-[var(--cm-on-surface-variant)] text-sm">
             {t("401 token inválido · 429 rate limit · 503 collector degradado. OpenAPI completo: ", "401 invalid token · 429 rate limit · 503 collector degraded. Full OpenAPI: ")}
             <a href={`${API_URL}/docs`} className="text-[var(--cm-mint)] underline" target="_blank" rel="noopener noreferrer">

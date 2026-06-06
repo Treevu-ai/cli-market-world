@@ -14,8 +14,6 @@ type Tier = {
   latamPrice?: string;
   annualPrice?: string;
   annualLatamPrice?: string;
-  trial_es?: string;
-  trial_en?: string;
   period_es?: string;
   period_en?: string;
   f_es: string[];
@@ -27,6 +25,8 @@ type Tier = {
   href?: string;
   proNote_es?: string;
   proNote_en?: string;
+  starterNote_es?: string;
+  starterNote_en?: string;
 };
 
 const tiers: Tier[] = [
@@ -60,8 +60,6 @@ const tiers: Tier[] = [
     annualLatamPrice: "S/1,090",
     period_es: "/ mes",
     period_en: "/ month",
-    trial_es: "14 días gratis",
-    trial_en: "14 days free",
     f_es: [
       "5,000 consultas / día",
       "3 claves API (lectura)",
@@ -74,8 +72,10 @@ const tiers: Tier[] = [
       "3 price alerts",
       "CSV export · email support 48h",
     ],
-    cta_es: "Probar gratis",
-    cta_en: "Try free",
+    cta_es: "Solicitar acceso",
+    cta_en: "Request access",
+    starterNote_es: "Activación manual ≤24h hábiles · sin checkout instantáneo.",
+    starterNote_en: "Manual activation ≤24 business hours · no instant checkout.",
   },
   {
     name: "Pro",
@@ -103,9 +103,9 @@ const tiers: Tier[] = [
     cta_en: "Get Pro",
     featured: true,
     proNote_es:
-      "Para agentes en producción. Facturación en soles con RUC 20613045563.",
+      "Activación automática vía PayPal webhook. Facturación PEN · RUC 20613045563.",
     proNote_en:
-      "For agents in production. Invoicing in PEN with tax ID 20613045563.",
+      "Auto-activation via PayPal webhook. PEN invoicing · tax ID 20613045563.",
   },
   {
     name: "Builder",
@@ -309,12 +309,19 @@ export default function Pricing() {
                     <ProSubscribeButton />
                   </div>
                 ) : tier.name === "Starter" ? (
-                  <button
-                    onClick={() => setStarterModalOpen(true)}
-                    className="btn-mint w-full"
-                  >
-                    {isES ? tier.cta_es : tier.cta_en}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setStarterModalOpen(true)}
+                      className="btn-mint w-full"
+                    >
+                      {isES ? tier.cta_es : tier.cta_en}
+                    </button>
+                    {tier.starterNote_es && (
+                      <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
+                        {isES ? tier.starterNote_es : tier.starterNote_en}
+                      </p>
+                    )}
+                  </>
                 ) : tier.name === "Free" ? (
                   <button
                     onClick={() => setFreeModalOpen(true)}

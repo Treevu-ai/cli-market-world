@@ -23,6 +23,16 @@ export default function QuickstartAPI() {
           <div className="code-block-cyber px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+              <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · onboarding</span>
+            </div>
+            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`pip install cli-market
+market init
+market search "leche" --country PE`}</pre>
+          </div>
+
+          <div className="code-block-cyber px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · canasta AR</span>
             </div>
             <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
@@ -45,6 +55,10 @@ export default function QuickstartAPI() {
 
         <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[var(--cm-on-surface-variant)]">
           <span>{isES ? "REST simple con JSON plano" : "Simple REST with flat JSON"}</span>
+          <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
+          <a href="/docs#auth" className="underline hover:text-[var(--cm-mint)]">
+            {isES ? "Crear cuenta (register) →" : "Create account (register) →"}
+          </a>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
           <a href="/tools" className="underline hover:text-[var(--cm-mint)]">
             {isES ? `${MARKET_STATS.mcpTools} herramientas MCP → configs` : `${MARKET_STATS.mcpTools} MCP tools → configs`}

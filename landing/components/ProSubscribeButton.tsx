@@ -2,20 +2,19 @@
 
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
-import { API_URL, PRO_PAYMENT_URL } from "@/lib/api";
+import { API_URL } from "@/lib/api";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
 
 type ProResponse = {
   ok?: boolean;
-  request_id?: string;
-  payment_link?: string;
-  email_sent?: boolean;
-  duplicate?: boolean;
+  approve_url?: string;
+  subscription_id?: string;
+  username?: string;
+  auto_activate?: boolean;
   message?: string;
   detail?: string;
 };
 
-// Sanitize user input to prevent XSS
 function escapeHtml(unsafe: string): string {
   return unsafe
     .replace(/&/g, "\u0026amp;")
@@ -29,6 +28,7 @@ export default function ProSubscribeButton() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProResponse | null>(null);
   const [error, setError] = useState("");
@@ -41,10 +41,14 @@ export default function ProSubscribeButton() {
     }
     setLoading(true);
     try {
-      const r = await fetch(`${API_URL}/billing/request-pro`, {
+      const r = await fetch(`${API_URL}/billing/paypal-subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), lang: isES ? "es" : "en" }),
+        body: JSON.stringify({
+          email: email.trim(),
+          username: username.trim() || undefined,
+          lang: isES ? "es" : "en",
+        }),
       });
       const data: ProResponse = await r.json();
       if (!r.ok) {
@@ -59,50 +63,47 @@ export default function ProSubscribeButton() {
     setLoading(false);
   };
 
-  if (result?.ok) {
-    const payLink = result.payment_link || PRO_PAYMENT_URL;
-    const ref = String(result.request_id || "");
-    const safeEmail = String(email.trim());
-
+  if (result?.ok && result.approve_url) {
+    const safeUser = String(result.username || "");
     return (
       <div className="space-y-3 text-left">
         <div className="rounded border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-3 text-sm text-[var(--cm-on-surface-variant)]">
-          {result.email_sent ? (
-            <p>
-              {isES
-                ? `Revisa ${escapeHtml(safeEmail)} — enviamos el link desde hello@cli-market.dev`
-                : `Check ${escapeHtml(safeEmail)} — link sent from hello@cli-market.dev`}
-            </p>
-          ) : (
-            <p>
-              {isES
-                ? "SMTP pendiente. Paga abajo o usa el link:"
-                : "Server SMTP pending. Pay below or use the link:"}
-            </p>
-          )}
-          {ref && (
+          <p>
+            {result.message ||
+              (isES
+                ? "Confirme en PayPal — Pro se activa automáticamente vía webhook."
+                : "Confirm in PayPal — Pro activates automatically via webhook.")}
+          </p>
+          {safeUser && (
             <p className="mt-1 font-mono text-[11px] text-[var(--cm-on-surface-variant)]/60">
-              Ref: {ref}
+              {isES ? "Usuario CLI" : "CLI user"}: {escapeHtml(safeUser)}
             </p>
           )}
         </div>
 
         <a
-          href={payLink}
+          href={result.approve_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full btn-mint"
         >
-          {isES ? "Pagar USD 79 con PayPal →" : "Pay USD 79 with PayPal →"}
+          {isES ? "Suscribirse en PayPal — $79/mes →" : "Subscribe on PayPal — $79/mo →"}
         </a>
 
         <p className="text-xs text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
           {isES
-            ? "Si el botón de PayPal aparece agotado, use el botón verde de arriba."
-            : "If the PayPal button shows sold out, use the green button above."}
+            ? "Tras pagar ejecute market whoami — tier: pro. Sin esperar activación manual."
+            : "After payment run market whoami — tier: pro. No manual activation wait."}
         </p>
 
-        <PayPalHostedButton className="w-full" />
+        <details className="text-xs text-[var(--cm-on-surface-variant)]/50">
+          <summary className="cursor-pointer hover:text-white">
+            {isES ? "Alternativa: botón alojado PayPal" : "Alternative: PayPal hosted button"}
+          </summary>
+          <div className="mt-2">
+            <PayPalHostedButton className="w-full" />
+          </div>
+        </details>
       </div>
     );
   }
@@ -116,6 +117,13 @@ export default function ProSubscribeButton() {
         placeholder={isES ? "tu@email.com" : "you@email.com"}
         className="w-full input-cyber"
       />
+      <input
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        placeholder={isES ? "usuario CLI (market whoami) — opcional" : "CLI username (market whoami) — optional"}
+        className="w-full input-cyber text-sm"
+      />
       {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
       <button
         onClick={submit}
@@ -124,12 +132,17 @@ export default function ProSubscribeButton() {
       >
         {loading
           ? isES
-            ? "Enviando..."
-            : "Sending..."
+            ? "Conectando PayPal..."
+            : "Connecting PayPal..."
           : isES
-            ? "Solicitar Pro — $79/mes"
-            : "Request Pro — $79/mo"}
+            ? "Activar Pro con PayPal — $79/mes"
+            : "Activate Pro with PayPal — $79/mo"}
       </button>
+      <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
+        {isES
+          ? "Activación automática vía webhook · Recomendado: market register primero"
+          : "Auto-activation via webhook · Recommended: market register first"}
+      </p>
     </div>
   );
 }

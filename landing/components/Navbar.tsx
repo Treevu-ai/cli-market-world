@@ -63,6 +63,12 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-3 shrink-0">
           <a
+            href="/account"
+            className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
+          >
+            {isES ? "Cuenta" : "Account"}
+          </a>
+          <a
             href="https://github.com/Treevu-ai/cli-market-world"
             target="_blank"
             rel="noopener noreferrer"

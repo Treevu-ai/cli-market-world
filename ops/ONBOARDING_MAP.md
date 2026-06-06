@@ -233,21 +233,21 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 | 4 | `market register` + `hello` actualizado | ✅ |
 | 5 | `demo-walkthrough.md` alineado (alerts → appendix Starter+) | ✅ |
 
-### P1 — Onboarding v2 core (dev en 5 min garantizado)
+### P1 — Onboarding v2 core (dev en 5 min garantizado) ✅ (2026-06-06)
 
-| # | Acción | Persona | Esfuerzo |
-|---|--------|---------|----------|
-| 6 | Flujo `market init` o `market register` — crea user + muestra `sk-` una vez | Dev | M |
-| 7 | Documentar `/auth/register` en DocsPage + QuickstartAPI | Dev | S |
-| 8 | MCP “starter 5 tools” en `/tools` (search, compare, cart, whoami, stats) | Dev | S |
-| 9 | `market doctor` — URL, auth, país, tier, MCP command check | Dev | M |
-| 10 | FreeSignupModal: honest UX si no crea cuenta (o conectar a register) | Free | M |
+| # | Acción | Persona | Estado |
+|---|--------|---------|--------|
+| 6 | Flujo `market init` o `market register` — crea user + muestra `sk-` una vez | Dev | ✅ CLI + hello + demo-walkthrough |
+| 7 | Documentar `/auth/register` en DocsPage + QuickstartAPI | Dev | ✅ `/docs#auth`, `#quickstart`, `#doctor` |
+| 8 | MCP “starter 5 tools” en `/tools` (search, compare, cart, whoami, stats) | Dev | ✅ ToolsPage con descripciones |
+| 9 | `market doctor` — URL, auth, país, tier, MCP command check | Dev | ✅ readiness % + fila País |
+| 10 | FreeSignupModal: honest UX si no crea cuenta (o conectar a register) | Free | ✅ dev-fast path + copy Starter |
 
 ### P2 — Monetización self-serve
 
 | # | Acción | Persona | Esfuerzo |
 |---|--------|---------|----------|
-| 11 | Auto-activate Pro vía PayPal webhook como path principal en landing | Pro | L |
+| 11 | Auto-activate Pro vía PayPal webhook como path principal en landing | Pro | ✅ paypal-subscribe + upgrade CLI |
 | 12 | Email transaccional post-pago con estado + ETA si manual | Pro | M |
 | 13 | Starter checkout self-serve o quitar “14 días gratis” del CTA | Starter | L |
 | 14 | Dashboard cliente: usage, tier, próximo paso upgrade | Pro | L |

@@ -26,11 +26,16 @@ manual_checklist:
     tier: 1
     name: "pip install cli-market en venv limpio"
     steps: "python -m venv /tmp/pam-venv && pip install -U cli-market && market hello"
+  - id: cli.journey_synthetic
+    phase: manual
+    tier: 1
+    name: "PAM 1.5 pytest journey (register to search to account)"
+    steps: "pytest tests/test_funnel.py::test_pam_journey_synthetic -q"
   - id: cli.journey
     phase: manual
     tier: 1
     name: "CLI journey básico"
-    steps: "market register → market search leche --country PE → market compare → market whoami (tier free)"
+    steps: "market init → market search leche --country PE → market compare → market doctor → market whoami (tier free)"
   - id: mcp.cursor
     phase: manual
     tier: 1
@@ -235,10 +240,25 @@ cases:
       status: 200
       json_has: [configured]
 
+  - id: public.billing_paypal_subscribe
+    tier: 1
+    phase: public
+    name: Pro PayPal subscribe (auto-activate path)
+    method: POST
+    path: /billing/paypal-subscribe
+    body:
+      email: "pam+{{run_id}}@cli-market.dev"
+      username: "pam-user"
+      lang: es
+    expect:
+      status_in: [200, 502, 501]
+      json_has: [ok]
+    notes: "502/501 if PayPal creds missing; 200 with approve_url in prod"
+
   - id: public.billing_request_pro
     tier: 1
     phase: public
-    name: Pro upgrade funnel (request-pro)
+    name: Pro upgrade funnel (request-pro fallback)
     method: POST
     path: /billing/request-pro
     body:
@@ -249,6 +269,28 @@ cases:
       json:
         ok: true
       json_has: [payment_link, request_id]
+
+  - id: public.funnel
+    tier: 2
+    phase: post
+    name: Onboarding funnel aggregates
+    method: GET
+    path: /analytics/funnel
+    auth: none
+    expect:
+      status: 200
+      json_has: [funnel_steps, conversion, ttfv_median_minutes]
+
+  - id: public.account
+    tier: 2
+    phase: post
+    name: Account dashboard API
+    method: GET
+    path: /auth/account
+    auth: api_key
+    expect:
+      status: 200
+      json_has: [username, tier, usage, upgrade]
 
   - id: public.contact
     tier: 1

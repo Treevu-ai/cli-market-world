@@ -112,6 +112,78 @@ def apply_retailer(body: dict):
     }
 
 
+
+
+def process_starter_subscription_request(
+    *,
+    email: str,
+    lang: str = "en",
+    note: str = "",
+    profile: str = "",
+    name: str = "",
+) -> dict:
+    """Persist Starter lead and send acknowledgment + ops notify."""
+    import uuid
+
+    from market_connectors.email_outbound import (
+        send_starter_request_notify,
+        send_starter_request_received_email,
+    )
+
+    email = email.strip().lower()
+    lang = (lang or "en").strip().lower()[:2]
+    request_id = f"STR-{uuid.uuid4().hex[:8].upper()}"
+
+    db = get_db()
+    db.execute(
+        """
+        INSERT INTO contacts (chat_id, first_name, username, last_message, created_at, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+        """,
+        (request_id, "starter", email, f"[starter] {note[:2000]}"),
+    )
+    db.commit()
+    db.close()
+
+    try:
+        from market_funnel import record_funnel_event
+        record_funnel_event("starter_request", meta={"email": email}, dedupe=False)
+    except Exception:
+        pass
+    ack = send_starter_request_received_email(
+        to_email=email,
+        request_id=request_id,
+        lang=lang,
+        name=name,
+    )
+    notify = send_starter_request_notify(
+        subscriber_email=email,
+        request_id=request_id,
+        profile=profile,
+        name=name,
+        note=note,
+    )
+
+    if lang == "es":
+        message = (
+            f"Recibimos su solicitud Starter ({request_id}). "
+            "Le activamos en ≤24h hábiles por email."
+        )
+    else:
+        message = (
+            f"We received your Starter request ({request_id}). "
+            "We activate within 24 business hours by email."
+        )
+
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "email_sent": bool(ack.get("sent")),
+        "notify_sent": bool(notify.get("sent")),
+        "message": message,
+    }
+
+
 @router.post("/v1/contact")
 def contact_request(body: dict):
     """Developer / plan access form from landing."""
@@ -125,17 +197,18 @@ def contact_request(body: dict):
     if not use_case or len(use_case) < 10:
         raise HTTPException(status_code=400, detail="use_case is required (min 10 chars)")
 
-    db = get_db()
-    chat_id = f"web-{uuid.uuid4().hex[:10]}"
-    db.execute(
-        """
-        INSERT INTO contacts (chat_id, first_name, username, last_message, created_at, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-        """,
-        (chat_id, plan, email, f"[{plan}] {use_case[:2000]}"),
-    )
-    db.commit()
-    db.close()
+    if plan not in ("pro", "starter"):
+        db = get_db()
+        chat_id = f"web-{uuid.uuid4().hex[:10]}"
+        db.execute(
+            """
+            INSERT INTO contacts (chat_id, first_name, username, last_message, created_at, updated_at)
+            VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+            """,
+            (chat_id, plan, email, f"[{plan}] {use_case[:2000]}"),
+        )
+        db.commit()
+        db.close()
 
     if plan == "pro":
         from routers.payments import process_pro_subscription_request
@@ -152,6 +225,22 @@ def contact_request(body: dict):
             "payment_link": pro.get("payment_link"),
             "email_sent": pro.get("email_sent", False),
             "message": pro.get("message", "Pro request received."),
+        }
+
+    if plan == "starter":
+        starter = process_starter_subscription_request(
+            email=email,
+            lang=lang,
+            note=use_case,
+            profile=(body.get("profile") or "").strip(),
+            name=(body.get("name") or "").strip(),
+        )
+        return {
+            "ok": True,
+            "plan": "starter",
+            "request_id": starter.get("request_id"),
+            "email_sent": starter.get("email_sent", False),
+            "message": starter.get("message", "Starter request received."),
         }
 
     return {"ok": True, "message": "Thanks — we'll reply within 24 hours."}
