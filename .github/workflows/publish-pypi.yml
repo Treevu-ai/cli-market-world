@@ -12,7 +12,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment: pypi
     steps:
       - uses: actions/checkout@v6
@@ -21,10 +21,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build package
+      - name: Checkout cli-market-core
+        uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          ref: ${{ github.ref_type == 'tag' && github.ref_name || 'main' }}
+          path: cli-market-core
+
+      - name: Build cli-market-core
+        working-directory: cli-market-core
         run: |
           pip install build
           python -m build
 
-      - name: Publish to PyPI
+      - name: Publish cli-market-core to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: cli-market-core/dist/
+
+      - name: Build cli-market
+        run: |
+          pip install build
+          python -m build
+
+      - name: Publish cli-market to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
