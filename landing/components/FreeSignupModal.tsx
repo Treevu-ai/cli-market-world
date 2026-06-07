@@ -147,7 +147,8 @@ export default function FreeSignupModal({
 
   if (!open) return null;
 
-  if (plan === "starter") {
+  if (plan === "pro" || plan === "starter") {
+    // legacy "starter" plan param supported for compat; renders Pro checkout flow
     return (
       <div
         role="dialog"
@@ -165,14 +166,14 @@ export default function FreeSignupModal({
           </button>
           <div className="space-y-5 text-center sm:text-left">
             <div>
-              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Starter</p>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Pro</p>
               <h3 className="text-lg font-bold text-white">
-                {isES ? "Checkout PayPal — USD 29/mes" : "PayPal checkout — USD 29/mo"}
+                {isES ? "Checkout PayPal — USD 39/mes" : "PayPal checkout — USD 39/mo"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES
-                  ? "Checkout PayPal en la sección de planes. Recomendado: market register antes."
-                  : "PayPal checkout in the plans section. Recommended: run market register first."}
+                  ? "Checkout PayPal en la sección de planes (Pro). Recomendado: market register antes."
+                  : "PayPal checkout in the plans section (Pro). Recommended: run market register first."}
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
@@ -180,8 +181,8 @@ export default function FreeSignupModal({
 market register
 market whoami`}</pre>
             </div>
-            <button type="button" className="btn-mint w-full" onClick={goToStarterCheckout}>
-              {isES ? "Ir al checkout Starter →" : "Go to Starter checkout →"}
+            <button type="button" className="btn-mint w-full" onClick={goToProCheckout}>
+              {isES ? "Ir al checkout Pro →" : "Go to Pro checkout →"}
             </button>
           </div>
         </div>
