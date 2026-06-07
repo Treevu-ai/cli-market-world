@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import sys
+from contextlib import nullcontext
 
 from rich.console import Console
 from rich.panel import Panel
@@ -624,16 +625,28 @@ def cmd_reorder(args):
 
 def cmd_ask(args):
     data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market hello"]), console)
+        return
     console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_preferences(args):
     data = cli_api("GET", "/agent/preferences")
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=["market preferences", "market whoami"]), console)
+        return
     console.print(f"[bold]Total gastado:[/] {fmt_price(data.get('total_spent', 0))}")
     console.print(f"[bold]Órdenes:[/] {data.get('total_orders', 0)}")
 
 def cmd_countries(args):
     data = cli_api("GET", "/countries")
     countries = data.get("countries", {})
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(True, {"countries": countries, "count": len(countries)}, next_commands=["market countries", "market lines"]),
+            console,
+        )
+        return
     table = Table(title="[bold #3cffd0]Países[/]", border_style=ui.TABLE_BORDER)
     table.add_column("País", style="bold")
     table.add_column("Tiendas")
@@ -647,6 +660,12 @@ def cmd_countries(args):
 def cmd_lines(args):
     data = cli_api("GET", "/lines")
     lines = data.get("lines", {})
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(True, {"lines": lines, "count": len(lines)}, next_commands=["market lines", "market countries"]),
+            console,
+        )
+        return
     table = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style=ui.TABLE_BORDER)
     table.add_column("Línea", style="bold")
     table.add_column("Retailers")
@@ -660,6 +679,9 @@ def cmd_lines(args):
 def cmd_categories(args):
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
         data = cli_api("GET", f"/categories/{args.store}")
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, {"store": args.store, "categories": data if isinstance(data, list) else []}, next_commands=["market categories --store " + args.store]), console)
+        return
     if isinstance(data, list):
         _print_cat_tree(data, indent=0)
     else:
@@ -739,8 +761,8 @@ def cmd_inflation(args):
     qs = "&".join(params)
     with console.status("[cyan]Calculando inflación..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
-    if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=["market inflation --country PE", "market indicators"]), console)
         return
     items = data.get("items", [])
     avg = data.get("avg_inflation_pct", 0)
@@ -762,8 +784,8 @@ def cmd_indicators(args):
         qs = f"country={args.country}" if args.country else ""
         with console.status("[cyan]Refrescando indicadores..."):
             data = cli_api("POST", f"/v1/intel/refresh?{qs}" if qs else "/v1/intel/refresh")
-        if getattr(args, "json", False):
-            console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(True, data, next_commands=["market indicators --refresh -c PE"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Indicadores actualizados — "
@@ -776,12 +798,12 @@ def cmd_indicators(args):
     with console.status("[cyan]Cargando catálogo de indicadores..."):
         catalog = cli_api("GET", "/v1/intel/indicators")
     items = catalog.get("indicators", [])
-    if getattr(args, "json", False):
+    if getattr(args, "json", False) or ui.is_json_mode():
         if args.country:
             latest = cli_api("GET", f"/v1/intel/scores?country={args.country}")
-            console.print(json.dumps({"catalog": catalog, "scores": latest}, indent=2, ensure_ascii=False))
+            ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=["market indicators -c PE", "market scores -c PE"]), console)
         else:
-            console.print(json.dumps(catalog, indent=2, ensure_ascii=False))
+            ui.emit_json(ui.json_response(True, catalog, next_commands=["market indicators --refresh -c PE"]), console)
         return
 
     cc = args.country or ui.get_default_country()
@@ -861,8 +883,8 @@ def cmd_enrichment(args):
     if args.refresh:
         with console.status(f"[cyan]Refrescando enriquecimiento — {cc}..."):
             refresh_data = cli_api("POST", f"/v1/intel/enrichment/refresh?country={cc}")
-        if getattr(args, "json", False):
-            console.print(json.dumps(refresh_data, indent=2, ensure_ascii=False))
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(True, refresh_data, next_commands=["market enrichment --refresh -c PE"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Enriquecimiento actualizado — "
@@ -872,8 +894,8 @@ def cmd_enrichment(args):
     with console.status(f"[cyan]Cargando enriquecimiento — {cc}..."):
         data = cli_api("GET", f"/v1/intel/enrichment?country={cc}")
     items = data.get("indicators", [])
-    if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=["market enrichment -c PE"]), console)
         return
 
     if not items:
@@ -938,15 +960,23 @@ def cmd_enrichment(args):
 
 def cmd_tools(args):
     """Catálogo MCP agrupado (43 tools) — misma superficie que market-mcp tools/list."""
-    if getattr(args, "json", False):
-        try:
-            from market_core.market_mcp import TOOLS
-            console.print(json.dumps({"tools": TOOLS, "total": len(TOOLS)}, indent=2, ensure_ascii=False))
-        except ImportError:
-            console.print(json.dumps({"error": "market_mcp unavailable"}, indent=2))
+    try:
+        from market_core.market_mcp import TOOLS
+    except Exception as e:
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(False, error=f"MCP tools unavailable: {e}"), console)
+            return
+        console.print("[yellow]MCP tools catalog not available in this build.[/]")
         return
-    from market_stats import MCP_TOOLS
 
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(True, {"tools": TOOLS, "total": len(TOOLS)}, next_commands=["market tools", "market hello"]),
+            console,
+        )
+        return
+
+    from market_stats import MCP_TOOLS
     ui.print_section_header(
         console,
         "MCP Tools" if ui.is_en() else "Herramientas MCP",
@@ -967,6 +997,9 @@ def cmd_alerts(args):
     if args.action == "list":
         data = cli_api("POST", "/v1/alerts", {"product": "", "action": "list"})
         alerts_list = data.get("alerts", [])
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(True, {"alerts": alerts_list}, next_commands=["market alerts", "market whoami"]), console)
+            return
         if not alerts_list:
             console.print("[yellow]No hay alertas configuradas.[/]")
             return
@@ -976,15 +1009,31 @@ def cmd_alerts(args):
         tier = ui.fetch_tier()
         ui.tier_gate(console, "alerts_create", tier, json_args=args)
         data = cli_api("POST", "/v1/alerts", {"product": args.product, "threshold_pct": args.threshold, "action": "create"})
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(True, {"created": data}, next_commands=["market alerts --action list"]), console)
+            return
         console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
 
 def cmd_about(args):
-    console.print(Panel.fit(
+    about_text = (
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
         f"[#888888]Un solo pip install. Una API. {RETAILERS_VERIFIED} retailers en {MS_COUNTRIES} países. {MCP_TOOLS} MCP tools.[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
         "[#888888]MIT · Gratis para developers.[/]\n\n"
-        "[dim]cli-market.dev · pypi.org/project/cli-market[/]",
+    )
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, {
+            "name": "CLI Market",
+            "description": "Agent-native commerce infrastructure for AI agents",
+            "retailers": RETAILERS_VERIFIED,
+            "countries": MS_COUNTRIES,
+            "mcp_tools": MCP_TOOLS,
+            "license": "MIT",
+            "website": "https://cli-market.dev"
+        }, next_commands=["market hello", "market tools"]), console)
+        return
+    console.print(Panel.fit(
+        about_text + "\n[dim]cli-market.dev · pypi.org/project/cli-market[/]",
         border_style="#00FF88"
     ))
 
@@ -1070,44 +1119,45 @@ def cmd_register(args):
         _run_activation_search()
 
 
-def cmd_doctor(args):
-    """Check API URL, connectivity, auth, tier, MCP, readiness score."""
+def _collect_doctor_checks() -> tuple[list[tuple[str, str, str]], bool]:
+    """Pure function to collect doctor checks (no prints, no exit, no status). For reuse in init --json and doctor."""
     import shutil
     import httpx
 
     checks: list[tuple[str, str, str]] = []
     ok = True
-    en = ui.is_en()
 
     env_url = os.environ.get("MARKET_API_URL")
     checks.append(("API URL", API, "ok" if env_url else "default (production)"))
 
-    with ui.run_with_status(console, "Verificando API..." if not en else "Checking API..."):
-        try:
-            resp = httpx.get(f"{API}/health/db", timeout=10)
-            if resp.status_code == 200:
-                snaps = resp.json().get("snapshots", "?")
-                checks.append(("API health", f"200 OK - {snaps:,} snapshots", "ok"))
-            else:
-                checks.append(("API health", f"HTTP {resp.status_code}", "fail"))
-                ok = False
-        except httpx.ConnectError:
-            checks.append(("API health", "connection refused", "fail"))
+    try:
+        resp = httpx.get(f"{API}/health/db", timeout=10)
+        if resp.status_code == 200:
+            snaps = resp.json().get("snapshots", "?")
+            checks.append(("API health", f"200 OK - {snaps:,} snapshots", "ok"))
+        else:
+            checks.append(("API health", f"HTTP {resp.status_code}", "fail"))
             ok = False
-        except Exception as exc:
-            checks.append(("API health", str(exc)[:80], "fail"))
-            ok = False
+    except httpx.ConnectError:
+        checks.append(("API health", "connection refused", "fail"))
+        ok = False
+    except Exception as exc:
+        checks.append(("API health", str(exc)[:80], "fail"))
+        ok = False
 
     token = get_token()
     if token:
-        who = api("GET", "/auth/whoami")
-        if who.get("error"):
-            checks.append(("Auth", who["error"], "warn"))
-        else:
-            checks.append(("Auth", who.get("username", "?"), "ok"))
-            sub = api("GET", "/auth/subscription")
-            tier = (sub.get("subscription") or {}).get("tier", "?")
-            checks.append(("Tier", tier, "ok"))
+        try:
+            who = api("GET", "/auth/whoami")
+            if who.get("error"):
+                checks.append(("Auth", who["error"], "warn"))
+            else:
+                checks.append(("Auth", who.get("username", "?"), "ok"))
+                sub = api("GET", "/auth/subscription")
+                tier = (sub.get("subscription") or {}).get("tier", "?")
+                checks.append(("Tier", tier, "ok"))
+        except Exception as e:
+            checks.append(("Auth", str(e)[:60], "warn"))
     else:
         checks.append(("Auth", "no token", "warn"))
 
@@ -1117,9 +1167,16 @@ def cmd_doctor(args):
     checks.append(("market-mcp", mcp_bin or "not in PATH", "ok" if mcp_bin else "warn"))
     checks.append(("MCP snippet", "cli-market.dev/tools", "ok"))
 
+    return checks, ok
+
+
+def cmd_doctor(args):
+    """Check API URL, connectivity, auth, tier, MCP, readiness score."""
+    en = ui.is_en()
+    checks, ok = _collect_doctor_checks()
     pct, summary = ui.readiness_score(checks)
 
-    if getattr(args, "json", False):
+    if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(ok, {
             "readiness_pct": pct,
             "readiness_summary": summary,
@@ -1127,6 +1184,7 @@ def cmd_doctor(args):
         }, next_commands=["market init", "market register", "market hello"]), console)
         sys.exit(0 if ok else 1)
 
+    # Human output
     table = Table(show_header=True, header_style=f"bold {ui.MINT}", box=ui.table_box(), border_style=ui.TABLE_BORDER)
     table.add_column("Check")
     table.add_column("Detail")
@@ -1143,6 +1201,7 @@ def cmd_doctor(args):
     if not ok:
         ui.print_hints(console, ["market doctor", "market init"])
         sys.exit(1)
+    token = get_token()
     if not token:
         ui.print_hints(console, ["market register", "market init"])
     else:
@@ -1360,9 +1419,73 @@ def _hello_contact_panel(is_en: bool, width: int) -> Panel:
     return Panel(body, title=title, border_style="dim", box=box.ROUNDED, padding=(1, 2), width=width)
 
 
+def _hello_data(is_en: bool) -> dict:
+    """Structured data for `market hello --json` (agent / machine readable)."""
+    platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
+
+    onboarding = [
+        {"step": 0, "cmd": "market hello", "description": "you are here" if is_en else "estás aquí", "current": True},
+        {"step": 1, "cmd": "market init", "description": "API + account + MCP" if is_en else "API + cuenta + MCP"},
+        {"step": 2, "cmd": "market register", "description": "sk-... shown once" if is_en else "sk-... una sola vez"},
+        {"step": 3, "cmd": 'market search "leche" --country PE', "description": "primera búsqueda verificada" if not is_en else "first verified search"},
+        {"step": 4, "cmd": "market doctor", "description": "readiness %" if is_en else "preparación %"},
+    ]
+
+    return {
+        "command": "hello",
+        "version": PACKAGE_VERSION,
+        "lang": "en" if is_en else "es",
+        "status": {
+            "api": _hello_api_host(),
+            "mcp_tools": MCP_TOOLS,
+            "retailers_verified": RETAILERS_VERIFIED,
+            "countries": MS_COUNTRIES,
+            "prices": PRICES_VERIFIED_LABEL,
+            "refresh_hours": PRICES_REFRESH_HOURS,
+            "indicators": INDICATORS_COUNT,
+            "platforms": platforms,
+            "online": True,
+        },
+        "onboarding": onboarding,
+        "capabilities": {
+            "coverage": f"{RETAILERS_VERIFIED} verified retailers - {MS_COUNTRIES} countries",
+            "data_moat": f"{INDICATORS_COUNT} indicators - kg/L normalized - multi-payment (Yape/Plin/PayPal) - MIT open source",
+        },
+        "use_cases": [
+            'market basket "leche:2 arroz:1" --country PE',
+            'market compare "aceite de girasol" --country AR',
+            "market inflation --country PE",
+            "market tools",
+            "market indicators --country PE",
+            "market alerts --action list",
+        ],
+        "mcp": ui.get_mcp_config(),
+        "docs": {
+            "quickstart": "https://cli-market.dev/docs#quickstart",
+            "tools": "https://cli-market.dev/tools",
+        },
+        "next_steps": ["market init", "market register", "market doctor"],
+    }
+
+
 def cmd_hello(args):
     """Post-install activation: show next steps after pip install."""
     is_en = get_lang() == "en"
+
+    # Agent / machine-readable path (respects `market --json` and `market hello --json`)
+    if ui.is_json_mode():
+        data = _hello_data(is_en)
+        ui.emit_json(
+            ui.json_response(
+                True,
+                data,
+                next_commands=["market init", "market register", "market doctor"],
+            ),
+            console,
+        )
+        return
+
+    # Human pretty path (unchanged visual experience)
     width = min(max(console.width, 80), 100)
     _report_install_event(source="hello")
 
@@ -1398,9 +1521,37 @@ def cmd_hello(args):
 
 
 
+def _init_data(en: bool, api_ok: bool, account_created: bool, search_done: bool, tier: str | None = None, username: str | None = None) -> dict:
+    """Structured data for `market init --json` (agent-friendly onboarding summary)."""
+    return {
+        "command": "init",
+        "version": PACKAGE_VERSION,
+        "lang": "en" if en else "es",
+        "steps": [
+            "API" if en else "API",
+            "Auth" if en else "Cuenta",
+            "Readiness" if en else "Preparacion",
+            "First search" if en else "Primera busqueda",
+            "MCP" if en else "MCP",
+        ],
+        "api_health": {"ok": api_ok},
+        "auth": {
+            "account_created": account_created,
+            "session_exists": not account_created,
+            "tier": tier,
+            "username": username,
+        },
+        "first_search_performed": search_done,
+        "mcp": ui.get_mcp_config(),
+        "next_steps": ["market search", "market whoami", "market doctor", "market tools"],
+    }
+
+
 def cmd_init(args):
     """Full onboarding: API, auth, readiness, first search, MCP snippet."""
     en = ui.is_en()
+    is_json = ui.is_json_mode() or getattr(args, "json", False)
+
     steps = [
         "API" if en else "API",
         "Auth" if en else "Cuenta",
@@ -1408,32 +1559,104 @@ def cmd_init(args):
         "First search" if en else "Primera busqueda",
         "MCP" if en else "MCP",
     ]
-    console.print()
-    console.print(Panel(
-        f"[bold]{'Zero-to-hero onboarding' if en else 'Onboarding completo'}[/]\n"
-        f"[dim]{'Steps' if en else 'Pasos'}:[/] {' -> '.join(steps)}",
-        border_style=ui.MINT,
-        box=box.DOUBLE_EDGE,
-    ))
-    with ui.run_with_status(console, steps[0] + "..."):
+
+    if not is_json:
+        console.print()
+        console.print(Panel(
+            f"[bold]{'Zero-to-hero onboarding' if en else 'Onboarding completo'}[/]\n"
+            f"[dim]{'Steps' if en else 'Pasos'}:[/] {' -> '.join(steps)}",
+            border_style=ui.MINT,
+            box=box.DOUBLE_EDGE,
+        ))
+
+    api_ok = False
+    if not is_json:
+        with ui.run_with_status(console, steps[0] + "..."):
+            import httpx
+            try:
+                httpx.get(f"{API}/health/db", timeout=10).raise_for_status()
+                console.print(f"[{ui.MINT}]OK[/] API")
+                api_ok = True
+            except Exception as exc:
+                ui.print_actionable_error(console, str(exc))
+                sys.exit(1)
+    else:
         import httpx
         try:
             httpx.get(f"{API}/health/db", timeout=10).raise_for_status()
-            console.print(f"[{ui.MINT}]OK[/] API")
+            api_ok = True
         except Exception as exc:
-            ui.print_actionable_error(console, str(exc))
-            sys.exit(1)
+            ui.json_exit(console, False, error=str(exc), status=500)
+
+    account_created = False
+    tier = None
+    username = None
     if not get_token():
-        console.print(f"[dim]{'Creating free account...' if en else 'Creando cuenta gratuita...'}[/]")
+        if not is_json:
+            console.print(f"[dim]{'Creating free account...' if en else 'Creando cuenta gratuita...'}[/]")
+        # Always call register without json when inside init --json, to guarantee SINGLE final payload from init.
+        # We collect the resulting auth info afterwards.
         reg_args = argparse.Namespace(
-            json=getattr(args, "json", False),
+            json=False,
             skip_search=True,
         )
         cmd_register(reg_args)
+        account_created = True
     else:
-        console.print(f"[{ui.MINT}]OK[/] Auth (session exists)")
-    cmd_doctor(argparse.Namespace(json=False))
-    _run_activation_search(skip=getattr(args, "skip_search", False) or getattr(args, "json", False))
+        if not is_json:
+            console.print(f"[{ui.MINT}]OK[/] Auth (session exists)")
+
+    # Collect auth info (after possible register in this run)
+    tier = None
+    username = None
+    try:
+        if get_token():
+            sub = api("GET", "/auth/subscription")
+            tier = (sub.get("subscription") or {}).get("tier")
+            username = sub.get("username")
+    except Exception:
+        pass
+
+    # For JSON init: force sub-calls to non-JSON to ensure SINGLE clean payload at the end.
+    # Collect doctor data using the pure helper.
+    search_done = _run_activation_search(
+        skip=getattr(args, "skip_search", False) or is_json
+    )
+
+    doctor_checks = []
+    doctor_ok = True
+    doctor_pct = 0
+    doctor_summary = ""
+    if is_json:
+        # Register was called with json=is_json above — it may have emitted, but for composite we prioritize final init payload.
+        # To get clean single output, re-collect doctor purely.
+        doctor_checks, doctor_ok = _collect_doctor_checks()
+        doctor_pct, doctor_summary = ui.readiness_score(doctor_checks)
+    else:
+        # Human: let doctor print its nice table + readiness
+        cmd_doctor(argparse.Namespace(json=False))
+
+    if is_json:
+        data = _init_data(en, api_ok, account_created, bool(search_done), tier, username)
+        data["doctor"] = {
+            "readiness_pct": doctor_pct,
+            "readiness_summary": doctor_summary,
+            "checks": [{"name": n, "detail": d, "status": s} for n, d, s in doctor_checks],
+            "ok": doctor_ok,
+        }
+        # Include a copy of the final mcp for convenience
+        data["mcp"] = ui.get_mcp_config()
+        ui.emit_json(
+            ui.json_response(
+                doctor_ok and api_ok,
+                data,
+                next_commands=["market search", "market whoami", "market doctor", "market tools"],
+            ),
+            console,
+        )
+        return
+
+    # Human path only (JSON path returned earlier)
     ui.mcp_snippet_panel(console)
     ui.print_hints(console, [
         'market compare "leche" --country PE',
