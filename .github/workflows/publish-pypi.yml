@@ -26,7 +26,7 @@ jobs:
         with:
           repository: Treevu-ai/cli-market-core
           # Pin core so PyPI wheels match requirements-railway.txt
-          ref: 73e717d793d5dd4c7708e681abd4ba91a153e198
+          ref: 5060554cf464b1f9858447a7f581859166d0dbbe
           path: cli-market-core
 
       - name: Vendor cli-market-core into package

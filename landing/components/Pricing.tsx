@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
+import StarterSubscribeButton from "@/components/StarterSubscribeButton";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import { MARKET_STATS } from "@/lib/marketStats";
 
@@ -72,10 +73,10 @@ const tiers: Tier[] = [
       "3 price alerts",
       "CSV export · email support 48h",
     ],
-    cta_es: "Solicitar acceso",
-    cta_en: "Request access",
-    starterNote_es: "Activación manual ≤24h hábiles · sin checkout instantáneo.",
-    starterNote_en: "Manual activation ≤24 business hours · no instant checkout.",
+    cta_es: "Activar Starter",
+    cta_en: "Activate Starter",
+    starterNote_es: "PayPal $29/mes · activación automática vía webhook.",
+    starterNote_en: "PayPal $29/mo · automatic activation via webhook.",
   },
   {
     name: "Pro",
@@ -251,6 +252,7 @@ function TierCard({
 }
 
 const proTier = tiers.find((t) => t.name === "Pro")!;
+const starterTier = tiers.find((t) => t.name === "Starter")!;
 
 export default function Pricing() {
   const { lang } = useLang();
@@ -261,6 +263,9 @@ export default function Pricing() {
 
   const scrollToProCheckout = () => {
     document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const scrollToStarterCheckout = () => {
+    document.getElementById("starter-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -332,11 +337,8 @@ export default function Pricing() {
                     {isES ? tier.cta_es : tier.cta_en} ↓
                   </button>
                 ) : tier.name === "Starter" ? (
-                  <button
-                    onClick={() => setStarterModalOpen(true)}
-                    className="btn-mint w-full"
-                  >
-                    {isES ? "Solicitar acceso" : "Request access"}
+                  <button type="button" onClick={scrollToStarterCheckout} className="btn-mint w-full">
+                    {isES ? tier.cta_es : tier.cta_en} ↓
                   </button>
                 ) : tier.name === "Free" ? (
                   <button
@@ -349,6 +351,38 @@ export default function Pricing() {
               </TierCard>
             </motion.div>
           ))}
+        </div>
+
+        <div
+          id="starter-checkout"
+          className="scroll-mt-24 max-w-4xl mx-auto mb-10 text-left"
+        >
+          <div className="card-cyber p-6 sm:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+              <div className="space-y-4">
+                <p className="section-eyebrow text-[var(--cm-mint)]">Starter</p>
+                <h3 className="text-xl font-bold text-white">
+                  {isES ? "Suscripción Starter — USD 29/mes" : "Starter subscription — USD 29/mo"}
+                </h3>
+                <ul className="space-y-2 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                  {(isES ? starterTier.f_es : starterTier.f_en).map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <span className="text-[var(--cm-mint)] shrink-0">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {starterTier.starterNote_es && (
+                  <p className="text-xs text-[var(--cm-on-surface-variant)]/70 font-mono leading-relaxed pt-3 border-t border-[var(--cm-outline-variant)]/25">
+                    {isES ? starterTier.starterNote_es : starterTier.starterNote_en}
+                  </p>
+                )}
+              </div>
+              <div>
+                <StarterSubscribeButton />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div
