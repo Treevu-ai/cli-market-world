@@ -25,8 +25,8 @@ jobs:
       - name: Install build deps
         run: |
           pip install build
-          pip install "cli-market-core>=1.9.5" \
-            || pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@2d98c0ebc7b17de5d976f76d966997dcb2201dab"
+          pip install "cli-market-core>=1.9.6" \
+            || pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@a574643"
 
       - name: Build cli-market-world
         run: python -m build
