@@ -227,6 +227,127 @@ def get_token_with_prompt() -> str:
         sys.exit(1)
     return token
 
+_ACTIVATION_QUERIES = {
+    "PE": "leche",
+    "AR": "leche",
+    "MX": "leche",
+    "CO": "leche",
+    "CL": "leche",
+    "ES": "leche",
+    "US": "milk",
+    "BR": "leite",
+}
+
+
+def _activation_query(country: str) -> str:
+    return _ACTIVATION_QUERIES.get((country or "PE").upper(), "leche")
+
+
+def _activation_search_done() -> bool:
+    return (SESSION_FILE.parent / "activation_search_done").is_file()
+
+
+def _mark_activation_search_done() -> None:
+    flag = SESSION_FILE.parent / "activation_search_done"
+    flag.parent.mkdir(parents=True, exist_ok=True)
+    flag.write_text("1", encoding="utf-8")
+
+
+def _run_activation_search(*, skip: bool = False) -> bool:
+    """Guided first search after register/init — drives funnel first_search + TTFV."""
+    if skip or _activation_search_done() or not get_token():
+        return False
+
+    en = ui.is_en()
+    country = ui.get_default_country()
+    query = _activation_query(country)
+    status = (
+        f"First search (activation): '{query}' in {country}..."
+        if en
+        else f"Primera búsqueda (activación): '{query}' en {country}..."
+    )
+    try:
+        with ui.run_with_status(console, status):
+            data = api(
+                "POST",
+                "/products/search",
+                {"query": query, "limit": 3, "country": country},
+            )
+        if isinstance(data, dict) and data.get("error"):
+            console.print(
+                f"[yellow]{'Activation search skipped:' if en else 'Búsqueda de activación omitida:'} "
+                f"{data['error']}[/]"
+            )
+            return False
+
+        results = data.get("results", [])
+        total = int(data.get("total", len(results)) or 0)
+        if not results:
+            console.print(
+                f"[yellow]{'No results yet — try:' if en else 'Sin resultados aún — prueba:'} "
+                f'market search "{query}" --country {country}[/]'
+            )
+            return False
+
+        table = Table(
+            title=(
+                f'Activation: "{query}" ({total} hits)'
+                if en
+                else f'Activación: "{query}" ({total} resultados)'
+            ),
+            border_style=ui.TABLE_BORDER,
+            show_header=True,
+            header_style=f"bold {ui.MINT}",
+            box=ui.table_box(),
+        )
+        table.add_column("#", style="dim", width=3, justify="right")
+        table.add_column("Producto" if not en else "Product", max_width=34)
+        table.add_column("Tienda" if not en else "Store", max_width=14)
+        table.add_column("Precio" if not en else "Price", justify="right")
+        for i, p in enumerate(results[:3], 1):
+            color = store_color(p.get("store", ""))
+            table.add_row(
+                str(i),
+                p.get("name", "?")[:34],
+                f"[{color}]{p.get('store_name', p.get('store', '?'))}[/]",
+                fmt_price(p.get("price", 0), p.get("currency", "PEN")),
+            )
+        console.print()
+        console.print(table)
+        ui.price_data_footer(console)
+        _mark_activation_search_done()
+        title = "TTFV" if en else "TTFV"
+        console.print(
+            Panel(
+                (
+                    "[bold #00FF88]First real prices loaded.[/] "
+                    "[dim]Your agent can now compare verified shelf data.[/]"
+                    if en
+                    else "[bold #00FF88]Primeros precios reales cargados.[/] "
+                    "[dim]Tu agente ya puede comparar datos verificados de góndola.[/]"
+                ),
+                title=title,
+                border_style="#00FF88",
+            )
+        )
+        q = query.replace('"', '\\"')
+        ui.print_hints(
+            console,
+            [
+                f'market compare "{q}" --country {country}',
+                f'market basket "{query}:1" --country {country}',
+                "market doctor",
+            ],
+        )
+        return True
+    except Exception as exc:
+        console.print(
+            f"[dim]{'Activation search skipped' if en else 'Búsqueda de activación omitida'}: "
+            f"{exc}[/]"
+        )
+        return False
+
+
 def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
     result = api(method, path, json_data)
     if isinstance(result, dict) and "error" in result:
@@ -943,6 +1064,8 @@ def cmd_register(args):
         border_style="#00FF88",
     ))
     ui.print_hints(console, ['market search "leche" --country PE', "market whoami", "market init"])
+    if not getattr(args, "skip_search", False):
+        _run_activation_search()
 
 
 def cmd_doctor(args):
@@ -1075,7 +1198,7 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
         body = (
             "[bold white]Post-install activation[/]\n"
             "[dim]You installed[/] [cyan]cli-market[/][dim]. Run[/] [bold cyan]market init[/] "
-            "[dim]for a free API key, readiness check, and MCP snippet.[/]\n"
+            "[dim]for API key, readiness,[/] [bold]first verified search[/][dim], and MCP snippet.[/]\n"
             "[dim]Or[/] [cyan]market register[/] [dim]if you only need credentials.[/]"
         )
         title = "[bold #00FF88]NEXT STEP[/]"
@@ -1083,7 +1206,7 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
         body = (
             "[bold white]Activación post-install[/]\n"
             "[dim]Instalaste[/] [cyan]cli-market[/][dim]. Ejecuta[/] [bold cyan]market init[/] "
-            "[dim]para API key gratis, readiness y snippet MCP.[/]\n"
+            "[dim]para API key, readiness,[/] [bold]primera búsqueda verificada[/][dim] y snippet MCP.[/]\n"
             "[dim]O[/] [cyan]market register[/] [dim]si solo necesitas credenciales.[/]"
         )
         title = "[bold #00FF88]SIGUIENTE PASO[/]"
@@ -1274,12 +1397,13 @@ def cmd_hello(args):
 
 
 def cmd_init(args):
-    """Full onboarding: API, auth, readiness, MCP snippet."""
+    """Full onboarding: API, auth, readiness, first search, MCP snippet."""
     en = ui.is_en()
     steps = [
         "API" if en else "API",
         "Auth" if en else "Cuenta",
         "Readiness" if en else "Preparacion",
+        "First search" if en else "Primera busqueda",
         "MCP" if en else "MCP",
     ]
     console.print()
@@ -1299,14 +1423,18 @@ def cmd_init(args):
             sys.exit(1)
     if not get_token():
         console.print(f"[dim]{'Creating free account...' if en else 'Creando cuenta gratuita...'}[/]")
-        reg_args = argparse.Namespace(json=getattr(args, "json", False))
+        reg_args = argparse.Namespace(
+            json=getattr(args, "json", False),
+            skip_search=True,
+        )
         cmd_register(reg_args)
     else:
         console.print(f"[{ui.MINT}]OK[/] Auth (session exists)")
     cmd_doctor(argparse.Namespace(json=False))
+    _run_activation_search(skip=getattr(args, "skip_search", False) or getattr(args, "json", False))
     ui.mcp_snippet_panel(console)
     ui.print_hints(console, [
-        'market search "leche" --country PE',
+        'market compare "leche" --country PE',
         "market shell",
         "market hello",
     ])
@@ -1588,11 +1716,21 @@ def main():
     sub.add_parser("whoami", help=t("whoami"))
 
     # register
-    sub.add_parser("register", help=t("register"))
+    p = sub.add_parser("register", help=t("register"))
+    p.add_argument(
+        "--skip-search",
+        action="store_true",
+        help="Skip guided first search after account creation",
+    )
 
     # doctor
     sub.add_parser("doctor", help=t("doctor"))
-    sub.add_parser("init", help=t("init"))
+    p = sub.add_parser("init", help=t("init"))
+    p.add_argument(
+        "--skip-search",
+        action="store_true",
+        help="Skip guided first search during onboarding",
+    )
     sub.add_parser("shell", help=t("shell"))
 
     # lang
