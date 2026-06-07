@@ -10,7 +10,7 @@ Se ha implementado un mecanismo de recuperación inteligente (self-healing fallb
 
 ### 1. Dependencias (`pyproject.toml`)
 - Agregado `playwright` como dependencia **opcional** bajo `[project.optional-dependencies]`
-- Installation: `pip install 'cli-market[playwright]'`
+- Installation: `pip install 'cli-market-world[playwright]'`
 
 ### 2. Estructura del Caché (`market_connectors/vtex.py`)
 ```python
@@ -96,13 +96,13 @@ Misma estrategia de 3 intentos, pero itera múltiples páginas. Fallback se acti
 
 ### Opción 1: Instalación Completa (con Playwright)
 ```bash
-pip install 'cli-market[playwright]'
+pip install 'cli-market-world[playwright]'
 playwright install chromium
 ```
 
 ### Opción 2: Instalación Mínima (sin Playwright)
 ```bash
-pip install cli-market
+pip install cli-market-world
 ```
 - Funcionará normalmente para tiendas sin bloqueos
 - Si una tienda bloqueada se intenta, mostrará error claro: `RuntimeError: Playwright not installed`
@@ -249,7 +249,7 @@ python3 -m market search "aspirina" --store globo_br --limit 5
 ### Error: `RuntimeError: Playwright not installed`
 **Solución:**
 ```bash
-pip install 'cli-market[playwright]'
+pip install 'cli-market-world[playwright]'
 playwright install chromium
 ```
 

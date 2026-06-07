@@ -13,7 +13,7 @@ client = TestClient(app)
 
 MOCK_PEPY = {
     "ok": True,
-    "project": "cli-market",
+    "project": "cli-market-world",
     "total_downloads": 11155,
     "downloads_last_7d": 900,
     "downloads_last_30d": 3486,

@@ -12,12 +12,12 @@ OUT = Path(__file__).resolve().parent.parent / "landing" / "public" / "llms.txt"
 body = f"""# CLI Market — Unified E-Commerce Infrastructure for AI Agents
 
 > URL: https://cli-market.dev
-> PyPI: https://pypi.org/project/cli-market/
+> PyPI: https://pypi.org/project/cli-market-world/
 > API: https://cli-market-production.up.railway.app
 > Docs: https://cli-market.dev/docs
 > OpenAPI: https://cli-market-production.up.railway.app/docs
 > Dashboard: https://cli-market-production.up.railway.app/dashboard
-> PyPI: https://pypi.org/project/cli-market/
+> PyPI: https://pypi.org/project/cli-market-world/
 
 ## Core Purpose
 
@@ -52,7 +52,7 @@ Commerce infrastructure for AI agents. {s.RETAILERS_PHRASE_EN} across {s.COUNTRI
 - **Cross-Border**: Single interface for {s.RETAILERS_VERIFIED} verified retailers.
 - **Data Moat**: Collector every {s.PRICES_REFRESH_HOURS}h. Historical snapshots, inflation, {s.INDICATORS_COUNT} indicators.
 - **Multi-Payment**: {s.PAYMENTS_LABEL}.
-- **Open Source**: MIT. pip install cli-market.
+- **Open Source**: MIT. pip install cli-market-world.
 """
 OUT.write_text(body, encoding="utf-8")
 print(f"Wrote {OUT}")

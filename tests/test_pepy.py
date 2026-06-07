@@ -12,7 +12,7 @@ from market_server import app
 client = TestClient(app)
 
 MOCK_PEPY = {
-    "id": "cli-market",
+    "id": "cli-market-world",
     "total_downloads": 11155,
     "versions": ["1.9.4", "1.6.0"],
     "downloads": {

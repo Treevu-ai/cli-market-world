@@ -53,5 +53,5 @@ All notable changes to the CLI Market ecosystem.
 - 66 retailers (36 verified active), 8 countries
 - 43 MCP tools, 34 market indicators
 - Checkout via PayPal + QR (Yape/Plin)
-- PyPI package: `pip install cli-market`
+- PyPI packages: `pip install cli-market-world` (+ `cli-market-core` intelligence layer)
 - Production API on Railway
