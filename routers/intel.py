@@ -8,6 +8,7 @@ Endpoints:
   GET  /v1/intel/alerts                     Price alerts (threshold-based)
   GET  /v1/intel/enrichment                 Enrichment indicators (OFF, Wiki, etc.)
   GET  /v1/intel/enrichment/subcategories   Subcategory-level enrichment
+  GET  /v1/intel/brief                      One-call intelligence narrative (PR3)
   POST /v1/intel/refresh                    Trigger indicator recomputation
   POST /v1/intel/enrichment/refresh         Trigger enrichment-only refresh
 """
@@ -25,6 +26,7 @@ from market_billing import db_get_subscription
 from server_deps import require_api_key, require_pro, require_starter
 from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
+    build_intel_brief,
     get_indicator_catalog,
     get_latest_values,
     get_scores,
@@ -171,6 +173,31 @@ def get_indicator(
         values = get_latest_values(db, country=country, line=line)
         latest = next((v for v in values if v.get("key") == key), None)
         return {"indicator": match, "latest_value": latest}
+    finally:
+        db.close()
+
+
+# ── Brief (PR3) ───────────────────────────────────────────────────────────────
+
+@router.get("/brief")
+def intel_brief(
+    country: str | None = Query(None),
+    line: str | None = Query(None),
+    days: int = Query(7, ge=1, le=90),
+    include_catalog: bool = Query(False),
+    authorization: str | None = Header(None),
+):
+    """One-call intelligence narrative: shelf signals, macro gap, scores, confidence."""
+    require_api_key(authorization)
+    db = get_db()
+    try:
+        return build_intel_brief(
+            db,
+            country=country.upper() if country else None,
+            line=line,
+            days=days,
+            include_catalog=include_catalog,
+        )
     finally:
         db.close()
 

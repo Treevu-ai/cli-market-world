@@ -560,6 +560,18 @@ cases:
     expect:
       status: 200
 
+  - id: user.intel_brief
+    tier: 1
+    phase: user
+    run_order: 10
+    name: Intelligence brief (PR3)
+    method: GET
+    path: /v1/intel/brief?country=PE&days=7
+    auth: user
+    expect:
+      status: 200
+      json_has: [headline, shelf, scores, confidence]
+
   - id: user.analytics_stats
     tier: 1
     phase: user
