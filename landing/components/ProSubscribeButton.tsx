@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
+import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 type ProResponse = {
   ok?: boolean;
@@ -198,41 +199,7 @@ export default function ProSubscribeButton() {
         )}
       </p>
 
-      <label className="flex items-start gap-3 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={legal}
-          onChange={(e) => setLegal(e.target.checked)}
-          className="mt-0.5 accent-[var(--cm-mint)] shrink-0"
-        />
-        <span className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
-          {isES ? (
-            <>
-              Acepto los{" "}
-              <a href="/legal/tos" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
-                Términos de Servicio
-              </a>{" "}
-              (incl. suscripciones) y la{" "}
-              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
-                Política de Privacidad
-              </a>
-              .
-            </>
-          ) : (
-            <>
-              I agree to the{" "}
-              <a href="/legal/tos" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
-                Terms of Service
-              </a>{" "}
-              (incl. subscriptions) and{" "}
-              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
-                Privacy Policy
-              </a>
-              .
-            </>
-          )}
-        </span>
-      </label>
+      <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
 
       {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
       <button

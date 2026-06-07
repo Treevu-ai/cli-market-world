@@ -66,6 +66,7 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ModeProvider } from "@/hooks/useMode";
+import CookieConsent from "@/components/CookieConsent";
 
 const cfBeaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
 const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
@@ -152,7 +153,12 @@ export default function RootLayout({
             strategy="afterInteractive"
           />
         ) : null}
-        <ModeProvider><LanguageProvider>{children}</LanguageProvider></ModeProvider>
+        <ModeProvider>
+          <LanguageProvider>
+            {children}
+            <CookieConsent />
+          </LanguageProvider>
+        </ModeProvider>
       </body>
     </html>
   );

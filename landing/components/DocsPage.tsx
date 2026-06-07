@@ -108,16 +108,29 @@ export default function DocsPage() {
               `CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
             )}
           </p>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE TIER</h4>
               <p className="font-mono text-lg text-white">1,000 req/day</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">{t("Ideal para prototipos.", "Ideal for prototyping.")}</p>
             </div>
+            <div className="card-cyber header-strip p-6">
+              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER TIER</h4>
+              <p className="font-mono text-lg text-white">5,000 req/day</p>
+              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
+                {t("USD 29/mes · CSV · activación manual ≤24h.", "USD 29/mo · CSV · manual activation ≤24h.")}
+              </p>
+              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+                {t("Solicitar Starter →", "Request Starter →")}
+              </a>
+            </div>
             <div className="card-cyber header-strip p-6 energy-border-active">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO TIER</h4>
               <p className="font-mono text-lg text-white">10,000 req/day</p>
-              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">{t("Producción y export.", "Production and export.")}</p>
+              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">{t("Producción, checkout y export.", "Production, checkout and export.")}</p>
+              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+                {t("Obtener Pro →", "Get Pro →")}
+              </a>
             </div>
           </div>
         </section>
@@ -237,8 +250,16 @@ market --json doctor`}</CodeBlock>
           <SectionHead n={8} title={t("Rate limits", "Rate limits")} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
             <li>Free: 1,000 {t("consultas/día", "requests/day")}</li>
+            <li>Starter: 5,000 {t("consultas/día", "requests/day")} · {t("activación manual", "manual activation")}</li>
             <li>Pro: 10,000 {t("consultas/día", "requests/day")}</li>
+            <li>Builder: 50,000 {t("consultas/día", "requests/day")}</li>
           </ul>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
+            {t("Planes completos en ", "Full plans at ")}{" "}
+            <a href="/#pricing" className="text-[var(--cm-mint)] underline">/#pricing</a>.
+            {t(" Datos comerciales sujetos al ", " Commercial data subject to ")}{" "}
+            <a href="/legal/dla" className="text-[var(--cm-mint)] underline">ALD/DLA</a>.
+          </p>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="errors">
