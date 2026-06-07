@@ -386,6 +386,15 @@ def build_slack_product_message(
     except Exception:
         pass
 
+    try:
+        from market_golive import go_live_slack_lines
+
+        golive = go_live_slack_lines(days=30, dashboard_data=data)
+        if golive:
+            lines.extend(golive)
+    except Exception:
+        pass
+
     lines += [
         f"• Indexados: *{k.get('total_indexed', 0):,}* · 24h: *{k.get('snapshots_24h', 0):,}* · "
         f"Tiendas: *{k.get('stores_indexed', 0)}* · Coverage 7d: *{k.get('coverage_7d_pct', 0)}%*",
