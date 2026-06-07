@@ -154,7 +154,7 @@ def auth_header(case: dict, ctx: dict[str, Any]) -> dict[str, str]:
         if not token:
             return {}
         return {"Authorization": f"Bearer {token}"}
-    if auth == "user":
+    if auth in ("user", "api_key"):
         token = os.getenv("MARKET_USER_TOKEN") or ctx.get("user_api_key", "")
         if not token:
             return {}
@@ -401,7 +401,7 @@ def run_case(
         result["status"] = "SKIP"
         result["skip_reason"] = "MARKET_API_TOKEN not set"
         return result
-    if auth == "user" and not (os.getenv("MARKET_USER_TOKEN") or ctx.get("user_api_key")):
+    if auth in ("user", "api_key") and not (os.getenv("MARKET_USER_TOKEN") or ctx.get("user_api_key")):
         result["status"] = "SKIP"
         result["skip_reason"] = "no user token (register failed?)"
         return result
@@ -471,6 +471,21 @@ def run_case(
             capture_values(parsed, case["capture"], ctx)
 
     return result
+
+
+def ensure_user_api_key(ctx: dict[str, Any], matrix: dict, cases: list[dict]) -> None:
+    """Bootstrap sk- key when post/user cases need it but user phase was not run."""
+    if os.getenv("MARKET_USER_TOKEN") or ctx.get("user_api_key"):
+        return
+    needs_user = any(c.get("auth") in ("user", "api_key") for c in cases)
+    if not needs_user:
+        return
+    api_base = os.getenv("MARKET_API_URL", matrix["defaults"].get("api_base", ""))
+    url = api_base.rstrip("/") + "/auth/register"
+    status, _, _, data, _ = _http_request(url, "POST", {"Content-Type": "application/json"}, b"{}", 30.0)
+    if status == 200 and isinstance(data, dict) and data.get("api_key"):
+        ctx["user_api_key"] = data["api_key"]
+        ctx["username"] = data.get("username", "")
 
 
 def should_auto_post(phases: set[str], tier: int) -> bool:
@@ -603,6 +618,8 @@ def main() -> int:
         print(f"\n{len(cases)} automated cases")
         print_manual_checklist(matrix, max_tier=args.tier)
         return 0
+
+    ensure_user_api_key(ctx, matrix, cases)
 
     results: list[dict] = []
     for case in cases:

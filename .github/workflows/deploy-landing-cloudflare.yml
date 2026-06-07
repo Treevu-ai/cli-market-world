@@ -31,9 +31,14 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (wrangler)
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy landing/out --project-name=cli-market-world --branch=main
+
+      - name: Skip wrangler (Cloudflare Git integration)
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' }}
+        run: echo "No CLOUDFLARE_API_TOKEN — relying on Cloudflare Pages Git build from cloudflare-pages.json"
