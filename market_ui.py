@@ -275,19 +275,22 @@ def readiness_score(checks: list[tuple[str, str, str]]) -> tuple[int, str]:
 
 # ── MCP snippets ────────────────────────────────────────────────────────────────
 
-def mcp_cursor_snippet() -> str:
-    return json.dumps(
-        {
-            "mcpServers": {
-                "cli-market": {
-                    "command": "market-mcp",
-                    "args": [],
-                    "env": {"MARKET_API_URL": API},
-                }
+def get_mcp_config() -> dict:
+    """Machine-readable MCP server configuration for agents / Cursor / Claude etc."""
+    return {
+        "mcpServers": {
+            "cli-market": {
+                "command": "market-mcp",
+                "args": [],
+                "env": {"MARKET_API_URL": API},
             }
-        },
-        indent=2,
-    )
+        }
+    }
+
+
+def mcp_cursor_snippet() -> str:
+    """Pretty-printed JSON snippet for pasting into ~/.cursor/mcp.json (human use)."""
+    return json.dumps(get_mcp_config(), indent=2)
 
 
 def mcp_snippet_panel(console: Console, width: int | None = None) -> None:
