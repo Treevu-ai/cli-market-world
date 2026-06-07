@@ -25,8 +25,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-core
-          # cli-market-core may not tag in lockstep with cli-market-world
-          ref: main
+          # Pin core so PyPI wheels match requirements-railway.txt
+          ref: ce105701f337cf7e2f84364edd0a81718aa627e7
           path: cli-market-core
 
       - name: Vendor cli-market-core into package
