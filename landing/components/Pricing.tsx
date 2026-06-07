@@ -127,7 +127,7 @@ const tiers: Tier[] = [
     ],
     cta_es: "Construir con CLI Market",
     cta_en: "Build with CLI Market",
-    href: "#contact-general",
+    href: "/#contact-general",
   },
   {
     name: "Enterprise",
@@ -149,7 +149,7 @@ const tiers: Tier[] = [
     cta_es: "Contactar",
     cta_en: "Contact us",
     dark: true,
-    href: "#contact-general",
+    href: "/#contact-general",
   },
 ];
 
@@ -348,7 +348,7 @@ export default function Pricing() {
               ? "¿Necesitas límites, SLAs o licencia de datos personalizados?"
               : "Need custom limits, SLAs, or a data license?"}
           </p>
-          <a href="#contact-general" className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all">
+          <a href="/#contact-general" className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all">
             {isES ? "Contáctanos →" : "Contact us →"}
           </a>
         </div>
