@@ -22,18 +22,18 @@ export default function HowItWorks() {
         <p className="section-eyebrow mb-4">
           {isES ? "Cómo funciona" : "How it works"}
         </p>
-        <h2 className="section-title mb-2">
+        <h2 className="section-title">
           {isES ? "Del install a datos verificados en minutos." : "From install to verified data in minutes."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-8">
+        <p className="section-intro max-w-xl">
           {isES
             ? `Hello → Search → Indicators → Ask → Basket. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores, checkout Pro.`
             : `Hello → Search → Indicators → Ask → Basket. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} indicators, Pro checkout.`}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left mb-10 min-w-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left mb-12 min-w-0">
           {steps.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }} className="card-cyber px-5 py-4 flex items-start gap-3 min-w-0 overflow-hidden">
+            <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }} className="card-cyber px-5 py-5 flex items-start gap-4 min-w-0 overflow-hidden">
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>
@@ -48,14 +48,7 @@ export default function HowItWorks() {
           {isES ? `Checkout ${MARKET_STATS.paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${MARKET_STATS.paymentsLabel} · requires Pro plan + email activation`}
         </p>
 
-        <a
-          href="https://pypi.org/project/cli-market/"
-          className="btn-mint"
-        >
-          {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
-        </a>
-
-        <p className="mt-6">
+        <p className="mt-8">
           <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/demo-walkthrough.md" target="_blank" rel="noopener" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo completa de 8 pasos →" : "Full 8-step walkthrough →"}
           </a>

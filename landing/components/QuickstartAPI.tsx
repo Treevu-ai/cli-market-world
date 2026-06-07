@@ -10,10 +10,10 @@ export default function QuickstartAPI() {
     <section id="api" className="landing-section animate-fade-in">
       <div className="landing-container text-center">
         <p className="section-eyebrow mb-8">API</p>
-        <h2 className="section-title mb-3">
+        <h2 className="section-title">
           {isES ? "Una llamada. Datos verificados." : "One call. Verified data."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-md mx-auto mb-12">
+        <p className="section-intro max-w-md">
           {isES
             ? "Todo lo que haces en la CLI está disponible vía HTTP. Busca, compara canastas y crea órdenes con JSON plano."
             : "Everything in the CLI is available over HTTP. Search, compare baskets, and create orders with flat JSON."}
