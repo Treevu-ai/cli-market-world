@@ -39,9 +39,9 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 
 ```bash
 pip install cli-market
-market hello   # post-instalación: estadísticas + próximos pasos
+market hello   # post-instalación: estadísticas + próximos pasos (API prod por defecto)
 
-export MARKET_API_URL=https://cli-market-production.up.railway.app
+# Solo para servidor local: export MARKET_API_URL=http://127.0.0.1:8765
 market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
@@ -100,9 +100,9 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 
 ```bash
 pip install cli-market
-market hello   # post-install: stats + next steps
+market hello   # post-install: stats + next steps (production API by default)
 
-export MARKET_API_URL=https://cli-market-production.up.railway.app
+# Local server only: export MARKET_API_URL=http://127.0.0.1:8765
 market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
