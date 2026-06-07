@@ -104,8 +104,8 @@ export default function DocsPage() {
           </h1>
           <p className="text-[var(--cm-on-surface-variant)] leading-relaxed">
             {t(
-              "CLI Market entrega precios de retail verificados vía REST, CLI y MCP. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada ${MARKET_STATS.pricesRefreshHours} h.",
-              "CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.",
+              `CLI Market entrega precios de retail verificados vía REST, CLI y MCP. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada ${MARKET_STATS.pricesRefreshHours} h.`,
+              `CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
             )}
           </p>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

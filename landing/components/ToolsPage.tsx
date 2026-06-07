@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 const MCP_API_URL = "https://cli-market-production.up.railway.app";
@@ -61,6 +62,8 @@ const TOOLS = [
 ];
 
 export default function ToolsPage() {
+  const { lang } = useLang();
+  const isES = lang === "es";
   const [tab, setTab] = useState<keyof typeof MCP_CONFIG>("cursor");
   const [copied, setCopied] = useState(false);
 
@@ -74,13 +77,18 @@ export default function ToolsPage() {
     <>
       <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
         <div className="max-w-[720px] mx-auto">
-          <p className="section-eyebrow mb-4">MCP · AI shopping API</p>
+          <p className="section-eyebrow mb-4">MCP · {isES ? "API de compras para IA" : "AI shopping API"}</p>
           <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-white mb-4 tracking-tight">
-            {MARKET_STATS.mcpTools} MCP tools for e-commerce agents
+            {isES
+              ? `${MARKET_STATS.mcpTools} herramientas MCP para agentes de comercio`
+              : `${MARKET_STATS.mcpTools} MCP tools for e-commerce agents`}
           </h1>
           <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
-            Commerce API for AI agents — search, compare, basket, and checkout across {MARKET_STATS.retailersVerified} retailers.
-            Copy a config, run <code className="font-mono text-sm text-[var(--cm-mint)]">pip install cli-market</code>, connect your IDE.
+            {isES
+              ? `API de comercio para agentes de IA — búsqueda, comparación, canasta y checkout en ${MARKET_STATS.retailersVerified} retailers. Copie una config, ejecute `
+              : `Commerce API for AI agents — search, compare, basket, and checkout across ${MARKET_STATS.retailersVerified} retailers. Copy a config, run `}
+            <code className="font-mono text-sm text-[var(--cm-mint)]">pip install cli-market</code>
+            {isES ? ", conecte su IDE." : ", connect your IDE."}
           </p>
         </div>
       </section>
@@ -103,14 +111,15 @@ export default function ToolsPage() {
               </button>
             ))}
             <button type="button" onClick={copy} className="font-label-caps px-4 py-1.5 bg-[var(--cm-surface-high)] text-white border border-[var(--cm-outline-variant)] hover:border-[var(--cm-mint)]/50">
-              {copied ? "Copied" : "Copy config"}
+              {copied ? (isES ? "Copiado" : "Copied") : (isES ? "Copiar config" : "Copy config")}
             </button>
           </div>
           <pre className="text-left code-block-cyber text-[var(--cm-mint)] p-5 overflow-x-auto">
             {MCP_CONFIG[tab]}
           </pre>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4 text-center">
-            Requires <code className="font-mono text-[var(--cm-mint)]">pip install cli-market</code> · Manifest:{" "}
+            {isES ? "Requiere" : "Requires"}{" "}
+            <code className="font-mono text-[var(--cm-mint)]">pip install cli-market</code> · Manifest:{" "}
             <a href="/server.json" className="text-[var(--cm-mint)] underline">server.json</a>
             {" "}· Docs:{" "}
             <a href="/llms.txt" className="text-[var(--cm-mint)] underline">llms.txt</a>
@@ -120,20 +129,24 @@ export default function ToolsPage() {
 
       <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
-          <h2 className="section-title mb-2">Starter MCP tools (5)</h2>
+          <h2 className="section-title mb-2">
+            {isES ? "Herramientas MCP iniciales (5)" : "Starter MCP tools (5)"}
+          </h2>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6">
-            Run <code className="font-mono text-[var(--cm-mint)]">market init</code> or{" "}
-            <code className="font-mono text-[var(--cm-mint)]">market register</code>, then try these first.
+            {isES ? "Ejecute" : "Run"}{" "}
+            <code className="font-mono text-[var(--cm-mint)]">market init</code> {isES ? "o" : "or"}{" "}
+            <code className="font-mono text-[var(--cm-mint)]">market register</code>
+            {isES ? ", luego pruebe estas primero." : ", then try these first."}
           </p>
           <ul className="text-left space-y-3 mb-10 max-w-md mx-auto">
             {STARTER_TOOLS.map((tool) => (
               <li key={tool.id} className="glass-panel rounded-lg px-4 py-3 border border-[var(--cm-mint)]/15">
                 <code className="font-mono text-sm text-[var(--cm-mint)]">{tool.id}</code>
-                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{tool.en}</p>
+                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{isES ? tool.es : tool.en}</p>
               </li>
             ))}
           </ul>
-          <h3 className="text-sm font-semibold text-white mb-4">More tools</h3>
+          <h3 className="text-sm font-semibold text-white mb-4">{isES ? "Más herramientas" : "More tools"}</h3>
           <div className="flex flex-wrap justify-center gap-2">
             {TOOLS.map((t) => (
               <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-on-surface-variant)]">
@@ -142,10 +155,11 @@ export default function ToolsPage() {
             ))}
           </div>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">
-            + {MARKET_STATS.mcpTools - STARTER_TOOLS.length - TOOLS.length} more in the full registry
+            + {MARKET_STATS.mcpTools - STARTER_TOOLS.length - TOOLS.length}{" "}
+            {isES ? "más en el registro completo" : "more in the full registry"}
           </p>
           <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
-            Full tool list on GitHub →
+            {isES ? "Lista completa en GitHub →" : "Full tool list on GitHub →"}
           </a>
         </div>
       </section>
