@@ -2,8 +2,8 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/cli-market?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/cli-market)
-[![PyPI](https://img.shields.io/pypi/v/cli-market.svg)](https://pypi.org/project/cli-market/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/cli-market-world?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/cli-market-world)
+[![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
 
@@ -38,7 +38,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 #### 🚀 Inicio rápido
 
 ```bash
-pip install cli-market
+pip install cli-market-world
 market hello   # post-instalación: estadísticas + próximos pasos (API prod por defecto)
 
 # Solo para servidor local: export MARKET_API_URL=http://127.0.0.1:8765
@@ -99,7 +99,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 #### 🚀 Quick start
 
 ```bash
-pip install cli-market
+pip install cli-market-world
 market hello   # post-install: stats + next steps (production API by default)
 
 # Local server only: export MARKET_API_URL=http://127.0.0.1:8765

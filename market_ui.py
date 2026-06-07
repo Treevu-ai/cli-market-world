@@ -313,7 +313,7 @@ def maybe_version_notice(console: Console) -> None:
     if flag.exists() and flag.read_text(encoding="utf-8").strip() == today:
         return
     try:
-        r = httpx.get("https://pypi.org/pypi/cli-market/json", timeout=4)
+        r = httpx.get("https://pypi.org/pypi/cli-market-world/json", timeout=4)
         r.raise_for_status()
         latest = r.json()["info"]["version"]
         if latest and latest != PACKAGE_VERSION:
@@ -321,7 +321,7 @@ def maybe_version_notice(console: Console) -> None:
             console.print(
                 f"[dim]CLI Market {PACKAGE_VERSION} — "
                 f"{'available' if en else 'disponible'} {latest} "
-                f"([cyan]pip install -U cli-market[/])[/]"
+                f"([cyan]pip install -U cli-market-world[/])[/]"
             )
     except Exception:
         pass

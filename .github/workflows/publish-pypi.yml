@@ -21,21 +21,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Checkout cli-market-core
-        uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          # Pin core so PyPI wheels match requirements-railway.txt
-          ref: e70887d893023c48c422fa1aa7be8957d6c4a107
-          path: cli-market-core
-
-      - name: Vendor cli-market-core into package
-        run: bash ops/vendor_core_for_pypi.sh cli-market-core
-
-      - name: Build cli-market
+      - name: Install build deps
         run: |
           pip install build
-          python -m build
+          pip install "cli-market-core>=1.9.5" \
+            || pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@2d98c0ebc7b17de5d976f76d966997dcb2201dab"
 
-      - name: Publish cli-market to PyPI
+      - name: Build cli-market-world
+        run: python -m build
+
+      - name: Publish cli-market-world to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

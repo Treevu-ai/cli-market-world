@@ -177,7 +177,7 @@ async def telegram_webhook(request: Request):
     elif text in ("/pricing", "pricing", "precio", "costo"):
         reply = (
             "<b>Planes CLI Market:</b>\n"
-            "\u2022 Free: 1,000 req/día — pip install cli-market\n"
+            "\u2022 Free: 1,000 req/día — pip install cli-market-world\n"
             "\u2022 Pro: $79/mo — cli-market.dev/#pricing\n"
             "\u2022 Enterprise: hello@cli-market.dev\n\n"
             "Docs: cli-market.dev/docs"

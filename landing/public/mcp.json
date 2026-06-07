@@ -8,7 +8,7 @@
   "env": {
     "MARKET_API_URL": "https://cli-market-production.up.railway.app"
   },
-  "repository": "https://pypi.org/project/cli-market/",
+  "repository": "https://pypi.org/project/cli-market-world/",
   "website": "https://cli-market.dev",
   "license": "MIT",
   "language": "Python",
