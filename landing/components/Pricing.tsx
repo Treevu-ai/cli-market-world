@@ -53,7 +53,7 @@ const tiers: Tier[] = [
     cta_en: "Get started",
     href: "https://pypi.org/project/cli-market/",
   },
-  // Pro is the primary paid tier (simplification: focus on 1 ICP AI Agent Builders). $39/mo, 20k req/day.
+  // Pro is the primary paid tier (simplification: focus on 1 ICP AI Agent Builders). $39/mo, 10k req/day.
   {
     name: "Pro",
     price: "$39",
@@ -63,16 +63,16 @@ const tiers: Tier[] = [
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [
-      "20,000 consultas / día",
-      "20 claves API (lectura y escritura)",
+      "10,000 consultas / día",
+      "10 claves API (lectura y escritura)",
       `Checkout ${MARKET_STATS.paymentsLabel} + full MCP`,
-      "Alertas ilimitadas · historial 12 meses",
+      "10 alertas · historial 12 meses",
     ],
     f_en: [
-      "20,000 requests / day",
-      "20 API keys (read + write)",
+      "10,000 requests / day",
+      "10 API keys (read + write)",
       `Checkout ${MARKET_STATS.paymentsLabel} + full MCP`,
-      "Unlimited alerts · 12-month history",
+      "10 alerts · 12-month history",
     ],
     cta_es: "Configurar suscripción",
     cta_en: "Set up subscription",
