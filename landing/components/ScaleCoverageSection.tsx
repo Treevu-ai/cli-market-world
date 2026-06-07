@@ -5,7 +5,7 @@ import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
-import { API_URL } from "@/lib/api";
+import FunnelMetrics from "@/components/FunnelMetrics";
 
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
@@ -201,6 +201,8 @@ export default function ScaleCoverageSection() {
             </div>
           </details>
         </div>
+
+        <FunnelMetrics />
 
         <p className="text-sm text-[var(--cm-on-surface-variant)]/70 mt-10">
           {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}

@@ -118,10 +118,10 @@ export default function DocsPage() {
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER TIER</h4>
               <p className="font-mono text-lg text-white">5,000 req/day</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
-                {t("USD 29/mes · CSV · activación manual ≤24h.", "USD 29/mo · CSV · manual activation ≤24h.")}
+                {t("USD 29/mes · CSV · PayPal · activación automática.", "USD 29/mo · CSV · PayPal · auto-activation.")}
               </p>
-              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
-                {t("Solicitar Starter →", "Request Starter →")}
+              <a href="/#starter-checkout" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+                {t("Activar Starter →", "Activate Starter →")}
               </a>
             </div>
             <div className="card-cyber header-strip p-6 energy-border-active">
@@ -250,7 +250,7 @@ market --json doctor`}</CodeBlock>
           <SectionHead n={8} title={t("Rate limits", "Rate limits")} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
             <li>Free: 1,000 {t("consultas/día", "requests/day")}</li>
-            <li>Starter: 5,000 {t("consultas/día", "requests/day")} · {t("activación manual", "manual activation")}</li>
+            <li>Starter: 5,000 {t("consultas/día", "requests/day")} · PayPal · {t("activación automática", "auto-activation")}</li>
             <li>Pro: 10,000 {t("consultas/día", "requests/day")}</li>
             <li>Builder: 50,000 {t("consultas/día", "requests/day")}</li>
           </ul>

@@ -15,8 +15,9 @@ FUNNEL_EVENTS = frozenset(
         "login",
         "register",
         "first_search",
-        "request_pro",
+        "starter_subscribe",
         "starter_request",
+        "request_pro",
         "activated",
     }
 )
@@ -151,6 +152,7 @@ def funnel_summary(*, days: int = 30) -> dict[str, Any]:
         {u for u, evs in by_user.items() if "register" in evs}
     )
     search_users = {u for u, evs in by_user.items() if "first_search" in evs}
+    starter_sub_users = {u for u, evs in by_user.items() if "starter_subscribe" in evs}
     pro_users = {u for u, evs in by_user.items() if "request_pro" in evs}
     activated_users = {u for u, evs in by_user.items() if "activated" in evs}
 
@@ -173,10 +175,12 @@ def funnel_summary(*, days: int = 30) -> dict[str, Any]:
             return None
         return round(num / den, 3)
 
+    starter_sub_n = max(events.get("starter_subscribe", 0), len(starter_sub_users))
     steps = [
         ("install", events.get("install", 0)),
         ("register", max(register_n, events.get("register", 0))),
         ("first_search", len(search_users)),
+        ("starter_subscribe", starter_sub_n),
         ("request_pro", len(pro_users)),
         ("activated", len(activated_users)),
     ]
@@ -195,11 +199,13 @@ def funnel_summary(*, days: int = 30) -> dict[str, Any]:
         "events": events,
         "unique_users": {
             "with_search": len(search_users),
+            "with_starter_subscribe": len(starter_sub_users),
             "with_pro_request": len(pro_users),
             "activated": len(activated_users),
         },
         "conversion": {
             "register_to_search": conv(len(search_users), register_n),
+            "search_to_starter": conv(starter_sub_n, len(search_users)),
             "search_to_pro": conv(len(pro_users), len(search_users)),
             "pro_to_activated": conv(len(activated_users), len(pro_users)),
         },

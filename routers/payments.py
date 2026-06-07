@@ -916,6 +916,18 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
         if not out.get("ok"):
             raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
 
+        try:
+            from market_funnel import record_funnel_event
+
+            record_funnel_event(
+                "starter_subscribe",
+                username=username or None,
+                meta={"email": email, "source": "landing"},
+                dedupe=False,
+            )
+        except Exception:
+            pass
+
         if lang == "es":
             out["message"] = (
                 "Confirme Starter en PayPal; se activa en segundos (webhook). "

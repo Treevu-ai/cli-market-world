@@ -61,7 +61,7 @@ export default function DataLicenseAgreement() {
                 <strong>Free:</strong> 1.000 consultas/día · uso de API/MCP de lectura.
               </li>
               <li>
-                <strong>Starter:</strong> 5.000 consultas/día · exportación CSV · activación manual.
+                <strong>Starter:</strong> 5.000 consultas/día · exportación CSV · suscripción PayPal con activación automática.
               </li>
               <li>
                 <strong>Pro:</strong> 10.000 consultas/día · checkout y claves de escritura.
@@ -154,7 +154,7 @@ export default function DataLicenseAgreement() {
                 <strong>Free:</strong> 1,000 requests/day · read API/MCP usage.
               </li>
               <li>
-                <strong>Starter:</strong> 5,000 requests/day · CSV export · manual activation.
+                <strong>Starter:</strong> 5,000 requests/day · CSV export · PayPal subscription with automatic activation.
               </li>
               <li>
                 <strong>Pro:</strong> 10,000 requests/day · checkout and write API keys.
