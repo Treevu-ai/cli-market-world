@@ -1,6 +1,6 @@
 # Shared core library — single source of truth for the data-moat modules.
 # Pinned to a specific commit so the web deploy is reproducible.
-cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@8b6f1f5e2ecbe6389d516a105ba8d279b3b7632c
+cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@e70887d893023c48c422fa1aa7be8957d6c4a107
 
 # Runtime dep the web tier imports directly (also pulled in transitively by the
 # core, kept explicit so the server's Playwright fallback always resolves).
