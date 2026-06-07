@@ -97,8 +97,8 @@ const tiers: Tier[] = [
       `Checkout ${MARKET_STATS.paymentsLabel}`,
       "10 alerts · 12-month history",
     ],
-    cta_es: "Obtener Pro",
-    cta_en: "Get Pro",
+    cta_es: "Configurar suscripción",
+    cta_en: "Set up subscription",
     featured: true,
     proNote_es:
       `Pagos: ${MARKET_STATS.paymentsLabel}. PayPal con activación automática vía webhook. Facturación PEN · RUC 20613045563.`,
@@ -158,11 +158,13 @@ function TierCard({
   isES,
   billing,
   children,
+  footerNote,
 }: {
   tier: Tier;
   isES: boolean;
   billing: Billing;
   children?: React.ReactNode;
+  footerNote?: string;
 }) {
   const isAnnual = billing === "annual";
   const displayPrice = isAnnual && tier.annualPrice ? tier.annualPrice : tier.price;
@@ -173,7 +175,7 @@ function TierCard({
 
   return (
     <div
-      className={`h-full rounded-2xl p-6 text-left flex flex-col relative ${
+      className={`h-full min-h-[22rem] rounded-2xl p-6 text-left flex flex-col ${
         tier.dark
           ? "energy-border-active card-cyber"
           : tier.featured
@@ -182,7 +184,7 @@ function TierCard({
       }`}
     >
       {tier.featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+        <span className="self-center mb-4 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
           {isES ? "Más popular" : "Most popular"}
         </span>
       )}
@@ -204,15 +206,16 @@ function TierCard({
           {displayLatam}{period ? ` ${period}` : ""}
         </p>
       )}
-      {isAnnual && tier.annualPrice && (
-        <p className="text-xs text-[var(--cm-mint)] mb-4 font-mono">
+      {isAnnual && tier.annualPrice ? (
+        <p className="text-xs text-[var(--cm-mint)] mb-4 font-mono min-h-[1.25rem]">
           {isES ? "2 meses gratis" : "2 months free"}
         </p>
+      ) : (
+        <div className="mb-4 min-h-[1.25rem]" aria-hidden="true" />
       )}
-      {!isAnnual && <div className="mb-4" />}
-      <ul className="space-y-2.5 mb-6 flex-1">
+      <ul className="space-y-3 mb-6 flex-1">
         {(isES ? tier.f_es : tier.f_en).map((f, i) => (
-          <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--cm-on-surface-variant)]">
+          <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
             <svg
               className="w-4 h-4 mt-0.5 shrink-0"
               viewBox="0 0 24 24"
@@ -226,19 +229,28 @@ function TierCard({
           </li>
         ))}
       </ul>
-      {children ? (
-        children
-      ) : (
-        <a
-          href={tier.href ?? "#"}
-          className="btn-mint w-full"
-        >
-          {isES ? tier.cta_es : tier.cta_en}
-        </a>
-      )}
+      <div className="mt-auto space-y-3">
+        {children ? (
+          children
+        ) : (
+          <a
+            href={tier.href ?? "#"}
+            className="btn-mint w-full"
+          >
+            {isES ? tier.cta_es : tier.cta_en}
+          </a>
+        )}
+        {footerNote && (
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 text-center font-mono leading-relaxed pt-1 border-t border-[var(--cm-outline-variant)]/20">
+            {footerNote}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
+
+const proTier = tiers.find((t) => t.name === "Pro")!;
 
 export default function Pricing() {
   const { lang } = useLang();
@@ -247,23 +259,26 @@ export default function Pricing() {
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [starterModalOpen, setStarterModalOpen] = useState(false);
 
+  const scrollToProCheckout = () => {
+    document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <section id="pricing" className="landing-section-alt animate-fade-in">
       <div className="landing-container-wide text-center">
         <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">
           {isES ? "Planes" : "Plans"}
         </p>
-        <h2 className="section-title mb-2">
+        <h2 className="section-title">
           {isES ? "Construido para escalar." : "Built to scale."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-8">
+        <p className="section-intro">
           {isES
             ? "Elige tu punto de entrada. Migra cuando crezcas sin cambiar de integración."
             : "Pick your entry point. Migrate as you grow without changing integrations."}
         </p>
 
-        {/* Billing toggle */}
-        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-10">
+        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-12">
           <button
             onClick={() => setBilling("monthly")}
             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
@@ -289,8 +304,7 @@ export default function Pricing() {
           </button>
         </div>
 
-        {/* Pricing cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-7xl mx-auto mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 max-w-7xl mx-auto mb-14">
           {tiers.map((tier, i) => (
             <motion.div
               key={tier.name}
@@ -301,25 +315,29 @@ export default function Pricing() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
             >
-              <TierCard tier={tier} isES={isES} billing={billing}>
+              <TierCard
+                tier={tier}
+                isES={isES}
+                billing={billing}
+                footerNote={
+                  tier.name === "Starter"
+                    ? isES
+                      ? tier.starterNote_es
+                      : tier.starterNote_en
+                    : undefined
+                }
+              >
                 {tier.name === "Pro" ? (
-                  <div id="pro-checkout" className="scroll-mt-24">
-                    <ProSubscribeButton />
-                  </div>
+                  <button type="button" onClick={scrollToProCheckout} className="btn-mint w-full">
+                    {isES ? tier.cta_es : tier.cta_en} ↓
+                  </button>
                 ) : tier.name === "Starter" ? (
-                  <>
-                    <button
-                      onClick={() => setStarterModalOpen(true)}
-                      className="btn-mint w-full"
-                    >
-                      {isES ? tier.cta_es : tier.cta_en}
-                    </button>
-                    {tier.starterNote_es && (
-                      <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
-                        {isES ? tier.starterNote_es : tier.starterNote_en}
-                      </p>
-                    )}
-                  </>
+                  <button
+                    onClick={() => setStarterModalOpen(true)}
+                    className="btn-mint w-full"
+                  >
+                    {isES ? "Solicitar acceso" : "Request access"}
+                  </button>
                 ) : tier.name === "Free" ? (
                   <button
                     onClick={() => setFreeModalOpen(true)}
@@ -329,27 +347,53 @@ export default function Pricing() {
                   </button>
                 ) : null}
               </TierCard>
-              {tier.name === "Pro" && tier.proNote_es && (
-                <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-2 text-center font-mono">
-                  {isES ? tier.proNote_es : tier.proNote_en}
-                </p>
-              )}
             </motion.div>
           ))}
+        </div>
+
+        <div
+          id="pro-checkout"
+          className="scroll-mt-24 max-w-4xl mx-auto mb-14 text-left"
+        >
+          <div className="card-cyber energy-border-active p-6 sm:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+              <div className="space-y-4">
+                <p className="section-eyebrow text-[var(--cm-mint)]">Pro</p>
+                <h3 className="text-xl font-bold text-white">
+                  {isES ? "Suscripción Pro — USD 79/mes" : "Pro subscription — USD 79/mo"}
+                </h3>
+                <ul className="space-y-2 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                  {(isES ? proTier.f_es : proTier.f_en).map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <span className="text-[var(--cm-mint)] shrink-0">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {proTier.proNote_es && (
+                  <p className="text-xs text-[var(--cm-on-surface-variant)]/70 font-mono leading-relaxed pt-3 border-t border-[var(--cm-outline-variant)]/25">
+                    {isES ? proTier.proNote_es : proTier.proNote_en}
+                  </p>
+                )}
+              </div>
+              <div>
+                <ProSubscribeButton />
+              </div>
+            </div>
+          </div>
         </div>
 
         <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
         <FreeSignupModal open={starterModalOpen} onClose={() => setStarterModalOpen(false)} plan="starter" />
 
-        {/* Enterprise CTA */}
-        <div className="border-t border-[var(--cm-outline-variant)]/30 pt-10 text-center">
-          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-3">
+        <div className="border-t border-[var(--cm-outline-variant)]/30 pt-12 text-center">
+          <p className="text-base text-[var(--cm-on-surface-variant)] mb-4">
             {isES
-              ? "¿Necesitas límites, SLAs o licencia de datos personalizados?"
+              ? "¿Necesita límites, SLAs o licencia de datos personalizados?"
               : "Need custom limits, SLAs, or a data license?"}
           </p>
           <a href="/#contact-general" className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all">
-            {isES ? "Contáctanos →" : "Contact us →"}
+            {isES ? "Contáctenos →" : "Contact us →"}
           </a>
         </div>
       </div>
