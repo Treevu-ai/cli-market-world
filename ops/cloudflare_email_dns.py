@@ -59,6 +59,13 @@ def _request(method: str, path: str, body: dict | None = None) -> dict:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         payload = exc.read().decode("utf-8", errors="replace")
+        if exc.code == 403 and "dns_records" in path:
+            raise SystemExit(
+                f"Cloudflare API {method} {path} failed (403).\n"
+                "Token needs: Zone → DNS → Edit + Zone → Zone → Read\n"
+                "Zone Resources: Include → cli-market.dev\n"
+                f"Raw: {payload}"
+            ) from exc
         raise SystemExit(f"Cloudflare API {method} {path} failed ({exc.code}): {payload}") from exc
 
 
