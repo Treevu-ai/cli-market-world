@@ -26,8 +26,6 @@ type Tier = {
   href?: string;
   proNote_es?: string;
   proNote_en?: string;
-  starterNote_es?: string;
-  starterNote_en?: string;
 };
 
 const tiers: Tier[] = [
@@ -75,8 +73,6 @@ const tiers: Tier[] = [
     ],
     cta_es: "Activar Starter",
     cta_en: "Activate Starter",
-    starterNote_es: "PayPal $29/mes · activación automática vía webhook.",
-    starterNote_en: "PayPal $29/mo · automatic activation via webhook.",
   },
   {
     name: "Pro",
@@ -323,13 +319,6 @@ export default function Pricing() {
                 tier={tier}
                 isES={isES}
                 billing={billing}
-                footerNote={
-                  tier.name === "Starter"
-                    ? isES
-                      ? tier.starterNote_es
-                      : tier.starterNote_en
-                    : undefined
-                }
               >
                 {tier.name === "Pro" ? (
                   <button type="button" onClick={scrollToProCheckout} className="btn-mint w-full">
@@ -371,11 +360,7 @@ export default function Pricing() {
                     </li>
                   ))}
                 </ul>
-                {starterTier.starterNote_es && (
-                  <p className="text-xs text-[var(--cm-on-surface-variant)]/70 font-mono leading-relaxed pt-3 border-t border-[var(--cm-outline-variant)]/25">
-                    {isES ? starterTier.starterNote_es : starterTier.starterNote_en}
-                  </p>
-                )}
+
               </div>
               <div>
                 <StarterSubscribeButton />
