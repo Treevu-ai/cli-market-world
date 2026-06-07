@@ -1,7 +1,7 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schema.json",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents \u2014 43 MCP tools to search, compare, and purchase across 38 retailers in 8 countries. 50,000+ real prices, 34 market indicators, refreshed every 4 hours. MIT.",
+  "description": "Commerce infrastructure for AI agents \u2014 22 curated MCP tools (46 legacy) to search, compare, and purchase across 38 retailers in 8 countries. 50,000+ real prices, 34 market indicators, refreshed every 4 hours. MIT.",
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
@@ -13,49 +13,28 @@
   "license": "MIT",
   "language": "Python",
   "tools": [
+    "market_whoami",
+    "market_subscription",
+    "market_favorites",
+    "market_price_alerts",
+    "market_preferences",
+    "market_intel_brief",
+    "market_inflation",
+    "market_scores",
+    "market_stats",
+    "market_export",
+    "market_trending",
     "market_login",
-    "market_lines",
+    "market_discover",
     "market_search",
     "market_compare",
     "market_add",
     "market_cart",
     "market_cart_update",
-    "market_cart_remove",
     "market_checkout",
     "market_orders",
-    "market_reorder",
     "market_ask",
-    "market_basket",
-    "market_inflation",
-    "market_indicators",
-    "market_scores",
-    "market_intel_refresh",
-    "market_enrichment",
-    "market_enrichment_subcategories",
-    "market_enrichment_refresh",
-    "market_analytics_indicators",
-    "market_categories",
-    "market_barcode",
-    "market_enrich",
-    "market_stores",
-    "market_countries",
-    "market_ticket",
-    "market_voice",
-    "market_price_history",
-    "market_stats",
-    "market_alerts",
-    "market_whoami",
-    "market_preferences",
-    "market_subscription",
-    "market_export",
-    "market_trending",
-    "market_scan",
-    "market_stock",
-    "market_brands",
-    "market_favorites",
-    "market_notify",
-    "market_exchange",
-    "market_delivery"
+    "market_basket"
   ],
   "keywords": [
     "vtex",
@@ -71,5 +50,116 @@
   "categories": [
     "commerce",
     "data"
+  ],
+  "default_profile": "default",
+  "profiles": {
+    "default": {
+      "tool_count": 22,
+      "description": "Curated Shop + Intel + Account bundles"
+    },
+    "full": {
+      "tool_count": 43,
+      "description": "Default plus advanced tools and legacy aliases"
+    },
+    "legacy": {
+      "tool_count": 46,
+      "description": "All registered tools (backward compatible)"
+    }
+  },
+  "bundles": {
+    "shop": {
+      "label": "Shop",
+      "tools": [
+        "market_login",
+        "market_discover",
+        "market_search",
+        "market_compare",
+        "market_add",
+        "market_cart",
+        "market_cart_update",
+        "market_checkout",
+        "market_orders",
+        "market_ask",
+        "market_basket"
+      ],
+      "canonical": [
+        "market_discover"
+      ]
+    },
+    "intel": {
+      "label": "Intel",
+      "tools": [
+        "market_intel_brief",
+        "market_inflation",
+        "market_scores",
+        "market_stats",
+        "market_export",
+        "market_trending"
+      ],
+      "canonical": [
+        "market_intel_brief"
+      ]
+    },
+    "account": {
+      "label": "Account",
+      "tools": [
+        "market_whoami",
+        "market_subscription",
+        "market_favorites",
+        "market_price_alerts",
+        "market_preferences"
+      ],
+      "canonical": [
+        "market_price_alerts"
+      ]
+    }
+  },
+  "tools_legacy": [
+    "market_whoami",
+    "market_subscription",
+    "market_favorites",
+    "market_price_alerts",
+    "market_preferences",
+    "market_alerts",
+    "market_notify",
+    "market_intel_refresh",
+    "market_enrichment_refresh",
+    "market_scan",
+    "market_categories",
+    "market_barcode",
+    "market_enrich",
+    "market_ticket",
+    "market_voice",
+    "market_price_history",
+    "market_stock",
+    "market_brands",
+    "market_exchange",
+    "market_delivery",
+    "market_intel_brief",
+    "market_inflation",
+    "market_scores",
+    "market_stats",
+    "market_export",
+    "market_trending",
+    "market_analytics_indicators",
+    "market_enrichment",
+    "market_enrichment_subcategories",
+    "market_indicators",
+    "market_login",
+    "market_discover",
+    "market_search",
+    "market_compare",
+    "market_add",
+    "market_cart",
+    "market_cart_update",
+    "market_checkout",
+    "market_orders",
+    "market_ask",
+    "market_basket",
+    "market_cart_remove",
+    "market_countries",
+    "market_lines",
+    "market_reorder",
+    "market_stores"
   ]
 }
