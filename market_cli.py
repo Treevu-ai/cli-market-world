@@ -139,10 +139,10 @@ WELCOME_BANNER = """\n[#00FF88]  ╭──────────────�
      [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
      [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] 36 mcp tools
-     [#00FF88]>[/] cross-border       [#00FF88]>[/] autónomo         [#00FF88]>[/] open source
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autónomo         [#00FF88]>[/] agent-ready
 
      [#555555]pip install cli-market[/]
-     [#555555]github.com/treevu-ai/cli-market-world[/]
+     [#555555]cli-market.dev[/]
 
      [#00FF88]market login[/]        [#888888]autentícate[/]
      [#00FF88]market search[/]       [#888888]busca en todos los retailers[/]
@@ -160,10 +160,10 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#888888]commerce infrastructure for humans and ai agents[/]
 
      [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] 36 mcp tools
-     [#00FF88]>[/] cross-border       [#00FF88]>[/] autonomous       [#00FF88]>[/] open source
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autonomous       [#00FF88]>[/] agent-ready
 
      [#555555]pip install cli-market[/]
-     [#555555]github.com/treevu-ai/cli-market-world[/]
+     [#555555]cli-market.dev[/]
 
      [#00FF88]market login[/]        [#888888]authenticate[/]
      [#00FF88]market search[/]       [#888888]search across all retailers[/]
@@ -983,8 +983,8 @@ def cmd_about(args):
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
         f"[#888888]Un solo pip install. Una API. {RETAILERS_VERIFIED} retailers en {MS_COUNTRIES} países. {MCP_TOOLS} MCP tools.[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
-        "[#888888]Open source (MIT). Gratis para developers.[/]\n\n"
-        "[dim]github.com/Treevu-ai/cli-market-world[/]",
+        "[#888888]MIT · Gratis para developers.[/]\n\n"
+        "[dim]cli-market.dev · pypi.org/project/cli-market[/]",
         border_style="#00FF88"
     ))
 

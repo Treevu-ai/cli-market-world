@@ -180,14 +180,14 @@ async def telegram_webhook(request: Request):
             "\u2022 Free: 1,000 req/día — pip install cli-market\n"
             "\u2022 Pro: $79/mo — cli-market.dev/#pricing\n"
             "\u2022 Enterprise: hello@cli-market.dev\n\n"
-            "Repo: github.com/Treevu-ai/cli-market-world"
+            "Docs: cli-market.dev/docs"
         )
     elif text in ("/docs", "docs", "api"):
         reply = (
             "<b>Documentación:</b>\n"
             "\u2022 Swagger: /docs\n"
             "\u2022 llms.txt: cli-market.dev/llms.txt\n"
-            "\u2022 README: github.com/Treevu-ai/cli-market-world"
+            "\u2022 Docs: cli-market.dev/docs"
         )
     else:
         reply = "<b>CLI Market Bot</b>\n\nComandos: /search /status /coverage /pricing /docs /help"

@@ -37,7 +37,8 @@ Open an issue with:
 ## Development setup
 
 ```bash
-git clone https://github.com/Treevu-ai/cli-market-world.git
+# Repos are private under Treevu-ai — request access from the maintainer.
+git clone git@github.com:Treevu-ai/cli-market-world.git
 cd cli-market-world
 pip install -r requirements.txt
 python3 market_server.py

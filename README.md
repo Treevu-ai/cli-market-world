@@ -2,8 +2,8 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![CI](https://github.com/Treevu-ai/cli-market-world/actions/workflows/ci.yml/badge.svg)](https://github.com/Treevu-ai/cli-market-world/actions/workflows/ci.yml)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/cli-market?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/cli-market)
+[![PyPI](https://img.shields.io/pypi/v/cli-market.svg)](https://pypi.org/project/cli-market/)
 
 **🌐 [Español](#-español) · [English](#-english)**
 
@@ -157,12 +157,13 @@ cli-market-core      Intelligence — indicators, stats, billing, connectors, 43
 cli-market-world     Exposure — landing, docs, MCP registry, deployment configs (THIS REPO)
 ```
 
-| Repo | GitHub | Role |
+| Repo | Visibility | Role |
 |---|---|---|
-| `cli-market-backend` | [Treevu-ai/cli-market-backend](https://github.com/Treevu-ai/cli-market-backend) | Scrapers + FastAPI API |
-| `cli-market-index` | [Treevu-ai/cli-market-index](https://github.com/Treevu-ai/cli-market-index) | Entity resolution engine |
-| `cli-market-core` | [Treevu-ai/cli-market-core](https://github.com/Treevu-ai/cli-market-core) | Intelligence + MCP tools |
-| `cli-market-world` | [Treevu-ai/cli-market-world](https://github.com/Treevu-ai/cli-market-world) | Landing + docs (this repo) |
+| `cli-market-backend` | Private | Scrapers + FastAPI API |
+| `cli-market-index` | Private | Entity resolution engine |
+| `cli-market-core` | Private | Intelligence + MCP tools |
+| `cli-market-world` | Private | Landing + docs (this repo) |
+| `cli-market-content` | Private | GTM + content calendar |
 
 ---
 

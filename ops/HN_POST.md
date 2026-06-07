@@ -26,7 +26,7 @@ The hard part isn't the code — it's maintaining connectors for 66 retailers wh
 
 Would love feedback from anyone building AI agents or working on retail infrastructure.
 
-Repo: https://github.com/Treevu-ai/cli-market-world
+Site: https://cli-market.dev · PyPI: https://pypi.org/project/cli-market/
 Demo: https://cli-market.dev (the landing has a 60s terminal GIF showing a full agent checkout)
 
 ---

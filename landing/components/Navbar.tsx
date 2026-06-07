@@ -70,12 +70,12 @@ export default function Navbar() {
             {isES ? "Cuenta" : "Account"}
           </a>
           <a
-            href="https://github.com/Treevu-ai/cli-market-world"
+            href="https://pypi.org/project/cli-market/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
           >
-            GitHub
+            PyPI
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
             className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white cursor-pointer">
@@ -108,9 +108,9 @@ export default function Navbar() {
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             {isES ? "Cuenta" : "Account"}
           </a>
-          <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener noreferrer" onClick={close}
+          <a href="https://pypi.org/project/cli-market/" target="_blank" rel="noopener noreferrer" onClick={close}
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
-            GitHub
+            PyPI
           </a>
           <a href="/#pricing" onClick={close}
              className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-1">
