@@ -52,9 +52,6 @@ export default function Footer() {
             {isES ? "Arquitectura" : "Architecture"}
           </a>
           <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            PyPI Package
-          </a>
-          <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             PyPI
           </a>
         </div>

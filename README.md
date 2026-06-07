@@ -57,12 +57,12 @@ market enrichment --refresh -c PE
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
 | **Precio** | $0 | $39/mes | A medida |
-| **Solicitudes/día** | 2,000 | 20,000 | Ilimitadas (negociado) |
+| **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
 | **Agente intel** | — | Ilimitado | Ilimitado + white-label |
 | **Alertas de precio** | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
-| **Historial de precios** | 7 días | 30 días | Completo |
+| **Historial de precios** | 7 días | 12 meses | Completo |
 | **Exportar datos** | — | CSV ilimitado + cron | Feed directo S3/webhook |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Soporte** | Comunidad | Email 4h | 24/7 + SLA escrito |
@@ -118,12 +118,12 @@ market enrichment --refresh -c PE
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
 | **Price** | $0 | $39/mo | Custom |
-| **Requests/day** | 2,000 | 20,000 | Unlimited (negotiated) |
+| **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
 | **Intel agent** | — | Unlimited | Unlimited + white-label |
 | **Price alerts** | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |
-| **Price history** | 7 days | 30 days | Full dataset |
+| **Price history** | 7 days | 12 months | Full dataset |
 | **Export** | — | CSV unlimited + cron | Direct S3/webhook feed |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Support** | Community | Email 4h | 24/7 + written SLA |
