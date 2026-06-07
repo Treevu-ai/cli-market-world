@@ -301,8 +301,8 @@ def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = 
         "",
         "## KPI 2 · Revenue",
         "",
-        f"- Starter: **{rev['starter_subscribe']}** · Pro request: **{rev['request_pro']}** · "
-        f"Activated: **{rev['activated']}**",
+        f"- Pro subscriptions: **{rev['starter_subscribe'] + rev.get('request_pro', 0)}** (metrics legacy key) · "
+        f"Activated: **{rev['activated']}**",  # Note: backend keys kept for compatibility; user-facing now "Pro" only
         f"- Meta semanal paid: **{rev['weekly_paid_goal']}**",
         f"- Estado: **{rev['status']}**",
         "",

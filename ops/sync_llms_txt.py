@@ -32,7 +32,7 @@ Commerce infrastructure for AI agents. {s.RETAILERS_PHRASE_EN} across {s.COUNTRI
 - {s.INDICATORS_COUNT} market indicators (shelf moat + public API enrichment)
 - Payments: {s.PAYMENTS_LABEL}
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- 5 pricing tiers (Free $0, Starter $29/mo, Pro $79/mo, Builder $149/mo, Enterprise custom)
+- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1-2k req/día), Pro $39/mo (20k req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
 
 ## Checkout endpoints
 

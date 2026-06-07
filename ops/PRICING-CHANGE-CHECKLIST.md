@@ -62,8 +62,8 @@ Cada vez que cambien precios, tiers o payment methods, esta lista debe quedar 10
 git fetch origin && git checkout origin/main -- README.md
 
 # 2. Verificar que el README tenga los precios correctos
-grep "Starter\|Pro\|Builder" README.md | grep "\$"
-# Debe mostrar $29, $79, $149 — si no, NO continuar
+grep "Free\|Pro\|Enterprise" README.md | grep -E "\$|39|custom"
+# Debe mostrar Free + Pro $39 + Enterprise — si no, NO continuar (pricing simplificado a 3 tiers, foco 1 ICP)
 
 # 3. Bump de versión (elegir el próximo número)
 sed -i 's/version = "X.X.X"/version = "X.X.Y"/' pyproject.toml
@@ -79,7 +79,7 @@ twine upload dist/cli_market-X.X.Y*
 - [ ] `pyproject.toml` version bumpeado (paso 5)
 - [ ] `market_stats.py` PACKAGE_VERSION bumpeado (paso 1)
 - [ ] `git fetch origin && git checkout origin/main -- README.md` ejecutado
-- [ ] `grep "Starter\|Pro\|Builder" README.md | grep "\$"` muestra $29/$79/$149
+- [ ] `grep "Free\|Pro\|Enterprise" README.md | grep -E "\$|39"` muestra Free + Pro $39 (simplificado)
 - [ ] `python3 -m build && twine upload dist/cli_market-NUEVA_VERSION*`
 - [ ] https://pypi.org/project/cli-market/ muestra precios correctos
 

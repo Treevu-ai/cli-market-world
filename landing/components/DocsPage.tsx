@@ -120,8 +120,8 @@ export default function DocsPage() {
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("USD 29/mes · CSV · PayPal.", "USD 29/mo · CSV · PayPal.")}
               </p>
-              <a href="/#starter-checkout" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
-                {t("Activar Starter →", "Activate Starter →")}
+              <a href="/#pro-checkout" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+                {t("Activar Pro →", "Activate Pro →")}
               </a>
             </div>
             <div className="card-cyber header-strip p-6 energy-border-active">
@@ -251,8 +251,8 @@ market --json doctor`}</CodeBlock>
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
             <li>Free: 1,000 {t("consultas/día", "requests/day")}</li>
             <li>Starter: 5,000 {t("consultas/día", "requests/day")} · PayPal · CSV</li>
-            <li>Pro: 10,000 {t("consultas/día", "requests/day")}</li>
-            <li>Builder: 50,000 {t("consultas/día", "requests/day")}</li>
+            <li>Pro: 20,000 {t("consultas/día", "requests/day")}</li>
+            <li>Enterprise: custom limits + SLAs</li>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Planes completos en ", "Full plans at ")}{" "}

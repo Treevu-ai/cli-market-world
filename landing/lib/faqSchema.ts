@@ -19,7 +19,7 @@ export const FAQ_SCHEMA_ES = [
   },
   {
     q: "¿Cuánto cuesta?",
-    a: "La CLI es open source (MIT). Free: 1,000 consultas/día. Starter: USD 29/mes (5,000/día, CSV). Pro: USD 79/mes con checkout y export.",
+    a: "La CLI es open source (MIT). Free: 2,000 consultas/día. Pro: USD 39/mes (20,000/día, alerts, full MCP + checkout). Enterprise custom para equipos.",
   },
 ];
 
@@ -42,7 +42,7 @@ export const FAQ_SCHEMA_EN = [
   },
   {
     q: "How much does it cost?",
-    a: "The CLI is open source (MIT). Free: 1,000 requests/day. Starter: USD 29/mo (5,000/day, CSV). Pro: USD 79/mo with checkout and export.",
+    a: "The CLI is open source (MIT). Free: 2,000 requests/day. Pro: USD 39/mo (20,000/day, alerts, full MCP + checkout). Enterprise custom for teams.",
   },
 ];
 

@@ -34,13 +34,13 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
     steps = {
         "free": {
             "next_tier": "starter",
-            "title_es": "Starter — alertas y export CSV",
-            "title_en": "Starter — alerts and CSV export",
-            "cli_es": "market register  →  Starter en cli-market.dev/#starter-checkout",
-            "cli_en": "market register  →  Starter at cli-market.dev/#starter-checkout",
-            "url": "https://cli-market.dev/#starter-checkout",
-            "cta_es": "Activar Starter (PayPal)",
-            "cta_en": "Activate Starter (PayPal)",
+            "title_es": "Pro — alertas, checkout y full MCP (foco principal para Agent Builders)",
+            "title_en": "Pro — alerts, checkout and full MCP (primary for AI Agent Builders)",
+            "cli_es": "market register  →  Pro en cli-market.dev/#pro-checkout",
+            "cli_en": "market register  →  Pro at cli-market.dev/#pro-checkout",
+            "url": "https://cli-market.dev/#pro-checkout",
+            "cta_es": "Activar Pro (PayPal)",
+            "cta_en": "Activate Pro (PayPal)",
         },
         "starter": {
             "next_tier": "pro",
@@ -112,9 +112,9 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
                 "request_id": req_id,
                 "approve_url": pending.get("payment_link"),
                 "message": (
-                    "Starter pendiente: confirme en PayPal — activación en segundos."
+                    "Pro pendiente: confirme en PayPal — activación en segundos."
                     if es
-                    else "Starter pending: confirm on PayPal — activates in seconds."
+                    else "Pro pending: confirm on PayPal — activates in seconds."
                 ),
             }
         return {
@@ -135,9 +135,9 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
             "request_id": pending.get("id"),
             "approve_url": pending.get("payment_link"),
             "message": (
-                "Starter pendiente: complete el checkout en la landing (enlace por email)."
+                "Pro pendiente: complete el checkout en la landing (enlace por email)."
                 if es
-                else "Starter pending: complete checkout on the landing (link emailed)."
+                else "Pro pending: complete checkout on the landing (link emailed)."
             ),
         }
     return {
