@@ -792,7 +792,7 @@ def print_account_dashboard(console: Console, data: dict[str, Any]) -> None:
 
     hints = ["market doctor", "market search \"leche\" --country PE"]
     if tier == "free":
-        hints.insert(0, "market upgrade")
+        hints.insert(0, "market upgrade --plan starter")
     elif tier == "starter":
-        hints.insert(0, "market upgrade")
+        hints.insert(0, "market upgrade --plan pro")
     print_intel_footer(console, hints)

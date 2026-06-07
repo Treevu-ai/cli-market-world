@@ -76,7 +76,7 @@ T = {
         "hello": "Onboarding post-install y próximos pasos",
         "register": "Crear cuenta free y API key (sk-)",
         "share": "Link de referido para compartir CLI Market",
-        "upgrade": "Solicitar Pro — email con link de pago",
+        "upgrade": "Upgrade Starter/Pro — suscripción PayPal",
         "doctor": "Diagnóstico: API, auth, tier y MCP",
         "init": "Onboarding completo: API, cuenta, MCP",
         "shell": "Sesión interactiva tipo agente (REPL)",
@@ -111,7 +111,7 @@ T = {
         "hello": "Post-install onboarding and next steps",
         "register": "Create free account and API key (sk-)",
         "share": "Referral link to share CLI Market",
-        "upgrade": "Request Pro — email with payment link",
+        "upgrade": "Upgrade Starter/Pro — PayPal subscription",
         "doctor": "Diagnostics: API, auth, tier, and MCP",
         "init": "Full onboarding: API, account, MCP",
         "shell": "Interactive agent-style session (REPL)",
@@ -1034,7 +1034,9 @@ def cmd_whoami(args):
         f"checkout: {'yes' if tier in ('pro', 'builder', 'enterprise') else 'no'}"
     )
     if tier == "free":
-        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade[/]")
+        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade --plan starter[/]")
+    elif tier == "starter":
+        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade --plan pro[/]")
 
 
 def cmd_register(args):
@@ -1540,9 +1542,11 @@ def cmd_upgrade(args):
     """Upgrade via PayPal subscription (Starter $29 or Pro $79 — auto-activate webhook)."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    plan = (getattr(args, "plan", None) or "pro").strip().lower()
+    plan = (getattr(args, "plan", None) or "").strip().lower()
     if plan not in ("pro", "starter"):
-        plan = "pro"
+        sub_data = cli_api("GET", "/auth/subscription")
+        tier = (sub_data.get("subscription") or {}).get("tier", "free")
+        plan = "starter" if tier == "free" else "pro"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
 
     if manual:
@@ -1772,7 +1776,12 @@ def main():
     sub.add_parser("hello", help=t("hello"))
     sub.add_parser("share", help=t("share"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
-    p.add_argument("--plan", choices=["pro", "starter"], default="pro", help="Tier: pro (default) or starter")
+    p.add_argument(
+        "--plan",
+        choices=["pro", "starter"],
+        default=None,
+        help="Tier: starter (default on free) or pro (default on starter)",
+    )
     p.add_argument("--email", help="Email to receive payment link (manual Pro fallback)")
     p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
 

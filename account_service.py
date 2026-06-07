@@ -128,6 +128,18 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
                 else "Pro pending: confirm on PayPal — activates in seconds."
             ),
         }
+    if is_starter:
+        return {
+            "state": "starter_pending_manual",
+            "activation": "manual",
+            "request_id": pending.get("id"),
+            "approve_url": pending.get("payment_link"),
+            "message": (
+                "Starter pendiente: complete el checkout en la landing (enlace por email)."
+                if es
+                else "Starter pending: complete checkout on the landing (link emailed)."
+            ),
+        }
     return {
         "state": "pro_pending_manual",
         "activation": "manual",
