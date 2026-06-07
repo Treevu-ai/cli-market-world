@@ -34,7 +34,7 @@ export default function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label={isES ? "Aviso de cookies" : "Cookie notice"}
-      className="fixed bottom-0 inset-x-0 z-[60] p-4 md:p-6 pointer-events-none"
+      className="fixed bottom-0 inset-x-0 z-50 p-4 md:px-6 md:pb-6 pointer-events-none"
     >
       <div className="landing-container-wide pointer-events-auto">
         <div className="card-cyber border border-[var(--cm-outline-variant)]/40 p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 shadow-lg">
