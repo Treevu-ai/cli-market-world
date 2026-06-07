@@ -161,7 +161,7 @@ cli-market-world     Exposure — landing, docs, MCP registry, deployment config
 |---|---|---|
 | `cli-market-backend` | Private | Scrapers + FastAPI API |
 | `cli-market-index` | Private | Entity resolution engine |
-| `cli-market-core` | Private | Intelligence + MCP tools |
+| `cli-market-core` | Public | Intelligence + MCP tools |
 | `cli-market-world` | Private | Landing + docs (this repo) |
 | `cli-market-content` | Private | GTM + content calendar |
 
