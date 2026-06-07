@@ -4,6 +4,7 @@ import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import { recordPipInstallIntent } from "@/lib/funnel";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -38,6 +39,7 @@ export default function Hero() {
         <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
           <a
             href="https://pypi.org/project/cli-market/"
+            onClick={() => recordPipInstallIntent("landing_hero")}
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">

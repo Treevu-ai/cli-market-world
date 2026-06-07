@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { recordPipInstallIntent } from "@/lib/funnel";
 
 const steps = [
   { cmd: "pip install cli-market", out_es: `cli-market ${MARKET_STATS.packageVersion} instalado`, out_en: `cli-market ${MARKET_STATS.packageVersion} installed`, label: "Install", icon: "↓" },
@@ -33,7 +34,24 @@ export default function HowItWorks() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left mb-12 min-w-0">
           {steps.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }} className="card-cyber px-5 py-5 flex items-start gap-4 min-w-0 overflow-hidden">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="card-cyber px-5 py-5 flex items-start gap-4 min-w-0 overflow-hidden"
+              onClick={i === 0 ? () => recordPipInstallIntent("landing_how_install") : undefined}
+              role={i === 0 ? "button" : undefined}
+              tabIndex={i === 0 ? 0 : undefined}
+              onKeyDown={
+                i === 0
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") recordPipInstallIntent("landing_how_install");
+                    }
+                  : undefined
+              }
+            >
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>

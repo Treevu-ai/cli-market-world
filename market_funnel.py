@@ -75,12 +75,19 @@ def record_funnel_event(
     user = (username or "").strip() or None
     sid = (session_id or "").strip() or None
 
-    if dedupe and user:
+    if dedupe:
         db = get_db()
-        row = db.execute(
-            "SELECT id FROM funnel_events WHERE event=? AND username=? LIMIT 1",
-            (event, user),
-        ).fetchone()
+        row = None
+        if user:
+            row = db.execute(
+                "SELECT id FROM funnel_events WHERE event=? AND username=? LIMIT 1",
+                (event, user),
+            ).fetchone()
+        elif sid and event == "install":
+            row = db.execute(
+                "SELECT id FROM funnel_events WHERE event=? AND session_id=? LIMIT 1",
+                (event, sid),
+            ).fetchone()
         db.close()
         if row:
             return {"ok": True, "deduped": True, "event": event}
