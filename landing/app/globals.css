@@ -256,8 +256,8 @@ section[id] {
   border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 30%, transparent);
 }
 
-.cookie-banner-spacer {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+body.cookie-banner-active {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Fade-in on scroll */
