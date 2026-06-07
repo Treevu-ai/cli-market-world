@@ -38,6 +38,7 @@ jobs:
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
           # Optional: GitHub secret CLI_MARKET_CONTENT_DIR if content repo is checked out alongside
           CLI_MARKET_CONTENT_DIR: ${{ secrets.CLI_MARKET_CONTENT_DIR }}
+          PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
         run: python3 ops/daily_briefing.py
 
       - name: Commit daily reports
