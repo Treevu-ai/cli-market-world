@@ -740,6 +740,37 @@ def test_admin_disabled_without_token(monkeypatch):
     assert r.status_code == 503
 
 
+# ── Intelligence brief (PR3) ─────────────────────────────────────────────────
+
+def test_intel_brief_requires_auth():
+    r = client.get("/v1/intel/brief?country=PE")
+    assert r.status_code == 401
+
+
+def test_intel_brief_returns_narrative():
+    r = client.get(
+        "/v1/intel/brief?country=PE&days=7",
+        headers={"Authorization": "Bearer test-token-123"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert "headline" in data
+    assert "shelf" in data
+    assert "macro_gap" in data
+    assert "confidence" in data
+    assert "scores" in data
+    assert data["country"] == "PE"
+
+
+def test_intel_scores_available():
+    r = client.get(
+        "/v1/intel/scores?country=PE",
+        headers={"Authorization": "Bearer test-token-123"},
+    )
+    assert r.status_code == 200
+    assert "scores" in r.json()
+
+
 # ── Conversational intel agent (/v1/intel/ask) ──────────────────────────────
 
 def test_intel_ask_requires_auth():

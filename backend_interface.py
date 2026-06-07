@@ -29,10 +29,12 @@ _RETAILER_ONBOARDING_AVAILABLE = True
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
     INDICATOR_DEFINITIONS,
+    build_intel_brief,
     compute_internal_inflation_avg,
     compute_staple_price_momentum,
     get_indicator_catalog,
     get_latest_values,
+    get_scores as _core_get_scores,
     refresh_after_collection,
     refresh_enrichment_only,
     refresh_indicators,
@@ -71,11 +73,11 @@ from data_v1_service import (
 # These were private-backend-only; keep them as 503 stubs so the affected
 # endpoints respond cleanly instead of crashing at import.
 
-_SCORES_AVAILABLE = False
+_SCORES_AVAILABLE = True
 
 
-def get_scores(*_a: Any, **_kw: Any) -> Any:
-    raise HTTPException(503, "Composite scores unavailable (not part of the shared core).")
+def get_scores(*args: Any, **kwargs: Any) -> Any:
+    return _core_get_scores(*args, **kwargs)
 
 
 def submit_retailer_application(*_a: Any, **_kw: Any) -> dict:
@@ -91,6 +93,7 @@ __all__ = [
     # market_indicators
     "ENRICHMENT_INDICATOR_KEYS",
     "INDICATOR_DEFINITIONS",
+    "build_intel_brief",
     "compute_internal_inflation_avg",
     "compute_staple_price_momentum",
     "get_indicator_catalog",
