@@ -171,8 +171,8 @@ export default function FreeSignupModal({
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES
-                  ? "Starter se activa en segundos tras confirmar el pago (webhook). Recomendado: market register antes del checkout."
-                  : "Starter activates in seconds after payment confirmation (webhook). Recommended: run market register before checkout."}
+                  ? "Checkout PayPal en la sección de planes. Recomendado: market register antes."
+                  : "PayPal checkout in the plans section. Recommended: run market register first."}
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">

@@ -98,9 +98,9 @@ const tiers: Tier[] = [
     cta_en: "Set up subscription",
     featured: true,
     proNote_es:
-      `Pagos: ${MARKET_STATS.paymentsLabel}. PayPal con activación automática vía webhook. Facturación PEN · RUC 20613045563.`,
+      `Pagos: ${MARKET_STATS.paymentsLabel}. Suscripción PayPal. Facturación PEN · RUC 20613045563.`,
     proNote_en:
-      `Payments: ${MARKET_STATS.paymentsLabel}. PayPal auto-activation via webhook. PEN invoicing · tax ID 20613045563.`,
+      `Payments: ${MARKET_STATS.paymentsLabel}. PayPal subscription. PEN invoicing · tax ID 20613045563.`,
   },
   {
     name: "Builder",

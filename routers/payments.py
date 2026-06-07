@@ -845,13 +845,13 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
 
         if lang == "es":
             out["message"] = (
-                "Confirme la suscripción en PayPal; Pro se activa en segundos (webhook). "
+                "Confirme la suscripción en PayPal. "
                 + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
                 + "Luego: market whoami"
             )
         else:
             out["message"] = (
-                "Confirm subscription in PayPal; Pro activates in seconds (webhook). "
+                "Confirm subscription in PayPal. "
                 + ("We emailed you the link. " if out.get("email_sent") else "")
                 + "Then: market whoami"
             )
@@ -930,13 +930,13 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
 
         if lang == "es":
             out["message"] = (
-                "Confirme Starter en PayPal; se activa en segundos (webhook). "
+                "Confirme Starter en PayPal. "
                 + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
                 + "Luego: market whoami"
             )
         else:
             out["message"] = (
-                "Confirm Starter on PayPal; activates in seconds (webhook). "
+                "Confirm Starter on PayPal. "
                 + ("We emailed you the link. " if out.get("email_sent") else "")
                 + "Then: market whoami"
             )

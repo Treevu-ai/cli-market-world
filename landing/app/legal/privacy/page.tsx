@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 <strong>Datos de transacción:</strong> detalles del pedido y eventos de
-                confirmación de pago (vía webhook de PayPal). No almacenamos números de tarjeta
+                confirmación de pago de PayPal. No almacenamos números de tarjeta
                 ni credenciales de pago completas.
               </li>
               <li>
@@ -175,7 +175,7 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 <strong>Transaction data:</strong> order details and payment confirmation events
-                (via PayPal webhook). We do not store card numbers or full payment credentials.
+                (via PayPal). We do not store card numbers or full payment credentials.
               </li>
               <li>
                 <strong>Technical data:</strong> IP address (for rate limiting and abuse

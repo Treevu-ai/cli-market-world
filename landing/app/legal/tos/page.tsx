@@ -86,8 +86,8 @@ export default function TermsOfService() {
                 suscripción recurrente en PayPal, salvo acuerdo escrito distinto.
               </li>
               <li>
-                La activación del tier Pro ocurre automáticamente tras la confirmación del pago
-                (webhook). Puede verificar con <code>market whoami</code>.
+                La activación del tier Pro ocurre automáticamente tras la confirmación del pago.
+                Puede verificar con <code>market whoami</code>.
               </li>
               <li>
                 Puede cancelar la renovación en cualquier momento desde su cuenta PayPal o
@@ -234,7 +234,7 @@ export default function TermsOfService() {
                 subscription unless otherwise agreed in writing.
               </li>
               <li>
-                Pro tier activates automatically after payment confirmation (webhook). Verify with{" "}
+                Pro tier activates automatically after payment confirmation. Verify with{" "}
                 <code>market whoami</code>.
               </li>
               <li>

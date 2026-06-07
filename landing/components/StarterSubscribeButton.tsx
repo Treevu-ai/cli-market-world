@@ -120,13 +120,13 @@ export default function StarterSubscribeButton() {
       <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/50 p-2.5">
         {isES ? (
           <>
-            Plan Starter: <strong>USD 29/mes</strong>, renovación automática vía PayPal. Activación en segundos tras
-            confirmar (webhook). Recomendado: <code className="text-[var(--cm-mint)]">market register</code> antes.
+            Plan Starter: <strong>USD 29/mes</strong>, renovación automática vía PayPal. Recomendado:{" "}
+            <code className="text-[var(--cm-mint)]">market register</code> antes del checkout.
           </>
         ) : (
           <>
-            Starter plan: <strong>USD 29/mo</strong>, auto-renewal via PayPal. Activates in seconds after confirmation
-            (webhook). Recommended: <code className="text-[var(--cm-mint)]">market register</code> first.
+            Starter plan: <strong>USD 29/mo</strong>, auto-renewal via PayPal. Recommended:{" "}
+            <code className="text-[var(--cm-mint)]">market register</code> before checkout.
           </>
         )}
       </p>
