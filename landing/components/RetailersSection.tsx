@@ -20,12 +20,10 @@ export default function RetailersSection() {
   const benefits = isES
     ? ["Sin costo, siempre. MIT. Sin letra chica.",
        "Sin integración técnica. Si ya vende online, ya está listo.",
-       "Canal nuevo: agentes que comparan precios en tiempo real.",
-       "Cada día fuera = ventaja para su competidor."]
+       "Canal nuevo: agentes que comparan precios en tiempo real."]
     : ["Free forever. MIT. No fine print.",
        "Zero technical integration. If you sell online, you're already ready.",
-       "New channel: agents comparing prices in real time.",
-       "Every day you're out = your rival's advantage."];
+       "New channel: agents comparing prices in real time."];
 
   return (
     <section id="retailers" className="landing-section-alt animate-fade-in" itemScope itemType="https://schema.org/Service">

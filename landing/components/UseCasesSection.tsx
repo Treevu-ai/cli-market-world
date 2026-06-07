@@ -48,16 +48,16 @@ export default function UseCasesSection() {
         <p className="section-eyebrow mb-4">
           {isES ? "Casos de uso" : "Use cases"}
         </p>
-        <h2 className="section-title mb-2">
+        <h2 className="section-title">
           {isES ? "Una API. Múltiples aplicaciones." : "One API. Multiple applications."}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto mb-10">
+        <p className="section-intro max-w-xl">
           {isES
             ? "Desde agentes de compra hasta equipos de datos: los mismos precios verificados para todos."
             : "From shopping agents to data teams: the same verified prices for everyone."}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[800px] mx-auto text-left mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[800px] mx-auto text-left mb-12">
           {cases.map((c, i) => (
             <motion.a
               key={c.title_es}
@@ -68,7 +68,7 @@ export default function UseCasesSection() {
               href={c.href}
               target={c.href.startsWith("http") ? "_blank" : undefined}
               rel={c.href.startsWith("http") ? "noopener" : undefined}
-              className="card-cyber p-6 flex flex-col gap-3 hover:border-[var(--cm-mint)]/30 transition-colors"
+              className="card-cyber card-cyber-interactive p-6 flex flex-col gap-4 hover:border-[var(--cm-mint)]/30 transition-colors"
             >
               <span className="text-2xl" aria-hidden="true">{c.icon}</span>
               <h3 className="text-sm font-bold text-white">

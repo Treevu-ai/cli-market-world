@@ -80,27 +80,27 @@ export default function IntelligenceSection() {
       className="landing-section animate-fade-in scroll-mt-20"
     >
       <div className="landing-container-wide">
-        <div className="text-center mb-10">
+        <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 mb-3">
             <p className="section-eyebrow text-[var(--cm-mint)]">Intelligence</p>
             <span className="text-xs font-semibold bg-[var(--cm-mint)]/15 text-[var(--cm-mint)] border border-[var(--cm-mint)]/30 px-2 py-0.5 rounded-full">
               {isES ? "Próximamente" : "Coming soon"}
             </span>
           </div>
-          <h2 className="section-title mb-3">
+          <h2 className="section-title">
             {isES
               ? "Precios reales de góndola. No estimaciones de 30 días."
               : "Real shelf prices. Not 30-day estimates."}
           </h2>
-          <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-xl mx-auto">
+          <p className="section-intro max-w-xl">
             {isES
               ? "Para equipos de pricing, trade marketing y análisis en CPG, retail y fintech."
               : "For pricing, trade marketing, and analytics teams in CPG, retail, and fintech."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+          <div className="space-y-5">
             {benefits.map((b) => (
               <div key={b.icon} className="flex items-start gap-3">
                 <span className="text-xl shrink-0 mt-0.5">{b.icon}</span>
@@ -110,7 +110,7 @@ export default function IntelligenceSection() {
               </div>
             ))}
 
-            <div className="mt-6 rounded-xl border border-[var(--cm-outline-variant)]/30 p-4 space-y-2">
+            <div className="mt-8 rounded-xl border border-[var(--cm-outline-variant)]/30 p-5 space-y-3">
               <p className="text-xs font-semibold text-[var(--cm-on-surface-variant)]/60 uppercase tracking-wider mb-3">
                 {isES ? "vs. el status quo" : "vs. the status quo"}
               </p>
