@@ -48,6 +48,13 @@ def _cached_dashboard_data() -> dict:
         market_core.recover_pg_if_needed()
     except Exception:
         pass
+    now = time.monotonic()
+    if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
+        return _dashboard_data_cache
+    data = _dashboard_data()
+    _dashboard_data_cache = data
+    _dashboard_data_cache_at = now
+    return data
 
 
 def get_cached_dashboard_data() -> dict:
@@ -57,13 +64,6 @@ def get_cached_dashboard_data() -> dict:
     over importing the private _cached_dashboard_data directly.
     """
     return _cached_dashboard_data()
-    now = time.monotonic()
-    if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
-        return _dashboard_data_cache
-    data = _dashboard_data()
-    _dashboard_data_cache = data
-    _dashboard_data_cache_at = now
-    return data
 
 
 def _build_moat_guide(
