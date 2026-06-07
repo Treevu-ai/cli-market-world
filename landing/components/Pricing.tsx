@@ -23,6 +23,7 @@ type Tier = {
   cta_en: string;
   dark?: boolean;
   featured?: boolean;
+  starterPick?: boolean;
   href?: string;
   proNote_es?: string;
   proNote_en?: string;
@@ -73,6 +74,7 @@ const tiers: Tier[] = [
     ],
     cta_es: "Activar Starter",
     cta_en: "Activate Starter",
+    starterPick: true,
   },
   {
     name: "Pro",
@@ -180,6 +182,11 @@ function TierCard({
             : "card-cyber"
       }`}
     >
+      {tier.starterPick && (
+        <span className="self-center mb-4 border border-[var(--cm-mint)]/50 text-[var(--cm-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+          {isES ? "Primer upgrade" : "First upgrade"}
+        </span>
+      )}
       {tier.featured && (
         <span className="self-center mb-4 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
           {isES ? "Más popular" : "Most popular"}
@@ -345,7 +352,7 @@ export default function Pricing() {
           id="starter-checkout"
           className="scroll-mt-24 max-w-4xl mx-auto mb-10 text-left"
         >
-          <div className="card-cyber p-6 sm:p-8">
+          <div className="card-cyber energy-border-active p-6 sm:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
               <div className="space-y-4">
                 <p className="section-eyebrow text-[var(--cm-mint)]">Starter</p>
@@ -373,7 +380,7 @@ export default function Pricing() {
           id="pro-checkout"
           className="scroll-mt-24 max-w-4xl mx-auto mb-14 text-left"
         >
-          <div className="card-cyber energy-border-active p-6 sm:p-8">
+          <div className="card-cyber p-6 sm:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
               <div className="space-y-4">
                 <p className="section-eyebrow text-[var(--cm-mint)]">Pro</p>
@@ -393,6 +400,23 @@ export default function Pricing() {
                     {isES ? proTier.proNote_es : proTier.proNote_en}
                   </p>
                 )}
+                <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
+                  {isES ? (
+                    <>
+                      ¿Solo alertas y CSV?{" "}
+                      <button type="button" onClick={scrollToStarterCheckout} className="text-[var(--cm-mint)] underline">
+                        Starter USD 29/mes →
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Only need alerts and CSV?{" "}
+                      <button type="button" onClick={scrollToStarterCheckout} className="text-[var(--cm-mint)] underline">
+                        Starter USD 29/mo →
+                      </button>
+                    </>
+                  )}
+                </p>
               </div>
               <div>
                 <ProSubscribeButton />

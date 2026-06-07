@@ -16,6 +16,7 @@ Endpoints:
   POST /checkout/paypal-webhook  PayPal IPN/webhooks
   GET  /checkout/rates      FX rates with PEN base (Wise; fallback if down)
   POST /billing/request-pro  Email payment link (manual Pro — default)
+  POST /billing/request-starter  Email Starter checkout link (fallback)
   POST /billing/paypal      PayPal Subscription (authenticated CLI)
   POST /billing/paypal-subscribe  PayPal Subscription (landing — auto-activate)
   POST /billing/checkout    Stripe Checkout — DISABLED (no activation webhook yet)
@@ -592,6 +593,176 @@ async def mercadopago_webhook(request: Request):
     }
 
 
+STARTER_CHECKOUT_URL = os.getenv(
+    "STARTER_PAYMENT_URL",
+    "https://cli-market.dev/#starter-checkout",
+)
+
+
+def _record_plan_funnel_event(
+    plan: str,
+    *,
+    username: str = "",
+    email: str = "",
+    source: str = "billing",
+) -> None:
+    try:
+        from market_funnel import record_funnel_event
+
+        event = "starter_subscribe" if plan == "starter" else "request_pro"
+        record_funnel_event(
+            event,
+            username=username or None,
+            meta={"email": email, "source": source},
+            dedupe=False,
+        )
+    except Exception:
+        pass
+
+
+def _send_starter_payment_email(
+    *,
+    to_email: str,
+    username: str,
+    request_id: str,
+    lang: str = "en",
+    checkout_url: str = STARTER_CHECKOUT_URL,
+) -> dict:
+    from market_connectors.email_outbound import STARTER_PRICE_LABEL, _send
+
+    if lang == "es":
+        subject = "Tu acceso Starter — CLI Market"
+        text = f"""Hola {username or ''},
+
+Recibimos tu solicitud de CLI Market Starter.
+
+Plan Starter — {STARTER_PRICE_LABEL}
+• 5.000 consultas API / día
+• 3 alertas de precio
+• Exportación CSV
+
+CHECKOUT STARTER → {checkout_url}
+
+Referencia: {request_id}
+
+Tras pagar en PayPal, Starter se activa en segundos (webhook). Verifique: market whoami
+
+— Ricardo · CLI Market
+hello@cli-market.dev
+"""
+    else:
+        subject = "Your Starter access — CLI Market"
+        text = f"""Hi {username or ''},
+
+We received your CLI Market Starter request.
+
+Starter plan — {STARTER_PRICE_LABEL}
+• 5,000 API requests / day
+• 3 price alerts
+• CSV export
+
+STARTER CHECKOUT → {checkout_url}
+
+Reference: {request_id}
+
+After PayPal payment, Starter activates in seconds (webhook). Verify: market whoami
+
+— Ricardo · CLI Market
+hello@cli-market.dev
+"""
+    html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+<h2 style="color:#3afecf;">CLI Market Starter</h2>
+<p><a href="{checkout_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Starter checkout →</a></p>
+</body></html>"""
+    return _send(to_email, subject, text, html)
+
+
+def process_starter_subscription_request(
+    *,
+    email: str,
+    lang: str = "en",
+    username: str = "",
+    force: bool = False,
+    note: str = "",
+) -> dict:
+    """Starter fallback: email self-serve checkout link when PayPal API is unavailable."""
+    from market_connectors.email_outbound import send_starter_request_notify
+
+    email = email.strip().lower()
+    lang = (lang or "en").strip().lower()[:2]
+
+    if not username:
+        username = email.split("@")[0]
+
+    recent = db_recent_subscription_request(email)
+    if recent and not force:
+        link = recent.get("payment_link") or STARTER_CHECKOUT_URL
+        return {
+            "ok": True,
+            "request_id": recent["id"],
+            "username": recent["username"],
+            "email": recent["email"],
+            "payment_link": link,
+            "approve_url": link,
+            "email_sent": bool(recent.get("email_sent")),
+            "message": (
+                "Ya enviamos el checkout Starter recientemente. Revise su bandeja (y spam)."
+                if lang == "es"
+                else "We already sent the Starter checkout recently. Check inbox (and spam)."
+            ),
+            "duplicate": True,
+            "tier": "starter",
+        }
+
+    _record_plan_funnel_event(
+        "starter",
+        username=username,
+        email=email,
+        source="request_starter",
+    )
+    req = db_create_subscription_request(username, email, STARTER_CHECKOUT_URL, prefix="STR")
+    sub_mail = _send_starter_payment_email(
+        to_email=email,
+        username=username,
+        request_id=req["id"],
+        lang=lang,
+    )
+    notify_mail = send_starter_request_notify(
+        subscriber_email=email,
+        request_id=req["id"],
+        note=(note or f"username={username} · starter checkout fallback"),
+    )
+    if sub_mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+
+    if lang == "es":
+        message = (
+            f"Le enviamos el checkout Starter a {email}."
+            if sub_mail.get("sent")
+            else f"Checkout Starter: {STARTER_CHECKOUT_URL}"
+        )
+    elif sub_mail.get("sent"):
+        message = f"We emailed the Starter checkout link to {email}."
+    else:
+        message = f"Starter checkout: {STARTER_CHECKOUT_URL}"
+
+    return {
+        "ok": True,
+        "request_id": req["id"],
+        "username": username,
+        "email": email,
+        "payment_link": STARTER_CHECKOUT_URL,
+        "approve_url": STARTER_CHECKOUT_URL,
+        "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
+        "notify_sent": notify_mail.get("sent", False),
+        "notify_error": notify_mail.get("reason") if not notify_mail.get("sent") else None,
+        "message": message,
+        "tier": "starter",
+        "auto_activate": True,
+    }
+
+
 def process_pro_subscription_request(
     *,
     email: str,
@@ -628,11 +799,7 @@ def process_pro_subscription_request(
             "duplicate": True,
         }
 
-    try:
-        from market_funnel import record_funnel_event
-        record_funnel_event("request_pro", username=username or None, meta={"email": email}, dedupe=False)
-    except Exception:
-        pass
+    _record_plan_funnel_event("pro", username=username, email=email, source="request_pro")
     req = db_create_subscription_request(username, email, PRO_PAYMENT_URL)
     sub_mail = send_pro_payment_email(
         to_email=email,
@@ -674,6 +841,41 @@ def process_pro_subscription_request(
         "notify_error": notify_mail.get("reason") if not notify_mail.get("sent") else None,
         "message": message,
     }
+
+
+@router.post("/billing/request-starter")
+def request_starter_subscription(body: dict, authorization: str | None = Header(None)):
+    """Request Starter — emails self-serve checkout when PayPal API is unavailable."""
+    try:
+        check_rate_limit("billing-request-starter")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        force = bool(body.get("resend"))
+        note = (body.get("note") or body.get("use_case") or "").strip()
+
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        username = (body.get("username") or "").strip()
+        if authorization:
+            try:
+                username = require_user(authorization)
+            except HTTPException:
+                if not username:
+                    raise
+
+        return process_starter_subscription_request(
+            email=email,
+            lang=lang,
+            username=username,
+            force=force,
+            note=note,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("request-starter failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 @router.post("/billing/request-pro")
@@ -740,6 +942,7 @@ async def _start_paypal_subscription(
     *,
     plan: str = "pro",
     lang: str = "en",
+    funnel_source: str = "paypal_subscribe",
 ) -> dict:
     from market_connectors.paypal_payments import STARTER_PRICE_USD, PRO_PRICE_USD, create_subscription
     from market_connectors.email_outbound import (
@@ -778,6 +981,12 @@ async def _start_paypal_subscription(
         plan_label = "Pro"
     if mail.get("sent"):
         db_mark_subscription_request_emailed(req["id"])
+    _record_plan_funnel_event(
+        plan_l,
+        username=username,
+        email=email,
+        source=funnel_source,
+    )
     return {
         "ok": True,
         "subscription_id": sub_id,
@@ -798,7 +1007,9 @@ async def billing_paypal(authorization: str | None = Header(None)):
     username = require_user(authorization)
     try:
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
-        out = await _start_paypal_subscription(username, email, plan="pro", lang="en")
+        out = await _start_paypal_subscription(
+            username, email, plan="pro", lang="en", funnel_source="cli_billing_paypal",
+        )
         if out.get("ok"):
             out["message"] = (
                 "Confirme en PayPal; Pro se activa en segundos. Revise su email con el enlace."
@@ -839,7 +1050,9 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
             auth_username=auth_user,
         )
 
-        out = await _start_paypal_subscription(username, email, plan="pro", lang=lang)
+        out = await _start_paypal_subscription(
+            username, email, plan="pro", lang=lang, funnel_source="landing_paypal_subscribe",
+        )
         if not out.get("ok"):
             raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
 
@@ -871,7 +1084,9 @@ async def billing_starter(authorization: str | None = Header(None)):
     username = require_user(authorization)
     try:
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
-        out = await _start_paypal_subscription(username, email, plan="starter", lang="en")
+        out = await _start_paypal_subscription(
+            username, email, plan="starter", lang="en", funnel_source="cli_billing_starter",
+        )
         if out.get("ok"):
             out["message"] = (
                 "Confirm on PayPal; Starter activates in seconds. Check your email for the link."
@@ -912,21 +1127,11 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
             auth_username=auth_user,
         )
 
-        out = await _start_paypal_subscription(username, email, plan="starter", lang=lang)
+        out = await _start_paypal_subscription(
+            username, email, plan="starter", lang=lang, funnel_source="landing_starter_subscribe",
+        )
         if not out.get("ok"):
             raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
-
-        try:
-            from market_funnel import record_funnel_event
-
-            record_funnel_event(
-                "starter_subscribe",
-                username=username or None,
-                meta={"email": email, "source": "landing"},
-                dedupe=False,
-            )
-        except Exception:
-            pass
 
         if lang == "es":
             out["message"] = (

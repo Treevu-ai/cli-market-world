@@ -292,6 +292,9 @@ market doctor`}</pre>
               <a href="/docs#quickstart" className="btn-mint text-center" onClick={onClose}>
                 {isES ? "Ver quickstart →" : "View quickstart →"}
               </a>
+              <button type="button" className="btn-mint w-full" onClick={goToStarterCheckout}>
+                {isES ? "¿Necesita alertas? Starter $29/mes →" : "Need alerts? Starter $29/mo →"}
+              </button>
               <button
                 type="button"
                 className="text-sm text-[var(--cm-on-surface-variant)] hover:text-white"

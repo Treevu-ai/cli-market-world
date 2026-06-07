@@ -9,6 +9,7 @@ import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 type StarterResponse = {
   ok?: boolean;
   approve_url?: string;
+  payment_link?: string;
   subscription_id?: string;
   username?: string;
   auto_activate?: boolean;
@@ -68,6 +69,32 @@ export default function StarterSubscribeButton() {
         setLoading(false);
         return;
       }
+
+      if (r.status === 404 || r.status === 501 || r.status === 502 || r.status === 503) {
+        const fallback = await fetch(`${API_URL}/billing/request-starter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            username: username.trim() || undefined,
+            lang: isES ? "es" : "en",
+          }),
+        });
+        const fb: StarterResponse = await fallback.json();
+        if (fallback.ok && fb.ok && (fb.approve_url || fb.payment_link)) {
+          recordFunnelEvent("starter_subscribe", {
+            username: fb.username || username.trim() || undefined,
+            meta: { source: "landing_fallback", email: email.trim() },
+          });
+          setResult({ ...fb, approve_url: fb.approve_url || fb.payment_link });
+          setLoading(false);
+          return;
+        }
+        setError(parseApiError(fb, isES ? "No se pudo iniciar Starter" : "Could not start Starter"));
+        setLoading(false);
+        return;
+      }
+
       setError(parseApiError(data, isES ? "Error al conectar con PayPal" : "PayPal connection error"));
     } catch {
       setError(isES ? "Error de red" : "Network error");

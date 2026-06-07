@@ -525,6 +525,28 @@ def test_paypal_subscribe_public(monkeypatch):
     assert sent[0]["username"] == "admin"
 
 
+def test_request_starter_creates_subscription_request(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "routers.payments._send_starter_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/billing/request-starter",
+        json={"email": "starter-fallback@test.com", "lang": "en"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["request_id"].startswith("STR-")
+    assert data["tier"] == "starter"
+    assert "starter-checkout" in data["payment_link"]
+
+
 def test_request_pro_creates_subscription_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
