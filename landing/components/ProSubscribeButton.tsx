@@ -126,8 +126,8 @@ export default function ProSubscribeButton() {
                   ? "Le enviamos el link de pago. Revise su bandeja (y spam)."
                   : "We sent the payment link. Check your inbox (and spam)."
                 : isES
-                  ? "Confirme en PayPal — Pro se activa automáticamente vía webhook."
-                  : "Confirm in PayPal — Pro activates automatically via webhook.")}
+                  ? "Confirme en PayPal para activar Pro."
+                  : "Confirm in PayPal to activate Pro.")}
           </p>
           {safeUser && (
             <p className="mt-1 font-mono text-[11px] text-[var(--cm-on-surface-variant)]/60">
@@ -194,7 +194,7 @@ export default function ProSubscribeButton() {
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . Facturación PEN disponible (RUC 20613045563). El tier Pro se activa tras confirmar el pago (webhook).
+            . Facturación PEN disponible (RUC 20613045563).
           </>
         ) : (
           <>
@@ -203,7 +203,7 @@ export default function ProSubscribeButton() {
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . PEN invoicing available (tax ID 20613045563). Pro tier activates after payment confirmation (webhook).
+            . PEN invoicing available (tax ID 20613045563).
           </>
         )}
       </p>
