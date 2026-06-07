@@ -30,6 +30,13 @@ type AccountData = {
     url?: string | null;
     cta?: string | null;
   };
+  billing?: {
+    state?: string;
+    activation?: string | null;
+    request_id?: string | null;
+    approve_url?: string | null;
+    message?: string | null;
+  };
 };
 
 function UsageBar({
@@ -168,6 +175,30 @@ export default function AccountDashboard() {
                 </li>
               </ul>
             </div>
+
+            {data.billing?.message && (
+              <div className="card-cyber p-5 md:col-span-2 space-y-2 border border-yellow-500/20 bg-yellow-500/5">
+                <h2 className="text-sm font-bold text-yellow-400 uppercase tracking-wider">
+                  {isES ? "Facturación" : "Billing"}
+                </h2>
+                <p className="text-sm text-[var(--cm-on-surface-variant)]">{data.billing.message}</p>
+                {data.billing.request_id && (
+                  <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]/70">
+                    ref: {data.billing.request_id}
+                  </p>
+                )}
+                {data.billing.approve_url && data.billing.activation === "auto" && (
+                  <a
+                    href={data.billing.approve_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-mint inline-flex text-sm"
+                  >
+                    {isES ? "Confirmar en PayPal →" : "Confirm on PayPal →"}
+                  </a>
+                )}
+              </div>
+            )}
 
             <div className="card-cyber p-5 space-y-4">
               <h2 className="text-sm font-bold text-[var(--cm-mint)] uppercase tracking-wider">
