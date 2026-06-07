@@ -64,7 +64,7 @@ export default function ScaleCoverageSection() {
             : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
         </p>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}

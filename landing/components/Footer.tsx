@@ -14,8 +14,8 @@ export default function Footer() {
       className="w-full py-12 bg-gradient-to-b from-[var(--cm-surface-low)] to-[var(--cm-background)] border-t border-[var(--cm-outline-variant)]/20"
       role="contentinfo"
     >
-      <div className="landing-container-wide grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div className="col-span-2 md:col-span-1">
+      <div className="landing-container-wide grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="sm:col-span-2 md:col-span-1">
           <div className="font-display text-xl font-bold text-white mb-4">CLI Market</div>
           <p className="font-mono text-sm text-[var(--cm-on-surface-variant)] opacity-80">
             {isES

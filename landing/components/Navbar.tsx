@@ -41,6 +41,7 @@ export default function Navbar() {
 
   const close = () => setOpen(false);
   const primaryCta = isES ? "Empezar con la API — gratis →" : "Start with the API — free →";
+  const mobileCta = isES ? "API gratis →" : "Free API →";
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -96,7 +97,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 px-6 py-4 flex flex-col gap-3">
+        <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
           {navItems.map(({ id, es, en }) => (
             <a key={id} href={`/#${id}`} onClick={close}
                className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
@@ -112,8 +113,8 @@ export default function Navbar() {
             GitHub
           </a>
           <a href="/#pricing" onClick={close}
-             className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3">
-            {primaryCta}
+             className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-1">
+            {mobileCta}
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
             className="text-xs font-medium text-[var(--cm-on-surface-variant)] cursor-pointer text-left">

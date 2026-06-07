@@ -8,16 +8,16 @@ export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   return (
-    <section id="hero" className="landing-section animate-fade-in relative min-h-[90vh] flex flex-col overflow-hidden">
+    <section id="hero" className="landing-section animate-fade-in relative min-h-0 md:min-h-[90vh] flex flex-col overflow-hidden">
       {/* Aura glow behind title */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--cm-mint)]/5 blur-[120px]" />
-        <div className="absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full bg-[var(--cm-mint)]/8 blur-[100px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(100vw,600px)] h-[min(100vw,600px)] rounded-full bg-[var(--cm-mint)]/5 blur-[80px] md:blur-[120px]" />
+        <div className="hidden sm:block absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full bg-[var(--cm-mint)]/8 blur-[100px]" />
       </div>
 
 
-      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-20 pb-24 lg:pt-28 lg:pb-32 text-center min-w-0 relative z-10">
-        <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-[clamp(32px,6vw,64px)] leading-[1.0] font-black text-white max-w-[900px] tracking-tight">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-28 lg:pb-32 text-center min-w-0 relative z-10">
+        <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }} className="text-[clamp(28px,7.5vw,64px)] leading-[1.05] font-black text-white max-w-[900px] tracking-tight text-balance">
           {isES
             ? "La capa programable del retail físico de LatAm."
             : "The programmable layer for physical retail in LatAm."}
@@ -33,7 +33,7 @@ export default function Hero() {
           </a>
         </motion.p>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[960px] mx-auto">
+        <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
           <a
             href="https://pypi.org/project/cli-market/"
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
