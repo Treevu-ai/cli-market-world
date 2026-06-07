@@ -108,21 +108,35 @@ export default function FreeSignupModal({
           lang: isES ? "es" : "en",
         }),
       });
-      if (r.ok) {
+      if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        if (data.request_id) setRequestId(data.request_id);
+        setError(
+          typeof data.detail === "string"
+            ? data.detail
+            : isES
+              ? "No se pudo registrar la solicitud. Intente de nuevo o escriba a hello@cli-market.dev"
+              : "Could not submit your request. Try again or email hello@cli-market.dev",
+        );
+        setLoading(false);
+        return;
+      }
+      const data = await r.json().catch(() => ({}));
+      if (data.request_id) setRequestId(data.request_id);
+      setDone(true);
+      if (plan === "free") {
+        setTimeout(() => {
+          onClose();
+          window.open(PYPI_URL, "_blank", "noopener,noreferrer");
+        }, 1400);
       }
     } catch {
-      // Never block the user on network failure
+      setError(
+        isES
+          ? "Error de red. Intente de nuevo o escriba a hello@cli-market.dev"
+          : "Network error. Try again or email hello@cli-market.dev",
+      );
     }
-
-    setDone(true);
-    if (plan === "free") {
-      setTimeout(() => {
-        onClose();
-        window.open(PYPI_URL, "_blank", "noopener,noreferrer");
-      }, 1400);
-    }
+    setLoading(false);
   };
 
   if (!open) return null;

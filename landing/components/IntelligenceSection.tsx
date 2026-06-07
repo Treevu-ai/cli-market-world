@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { API_URL } from "@/lib/api";
+import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const BENEFITS_ES = [
   { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} precios de góndola actualizados cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
@@ -27,11 +28,20 @@ export default function IntelligenceSection() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [legal, setLegal] = useState(false);
 
   const benefits = isES ? BENEFITS_ES : BENEFITS_EN;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!legal) {
+      setError(
+        isES
+          ? "Debe aceptar los términos y la política de privacidad."
+          : "You must accept the terms and privacy policy.",
+      );
+      return;
+    }
     if (!email.includes("@")) {
       setError(isES ? "Email inválido" : "Invalid email");
       return;
@@ -184,12 +194,14 @@ export default function IntelligenceSection() {
                   />
                 </div>
 
+                <LegalConsentCheckbox checked={legal} onChange={setLegal} />
+
                 {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="btn-mint w-full disabled:opacity-50"
+                  disabled={loading || !legal}
+                  className="btn-mint w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading
                     ? isES ? "Enviando…" : "Sending…"
