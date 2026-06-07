@@ -192,7 +192,7 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
             _alert(
                 "info",
                 "pypi_unavailable",
-                adoption["pypi"].get("message") or "PyPI (Pepy) sin datos — revisar PE_PY_API_KEY.",
+                adoption["pypi"].get("message") or "PyPI (Pepy) sin datos — revisar PEPY_API_KEY.",
             )
         )
 
