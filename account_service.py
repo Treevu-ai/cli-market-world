@@ -5,7 +5,14 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from market_core import TIERS, db_get_subscription, db_list_api_keys, get_db
+from market_core import (
+    TIERS,
+    db_find_subscription_request,
+    db_get_subscription,
+    db_get_user_email,
+    db_list_api_keys,
+    get_db,
+)
 
 
 def _rate_count(db, key: str, window_start: float) -> int:
@@ -74,6 +81,52 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
     }
 
 
+def _is_auto_activate_link(payment_link: str) -> bool:
+    link = (payment_link or "").lower()
+    return "billing/subscriptions" in link or "/subscriptions?" in link
+
+
+def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, Any]:
+    es = lang == "es"
+    if tier in ("pro", "builder", "enterprise"):
+        return {
+            "state": "active",
+            "activation": None,
+            "request_id": None,
+            "message": None,
+        }
+
+    email = db_get_user_email(username) or ""
+    pending = db_find_subscription_request(email=email) if email else None
+    if not pending or pending.get("status") != "pending":
+        return {"state": "none", "activation": None, "request_id": None, "message": None}
+
+    auto = _is_auto_activate_link(pending.get("payment_link") or "")
+    if auto:
+        return {
+            "state": "pro_pending_auto",
+            "activation": "auto",
+            "request_id": pending.get("id"),
+            "approve_url": pending.get("payment_link"),
+            "message": (
+                "Pro pendiente: confirme en PayPal — activación en segundos."
+                if es
+                else "Pro pending: confirm on PayPal — activates in seconds."
+            ),
+        }
+    return {
+        "state": "pro_pending_manual",
+        "activation": "manual",
+        "request_id": pending.get("id"),
+        "approve_url": pending.get("payment_link"),
+        "message": (
+            "Pro pendiente: activación manual ≤24 h hábiles tras confirmar pago."
+            if es
+            else "Pro pending: manual activation within 24 business hours after payment."
+        ),
+    }
+
+
 def build_account_summary(username: str, *, lang: str = "es") -> dict[str, Any]:
     sub = db_get_subscription(username)
     tier = sub.get("tier", "free")
@@ -116,4 +169,5 @@ def build_account_summary(username: str, *, lang: str = "es") -> dict[str, Any]:
             "minute_pct": pct(minute_used, min_limit if min_limit != -1 else 0),
         },
         "upgrade": upgrade_next_step(tier, lang=lang),
+        "billing": _billing_status(username, tier, lang=lang),
     }

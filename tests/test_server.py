@@ -423,11 +423,21 @@ def test_billing_paypal_saves_pending(monkeypatch):
 
 def test_paypal_subscribe_public(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    sent = []
+
+    def fake_pending_email(**kw):
+        sent.append(kw)
+        return {"sent": True, "to": kw["to_email"]}
+
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_subscribe_pending_email",
+        fake_pending_email,
+    )
 
     async def fake_sub(username, **kwargs):
         return {
             "subscription_id": "I-LAND99",
-            "approve_url": "https://www.paypal.com/subscribe",
+            "approve_url": "https://www.paypal.com/billing/subscriptions?ba_token=abc",
             "status": "APPROVAL_PENDING",
         }
 
@@ -441,6 +451,9 @@ def test_paypal_subscribe_public(monkeypatch):
     assert data["ok"] is True
     assert data["auto_activate"] is True
     assert data["approve_url"].startswith("https://")
+    assert data.get("email_sent") is True
+    assert len(sent) == 1
+    assert sent[0]["username"] == "admin"
 
 
 def test_request_pro_creates_subscription_request(monkeypatch):
@@ -507,6 +520,30 @@ def test_auth_account_returns_usage(monkeypatch):
     assert "usage" in data
     assert "limits" in data
     assert data["upgrade"]["next_tier"] == "starter"
+
+
+def test_auth_account_shows_pending_pro_billing(monkeypatch):
+    from market_core import db_create_api_key, db_create_subscription_request, db_save_user
+    from server_deps import hash_password
+    import uuid
+
+    username = f"bill-{uuid.uuid4().hex[:8]}"
+    email = f"{username}@test.com"
+    db_save_user(username, hash_password("x"), str(uuid.uuid4()))
+    key = db_create_api_key(username, "read", "test")["key"]
+    db_create_subscription_request(
+        username,
+        email,
+        "https://www.paypal.com/billing/subscriptions?ba_token=x",
+    )
+
+    r = client.get("/auth/account?lang=en", headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code == 200
+    billing = r.json().get("billing") or {}
+    assert billing.get("state") == "pro_pending_auto"
+    assert billing.get("activation") == "auto"
+    assert billing.get("request_id", "").startswith("PRO-")
+
 
 def test_contact_starter_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)

@@ -752,6 +752,25 @@ def print_account_dashboard(console: Console, data: dict[str, Any]) -> None:
         ],
     )
 
+    billing = data.get("billing") or {}
+    if billing.get("message"):
+        console.print()
+        console.print(
+            Panel(
+                f"[yellow]{billing['message']}[/]"
+                + (
+                    f"\n[dim]ref:[/] [cyan]{billing.get('request_id', '')}[/]"
+                    if billing.get("request_id")
+                    else ""
+                ),
+                title=f"[bold {MINT}]{'Facturación' if lang_es else 'Billing'}[/]",
+                border_style="yellow",
+                box=box.ROUNDED,
+                padding=(1, 2),
+                width=layout_width(console),
+            )
+        )
+
     if upgrade.get("next_tier"):
         up_body = (
             f"[bold]{upgrade.get('title', '')}[/]\n\n"

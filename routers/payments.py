@@ -716,8 +716,14 @@ def _resolve_pro_username(
     return safe or f"user-{uuid.uuid4().hex[:8]}"
 
 
-async def _start_paypal_pro_subscription(username: str, email: str) -> dict:
+async def _start_paypal_pro_subscription(
+    username: str,
+    email: str,
+    *,
+    lang: str = "en",
+) -> dict:
     from market_connectors.paypal_payments import create_subscription
+    from market_connectors.email_outbound import send_pro_subscribe_pending_email
 
     result = await create_subscription(username=username)
     if "approve_url" not in result:
@@ -725,7 +731,16 @@ async def _start_paypal_pro_subscription(username: str, email: str) -> dict:
     sub_id = result["subscription_id"]
     approve = result["approve_url"]
     db_save_billing_pending(sub_id, "paypal", username, "subscription")
-    db_create_subscription_request(username, email, approve)
+    req = db_create_subscription_request(username, email, approve)
+    mail = send_pro_subscribe_pending_email(
+        to_email=email,
+        username=username,
+        approve_url=approve,
+        request_id=req["id"],
+        lang=lang,
+    )
+    if mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
     return {
         "ok": True,
         "subscription_id": sub_id,
@@ -734,6 +749,9 @@ async def _start_paypal_pro_subscription(username: str, email: str) -> dict:
         "amount": "$79/mo",
         "username": username,
         "auto_activate": True,
+        "request_id": req["id"],
+        "email_sent": mail.get("sent", False),
+        "email_error": mail.get("reason") if not mail.get("sent") else None,
     }
 
 @router.post("/billing/paypal")
@@ -742,10 +760,12 @@ async def billing_paypal(authorization: str | None = Header(None)):
     username = require_user(authorization)
     try:
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
-        out = await _start_paypal_pro_subscription(username, email)
+        out = await _start_paypal_pro_subscription(username, email, lang="en")
         if out.get("ok"):
             out["message"] = (
-                "Pro se activa automáticamente al confirmar la suscripción en PayPal."
+                "Confirme en PayPal; Pro se activa en segundos. Revise su email con el enlace."
+                if out.get("email_sent")
+                else "Confirme en PayPal; Pro se activa en segundos (email no enviado — SMTP)."
             )
             return out
         raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
@@ -781,19 +801,21 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
             auth_username=auth_user,
         )
 
-        out = await _start_paypal_pro_subscription(username, email)
+        out = await _start_paypal_pro_subscription(username, email, lang=lang)
         if not out.get("ok"):
             raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
 
         if lang == "es":
             out["message"] = (
                 "Confirme la suscripción en PayPal; Pro se activa en segundos (webhook). "
-                "Luego: market whoami"
+                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                + "Luego: market whoami"
             )
         else:
             out["message"] = (
                 "Confirm subscription in PayPal; Pro activates in seconds (webhook). "
-                "Then: market whoami"
+                + ("We emailed you the link. " if out.get("email_sent") else "")
+                + "Then: market whoami"
             )
         return out
     except HTTPException:
