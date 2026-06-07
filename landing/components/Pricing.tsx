@@ -83,8 +83,6 @@ const tiers: Tier[] = [
     latamPrice: "S/299",
     annualPrice: "$790",
     annualLatamPrice: "S/2,990",
-    trial_es: "14 días gratis",
-    trial_en: "14 days free",
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [

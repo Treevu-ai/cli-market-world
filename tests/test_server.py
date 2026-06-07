@@ -291,7 +291,7 @@ def test_rate_limit_headers():
 
 def test_mcp_module_tools_list():
     """Verify mcp module has tools defined."""
-    from market_mcp import TOOLS
+    from market_core.market_mcp import TOOLS
     assert isinstance(TOOLS, list)
     assert len(TOOLS) >= 17
     tool_names = [t["name"] for t in TOOLS]
