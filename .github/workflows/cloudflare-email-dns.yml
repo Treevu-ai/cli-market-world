@@ -14,8 +14,24 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Detect Cloudflare token
+        id: cf
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$CF_TOKEN" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upsert SPF + DMARC
+        if: steps.cf.outputs.present == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: python ops/cloudflare_email_dns.py
+
+      - name: Skip (add CLOUDFLARE_API_TOKEN to repo secrets)
+        if: steps.cf.outputs.present != 'true'
+        run: echo "Set CLOUDFLARE_API_TOKEN in GitHub repo secrets, then re-run this workflow."
