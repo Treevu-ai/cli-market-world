@@ -175,7 +175,7 @@ function TierCard({
 
   return (
     <div
-      className={`h-full min-h-[22rem] rounded-2xl p-6 text-left flex flex-col ${
+      className={`h-full min-h-0 md:min-h-[22rem] rounded-2xl p-5 sm:p-6 text-left flex flex-col ${
         tier.dark
           ? "energy-border-active card-cyber"
           : tier.featured

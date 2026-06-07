@@ -50,11 +50,11 @@ export default function CookieConsent() {
       aria-live="polite"
       aria-label={isES ? "Aviso de cookies" : "Cookie notice"}
       data-cookie-banner="true"
-      className="fixed bottom-0 inset-x-0 z-[100] p-4 md:px-6 md:pb-6 pointer-events-none"
+      className="fixed bottom-0 inset-x-0 z-[100] p-3 sm:p-4 md:px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6 pointer-events-none"
     >
       <div className="landing-container-wide pointer-events-auto">
-        <div className="rounded-lg border border-[var(--cm-mint)]/30 bg-[var(--cm-surface-low)]/95 backdrop-blur-md p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
-          <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed flex-1">
+        <div className="rounded-lg border border-[var(--cm-mint)]/30 bg-[var(--cm-surface-low)]/95 backdrop-blur-md p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
+          <p className="text-sm md:text-xs text-[var(--cm-on-surface-variant)] leading-relaxed flex-1">
             {isES ? (
               <>
                 Usamos cookies técnicas y analíticas esenciales (Cloudflare, Plausible) para medir
@@ -79,7 +79,7 @@ export default function CookieConsent() {
           <button
             type="button"
             onClick={accept}
-            className="btn-mint text-xs px-5 py-2.5 shrink-0 self-end md:self-center"
+            className="btn-mint text-xs px-5 py-2.5 w-full md:w-auto shrink-0 md:self-center"
           >
             {isES ? "Entendido" : "Got it"}
           </button>

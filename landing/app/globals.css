@@ -390,10 +390,55 @@ select.input-cyber option {
 }
 
 @media (max-width: 767px) {
-  a:not(.touch-compact), button:not(.touch-compact), [role="button"]:not(.touch-compact) {
+  :root {
+    --cm-gutter: 20px;
+  }
+
+  section[id] {
+    scroll-margin-top: 64px;
+  }
+
+  .landing-section {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .section-intro {
+    margin-bottom: 2rem;
+    font-size: 0.9375rem;
+  }
+
+  .details-disclosure summary {
     min-height: 44px;
-    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .details-disclosure summary::after {
+    float: none;
+  }
+
+  body.cookie-banner-active {
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  nav a,
+  footer a,
+  .landing-mobile-menu a,
+  .btn-mint,
+  button:not(.touch-compact):not(summary),
+  [role="button"]:not(.touch-compact) {
+    min-height: 44px;
     touch-action: manipulation;
+  }
+
+  nav a,
+  footer a,
+  .landing-mobile-menu a {
+    display: inline-flex;
+    align-items: center;
   }
 }
 
