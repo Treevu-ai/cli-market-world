@@ -51,7 +51,7 @@ export default function Footer() {
           <a href="/docs" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Arquitectura" : "Architecture"}
           </a>
-          <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href={MARKET_STATS.pypiUrl} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             PyPI
           </a>
         </div>

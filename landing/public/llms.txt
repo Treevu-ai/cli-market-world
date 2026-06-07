@@ -6,7 +6,7 @@
 > Docs: https://cli-market.dev/docs
 > OpenAPI: https://cli-market-production.up.railway.app/docs
 > Dashboard: https://cli-market-production.up.railway.app/dashboard
-> PyPI: https://pypi.org/project/cli-market/
+> PyPI: https://pypi.org/project/cli-market-world/
 
 ## Core Purpose
 
@@ -41,11 +41,11 @@ Nuna Orgánica, Xray Chipped PE
 - **Cross-Border**: Single interface for 38 verified retailers.
 - **Data Moat**: Collector every 4h. Historical snapshots, inflation, 34 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · QR (Yape/Plin).
-- **Open Source**: MIT. pip install cli-market.
+- **Open Source**: MIT. pip install cli-market-world.
 
 ## Quick start (developers)
 
-1. `pip install cli-market`
+1. `pip install cli-market-world`
 2. `market register` — free API key (or `market login` if you have credentials)
 3. `market search "leche" --country PE`
 4. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`

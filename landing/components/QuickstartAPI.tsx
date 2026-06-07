@@ -25,7 +25,7 @@ export default function QuickstartAPI() {
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · onboarding</span>
             </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`pip install cli-market
+            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`${MARKET_STATS.pipInstallCmd}
 market init
 market search "leche" --country PE`}</pre>
           </div>

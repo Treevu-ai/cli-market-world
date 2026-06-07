@@ -220,12 +220,12 @@ export default function ScannerPage() {
                 Accedé a los 43 MCP tools y 45,000+ precios verificados vía API.
               </p>
               <a
-                href="https://pypi.org/project/cli-market/"
+                href={MARKET_STATS.pypiUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-mint inline-block px-6 py-2 text-sm"
               >
-                pip install cli-market
+                {MARKET_STATS.pipInstallCmd}
               </a>
             </div>
 
