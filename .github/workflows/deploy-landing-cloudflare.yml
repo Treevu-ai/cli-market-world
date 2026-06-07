@@ -43,12 +43,19 @@ jobs:
           fi
 
       - name: Deploy to Cloudflare Pages (wrangler)
+        id: wrangler
         if: steps.cf_creds.outputs.present == 'true'
+        continue-on-error: true
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy landing/out --project-name=cli-market-world --branch=main
+
+      - name: Wrangler deploy fallback note
+        if: steps.cf_creds.outputs.present == 'true' && steps.wrangler.outcome != 'success'
+        run: |
+          echo "::warning::Wrangler deploy failed (token scope?). Landing may still deploy via Cloudflare Git integration."
 
       - name: Skip wrangler (Cloudflare Git integration)
         if: steps.cf_creds.outputs.present != 'true'
