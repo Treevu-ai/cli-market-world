@@ -4,6 +4,20 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-07] — MCP bundle alignment (PR5)
+
+### cli-market-core v1.9.6
+- **Changed:** `MCP_TOOL_PROFILE` defaults to `default` (22 curated tools) instead of `legacy` (46)
+- **Changed:** Invalid profile env falls back to `default`
+
+### cli-market-world v1.9.6
+- **Changed:** `market tools` reads registry bundles (Shop/Intel/Account) with `--profile` flag
+- **Changed:** `market_ui` MCP catalog driven by `market_mcp_registry` (canonical tools marked ★)
+- **Changed:** `market hello`, `market about`, help copy use default/legacy tool counts
+- **Changed:** `mcp.json` env includes `MCP_TOOL_PROFILE=default`
+
+---
+
 ## [2026-06-05] — Ecosystem rearchitecture
 
 ### cli-market-index v0.1.0

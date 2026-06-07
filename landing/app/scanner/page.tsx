@@ -217,7 +217,7 @@ export default function ScannerPage() {
                 ¿Querés comparar precios programáticamente?
               </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)] mb-4">
-                Accedé a los 43 MCP tools y 45,000+ precios verificados vía API.
+                Accedé a {MARKET_STATS.mcpTools} herramientas MCP y {MARKET_STATS.pricesVerifiedLabel} precios verificados vía API.
               </p>
               <a
                 href={MARKET_STATS.pypiUrl}
