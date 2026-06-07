@@ -19,4 +19,11 @@ for mod in store_credentials market_stats retailer_onboarding market_security ma
   fi
 done
 
+VER="$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
+if [ -f market_core/market_stats.py ]; then
+  sed -i.bak "s/^PACKAGE_VERSION = .*/PACKAGE_VERSION = \"${VER}\"/" market_core/market_stats.py
+  rm -f market_core/market_stats.py.bak
+  echo "Pinned PACKAGE_VERSION=${VER} in market_core/market_stats.py"
+fi
+
 echo "Vendored cli-market-core into $(pwd)"
