@@ -12,7 +12,8 @@ const MCP_CONFIG = {
       "command": "market-mcp",
       "args": [],
       "env": {
-        "MARKET_API_URL": "${MCP_API_URL}"
+        "MARKET_API_URL": "${MCP_API_URL}",
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -23,7 +24,8 @@ const MCP_CONFIG = {
       "command": "market-mcp",
       "args": [],
       "env": {
-        "MARKET_API_URL": "${MCP_API_URL}"
+        "MARKET_API_URL": "${MCP_API_URL}",
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -34,44 +36,51 @@ const MCP_CONFIG = {
       "type": "stdio",
       "command": "market-mcp",
       "env": {
-        "MARKET_API_URL": "${MCP_API_URL}"
+        "MARKET_API_URL": "${MCP_API_URL}",
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
 }`,
 };
 
-const STARTER_TOOLS = [
-  { id: "market_search", es: "Buscar productos por query y país", en: "Search products by query and country" },
-  { id: "market_compare", es: "Comparar precio del mismo SKU entre retailers", en: "Compare same SKU price across retailers" },
-  { id: "market_cart", es: "Ver y gestionar carrito", en: "View and manage cart" },
-  { id: "market_whoami", es: "Usuario, tier y límites", en: "User, tier, and limits" },
-  { id: "market_stats", es: "Estadísticas de red (retailers, snapshots)", en: "Network stats (retailers, snapshots)" },
-];
+type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
 
-const TOOLS = [
-  "market_add",
-  "market_cart",
-  "market_checkout",
-  "market_inflation",
-  "market_stores",
-  "market_countries",
-  "market_lines",
-  "market_ask",
-  "market_orders",
-];
+const BUNDLE_LABELS: Record<BundleKey, { es: string; en: string }> = {
+  shop: { es: "Shop", en: "Shop" },
+  intel: { es: "Intel", en: "Intel" },
+  account: { es: "Account", en: "Account" },
+};
+
+const BUNDLE_INTRO: Record<BundleKey, { es: string; en: string }> = {
+  shop: {
+    es: "Cobertura, búsqueda, comparación, canasta y checkout.",
+    en: "Coverage, search, compare, basket, and checkout.",
+  },
+  intel: {
+    es: "Brief de mercado, inflación, scores y exportación de datos.",
+    en: "Market brief, inflation, scores, and data export.",
+  },
+  account: {
+    es: "Sesión, preferencias, alertas de precio y favoritos.",
+    en: "Session, preferences, price alerts, and favorites.",
+  },
+};
 
 export default function ToolsPage() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const [tab, setTab] = useState<keyof typeof MCP_CONFIG>("cursor");
+  const [ideTab, setIdeTab] = useState<keyof typeof MCP_CONFIG>("cursor");
+  const [bundleTab, setBundleTab] = useState<BundleKey>("shop");
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(MCP_CONFIG[tab]);
+    await navigator.clipboard.writeText(MCP_CONFIG[ideTab]);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const bundleTools = MARKET_STATS.mcpBundles[bundleTab];
 
   return (
     <>
@@ -85,10 +94,15 @@ export default function ToolsPage() {
           </h1>
           <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
             {isES
-              ? `API de comercio para agentes de IA — búsqueda, comparación, canasta y checkout en ${MARKET_STATS.retailersVerified} retailers. Copie una config, ejecute `
-              : `Commerce API for AI agents — search, compare, basket, and checkout across ${MARKET_STATS.retailersVerified} retailers. Copy a config, run `}
+              ? `API de comercio para agentes de IA — Shop, Intel y Account en ${MARKET_STATS.retailersVerified} retailers. Copie una config, ejecute `
+              : `Commerce API for AI agents — Shop, Intel, and Account across ${MARKET_STATS.retailersVerified} retailers. Copy a config, run `}
             <code className="font-mono text-sm text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
             {isES ? ", conecte su IDE." : ", connect your IDE."}
+          </p>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-3">
+            {isES
+              ? `Perfil default (${MARKET_STATS.mcpTools} tools) · legacy: ${MARKET_STATS.mcpToolsLegacy} tools con aliases`
+              : `Default profile (${MARKET_STATS.mcpTools} tools) · legacy: ${MARKET_STATS.mcpToolsLegacy} tools with aliases`}
           </p>
         </div>
       </section>
@@ -100,9 +114,9 @@ export default function ToolsPage() {
               <button
                 key={k}
                 type="button"
-                onClick={() => setTab(k)}
+                onClick={() => setIdeTab(k)}
                 className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
-                  tab === k
+                  ideTab === k
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
                     : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-white"
                 }`}
@@ -115,12 +129,12 @@ export default function ToolsPage() {
             </button>
           </div>
           <pre className="text-left code-block-cyber text-[var(--cm-mint)] p-5 overflow-x-auto">
-            {MCP_CONFIG[tab]}
+            {MCP_CONFIG[ideTab]}
           </pre>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4 text-center">
             {isES ? "Requiere" : "Requires"}{" "}
             <code className="font-mono text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code> · Manifest:{" "}
-            <a href="/server.json" className="text-[var(--cm-mint)] underline">server.json</a>
+            <a href="/mcp.json" className="text-[var(--cm-mint)] underline">mcp.json</a>
             {" "}· Docs:{" "}
             <a href="/llms.txt" className="text-[var(--cm-mint)] underline">llms.txt</a>
           </p>
@@ -130,36 +144,68 @@ export default function ToolsPage() {
       <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
           <h2 className="section-title mb-2">
-            {isES ? "Herramientas MCP iniciales (5)" : "Starter MCP tools (5)"}
+            {isES ? "Bundles MCP (Shop · Intel · Account)" : "MCP bundles (Shop · Intel · Account)"}
           </h2>
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6">
-            {isES ? "Ejecute" : "Run"}{" "}
-            <code className="font-mono text-[var(--cm-mint)]">market init</code> {isES ? "o" : "or"}{" "}
-            <code className="font-mono text-[var(--cm-mint)]">market register</code>
-            {isES ? ", luego pruebe estas primero." : ", then try these first."}
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6 max-w-lg mx-auto">
+            {isES
+              ? `Perfil default con ${MARKET_STATS.mcpTools} herramientas. Use MCP_TOOL_PROFILE=legacy para ${MARKET_STATS.mcpToolsLegacy} tools (aliases incluidos).`
+              : `Default profile with ${MARKET_STATS.mcpTools} tools. Set MCP_TOOL_PROFILE=legacy for ${MARKET_STATS.mcpToolsLegacy} tools (includes aliases).`}
           </p>
-          <ul className="text-left space-y-3 mb-10 max-w-md mx-auto">
-            {STARTER_TOOLS.map((tool) => (
-              <li key={tool.id} className="glass-panel rounded-lg px-4 py-3 border border-[var(--cm-mint)]/15">
-                <code className="font-mono text-sm text-[var(--cm-mint)]">{tool.id}</code>
-                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{isES ? tool.es : tool.en}</p>
+
+          <div className="flex flex-wrap gap-2 mb-6 justify-center">
+            {(Object.keys(BUNDLE_LABELS) as BundleKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setBundleTab(key)}
+                className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
+                  bundleTab === key
+                    ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-white"
+                }`}
+              >
+                {isES ? BUNDLE_LABELS[key].es : BUNDLE_LABELS[key].en}
+                <span className="ml-1 opacity-70">({MARKET_STATS.mcpBundles[key].length})</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-6">
+            {isES ? BUNDLE_INTRO[bundleTab].es : BUNDLE_INTRO[bundleTab].en}
+          </p>
+
+          <ul className="text-left space-y-3 mb-10 max-w-lg mx-auto">
+            {bundleTools.map((tool) => (
+              <li
+                key={tool.id}
+                className={`glass-panel rounded-lg px-4 py-3 border ${
+                  tool.canonical
+                    ? "border-[var(--cm-mint)]/40 bg-[var(--cm-mint)]/5"
+                    : "border-[var(--cm-outline-variant)]/30"
+                }`}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <code className="font-mono text-sm text-[var(--cm-mint)]">{tool.id}</code>
+                  {tool.canonical && (
+                    <span className="font-label-caps text-[10px] px-2 py-0.5 rounded-full bg-[var(--cm-mint)]/20 text-[var(--cm-mint)]">
+                      {isES ? "canónica" : "canonical"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1 leading-relaxed">
+                  {tool.description}
+                </p>
               </li>
             ))}
           </ul>
-          <h3 className="text-sm font-semibold text-white mb-4">{isES ? "Más herramientas" : "More tools"}</h3>
-          <div className="flex flex-wrap justify-center gap-2">
-            {TOOLS.map((t) => (
-              <span key={t} className="font-mono text-[11px] glass-panel rounded-full px-3 py-1 text-[var(--cm-on-surface-variant)]">
-                {t}
-              </span>
-            ))}
-          </div>
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-6">
-            + {MARKET_STATS.mcpTools - STARTER_TOOLS.length - TOOLS.length}{" "}
-            {isES ? "más en el registro completo" : "more in the full registry"}
+
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60">
+            {isES
+              ? `+ ${MARKET_STATS.mcpToolsLegacy - MARKET_STATS.mcpTools} herramientas más en perfil legacy (advanced, admin, aliases)`
+              : `+ ${MARKET_STATS.mcpToolsLegacy - MARKET_STATS.mcpTools} more tools in legacy profile (advanced, admin, aliases)`}
           </p>
-          <a href="/tools" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
-            {isES ? "Registro completo MCP →" : "Full MCP registry →"}
+          <a href="/llms-full.txt" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
+            {isES ? "Flujos recomendados por ICP →" : "Recommended ICP flows →"}
           </a>
         </div>
       </section>
