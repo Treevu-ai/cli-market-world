@@ -35,12 +35,18 @@ from market_core import (
 )
 import market_ui as ui
 from market_stats import (
-    COUNTRIES as MS_COUNTRIES, MCP_TOOLS, RETAILERS_VERIFIED,
+    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED,
     PRICES_VERIFIED_LABEL, INDICATORS_COUNT, PLATFORM_LIST_ES, PLATFORM_LIST_EN,
     PRICES_REFRESH_HOURS, PACKAGE_VERSION,
 )
 
 console = Console()
+
+
+def _mcp_profile_counts() -> tuple[int, int]:
+    from market_core.market_mcp_registry import public_tool_count
+    return public_tool_count("default"), public_tool_count("legacy")
+
 
 # ── i18n ────────────────────────────────────────────────────────────────────
 _ = lambda x: x
@@ -178,10 +184,11 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
 def welcome_banner():
     is_en = get_lang() == "en"
     n_countries = len(MS_COUNTRIES)
+    mcp_default, _ = _mcp_profile_counts()
     stats = (
         f"[#00FF88]>[/] {RETAILERS_VERIFIED} retailers    "
         f"[#00FF88]>[/] {n_countries} {'countries' if is_en else 'países'}    "
-        f"[#00FF88]>[/] {MCP_TOOLS} mcp tools"
+        f"[#00FF88]>[/] {mcp_default} mcp tools"
     )
     if is_en:
         body = WELCOME_BANNER_EN.replace(
@@ -958,9 +965,10 @@ def cmd_enrichment(args):
 
 
 def cmd_tools(args):
-    """Catálogo MCP agrupado (43 tools) — misma superficie que market-mcp tools/list."""
+    """Catálogo MCP por bundle — misma superficie que market-mcp tools/list."""
+    profile = getattr(args, "profile", None) or "default"
     try:
-        from market_core.market_mcp import TOOLS
+        from market_core.market_mcp_registry import list_tools, public_tool_count
     except Exception as e:
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(False, error=f"MCP tools unavailable: {e}"), console)
@@ -968,28 +976,52 @@ def cmd_tools(args):
         console.print("[yellow]MCP tools catalog not available in this build.[/]")
         return
 
+    tools = list_tools(profile)
+    mcp_default, mcp_legacy = _mcp_profile_counts()
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(
-            ui.json_response(True, {"tools": TOOLS, "total": len(TOOLS)}, next_commands=["market tools", "market hello"]),
+            ui.json_response(
+                True,
+                {
+                    "profile": profile,
+                    "tools": tools,
+                    "total": len(tools),
+                    "default_total": mcp_default,
+                    "legacy_total": mcp_legacy,
+                    "bundles": {
+                        key: names
+                        for key, _, _, names in ui.mcp_tool_groups(profile)
+                    },
+                },
+                next_commands=["market tools", "market tools --profile legacy", "market hello"],
+            ),
             console,
         )
         return
 
-    from market_stats import MCP_TOOLS
+    profile_note = (
+        f"perfil {profile} · {len(tools)} tools"
+        if not ui.is_en()
+        else f"profile {profile} · {len(tools)} tools"
+    )
     ui.print_section_header(
         console,
         "MCP Tools" if ui.is_en() else "Herramientas MCP",
         subtitle=(
-            "Grupos para Cursor / Claude / Codex — comando market-mcp"
-            if not ui.is_en()
-            else "Groups for Cursor / Claude / Codex — run market-mcp"
+            "Shop · Intel · Account — market-mcp (MCP_TOOL_PROFILE=default)"
+            if ui.is_en()
+            else "Shop · Intel · Account — market-mcp (MCP_TOOL_PROFILE=default)"
         ),
-        meta=f"{MCP_TOOLS} tools · cli-market.dev/tools",
+        meta=f"{profile_note} · legacy {mcp_legacy} · cli-market.dev/tools",
     )
-    ui.print_mcp_tools_catalog(console)
+    ui.print_mcp_tools_catalog(console, profile=profile)
     ui.print_intel_footer(
         console,
-        ["market init", "market doctor", "market indicators -c PE"],
+        [
+            "market tools --profile legacy",
+            "market init",
+            "market doctor",
+        ],
     )
 
 def cmd_alerts(args):
@@ -1014,9 +1046,11 @@ def cmd_alerts(args):
         console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
 
 def cmd_about(args):
+    mcp_default, mcp_legacy = _mcp_profile_counts()
     about_text = (
         "[bold #00FF88]CLI Market[/] — Infraestructura de comercio para agentes IA.\n\n"
-        f"[#888888]Un solo pip install. Una API. {RETAILERS_VERIFIED} retailers en {MS_COUNTRIES} países. {MCP_TOOLS} MCP tools.[/]\n"
+        f"[#888888]Un solo pip install. Una API. {RETAILERS_VERIFIED} retailers en {MS_COUNTRIES} países. "
+        f"{mcp_default} MCP tools ({mcp_legacy} legacy).[/]\n"
         "[#888888]Comparación de precios cross-border. Data moat con precios reales.[/]\n"
         "[#888888]MIT · Gratis para developers.[/]\n\n"
     )
@@ -1026,7 +1060,8 @@ def cmd_about(args):
             "description": "Agent-native commerce infrastructure for AI agents",
             "retailers": RETAILERS_VERIFIED,
             "countries": MS_COUNTRIES,
-            "mcp_tools": MCP_TOOLS,
+            "mcp_tools": mcp_default,
+            "mcp_tools_legacy": mcp_legacy,
             "license": "MIT",
             "website": "https://cli-market.dev"
         }, next_commands=["market hello", "market tools"]), console)
@@ -1275,10 +1310,11 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
 
 def _hello_status_bar(is_en: bool, width: int) -> Panel:
     label = "EN LINEA" if not is_en else "ONLINE"
+    mcp_default, _ = _mcp_profile_counts()
     line = (
         f"[dim]v{PACKAGE_VERSION}[/]  [#00FF88]|[/]  "
         f"[dim]API[/]  [bold]{_hello_api_host()}[/]  [#00FF88]|[/]  "
-        f"[dim]MCP[/]  [bold #00FF88]{MCP_TOOLS}[/] tools  [#00FF88]|[/]  "
+        f"[dim]MCP[/]  [bold #00FF88]{mcp_default}[/] tools  [#00FF88]|[/]  "
         f"[dim]RETAILERS[/]  [bold #00FF88]{RETAILERS_VERIFIED}[/]  [#00FF88]|[/]  "
         f"[dim]STATUS[/]  [bold #00FF88]{label}[/]"
     )
@@ -1346,13 +1382,14 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
 
 
 def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
+    mcp_default, mcp_legacy = _mcp_profile_counts()
     if is_en:
         body = (
             "[bold #00FF88]INTERMEDIATE[/]\n"
             '  [cyan]market basket[/] [dim]"milk:2 rice:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"sunflower oil" --country AR[/]\n'
             "  [cyan]market inflation[/] [dim]--country PE[/]\n"
-            "  [cyan]market tools[/]            [dim]43 MCP grouped[/]\n"
+            f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
             "  [cyan]market indicators[/] [dim]--country PE[/]\n"
             "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -1364,7 +1401,7 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             '  [cyan]market basket[/] [dim]"leche:2 arroz:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"aceite de girasol" --country AR[/]\n'
             "  [cyan]market inflation[/] [dim]--country PE[/]\n"
-            "  [cyan]market tools[/]            [dim]43 MCP agrupadas[/]\n"
+            f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
             "  [cyan]market indicators[/] [dim]--country PE[/]\n"
             "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -1421,6 +1458,7 @@ def _hello_contact_panel(is_en: bool, width: int) -> Panel:
 def _hello_data(is_en: bool) -> dict:
     """Structured data for `market hello --json` (agent / machine readable)."""
     platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
+    mcp_default, mcp_legacy = _mcp_profile_counts()
 
     onboarding = [
         {"step": 0, "cmd": "market hello", "description": "you are here" if is_en else "estás aquí", "current": True},
@@ -1436,7 +1474,9 @@ def _hello_data(is_en: bool) -> dict:
         "lang": "en" if is_en else "es",
         "status": {
             "api": _hello_api_host(),
-            "mcp_tools": MCP_TOOLS,
+            "mcp_tools": mcp_default,
+            "mcp_tools_legacy": mcp_legacy,
+            "mcp_profile": "default",
             "retailers_verified": RETAILERS_VERIFIED,
             "countries": MS_COUNTRIES,
             "prices": PRICES_VERIFIED_LABEL,
@@ -1994,7 +2034,17 @@ def main():
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
 
-    sub.add_parser("tools", help="Catálogo MCP agrupado (43 tools)")
+    mcp_default, mcp_legacy = _mcp_profile_counts()
+    p_tools = sub.add_parser(
+        "tools",
+        help=f"Catálogo MCP por bundle ({mcp_default} default / {mcp_legacy} legacy)",
+    )
+    p_tools.add_argument(
+        "--profile",
+        choices=["default", "legacy", "full", "admin"],
+        default="default",
+        help="MCP tool profile (default: curated Shop/Intel/Account)",
+    )
     sub.add_parser("hello", help=t("hello"))
     sub.add_parser("share", help=t("share"))
     p = sub.add_parser("upgrade", help=t("upgrade"))

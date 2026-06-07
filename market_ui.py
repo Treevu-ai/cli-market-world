@@ -377,79 +377,43 @@ INDICATOR_GROUP_LABELS = {
     },
 }
 
-MCP_TOOL_GROUPS: list[tuple[str, str, list[str]]] = [
-    (
-        "session",
-        "Sesión y cuenta",
-        "Session and account",
-        [
-            "market_login",
-            "market_whoami",
-            "market_subscription",
-            "market_preferences",
-        ],
-    ),
-    (
-        "commerce",
-        "Comercio",
-        "Commerce",
-        [
-            "market_search",
-            "market_compare",
-            "market_add",
-            "market_cart",
-            "market_cart_update",
-            "market_cart_remove",
-            "market_checkout",
-            "market_orders",
-            "market_reorder",
-            "market_ask",
-            "market_basket",
-        ],
-    ),
-    (
-        "moat",
-        "Data moat",
-        "Data moat",
-        [
-            "market_inflation",
-            "market_indicators",
-            "market_scores",
-            "market_intel_refresh",
-            "market_enrichment",
-            "market_enrichment_subcategories",
-            "market_enrichment_refresh",
-            "market_analytics_indicators",
-            "market_stats",
-            "market_alerts",
-            "market_export",
-            "market_trending",
-            "market_price_history",
-        ],
-    ),
-    (
-        "catalog",
-        "Catálogo y utilidades",
-        "Catalog and utilities",
-        [
-            "market_lines",
-            "market_stores",
-            "market_countries",
-            "market_categories",
-            "market_barcode",
-            "market_enrich",
-            "market_brands",
-            "market_stock",
-            "market_scan",
-            "market_ticket",
-            "market_voice",
-            "market_favorites",
-            "market_notify",
-            "market_exchange",
-            "market_delivery",
-        ],
-    ),
-]
+_MCP_BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
+_MCP_CANONICAL = frozenset({"market_discover", "market_intel_brief", "market_price_alerts"})
+_MCP_BUNDLE_LABELS: dict[str, tuple[str, str]] = {
+    "shop": ("Shop", "Shop"),
+    "intel": ("Intel", "Intel"),
+    "account": ("Cuenta", "Account"),
+    "advanced": ("Avanzado", "Advanced"),
+    "admin": ("Admin", "Admin"),
+}
+
+
+def _strip_mcp_bundle_prefix(description: str) -> str:
+    for prefix in _MCP_BUNDLE_PREFIXES:
+        if description.startswith(prefix):
+            return description[len(prefix) :]
+    return description
+
+
+def mcp_tool_groups(profile: str = "default") -> list[tuple[str, str, str, list[str]]]:
+    """Bundle-grouped MCP tool names from registry (PR5)."""
+    from market_core.market_mcp_registry import BUNDLES, TOOLS, get_tool_meta, tool_in_profile
+
+    bundle_keys = ("shop", "intel", "account") if profile == "default" else BUNDLES
+    groups: list[tuple[str, str, str, list[str]]] = []
+    for bundle in bundle_keys:
+        names = [
+            tool["name"]
+            for tool in TOOLS
+            if (meta := get_tool_meta(tool["name"]))
+            and meta["bundle"] == bundle
+            and tool_in_profile(tool["name"], profile)
+        ]
+        if not names:
+            continue
+        es, en = _MCP_BUNDLE_LABELS[bundle]
+        groups.append((bundle, es, en, names))
+    return groups
 
 
 def layout_width(console: Console, *, minimum: int = 72, maximum: int = 100) -> int:
@@ -654,7 +618,7 @@ def _mcp_tool_lookup() -> dict[str, str]:
         from market_core.market_mcp import TOOLS
     except ImportError:
         return {}
-    return {t["name"]: t.get("description", "") for t in TOOLS}
+    return {t["name"]: _strip_mcp_bundle_prefix(t.get("description", "")) for t in TOOLS}
 
 
 def mcp_group_panel(
@@ -672,7 +636,8 @@ def mcp_group_panel(
     for name in tool_names:
         desc = descriptions.get(name, "")
         short = (desc[:52] + "…") if len(desc) > 55 else desc
-        lines.append(f"[cyan]{name}[/]\n[dim]{short or '—'}[/]")
+        marker = f" [bold {MINT}]★[/]" if name in _MCP_CANONICAL else ""
+        lines.append(f"[cyan]{name}[/]{marker}\n[dim]{short or '—'}[/]")
     body = "\n\n".join(lines)
     return Panel(
         body,
@@ -684,20 +649,18 @@ def mcp_group_panel(
     )
 
 
-def print_mcp_tools_catalog(console: Console) -> None:
+def print_mcp_tools_catalog(console: Console, *, profile: str = "default") -> None:
     descriptions = _mcp_tool_lookup()
+    groups = mcp_tool_groups(profile)
     col_w = column_width(console, columns=2)
-    row1 = [
+    panels = [
         mcp_group_panel(key, es, en, names, descriptions=descriptions, width=col_w)
-        for key, es, en, names in MCP_TOOL_GROUPS[:2]
+        for key, es, en, names in groups
     ]
-    row2 = [
-        mcp_group_panel(key, es, en, names, descriptions=descriptions, width=col_w)
-        for key, es, en, names in MCP_TOOL_GROUPS[2:]
-    ]
-    print_columns(console, row1)
-    console.print()
-    print_columns(console, row2)
+    for i in range(0, len(panels), 2):
+        print_columns(console, panels[i : i + 2])
+        if i + 2 < len(panels):
+            console.print()
 
 
 def print_intel_footer(console: Console, hints: list[str]) -> None:

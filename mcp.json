@@ -6,7 +6,8 @@
   "command": "market-mcp",
   "args": [],
   "env": {
-    "MARKET_API_URL": "https://cli-market-production.up.railway.app"
+    "MARKET_API_URL": "https://cli-market-production.up.railway.app",
+    "MCP_TOOL_PROFILE": "default"
   },
   "repository": "https://pypi.org/project/cli-market-world/",
   "website": "https://cli-market.dev",

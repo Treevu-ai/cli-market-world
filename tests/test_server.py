@@ -318,6 +318,24 @@ def test_mcp_module_has_get_token():
     assert callable(get_token)
 
 
+def test_mcp_profile_defaults_to_default(monkeypatch):
+    from market_core.market_mcp_registry import get_profile, public_tool_count
+
+    monkeypatch.delenv("MCP_TOOL_PROFILE", raising=False)
+    assert get_profile() == "default"
+    assert public_tool_count("default") == 22
+
+
+def test_mcp_tool_groups_match_registry_bundles():
+    import market_ui as ui
+
+    groups = ui.mcp_tool_groups("default")
+    assert [g[0] for g in groups] == ["shop", "intel", "account"]
+    shop_names = groups[0][3]
+    assert "market_discover" in shop_names
+    assert "market_lines" not in shop_names
+
+
 # ── Payment / PayPal webhook tests ───────────────────────────────────────────
 
 def test_paypal_webhook_subscription_activated(monkeypatch):

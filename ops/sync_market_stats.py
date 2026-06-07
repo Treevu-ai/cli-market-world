@@ -319,6 +319,10 @@ def sync_mcp_json() -> None:
     }
     data["tools"] = default_tools
     data["tools_legacy"] = legacy_tools
+    data["env"] = {
+        "MARKET_API_URL": "https://cli-market-production.up.railway.app",
+        "MCP_TOOL_PROFILE": "default",
+    }
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"Synced {path}")
     root = ROOT / "mcp.json"
