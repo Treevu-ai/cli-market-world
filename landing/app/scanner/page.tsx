@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { API_URL } from "@/lib/api";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 type MatchedItem = {
   ticket_text: string;
@@ -90,8 +91,8 @@ export default function ScannerPage() {
           </h1>
           <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-md mx-auto">
             Sube una foto de tu ticket de compra. Buscamos cada ítem en{" "}
-            <span className="text-white font-semibold">45,000+ precios verificados</span> de{" "}
-            36 retailers y te mostramos dónde podrías pagar menos.
+            <span className="text-white font-semibold">{MARKET_STATS.pricesVerifiedLabel} precios verificados</span> de{" "}
+            {MARKET_STATS.retailersVerified} retailers y le mostramos dónde podría pagar menos.
           </p>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/50 mt-2 font-mono">
             Sin registro · Sin cookies · Solo datos de góndola real

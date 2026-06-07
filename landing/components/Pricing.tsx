@@ -101,9 +101,9 @@ const tiers: Tier[] = [
     cta_en: "Get Pro",
     featured: true,
     proNote_es:
-      "Activación automática vía PayPal webhook. Facturación PEN · RUC 20613045563.",
+      `Pagos: ${MARKET_STATS.paymentsLabel}. PayPal con activación automática vía webhook. Facturación PEN · RUC 20613045563.`,
     proNote_en:
-      "Auto-activation via PayPal webhook. PEN invoicing · tax ID 20613045563.",
+      `Payments: ${MARKET_STATS.paymentsLabel}. PayPal auto-activation via webhook. PEN invoicing · tax ID 20613045563.`,
   },
   {
     name: "Builder",

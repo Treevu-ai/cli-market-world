@@ -30,12 +30,17 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">Developers</span>
+          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
+            {isES ? "Desarrolladores" : "Developers"}
+          </span>
           <a href="/docs" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            Quickstart API
+            {isES ? "Quickstart API" : "Quickstart API"}
           </a>
           <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            MCP Tool Reference
+            {isES ? "Referencia MCP" : "MCP Tool Reference"}
+          </a>
+          <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Retailers" : "Retailers"}
           </a>
           <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/demo-walkthrough.md" target="_blank" rel="noopener" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo en terminal" : "Terminal demo"}
@@ -56,15 +61,15 @@ export default function Footer() {
 
         <div className="flex flex-col gap-3">
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
-            {isES ? "Compania" : "Company"}
+            {isES ? "Compañía" : "Company"}
           </span>
-          <a href="#retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Listar mi tienda" : "List my store"}
           </a>
-          <a href="#intelligence" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#intelligence" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Inteligencia piloto" : "Intelligence pilot"}
           </a>
-          <a href="#contact" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#contact" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Contacto" : "Contact"}
           </a>
           <a href="mailto:hello@cli-market.dev" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
@@ -76,16 +81,16 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Producto" : "Product"}
           </span>
-          <a href="#how" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#how" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Flujo" : "Flow"}
           </a>
-          <a href="#casos" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#casos" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Casos de uso" : "Use cases"}
           </a>
-          <a href="#coverage" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#coverage" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Cobertura" : "Coverage"}
           </a>
-          <a href="#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             FAQ
           </a>
         </div>
