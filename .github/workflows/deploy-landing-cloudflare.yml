@@ -31,8 +31,19 @@ jobs:
           npm ci
           npm run build
 
+      - name: Detect Cloudflare credentials
+        id: cf_creds
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$CF_TOKEN" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy to Cloudflare Pages (wrangler)
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        if: steps.cf_creds.outputs.present == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -40,5 +51,5 @@ jobs:
           command: pages deploy landing/out --project-name=cli-market-world --branch=main
 
       - name: Skip wrangler (Cloudflare Git integration)
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' }}
+        if: steps.cf_creds.outputs.present != 'true'
         run: echo "No CLOUDFLARE_API_TOKEN — relying on Cloudflare Pages Git build from cloudflare-pages.json"

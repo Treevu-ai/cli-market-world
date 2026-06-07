@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, TIERS, get_default_stores, db_get_subscription, get_db, price_to_usd
+from market_core import STORES, get_default_stores, get_db, price_to_usd
 from market_basket import build_canasta_basica
 from market_spread import build_spread_analytics, find_median_outliers
 from dashboard_glossary import (
