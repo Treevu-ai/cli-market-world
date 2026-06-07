@@ -659,7 +659,7 @@ def test_intel_ask_unavailable_without_api_key(monkeypatch):
 def test_intel_ask_runs_tool_loop(monkeypatch):
     """Pro user + mocked LLM: tool_use → tool_result → final answer."""
     from market_core import db_set_subscription
-    import market_intel_agent as agent
+    import market_core.market_intel_agent as agent
 
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     db_set_subscription("admin", "pro")
