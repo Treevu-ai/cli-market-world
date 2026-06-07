@@ -1,22 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 
 const STORAGE_KEY = "cm-cookie-consent";
+
+function readNeedsConsent(): boolean {
+  try {
+    return !window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return true;
+  }
+}
 
 export default function CookieConsent() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    try {
-      if (!window.localStorage.getItem(STORAGE_KEY)) setVisible(true);
-    } catch {
-      setVisible(true);
-    }
+  useLayoutEffect(() => {
+    setVisible(readNeedsConsent());
+    setReady(true);
   }, []);
+
+  useLayoutEffect(() => {
+    if (!visible) {
+      document.body.classList.remove("cookie-banner-active");
+      return;
+    }
+    document.body.classList.add("cookie-banner-active");
+    return () => document.body.classList.remove("cookie-banner-active");
+  }, [visible]);
 
   const accept = () => {
     try {
@@ -27,17 +42,18 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  if (!ready || !visible) return null;
 
   return (
     <div
       role="dialog"
       aria-live="polite"
       aria-label={isES ? "Aviso de cookies" : "Cookie notice"}
-      className="fixed bottom-0 inset-x-0 z-50 p-4 md:px-6 md:pb-6 pointer-events-none"
+      data-cookie-banner="true"
+      className="fixed bottom-0 inset-x-0 z-[100] p-4 md:px-6 md:pb-6 pointer-events-none"
     >
       <div className="landing-container-wide pointer-events-auto">
-        <div className="card-cyber border border-[var(--cm-outline-variant)]/40 p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 shadow-lg">
+        <div className="rounded-lg border border-[var(--cm-mint)]/30 bg-[var(--cm-surface-low)]/95 backdrop-blur-md p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
           <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed flex-1">
             {isES ? (
               <>
