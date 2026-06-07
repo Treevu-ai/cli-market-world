@@ -41,26 +41,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Extract pinned cli-market-core ref
-        id: core
-        run: |
-          REF=$(python -c "import re, pathlib; t=pathlib.Path('requirements-railway.txt').read_text(); m=re.search(r'cli-market-core@([a-f0-9]{40})', t); assert m, 'pin missing'; print(m.group(1))")
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
-
-      - name: Checkout cli-market-core
-        uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: ${{ steps.core.outputs.ref }}
-          path: cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Vendor cli-market-core for tests
-        run: bash ops/vendor_core_for_pypi.sh cli-market-core
-
       - name: Install dependencies
         run: |
-          pip install --no-cache-dir ./cli-market-core
+          pip install "cli-market-core>=1.9.5"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
@@ -98,26 +81,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Extract pinned cli-market-core ref
-        id: core
-        run: |
-          REF=$(python -c "import re, pathlib; t=pathlib.Path('requirements-railway.txt').read_text(); m=re.search(r'cli-market-core@([a-f0-9]{40})', t); assert m, 'pin missing'; print(m.group(1))")
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
-
-      - name: Checkout cli-market-core
-        uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: ${{ steps.core.outputs.ref }}
-          path: cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Vendor cli-market-core for tests
-        run: bash ops/vendor_core_for_pypi.sh cli-market-core
-
       - name: Install dependencies
         run: |
-          pip install --no-cache-dir ./cli-market-core
+          pip install "cli-market-core>=1.9.5"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
