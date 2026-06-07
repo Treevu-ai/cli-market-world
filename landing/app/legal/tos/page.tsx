@@ -1,13 +1,14 @@
 "use client";
 import LegalPage from "@/components/LegalPage";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function TermsOfService() {
   return (
     <LegalPage
       titleES="Términos de Servicio"
       titleEN="Terms of Service"
-      updatedES="20 de mayo de 2026"
-      updatedEN="May 20, 2026"
+      updatedES="6 de junio de 2026"
+      updatedEN="June 6, 2026"
     >
       {(isES) =>
         isES ? (
@@ -30,11 +31,14 @@ export default function TermsOfService() {
             <h2>2. Descripción del Servicio</h2>
             <p>
               CLI Market proporciona una interfaz programable para búsqueda de productos,
-              comparación de precios y ejecución de compras en 66 retailers (36 verificados
-              activos) en 11 países. El Servicio se entrega mediante el paquete PyPI (
-              <code>pip install cli-market</code>), servidor MCP (43 herramientas), una API REST
-              y snapshots de datos (bases de datos PostgreSQL de historial de precios y mapeos
-              de SKU — licenciados por separado bajo el Acuerdo de Licencia de Datos).
+              comparación de precios y ejecución de compras en {MARKET_STATS.retailersDefined}{" "}
+              retailers ({MARKET_STATS.retailersVerified} verificados activos) en{" "}
+              {MARKET_STATS.countries} países. El Servicio se entrega mediante el paquete PyPI (
+              <code>pip install cli-market</code>), servidor MCP ({MARKET_STATS.mcpTools}{" "}
+              herramientas), una API REST y snapshots de datos (bases de datos PostgreSQL de
+              historial de precios y mapeos de SKU — licenciados por separado bajo acuerdo
+              comercial de datos, previa solicitud a{" "}
+              <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>).
             </p>
 
             <h2>3. Registro de Cuenta</h2>
@@ -73,6 +77,33 @@ export default function TermsOfService() {
               de pago puede resultar en la suspensión del Servicio; las exportaciones de datos
               están disponibles durante 30 días post-suspensión.
             </p>
+
+            <h3>6.1 Suscripciones Pro (PayPal)</h3>
+            <ul>
+              <li>
+                El plan Pro (USD 79/mes u opción anual publicada en la landing) se factura mediante
+                suscripción recurrente en PayPal, salvo acuerdo escrito distinto.
+              </li>
+              <li>
+                La activación del tier Pro ocurre automáticamente tras la confirmación del pago
+                (webhook). Puede verificar con <code>market whoami</code>.
+              </li>
+              <li>
+                Puede cancelar la renovación en cualquier momento desde su cuenta PayPal o
+                contactando a{" "}
+                <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>. La cancelación
+                detiene cargos futuros; no reembolsa periodos ya facturados salvo lo exigido por
+                ley o la política de PayPal.
+              </li>
+              <li>
+                Checkout de productos (no suscripción) puede usar PayPal, Mercado Pago o QR
+                (Yape/Plin) según disponibilidad regional y tier activo.
+              </li>
+              <li>
+                Facturación en soles (PEN) y comprobantes: Sinapsis Innovadora S.A.C., RUC
+                20613045563 — solicítelos por correo tras el pago.
+              </li>
+            </ul>
 
             <h2>7. Propiedad Intelectual</h2>
             <p>
@@ -149,11 +180,13 @@ export default function TermsOfService() {
             <h2>2. Description of Service</h2>
             <p>
               CLI Market provides a programmable interface for product search, price comparison,
-              and purchase execution across 66 retailers (36 verified active) in 11 countries.
-              The Service is delivered via PyPI package (<code>pip install cli-market</code>),
-              MCP server (43 tools), a REST API, and data snapshots (PostgreSQL databases of
-              pricing history and SKU mappings — licensed separately under the Data License
-              Agreement).
+              and purchase execution across {MARKET_STATS.retailersDefined} retailers (
+              {MARKET_STATS.retailersVerified} verified active) in {MARKET_STATS.countries}{" "}
+              countries. The Service is delivered via PyPI package (
+              <code>pip install cli-market</code>), MCP server ({MARKET_STATS.mcpTools} tools), a
+              REST API, and data snapshots (PostgreSQL databases of pricing history and SKU
+              mappings — licensed separately under a commercial data agreement upon request at{" "}
+              <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>).
             </p>
 
             <h2>3. Account Registration</h2>
@@ -191,6 +224,32 @@ export default function TermsOfService() {
               right to modify pricing with 30 days notice. Failure to pay may result in
               suspension; data exports are available for 30 days post-suspension.
             </p>
+
+            <h3>6.1 Pro Subscriptions (PayPal)</h3>
+            <ul>
+              <li>
+                The Pro plan (USD 79/mo or published annual option) is billed via recurring PayPal
+                subscription unless otherwise agreed in writing.
+              </li>
+              <li>
+                Pro tier activates automatically after payment confirmation (webhook). Verify with{" "}
+                <code>market whoami</code>.
+              </li>
+              <li>
+                You may cancel renewal anytime from your PayPal account or by emailing{" "}
+                <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>. Cancellation stops
+                future charges; it does not refund already-billed periods except as required by
+                law or PayPal policy.
+              </li>
+              <li>
+                Product checkout (not subscription) may use PayPal, Mercado Pago, or Yape/Plin QR
+                depending on region and active tier.
+              </li>
+              <li>
+                PEN invoicing and receipts: Sinapsis Innovadora S.A.C., tax ID 20613045563 —
+                request by email after payment.
+              </li>
+            </ul>
 
             <h2>7. Intellectual Property</h2>
             <p>

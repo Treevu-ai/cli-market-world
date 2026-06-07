@@ -54,7 +54,7 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-5">
           {navItems.map(({ id, es, en }) => (
-            <a key={id} href={`#${id}`}
+            <a key={id} href={`/#${id}`}
                className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors whitespace-nowrap">
               {isES ? es : en}
             </a>
@@ -98,11 +98,15 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 px-6 py-4 flex flex-col gap-3">
           {navItems.map(({ id, es, en }) => (
-            <a key={id} href={`#${id}`} onClick={close}
+            <a key={id} href={`/#${id}`} onClick={close}
                className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
               {isES ? es : en}
             </a>
           ))}
+          <a href="/account" onClick={close}
+             className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
+            {isES ? "Cuenta" : "Account"}
+          </a>
           <a href="https://github.com/Treevu-ai/cli-market-world" target="_blank" rel="noopener noreferrer" onClick={close}
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             GitHub

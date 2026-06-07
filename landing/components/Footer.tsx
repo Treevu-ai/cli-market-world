@@ -93,7 +93,27 @@ export default function Footer() {
           <a href="/#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             FAQ
           </a>
+          <a href="/#pricing" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Planes y precios" : "Plans & pricing"}
+          </a>
         </div>
+      </div>
+
+      <div className="landing-container-wide mt-10 pt-6 border-t border-[var(--cm-outline-variant)]/20 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <span className="font-label-caps text-[var(--cm-mint)] opacity-50 text-[10px]">
+            {isES ? "Legal" : "Legal"}
+          </span>
+          <a href="/legal/tos" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Términos de Servicio" : "Terms of Service"}
+          </a>
+          <a href="/legal/privacy" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Política de Privacidad" : "Privacy Policy"}
+          </a>
+        </div>
+        <p className="font-mono text-[10px] text-[var(--cm-on-surface-variant)]/50">
+          Sinapsis Innovadora S.A.C. · RUC 20613045563 · Lima, Perú
+        </p>
       </div>
     </footer>
   );

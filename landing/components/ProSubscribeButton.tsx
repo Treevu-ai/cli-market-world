@@ -39,6 +39,7 @@ export default function ProSubscribeButton() {
   const isES = lang === "es";
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [legal, setLegal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProResponse | null>(null);
   const [error, setError] = useState("");
@@ -53,6 +54,14 @@ export default function ProSubscribeButton() {
     setError("");
     if (!email.trim()) {
       setError(isES ? "Ingrese su email" : "Enter your email");
+      return;
+    }
+    if (!legal) {
+      setError(
+        isES
+          ? "Debe aceptar los Términos y la Política de Privacidad."
+          : "You must accept the Terms and Privacy Policy.",
+      );
       return;
     }
     setLoading(true);
@@ -166,11 +175,70 @@ export default function ProSubscribeButton() {
         placeholder={isES ? "usuario CLI (market whoami) — opcional" : "CLI username (market whoami) — optional"}
         className="w-full input-cyber text-sm"
       />
+
+      <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/50 p-2.5">
+        {isES ? (
+          <>
+            Plan Pro: <strong>USD 79/mes</strong>, renovación automática vía PayPal. Puede cancelar en cualquier
+            momento desde su cuenta PayPal o escribiendo a{" "}
+            <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
+              hello@cli-market.dev
+            </a>
+            . Facturación PEN disponible (RUC 20613045563). El tier Pro se activa tras confirmar el pago (webhook).
+          </>
+        ) : (
+          <>
+            Pro plan: <strong>USD 79/mo</strong>, auto-renewal via PayPal. Cancel anytime from your PayPal account or
+            email{" "}
+            <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
+              hello@cli-market.dev
+            </a>
+            . PEN invoicing available (tax ID 20613045563). Pro tier activates after payment confirmation (webhook).
+          </>
+        )}
+      </p>
+
+      <label className="flex items-start gap-3 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={legal}
+          onChange={(e) => setLegal(e.target.checked)}
+          className="mt-0.5 accent-[var(--cm-mint)] shrink-0"
+        />
+        <span className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
+          {isES ? (
+            <>
+              Acepto los{" "}
+              <a href="/legal/tos" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
+                Términos de Servicio
+              </a>{" "}
+              (incl. suscripciones) y la{" "}
+              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
+                Política de Privacidad
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              I agree to the{" "}
+              <a href="/legal/tos" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
+                Terms of Service
+              </a>{" "}
+              (incl. subscriptions) and{" "}
+              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--cm-mint)] hover:underline">
+                Privacy Policy
+              </a>
+              .
+            </>
+          )}
+        </span>
+      </label>
+
       {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
       <button
         onClick={submit}
-        disabled={loading}
-        className="btn-mint w-full disabled:opacity-50"
+        disabled={loading || !legal}
+        className="btn-mint w-full disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading
           ? isES
@@ -182,8 +250,8 @@ export default function ProSubscribeButton() {
       </button>
       <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
         {isES
-          ? `${MARKET_STATS.paymentsLabel} · PayPal con activación automática · Recomendado: market register primero`
-          : `${MARKET_STATS.paymentsLabel} · PayPal auto-activation · Recommended: market register first`}
+          ? `${MARKET_STATS.paymentsLabel} · Checkout de productos vía MP/Yape con tier Pro`
+          : `${MARKET_STATS.paymentsLabel} · Product checkout via MP/Yape on Pro tier`}
       </p>
     </div>
   );

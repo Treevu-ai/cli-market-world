@@ -6,8 +6,8 @@ export default function PrivacyPolicy() {
     <LegalPage
       titleES="Política de Privacidad"
       titleEN="Privacy Policy"
-      updatedES="4 de junio de 2026"
-      updatedEN="June 4, 2026"
+      updatedES="6 de junio de 2026"
+      updatedEN="June 6, 2026"
     >
       {(isES) =>
         isES ? (
@@ -75,16 +75,39 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 <strong>Cloudflare Pages:</strong> alojamiento de la landing estática. Cloudflare
-                puede registrar metadatos de solicitudes anonimizados según sus prácticas
-                estándar de infraestructura.
+                puede registrar metadatos de solicitudes según sus prácticas de infraestructura.
+              </li>
+              <li>
+                <strong>Cloudflare Web Analytics:</strong> métricas agregadas de visitas (páginas
+                vistas, referrer, país aproximado) sin cookies de terceros para publicidad.{" "}
+                <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+                  Política de Cloudflare
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Plausible Analytics:</strong> analítica respetuosa con la privacidad (sin
+                cookies de seguimiento cross-site, datos agregados).{" "}
+                <a href="https://plausible.io/privacy-focused-web-analytics" target="_blank" rel="noopener noreferrer">
+                  Política de Plausible
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Mercado Pago:</strong> procesamiento de pagos locales (Perú/LatAm) cuando
+                utiliza checkout de productos en tier Pro.
               </li>
             </ul>
-            <p>No integramos redes publicitarias, plataformas de analítica ni píxeles de seguimiento social.</p>
-
-            <h2>5. Cookies</h2>
             <p>
-              La landing no utiliza cookies de seguimiento. La API usa un token de sesión
-              almacenado en tu configuración local del CLI (~/.cli-market/config.json), no en
+              No integramos redes publicitarias ni píxeles de seguimiento social. La analítica de
+              la landing se usa únicamente para medir tráfico agregado y mejorar el producto.
+            </p>
+
+            <h2>5. Cookies y almacenamiento local</h2>
+            <p>
+              La landing no utiliza cookies de publicidad. Cloudflare y Plausible pueden usar
+              almacenamiento mínimo técnico según su documentación. La API usa un token de sesión
+              almacenado en su configuración local del CLI (~/.cli-market/config.json), no en
               cookies del navegador.
             </p>
 
@@ -192,15 +215,39 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 <strong>Cloudflare Pages:</strong> static landing page hosting. Cloudflare may
-                log anonymized request metadata per their standard infrastructure practices.
+                log request metadata per their infrastructure practices.
+              </li>
+              <li>
+                <strong>Cloudflare Web Analytics:</strong> aggregated visit metrics (page views,
+                referrer, approximate country) without third-party advertising cookies.{" "}
+                <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+                  Cloudflare Privacy Policy
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Plausible Analytics:</strong> privacy-friendly analytics (no cross-site
+                tracking cookies, aggregated data).{" "}
+                <a href="https://plausible.io/privacy-focused-web-analytics" target="_blank" rel="noopener noreferrer">
+                  Plausible policy
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Mercado Pago:</strong> local payment processing (Peru/LatAm) when using
+                product checkout on the Pro tier.
               </li>
             </ul>
-            <p>We do not integrate advertising networks, analytics platforms, or social tracking pixels.</p>
-
-            <h2>5. Cookies</h2>
             <p>
-              The landing page does not use tracking cookies. The API uses a session token stored
-              in your local CLI configuration (~/.cli-market/config.json), not in browser
+              We do not integrate advertising networks or social tracking pixels. Landing
+              analytics is used only for aggregated traffic measurement and product improvement.
+            </p>
+
+            <h2>5. Cookies and local storage</h2>
+            <p>
+              The landing page does not use advertising cookies. Cloudflare and Plausible may use
+              minimal technical storage per their documentation. The API uses a session token
+              stored in your local CLI configuration (~/.cli-market/config.json), not in browser
               cookies.
             </p>
 
