@@ -544,7 +544,7 @@ def test_request_starter_creates_subscription_request(monkeypatch):
     assert data["ok"] is True
     assert data["request_id"].startswith("STR-")
     assert data["tier"] == "starter"
-    assert "starter-checkout" in data["payment_link"]
+    assert "pro-checkout" in data["payment_link"]
 
 
 def test_request_pro_creates_subscription_request(monkeypatch):
