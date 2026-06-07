@@ -55,10 +55,11 @@ jobs:
           path: cli-market-core
           token: ${{ secrets.GH_PAT }}
 
+      - name: Vendor cli-market-core for tests
+        run: bash ops/vendor_core_for_pypi.sh cli-market-core
+
       - name: Install dependencies
         run: |
-          pip uninstall -y cli-market-core cli-market 2>/dev/null || true
-          pip install --no-cache-dir ./cli-market-core
           pip install "playwright>=1.45.0" pytest httpx
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
@@ -110,10 +111,11 @@ jobs:
           path: cli-market-core
           token: ${{ secrets.GH_PAT }}
 
+      - name: Vendor cli-market-core for tests
+        run: bash ops/vendor_core_for_pypi.sh cli-market-core
+
       - name: Install dependencies
         run: |
-          pip uninstall -y cli-market-core cli-market 2>/dev/null || true
-          pip install --no-cache-dir ./cli-market-core
           pip install "playwright>=1.45.0" pytest httpx psycopg2-binary
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
