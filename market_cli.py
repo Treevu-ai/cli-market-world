@@ -1070,6 +1070,26 @@ def _hello_wordmark_panel(is_en: bool, width: int) -> Panel:
     )
 
 
+def _hello_activation_panel(is_en: bool, width: int) -> Panel:
+    if is_en:
+        body = (
+            "[bold white]Post-install activation[/]\n"
+            "[dim]You installed[/] [cyan]cli-market[/][dim]. Run[/] [bold cyan]market init[/] "
+            "[dim]for a free API key, readiness check, and MCP snippet.[/]\n"
+            "[dim]Or[/] [cyan]market register[/] [dim]if you only need credentials.[/]"
+        )
+        title = "[bold #00FF88]NEXT STEP[/]"
+    else:
+        body = (
+            "[bold white]Activación post-install[/]\n"
+            "[dim]Instalaste[/] [cyan]cli-market[/][dim]. Ejecuta[/] [bold cyan]market init[/] "
+            "[dim]para API key gratis, readiness y snippet MCP.[/]\n"
+            "[dim]O[/] [cyan]market register[/] [dim]si solo necesitas credenciales.[/]"
+        )
+        title = "[bold #00FF88]SIGUIENTE PASO[/]"
+    return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
 def _hello_status_bar(is_en: bool, width: int) -> Panel:
     label = "EN LINEA" if not is_en else "ONLINE"
     line = (
@@ -1115,6 +1135,7 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
     if is_en:
         body = (
             "[bold #00FF88]ONBOARDING[/]\n"
+            "  [cyan]0.[/] [cyan]market hello[/]        [dim]you are here[/]\n"
             "  [cyan]1.[/] [cyan]market init[/]         [dim]API + account + MCP[/]\n"
             "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... shown once[/]\n"
             '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
@@ -1127,6 +1148,7 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
     else:
         body = (
             "[bold #00FF88]INICIO RÁPIDO[/]\n"
+            "  [cyan]0.[/] [cyan]market hello[/]        [dim]estás aquí[/]\n"
             "  [cyan]1.[/] [cyan]market init[/]         [dim]API + cuenta + MCP[/]\n"
             "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... una sola vez[/]\n"
             '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
@@ -1217,9 +1239,11 @@ def cmd_hello(args):
     """Post-install activation: show next steps after pip install."""
     is_en = get_lang() == "en"
     width = min(max(console.width, 80), 100)
+    _report_install_event(source="hello")
 
     console.print()
     console.print(_hello_wordmark_panel(is_en, width))
+    console.print(_hello_activation_panel(is_en, width))
     console.print(_hello_status_bar(is_en, width))
     col_w = max((width - 6) // 2, 36)
     console.print(
@@ -1428,16 +1452,46 @@ def cmd_upgrade(args):
 # ── Main ────────────────────────────────────────────────────────────────────
 
 
-def _report_install_event():
+def _install_session_id() -> str:
+    """Stable anonymous id for CLI funnel events (per machine profile)."""
+    sid_file = SESSION_FILE.parent / "funnel_session"
+    if sid_file.is_file():
+        return sid_file.read_text(encoding="utf-8").strip()
+    import uuid
+
+    sid = str(uuid.uuid4())
+    sid_file.parent.mkdir(parents=True, exist_ok=True)
+    sid_file.write_text(sid, encoding="utf-8")
+    return sid
+
+
+def _report_install_event(*, source: str = "cli") -> bool:
+    """Report first CLI activation after pip install (once per machine)."""
     flag = SESSION_FILE.parent / "funnel_install"
-    if flag.exists():
-        return
+    if flag.is_file():
+        return False
     try:
-        api("POST", "/v1/events", {"event": "install", "dedupe": True})
+        import platform
+
+        api(
+            "POST",
+            "/v1/events",
+            {
+                "event": "install",
+                "dedupe": True,
+                "session_id": _install_session_id(),
+                "meta": {
+                    "source": source,
+                    "cli_version": PACKAGE_VERSION,
+                    "platform": platform.system(),
+                },
+            },
+        )
         flag.parent.mkdir(parents=True, exist_ok=True)
         flag.write_text("1", encoding="utf-8")
+        return True
     except Exception:
-        pass
+        return False
 
 
 def main():
@@ -1586,7 +1640,8 @@ def main():
 
     args = parser.parse_args()
     ui.set_json_mode(getattr(args, "json", False))
-    _report_install_event()
+    install_source = "hello" if not getattr(args, "command", None) or args.command == "hello" else "cli"
+    _report_install_event(source=install_source)
     ui.maybe_version_notice(console)
     if not args.command:
         cmd_hello(argparse.Namespace(json=getattr(args, "json", False)))

@@ -31,6 +31,21 @@ def test_v1_events_endpoint():
     assert r.json().get("ok") is True
 
 
+def test_install_dedupe_by_session_id():
+    sid = "install-dedupe-sess-1"
+    first = client.post(
+        "/v1/events",
+        json={"event": "install", "session_id": sid, "dedupe": True, "meta": {"source": "test"}},
+    )
+    second = client.post(
+        "/v1/events",
+        json={"event": "install", "session_id": sid, "dedupe": True, "meta": {"source": "test"}},
+    )
+    assert first.status_code == 200
+    assert first.json().get("ok") is True
+    assert second.json().get("deduped") is True
+
+
 def test_starter_subscribe_event():
     r = client.post(
         "/v1/events",

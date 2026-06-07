@@ -1,6 +1,7 @@
 import { API_URL } from "@/lib/api";
 
 const SESSION_KEY = "cm-funnel-session";
+const INSTALL_REPORTED_KEY = "cm-funnel-install-reported";
 
 export type FunnelEvent =
   | "install"
@@ -58,6 +59,21 @@ export function recordFunnelEvent(
     body: JSON.stringify(body),
     keepalive: true,
   }).catch(() => {});
+}
+
+/** Record pip install intent once per browser (Hero, docs, how-it-works). */
+export function recordPipInstallIntent(source: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (window.localStorage.getItem(INSTALL_REPORTED_KEY)) return;
+    recordFunnelEvent("install", {
+      meta: { source },
+      dedupe: true,
+    });
+    window.localStorage.setItem(INSTALL_REPORTED_KEY, source);
+  } catch {
+    recordFunnelEvent("install", { meta: { source }, dedupe: true });
+  }
 }
 
 export function scrollToStarterCheckout(): void {
