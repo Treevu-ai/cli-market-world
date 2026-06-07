@@ -55,28 +55,23 @@ export default function ScaleCoverageSection() {
         <p className="section-eyebrow mb-4">
           {isES ? "Escala y cobertura" : "Scale and coverage"}
         </p>
-        <h2 className="section-title mb-2">
-          {isES
-            ? `${retailersDefined} retailers · ${retailersVerified} verificados · ${MARKET_STATS.countries} países`
-            : `${retailersDefined} retailers · ${retailersVerified} verified · ${MARKET_STATS.countries} countries`}
+        <h2 className="section-title">
+          {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
         </h2>
-        <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-8">
-          {isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn}
-          {" · "}
-          <span className="tabular-nums">{priceLong}</span> {isES ? "precios verificados" : "verified prices"}
-          {" · "}
-          {refreshLabel(isES)}
+        <p className="section-intro">
+          {isES
+            ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`
+            : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
         </p>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}
         </div>
 
-        {/* Data moat snapshot */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 text-left">
-          <div className="card-cyber p-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
+          <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
             </p>
@@ -85,8 +80,8 @@ export default function ScaleCoverageSection() {
               {isES ? "precios indexados · normalizados kg/L · 34 indicadores" : "indexed prices · kg/L normalized · 34 indicators"}
             </p>
           </div>
-          <div className="card-cyber p-5">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
+          <div className="card-cyber p-6">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Frescura" : "Freshness"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">
@@ -97,8 +92,8 @@ export default function ScaleCoverageSection() {
               {stats.moatAgeHours != null ? ` · ${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h` : ""}
             </p>
           </div>
-          <div className="card-cyber p-5">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
+          <div className="card-cyber p-6">
+            <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Cobertura" : "Coverage"}
             </p>
             <p className="text-3xl font-black text-white tabular-nums">
@@ -110,99 +105,104 @@ export default function ScaleCoverageSection() {
           </div>
         </div>
 
-        {/* Auditability bar */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8 text-left">
-          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
-              {isES ? "Precios acumulados" : "Total snapshots"}
-            </p>
-            <p className="text-lg font-bold text-white tabular-nums">
-              {stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—"}
-            </p>
-          </div>
-          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
-              {isES ? "Promedio diario (7d)" : "Daily avg (7d)"}
-            </p>
-            <p className="text-lg font-bold text-white tabular-nums">
-              {stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—"}
-            </p>
-          </div>
-          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
-              {isES ? "Foso de datos" : "Data moat"}
-            </p>
-            <p className="text-lg font-bold text-white tabular-nums">
-              {stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—"}
-            </p>
-          </div>
-          <div className="card-cyber p-3 border-l-2 border-[var(--cm-mint)]/40">
-            <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-1">
-              {isES ? "Intervalo collector" : "Collector interval"}
-            </p>
-            <p className="text-lg font-bold text-white tabular-nums">
-              {stats.collectorIntervalH != null ? `cada ${stats.collectorIntervalH}h` : `cada ${MARKET_STATS.pricesRefreshHours}h`}
-            </p>
-          </div>
-        </div>
-
-        {/* Platforms */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10 text-left">
-          {[
-            { name: "VTEX", count: MARKET_STATS.platformVtex, note: isES ? "supermercados, electro, moda LatAm" : "supermarkets, electronics, LatAm fashion" },
-            { name: "Shopify", count: MARKET_STATS.platformShopify, note: isES ? "moda & beauty global" : "global fashion & beauty" },
-            { name: "Magento", count: MARKET_STATS.platformMagento, note: isES ? "departamentales" : "department stores" },
-            { name: "WooCommerce", count: MARKET_STATS.platformWooCommerce, note: isES ? "FMCG organico PE (piloto)" : "organic FMCG PE (pilot)" },
-          ].map((p) => (
-            <div key={p.name} className="card-cyber p-4">
-              <p className="text-lg font-bold text-white">{p.name}</p>
-              <p className="text-2xl font-black text-white tabular-nums">{p.count}</p>
-              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{p.note}</p>
+        <div className="max-w-3xl mx-auto text-left space-y-4">
+          <details className="details-disclosure">
+            <summary>{isES ? "Métricas técnicas del collector" : "Collector technical metrics"}</summary>
+            <div className="details-body">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                {[
+                  { label: isES ? "Precios acumulados" : "Total snapshots", value: stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—" },
+                  { label: isES ? "Promedio diario (7d)" : "Daily avg (7d)", value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—" },
+                  { label: isES ? "Foso de datos" : "Data moat", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
+                  { label: isES ? "Intervalo collector" : "Collector interval", value: stats.collectorIntervalH != null ? `cada ${stats.collectorIntervalH}h` : `cada ${MARKET_STATS.pricesRefreshHours}h` },
+                ].map((item) => (
+                  <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
+                    <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-2">{item.label}</p>
+                    <p className="text-lg font-bold text-white tabular-nums">{item.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          </details>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left mb-8">
-          <div>
-            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">VTEX</p>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(vtexLines).map(([line, stores]) => (
-                <div key={line} className="card-cyber p-3">
-                  <h3 className="text-xs font-bold uppercase text-white mb-1">{line}</h3>
-                  <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{stores.slice(0, 4).join(" · ")}{stores.length > 4 ? "…" : ""}</p>
+          <details className="details-disclosure">
+            <summary>{isES ? "Plataformas y retailers" : "Platforms and retailers"}</summary>
+            <div className="details-body space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                {[
+                  { name: "VTEX", count: MARKET_STATS.platformVtex, note: isES ? "supermercados, electro, moda LatAm" : "supermarkets, electronics, LatAm fashion" },
+                  { name: "Shopify", count: MARKET_STATS.platformShopify, note: isES ? "moda & beauty global" : "global fashion & beauty" },
+                  { name: "Magento", count: MARKET_STATS.platformMagento, note: isES ? "departamentales" : "department stores" },
+                  { name: "WooCommerce", count: MARKET_STATS.platformWooCommerce, note: isES ? "FMCG organico PE (piloto)" : "organic FMCG PE (pilot)" },
+                ].map((p) => (
+                  <div key={p.name} className="card-cyber p-5">
+                    <p className="text-lg font-bold text-white">{p.name}</p>
+                    <p className="text-2xl font-black text-white tabular-nums mt-1">{p.count}</p>
+                    <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2 leading-relaxed">{p.note}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">VTEX</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.entries(vtexLines).map(([line, stores]) => (
+                      <div key={line} className="card-cyber p-4">
+                        <h3 className="text-xs font-bold uppercase text-white mb-2">{line}</h3>
+                        <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-1 leading-relaxed list-disc pl-4">
+                          {stores.slice(0, 4).map((store) => (
+                            <li key={store}>{store}</li>
+                          ))}
+                          {stores.length > 4 && (
+                            <li className="list-none pl-0 text-[var(--cm-on-surface-variant)]/60">
+                              +{stores.length - 4} {isES ? "más" : "more"}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+                <div className="space-y-5">
+                  <div>
+                    <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">
+                      Shopify · {isES ? "marcas moda & beauty" : "fashion & beauty brands"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {MARKET_STATS.shopifyBrands.map((brand) => (
+                        <span key={brand} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                          {brand}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">Magento</p>
+                    <div className="flex flex-wrap gap-2">
+                      {magentoStores.map((store) => (
+                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                          {store}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">{isES ? "Países" : "Countries"}</p>
+                <div className="flex flex-wrap gap-2">
+                  {MARKET_STATS.countryCodes.map((c) => (
+                    <span key={c} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">
-              Shopify · {isES ? "marcas moda & beauty" : "fashion & beauty brands"}
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {MARKET_STATS.shopifyBrands.map((brand) => (
-                <span key={brand} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
-                  {brand}
-                </span>
-              ))}
-            </div>
-            <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-2">Magento</p>
-            <div className="flex flex-wrap gap-2">
-              {magentoStores.map((store) => (
-                <span key={store} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
-                  {store}
-                </span>
-              ))}
-            </div>
-          </div>
+          </details>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {MARKET_STATS.countryCodes.map((c) => (
-            <span key={c} className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
-          ))}
-        </div>
-
-        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-4">
+        <p className="text-sm text-[var(--cm-on-surface-variant)]/70 mt-10">
           {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}
         </p>
       </div>
