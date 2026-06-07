@@ -205,9 +205,9 @@ def tier_gate(console: Console, feature: str, tier: str, *, json_args: Any = Non
     elif feature == "alerts_create" and tier_l == "free":
         allowed = False
         msg = (
-            "Price alerts require Starter or Pro."
+            "Price alerts require Pro."
             if en
-            else "Alertas de precio requieren Starter o Pro."
+            else "Alertas de precio requieren Pro."
         )
 
     if allowed:

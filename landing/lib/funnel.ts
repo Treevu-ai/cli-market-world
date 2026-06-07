@@ -76,6 +76,7 @@ export function recordPipInstallIntent(source: string): void {
   }
 }
 
-export function scrollToStarterCheckout(): void {
-  document.getElementById("starter-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
+export function scrollToProCheckout(): void {
+  document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+// Legacy scrollToStarterCheckout removed as part of pricing simplification (1 ICP focus on Pro)

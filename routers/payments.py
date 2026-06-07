@@ -595,8 +595,8 @@ async def mercadopago_webhook(request: Request):
 
 STARTER_CHECKOUT_URL = os.getenv(
     "STARTER_PAYMENT_URL",
-    "https://cli-market.dev/#starter-checkout",
-)
+    "https://cli-market.dev/#pro-checkout",
+)  # legacy env name kept for compat; value now points to Pro (pricing simplified)
 
 
 def _record_plan_funnel_event(
@@ -631,15 +631,15 @@ def _send_starter_payment_email(
     from market_connectors.email_outbound import STARTER_PRICE_LABEL, _send
 
     if lang == "es":
-        subject = "Tu acceso Starter — CLI Market"
+        subject = "Tu acceso Pro — CLI Market"
         text = f"""Hola {username or ''},
 
-Recibimos tu solicitud de CLI Market Starter.
+Recibimos tu solicitud de CLI Market Pro.
 
-Plan Starter — {STARTER_PRICE_LABEL}
-• 5.000 consultas API / día
-• 3 alertas de precio
-• Exportación CSV
+Plan Pro — {STARTER_PRICE_LABEL}
+• 20.000 consultas API / día
+• Alertas + full MCP + checkout
+• Exportación / historial
 
 CHECKOUT STARTER → {checkout_url}
 
@@ -651,15 +651,15 @@ Tras pagar en PayPal, Starter se activa en segundos (webhook). Verifique: market
 hello@cli-market.dev
 """
     else:
-        subject = "Your Starter access — CLI Market"
+        subject = "Your Pro access — CLI Market"
         text = f"""Hi {username or ''},
 
-We received your CLI Market Starter request.
+We received your CLI Market Pro request.
 
-Starter plan — {STARTER_PRICE_LABEL}
-• 5,000 API requests / day
-• 3 price alerts
-• CSV export
+Pro plan — {STARTER_PRICE_LABEL}
+• 20,000 API requests / day
+• Alerts + full MCP + checkout
+• CSV export / history
 
 STARTER CHECKOUT → {checkout_url}
 
@@ -671,8 +671,8 @@ After PayPal payment, Starter activates in seconds (webhook). Verify: market who
 hello@cli-market.dev
 """
     html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
-<h2 style="color:#3afecf;">CLI Market Starter</h2>
-<p><a href="{checkout_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Starter checkout →</a></p>
+<h2 style="color:#3afecf;">CLI Market Pro</h2>
+<p><a href="{checkout_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Pro checkout →</a></p>
 </body></html>"""
     return _send(to_email, subject, text, html)
 
@@ -1089,9 +1089,9 @@ async def billing_starter(authorization: str | None = Header(None)):
         )
         if out.get("ok"):
             out["message"] = (
-                "Confirm on PayPal; Starter activates in seconds. Check your email for the link."
+                "Confirm on PayPal; Pro activates in seconds. Check your email for the link."
                 if out.get("email_sent")
-                else "Confirm on PayPal; Starter activates in seconds (email not sent — SMTP)."
+                else "Confirm on PayPal; Pro activates in seconds (email not sent — SMTP)."
             )
             return out
         raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))

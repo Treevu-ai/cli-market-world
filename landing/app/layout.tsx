@@ -109,9 +109,8 @@ const jsonLd = {
       },
       offers: [
         { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
-        { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD" },
-        { "@type": "Offer", name: "Pro", price: "79", priceCurrency: "USD" },
-        { "@type": "Offer", name: "Builder", price: "149", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Pro", price: "39", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Enterprise", price: "custom", priceCurrency: "USD" },
       ],
     },
     buildFaqJsonLd("es"),

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
-import StarterSubscribeButton from "@/components/StarterSubscribeButton";
 import FreeSignupModal from "@/components/FreeSignupModal";
+// Pricing simplified to Free + Pro($39 primary for AI Agent Builders ICP) + Enterprise contact. Starter/Builder tiers removed.
+
 import { MARKET_STATS } from "@/lib/marketStats";
 
 type Billing = "monthly" | "annual";
@@ -52,49 +53,26 @@ const tiers: Tier[] = [
     cta_en: "Get started",
     href: "https://pypi.org/project/cli-market/",
   },
-  {
-    name: "Starter",
-    price: "$29",
-    latamPrice: "S/109",
-    annualPrice: "$290",
-    annualLatamPrice: "S/1,090",
-    period_es: "/ mes",
-    period_en: "/ month",
-    f_es: [
-      "5,000 consultas / día",
-      "3 claves API (lectura)",
-      "3 alertas de precio",
-      "Exportación CSV · soporte 48h",
-    ],
-    f_en: [
-      "5,000 requests / day",
-      "3 API keys (read-only)",
-      "3 price alerts",
-      "CSV export · email support 48h",
-    ],
-    cta_es: "Activar Starter",
-    cta_en: "Activate Starter",
-    starterPick: true,
-  },
+  // Pro is the primary paid tier (simplification: focus on 1 ICP AI Agent Builders). $39/mo, 20k req/day.
   {
     name: "Pro",
-    price: "$79",
-    latamPrice: "S/299",
-    annualPrice: "$790",
-    annualLatamPrice: "S/2,990",
+    price: "$39",
+    latamPrice: "S/149",
+    annualPrice: "$390",
+    annualLatamPrice: "S/1,490",
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [
-      "10,000 consultas / día",
-      "10 claves API (lectura y escritura)",
-      `Checkout ${MARKET_STATS.paymentsLabel}`,
-      "10 alertas · historial 12 meses",
+      "20,000 consultas / día",
+      "20 claves API (lectura y escritura)",
+      `Checkout ${MARKET_STATS.paymentsLabel} + full MCP`,
+      "Alertas ilimitadas · historial 12 meses",
     ],
     f_en: [
-      "10,000 requests / day",
-      "10 API keys (read + write)",
-      `Checkout ${MARKET_STATS.paymentsLabel}`,
-      "10 alerts · 12-month history",
+      "20,000 requests / day",
+      "20 API keys (read + write)",
+      `Checkout ${MARKET_STATS.paymentsLabel} + full MCP`,
+      "Unlimited alerts · 12-month history",
     ],
     cta_es: "Configurar suscripción",
     cta_en: "Set up subscription",
@@ -104,30 +82,7 @@ const tiers: Tier[] = [
     proNote_en:
       `Payments: ${MARKET_STATS.paymentsLabel}. PayPal subscription. PEN invoicing · tax ID 20613045563.`,
   },
-  {
-    name: "Builder",
-    price: "$149",
-    latamPrice: "S/565",
-    annualPrice: "$1,490",
-    annualLatamPrice: "S/5,650",
-    period_es: "/ mes",
-    period_en: "/ month",
-    f_es: [
-      "50,000 consultas / día",
-      "25 claves API · white-label",
-      "Intelligence API completa (34 indicadores)",
-      "Alertas y exportación ilimitadas",
-    ],
-    f_en: [
-      "50,000 requests / day",
-      "25 API keys · white-label",
-      "Full Intelligence API (34 indicators)",
-      "Unlimited alerts & export",
-    ],
-    cta_es: "Construir con CLI Market",
-    cta_en: "Build with CLI Market",
-    href: "/#contact-general",
-  },
+
   {
     name: "Enterprise",
     price: "A medida",
@@ -255,7 +210,6 @@ function TierCard({
 }
 
 const proTier = tiers.find((t) => t.name === "Pro")!;
-const starterTier = tiers.find((t) => t.name === "Starter")!;
 
 export default function Pricing() {
   const { lang } = useLang();
@@ -265,9 +219,6 @@ export default function Pricing() {
 
   const scrollToProCheckout = () => {
     document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  const scrollToStarterCheckout = () => {
-    document.getElementById("starter-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -311,12 +262,10 @@ export default function Pricing() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 max-w-7xl mx-auto mb-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto mb-14">
           {tiers.map((tier, i) => (
             <motion.div
               key={tier.name}
-              id={tier.name === "Builder" ? "pricing-build" : undefined}
-              className={tier.name === "Builder" ? "scroll-mt-24" : undefined}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -329,10 +278,6 @@ export default function Pricing() {
               >
                 {tier.name === "Pro" ? (
                   <button type="button" onClick={scrollToProCheckout} className="btn-mint w-full">
-                    {isES ? tier.cta_es : tier.cta_en} ↓
-                  </button>
-                ) : tier.name === "Starter" ? (
-                  <button type="button" onClick={scrollToStarterCheckout} className="btn-mint w-full">
                     {isES ? tier.cta_es : tier.cta_en} ↓
                   </button>
                 ) : tier.name === "Free" ? (
@@ -349,34 +294,6 @@ export default function Pricing() {
         </div>
 
         <div
-          id="starter-checkout"
-          className="scroll-mt-24 max-w-4xl mx-auto mb-10 text-left"
-        >
-          <div className="card-cyber energy-border-active p-6 sm:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-              <div className="space-y-4">
-                <p className="section-eyebrow text-[var(--cm-mint)]">Starter</p>
-                <h3 className="text-xl font-bold text-white">
-                  {isES ? "Suscripción Starter — USD 29/mes" : "Starter subscription — USD 29/mo"}
-                </h3>
-                <ul className="space-y-2 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
-                  {(isES ? starterTier.f_es : starterTier.f_en).map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span className="text-[var(--cm-mint)] shrink-0">✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-              </div>
-              <div>
-                <StarterSubscribeButton />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
           id="pro-checkout"
           className="scroll-mt-24 max-w-4xl mx-auto mb-14 text-left"
         >
@@ -385,7 +302,7 @@ export default function Pricing() {
               <div className="space-y-4">
                 <p className="section-eyebrow text-[var(--cm-mint)]">Pro</p>
                 <h3 className="text-xl font-bold text-white">
-                  {isES ? "Suscripción Pro — USD 79/mes" : "Pro subscription — USD 79/mo"}
+                  {isES ? "Suscripción Pro — USD 39/mes" : "Pro subscription — USD 39/mo"}
                 </h3>
                 <ul className="space-y-2 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                   {(isES ? proTier.f_es : proTier.f_en).map((f) => (
@@ -400,23 +317,6 @@ export default function Pricing() {
                     {isES ? proTier.proNote_es : proTier.proNote_en}
                   </p>
                 )}
-                <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
-                  {isES ? (
-                    <>
-                      ¿Solo alertas y CSV?{" "}
-                      <button type="button" onClick={scrollToStarterCheckout} className="text-[var(--cm-mint)] underline">
-                        Starter USD 29/mes →
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Only need alerts and CSV?{" "}
-                      <button type="button" onClick={scrollToStarterCheckout} className="text-[var(--cm-mint)] underline">
-                        Starter USD 29/mo →
-                      </button>
-                    </>
-                  )}
-                </p>
               </div>
               <div>
                 <ProSubscribeButton />

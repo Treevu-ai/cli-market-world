@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
-import { scrollToStarterCheckout } from "@/lib/funnel";
+import { scrollToProCheckout } from "@/lib/funnel";
 
 const PYPI_URL = "https://pypi.org/project/cli-market/";
 
@@ -58,9 +58,9 @@ export default function FreeSignupModal({
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
 
-  const goToStarterCheckout = () => {
+  const goToProCheckout = () => {
     onClose();
-    window.setTimeout(scrollToStarterCheckout, 150);
+    window.setTimeout(scrollToProCheckout, 150);
   };
 
   useEffect(() => {
@@ -292,8 +292,8 @@ market doctor`}</pre>
               <a href="/docs#quickstart" className="btn-mint text-center" onClick={onClose}>
                 {isES ? "Ver quickstart →" : "View quickstart →"}
               </a>
-              <button type="button" className="btn-mint w-full" onClick={goToStarterCheckout}>
-                {isES ? "¿Necesita alertas? Starter $29/mes →" : "Need alerts? Starter $29/mo →"}
+              <button type="button" className="btn-mint w-full" onClick={goToProCheckout}>
+                {isES ? "¿Necesita alertas y MCP full? Pro $39/mes →" : "Need alerts + full MCP? Pro $39/mo →"}
               </button>
               <button
                 type="button"

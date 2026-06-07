@@ -76,7 +76,7 @@ T = {
         "hello": "Onboarding post-install y próximos pasos",
         "register": "Crear cuenta free y API key (sk-)",
         "share": "Link de referido para compartir CLI Market",
-        "upgrade": "Upgrade Starter/Pro — suscripción PayPal",
+        "upgrade": "Upgrade a Pro — suscripción PayPal (foco principal para builders de agentes)",
         "doctor": "Diagnóstico: API, auth, tier y MCP",
         "init": "Onboarding completo: API, cuenta, MCP",
         "shell": "Sesión interactiva tipo agente (REPL)",
@@ -1539,7 +1539,7 @@ def cmd_share(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade via PayPal subscription (Starter $29 or Pro $79 — auto-activate webhook)."""
+    """Upgrade via PayPal subscription (Pro $39 — auto-activate webhook). Primary paid tier for AI Agent Builders ICP."""
     get_token_with_prompt()
     es = get_lang() == "es"
     plan = (getattr(args, "plan", None) or "").strip().lower()
@@ -1564,7 +1564,7 @@ def cmd_upgrade(args):
         return
 
     endpoint = "/billing/starter" if plan == "starter" else "/billing/paypal"
-    label = "Starter — $29/mo" if plan == "starter" else "Pro — $79/mo"
+    label = "Pro — $39/mo"  # Simplified: only Pro as main paid for primary ICP (removed Starter/Builder tiers)
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
         data = cli_api("POST", endpoint, {})
     url = data.get("approve_url", "")
