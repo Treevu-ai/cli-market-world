@@ -31,7 +31,11 @@ def _fetch_json(path: str) -> dict[str, Any] | list[Any] | None:
     url = f"{PEPY_BASE}{path}"
     req = urllib.request.Request(
         url,
-        headers={"X-API-Key": key, "Accept": "application/json"},
+        headers={
+            "X-API-Key": key,
+            "Accept": "application/json",
+            "User-Agent": "CLI-Market-Pepy/1 (+https://cli-market.dev)",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=25) as resp:
