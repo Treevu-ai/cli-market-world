@@ -89,7 +89,7 @@ const jsonLd = {
       },
       sameAs: [
         "https://cli-market.dev",
-        "https://pypi.org/project/cli-market/",
+        MARKET_STATS.pypiUrl,
         "https://www.linkedin.com/company/cli-market/",
         "https://x.com/cli_market_dev",
       ],
@@ -101,7 +101,7 @@ const jsonLd = {
       operatingSystem: "Linux, macOS, Windows",
       description: MARKET_STATS.serverDescription,
       url: siteUrl,
-      downloadUrl: "https://pypi.org/project/cli-market/",
+      downloadUrl: MARKET_STATS.pypiUrl,
       softwareVersion: MARKET_STATS.packageVersion,
       author: {
         "@type": "Organization",

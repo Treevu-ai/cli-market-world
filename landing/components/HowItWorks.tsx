@@ -5,7 +5,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 
 const steps = [
-  { cmd: "pip install cli-market", out_es: `cli-market ${MARKET_STATS.packageVersion} instalado`, out_en: `cli-market ${MARKET_STATS.packageVersion} installed`, label: "Install", icon: "↓" },
+  { cmd: MARKET_STATS.pipInstallCmd, out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} instalado`, out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} installed`, label: "Install", icon: "↓" },
   { cmd: "market hello", out_es: `${MARKET_STATS.retailersDefined} retailers · ${MARKET_STATS.pricesVerifiedLabel} precios · ${MARKET_STATS.mcpTools} MCP tools`, out_en: `${MARKET_STATS.retailersDefined} retailers · ${MARKET_STATS.pricesVerifiedLabel} prices · ${MARKET_STATS.mcpTools} MCP tools`, label: "Hello", icon: "👋" },
   { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search", icon: "🔍" },
   { cmd: "market indicators --country PE", out_es: `${MARKET_STATS.indicatorsCount} indicadores · OFF · Wikimedia · World Bank · IMF`, out_en: `${MARKET_STATS.indicatorsCount} indicators · OFF · Wikimedia · World Bank · IMF`, label: "Indicators", icon: "📊" },

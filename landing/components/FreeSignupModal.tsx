@@ -4,7 +4,9 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { scrollToProCheckout } from "@/lib/funnel";
 
-const PYPI_URL = "https://pypi.org/project/cli-market/";
+import { MARKET_STATS } from "@/lib/marketStats";
+
+const PYPI_URL = MARKET_STATS.pypiUrl;
 
 type Profile = "dev" | "business" | "other";
 
@@ -177,7 +179,7 @@ export default function FreeSignupModal({
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
-              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
+              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`${MARKET_STATS.pipInstallCmd}
 market register
 market whoami`}</pre>
             </div>
@@ -285,7 +287,7 @@ market whoami`}</pre>
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
-              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
+              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`${MARKET_STATS.pipInstallCmd}
 market init
 market doctor`}</pre>
             </div>

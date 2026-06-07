@@ -87,7 +87,7 @@ export default function ToolsPage() {
             {isES
               ? `API de comercio para agentes de IA — búsqueda, comparación, canasta y checkout en ${MARKET_STATS.retailersVerified} retailers. Copie una config, ejecute `
               : `Commerce API for AI agents — search, compare, basket, and checkout across ${MARKET_STATS.retailersVerified} retailers. Copy a config, run `}
-            <code className="font-mono text-sm text-[var(--cm-mint)]">pip install cli-market</code>
+            <code className="font-mono text-sm text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
             {isES ? ", conecte su IDE." : ", connect your IDE."}
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function ToolsPage() {
           </pre>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4 text-center">
             {isES ? "Requiere" : "Requires"}{" "}
-            <code className="font-mono text-[var(--cm-mint)]">pip install cli-market</code> · Manifest:{" "}
+            <code className="font-mono text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code> · Manifest:{" "}
             <a href="/server.json" className="text-[var(--cm-mint)] underline">server.json</a>
             {" "}· Docs:{" "}
             <a href="/llms.txt" className="text-[var(--cm-mint)] underline">llms.txt</a>

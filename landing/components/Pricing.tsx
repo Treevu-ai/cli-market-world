@@ -51,7 +51,7 @@ const tiers: Tier[] = [
     ],
     cta_es: "Empezar",
     cta_en: "Get started",
-    href: "https://pypi.org/project/cli-market/",
+    href: MARKET_STATS.pypiUrl,
   },
   // Pro is the primary paid tier (simplification: focus on 1 ICP AI Agent Builders). $39/mo, 10k req/day.
   {

@@ -38,7 +38,7 @@ export default function Hero() {
 
         <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
           <a
-            href="https://pypi.org/project/cli-market/"
+            href={MARKET_STATS.pypiUrl}
             onClick={() => recordPipInstallIntent("landing_hero")}
             className="group flex flex-col items-center gap-2 rounded-2xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-6 py-5 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
@@ -48,7 +48,15 @@ export default function Hero() {
             <span className="text-base font-semibold">
               <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
             </span>
-            <code className="font-mono text-xs text-[var(--cm-on-mint)]/80">pip install cli-market</code>
+            <code className="font-mono text-xs text-[var(--cm-on-mint)]/80">{MARKET_STATS.pipInstallCmd}</code>
+            <img
+              src={MARKET_STATS.pepyBadgeUrl}
+              alt={isES ? "Descargas PyPI (Pepy.tech)" : "PyPI downloads (Pepy.tech)"}
+              width={180}
+              height={20}
+              loading="lazy"
+              className="h-5 w-auto max-w-full opacity-90 group-hover:opacity-100 transition-opacity"
+            />
             {pypiChip ? (
               <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65">
                 {pypiChip} {isES ? "instalaciones PyPI" : "PyPI installs"}

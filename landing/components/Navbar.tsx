@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const navItems = [
   { id: "how", es: "Flujo", en: "Flow" },
@@ -70,7 +71,7 @@ export default function Navbar() {
             {isES ? "Cuenta" : "Account"}
           </a>
           <a
-            href="https://pypi.org/project/cli-market/"
+            href={MARKET_STATS.pypiUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
@@ -108,7 +109,7 @@ export default function Navbar() {
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             {isES ? "Cuenta" : "Account"}
           </a>
-          <a href="https://pypi.org/project/cli-market/" target="_blank" rel="noopener noreferrer" onClick={close}
+          <a href={MARKET_STATS.pypiUrl} target="_blank" rel="noopener noreferrer" onClick={close}
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             PyPI
           </a>

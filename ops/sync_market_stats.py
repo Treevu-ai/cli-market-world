@@ -36,6 +36,11 @@ export const MARKET_STATS = {{
   enrichmentSourcesLabel: "{s.ENRICHMENT_SOURCES_LABEL}",
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},
+  pypiPackageName: "{s.PYPI_PACKAGE_NAME}",
+  pypiUrl: "{s.PYPI_URL}",
+  pepyProjectUrl: "{s.PEPY_PROJECT_URL}",
+  pepyBadgeUrl: "{s.PEPY_BADGE_URL}",
+  pipInstallCmd: "{s.PIP_INSTALL_CMD}",
   packageVersion: "{s.PACKAGE_VERSION}",
   license: "{s.LICENSE}",
   paymentsLabel: "{s.PAYMENTS_LABEL}",
@@ -229,6 +234,7 @@ def sync_og_svg() -> None:
         text,
         count=1,
     )
+    text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
     path.write_text(text, encoding="utf-8")
     print(f"Synced {path}")
 
@@ -237,8 +243,21 @@ def sync_og_preview_svg() -> None:
     path = ROOT / "landing" / "public" / "og-preview.svg"
     text = path.read_text(encoding="utf-8")
     text = re.sub(r"\d+ MCP", f"{s.MCP_TOOLS} MCP", text, count=1)
+    text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
     path.write_text(text, encoding="utf-8")
     print(f"Synced {path}")
+
+
+def sync_llms_txt() -> None:
+    for rel in ("landing/public/llms.txt", "landing/public/llms-full.txt"):
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
+        text = text.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
+        path.write_text(text, encoding="utf-8")
+        print(f"Synced {path}")
 
 
 def main() -> None:
@@ -249,6 +268,7 @@ def main() -> None:
     sync_mcp_json()
     sync_og_svg()
     sync_og_preview_svg()
+    sync_llms_txt()
 
 
 if __name__ == "__main__":

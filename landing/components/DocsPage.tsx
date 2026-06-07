@@ -143,7 +143,7 @@ export default function DocsPage() {
               "From pip install to real prices in ~5 min. Recommended: guided onboarding.",
             )}
           </p>
-          <CodeBlock>{`pip install cli-market
+          <CodeBlock>{`${MARKET_STATS.pipInstallCmd}
 market init
 market search "leche" --country PE
 market doctor`}</CodeBlock>

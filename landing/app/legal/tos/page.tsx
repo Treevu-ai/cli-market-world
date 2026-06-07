@@ -34,7 +34,7 @@ export default function TermsOfService() {
               comparación de precios y ejecución de compras en {MARKET_STATS.retailersDefined}{" "}
               retailers ({MARKET_STATS.retailersVerified} verificados activos) en{" "}
               {MARKET_STATS.countries} países. El Servicio se entrega mediante el paquete PyPI (
-              <code>pip install cli-market</code>), servidor MCP ({MARKET_STATS.mcpTools}{" "}
+              <code>{MARKET_STATS.pipInstallCmd}</code>), servidor MCP ({MARKET_STATS.mcpTools}{" "}
               herramientas), una API REST y snapshots de datos (bases de datos PostgreSQL de
               historial de precios y mapeos de SKU — licenciados por separado bajo acuerdo
               comercial de datos, previa solicitud a{" "}
@@ -184,7 +184,7 @@ export default function TermsOfService() {
               and purchase execution across {MARKET_STATS.retailersDefined} retailers (
               {MARKET_STATS.retailersVerified} verified active) in {MARKET_STATS.countries}{" "}
               countries. The Service is delivered via PyPI package (
-              <code>pip install cli-market</code>), MCP server ({MARKET_STATS.mcpTools} tools), a
+              <code>{MARKET_STATS.pipInstallCmd}</code>), MCP server ({MARKET_STATS.mcpTools} tools), a
               REST API, and data snapshots (PostgreSQL databases of pricing history and SKU
               mappings — licensed separately under a commercial data agreement upon request at{" "}
               <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>).
