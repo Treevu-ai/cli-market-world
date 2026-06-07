@@ -19,7 +19,7 @@ export const MARKET_STATS = {
   pypiPackageName: "cli-market-world",
   pypiUrl: "https://pypi.org/project/cli-market-world/",
   pepyProjectUrl: "https://pepy.tech/projects/cli-market-world",
-  pepyBadgeUrl: "https://static.pepy.tech/personalized-badge/cli-market-world?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads",
+  pepyBadgeUrl: "https://img.shields.io/pepy/dt/cli-market-world?label=downloads&color=00d75f&logo=pypi",
   pipInstallCmd: "pip install cli-market-world",
   packageVersion: "1.9.5",
   license: "MIT",

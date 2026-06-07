@@ -64,6 +64,12 @@ def sync_readme() -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     text = re.sub(
+        r"\[!\[PyPI Downloads\]\([^)]+\)\]\([^)]+\)",
+        f"[![PyPI Downloads]({s.PEPY_BADGE_URL})]({s.PEPY_PROJECT_URL})",
+        text,
+        count=1,
+    )
+    text = re.sub(
         r'<img src="https://img\.shields\.io/badge/retailers-\d+-brightgreen" alt="[^"]*">',
         f'<img src="https://img.shields.io/badge/retailers-{s.RETAILERS_DEFINED}-brightgreen" alt="{s.RETAILERS_DEFINED} retailers">',
         text,
