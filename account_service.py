@@ -36,11 +36,11 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
             "next_tier": "starter",
             "title_es": "Starter — alertas y export CSV",
             "title_en": "Starter — alerts and CSV export",
-            "cli_es": "market register  →  solicitar Starter en cli-market.dev/#pricing",
-            "cli_en": "market register  →  request Starter at cli-market.dev/#pricing",
-            "url": "https://cli-market.dev/#pricing",
-            "cta_es": "Solicitar Starter",
-            "cta_en": "Request Starter",
+            "cli_es": "market register  →  Starter en cli-market.dev/#starter-checkout",
+            "cli_en": "market register  →  Starter at cli-market.dev/#starter-checkout",
+            "url": "https://cli-market.dev/#starter-checkout",
+            "cta_es": "Activar Starter (PayPal)",
+            "cta_en": "Activate Starter (PayPal)",
         },
         "starter": {
             "next_tier": "pro",
@@ -101,12 +101,26 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
     if not pending or pending.get("status") != "pending":
         return {"state": "none", "activation": None, "request_id": None, "message": None}
 
+    req_id = pending.get("id") or ""
+    is_starter = req_id.startswith("STR-")
     auto = _is_auto_activate_link(pending.get("payment_link") or "")
     if auto:
+        if is_starter:
+            return {
+                "state": "starter_pending_auto",
+                "activation": "auto",
+                "request_id": req_id,
+                "approve_url": pending.get("payment_link"),
+                "message": (
+                    "Starter pendiente: confirme en PayPal — activación en segundos."
+                    if es
+                    else "Starter pending: confirm on PayPal — activates in seconds."
+                ),
+            }
         return {
             "state": "pro_pending_auto",
             "activation": "auto",
-            "request_id": pending.get("id"),
+            "request_id": req_id,
             "approve_url": pending.get("payment_link"),
             "message": (
                 "Pro pendiente: confirme en PayPal — activación en segundos."

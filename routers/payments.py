@@ -133,42 +133,57 @@ async def _handle_paypal_event(event: dict) -> dict:
     elif event_type == "BILLING.SUBSCRIPTION.ACTIVATED":
         sub_id = resource.get("id", "")
         username = resource.get("custom_id") or ""
-        if not username and sub_id:
-            pending = db_get_billing_pending(sub_id)
-            username = (pending or {}).get("username", "")
+        pending = db_get_billing_pending(sub_id) if sub_id else None
+        if not username and pending:
+            username = pending.get("username", "")
         if username:
-            db_set_subscription(username, "pro", paypal_subscription_id=sub_id)
+            kind = (pending or {}).get("kind", "subscription")
+            tier = "starter" if kind == "starter" else "pro"
+            db_set_subscription(username, tier, paypal_subscription_id=sub_id)
             if sub_id:
                 db_delete_billing_pending(sub_id)
             marked = db_mark_subscription_requests_activated_for_user(username)
-            actions.append(f"pro_activated:{username}")
+            actions.append(f"{tier}_activated:{username}")
             try:
                 from market_funnel import record_funnel_event
-                record_funnel_event("activated", username=username, meta={"source": "paypal_webhook"}, dedupe=True)
+                record_funnel_event(
+                    "activated",
+                    username=username,
+                    meta={"source": "paypal_webhook", "tier": tier},
+                    dedupe=True,
+                )
             except Exception:
                 pass
             if marked:
                 actions.append(f"requests_closed:{marked}")
             try:
-                from market_connectors.email_outbound import send_pro_activated_email
-
                 email = db_get_user_email(username) or ""
                 if email:
                     lang = (resource.get("locale") or "es")[:2].lower()
                     if lang not in ("es", "en"):
                         lang = "es"
-                    mail = send_pro_activated_email(
-                        to_email=email,
-                        username=username,
-                        lang=lang,
-                        subscription_id=sub_id,
-                    )
+                    if tier == "starter":
+                        from market_connectors.email_outbound import send_starter_activated_email
+                        mail = send_starter_activated_email(
+                            to_email=email,
+                            username=username,
+                            lang=lang,
+                            subscription_id=sub_id,
+                        )
+                    else:
+                        from market_connectors.email_outbound import send_pro_activated_email
+                        mail = send_pro_activated_email(
+                            to_email=email,
+                            username=username,
+                            lang=lang,
+                            subscription_id=sub_id,
+                        )
                     if mail.get("sent"):
                         actions.append(f"activation_email:{email}")
                     else:
                         actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
             except Exception:
-                logger.exception("pro activation email failed for %s", username)
+                logger.exception("%s activation email failed for %s", tier, username)
                 actions.append("activation_email_failed")
         else:
             actions.append(f"subscription_no_user:{sub_id}")
@@ -400,6 +415,7 @@ async def paypal_status(test: bool = False):
         "live": not sandbox and bool(client_id and client_secret),
         "webhook_configured": bool(os.getenv("PAYPAL_WEBHOOK_ID", "")),
         "plan_id_configured": bool(os.getenv("PAYPAL_PLAN_ID", "")),
+        "starter_plan_id_configured": bool(os.getenv("PAYPAL_STARTER_PLAN_ID", "")),
         "api_url": "https://api-m.sandbox.paypal.com" if sandbox else "https://api-m.paypal.com",
         "webhook_url": "https://cli-market-production.up.railway.app/checkout/paypal-webhook",
         "setup_script": "python3 ops/paypal_sandbox_setup.py check",
@@ -407,6 +423,8 @@ async def paypal_status(test: bool = False):
             "/checkout/paypal",
             "/checkout/paypal/capture",
             "/billing/paypal",
+            "/billing/starter",
+            "/billing/starter-subscribe",
             "/checkout/paypal-webhook",
         ],
     }
@@ -716,37 +734,57 @@ def _resolve_pro_username(
     return safe or f"user-{uuid.uuid4().hex[:8]}"
 
 
-async def _start_paypal_pro_subscription(
+async def _start_paypal_subscription(
     username: str,
     email: str,
     *,
+    plan: str = "pro",
     lang: str = "en",
 ) -> dict:
-    from market_connectors.paypal_payments import create_subscription
-    from market_connectors.email_outbound import send_pro_subscribe_pending_email
+    from market_connectors.paypal_payments import STARTER_PRICE_USD, PRO_PRICE_USD, create_subscription
+    from market_connectors.email_outbound import (
+        send_pro_subscribe_pending_email,
+        send_starter_subscribe_pending_email,
+    )
 
-    result = await create_subscription(username=username)
+    plan_l = "starter" if plan == "starter" else "pro"
+    result = await create_subscription(username=username, plan=plan_l)
     if "approve_url" not in result:
         return {"error": result.get("error", "PayPal error"), "details": result}
     sub_id = result["subscription_id"]
     approve = result["approve_url"]
-    db_save_billing_pending(sub_id, "paypal", username, "subscription")
-    req = db_create_subscription_request(username, email, approve)
-    mail = send_pro_subscribe_pending_email(
-        to_email=email,
-        username=username,
-        approve_url=approve,
-        request_id=req["id"],
-        lang=lang,
-    )
+    db_save_billing_pending(sub_id, "paypal", username, plan_l)
+    prefix = "STR" if plan_l == "starter" else "PRO"
+    req = db_create_subscription_request(username, email, approve, prefix=prefix)
+    if plan_l == "starter":
+        mail = send_starter_subscribe_pending_email(
+            to_email=email,
+            username=username,
+            approve_url=approve,
+            request_id=req["id"],
+            lang=lang,
+        )
+        amount_label = f"${STARTER_PRICE_USD:.0f}/mo"
+        plan_label = "Starter"
+    else:
+        mail = send_pro_subscribe_pending_email(
+            to_email=email,
+            username=username,
+            approve_url=approve,
+            request_id=req["id"],
+            lang=lang,
+        )
+        amount_label = f"${PRO_PRICE_USD:.0f}/mo"
+        plan_label = "Pro"
     if mail.get("sent"):
         db_mark_subscription_request_emailed(req["id"])
     return {
         "ok": True,
         "subscription_id": sub_id,
         "approve_url": approve,
-        "plan": "Pro",
-        "amount": "$79/mo",
+        "plan": plan_label,
+        "tier": plan_l,
+        "amount": amount_label,
         "username": username,
         "auto_activate": True,
         "request_id": req["id"],
@@ -760,7 +798,7 @@ async def billing_paypal(authorization: str | None = Header(None)):
     username = require_user(authorization)
     try:
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
-        out = await _start_paypal_pro_subscription(username, email, lang="en")
+        out = await _start_paypal_subscription(username, email, plan="pro", lang="en")
         if out.get("ok"):
             out["message"] = (
                 "Confirme en PayPal; Pro se activa en segundos. Revise su email con el enlace."
@@ -801,7 +839,7 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
             auth_username=auth_user,
         )
 
-        out = await _start_paypal_pro_subscription(username, email, lang=lang)
+        out = await _start_paypal_subscription(username, email, plan="pro", lang=lang)
         if not out.get("ok"):
             raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
 
@@ -824,6 +862,79 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
         raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
     except Exception as e:
         logger.exception("billing_paypal_subscribe failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
+
+
+@router.post("/billing/starter")
+async def billing_starter(authorization: str | None = Header(None)):
+    """PayPal Subscription for Starter ($29/mo) — authenticated CLI path."""
+    username = require_user(authorization)
+    try:
+        email = db_get_user_email(username) or f"{username}@cli-market.dev"
+        out = await _start_paypal_subscription(username, email, plan="starter", lang="en")
+        if out.get("ok"):
+            out["message"] = (
+                "Confirm on PayPal; Starter activates in seconds. Check your email for the link."
+                if out.get("email_sent")
+                else "Confirm on PayPal; Starter activates in seconds (email not sent — SMTP)."
+            )
+            return out
+        raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+    except ValueError as e:
+        return {"error": "PayPal not configured", "detail": str(e)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("billing_starter failed")
+        return {"error": str(e)}
+
+
+@router.post("/billing/starter-subscribe")
+async def billing_starter_subscribe(body: dict, authorization: str | None = Header(None)):
+    """PayPal Starter subscription from landing — auto-activate via webhook."""
+    try:
+        check_rate_limit("billing-starter-subscribe")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        auth_user = ""
+        if authorization:
+            try:
+                auth_user = require_user(authorization)
+            except HTTPException:
+                auth_user = ""
+
+        username = _resolve_pro_username(
+            email,
+            body_username=(body.get("username") or ""),
+            auth_username=auth_user,
+        )
+
+        out = await _start_paypal_subscription(username, email, plan="starter", lang=lang)
+        if not out.get("ok"):
+            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+
+        if lang == "es":
+            out["message"] = (
+                "Confirme Starter en PayPal; se activa en segundos (webhook). "
+                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                + "Luego: market whoami"
+            )
+        else:
+            out["message"] = (
+                "Confirm Starter on PayPal; activates in seconds (webhook). "
+                + ("We emailed you the link. " if out.get("email_sent") else "")
+                + "Then: market whoami"
+            )
+        return out
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
+    except Exception as e:
+        logger.exception("billing_starter_subscribe failed")
         raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 

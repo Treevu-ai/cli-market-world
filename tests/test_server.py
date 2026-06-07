@@ -421,6 +421,75 @@ def test_billing_paypal_saves_pending(monkeypatch):
     assert pending["username"] == "admin"
 
 
+def test_starter_subscribe_public(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    sent = []
+
+    def fake_pending_email(**kw):
+        sent.append(kw)
+        return {"sent": True, "to": kw["to_email"]}
+
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_subscribe_pending_email",
+        fake_pending_email,
+    )
+
+    async def fake_sub(username, plan="pro", **kwargs):
+        assert plan == "starter"
+        return {
+            "subscription_id": "I-START99",
+            "approve_url": "https://www.paypal.com/billing/subscriptions?ba_token=starter",
+            "status": "APPROVAL_PENDING",
+            "plan": "starter",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
+    r = client.post(
+        "/billing/starter-subscribe",
+        json={"email": "starter@cli-market.dev", "username": "admin", "lang": "es"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["tier"] == "starter"
+    assert data.get("email_sent") is True
+    assert len(sent) == 1
+
+
+def test_paypal_webhook_starter_activated(monkeypatch):
+    from unittest.mock import AsyncMock, patch
+    from market_core import db_save_billing_pending, db_get_subscription, db_create_subscription_request
+
+    db_save_billing_pending("I-STARTWEB", "paypal", "admin", "starter")
+    db_create_subscription_request(
+        "admin",
+        "starter-activated@test.com",
+        "https://paypal.test/starter",
+        prefix="STR",
+    )
+    sent = []
+
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_activated_email",
+        lambda **kw: sent.append(kw) or {"sent": True, "to": kw["to_email"]},
+    )
+    event = {
+        "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
+        "resource": {"id": "I-STARTWEB", "custom_id": "admin"},
+    }
+    with patch("market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID", "WH-TEST"):
+        with patch(
+            "market_connectors.paypal_payments.verify_webhook_signature",
+            new=AsyncMock(return_value=True),
+        ):
+            r = client.post("/checkout/paypal-webhook", json=event)
+    assert r.status_code == 200
+    assert "starter_activated:admin" in r.json().get("actions", [])
+    assert "activation_email:starter-activated@test.com" in r.json().get("actions", [])
+    assert db_get_subscription("admin")["tier"] == "starter"
+    assert len(sent) == 1
+
+
 def test_paypal_subscribe_public(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     sent = []

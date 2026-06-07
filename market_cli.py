@@ -1385,10 +1385,13 @@ def cmd_share(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade to Pro via PayPal subscription (auto-activate webhook)."""
+    """Upgrade via PayPal subscription (Starter $29 or Pro $79 — auto-activate webhook)."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    manual = getattr(args, "resend", False) and getattr(args, "email", None)
+    plan = (getattr(args, "plan", None) or "pro").strip().lower()
+    if plan not in ("pro", "starter"):
+        plan = "pro"
+    manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
 
     if manual:
         email = (args.email or "").strip()
@@ -1404,18 +1407,19 @@ def cmd_upgrade(args):
         ))
         return
 
+    endpoint = "/billing/starter" if plan == "starter" else "/billing/paypal"
+    label = "Starter — $29/mo" if plan == "starter" else "Pro — $79/mo"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
-        data = cli_api("POST", "/billing/paypal", {})
+        data = cli_api("POST", endpoint, {})
     url = data.get("approve_url", "")
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
         return
     console.print(Panel.fit(
-        f"[bold #00FF88]CLI Market Pro — $79/mo[/]\n\n"
+        f"[bold #00FF88]CLI Market {label}[/]\n\n"
         f"{data.get('message', '')}\n\n"
         f"[cyan underline]{url}[/]\n\n"
-        + ("[dim]Pro se activa solo al confirmar en PayPal. Luego: market whoami[/]"
-           if es else "[dim]Pro activates on PayPal confirm. Then: market whoami[/]"),
+        + (f"[dim]{'Se activa al confirmar en PayPal. Luego: market whoami' if es else 'Activates on PayPal confirm. Then: market whoami'}[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))
@@ -1576,8 +1580,9 @@ def main():
     sub.add_parser("hello", help=t("hello"))
     sub.add_parser("share", help=t("share"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
-    p.add_argument("--email", help="Email to receive payment link")
-    p.add_argument("--resend", action="store_true", help="Resend payment link email")
+    p.add_argument("--plan", choices=["pro", "starter"], default="pro", help="Tier: pro (default) or starter")
+    p.add_argument("--email", help="Email to receive payment link (manual Pro fallback)")
+    p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
 
     args = parser.parse_args()
     ui.set_json_mode(getattr(args, "json", False))
