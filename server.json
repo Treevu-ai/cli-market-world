@@ -3,8 +3,8 @@
   "name": "io.github.Treevu-ai/cli-market-world",
   "description": "Commerce for AI agents. 43 MCP tools. 68 retailers (38 verified), 8 countries, 4 platforms.",
   "repository": {
-    "url": "https://github.com/Treevu-ai/cli-market-world",
-    "source": "github"
+    "url": "https://cli-market.dev",
+    "source": "website"
   },
   "version": "1.9.5",
   "packages": [

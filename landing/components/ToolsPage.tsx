@@ -158,8 +158,8 @@ export default function ToolsPage() {
             + {MARKET_STATS.mcpTools - STARTER_TOOLS.length - TOOLS.length}{" "}
             {isES ? "más en el registro completo" : "more in the full registry"}
           </p>
-          <a href="https://github.com/Treevu-ai/cli-market-world" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
-            {isES ? "Lista completa en GitHub →" : "Full tool list on GitHub →"}
+          <a href="/tools" className="inline-block mt-8 text-sm font-semibold text-[var(--cm-mint)] underline">
+            {isES ? "Registro completo MCP →" : "Full MCP registry →"}
           </a>
         </div>
       </section>

@@ -42,17 +42,17 @@ export default function Footer() {
           <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Retailers" : "Retailers"}
           </a>
-          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/demo-walkthrough.md" target="_blank" rel="noopener" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/docs#quickstart" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo en terminal" : "Terminal demo"}
           </a>
-          <a href="https://github.com/Treevu-ai/cli-market-world/blob/main/docs/use-cases.md" target="_blank" rel="noopener" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/docs" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Casos de uso" : "Use cases"}
           </a>
-          <a href="https://github.com/Treevu-ai/cli-market-world#-ecosystem-architecture" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/docs" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Arquitectura" : "Architecture"}
           </a>
-          <a href="https://github.com/Treevu-ai/cli-market-world" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            GitHub Repo
+          <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            PyPI Package
           </a>
           <a href="https://pypi.org/project/cli-market/" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             PyPI

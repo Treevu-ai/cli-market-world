@@ -88,7 +88,7 @@ const jsonLd = {
         jobTitle: "Founder & Product Owner",
       },
       sameAs: [
-        "https://github.com/Treevu-ai/cli-market-world",
+        "https://cli-market.dev",
         "https://pypi.org/project/cli-market/",
         "https://www.linkedin.com/company/cli-market/",
         "https://x.com/cli_market_dev",

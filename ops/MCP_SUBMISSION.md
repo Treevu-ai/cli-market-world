@@ -6,7 +6,7 @@
 git clone https://github.com/modelcontextprotocol/registry
 cd registry
 make publisher
-./bin/mcp-publisher publish --repo https://github.com/Treevu-ai/cli-market-world
+./bin/mcp-publisher publish --repo https://pypi.org/project/cli-market/
 ```
 
 The mcp.json at repo root is auto-parsed. Uses GitHub OAuth for namespace verification.
