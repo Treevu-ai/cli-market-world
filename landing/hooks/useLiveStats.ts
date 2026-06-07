@@ -16,6 +16,15 @@ export interface LiveStats {
   moatStart: string | null;
   collectorStatus: string | null;
   collectorIntervalH: number | null;
+  pypiTotal: number | null;
+  pypiDownloads30d: number | null;
+}
+
+export function formatPypiDownloads(n: number | null): string | null {
+  if (n == null || n <= 0) return null;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
+  if (n >= 1_000) return `${Math.round(n / 100) / 10}K+`.replace(/\.0K/, "K");
+  return n.toLocaleString();
 }
 
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
@@ -51,9 +60,23 @@ export function useLiveStats() {
     moatStart: null,
     collectorStatus: null,
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
+    pypiTotal: null,
+    pypiDownloads30d: null,
   });
 
   const fetchStats = () => {
+    fetch(`${API_URL}/analytics/pypi`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((p) => {
+        if (!p?.ok) return;
+        setStats((prev) => ({
+          ...prev,
+          pypiTotal: p.total_downloads ?? null,
+          pypiDownloads30d: p.downloads_last_30d ?? null,
+        }));
+      })
+      .catch(() => {});
+
     fetch(`${API_URL}/dashboard/data`)
       .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
@@ -62,7 +85,8 @@ export function useLiveStats() {
       .then((d) => {
         const k = d.kpis ?? {};
         const c = d.collector ?? {};
-        setStats({
+        setStats((prev) => ({
+          ...prev,
           indexed: k.total_indexed ?? null,
           snapshots24h: k.snapshots_24h ?? null,
           storesInCatalog: k.stores_indexed ?? k.catalog_stores ?? null,
@@ -74,7 +98,7 @@ export function useLiveStats() {
           moatStart: d.generated_at ?? null,
           collectorStatus: c.status ?? null,
           collectorIntervalH: c.interval_hours ?? MARKET_STATS.pricesRefreshHours,
-        });
+        }));
       })
       .catch(() => {});
   };
@@ -88,11 +112,13 @@ export function useLiveStats() {
   }, []);
 
   const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
+  const pypiChip = formatPypiDownloads(stats.pypiTotal);
 
   return {
     stats,
     priceChip,
     priceLong,
+    pypiChip,
     retailersDefined: MARKET_STATS.retailersDefined,
     retailersVerified: MARKET_STATS.retailersVerified,
     retailersPhraseEn: MARKET_STATS.retailersPhraseEn,

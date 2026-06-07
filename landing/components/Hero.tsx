@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { useLiveStats } from "@/hooks/useLiveStats";
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const { pypiChip } = useLiveStats();
   return (
     <section id="hero" className="landing-section animate-fade-in relative min-h-0 md:min-h-[90vh] flex flex-col overflow-hidden">
       {/* Aura glow behind title */}
@@ -45,6 +47,11 @@ export default function Hero() {
               <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
             </span>
             <code className="font-mono text-xs text-[var(--cm-on-mint)]/80">pip install cli-market</code>
+            {pypiChip ? (
+              <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65">
+                {pypiChip} {isES ? "instalaciones PyPI" : "PyPI installs"}
+              </span>
+            ) : null}
           </a>
 
           <a

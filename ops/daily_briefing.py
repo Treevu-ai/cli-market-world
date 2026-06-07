@@ -172,9 +172,15 @@ def build_product_report(data: dict, meta: dict, for_date: date) -> str:
         body,
         count=1,
     )
+    try:
+        from market_pepy import pepy_briefing_line
+
+        pepy_line = pepy_briefing_line()
+    except Exception:
+        pepy_line = "PyPI (Pepy): unavailable"
     stamp = (
         f"_Generado {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} · "
-        f"fuente: `/dashboard/data`_"
+        f"fuente: `/dashboard/data` · {pepy_line}_"
     )
     if "\n" in body:
         title, rest = body.split("\n", 1)
