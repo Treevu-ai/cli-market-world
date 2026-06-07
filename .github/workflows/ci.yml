@@ -60,7 +60,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "playwright>=1.45.0" pytest httpx
+          pip install --no-cache-dir ./cli-market-core
+          pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
       - name: Run tests
@@ -116,7 +117,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "playwright>=1.45.0" pytest httpx psycopg2-binary
+          pip install --no-cache-dir ./cli-market-core
+          pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
       - name: Run tests against PostgreSQL
