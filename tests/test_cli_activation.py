@@ -1,0 +1,82 @@
+"""Guided first-search activation after register/init."""
+
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import market_cli
+import market_core
+
+
+@pytest.fixture(autouse=True)
+def clear_activation_flag():
+    flag = market_core.SESSION_FILE.parent / "activation_search_done"
+    if flag.is_file():
+        flag.unlink()
+    yield
+    if flag.is_file():
+        flag.unlink()
+
+
+def test_activation_query_by_country():
+    assert market_cli._activation_query("PE") == "leche"
+    assert market_cli._activation_query("US") == "milk"
+
+
+def test_run_activation_search_once(monkeypatch):
+    calls: list[dict] = []
+
+    def fake_api(method, path, body=None):
+        calls.append({"method": method, "path": path, "body": body})
+        return {
+            "total": 2,
+            "results": [
+                {
+                    "name": "Leche entera",
+                    "store": "wong",
+                    "store_name": "Wong",
+                    "price": 4.2,
+                    "currency": "PEN",
+                }
+            ],
+        }
+
+    monkeypatch.setattr(market_cli, "api", fake_api)
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-test")
+    monkeypatch.setattr(market_cli.ui, "get_default_country", lambda: "PE")
+    monkeypatch.setattr(market_cli.console, "print", MagicMock())
+
+    assert market_cli._run_activation_search() is True
+    assert market_cli._run_activation_search() is False
+    assert len(calls) == 1
+    assert calls[0]["path"] == "/products/search"
+    assert calls[0]["body"]["query"] == "leche"
+    assert market_cli._activation_search_done() is True
+
+
+def test_register_runs_activation_search(monkeypatch):
+    monkeypatch.setattr(
+        market_cli,
+        "api",
+        lambda method, path, body=None: (
+            {"username": "user-x", "api_key": "sk-x"}
+            if path == "/auth/register"
+            else {"total": 1, "results": [{"name": "Leche", "store": "wong", "price": 1, "currency": "PEN"}]}
+        ),
+    )
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-x")
+    monkeypatch.setattr(market_cli.ui, "is_en", lambda: True)
+    monkeypatch.setattr(market_cli.ui, "get_default_country", lambda: "PE")
+    monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    panel = MagicMock()
+    panel.fit = MagicMock(return_value="panel")
+    monkeypatch.setattr(market_cli, "Panel", panel)
+
+    import argparse
+
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=False))
+    assert market_cli._activation_search_done() is True
