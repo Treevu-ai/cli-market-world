@@ -3,13 +3,12 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# cli-market-core is a public repo, so no auth is needed to pip-install it
-# (git is required for the git+https dependency).
+# cli-market-core from PyPI (requirements-railway.txt).
 COPY requirements-railway.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev tesseract-ocr tesseract-ocr-spa git && rm -rf /var/lib/apt/lists/*
+    gcc libpq-dev tesseract-ocr tesseract-ocr-spa && rm -rf /var/lib/apt/lists/*
 
-# Install the shared core (and its transitive deps) from the pinned commit.
+# Install the shared core (and its transitive deps) from PyPI.
 RUN pip install --no-cache-dir -r requirements-railway.txt
 
 ARG CACHE_BUST=1
