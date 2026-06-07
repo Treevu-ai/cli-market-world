@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import { scrollToStarterCheckout } from "@/lib/funnel";
 
 const PYPI_URL = "https://pypi.org/project/cli-market/";
 
@@ -46,7 +47,7 @@ export default function FreeSignupModal({
   const { lang } = useLang();
   const isES = lang === "es";
 
-  const [step, setStep] = useState<1 | 2 | "dev-fast" | "starter-dev">(1);
+  const [step, setStep] = useState<1 | 2 | "dev-fast">(1);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -56,6 +57,11 @@ export default function FreeSignupModal({
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
+
+  const goToStarterCheckout = () => {
+    onClose();
+    window.setTimeout(scrollToStarterCheckout, 150);
+  };
 
   useEffect(() => {
     if (open) {
@@ -141,6 +147,48 @@ export default function FreeSignupModal({
 
   if (!open) return null;
 
+  if (plan === "starter") {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        <div className="card-cyber w-full max-w-md p-6 sm:p-8 relative animate-fade-in">
+          <button
+            onClick={onClose}
+            aria-label={isES ? "Cerrar" : "Close"}
+            className="absolute top-4 right-4 text-[var(--cm-on-surface-variant)] hover:text-white transition-colors text-lg leading-none"
+          >
+            ✕
+          </button>
+          <div className="space-y-5 text-center sm:text-left">
+            <div>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Starter</p>
+              <h3 className="text-lg font-bold text-white">
+                {isES ? "Checkout PayPal — USD 29/mes" : "PayPal checkout — USD 29/mo"}
+              </h3>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
+                {isES
+                  ? "Starter se activa en segundos tras confirmar el pago (webhook). Recomendado: market register antes del checkout."
+                  : "Starter activates in seconds after payment confirmation (webhook). Recommended: run market register before checkout."}
+              </p>
+            </div>
+            <div className="code-block-cyber px-4 py-3 text-left">
+              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
+market register
+market whoami`}</pre>
+            </div>
+            <button type="button" className="btn-mint w-full" onClick={goToStarterCheckout}>
+              {isES ? "Ir al checkout Starter →" : "Go to Starter checkout →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       role="dialog"
@@ -167,8 +215,8 @@ export default function FreeSignupModal({
               {plan === "free"
                 ? isES ? "Redirigiendo a PyPI…" : "Redirecting to PyPI…"
                 : isES
-                  ? `Recibimos su solicitud Starter${requestId ? ` (${requestId})` : ""}. Activación manual ≤24h hábiles.`
-                  : `We received your Starter request${requestId ? ` (${requestId})` : ""}. Manual activation within 24 business hours.`}
+                  ? `Recibimos su solicitud${requestId ? ` (${requestId})` : ""}. Le contactaremos pronto.`
+                  : `We received your request${requestId ? ` (${requestId})` : ""}. We'll be in touch soon.`}
             </p>
             {plan !== "free" && (
               <button onClick={onClose} className="btn-mint mt-4">
@@ -184,13 +232,9 @@ export default function FreeSignupModal({
                 {isES ? "¿Cómo usarás CLI Market?" : "How will you use CLI Market?"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1">
-                {plan === "starter"
-                  ? isES
-                    ? "Starter requiere activación manual (≤24h hábiles). No hay checkout instantáneo."
-                    : "Starter requires manual activation (≤24 business hours). No instant checkout."
-                  : isES
-                    ? "Nos ayuda a darte la mejor experiencia."
-                    : "Helps us give you the best experience."}
+                {isES
+                  ? "Nos ayuda a darte la mejor experiencia."
+                  : "Helps us give you the best experience."}
               </p>
             </div>
             <div className="space-y-3">
@@ -200,7 +244,6 @@ export default function FreeSignupModal({
                   onClick={() => {
                     setProfile(p.id);
                     if (p.id === "dev" && plan === "free") setStep("dev-fast");
-                    else if (p.id === "dev" && plan === "starter") setStep("starter-dev");
                     else setStep(2);
                   }}
                   className="w-full text-left rounded-xl border border-[var(--cm-outline-variant)]/40 hover:border-[var(--cm-mint)]/60 hover:bg-white/5 transition-all p-4"
@@ -257,36 +300,6 @@ market doctor`}</pre>
                 {isES ? "Ir a PyPI →" : "Go to PyPI →"}
               </button>
             </div>
-          </div>
-
-        ) : step === "starter-dev" ? (
-          <div className="space-y-5">
-            <div>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="text-xs text-[var(--cm-on-surface-variant)] hover:text-white flex items-center gap-1 mb-5 transition-colors"
-              >
-                ← {isES ? "Volver" : "Back"}
-              </button>
-              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Starter</p>
-              <h3 className="text-lg font-bold text-white">
-                {isES ? "Primero cuenta Free, luego Starter" : "Free account first, then Starter"}
-              </h3>
-              <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
-                {isES
-                  ? "Starter no se activa al instante. Cree su cuenta gratuita en terminal y envíe la solicitud de upgrade."
-                  : "Starter is not instant. Create your free terminal account, then submit the upgrade request."}
-              </p>
-            </div>
-            <div className="code-block-cyber px-4 py-3 text-left">
-              <pre className="code-snippet text-[var(--cm-mint)] text-xs whitespace-pre-wrap">{`pip install cli-market
-market register
-market whoami`}</pre>
-            </div>
-            <button type="button" className="btn-mint w-full" onClick={() => setStep(2)}>
-              {isES ? "Continuar solicitud Starter →" : "Continue Starter request →"}
-            </button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
@@ -432,17 +445,13 @@ market whoami`}</pre>
                 ? isES ? "Procesando…" : "Processing…"
                 : plan === "free"
                   ? isES ? "Continuar a PyPI →" : "Continue to PyPI →"
-                  : plan === "starter"
-                  ? isES ? "Solicitar Starter →" : "Request Starter →"
                   : isES ? "Solicitar acceso →" : "Request access →"}
             </button>
 
             <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
               {plan === "free"
                 ? isES ? "La API key se crea con market register · MIT · Sin tarjeta" : "API key via market register · MIT · No card"
-                : plan === "starter"
-                ? isES ? "Sin tarjeta ahora · activación manual ≤24h hábiles · email de confirmación" : "No card now · manual activation ≤24h · confirmation email"
-                : isES ? "Solicitud de acceso · activación manual ≤24h hábiles" : "Access request · manual activation ≤24h"}
+                : isES ? "Solicitud de acceso · respuesta en ≤24h hábiles" : "Access request · response within 24 business hours"}
             </p>
           </form>
         )}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import { recordFunnelEvent } from "@/lib/funnel";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 type StarterResponse = {
@@ -59,6 +60,10 @@ export default function StarterSubscribeButton() {
       });
       const data: StarterResponse = await r.json();
       if (r.ok && data.ok && data.approve_url) {
+        recordFunnelEvent("starter_subscribe", {
+          username: data.username || username.trim() || undefined,
+          meta: { source: "landing_checkout", email: email.trim() },
+        });
         setResult(data);
         setLoading(false);
         return;

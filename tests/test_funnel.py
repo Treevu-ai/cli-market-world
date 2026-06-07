@@ -31,6 +31,19 @@ def test_v1_events_endpoint():
     assert r.json().get("ok") is True
 
 
+def test_starter_subscribe_event():
+    r = client.post(
+        "/v1/events",
+        json={"event": "starter_subscribe", "session_id": "landing-sess", "meta": {"source": "test"}},
+    )
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+    data = funnel_summary(days=30)
+    assert data["events"].get("starter_subscribe", 0) >= 1
+    steps = [s["step"] for s in data["funnel_steps"]]
+    assert "starter_subscribe" in steps
+
+
 def test_analytics_funnel_public():
     r = client.get("/analytics/funnel")
     assert r.status_code == 200

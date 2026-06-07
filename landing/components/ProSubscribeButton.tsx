@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
@@ -75,6 +76,10 @@ export default function ProSubscribeButton() {
       const data: ProResponse = await r.json();
 
       if (r.ok && data.ok && data.approve_url) {
+        recordFunnelEvent("request_pro", {
+          username: data.username || username.trim() || undefined,
+          meta: { source: "landing_checkout", email: email.trim() },
+        });
         setResult(data);
         setLoading(false);
         return;
@@ -88,6 +93,10 @@ export default function ProSubscribeButton() {
         });
         const fb: ProResponse = await fallback.json();
         if (fallback.ok && fb.ok && fb.payment_link) {
+          recordFunnelEvent("request_pro", {
+            username: fb.username || username.trim() || undefined,
+            meta: { source: "landing_fallback", email: email.trim() },
+          });
           setResult({ ...fb, approve_url: fb.payment_link });
           setLoading(false);
           return;

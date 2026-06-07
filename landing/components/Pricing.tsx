@@ -259,7 +259,6 @@ export default function Pricing() {
   const isES = lang === "es";
   const [billing, setBilling] = useState<Billing>("monthly");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
-  const [starterModalOpen, setStarterModalOpen] = useState(false);
 
   const scrollToProCheckout = () => {
     document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -418,7 +417,6 @@ export default function Pricing() {
         </div>
 
         <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
-        <FreeSignupModal open={starterModalOpen} onClose={() => setStarterModalOpen(false)} plan="starter" />
 
         <div className="border-t border-[var(--cm-outline-variant)]/30 pt-12 text-center">
           <p className="text-base text-[var(--cm-on-surface-variant)] mb-4">
