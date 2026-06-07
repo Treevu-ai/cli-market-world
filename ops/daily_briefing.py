@@ -162,6 +162,14 @@ def _dev_calendar_this_week(for_date: date) -> list[str]:
     return rows[-4:] if rows else []
 
 
+def _inject_after_tldr(body: str, section: str) -> str:
+    """Insert markdown block after ## TL;DR section."""
+    pattern = r"(## TL;DR\s*\n.*?\n)(\n---)"
+    repl = r"\1\n" + section.rstrip() + r"\2"
+    out, n = re.subn(pattern, repl, body, count=1, flags=re.DOTALL)
+    return out if n else body
+
+
 def build_product_report(data: dict, meta: dict, for_date: date) -> str:
     monday = _load_monday()
     body = monday.build_report(data, meta)
@@ -173,8 +181,10 @@ def build_product_report(data: dict, meta: dict, for_date: date) -> str:
         count=1,
     )
     try:
+        from market_adoption import adoption_markdown_section
         from market_pepy import pepy_briefing_line
 
+        body = _inject_after_tldr(body, adoption_markdown_section(days=30))
         pepy_line = pepy_briefing_line()
     except Exception:
         pepy_line = "PyPI (Pepy): unavailable"
@@ -367,6 +377,16 @@ def build_slack_product_message(
         "",
         monday.tldr(data),
         "",
+    ]
+
+    try:
+        from market_adoption import adoption_slack_lines
+
+        lines.extend(adoption_slack_lines(days=30))
+    except Exception:
+        pass
+
+    lines += [
         f"• Indexados: *{k.get('total_indexed', 0):,}* · 24h: *{k.get('snapshots_24h', 0):,}* · "
         f"Tiendas: *{k.get('stores_indexed', 0)}* · Coverage 7d: *{k.get('coverage_7d_pct', 0)}%*",
         "",
