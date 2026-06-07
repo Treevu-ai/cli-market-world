@@ -64,8 +64,9 @@ export default function TermsOfService() {
             <p>
               El software de CLI Market está licenciado bajo la Licencia MIT. Los datos de
               precios, mapeos de SKU, snapshots históricos e índices de retailers ("Datos") se
-              licencian por separado bajo el Acuerdo de Licencia de Datos ("ALD"). Conservas la
-              propiedad de tu historial de compras y datos de carrito.
+              licencian por separado bajo el{" "}
+              <a href="/legal/dla">Acuerdo de Licencia de Datos ("ALD")</a>. Conserva la
+              propiedad de su historial de compras y datos de carrito.
             </p>
 
             <h2>6. Tarifas y Pago</h2>
@@ -212,7 +213,8 @@ export default function TermsOfService() {
             <p>
               The CLI Market software is licensed under the MIT License. Pricing data, SKU
               mappings, historical snapshots, and retailer indexes ("Data") are licensed
-              separately under the Data License Agreement ("DLA"). You retain ownership of your
+              separately under the{" "}
+              <a href="/legal/dla">Data License Agreement ("DLA")</a>. You retain ownership of your
               purchase history and cart data.
             </p>
 

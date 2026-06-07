@@ -110,6 +110,9 @@ export default function Footer() {
           <a href="/legal/privacy" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Política de Privacidad" : "Privacy Policy"}
           </a>
+          <a href="/legal/dla" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Licencia de Datos (ALD)" : "Data License (DLA)"}
+          </a>
         </div>
         <p className="font-mono text-[10px] text-[var(--cm-on-surface-variant)]/50">
           Sinapsis Innovadora S.A.C. · RUC 20613045563 · Lima, Perú
