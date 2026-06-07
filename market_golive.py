@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 from datetime import datetime, timezone
 from typing import Any
 
@@ -36,10 +37,21 @@ def _load_dashboard_data(dashboard_data: dict[str, Any] | None) -> dict[str, Any
     if dashboard_data is not None:
         return dashboard_data
     try:
-        from routers.dashboard import _cached_dashboard_data
+        # Prefer the public accessor (added for cleaner cross-module use by
+        # founder go-live alerts and to avoid importing private symbols).
+        from routers.dashboard import get_cached_dashboard_data
 
-        return _cached_dashboard_data()
+        return get_cached_dashboard_data()
+    except (ImportError, AttributeError):
+        # Fallback for older deployments or during refactors
+        try:
+            from routers.dashboard import _cached_dashboard_data
+
+            return _cached_dashboard_data()
+        except Exception:
+            return {}
     except Exception:
+        # Never let dashboard data loading take down the go-live view
         return {}
 
 
@@ -389,18 +401,26 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
                 f"activated: {kpi['activated']}\n"
                 f"weekly_goal: {kpi['weekly_paid_goal']}"
             )
+        stores = kpi.get("critical_stores", []) or []
+        store_lines = "\n".join(
+            f"  - {html.escape(str(s.get('store', '?')))}: {s.get('success_pct')}%"
+            for s in stores[:5]
+        ) or "  (none)"
         return (
             f"coverage_7d: {kpi['coverage_7d_pct']:.1f}%\n"
             f"collector: {kpi['collector_status']}\n"
             f"stale: {kpi['collector_stale']}\n"
-            f"critical_stores: {kpi['critical_store_count']}"
+            f"critical_stores ({kpi['critical_store_count']}):\n{store_lines}"
         )
 
     alert_rows = ""
     for a in data["alerts"]:
         sev = a["severity"]
+        # Escape any dynamic content in alerts (defense in depth even though
+        # sources are internal founder metrics).
+        safe_msg = html.escape(a["message"])
         alert_rows += (
-            f'<div class="alert {sev}"><strong>{sev}</strong> {a["message"]}</div>\n'
+            f'<div class="alert {sev}"><strong>{sev}</strong> {safe_msg}</div>\n'
         )
     if not alert_rows:
         alert_rows = '<div class="alert ok">Sin alertas activas.</div>'
