@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const PLATFORMS = [
   { value: "vtex", label: "VTEX" },
   { value: "shopify", label: "Shopify" },
   { value: "magento", label: "Magento" },
+  { value: "woocommerce", label: "WooCommerce" },
   { value: "other", label: "Other" },
 ];
 
 const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
 
 export default function RetailerApplyForm() {
+  const { lang } = useLang();
+  const isES = lang === "es";
+
   const [storeName, setStoreName] = useState("");
   const [platform, setPlatform] = useState("vtex");
   const [country, setCountry] = useState("PE");
@@ -20,12 +26,21 @@ export default function RetailerApplyForm() {
   const [contactEmail, setContactEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [apiToken, setApiToken] = useState("");
+  const [legal, setLegal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [appId, setAppId] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!legal) {
+      setError(
+        isES
+          ? "Debe aceptar los términos y la política de privacidad."
+          : "You must accept the terms and privacy policy.",
+      );
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -63,12 +78,16 @@ export default function RetailerApplyForm() {
   if (appId) {
     return (
       <div className="card-cyber energy-border-active p-8 max-w-[520px] mx-auto text-center">
-        <p className="text-lg font-semibold text-white mb-2">Application received</p>
+        <p className="text-lg font-semibold text-white mb-2">
+          {isES ? "Solicitud recibida" : "Application received"}
+        </p>
         <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
           ID: <code className="font-mono text-[var(--cm-mint)]">{appId}</code>
         </p>
         <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
-          We validate read-only catalog access and email you within 24 hours. Free forever.
+          {isES
+            ? "Validamos el acceso de solo lectura al catálogo y le escribimos en 24 horas hábiles. Gratis para siempre."
+            : "We validate read-only catalog access and email you within 24 business hours. Free forever."}
         </p>
       </div>
     );
@@ -76,59 +95,110 @@ export default function RetailerApplyForm() {
 
   return (
     <form onSubmit={submit} className="card-cyber p-6 md:p-8 max-w-[520px] mx-auto space-y-4 text-left">
-      <h3 className="text-lg font-semibold text-white text-center">List your store — 30 seconds</h3>
+      <h3 className="text-lg font-semibold text-white text-center">
+        {isES ? "Liste su tienda — 30 segundos" : "List your store — 30 seconds"}
+      </h3>
 
       <div>
-        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Store name</label>
-        <input required value={storeName} onChange={(e) => setStoreName(e.target.value)} className="input-cyber" placeholder="Metro Perú" />
+        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+          {isES ? "Nombre de la tienda" : "Store name"}
+        </label>
+        <input
+          required
+          value={storeName}
+          onChange={(e) => setStoreName(e.target.value)}
+          className="input-cyber"
+          placeholder="Metro Perú"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Platform</label>
+          <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+            {isES ? "Plataforma" : "Platform"}
+          </label>
           <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="input-cyber">
             {PLATFORMS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
+              <option key={p.value} value={p.value}>
+                {p.value === "other" ? (isES ? "Otra" : p.label) : p.label}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Country</label>
+          <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+            {isES ? "País" : "Country"}
+          </label>
           <select value={country} onChange={(e) => setCountry(e.target.value)} className="input-cyber">
             {COUNTRIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Contact email</label>
-        <input required type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="input-cyber" placeholder="ecommerce@yourstore.com" />
+        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+          {isES ? "Email de contacto" : "Contact email"}
+        </label>
+        <input
+          required
+          type="email"
+          value={contactEmail}
+          onChange={(e) => setContactEmail(e.target.value)}
+          className="input-cyber"
+          placeholder="ecommerce@yourstore.com"
+        />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Contact name (optional)</label>
+        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+          {isES ? "Nombre de contacto (opcional)" : "Contact name (optional)"}
+        </label>
         <input value={contactName} onChange={(e) => setContactName(e.target.value)} className="input-cyber" />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Store URL (optional)</label>
+        <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+          {isES ? "URL de la tienda (opcional)" : "Store URL (optional)"}
+        </label>
         <input value={website} onChange={(e) => setWebsite(e.target.value)} className="input-cyber" placeholder="https://..." />
       </div>
 
       <div>
         <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
-          Read-only API token (Shopify/Magento — optional)
+          {isES
+            ? "Token API de solo lectura (Shopify/Magento — opcional)"
+            : "Read-only API token (Shopify/Magento — optional)"}
         </label>
-        <input type="password" value={apiToken} onChange={(e) => setApiToken(e.target.value)} className="input-cyber font-mono" placeholder="shpat_... or integration token" />
-        <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">VTEX public catalogs often need no token.</p>
+        <input
+          type="password"
+          value={apiToken}
+          onChange={(e) => setApiToken(e.target.value)}
+          className="input-cyber font-mono"
+          placeholder="shpat_... or integration token"
+        />
+        <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">
+          {isES
+            ? "Los catálogos VTEX públicos generalmente no requieren token."
+            : "VTEX public catalogs often need no token."}
+        </p>
       </div>
+
+      <LegalConsentCheckbox checked={legal} onChange={setLegal} />
 
       {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
 
-      <button type="submit" disabled={loading} className="btn-mint w-full disabled:opacity-50">
-        {loading ? "Submitting…" : "Submit — free listing"}
+      <button type="submit" disabled={loading || !legal} className="btn-mint w-full disabled:opacity-50 disabled:cursor-not-allowed">
+        {loading
+          ? isES
+            ? "Enviando…"
+            : "Submitting…"
+          : isES
+            ? "Enviar solicitud — gratis"
+            : "Submit — free listing"}
       </button>
     </form>
   );

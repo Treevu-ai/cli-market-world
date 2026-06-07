@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const TOPICS_ES = [
   { value: "enterprise", label: "Enterprise / Volumen personalizado" },
@@ -59,6 +60,7 @@ export default function UnifiedContactForm() {
   const [sent,    setSent]    = useState(false);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
+  const [legal,   setLegal]   = useState(false);
 
   const isRetailer = topic === "retailer";
 
@@ -103,6 +105,14 @@ export default function UnifiedContactForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!legal) {
+      setError(
+        isES
+          ? "Debe aceptar los términos y la política de privacidad."
+          : "You must accept the terms and privacy policy.",
+      );
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -136,7 +146,9 @@ export default function UnifiedContactForm() {
           </p>
         )}
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
-          {isES ? `Respondemos a ${confirmEmail} en menos de 30 min.` : `We'll reply to ${confirmEmail} within 30 min.`}
+          {isES
+            ? `Responderemos a ${confirmEmail} en el mismo día hábil.`
+            : `We'll reply to ${confirmEmail} on the same business day.`}
         </p>
       </div>
     );
@@ -152,7 +164,7 @@ export default function UnifiedContactForm() {
           {isES ? "¿En qué podemos ayudarte?" : "How can we help?"}
         </h3>
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
-          {isES ? "Respondemos en menos de 30 min." : "We reply within 30 min."}
+          {isES ? "Respondemos habitualmente el mismo día hábil." : "We usually reply the same business day."}
         </p>
       </div>
 
@@ -244,9 +256,11 @@ export default function UnifiedContactForm() {
         </>
       )}
 
+      <LegalConsentCheckbox checked={legal} onChange={setLegal} />
+
       {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
 
-      <button type="submit" disabled={loading} className="btn-mint w-full disabled:opacity-50">
+      <button type="submit" disabled={loading || !legal} className="btn-mint w-full disabled:opacity-50 disabled:cursor-not-allowed">
         {loading
           ? (isES ? "Enviando…" : "Sending…")
           : isRetailer
