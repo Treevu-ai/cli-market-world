@@ -39,7 +39,8 @@
   --cm-secondary: #c6c4df;
   --cm-secondary-container: #47475d;
   --cm-gutter: 24px;
-  --cm-container-max: 1440px;
+  --cm-content-max: 1200px;
+  --cm-container-max: 1280px;
 
   /* Legacy Wise tokens — kept for sections not yet migrated */
   --wise-green: #3afecf;
@@ -79,12 +80,12 @@ body {
 }
 
 section[id] {
-  scroll-margin-top: 72px;
+  scroll-margin-top: 80px;
 }
 
 .landing-container {
   width: 100%;
-  max-width: 1100px;
+  max-width: var(--cm-content-max);
   margin-left: auto;
   margin-right: auto;
   padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
@@ -150,9 +151,16 @@ section[id] {
 /* Phase 2 — section & form patterns */
 .landing-section {
   position: relative;
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
+}
+
+@media (min-width: 768px) {
+  .landing-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
 }
 
 .landing-section-alt {
@@ -162,7 +170,7 @@ section[id] {
 .section-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  line-height: 1;
+  line-height: 1.4;
   letter-spacing: 0.1em;
   font-weight: 700;
   text-transform: uppercase;
@@ -175,6 +183,23 @@ section[id] {
   font-weight: 600;
   color: #fff;
   letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+}
+
+.section-intro {
+  font-size: 1rem;
+  line-height: 1.625;
+  color: var(--cm-on-surface-variant);
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 3rem;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .card-cyber {
@@ -186,9 +211,53 @@ section[id] {
 }
 
 .card-cyber:hover {
-  transform: scale(1.02);
   border-color: rgba(58, 254, 207, 0.25);
   box-shadow: 0 0 20px rgba(58, 254, 207, 0.08);
+}
+
+.card-cyber-interactive:hover {
+  transform: scale(1.02);
+}
+
+.details-disclosure {
+  border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 40%, transparent);
+  border-radius: 0.5rem;
+  background: rgba(26, 26, 46, 0.1);
+}
+
+.details-disclosure summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cm-on-surface-variant);
+}
+
+.details-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.details-disclosure summary::after {
+  content: "+";
+  float: right;
+  color: var(--cm-mint);
+}
+
+.details-disclosure[open] summary::after {
+  content: "−";
+}
+
+.details-disclosure .details-body {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 30%, transparent);
+}
+
+.cookie-banner-spacer {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Fade-in on scroll */
@@ -321,7 +390,7 @@ select.input-cyber option {
 }
 
 @media (max-width: 767px) {
-  a, button, [role="button"] {
+  a:not(.touch-compact), button:not(.touch-compact), [role="button"]:not(.touch-compact) {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
