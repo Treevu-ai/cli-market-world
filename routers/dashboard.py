@@ -48,6 +48,15 @@ def _cached_dashboard_data() -> dict:
         market_core.recover_pg_if_needed()
     except Exception:
         pass
+
+
+def get_cached_dashboard_data() -> dict:
+    """Public accessor for the cached dashboard data.
+
+    go-live founder alerts and other internal consumers should prefer this
+    over importing the private _cached_dashboard_data directly.
+    """
+    return _cached_dashboard_data()
     now = time.monotonic()
     if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
         return _dashboard_data_cache
