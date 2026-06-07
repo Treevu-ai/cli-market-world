@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Header, HTTPException
 
+from market_adoption import adoption_summary
 from market_funnel import FUNNEL_EVENTS, funnel_summary, record_funnel_event
 from market_pepy import pepy_summary
 from server_deps import auth_user, check_rate_limit, require_admin
@@ -63,6 +64,13 @@ def analytics_funnel_public(days: int = 30):
         "ttc_median_hours": data["ttc_median_hours"],
         "funnel_steps": data["funnel_steps"],
     }
+
+
+@router.get("/analytics/adoption")
+def analytics_adoption_public(days: int = 30):
+    """Public PyPI + funnel adoption comparison (no PII)."""
+    days = max(1, min(days, 90))
+    return adoption_summary(days=days)
 
 
 @router.get("/analytics/pypi")
