@@ -16,6 +16,7 @@ Endpoints:
   POST /checkout/paypal-webhook  PayPal IPN/webhooks
   GET  /checkout/rates      FX rates with PEN base (Wise; fallback if down)
   POST /billing/request-pro  Email payment link (manual Pro — default)
+  POST /billing/pro-checkout  Pro billing — PayPal / Mercado Pago / Yape / Plin (landing)
   POST /billing/request-starter  Email Starter checkout link (fallback)
   POST /billing/paypal      PayPal Subscription (authenticated CLI)
   POST /billing/paypal-subscribe  PayPal Subscription (landing — auto-activate)
@@ -42,6 +43,7 @@ from market_core import (
     db_get_billing_pending,
     db_get_user_email,
     db_create_subscription_request,
+    db_mark_subscription_request_activated,
     db_mark_subscription_request_emailed,
     db_mark_subscription_requests_activated_for_user,
     db_find_subscription_request,
@@ -62,6 +64,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
 
 _ORDER_REF_RE = re.compile(r"CLI-Market-(ORD-[A-F0-9]+)", re.I)
+_PRO_REF_RE = re.compile(r"CLI-Market-(PRO-[A-Z0-9]+)", re.I)
+_PRO_BILLING_METHODS = frozenset({"paypal", "yape", "plin", "mercadopago"})
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -576,11 +580,16 @@ async def mercadopago_webhook(request: Request):
     order_id = parse_external_order_id(ext_ref)
     actions: list[str] = []
 
-    if status == "approved" and order_id:
+    pro_request_id = _parse_pro_request_ref(ext_ref)
+    if status == "approved" and pro_request_id:
+        actions.extend(_activate_pro_from_request(pro_request_id, source="mercadopago_webhook"))
+    elif status == "approved" and order_id:
         if db_update_order_status(order_id, "paid"):
             actions.append(f"paid:{order_id}")
         else:
             actions.append(f"order_not_found:{order_id}")
+    elif pro_request_id:
+        actions.append(f"pro_status:{status}:{pro_request_id}")
     elif order_id:
         actions.append(f"status:{status}:{order_id}")
 
@@ -597,6 +606,71 @@ STARTER_CHECKOUT_URL = os.getenv(
     "STARTER_PAYMENT_URL",
     "https://cli-market.dev/#pro-checkout",
 )  # legacy env name kept for compat; value now points to Pro (pricing simplified)
+
+
+def _pro_price_pen() -> float:
+    """USD Pro price converted to PEN for Yape/Plin/Mercado Pago."""
+    from market_connectors.paypal_payments import PRO_PRICE_USD
+
+    pen_per_usd = float(os.getenv("PRO_PEN_PER_USD", "3.7"))
+    return round(float(PRO_PRICE_USD) * pen_per_usd, 2)
+
+
+def _parse_pro_request_ref(external_reference: str) -> str | None:
+    ref = (external_reference or "").strip()
+    if not ref:
+        return None
+    if ref.upper().startswith("PRO-"):
+        return ref.upper()
+    m = _PRO_REF_RE.search(ref)
+    return m.group(1).upper() if m else None
+
+
+def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
+    """Mark subscription request paid and upgrade user to Pro."""
+    req = db_find_subscription_request(request_id=request_id)
+    if not req:
+        return [f"request_not_found:{request_id}"]
+    if (req.get("status") or "").lower() == "activated":
+        return [f"already_activated:{request_id}"]
+
+    username = (req.get("username") or "").strip()
+    if not username:
+        return [f"request_no_user:{request_id}"]
+
+    db_set_subscription(username, "pro")
+    db_mark_subscription_request_activated(request_id, username)
+    actions = [f"pro_activated:{username}", f"request_closed:{request_id}"]
+
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": source, "request_id": request_id},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+
+    try:
+        email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
+        if email:
+            from market_connectors.email_outbound import send_pro_activated_email
+
+            mail = send_pro_activated_email(
+                to_email=email,
+                username=username,
+                lang="es",
+                subscription_id=request_id,
+            )
+            if mail.get("sent"):
+                actions.append(f"activation_email:{email}")
+    except Exception:
+        logger.exception("Pro activation email failed for %s", username)
+
+    return actions
 
 
 def _record_plan_funnel_event(
@@ -976,6 +1050,273 @@ async def request_pro_subscription(body: dict, authorization: str | None = Heade
         raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
+
+
+def _start_pro_qr_checkout(
+    username: str,
+    email: str,
+    *,
+    method: str,
+    lang: str,
+    funnel_source: str,
+) -> dict:
+    """Yape/Plin QR for Pro — manual activation after payment confirmation."""
+    from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
+    from market_connectors.paypal_payments import PRO_PRICE_USD
+
+    amount_pen = _pro_price_pen()
+    payment_label = "plin" if method == "plin" else "yape"
+    req = db_create_subscription_request(username, email, f"{payment_label}:S/{amount_pen:.2f}")
+    request_id = req["id"]
+    yape_number = os.getenv("YAPE_PLIN_NUMBER", "")
+    qr_data = yape_number or f"{payment_label}-{request_id.lower()}"
+    if yape_number:
+        qr_data = f"yape://pay?phone={yape_number}&amount={amount_pen:.2f}&ref={request_id}"
+    qr_url = (
+        "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
+        + qr_data.replace(" ", "%20")
+    )
+
+    sub_mail = send_pro_payment_email(
+        to_email=email,
+        username=username,
+        request_id=request_id,
+        lang=lang,
+    )
+    notify_mail = send_pro_request_notify(
+        subscriber_email=email,
+        username=username,
+        request_id=request_id,
+        note=f"method={payment_label} amount_pen={amount_pen:.2f} usd={PRO_PRICE_USD}",
+    )
+    if sub_mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+
+    _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
+
+    if lang == "es":
+        message = (
+            f"Escanea con {payment_label.capitalize()}. Monto: S/ {amount_pen:.2f} "
+            f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}. "
+            "Pro se activa ≤24 h tras confirmar el pago."
+        )
+    else:
+        message = (
+            f"Scan with {payment_label.capitalize()}. Amount: S/ {amount_pen:.2f} "
+            f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}. "
+            "Pro activates within 24h after payment confirmation."
+        )
+
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "username": username,
+        "email": email,
+        "payment_method": payment_label,
+        "amount_usd": float(PRO_PRICE_USD),
+        "amount_pen": amount_pen,
+        "currency": "PEN",
+        "qr_reference": request_id,
+        "qr_url": qr_url,
+        "auto_activate": False,
+        "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
+        "notify_sent": notify_mail.get("sent", False),
+        "message": message,
+    }
+
+
+async def _start_pro_mercadopago_checkout(
+    username: str,
+    email: str,
+    *,
+    lang: str,
+    funnel_source: str,
+) -> dict:
+    from market_connectors.mercadopago_payments import create_preference
+    from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
+    from market_connectors.paypal_payments import PRO_PRICE_USD
+
+    amount_pen = _pro_price_pen()
+    req = db_create_subscription_request(username, email, "mercadopago:pending")
+    request_id = req["id"]
+
+    mp = await create_preference(
+        amount_pen,
+        "PEN",
+        f"CLI-Market-{request_id}",
+        title="CLI Market Pro",
+    )
+    if not mp.get("checkout_url"):
+        raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
+
+    checkout_url = mp["checkout_url"]
+    sub_mail = send_pro_payment_email(
+        to_email=email,
+        username=username,
+        request_id=request_id,
+        lang=lang,
+    )
+    notify_mail = send_pro_request_notify(
+        subscriber_email=email,
+        username=username,
+        request_id=request_id,
+        note=f"method=mercadopago amount_pen={amount_pen:.2f} url={checkout_url}",
+    )
+    if sub_mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+
+    _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
+
+    if lang == "es":
+        message = (
+            f"Complete el pago en Mercado Pago — S/ {amount_pen:.2f} "
+            f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}."
+        )
+    else:
+        message = (
+            f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
+            f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}."
+        )
+
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "username": username,
+        "email": email,
+        "payment_method": "mercadopago",
+        "amount_usd": float(PRO_PRICE_USD),
+        "amount_pen": amount_pen,
+        "currency": "PEN",
+        "checkout_url": checkout_url,
+        "approve_url": checkout_url,
+        "preference_id": mp.get("preference_id", ""),
+        "auto_activate": True,
+        "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
+        "notify_sent": notify_mail.get("sent", False),
+        "message": message,
+    }
+
+
+@router.post("/billing/pro-checkout")
+async def billing_pro_checkout(body: dict, authorization: str | None = Header(None)):
+    """Pro billing from landing — PayPal, Mercado Pago, Yape, or Plin."""
+    try:
+        check_rate_limit("billing-pro-checkout")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        method = (body.get("payment_method") or "paypal").strip().lower()
+        force = bool(body.get("resend"))
+
+        if method not in _PRO_BILLING_METHODS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"payment_method must be one of: {', '.join(sorted(_PRO_BILLING_METHODS))}",
+            )
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        auth_user = ""
+        if authorization:
+            try:
+                auth_user = require_user(authorization)
+            except HTTPException:
+                auth_user = ""
+
+        username = _resolve_pro_username(
+            email,
+            body_username=(body.get("username") or ""),
+            auth_username=auth_user,
+        )
+
+        if not force:
+            recent = db_recent_subscription_request(email)
+            if recent:
+                link = recent.get("payment_link") or ""
+                if method == "paypal" and (
+                    "billing/subscriptions" in link.lower() or "/subscriptions?" in link.lower()
+                ):
+                    return {
+                        "ok": True,
+                        "request_id": recent["id"],
+                        "username": recent["username"],
+                        "email": recent["email"],
+                        "payment_method": "paypal",
+                        "payment_link": link,
+                        "approve_url": link,
+                        "auto_activate": True,
+                        "email_sent": bool(recent.get("email_sent")),
+                        "duplicate": True,
+                        "message": (
+                            "Ya enviamos el enlace PayPal recientemente. Revisa tu bandeja (y spam)."
+                            if lang == "es"
+                            else "We already sent the PayPal link recently. Check inbox (and spam)."
+                        ),
+                    }
+
+        if method == "paypal":
+            try:
+                out = await _start_paypal_subscription(
+                    username,
+                    email,
+                    plan="pro",
+                    lang=lang,
+                    funnel_source="landing_pro_checkout_paypal",
+                )
+                if out.get("ok"):
+                    out["payment_method"] = "paypal"
+                    out["payment_link"] = out.get("approve_url") or out.get("payment_link")
+                    if lang == "es":
+                        out["message"] = (
+                            "Confirme la suscripción en PayPal — Pro se activa en segundos (webhook). "
+                            + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                            + "Luego: market whoami"
+                        )
+                    else:
+                        out["message"] = (
+                            "Confirm subscription in PayPal — Pro activates in seconds (webhook). "
+                            + ("We emailed you the link. " if out.get("email_sent") else "")
+                            + "Then: market whoami"
+                        )
+                    return out
+            except ValueError:
+                logger.info("pro-checkout paypal: not configured, using hosted-button fallback")
+            except Exception as e:
+                logger.warning("pro-checkout paypal failed (%s), using hosted-button fallback", e)
+
+            out = process_pro_subscription_request(
+                email=email,
+                lang=lang,
+                username=username,
+                force=force,
+            )
+            out["payment_method"] = "paypal"
+            out["approve_url"] = out.get("payment_link")
+            return out
+
+        if method in ("yape", "plin"):
+            return _start_pro_qr_checkout(
+                username,
+                email,
+                method=method,
+                lang=lang,
+                funnel_source=f"landing_pro_checkout_{method}",
+            )
+
+        return await _start_pro_mercadopago_checkout(
+            username,
+            email,
+            lang=lang,
+            funnel_source="landing_pro_checkout_mercadopago",
+        )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=501, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("billing_pro_checkout failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 def _resolve_pro_username(
