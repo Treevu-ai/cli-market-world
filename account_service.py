@@ -33,7 +33,7 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
     es = lang == "es"
     steps = {
         "free": {
-            "next_tier": "starter",
+            "next_tier": "pro",
             "title_es": "Pro — alertas, checkout y full MCP (foco principal para Agent Builders)",
             "title_en": "Pro — alerts, checkout and full MCP (primary for AI Agent Builders)",
             "cli_es": "market register  →  Pro en cli-market.dev/#pro-checkout",
