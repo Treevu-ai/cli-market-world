@@ -153,7 +153,7 @@ export default function DocsPage() {
                   `Checkout ${MARKET_STATS.paymentsLabel} · export · write API keys.`,
                 )}
               </p>
-              <a href="/#pro-checkout" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Configurar Pro →", "Set up Pro →")}
               </a>
             </div>

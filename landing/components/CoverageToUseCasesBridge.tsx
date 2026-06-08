@@ -20,7 +20,7 @@ export default function CoverageToUseCasesBridge() {
                 equipos de pricing y trade
               </a>{" "}
               validan spreads e inflación;{" "}
-              <a href="#pricing-build" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+              <a href="#pricing" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 builders
               </a>{" "}
               integran la misma API en agentes;{" "}
@@ -36,7 +36,7 @@ export default function CoverageToUseCasesBridge() {
                 pricing and trade teams
               </a>{" "}
               validate spreads and inflation;{" "}
-              <a href="#pricing-build" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+              <a href="#pricing" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 builders
               </a>{" "}
               plug the same API into agents;{" "}
