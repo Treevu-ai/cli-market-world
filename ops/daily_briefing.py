@@ -33,7 +33,13 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from load_env import load_repo_env  # noqa: E402
+
+load_repo_env()
+
 from content_paths import calendar_dir, content_root, linkedin_dir, metrics_dir, rel_to_content  # noqa: E402
 
 
@@ -523,6 +529,16 @@ def main() -> None:
             product_slack = build_slack_product_message(ds, data, meta, product_rel)
             deliver_to_bitacora(product_slack)
             print("Slack → bitácora (producto).")
+
+            from procure_daily import procure_daily_configured, trigger_procure_daily_summary
+
+            if procure_daily_configured():
+                procure_result = trigger_procure_daily_summary(today)
+                if procure_result.get("ok"):
+                    ordered = procure_result.get("ordered", 0)
+                    print(f"Slack → Procure resumen diario ({ordered} órdenes).")
+                else:
+                    print(f"Procure daily summary failed: {procure_result.get('error', procure_result)}")
 
         if both or content_only:
             content_slack = build_slack_content_message(ds, day, today_doc, content_rel)

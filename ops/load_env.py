@@ -31,7 +31,11 @@ def load_repo_env() -> None:
             "SLACK_BOT_TOKEN",
             "SLACK_CHANNEL_COMMAND_CONTROL",
             "MARKET_API_TOKEN",
+            "PEPY_API_KEY",
+            "PEPY_PROJECT",
             "CLOUDFLARE_API_TOKEN",
+            "PROCUREMENT_WEBHOOK_SECRET",
+            "PROCURE_PUBLIC_URL",
         ):
             if os.getenv(key):
                 continue
