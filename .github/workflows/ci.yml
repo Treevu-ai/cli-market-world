@@ -41,9 +41,17 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: 2bfa6d210fc429e1c9c7780d7df9158eb0713a66
+          path: .deps/cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
       - name: Install dependencies
         run: |
           pip install "cli-market-core>=1.9.5"
+          pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 
@@ -81,9 +89,17 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: 2bfa6d210fc429e1c9c7780d7df9158eb0713a66
+          path: .deps/cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
       - name: Install dependencies
         run: |
           pip install "cli-market-core>=1.9.5"
+          pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
 

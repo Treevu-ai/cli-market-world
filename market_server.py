@@ -133,6 +133,7 @@ from routers.dashboard import router as dashboard_router
 from routers.data_export import router as data_export_router
 from routers.funnel import router as funnel_router
 from routers.health import router as health_router
+from routers.index_api import router as index_router
 from routers.intel import router as intel_router
 from routers.media import router as media_router
 from routers.misc import router as misc_router
@@ -156,6 +157,7 @@ for r in (
     data_export_router,
     funnel_router,
     health_router,
+    index_router,
     intel_router,
     media_router,
     misc_router,

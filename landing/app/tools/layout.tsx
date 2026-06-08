@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 export const metadata: Metadata = {
-  title: "MCP Tools — 43 copy-paste configs for AI agents",
+  title: `MCP Tools — ${MARKET_STATS.mcpTools} tools · copy-paste configs for AI agents`,
   description:
     `MCP tools for e-commerce and AI shopping API integration. Copy-paste configs for Cursor, Claude Desktop, and VS Code. ${MARKET_STATS.mcpTools} commerce tools across ${MARKET_STATS.retailersVerified} verified retailers.`,
   keywords: [

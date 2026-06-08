@@ -19,6 +19,7 @@ import httpx
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slack_notify import (
     channel_bitacora,
+    channel_command_control,
     channel_publicaciones,
     channel_revisiones_cursor,
 )
@@ -69,11 +70,17 @@ def main() -> None:
     )
 
     failed = False
-    for label, cid in (
+    channels: list[tuple[str, str]] = [
         ("Bitácora", channel_bitacora()),
         ("Publicaciones", channel_publicaciones()),
         ("Revisiones Cursor", channel_revisiones_cursor()),
-    ):
+    ]
+    try:
+        channels.append(("Command & Control", channel_command_control()))
+    except ValueError as exc:
+        print(f"  ⚠ Command & Control: {exc}")
+
+    for label, cid in channels:
         print(f"  {label} ({cid})")
         if not send_test:
             print("    → dry-run (usa --send-test para postear)")

@@ -9,6 +9,7 @@ Usage:
   python3 ops/slack_cli.py post --bitacora "Hola"
   python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
   python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
+  python3 ops/slack_cli.py command-control [--remote] [--dry-run]
   python3 ops/slack_cli.py verify [--send-test]
 """
 
@@ -22,12 +23,18 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from load_env import load_repo_env  # noqa: E402
+
+load_repo_env()
+
 from slack_notify import (  # noqa: E402
     channel_bitacora,
+    channel_command_control,
     channel_publicaciones,
     channel_revisiones_cursor,
     deliver,
     deliver_to_bitacora,
+    deliver_to_command_control,
     deliver_to_publicaciones,
     deliver_to_revisiones_cursor,
 )
@@ -113,6 +120,17 @@ def cmd_campaign_sync(dry_run: bool) -> int:
     return subprocess.call(args, cwd=ROOT)
 
 
+def cmd_command_control(dry_run: bool, remote: bool, slack: bool) -> int:
+    args = [sys.executable, str(ROOT / "ops" / "command_control_daily.py")]
+    if dry_run:
+        args.append("--dry-run")
+    if remote:
+        args.append("--remote")
+    if slack:
+        args.append("--slack")
+    return subprocess.call(args, cwd=ROOT)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="CLI Market Slack helper for Cursor")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -144,6 +162,13 @@ def main() -> int:
     camp_sub.add_parser("assets", help="Regenerate all 30 LinkedIn PNG assets")
     camp_sub.add_parser("template-sync", help="Sync content template → content repo (incremental)")
 
+    p_cc = sub.add_parser(
+        "command-control",
+        help="Founder ops panel → #command-control-cli-market",
+    )
+    p_cc.add_argument("--dry-run", action="store_true", help="Print only; no Slack/history")
+    p_cc.add_argument("--remote", action="store_true", help="KPIs from production API")
+
     args = parser.parse_args()
 
     if args.command == "verify":
@@ -165,6 +190,12 @@ def main() -> int:
                 [sys.executable, str(ROOT / "ops" / "sync_content_template.py")],
                 cwd=ROOT,
             )
+    if args.command == "command-control":
+        return cmd_command_control(
+            dry_run=args.dry_run,
+            remote=args.remote,
+            slack=not args.dry_run,
+        )
     if args.command == "post":
         if args.channel:
             ch = args.channel

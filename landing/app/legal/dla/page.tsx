@@ -38,7 +38,7 @@ export default function DataLicenseAgreement() {
             <ul>
               <li>Consultar Datos vía API, CLI o MCP dentro de los límites de su tier.</li>
               <li>Usar resultados en aplicaciones internas, dashboards y agentes autorizados.</li>
-              <li>Exportar según lo permitido por su tier (p. ej. CSV en Starter y superiores).</li>
+              <li>Exportar según lo permitido por su tier (p. ej. CSV en Pro y superiores).</li>
             </ul>
 
             <h2>3. Restricciones</h2>
@@ -61,14 +61,12 @@ export default function DataLicenseAgreement() {
                 <strong>Free:</strong> 1.000 consultas/día · uso de API/MCP de lectura.
               </li>
               <li>
-                <strong>Starter:</strong> 5.000 consultas/día · exportación CSV · suscripción PayPal.
+                <strong>Pro:</strong> 10.000 consultas/día · checkout · exportación CSV ·{" "}
+                {MARKET_STATS.paymentsLabel} · USD 39/mes.
               </li>
               <li>
-                <strong>Pro:</strong> 10.000 consultas/día · checkout y claves de escritura.
-              </li>
-              <li>
-                <strong>Builder / Intelligence:</strong> límites ampliados y endpoints comerciales
-                bajo contrato.
+                <strong>Enterprise / Intelligence:</strong> límites ampliados, endpoints comerciales
+                y licencia de datos bajo contrato.
               </li>
             </ul>
             <p>
@@ -131,7 +129,7 @@ export default function DataLicenseAgreement() {
             <ul>
               <li>Query Data via API, CLI, or MCP within your tier limits.</li>
               <li>Use results in internal applications, dashboards, and authorized agents.</li>
-              <li>Export as permitted by your tier (e.g. CSV on Starter and above).</li>
+              <li>Export as permitted by your tier (e.g. CSV on Pro and above).</li>
             </ul>
 
             <h2>3. Restrictions</h2>
@@ -154,14 +152,12 @@ export default function DataLicenseAgreement() {
                 <strong>Free:</strong> 1,000 requests/day · read API/MCP usage.
               </li>
               <li>
-                <strong>Starter:</strong> 5,000 requests/day · CSV export · PayPal subscription.
+                <strong>Pro:</strong> 10,000 requests/day · checkout · CSV export ·{" "}
+                {MARKET_STATS.paymentsLabel} · USD 39/mo.
               </li>
               <li>
-                <strong>Pro:</strong> 10,000 requests/day · checkout and write API keys.
-              </li>
-              <li>
-                <strong>Builder / Intelligence:</strong> expanded limits and commercial endpoints
-                under contract.
+                <strong>Enterprise / Intelligence:</strong> expanded limits, commercial endpoints,
+                and data license under contract.
               </li>
             </ul>
             <p>

@@ -10,6 +10,7 @@ import httpx
 DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
+COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
 
 MAX_SLACK_TEXT = 3900
 
@@ -25,6 +26,51 @@ def channel_bitacora() -> str:
 def channel_revisiones_cursor() -> str:
     return os.getenv(
         "SLACK_CHANNEL_REVISIONES_CURSOR", DEFAULT_CHANNEL_REVISIONES_CURSOR
+    )
+
+
+def _resolve_channel_by_name(token: str, name: str) -> str | None:
+    """Lookup channel ID by name (needs channels:read or groups:read)."""
+    cursor = ""
+    for _ in range(20):
+        payload: dict = {
+            "types": "public_channel,private_channel",
+            "limit": 200,
+            "exclude_archived": True,
+        }
+        if cursor:
+            payload["cursor"] = cursor
+        r = httpx.post(
+            "https://slack.com/api/conversations.list",
+            headers={"Authorization": f"Bearer {token}"},
+            json=payload,
+            timeout=15,
+        )
+        r.raise_for_status()
+        body = r.json()
+        if not body.get("ok"):
+            return None
+        for ch in body.get("channels", []):
+            if ch.get("name") == name:
+                return ch.get("id")
+        cursor = (body.get("response_metadata") or {}).get("next_cursor", "")
+        if not cursor:
+            break
+    return None
+
+
+def channel_command_control() -> str:
+    explicit = os.getenv("SLACK_CHANNEL_COMMAND_CONTROL", "").strip()
+    if explicit:
+        return explicit
+    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
+    if token:
+        resolved = _resolve_channel_by_name(token, COMMAND_CONTROL_CHANNEL_NAME)
+        if resolved:
+            return resolved
+    raise ValueError(
+        "Command & Control channel not configured. Set SLACK_CHANNEL_COMMAND_CONTROL "
+        f"to the ID of #{COMMAND_CONTROL_CHANNEL_NAME}, or grant channels:read to the bot."
     )
 
 
@@ -129,4 +175,12 @@ def deliver_to_revisiones_cursor(text: str) -> None:
         text,
         channel=channel_revisiones_cursor(),
         webhook_url=os.getenv("SLACK_WEBHOOK_REVISIONES_CURSOR", ""),
+    )
+
+
+def deliver_to_command_control(text: str) -> None:
+    deliver(
+        text,
+        channel=channel_command_control(),
+        webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""),
     )
