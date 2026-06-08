@@ -64,6 +64,9 @@ export default function Footer() {
           <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Listar mi tienda" : "List my store"}
           </a>
+          <a href="/#procure" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            Procure Copilot
+          </a>
           <a href="/#intelligence" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Inteligencia piloto" : "Intelligence pilot"}
           </a>

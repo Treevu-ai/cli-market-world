@@ -8,6 +8,7 @@ const items = [
   { id: "api", es: "API", en: "API" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "casos", es: "Casos", en: "Use cases" },
+  { id: "procure", es: "Procure", en: "Procure" },
   { id: "intelligence", es: "Intelligence", en: "Intelligence" },
   { id: "pricing", es: "Planes", en: "Pricing" },
   { id: "retailers", es: "Retailers", en: "Retailers" },

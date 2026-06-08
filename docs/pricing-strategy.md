@@ -96,9 +96,15 @@ Monitorear mensualmente:
 
 ---
 
+## Superficie comercial unificada (Fase A)
+
+- **Pricing Procure:** `https://cli-market.dev/#procure` — misma landing que Build e Intelligence.
+- **App Procure:** Worker en `/dashboard` — sin landing de marketing propia (`/procure` redirige a `#procure`).
+- **Checkout Procure:** `POST /billing/procure-subscribe` en Railway; activación vía webhook PayPal (`procure_starter` / `procure_pro` / `procure_builder`).
+
 ## Referencias
 
-- Planes Procure (código): `../procure-copilot/lib/plans.ts`, `lib/procure-content.ts`
+- Planes Procure (código): `../procure-copilot/lib/plans.ts`, `landing/lib/procurePlans.ts`
 - Planes CLI Market: `README.md`, `landing/public/llms.txt`
 - Intelligence: `landing/public/intelligence-pilot-es.md`
 - Demo SE: `docs/agents/contexts/sales-engineer-context.md`

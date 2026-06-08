@@ -25,7 +25,10 @@ from market_core import (
     product_from_json,
 )
 from market_billing import TIERS
+from procure_billing import all_valid_tiers
 from server_deps import require_admin
+
+_VALID_TIERS = all_valid_tiers(TIERS)
 
 router = APIRouter(prefix="", tags=["admin"])
 
@@ -58,10 +61,10 @@ def admin_set_tier(
     tier = (body.get("tier") or "").strip().lower()
     if not username:
         raise HTTPException(status_code=400, detail="username required")
-    if tier not in TIERS:
+    if tier not in _VALID_TIERS:
         raise HTTPException(
             status_code=400,
-            detail=f"tier must be one of {sorted(TIERS)}",
+            detail=f"tier must be one of {sorted(_VALID_TIERS)}",
         )
     if username not in db_get_users():
         raise HTTPException(status_code=404, detail=f"user not found: {username}")

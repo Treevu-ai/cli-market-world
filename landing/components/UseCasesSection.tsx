@@ -36,6 +36,14 @@ const cases = [
     desc_en: `Real price changes refreshed every ${MARKET_STATS.pricesRefreshHours} hours, not 30-day-lagged estimates.`,
     href: "#coverage",
   },
+  {
+    icon: "🛒",
+    title_es: "Compras de empresa",
+    title_en: "Enterprise procurement",
+    desc_es: "Procure Copilot: comparar, aprobar y pagar sin programar. Infra CLI Market incluida desde $29/mes.",
+    desc_en: "Procure Copilot: compare, approve, and pay without code. CLI Market infra included from $29/mo.",
+    href: "#procure",
+  },
 ];
 
 export default function UseCasesSection() {

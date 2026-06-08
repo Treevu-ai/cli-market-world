@@ -23,7 +23,11 @@ export default function CoverageToUseCasesBridge() {
               <a href="#pricing-build" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 builders
               </a>{" "}
-              integran la misma API en agentes — dos productos, un solo moat de datos.
+              integran la misma API en agentes;{" "}
+              <a href="#procure" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+                equipos de compras
+              </a>{" "}
+              usan Procure — tres productos, un solo moat de datos.
             </>
           ) : (
             <>
@@ -35,7 +39,11 @@ export default function CoverageToUseCasesBridge() {
               <a href="#pricing-build" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 builders
               </a>{" "}
-              plug the same API into agents — two products, one data moat.
+              plug the same API into agents;{" "}
+              <a href="#procure" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
+                procurement teams
+              </a>{" "}
+              use Procure — three products, one data moat.
             </>
           )}
         </p>
