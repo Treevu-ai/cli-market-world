@@ -72,16 +72,51 @@ def main() -> int:
         db_mark_subscription_request_activated(request_id, username)
         print(f"✓ Request {request_id} marked activated")
 
+    customer_email = ""
+    if req:
+        customer_email = (req.get("email") or "").strip()
+    if not customer_email and args.email:
+        customer_email = args.email.strip()
+
+    pay_method = "yape"
+    if req:
+        pay_url = (req.get("payment_url") or "").strip().lower()
+        if pay_url.startswith("plin:"):
+            pay_method = "plin"
+        elif pay_url.startswith("mercadopago"):
+            pay_method = "mercadopago"
+
+    if customer_email:
+        try:
+            from market_connectors.email_outbound import send_pro_activated_email
+
+            mail = send_pro_activated_email(
+                to_email=customer_email,
+                username=username,
+                lang="es",
+                request_id=request_id,
+                payment_method=pay_method,
+                source="ops_manual",
+            )
+            if mail.get("sent"):
+                print(f"✓ Activation email sent to {customer_email}")
+            if mail.get("ops_notified"):
+                print("✓ Draft reply sent to hello@cli-market.dev")
+            elif not mail.get("sent"):
+                print(f"⚠ Email not sent: {mail.get('reason', 'unknown')}", file=sys.stderr)
+        except Exception as exc:
+            print(f"⚠ Activation email failed: {exc}", file=sys.stderr)
+
     try:
         from billing_slack import notify_pro_subscription
 
         notify_pro_subscription(
             status="activated",
             username=username,
-            email=(req or {}).get("email", "") if req else "",
+            email=customer_email,
             request_id=request_id,
             source="ops_manual",
-            payment_method="yape|plin",
+            payment_method=pay_method,
         )
     except Exception:
         pass
