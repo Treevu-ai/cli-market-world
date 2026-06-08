@@ -1,7 +1,7 @@
 #!/bin/bash
 # Agent Receipt — CLI Market Demo Script (~45s)
-# Record: terminalizer record demo -c ops/terminalizer.yml
-# Landing now uses landing/components/HeroDemo.tsx (live terminal animation).
+# Record (Linux/macOS): terminalizer record demo -c ops/terminalizer.yml
+# Render GIF (all platforms): python3 ops/generate_demo_gif.py
 
 clear
 echo ""
@@ -13,7 +13,7 @@ sleep 1; echo "  ✓ cli-market-world 1.9.6"
 sleep 1
 
 echo ""; echo -n "  \$ "; sleep 0.3; echo "market init"
-sleep 1; echo "  ✓ 38 retailers verificados · 22 MCP · 8 países"
+sleep 1; echo "  ✓ 68 retailers · 38 verificados · 22 MCP · 8 países"
 sleep 2
 
 echo ""; echo -n "  \$ "; sleep 0.3
@@ -39,7 +39,7 @@ echo ""
 echo "  ─────────────────────────────────────────"
 echo "  🧾  AGENT RECEIPT"
 echo "  ─────────────────"
-echo "  Comparado:  38 retailers · PE"
+echo "  Comparado:  38 retailers verificados · PE"
 echo "  Canasta:    Metro · S/12.40"
 echo "  MCP:        22 curated (46 legacy)"
 echo "  Tiempo:     <15 segundos"

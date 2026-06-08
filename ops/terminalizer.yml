@@ -1,5 +1,5 @@
-command: bash /home/acuba/Proyectos/nuevo/ops/agent_receipt.sh
-cwd: /home/acuba/Proyectos/nuevo
+command: bash ops/agent_receipt.sh
+cwd: .
 env:
   recording: true
 cols: 90
