@@ -88,6 +88,9 @@
 }
 
 .btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--cm-action);
   color: var(--cm-on-mint);
   border-radius: var(--cm-radius-pill);
@@ -97,6 +100,11 @@
 
 .btn-action:hover {
   filter: brightness(1.08);
+}
+
+.hero-terminal-cta-primary {
+  border-radius: var(--cm-radius-lg);
+  text-decoration: none;
 }
 
 html {
@@ -197,6 +205,89 @@ section[id] {
 
 .landing-section#hero {
   border-top: none;
+}
+
+/* Hero — Terminal mode (docs/BRAND.md) */
+.hero-terminal {
+  background-color: var(--cm-void);
+  border-bottom: 1px solid color-mix(in srgb, var(--cm-action-glow) 12%, transparent);
+}
+
+.hero-terminal-grid {
+  background-image:
+    linear-gradient(rgba(200, 255, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 255, 0, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
+}
+
+.hero-terminal-glow::before {
+  content: "";
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  width: min(90vw, 720px);
+  height: min(90vw, 720px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 255, 0, 0.12) 0%, transparent 68%);
+  filter: blur(40px);
+}
+
+.hero-terminal-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cm-action);
+}
+
+.hero-terminal-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6.5vw, 4.25rem);
+  line-height: 1.05;
+  font-weight: 800;
+  color: var(--cm-ink);
+  max-width: 920px;
+  letter-spacing: -0.03em;
+}
+
+.hero-terminal-subhead {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--cm-text-secondary);
+}
+
+.hero-metric-value {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 28px rgba(200, 255, 0, 0.12);
+}
+
+.hero-metric-label {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cm-text-secondary);
+}
+
+.hero-terminal-card {
+  border-radius: var(--cm-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--cm-action-glow) 18%, transparent);
+  background: color-mix(in srgb, var(--cm-surface-card) 88%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-terminal-card:hover {
+  border-color: color-mix(in srgb, var(--cm-data) 45%, transparent);
+  box-shadow: 0 0 20px rgba(58, 254, 207, 0.08);
 }
 
 @media (min-width: 768px) {
