@@ -814,17 +814,34 @@ def cmd_inflation(args):
         return
     items = data.get("items", [])
     avg = data.get("avg_inflation_pct", 0)
+    n_products = sum(int(i.get("n_products") or 0) for i in items)
     color = "#FF6B35" if avg > 0 else "#00FF88"
-    console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({len(items)} productos rastreados)[/]")
+    meta = (
+        f"{n_products} productos · {len(items)} líneas"
+        if not ui.is_en()
+        else f"{n_products} products · {len(items)} lines"
+    )
+    console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({meta})[/]")
     if items:
-        table = Table(title="[bold white]Variación de precios[/]", border_style=ui.TABLE_BORDER)
-        table.add_column("Producto", max_width=35)
-        table.add_column("Desde", style="dim")
-        table.add_column("Hasta", style="dim")
+        title = "Variación por línea" if not ui.is_en() else "Change by line"
+        table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
+        table.add_column("Línea" if not ui.is_en() else "Line", max_width=28)
+        table.add_column("Antes" if not ui.is_en() else "Before", style="dim")
+        table.add_column("Ahora" if not ui.is_en() else "Now", style="dim")
         table.add_column("Δ %", justify="right")
         for i in items[:15]:
-            c = "#FF6B35" if i["delta_pct"] > 0 else "#00FF88"
-            table.add_row(i["product"][:35], f"{i['currency']} {i['first_price']:.2f}", f"{i['currency']} {i['last_price']:.2f}", f"[{c}]{i['delta_pct']:+.1f}%[/]")
+            delta = float(i.get("delta_pct") or 0)
+            cur = i.get("currency") or ""
+            before = float(i.get("avg_before") or i.get("first_price") or 0)
+            now = float(i.get("avg_now") or i.get("last_price") or 0)
+            label = (i.get("line") or i.get("line_key") or i.get("product") or "?")[:28]
+            c = "#FF6B35" if delta > 0 else "#00FF88"
+            table.add_row(
+                label,
+                f"{cur} {before:.2f}".strip(),
+                f"{cur} {now:.2f}".strip(),
+                f"[{c}]{delta:+.1f}%[/]",
+            )
         console.print(table)
 
 def cmd_indicators(args):
