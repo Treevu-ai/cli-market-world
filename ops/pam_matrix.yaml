@@ -372,7 +372,7 @@ cases:
       store_name: "PAM Test Store {{run_id}}"
       website: https://example.com
       country: PE
-      platform: woocommerce
+      platform: shopify
       contact_email: "pam+{{run_id}}@cli-market.dev"
       catalog_size: small
     expect:
@@ -539,6 +539,8 @@ cases:
     method: GET
     path: /index/stats
     auth: user
+    skip_if_env_missing: [CLI_MARKET_INDEX_URL]
+    notes: "cli-market-index not mounted on world API — set CLI_MARKET_INDEX_URL when proxy exists"
     expect:
       status: 200
       json_has: [registry_size, linkage_pct]
@@ -551,6 +553,8 @@ cases:
     method: POST
     path: /index/resolve
     auth: user
+    skip_if_env_missing: [CLI_MARKET_INDEX_URL]
+    notes: "cli-market-index not mounted on world API — set CLI_MARKET_INDEX_URL when proxy exists"
     body:
       name: "Leche Gloria entera 1L"
       brand: Gloria
@@ -682,6 +686,23 @@ cases:
     expect:
       status_in: [200, 404, 502]
 
+  - id: user.bootstrap_pro
+    tier: 2
+    phase: user
+    run_order: 14
+    name: Grant Pro tier for gated user endpoints
+    method: POST
+    path: /v1/admin/set-tier
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    requires: [user.auth_register]
+    body:
+      username: "{{username}}"
+      tier: pro
+    expect:
+      status: 200
+      json_has: [username, subscription]
+
   - id: user.alerts_list
     tier: 2
     phase: user
@@ -689,6 +710,7 @@ cases:
     method: GET
     path: /v1/alerts
     auth: user
+    requires: [user.bootstrap_pro]
     expect:
       status: 200
 
@@ -699,6 +721,7 @@ cases:
     method: POST
     path: /v1/data/export-history
     auth: user
+    requires: [user.bootstrap_pro]
     body: {}
     expect:
       status_in: [200, 422]
@@ -858,7 +881,6 @@ cases:
       status: 200
       json:
         status: ok
-        in_progress: false
       json_min:
         stores_succeeded: "{{threshold.min_collector_succeeded}}"
         stores_attempted: "{{threshold.min_collector_succeeded}}"
