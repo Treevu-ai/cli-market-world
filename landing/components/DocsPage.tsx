@@ -6,6 +6,28 @@ import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 type SnippetTab = "curl" | "python" | "mcp";
+type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
+
+const BUNDLE_LABELS: Record<BundleKey, { es: string; en: string }> = {
+  shop: { es: "Shop", en: "Shop" },
+  intel: { es: "Intel", en: "Intel" },
+  account: { es: "Account", en: "Account" },
+};
+
+const BUNDLE_INTRO: Record<BundleKey, { es: string; en: string }> = {
+  shop: {
+    es: "Cobertura, búsqueda, comparación, canasta y checkout.",
+    en: "Coverage, search, compare, basket, and checkout.",
+  },
+  intel: {
+    es: "Brief de mercado, inflación, scores y exportación de datos.",
+    en: "Market brief, inflation, scores, and data export.",
+  },
+  account: {
+    es: "Sesión, preferencias, alertas de precio y favoritos.",
+    en: "Session, preferences, price alerts, and favorites.",
+  },
+};
 
 const SIDEBAR = {
   start: [
@@ -44,7 +66,8 @@ print(r.json())`,
       "command": "market-mcp",
       "args": [],
       "env": {
-        "MARKET_API_URL": "${API_URL}"
+        "MARKET_API_URL": "${API_URL}",
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -55,7 +78,9 @@ export default function DocsPage() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [tab, setTab] = useState<SnippetTab>("curl");
+  const [bundleTab, setBundleTab] = useState<BundleKey>("shop");
   const [copied, setCopied] = useState(false);
+  const bundleTools = MARKET_STATS.mcpBundles[bundleTab];
 
   const copy = async () => {
     await navigator.clipboard.writeText(SNIPPETS[tab]);
@@ -241,9 +266,56 @@ market --json doctor`}</CodeBlock>
         <section className="mb-16 scroll-mt-24" id="mcp">
           <SectionHead n={7} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
-            {t("Configs listas en ", "Ready configs at ")}
-            <a href="/tools" className="text-[var(--cm-mint)] underline">/tools</a>.
+            {t(
+              `Perfil default: ${MARKET_STATS.mcpTools} herramientas (Shop · Intel · Account). Legacy: ${MARKET_STATS.mcpToolsLegacy} con aliases. Configs en `,
+              `Default profile: ${MARKET_STATS.mcpTools} tools (Shop · Intel · Account). Legacy: ${MARKET_STATS.mcpToolsLegacy} with aliases. Configs at `,
+            )}
+            <a href="/tools" className="text-[var(--cm-mint)] underline">/tools</a>
+            {" · "}
+            <a href="/mcp.json" className="text-[var(--cm-mint)] underline">mcp.json</a>.
           </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {(Object.keys(BUNDLE_LABELS) as BundleKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setBundleTab(key)}
+                className={`font-label-caps px-3 py-1 text-xs capitalize transition-colors ${
+                  bundleTab === key
+                    ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-white"
+                }`}
+              >
+                {isES ? BUNDLE_LABELS[key].es : BUNDLE_LABELS[key].en}
+                <span className="ml-1 opacity-70">({MARKET_STATS.mcpBundles[key].length})</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
+            {isES ? BUNDLE_INTRO[bundleTab].es : BUNDLE_INTRO[bundleTab].en}
+          </p>
+          <ul className="space-y-2 mb-4">
+            {bundleTools.map((tool) => (
+              <li
+                key={tool.id}
+                className={`glass-panel rounded-lg px-3 py-2 border text-sm ${
+                  tool.canonical
+                    ? "border-[var(--cm-mint)]/40 bg-[var(--cm-mint)]/5"
+                    : "border-[var(--cm-outline-variant)]/30"
+                }`}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <code className="font-mono text-xs text-[var(--cm-mint)]">{tool.id}</code>
+                  {tool.canonical && (
+                    <span className="font-label-caps text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--cm-mint)]/20 text-[var(--cm-mint)]">
+                      {isES ? "canónica" : "canonical"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1 leading-relaxed">{tool.description}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="limits">

@@ -1,6 +1,6 @@
-# Show HN: CLI Market — Commerce infrastructure for AI agents (36 retailers, 11 countries)
+# Show HN: CLI Market — Commerce infrastructure for AI agents (38 retailers, 8 countries)
 
-**Title:** Show HN: CLI Market — My agent shops at 36 stores across 11 countries. One API.
+**Title:** Show HN: CLI Market — My agent shops at 38 verified retailers across 8 countries. One API.
 
 **URL:** https://cli-market.dev
 
@@ -8,7 +8,7 @@
 
 AI agents can't comparison-shop in physical retail. Every store has its own auth, search logic, and checkout flow. Agents fail before the first query.
 
-CLI Market fixes this: one `pip install`, one API across 66 retailers (36 verified) in 11 countries. 43 MCP tools. 45,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
+CLI Market fixes this: one `pip install`, one API across 68 retailers (38 verified) in 8 countries. 22 curated MCP tools (46 legacy). ~50,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
 
 ---
 

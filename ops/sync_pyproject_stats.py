@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
-"""Sync pyproject.toml description from market_stats."""
-from pathlib import Path
-import re
+"""DEPRECATED — use ops/sync_market_stats.py (includes sync_pyproject)."""
+
+from __future__ import annotations
+
+import subprocess
 import sys
+from pathlib import Path
 
-CORE = Path(__file__).resolve().parent.parent.parent / "cli-market-core"
-sys.path.insert(0, str(CORE))
-from market_core import market_stats as s
+ROOT = Path(__file__).resolve().parent.parent
 
-pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
-text = pyproject.read_text(encoding="utf-8")
-desc = (
-    f"mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. "
-    f"{s.MCP_TOOLS} MCP tools, {s.INDICATORS_COUNT} indicators, {s.RETAILERS_DEFINED} retailers "
-    f"({s.RETAILERS_VERIFIED} verified) in {s.COUNTRIES} countries, {s.PLATFORMS} platforms. MIT."
-)
-text = re.sub(
-    r'description = ".*?"',
-    f'description = "{desc}"',
-    text,
-    count=1,
-)
-pyproject.write_text(text, encoding="utf-8")
-print(f"Updated {pyproject.name} description")
+if __name__ == "__main__":
+    print("sync_pyproject_stats.py is deprecated. Use: python ops/sync_market_stats.py", file=sys.stderr)
+    raise SystemExit(subprocess.call([sys.executable, str(ROOT / "ops" / "sync_market_stats.py")]))
