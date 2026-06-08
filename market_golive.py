@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from market_adoption import adoption_summary
-from market_funnel import funnel_summary
+from market_funnel import activation_summary, funnel_summary
 
 # Internal targets (founder ops)
 SEARCH_PER_REGISTER_TARGET = 0.40
@@ -24,6 +24,7 @@ PRICING_HEALTH_TRIAL = 0.005
 TTFV_MEDIAN_MINUTES_TARGET = 30.0
 TTC_MEDIAN_HOURS_TARGET = 24.0
 PRICING_MIN_REGISTER_SAMPLE = 20
+WEBHOOK_ACTIVATION_SHARE_TARGET = 0.80
 
 
 def _pct(rate: float | None) -> str:
@@ -159,6 +160,7 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
     days = max(1, min(days, 90))
     adoption = adoption_summary(days=days)
     funnel = funnel_summary(days=days)
+    activation_paths = activation_summary(days=days)
     dash = _load_dashboard_data(dashboard_data)
 
     f = adoption["funnel"]
@@ -320,6 +322,43 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
             )
         )
 
+    act_req = activation_paths.get("subscription_requests", {})
+    act_ev = activation_paths.get("activated_events", {})
+    pending_manual = int(act_req.get("pending_manual", 0) or 0)
+    pending_auto = int(act_req.get("pending_auto", 0) or 0)
+    webhook_share = activation_paths.get("webhook_share")
+
+    if pending_manual > 0:
+        alerts.append(
+            _alert(
+                "warn",
+                "activation_manual_queue",
+                f"{pending_manual} Pro request(s) en cola manual (hosted button) — "
+                f"migrar a suscripción webhook.",
+            )
+        )
+
+    if act_ev.get("total", 0) >= 2 and webhook_share is not None:
+        if webhook_share < WEBHOOK_ACTIVATION_SHARE_TARGET:
+            alerts.append(
+                _alert(
+                    "warn",
+                    "activation_webhook_low",
+                    f"Webhook share {_pct(webhook_share)} "
+                    f"(meta ≥{_pct(WEBHOOK_ACTIVATION_SHARE_TARGET)}) — "
+                    f"manual={act_ev.get('manual', 0)}.",
+                )
+            )
+
+    if pending_auto > 0 and activated == 0 and pro_req > 0:
+        alerts.append(
+            _alert(
+                "info",
+                "activation_pending_webhook",
+                f"{pending_auto} suscripción(es) Pro pendientes de confirmar en PayPal.",
+            )
+        )
+
     if register >= 5 and not revenue_has_signal:
         alerts.append(
             _alert(
@@ -415,6 +454,7 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
             "pricing_health_trial": PRICING_HEALTH_TRIAL,
             "ttfv_median_minutes_max": TTFV_MEDIAN_MINUTES_TARGET,
             "ttc_median_hours_max": TTC_MEDIAN_HOURS_TARGET,
+            "webhook_activation_share_min": WEBHOOK_ACTIVATION_SHARE_TARGET,
         },
         "kpis": {
             "activation": {
@@ -437,19 +477,24 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
                 else None,
                 "status": _kpi_status(ok=revenue_ok, warn=revenue_warn),
             },
-            "data_moat": {
-                "title": "Data moat",
-                "coverage_7d_pct": coverage_7d,
-                "coverage_target": COVERAGE_7D_TARGET,
-                "collector_status": collector_status,
-                "collector_stale": collector_stale,
-                "critical_stores": [
-                    {"store": h.get("store"), "success_pct": h.get("success_pct")}
-                    for h in critical_stores[:10]
-                ],
-                "critical_store_count": len(critical_stores),
-                "snapshots_24h": kpis.get("snapshots_24h"),
-                "status": _kpi_status(ok=moat_ok, warn=moat_warn),
+            "pro_activation": {
+                "title": "Activación Pro",
+                "pending_auto": pending_auto,
+                "pending_manual": pending_manual,
+                "requests_activated": act_req.get("activated", 0),
+                "webhook_activated": act_ev.get("webhook", 0),
+                "manual_activated": act_ev.get("manual", 0),
+                "webhook_share": webhook_share,
+                "webhook_share_target": WEBHOOK_ACTIVATION_SHARE_TARGET,
+                "unified_webhook": activation_paths.get("unified_webhook"),
+                "status": _kpi_status(
+                    ok=bool(activation_paths.get("unified_webhook")),
+                    warn=pending_manual > 0 or (
+                        webhook_share is not None
+                        and webhook_share < WEBHOOK_ACTIVATION_SHARE_TARGET
+                        and act_ev.get("total", 0) >= 1
+                    ),
+                ),
             },
             "pricing": {
                 "title": "Pricing / spike",
@@ -470,6 +515,20 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
                     warn=pro_req > 0 and activated == 0,
                 ),
             },
+            "data_moat": {
+                "title": "Data moat",
+                "coverage_7d_pct": coverage_7d,
+                "coverage_target": COVERAGE_7D_TARGET,
+                "collector_status": collector_status,
+                "collector_stale": collector_stale,
+                "critical_stores": [
+                    {"store": h.get("store"), "success_pct": h.get("success_pct")}
+                    for h in critical_stores[:10]
+                ],
+                "critical_store_count": len(critical_stores),
+                "snapshots_24h": kpis.get("snapshots_24h"),
+                "status": _kpi_status(ok=moat_ok, warn=moat_warn),
+            },
         },
         "adoption": {
             "pypi_downloads_30d": adoption["pypi"].get("downloads_last_30d"),
@@ -477,6 +536,7 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
             "install": f.get("install"),
             "notes": adoption.get("notes", []),
         },
+        "activation_detail": activation_paths,
         "alerts": alerts,
         "alert_count": alert_count,
     }
@@ -488,6 +548,7 @@ def go_live_spike_markdown(*, days: int = 7, dashboard_data: dict[str, Any] | No
     act = data["kpis"]["activation"]
     rev = data["kpis"]["revenue"]
     pr = data["kpis"]["pricing"]
+    pac = data["kpis"]["pro_activation"]
     dec = pr["decision"]
     pypi_7d = pr.get("pypi_downloads_7d")
 
@@ -522,6 +583,15 @@ def go_live_spike_markdown(*, days: int = 7, dashboard_data: dict[str, Any] | No
         f"{'✅' if (pr['pricing_health'] or 0) >= PRICING_HEALTH_OK else '⏳'} |",
         f"| TTFV mediana (min) | {act['ttfv_median_minutes'] or '—'} | <{TTFV_MEDIAN_MINUTES_TARGET:.0f} | |",
         f"| TTC mediana (h) | {pr['ttc_median_hours'] or '—'} | <{TTC_MEDIAN_HOURS_TARGET:.0f} | |",
+        f"| Pro pending webhook | {pac['pending_auto']} | 0 cola | "
+        f"{'✅' if pac['pending_auto'] == 0 else '⏳'} |",
+        f"| Pro pending manual | {pac['pending_manual']} | 0 | "
+        f"{'✅' if pac['pending_manual'] == 0 else '⚠️'} |",
+        f"| activated vía webhook | {pac['webhook_activated']} | — | |",
+        f"| webhook share | {_cell(pac['webhook_share'])} | ≥{_pct(WEBHOOK_ACTIVATION_SHARE_TARGET)} | "
+        f"{'✅' if (pac['webhook_share'] or 0) >= WEBHOOK_ACTIVATION_SHARE_TARGET or pac['webhook_activated'] == 0 else '⏳'} |",
+        f"| **unified webhook** | {'sí' if pac['unified_webhook'] else 'no'} | sí | "
+        f"{'✅' if pac['unified_webhook'] else '⚠️'} |",
         "",
         f"**Decisión pricing:** **{dec['label']}** (`{dec['action']}`) — {dec['detail']}",
         "",
@@ -539,6 +609,7 @@ def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = 
     rev = data["kpis"]["revenue"]
     moat = data["kpis"]["data_moat"]
     pr = data["kpis"]["pricing"]
+    pac = data["kpis"]["pro_activation"]
     w = data["window_days"]
 
     lines = [
@@ -561,7 +632,14 @@ def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = 
         f"Meta spike Pro: **{SPIKE_PRO_ACTIVATED_TARGET}**",
         f"- Estado: **{rev['status']}**",
         "",
-        "## KPI 3 · Pricing / spike",
+        "## KPI 3 · Activación Pro (webhook)",
+        "",
+        f"- Pending webhook: **{pac['pending_auto']}** · Pending manual: **{pac['pending_manual']}**",
+        f"- Activated webhook: **{pac['webhook_activated']}** · manual: **{pac['manual_activated']}**",
+        f"- Webhook share: **{_pct(pac['webhook_share'])}** (meta ≥{_pct(WEBHOOK_ACTIVATION_SHARE_TARGET)})",
+        f"- Unified: **{'sí' if pac['unified_webhook'] else 'no'}** · Estado: **{pac['status']}**",
+        "",
+        "## KPI 4 · Pricing / spike",
         "",
         f"- PyPI 7d: **{pr.get('pypi_downloads_7d') or '—'}** (meta ≥{SPIKE_PYPI_7D_TARGET:,})",
         f"- search→pro: **{_pct(pr['search_to_pro'])}** (meta ≥{_pct(SEARCH_TO_PRO_TARGET)})",
@@ -571,7 +649,7 @@ def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = 
         f"- Decisión: **{pr['decision']['label']}** — {pr['decision']['detail']}",
         f"- Estado: **{pr['status']}**",
         "",
-        "## KPI 4 · Data moat",
+        "## KPI 5 · Data moat",
         "",
         f"- Coverage 7d: **{moat['coverage_7d_pct']:.1f}%** (meta ≥{moat['coverage_target']:.0f}%)",
         f"- Collector: **{moat['collector_status']}** · stale: **{moat['collector_stale']}**",
@@ -602,12 +680,15 @@ def go_live_slack_lines(*, days: int = 30, dashboard_data: dict[str, Any] | None
     )
 
     pr = data["kpis"]["pricing"]
+    pac = data["kpis"]["pro_activation"]
     lines = [
         f"{status_emoji} *Go-live* · {data['overall_status']} ({w}d)",
         "",
         f"• *Activación:* search/reg *{_pct(act['search_per_register'])}* · "
         f"TTFV *{act['ttfv_median_minutes'] or '—'}* min · {act['status']}",
         f"• *Revenue:* request_pro *{rev['request_pro']}* · activated *{rev['activated']}* · {rev['status']}",
+        f"• *Pro webhook:* pending manual *{pac['pending_manual']}* · webhook share "
+        f"*{_pct(pac['webhook_share'])}* · unified *{'sí' if pac['unified_webhook'] else 'no'}*",
         f"• *Pricing:* health *{_pct(pr['pricing_health'])}* · intent *{_pct(pr['search_to_pro'])}* · "
         f"{pr['decision']['label']}",
         f"• *Moat:* coverage *{moat['coverage_7d_pct']:.1f}%* · collector *{moat['collector_status']}* · "
@@ -666,6 +747,14 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
                 f"request_pro: {kpi['request_pro']}\n"
                 f"activated: {kpi['activated']}\n"
                 f"weekly_goal: {kpi['weekly_paid_goal']}"
+            )
+        if title == "Activación Pro":
+            return (
+                f"pending_webhook: {kpi.get('pending_auto', 0)}\n"
+                f"pending_manual: {kpi.get('pending_manual', 0)}\n"
+                f"webhook_activated: {kpi.get('webhook_activated', 0)}\n"
+                f"webhook_share: {_pct(kpi.get('webhook_share'))}\n"
+                f"unified: {kpi.get('unified_webhook')}"
             )
         if title == "Pricing":
             dec = kpi.get("decision", {})
@@ -732,6 +821,7 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
   <div class="grid">
     {_card("Activación", act)}
     {_card("Revenue", rev)}
+    {_card("Activación Pro", pac)}
     {_card("Pricing", pr)}
     {_card("Data moat", moat)}
   </div>

@@ -52,6 +52,18 @@ def main() -> int:
     result = db_set_subscription(username, "pro")
     print(f"✓ Pro activated for {result['username']}")
 
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": "ops_manual", "request_id": request_id or None},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+
     if not request_id and req:
         request_id = req.get("id", "")
     if request_id:

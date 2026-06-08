@@ -840,6 +840,7 @@ def process_pro_subscription_request(
         "notify_sent": notify_mail.get("sent", False),
         "notify_error": notify_mail.get("reason") if not notify_mail.get("sent") else None,
         "message": message,
+        "auto_activate": False,
     }
 
 
@@ -879,10 +880,10 @@ def request_starter_subscription(body: dict, authorization: str | None = Header(
 
 
 @router.post("/billing/request-pro")
-def request_pro_subscription(body: dict, authorization: str | None = Header(None)):
-    """Request Pro — stores intent and emails payment link from hello@cli-market.dev.
+async def request_pro_subscription(body: dict, authorization: str | None = Header(None)):
+    """Request Pro — PayPal subscription (webhook auto-activate) when API is configured.
 
-    Default billing flow (no PayPal API friction). Requires subscriber email.
+    Falls back to hosted payment link + manual activation only if PayPal REST is unavailable.
     """
     try:
         check_rate_limit("billing-request-pro")
@@ -894,13 +895,72 @@ def request_pro_subscription(body: dict, authorization: str | None = Header(None
         if not email or not _EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="valid email is required")
 
-        username = (body.get("username") or "").strip()
+        auth_user = ""
         if authorization:
             try:
-                username = require_user(authorization)
+                auth_user = require_user(authorization)
             except HTTPException:
-                if not username:
-                    raise
+                auth_user = ""
+
+        username = (body.get("username") or "").strip()
+        if auth_user:
+            username = auth_user
+
+        if not force:
+            recent = db_recent_subscription_request(email)
+            if recent:
+                link = recent.get("payment_link") or ""
+                auto = "billing/subscriptions" in link.lower() or "/subscriptions?" in link.lower()
+                return {
+                    "ok": True,
+                    "request_id": recent["id"],
+                    "username": recent["username"],
+                    "email": recent["email"],
+                    "payment_link": link,
+                    "approve_url": link if auto else None,
+                    "auto_activate": auto,
+                    "email_sent": bool(recent.get("email_sent")),
+                    "message": (
+                        "Ya enviamos el enlace recientemente. Revisa tu bandeja (y spam)."
+                        if lang == "es"
+                        else "We already sent a link recently. Check inbox (and spam)."
+                    ),
+                    "duplicate": True,
+                }
+
+        username = _resolve_pro_username(
+            email,
+            body_username=username,
+            auth_username=auth_user,
+        )
+
+        try:
+            out = await _start_paypal_subscription(
+                username,
+                email,
+                plan="pro",
+                lang=lang,
+                funnel_source="request_pro",
+            )
+            if out.get("ok"):
+                out["payment_link"] = out.get("approve_url") or out.get("payment_link")
+                if lang == "es":
+                    out["message"] = (
+                        "Confirme la suscripción en PayPal — Pro se activa en segundos vía webhook. "
+                        + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                        + "Luego: market whoami"
+                    )
+                else:
+                    out["message"] = (
+                        "Confirm subscription in PayPal — Pro activates in seconds via webhook. "
+                        + ("We emailed you the link. " if out.get("email_sent") else "")
+                        + "Then: market whoami"
+                    )
+                return out
+        except ValueError:
+            logger.info("request-pro: PayPal not configured, using hosted-button fallback")
+        except Exception as e:
+            logger.warning("request-pro: subscription failed (%s), using hosted-button fallback", e)
 
         return process_pro_subscription_request(
             email=email,

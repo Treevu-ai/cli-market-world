@@ -84,6 +84,7 @@ def test_go_live_markdown(mock_adoption, mock_funnel):
     assert "Go-live" in md
     assert "Activación" in md
     assert "Pricing" in md
+    assert "webhook" in md.lower()
     assert "Alertas" in md
 
 
