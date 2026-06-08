@@ -57,11 +57,11 @@ export default function SideNav() {
         </div>
 
         {items.map(({ id, es, en }) => (
-          <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
+          <a key={id} href={`/#${id}`}
             className="touch-compact group relative flex items-center z-10" aria-label={isES ? es : en} title={isES ? es : en}>
             <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
               active === id ? "bg-[var(--cm-mint)] scale-125 shadow-[0_0_6px_var(--cm-mint)]" : "bg-white/15 group-hover:bg-white/30"}`} />
-          </button>
+          </a>
         ))}
         <button onClick={() => setLang(isES ? "en" : "es")} className="mt-4 text-xs font-mono text-[var(--cm-on-surface-variant)] hover:text-white transition-colors z-10">
           {isES ? "EN" : "ES"}
