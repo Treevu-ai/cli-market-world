@@ -8,43 +8,14 @@ on:
       - "cloudflare-pages.json"
       - ".github/workflows/deploy-landing-cloudflare.yml"
   workflow_dispatch:
-    inputs:
-      wrangler_deploy:
-        description: "Upload landing/out via wrangler (needs valid CLOUDFLARE_API_TOKEN)"
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: landing/package-lock.json
-
-      - name: Build static export
-        working-directory: landing
-        run: |
-          npm ci
-          npm run build
-
-      - name: Landing build OK
-        run: |
-          echo "Build passed. Production deploy is handled by Cloudflare Pages Git integration (check run: Cloudflare Pages)."
-
-  deploy-wrangler:
-    if: github.event_name == 'workflow_dispatch' && inputs.wrangler_deploy
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -100,7 +71,7 @@ jobs:
             -H "Authorization: Bearer $CF_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/pages/projects/cli-market-world")
           if [ "$RESP" != "200" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN cannot read Pages project (HTTP $RESP). Rotate token: Account · Cloudflare Pages · Edit."
+            echo "::error::CLOUDFLARE_API_TOKEN cannot read Pages project (HTTP $RESP). Token needs Account · Cloudflare Pages · Edit."
             cat /tmp/cf.json | jq -r '.errors[]?.message // .' 2>/dev/null || cat /tmp/cf.json
             exit 1
           fi
@@ -115,3 +86,6 @@ jobs:
           accountId: ${{ steps.cf_account.outputs.id }}
           wranglerVersion: "4"
           command: pages deploy landing/out --project-name=cli-market-world --branch=main
+
+      - name: Deploy complete
+        run: echo "Live at https://cli-market.dev"
