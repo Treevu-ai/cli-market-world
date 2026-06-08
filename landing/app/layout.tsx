@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     alternateLocale: ["en_US"],
     images: [
       {
-        url: "/og.png",
+        url: MARKET_STATS.ogImageUrl,
         width: 1200,
         height: 630,
         alt: "CLI Market — commerce infrastructure for AI agents",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CLI Market — Commerce infrastructure for AI agents",
     description: `AI commerce API + MCP tools. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
-    images: ["/og.png"],
+    images: [MARKET_STATS.ogImageUrl],
   },
 };
 

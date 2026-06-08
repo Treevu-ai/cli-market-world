@@ -26,6 +26,7 @@ export const MARKET_STATS = {
   pepyBadgeUrl: "https://img.shields.io/pepy/dt/cli-market?label=downloads&color=00d75f&logo=pypi",
   pipInstallCmd: "pip install cli-market-world",
   packageVersion: "1.9.6",
+  ogImageUrl: "/og.png?v=1.9.6",
   license: "MIT",
   paymentsLabel: "PayPal · Mercado Pago · QR (Yape/Plin)",
   businessLines: 6,
