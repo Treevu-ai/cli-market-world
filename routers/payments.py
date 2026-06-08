@@ -1797,13 +1797,13 @@ async def billing_procure_subscribe(body: dict, authorization: str | None = Head
             out["message"] = (
                 "Confirme la suscripción Procure en PayPal. "
                 + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
-                + "Luego pegue su API key (market register → market keys) en el dashboard Procure."
+                + "Luego pegue su API key (market register → market account) en el dashboard Procure."
             )
         else:
             out["message"] = (
                 "Confirm Procure subscription on PayPal. "
                 + ("We emailed you the link. " if out.get("email_sent") else "")
-                + "Then paste your API key (market register → market keys) in the Procure dashboard."
+                + "Then paste your API key (market register → market account) in the Procure dashboard."
             )
         return out
     except HTTPException:

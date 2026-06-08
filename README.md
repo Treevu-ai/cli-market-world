@@ -55,8 +55,8 @@ market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "compra arroz al mejor precio"
-market indicators --country PE
-market enrichment --refresh -c PE
+market intel indicators --country PE
+market intel enrichment -c PE
 ```
 
 #### 💵 Planes (simplificado — foco en 1 ICP principal: AI Agent Builders)
@@ -126,8 +126,8 @@ market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "buy rice at the best price"
-market indicators --country PE
-market enrichment --refresh -c PE
+market intel indicators --country PE
+market intel enrichment -c PE
 ```
 
 #### 💵 Pricing (simplified — focus on 1 primary ICP: AI Agent Builders)

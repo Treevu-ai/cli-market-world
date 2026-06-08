@@ -85,7 +85,7 @@ export default function PaymentReturnBanner() {
               </p>
               <ol className="list-decimal list-inside space-y-1 font-mono text-xs">
                 <li>{isES ? "market register  (si es cuenta nueva)" : "market register  (if new account)"}</li>
-                <li>{isES ? "market keys  → copia sk-…" : "market keys  → copy sk-…"}</li>
+                <li>{isES ? "market account  → copia sk-…" : "market account  → copy sk-…"}</li>
                 <li>{isES ? "Pega la API key en el dashboard Procure" : "Paste API key in Procure dashboard"}</li>
               </ol>
               <a href={PROCURE_APP_URL} className="inline-block text-[var(--cm-mint)] text-xs hover:underline">

@@ -60,7 +60,7 @@ market checkout --payment yape   # ya no 403
 
 ### Procure Copilot (tab Procure)
 1. Modal → PayPal → vuelve a `cli-market.dev/?sub=success&audience=procure#procure`
-2. `market register` (si nuevo) → `market keys` → pegar `sk-…` en dashboard Procure
+2. `market register` (si nuevo) → `market account` → pegar `sk-…` en dashboard Procure
 3. No requiere Build Pro aparte (API incluida en Procure Pro+)
 
 ---

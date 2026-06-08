@@ -202,12 +202,14 @@ Endpoints existentes **sin cambios de contrato**:
 ### CLI
 
 ```bash
-market indicators              # catálogo de 34 indicadores
-market indicators -c PE        # catálogo + scores PE
-market indicators --refresh -c PE   # refresh manual (internal + macro + enrichment)
-market enrichment -c PE            # señales OFF / Wiki / clima / food CPI
-market enrichment --refresh -c PE    # refresh solo enriquecimiento
-market scores -c PE            # scores compuestos
+market intel indicators              # catálogo de 34 indicadores
+market intel indicators -c PE        # catálogo + scores PE
+market intel enrichment -c PE        # señales OFF / Wiki / clima / food CPI
+market intel scores -c PE            # scores compuestos
+market intel inflation -c PE         # variación por línea (7d)
+
+# Legacy (shim): market indicators … → market intel indicators …
+# Ops refresh: POST /v1/intel/refresh (no expuesto en --help público)
 ```
 | `GET /v1/intel/scores` | Agentes MCP / dashboard |
 

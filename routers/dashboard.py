@@ -151,7 +151,8 @@ def _build_moat_guide(
                 "surfaces": [
                     {"cmd": "market compare <producto>", "use": "Buscar el precio más bajo del mismo producto en varias tiendas"},
                     {"cmd": "market basket", "use": "Calcular cuánto cuesta la canasta básica en cada tienda"},
-                    {"cmd": "GET /v1/intel/inflation?days=7", "use": "Ver si los precios subieron o bajaron en la última semana"},
+                    {"cmd": "market intel inflation -c PE", "use": "Ver variación de precios por línea en la última semana (CLI)"},
+                    {"cmd": "GET /v1/intel/inflation?days=7", "use": "Mismo dato vía API para agentes"},
                     {"cmd": "GET /dashboard/data", "use": "Descargar todos los KPIs y explicaciones en JSON"},
                 ],
             },
@@ -856,8 +857,9 @@ def _dashboard_data():
             "stale_stores": moat_stale,
             "health_breakdown": health_breakdown,
             "agent_surfaces": [
-                "market compare", "market basket", "market indicators", "market scores",
-                "market enrichment", "market enrichment --refresh",
+                "market compare", "market basket",
+                "market intel indicators", "market intel scores", "market intel enrichment",
+                "market intel inflation",
                 "/v1/intel/inflation", "/v1/intel/scores", "/v1/intel/enrichment",
                 "/v1/intel/enrichment/subcategories", "/analytics/indicators", "MCP market_stats",
             ],
