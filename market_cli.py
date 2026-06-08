@@ -86,6 +86,11 @@ T = {
         "doctor": "Diagnóstico: API, auth, tier y MCP",
         "init": "Onboarding completo: API, cuenta, MCP",
         "shell": "Sesión interactiva tipo agente (REPL)",
+        "intel": "Intelligence / data moat (analistas, Price Pulse)",
+        "intel_inflation": "Inflación por línea y país",
+        "intel_indicators": "Catálogo de indicadores del moat",
+        "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
+        "intel_scores": "Scores compuestos (fairness, stress, aggression)",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -121,8 +126,45 @@ T = {
         "doctor": "Diagnostics: API, auth, tier, and MCP",
         "init": "Full onboarding: API, account, MCP",
         "shell": "Interactive agent-style session (REPL)",
+        "intel": "Intelligence / data moat (analysts, Price Pulse)",
+        "intel_inflation": "Inflation by line and country",
+        "intel_indicators": "Moat indicator catalog",
+        "intel_enrichment": "Enrichment signals (OFF, Wiki, weather, CPI)",
+        "intel_scores": "Composite scores (fairness, stress, aggression)",
     },
 }
+
+_LEGACY_INTEL_CMDS = frozenset({"inflation", "indicators", "enrichment", "scores"})
+_META_CMDS = frozenset({"about", "share"})
+
+
+def _normalize_market_argv(argv: list[str]) -> list[str]:
+    """Map legacy top-level commands without cluttering --help."""
+    if len(argv) < 2:
+        return argv
+    cmd = argv[1]
+    if cmd in _LEGACY_INTEL_CMDS:
+        return [argv[0], "intel", cmd, *argv[2:]]
+    return argv
+
+
+def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
+    """Register intelligence CLI commands on *parent* (market intel * or hidden legacy)."""
+    p = parent.add_parser("inflation", help=helps["inflation"])
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
+    p = parent.add_parser("indicators", help=helps["indicators"])
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--refresh", action="store_true", help=argparse.SUPPRESS)
+
+    p = parent.add_parser("enrichment", help=helps["enrichment"])
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--refresh", action="store_true", help=argparse.SUPPRESS)
+
+    p = parent.add_parser("scores", help=helps["scores"])
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
 
 def get_lang() -> str:
     if LANG_FILE.exists():
@@ -768,7 +810,7 @@ def cmd_inflation(args):
     with console.status("[cyan]Calculando inflación..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, data, next_commands=["market inflation --country PE", "market indicators"]), console)
+        ui.emit_json(ui.json_response(True, data, next_commands=["market intel inflation --country PE", "market intel indicators"]), console)
         return
     items = data.get("items", [])
     avg = data.get("avg_inflation_pct", 0)
@@ -791,7 +833,7 @@ def cmd_indicators(args):
         with console.status("[cyan]Refrescando indicadores..."):
             data = cli_api("POST", f"/v1/intel/refresh?{qs}" if qs else "/v1/intel/refresh")
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.emit_json(ui.json_response(True, data, next_commands=["market indicators --refresh -c PE"]), console)
+            ui.emit_json(ui.json_response(True, data, next_commands=["market intel indicators -c PE"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Indicadores actualizados — "
@@ -807,9 +849,9 @@ def cmd_indicators(args):
     if getattr(args, "json", False) or ui.is_json_mode():
         if args.country:
             latest = cli_api("GET", f"/v1/intel/scores?country={args.country}")
-            ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=["market indicators -c PE", "market scores -c PE"]), console)
+            ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=["market intel indicators -c PE", "market intel scores -c PE"]), console)
         else:
-            ui.emit_json(ui.json_response(True, catalog, next_commands=["market indicators --refresh -c PE"]), console)
+            ui.emit_json(ui.json_response(True, catalog, next_commands=["market intel indicators -c PE"]), console)
         return
 
     cc = args.country or ui.get_default_country()
@@ -838,13 +880,13 @@ def cmd_indicators(args):
             console.print()
             console.print(panel)
         elif not ui.is_en():
-            console.print("[yellow]Sin scores aún. Corré: market indicators --refresh -c PE[/]")
+            console.print("[yellow]Sin scores aún. Corré: market intel indicators -c PE[/]")
         else:
-            console.print("[yellow]No scores yet. Run: market indicators --refresh -c PE[/]")
+            console.print("[yellow]No scores yet. Run: market intel indicators -c PE[/]")
 
     ui.print_intel_footer(
         console,
-        ["market indicators --refresh -c PE", "market scores -c PE", "market enrichment -c PE"],
+        ["market intel indicators -c PE", "market intel scores -c PE", "market intel enrichment -c PE"],
     )
 
 
@@ -863,9 +905,9 @@ def cmd_scores(args):
     scores = data.get("scores", {})
     if not scores:
         msg = (
-            "Sin scores aún. Corré: market indicators --refresh -c PE"
+            "Sin scores aún. Corré: market intel indicators -c PE"
             if not ui.is_en()
-            else "No scores yet. Run: market indicators --refresh -c PE"
+            else "No scores yet. Run: market intel indicators -c PE"
         )
         console.print(f"[yellow]{msg}[/]")
         return
@@ -881,7 +923,7 @@ def cmd_scores(args):
     disclaimer = data.get("disclaimer", "")
     if disclaimer:
         console.print(f"[dim]{disclaimer}[/]")
-    ui.print_intel_footer(console, ["market indicators --refresh -c PE", "market enrichment -c PE"])
+    ui.print_intel_footer(console, ["market intel indicators -c PE", "market intel enrichment -c PE"])
 
 
 def cmd_enrichment(args):
@@ -890,7 +932,7 @@ def cmd_enrichment(args):
         with console.status(f"[cyan]Refrescando enriquecimiento — {cc}..."):
             refresh_data = cli_api("POST", f"/v1/intel/enrichment/refresh?country={cc}")
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.emit_json(ui.json_response(True, refresh_data, next_commands=["market enrichment --refresh -c PE"]), console)
+            ui.emit_json(ui.json_response(True, refresh_data, next_commands=["market intel enrichment -c PE"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Enriquecimiento actualizado — "
@@ -901,14 +943,14 @@ def cmd_enrichment(args):
         data = cli_api("GET", f"/v1/intel/enrichment?country={cc}")
     items = data.get("indicators", [])
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, data, next_commands=["market enrichment -c PE"]), console)
+        ui.emit_json(ui.json_response(True, data, next_commands=["market intel enrichment -c PE"]), console)
         return
 
     if not items:
         msg = (
-            "Sin datos aún. Corré: market enrichment --refresh -c PE"
+            "Sin datos aún. Corré: market intel enrichment -c PE"
             if not ui.is_en()
-            else "No data yet. Run: market enrichment --refresh -c PE"
+            else "No data yet. Run: market intel enrichment -c PE"
         )
         console.print(f"[yellow]{msg}[/]")
         return
@@ -958,7 +1000,7 @@ def cmd_enrichment(args):
         console.print(f"\n[dim]{label}: {sources}[/]")
     ui.print_intel_footer(
         console,
-        ["market enrichment --refresh -c PE", "market scores -c PE", "market indicators -c PE"],
+        ["market intel enrichment -c PE", "market intel scores -c PE", "market intel indicators -c PE"],
     )
 
 
@@ -1117,9 +1159,9 @@ def cmd_whoami(args):
         f"checkout: {'yes' if tier in ('pro', 'builder', 'enterprise') else 'no'}"
     )
     if tier == "free":
-        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade --plan starter[/]")
+        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade[/]")
     elif tier == "starter":
-        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade --plan pro[/]")
+        console.print("[dim]Dashboard: market account  ·  Upgrade: market upgrade[/]")
 
 
 def cmd_register(args):
@@ -1388,10 +1430,10 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             "[bold #00FF88]INTERMEDIATE[/]\n"
             '  [cyan]market basket[/] [dim]"milk:2 rice:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"sunflower oil" --country AR[/]\n'
-            "  [cyan]market inflation[/] [dim]--country PE[/]\n"
+            "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
             f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
-            "  [cyan]market indicators[/] [dim]--country PE[/]\n"
-            "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
+            "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
+            "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
         )
         title = "[bold #00FF88]USE CASES[/]"
@@ -1400,10 +1442,10 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             "[bold #00FF88]NIVEL INTERMEDIO[/]\n"
             '  [cyan]market basket[/] [dim]"leche:2 arroz:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"aceite de girasol" --country AR[/]\n'
-            "  [cyan]market inflation[/] [dim]--country PE[/]\n"
+            "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
             f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
-            "  [cyan]market indicators[/] [dim]--country PE[/]\n"
-            "  [cyan]market enrichment[/] [dim]--refresh -c PE[/]\n"
+            "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
+            "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
         )
         title = "[bold #00FF88]CASOS DE USO[/]"
@@ -1493,9 +1535,9 @@ def _hello_data(is_en: bool) -> dict:
         "use_cases": [
             'market basket "leche:2 arroz:1" --country PE',
             'market compare "aceite de girasol" --country AR',
-            "market inflation --country PE",
+            "market intel inflation --country PE",
             "market tools",
-            "market indicators --country PE",
+            "market intel indicators --country PE",
             "market alerts --action list",
         ],
         "mcp": ui.get_mcp_config(),
@@ -1804,11 +1846,9 @@ def cmd_upgrade(args):
     """Upgrade via PayPal subscription (Pro $39 — auto-activate webhook). Same rail as landing /billing/pro-checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    plan = (getattr(args, "plan", None) or "").strip().lower()
-    if plan not in ("pro", "starter"):
-        sub_data = cli_api("GET", "/auth/subscription")
-        tier = (sub_data.get("subscription") or {}).get("tier", "free")
-        plan = "starter" if tier == "free" else "pro"
+    plan = (getattr(args, "plan", None) or "pro").strip().lower()
+    if plan != "pro":
+        plan = "pro"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
 
     if manual:
@@ -1825,8 +1865,8 @@ def cmd_upgrade(args):
         ))
         return
 
-    endpoint = "/billing/starter" if plan == "starter" else "/billing/paypal"
-    label = "Pro — $39/mo"  # Simplified: only Pro as main paid for primary ICP (removed Starter/Builder tiers)
+    endpoint = "/billing/paypal"
+    label = "Pro — $39/mo"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
         data = cli_api("POST", endpoint, {})
     url = data.get("approve_url", "")
@@ -1892,6 +1932,13 @@ def _report_install_event(*, source: str = "cli") -> bool:
 
 
 def main():
+    sys.argv = _normalize_market_argv(sys.argv)
+    if len(sys.argv) > 1 and sys.argv[1] in _META_CMDS:
+        ns = argparse.Namespace(json="--json" in sys.argv)
+        if sys.argv[1] == "about":
+            return cmd_about(ns)
+        return cmd_share(ns)
+
     parser = argparse.ArgumentParser(description=t("desc"), usage=t("usage"))
     parser.add_argument("--json", action="store_true", help=t("json_help"))
     sub = parser.add_subparsers(dest="command")
@@ -1977,9 +2024,6 @@ def main():
     # lines
     sub.add_parser("lines", help=t("lines"))
 
-    # about
-    sub.add_parser("about", help=t("about"))
-
     # whoami
     sub.add_parser("account", help="Dashboard: tier, uso y upgrade")
     sub.add_parser("whoami", help=t("whoami"))
@@ -2011,25 +2055,18 @@ def main():
     p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
 
-    # inflation
-    p = sub.add_parser("inflation", help="Ver inflación desde el data moat")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--line", choices=list(LINES.keys()), default=None)
-
-    # indicators
-    p = sub.add_parser("indicators", help="Catálogo y refresh de indicadores del data moat")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--refresh", action="store_true", help="Recalcular indicadores (internal + APIs públicas)")
-
-    # enrichment (data moat signals from public APIs)
-    p = sub.add_parser("enrichment", help="Indicadores de enriquecimiento (OFF, Wiki, clima, food CPI)")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
-    p.add_argument("--refresh", action="store_true", help="Solo refrescar enriquecimiento (sin recalcular todo el moat)")
-
-    # scores
-    p = sub.add_parser("scores", help="Scores compuestos del moat (fairness, stress, aggression)")
-    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
-    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    # intelligence (Price Pulse / data moat — not default commerce CLI)
+    p_intel = sub.add_parser("intel", help=t("intel"))
+    intel_sub = p_intel.add_subparsers(dest="intel_cmd", required=True)
+    _attach_intel_parsers(
+        intel_sub,
+        {
+            "inflation": t("intel_inflation"),
+            "indicators": t("intel_indicators"),
+            "enrichment": t("intel_enrichment"),
+            "scores": t("intel_scores"),
+        },
+    )
 
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
@@ -2044,18 +2081,17 @@ def main():
     )
     p_tools.add_argument(
         "--profile",
-        choices=["default", "legacy", "full", "admin"],
+        choices=["default", "legacy", "full"],
         default="default",
         help="MCP tool profile (default: curated Shop/Intel/Account)",
     )
     sub.add_parser("hello", help=t("hello"))
-    sub.add_parser("share", help=t("share"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
         "--plan",
-        choices=["pro", "starter"],
+        choices=["pro"],
         default=None,
-        help="Tier: starter (default on free) or pro (default on starter)",
+        help="Build Pro ($39/mo) via PayPal subscription",
     )
     p.add_argument("--email", help="Email to receive payment link (manual Pro fallback)")
     p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
@@ -2085,7 +2121,10 @@ def main():
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
     }
-    handler = handlers.get(args.command)
+    cmd = args.command
+    if cmd == "intel":
+        cmd = args.intel_cmd
+    handler = handlers.get(cmd)
     if handler:
         handler(args)
 
