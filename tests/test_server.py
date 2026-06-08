@@ -707,6 +707,43 @@ def test_contact_pro_triggers_billing_request(monkeypatch):
     assert data["request_id"].startswith("PRO-")
 
 
+def test_intel_inflation_with_snapshot_rows():
+    """Regression: DB rows are not dicts — must not call row.get()."""
+    from datetime import datetime, timedelta, timezone
+
+    db = get_db()
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=1)).isoformat()
+    older = (now - timedelta(days=10)).isoformat()
+    rows = (
+        ("p1", 10.0, recent),
+        ("p2", 12.0, recent),
+        ("p3", 8.0, older),
+    )
+    for product_id, price, queried_at in rows:
+        db.execute(
+            """INSERT INTO price_snapshots
+               (product_id, store, name, price, currency, line, queried_at, url)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (product_id, "wong", "Leche test", price, "PEN", "supermercados", queried_at, ""),
+        )
+    db.commit()
+    db.close()
+
+    db_save_user("admin", hash_password("market"), "test@test.com")
+    from market_core import db_create_api_key
+
+    key = db_create_api_key("admin", "read", "t")["key"]
+    r = client.get(
+        "/v1/intel/inflation?country=PE&line=supermercados",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["items"]
+    assert data["items"][0]["n_products"] >= 1
+
+
 def test_pro_checkout_yape_returns_qr(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(

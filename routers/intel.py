@@ -288,7 +288,7 @@ def get_inflation(
                 "delta_pct": delta,
                 "avg_now_usd": price_to_usd(r_avg, cur),
                 "avg_before_usd": price_to_usd(o_avg, cur),
-                "n_products": pair.get("n", 0),
+                "n_products": int(pair["n"] or 0),
             })
 
         avg_inflation = round(sum(deltas) / len(deltas), 1) if deltas else 0.0

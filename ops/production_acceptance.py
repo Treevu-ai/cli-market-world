@@ -40,6 +40,18 @@ PHASE_ORDER = ("public", "landing", "user", "admin", "post")
 MATRIX_YAML = OPS_DIR / "pam_matrix.yaml"
 MATRIX_JSON = OPS_DIR / "pam_matrix.json"
 DEFAULT_REPORT_DIR = OPS_DIR / "reports"
+ROTATION_LOCAL = OPS_DIR / ".rotation-local.txt"
+
+
+def _load_admin_token() -> str:
+    token = (os.getenv("MARKET_API_TOKEN") or "").strip()
+    if token:
+        return token
+    if ROTATION_LOCAL.exists():
+        for line in ROTATION_LOCAL.read_text(encoding="utf-8").splitlines():
+            if line.startswith("MARKET_API_TOKEN="):
+                return line.split("=", 1)[1].strip()
+    return ""
 
 ALLOWED_API_HOSTS = (
     "cli-market-production.up.railway.app",
@@ -309,7 +321,7 @@ def _poll_collector_batch(
         )
         last = (status, resp_headers, raw, parsed, latency_ms)
         data = parsed if isinstance(parsed, dict) else {}
-        if data.get("in_progress"):
+        if data.get("in_progress") or data.get("status") == "running":
             time.sleep(interval)
             continue
         errs = check_expect(
@@ -609,8 +621,13 @@ def main() -> int:
     }
 
     api_base = os.getenv("MARKET_API_URL", matrix["defaults"].get("api_base", ""))
+    admin_token = _load_admin_token()
+    if admin_token and not os.getenv("MARKET_API_TOKEN"):
+        os.environ["MARKET_API_TOKEN"] = admin_token
     print(f"PAM run {ctx['run_id']}  tier<={args.tier}  phases={','.join(sorted(phases))}")
     print(f"  API: {api_base}")
+    if admin_token:
+        print("  admin: MARKET_API_TOKEN loaded")
 
     if args.dry_run:
         for c in cases:
