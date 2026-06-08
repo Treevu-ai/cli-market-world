@@ -294,8 +294,8 @@ def run_billing_channels(base: str, rep: Report, run_id: str) -> None:
                 rep.add("billing", f"pro-checkout/{method}", "FAIL", "no approve_url", ms)
                 continue
         elif method in ("yape", "plin"):
-            if not data.get("qr_url"):
-                rep.add("billing", f"pro-checkout/{method}", "FAIL", "no qr_url", ms)
+            if data.get("payment_mode") != "manual_transfer" and not data.get("manual_steps"):
+                rep.add("billing", f"pro-checkout/{method}", "FAIL", "no manual_transfer", ms)
                 continue
             if data.get("amount_pen") is None:
                 rep.add("billing", f"pro-checkout/{method}", "FAIL", "no amount_pen", ms)
@@ -352,7 +352,9 @@ def run_tier_gates(base: str, rep: Report, admin: str) -> tuple[str, str]:
 
             if should_checkout:
                 if status == 200 and isinstance(data, dict):
-                    if ch_name in ("yape", "plin") and data.get("qr_url"):
+                    if ch_name in ("yape", "plin") and (
+                        data.get("payment_mode") == "manual_transfer" or data.get("manual_steps")
+                    ):
                         rep.add("tier", f"{tier}/{ch_name}", "PASS", data.get("order_id", ""), ms)
                     elif ch_name == "mercadopago" and data.get("checkout_url"):
                         rep.add("tier", f"{tier}/{ch_name}", "PASS", data.get("order_id", ""), ms)
@@ -384,10 +386,9 @@ def run_tier_gates(base: str, rep: Report, admin: str) -> tuple[str, str]:
 def _checkout_payload_ok(method: str, data: dict) -> tuple[bool, str]:
     """Validate retail or procure checkout JSON shape."""
     if method in ("yape", "plin"):
-        qr = data.get("qr_url")
-        if qr and str(qr).startswith("http"):
-            return True, str(data.get("order_id") or "")
-        return False, "missing qr_url"
+        if data.get("payment_mode") == "manual_transfer" or data.get("manual_steps"):
+            return True, str(data.get("order_id") or data.get("request_id") or "")
+        return False, "missing manual_transfer"
     if method == "mercadopago":
         url = data.get("checkout_url") or data.get("preference_id")
         if url and str(url).startswith("http"):

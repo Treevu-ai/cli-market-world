@@ -757,7 +757,7 @@ def test_intel_inflation_country_filter_sql():
     assert r.status_code == 200, r.text
 
 
-def test_pro_checkout_yape_returns_qr(monkeypatch):
+def test_pro_checkout_yape_returns_manual_transfer(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
@@ -775,7 +775,8 @@ def test_pro_checkout_yape_returns_qr(monkeypatch):
     data = r.json()
     assert data["ok"] is True
     assert data["payment_method"] == "yape"
-    assert data["qr_url"].startswith("https://")
+    assert data["payment_mode"] == "manual_transfer"
+    assert isinstance(data.get("manual_steps"), list) and len(data["manual_steps"]) >= 3
     assert data["request_id"].startswith("PRO-")
     assert data["auto_activate"] is False
 

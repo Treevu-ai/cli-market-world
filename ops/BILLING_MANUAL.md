@@ -1,26 +1,55 @@
-# Billing manual — Pro via email (default)
+# Billing manual — CLI Market Pro
 
-Sin integración PayPal directa. Flujo:
+Flujo principal: **PayPal REST** + modal en landing (`/billing/pro-checkout`). Activación automática vía webhook.
 
-1. Usuario solicita Pro (`market upgrade --email`, landing pricing, o `/v1/contact` plan=pro)
-2. API guarda `subscription_requests` y envía email desde **hello@cli-market.dev**
-3. Usuario paga link configurado (`PRO_PAYMENT_URL`)
-4. Usuario responde al email con su username CLI
-5. Tú activas Pro manualmente
+Fallback manual (hosted button, Yape/Plin): activación ops ≤24 h.
+
+## Flujo web (recomendado)
+
+1. Usuario abre [cli-market.dev/#pricing](https://cli-market.dev/#pricing) → **Configurar Pro**
+2. Modal paso 1: método + legal · paso 2: email + username CLI
+3. API: `POST /billing/pro-checkout` → `approve_url` PayPal o QR Yape/Plin
+4. PayPal confirmado → webhook activa tier `pro` en segundos
+5. Usuario: `market whoami` → `market checkout`
+
+## Flujo CLI (con sesión)
+
+```bash
+market login
+market upgrade    # POST /billing/paypal — PayPal REST, mismo webhook
+```
+
+## Flujo manual (fallback)
+
+1. PayPal REST no disponible → `process_pro_subscription_request` + `PRO_PAYMENT_URL`
+2. O Yape/Plin → QR + ref `PRO-xxx` → ops activa manualmente
+3. `python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX`
 
 ## Variables Railway
 
 ```bash
-# Link de pago — PayPal Hosted Button (recomendado)
+# PayPal REST (primario)
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+PAYPAL_PLAN_ID_PRO=...
+PAYPAL_SANDBOX=false   # Live en producción
+
+# Return URLs post-PayPal (opcional)
+PRO_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success#pricing
+PRO_SUBSCRIBE_CANCEL_URL=https://cli-market.dev/?sub=cancelled#pricing
+PROCURE_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success&audience=procure#procure
+
+# Fallback hosted button
 PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/PLB-K47XCNUKG24P
-PRO_PRICE_LABEL=$39/month
 PRO_PRICE_USD=39
+
+# Yape/Plin — transferencia manual en app (no QR web)
+YAPE_PLIN_NUMBER=9XXXXXXXX
+PRO_PEN_PER_USD=3.7
 
 # Email saliente
 BILLING_FROM_EMAIL=hello@cli-market.dev
 BILLING_NOTIFY_EMAIL=hello@cli-market.dev
-
-# SMTP (ej. Google Workspace, Zoho, SendGrid SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=hello@cli-market.dev
@@ -28,52 +57,46 @@ SMTP_PASSWORD=app-password-here
 SMTP_USE_TLS=true
 ```
 
-Sin SMTP: el endpoint devuelve el `payment_link` en JSON/CLI pero no envía email.
+Sin SMTP: el endpoint devuelve `approve_url` en JSON/modal pero no envía email.
+
+## Endpoints
+
+| Endpoint | Uso |
+|----------|-----|
+| `POST /billing/pro-checkout` | Landing modal — PayPal, MP, Yape, Plin |
+| `POST /billing/paypal` | CLI autenticado — PayPal REST |
+| `POST /billing/procure-subscribe` | Tab Procure — PayPal REST |
+| `POST /billing/request-pro` | Legacy email + hosted button |
+
+## Probar
+
+```bash
+curl -X POST https://cli-market-production.up.railway.app/billing/pro-checkout \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","lang":"es","payment_method":"paypal","username":"miuser"}'
+```
+
+Reenviar si duplicado:
+```bash
+curl -X POST .../billing/pro-checkout \
+  -d '{"email":"test@example.com","payment_method":"paypal","resend":true}'
+```
 
 ## PayPal Hosted Button — «Agotado» en landing
 
 Si el widget embebido muestra **Sold out / Agotado**:
 
-1. PayPal Business → **Payment links & buttons** → link `PLB-K47XCNUKG24P` (legacy: `B6YVFTG4MA73J` @ $49 — no usar)
-2. Verificar que el producto/plan Pro tenga **inventario ilimitado** o stock > 0
-3. Mientras tanto, el CTA principal en landing es el link directo `PRO_PAYMENT_URL` (botón verde post-solicitud)
+1. PayPal Business → **Payment links & buttons** → link `PLB-K47XCNUKG24P`
+2. Verificar inventario ilimitado en el plan
+3. El modal usa REST primero; hosted button solo en `<details>` de respaldo
 
-## Probar
+## Activar Pro tras pago manual
 
-```bash
-curl -X POST https://cli-market-production.up.railway.app/billing/request-pro \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","lang":"es"}'
-```
-
-CLI:
-
-```bash
-market login
-market upgrade --email tu@email.com
-```
-
-## Activar Pro tras pago confirmado
-
-**SLA:** activar en **≤24 h hábiles** tras confirmación de pago en PayPal (ver `docs/ops/phase0-mitigation.md`).
+**SLA:** ≤24 h hábiles para Yape/Plin y fallback hosted (`docs/ops/phase0-mitigation.md`).
 
 ```bash
 python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
-# o por email si no hay request-id
 python3 ops/activate_pro.py USERNAME --email cliente@example.com
 ```
 
-Ver journey completo: `ops/E2E_CLIENT_JOURNEY.md`.
-
-Alternativa manual en Python:
-
-```python
-from market_core import ensure_db_initialized, db_set_subscription
-ensure_db_initialized()
-db_set_subscription("admin", "pro")
-```
-
-## PayPal REST (opcional, más adelante)
-
-Endpoints `/billing/paypal` y webhooks siguen en el código por si vuelves a automatizar.
-Ver `ops/PAYPAL_SANDBOX.md`.
+Journey completo: `ops/E2E_CLIENT_JOURNEY.md` · Sandbox: `ops/PAYPAL_SANDBOX.md`

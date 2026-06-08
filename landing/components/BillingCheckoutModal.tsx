@@ -7,8 +7,9 @@ import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
-import type { ProcurePlanSlug } from "@/lib/procurePlans";
+import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
 import { PROCURE_PLANS } from "@/lib/procurePlans";
+import WalletManualTransfer from "@/components/WalletManualTransfer";
 
 type PaymentMethod = "paypal" | "mercadopago" | "yape" | "plin";
 
@@ -16,15 +17,46 @@ export type BillingCheckoutKind =
   | { type: "build-pro" }
   | { type: "procure"; plan: ProcurePlanSlug };
 
-const PAYMENT_METHODS: { id: PaymentMethod; label_es: string; label_en: string }[] = [
-  { id: "paypal", label_es: "PayPal", label_en: "PayPal" },
-  { id: "mercadopago", label_es: "Mercado Pago", label_en: "Mercado Pago" },
-  { id: "yape", label_es: "Yape", label_en: "Yape" },
-  { id: "plin", label_es: "Plin", label_en: "Plin" },
+const PAYMENT_METHODS: {
+  id: PaymentMethod;
+  label_es: string;
+  label_en: string;
+  auto_es: string;
+  auto_en: string;
+}[] = [
+  {
+    id: "paypal",
+    label_es: "PayPal",
+    label_en: "PayPal",
+    auto_es: "Auto · segundos",
+    auto_en: "Auto · seconds",
+  },
+  {
+    id: "mercadopago",
+    label_es: "Mercado Pago",
+    label_en: "Mercado Pago",
+    auto_es: "Auto · webhook",
+    auto_en: "Auto · webhook",
+  },
+  {
+    id: "yape",
+    label_es: "Yape",
+    label_en: "Yape",
+    auto_es: "App · transferencia",
+    auto_en: "App · transfer",
+  },
+  {
+    id: "plin",
+    label_es: "Plin",
+    label_en: "Plin",
+    auto_es: "App · transferencia",
+    auto_en: "App · transfer",
+  },
 ];
 
 type CheckoutResult = {
   ok?: boolean;
+  duplicate?: boolean;
   approve_url?: string;
   checkout_url?: string;
   payment_link?: string;
@@ -38,6 +70,10 @@ type CheckoutResult = {
   amount_usd?: number;
   auto_activate?: boolean;
   subscription_id?: string;
+  request_id?: string;
+  payment_mode?: string;
+  payment_phone?: string | null;
+  manual_steps?: string[];
 };
 
 function parseApiError(data: CheckoutResult, fallback: string): string {
@@ -50,6 +86,26 @@ function methodLabel(method: string | undefined, isES: boolean): string {
   const found = PAYMENT_METHODS.find((m) => m.id === method);
   if (!found) return method || "";
   return isES ? found.label_es : found.label_en;
+}
+
+async function postCheckout(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; status: number; data: CheckoutResult }> {
+  const r = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = (await r.json()) as CheckoutResult;
+  return { ok: r.ok, status: r.status, data };
+}
+
+function checkoutSucceeded(data: CheckoutResult): boolean {
+  if (!data.ok) return false;
+  const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
+  const wallet = data.payment_method === "yape" || data.payment_method === "plin";
+  return Boolean(redirectUrl || (wallet && data.request_id));
 }
 
 export default function BillingCheckoutModal({
@@ -110,7 +166,24 @@ export default function BillingCheckoutModal({
       ? `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mes`
       : `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mo`;
 
-  const submit = async () => {
+  const applyCheckoutResult = (data: CheckoutResult, source: string) => {
+    const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
+    recordFunnelEvent(isPro ? "request_pro" : "starter_subscribe", {
+      username: data.username || username.trim() || undefined,
+      meta: {
+        source,
+        auto_activate: data.auto_activate !== false,
+        email: email.trim(),
+        payment_method: data.payment_method || paymentMethod,
+        duplicate: Boolean(data.duplicate),
+      },
+    });
+    setResult({ ...data, approve_url: redirectUrl });
+    setStep("done");
+    setLoading(false);
+  };
+
+  const submit = async (opts?: { resend?: boolean }) => {
     setError("");
     if (!email.trim() || !email.includes("@")) {
       setError(isES ? "Ingrese un email válido" : "Enter a valid email");
@@ -118,56 +191,30 @@ export default function BillingCheckoutModal({
     }
     setLoading(true);
     try {
+      const payload = {
+        email: email.trim(),
+        username: username.trim() || undefined,
+        lang: isES ? "es" : "en",
+        ...(opts?.resend ? { resend: true } : {}),
+      };
+
       if (isPro) {
-        const r = await fetch(`${API_URL}/billing/pro-checkout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email.trim(),
-            username: username.trim() || undefined,
-            lang: isES ? "es" : "en",
-            payment_method: paymentMethod,
-          }),
+        const { ok, data } = await postCheckout("/billing/pro-checkout", {
+          ...payload,
+          payment_method: paymentMethod,
         });
-        const data: CheckoutResult = await r.json();
-        const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
-        const hasQr = Boolean(data.qr_url);
-        if (r.ok && data.ok && (redirectUrl || hasQr)) {
-          recordFunnelEvent("request_pro", {
-            username: data.username || username.trim() || undefined,
-            meta: {
-              source: `landing_checkout_modal_${paymentMethod}`,
-              auto_activate: data.auto_activate !== false,
-              email: email.trim(),
-              payment_method: paymentMethod,
-            },
-          });
-          setResult({ ...data, approve_url: redirectUrl });
-          setStep("done");
-          setLoading(false);
+        if (ok && checkoutSucceeded(data)) {
+          applyCheckoutResult(data, `landing_checkout_modal_${paymentMethod}`);
           return;
         }
         setError(parseApiError(data, isES ? "Error al preparar el pago" : "Error preparing checkout"));
       } else {
-        const r = await fetch(`${API_URL}/billing/procure-subscribe`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email.trim(),
-            username: username.trim() || undefined,
-            plan: kind.plan,
-            lang: isES ? "es" : "en",
-          }),
+        const { ok, data } = await postCheckout("/billing/procure-subscribe", {
+          ...payload,
+          plan: kind.plan,
         });
-        const data = (await r.json()) as CheckoutResult;
-        if (r.ok && data.ok && data.approve_url) {
-          window.location.assign(data.approve_url);
-          return;
-        }
-        if (r.ok && data.ok) {
-          setResult(data);
-          setStep("done");
-          setLoading(false);
+        if (ok && checkoutSucceeded(data)) {
+          applyCheckoutResult(data, "landing_procure_subscribe");
           return;
         }
         setError(
@@ -183,22 +230,74 @@ export default function BillingCheckoutModal({
   const renderSuccess = () => {
     if (!result?.ok) return null;
     const method = result.payment_method || paymentMethod;
-    const isQr = method === "yape" || method === "plin";
+    const isWallet = method === "yape" || method === "plin";
     const redirectUrl = result.approve_url || result.checkout_url || result.payment_link;
+    const resolvedUser = result.username || username.trim();
 
     return (
       <div className="space-y-4 text-left">
-        <p className="text-sm text-[var(--cm-on-surface-variant)]">{result.message}</p>
-        {isQr && result.qr_url && (
-          <div className="flex flex-col items-center gap-2 rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={result.qr_url} alt="QR" width={200} height={200} className="rounded bg-white p-2" />
-          </div>
+        {result.duplicate && (
+          <p className="text-xs rounded border border-[var(--cm-outline-variant)]/40 bg-[var(--cm-surface-low)]/50 px-3 py-2 text-[var(--cm-on-surface-variant)]">
+            {result.message}
+          </p>
         )}
-        {redirectUrl && !isQr && (
+        {!result.duplicate && result.message && (
+          <p className="text-sm text-[var(--cm-on-surface-variant)]">{result.message}</p>
+        )}
+        {resolvedUser && (
+          <p className="font-mono text-xs text-[var(--cm-on-surface-variant)]/80">
+            {isES ? "Usuario CLI:" : "CLI user:"} <span className="text-white">{resolvedUser}</span>
+          </p>
+        )}
+        {isWallet && (
+          <WalletManualTransfer
+            method={method as "yape" | "plin"}
+            amountPen={result.amount_pen}
+            reference={result.request_id || result.qr_reference}
+            phone={result.payment_phone}
+            steps={result.manual_steps}
+            isES={isES}
+          />
+        )}
+        {redirectUrl && !isWallet && (
           <a href={redirectUrl} target="_blank" rel="noopener noreferrer" className="btn-mint w-full inline-flex justify-center">
-            {isES ? "Ir al pago →" : "Go to payment →"}
+            {isES ? "Ir al pago en PayPal →" : "Go to PayPal →"}
           </a>
+        )}
+        <div className="rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-3 py-3 text-xs text-[var(--cm-on-surface-variant)] space-y-1">
+          {isPro ? (
+            <>
+              <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
+              <p className="font-mono">market whoami</p>
+              <p>{isES ? "Luego prueba checkout retail:" : "Then try retail checkout:"}</p>
+              <p className="font-mono">market checkout --payment yape</p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
+              <p className="font-mono">market register → market keys</p>
+              <p>{isES ? "Pega sk-… en el dashboard Procure:" : "Paste sk-… in Procure dashboard:"}</p>
+              <a href={PROCURE_APP_URL} className="text-[var(--cm-mint)] hover:underline inline-block">
+                {isES ? "Abrir Procure →" : "Open Procure →"}
+              </a>
+            </>
+          )}
+        </div>
+        {result.duplicate && (
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => submit({ resend: true })}
+            className="w-full rounded-full border border-[var(--cm-outline-variant)]/50 py-2.5 text-sm text-[var(--cm-on-surface-variant)] hover:text-white disabled:opacity-50"
+          >
+            {loading
+              ? isES
+                ? "Reenviando…"
+                : "Resending…"
+              : isES
+                ? "Reenviar enlace por email"
+                : "Resend link by email"}
+          </button>
         )}
         <button type="button" onClick={onClose} className="w-full text-sm text-[var(--cm-on-surface-variant)] hover:text-white">
           {isES ? "Cerrar" : "Close"}
@@ -206,6 +305,8 @@ export default function BillingCheckoutModal({
       </div>
     );
   };
+
+  const selectedMethod = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
   return (
     <div
@@ -256,22 +357,32 @@ export default function BillingCheckoutModal({
                         key={m.id}
                         type="button"
                         onClick={() => setPaymentMethod(m.id)}
-                        className={`text-sm px-3 py-2.5 rounded border transition-colors ${
+                        className={`text-left text-sm px-3 py-2.5 rounded border transition-colors ${
                           paymentMethod === m.id
                             ? "border-[var(--cm-action)] bg-[var(--cm-action)]/10 text-white"
                             : "border-[var(--cm-outline-variant)]/40 text-[var(--cm-on-surface-variant)]"
                         }`}
                       >
-                        {isES ? m.label_es : m.label_en}
+                        <span className="block">{isES ? m.label_es : m.label_en}</span>
+                        <span className="block text-[10px] font-mono opacity-70 mt-0.5">
+                          {isES ? m.auto_es : m.auto_en}
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
               {!isPro && procureMeta && (
-                <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
-                  {isES ? procureMeta.description_es : procureMeta.description_en}
-                </p>
+                <>
+                  <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                    {isES ? procureMeta.description_es : procureMeta.description_en}
+                  </p>
+                  <p className="text-xs rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-3 py-2 text-[var(--cm-on-surface-variant)]">
+                    {isES
+                      ? "Pago solo vía PayPal (auto-activación). Incluye API Build — no necesitas Build Pro aparte."
+                      : "PayPal only (auto-activation). Includes Build API — no separate Build Pro needed."}
+                  </p>
+                </>
               )}
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                 {isPro
@@ -279,10 +390,10 @@ export default function BillingCheckoutModal({
                     ? `Facturación ${MARKET_STATS.paymentsLabel}. Sinapsis Innovadora S.A.C. · RUC 20613045563.`
                     : `Billing via ${MARKET_STATS.paymentsLabel}. Sinapsis Innovadora S.A.C. · tax ID 20613045563.`
                   : isES
-                    ? "Pago vía PayPal. Tras confirmar, pega tu API key en el dashboard Procure."
-                    : "Pay via PayPal. After confirmation, paste your API key in the Procure dashboard."}
+                    ? "Suscripción mensual vía PayPal. Tras confirmar, conecta tu API key en Procure."
+                    : "Monthly PayPal subscription. After confirming, connect your API key in Procure."}
               </p>
-              <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions={isPro} />
+              <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
               <button
                 type="button"
@@ -300,8 +411,8 @@ export default function BillingCheckoutModal({
             <div className="form-stack">
               <p className="text-sm text-[var(--cm-on-surface-variant)]">
                 {isES
-                  ? "Email para activación y comprobantes. Si ya tienes cuenta CLI, indícalo abajo (opcional)."
-                  : "Email for activation and receipts. If you already have a CLI account, add it below (optional)."}
+                  ? "Email para activación y comprobantes."
+                  : "Email for activation and receipts."}
               </p>
               <input
                 type="email"
@@ -311,24 +422,30 @@ export default function BillingCheckoutModal({
                 placeholder={isES ? "su@email.com" : "you@email.com"}
                 className="w-full input-cyber"
               />
-              <details className="details-disclosure">
-                <summary>{isES ? "Usuario CLI existente (opcional)" : "Existing CLI user (optional)"}</summary>
-                <div className="details-body pt-3">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder={isES ? "market whoami" : "market whoami"}
-                    className="w-full input-cyber text-sm"
-                  />
-                </div>
-              </details>
+              <div className="space-y-1">
+                <label htmlFor="checkout-username" className="text-xs text-[var(--cm-on-surface-variant)]">
+                  {isES ? "Usuario CLI (recomendado si ya hiciste market login)" : "CLI username (recommended if you ran market login)"}
+                </label>
+                <input
+                  id="checkout-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={isES ? "el de market whoami" : "from market whoami"}
+                  className="w-full input-cyber text-sm"
+                />
+                <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60">
+                  {isES
+                    ? "Si lo dejas vacío, se crea uno desde tu email — puede no coincidir con tu sesión CLI."
+                    : "If empty, one is derived from your email — may not match your CLI session."}
+                </p>
+              </div>
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
               <div className="flex gap-2">
                 <button type="button" onClick={() => setStep(1)} className="flex-1 rounded-full border border-[var(--cm-outline-variant)]/50 py-2.5 text-sm text-[var(--cm-on-surface-variant)]">
                   {isES ? "Atrás" : "Back"}
                 </button>
-                <button type="button" onClick={submit} disabled={loading} className="btn-mint flex-[2] disabled:opacity-50">
+                <button type="button" onClick={() => submit()} disabled={loading} className="btn-mint flex-[2] disabled:opacity-50">
                   {loading
                     ? isES
                       ? "Preparando…"
@@ -338,13 +455,18 @@ export default function BillingCheckoutModal({
                         ? `Pagar — ${methodLabel(paymentMethod, true)}`
                         : `Pay — ${methodLabel(paymentMethod, false)}`
                       : isES
-                        ? "Suscribir en PayPal"
-                        : "Subscribe on PayPal"}
+                        ? "Continuar — PayPal"
+                        : "Continue — PayPal"}
                 </button>
               </div>
+              {isPro && paymentMethod === "paypal" && selectedMethod && (
+                <p className="text-[10px] text-center text-[var(--cm-on-surface-variant)]/50 font-mono">
+                  {isES ? selectedMethod.auto_es : selectedMethod.auto_en}
+                </p>
+              )}
               {isPro && paymentMethod === "paypal" && (
                 <details className="text-xs text-[var(--cm-on-surface-variant)]/50">
-                  <summary className="cursor-pointer">{isES ? "Botón PayPal alojado" : "PayPal hosted button"}</summary>
+                  <summary className="cursor-pointer">{isES ? "Respaldo: botón PayPal alojado" : "Fallback: PayPal hosted button"}</summary>
                   <div className="mt-2">
                     <PayPalHostedButton className="w-full" />
                   </div>
