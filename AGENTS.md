@@ -74,6 +74,11 @@ Estrategia canónica: `docs/pricing-strategy.md`
 
 **GTM:** no mezclar `pip install` con Procure en el mismo post. Outbound compras → solo Procure.
 
+## Identidad visual
+
+- Tokens y modos Terminal/Operations: `docs/BRAND.md`
+- Métricas en creative: solo data-gate; neón &lt;15% del layout
+
 ## Reglas de contenido
 
 - Español: castellano neutro LATAM (Perú). Ver `../cli-market-content/linkedin/STYLE-es.md`
