@@ -18,4 +18,4 @@
 
 **Solución:** API keys scope read. 22 herramientas MCP (Shop/Intel/Account). El agente busca insumos en 38 retailers verificados, compara precios cross-border, genera reporte semanal con `market_intel_brief`.
 
-**Resultado:** 4-6h/semana ahorradas. Precios de 30 retailers en 7 países. Alertas de cambio >5%. $49/mes por restaurante. 3 onboarded en mes 1.
+**Resultado:** 4-6h/semana ahorradas. Precios de 30 retailers en 7 países. Alertas de cambio >5%. **Procure Starter $29/mes** (comparación) o **Pro $79/mes** (aprobaciones + checkout; infra CLI Market incluida). 3 onboarded en mes 1.

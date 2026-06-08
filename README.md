@@ -75,6 +75,16 @@ market enrichment --refresh -c PE
 | **Soporte** | Comunidad | Email 4h | 24/7 + SLA escrito |
 | **Anual** | — | $390/año | — |
 
+#### ¿Quién compra qué? (ecosistema)
+
+| Buyer | Producto | Precio |
+|-------|----------|--------|
+| Developer / agent builder que **integra** comercio en su software | **CLI Market Pro** | $39/mes |
+| Equipo de **compras** (restaurante, hotel, agro) — sin código | **Procure Copilot** | $29–149/mes (infra CLI Market incluida en Pro+) |
+| Analista / fintech que necesita **datos**, no checkout | **Intelligence** | $300–500/mes |
+
+Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [docs/pricing-strategy.md](docs/pricing-strategy.md).
+
 ---
 
 ## 🇬🇧 English
@@ -135,6 +145,16 @@ market enrichment --refresh -c PE
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Support** | Community | Email 4h | 24/7 + written SLA |
 | **Annual** | — | $390/yr | — |
+
+#### Who buys what (ecosystem)
+
+| Buyer | Product | Price |
+|-------|---------|-------|
+| Developer / agent builder **embedding** commerce in their software | **CLI Market Pro** | $39/mo |
+| **Procurement** team (no code) | **Procure Copilot** | $29–149/mo (CLI Market infra bundled on Pro+) |
+| Analyst / fintech needing **data**, not checkout | **Intelligence** | $300–500/mo |
+
+Procurement teams do **not** need a separate CLI Market Pro subscription. See [docs/pricing-strategy.md](docs/pricing-strategy.md).
 
 ---
 

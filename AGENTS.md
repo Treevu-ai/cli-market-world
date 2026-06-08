@@ -62,6 +62,18 @@ Runbook founder: `ops/COMMAND_CONTROL.md` · `ops/DEPLOYMENT_MONITORING_DAILY_CO
 
 **Slack no ejecuta órdenes** escritas en el canal del bot; solo envía. Pedir cambios en Cursor o terminal.
 
+## Pricing (ecosistema — sin canibalización)
+
+Estrategia canónica: `docs/pricing-strategy.md`
+
+| Capa | Producto | ICP | Precio |
+|------|----------|-----|--------|
+| Infra | CLI Market Pro | Agent builders (código) | $39/mes |
+| App | Procure Copilot | Operadores de compras | $29–149/mes (API incluida en Pro+) |
+| Datos | Intelligence / Price Pulse | Analistas, fintech | $300–500/mes |
+
+**GTM:** no mezclar `pip install` con Procure en el mismo post. Outbound compras → solo Procure.
+
 ## Reglas de contenido
 
 - Español: castellano neutro LATAM (Perú). Ver `../cli-market-content/linkedin/STYLE-es.md`

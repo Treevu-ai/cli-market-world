@@ -1,6 +1,8 @@
 # CLI Market — Deployment, Monitoring & Daily Ops Runbook
 
-**Generado:** 2026-06-07 (actualizado 2026-06-08 — E2E rieles de pago retail + Procure)
+**Generado:** 2026-06-07 (actualizado 2026-06-08 — E2E pagos + pricing ecosistema)
+
+**Pricing (sin canibalización):** `docs/pricing-strategy.md` — CLI Market Pro ($39 builders) · Procure ($29–149 operadores) · Intelligence ($300–500 datos).
 
 ## Verificación de Deployments
 

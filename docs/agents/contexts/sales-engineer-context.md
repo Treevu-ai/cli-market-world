@@ -107,9 +107,11 @@ Mostrar `checkoutUrl` — handoff a pago real vía CLI Market. No completar pago
 
 | Señal del prospecto | Plan | CTA |
 |---------------------|------|-----|
-| 1 local, &lt;20 compras/mes | Starter $29 | Piloto 30 días, canasta semanal |
-| Aprobaciones, stock, delivery | Pro $79 | Piloto 30 días + umbral custom |
+| 1 local, solo comparar precios (sin pagar en plataforma) | Starter $29 | Piloto 30 días — **sin checkout** |
+| Aprobaciones, stock, delivery, **pago integrado** | Pro $79 | Piloto 30 días + umbral custom (infra CLI Market incluida) |
 | Multi-país, integración ERP | Builder $149 | Call técnica integraciones |
+
+Pricing ecosistema: `docs/pricing-strategy.md` — no ofrecer CLI Market Pro $39 al operador de compras.
 
 Ofrecer anexo Price Pulse (secciones inflación + canasta) si es agroindustrial — ver `docs/agents/price-pulse-workflow.md`.
 
@@ -118,8 +120,8 @@ Ofrecer anexo Price Pulse (secciones inflación + canasta) si es agroindustrial 
 | Alternativa | Debilidad | Respuesta Procure |
 |-------------|-----------|-------------------|
 | Excel + WhatsApp | Manual, sin stock, sin auditoría | Agente + aprobación + historial |
-| Solo CLI Market API | Sin gobernanza de compra | Control plane con D1 y umbrales |
-| Nielsen / panel legacy | Caro, lento | Góndola 4h desde $29/mes ejecución |
+| Solo CLI Market API ($39) | Sin gobernanza; para developers | Procure = app de compras; API ya incluida en Pro $79 |
+| Nielsen / panel legacy | Caro, lento | Góndola 4h — Starter $29 comparar · Pro $79 ejecutar |
 | Comprar directo en web retailer | Sin comparación multi-tienda | Basket compare 38 retailers |
 
 ## Objeciones frecuentes
