@@ -5,7 +5,7 @@ import HowItWorks from "@/components/HowItWorks";
 import QuickstartAPI from "@/components/QuickstartAPI";
 import UseCasesSection from "@/components/UseCasesSection";
 import IntelligenceSection from "@/components/IntelligenceSection";
-import ProcureSection from "@/components/ProcureSection";
+
 
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
 import CoverageToUseCasesBridge from "@/components/CoverageToUseCasesBridge";
@@ -30,7 +30,6 @@ export default function Home() {
           <ScaleCoverageSection />
           <CoverageToUseCasesBridge />
           <UseCasesSection />
-          <ProcureSection />
           <IntelligenceSection />
           <Pricing />
           <FAQ />

@@ -8,7 +8,7 @@ import HeroMetrics from "@/components/HeroMetrics";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { PRICING_RETAILERS_HASH } from "@/lib/siteNav";
+import { PRICING_LISTED_HASH, PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -79,12 +79,12 @@ export default function Hero() {
 
         <div className="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
           <a
-            href={MARKET_STATS.pypiUrl}
+            href={PRICING_BUILD_HASH}
             onClick={() => recordPipInstallIntent("landing_hero")}
             className="btn-action hero-terminal-cta-primary group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start shadow-[0_0_24px_rgba(200,255,0,0.15)]"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
-              {isES ? "Para builders / agentes" : "For builders / agents"}
+              Build
             </span>
             <span className="text-base font-semibold">
               <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
@@ -98,14 +98,14 @@ export default function Hero() {
           </a>
 
           <a
-            href={PRICING_RETAILERS_HASH}
+            href={PRICING_LISTED_HASH}
             className="hero-terminal-card group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-text-secondary)]">
-              {isES ? "Para retailers" : "For retailers"}
+              Listed
             </span>
             <span className="text-base font-semibold text-[var(--cm-ink)]">
-              {isES ? "Listar mi tienda — gratis →" : "List my store — free →"}
+              {isES ? "Tu góndola, visible — gratis →" : "Your shelf, visible — free →"}
             </span>
             <span className="text-xs text-[var(--cm-text-secondary)]">
               {isES ? "30 segundos · sin código" : "30 seconds · no code"}

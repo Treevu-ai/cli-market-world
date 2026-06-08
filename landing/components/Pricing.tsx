@@ -4,11 +4,17 @@ import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import FreeSignupModal from "@/components/FreeSignupModal";
-import RetailersPricingPanel from "@/components/RetailersPricingPanel";
+import ProcurePricingPanel from "@/components/ProcurePricingPanel";
+import ListedPricingPanel from "@/components/ListedPricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
+import {
+  PRICING_TABS,
+  resolvePricingAudience,
+  hashForAudience,
+  type PricingAudience,
+} from "@/lib/pricingAudiences";
 
 type Billing = "monthly" | "annual";
-type Audience = "developers" | "retailers";
 
 type Tier = {
   name: string;
@@ -24,7 +30,6 @@ type Tier = {
   cta_en: string;
   dark?: boolean;
   featured?: boolean;
-  starterPick?: boolean;
   href?: string;
   proNote_es?: string;
   proNote_en?: string;
@@ -103,14 +108,6 @@ const tiers: Tier[] = [
   },
 ];
 
-function resolveAudienceFromLocation(): Audience {
-  if (typeof window === "undefined") return "developers";
-  const hash = window.location.hash.replace("#", "");
-  const params = new URLSearchParams(window.location.search);
-  if (hash === "retailers" || params.get("audience") === "retailers") return "retailers";
-  return "developers";
-}
-
 function TierCard({
   tier,
   isES,
@@ -144,11 +141,6 @@ function TierCard({
         tier.dark || tier.featured ? "energy-border-active card-cyber" : "card-cyber"
       } ${className ?? ""}`}
     >
-      {tier.starterPick && (
-        <span className="self-center mb-4 border border-[var(--cm-mint)]/50 text-[var(--cm-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
-          {isES ? "Primer upgrade" : "First upgrade"}
-        </span>
-      )}
       {tier.featured && (
         <span className="self-center mb-4 bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
           {isES ? "Más popular" : "Most popular"}
@@ -194,9 +186,7 @@ function TierCard({
         ))}
       </ul>
       <div className="mt-auto space-y-3">
-        {children ? (
-          children
-        ) : (
+        {children ?? (
           <a href={tier.href ?? "#"} className="btn-mint w-full">
             {isES ? tier.cta_es : tier.cta_en}
           </a>
@@ -211,26 +201,33 @@ function TierCard({
   );
 }
 
+function scrollToPricingSection(focusId?: string) {
+  requestAnimationFrame(() => {
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (focusId) {
+      document.getElementById(focusId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+}
+
 export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
   const [billing, setBilling] = useState<Billing>("monthly");
-  const [audience, setAudience] = useState<Audience>("developers");
+  const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
+
+  const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
   useEffect(() => {
     const syncFromLocation = () => {
-      const next = resolveAudienceFromLocation();
+      const next = resolvePricingAudience();
       setAudience(next);
       const hash = window.location.hash.replace("#", "");
-      if (hash === "pro-checkout" || hash === "pricing-build") {
-        requestAnimationFrame(() => {
-          document.getElementById("pro-checkout")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      } else if (hash === "retailers") {
-        requestAnimationFrame(() => {
-          document.getElementById("retailers")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
+      if (hash === "pro-checkout" || hash === "pricing-build" || hash === "pricing") {
+        scrollToPricingSection(hash === "pro-checkout" ? "pro-checkout" : undefined);
+      } else if (hash === "procure" || hash === "listed" || hash === "retailers") {
+        scrollToPricingSection(hash === "retailers" ? "listed" : hash);
       }
     };
     syncFromLocation();
@@ -238,9 +235,9 @@ export default function Pricing() {
     return () => window.removeEventListener("hashchange", syncFromLocation);
   }, []);
 
-  const setAudienceTab = (tab: Audience) => {
+  const setAudienceTab = (tab: PricingAudience) => {
     setAudience(tab);
-    const hash = tab === "retailers" ? "#retailers" : "#pricing";
+    const hash = hashForAudience(tab);
     if (window.location.hash !== hash) {
       window.history.replaceState(null, "", hash);
     }
@@ -253,125 +250,136 @@ export default function Pricing() {
           {isES ? "Planes" : "Plans"}
         </p>
 
-        <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-8">
-          <button
-            type="button"
-            onClick={() => setAudienceTab("developers")}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-              audience === "developers"
-                ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                : "text-[var(--cm-on-surface-variant)] hover:text-white"
-            }`}
-          >
-            {isES ? "Developers" : "Developers"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setAudienceTab("retailers")}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-              audience === "retailers"
-                ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                : "text-[var(--cm-on-surface-variant)] hover:text-white"
-            }`}
-          >
-            {isES ? "Retailers" : "Retailers"}
-          </button>
+        <div
+          role="tablist"
+          aria-label={isES ? "Líneas de producto" : "Product lines"}
+          className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-6 max-w-full"
+        >
+          {PRICING_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={audience === tab.id}
+              onClick={() => setAudienceTab(tab.id)}
+              className={`px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all flex flex-col items-center min-w-[5.5rem] ${
+                audience === tab.id
+                  ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
+                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`text-[10px] font-mono font-normal mt-0.5 ${
+                  audience === tab.id ? "text-[var(--cm-on-mint)]/75" : "text-[var(--cm-on-surface-variant)]/60"
+                }`}
+              >
+                {isES ? tab.hint_es : tab.hint_en}
+              </span>
+            </button>
+          ))}
         </div>
 
-        <div className={audience !== "developers" ? "hidden" : undefined} aria-hidden={audience !== "developers"}>
-            <h2 className="section-title">
-              {isES ? "Construido para escalar." : "Built to scale."}
-            </h2>
-            <p className="section-intro">
-              {isES
-                ? "Elige tu punto de entrada. Migra cuando crezcas sin cambiar de integración."
-                : "Pick your entry point. Migrate as you grow without changing integrations."}
-            </p>
+        <h2 className="section-title">{isES ? activeTab.title_es : activeTab.title_en}</h2>
+        <p className="section-intro">{isES ? activeTab.intro_es : activeTab.intro_en}</p>
 
-            <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-12">
-              <button
-                type="button"
-                onClick={() => setBilling("monthly")}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                  billing === "monthly"
-                    ? "bg-[var(--cm-surface-high)] text-white"
-                    : "text-[var(--cm-on-surface-variant)] hover:text-white"
-                }`}
-              >
-                {isES ? "Mensual" : "Monthly"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setBilling("annual")}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
-                  billing === "annual"
-                    ? "bg-[var(--cm-surface-high)] text-white"
-                    : "text-[var(--cm-on-surface-variant)] hover:text-white"
-                }`}
-              >
-                {isES ? "Anual" : "Annual"}
-                <span className="text-[10px] font-bold text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 px-1.5 py-0.5 rounded-full">
-                  −17%
-                </span>
-              </button>
-            </div>
+        <div className={audience !== "build" ? "hidden" : undefined} aria-hidden={audience !== "build"} role="tabpanel">
+          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-12 mt-4">
+            <button
+              type="button"
+              onClick={() => setBilling("monthly")}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                billing === "monthly"
+                  ? "bg-[var(--cm-surface-high)] text-white"
+                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              }`}
+            >
+              {isES ? "Mensual" : "Monthly"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBilling("annual")}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+                billing === "annual"
+                  ? "bg-[var(--cm-surface-high)] text-white"
+                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              }`}
+            >
+              {isES ? "Anual" : "Annual"}
+              <span className="text-[10px] font-bold text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 px-1.5 py-0.5 rounded-full">
+                −17%
+              </span>
+            </button>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto mb-14">
-              {tiers.map((tier, i) => (
-                <motion.div
-                  key={tier.name}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.08 }}
-                  className={tier.name === "Pro" ? "sm:col-span-2 lg:col-span-1" : undefined}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto mb-14">
+            {tiers.map((tier, i) => (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className={tier.name === "Pro" ? "sm:col-span-2 lg:col-span-1" : undefined}
+              >
+                <TierCard
+                  tier={tier}
+                  isES={isES}
+                  billing={billing}
+                  className={tier.name === "Pro" ? "lg:min-h-[28rem]" : undefined}
+                  footerNote={
+                    tier.name === "Pro" && tier.proNote_es
+                      ? isES
+                        ? tier.proNote_es
+                        : tier.proNote_en
+                      : undefined
+                  }
                 >
-                  <TierCard
-                    tier={tier}
-                    isES={isES}
-                    billing={billing}
-                    className={tier.name === "Pro" ? "lg:min-h-[28rem]" : undefined}
-                    footerNote={
-                      tier.name === "Pro" && tier.proNote_es
-                        ? isES
-                          ? tier.proNote_es
-                          : tier.proNote_en
-                        : undefined
-                    }
-                  >
-                    {tier.name === "Pro" ? (
-                      <div id="pro-checkout" className="scroll-mt-24 space-y-3">
-                        <ProSubscribeButton />
-                      </div>
-                    ) : tier.name === "Free" ? (
-                      <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
-                        {isES ? tier.cta_es : tier.cta_en}
-                      </button>
-                    ) : null}
-                  </TierCard>
-                </motion.div>
-              ))}
-            </div>
+                  {tier.name === "Pro" ? (
+                    <div id="pro-checkout" className="scroll-mt-24 space-y-3">
+                      <ProSubscribeButton />
+                    </div>
+                  ) : tier.name === "Free" ? (
+                    <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
+                      {isES ? tier.cta_es : tier.cta_en}
+                    </button>
+                  ) : null}
+                </TierCard>
+              </motion.div>
+            ))}
+          </div>
 
-            <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
+          <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
 
-            <div className="border-t border-[var(--cm-outline-variant)]/30 pt-12 text-center">
-              <p className="text-base text-[var(--cm-on-surface-variant)] mb-4">
-                {isES
-                  ? "¿Necesita límites, SLAs o licencia de datos personalizados?"
-                  : "Need custom limits, SLAs, or a data license?"}
-              </p>
-              <a
-                href="/#contact-general"
-                className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all"
-              >
-                {isES ? "Contáctenos →" : "Contact us →"}
-              </a>
-            </div>
+          <div className="border-t border-[var(--cm-outline-variant)]/30 pt-12 text-center">
+            <p className="text-base text-[var(--cm-on-surface-variant)] mb-4">
+              {isES
+                ? "¿Necesita límites, SLAs o licencia de datos personalizados?"
+                : "Need custom limits, SLAs, or a data license?"}
+            </p>
+            <a
+              href="/#contact-general"
+              className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all"
+            >
+              {isES ? "Contáctenos →" : "Contact us →"}
+            </a>
+          </div>
         </div>
 
-        <div className={audience !== "retailers" ? "hidden" : undefined} aria-hidden={audience !== "retailers"}>
-          <RetailersPricingPanel />
+        <div
+          className={audience !== "procure" ? "hidden" : undefined}
+          aria-hidden={audience !== "procure"}
+          role="tabpanel"
+        >
+          <ProcurePricingPanel />
+        </div>
+
+        <div
+          className={audience !== "listed" ? "hidden" : undefined}
+          aria-hidden={audience !== "listed"}
+          role="tabpanel"
+        >
+          <ListedPricingPanel />
         </div>
       </div>
     </section>
