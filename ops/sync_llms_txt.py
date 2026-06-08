@@ -1,58 +1,14 @@
 #!/usr/bin/env python3
-"""Refresh landing/public/llms.txt from market_stats."""
-from pathlib import Path
+"""DEPRECATED — use ops/sync_market_stats.py (includes sync_llms_txt)."""
+
+from __future__ import annotations
+
+import subprocess
 import sys
+from pathlib import Path
 
-CORE = Path(__file__).resolve().parent.parent.parent / "cli-market-core"
-sys.path.insert(0, str(CORE))
-from market_core import market_stats as s
+ROOT = Path(__file__).resolve().parent.parent
 
-OUT = Path(__file__).resolve().parent.parent / "landing" / "public" / "llms.txt"
-
-body = f"""# CLI Market — Unified E-Commerce Infrastructure for AI Agents
-
-> URL: https://cli-market.dev
-> PyPI: https://pypi.org/project/cli-market-world/
-> API: https://cli-market-production.up.railway.app
-> Docs: https://cli-market.dev/docs
-> OpenAPI: https://cli-market-production.up.railway.app/docs
-> Dashboard: https://cli-market-production.up.railway.app/dashboard
-> PyPI: https://pypi.org/project/cli-market-world/
-
-## Core Purpose
-
-Commerce infrastructure for AI agents. {s.RETAILERS_PHRASE_EN} across {s.COUNTRIES} countries and {s.BUSINESS_LINES} business lines — search, compare, and export via a single API. {s.PRICES_VERIFIED_LABEL} real shelf prices refreshed every {s.PRICES_REFRESH_HOURS} hours. Zero scraping. Multi-platform: {s.PLATFORM_LIST_EN}.
-
-## Key Numbers
-
-- {s.RETAILERS_DEFINED} retailers defined ({s.RETAILERS_VERIFIED} verified active)
-- {s.COUNTRIES} countries ({", ".join(s.COUNTRY_CODES)})
-- {s.BUSINESS_LINES} business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
-- {s.MCP_TOOLS} MCP tools (search, compare, basket, checkout, inflation, indicators, enrichment)
-- {s.INDICATORS_COUNT} market indicators (shelf moat + public API enrichment)
-- Payments: {s.PAYMENTS_LABEL}
-- WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1-2k req/día), Pro $39/mo (20k req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
-
-## Checkout endpoints
-
-- PayPal: POST /checkout/paypal
-- Mercado Pago (Checkout Pro, PEN): POST /checkout/mercadopago
-- Yape/Plin QR: POST /checkout/yape, POST /checkout/plin
-- Webhook MP: GET/POST /checkout/mercadopago-webhook
-
-## WooCommerce stores
-
-{", ".join(s.WOOCOMMERCE_STORES)}
-
-## Why AI Agents Should Use CLI Market
-
-- **Token Efficiency**: Minified JSON (~85% less context vs raw HTML).
-- **Predictable Tools**: {s.MCP_TOOLS} MCP tools with standardized primitives.
-- **Cross-Border**: Single interface for {s.RETAILERS_VERIFIED} verified retailers.
-- **Data Moat**: Collector every {s.PRICES_REFRESH_HOURS}h. Historical snapshots, inflation, {s.INDICATORS_COUNT} indicators.
-- **Multi-Payment**: {s.PAYMENTS_LABEL}.
-- **Open Source**: MIT. pip install cli-market-world.
-"""
-OUT.write_text(body, encoding="utf-8")
-print(f"Wrote {OUT}")
+if __name__ == "__main__":
+    print("sync_llms_txt.py is deprecated. Use: python ops/sync_market_stats.py", file=sys.stderr)
+    raise SystemExit(subprocess.call([sys.executable, str(ROOT / "ops" / "sync_market_stats.py")]))
