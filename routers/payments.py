@@ -35,7 +35,7 @@ import re
 import uuid
 
 import httpx
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Body, Header, HTTPException, Request
 
 from market_core import (
     db_delete_billing_pending,
@@ -283,13 +283,25 @@ async def checkout_lemon(authorization: str | None = Header(None)):
 
 
 @router.post("/checkout/paypal")
-async def checkout_paypal(authorization: str | None = Header(None)):
+async def checkout_paypal(
+    body: dict = Body(default_factory=dict),
+    authorization: str | None = Header(None),
+):
     username = require_user(authorization)
     _, total, order_id = _prepare_pending_order(username, "paypal")
     from market_connectors.paypal_payments import create_order
 
+    return_url = (body.get("return_url") or "").strip() or "https://cli-market.dev?order=success"
+    cancel_url = (body.get("cancel_url") or "").strip() or "https://cli-market.dev?order=cancelled"
+
     try:
-        pp = await create_order(total, "USD", f"CLI-Market-{order_id}")
+        pp = await create_order(
+            total,
+            "USD",
+            f"CLI-Market-{order_id}",
+            return_url=return_url,
+            cancel_url=cancel_url,
+        )
         if "approve_url" in pp:
             db_set_order_gateway_ref(order_id, pp["order_id"])
             return {
