@@ -1,20 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useLang } from "@/lib/LanguageContext"
-
-const items = [
-  { id: "hero", es: "Inicio", en: "Home" },
-  { id: "how", es: "Flujo", en: "Flow" },
-  { id: "api", es: "API", en: "API" },
-  { id: "coverage", es: "Cobertura", en: "Coverage" },
-  { id: "casos", es: "Casos", en: "Use cases" },
-  { id: "procure", es: "Procure", en: "Procure" },
-  { id: "intelligence", es: "Intelligence", en: "Intelligence" },
-  { id: "pricing", es: "Planes", en: "Pricing" },
-  { id: "retailers", es: "Retailers", en: "Retailers" },
-  { id: "faq", es: "FAQ", en: "FAQ" },
-  { id: "contact", es: "Contacto", en: "Contact" },
-]
+import { SIDE_NAV } from "@/lib/siteNav"
 
 export default function SideNav() {
   const [active, setActive] = useState("hero")
@@ -27,7 +14,7 @@ export default function SideNav() {
       (entries) => { entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id) }) },
       { threshold: 0.2 },
     )
-    items.forEach(({ id }) => { const el = document.getElementById(id); if (el) obs.observe(el) })
+    SIDE_NAV.forEach(({ id }) => { const el = document.getElementById(id); if (el) obs.observe(el) })
 
     const onScroll = () => {
       const scrollTop = window.scrollY
@@ -43,7 +30,7 @@ export default function SideNav() {
     }
   }, [])
 
-  const activeIndex = items.findIndex(i => i.id === active)
+  const activeIndex = SIDE_NAV.findIndex(i => i.id === active)
 
   return (
     <nav className="fixed left-0 top-0 z-40 h-screen w-12 hidden xl:flex flex-col justify-center bg-[var(--cm-background)]/80 backdrop-blur-sm" aria-label={isES ? "Navegación de secciones" : "Section navigation"}>
@@ -52,11 +39,11 @@ export default function SideNav() {
         <div className="absolute left-[calc(0.75rem+2.5px)] top-4 bottom-4 w-px bg-white/10" aria-hidden="true">
           <div
             className="w-full bg-[var(--cm-mint)]/40 transition-all duration-300 ease-out"
-            style={{ height: `${Math.max(progress * 100, (activeIndex / (items.length - 1)) * 100)}%` }}
+            style={{ height: `${Math.max(progress * 100, (activeIndex / (SIDE_NAV.length - 1)) * 100)}%` }}
           />
         </div>
 
-        {items.map(({ id, es, en }) => (
+        {SIDE_NAV.map(({ id, es, en }) => (
           <a key={id} href={`/#${id}`}
             className="touch-compact group relative flex items-center z-10" aria-label={isES ? es : en} title={isES ? es : en}>
             <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${

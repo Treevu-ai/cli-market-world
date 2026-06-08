@@ -2,19 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-
-const navItems = [
-  { id: "how", es: "Flujo", en: "Flow" },
-  { id: "api", es: "API", en: "API" },
-  { id: "coverage", es: "Cobertura", en: "Coverage" },
-  { id: "casos", es: "Casos", en: "Use cases" },
-  { id: "procure", es: "Procure", en: "Procure" },
-  { id: "intelligence", es: "Intelligence", en: "Intelligence" },
-  { id: "pricing", es: "Planes", en: "Pricing" },
-  { id: "retailers", es: "Retailers", en: "Retailers" },
-  { id: "faq", es: "FAQ", en: "FAQ" },
-  { id: "contact", es: "Contacto", en: "Contact" },
-];
+import { SECTION_NAV } from "@/lib/siteNav";
 
 function Logo() {
   return (
@@ -56,7 +44,7 @@ export default function Navbar() {
         </a>
 
         <div className="hidden lg:flex items-center gap-5">
-          {navItems.map(({ id, es, en }) => (
+          {SECTION_NAV.map(({ id, es, en }) => (
             <a key={id} href={`/#${id}`}
                className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors whitespace-nowrap">
               {isES ? es : en}
@@ -84,7 +72,9 @@ export default function Navbar() {
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href="/#pricing"
+            href={MARKET_STATS.pypiUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-2 hover:brightness-110 transition-all whitespace-nowrap"
           >
             {primaryCta}
@@ -100,7 +90,7 @@ export default function Navbar() {
 
       {open && (
         <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
-          {navItems.map(({ id, es, en }) => (
+          {SECTION_NAV.map(({ id, es, en }) => (
             <a key={id} href={`/#${id}`} onClick={close}
                className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
               {isES ? es : en}
@@ -114,7 +104,7 @@ export default function Navbar() {
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             PyPI
           </a>
-          <a href="/#pricing" onClick={close}
+          <a href={MARKET_STATS.pypiUrl} target="_blank" rel="noopener noreferrer" onClick={close}
              className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-1">
             {mobileCta}
           </a>

@@ -3,6 +3,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { SECTION_NAV, PRICING_RETAILERS_HASH } from "@/lib/siteNav";
 
 export default function Footer() {
   const { lang } = useLang();
@@ -43,9 +44,6 @@ export default function Footer() {
           <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Referencia MCP" : "MCP Tool Reference"}
           </a>
-          <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Catálogo retailers" : "Retailer catalog"}
-          </a>
           <a href="/docs#quickstart" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo en terminal" : "Terminal demo"}
           </a>
@@ -61,14 +59,11 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Compañía" : "Company"}
           </span>
+          <a href={PRICING_RETAILERS_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
+          </a>
           <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Listar mi tienda" : "List my store"}
-          </a>
-          <a href="/#procure" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            Procure Copilot
-          </a>
-          <a href="/#intelligence" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Inteligencia piloto" : "Intelligence pilot"}
+            {isES ? "Catálogo retailers" : "Retailer catalog"}
           </a>
           <a href="/intelligence-pilot-es.md" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "One-pager Intelligence" : "Intelligence one-pager"}
@@ -88,27 +83,29 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Producto" : "Product"}
           </span>
-          <a href="/#how" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Flujo" : "Flow"}
-          </a>
-          <a href="/#api" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "API en vivo" : "Live API"}
-          </a>
-          <a href="/#casos" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Casos de uso" : "Use cases"}
-          </a>
-          <a href="/#coverage" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Cobertura" : "Coverage"}
-          </a>
-          <a href="/#retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Retailers GEO" : "Retailer GEO"}
-          </a>
-          <a href="/#faq" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            FAQ
-          </a>
-          <a href="/#pricing" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Planes y precios" : "Plans & pricing"}
-          </a>
+          {SECTION_NAV.map(({ id, es, en }) => (
+            <a
+              key={id}
+              href={`/#${id}`}
+              className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+            >
+              {id === "pricing"
+                ? isES
+                  ? "Planes (Developers · Retailers)"
+                  : "Plans (Developers · Retailers)"
+                : id === "api"
+                  ? isES
+                    ? "API en vivo"
+                    : "Live API"
+                  : id === "casos"
+                    ? isES
+                      ? "Casos de uso"
+                      : "Use cases"
+                    : isES
+                      ? es
+                      : en}
+            </a>
+          ))}
         </div>
       </div>
 
