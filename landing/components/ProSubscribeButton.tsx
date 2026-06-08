@@ -75,33 +75,19 @@ export default function ProSubscribeButton() {
       });
       const data: ProResponse = await r.json();
 
-      if (r.ok && data.ok && data.approve_url) {
+      if (r.ok && data.ok && (data.approve_url || data.payment_link)) {
         recordFunnelEvent("request_pro", {
           username: data.username || username.trim() || undefined,
-          meta: { source: "landing_checkout", email: email.trim() },
+          meta: {
+            source: "landing_paypal_subscribe",
+            auto_activate: data.auto_activate !== false,
+            email: email.trim(),
+          },
         });
-        setResult(data);
-        setLoading(false);
-        return;
-      }
-
-      if (r.status === 404 || r.status === 501 || r.status === 502 || r.status === 503) {
-        const fallback = await fetch(`${API_URL}/billing/request-pro`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload()),
+        setResult({
+          ...data,
+          approve_url: data.approve_url || data.payment_link,
         });
-        const fb: ProResponse = await fallback.json();
-        if (fallback.ok && fb.ok && fb.payment_link) {
-          recordFunnelEvent("request_pro", {
-            username: fb.username || username.trim() || undefined,
-            meta: { source: "landing_fallback", email: email.trim() },
-          });
-          setResult({ ...fb, approve_url: fb.payment_link });
-          setLoading(false);
-          return;
-        }
-        setError(parseApiError(fb, isES ? "No se pudo iniciar el pago" : "Could not start checkout"));
         setLoading(false);
         return;
       }
@@ -115,19 +101,20 @@ export default function ProSubscribeButton() {
 
   if (result?.ok && result.approve_url) {
     const safeUser = String(result.username || "");
-    const isEmailLink = Boolean(result.payment_link && !result.subscription_id);
+    const isManualHosted =
+      Boolean(result.payment_link && !result.subscription_id) && result.auto_activate === false;
     return (
       <div className="space-y-3 text-left">
         <div className="rounded border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-3 text-sm text-[var(--cm-on-surface-variant)]">
           <p>
             {result.message ||
-              (isEmailLink
+              (isManualHosted
                 ? isES
-                  ? "Le enviamos el link de pago. Revise su bandeja (y spam)."
-                  : "We sent the payment link. Check your inbox (and spam)."
+                  ? "Le enviamos el link de pago. Activación manual ≤24 h tras pagar."
+                  : "We sent the payment link. Manual activation within 24h after payment."
                 : isES
-                  ? "Confirme en PayPal para activar Pro."
-                  : "Confirm in PayPal to activate Pro.")}
+                  ? "Confirme en PayPal — Pro se activa en segundos (webhook)."
+                  : "Confirm in PayPal — Pro activates in seconds (webhook).")}
           </p>
           {safeUser && (
             <p className="mt-1 font-mono text-[11px] text-[var(--cm-on-surface-variant)]/60">
@@ -142,7 +129,7 @@ export default function ProSubscribeButton() {
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center text-sm font-semibold px-6 py-3 transition-colors w-full btn-mint"
         >
-          {isEmailLink
+          {isManualHosted
             ? isES
               ? "Abrir link de pago →"
               : "Open payment link →"
