@@ -78,3 +78,4 @@ Runbook founder: `ops/COMMAND_CONTROL.md` · `ops/DEPLOYMENT_MONITORING_DAILY_CO
 | Responder DMs, comentarios, emails | support-responder | `docs/agents/contexts/support-responder-context.md` |
 | Outbound a retailers | outbound-strategist | `../cli-market-content/outbound/` |
 | Demo técnica a retailer | sales-engineer | `docs/agents/contexts/sales-engineer-context.md` |
+| Demo / outbound Procure Copilot | sales-engineer + outbound-strategist | `docs/agents/contexts/sales-engineer-context.md` · `../cli-market-content/outbound/procure-sequences.md` |
