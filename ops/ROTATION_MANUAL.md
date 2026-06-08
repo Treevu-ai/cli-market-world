@@ -38,7 +38,7 @@
    # opcional si CI no resuelve solo:
    gh secret set CLOUDFLARE_ACCOUNT_ID -R Treevu-ai/cli-market-world
    ```
-4. Verificar deploy: Actions → **Deploy Landing (Cloudflare Pages)** debe quedar verde
+4. Push a `main` despliega vía integración Git de Cloudflare (check **Cloudflare Pages** en el commit). Actions solo valida el build; wrangler manual: workflow_dispatch con `wrangler_deploy=true`.
 
 ### 4. PayPal (Railway)
 - https://developer.paypal.com/dashboard/applications
