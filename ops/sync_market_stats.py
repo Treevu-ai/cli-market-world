@@ -156,7 +156,7 @@ export const MARKET_STATS = {{
   pepyBadgeUrl: "{s.PEPY_BADGE_URL}",
   pipInstallCmd: "{s.PIP_INSTALL_CMD}",
   packageVersion: "{s.PACKAGE_VERSION}",
-  ogImageUrl: "/og.png?v={s.PACKAGE_VERSION}",
+  ogImageUrl: "/og.png",
   license: "{s.LICENSE}",
   paymentsLabel: "{s.PAYMENTS_LABEL}",
   businessLines: {s.BUSINESS_LINES},
