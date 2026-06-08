@@ -19,6 +19,7 @@ import httpx
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slack_notify import (
     channel_bitacora,
+    channel_cli_market_pro,
     channel_command_control,
     channel_publicaciones,
     channel_revisiones_cursor,
@@ -79,6 +80,10 @@ def main() -> None:
         channels.append(("Command & Control", channel_command_control()))
     except ValueError as exc:
         print(f"  ⚠ Command & Control: {exc}")
+    try:
+        channels.append(("CLI Market Pro", channel_cli_market_pro()))
+    except ValueError as exc:
+        print(f"  ⚠ CLI Market Pro: {exc}")
 
     for label, cid in channels:
         print(f"  {label} ({cid})")

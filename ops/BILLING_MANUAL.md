@@ -97,7 +97,8 @@ Si el widget embebido muestra **Sold out / Agotado**:
 Atajo (recomendado tras confirmar Yape/Plin):
 
 ```bash
-python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX --bitacora
+python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX
+# → activa tier + postea en #cli-market-pro (opcional: --bitacora)
 ```
 
 Equivalente directo:
