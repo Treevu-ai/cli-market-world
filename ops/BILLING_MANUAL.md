@@ -105,6 +105,7 @@ Equivalente directo:
 
 ```bash
 python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
+python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX --display-name "Nombre Cliente"
 python3 ops/activate_pro.py --email cliente@example.com
 python3 ops/slack_cli.py activate-pro --email cliente@example.com --bitacora
 ```

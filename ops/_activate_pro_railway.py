@@ -66,8 +66,9 @@ def main() -> int:
         os.environ["BILLING_NOTIFY_EMAIL"] = os.environ.get("SMTP_USER", "")
 
     activate = ROOT / "ops" / "activate_pro.py"
+    extra = sys.argv[2:]
     proc = subprocess.run(
-        [sys.executable, str(activate), "--request-id", request_id],
+        [sys.executable, str(activate), "--request-id", request_id, *extra],
         cwd=str(ROOT),
         env=os.environ,
     )

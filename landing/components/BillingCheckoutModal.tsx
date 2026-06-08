@@ -130,6 +130,7 @@ export default function BillingCheckoutModal({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("soles");
   const [legal, setLegal] = useState(false);
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -154,6 +155,7 @@ export default function BillingCheckoutModal({
       setStep(1);
       setLegal(false);
       setEmail("");
+      setDisplayName("");
       setUsername("");
       setError("");
       setResult(null);
@@ -208,6 +210,7 @@ export default function BillingCheckoutModal({
       const payload = {
         email: email.trim(),
         username: username.trim(),
+        display_name: displayName.trim() || undefined,
         lang: isES ? "es" : "en",
         ...(opts?.resend ? { resend: true } : {}),
       };
@@ -443,12 +446,19 @@ export default function BillingCheckoutModal({
             <div className="form-stack">
               <p className="text-sm text-[var(--cm-on-surface-variant)]">
                 {isES
-                  ? "Email para activación y comprobantes."
-                  : "Email for activation and receipts."}
+                  ? "Datos para tu correo de bienvenida y activación Pro."
+                  : "Details for your welcome email and Pro activation."}
               </p>
               <input
-                type="email"
+                type="text"
                 autoFocus
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={isES ? "Tu nombre" : "Your name"}
+                className="w-full input-cyber"
+              />
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={isES ? "su@email.com" : "you@email.com"}
