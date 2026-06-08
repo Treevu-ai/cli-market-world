@@ -80,3 +80,41 @@ def test_register_runs_activation_search(monkeypatch):
 
     market_cli.cmd_register(argparse.Namespace(json=False, skip_search=False))
     assert market_cli._activation_search_done() is True
+
+
+class _FakeStatus:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def test_cmd_inflation_renders_api_shape(monkeypatch):
+    """Regression: inflation items use line/avg_* fields, not product/first_price."""
+    mock_data = {
+        "items": [
+            {
+                "line": "Supermercados",
+                "line_key": "supermercados",
+                "currency": "PEN",
+                "avg_now": 12.0,
+                "avg_before": 10.0,
+                "delta_pct": 20.0,
+                "n_products": 3,
+            }
+        ],
+        "avg_inflation_pct": 20.0,
+    }
+    printed: list = []
+
+    monkeypatch.setattr(market_cli, "cli_api", lambda *a, **k: mock_data)
+    monkeypatch.setattr(market_cli.console, "status", lambda *a, **k: _FakeStatus())
+    monkeypatch.setattr(market_cli.console, "print", lambda *a, **k: printed.append(a))
+    monkeypatch.setattr(market_cli.ui, "is_en", lambda: False)
+    monkeypatch.setattr(market_cli.ui, "is_json_mode", lambda: False)
+
+    import argparse
+
+    market_cli.cmd_inflation(argparse.Namespace(country="PE", line=None, json=False))
+    assert printed
