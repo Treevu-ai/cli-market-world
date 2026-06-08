@@ -11,6 +11,7 @@ Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicl
 
 from __future__ import annotations
 
+import logging
 import time
 
 import httpx
@@ -28,6 +29,8 @@ from market_billing import TIERS
 from procure_billing import all_valid_tiers
 from server_deps import require_admin
 
+logger = logging.getLogger(__name__)
+
 _VALID_TIERS = all_valid_tiers(TIERS)
 
 router = APIRouter(prefix="", tags=["admin"])
@@ -44,6 +47,27 @@ async def debug_fetch(
     raw = await fetch_store(store, query, page=1, limit=3)
     products = [product_from_json(p, store) for p in raw[:3]]
     return {"store": store, "query": query, "results": len(raw), "products": products}
+
+
+@router.post("/admin/activate-pro-request")
+def admin_activate_pro_request(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Activate Pro from a pending PRO- request (manual Yape/Plin or ops)."""
+    require_admin(authorization)
+    request_id = (body.get("request_id") or body.get("ref") or "").strip().upper()
+    if not request_id.startswith("PRO-"):
+        raise HTTPException(status_code=400, detail="request_id must be PRO-XXXXXXXX")
+
+    from routers.payments import _activate_pro_from_request
+
+    actions = _activate_pro_from_request(request_id, source="admin_api")
+    logger.info("audit admin_activate_pro request_id=%s actions=%s", request_id, actions)
+    if not any(a.startswith("pro_activated:") for a in actions):
+        raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
+    username = next(a.split(":", 1)[1] for a in actions if a.startswith("pro_activated:"))
+    return {"ok": True, "request_id": request_id, "username": username, "actions": actions}
 
 
 @router.post("/v1/admin/set-tier")

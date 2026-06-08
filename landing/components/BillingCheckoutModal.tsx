@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
-import { API_URL } from "@/lib/api";
+import { API_URL, WALLET_MANUAL_FALLBACK } from "@/lib/api";
 import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
@@ -11,46 +11,33 @@ import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
 import { PROCURE_PLANS } from "@/lib/procurePlans";
 import WalletManualTransfer from "@/components/WalletManualTransfer";
 
-type PaymentMethod = "paypal" | "mercadopago" | "yape" | "plin";
+/** Landing Pro checkout: PayPal (USD) or Soles via Mercado Pago (Yape · Plin · tarjeta). */
+type PaymentMethod = "paypal" | "soles";
 
 export type BillingCheckoutKind =
   | { type: "build-pro" }
   | { type: "procure"; plan: ProcurePlanSlug };
 
-const PAYMENT_METHODS: {
+const PRO_PAYMENT_OPTIONS: {
   id: PaymentMethod;
   label_es: string;
   label_en: string;
-  auto_es: string;
-  auto_en: string;
+  hint_es: string;
+  hint_en: string;
 }[] = [
   {
+    id: "soles",
+    label_es: "Soles (Yape · Plin · tarjeta)",
+    label_en: "Soles (Yape · Plin · card)",
+    hint_es: "Auto · Mercado Pago",
+    hint_en: "Auto · Mercado Pago",
+  },
+  {
     id: "paypal",
-    label_es: "PayPal",
-    label_en: "PayPal",
-    auto_es: "Auto · segundos",
-    auto_en: "Auto · seconds",
-  },
-  {
-    id: "mercadopago",
-    label_es: "Mercado Pago",
-    label_en: "Mercado Pago",
-    auto_es: "Auto · webhook",
-    auto_en: "Auto · webhook",
-  },
-  {
-    id: "yape",
-    label_es: "Yape",
-    label_en: "Yape",
-    auto_es: "Auto · vía Mercado Pago",
-    auto_en: "Auto · via Mercado Pago",
-  },
-  {
-    id: "plin",
-    label_es: "Plin",
-    label_en: "Plin",
-    auto_es: "Auto · vía Mercado Pago",
-    auto_en: "Auto · via Mercado Pago",
+    label_es: "PayPal (USD)",
+    label_en: "PayPal (USD)",
+    hint_es: "Auto · segundos",
+    hint_en: "Auto · seconds",
   },
 ];
 
@@ -84,10 +71,16 @@ function parseApiError(data: CheckoutResult, fallback: string): string {
   return data.message || fallback;
 }
 
-function methodLabel(method: string | undefined, isES: boolean): string {
-  const found = PAYMENT_METHODS.find((m) => m.id === method);
-  if (!found) return method || "";
-  return isES ? found.label_es : found.label_en;
+function apiPaymentMethod(method: PaymentMethod): string {
+  return method === "soles" ? "mercadopago" : "paypal";
+}
+
+function displayMethodLabel(method: string | undefined, isES: boolean): string {
+  if (method === "mercadopago" || method === "yape" || method === "plin") {
+    return isES ? "Soles (Mercado Pago)" : "Soles (Mercado Pago)";
+  }
+  if (method === "paypal") return "PayPal";
+  return method || "";
 }
 
 async function postCheckout(
@@ -134,7 +127,7 @@ export default function BillingCheckoutModal({
   const procureMeta = !isPro ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
 
   const [step, setStep] = useState<1 | 2 | "done">(1);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("soles");
   const [legal, setLegal] = useState(false);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -164,7 +157,7 @@ export default function BillingCheckoutModal({
       setUsername("");
       setError("");
       setResult(null);
-      setPaymentMethod("paypal");
+      setPaymentMethod("soles");
       setManualTransfer(false);
     }
   }, [open, kind]);
@@ -187,7 +180,7 @@ export default function BillingCheckoutModal({
         source,
         auto_activate: data.auto_activate !== false,
         email: email.trim(),
-        payment_method: data.payment_method || paymentMethod,
+        payment_method: data.payment_method || apiPaymentMethod(paymentMethod),
         duplicate: Boolean(data.duplicate),
       },
     });
@@ -202,21 +195,32 @@ export default function BillingCheckoutModal({
       setError(isES ? "Ingrese un email válido" : "Enter a valid email");
       return;
     }
+    if (isPro && !username.trim()) {
+      setError(
+        isES
+          ? "Usuario CLI requerido — el de market whoami"
+          : "CLI username required — from market whoami",
+      );
+      return;
+    }
     setLoading(true);
     try {
       const payload = {
         email: email.trim(),
-        username: username.trim() || undefined,
+        username: username.trim(),
         lang: isES ? "es" : "en",
         ...(opts?.resend ? { resend: true } : {}),
       };
 
       if (isPro) {
+        const apiMethod = apiPaymentMethod(paymentMethod);
         const { ok, data } = await postCheckout("/billing/pro-checkout", {
           ...payload,
-          payment_method: paymentMethod,
-          ...(manualTransfer && (paymentMethod === "yape" || paymentMethod === "plin")
-            ? { manual_transfer: true }
+          payment_method: apiMethod,
+          ...(WALLET_MANUAL_FALLBACK &&
+          manualTransfer &&
+          paymentMethod === "soles"
+            ? { payment_method: "yape", manual_transfer: true }
             : {}),
         });
         if (ok && checkoutSucceeded(data)) {
@@ -245,7 +249,7 @@ export default function BillingCheckoutModal({
 
   const renderSuccess = () => {
     if (!result?.ok) return null;
-    const method = result.payment_method || paymentMethod;
+    const method = result.payment_method || apiPaymentMethod(paymentMethod);
     const isManualWallet = result.payment_mode === "manual_transfer";
     const isAutoWallet =
       result.wallet_checkout || ((method === "yape" || method === "plin") && !isManualWallet);
@@ -257,8 +261,8 @@ export default function BillingCheckoutModal({
         {isAutoWallet && !result.duplicate && (
           <p className="text-sm font-semibold text-white">
             {isES
-              ? `Paga con ${methodLabel(method, true)} en Mercado Pago — Pro se activa en minutos`
-              : `Pay with ${methodLabel(method, false)} on Mercado Pago — Pro activates in minutes`}
+              ? `Paga en Mercado Pago (Yape, Plin o tarjeta) — Pro se activa en minutos`
+              : `Pay on Mercado Pago (Yape, Plin, or card) — Pro activates in minutes`}
           </p>
         )}
         {result.duplicate && (
@@ -334,7 +338,7 @@ export default function BillingCheckoutModal({
     );
   };
 
-  const selectedMethod = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
+  const selectedOption = PRO_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod);
 
   return (
     <div
@@ -379,8 +383,8 @@ export default function BillingCheckoutModal({
                   <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
                     {isES ? "Método de pago" : "Payment method"}
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {PAYMENT_METHODS.map((m) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {PRO_PAYMENT_OPTIONS.map((m) => (
                       <button
                         key={m.id}
                         type="button"
@@ -393,7 +397,7 @@ export default function BillingCheckoutModal({
                       >
                         <span className="block">{isES ? m.label_es : m.label_en}</span>
                         <span className="block text-[10px] font-mono opacity-70 mt-0.5">
-                          {isES ? m.auto_es : m.auto_en}
+                          {isES ? m.hint_es : m.hint_en}
                         </span>
                       </button>
                     ))}
@@ -452,11 +456,12 @@ export default function BillingCheckoutModal({
               />
               <div className="space-y-1">
                 <label htmlFor="checkout-username" className="text-xs text-[var(--cm-on-surface-variant)]">
-                  {isES ? "Usuario CLI (recomendado si ya hiciste market login)" : "CLI username (recommended if you ran market login)"}
+                  {isES ? "Usuario CLI (obligatorio)" : "CLI username (required)"}
                 </label>
                 <input
                   id="checkout-username"
                   type="text"
+                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={isES ? "el de market whoami" : "from market whoami"}
@@ -464,8 +469,8 @@ export default function BillingCheckoutModal({
                 />
                 <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60">
                   {isES
-                    ? "Si lo dejas vacío, se crea uno desde tu email — puede no coincidir con tu sesión CLI."
-                    : "If empty, one is derived from your email — may not match your CLI session."}
+                    ? "Debe coincidir con tu sesión CLI para que Pro se active en el usuario correcto."
+                    : "Must match your CLI session so Pro activates on the right user."}
                 </p>
               </div>
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
@@ -480,16 +485,16 @@ export default function BillingCheckoutModal({
                       : "Preparing…"
                     : isPro
                       ? isES
-                        ? `Pagar — ${methodLabel(paymentMethod, true)}`
-                        : `Pay — ${methodLabel(paymentMethod, false)}`
+                        ? `Pagar — ${selectedOption ? (isES ? selectedOption.label_es : selectedOption.label_en) : ""}`
+                        : `Pay — ${selectedOption ? selectedOption.label_en : ""}`
                       : isES
                         ? "Continuar — PayPal"
                         : "Continue — PayPal"}
                 </button>
               </div>
-              {isPro && paymentMethod === "paypal" && selectedMethod && (
+              {isPro && paymentMethod === "paypal" && selectedOption && (
                 <p className="text-[10px] text-center text-[var(--cm-on-surface-variant)]/50 font-mono">
-                  {isES ? selectedMethod.auto_es : selectedMethod.auto_en}
+                  {isES ? selectedOption.hint_es : selectedOption.hint_en}
                 </p>
               )}
               {isPro && paymentMethod === "paypal" && (
@@ -500,7 +505,7 @@ export default function BillingCheckoutModal({
                   </div>
                 </details>
               )}
-              {isPro && (paymentMethod === "yape" || paymentMethod === "plin") && (
+              {isPro && WALLET_MANUAL_FALLBACK && paymentMethod === "soles" && (
                 <label className="flex items-start gap-2 text-xs text-[var(--cm-on-surface-variant)]/70 cursor-pointer">
                   <input
                     type="checkbox"

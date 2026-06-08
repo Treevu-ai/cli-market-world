@@ -50,6 +50,7 @@ from market_core import (
     db_mark_subscription_requests_activated_for_user,
     db_find_subscription_request,
     db_recent_subscription_request,
+    db_update_subscription_request_payment_link,
     db_save_billing_pending,
     db_set_order_gateway_ref,
     db_set_subscription,
@@ -59,6 +60,12 @@ from market_core import (
     db_get_cart,
 )
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
+from routers.billing.pro_helpers import (
+    duplicate_mp_checkout_payload,
+    is_mp_billing_method,
+    mp_pay_note,
+    wallet_manual_fallback_enabled,
+)
 from server_deps import check_rate_limit, require_checkout_access, require_user
 
 logger = logging.getLogger(__name__)
@@ -862,7 +869,7 @@ def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
     except Exception:
         pass
 
-    pay_url = (req.get("payment_url") or "").strip().lower()
+    pay_url = (req.get("payment_link") or "").strip().lower()
     method = "yape"
     if pay_url.startswith("plin:"):
         method = "plin"
@@ -1181,101 +1188,17 @@ def request_starter_subscription(body: dict, authorization: str | None = Header(
         raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
-@router.post("/billing/request-pro")
+@router.post("/billing/request-pro", deprecated=True)
 async def request_pro_subscription(body: dict, authorization: str | None = Header(None)):
-    """Request Pro — PayPal subscription (webhook auto-activate) when API is configured.
-
-    Falls back to hosted payment link + manual activation only if PayPal REST is unavailable.
-    """
-    try:
-        check_rate_limit("billing-request-pro")
-        email = (body.get("email") or "").strip().lower()
-        lang = (body.get("lang") or "en").strip().lower()[:2]
-        force = bool(body.get("resend"))
-        note = (body.get("note") or body.get("use_case") or "").strip()
-
-        if not email or not _EMAIL_RE.match(email):
-            raise HTTPException(status_code=400, detail="valid email is required")
-
-        auth_user = ""
-        if authorization:
-            try:
-                auth_user = require_user(authorization)
-            except HTTPException:
-                auth_user = ""
-
-        username = (body.get("username") or "").strip()
-        if auth_user:
-            username = auth_user
-
-        if not force:
-            recent = db_recent_subscription_request(email)
-            if recent:
-                link = recent.get("payment_link") or ""
-                auto = "billing/subscriptions" in link.lower() or "/subscriptions?" in link.lower()
-                return {
-                    "ok": True,
-                    "request_id": recent["id"],
-                    "username": recent["username"],
-                    "email": recent["email"],
-                    "payment_link": link,
-                    "approve_url": link if auto else None,
-                    "auto_activate": auto,
-                    "email_sent": bool(recent.get("email_sent")),
-                    "message": (
-                        "Ya enviamos el enlace recientemente. Revisa tu bandeja (y spam)."
-                        if lang == "es"
-                        else "We already sent a link recently. Check inbox (and spam)."
-                    ),
-                    "duplicate": True,
-                }
-
-        username = _resolve_pro_username(
-            email,
-            body_username=username,
-            auth_username=auth_user,
-        )
-
-        try:
-            out = await _start_paypal_subscription(
-                username,
-                email,
-                plan="pro",
-                lang=lang,
-                funnel_source="request_pro",
-            )
-            if out.get("ok"):
-                out["payment_link"] = out.get("approve_url") or out.get("payment_link")
-                if lang == "es":
-                    out["message"] = (
-                        "Confirme la suscripción en PayPal — Pro se activa en segundos vía webhook. "
-                        + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
-                        + "Luego: market whoami"
-                    )
-                else:
-                    out["message"] = (
-                        "Confirm subscription in PayPal — Pro activates in seconds via webhook. "
-                        + ("We emailed you the link. " if out.get("email_sent") else "")
-                        + "Then: market whoami"
-                    )
-                return out
-        except ValueError:
-            logger.info("request-pro: PayPal not configured, using hosted-button fallback")
-        except Exception as e:
-            logger.warning("request-pro: subscription failed (%s), using hosted-button fallback", e)
-
-        return process_pro_subscription_request(
-            email=email,
-            lang=lang,
-            username=username,
-            force=force,
-            note=note,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception("request-pro failed")
-        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
+    """Deprecated — use POST /billing/pro-checkout with payment_method=paypal."""
+    logger.warning("DEPRECATED endpoint /billing/request-pro — use /billing/pro-checkout")
+    check_rate_limit("billing-request-pro")
+    delegated = {
+        **body,
+        "payment_method": body.get("payment_method") or "paypal",
+        "resend": bool(body.get("resend")),
+    }
+    return await billing_pro_checkout(delegated, authorization)
 
 
 
@@ -1364,9 +1287,7 @@ async def _start_pro_mercadopago_checkout(
 
     amount_pen = _pro_price_pen()
     wallet = (wallet_method or "").strip().lower()
-    pay_note = f"mercadopago:pending"
-    if wallet in ("yape", "plin"):
-        pay_note = f"{wallet}:mercadopago:pending"
+    pay_note = mp_pay_note(wallet)
     req = db_create_subscription_request(username, email, pay_note)
     request_id = req["id"]
 
@@ -1384,6 +1305,7 @@ async def _start_pro_mercadopago_checkout(
         raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
 
     checkout_url = mp["checkout_url"]
+    db_update_subscription_request_payment_link(request_id, checkout_url)
     sub_mail = send_pro_payment_email(
         to_email=email,
         username=username,
@@ -1477,9 +1399,20 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
         if not email or not _EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="valid email is required")
 
+        body_username = (body.get("username") or "").strip()
+        if not auth_user and not body_username:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "username is required — run market login first or enter your CLI user"
+                    if lang != "es"
+                    else "usuario CLI requerido — ejecuta market login o ingresa tu usuario"
+                ),
+            )
+
         username = _resolve_pro_username(
             email,
-            body_username=(body.get("username") or ""),
+            body_username=body_username,
             auth_username=auth_user,
         )
 
@@ -1507,6 +1440,10 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                             else "We already sent the PayPal link recently. Check inbox (and spam)."
                         ),
                     }
+                if is_mp_billing_method(method):
+                    dup = duplicate_mp_checkout_payload(recent, method=method, lang=lang)
+                    if dup:
+                        return dup
 
         if method == "paypal":
             try:
@@ -1548,7 +1485,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
             out["approve_url"] = out.get("payment_link")
             return out
 
-        manual_transfer = bool(body.get("manual_transfer"))
+        manual_transfer = bool(body.get("manual_transfer")) and wallet_manual_fallback_enabled()
 
         if method in ("yape", "plin") and manual_transfer:
             return _start_pro_qr_checkout(
@@ -1803,55 +1740,13 @@ async def billing_paypal(authorization: str | None = Header(None)):
         return {"error": str(e)}
 
 
-@router.post("/billing/paypal-subscribe")
+@router.post("/billing/paypal-subscribe", deprecated=True)
 async def billing_paypal_subscribe(body: dict, authorization: str | None = Header(None)):
-    """PayPal Subscription from landing — auto-activate via webhook."""
-    try:
-        check_rate_limit("billing-paypal-subscribe")
-        email = (body.get("email") or "").strip().lower()
-        lang = (body.get("lang") or "en").strip().lower()[:2]
-        if not email or not _EMAIL_RE.match(email):
-            raise HTTPException(status_code=400, detail="valid email is required")
-
-        auth_user = ""
-        if authorization:
-            try:
-                auth_user = require_user(authorization)
-            except HTTPException:
-                auth_user = ""
-
-        username = _resolve_pro_username(
-            email,
-            body_username=(body.get("username") or ""),
-            auth_username=auth_user,
-        )
-
-        out = await _start_paypal_subscription(
-            username, email, plan="pro", lang=lang, funnel_source="landing_paypal_subscribe",
-        )
-        if not out.get("ok"):
-            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
-
-        if lang == "es":
-            out["message"] = (
-                "Confirme la suscripción en PayPal. "
-                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
-                + "Luego: market whoami"
-            )
-        else:
-            out["message"] = (
-                "Confirm subscription in PayPal. "
-                + ("We emailed you the link. " if out.get("email_sent") else "")
-                + "Then: market whoami"
-            )
-        return out
-    except HTTPException:
-        raise
-    except ValueError as e:
-        raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
-    except Exception as e:
-        logger.exception("billing_paypal_subscribe failed")
-        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
+    """Deprecated — use POST /billing/pro-checkout with payment_method=paypal."""
+    logger.warning("DEPRECATED endpoint /billing/paypal-subscribe — use /billing/pro-checkout")
+    check_rate_limit("billing-paypal-subscribe")
+    delegated = {**body, "payment_method": "paypal"}
+    return await billing_pro_checkout(delegated, authorization)
 
 
 @router.post("/billing/starter")

@@ -1866,14 +1866,21 @@ def cmd_upgrade(args):
     plan = (getattr(args, "plan", None) or "pro").strip().lower()
     if plan != "pro":
         plan = "pro"
-    payment = (getattr(args, "payment", None) or "paypal").strip().lower()
+    payment = (getattr(args, "payment", None) or "").strip().lower()
+    if not payment:
+        payment = "mercadopago" if es else "paypal"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
     manual_wallet = bool(getattr(args, "manual_transfer", False))
 
     if manual:
         email = (args.email or "").strip()
-        payload = {"email": email, "lang": get_lang(), "resend": True}
-        data = cli_api("POST", "/billing/request-pro", payload)
+        payload = {
+            "email": email,
+            "lang": get_lang(),
+            "resend": True,
+            "payment_method": "paypal",
+        }
+        data = cli_api("POST", "/billing/pro-checkout", payload)
         if getattr(args, "json", False):
             ui.emit_json(ui.json_response(True, data), console)
             return
@@ -2165,8 +2172,8 @@ def main():
     p.add_argument(
         "--payment",
         choices=["paypal", "mercadopago", "yape", "plin"],
-        default="paypal",
-        help="Payment method (yape/plin use Mercado Pago checkout — auto-activate)",
+        default=None,
+        help="Payment method (default: Mercado Pago in es, PayPal in en)",
     )
     p.add_argument("--email", help="Email for checkout receipt (optional if registered)")
     p.add_argument(
