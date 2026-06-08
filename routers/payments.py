@@ -20,6 +20,7 @@ Endpoints:
   POST /billing/request-starter  Email Starter checkout link (fallback)
   POST /billing/paypal      PayPal Subscription (authenticated CLI)
   POST /billing/paypal-subscribe  PayPal Subscription (landing — auto-activate)
+  POST /billing/procure-subscribe  Procure Copilot PayPal subscription (landing #procure)
   POST /billing/checkout    Stripe Checkout — DISABLED (no activation webhook yet)
   GET  /paypal-status       PayPal config diagnostic
   POST /checkout/mercadopago     Mercado Pago Checkout Pro (PEN)
@@ -119,6 +120,16 @@ def _parse_market_order_ref(resource: dict) -> str | None:
     return m.group(1).upper() if m else None
 
 
+def _tier_from_billing_kind(kind: str) -> str:
+    """Map billing_pending.kind → subscriptions.tier."""
+    k = (kind or "").strip().lower()
+    if k.startswith("procure_"):
+        return k
+    if k == "starter":
+        return "starter"
+    return "pro"
+
+
 async def _handle_paypal_event(event: dict) -> dict:
     event_type = event.get("event_type", "")
     resource = event.get("resource") or {}
@@ -166,7 +177,7 @@ async def _handle_paypal_event(event: dict) -> dict:
             username = pending.get("username", "")
         if username:
             kind = (pending or {}).get("kind", "subscription")
-            tier = "starter" if kind == "starter" else "pro"
+            tier = _tier_from_billing_kind(kind)
             db_set_subscription(username, tier, paypal_subscription_id=sub_id)
             if sub_id:
                 db_delete_billing_pending(sub_id)
@@ -190,7 +201,7 @@ async def _handle_paypal_event(event: dict) -> dict:
                     lang = (resource.get("locale") or "es")[:2].lower()
                     if lang not in ("es", "en"):
                         lang = "es"
-                    if tier == "starter":
+                    if tier in ("starter", "procure_starter"):
                         from market_connectors.email_outbound import send_starter_activated_email
                         mail = send_starter_activated_email(
                             to_email=email,
@@ -1409,6 +1420,108 @@ def _resolve_pro_username(
     return safe or f"user-{uuid.uuid4().hex[:8]}"
 
 
+async def _start_procure_subscription(
+    username: str,
+    email: str,
+    *,
+    plan_slug: str,
+    lang: str = "en",
+    funnel_source: str = "procure_subscribe",
+) -> dict:
+    """PayPal subscription for Procure Copilot tiers (kind = procure_* in billing_pending)."""
+    from procure_billing import procure_plan_config
+    from market_connectors.email_outbound import send_pro_subscribe_pending_email
+    from market_connectors.paypal_payments import PAYPAL_API, _ensure_billing_plan, _get_access_token
+
+    cfg = procure_plan_config(plan_slug)
+    tier = cfg["tier"]
+    amount = float(cfg["amount"])
+    label = cfg["label"]
+    prefix = cfg["request_prefix"]
+    return_url = os.getenv(
+        "PROCURE_SUBSCRIBE_RETURN_URL",
+        "https://procure-copilot.contacto-8e4.workers.dev/dashboard?sub=success",
+    )
+    cancel_url = os.getenv(
+        "PROCURE_SUBSCRIBE_CANCEL_URL",
+        "https://cli-market.dev/#procure?sub=cancelled",
+    )
+
+    token = await _get_access_token()
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        h = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        plan_id = await _ensure_billing_plan(
+            token,
+            client,
+            amount,
+            "USD",
+            env_plan_id=cfg["paypal_plan_id"],
+            product_name=label,
+            plan_name=f"{label} Monthly",
+            description=f"${amount:.0f}/month — Procure Copilot",
+        )
+        p3 = await client.post(
+            f"{PAYPAL_API}/v1/billing/subscriptions",
+            json={
+                "plan_id": plan_id,
+                "custom_id": username,
+                "application_context": {
+                    "return_url": return_url,
+                    "cancel_url": cancel_url,
+                    "brand_name": "Procure Copilot",
+                    "user_action": "SUBSCRIBE_NOW",
+                    "shipping_preference": "NO_SHIPPING",
+                },
+            },
+            headers=h,
+        )
+        if p3.status_code not in (200, 201):
+            return {"error": f"Subscription failed: {p3.text}"}
+        data = p3.json()
+        approve_link = next(
+            (link["href"] for link in data.get("links", []) if link.get("rel") == "approve"),
+            None,
+        )
+        sub_id = data["id"]
+
+    db_save_billing_pending(sub_id, "paypal", username, tier)
+    req = db_create_subscription_request(username, email, approve_link or "", prefix=prefix)
+    mail = send_pro_subscribe_pending_email(
+        to_email=email,
+        username=username,
+        approve_url=approve_link or "",
+        request_id=req["id"],
+        lang=lang,
+    )
+    if mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "procure_subscribe",
+            username=username,
+            meta={"email": email, "source": funnel_source, "plan": plan_slug, "tier": tier},
+            dedupe=False,
+        )
+    except Exception:
+        pass
+    return {
+        "ok": True,
+        "subscription_id": sub_id,
+        "approve_url": approve_link,
+        "plan": label,
+        "tier": tier,
+        "procure_plan": plan_slug,
+        "amount": f"${amount:.0f}/mo",
+        "username": username,
+        "auto_activate": True,
+        "request_id": req["id"],
+        "email_sent": mail.get("sent", False),
+        "email_error": mail.get("reason") if not mail.get("sent") else None,
+    }
+
+
 async def _start_paypal_subscription(
     username: str,
     email: str,
@@ -1575,6 +1688,63 @@ async def billing_starter(authorization: str | None = Header(None)):
     except Exception as e:
         logger.exception("billing_starter failed")
         return {"error": str(e)}
+
+
+@router.post("/billing/procure-subscribe")
+async def billing_procure_subscribe(body: dict, authorization: str | None = Header(None)):
+    """Procure Copilot subscription from cli-market.dev/#procure — auto-activate via webhook."""
+    try:
+        check_rate_limit("billing-procure-subscribe")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        plan_slug = (body.get("plan") or "pro").strip().lower()
+
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        auth_user = ""
+        if authorization:
+            try:
+                auth_user = require_user(authorization)
+            except HTTPException:
+                auth_user = ""
+
+        username = _resolve_pro_username(
+            email,
+            body_username=(body.get("username") or ""),
+            auth_username=auth_user,
+        )
+
+        out = await _start_procure_subscription(
+            username,
+            email,
+            plan_slug=plan_slug,
+            lang=lang,
+            funnel_source="landing_procure_subscribe",
+        )
+        if not out.get("ok"):
+            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+
+        if lang == "es":
+            out["message"] = (
+                "Confirme la suscripción Procure en PayPal. "
+                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                + "Luego pegue su API key (market register → market keys) en el dashboard Procure."
+            )
+        else:
+            out["message"] = (
+                "Confirm Procure subscription on PayPal. "
+                + ("We emailed you the link. " if out.get("email_sent") else "")
+                + "Then paste your API key (market register → market keys) in the Procure dashboard."
+            )
+        return out
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("billing_procure_subscribe failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 @router.post("/billing/starter-subscribe")

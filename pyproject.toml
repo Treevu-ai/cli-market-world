@@ -42,7 +42,7 @@ market-mcp = "market_mcp:main"
 
 [tool.setuptools]
 py-modules = [
-    "market_cli", "market_ui", "account_service", "market_funnel", "market_server", "market_security", "server_deps", "collect_prices", "backend_interface", "index_gate", "price_snapshots_schema",
+    "market_cli", "market_ui", "account_service", "procure_billing", "market_funnel", "market_server", "market_security", "server_deps", "collect_prices", "backend_interface", "index_gate", "price_snapshots_schema",
 ]
 
 [tool.ruff]

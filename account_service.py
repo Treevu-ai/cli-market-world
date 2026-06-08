@@ -13,6 +13,7 @@ from market_core import (
     db_list_api_keys,
     get_db,
 )
+from procure_billing import is_procure_tier, resolve_tier_config, tier_to_procure_plan
 
 
 def _rate_count(db, key: str, window_start: float) -> int:
@@ -62,8 +63,28 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
             "cta_es": "Contactar ventas",
             "cta_en": "Contact sales",
         },
+        "procure_starter": {
+            "next_tier": "procure_pro",
+            "title_es": "Procure Pro — aprobaciones y checkout",
+            "title_en": "Procure Pro — approvals and checkout",
+            "cli_es": "cli-market.dev/#procure",
+            "cli_en": "cli-market.dev/#procure",
+            "url": "https://cli-market.dev/#procure",
+            "cta_es": "Upgrade Procure Pro",
+            "cta_en": "Upgrade Procure Pro",
+        },
+        "procure_pro": {
+            "next_tier": "procure_builder",
+            "title_es": "Procure Builder — multi-país y volumen",
+            "title_en": "Procure Builder — multi-country volume",
+            "cli_es": "cli-market.dev/#procure",
+            "cli_en": "cli-market.dev/#procure",
+            "url": "https://cli-market.dev/#procure",
+            "cta_es": "Upgrade Procure Builder",
+            "cta_en": "Upgrade Procure Builder",
+        },
     }
-    if tier_l in ("builder", "enterprise"):
+    if tier_l in ("builder", "enterprise", "procure_builder"):
         return {
             "next_tier": None,
             "title": "Plan máximo" if es else "Top tier",
@@ -88,7 +109,7 @@ def _is_auto_activate_link(payment_link: str) -> bool:
 
 def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, Any]:
     es = lang == "es"
-    if tier in ("pro", "builder", "enterprise"):
+    if tier in ("pro", "builder", "enterprise") or is_procure_tier(tier):
         return {
             "state": "active",
             "activation": None,
@@ -102,30 +123,20 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
         return {"state": "none", "activation": None, "request_id": None, "message": None}
 
     req_id = pending.get("id") or ""
-    is_starter = req_id.startswith("STR-")
+    is_starter = req_id.startswith("STR-") or req_id.startswith("PCS-")
+    is_procure_req = req_id.startswith(("PCS-", "PCP-", "PCB-"))
     auto = _is_auto_activate_link(pending.get("payment_link") or "")
     if auto:
-        if is_starter:
-            return {
-                "state": "starter_pending_auto",
-                "activation": "auto",
-                "request_id": req_id,
-                "approve_url": pending.get("payment_link"),
-                "message": (
-                    "Pro pendiente: confirme en PayPal — activación en segundos."
-                    if es
-                    else "Pro pending: confirm on PayPal — activates in seconds."
-                ),
-            }
+        label = "Procure" if is_procure_req else ("Starter" if is_starter else "Pro")
         return {
-            "state": "pro_pending_auto",
+            "state": "starter_pending_auto" if is_starter else "pro_pending_auto",
             "activation": "auto",
             "request_id": req_id,
             "approve_url": pending.get("payment_link"),
             "message": (
-                "Pro pendiente: confirme en PayPal — activación en segundos."
+                f"{label} pendiente: confirme en PayPal — activación en segundos."
                 if es
-                else "Pro pending: confirm on PayPal — activates in seconds."
+                else f"{label} pending: confirm on PayPal — activates in seconds."
             ),
         }
     if is_starter:
@@ -156,7 +167,7 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
 def build_account_summary(username: str, *, lang: str = "es") -> dict[str, Any]:
     sub = db_get_subscription(username)
     tier = sub.get("tier", "free")
-    tier_cfg = TIERS.get(tier, TIERS["free"])
+    tier_cfg = resolve_tier_config(tier, TIERS.get(tier, TIERS["free"]))
     keys = db_list_api_keys(username)
     keys_limit = tier_cfg.get("api_keys", 1)
 
@@ -178,6 +189,8 @@ def build_account_summary(username: str, *, lang: str = "es") -> dict[str, Any]:
     return {
         "username": username,
         "tier": tier,
+        "product_line": "procure" if is_procure_tier(tier) else "build",
+        "procure_plan": tier_to_procure_plan(tier),
         "limits": {
             "req_day": day_limit if day_limit != -1 else "unlimited",
             "req_min": min_limit if min_limit != -1 else "unlimited",
