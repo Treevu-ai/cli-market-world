@@ -31,22 +31,41 @@ jobs:
           npm ci
           npm run build
 
-      - name: Require Cloudflare credentials
+      - name: Resolve Cloudflare account ID
+        id: cf_account
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
-            echo "::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID GitHub secrets."
-            echo "Create token: Cloudflare Dashboard → My Profile → API Tokens"
-            echo "Permissions: Account / Cloudflare Pages / Edit"
+          if [ -z "$CF_TOKEN" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN GitHub secret."
             exit 1
           fi
+          if [ -n "$CF_ACCOUNT" ]; then
+            echo "id=$CF_ACCOUNT" >> "$GITHUB_OUTPUT"
+            echo "Using CLOUDFLARE_ACCOUNT_ID from secrets"
+            exit 0
+          fi
+          RESP=$(curl -sS -H "Authorization: Bearer $CF_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts?per_page=1")
+          ID=$(echo "$RESP" | jq -r '.result[0].id // empty')
+          if [ -z "$ID" ] || [ "$ID" = "null" ]; then
+            RESP=$(curl -sS -H "Authorization: Bearer $CF_TOKEN" \
+              "https://api.cloudflare.com/client/v4/user/memberships?per_page=1")
+            ID=$(echo "$RESP" | jq -r '.result[0].account.id // empty')
+          fi
+          if [ -z "$ID" ] || [ "$ID" = "null" ]; then
+            echo "::error::Could not resolve Cloudflare account ID. Set CLOUDFLARE_ACCOUNT_ID secret or fix token permissions."
+            echo "$RESP" | jq -r '.errors[]?.message // .' 2>/dev/null || echo "$RESP"
+            exit 1
+          fi
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          echo "Resolved account ID from API token"
 
       - name: Deploy to Cloudflare Pages (wrangler)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ${{ steps.cf_account.outputs.id }}
           wranglerVersion: "4"
           command: pages deploy landing/out --project-name=cli-market-world --branch=main
