@@ -89,4 +89,4 @@ def test_pam_journey_synthetic():
     body = acct.json()
     assert body["tier"] == "free"
     assert "usage" in body
-    assert body["upgrade"]["next_tier"] == "starter"
+    assert body["upgrade"]["next_tier"] == "pro"

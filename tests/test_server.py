@@ -628,7 +628,7 @@ def test_auth_account_returns_usage(monkeypatch):
     assert data["tier"] == "free"
     assert "usage" in data
     assert "limits" in data
-    assert data["upgrade"]["next_tier"] == "starter"
+    assert data["upgrade"]["next_tier"] == "pro"
 
 
 def test_auth_account_shows_pending_pro_billing(monkeypatch):
