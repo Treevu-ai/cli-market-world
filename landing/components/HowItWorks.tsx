@@ -5,12 +5,48 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 
 const steps = [
-  { cmd: MARKET_STATS.pipInstallCmd, out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} instalado`, out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} installed`, label: "Install", icon: "↓" },
-  { cmd: "market hello", out_es: `${MARKET_STATS.retailersDefined} retailers · ${MARKET_STATS.pricesVerifiedLabel} precios · ${MARKET_STATS.mcpTools} MCP tools`, out_en: `${MARKET_STATS.retailersDefined} retailers · ${MARKET_STATS.pricesVerifiedLabel} prices · ${MARKET_STATS.mcpTools} MCP tools`, label: "Hello", icon: "👋" },
-  { cmd: "market search \"leche\" --country PE", out_es: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", out_en: "Wong S/4.20 · Metro S/3.90 · Plaza Vea S/4.50", label: "Search", icon: "🔍" },
-  { cmd: "market indicators --country PE", out_es: `${MARKET_STATS.indicatorsCount} indicadores · OFF · Wikimedia · World Bank · IMF`, out_en: `${MARKET_STATS.indicatorsCount} indicators · OFF · Wikimedia · World Bank · IMF`, label: "Indicators", icon: "📊" },
-  { cmd: "market ask \"compra arroz al mejor precio\"", out_es: "Metro S/2.80 · Ahorro: S/0.70/unidad", out_en: "Best: Metro S/2.80 · Savings: S/0.70/unit", label: "Ask", icon: "💬" },
-  { cmd: "market basket \"arroz:1 aceite:1 leche:1\" --country AR", out_es: "Carrefour $3.20 · Jumbo $3.50 · Vea $2.90", out_en: "Carrefour $3.20 · Jumbo $3.50 · Vea $2.90", label: "Basket", icon: "🧺" },
+  {
+    cmd: MARKET_STATS.pipInstallCmd,
+    out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · MIT`,
+    out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · MIT`,
+    label: "Install",
+    icon: "↓",
+  },
+  {
+    cmd: "market init",
+    out_es: `Cuenta free · ${MARKET_STATS.retailersVerified} retailers · ${MARKET_STATS.mcpTools} MCP`,
+    out_en: `Free account · ${MARKET_STATS.retailersVerified} retailers · ${MARKET_STATS.mcpTools} MCP`,
+    label: "Init",
+    icon: "⚡",
+  },
+  {
+    cmd: "market discover --country PE",
+    out_es: "Shop bundle · retailers + líneas + países en una llamada",
+    out_en: "Shop bundle · retailers + lines + countries in one call",
+    label: "Discover",
+    icon: "🛒",
+  },
+  {
+    cmd: 'market compare "arroz" --country PE',
+    out_es: "Metro S/2.90 · Wong S/3.10 · precio/kg normalizado",
+    out_en: "Metro S/2.90 · Wong S/3.10 · normalized per kg",
+    label: "Compare",
+    icon: "🔍",
+  },
+  {
+    cmd: 'market basket "arroz:1 leche:1" --country PE',
+    out_es: "Canasta multi-retailer · mejor total en <1s",
+    out_en: "Multi-retailer basket · best total in <1s",
+    label: "Basket",
+    icon: "🧺",
+  },
+  {
+    cmd: "market tools",
+    out_es: `Shop · Intel · Account · ${MARKET_STATS.mcpTools} tools (46 legacy)`,
+    out_en: `Shop · Intel · Account · ${MARKET_STATS.mcpTools} tools (46 legacy)`,
+    label: "MCP",
+    icon: "🔌",
+  },
 ];
 
 export default function HowItWorks() {
@@ -18,9 +54,9 @@ export default function HowItWorks() {
   const isES = lang === "es";
 
   return (
-    <section id="how" className="landing-section-alt animate-fade-in">
+    <section id="how" className="landing-section landing-section-alt animate-fade-in">
       <div className="landing-container text-center">
-        <p className="section-eyebrow mb-4">
+        <p className="section-eyebrow mb-4 mt-2">
           {isES ? "Cómo funciona" : "How it works"}
         </p>
         <h2 className="section-title">
@@ -28,8 +64,8 @@ export default function HowItWorks() {
         </h2>
         <p className="section-intro max-w-xl">
           {isES
-            ? `Hello → Search → Indicators → Ask → Basket. ${MARKET_STATS.mcpTools} herramientas MCP, ${MARKET_STATS.indicatorsCount} indicadores, checkout Pro.`
-            : `Hello → Search → Indicators → Ask → Basket. ${MARKET_STATS.mcpTools} MCP tools, ${MARKET_STATS.indicatorsCount} indicators, Pro checkout.`}
+            ? `Init → Discover → Compare → Basket → MCP. ${MARKET_STATS.mcpTools} herramientas, bundles Shop/Intel/Account, checkout Pro.`
+            : `Init → Discover → Compare → Basket → MCP. ${MARKET_STATS.mcpTools} tools, Shop/Intel/Account bundles, Pro checkout.`}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left mb-12 min-w-0">

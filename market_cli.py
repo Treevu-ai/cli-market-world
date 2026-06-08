@@ -968,7 +968,7 @@ def cmd_tools(args):
     """Catálogo MCP por bundle — misma superficie que market-mcp tools/list."""
     profile = getattr(args, "profile", None) or "default"
     try:
-        from market_core.market_mcp_registry import list_tools, public_tool_count
+        from market_core.market_mcp_registry import list_tools
     except Exception as e:
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(False, error=f"MCP tools unavailable: {e}"), console)

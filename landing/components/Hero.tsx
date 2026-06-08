@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
+import HeroDemo from "@/components/HeroDemo";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
@@ -94,19 +95,7 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="mt-12 w-full max-w-[900px]">
-          <img
-            src="/demo.gif"
-            alt={isES ? "Demo: agente de IA comprando canasta básica en supermercados peruanos con CLI Market" : "Demo: AI agent shopping a basic basket at Peruvian supermarkets with CLI Market"}
-            className="mx-auto rounded-xl border border-[var(--cm-outline-variant)]/40 shadow-lg max-w-full h-auto"
-            width={960}
-            height={540}
-            loading="lazy"
-          />
-          <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono text-center">
-            {isES ? "Agente IA · canasta básica PE · 30 verificados · 14 s" : "AI agent · PE basic basket · 30 verified · 14 s"}
-          </p>
-        </div>
+        <HeroDemo />
       </div>
     </section>
   );
