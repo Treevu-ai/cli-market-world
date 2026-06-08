@@ -674,8 +674,9 @@ def run_landing_pricing_smoke(landing: str, rep: Report) -> None:
 
     # Pricing cards should expose CTA only — email fields live in checkout modal (client)
     pricing_slice = body[body.find('id="pricing"'): body.find('id="faq"')] if 'id="pricing"' in body else ""
-    if pricing_slice.count('type="email"') > 2:
-        rep.add("landing", "pricing-no-inline-email", "FAIL", f"email inputs={pricing_slice.count('type=\"email\"')}")
+    email_inputs = pricing_slice.count('type="email"')
+    if email_inputs > 2:
+        rep.add("landing", "pricing-no-inline-email", "FAIL", f"email inputs={email_inputs}")
     else:
         rep.add("landing", "pricing-no-inline-email", "PASS", "cards lean")
 
