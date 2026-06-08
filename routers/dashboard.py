@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header
 
-from market_core import STORES, get_default_stores, get_db, price_to_usd
+from market_core import STORES, canonical_line_name, get_default_stores, get_db, price_to_usd
 from market_basket import build_canasta_basica
 from market_spread import build_spread_analytics, find_median_outliers
 from dashboard_glossary import (
@@ -264,18 +264,26 @@ def _dashboard_data():
 
     total_runs = db.execute("SELECT COUNT(*) as n FROM collector_runs").fetchone()["n"]
 
-    # ── By line ──────────────────────────────────────────────────────────────
-    by_line = db.execute(
+    # ── By line (canonical business line — never GROUP BY legacy line_name) ───
+    by_line_raw = db.execute(
         """
-        SELECT line, line_name,
+        SELECT line,
                COUNT(DISTINCT product_id||store) as count,
                ROUND(AVG(price)::numeric, 2) as avg_price,
                ROUND(MIN(price)::numeric, 2) as min_price,
                ROUND(MAX(price)::numeric, 2) as max_price
         FROM price_snapshots WHERE price > 0 AND price < 999999
-        GROUP BY line, line_name ORDER BY count DESC
+          AND line IS NOT NULL AND line != ''
+        GROUP BY line ORDER BY count DESC
         """
     ).fetchall()
+    by_line = [
+        {
+            **dict(r),
+            "line_name": canonical_line_name(r["line"]),
+        }
+        for r in by_line_raw
+    ]
 
     # ── By country ───────────────────────────────────────────────────────────
     by_country_raw = db.execute(
@@ -320,9 +328,10 @@ def _dashboard_data():
     for r in price_rows:
         key = (r["line"], r["currency"])
         if key not in groups:
+            line_id = r["line"] or ""
             groups[key] = {
-                "line": r["line"],
-                "line_name": r["line_name"],
+                "line": line_id,
+                "line_name": canonical_line_name(line_id),
                 "currency": r["currency"],
                 "prices": [],
                 "products": set(),
@@ -347,10 +356,14 @@ def _dashboard_data():
     for key in sorted(groups):
         g = groups[key]
         prices = sorted(g["prices"])
+        line_id = g["line"]
+        line_label = canonical_line_name(line_id)
+        currency = g["currency"]
         by_line_currency.append({
-            "line": g["line"],
-            "line_name": g["line_name"],
-            "currency": g["currency"],
+            "line": line_id,
+            "line_name": line_label,
+            "category_label": f"{line_label} · {currency}",
+            "currency": currency,
             "count": len(g["products"]),
             "p25": _percentile(prices, 0.25),
             "p50": _percentile(prices, 0.50),
@@ -433,33 +446,26 @@ def _dashboard_data():
         """
     ).fetchall()
 
-    # ── Cheapest store by line ───────────────────────────────────────────────
+    # ── Cheapest store by line (one row per canonical line) ─────────────────
     cheapest_by_line = db.execute(
         """
-        SELECT line, line_name, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
+        SELECT line, store, store_name, ROUND(AVG(price)::numeric,2) as avg_price, currency, COUNT(*) as n
         FROM price_snapshots WHERE price > 0 AND price < 999999
-          AND line_name IS NOT NULL AND line_name != ''
-        GROUP BY line, line_name, store, store_name, currency ORDER BY line, avg_price ASC
+          AND line IS NOT NULL AND line != ''
+        GROUP BY line, store, store_name, currency ORDER BY line, avg_price ASC
         """
     ).fetchall()
 
-    line_display: dict[str, str] = {
-        "supermercados": "Supermercados",
-        "farmacias": "Farmacias",
-        "electro": "Electro",
-        "moda": "Moda",
-        "hogar": "Hogar",
-        "departamentales": "Departamentales",
-    }
     seen_lines: set[str] = set()
     cheapest_dedup: list[dict] = []
     for r in cheapest_by_line:
-        ln = r["line_name"] or line_display.get(r.get("line", ""), r.get("line", "?"))
-        if ln and ln not in seen_lines:
-            seen_lines.add(ln)
-            item = dict(r)
-            item["line_name"] = ln
-            cheapest_dedup.append(item)
+        line_id = r.get("line") or ""
+        if not line_id or line_id in seen_lines:
+            continue
+        seen_lines.add(line_id)
+        item = dict(r)
+        item["line_name"] = canonical_line_name(line_id)
+        cheapest_dedup.append(item)
 
     # ── Coverage ─────────────────────────────────────────────────────────────
     stores_24h = active_stores_24h
@@ -729,7 +735,7 @@ def _dashboard_data():
         delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg > 0 else 0
         cur = row["currency"] or ""
         inflation.append({
-            "line": row["line_name"] or row["line"],
+            "line": row.get("category_label") or row["line_name"],
             "line_key": row["line"],
             "currency": cur,
             "avg_now": r_avg,
@@ -858,7 +864,7 @@ def _dashboard_data():
         },
         "moat_guide": moat_guide,
         "metric_glossary": build_metric_glossary(),
-        "by_line": [dict(r) for r in by_line],
+        "by_line": by_line,
         "by_country": by_country,
         "dispersion": dispersion,
         "canasta_spreads": canasta_spreads,
