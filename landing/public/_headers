@@ -1,0 +1,5 @@
+/og.png
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/og-preview.png
+  Cache-Control: public, max-age=3600, must-revalidate

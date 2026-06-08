@@ -19,6 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const siteUrl = "https://cli-market.dev";
+const ogImage = `${siteUrl}/og.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     alternateLocale: ["en_US"],
     images: [
       {
-        url: MARKET_STATS.ogImageUrl,
+        url: ogImage,
         width: 1200,
         height: 630,
         alt: "CLI Market — commerce infrastructure for AI agents",
@@ -60,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CLI Market — Commerce infrastructure for AI agents",
     description: `AI commerce API + MCP tools. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
-    images: [MARKET_STATS.ogImageUrl],
+    images: [ogImage],
   },
 };
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { MARKET_STATS } from "@/lib/marketStats";
 
+const ogImage = "https://cli-market.dev/og.png";
+
 export const metadata: Metadata = {
   title: "API Docs — Quickstart, Compare, MCP",
   description:
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
     description: "REST + CLI + MCP reference for verified LatAm retail prices.",
     url: "https://cli-market.dev/docs",
     type: "website",
-    images: [{ url: MARKET_STATS.ogImageUrl, width: 1200, height: 630, alt: "CLI Market API documentation" }],
+    images: [{ url: ogImage, width: 1200, height: 630, alt: "CLI Market API documentation" }],
   },
 };
 
