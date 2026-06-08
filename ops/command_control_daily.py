@@ -109,6 +109,11 @@ BOOKMARKS = [
     ("GitHub", "https://github.com/Treevu-ai/cli-market-world"),
 ]
 
+# Meta internas (alineadas con market_golive.py)
+COVERAGE_7D_TARGET = 80.0
+LINKAGE_TARGET = 85.0
+STORE_SUCCESS_WARN = 70.0
+
 
 def _sparkline(values: list[float], *, width: int = 10) -> str:
     """Unicode mini-chart (oldest → newest, left to right)."""
@@ -124,6 +129,30 @@ def _sparkline(values: list[float], *, width: int = 10) -> str:
         idx = int((v - lo) / (hi - lo) * (len(blocks) - 1))
         out.append(blocks[idx])
     return "".join(out)
+
+
+def _status_emoji(level: str) -> str:
+    return {"ok": "✅", "warn": "🟡", "critical": "🔴", "info": "ℹ️"}.get(level, "•")
+
+
+def _metric_level(
+    value: float,
+    *,
+    target: float | None = None,
+    warn_below: float | None = None,
+    higher_is_better: bool = True,
+) -> str:
+    if target is not None:
+        if higher_is_better:
+            if value >= target:
+                return "ok"
+            if warn_below is not None and value >= warn_below:
+                return "warn"
+            return "critical"
+        if value <= target:
+            return "ok"
+        return "warn"
+    return "ok"
 
 
 def _delta_str(current: float, previous: float | None, *, pct: bool = False) -> str:
@@ -247,18 +276,17 @@ def _collect_metrics(*, remote: bool) -> dict[str, Any]:
         else _fetch_index_stats_local() or _fetch_index_stats_remote()
     )
 
-    golive_status = "unknown"
-    golive_overall = "unknown"
+    golive: dict[str, Any] = {}
     try:
         from market_golive import go_live_summary
 
-        gl = go_live_summary(days=30, dashboard_data=dash)
-        golive_overall = gl.get("overall_status", "unknown")
-        golive_status = gl.get("kpis", {}).get("data_moat", {}).get("status", "unknown")
+        golive = go_live_summary(days=30, dashboard_data=dash)
     except Exception:
-        pass
+        golive = {}
 
     pam = _pam_summary(_latest_pam())
+    act = golive.get("kpis", {}).get("activation", {})
+    rev = golive.get("kpis", {}).get("revenue", {})
 
     return {
         "date": today,
@@ -281,17 +309,380 @@ def _collect_metrics(*, remote: bool) -> dict[str, Any]:
             "snapshots_linked": int((index or {}).get("snapshots_linked", 0) or 0),
         },
         "golive": {
-            "overall": golive_overall,
-            "moat_status": golive_status,
+            "overall": golive.get("overall_status", "unknown"),
+            "moat_status": golive.get("kpis", {}).get("data_moat", {}).get("status", "unknown"),
+            "register_30d": int(act.get("register", 0) or 0),
+            "first_search_30d": int(act.get("first_search", 0) or 0),
+            "search_per_register": act.get("search_per_register"),
+            "request_pro_30d": int(rev.get("request_pro", 0) or 0),
+            "activated_30d": int(rev.get("activated", 0) or 0),
+            "alerts": [
+                a for a in golive.get("alerts", [])
+                if a.get("severity") in ("critical", "warn")
+            ][:5],
         },
         "pam": pam,
     }
 
 
-def _trend_section(history: list[dict[str, Any]], current: dict[str, Any]) -> list[str]:
-    """Build sparkline rows from historical snapshots."""
+def _pct(rate: float | None) -> str:
+    if rate is None:
+        return "—"
+    return f"{rate * 100:.1f}%"
+
+
+def _adoption_clause(gl: dict[str, Any]) -> str:
+    """Frase de adopción que no suene rota con funnel en cero."""
+    reg = int(gl.get("register_30d", 0) or 0)
+    activated = int(gl.get("activated_30d", 0) or 0)
+    if reg > 0:
+        return (
+            f"Adopción (30 d): {reg} registros, búsqueda/registro {_pct(gl.get('search_per_register'))}, "
+            f"{activated} cuentas Pro activadas."
+        )
+    if activated > 0:
+        pro_note = (
+            "1 cuenta Pro activada manualmente."
+            if activated == 1
+            else f"{activated} cuentas Pro activadas manualmente."
+        )
+        return (
+            f"Adopción (30 d): funnel en soft-launch (0 registros públicos); {pro_note}"
+        )
+    return "Adopción (30 d): etapa pre-tracción — foco en moat y GTM."
+
+
+def _executive_story(metrics: dict[str, Any]) -> str:
+    """2–3 frases que un founder puede leer en voz alta."""
+    m = metrics["moat"]
+    ix = metrics["index"]
+    gl = metrics["golive"]
+    pam = metrics["pam"]
+
+    fresh = "fresco" if not m["collector_stale"] else "atrasado (stale)"
+    linkage_clause = (
+        f"El {ix['linkage_pct']:.0f}% de esos precios ya tienen identidad de producto "
+        f"única (Golden Record prod_*)."
+        if ix["linkage_pct"] >= 50
+        else "Falta vincular más snapshots al índice semántico (linkage bajo)."
+    )
+
+    caveats: list[str] = []
+    if m["store_success_pct"] < STORE_SUCCESS_WARN:
+        caveats.append(
+            f"⚠️ solo {m['healthy_stores']} de {m['total_stores']} retailers respondieron bien "
+            f"({m['store_success_pct']:.0f}%) — conviene explicarlo como deuda de conectores, "
+            "no como caída del moat"
+        )
+    if pam["skip"] > 0 and pam["fail"] == 0:
+        caveats.append(f"ℹ️ PAM con {pam['skip']} SKIP (checks sin credenciales o entorno)")
+
+    quality = (
+        f"PAM: {pam['pass']} pruebas OK, {pam['fail']} fallos."
+        if pam["fail"] == 0
+        else f"⚠️ PAM con {pam['fail']} fallo(s) — revisar antes de demos."
+    )
+
+    caveat_txt = (" " + " · ".join(caveats)) if caveats else ""
+    return (
+        f"Hoy operamos *{m['total_indexed']:,} precios* de *{m['stores_indexed']} retailers*; "
+        f"el collector está *{fresh}* y actualizó *{m['snapshots_24h']:,}* precios en 24 h. "
+        f"{linkage_clause} {_adoption_clause(gl)} {quality}{caveat_txt}"
+    )
+
+
+def _story_layers(metrics: dict[str, Any]) -> list[str]:
+    """Arco Recolectar → Normalizar → Entregar (el 'por qué' del stack)."""
+    m, ix, pam = metrics["moat"], metrics["index"], metrics["pam"]
+    return [
+        "*🧱 La historia en 3 capas*",
+        "_Usa esto cuando alguien pregunte '¿qué hacen?' — no sueltes números sueltos._",
+        "",
+        "1️⃣ *Recolectamos* — APIs VTEX, no scraping. "
+        f"{m['total_indexed']:,} precios · {m['stores_indexed']} cadenas · actualización cada ~4 h.",
+        "2️⃣ *Normalizamos* — Golden Record = «ISBN del súper». "
+        f"{ix['registry_size']:,} productos únicos · {ix['linkage_pct']:.0f}% del moat ya etiquetado.",
+        "3️⃣ *Entregamos* — API + CLI + MCP para agentes. "
+        f"PAM: {pam['pass']} OK, {pam['fail']} fallos — el producto responde en producción.",
+        "",
+    ]
+
+
+def _audience_scripts(metrics: dict[str, Any]) -> list[str]:
+    """Una línea por audiencia — copiar según con quién hablas."""
+    m, ix, gl = metrics["moat"], metrics["index"], metrics["golive"]
+    store_note = ""
+    if m["store_success_pct"] < STORE_SUCCESS_WARN:
+        store_note = (
+            f" (hoy {m['healthy_stores']} de {m['total_stores']} cadenas con fetch exitoso; "
+            "ampliamos catálogo y aún no todos los conectores están al día)"
+        )
+    return [
+        "*🎤 Según con quién hables*",
+        "",
+        f"• *Inversor:* «Construimos un moat de precios de retail en LATAM: "
+        f"{m['total_indexed']:,} observaciones, {ix['linkage_pct']:.0f}% con identidad semántica. "
+        "Es barrera de datos más comparación entre cadenas que un LLM no puede inventar.»",
+        f"• *Retailer VTEX:* «Vemos su catálogo junto al de {m['stores_indexed']} cadenas "
+        f"con el mismo producto normalizado: Price Pulse y benchmarking sin integración adicional"
+        f"{store_note}.»",
+        f"• *Dev / agente:* «Un endpoint: búsqueda, comparación y checkout. "
+        f"{ix['registry_size']:,} Golden Records, linkage {ix['linkage_pct']:.0f}%, "
+        f"{metrics['pam']['pass']} checks PAM en verde en producción.»",
+        f"• *Tú mismo (1 línea):* {_adoption_clause(gl)}",
+        "",
+    ]
+
+
+def _metric_cards(metrics: dict[str, Any], history: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Cada métrica: valor, meta, qué es, cómo explicarla."""
+    m = metrics["moat"]
+    ix = metrics["index"]
+    pam = metrics["pam"]
+    prev = history[-1] if history else {}
+    pm, pi = prev.get("moat", {}), prev.get("index", {})
+
+    cards: list[dict[str, str]] = [
+        {
+            "key": "total_indexed",
+            "title": "Precios indexados (moat)",
+            "value": f"{m['total_indexed']:,}",
+            "level": "ok",
+            "meta": "Crece con cada ciclo del collector",
+            "meaning": "Total de snapshots de precio en PostgreSQL — el inventario histórico del data moat.",
+            "why": "Sin volumen histórico no hay tendencia ni inflación observada — es el activo que vendemos.",
+            "say": (
+                f"«Indexamos {m['total_indexed']:,} precios reales de góndola; "
+                "no es scraping, son APIs de retailers.»"
+            ),
+            "delta": _delta_str(m["total_indexed"], pm.get("total_indexed")),
+        },
+        {
+            "key": "snapshots_24h",
+            "title": "Refresh 24h",
+            "value": f"{m['snapshots_24h']:,}",
+            "level": "critical" if m["collector_stale"] else "ok",
+            "meta": "Debe moverse cada ~4h si el collector corre",
+            "meaning": "Cuántos precios se actualizaron en el último día — proxy de frescura operativa.",
+            "why": "Un moat viejo es un catálogo muerto; esto prueba que el pipeline corre.",
+            "say": (
+                f"«En las últimas 24h actualizamos {m['snapshots_24h']:,} precios; "
+                f"el ciclo objetivo es cada 4 horas.»"
+            ),
+            "delta": _delta_str(m["snapshots_24h"], pm.get("snapshots_24h")),
+        },
+        {
+            "key": "coverage_7d",
+            "title": "Coverage 7 días",
+            "value": f"{m['coverage_7d_pct']:.1f}%",
+            "level": _metric_level(
+                m["coverage_7d_pct"],
+                target=COVERAGE_7D_TARGET,
+                warn_below=60,
+            ),
+            "meta": f"Meta ≥ {COVERAGE_7D_TARGET:.0f}%",
+            "meaning": "Porcentaje de tiendas con al menos un snapshot en los últimos 7 días.",
+            "why": "Distingue 'tenemos muchos precios' de 'cubrimos todas las cadenas activas'.",
+            "say": (
+                f"«{m['coverage_7d_pct']:.0f}% de nuestras tiendas tuvieron dato fresco esta semana; "
+                "mide si el moat cubre el catálogo o solo un subconjunto.»"
+            ),
+            "delta": _delta_str(m["coverage_7d_pct"], pm.get("coverage_7d_pct"), pct=True),
+        },
+        {
+            "key": "store_success",
+            "title": "Tiendas sanas",
+            "value": f"{m['healthy_stores']}/{m['total_stores']} ({m['store_success_pct']:.0f}%)",
+            "level": _metric_level(
+                m["store_success_pct"],
+                target=STORE_SUCCESS_WARN,
+                warn_below=45,
+            ),
+            "meta": "Éxito de fetch por retailer",
+            "meaning": "Cuántos retailers respondieron bien en el último barrido (sin timeout ni error API).",
+            "why": "Bajo % ≠ moat roto: muchas cadenas están en onboarding; alto % = confianza para demos.",
+            "say": (
+                f"«{m['healthy_stores']} de {m['total_stores']} cadenas respondieron bien — "
+                "si baja, hay conectores rotos o retailers caídos.»"
+            ),
+            "delta": "",
+        },
+        {
+            "key": "registry",
+            "title": "Golden Records",
+            "value": f"{ix['registry_size']:,}",
+            "level": "ok" if ix["registry_size"] > 0 else "warn",
+            "meta": "prod_* en cli-market-index",
+            "meaning": "Productos canónicos únicos (marca + nombre + medida normalizada) — el grafo semántico.",
+            "why": "Es el «ISBN del súper»: sin esto, cada retailer habla un idioma distinto.",
+            "say": (
+                f"«Tenemos {ix['registry_size']:,} productos únicos normalizados; "
+                "dos SKUs distintos del mismo aceite 900ml colapsan al mismo prod_*.»"
+            ),
+            "delta": _delta_str(ix["registry_size"], pi.get("registry_size")),
+        },
+        {
+            "key": "linkage",
+            "title": "Linkage %",
+            "value": f"{ix['linkage_pct']:.1f}%",
+            "level": _metric_level(
+                ix["linkage_pct"],
+                target=LINKAGE_TARGET,
+                warn_below=70,
+            ),
+            "meta": f"Meta ≥ {LINKAGE_TARGET:.0f}%",
+            "meaning": "Qué porcentaje del moat ya está etiquetado con un Golden Record (canonical_product_id).",
+            "why": "Linkage alto = comparar precios entre cadenas sin fuzzy match en cada query.",
+            "say": (
+                f"«El {ix['linkage_pct']:.1f}% del inventario ya está vinculado a identidad de producto — "
+                "sin esto, comparar entre cadenas es fuzzy match cada vez.»"
+            ),
+            "delta": _delta_str(ix["linkage_pct"], pi.get("linkage_pct"), pct=True),
+        },
+        {
+            "key": "pam",
+            "title": "PAM (smoke prod)",
+            "value": f"{pam['pass']} PASS · {pam['fail']} FAIL · {pam['skip']} SKIP",
+            "level": "critical" if pam["fail"] else ("warn" if pam["skip"] else "ok"),
+            "meta": "Tier 2 = flujos usuario críticos",
+            "meaning": "Production Acceptance Matrix — batería automática contra API, pagos, index, search.",
+            "why": "Traduce «los números se ven bien» en «un agente puede buscar y comprar sin sorpresas».",
+            "say": (
+                f"«Corrimos {pam['pass']} checks en producción; "
+                + (
+                    "ningún fallo en flujos críticos.»"
+                    if pam["fail"] == 0
+                    else (
+                        f"{pam['fail']} fallo significa algo roto para clientes o agentes.»"
+                        if pam["fail"] == 1
+                        else f"{pam['fail']} fallos significan algo roto para clientes o agentes.»"
+                    )
+                )
+            ),
+            "delta": "",
+        },
+    ]
+    return cards
+
+
+def _explain_section(cards: list[dict[str, str]], *, brief: bool = True) -> list[str]:
+    """Glosario: en brief solo expande métricas 🟡/🔴; el resto va en tabla compacta."""
+    lines = [
+        "*📖 Glosario rápido*",
+        "_Semáforo = salud · «Por qué importa» = argumento · «Cómo decirlo» = frase lista para una call._",
+        "",
+    ]
+
+    if brief:
+        lines.append("*Resumen*")
+        for c in cards:
+            lines.append(
+                f"{_status_emoji(c['level'])} *{c['title']}:* {c['value']}{c['delta']}"
+            )
+        lines.append("")
+
+        attention = [c for c in cards if c["level"] in ("warn", "critical")]
+        if attention:
+            lines.append("*Detalle (solo lo que conviene explicar hoy)*")
+            for c in attention:
+                lines.extend(_card_detail_lines(c))
+        else:
+            lines.append("_Todo verde — si preguntan, usa las frases de «Según con quién hables» arriba._")
+            lines.append("")
+        return lines
+
+    lines.append("*Todas las métricas*")
+    for c in cards:
+        lines.extend(_card_detail_lines(c))
+    return lines
+
+
+def _card_detail_lines(c: dict[str, str]) -> list[str]:
+    out = [
+        f"{_status_emoji(c['level'])} *{c['title']}:* *{c['value']}*{c['delta']}",
+        f"    _Qué es:_ {c['meaning']}",
+        f"    _Por qué importa:_ {c.get('why', '—')}",
+        f"    _Meta:_ {c['meta']}",
+        f"    _Cómo decirlo:_ {c['say']}",
+        "",
+    ]
+    return out
+
+
+def _scoreboard(metrics: dict[str, Any]) -> list[str]:
+    """Tabla de un vistazo — números sin narrativa (ya cubierta arriba)."""
+    m, ix, gl, pam = (
+        metrics["moat"],
+        metrics["index"],
+        metrics["golive"],
+        metrics["pam"],
+    )
+    coll = "OK" if not m["collector_stale"] else "STALE"
+    return [
+        "*📊 Scoreboard*",
+        "",
+        f"Moat {m['total_indexed']:,} · 24h {m['snapshots_24h']:,} · "
+        f"coverage {m['coverage_7d_pct']:.0f}% · collector {coll}",
+        f"Index {ix['registry_size']:,} GR · linkage {ix['linkage_pct']:.1f}%",
+        f"PAM {pam['pass']}/{pam['fail']}/{pam['skip']} (pass/fail/skip) · "
+        f"go-live {gl.get('overall', '?')}",
+        "",
+    ]
+
+
+def _priority_actions(metrics: dict[str, Any]) -> list[str]:
+    """1–4 acciones concretas según estado (no checklist genérico)."""
+    m, pam, gl = metrics["moat"], metrics["pam"], metrics["golive"]
+    actions: list[tuple[int, str]] = []
+
+    if pam["fail"] > 0:
+        actions.append((1, f"🔴 PAM con {pam['fail']} FAIL → `python ops/production_acceptance.py --tier 2` y revisar ops/reports/"))
+    if m["collector_stale"]:
+        actions.append((1, "🔴 Collector stale → revisar servicio collector en Railway + `python collect_prices.py --status`"))
+    if m["coverage_7d_pct"] < COVERAGE_7D_TARGET:
+        actions.append((2, f"🟡 Coverage {m['coverage_7d_pct']:.0f}% < {COVERAGE_7D_TARGET:.0f}% → `make gate-remote` y tiendas con <30% éxito"))
+    if metrics["index"]["linkage_pct"] < LINKAGE_TARGET:
+        actions.append((3, f"🟡 Linkage {metrics['index']['linkage_pct']:.1f}% → `POST /index/backfill` o esperar ciclo index post-collector"))
+    for a in gl.get("alerts", [])[:2]:
+        sev = a.get("severity", "warn")
+        icon = "🔴" if sev == "critical" else "🟡"
+        actions.append((2 if sev == "critical" else 4, f"{icon} {a.get('message', '')}"))
+
+    if not actions:
+        actions.append((5, "✅ Sin acciones urgentes — ejecutar checklist matutino (briefing + go-live + content `make today`)"))
+
+    actions.sort(key=lambda x: x[0])
+    lines = ["*🎯 Prioridad hoy*", ""]
+    for i, (_, msg) in enumerate(actions[:4], 1):
+        lines.append(f"{i}. {msg}")
+    lines.append("")
+    return lines
+
+
+def _trend_reading(history: list[dict[str, Any]], current: dict[str, Any]) -> str:
     if len(history) < 2:
-        return ["_Sin histórico aún — vuelve mañana para ver tendencias._", ""]
+        return ""
+    prev = history[-1]
+    m0, m1 = prev.get("moat", {}), current["moat"]
+    parts: list[str] = []
+    di = m1["total_indexed"] - int(m0.get("total_indexed", 0) or 0)
+    if di != 0:
+        parts.append(f"moat {'creció' if di > 0 else 'bajó'} {di:+,}")
+    ds = m1["snapshots_24h"] - int(m0.get("snapshots_24h", 0) or 0)
+    if ds != 0:
+        parts.append(f"refresh 24h {ds:+,}")
+    if not parts:
+        return ""
+    return "_Lectura tendencia vs ayer:_ " + " · ".join(parts) + "."
+
+
+def _trend_section(history: list[dict[str, Any]], current: dict[str, Any]) -> list[str]:
+    """Sparklines + lectura vs ayer."""
+    if len(history) < 2:
+        return [
+            "_Tendencia:_ sin histórico aún; mañana verás sparklines (▁▂▃▄▅▆▇█ = sube o baja en el tiempo)._",
+            "",
+        ]
 
     def series(key_path: str) -> list[float]:
         out: list[float] = []
@@ -311,72 +702,79 @@ def _trend_section(history: list[dict[str, Any]], current: dict[str, Any]) -> li
     pm = prev.get("moat", {})
     pi = prev.get("index", {})
 
+    reading = _trend_reading(history, current)
     lines = [
-        "*📈 Tendencia* (últimos días · izq=antiguo, der=hoy)",
+        "*📈 Tendencia* (▁→█ = más reciente a la derecha)",
         "",
-        f"• Indexados: `{_sparkline(series('moat.total_indexed'))}` *{m['total_indexed']:,}*"
+        f"• Moat: `{_sparkline(series('moat.total_indexed'))}` *{m['total_indexed']:,}*"
         f"{_delta_str(m['total_indexed'], pm.get('total_indexed'))}",
-        f"• Snap 24h: `{_sparkline(series('moat.snapshots_24h'))}` *{m['snapshots_24h']:,}*"
+        f"• Refresh 24h: `{_sparkline(series('moat.snapshots_24h'))}` *{m['snapshots_24h']:,}*"
         f"{_delta_str(m['snapshots_24h'], pm.get('snapshots_24h'))}",
         f"• Coverage 7d: `{_sparkline(series('moat.coverage_7d_pct'))}` *{m['coverage_7d_pct']:.1f}%*"
         f"{_delta_str(m['coverage_7d_pct'], pm.get('coverage_7d_pct'), pct=True)}",
         f"• Golden Records: `{_sparkline(series('index.registry_size'))}` *{ix['registry_size']:,}*"
         f"{_delta_str(ix['registry_size'], pi.get('registry_size'))}",
-        f"• Linkage %: `{_sparkline(series('index.linkage_pct'))}` *{ix['linkage_pct']:.1f}%*"
+        f"• Linkage: `{_sparkline(series('index.linkage_pct'))}` *{ix['linkage_pct']:.1f}%*"
         f"{_delta_str(ix['linkage_pct'], pi.get('linkage_pct'), pct=True)}",
         "",
     ]
+    if reading:
+        lines.append(reading)
+        lines.append("")
     return lines
 
 
-def build_message(*, remote: bool = False) -> str:
-    history = _load_history()
-    metrics = _collect_metrics(remote=remote)
-    m = metrics["moat"]
-    ix = metrics["index"]
-    gl = metrics["golive"]
-    pam = metrics["pam"]
-
-    status_emoji = {"healthy": "✅", "degraded": "🟡", "critical": "🔴"}.get(
-        gl["overall"], "⚪"
-    )
-    coll_emoji = "🔴" if m["collector_stale"] else "🟢"
-
-    lines = [
-        f"🎛️ *Command & Control* · {metrics['date']} · founder ops",
-        "",
-        f"{status_emoji} *Go-live:* {gl['overall']} · moat {gl['moat_status']}",
-        f"{coll_emoji} *Collector:* {m['collector_status']}"
-        + (" · _stale_" if m["collector_stale"] else ""),
-        "",
-        "*📊 KPIs hoy*",
-        f"• Moat: *{m['total_indexed']:,}* indexados · *{m['snapshots_24h']:,}* (24h) · "
-        f"*{m['stores_indexed']}* tiendas · coverage *{m['coverage_7d_pct']:.1f}%*",
-        f"• Tiendas sanas: *{m['healthy_stores']}/{m['total_stores']}* "
-        f"({m['store_success_pct']:.0f}% éxito)",
-        f"• Index: *{ix['registry_size']:,}* Golden Records · linkage *{ix['linkage_pct']:.1f}%* "
-        f"({ix['snapshots_linked']:,} snapshots)",
-        f"• PAM último: *{pam['pass']} PASS / {pam['fail']} FAIL / {pam['skip']} SKIP*"
-        + (f" · `{pam['file']}`" if pam.get("file") else ""),
-        "",
-    ]
-    lines.extend(_trend_section(history, metrics))
-    lines.append("*✅ Checklist founder (orden sugerido)*")
-    lines.append("")
+def _checklist_section() -> list[str]:
+    lines = ["*✅ Checklist founder (completo)*", ""]
     for block in FOUNDER_COMMANDS:
         lines.append(f"*{block['block']}*")
         for num, cmd, why in block["items"]:
-            lines.append(f"`{num}.` `{cmd}`")
-            lines.append(f"    _{why}_")
+            lines.append(f"`{num}.` `{cmd}` — _{why}_")
         lines.append("")
+    return lines
+
+
+def build_message(*, remote: bool = False, brief: bool = True) -> str:
+    history = _load_history()
+    metrics = _collect_metrics(remote=remote)
+    gl = metrics["golive"]
+    cards = _metric_cards(metrics, history)
+
+    status_emoji = {"healthy": "✅", "degraded": "🟡", "critical": "🔴"}.get(
+        gl.get("overall"), "⚪"
+    )
+
+    lines = [
+        f"🎛️ *Command & Control* · {metrics['date']}",
+        "",
+        "*📣 En una frase*",
+        _executive_story(metrics),
+        "",
+        f"{status_emoji} *Go-live:* {gl.get('overall', '?')} · "
+        f"moat {gl.get('moat_status', '?')} · "
+        f"collector {'stale' if metrics['moat']['collector_stale'] else metrics['moat']['collector_status']}",
+        "",
+    ]
+    lines.extend(_story_layers(metrics))
+    lines.extend(_priority_actions(metrics))
+    lines.extend(_audience_scripts(metrics))
+    lines.extend(_scoreboard(metrics))
+    lines.extend(_explain_section(cards, brief=brief))
+    lines.extend(_trend_section(history, metrics))
+
+    if brief:
+        lines.append("_Checklist completo:_ `python ops/command_control_daily.py --slack --full`")
+        lines.append("")
+    else:
+        lines.extend(_checklist_section())
 
     lines.append("*🔗 Bookmarks*")
     for label, url in BOOKMARKS:
         lines.append(f"• <{url}|{label}>")
     lines.append("")
     lines.append(
-        "_Bitácora = narrativa diaria · Command & Control = checklist + métricas._ "
-        "Actualiza con `python ops/command_control_daily.py --slack`."
+        "_Bitácora = narrativa diaria · Command & Control = métricas y cómo explicarlas._ "
+        "`python ops/command_control_daily.py --slack --remote`"
     )
     return "\n".join(lines)
 
@@ -387,14 +785,20 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Print only; no save, no Slack")
     parser.add_argument("--remote", action="store_true", help="Fetch KPIs from production API")
     parser.add_argument("--json", action="store_true", help="JSON metrics snapshot")
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Incluir checklist founder completo (default en Slack: solo narrativa + prioridades)",
+    )
     args = parser.parse_args()
 
     metrics = _collect_metrics(remote=args.remote)
+    brief = not args.full
 
     if args.json:
         print(json.dumps(metrics, indent=2, ensure_ascii=False))
     else:
-        print(build_message(remote=args.remote))
+        print(build_message(remote=args.remote, brief=brief))
 
     if not args.dry_run:
         _save_snapshot(metrics)
@@ -402,7 +806,7 @@ def main() -> int:
     if args.slack and not args.dry_run:
         from slack_notify import deliver_to_command_control
 
-        deliver_to_command_control(build_message(remote=args.remote))
+        deliver_to_command_control(build_message(remote=args.remote, brief=brief))
         print("Slack → command-control-cli-market", file=sys.stderr)
 
     return 0
