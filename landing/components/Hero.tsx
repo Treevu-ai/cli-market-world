@@ -8,6 +8,7 @@ import HeroMetrics from "@/components/HeroMetrics";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
+import { PRICING_RETAILERS_HASH } from "@/lib/siteNav";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -97,7 +98,7 @@ export default function Hero() {
           </a>
 
           <a
-            href="#retailers"
+            href={PRICING_RETAILERS_HASH}
             className="hero-terminal-card group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-text-secondary)]">
