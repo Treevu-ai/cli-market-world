@@ -21,7 +21,7 @@ Commerce infrastructure for AI agents. 68 retailers, 38 verified active across 8
 - 34 market indicators (shelf moat + public API enrichment)
 - Payments: PayPal · Mercado Pago · QR (Yape/Plin)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1-2k req/día), Pro $39/mo (20k req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
+- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1,000 req/día), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
 
 ## Checkout endpoints
 
@@ -41,11 +41,11 @@ Nuna Orgánica, Xray Chipped PE
 - **Cross-Border**: Single interface for 38 verified retailers.
 - **Data Moat**: Collector every 4h. Historical snapshots, inflation, 34 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · QR (Yape/Plin).
-- **Open Source**: MIT. pip install cli-market-world.
+- **Open Source**: MIT. pip install cli-market-world-world.
 
 ## Quick start (developers)
 
-1. `pip install cli-market-world`
+1. `pip install cli-market-world-world`
 2. `market register` — free API key (or `market login` if you have credentials)
 3. `market search "leche" --country PE`
 4. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`

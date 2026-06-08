@@ -613,6 +613,13 @@ def sync_llms_txt() -> None:
             text,
             count=1,
         )
+        text = re.sub(
+            r"- Pricing \(.*?\): Free \$0 \(.*?\), Pro \$39/mo \(.*?\), Enterprise custom.*",
+            "- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1,000 req/día), "
+            "Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)",
+            text,
+            count=1,
+        )
         path.write_text(text, encoding="utf-8")
         print(f"Synced {path}")
 
