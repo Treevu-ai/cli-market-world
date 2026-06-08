@@ -10,6 +10,7 @@ import httpx
 DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
+DEFAULT_CHANNEL_CLI_MARKET_PRO = ""  # set SLACK_CHANNEL_CLI_MARKET_PRO after creating #cli-market-pro
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
 CLI_MARKET_PRO_CHANNEL_NAME = "cli-market-pro"
 
@@ -61,7 +62,10 @@ def _resolve_channel_by_name(token: str, name: str) -> str | None:
 
 
 def channel_cli_market_pro() -> str:
-    explicit = os.getenv("SLACK_CHANNEL_CLI_MARKET_PRO", "").strip()
+    explicit = (
+        os.getenv("SLACK_CHANNEL_CLI_MARKET_PRO", "").strip()
+        or DEFAULT_CHANNEL_CLI_MARKET_PRO
+    )
     if explicit:
         return explicit
     token = os.getenv("SLACK_BOT_TOKEN", "").strip()

@@ -808,6 +808,35 @@ def test_pro_checkout_yape_routes_to_mercadopago(monkeypatch):
     assert data["auto_activate"] is True
 
 
+def test_pro_checkout_persists_display_name(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr("routers.payments.wallet_manual_fallback_enabled", lambda: True)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/billing/pro-checkout",
+        json={
+            "email": "antonio@test.com",
+            "username": "antonio-cli",
+            "display_name": "Antonio Cuba",
+            "payment_method": "yape",
+            "lang": "es",
+            "manual_transfer": True,
+        },
+    )
+    assert r.status_code == 200
+    from market_core import db_find_subscription_request
+
+    req = db_find_subscription_request(request_id=r.json()["request_id"])
+    assert req["display_name"] == "Antonio Cuba"
+
+
 def test_pro_checkout_yape_manual_transfer_fallback(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr("routers.payments.wallet_manual_fallback_enabled", lambda: True)
@@ -977,11 +1006,16 @@ def test_activate_pro_by_request_id(monkeypatch):
     from market_core import db_find_subscription_request, db_get_subscription
 
     assert db_get_subscription("admin")["tier"] == "free"
+    env = os.environ.copy()
+    for key in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_PASS"):
+        env[key] = ""
+    env["GMAIL_DRAFTS_ENABLED"] = "0"
     proc = subprocess.run(
         [sys.executable, "ops/activate_pro.py", "admin", "--request-id", req_id],
         cwd=str(Path(__file__).parent.parent),
         capture_output=True,
         text=True,
+        env=env,
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
     assert db_get_subscription("admin")["tier"] == "pro"

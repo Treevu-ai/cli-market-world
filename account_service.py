@@ -8,6 +8,7 @@ from typing import Any
 from market_core import (
     TIERS,
     db_find_subscription_request,
+    db_get_latest_subscription_request_for_user,
     db_get_subscription,
     db_get_user_email,
     db_list_api_keys,
@@ -222,3 +223,83 @@ def build_account_summary(username: str, *, lang: str = "es") -> dict[str, Any]:
         "upgrade": upgrade_next_step(tier, lang=lang),
         "billing": _billing_status(username, tier, lang=lang),
     }
+
+
+def resolve_pro_display_name(
+    *,
+    username: str,
+    email: str = "",
+    display_name: str = "",
+) -> str:
+    """Friendly name for emails — never the raw billing address alone."""
+    explicit = (display_name or "").strip()
+    if explicit:
+        return explicit
+    handle = (username or "").strip()
+    if handle and not handle.startswith("user-"):
+        return handle.replace("-", " ").replace("_", " ").title()
+    local = (email or "").split("@")[0]
+    local = local.replace(".", " ").replace("_", " ").replace("-", " ").strip()
+    if local and not local.startswith("user"):
+        return " ".join(part.capitalize() for part in local.split() if part)
+    return handle or "Cliente"
+
+
+def build_pro_email_context(
+    username: str,
+    *,
+    email: str = "",
+    password: str = "",
+    display_name: str = "",
+    request_id: str = "",
+    lang: str = "es",
+    payment_method: str = "paypal",
+) -> dict[str, str]:
+    """Unify nombre, email, usuario CLI y contraseña para el correo de bienvenida."""
+    req = None
+    try:
+        if request_id:
+            req = db_find_subscription_request(request_id=request_id)
+        if not req and username:
+            req = db_get_latest_subscription_request_for_user(username)
+    except Exception:
+        req = None
+    resolved_email = (
+        (email or (req or {}).get("email") or db_get_user_email(username) or "")
+        .strip()
+        .lower()
+    )
+    resolved_display = (display_name or (req or {}).get("display_name") or "").strip()
+    dn = resolve_pro_display_name(
+        username=username,
+        email=resolved_email,
+        display_name=resolved_display,
+    )
+    return {
+        "display_name": dn,
+        "username": (username or "").strip(),
+        "email": resolved_email,
+        "password": password,
+        "lang": (lang or "es").strip().lower()[:2],
+        "payment_method": (payment_method or "paypal").strip().lower(),
+        "request_id": request_id or (req or {}).get("id") or "",
+    }
+
+
+def provision_pro_login_credentials(username: str) -> str:
+    """Ensure CLI login exists for Pro; return one-time plaintext password for email."""
+    import secrets
+    import uuid
+
+    from market_core import db_get_users, db_save_user
+    from server_deps import hash_password
+
+    name = (username or "").strip()
+    if not name:
+        raise ValueError("username required")
+    password = secrets.token_urlsafe(10)
+    users = db_get_users()
+    existing = users.get(name) or {}
+    token = existing.get("token") or str(uuid.uuid4())
+    db_save_user(name, hash_password(password), token)
+    return password

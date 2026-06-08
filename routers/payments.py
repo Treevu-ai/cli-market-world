@@ -262,8 +262,7 @@ async def _handle_paypal_event(event: dict) -> dict:
                             subscription_id=sub_id,
                         )
                     else:
-                        from market_connectors.email_outbound import send_pro_activated_email
-                        mail = send_pro_activated_email(
+                        mail = _send_pro_activated_email_with_credentials(
                             to_email=email,
                             username=username,
                             lang=lang,
@@ -841,6 +840,36 @@ def _parse_pro_request_ref(external_reference: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+def _send_pro_activated_email_with_credentials(**kwargs) -> dict:
+    """Provision fresh CLI login password and email it to the Pro subscriber."""
+    from account_service import build_pro_email_context, provision_pro_login_credentials
+    from market_connectors.email_outbound import send_pro_activated_email
+
+    username = (kwargs.get("username") or "").strip()
+    password = provision_pro_login_credentials(username)
+    ctx = build_pro_email_context(
+        username,
+        email=kwargs.get("to_email") or kwargs.get("email") or "",
+        password=password,
+        display_name=kwargs.get("display_name") or "",
+        request_id=kwargs.get("request_id") or "",
+        lang=kwargs.get("lang") or "es",
+        payment_method=kwargs.get("payment_method") or "paypal",
+    )
+    return send_pro_activated_email(
+        to_email=ctx["email"] or kwargs.get("to_email", ""),
+        username=ctx["username"],
+        lang=ctx["lang"],
+        payment_method=ctx["payment_method"],
+        request_id=ctx["request_id"],
+        password=ctx["password"],
+        display_name=ctx["display_name"],
+        notify_ops=kwargs.get("notify_ops", True),
+        source=kwargs.get("source", ""),
+        subscription_id=kwargs.get("subscription_id", ""),
+    )
+
+
 def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
     """Mark subscription request paid and upgrade user to Pro."""
     req = db_find_subscription_request(request_id=request_id)
@@ -881,15 +910,14 @@ def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
     try:
         email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
         if email:
-            from market_connectors.email_outbound import send_pro_activated_email
-
-            mail = send_pro_activated_email(
+            mail = _send_pro_activated_email_with_credentials(
                 to_email=email,
                 username=username,
                 lang="es",
                 request_id=request_id,
                 payment_method=method,
                 source=source,
+                display_name=(req.get("display_name") or "").strip(),
             )
             if mail.get("sent"):
                 actions.append(f"activation_email:{email}")
@@ -1077,6 +1105,7 @@ def process_pro_subscription_request(
     email: str,
     lang: str = "en",
     username: str = "",
+    display_name: str = "",
     force: bool = False,
     note: str = "",
 ) -> dict:
@@ -1109,7 +1138,9 @@ def process_pro_subscription_request(
         }
 
     _record_plan_funnel_event("pro", username=username, email=email, source="request_pro")
-    req = db_create_subscription_request(username, email, PRO_PAYMENT_URL)
+    req = db_create_subscription_request(
+        username, email, PRO_PAYMENT_URL, display_name=display_name,
+    )
     sub_mail = send_pro_payment_email(
         to_email=email,
         username=username,
@@ -1210,6 +1241,7 @@ def _start_pro_qr_checkout(
     method: str,
     lang: str,
     funnel_source: str,
+    display_name: str = "",
 ) -> dict:
     """Yape/Plin QR for Pro — manual activation after payment confirmation."""
     from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
@@ -1217,7 +1249,9 @@ def _start_pro_qr_checkout(
 
     amount_pen = _pro_price_pen()
     payment_label = "plin" if method == "plin" else "yape"
-    req = db_create_subscription_request(username, email, f"{payment_label}:S/{amount_pen:.2f}")
+    req = db_create_subscription_request(
+        username, email, f"{payment_label}:S/{amount_pen:.2f}", display_name=display_name,
+    )
     request_id = req["id"]
     phone = _wallet_payment_phone()
     wallet = _wallet_manual_transfer_fields(
@@ -1280,6 +1314,7 @@ async def _start_pro_mercadopago_checkout(
     lang: str,
     funnel_source: str,
     wallet_method: str = "",
+    display_name: str = "",
 ) -> dict:
     from market_connectors.mercadopago_payments import create_preference
     from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
@@ -1288,7 +1323,7 @@ async def _start_pro_mercadopago_checkout(
     amount_pen = _pro_price_pen()
     wallet = (wallet_method or "").strip().lower()
     pay_note = mp_pay_note(wallet)
-    req = db_create_subscription_request(username, email, pay_note)
+    req = db_create_subscription_request(username, email, pay_note, display_name=display_name)
     request_id = req["id"]
 
     mp_return = f"https://cli-market.dev/?mp=success&ref={request_id}#pricing"
@@ -1415,6 +1450,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
             body_username=body_username,
             auth_username=auth_user,
         )
+        display_name = (body.get("display_name") or body.get("name") or "").strip()
 
         if not force:
             recent = db_recent_subscription_request(email)
@@ -1479,6 +1515,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 email=email,
                 lang=lang,
                 username=username,
+                display_name=display_name,
                 force=force,
             )
             out["payment_method"] = "paypal"
@@ -1494,6 +1531,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 method=method,
                 lang=lang,
                 funnel_source=f"landing_pro_checkout_{method}_manual",
+                display_name=display_name,
             )
 
         if method in ("yape", "plin", "mercadopago"):
@@ -1504,6 +1542,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 lang=lang,
                 funnel_source=f"landing_pro_checkout_{method}",
                 wallet_method=wallet_method,
+                display_name=display_name,
             )
 
         raise HTTPException(status_code=400, detail=f"unsupported payment_method: {method}")

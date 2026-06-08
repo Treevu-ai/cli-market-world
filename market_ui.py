@@ -15,7 +15,7 @@ from rich.columns import Columns
 from rich.table import Table
 from rich import box
 
-from market_core import API, SESSION_FILE, LANG_FILE, get_token, api
+from market_core import API, SESSION_FILE, LANG_FILE, get_token, get_session_username, api
 from market_stats import PACKAGE_VERSION, PRICES_REFRESH_HOURS
 
 # ── Theme (Antigravity / Codex / Claude inspired) ─────────────────────────────
@@ -350,13 +350,37 @@ def price_data_footer(console: Console) -> None:
 
 
 def fetch_tier() -> str:
-    token = get_token()
-    if not token:
+    ctx = fetch_session_context()
+    if not ctx:
         return "free"
-    sub = api("GET", "/auth/subscription")
-    if sub.get("error"):
-        return "?"
-    return (sub.get("subscription") or {}).get("tier", "free")
+    return ctx.get("tier", "free")
+
+
+def fetch_session_context() -> dict | None:
+    """Return username, tier, and subscription when a local session exists."""
+    if not get_token():
+        return None
+    who = api("GET", "/auth/whoami")
+    if who.get("error"):
+        return {
+            "username": get_session_username() or "?",
+            "tier": "?",
+            "subscription": {},
+            "valid": False,
+        }
+    sub_data = api("GET", "/auth/subscription")
+    sub = sub_data.get("subscription") or {}
+    username = who.get("username") or sub_data.get("username") or get_session_username() or "?"
+    return {
+        "username": username,
+        "tier": sub.get("tier", "free"),
+        "subscription": sub,
+        "valid": True,
+    }
+
+
+def is_pro_tier(tier: str | None) -> bool:
+    return (tier or "free").lower() in PRO_TIERS
 
 
 # ── Grouped terminal layouts (MCP tools + data moat) ─────────────────────────

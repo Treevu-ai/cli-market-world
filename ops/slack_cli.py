@@ -126,6 +126,7 @@ def cmd_activate_pro(
     request_id: str | None,
     email: str | None,
     *,
+    display_name: str | None = None,
     bitacora: bool,
     dry_run: bool,
 ) -> int:
@@ -144,6 +145,8 @@ def cmd_activate_pro(
         args.extend(["--request-id", request_id])
     if email:
         args.extend(["--email", email])
+    if display_name:
+        args.extend(["--display-name", display_name])
 
     if dry_run:
         print("dry-run:", " ".join(args))
@@ -226,6 +229,7 @@ def main() -> int:
     )
     p_ap.add_argument("--request-id", dest="request_id", help="PRO-XXXXXXXX (same as positional)")
     p_ap.add_argument("--email", help="Lookup latest request by subscriber email")
+    p_ap.add_argument("--display-name", dest="display_name", help="Friendly name for welcome email")
     p_ap.add_argument("--bitacora", action="store_true", help="Post confirmation to bitácora Slack")
     p_ap.add_argument("--dry-run", action="store_true", help="Print activate_pro command only")
 
@@ -268,10 +272,12 @@ def main() -> int:
             else:
                 username = target
         email = (args.email or "").strip() or None
+        display_name = (args.display_name or "").strip() or None
         return cmd_activate_pro(
             username,
             request_id,
             email,
+            display_name=display_name,
             bitacora=args.bitacora,
             dry_run=args.dry_run,
         )

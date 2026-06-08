@@ -30,7 +30,7 @@ from rich.columns import Columns
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, api, API,
+    STORES, LINES, COUNTRIES, LANG_FILE, SESSION_FILE, get_token, get_session_username, api, API,
     fmt_price, store_color, save_last_search, load_last_search,
 )
 import market_ui as ui
@@ -427,8 +427,25 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
 
 def cmd_login(args):
     data = cli_api("POST", "/auth/login", {"username": args.username, "password": args.password})
+    ctx = ui.fetch_session_context() or {}
+    tier = ctx.get("tier", "free")
+    username = ctx.get("username") or data.get("username", "?")
     console.print(f"[#00FF88]✓ {data.get('message', 'OK')}[/]")
-    console.print(f"[dim]Usuario: {data.get('username')}[/]")
+    ui.print_context_bar(console, tier=tier, username=username)
+    if ui.is_pro_tier(tier):
+        en = ui.is_en()
+        console.print(Panel.fit(
+            (
+                f"[bold #00FF88]Build Pro activo[/] — [cyan]{username}[/]\n"
+                f"[dim]Checkout, alertas y límites ampliados listos.[/]"
+                if not en
+                else f"[bold #00FF88]Build Pro active[/] — [cyan]{username}[/]\n"
+                f"[dim]Checkout, alerts, and higher limits are ready.[/]"
+            ),
+            border_style="#00FF88",
+        ))
+    else:
+        console.print(f"[dim]Usuario: {username}[/]")
     console.print(f"[dim]Token guardado en {SESSION_FILE}[/]")
 
 def cmd_search(args):
@@ -1367,7 +1384,34 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
     return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
 
 
-def _hello_status_bar(is_en: bool, width: int) -> Panel:
+def _hello_pro_panel(is_en: bool, width: int, *, username: str, sub: dict) -> Panel:
+    limits = (
+        f"{sub.get('req_limit_day', '?')}/day · checkout · alertas"
+        if not is_en
+        else f"{sub.get('req_limit_day', '?')}/day · checkout · alerts"
+    )
+    if is_en:
+        body = (
+            f"[bold white]Welcome back,[/] [cyan]{username}[/]\n"
+            f"[bold #00FF88]Build Pro[/] is active on this machine.\n"
+            f"[dim]Limits:[/] {limits}\n\n"
+            f"[dim]Try[/] [cyan]market search \"rice\" --country PE[/] "
+            f"[dim]or[/] [cyan]market account[/] [dim]for usage.[/]"
+        )
+        title = "[bold #00FF88]PRO ACCOUNT[/]"
+    else:
+        body = (
+            f"[bold white]Bienvenido de vuelta,[/] [cyan]{username}[/]\n"
+            f"[bold #00FF88]Build Pro[/] activo en esta máquina.\n"
+            f"[dim]Límites:[/] {limits}\n\n"
+            f"[dim]Prueba[/] [cyan]market search \"arroz\" --country PE[/] "
+            f"[dim]o[/] [cyan]market account[/] [dim]para ver uso.[/]"
+        )
+        title = "[bold #00FF88]CUENTA PRO[/]"
+    return Panel(body, title=title, border_style="#00FF88", box=box.ROUNDED, padding=(1, 2), width=width)
+
+
+def _hello_status_bar(is_en: bool, width: int, *, ctx: dict | None = None) -> Panel:
     label = "EN LINEA" if not is_en else "ONLINE"
     mcp_default, _ = _mcp_profile_counts()
     line = (
@@ -1377,6 +1421,12 @@ def _hello_status_bar(is_en: bool, width: int) -> Panel:
         f"[dim]RETAILERS[/]  [bold #00FF88]{RETAILERS_VERIFIED}[/]  [#00FF88]|[/]  "
         f"[dim]STATUS[/]  [bold #00FF88]{label}[/]"
     )
+    if ctx and ctx.get("valid"):
+        line += (
+            f"  [#00FF88]|[/]  [dim]{'user' if is_en else 'usuario'}[/]  "
+            f"[bold cyan]{ctx.get('username', '?')}[/]  [#00FF88]|[/]  "
+            f"[dim]tier[/]  [bold #00FF88]{ctx.get('tier', '?')}[/]"
+        )
     return Panel(line, border_style="#00FF88", box=box.HEAVY, padding=(0, 1), width=width)
 
 
@@ -1514,10 +1564,11 @@ def _hello_contact_panel(is_en: bool, width: int) -> Panel:
     return Panel(body, title=title, border_style="dim", box=box.ROUNDED, padding=(1, 2), width=width)
 
 
-def _hello_data(is_en: bool) -> dict:
+def _hello_data(is_en: bool, ctx: dict | None = None) -> dict:
     """Structured data for `market hello --json` (agent / machine readable)."""
     platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
     mcp_default, mcp_legacy = _mcp_profile_counts()
+    pro_active = bool(ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")))
 
     onboarding = [
         {"step": 0, "cmd": "market hello", "description": "you are here" if is_en else "estás aquí", "current": True},
@@ -1526,8 +1577,14 @@ def _hello_data(is_en: bool) -> dict:
         {"step": 3, "cmd": 'market search "leche" --country PE', "description": "primera búsqueda verificada" if not is_en else "first verified search"},
         {"step": 4, "cmd": "market doctor", "description": "readiness %" if is_en else "preparación %"},
     ]
+    if pro_active:
+        next_steps = ['market search "arroz" --country PE', "market account", "market doctor"]
+    elif ctx and ctx.get("valid"):
+        next_steps = ['market search "leche" --country PE', "market account", "market doctor"]
+    else:
+        next_steps = ["market init", "market register", "market doctor"]
 
-    return {
+    payload = {
         "command": "hello",
         "version": PACKAGE_VERSION,
         "lang": "en" if is_en else "es",
@@ -1562,35 +1619,80 @@ def _hello_data(is_en: bool) -> dict:
             "quickstart": "https://cli-market.dev/docs#quickstart",
             "tools": "https://cli-market.dev/tools",
         },
-        "next_steps": ["market init", "market register", "market doctor"],
+        "next_steps": next_steps,
     }
+    if ctx:
+        payload["auth"] = {
+            "session_exists": True,
+            "valid": bool(ctx.get("valid")),
+            "username": ctx.get("username"),
+            "tier": ctx.get("tier"),
+            "pro_active": pro_active,
+        }
+    else:
+        payload["auth"] = {"session_exists": False, "pro_active": False}
+    return payload
 
 
 def cmd_hello(args):
     """Post-install activation: show next steps after pip install."""
     is_en = get_lang() == "en"
+    ctx = ui.fetch_session_context()
 
     # Agent / machine-readable path (respects `market --json` and `market hello --json`)
     if ui.is_json_mode():
-        data = _hello_data(is_en)
+        data = _hello_data(is_en, ctx)
         ui.emit_json(
             ui.json_response(
                 True,
                 data,
-                next_commands=["market init", "market register", "market doctor"],
+                next_commands=data.get("next_steps"),
             ),
             console,
         )
         return
 
-    # Human pretty path (unchanged visual experience)
+    # Human pretty path
     width = min(max(console.width, 80), 100)
     _report_install_event(source="hello")
 
     console.print()
+    if ctx and ctx.get("valid"):
+        ui.print_context_bar(
+            console,
+            tier=ctx.get("tier", "?"),
+            username=ctx.get("username"),
+        )
+    elif ctx and not ctx.get("valid"):
+        stale_user = ctx.get("username") or get_session_username()
+        console.print(
+            Panel.fit(
+                (
+                    f"[yellow]Sesión expirada.[/] [cyan]market login --username {stale_user}[/]"
+                    if not is_en and stale_user and stale_user != "?"
+                    else f"[yellow]Session expired.[/] [cyan]market login --username {stale_user}[/]"
+                    if stale_user and stale_user != "?"
+                    else "[yellow]Sesión expirada.[/] [cyan]market login[/]"
+                    if not is_en
+                    else "[yellow]Session expired.[/] [cyan]market login[/]"
+                ),
+                border_style="yellow",
+            )
+        )
+
     console.print(_hello_wordmark_panel(is_en, width))
-    console.print(_hello_activation_panel(is_en, width))
-    console.print(_hello_status_bar(is_en, width))
+    if ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")):
+        console.print(
+            _hello_pro_panel(
+                is_en,
+                width,
+                username=ctx.get("username", "?"),
+                sub=ctx.get("subscription") or {},
+            )
+        )
+    elif not ctx or not ctx.get("valid"):
+        console.print(_hello_activation_panel(is_en, width))
+    console.print(_hello_status_bar(is_en, width, ctx=ctx if ctx and ctx.get("valid") else None))
     col_w = max((width - 6) // 2, 36)
     console.print(
         Columns(
@@ -1606,11 +1708,20 @@ def cmd_hello(args):
     console.print(_hello_insight_panel(is_en, width))
     console.print(_hello_contact_panel(is_en, width))
     ui.mcp_snippet_panel(console, width)
-    hint = (
-        "run market init to begin"
-        if is_en
-        else "ejecute market init para comenzar"
-    )
+    if ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")):
+        hint = (
+            'run market search "rice" --country PE'
+            if is_en
+            else 'ejecute market search "arroz" --country PE'
+        )
+    elif ctx and ctx.get("valid"):
+        hint = "run market account" if is_en else "ejecute market account"
+    else:
+        hint = (
+            "run market init to begin"
+            if is_en
+            else "ejecute market init para comenzar"
+        )
     console.print(
         f"[bold #00FF88]market>[/] [dim]{hint}[/][bold #00FF88]_[/]"
     )

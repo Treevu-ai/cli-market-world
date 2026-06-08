@@ -12,10 +12,15 @@ ROOT = OPS.parent
 sys.path.insert(0, str(OPS))
 sys.path.insert(0, str(ROOT))
 
-from market_core import (
+from load_env import load_repo_env  # noqa: E402
+
+load_repo_env()
+
+from market_core import (  # noqa: E402
     db_find_subscription_request,
     db_mark_subscription_request_activated,
     db_set_subscription,
+    db_update_subscription_request_display_name,
     ensure_db_initialized,
 )
 
@@ -25,6 +30,7 @@ def main() -> int:
     p.add_argument("username", nargs="?", help="CLI username (from market login)")
     p.add_argument("--email", help="Lookup latest Pro request by subscriber email")
     p.add_argument("--request-id", dest="request_id", help="Pro request ref (PRO-XXXXXXXX)")
+    p.add_argument("--display-name", dest="display_name", help="Friendly name for welcome email")
     args = p.parse_args()
 
     ensure_db_initialized()
@@ -68,6 +74,12 @@ def main() -> int:
 
     if not request_id and req:
         request_id = req.get("id", "")
+    display_override = (args.display_name or "").strip()
+    if request_id and display_override:
+        if db_update_subscription_request_display_name(request_id, display_override):
+            print(f"✓ Display name saved: {display_override}")
+            if req:
+                req["display_name"] = display_override
     if request_id:
         db_mark_subscription_request_activated(request_id, username)
         print(f"✓ Request {request_id} marked activated")
@@ -88,15 +100,28 @@ def main() -> int:
 
     if customer_email:
         try:
+            from account_service import build_pro_email_context, provision_pro_login_credentials
             from market_connectors.email_outbound import send_pro_activated_email
 
-            mail = send_pro_activated_email(
-                to_email=customer_email,
-                username=username,
-                lang="es",
+            login_password = provision_pro_login_credentials(username)
+            ctx = build_pro_email_context(
+                username,
+                email=customer_email,
+                password=login_password,
+                display_name=display_override or (req.get("display_name") if req else "") or "",
                 request_id=request_id,
+                lang="es",
                 payment_method=pay_method,
+            )
+            mail = send_pro_activated_email(
+                to_email=ctx["email"] or customer_email,
+                username=ctx["username"],
+                lang=ctx["lang"],
+                request_id=ctx["request_id"],
+                payment_method=ctx["payment_method"],
                 source="ops_manual",
+                password=ctx["password"],
+                display_name=ctx["display_name"],
             )
             if mail.get("sent"):
                 print(f"✓ Activation email sent to {customer_email}")
@@ -123,7 +148,7 @@ def main() -> int:
     except Exception:
         pass
 
-    print("\nNext: ask customer to run `market whoami` — tier should show pro.")
+    print("\nNext: ask customer to run `market login` once, then `market` — Pro shows in the top bar.")
     return 0
 
 
