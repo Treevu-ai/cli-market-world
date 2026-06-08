@@ -32,9 +32,13 @@ MOCK_ADOPTION = {
 MOCK_FUNNEL = {
     "window_days": 30,
     "ttfv_median_minutes": 90.0,
+    "ttc_median_hours": 30.0,
     "events": {},
     "unique_users": {},
-    "conversion": {},
+    "conversion": {
+        "search_to_pro": 0.01,
+        "pro_to_activated": 0.0,
+    },
     "funnel_steps": [],
 }
 
@@ -79,6 +83,7 @@ def test_go_live_markdown(mock_adoption, mock_funnel):
     md = go_live_markdown(days=30, dashboard_data=MOCK_DASHBOARD)
     assert "Go-live" in md
     assert "Activación" in md
+    assert "Pricing" in md
     assert "Alertas" in md
 
 
@@ -121,24 +126,25 @@ def test_healthy_go_live(mock_adoption, mock_funnel):
 
     mock_adoption.return_value = {
         "window_days": 30,
-        "pypi": {"ok": True, "downloads_last_30d": 500},
+        "pypi": {"ok": True, "downloads_last_30d": 500, "downloads_last_7d": 3000},
         "funnel": {
-            "install": 10,
-            "register": 5,
-            "first_search": 4,
-            "starter_subscribe": 1,
-            "request_pro": 0,
-            "activated": 1,
+            "install": 30,
+            "register": 25,
+            "first_search": 20,
+            "starter_subscribe": 0,
+            "request_pro": 2,
+            "activated": 2,
         },
         "comparison": {"search_per_register": 0.8},
         "notes": [],
     }
     mock_funnel.return_value = {
         "ttfv_median_minutes": 5.0,
+        "ttc_median_hours": 2.0,
         "window_days": 30,
         "events": {},
         "unique_users": {},
-        "conversion": {},
+        "conversion": {"search_to_pro": 0.05, "pro_to_activated": 1.0},
         "funnel_steps": [],
     }
     dash = {
@@ -150,3 +156,38 @@ def test_healthy_go_live(mock_adoption, mock_funnel):
     data = go_live_summary(days=30, dashboard_data=dash)
     assert data["overall_status"] == "healthy"
     assert data["alert_count"]["critical"] == 0
+    assert "pricing" in data["kpis"]
+    assert data["kpis"]["pricing"]["decision"]["action"] == "keep_39"
+
+
+@patch("market_golive.funnel_summary")
+@patch("market_golive.adoption_summary")
+def test_spike_markdown_includes_pricing_health(mock_adoption, mock_funnel):
+    from market_golive import go_live_spike_markdown
+
+    mock_adoption.return_value = {
+        "window_days": 7,
+        "pypi": {"ok": True, "downloads_last_7d": 2500, "downloads_last_30d": 5000},
+        "funnel": {
+            "install": 50,
+            "register": 25,
+            "first_search": 12,
+            "starter_subscribe": 0,
+            "request_pro": 2,
+            "activated": 1,
+        },
+        "comparison": {"search_per_register": 0.48},
+        "notes": [],
+    }
+    mock_funnel.return_value = {
+        "ttfv_median_minutes": 8.0,
+        "ttc_median_hours": 6.0,
+        "conversion": {"search_to_pro": 0.167, "pro_to_activated": 0.5},
+        "events": {},
+        "unique_users": {},
+        "funnel_steps": [],
+    }
+    md = go_live_spike_markdown(days=7)
+    assert "Spike D+7" in md
+    assert "pricing_health" in md
+    assert "Decisión pricing" in md
