@@ -54,7 +54,7 @@ export default function HowItWorks() {
   const isES = lang === "es";
 
   return (
-    <section id="how" className="landing-section landing-section-alt animate-fade-in">
+    <section id="how" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
       <div className="landing-container text-center">
         <p className="section-eyebrow mb-4 mt-2">
           {isES ? "Cómo funciona" : "How it works"}

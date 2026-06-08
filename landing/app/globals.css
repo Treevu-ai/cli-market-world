@@ -315,6 +315,67 @@ section.landing-section-alt:not(.landing-section) {
   background-color: var(--cm-surface-low);
 }
 
+/* Terminal atmosphere below hero — subtle grid + top glow (neon budget per BRAND.md) */
+.landing-section-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-section-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(200, 255, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 255, 0, 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.landing-section-glow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(72%, 520px);
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.28), transparent);
+  box-shadow: 0 0 36px rgba(200, 255, 0, 0.07);
+}
+
+.landing-section-glow > .landing-container,
+.landing-section-glow > .landing-container-wide {
+  position: relative;
+  z-index: 1;
+}
+
+.section-eyebrow-action {
+  color: var(--cm-action);
+  text-shadow: 0 0 20px rgba(200, 255, 0, 0.12);
+}
+
+.brand-mode-terminal .card-cyber {
+  border-radius: var(--cm-radius-md);
+  background: color-mix(in srgb, var(--cm-surface-card) 92%, transparent);
+  border-color: color-mix(in srgb, var(--cm-action-glow) 10%, transparent);
+}
+
+.brand-mode-terminal .card-cyber:hover {
+  border-color: color-mix(in srgb, var(--cm-action-glow) 22%, transparent);
+  box-shadow:
+    0 0 24px rgba(200, 255, 0, 0.06),
+    0 0 20px rgba(58, 254, 207, 0.06);
+}
+
+.brand-mode-terminal .energy-border-active {
+  box-shadow:
+    0 0 calc(16px * var(--cm-glow-strength, 1)) rgba(200, 255, 0, 0.1),
+    0 0 calc(12px * var(--cm-glow-strength, 1)) rgba(58, 254, 207, 0.12);
+}
+
 /* Eyebrow / title block — extra air below the section divider */
 .landing-section > .landing-container > :first-child,
 .landing-section > .landing-container-wide > :first-child {
