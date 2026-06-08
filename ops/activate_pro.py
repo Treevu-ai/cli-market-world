@@ -7,7 +7,9 @@ import argparse
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+OPS = Path(__file__).resolve().parent
+ROOT = OPS.parent
+sys.path.insert(0, str(OPS))
 sys.path.insert(0, str(ROOT))
 
 from market_core import (
@@ -69,6 +71,20 @@ def main() -> int:
     if request_id:
         db_mark_subscription_request_activated(request_id, username)
         print(f"✓ Request {request_id} marked activated")
+
+    try:
+        from billing_slack import notify_pro_subscription
+
+        notify_pro_subscription(
+            status="activated",
+            username=username,
+            email=(req or {}).get("email", "") if req else "",
+            request_id=request_id,
+            source="ops_manual",
+            payment_method="yape|plin",
+        )
+    except Exception:
+        pass
 
     print("\nNext: ask customer to run `market whoami` — tier should show pro.")
     return 0

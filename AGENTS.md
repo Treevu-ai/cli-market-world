@@ -48,7 +48,7 @@ Output: PDF de 10 secciones, 3 tiers comerciales ($300-500/mes).
 
 ## Slack
 
-Canales: **bitácora** `C0B6V3Y9ZSP` · **publicaciones** `C0B6ZJ1B9B8` · **revisiones-cursor** `C0B723TQS78` · **command-control** `#command-control-cli-market` (env `SLACK_CHANNEL_COMMAND_CONTROL`)
+Canales: **bitácora** `C0B6V3Y9ZSP` · **publicaciones** `C0B6ZJ1B9B8` · **revisiones-cursor** `C0B723TQS78` · **command-control** `#command-control-cli-market` (env `SLACK_CHANNEL_COMMAND_CONTROL`) · **cli-market-pro** `#cli-market-pro` (env `SLACK_CHANNEL_CLI_MARKET_PRO`) — cada suscripción Build Pro
 
 ```bash
 python3 ops/slack_cli.py command-control --remote   # panel founder (checklist + KPIs + tendencias)

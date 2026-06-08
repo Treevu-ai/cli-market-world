@@ -11,6 +11,7 @@ DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
+CLI_MARKET_PRO_CHANNEL_NAME = "cli-market-pro"
 
 MAX_SLACK_TEXT = 3900
 
@@ -57,6 +58,21 @@ def _resolve_channel_by_name(token: str, name: str) -> str | None:
         if not cursor:
             break
     return None
+
+
+def channel_cli_market_pro() -> str:
+    explicit = os.getenv("SLACK_CHANNEL_CLI_MARKET_PRO", "").strip()
+    if explicit:
+        return explicit
+    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
+    if token:
+        resolved = _resolve_channel_by_name(token, CLI_MARKET_PRO_CHANNEL_NAME)
+        if resolved:
+            return resolved
+    raise ValueError(
+        "CLI Market Pro channel not configured. Set SLACK_CHANNEL_CLI_MARKET_PRO "
+        f"to the ID of #{CLI_MARKET_PRO_CHANNEL_NAME}, or grant channels:read to the bot."
+    )
 
 
 def channel_command_control() -> str:
@@ -183,4 +199,12 @@ def deliver_to_command_control(text: str) -> None:
         text,
         channel=channel_command_control(),
         webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""),
+    )
+
+
+def deliver_to_cli_market_pro(text: str) -> None:
+    deliver(
+        text,
+        channel=channel_cli_market_pro(),
+        webhook_url=os.getenv("SLACK_WEBHOOK_CLI_MARKET_PRO", ""),
     )

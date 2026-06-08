@@ -11,6 +11,7 @@ Usage:
   python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
   python3 ops/slack_cli.py command-control [--remote] [--dry-run]
   python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX [--bitacora]
+  # posts to #cli-market-pro by default
   python3 ops/slack_cli.py activate-pro --email cliente@example.com
   python3 ops/slack_cli.py verify [--send-test]
 """
@@ -156,8 +157,8 @@ def cmd_activate_pro(
     if proc.returncode != 0:
         return proc.returncode
 
+    ref = request_id or email or username or "?"
     if bitacora:
-        ref = request_id or email or username or "?"
         summary = (proc.stdout or "").strip() or f"Pro activated ({ref})"
         deliver_to_bitacora(
             "✅ *Build Pro activado* (Yape/Plin manual)\n"

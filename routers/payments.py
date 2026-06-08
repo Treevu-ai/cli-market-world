@@ -75,6 +75,51 @@ def _cart_total(cart: list[dict]) -> float:
     return round(sum(i["price"] * i["quantity"] for i in cart), 2)
 
 
+def _slack_notify_build_pro(
+    *,
+    status: str = "activated",
+    username: str = "",
+    email: str = "",
+    request_id: str = "",
+    source: str = "",
+    payment_method: str = "",
+    amount_pen: float | None = None,
+    amount_usd: float | None = None,
+) -> None:
+    """Post Build Pro events to #cli-market-pro (best-effort)."""
+    try:
+        import sys
+        from pathlib import Path
+
+        ops_dir = Path(__file__).resolve().parent.parent / "ops"
+        if str(ops_dir) not in sys.path:
+            sys.path.insert(0, str(ops_dir))
+        from billing_slack import notify_build_pro_tier_activated, notify_pro_subscription
+
+        if status == "pending":
+            notify_pro_subscription(
+                status="pending",
+                username=username,
+                email=email,
+                request_id=request_id,
+                source=source,
+                payment_method=payment_method,
+                amount_pen=amount_pen,
+                amount_usd=amount_usd,
+            )
+            return
+        notify_build_pro_tier_activated(
+            tier="pro",
+            username=username,
+            email=email,
+            request_id=request_id,
+            source=source,
+            payment_method=payment_method,
+        )
+    except Exception as exc:
+        logger.warning("cli-market-pro Slack notify skipped: %s", exc)
+
+
 def _notify_procure_payment(order_id: str, status: str) -> str | None:
     """Forward payment status to Procure Copilot when PROCURE_WEBHOOK_URL is set."""
     url = os.getenv("PROCURE_WEBHOOK_URL", "").strip()
@@ -224,6 +269,14 @@ async def _handle_paypal_event(event: dict) -> dict:
             except Exception:
                 logger.exception("%s activation email failed for %s", tier, username)
                 actions.append("activation_email_failed")
+            if tier == "pro":
+                _slack_notify_build_pro(
+                    username=username,
+                    email=db_get_user_email(username) or "",
+                    request_id=sub_id or "",
+                    source="paypal_webhook",
+                    payment_method="paypal",
+                )
         else:
             actions.append(f"subscription_no_user:{sub_id}")
 
@@ -823,6 +876,22 @@ def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
     except Exception:
         logger.exception("Pro activation email failed for %s", username)
 
+    pay_url = (req.get("payment_url") or "").strip().lower()
+    method = "yape"
+    if pay_url.startswith("plin:"):
+        method = "plin"
+    elif pay_url.startswith("mercadopago"):
+        method = "mercadopago"
+    elif pay_url.startswith("paypal"):
+        method = "paypal"
+    _slack_notify_build_pro(
+        username=username,
+        email=(req.get("email") or "").strip() or db_get_user_email(username) or "",
+        request_id=request_id,
+        source=source,
+        payment_method=method,
+    )
+
     return actions
 
 
@@ -1246,6 +1315,17 @@ def _start_pro_qr_checkout(
         db_mark_subscription_request_emailed(req["id"])
 
     _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
+
+    _slack_notify_build_pro(
+        status="pending",
+        username=username,
+        email=email,
+        request_id=request_id,
+        source=funnel_source,
+        payment_method=payment_label,
+        amount_pen=amount_pen,
+        amount_usd=float(PRO_PRICE_USD),
+    )
 
     return {
         "ok": True,

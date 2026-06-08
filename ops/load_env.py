@@ -30,6 +30,8 @@ def load_repo_env() -> None:
         for key in (
             "SLACK_BOT_TOKEN",
             "SLACK_CHANNEL_COMMAND_CONTROL",
+            "SLACK_CHANNEL_CLI_MARKET_PRO",
+            "SLACK_WEBHOOK_CLI_MARKET_PRO",
             "MARKET_API_TOKEN",
             "PEPY_API_KEY",
             "PEPY_PROJECT",
