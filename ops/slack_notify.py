@@ -10,9 +10,9 @@ import httpx
 DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
-DEFAULT_CHANNEL_CLI_MARKET_PRO = ""  # set SLACK_CHANNEL_CLI_MARKET_PRO after creating #cli-market-pro
+DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # #suscripciones-cli-pro
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
-CLI_MARKET_PRO_CHANNEL_NAME = "cli-market-pro"
+CLI_MARKET_PRO_CHANNEL_NAME = "suscripciones-cli-pro"
 
 MAX_SLACK_TEXT = 3900
 
@@ -74,7 +74,7 @@ def channel_cli_market_pro() -> str:
         if resolved:
             return resolved
     raise ValueError(
-        "CLI Market Pro channel not configured. Set SLACK_CHANNEL_CLI_MARKET_PRO "
+        "Subscriptions channel not configured. Set SLACK_CHANNEL_CLI_MARKET_PRO "
         f"to the ID of #{CLI_MARKET_PRO_CHANNEL_NAME}, or grant channels:read to the bot."
     )
 

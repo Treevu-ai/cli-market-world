@@ -34,13 +34,27 @@ def ingest_event(body: dict, authorization: str | None = Header(None)):
     if not username:
         username = (body.get("username") or "").strip() or None
 
-    return record_funnel_event(
+    meta = body.get("meta") if isinstance(body.get("meta"), dict) else None
+    result = record_funnel_event(
         event,
         username=username,
         session_id=(body.get("session_id") or "").strip() or None,
-        meta=body.get("meta") if isinstance(body.get("meta"), dict) else None,
+        meta=meta,
         dedupe=bool(body.get("dedupe", event in ("install", "first_search"))),
     )
+    try:
+        import sys
+        from pathlib import Path
+
+        ops_dir = Path(__file__).resolve().parent.parent / "ops"
+        if str(ops_dir) not in sys.path:
+            sys.path.insert(0, str(ops_dir))
+        from billing_slack import notify_funnel_event
+
+        notify_funnel_event(event=event, username=username or "", meta=meta)
+    except Exception:
+        pass
+    return result
 
 
 @router.get("/dashboard/funnel")

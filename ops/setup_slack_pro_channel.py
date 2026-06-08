@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Configure #cli-market-pro for Build Pro billing notifications.
+"""Configure #suscripciones-cli-pro for all tier subscription notifications.
 
 The bot needs chat:write and must be /invite'd to the channel.
-Optional: channels:read on the Slack app to auto-resolve the channel ID.
 
 Usage:
-  python ops/setup_slack_pro_channel.py --channel-id C0XXXXXXXX
+  python ops/setup_slack_pro_channel.py --channel-id C0B90LCEK0V
   python ops/setup_slack_pro_channel.py --test
-  railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0XXXXXXXX
+  railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V
 """
 
 from __future__ import annotations
@@ -26,7 +25,7 @@ load_repo_env()
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Setup #cli-market-pro Slack channel")
+    p = argparse.ArgumentParser(description="Setup #suscripciones-cli-pro Slack channel")
     p.add_argument("--channel-id", help="Channel ID (C0...) from Slack channel details")
     p.add_argument("--test", action="store_true", help="Send test Pro activation message")
     args = p.parse_args()
@@ -54,17 +53,16 @@ def main() -> int:
             payment_method="yape",
         )
         if ok:
-            print("✓ Test message posted to #cli-market-pro")
+            print("✓ Test message posted to #suscripciones-cli-pro")
             return 0
-        print("✗ Post failed — create #cli-market-pro, /invite @cli_market_dev_bot", file=sys.stderr)
+        print("✗ Post failed — /invite @cli_market_dev_bot in #suscripciones-cli-pro", file=sys.stderr)
         return 1
 
     print(
-        "1. Slack → Create channel #cli-market-pro (public)\n"
-        "2. In channel: /invite @cli_market_dev_bot\n"
-        "3. Channel details → copy Channel ID (C0...)\n"
-        "4. python ops/setup_slack_pro_channel.py --channel-id C0XXXXXXXX --test\n"
-        "5. railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0XXXXXXXX"
+        "Canal: #suscripciones-cli-pro (C0B90LCEK0V)\n"
+        "1. /invite @cli_market_dev_bot en el canal\n"
+        "2. python ops/setup_slack_pro_channel.py --channel-id C0B90LCEK0V --test\n"
+        "3. railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V"
     )
     return 0
 
