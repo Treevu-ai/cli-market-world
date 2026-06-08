@@ -492,7 +492,13 @@ def run_procure_channels(procure_base: str, rep: Report) -> None:
     for method in PROCURE_METHODS:
         proc, err = _procure_run_and_approve(procure_base)
         if not proc:
-            rep.add("procure", f"checkout/{method}", "FAIL", err)
+            err_l = err.lower()
+            if "429" in err and (
+                "plan_limit_quota" in err_l or "procurement limit" in err_l
+            ):
+                rep.add("procure", f"checkout/{method}", "SKIP", err)
+            else:
+                rep.add("procure", f"checkout/{method}", "FAIL", err)
             continue
 
         try:
@@ -514,9 +520,10 @@ def run_procure_channels(procure_base: str, rep: Report) -> None:
         if isinstance(payload, dict):
             err_text = str(payload.get("error") or "")
             err_code = str(payload.get("code") or "")
-            if status == 403 and (
-                err_code == "PLAN_LIMIT_CHECKOUT"
+            if status in (403, 429) and (
+                err_code in ("PLAN_LIMIT_CHECKOUT", "PLAN_LIMIT_QUOTA")
                 or ("Pro" in err_text and ("CLI Market" in err_text or "Procure Pro" in err_text))
+                or "procurement limit" in err_text.lower()
             ):
                 rep.add("procure", f"checkout/{method}", "SKIP", err_text or err_code, ms)
                 continue
