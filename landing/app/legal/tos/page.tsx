@@ -82,7 +82,7 @@ export default function TermsOfService() {
             <h3>6.1 Suscripciones Pro (PayPal)</h3>
             <ul>
               <li>
-                El plan Pro (USD 79/mes u opción anual publicada en la landing) se factura mediante
+                El plan Pro (USD 39/mes u opción anual publicada en la landing) se factura mediante
                 suscripción recurrente en PayPal, salvo acuerdo escrito distinto.
               </li>
               <li>
@@ -230,7 +230,7 @@ export default function TermsOfService() {
             <h3>6.1 Pro Subscriptions (PayPal)</h3>
             <ul>
               <li>
-                The Pro plan (USD 79/mo or published annual option) is billed via recurring PayPal
+                The Pro plan (USD 39/mo or published annual option) is billed via recurring PayPal
                 subscription unless otherwise agreed in writing.
               </li>
               <li>

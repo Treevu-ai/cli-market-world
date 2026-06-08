@@ -184,7 +184,7 @@ def require_pro(authorization: str | None) -> str:
         raise HTTPException(
             status_code=403,
             detail=(
-                "This endpoint requires CLI Market Pro ($79/mo). "
+                "This endpoint requires CLI Market Pro ($39/mo). "
                 "Run: market upgrade  or visit /billing/paypal"
             ),
         )
@@ -200,7 +200,7 @@ def require_checkout_access(username: str) -> None:
     raise HTTPException(
         status_code=403,
         detail=(
-            "Checkout requires CLI Market Pro ($79/mo). "
+            "Checkout requires CLI Market Pro ($39/mo). "
             "Run: market upgrade"
         ),
     )
