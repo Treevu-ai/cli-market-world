@@ -367,6 +367,98 @@
       }
     },
     {
+      "id": "public.billing_pro_checkout_paypal",
+      "tier": 1,
+      "phase": "public",
+      "name": "Pro checkout PayPal channel",
+      "method": "POST",
+      "path": "/billing/pro-checkout",
+      "body": {
+        "email": "pam+pp+{{run_id}}@cli-market.dev",
+        "lang": "es",
+        "payment_method": "paypal"
+      },
+      "expect": {
+        "status_in": [
+          200,
+          501,
+          502
+        ],
+        "json_has": [
+          "ok",
+          "request_id"
+        ]
+      }
+    },
+    {
+      "id": "public.billing_pro_checkout_yape",
+      "tier": 1,
+      "phase": "public",
+      "name": "Pro checkout Yape QR channel",
+      "method": "POST",
+      "path": "/billing/pro-checkout",
+      "body": {
+        "email": "pam+yape+{{run_id}}@cli-market.dev",
+        "lang": "es",
+        "payment_method": "yape"
+      },
+      "expect": {
+        "status": 200,
+        "json_has": [
+          "ok",
+          "qr_url",
+          "request_id",
+          "amount_pen"
+        ]
+      }
+    },
+    {
+      "id": "public.billing_pro_checkout_plin",
+      "tier": 1,
+      "phase": "public",
+      "name": "Pro checkout Plin QR channel",
+      "method": "POST",
+      "path": "/billing/pro-checkout",
+      "body": {
+        "email": "pam+plin+{{run_id}}@cli-market.dev",
+        "lang": "es",
+        "payment_method": "plin"
+      },
+      "expect": {
+        "status": 200,
+        "json_has": [
+          "ok",
+          "qr_url",
+          "request_id",
+          "amount_pen"
+        ]
+      }
+    },
+    {
+      "id": "public.billing_pro_checkout_mercadopago",
+      "tier": 1,
+      "phase": "public",
+      "name": "Pro checkout Mercado Pago channel",
+      "method": "POST",
+      "path": "/billing/pro-checkout",
+      "body": {
+        "email": "pam+mp+{{run_id}}@cli-market.dev",
+        "lang": "es",
+        "payment_method": "mercadopago"
+      },
+      "expect": {
+        "status_in": [
+          200,
+          501,
+          502
+        ],
+        "json_has": [
+          "ok",
+          "request_id"
+        ]
+      }
+    },
+    {
       "id": "public.funnel",
       "tier": 2,
       "phase": "post",
@@ -783,7 +875,12 @@
       "auth": "user",
       "expect": {
         "status": 200,
-        "json_has": ["headline", "shelf", "scores", "confidence"]
+        "json_has": [
+          "headline",
+          "shelf",
+          "scores",
+          "confidence"
+        ]
       }
     },
     {
