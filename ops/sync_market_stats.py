@@ -3,6 +3,8 @@
 
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -154,6 +156,7 @@ export const MARKET_STATS = {{
   pepyBadgeUrl: "{s.PEPY_BADGE_URL}",
   pipInstallCmd: "{s.PIP_INSTALL_CMD}",
   packageVersion: "{s.PACKAGE_VERSION}",
+  ogImageUrl: "/og.png?v={s.PACKAGE_VERSION}",
   license: "{s.LICENSE}",
   paymentsLabel: "{s.PAYMENTS_LABEL}",
   businessLines: {s.BUSINESS_LINES},
@@ -427,36 +430,126 @@ def sync_mcp_json() -> None:
     print(f"Synced {root}")
 
 
+def _og_price_compact() -> str:
+    m = re.match(r"([\d,]+)", s.PRICES_VERIFIED_LABEL)
+    if m:
+        n = int(m.group(1).replace(",", ""))
+        if n >= 1000:
+            return f"{n // 1000}K+"
+    return s.PRICES_VERIFIED_LABEL.replace(",", "")
+
+
+def _og_stats_line_es() -> str:
+    mcp = public_tool_count("default")
+    return (
+        f"{s.RETAILERS_DEFINED} retailers · {_og_price_compact()} precios · "
+        f"{mcp} MCP · {s.COUNTRIES} países LatAm"
+    )
+
+
+def _og_stats_line_en() -> str:
+    mcp = public_tool_count("default")
+    return (
+        f"{s.RETAILERS_DEFINED} retailers · {_og_price_compact()} prices · "
+        f"{mcp} MCP · {s.COUNTRIES} countries"
+    )
+
+
+def _og_svg_content() -> str:
+    stats = _og_stats_line_es()
+    pip = s.PIP_INSTALL_CMD
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0b"/>
+      <stop offset="100%" stop-color="#131314"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#3afecf" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#3afecf" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3afecf" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.08"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="40" y="40" width="1120" height="550" rx="8" fill="none" stroke="url(#border)" stroke-width="1.5"/>
+  <rect x="40" y="40" width="1120" height="4" rx="2" fill="#47475d"/>
+  <circle cx="68" cy="62" r="5" fill="#ffffff" fill-opacity="0.15"/>
+  <circle cx="88" cy="62" r="5" fill="#ffffff" fill-opacity="0.15"/>
+  <circle cx="108" cy="62" r="5" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="600" y="72" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#b9cac2" fill-opacity="0.5">market_agent_sh // og_preview</text>
+  <text x="600" y="268" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="64" font-weight="700" fill="#ffffff" letter-spacing="-2">CLI Market</text>
+  <text x="600" y="318" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" fill="#3afecf" font-style="italic">La capa programable del retail físico</text>
+  <text x="600" y="368" text-anchor="middle" font-family="ui-monospace, monospace" font-size="22" fill="#b9cac2">{stats}</text>
+  <rect x="320" y="400" width="560" height="56" rx="4" fill="#3afecf" fill-opacity="0.12" stroke="#3afecf" stroke-opacity="0.35"/>
+  <text x="600" y="436" text-anchor="middle" font-family="ui-monospace, monospace" font-size="18" font-weight="700" fill="#3afecf" letter-spacing="2">{pip}</text>
+  <text x="600" y="510" text-anchor="middle" font-family="ui-monospace, monospace" font-size="16" fill="#84948d">cli-market.dev · MIT · Network Engine Active</text>
+  <circle cx="440" cy="508" r="4" fill="#3afecf"/>
+</svg>
+"""
+
+
+def _og_preview_svg_content() -> str:
+    stats = _og_stats_line_en()
+    pip = s.PIP_INSTALL_CMD
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0b"/>
+      <stop offset="100%" stop-color="#131314"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" fill="url(#bg)"/>
+  <rect x="1" y="1" width="798" height="198" fill="none" stroke="#3afecf" stroke-opacity="0.2"/>
+  <rect x="0" y="0" width="800" height="3" fill="#47475d"/>
+  <text x="400" y="68" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="34" font-weight="700" fill="#ffffff" letter-spacing="-1">CLI Market</text>
+  <text x="400" y="96" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#3afecf">commerce infrastructure for AI agents</text>
+  <text x="400" y="126" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#b9cac2">{stats}</text>
+  <text x="400" y="154" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#84948d">{pip} · cli-market.dev · MIT</text>
+  <line x1="180" y1="168" x2="620" y2="168" stroke="#3b4a44" stroke-width="0.5"/>
+  <text x="400" y="186" text-anchor="middle" font-family="ui-monospace, monospace" font-size="8" fill="#84948d" letter-spacing="1">MIT · MCP NATIVE · LATAM RETAIL · VERIFIED PRICES</text>
+</svg>
+"""
+
+
 def sync_og_svg() -> None:
     path = ROOT / "landing" / "public" / "og.svg"
-    text = path.read_text(encoding="utf-8")
-    text = re.sub(
-        r"\d+ MCP tools \| pip install",
-        f"{public_tool_count('default')} MCP tools | pip install",
-        text,
-        count=1,
-    )
-    text = re.sub(
-        r"\d+ retailers · \d+K\+ precios · \d+ MCP ·",
-        (
-            f"{s.RETAILERS_DEFINED} retailers · {s.PRICES_VERIFIED_LABEL.replace(',', '')} precios · "
-            f"{public_tool_count('default')} MCP ·"
-        ),
-        text,
-        count=1,
-    )
-    text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(_og_svg_content(), encoding="utf-8")
     print(f"Synced {path}")
 
 
 def sync_og_preview_svg() -> None:
     path = ROOT / "landing" / "public" / "og-preview.svg"
-    text = path.read_text(encoding="utf-8")
-    text = re.sub(r"\d+ MCP", f"{public_tool_count('default')} MCP", text, count=1)
-    text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(_og_preview_svg_content(), encoding="utf-8")
     print(f"Synced {path}")
+
+
+def sync_og_png() -> None:
+    """Rasterize OG SVGs to PNG — social crawlers (LinkedIn, Slack) do not use SVG."""
+    node = shutil.which("node") or shutil.which("node.exe")
+    if not node:
+        print("WARN: node not found — og.png not regenerated", file=sys.stderr)
+        return
+    landing = ROOT / "landing"
+    rasterizer = landing / "scripts" / "rasterize_og.mjs"
+    pairs = [
+        (landing / "public" / "og.svg", landing / "public" / "og.png"),
+        (landing / "public" / "og-preview.svg", landing / "public" / "og-preview.png"),
+    ]
+    for svg_path, png_path in pairs:
+        result = subprocess.run(
+            [node, str(rasterizer), str(svg_path.relative_to(landing)), str(png_path.relative_to(landing))],
+            cwd=landing,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            print(f"WARN: could not rasterize {svg_path.name}: {result.stderr.strip()}", file=sys.stderr)
+            continue
+        print(f"Synced {png_path}")
 
 
 def _llms_bundle_section() -> str:
@@ -569,6 +662,7 @@ def main() -> None:
     sync_glama_json()
     sync_og_svg()
     sync_og_preview_svg()
+    sync_og_png()
     sync_llms_txt()
 
 

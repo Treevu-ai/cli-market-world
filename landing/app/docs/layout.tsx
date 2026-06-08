@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description: "REST + CLI + MCP reference for verified LatAm retail prices.",
     url: "https://cli-market.dev/docs",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "CLI Market API documentation" }],
+    images: [{ url: MARKET_STATS.ogImageUrl, width: 1200, height: 630, alt: "CLI Market API documentation" }],
   },
 };
 
