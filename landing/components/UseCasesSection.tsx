@@ -51,7 +51,7 @@ export default function UseCasesSection() {
   const isES = lang === "es";
 
   return (
-    <section id="casos" className="landing-section animate-fade-in">
+    <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
       <div className="landing-container text-center">
         <p className="section-eyebrow mb-4">
           {isES ? "Casos de uso" : "Use cases"}

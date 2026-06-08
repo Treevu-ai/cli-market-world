@@ -244,9 +244,9 @@ export default function Pricing() {
   };
 
   return (
-    <section id="pricing" className="landing-section landing-section-alt animate-fade-in scroll-mt-24">
+    <section id="pricing" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in scroll-mt-24">
       <div className="landing-container-wide text-center">
-        <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">
+        <p className="section-eyebrow section-eyebrow-action mb-4">
           {isES ? "Planes" : "Plans"}
         </p>
 
@@ -320,13 +320,11 @@ export default function Pricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className={tier.name === "Pro" ? "sm:col-span-2 lg:col-span-1" : undefined}
               >
                 <TierCard
                   tier={tier}
                   isES={isES}
                   billing={billing}
-                  className={tier.name === "Pro" ? "lg:min-h-[28rem]" : undefined}
                   footerNote={
                     tier.name === "Pro" && tier.proNote_es
                       ? isES
@@ -336,7 +334,7 @@ export default function Pricing() {
                   }
                 >
                   {tier.name === "Pro" ? (
-                    <div id="pro-checkout" className="scroll-mt-24 space-y-3">
+                    <div id="pro-checkout" className="scroll-mt-24">
                       <ProSubscribeButton />
                     </div>
                   ) : tier.name === "Free" ? (
