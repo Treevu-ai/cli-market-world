@@ -10,6 +10,8 @@ Usage:
   python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
   python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
   python3 ops/slack_cli.py command-control [--remote] [--dry-run]
+  python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX [--bitacora]
+  python3 ops/slack_cli.py activate-pro --email cliente@example.com
   python3 ops/slack_cli.py verify [--send-test]
 """
 
@@ -118,12 +120,63 @@ def cmd_campaign_sync(dry_run: bool) -> int:
     return subprocess.call(args, cwd=ROOT)
 
 
-def cmd_command_control(dry_run: bool, remote: bool, slack: bool) -> int:
+def cmd_activate_pro(
+    username: str | None,
+    request_id: str | None,
+    email: str | None,
+    *,
+    bitacora: bool,
+    dry_run: bool,
+) -> int:
+    """Activate Build Pro after manual Yape/Plin payment (wraps ops/activate_pro.py)."""
+    if not (username or request_id or email):
+        print(
+            "Error: provide PRO-XXXXXXXX, --email, or USERNAME",
+            file=sys.stderr,
+        )
+        return 1
+
+    args = [sys.executable, str(ROOT / "ops" / "activate_pro.py")]
+    if username:
+        args.append(username)
+    if request_id:
+        args.extend(["--request-id", request_id])
+    if email:
+        args.extend(["--email", email])
+
+    if dry_run:
+        print("dry-run:", " ".join(args))
+        return 0
+
+    proc = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
+    if proc.stdout:
+        print(proc.stdout, end="")
+    if proc.stderr:
+        print(proc.stderr, file=sys.stderr, end="")
+    if proc.returncode != 0:
+        return proc.returncode
+
+    if bitacora:
+        ref = request_id or email or username or "?"
+        summary = (proc.stdout or "").strip() or f"Pro activated ({ref})"
+        deliver_to_bitacora(
+            "✅ *Build Pro activado* (Yape/Plin manual)\n"
+            f"• ref: `{ref}`\n"
+            f"• {summary}\n"
+            "• Cliente: `market whoami` → tier pro"
+        )
+        print(f"OK → bitácora ({channel_bitacora()})")
+    return 0
+
+
+def cmd_command_control(dry_run: bool, remote: bool, slack: bool, full: bool) -> int:
     args = [sys.executable, str(ROOT / "ops" / "command_control_daily.py")]
     if dry_run:
         args.append("--dry-run")
     if remote:
         args.append("--remote")
+    if full:
+        args.append("--full")
     if slack:
         args.append("--slack")
     return subprocess.call(args, cwd=ROOT)
@@ -160,12 +213,28 @@ def main() -> int:
     camp_sub.add_parser("assets", help="Regenerate all 30 LinkedIn PNG assets")
     camp_sub.add_parser("template-sync", help="Sync content template → content repo (incremental)")
 
+    p_ap = sub.add_parser(
+        "activate-pro",
+        help="Activate Build Pro after Yape/Plin payment (ops/activate_pro.py)",
+    )
+    p_ap.add_argument(
+        "target",
+        nargs="?",
+        metavar="PRO-XXXXXXXX",
+        help="Payment ref from Yape/Plin message (or username if not PRO-*)",
+    )
+    p_ap.add_argument("--request-id", dest="request_id", help="PRO-XXXXXXXX (same as positional)")
+    p_ap.add_argument("--email", help="Lookup latest request by subscriber email")
+    p_ap.add_argument("--bitacora", action="store_true", help="Post confirmation to bitácora Slack")
+    p_ap.add_argument("--dry-run", action="store_true", help="Print activate_pro command only")
+
     p_cc = sub.add_parser(
         "command-control",
         help="Founder ops panel → #command-control-cli-market",
     )
     p_cc.add_argument("--dry-run", action="store_true", help="Print only; no Slack/history")
     p_cc.add_argument("--remote", action="store_true", help="KPIs from production API")
+    p_cc.add_argument("--full", action="store_true", help="Include full founder checklist in Slack")
 
     args = parser.parse_args()
 
@@ -188,11 +257,29 @@ def main() -> int:
                 [sys.executable, str(ROOT / "ops" / "sync_content_template.py")],
                 cwd=ROOT,
             )
+    if args.command == "activate-pro":
+        request_id = (args.request_id or "").strip().upper() or None
+        username: str | None = None
+        target = (args.target or "").strip()
+        if not request_id and target:
+            if target.upper().startswith("PRO-"):
+                request_id = target.upper()
+            else:
+                username = target
+        email = (args.email or "").strip() or None
+        return cmd_activate_pro(
+            username,
+            request_id,
+            email,
+            bitacora=args.bitacora,
+            dry_run=args.dry_run,
+        )
     if args.command == "command-control":
         return cmd_command_control(
             dry_run=args.dry_run,
             remote=args.remote,
             slack=not args.dry_run,
+            full=args.full,
         )
     if args.command == "post":
         if args.channel:
