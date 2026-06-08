@@ -29,12 +29,10 @@ load_repo_env()
 
 from slack_notify import (  # noqa: E402
     channel_bitacora,
-    channel_command_control,
     channel_publicaciones,
     channel_revisiones_cursor,
     deliver,
     deliver_to_bitacora,
-    deliver_to_command_control,
     deliver_to_publicaciones,
     deliver_to_revisiones_cursor,
 )
