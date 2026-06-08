@@ -10,15 +10,17 @@ export const SECTION_NAV: NavItem[] = [
   { id: "api", es: "API", en: "API" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "casos", es: "Casos", en: "Use cases" },
-  { id: "procure", es: "Procure", en: "Procure" },
   { id: "intelligence", es: "Intelligence", en: "Intelligence" },
   { id: "pricing", es: "Planes", en: "Pricing" },
   { id: "faq", es: "FAQ", en: "FAQ" },
   { id: "contact", es: "Contacto", en: "Contact" },
 ];
 
-/** Side rail includes hero home dot. Retailers live under #pricing (Developers | Retailers toggle). */
+/** Side rail includes hero home dot. Build · Procure · Listed live under #pricing. */
 export const SIDE_NAV: NavItem[] = [{ id: "hero", es: "Inicio", en: "Home" }, ...SECTION_NAV];
 
-export const PRICING_RETAILERS_HASH = "#retailers";
-export const PRICING_DEVELOPERS_HASH = "#pricing";
+export const PRICING_BUILD_HASH = "#pricing";
+export const PRICING_PROCURE_HASH = "#procure";
+export const PRICING_LISTED_HASH = "#listed";
+/** Legacy alias — opens Listed tab */
+export const PRICING_RETAILERS_HASH = "#listed";

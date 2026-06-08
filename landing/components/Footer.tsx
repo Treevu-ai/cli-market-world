@@ -3,7 +3,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { SECTION_NAV, PRICING_RETAILERS_HASH } from "@/lib/siteNav";
+import { SECTION_NAV, PRICING_LISTED_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
 
 export default function Footer() {
   const { lang } = useLang();
@@ -59,8 +59,11 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Compañía" : "Company"}
           </span>
-          <a href={PRICING_RETAILERS_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
+          <a href={PRICING_LISTED_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            Listed — {isES ? "góndola gratis" : "free shelf"}
+          </a>
+          <a href={PRICING_PROCURE_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+            Procure Copilot
           </a>
           <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Catálogo retailers" : "Retailer catalog"}
@@ -91,8 +94,8 @@ export default function Footer() {
             >
               {id === "pricing"
                 ? isES
-                  ? "Planes (Developers · Retailers)"
-                  : "Plans (Developers · Retailers)"
+                  ? "Planes (Build · Procure · Listed)"
+                  : "Plans (Build · Procure · Listed)"
                 : id === "api"
                   ? isES
                     ? "API en vivo"

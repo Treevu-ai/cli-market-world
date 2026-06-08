@@ -1,4 +1,4 @@
-/** Procure Copilot — pricing on cli-market.dev/#procure (single commercial surface). */
+/** Procure Copilot — pricing tab at cli-market.dev/#procure (inside #pricing). */
 
 export const PROCURE_APP_URL =
   process.env.NEXT_PUBLIC_PROCURE_APP_URL ||
