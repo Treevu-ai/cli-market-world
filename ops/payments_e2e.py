@@ -660,12 +660,23 @@ def run_landing_pricing_smoke(landing: str, rep: Report) -> None:
         ("anchor-procure", 'id="procure"'),
         ("anchor-listed", 'id="listed"'),
         ("pro-checkout", 'id="pro-checkout"'),
+        ("cta-pro-modal", "Configurar Pro"),
+        ("cta-procure-modal", "Suscribir con PayPal"),
+        ("section-glow", "landing-section-glow"),
+        ("hero-terminal", "hero-terminal"),
     )
     for name, needle in markers:
         if needle in body:
             rep.add("landing", name, "PASS", needle)
         else:
             rep.add("landing", name, "FAIL", f"missing {needle}")
+
+    # Pricing cards should expose CTA only — email fields live in checkout modal (client)
+    pricing_slice = body[body.find('id="pricing"'): body.find('id="faq"')] if 'id="pricing"' in body else ""
+    if pricing_slice.count('type="email"') > 2:
+        rep.add("landing", "pricing-no-inline-email", "FAIL", f"email inputs={pricing_slice.count('type=\"email\"')}")
+    else:
+        rep.add("landing", "pricing-no-inline-email", "PASS", "cards lean")
 
     try:
         status, _, ms = http_json(DEFAULT_PROCURE, "GET", "/procure")
