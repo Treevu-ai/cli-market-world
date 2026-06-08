@@ -30,7 +30,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "Build (API/MCP): Free 1.000 consultas/día; Starter USD 29/mes (5.000/día, CSV, PayPal); Pro USD 79/mes (10.000/día, checkout y export avanzado). Intelligence (datos comerciales): en desarrollo — lista de espera en la sección Intelligence. Listado retailer: gratis siempre.",
+        a: "Build (API/MCP): Free 1.000 consultas/día; Pro USD 39/mes (10.000/día, alertas, full MCP + checkout PayPal). Enterprise a medida. Intelligence (datos comerciales): lista de espera en la sección Intelligence. Listado retailer: gratis siempre.",
       },
     ];
   }
@@ -58,7 +58,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How much does it cost?",
-      a: "Build (API/MCP): Free 1,000 requests/day; Starter USD 29/mo (5,000/day, CSV, PayPal); Pro USD 79/mo (10,000/day, checkout and advanced export). Intelligence (commercial data): in development — waitlist in the Intelligence section. Retailer listing: free forever.",
+      a: "Build (API/MCP): Free 1,000 requests/day; Pro USD 39/mo (10,000/day, alerts, full MCP + PayPal checkout). Enterprise custom. Intelligence (commercial data): waitlist in the Intelligence section. Retailer listing: free forever.",
     },
   ];
 }
