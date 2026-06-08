@@ -100,7 +100,9 @@ def main() -> int:
             )
             if mail.get("sent"):
                 print(f"✓ Activation email sent to {customer_email}")
-            if mail.get("ops_notified"):
+            if mail.get("gmail_draft"):
+                print(f"✓ Gmail draft created for {customer_email}")
+            elif mail.get("ops_notified"):
                 print("✓ Draft reply sent to hello@cli-market.dev")
             elif not mail.get("sent"):
                 print(f"⚠ Email not sent: {mail.get('reason', 'unknown')}", file=sys.stderr)
