@@ -14,6 +14,17 @@ SEARCH_PER_REGISTER_TARGET = 0.40
 COVERAGE_7D_TARGET = 80.0
 WEEKLY_ACTIVATED_GOAL = 1
 
+# Spike D+7 (2026-06-10 → 2026-06-17) + pricing decision gates
+SPIKE_PYPI_7D_TARGET = 2_000
+SPIKE_PRO_ACTIVATED_TARGET = 2
+SEARCH_TO_PRO_TARGET = 0.03
+PRO_TO_ACTIVATED_TARGET = 0.50
+PRICING_HEALTH_OK = 0.02
+PRICING_HEALTH_TRIAL = 0.005
+TTFV_MEDIAN_MINUTES_TARGET = 30.0
+TTC_MEDIAN_HOURS_TARGET = 24.0
+PRICING_MIN_REGISTER_SAMPLE = 20
+
 
 def _pct(rate: float | None) -> str:
     if rate is None:
@@ -31,6 +42,94 @@ def _kpi_status(*, ok: bool, warn: bool = False) -> str:
 
 def _alert(severity: str, code: str, message: str) -> dict[str, str]:
     return {"severity": severity, "code": code, "message": message}
+
+
+def _rate(num: int, den: int) -> float | None:
+    if den <= 0:
+        return None
+    return round(num / den, 4)
+
+
+def _pricing_recommendation(
+    *,
+    register: int,
+    first_search: int,
+    pro_req: int,
+    activated: int,
+    search_to_pro: float | None,
+    pro_to_activated: float | None,
+    pricing_health: float | None,
+) -> dict[str, Any]:
+    """Post-spike pricing decision from funnel shape (see ops/go_live_check.py --spike)."""
+    if register < PRICING_MIN_REGISTER_SAMPLE:
+        return {
+            "action": "wait",
+            "label": "Muestra insuficiente",
+            "detail": f"register {register} < {PRICING_MIN_REGISTER_SAMPLE} — no cambiar pricing aún.",
+        }
+
+    search_per_register = _rate(first_search, register)
+    if search_per_register is not None and search_per_register < 0.25:
+        return {
+            "action": "fix_onboarding",
+            "label": "Arreglar onboarding",
+            "detail": "search/register <25% — adopción rota; no tocar precio.",
+        }
+
+    if pro_to_activated is not None and pro_req >= 2 and pro_to_activated < PRO_TO_ACTIVATED_TARGET:
+        return {
+            "action": "fix_checkout",
+            "label": "Arreglar checkout",
+            "detail": (
+                f"activated/request_pro {_pct(pro_to_activated)} "
+                f"(meta ≥{_pct(PRO_TO_ACTIVATED_TARGET)}) — ops PayPal, no bajar precio."
+            ),
+        }
+
+    if pricing_health is not None and pricing_health >= PRICING_HEALTH_OK:
+        return {
+            "action": "keep_39",
+            "label": "Mantener Pro $39",
+            "detail": (
+                f"pricing_health {_pct(pricing_health)} ≥ {_pct(PRICING_HEALTH_OK)}."
+            ),
+        }
+
+    if (
+        search_to_pro is not None
+        and PRICING_HEALTH_TRIAL <= (pricing_health or 0) < PRICING_HEALTH_OK
+    ) or (
+        search_to_pro is not None
+        and SEARCH_TO_PRO_TARGET * 0.33 <= search_to_pro < SEARCH_TO_PRO_TARGET
+    ):
+        return {
+            "action": "trial_pro",
+            "label": "Trial Pro 14d",
+            "detail": (
+                f"intent {_pct(search_to_pro)} o health {_pct(pricing_health)} — "
+                "probar trial antes que Starter $19."
+            ),
+        }
+
+    if (
+        search_per_register is not None
+        and search_per_register >= SEARCH_PER_REGISTER_TARGET
+        and (search_to_pro or 0) < SEARCH_TO_PRO_TARGET
+        and (pricing_health or 0) < PRICING_HEALTH_TRIAL
+    ):
+        return {
+            "action": "evaluate_starter",
+            "label": "Evaluar Starter $19 (CLI only)",
+            "detail": (
+                "search alto, intent bajo — Starter oculto post D+14, no en landing."
+            ),
+        }
+
+    return {
+        "action": "keep_39",
+        "label": "Mantener Pro $39",
+        "detail": "Sin señal clara para cambio — seguir midiendo.",
+    }
 
 
 def _load_dashboard_data(dashboard_data: dict[str, Any] | None) -> dict[str, Any]:
@@ -72,6 +171,21 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
 
     search_per_register = c.get("search_per_register")
     ttfv = funnel.get("ttfv_median_minutes")
+    ttc = funnel.get("ttc_median_hours")
+    search_to_pro = funnel.get("conversion", {}).get("search_to_pro")
+    pro_to_activated = funnel.get("conversion", {}).get("pro_to_activated")
+    pricing_health = _rate(activated, first_search)
+    intent_rate = search_to_pro
+    pypi_7d = adoption["pypi"].get("downloads_last_7d")
+    pricing_decision = _pricing_recommendation(
+        register=register,
+        first_search=first_search,
+        pro_req=pro_req,
+        activated=activated,
+        search_to_pro=search_to_pro,
+        pro_to_activated=pro_to_activated,
+        pricing_health=pricing_health,
+    )
 
     activation_ok = (
         register == 0
@@ -142,6 +256,67 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
                 "warn",
                 "ttfv_slow",
                 f"TTFV mediana {ttfv:.0f} min (>60 min) — usuarios tardan en primera búsqueda.",
+            )
+        )
+    elif ttfv is not None and ttfv > TTFV_MEDIAN_MINUTES_TARGET:
+        alerts.append(
+            _alert(
+                "info",
+                "ttfv_above_target",
+                f"TTFV mediana {ttfv:.0f} min (meta <{TTFV_MEDIAN_MINUTES_TARGET:.0f} min).",
+            )
+        )
+
+    if ttc is not None and ttc > TTC_MEDIAN_HOURS_TARGET:
+        alerts.append(
+            _alert(
+                "warn",
+                "ttc_slow",
+                f"TTC mediana {ttc:.0f} h (>{TTC_MEDIAN_HOURS_TARGET:.0f} h) — checkout o activación lenta.",
+            )
+        )
+
+    if isinstance(pypi_7d, int) and days <= 7 and pypi_7d < SPIKE_PYPI_7D_TARGET:
+        alerts.append(
+            _alert(
+                "warn",
+                "spike_pypi_gate",
+                f"PyPI 7d {pypi_7d:,} < meta spike {SPIKE_PYPI_7D_TARGET:,}.",
+            )
+        )
+
+    if days <= 7 and activated < SPIKE_PRO_ACTIVATED_TARGET and register >= 10:
+        alerts.append(
+            _alert(
+                "warn",
+                "spike_pro_gate",
+                f"Pro activados {activated} < meta spike {SPIKE_PRO_ACTIVATED_TARGET} "
+                f"(ventana {days}d).",
+            )
+        )
+
+    if (
+        first_search >= 5
+        and search_to_pro is not None
+        and search_to_pro < SEARCH_TO_PRO_TARGET
+        and register >= PRICING_MIN_REGISTER_SAMPLE
+    ):
+        alerts.append(
+            _alert(
+                "info",
+                "pricing_intent_low",
+                f"Intent Pro (search→request_pro) {_pct(search_to_pro)} "
+                f"(meta ≥{_pct(SEARCH_TO_PRO_TARGET)}).",
+            )
+        )
+
+    if pro_req >= 2 and pro_to_activated is not None and pro_to_activated < PRO_TO_ACTIVATED_TARGET:
+        alerts.append(
+            _alert(
+                "warn",
+                "pricing_activation_leak",
+                f"Fuga activación: activated/request_pro {_pct(pro_to_activated)} "
+                f"(meta ≥{_pct(PRO_TO_ACTIVATED_TARGET)}).",
             )
         )
 
@@ -232,6 +407,14 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
             "search_per_register_min": SEARCH_PER_REGISTER_TARGET,
             "coverage_7d_min": COVERAGE_7D_TARGET,
             "weekly_activated_goal": WEEKLY_ACTIVATED_GOAL,
+            "spike_pypi_7d": SPIKE_PYPI_7D_TARGET,
+            "spike_pro_activated": SPIKE_PRO_ACTIVATED_TARGET,
+            "search_to_pro_min": SEARCH_TO_PRO_TARGET,
+            "pro_to_activated_min": PRO_TO_ACTIVATED_TARGET,
+            "pricing_health_ok": PRICING_HEALTH_OK,
+            "pricing_health_trial": PRICING_HEALTH_TRIAL,
+            "ttfv_median_minutes_max": TTFV_MEDIAN_MINUTES_TARGET,
+            "ttc_median_hours_max": TTC_MEDIAN_HOURS_TARGET,
         },
         "kpis": {
             "activation": {
@@ -268,9 +451,29 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
                 "snapshots_24h": kpis.get("snapshots_24h"),
                 "status": _kpi_status(ok=moat_ok, warn=moat_warn),
             },
+            "pricing": {
+                "title": "Pricing / spike",
+                "pypi_downloads_7d": pypi_7d,
+                "spike_pypi_7d_target": SPIKE_PYPI_7D_TARGET,
+                "search_to_pro": search_to_pro,
+                "search_to_pro_target": SEARCH_TO_PRO_TARGET,
+                "pro_to_activated": pro_to_activated,
+                "pro_to_activated_target": PRO_TO_ACTIVATED_TARGET,
+                "pricing_health": pricing_health,
+                "pricing_health_ok": PRICING_HEALTH_OK,
+                "intent_rate": intent_rate,
+                "ttc_median_hours": ttc,
+                "decision": pricing_decision,
+                "status": _kpi_status(
+                    ok=activated >= SPIKE_PRO_ACTIVATED_TARGET
+                    or (pricing_health or 0) >= PRICING_HEALTH_OK,
+                    warn=pro_req > 0 and activated == 0,
+                ),
+            },
         },
         "adoption": {
             "pypi_downloads_30d": adoption["pypi"].get("downloads_last_30d"),
+            "pypi_downloads_7d": pypi_7d,
             "install": f.get("install"),
             "notes": adoption.get("notes", []),
         },
@@ -279,11 +482,63 @@ def go_live_summary(*, days: int = 30, dashboard_data: dict[str, Any] | None = N
     }
 
 
+def go_live_spike_markdown(*, days: int = 7, dashboard_data: dict[str, Any] | None = None) -> str:
+    """Spike D+7 table for price-pulse / founder debrief."""
+    data = go_live_summary(days=days, dashboard_data=dashboard_data)
+    act = data["kpis"]["activation"]
+    rev = data["kpis"]["revenue"]
+    pr = data["kpis"]["pricing"]
+    dec = pr["decision"]
+    pypi_7d = pr.get("pypi_downloads_7d")
+
+    def _cell(val: Any) -> str:
+        if val is None:
+            return ""
+        if isinstance(val, float) and val < 1:
+            return _pct(val)
+        return str(val)
+
+    lines = [
+        "## Spike D+7 — embudo y pricing",
+        "",
+        f"_Ventana **{days}d** · generado {data['generated_at'][:19]} UTC_",
+        "",
+        "| Métrica | Valor actual | Meta | Estado |",
+        "|---------|--------------|------|--------|",
+        f"| PyPI 7d rolling | {_cell(pypi_7d)} | ≥{SPIKE_PYPI_7D_TARGET:,} | "
+        f"{'✅' if isinstance(pypi_7d, int) and pypi_7d >= SPIKE_PYPI_7D_TARGET else '⏳'} |",
+        f"| Registers (únicos) | {act['register']} | — | |",
+        f"| first_search (únicos) | {act['first_search']} | — | |",
+        f"| search/register | {_cell(act['search_per_register'])} | ≥{_pct(SEARCH_PER_REGISTER_TARGET)} | "
+        f"{'✅' if (act['search_per_register'] or 0) >= SEARCH_PER_REGISTER_TARGET else '⏳'} |",
+        f"| request_pro (únicos) | {rev['request_pro']} | — | |",
+        f"| search→pro (intent) | {_cell(pr['search_to_pro'])} | ≥{_pct(SEARCH_TO_PRO_TARGET)} | "
+        f"{'✅' if (pr['search_to_pro'] or 0) >= SEARCH_TO_PRO_TARGET else '⏳'} |",
+        f"| activated (únicos) | {rev['activated']} | ≥{SPIKE_PRO_ACTIVATED_TARGET} | "
+        f"{'✅' if rev['activated'] >= SPIKE_PRO_ACTIVATED_TARGET else '⏳'} |",
+        f"| pro→activated | {_cell(pr['pro_to_activated'])} | ≥{_pct(PRO_TO_ACTIVATED_TARGET)} | "
+        f"{'✅' if (pr['pro_to_activated'] or 0) >= PRO_TO_ACTIVATED_TARGET else '⏳'} |",
+        f"| **pricing_health** (act/search) | {_cell(pr['pricing_health'])} | ≥{_pct(PRICING_HEALTH_OK)} | "
+        f"{'✅' if (pr['pricing_health'] or 0) >= PRICING_HEALTH_OK else '⏳'} |",
+        f"| TTFV mediana (min) | {act['ttfv_median_minutes'] or '—'} | <{TTFV_MEDIAN_MINUTES_TARGET:.0f} | |",
+        f"| TTC mediana (h) | {pr['ttc_median_hours'] or '—'} | <{TTC_MEDIAN_HOURS_TARGET:.0f} | |",
+        "",
+        f"**Decisión pricing:** **{dec['label']}** (`{dec['action']}`) — {dec['detail']}",
+        "",
+        "```bash",
+        f"python ops/go_live_check.py --spike --days {days}",
+        "```",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = None) -> str:
     data = go_live_summary(days=days, dashboard_data=dashboard_data)
     act = data["kpis"]["activation"]
     rev = data["kpis"]["revenue"]
     moat = data["kpis"]["data_moat"]
+    pr = data["kpis"]["pricing"]
     w = data["window_days"]
 
     lines = [
@@ -301,12 +556,22 @@ def go_live_markdown(*, days: int = 30, dashboard_data: dict[str, Any] | None = 
         "",
         "## KPI 2 · Revenue",
         "",
-        f"- Pro subscriptions: **{rev['starter_subscribe'] + rev.get('request_pro', 0)}** (metrics legacy key) · "
-        f"Activated: **{rev['activated']}**",  # Note: backend keys kept for compatibility; user-facing now "Pro" only
-        f"- Meta semanal paid: **{rev['weekly_paid_goal']}**",
+        f"- request_pro: **{rev['request_pro']}** · Activated: **{rev['activated']}**",
+        f"- Meta semanal paid: **{rev['weekly_paid_goal']}** · "
+        f"Meta spike Pro: **{SPIKE_PRO_ACTIVATED_TARGET}**",
         f"- Estado: **{rev['status']}**",
         "",
-        "## KPI 3 · Data moat",
+        "## KPI 3 · Pricing / spike",
+        "",
+        f"- PyPI 7d: **{pr.get('pypi_downloads_7d') or '—'}** (meta ≥{SPIKE_PYPI_7D_TARGET:,})",
+        f"- search→pro: **{_pct(pr['search_to_pro'])}** (meta ≥{_pct(SEARCH_TO_PRO_TARGET)})",
+        f"- pro→activated: **{_pct(pr['pro_to_activated'])}** (meta ≥{_pct(PRO_TO_ACTIVATED_TARGET)})",
+        f"- pricing_health: **{_pct(pr['pricing_health'])}** (meta ≥{_pct(PRICING_HEALTH_OK)})",
+        f"- TTC mediana: **{pr['ttc_median_hours'] or '—'}** h",
+        f"- Decisión: **{pr['decision']['label']}** — {pr['decision']['detail']}",
+        f"- Estado: **{pr['status']}**",
+        "",
+        "## KPI 4 · Data moat",
         "",
         f"- Coverage 7d: **{moat['coverage_7d_pct']:.1f}%** (meta ≥{moat['coverage_target']:.0f}%)",
         f"- Collector: **{moat['collector_status']}** · stale: **{moat['collector_stale']}**",
@@ -336,13 +601,15 @@ def go_live_slack_lines(*, days: int = 30, dashboard_data: dict[str, Any] | None
         data["overall_status"], "•"
     )
 
+    pr = data["kpis"]["pricing"]
     lines = [
         f"{status_emoji} *Go-live* · {data['overall_status']} ({w}d)",
         "",
         f"• *Activación:* search/reg *{_pct(act['search_per_register'])}* · "
         f"TTFV *{act['ttfv_median_minutes'] or '—'}* min · {act['status']}",
-        f"• *Revenue:* starter *{rev['starter_subscribe']}* · pro *{rev['request_pro']}* · "
-        f"activated *{rev['activated']}* · {rev['status']}",
+        f"• *Revenue:* request_pro *{rev['request_pro']}* · activated *{rev['activated']}* · {rev['status']}",
+        f"• *Pricing:* health *{_pct(pr['pricing_health'])}* · intent *{_pct(pr['search_to_pro'])}* · "
+        f"{pr['decision']['label']}",
         f"• *Moat:* coverage *{moat['coverage_7d_pct']:.1f}%* · collector *{moat['collector_status']}* · "
         f"críticas *{moat['critical_store_count']}* · {moat['status']}",
         "",
@@ -396,10 +663,17 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
             )
         if title == "Revenue":
             return (
-                f"starter: {kpi['starter_subscribe']}\n"
                 f"request_pro: {kpi['request_pro']}\n"
                 f"activated: {kpi['activated']}\n"
                 f"weekly_goal: {kpi['weekly_paid_goal']}"
+            )
+        if title == "Pricing":
+            dec = kpi.get("decision", {})
+            return (
+                f"pypi_7d: {kpi.get('pypi_downloads_7d') or '—'}\n"
+                f"search_to_pro: {_pct(kpi.get('search_to_pro'))}\n"
+                f"pricing_health: {_pct(kpi.get('pricing_health'))}\n"
+                f"decision: {dec.get('label', '—')}"
             )
         stores = kpi.get("critical_stores", []) or []
         store_lines = "\n".join(
@@ -458,6 +732,7 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
   <div class="grid">
     {_card("Activación", act)}
     {_card("Revenue", rev)}
+    {_card("Pricing", pr)}
     {_card("Data moat", moat)}
   </div>
   <div class="alerts">

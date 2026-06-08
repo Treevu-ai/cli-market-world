@@ -8,6 +8,8 @@ Usage:
   python ops/go_live_check.py --json
   python ops/go_live_check.py --slack
   python ops/go_live_check.py --days 7
+  python ops/go_live_check.py --spike
+  python ops/go_live_check.py --spike --json
 
 Env:
   DASHBOARD_DATA_URL   — production dashboard JSON (optional; uses local DB if unset)
@@ -30,7 +32,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from market_golive import go_live_markdown, go_live_slack_lines, go_live_summary  # noqa: E402
+from market_golive import (  # noqa: E402
+    go_live_markdown,
+    go_live_slack_lines,
+    go_live_spike_markdown,
+    go_live_summary,
+)
 
 DASHBOARD_URL = os.getenv(
     "DASHBOARD_DATA_URL",
@@ -56,19 +63,23 @@ def _fetch_dashboard_remote() -> dict | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Go-live KPI check")
-    parser.add_argument("--days", type=int, default=30, help="Funnel window (1-90)")
+    parser.add_argument("--days", type=int, default=None, help="Funnel window (1-90)")
+    parser.add_argument("--spike", action="store_true", help="Spike D+7 report (default 7d window)")
     parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--slack", action="store_true", help="Post to Slack bitácora if alerts")
     parser.add_argument("--remote", action="store_true", help="Fetch moat KPIs from production API")
     args = parser.parse_args()
 
+    days = args.days if args.days is not None else (7 if args.spike else 30)
     dash = _fetch_dashboard_remote() if args.remote else None
-    summary = go_live_summary(days=args.days, dashboard_data=dash)
+    summary = go_live_summary(days=days, dashboard_data=dash)
 
     if args.json:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
+    elif args.spike:
+        print(go_live_spike_markdown(days=days, dashboard_data=dash))
     else:
-        print(go_live_markdown(days=args.days, dashboard_data=dash))
+        print(go_live_markdown(days=days, dashboard_data=dash))
 
     if args.slack and summary.get("alerts"):
         actionable = [
@@ -77,7 +88,7 @@ def main() -> int:
         if actionable:
             from slack_notify import deliver_to_bitacora
 
-            lines = go_live_slack_lines(days=args.days, dashboard_data=dash)
+            lines = go_live_slack_lines(days=days, dashboard_data=dash)
             deliver_to_bitacora("\n".join(lines))
             print("Slack → bitácora (go-live alerts).", file=sys.stderr)
 

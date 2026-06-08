@@ -68,6 +68,9 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
     if register > 0 and first_search == 0:
         notes.append("Hay registros sin first_search en la ventana.")
 
+    funnel_conv = funnel.get("conversion", {})
+    pricing_health = _conv(activated, first_search)
+
     return {
         "window_days": days,
         "pypi": {
@@ -93,8 +96,11 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
             "register_per_install": register_per_install,
             "search_per_register": search_per_register,
             "install_per_pypi_30d": install_per_pypi,
-            "funnel_register_to_search": funnel["conversion"].get("register_to_search"),
-            "funnel_search_to_starter": funnel["conversion"].get("search_to_starter"),
+            "funnel_register_to_search": funnel_conv.get("register_to_search"),
+            "funnel_search_to_starter": funnel_conv.get("search_to_starter"),
+            "funnel_search_to_pro": funnel_conv.get("search_to_pro"),
+            "funnel_pro_to_activated": funnel_conv.get("pro_to_activated"),
+            "pricing_health": pricing_health,
         },
         "notes": notes,
         "fetched_at": pepy.get("fetched_at"),
@@ -141,6 +147,12 @@ def adoption_markdown_section(*, days: int = 30) -> str:
         f"- Register / install (embudo): **{_pct(c.get('register_per_install'))}**",
         f"- First search / register: **{_pct(c.get('search_per_register'))}**",
         f"- Install / PyPI 30d (cobertura telemetría): **{_pct(c.get('install_per_pypi_30d'))}**",
+        "",
+        "**Pricing (post-spike)**",
+        "",
+        f"- search → request_pro: **{_pct(c.get('funnel_search_to_pro'))}**",
+        f"- request_pro → activated: **{_pct(c.get('funnel_pro_to_activated'))}**",
+        f"- **pricing_health** (activated / search): **{_pct(c.get('pricing_health'))}**",
         "",
     ]
 
