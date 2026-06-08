@@ -79,26 +79,24 @@ export default function TermsOfService() {
               están disponibles durante 30 días post-suspensión.
             </p>
 
-            <h3>6.1 Suscripciones Pro (PayPal)</h3>
+            <h3>6.1 Pagos, suscripciones y facturación</h3>
             <ul>
               <li>
-                El plan Pro (USD 39/mes u opción anual publicada en la landing) se factura mediante
-                suscripción recurrente en PayPal, salvo acuerdo escrito distinto.
+                Los pagos del plan Pro (USD 39/mes u opción anual publicada en la landing), de
+                servicios SaaS de Sinapsis Innovadora S.A.C. y el checkout de productos retail
+                utilizan los mismos canales: PayPal, Mercado Pago, Yape y Plin, según
+                disponibilidad regional y tier activo.
               </li>
               <li>
                 La activación del tier Pro ocurre automáticamente tras la confirmación del pago.
                 Puede verificar con <code>market whoami</code>.
               </li>
               <li>
-                Puede cancelar la renovación en cualquier momento desde su cuenta PayPal o
-                contactando a{" "}
+                Puede cancelar la renovación en cualquier momento desde el canal de pago utilizado
+                (p. ej. cuenta PayPal para suscripciones recurrentes) o contactando a{" "}
                 <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>. La cancelación
                 detiene cargos futuros; no reembolsa periodos ya facturados salvo lo exigido por
-                ley o la política de PayPal.
-              </li>
-              <li>
-                Checkout de productos (no suscripción) puede usar PayPal, Mercado Pago o QR
-                (Yape/Plin) según disponibilidad regional y tier activo.
+                ley o la política del procesador de pagos.
               </li>
               <li>
                 Facturación de suscripciones y servicios SaaS en dólares estadounidenses (USD).
@@ -229,25 +227,24 @@ export default function TermsOfService() {
               suspension; data exports are available for 30 days post-suspension.
             </p>
 
-            <h3>6.1 Pro Subscriptions (PayPal)</h3>
+            <h3>6.1 Payments, subscriptions, and invoicing</h3>
             <ul>
               <li>
-                The Pro plan (USD 39/mo or published annual option) is billed via recurring PayPal
-                subscription unless otherwise agreed in writing.
+                Payments for the Pro plan (USD 39/mo or published annual option), Sinapsis
+                Innovadora S.A.C. SaaS services, and retail product checkout use the same
+                channels: PayPal, Mercado Pago, Yape, and Plin, depending on region and active
+                tier.
               </li>
               <li>
                 Pro tier activates automatically after payment confirmation. Verify with{" "}
                 <code>market whoami</code>.
               </li>
               <li>
-                You may cancel renewal anytime from your PayPal account or by emailing{" "}
+                You may cancel renewal anytime from the payment channel used (e.g. PayPal account
+                for recurring subscriptions) or by emailing{" "}
                 <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a>. Cancellation stops
                 future charges; it does not refund already-billed periods except as required by
-                law or PayPal policy.
-              </li>
-              <li>
-                Product checkout (not subscription) may use PayPal, Mercado Pago, or Yape/Plin QR
-                depending on region and active tier.
+                law or the payment processor&apos;s policy.
               </li>
               <li>
                 Subscription and SaaS services are invoiced in US dollars (USD). Issuer:

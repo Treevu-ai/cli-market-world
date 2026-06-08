@@ -11,7 +11,7 @@ export const FAQ_SCHEMA_ES = [
   },
   {
     q: "¿Cómo funciona el pago?",
-    a: `Aceptamos ${MARKET_STATS.paymentsLabel}. El checkout genera un QR que escaneas desde tu app de pagos.`,
+    a: `Aceptamos ${MARKET_STATS.paymentsLabel}. Los mismos canales aplican a suscripciones Pro, facturación de Sinapsis Innovadora S.A.C. y checkout retail.`,
   },
   {
     q: "¿Los precios son reales?",
@@ -34,7 +34,7 @@ export const FAQ_SCHEMA_EN = [
   },
   {
     q: "How does payment work?",
-    a: `${MARKET_STATS.paymentsLabel}. Checkout generates a QR code you scan from your payment app.`,
+    a: `${MARKET_STATS.paymentsLabel}. The same channels apply to Pro subscriptions, Sinapsis Innovadora S.A.C. billing, and retail checkout.`,
   },
   {
     q: "Are the prices real?",
