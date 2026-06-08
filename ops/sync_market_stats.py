@@ -2,6 +2,7 @@
 """Emit landing/lib/marketStats.ts and sync README, PyPI, server.json from market_stats.py."""
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -24,6 +25,18 @@ from market_core.market_mcp_registry import (
 )
 
 OUT_TS = ROOT / "landing" / "lib" / "marketStats.ts"
+def _procure_stats_path() -> Path | None:
+    candidates = [
+        ROOT.parent / "procure-copilot" / "lib" / "market-stats.ts",
+        ROOT.parent / "Projects" / "procure-copilot" / "lib" / "market-stats.ts",
+    ]
+    env = os.environ.get("PROCURE_COPILOT_ROOT")
+    if env:
+        candidates.insert(0, Path(env) / "lib" / "market-stats.ts")
+    for path in candidates:
+        if path.parent.exists():
+            return path
+    return None
 
 _BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
 _CANONICAL_HIGHLIGHTS = frozenset({"market_discover", "market_intel_brief", "market_price_alerts"})
@@ -173,6 +186,36 @@ export const MARKET_STATS = {{
 """
     OUT_TS.write_text(ts, encoding="utf-8")
     print(f"Wrote {OUT_TS}")
+
+
+def write_procure_market_stats_ts() -> None:
+    """Emit procure-copilot/lib/market-stats.ts from the same canonical source."""
+    counts = _mcp_counts()
+    hero = (
+        f"{s.RETAILERS_VERIFIED} retailers verificados · {s.COUNTRIES} países · "
+        f"{counts['default']} MCP tools"
+    )
+    ts = f"""// AUTO-GENERATED — do not edit. Run: python3 ops/sync_market_stats.py
+
+export const CLI_MARKET_STATS = {{
+  retailersDefined: {s.RETAILERS_DEFINED},
+  retailersVerified: {s.RETAILERS_VERIFIED},
+  countries: {s.COUNTRIES},
+  mcpTools: {counts["default"]},
+  pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
+  pricesRefreshHours: {s.PRICES_REFRESH_HOURS},
+  apiBaseUrl: "https://cli-market-production.up.railway.app",
+  retailersPhraseEs: "{s.RETAILERS_PHRASE_ES}",
+  retailersPhraseEn: "{s.RETAILERS_PHRASE_EN}",
+  heroBadgeEs: {json.dumps(hero)},
+}} as const;
+"""
+    out = _procure_stats_path()
+    if not out:
+        print("SKIP procure stats (procure-copilot not found beside cli-market-world)", file=sys.stderr)
+        return
+    out.write_text(ts, encoding="utf-8")
+    print(f"Wrote {out}")
 
 
 def sync_readme() -> None:
@@ -662,6 +705,7 @@ def sync_glama_json() -> None:
 
 def main() -> None:
     write_market_stats_ts()
+    write_procure_market_stats_ts()
     sync_readme()
     sync_pyproject()
     sync_server_json()
