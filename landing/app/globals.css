@@ -151,20 +151,44 @@ section[id] {
 /* Phase 2 — section & form patterns */
 .landing-section {
   position: relative;
-  padding-top: 5rem;
+  padding-top: 5.5rem;
+  padding-bottom: 5rem;
+  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
+}
+
+.landing-section#hero {
+  border-top: none;
+}
+
+@media (min-width: 768px) {
+  .landing-section {
+    padding-top: 6.5rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Alt background only — still needs section rhythm if used without .landing-section */
+section.landing-section-alt:not(.landing-section) {
+  padding-top: 5.5rem;
   padding-bottom: 5rem;
   border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
 }
 
 @media (min-width: 768px) {
-  .landing-section {
-    padding-top: 6rem;
+  section.landing-section-alt:not(.landing-section) {
+    padding-top: 6.5rem;
     padding-bottom: 6rem;
   }
 }
 
 .landing-section-alt {
   background-color: var(--cm-surface-low);
+}
+
+/* Eyebrow / title block — extra air below the section divider */
+.landing-section > .landing-container > :first-child,
+.landing-section > .landing-container-wide > :first-child {
+  margin-top: 0.25rem;
 }
 
 .section-eyebrow {
@@ -399,7 +423,12 @@ select.input-cyber option {
   }
 
   .landing-section {
-    padding-top: 3.5rem;
+    padding-top: 4.25rem;
+    padding-bottom: 3.5rem;
+  }
+
+  section.landing-section-alt:not(.landing-section) {
+    padding-top: 4.25rem;
     padding-bottom: 3.5rem;
   }
 
