@@ -4,6 +4,17 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-08] — CLI intel namespace + billing touchpoints
+
+### cli-market-world v1.9.7
+- **Changed:** Intelligence CLI under `market intel` (`inflation`, `indicators`, `enrichment`, `scores`); legacy top-level shims kept
+- **Changed:** Public `--help` slimmed — `about`/`share` hidden; `upgrade` Pro-only; `tools --profile` without `admin`
+- **Fixed:** `market intel inflation` table matches API `line` / `avg_*` schema
+- **Changed:** Touchpoints use `market account` (not `market keys`) and `market upgrade` (not `--plan starter`)
+- **Added:** `ops/CLIENT_PAYMENT_JOURNEY.md` — client payment flow (Build + Procure)
+
+---
+
 ## [2026-06-07] — MCP bundle alignment (PR5)
 
 ### cli-market-core v1.9.6
