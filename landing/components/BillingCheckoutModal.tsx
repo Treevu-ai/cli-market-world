@@ -42,15 +42,15 @@ const PAYMENT_METHODS: {
     id: "yape",
     label_es: "Yape",
     label_en: "Yape",
-    auto_es: "App · transferencia",
-    auto_en: "App · transfer",
+    auto_es: "Auto · vía Mercado Pago",
+    auto_en: "Auto · via Mercado Pago",
   },
   {
     id: "plin",
     label_es: "Plin",
     label_en: "Plin",
-    auto_es: "App · transferencia",
-    auto_en: "App · transfer",
+    auto_es: "Auto · vía Mercado Pago",
+    auto_en: "Auto · via Mercado Pago",
   },
 ];
 
@@ -72,6 +72,8 @@ type CheckoutResult = {
   subscription_id?: string;
   request_id?: string;
   payment_mode?: string;
+  payment_rail?: string;
+  wallet_checkout?: boolean;
   payment_phone?: string | null;
   manual_steps?: string[];
 };
@@ -104,8 +106,17 @@ async function postCheckout(
 function checkoutSucceeded(data: CheckoutResult): boolean {
   if (!data.ok) return false;
   const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
-  const wallet = data.payment_method === "yape" || data.payment_method === "plin";
-  return Boolean(redirectUrl || (wallet && data.request_id));
+  const manualWallet =
+    data.payment_mode === "manual_transfer" &&
+    (data.payment_method === "yape" || data.payment_method === "plin");
+  return Boolean(redirectUrl || (manualWallet && data.request_id));
+}
+
+function paymentRedirectLabel(method: string | undefined, isES: boolean): string {
+  if (method === "mercadopago" || method === "yape" || method === "plin") {
+    return isES ? "Ir a Mercado Pago →" : "Go to Mercado Pago →";
+  }
+  return isES ? "Ir al pago en PayPal →" : "Go to PayPal →";
 }
 
 export default function BillingCheckoutModal({
@@ -130,6 +141,7 @@ export default function BillingCheckoutModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<CheckoutResult | null>(null);
+  const [manualTransfer, setManualTransfer] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -153,6 +165,7 @@ export default function BillingCheckoutModal({
       setError("");
       setResult(null);
       setPaymentMethod("paypal");
+      setManualTransfer(false);
     }
   }, [open, kind]);
 
@@ -202,6 +215,9 @@ export default function BillingCheckoutModal({
         const { ok, data } = await postCheckout("/billing/pro-checkout", {
           ...payload,
           payment_method: paymentMethod,
+          ...(manualTransfer && (paymentMethod === "yape" || paymentMethod === "plin")
+            ? { manual_transfer: true }
+            : {}),
         });
         if (ok && checkoutSucceeded(data)) {
           applyCheckoutResult(data, `landing_checkout_modal_${paymentMethod}`);
@@ -230,12 +246,21 @@ export default function BillingCheckoutModal({
   const renderSuccess = () => {
     if (!result?.ok) return null;
     const method = result.payment_method || paymentMethod;
-    const isWallet = method === "yape" || method === "plin";
+    const isManualWallet = result.payment_mode === "manual_transfer";
+    const isAutoWallet =
+      result.wallet_checkout || ((method === "yape" || method === "plin") && !isManualWallet);
     const redirectUrl = result.approve_url || result.checkout_url || result.payment_link;
     const resolvedUser = result.username || username.trim();
 
     return (
       <div className="space-y-4 text-left">
+        {isAutoWallet && !result.duplicate && (
+          <p className="text-sm font-semibold text-white">
+            {isES
+              ? `Paga con ${methodLabel(method, true)} en Mercado Pago — Pro se activa en minutos`
+              : `Pay with ${methodLabel(method, false)} on Mercado Pago — Pro activates in minutes`}
+          </p>
+        )}
         {result.duplicate && (
           <p className="text-xs rounded border border-[var(--cm-outline-variant)]/40 bg-[var(--cm-surface-low)]/50 px-3 py-2 text-[var(--cm-on-surface-variant)]">
             {result.message}
@@ -249,7 +274,7 @@ export default function BillingCheckoutModal({
             {isES ? "Usuario CLI:" : "CLI user:"} <span className="text-white">{resolvedUser}</span>
           </p>
         )}
-        {isWallet && (
+        {isManualWallet && (
           <WalletManualTransfer
             method={method as "yape" | "plin"}
             amountPen={result.amount_pen}
@@ -259,18 +284,21 @@ export default function BillingCheckoutModal({
             isES={isES}
           />
         )}
-        {redirectUrl && !isWallet && (
+        {redirectUrl && !isManualWallet && (
           <a href={redirectUrl} target="_blank" rel="noopener noreferrer" className="btn-mint w-full inline-flex justify-center">
-            {isES ? "Ir al pago en PayPal →" : "Go to PayPal →"}
+            {paymentRedirectLabel(method, isES)}
           </a>
         )}
         <div className="rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-3 py-3 text-xs text-[var(--cm-on-surface-variant)] space-y-1">
           {isPro ? (
             <>
               <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
+              <p className="font-mono">pip install cli-market-world</p>
+              <p className="font-mono">market login --username {resolvedUser || "TU_USUARIO"}</p>
               <p className="font-mono">market whoami</p>
-              <p>{isES ? "Luego prueba checkout retail:" : "Then try retail checkout:"}</p>
-              <p className="font-mono">market checkout --payment yape</p>
+              <p className="text-[var(--cm-on-surface-variant)]/80">
+                {isES ? "→ debe mostrar tier: pro" : "→ should show tier: pro"}
+              </p>
             </>
           ) : (
             <>
@@ -471,6 +499,21 @@ export default function BillingCheckoutModal({
                     <PayPalHostedButton className="w-full" />
                   </div>
                 </details>
+              )}
+              {isPro && (paymentMethod === "yape" || paymentMethod === "plin") && (
+                <label className="flex items-start gap-2 text-xs text-[var(--cm-on-surface-variant)]/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={manualTransfer}
+                    onChange={(e) => setManualTransfer(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    {isES
+                      ? "Sin Mercado Pago: transferencia manual a número Yape/Plin (activación ≤24 h)"
+                      : "No Mercado Pago: manual transfer to Yape/Plin number (activation ≤24 h)"}
+                  </span>
+                </label>
               )}
             </div>
           )}

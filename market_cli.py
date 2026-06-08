@@ -1860,13 +1860,15 @@ def cmd_share(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade via PayPal subscription (Pro $39 — auto-activate webhook). Same rail as landing /billing/pro-checkout."""
+    """Upgrade Pro ($39) — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
     plan = (getattr(args, "plan", None) or "pro").strip().lower()
     if plan != "pro":
         plan = "pro"
+    payment = (getattr(args, "payment", None) or "paypal").strip().lower()
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
+    manual_wallet = bool(getattr(args, "manual_transfer", False))
 
     if manual:
         email = (args.email or "").strip()
@@ -1882,6 +1884,56 @@ def cmd_upgrade(args):
         ))
         return
 
+    if payment in ("yape", "plin", "mercadopago"):
+        payload = {
+            "payment_method": payment,
+            "lang": get_lang(),
+            "manual_transfer": manual_wallet,
+        }
+        email = (getattr(args, "email", None) or "").strip()
+        if email:
+            payload["email"] = email
+        status_msg = (
+            f"Preparando pago {payment} (Mercado Pago)..."
+            if es and payment in ("yape", "plin")
+            else f"Preparing {payment} checkout..."
+            if not es
+            else f"Preparando Mercado Pago..."
+        )
+        with ui.run_with_status(console, status_msg):
+            data = cli_api("POST", "/billing/pro-checkout", payload)
+        url = data.get("approve_url") or data.get("checkout_url") or ""
+        if getattr(args, "json", False):
+            ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
+            return
+        if data.get("payment_mode") == "manual_transfer":
+            console.print(Panel.fit(
+                f"[bold #00FF88]Pro — transferencia manual[/]\n\n{data.get('message', '')}",
+                title="Upgrade",
+                border_style="#00FF88",
+            ))
+            for step in data.get("manual_steps") or []:
+                console.print(f"[dim]• {step}[/]")
+            if data.get("payment_phone"):
+                console.print(f"[cyan]Número:[/] {data['payment_phone']}")
+            if data.get("request_id"):
+                console.print(f"[cyan]Ref:[/] {data['request_id']}")
+        else:
+            console.print(Panel.fit(
+                f"[bold #00FF88]Pro — Mercado Pago[/]\n\n"
+                f"{data.get('message', '')}\n\n"
+                f"[cyan underline]{url}[/]\n\n"
+                + (f"[dim]Paga con {payment.upper()} en Mercado Pago. Pro se activa en minutos. Luego: market whoami[/]"
+                   if es and payment in ("yape", "plin")
+                   else f"[dim]Activates in minutes via webhook. Then: market whoami[/]"
+                   if not es
+                   else "[dim]Pro se activa en minutos (webhook). Luego: market whoami[/]"),
+                title="Upgrade",
+                border_style="#00FF88",
+            ))
+        ui.print_hints(console, ["market whoami", "market doctor"])
+        return
+
     endpoint = "/billing/paypal"
     label = "Pro — $39/mo"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
@@ -1895,9 +1947,9 @@ def cmd_upgrade(args):
         f"[bold #00FF88]CLI Market {label}[/]\n\n"
         f"{data.get('message', '')}\n\n"
         f"[cyan underline]{url}[/]\n\n"
-        + (f"[dim]Se activa al confirmar en PayPal. Luego: market whoami\nWeb (Yape/MP): {web_hint}[/]"
+        + (f"[dim]Se activa al confirmar en PayPal. Luego: market whoami\nYape/Plin: market upgrade --payment yape[/]"
            if es else
-           f"[dim]Activates on PayPal confirm. Then: market whoami\nWeb (Yape/MP): {web_hint}[/]"),
+           f"[dim]Activates on PayPal confirm. Then: market whoami\nYape/Plin: market upgrade --payment yape[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))
@@ -2110,7 +2162,19 @@ def main():
         default=None,
         help="Build Pro ($39/mo) via PayPal subscription",
     )
-    p.add_argument("--email", help="Email to receive payment link (manual Pro fallback)")
+    p.add_argument(
+        "--payment",
+        choices=["paypal", "mercadopago", "yape", "plin"],
+        default="paypal",
+        help="Payment method (yape/plin use Mercado Pago checkout — auto-activate)",
+    )
+    p.add_argument("--email", help="Email for checkout receipt (optional if registered)")
+    p.add_argument(
+        "--manual-transfer",
+        action="store_true",
+        dest="manual_transfer",
+        help="Yape/Plin only: manual transfer fallback (≤24h ops activation)",
+    )
     p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
 
     args = parser.parse_args()
