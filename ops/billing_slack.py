@@ -15,6 +15,8 @@ TIER_LABELS: dict[str, str] = {
     "procure_builder": "Procure Builder ($149)",
 }
 
+_FUNNEL_QUIET_DEFAULT = frozenset({"install", "login", "first_search"})
+
 _FUNNEL_LABELS: dict[str, str] = {
     "install": "pip install / primera ejecución",
     "register": "registro de cuenta",
@@ -63,6 +65,18 @@ def format_subscription_message(
     ref = (request_id or "—").strip()
     src = (source or "—").strip()
     method = (payment_method or "—").strip()
+
+    if st == "cancelled":
+        reason = (source or "paypal_webhook").strip()
+        lines = [
+            f"❌ *{label}* — suscripción cancelada",
+            f"• usuario: `{user}`",
+            f"• email: {mail}",
+            f"• ref: `{ref}`",
+            f"• evento: {reason}",
+            "• tier actualizado → `free`",
+        ]
+        return "\n".join(lines)
 
     if st == "pending":
         lines = [
@@ -208,15 +222,24 @@ def notify_subscription(
         return False
 
 
+def _funnel_slack_enabled(event: str) -> bool:
+    ev = (event or "").strip().lower()
+    if os.getenv("SLACK_FUNNEL_VERBOSE", "").strip().lower() in ("1", "true", "yes"):
+        return True
+    return ev not in _FUNNEL_QUIET_DEFAULT
+
+
 def notify_funnel_event(
     *,
     event: str,
     username: str = "",
     meta: dict | None = None,
 ) -> bool:
-    """Post adoption funnel events (install, register, checkout) to subscriptions channel."""
+    """Post adoption funnel events (register, checkout) to subscriptions channel."""
     ev = (event or "").strip().lower()
     if ev not in _FUNNEL_LABELS:
+        return False
+    if not _funnel_slack_enabled(ev):
         return False
     if not _slack_ready():
         return False
@@ -241,6 +264,30 @@ def format_pro_subscription_message(**kwargs) -> str:
 def notify_pro_subscription(**kwargs) -> bool:
     kwargs.setdefault("tier", "pro")
     return notify_subscription(**kwargs)
+
+
+def notify_subscription_cancelled(
+    *,
+    tier: str,
+    username: str,
+    email: str = "",
+    request_id: str = "",
+    event_type: str = "",
+    payment_method: str = "paypal",
+) -> bool:
+    """Churn alert when PayPal downgrades a paid tier to free."""
+    t = (tier or "").strip().lower()
+    if t not in TIER_LABELS:
+        return False
+    return notify_subscription(
+        tier=t,
+        status="cancelled",
+        username=username,
+        email=email,
+        request_id=request_id,
+        source=event_type or "paypal_webhook",
+        payment_method=payment_method,
+    )
 
 
 def notify_build_pro_tier_activated(

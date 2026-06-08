@@ -34,7 +34,7 @@ def _verify_slack_signature(body: bytes, timestamp: str, signature: str, secret:
 
 @router.post("/slack/interactions")
 async def slack_interactions(request: Request):
-    """Handle block_actions from #cli-market-pro (activate Pro after manual payment)."""
+    """Handle block_actions from #suscripciones-cli-pro (activate Pro after manual payment)."""
     secret = os.getenv("SLACK_SIGNING_SECRET", "").strip()
     if not secret:
         raise HTTPException(status_code=503, detail="SLACK_SIGNING_SECRET not configured")

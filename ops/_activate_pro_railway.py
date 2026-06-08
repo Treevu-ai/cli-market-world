@@ -46,6 +46,7 @@ def main() -> int:
         "SMTP_USE_TLS",
         "SLACK_BOT_TOKEN",
         "SLACK_CHANNEL_CLI_MARKET_PRO",
+        "SLACK_SIGNING_SECRET",
         "MARKET_API_TOKEN",
         "MARKET_API_URL",
         "BILLING_NOTIFY_EMAIL",

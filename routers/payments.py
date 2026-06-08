@@ -103,7 +103,11 @@ def _slack_notify_subscription(
         ops_dir = Path(__file__).resolve().parent.parent / "ops"
         if str(ops_dir) not in sys.path:
             sys.path.insert(0, str(ops_dir))
-        from billing_slack import notify_build_pro_tier_activated, notify_subscription
+        from billing_slack import (
+            notify_build_pro_tier_activated,
+            notify_subscription,
+            notify_subscription_cancelled,
+        )
 
         if status == "pending":
             notify_subscription(
@@ -117,6 +121,16 @@ def _slack_notify_subscription(
                 amount_pen=amount_pen,
                 amount_usd=amount_usd,
                 plan=plan,
+            )
+            return
+        if status == "cancelled":
+            notify_subscription_cancelled(
+                tier=tier,
+                username=username,
+                email=email,
+                request_id=request_id,
+                event_type=source,
+                payment_method=payment_method,
             )
             return
         notify_build_pro_tier_activated(
@@ -300,12 +314,26 @@ async def _handle_paypal_event(event: dict) -> dict:
 
     elif event_type in ("BILLING.SUBSCRIPTION.CANCELLED", "BILLING.SUBSCRIPTION.EXPIRED",
                         "BILLING.SUBSCRIPTION.SUSPENDED"):
+        from market_core import db_get_subscription
+
         sub_id = resource.get("id", "")
         username = resource.get("custom_id") or ""
-        if not username and sub_id:
-            pending = db_get_billing_pending(sub_id)
+        pending = db_get_billing_pending(sub_id) if sub_id else None
+        if not username and pending:
             username = (pending or {}).get("username", "")
         if username:
+            prev_tier = (db_get_subscription(username) or {}).get("tier", "free")
+            email = db_get_user_email(username) or ""
+            if (prev_tier or "").strip().lower() not in ("", "free"):
+                _slack_notify_subscription(
+                    tier=prev_tier,
+                    status="cancelled",
+                    username=username,
+                    email=email,
+                    request_id=sub_id or "",
+                    source=event_type,
+                    payment_method="paypal",
+                )
             db_set_subscription(username, "free", paypal_subscription_id="")
             if sub_id:
                 db_delete_billing_pending(sub_id)

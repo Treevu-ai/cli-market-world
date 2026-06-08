@@ -50,3 +50,32 @@ def test_format_funnel_install():
     )
     assert "pip install" in text
     assert "hello" in text
+
+
+def test_format_cancelled():
+    text = format_subscription_message(
+        tier="pro",
+        status="cancelled",
+        username="acubatruweb",
+        email="a@outlook.com",
+        request_id="I-SUB123",
+        source="BILLING.SUBSCRIPTION.CANCELLED",
+    )
+    assert "cancelada" in text
+    assert "acubatruweb" in text
+
+
+def test_funnel_install_quiet_by_default(monkeypatch):
+    from billing_slack import notify_funnel_event
+
+    monkeypatch.delenv("SLACK_FUNNEL_VERBOSE", raising=False)
+    assert notify_funnel_event(event="install", meta={"source": "test"}) is False
+
+
+def test_funnel_register_always_notifies(monkeypatch):
+    from billing_slack import notify_funnel_event
+
+    monkeypatch.delenv("SLACK_FUNNEL_VERBOSE", raising=False)
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "")
+    monkeypatch.setenv("SLACK_WEBHOOK_CLI_MARKET_PRO", "")
+    assert notify_funnel_event(event="register", username="newuser") is False
