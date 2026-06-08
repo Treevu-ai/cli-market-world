@@ -101,8 +101,10 @@ export default function TermsOfService() {
                 (Yape/Plin) según disponibilidad regional y tier activo.
               </li>
               <li>
-                Facturación en soles (PEN) y comprobantes: Sinapsis Innovadora S.A.C., RUC
-                20613045563 — solicítelos por correo tras el pago.
+                Facturación de suscripciones y servicios SaaS en dólares estadounidenses (USD).
+                Emisor: Sinapsis Innovadora S.A.C., RUC 20613045563 — solicite comprobante por
+                correo a{" "}
+                <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a> tras el pago.
               </li>
             </ul>
 
@@ -248,8 +250,9 @@ export default function TermsOfService() {
                 depending on region and active tier.
               </li>
               <li>
-                PEN invoicing and receipts: Sinapsis Innovadora S.A.C., tax ID 20613045563 —
-                request by email after payment.
+                Subscription and SaaS services are invoiced in US dollars (USD). Issuer:
+                Sinapsis Innovadora S.A.C., tax ID 20613045563 — request receipts by email at{" "}
+                <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a> after payment.
               </li>
             </ul>
 
