@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""E2E payment flows — all billing + retail channels and tier gates.
+"""E2E payment rails — CLI Market (billing + retail/logistics) and Procure Copilot.
 
-Runs against deployed Railway (or MARKET_API_URL). Does not complete real payments;
-validates endpoints, config, tier gates, and checkout payload shape.
+Runs against deployed Railway (or MARKET_API_URL) and Procure Worker. Does not
+complete real payments; validates endpoints, tier gates, and checkout payload shape
+for PayPal, Mercado Pago, Yape and Plin.
 
 Usage:
     python ops/payments_e2e.py
     MARKET_API_URL=https://... MARKET_API_TOKEN=... python ops/payments_e2e.py
+    MARKET_PRO_API_KEY=sk-... python ops/payments_e2e.py  # retail logistics (Pro cart checkout)
+    PROCURE_PUBLIC_URL=https://procure-copilot... python ops/payments_e2e.py
 
 Exit 0 = all required checks passed.
 """
@@ -26,7 +29,15 @@ from urllib.request import Request, urlopen
 OPS = Path(__file__).resolve().parent
 ROOT = OPS.parent
 DEFAULT_API = "https://cli-market-production.up.railway.app"
+DEFAULT_PROCURE = "https://procure-copilot.contacto-8e4.workers.dev"
 BILLING_METHODS = ("paypal", "mercadopago", "yape", "plin")
+PROCURE_METHODS = BILLING_METHODS
+PROCURE_HEADERS = {
+    "Content-Type": "application/json",
+    "x-plan": "pro",
+    "x-user-id": "payments-e2e",
+    "x-approver-id": "payments-e2e-approver",
+}
 RETAIL_METHODS = (
     ("yape", "POST", "/checkout/yape", None),
     ("plin", "POST", "/checkout/yape", None),
@@ -72,6 +83,49 @@ def _load_admin_token() -> str:
     return ""
 
 
+def _load_pro_api_key() -> str:
+    """Pro-tier sk- key for retail logistics checkout (same as Procure CLI_MARKET_API_KEY)."""
+    for env_name in ("MARKET_PRO_API_KEY", "CLI_MARKET_API_KEY", "MARKET_USER_TOKEN"):
+        key = (os.getenv(env_name) or "").strip()
+        if key.startswith("sk-"):
+            return key
+    procure_env_candidates = (
+        ROOT.parent / "procure-copilot" / ".env.local",
+        ROOT.parent / "Projects" / "procure-copilot" / ".env.local",
+    )
+    procure_env = next((p for p in procure_env_candidates if p.exists()), None)
+    if procure_env:
+        for line in procure_env.read_text(encoding="utf-8").splitlines():
+            if line.startswith("CLI_MARKET_API_KEY="):
+                key = line.split("=", 1)[1].strip().strip("\"'")
+                if key.startswith("sk-"):
+                    return key
+    return ""
+
+
+_OPENAPI_CACHE: dict[str, set[str]] = {}
+
+
+def _openapi_paths(base: str) -> set[str]:
+    if base in _OPENAPI_CACHE:
+        return _OPENAPI_CACHE[base]
+    try:
+        status, data, _ = http_json(base, "GET", "/openapi.json")
+        if status == 200 and isinstance(data, dict):
+            paths = set(data.get("paths") or {})
+            _OPENAPI_CACHE[base] = paths
+            return paths
+    except RuntimeError:
+        pass
+    _OPENAPI_CACHE[base] = set()
+    return set()
+
+
+def _endpoint_available(base: str, path: str) -> bool:
+    paths = _openapi_paths(base)
+    return path in paths if paths else True
+
+
 def http_json(
     base: str,
     method: str,
@@ -79,12 +133,15 @@ def http_json(
     *,
     body: dict | None = None,
     token: str = "",
-    timeout: float = 45.0,
+    extra_headers: dict[str, str] | None = None,
+    timeout: float = 90.0,
 ) -> tuple[int, dict | list | str, float]:
     url = base.rstrip("/") + path
     headers = {"User-Agent": "CLI-Market-Payments-E2E/1.0", "Accept": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
+    if extra_headers:
+        headers.update(extra_headers)
     data = None
     if body is not None:
         data = json.dumps(body).encode("utf-8")
@@ -194,6 +251,11 @@ def run_config_probes(base: str, rep: Report) -> None:
 
 
 def run_billing_channels(base: str, rep: Report, run_id: str) -> None:
+    if not _endpoint_available(base, "/billing/pro-checkout"):
+        for method in BILLING_METHODS:
+            rep.add("billing", f"pro-checkout/{method}", "SKIP", "endpoint not deployed")
+        return
+
     for method in BILLING_METHODS:
         email = f"e2e+{method}+{run_id}@cli-market.dev"
         try:
@@ -259,14 +321,22 @@ def run_tier_gates(base: str, rep: Report, admin: str) -> tuple[str, str]:
         return user, token
     rep.add("tier", "setup/user", "PASS", user)
 
+    set_tier_live = _endpoint_available(base, "/v1/admin/set-tier")
+    if admin and not set_tier_live:
+        rep.add("tier", "set-tier", "SKIP", "/v1/admin/set-tier not deployed")
+
     for tier, should_checkout in USER_TIERS_CHECKOUT:
-        if admin:
+        if should_checkout and not set_tier_live:
+            rep.add("tier", f"retail/{tier}", "SKIP", "set-tier not deployed — use retail group")
+            continue
+        if admin and set_tier_live:
             if not set_tier(base, admin, user, tier):
                 rep.add("tier", f"set-tier/{tier}", "FAIL", "admin set-tier failed")
                 continue
             rep.add("tier", f"set-tier/{tier}", "PASS", tier)
         elif tier != "free":
-            rep.add("tier", f"retail/{tier}", "SKIP", "MARKET_API_TOKEN missing for set-tier")
+            reason = "set-tier not deployed" if admin else "MARKET_API_TOKEN missing for set-tier"
+            rep.add("tier", f"retail/{tier}", "SKIP", reason)
             continue
 
         for ch_name, method, path, _ in RETAIL_METHODS:
@@ -310,6 +380,226 @@ def run_tier_gates(base: str, rep: Report, admin: str) -> tuple[str, str]:
     return user, token
 
 
+def _checkout_payload_ok(method: str, data: dict) -> tuple[bool, str]:
+    """Validate retail or procure checkout JSON shape."""
+    if method in ("yape", "plin"):
+        qr = data.get("qr_url")
+        if qr and str(qr).startswith("http"):
+            return True, str(data.get("order_id") or "")
+        return False, "missing qr_url"
+    if method == "mercadopago":
+        url = data.get("checkout_url") or data.get("preference_id")
+        if url and str(url).startswith("http"):
+            return True, str(data.get("order_id") or "")
+        return False, "missing checkout_url"
+    if method == "paypal":
+        url = data.get("approve_url") or data.get("approval_url") or data.get("checkout_url")
+        if url and str(url).startswith("http"):
+            return True, str(data.get("order_id") or data.get("paypal_order_id") or "")
+        return False, "missing approve_url"
+    return False, f"unknown method {method}"
+
+
+def _procure_checkout_payload_ok(method: str, payload: dict) -> tuple[bool, str]:
+    if not isinstance(payload, dict):
+        return False, "non-dict response"
+    if not payload.get("success"):
+        err = str(payload.get("error") or "")
+        if "Pro" in err or "tier" in err.lower():
+            return False, f"gate: {err}"
+        return False, err or "success=false"
+    checkout = payload.get("checkout")
+    if not isinstance(checkout, dict):
+        inner = payload.get("data")
+        if isinstance(inner, dict):
+            checkout = inner.get("checkout")
+    if not isinstance(checkout, dict):
+        return False, "missing checkout"
+    url = checkout.get("checkoutUrl") or checkout.get("qrUrl")
+    if method in ("yape", "plin"):
+        if checkout.get("qrUrl") or (url and str(url).startswith("http")):
+            return True, str(checkout.get("orderId") or "")
+        return False, "missing qrUrl/checkoutUrl"
+    if method == "mercadopago":
+        if url and str(url).startswith("http"):
+            return True, str(checkout.get("orderId") or "")
+        return False, "missing checkoutUrl"
+    if method == "paypal":
+        if url and str(url).startswith("http"):
+            return True, str(checkout.get("orderId") or checkout.get("paypalOrderId") or "")
+        return False, "missing checkoutUrl"
+    return False, f"unknown method {method}"
+
+
+def _procure_run_and_approve(procure_base: str) -> tuple[dict | None, str]:
+    status, run, _ = http_json(
+        procure_base,
+        "POST",
+        "/api/procurement/run",
+        body={
+            "items": [{"product": "arroz", "quantity": 2}],
+            "country": "PE",
+            "approvalThreshold": 1,
+        },
+        extra_headers=PROCURE_HEADERS,
+    )
+    if status != 200 or not isinstance(run, dict) or not run.get("success"):
+        return None, f"run {status} {run}"
+    proc = run.get("data") or {}
+    if not isinstance(proc, dict) or not proc.get("id"):
+        return None, "run missing procurement id"
+
+    if proc.get("status") == "pending_approval":
+        approval = proc.get("approval") or {}
+        aid = approval.get("id")
+        if not aid:
+            return None, "pending_approval without approval.id"
+        status, appr, _ = http_json(
+            procure_base,
+            "POST",
+            "/api/procurement/approve",
+            body={
+                "approvalId": aid,
+                "response": "approved",
+                "responderId": "payments-e2e-approver",
+            },
+            extra_headers=PROCURE_HEADERS,
+        )
+        if status != 200 or not isinstance(appr, dict) or not appr.get("success"):
+            return None, f"approve {status} {appr}"
+        proc = (appr.get("data") or {}).get("procurement") or proc
+
+    if proc.get("status") not in ("checkout_ready", "approved"):
+        return None, f"status={proc.get('status')}"
+
+    return proc, ""
+
+
+def run_procure_channels(procure_base: str, rep: Report) -> None:
+    """Procure Copilot: run → approve → checkout per payment rail."""
+    try:
+        status, data, ms = http_json(procure_base, "GET", "/procure")
+    except RuntimeError as exc:
+        rep.add("procure", "health", "FAIL", str(exc))
+        return
+    if status != 200:
+        rep.add("procure", "health", "FAIL", f"status={status}", ms)
+        return
+    rep.add("procure", "health", "PASS", "landing ok", ms)
+
+    for method in PROCURE_METHODS:
+        proc, err = _procure_run_and_approve(procure_base)
+        if not proc:
+            rep.add("procure", f"checkout/{method}", "FAIL", err)
+            continue
+
+        try:
+            status, payload, ms = http_json(
+                procure_base,
+                "POST",
+                "/api/procurement/checkout",
+                body={"procurementId": proc["id"], "payment": method},
+                extra_headers=PROCURE_HEADERS,
+            )
+        except RuntimeError as exc:
+            rep.add("procure", f"checkout/{method}", "FAIL", str(exc))
+            continue
+
+        if status in (501, 502):
+            rep.add("procure", f"checkout/{method}", "SKIP", f"gateway {status}", ms)
+            continue
+
+        if status != 200 or not isinstance(payload, dict):
+            rep.add("procure", f"checkout/{method}", "FAIL", f"status={status} {payload}", ms)
+            continue
+
+        err_text = str(payload.get("error") or "")
+        if "Pro" in err_text and "CLI Market" in err_text:
+            rep.add("procure", f"checkout/{method}", "SKIP", err_text, ms)
+            continue
+        if method == "paypal" and ("PayPal" in err_text or status == 501):
+            rep.add("procure", f"checkout/{method}", "SKIP", err_text or "paypal unavailable", ms)
+            continue
+        if method == "mercadopago" and ("Mercado" in err_text or status == 501):
+            rep.add("procure", f"checkout/{method}", "SKIP", err_text or "mp unavailable", ms)
+            continue
+
+        ok, detail = _procure_checkout_payload_ok(method, payload)
+        if ok:
+            rep.add("procure", f"checkout/{method}", "PASS", detail, ms)
+        else:
+            rep.add("procure", f"checkout/{method}", "FAIL", detail, ms)
+
+
+def run_retail_logistics_channels(base: str, rep: Report, admin: str) -> None:
+    """Retail cart checkout (logistics rail) — Pro tier, all four gateways."""
+    pro_key = _load_pro_api_key()
+    set_tier_live = _endpoint_available(base, "/v1/admin/set-tier")
+
+    if pro_key:
+        token = pro_key
+        status, acc, _ = http_json(base, "GET", "/auth/account", token=token)
+        if status != 200 or not isinstance(acc, dict) or acc.get("tier") != "pro":
+            for method in BILLING_METHODS:
+                rep.add("retail", f"checkout/{method}", "FAIL", "MARKET_PRO_API_KEY not pro tier")
+            return
+        user = str(acc.get("username") or "pro-user")
+        rep.add("retail", "setup", "PASS", f"user={user} tier=pro (api key)")
+    elif admin and set_tier_live:
+        user, token = register_user(base)
+        product = search_first_product(base, token)
+        if not product or not add_cart_item(base, token, product):
+            for method in BILLING_METHODS:
+                rep.add("retail", f"checkout/{method}", "FAIL", "cart setup failed")
+            return
+        if not set_tier(base, admin, user, "pro"):
+            for method in BILLING_METHODS:
+                rep.add("retail", f"checkout/{method}", "FAIL", "set-tier pro failed")
+            return
+        rep.add("retail", "setup", "PASS", f"user={user} tier=pro")
+    else:
+        for method in BILLING_METHODS:
+            rep.add(
+                "retail",
+                f"checkout/{method}",
+                "SKIP",
+                "set MARKET_PRO_API_KEY or deploy /v1/admin/set-tier",
+            )
+        return
+
+    product = search_first_product(base, token)
+    if not product:
+        for method in BILLING_METHODS:
+            rep.add("retail", f"checkout/{method}", "FAIL", "no search product")
+        return
+
+    for ch_name, method, path, _ in RETAIL_METHODS:
+        if not add_cart_item(base, token, product):
+            rep.add("retail", f"checkout/{ch_name}", "FAIL", "cart/add failed")
+            continue
+        try:
+            status, data, ms = http_json(base, method, path, token=token)
+        except RuntimeError as exc:
+            rep.add("retail", f"checkout/{ch_name}", "FAIL", str(exc))
+            continue
+
+        if status in (501, 502):
+            rep.add("retail", f"checkout/{ch_name}", "SKIP", f"gateway {status}", ms)
+            continue
+        if status != 200 or not isinstance(data, dict):
+            rep.add("retail", f"checkout/{ch_name}", "FAIL", f"status={status} {data}", ms)
+            continue
+
+        ok, detail = _checkout_payload_ok(ch_name, data)
+        if ok:
+            rep.add("retail", f"checkout/{ch_name}", "PASS", detail, ms)
+        else:
+            rep.add("retail", f"checkout/{ch_name}", "FAIL", detail, ms)
+
+    if admin and set_tier_live and not pro_key:
+        set_tier(base, admin, user, "free")
+
+
 def run_legacy_endpoints(base: str, rep: Report, run_id: str) -> None:
     """Backward-compat billing paths still wired in CLI/landing."""
     cases = (
@@ -339,7 +629,7 @@ def print_report(rep: Report) -> None:
         groups.setdefault(row.group, []).append(row)
 
     print("\n=== Payments E2E Report ===\n")
-    for group in ("config", "billing", "tier", "legacy"):
+    for group in ("config", "billing", "tier", "retail", "procure", "legacy"):
         rows = groups.get(group, [])
         if not rows:
             continue
@@ -358,16 +648,23 @@ def print_report(rep: Report) -> None:
 
 def main() -> int:
     base = os.getenv("MARKET_API_URL", DEFAULT_API).rstrip("/")
+    procure_base = os.getenv("PROCURE_PUBLIC_URL", DEFAULT_PROCURE).rstrip("/")
     admin = _load_admin_token()
     run_id = uuid.uuid4().hex[:10]
     rep = Report()
 
     print(f"API: {base}")
+    print(f"Procure: {procure_base}")
     print(f"run_id: {run_id}")
+    pro_key = _load_pro_api_key()
     if admin:
         print("admin: MARKET_API_TOKEN loaded")
     else:
         print("admin: not set — tier tests limited to free-only gates")
+    if pro_key:
+        print("retail: MARKET_PRO_API_KEY loaded")
+    else:
+        print("retail: no pro api key — logistics checkout needs MARKET_PRO_API_KEY or set-tier")
 
     try:
         status, data, ms = http_json(base, "GET", "/")
@@ -385,6 +682,8 @@ def main() -> int:
     run_config_probes(base, rep)
     run_billing_channels(base, rep, run_id)
     run_tier_gates(base, rep, admin)
+    run_retail_logistics_channels(base, rep, admin)
+    run_procure_channels(procure_base, rep)
     run_legacy_endpoints(base, rep, run_id)
 
     print_report(rep)
