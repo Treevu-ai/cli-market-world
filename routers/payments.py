@@ -542,11 +542,24 @@ async def mercadopago_status(test: bool = False):
 
 
 @router.post("/checkout/mercadopago")
-async def checkout_mercadopago(authorization: str | None = Header(None)):
+async def checkout_mercadopago(
+    body: dict = Body(default_factory=dict),
+    authorization: str | None = Header(None),
+):
     """Mercado Pago Checkout Pro for PEN cart total."""
     username = require_user(authorization)
     _, total, order_id = _prepare_pending_order(username, "mercadopago")
     from market_connectors.mercadopago_payments import create_preference
+
+    success_url = (
+        (body.get("success_url") or body.get("return_url") or "").strip()
+        or "https://cli-market.dev?mp=success"
+    )
+    failure_url = (
+        (body.get("failure_url") or body.get("cancel_url") or "").strip()
+        or "https://cli-market.dev?mp=failure"
+    )
+    pending_url = (body.get("pending_url") or "").strip() or success_url
 
     try:
         mp = await create_preference(
@@ -554,6 +567,9 @@ async def checkout_mercadopago(authorization: str | None = Header(None)):
             "PEN",
             f"CLI-Market-{order_id}",
             title=f"CLI Market {order_id}",
+            success_url=success_url,
+            failure_url=failure_url,
+            pending_url=pending_url,
         )
         if mp.get("checkout_url"):
             if mp.get("preference_id"):
@@ -632,6 +648,9 @@ async def mercadopago_webhook(request: Request):
     elif status == "approved" and order_id:
         if db_update_order_status(order_id, "paid"):
             actions.append(f"paid:{order_id}")
+            notified = _notify_procure_payment(order_id, "paid")
+            if notified:
+                actions.append(notified)
         else:
             actions.append(f"order_not_found:{order_id}")
     elif pro_request_id:
