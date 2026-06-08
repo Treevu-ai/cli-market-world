@@ -707,6 +707,90 @@ def test_contact_pro_triggers_billing_request(monkeypatch):
     assert data["request_id"].startswith("PRO-")
 
 
+def test_pro_checkout_yape_returns_qr(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/billing/pro-checkout",
+        json={"email": "yape-pro@test.com", "payment_method": "yape", "lang": "es"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["payment_method"] == "yape"
+    assert data["qr_url"].startswith("https://")
+    assert data["request_id"].startswith("PRO-")
+    assert data["auto_activate"] is False
+
+
+def test_pro_checkout_mercadopago_returns_url(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+
+    async def fake_pref(total, currency, ref, **kwargs):
+        return {
+            "checkout_url": "https://mp.test/checkout",
+            "preference_id": "pref-123",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
+    r = client.post(
+        "/billing/pro-checkout",
+        json={"email": "mp-pro@test.com", "payment_method": "mercadopago", "lang": "en"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["payment_method"] == "mercadopago"
+    assert data["checkout_url"] == "https://mp.test/checkout"
+    assert data["request_id"].startswith("PRO-")
+
+
+def test_mercadopago_webhook_activates_pro_request(monkeypatch):
+    from market_core import db_create_subscription_request, db_get_subscription
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    req = db_create_subscription_request("admin", "mp-webhook@test.com", "mercadopago:test")
+    request_id = req["id"]
+
+    async def fake_get_payment(payment_id):
+        return {
+            "status": "approved",
+            "external_reference": f"CLI-Market-{request_id}",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.get_payment", fake_get_payment)
+    monkeypatch.setattr("market_connectors.mercadopago_payments.webhook_secret", lambda: "")
+    monkeypatch.setattr(
+        "market_connectors.mercadopago_payments.parse_webhook_payment_id",
+        lambda **kw: ("pay-1", "payment"),
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        lambda **kw: {"sent": True},
+    )
+
+    assert db_get_subscription("admin")["tier"] == "free"
+    r = client.post("/checkout/mercadopago-webhook?data.id=pay-1")
+    assert r.status_code == 200
+    assert any("pro_activated:admin" in a for a in r.json().get("actions", []))
+    assert db_get_subscription("admin")["tier"] == "pro"
+
+
 def test_activate_pro_by_request_id(monkeypatch):
     import subprocess
 
