@@ -66,6 +66,44 @@ def format_pro_subscription_message(
     return "\n".join(lines)
 
 
+def pro_pending_slack_blocks(
+    *,
+    username: str = "",
+    email: str = "",
+    request_id: str = "",
+    payment_method: str = "",
+    amount_pen: float | None = None,
+) -> list:
+    """Slack blocks with Activar button (requires bot token + SLACK_SIGNING_SECRET)."""
+    ref = (request_id or "—").strip()
+    user = (username or "—").strip()
+    mail = (email or "—").strip()
+    method = (payment_method or "—").strip()
+    lines = [
+        "⏳ *CLI Market Pro* — pago pendiente",
+        f"• ref: `{ref}` · usuario: `{user}`",
+        f"• email: {mail} · método: {method}",
+    ]
+    if amount_pen is not None:
+        lines.append(f"• monto: S/ {amount_pen:.2f}")
+    lines.append(f"• CLI fallback: `python ops/slack_cli.py activate-pro {ref}`")
+    return [
+        {"type": "section", "text": {"type": "mrkdwn", "text": "\n".join(lines)}},
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "action_id": "activate_pro_request",
+                    "text": {"type": "plain_text", "text": "Activar Pro"},
+                    "style": "primary",
+                    "value": ref,
+                }
+            ],
+        },
+    ]
+
+
 def notify_pro_subscription(
     *,
     status: str = "activated",
@@ -94,7 +132,16 @@ def notify_pro_subscription(
             amount_pen=amount_pen,
             amount_usd=amount_usd,
         )
-        deliver_to_cli_market_pro(text)
+        blocks = None
+        if (status or "").strip().lower() == "pending" and os.getenv("SLACK_BOT_TOKEN", "").strip():
+            blocks = pro_pending_slack_blocks(
+                username=username,
+                email=email,
+                request_id=request_id,
+                payment_method=payment_method,
+                amount_pen=amount_pen,
+            )
+        deliver_to_cli_market_pro(text, blocks=blocks)
         return True
     except Exception as exc:
         logger.warning("CLI Market Pro Slack notify failed: %s", exc)

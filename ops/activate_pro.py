@@ -80,7 +80,7 @@ def main() -> int:
 
     pay_method = "yape"
     if req:
-        pay_url = (req.get("payment_url") or "").strip().lower()
+        pay_url = (req.get("payment_link") or "").strip().lower()
         if pay_url.startswith("plin:"):
             pay_method = "plin"
         elif pay_url.startswith("mercadopago"):

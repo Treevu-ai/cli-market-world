@@ -14,3 +14,7 @@ export const PAYPAL_HOSTED_BUTTON_ID =
 export const PRO_PAYMENT_URL =
   process.env.NEXT_PUBLIC_PRO_PAYMENT_URL ||
   `https://www.paypal.com/ncp/payment/${PAYPAL_HOSTED_BUTTON_ID}`;
+
+/** Show Yape/Plin manual transfer fallback in checkout (ops-only; default off). */
+export const WALLET_MANUAL_FALLBACK =
+  process.env.NEXT_PUBLIC_WALLET_MANUAL_FALLBACK === "true";

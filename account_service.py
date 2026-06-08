@@ -40,8 +40,8 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
             "cli_es": "market register  →  Pro en cli-market.dev/#pricing",
             "cli_en": "market register  →  Pro at cli-market.dev/#pricing",
             "url": "https://cli-market.dev/#pricing",
-            "cta_es": "Activar Pro (PayPal)",
-            "cta_en": "Activate Pro (PayPal)",
+            "cta_es": "Activar Pro",
+            "cta_en": "Activate Pro",
         },
         "starter": {
             "next_tier": "pro",
@@ -50,8 +50,8 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
             "cli_es": "market upgrade",
             "cli_en": "market upgrade",
             "url": "https://cli-market.dev/#pricing",
-            "cta_es": "Activar Pro (PayPal)",
-            "cta_en": "Activate Pro (PayPal)",
+            "cta_es": "Activar Pro",
+            "cta_en": "Activate Pro",
         },
         "pro": {
             "next_tier": "builder",

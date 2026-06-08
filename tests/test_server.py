@@ -568,20 +568,28 @@ def test_request_starter_creates_subscription_request(monkeypatch):
 def test_request_pro_creates_subscription_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
-        "market_connectors.email_outbound.send_pro_payment_email",
+        "market_connectors.email_outbound.send_pro_subscribe_pending_email",
         lambda **kw: {"sent": False, "to": kw["to_email"]},
     )
-    monkeypatch.setattr(
-        "market_connectors.email_outbound.send_pro_request_notify",
-        lambda **kw: {"sent": False},
+
+    async def fake_sub(username, **kwargs):
+        return {
+            "subscription_id": "I-REQPRO",
+            "approve_url": "https://www.paypal.com/billing/subscriptions?ba_token=req",
+            "status": "APPROVAL_PENDING",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
+    r = client.post(
+        "/billing/request-pro",
+        json={"email": "pro@test.com", "username": "prouser", "lang": "en"},
     )
-    r = client.post("/billing/request-pro", json={"email": "pro@test.com", "lang": "en"})
     assert r.status_code == 200
     data = r.json()
     assert data["ok"] is True
     assert data["request_id"].startswith("PRO-")
-    assert data["email"] == "pro@test.com"
-    assert "payment_link" in data
+    assert data["username"] == "prouser"
+    assert data.get("approve_url", "").startswith("https://")
 
 
 def test_request_pro_requires_valid_email(monkeypatch):
@@ -593,14 +601,19 @@ def test_request_pro_requires_valid_email(monkeypatch):
 def test_request_pro_duplicate_without_resend(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
-        "market_connectors.email_outbound.send_pro_payment_email",
+        "market_connectors.email_outbound.send_pro_subscribe_pending_email",
         lambda **kw: {"sent": True, "to": kw["to_email"]},
     )
-    monkeypatch.setattr(
-        "market_connectors.email_outbound.send_pro_request_notify",
-        lambda **kw: {"sent": True},
-    )
-    payload = {"email": "dup@test.com", "lang": "es"}
+
+    async def fake_sub(username, **kwargs):
+        return {
+            "subscription_id": "I-DUPPRO",
+            "approve_url": "https://www.paypal.com/billing/subscriptions?ba_token=dup",
+            "status": "APPROVAL_PENDING",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
+    payload = {"email": "dup@test.com", "username": "dupuser", "lang": "es"}
     r1 = client.post("/billing/request-pro", json=payload)
     r2 = client.post("/billing/request-pro", json=payload)
     assert r1.status_code == 200
@@ -777,7 +790,12 @@ def test_pro_checkout_yape_routes_to_mercadopago(monkeypatch):
     monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
     r = client.post(
         "/billing/pro-checkout",
-        json={"email": "yape-pro@test.com", "payment_method": "yape", "lang": "es"},
+        json={
+            "email": "yape-pro@test.com",
+            "username": "yapeuser",
+            "payment_method": "yape",
+            "lang": "es",
+        },
     )
     assert r.status_code == 200
     data = r.json()
@@ -792,6 +810,7 @@ def test_pro_checkout_yape_routes_to_mercadopago(monkeypatch):
 
 def test_pro_checkout_yape_manual_transfer_fallback(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr("routers.payments.wallet_manual_fallback_enabled", lambda: True)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
         lambda **kw: {"sent": True, "to": kw["to_email"]},
@@ -804,6 +823,7 @@ def test_pro_checkout_yape_manual_transfer_fallback(monkeypatch):
         "/billing/pro-checkout",
         json={
             "email": "yape-manual@test.com",
+            "username": "yapemanual",
             "payment_method": "yape",
             "lang": "es",
             "manual_transfer": True,
@@ -838,7 +858,12 @@ def test_pro_checkout_mercadopago_returns_url(monkeypatch):
     monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
     r = client.post(
         "/billing/pro-checkout",
-        json={"email": "mp-pro@test.com", "payment_method": "mercadopago", "lang": "en"},
+        json={
+            "email": "mp-pro@test.com",
+            "username": "mpuser",
+            "payment_method": "mercadopago",
+            "lang": "en",
+        },
     )
     assert r.status_code == 200
     data = r.json()
@@ -846,6 +871,46 @@ def test_pro_checkout_mercadopago_returns_url(monkeypatch):
     assert data["payment_method"] == "mercadopago"
     assert data["checkout_url"] == "https://mp.test/checkout"
     assert data["request_id"].startswith("PRO-")
+
+
+def test_pro_checkout_requires_username(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    r = client.post(
+        "/billing/pro-checkout",
+        json={"email": "no-user@test.com", "payment_method": "mercadopago", "lang": "es"},
+    )
+    assert r.status_code == 400
+
+
+def test_pro_checkout_mp_dedupe_returns_checkout_url(monkeypatch):
+    from market_core import db_create_subscription_request, db_update_subscription_request_payment_link
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+
+    req = db_create_subscription_request("dedupeuser", "mp-dedupe@test.com", "mercadopago:pending")
+    db_update_subscription_request_payment_link(req["id"], "https://www.mercadopago.com/checkout/existing")
+
+    r = client.post(
+        "/billing/pro-checkout",
+        json={
+            "email": "mp-dedupe@test.com",
+            "username": "dedupeuser",
+            "payment_method": "mercadopago",
+            "lang": "es",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data.get("duplicate") is True
+    assert data.get("checkout_url") == "https://www.mercadopago.com/checkout/existing"
 
 
 def test_mercadopago_webhook_activates_pro_request(monkeypatch):
@@ -891,6 +956,19 @@ def test_activate_pro_by_request_id(monkeypatch):
         "market_connectors.email_outbound.send_pro_request_notify",
         lambda **kw: {"sent": False},
     )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_subscribe_pending_email",
+        lambda **kw: {"sent": False},
+    )
+
+    async def fake_sub(username, **kwargs):
+        return {
+            "subscription_id": "I-ACTIVATE",
+            "approve_url": "https://www.paypal.com/billing/subscriptions?ba_token=act",
+            "status": "APPROVAL_PENDING",
+        }
+
+    monkeypatch.setattr("market_connectors.paypal_payments.create_subscription", fake_sub)
     r = client.post(
         "/billing/request-pro",
         json={"email": "activate@test.com", "username": "admin", "lang": "en"},

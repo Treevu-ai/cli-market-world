@@ -148,6 +148,24 @@ def post_via_bot(token: str, channel: str, text: str) -> None:
             raise RuntimeError(f"Slack API error: {body.get('error', body)}")
 
 
+def post_blocks_via_bot(token: str, channel: str, *, text: str, blocks: list) -> None:
+    r = httpx.post(
+        "https://slack.com/api/chat.postMessage",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "channel": channel,
+            "text": text,
+            "blocks": blocks,
+            "mrkdwn": True,
+        },
+        timeout=15,
+    )
+    r.raise_for_status()
+    body = r.json()
+    if not body.get("ok"):
+        raise RuntimeError(f"Slack API error: {body.get('error', body)}")
+
+
 def deliver(
     text: str,
     *,
@@ -202,9 +220,16 @@ def deliver_to_command_control(text: str) -> None:
     )
 
 
-def deliver_to_cli_market_pro(text: str) -> None:
+def deliver_to_cli_market_pro(text: str, *, blocks: list | None = None) -> None:
+    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
+    hook = os.getenv("SLACK_WEBHOOK_CLI_MARKET_PRO", "").strip()
+    channel = channel_cli_market_pro()
+    if blocks and token:
+        post_blocks_via_bot(token, channel, text=text, blocks=blocks)
+        return
     deliver(
         text,
-        channel=channel_cli_market_pro(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_CLI_MARKET_PRO", ""),
+        channel=channel,
+        webhook_url=hook,
+        bot_token=token,
     )
