@@ -19,7 +19,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 43 herramientas MCP · 34 indicadores**
+- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 34 indicadores**
 - 💰 **Más de 50,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
@@ -78,15 +78,15 @@ market enrichment --refresh -c PE
 
 AI agents still can't shop in the real world. Every retailer means separate auth, separate search logic, no shared cart — so agents fail before the first query.
 
-**CLI Market fixes that.** One `pip install`. One API call across **66 retailers (38 verified active)** in **8 countries**. One JSON schema.
+**CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema.
 
-- 🌍 **66 retailers (38 verified active) · 8 countries · 3 platforms · 43 MCP tools · 34 indicators**
+- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 34 indicators**
 - 💰 **50,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
 
-- 🔎 **Search** any product across 66 retailers (38 verified active) in 8 countries
+- 🔎 **Search** any product across 68 retailers (38 verified active) in 8 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
@@ -145,13 +145,13 @@ market enrichment --refresh -c PE
 CLI Market is composed of 4 specialized repositories, each with a single responsibility:
 
 ```
-cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 66 retailers, 45k prices
+cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retailers, 45k prices
        |
        v  raw snapshots
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
        |
        v  canonical identities
-cli-market-core      Intelligence — indicators, stats, billing, connectors, 43 MCP tools
+cli-market-core      Intelligence — indicators, stats, billing, connectors, 22 MCP tools (default)
        |
        v  structured intelligence
 cli-market-world     Exposure — landing, docs, MCP registry, deployment configs (THIS REPO)
@@ -182,10 +182,9 @@ All six capabilities are backed by the same 46,000+, refreshed every 4 hours by 
 
 ---
 
-## 🔧 43 MCP tools · 34 indicators
+## 🔧 22 MCP tools (default profile) · 34 indicators
 
-`market_login` `market_lines` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_cart_remove` `market_checkout` `market_orders` `market_reorder` `market_ask` `market_basket` `market_inflation` `market_indicators` `market_scores` `market_intel_refresh` `market_enrichment` `market_enrichment_subcategories` `market_enrichment_refresh` `market_analytics_indicators` `market_categories` `market_barcode` `market_enrich` `market_stores` `market_countries` `market_ticket` `market_voice` `market_price_history` `market_stats` `market_alerts` `market_whoami` `market_preferences` `market_subscription` `market_export` `market_trending` `market_scan` `market_stock` `market_notify` `market_brands` `market_favorites` `market_exchange` `market_delivery`
-
+`market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 
 ---
 

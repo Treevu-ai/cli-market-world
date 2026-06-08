@@ -62,6 +62,46 @@ def _bundle_tools_for_landing(profile: str = "default") -> dict[str, list[dict[s
     return bundles
 
 
+def _pypi_description() -> str:
+    counts = _mcp_counts()
+    return (
+        "mcp-name: io.github.Treevu-ai/cli-market-world - "
+        "CLI Market: commerce API for AI agents. "
+        f"{counts['default']} curated MCP tools ({counts['legacy']} legacy), "
+        f"{s.INDICATORS_COUNT} indicators, "
+        f"{s.RETAILERS_VERIFIED} verified retailers in {s.COUNTRIES} countries. MIT."
+    )
+
+
+def _server_description() -> str:
+    counts = _mcp_counts()
+    return _replace_mcp_count(s.server_json_description(), s.MCP_TOOLS, counts["default"])
+
+
+def _readme_tagline_html() -> str:
+    counts = _mcp_counts()
+    return (
+        f"<b>Commerce infrastructure for AI agents.</b><br>"
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified). "
+        f"{s.COUNTRIES} countries. {s.PLATFORMS} platforms. "
+        f"{counts['default']} curated MCP tools ({counts['legacy']} legacy). "
+        f"{s.PAYMENTS_LABEL}.<br>"
+        f"{s.PRICES_VERIFIED_LABEL} verified shelf prices, normalized per kg/L, "
+        f"refreshed every {s.PRICES_REFRESH_HOURS} hours.<br>"
+        f"One <code>pip install</code>. One API. Zero scraping."
+    )
+
+
+def _readme_mcp_section() -> str:
+    mcp_default = public_tool_count("default")
+    tools = [t["name"] for t in list_tools("default")]
+    tools_line = " ".join(f"`{name}`" for name in tools)
+    return (
+        f"## 🔧 {mcp_default} MCP tools (default profile) · {s.INDICATORS_COUNT} indicators\n\n"
+        f"{tools_line}\n"
+    )
+
+
 def _replace_mcp_count(text: str, old: int, new: int, *, es: bool = False) -> str:
     replacements = [
         (f"{old} MCP tools", f"{new} MCP tools"),
@@ -166,10 +206,48 @@ def sync_readme() -> None:
     )
     text = re.sub(
         r"<p align=\"center\"><b>Commerce infrastructure for AI agents\.</b><br>.*?</p>",
-        f'<p align="center">{s.readme_tagline_html()}</p>',
+        f'<p align="center">{_readme_tagline_html()}</p>',
         text,
         count=1,
         flags=re.DOTALL,
+    )
+    text = re.sub(
+        r"🌍 \*\*\d+ retailers \(\d+ verificados activos\) · \d+ países · \d+ plataformas · \d+ herramientas MCP · \d+ indicadores\*\*",
+        (
+            f"🌍 **{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verificados activos) · "
+            f"{s.COUNTRIES} países · {s.PLATFORMS} plataformas · "
+            f"{mcp_default} herramientas MCP ({mcp_legacy} legacy) · {s.INDICATORS_COUNT} indicadores**"
+        ),
+        text,
+        count=1,
+    )
+    text = re.sub(
+        r"🌍 \*\*\d+ retailers \(\d+ verified active\) · \d+ countries · \d+ platforms · \d+ MCP tools · \d+ indicators\*\*",
+        (
+            f"🌍 **{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified active) · "
+            f"{s.COUNTRIES} countries · {s.PLATFORMS} platforms · "
+            f"{mcp_default} curated MCP tools ({mcp_legacy} legacy) · {s.INDICATORS_COUNT} indicators**"
+        ),
+        text,
+        count=1,
+    )
+    text = re.sub(
+        r"cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, \d+ retailers, \d+k prices",
+        f"cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, {s.RETAILERS_DEFINED} retailers, 45k prices",
+        text,
+        count=1,
+    )
+    text = re.sub(
+        r"cli-market-core      Intelligence — indicators, stats, billing, connectors, \d+ MCP tools(?: \(default\))*",
+        f"cli-market-core      Intelligence — indicators, stats, billing, connectors, {mcp_default} MCP tools (default)",
+        text,
+        count=1,
+    )
+    text = re.sub(
+        r"## 🔧 \d+ MCP tools[^\n]*\n\n(?:`[^`]+` ?)+\n*",
+        _readme_mcp_section() + "\n",
+        text,
+        count=1,
     )
     text = re.sub(
         r"├── market_mcp\.py            → MCP server \(\d+ tools\)",
@@ -213,6 +291,16 @@ def sync_readme() -> None:
         text,
     )
     text = re.sub(
+        r"\d+ retailers \(\d+ verified active\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified active)",
+        text,
+    )
+    text = re.sub(
+        r"\d+ retailers \(\d+ verificados activos\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verificados activos)",
+        text,
+    )
+    text = re.sub(
         r"\d+ verified active\b",
         f"{s.RETAILERS_VERIFIED} verified active",
         text,
@@ -253,7 +341,7 @@ def sync_pyproject() -> None:
         count=1,
         flags=re.MULTILINE,
     )
-    desc = s.pypi_summary().replace('"', '\\"')
+    desc = _pypi_description().replace('"', '\\"')
     text = re.sub(
         r'^description = ".*"$',
         f'description = "{desc}"',
@@ -266,14 +354,23 @@ def sync_pyproject() -> None:
 
 
 def sync_server_json() -> None:
-    desc = s.server_json_description()
+    desc = _server_description()
     for rel in ("server.json", "landing/public/server.json"):
         path = ROOT / rel
         data = json.loads(path.read_text(encoding="utf-8"))
         data["description"] = desc
         data["version"] = s.PACKAGE_VERSION
         if data.get("packages"):
-            data["packages"][0]["version"] = s.PACKAGE_VERSION
+            pkg = data["packages"][0]
+            pkg["version"] = s.PACKAGE_VERSION
+            env_vars = list(pkg.get("environmentVariables") or [])
+            by_name = {e["name"]: e for e in env_vars}
+            by_name["MCP_TOOL_PROFILE"] = {
+                "name": "MCP_TOOL_PROFILE",
+                "description": "MCP tool profile: default (curated) or legacy (all tools)",
+                "default": "default",
+            }
+            pkg["environmentVariables"] = list(by_name.values())
         path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         print(f"Synced {path}")
 
@@ -336,6 +433,15 @@ def sync_og_svg() -> None:
     text = re.sub(
         r"\d+ MCP tools \| pip install",
         f"{public_tool_count('default')} MCP tools | pip install",
+        text,
+        count=1,
+    )
+    text = re.sub(
+        r"\d+ retailers · \d+K\+ precios · \d+ MCP ·",
+        (
+            f"{s.RETAILERS_DEFINED} retailers · {s.PRICES_VERIFIED_LABEL.replace(',', '')} precios · "
+            f"{public_tool_count('default')} MCP ·"
+        ),
         text,
         count=1,
     )
@@ -434,12 +540,33 @@ def sync_llms_txt() -> None:
         print(f"Synced {full_path}")
 
 
+def sync_glama_json() -> None:
+    counts = _mcp_counts()
+    path = ROOT / "glama.json"
+    tools = [t["name"] for t in list_tools("default")]
+    data = {
+        "license": s.LICENSE,
+        "description": (
+            f"Commerce infrastructure for AI agents — {counts['default']} curated MCP tools "
+            f"({counts['legacy']} legacy) to search, compare, and purchase across "
+            f"{s.RETAILERS_VERIFIED} verified retailers in {s.COUNTRIES} countries. "
+            f"{s.PRICES_VERIFIED_LABEL} real shelf prices refreshed every {s.PRICES_REFRESH_HOURS} hours. "
+            "Free tier available."
+        ),
+        "categories": ["ecommerce", "retail", "commerce", "data", "prices"],
+        "tools": tools,
+    }
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Synced {path}")
+
+
 def main() -> None:
     write_market_stats_ts()
     sync_readme()
     sync_pyproject()
     sync_server_json()
     sync_mcp_json()
+    sync_glama_json()
     sync_og_svg()
     sync_og_preview_svg()
     sync_llms_txt()
