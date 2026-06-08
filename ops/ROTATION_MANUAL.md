@@ -32,10 +32,13 @@
 
 ### 3. Cloudflare (`CLOUDFLARE_API_TOKEN`)
 1. https://dash.cloudflare.com/profile/api-tokens
-2. Revocar token antiguo → crear nuevo (Pages + DNS según deploy)
+2. Revocar token antiguo → crear nuevo (**Account · Cloudflare Pages · Edit**)
 3. ```bash
    gh secret set CLOUDFLARE_API_TOKEN -R Treevu-ai/cli-market-world
+   # opcional si CI no resuelve solo:
+   gh secret set CLOUDFLARE_ACCOUNT_ID -R Treevu-ai/cli-market-world
    ```
+4. Verificar deploy: Actions → **Deploy Landing (Cloudflare Pages)** debe quedar verde
 
 ### 4. PayPal (Railway)
 - https://developer.paypal.com/dashboard/applications
