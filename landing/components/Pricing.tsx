@@ -78,9 +78,9 @@ const tiers: Tier[] = [
     cta_en: "Set up subscription",
     featured: true,
     proNote_es:
-      `Pagos: ${MARKET_STATS.paymentsLabel}. Suscripción PayPal. Facturación PEN · RUC 20613045563.`,
+      `Pagos: ${MARKET_STATS.paymentsLabel}. Suscripción PayPal. Facturación USD · Sinapsis Innovadora S.A.C. · RUC 20613045563.`,
     proNote_en:
-      `Payments: ${MARKET_STATS.paymentsLabel}. PayPal subscription. PEN invoicing · tax ID 20613045563.`,
+      `Payments: ${MARKET_STATS.paymentsLabel}. PayPal subscription. USD invoicing · Sinapsis Innovadora S.A.C. · tax ID 20613045563.`,
   },
 
   {

@@ -181,7 +181,7 @@ export default function ProSubscribeButton() {
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . Facturación PEN disponible (RUC 20613045563).
+            . Facturación en USD — Sinapsis Innovadora S.A.C. (RUC 20613045563).
           </>
         ) : (
           <>
@@ -190,7 +190,7 @@ export default function ProSubscribeButton() {
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . PEN invoicing available (tax ID 20613045563).
+            . USD invoicing — Sinapsis Innovadora S.A.C. (tax ID 20613045563).
           </>
         )}
       </p>
