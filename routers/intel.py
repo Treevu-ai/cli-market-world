@@ -363,7 +363,7 @@ def refresh_indicators(
             "enrichment_written": 0,
             "country": country,
             "line": line,
-            "hint": "External indicators require the collector backend. Use market indicators --refresh on the deployed API for full refresh.",
+            "hint": "External indicators require the collector backend. Use POST /v1/intel/refresh on the deployed API for full refresh.",
         }
     finally:
         db.close()

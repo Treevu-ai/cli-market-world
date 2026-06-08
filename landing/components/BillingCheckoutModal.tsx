@@ -275,7 +275,7 @@ export default function BillingCheckoutModal({
           ) : (
             <>
               <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
-              <p className="font-mono">market register → market keys</p>
+              <p className="font-mono">market register → market account</p>
               <p>{isES ? "Pega sk-… en el dashboard Procure:" : "Paste sk-… in Procure dashboard:"}</p>
               <a href={PROCURE_APP_URL} className="text-[var(--cm-mint)] hover:underline inline-block">
                 {isES ? "Abrir Procure →" : "Open Procure →"}
