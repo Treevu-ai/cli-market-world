@@ -261,6 +261,8 @@ async def _handle_paypal_event(event: dict) -> dict:
                             username=username,
                             lang=lang,
                             subscription_id=sub_id,
+                            payment_method="paypal",
+                            source="paypal_webhook",
                         )
                     if mail.get("sent"):
                         actions.append(f"activation_email:{email}")
@@ -860,6 +862,15 @@ def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
     except Exception:
         pass
 
+    pay_url = (req.get("payment_url") or "").strip().lower()
+    method = "yape"
+    if pay_url.startswith("plin:"):
+        method = "plin"
+    elif pay_url.startswith("mercadopago"):
+        method = "mercadopago"
+    elif pay_url.startswith("paypal"):
+        method = "paypal"
+
     try:
         email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
         if email:
@@ -869,21 +880,16 @@ def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
                 to_email=email,
                 username=username,
                 lang="es",
-                subscription_id=request_id,
+                request_id=request_id,
+                payment_method=method,
+                source=source,
             )
             if mail.get("sent"):
                 actions.append(f"activation_email:{email}")
+            if mail.get("ops_notified"):
+                actions.append(f"activation_draft_notify:{email}")
     except Exception:
         logger.exception("Pro activation email failed for %s", username)
-
-    pay_url = (req.get("payment_url") or "").strip().lower()
-    method = "yape"
-    if pay_url.startswith("plin:"):
-        method = "plin"
-    elif pay_url.startswith("mercadopago"):
-        method = "mercadopago"
-    elif pay_url.startswith("paypal"):
-        method = "paypal"
     _slack_notify_build_pro(
         username=username,
         email=(req.get("email") or "").strip() or db_get_user_email(username) or "",
