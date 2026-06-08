@@ -82,8 +82,9 @@ def _cart_total(cart: list[dict]) -> float:
     return round(sum(i["price"] * i["quantity"] for i in cart), 2)
 
 
-def _slack_notify_build_pro(
+def _slack_notify_subscription(
     *,
+    tier: str,
     status: str = "activated",
     username: str = "",
     email: str = "",
@@ -92,8 +93,9 @@ def _slack_notify_build_pro(
     payment_method: str = "",
     amount_pen: float | None = None,
     amount_usd: float | None = None,
+    plan: str = "",
 ) -> None:
-    """Post Build Pro events to #cli-market-pro (best-effort)."""
+    """Post subscription events to #suscripciones-cli-pro (best-effort)."""
     try:
         import sys
         from pathlib import Path
@@ -101,10 +103,11 @@ def _slack_notify_build_pro(
         ops_dir = Path(__file__).resolve().parent.parent / "ops"
         if str(ops_dir) not in sys.path:
             sys.path.insert(0, str(ops_dir))
-        from billing_slack import notify_build_pro_tier_activated, notify_pro_subscription
+        from billing_slack import notify_build_pro_tier_activated, notify_subscription
 
         if status == "pending":
-            notify_pro_subscription(
+            notify_subscription(
+                tier=tier,
                 status="pending",
                 username=username,
                 email=email,
@@ -113,10 +116,11 @@ def _slack_notify_build_pro(
                 payment_method=payment_method,
                 amount_pen=amount_pen,
                 amount_usd=amount_usd,
+                plan=plan,
             )
             return
         notify_build_pro_tier_activated(
-            tier="pro",
+            tier=tier,
             username=username,
             email=email,
             request_id=request_id,
@@ -124,7 +128,13 @@ def _slack_notify_build_pro(
             payment_method=payment_method,
         )
     except Exception as exc:
-        logger.warning("cli-market-pro Slack notify skipped: %s", exc)
+        logger.warning("subscriptions Slack notify skipped: %s", exc)
+
+
+def _slack_notify_build_pro(**kwargs) -> None:
+    """Backward-compat shim — Build Pro only."""
+    kwargs.setdefault("tier", "pro")
+    _slack_notify_subscription(**kwargs)
 
 
 def _notify_procure_payment(order_id: str, status: str) -> str | None:
@@ -277,14 +287,14 @@ async def _handle_paypal_event(event: dict) -> dict:
             except Exception:
                 logger.exception("%s activation email failed for %s", tier, username)
                 actions.append("activation_email_failed")
-            if tier == "pro":
-                _slack_notify_build_pro(
-                    username=username,
-                    email=db_get_user_email(username) or "",
-                    request_id=sub_id or "",
-                    source="paypal_webhook",
-                    payment_method="paypal",
-                )
+            _slack_notify_subscription(
+                tier=tier,
+                username=username,
+                email=db_get_user_email(username) or "",
+                request_id=sub_id or "",
+                source="paypal_webhook",
+                payment_method="paypal",
+            )
         else:
             actions.append(f"subscription_no_user:{sub_id}")
 
@@ -1072,6 +1082,17 @@ def process_starter_subscription_request(
     if sub_mail.get("sent"):
         db_mark_subscription_request_emailed(req["id"])
 
+    _slack_notify_subscription(
+        tier="starter",
+        status="pending",
+        username=username,
+        email=email,
+        request_id=req["id"],
+        source="request_starter",
+        payment_method="paypal",
+        amount_usd=29.0,
+    )
+
     if lang == "es":
         message = (
             f"Le enviamos el checkout Starter a {email}."
@@ -1659,6 +1680,17 @@ async def _start_procure_subscription(
         )
     except Exception:
         pass
+    _slack_notify_subscription(
+        tier=tier,
+        status="pending",
+        username=username,
+        email=email,
+        request_id=req["id"],
+        source=funnel_source,
+        payment_method="paypal",
+        amount_usd=amount,
+        plan=label,
+    )
     return {
         "ok": True,
         "subscription_id": sub_id,
@@ -1738,6 +1770,17 @@ async def _start_paypal_subscription(
         username=username,
         email=email,
         source=funnel_source,
+    )
+    _slack_notify_subscription(
+        tier=plan_l,
+        status="pending",
+        username=username,
+        email=email,
+        request_id=req["id"],
+        source=funnel_source,
+        payment_method="paypal",
+        amount_usd=STARTER_PRICE_USD if plan_l == "starter" else PRO_PRICE_USD,
+        plan=plan_label,
     )
     return {
         "ok": True,
