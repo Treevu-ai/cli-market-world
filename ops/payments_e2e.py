@@ -30,6 +30,7 @@ OPS = Path(__file__).resolve().parent
 ROOT = OPS.parent
 DEFAULT_API = "https://cli-market-production.up.railway.app"
 DEFAULT_PROCURE = "https://procure-copilot.contacto-8e4.workers.dev"
+DEFAULT_LANDING = "https://cli-market.dev"
 BILLING_METHODS = ("paypal", "mercadopago", "yape", "plin")
 PROCURE_METHODS = BILLING_METHODS
 PROCURE_HEADERS = {
@@ -509,14 +510,21 @@ def run_procure_channels(procure_base: str, rep: Report) -> None:
             rep.add("procure", f"checkout/{method}", "SKIP", f"gateway {status}", ms)
             continue
 
+        if isinstance(payload, dict):
+            err_text = str(payload.get("error") or "")
+            err_code = str(payload.get("code") or "")
+            if status == 403 and (
+                err_code == "PLAN_LIMIT_CHECKOUT"
+                or ("Pro" in err_text and ("CLI Market" in err_text or "Procure Pro" in err_text))
+            ):
+                rep.add("procure", f"checkout/{method}", "SKIP", err_text or err_code, ms)
+                continue
+
         if status != 200 or not isinstance(payload, dict):
             rep.add("procure", f"checkout/{method}", "FAIL", f"status={status} {payload}", ms)
             continue
 
         err_text = str(payload.get("error") or "")
-        if "Pro" in err_text and "CLI Market" in err_text:
-            rep.add("procure", f"checkout/{method}", "SKIP", err_text, ms)
-            continue
         if method == "paypal" and ("PayPal" in err_text or status == 501):
             rep.add("procure", f"checkout/{method}", "SKIP", err_text or "paypal unavailable", ms)
             continue
@@ -600,6 +608,76 @@ def run_retail_logistics_channels(base: str, rep: Report, admin: str) -> None:
         set_tier(base, admin, user, "free")
 
 
+def run_procure_billing(base: str, rep: Report, run_id: str) -> None:
+    """Procure subscription rail on Railway (landing #procure tab)."""
+    if not _endpoint_available(base, "/billing/procure-subscribe"):
+        rep.add("billing", "procure-subscribe", "SKIP", "endpoint not deployed")
+        return
+    try:
+        status, data, ms = http_json(
+            base,
+            "POST",
+            "/billing/procure-subscribe",
+            body={
+                "email": f"e2e+procure+{run_id}@cli-market.dev",
+                "tier": "procure_pro",
+                "payment_method": "paypal",
+                "lang": "es",
+            },
+        )
+    except RuntimeError as exc:
+        rep.add("billing", "procure-subscribe", "FAIL", str(exc))
+        return
+    if status in (501, 502):
+        rep.add("billing", "procure-subscribe", "SKIP", f"PayPal unavailable ({status})", ms)
+        return
+    if status != 200 or not isinstance(data, dict):
+        rep.add("billing", "procure-subscribe", "FAIL", f"status={status} {data}", ms)
+        return
+    tier = data.get("tier") or data.get("plan")
+    if tier == "procure_pro" or data.get("checkout_url") or data.get("approve_url") or data.get("ok"):
+        rep.add("billing", "procure-subscribe", "PASS", f"tier={tier or 'procure_pro'}", ms)
+    else:
+        rep.add("billing", "procure-subscribe", "FAIL", str(data), ms)
+
+
+def run_landing_pricing_smoke(landing: str, rep: Report) -> None:
+    """Landing #pricing — Build · Procure · Listed tabs (post-unification)."""
+    try:
+        status, body, ms = http_json(landing, "GET", "/")
+    except RuntimeError as exc:
+        rep.add("landing", "home", "FAIL", str(exc))
+        return
+    if status != 200 or not isinstance(body, str):
+        rep.add("landing", "home", "FAIL", f"status={status}", ms)
+        return
+    rep.add("landing", "home", "PASS", "200", ms)
+    markers = (
+        ("tab-build", "Build"),
+        ("tab-procure", "Procure"),
+        ("tab-listed", "Listed"),
+        ("anchor-pricing", 'id="pricing"'),
+        ("anchor-procure", 'id="procure"'),
+        ("anchor-listed", 'id="listed"'),
+        ("pro-checkout", 'id="pro-checkout"'),
+    )
+    for name, needle in markers:
+        if needle in body:
+            rep.add("landing", name, "PASS", needle)
+        else:
+            rep.add("landing", name, "FAIL", f"missing {needle}")
+
+    try:
+        status, _, ms = http_json(DEFAULT_PROCURE, "GET", "/procure")
+    except RuntimeError as exc:
+        rep.add("landing", "procure-redirect", "FAIL", str(exc))
+        return
+    if status == 200:
+        rep.add("landing", "procure-redirect", "PASS", "followed to landing", ms)
+    else:
+        rep.add("landing", "procure-redirect", "FAIL", f"status={status}", ms)
+
+
 def run_legacy_endpoints(base: str, rep: Report, run_id: str) -> None:
     """Backward-compat billing paths still wired in CLI/landing."""
     cases = (
@@ -629,7 +707,7 @@ def print_report(rep: Report) -> None:
         groups.setdefault(row.group, []).append(row)
 
     print("\n=== Payments E2E Report ===\n")
-    for group in ("config", "billing", "tier", "retail", "procure", "legacy"):
+    for group in ("config", "billing", "tier", "retail", "procure", "landing", "legacy"):
         rows = groups.get(group, [])
         if not rows:
             continue
@@ -649,12 +727,14 @@ def print_report(rep: Report) -> None:
 def main() -> int:
     base = os.getenv("MARKET_API_URL", DEFAULT_API).rstrip("/")
     procure_base = os.getenv("PROCURE_PUBLIC_URL", DEFAULT_PROCURE).rstrip("/")
+    landing = os.getenv("LANDING_URL", DEFAULT_LANDING).rstrip("/")
     admin = _load_admin_token()
     run_id = uuid.uuid4().hex[:10]
     rep = Report()
 
     print(f"API: {base}")
     print(f"Procure: {procure_base}")
+    print(f"Landing: {landing}")
     print(f"run_id: {run_id}")
     pro_key = _load_pro_api_key()
     if admin:
@@ -681,9 +761,11 @@ def main() -> int:
 
     run_config_probes(base, rep)
     run_billing_channels(base, rep, run_id)
+    run_procure_billing(base, rep, run_id)
     run_tier_gates(base, rep, admin)
     run_retail_logistics_channels(base, rep, admin)
     run_procure_channels(procure_base, rep)
+    run_landing_pricing_smoke(landing, rep)
     run_legacy_endpoints(base, rep, run_id)
 
     print_report(rep)
