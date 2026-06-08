@@ -21,16 +21,33 @@
   --color-cm-secondary-container: #47475d;
 }
 
-:root {
+:root,
+.brand-mode-terminal {
+  /* Semantic brand tokens — docs/BRAND.md */
+  --cm-void: #000000;
+  --cm-canvas: #0a0a0b;
+  --cm-ink: #ffffff;
+  --cm-action: #c8ff00;
+  --cm-action-glow: #dfff00;
+  --cm-data: #3afecf;
+  --cm-signal: #ffe500;
+  --cm-surface-card: #111111;
+  --cm-text-secondary: #7a7a7a;
+  --cm-radius-lg: 24px;
+  --cm-radius-md: 12px;
+  --cm-radius-sm: 8px;
+  --cm-radius-pill: 9999px;
+  --cm-glow-strength: 1;
+
   /* Cyber design system (primary) */
-  --cm-background: #0a0a0b;
+  --cm-background: var(--cm-canvas);
   --cm-surface-lowest: #0f0f10;
   --cm-surface: #131314;
   --cm-surface-low: #1c1b1c;
   --cm-surface-container: #201f20;
   --cm-surface-high: #2a2a2b;
   --cm-surface-highest: #353436;
-  --cm-mint: #3afecf;
+  --cm-mint: var(--cm-data);
   --cm-mint-dim: #00e0b4;
   --cm-on-mint: #002118;
   --cm-on-surface: #e5e2e3;
@@ -43,7 +60,7 @@
   --cm-container-max: 1280px;
 
   /* Legacy Wise tokens — kept for sections not yet migrated */
-  --wise-green: #3afecf;
+  --wise-green: var(--cm-data);
   --wise-green-hover: #5dffd9;
   --wise-green-pale: rgba(58, 254, 207, 0.25);
   --wise-ink: #0e0f0c;
@@ -58,6 +75,28 @@
 .wise-on-dark {
   --wise-body: var(--wise-body-on-dark);
   --wise-mute: var(--wise-mute-on-dark);
+}
+
+/* Procure & outbound compras — misma paleta, menos terminal (docs/BRAND.md) */
+.brand-mode-operations {
+  --cm-glow-strength: 0.35;
+  --cm-action: var(--cm-data);
+}
+
+.brand-mode-operations .energy-border-active {
+  box-shadow: 0 0 calc(12px * var(--cm-glow-strength)) rgba(58, 254, 207, 0.25);
+}
+
+.btn-action {
+  background: var(--cm-action);
+  color: var(--cm-on-mint);
+  border-radius: var(--cm-radius-pill);
+  font-weight: 600;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.btn-action:hover {
+  filter: brightness(1.08);
 }
 
 html {

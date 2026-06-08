@@ -26,7 +26,10 @@ export default function ProcureSection() {
   const benefits = isES ? BENEFITS_ES : BENEFITS_EN;
 
   return (
-    <section id="procure" className="landing-section animate-fade-in scroll-mt-20">
+    <section
+      id="procure"
+      className="brand-mode-operations landing-section animate-fade-in scroll-mt-20"
+    >
       <div className="landing-container-wide">
         <div className="text-center mb-14">
           <p className="section-eyebrow text-[var(--cm-mint)] mb-4">Procure</p>
