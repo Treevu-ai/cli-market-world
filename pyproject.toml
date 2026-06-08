@@ -32,6 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+index = ["cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@2bfa6d210fc429e1c9c7780d7df9158eb0713a66"]
 playwright = ["playwright>=1.45.0"]
 
 [project.scripts]
@@ -41,7 +42,7 @@ market-mcp = "market_mcp:main"
 
 [tool.setuptools]
 py-modules = [
-    "market_cli", "market_ui", "account_service", "market_funnel", "market_server", "market_security", "server_deps", "collect_prices", "backend_interface",
+    "market_cli", "market_ui", "account_service", "market_funnel", "market_server", "market_security", "server_deps", "collect_prices", "backend_interface", "index_gate", "price_snapshots_schema",
 ]
 
 [tool.ruff]

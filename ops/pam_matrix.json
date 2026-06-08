@@ -761,10 +761,7 @@
       "method": "GET",
       "path": "/index/stats",
       "auth": "user",
-      "skip_if_env_missing": [
-        "CLI_MARKET_INDEX_URL"
-      ],
-      "notes": "cli-market-index not mounted on world API — set CLI_MARKET_INDEX_URL when proxy exists",
+      "notes": "Golden Record registry + linkage_pct (cli-market-index in-process)",
       "expect": {
         "status": 200,
         "json_has": [
@@ -782,10 +779,7 @@
       "method": "POST",
       "path": "/index/resolve",
       "auth": "user",
-      "skip_if_env_missing": [
-        "CLI_MARKET_INDEX_URL"
-      ],
-      "notes": "cli-market-index not mounted on world API — set CLI_MARKET_INDEX_URL when proxy exists",
+      "notes": "Entity resolution via cli-market-index IndexService",
       "body": {
         "name": "Leche Gloria entera 1L",
         "brand": "Gloria",
