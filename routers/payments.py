@@ -34,6 +34,7 @@ import os
 import re
 import uuid
 
+import httpx
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from market_core import (
@@ -71,6 +72,25 @@ _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 def _cart_total(cart: list[dict]) -> float:
     return round(sum(i["price"] * i["quantity"] for i in cart), 2)
+
+
+def _notify_procure_payment(order_id: str, status: str) -> str | None:
+    """Forward payment status to Procure Copilot when PROCURE_WEBHOOK_URL is set."""
+    url = os.getenv("PROCURE_WEBHOOK_URL", "").strip()
+    secret = os.getenv("PROCURE_WEBHOOK_SECRET", "").strip()
+    if not url:
+        return None
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            r = client.post(
+                url,
+                json={"orderId": order_id, "status": status, "secret": secret},
+            )
+            if r.is_success:
+                return "procure_notified"
+    except Exception as exc:
+        logger.warning("Procure webhook notify failed for %s: %s", order_id, exc)
+    return None
 
 
 def _prepare_pending_order(username: str, method: str) -> tuple[list[dict], float, str]:
@@ -132,6 +152,9 @@ async def _handle_paypal_event(event: dict) -> dict:
         if order_row:
             db_update_order_status(order_row["order_id"], "paid")
             actions.append(f"order_paid:{order_row['order_id']}")
+            notified = _notify_procure_payment(order_row["order_id"], "paid")
+            if notified:
+                actions.append(notified)
         else:
             actions.append(f"order_not_found:{paypal_order_id}")
 
@@ -302,9 +325,14 @@ async def checkout_paypal_capture(
     if not cap.get("ok"):
         raise HTTPException(status_code=502, detail=cap.get("error", "Capture failed"))
     row = db_find_order_by_gateway_ref(paypal_order_id)
+    procure_action = None
     if row:
         db_update_order_status(row["order_id"], "paid")
-    return {"ok": True, "paypal_order_id": paypal_order_id, "market_order": row}
+        procure_action = _notify_procure_payment(row["order_id"], "paid")
+    payload = {"ok": True, "paypal_order_id": paypal_order_id, "market_order": row}
+    if procure_action:
+        payload["procure"] = procure_action
+    return payload
 
 
 @router.post("/checkout/wise")
@@ -380,7 +408,13 @@ def checkout_webhook(order_id: str = "", status: str = "paid", secret: str = "")
         raise HTTPException(status_code=400, detail="order_id required")
     if not db_update_order_status(order_id, status):
         raise HTTPException(status_code=404, detail="Order not found")
-    return {"order_id": order_id, "status": status, "message": f"Payment {status}"}
+    procure_action = None
+    if status == "paid":
+        procure_action = _notify_procure_payment(order_id, status)
+    payload = {"order_id": order_id, "status": status, "message": f"Payment {status}"}
+    if procure_action:
+        payload["procure"] = procure_action
+    return payload
 
 
 @router.get("/checkout/rates")
