@@ -18,7 +18,7 @@ Commerce infrastructure for AI agents. 68 retailers, 38 verified active across 8
 - 8 countries (AR, BR, CL, CO, FR, IT, MX, PE)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
 - 22 curated MCP tools (Shop · Intel · Account; 46 legacy)
-- 34 market indicators (shelf moat + public API enrichment)
+- 34 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
 - Pricing (ICP: AI Agent Builders — NOT procurement operators): Free $0 (1,000 req/día), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout for embedded agents), Enterprise custom
@@ -43,12 +43,19 @@ Nuna Orgánica, Xray Chipped PE
 - **Cross-Border**: Single interface for 38 verified retailers.
 - **Data Moat**: Collector every 4h. Historical snapshots, inflation, 34 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru).
-- **Open Source**: MIT. pip install cli-market-world-world.
+- **Open Source**: MIT. pip install cli-market-world.
 
 ## Quick start (developers)
 
-1. `pip install cli-market-world-world`
+1. `pip install cli-market-world`
 2. `market register` — free API key (or `market login` if you have credentials)
 3. `market search "leche" --country PE`
-4. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`
-5. Config snippets: https://cli-market.dev/tools
+4. Intelligence: `market intel inflation -c PE` · `market intel indicators -c PE`
+5. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`
+6. Config snippets: https://cli-market.dev/tools
+
+## Billing (Build Pro)
+
+- Web: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)
+- CLI: `market upgrade` → POST /billing/paypal
+- After pay: `market whoami` · `market account`

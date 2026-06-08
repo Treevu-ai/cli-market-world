@@ -8,14 +8,14 @@ import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 const BENEFITS_ES = [
   { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} precios de góndola actualizados cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
   { icon: "📐", text: "Precios normalizados por kg/L para comparar categorías entre cadenas y países" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} indicadores de mercado: spread entre cadenas, inflación real, tendencias históricas` },
+  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} indicadores intel: spread entre cadenas, inflación real, tendencias (CLI: market intel)` },
   { icon: "🌎", text: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países — sin scraping, APIs públicas de catálogo` },
 ];
 
 const BENEFITS_EN = [
   { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} shelf prices refreshed every ${MARKET_STATS.pricesRefreshHours}h — not 30-day-lagged estimates` },
   { icon: "📐", text: "Prices normalized per kg/L to compare categories across chains and countries" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} market indicators: chain spread, real inflation, historical trends` },
+  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} intel indicators: chain spread, real inflation, historical trends (CLI: market intel)` },
   { icon: "🌎", text: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} countries — no scraping, public catalog APIs` },
 ];
 
