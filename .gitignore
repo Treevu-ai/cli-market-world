@@ -1,7 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
-.vercel
+
 stores_curated.csv
 cli_market.egg-info/
 dist/

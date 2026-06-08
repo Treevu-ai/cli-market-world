@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Configure www.cli-market.dev -> https://cli-market.dev (301) on Cloudflare.
 
-Root cause: www currently proxies to a stale Vercel origin (DEPLOYMENT_NOT_FOUND).
-This script adds a zone-level dynamic redirect so requests never reach Vercel.
+Ensures www always redirects to the apex site (Cloudflare Pages: cli-market-world).
 
 Usage:
   set CLOUDFLARE_API_TOKEN=...

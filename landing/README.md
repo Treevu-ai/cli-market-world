@@ -1,6 +1,6 @@
 # Landing (cli-market.dev)
 
-Static Next.js export → Cloudflare Pages.
+Static Next.js export → **Cloudflare Pages** (`cli-market-world` → https://cli-market.dev).
 
 ## Build
 
@@ -11,6 +11,23 @@ npm install
 npm run build
 # output: landing/out/
 ```
+
+## Deploy (Cloudflare Pages)
+
+From repo root (needs `CLOUDFLARE_API_TOKEN`):
+
+```powershell
+$env:CLOUDFLARE_API_TOKEN = "..."
+.\ops\deploy_landing.ps1
+```
+
+Or from `landing/` after build:
+
+```bash
+CLOUDFLARE_API_TOKEN=... npm run deploy
+```
+
+CI: push to `main` with changes under `landing/` runs `.github/workflows/deploy-landing-cloudflare.yml`.
 
 ## Env (Cloudflare Pages)
 
