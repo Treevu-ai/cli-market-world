@@ -1,5 +1,12 @@
 mcp-name: io.github.Treevu-ai/cli-market-world
 
+<!-- readme-hero -->
+<div align="center">
+
+<img src="assets/readme-hero.gif" alt="CLI MARKET" width="100%" />
+
+</div>
+
 # 🛒 CLI Market
 
 [![PyPI Downloads](https://img.shields.io/pepy/dt/cli-market?label=downloads&color=00d75f&logo=pypi)](https://pepy.tech/projects/cli-market-world)
