@@ -42,6 +42,26 @@ MOCK_FUNNEL = {
     "funnel_steps": [],
 }
 
+MOCK_ACTIVATION = {
+    "window_days": 30,
+    "subscription_requests": {
+        "pending_auto": 0,
+        "pending_manual": 0,
+        "activated": 0,
+        "total": 0,
+    },
+    "activated_events": {
+        "webhook": 0,
+        "manual": 0,
+        "other": 0,
+        "unique_users": 0,
+        "total": 0,
+    },
+    "webhook_share": None,
+    "unified_webhook": True,
+    "conversion": {"webhook_of_activated": None},
+}
+
 MOCK_DASHBOARD = {
     "kpis": {
         "coverage_7d_pct": 55.0,
@@ -120,9 +140,10 @@ def test_dashboard_go_live_endpoint(mock_summary, monkeypatch):
     assert r.json()["overall_status"] == "healthy"
 
 
+@patch("market_golive.activation_summary", return_value=MOCK_ACTIVATION)
 @patch("market_golive.funnel_summary")
 @patch("market_golive.adoption_summary")
-def test_healthy_go_live(mock_adoption, mock_funnel):
+def test_healthy_go_live(mock_adoption, mock_funnel, mock_activation):
     from market_golive import go_live_summary
 
     mock_adoption.return_value = {
