@@ -24,3 +24,22 @@ def load_repo_env() -> None:
             value = value.strip().strip('"').strip("'")
             if key and key not in os.environ:
                 os.environ[key] = value
+
+    # Windows user-level vars (Cursor subprocess may not inherit User scope).
+    if os.name == "nt":
+        for key in (
+            "SLACK_BOT_TOKEN",
+            "SLACK_CHANNEL_COMMAND_CONTROL",
+            "MARKET_API_TOKEN",
+            "CLOUDFLARE_API_TOKEN",
+        ):
+            if os.getenv(key):
+                continue
+            try:
+                import ctypes
+
+                buf = ctypes.create_unicode_buffer(8192)
+                if ctypes.windll.kernel32.GetEnvironmentVariableW(key, buf, 8192):
+                    os.environ[key] = buf.value
+            except Exception:
+                pass
