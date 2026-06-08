@@ -1801,7 +1801,7 @@ def cmd_share(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade via PayPal subscription (Pro $39 — auto-activate webhook). Primary paid tier for AI Agent Builders ICP."""
+    """Upgrade via PayPal subscription (Pro $39 — auto-activate webhook). Same rail as landing /billing/pro-checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
     plan = (getattr(args, "plan", None) or "").strip().lower()
@@ -1833,11 +1833,14 @@ def cmd_upgrade(args):
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
         return
+    web_hint = "https://cli-market.dev/#pricing"
     console.print(Panel.fit(
         f"[bold #00FF88]CLI Market {label}[/]\n\n"
         f"{data.get('message', '')}\n\n"
         f"[cyan underline]{url}[/]\n\n"
-        + (f"[dim]{'Se activa al confirmar en PayPal. Luego: market whoami' if es else 'Activates on PayPal confirm. Then: market whoami'}[/]"),
+        + (f"[dim]Se activa al confirmar en PayPal. Luego: market whoami\nWeb (Yape/MP): {web_hint}[/]"
+           if es else
+           f"[dim]Activates on PayPal confirm. Then: market whoami\nWeb (Yape/MP): {web_hint}[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))

@@ -30,11 +30,23 @@ export default function ProcurePricingPanel() {
       id="procure"
       className="brand-mode-operations scroll-mt-24 text-left"
     >
-      <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto mb-10 text-center">
-        {isES
-          ? `${MARKET_STATS.retailersVerified} retailers verificados · misma API que Build · dashboard Procure incluido.`
-          : `${MARKET_STATS.retailersVerified} verified retailers · same API as Build · Procure dashboard included.`}
-      </p>
+      <div className="max-w-2xl mx-auto mb-10 space-y-4 text-center">
+        <p className="text-sm text-[var(--cm-on-surface-variant)]">
+          {isES
+            ? `${MARKET_STATS.retailersVerified} retailers verificados · misma API que Build · dashboard Procure incluido.`
+            : `${MARKET_STATS.retailersVerified} verified retailers · same API as Build · Procure dashboard included.`}
+        </p>
+        <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
+          <p className="font-semibold text-white mb-1">
+            {isES ? "¿Build Pro o Procure?" : "Build Pro or Procure?"}
+          </p>
+          <p>
+            {isES
+              ? "Build Pro ($39) es para quien integra la API/MCP en código. Procure es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
+              : "Build Pro ($39) is for developers integrating the API/MCP. Procure is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
+          </p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-6xl mx-auto mb-10">
         {PROCURE_PLANS.map((plan, i) => (

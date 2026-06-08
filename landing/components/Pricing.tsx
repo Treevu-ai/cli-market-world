@@ -13,6 +13,7 @@ import {
   hashForAudience,
   type PricingAudience,
 } from "@/lib/pricingAudiences";
+import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
 
 type Billing = "monthly" | "annual";
 
@@ -221,13 +222,16 @@ export default function Pricing() {
 
   useEffect(() => {
     const syncFromLocation = () => {
-      const next = resolvePricingAudience();
+      const { state, audience: returnAudience } = readPaymentReturnState();
+      const next = returnAudience === "procure" && state ? "procure" : resolvePricingAudience();
       setAudience(next);
       const hash = window.location.hash.replace("#", "");
       if (hash === "pro-checkout" || hash === "pricing-build" || hash === "pricing") {
         scrollToPricingSection(hash === "pro-checkout" ? "pro-checkout" : undefined);
       } else if (hash === "procure" || hash === "listed" || hash === "retailers") {
         scrollToPricingSection(hash === "retailers" ? "listed" : hash);
+      } else if (state) {
+        scrollToPricingSection(returnAudience === "procure" ? "procure" : undefined);
       }
     };
     syncFromLocation();
@@ -249,6 +253,8 @@ export default function Pricing() {
         <p className="section-eyebrow section-eyebrow-action mb-4">
           {isES ? "Planes" : "Plans"}
         </p>
+
+        <PaymentReturnBanner />
 
         <div
           role="tablist"

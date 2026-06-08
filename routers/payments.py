@@ -244,25 +244,32 @@ async def _handle_paypal_event(event: dict) -> dict:
 
 
 @router.post("/checkout/yape")
-def checkout_yape(authorization: str | None = Header(None)):
+def checkout_yape(authorization: str | None = Header(None), body: dict | None = Body(None)):
     username = require_user(authorization)
-    _, total, order_id = _prepare_pending_order(username, "yape")
-    yape_number = os.getenv("YAPE_PLIN_NUMBER", "")
-    qr_data = yape_number or f"yape-{order_id.lower()}"
-    if yape_number:
-        qr_data = f"yape://pay?phone={yape_number}&amount={total:.2f}&ref={order_id}"
+    payload = body or {}
+    method = (payload.get("payment_method") or "yape").strip().lower()
+    if method not in ("yape", "plin"):
+        method = "yape"
+    _, total, order_id = _prepare_pending_order(username, method)
+    phone = _wallet_payment_phone()
+    lang = (payload.get("lang") or "es").strip().lower()[:2]
+    wallet = _wallet_manual_transfer_fields(
+        method=method,
+        amount_pen=float(total),
+        reference=order_id,
+        lang=lang,
+        phone=phone,
+    )
     return {
         "order_id": order_id,
         "total": total,
         "currency": "PEN",
-        "payment_method": "yape",
+        "amount_pen": float(total),
+        "request_id": order_id,
         "qr_reference": order_id,
-        "qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={qr_data}",
         "status": "pending",
-        "message": (
-            f"Escanea con Yape/Plin. Monto: S/ {total:.2f}. Referencia: {order_id}. "
-            "Confirmación manual hasta integrar agregador."
-        ),
+        "auto_activate": False,
+        **wallet,
     }
 
 
@@ -697,6 +704,69 @@ def _pro_price_pen() -> float:
     if pen_per_usd <= 0:
         pen_per_usd = 3.7
     return round(float(PRO_PRICE_USD) * pen_per_usd, 2)
+
+
+def _wallet_payment_phone() -> str:
+    return (os.getenv("YAPE_PLIN_NUMBER") or os.getenv("PLIN_NUMBER") or "").strip()
+
+
+def _wallet_manual_transfer_fields(
+    *,
+    method: str,
+    amount_pen: float,
+    reference: str,
+    lang: str,
+    phone: str = "",
+) -> dict:
+    """Yape/Plin: in-app transfer (phone + amount + ref). QR deep-links are unreliable from web."""
+    payment_label = "plin" if method == "plin" else "yape"
+    app = "Plin" if method == "plin" else "Yape"
+    verb_es = "Transfiere con Plin" if method == "plin" else "Yapea"
+    verb_en = "Transfer with Plin" if method == "plin" else "Send via Yape"
+    phone_line_es = (
+        f"{verb_es} al número {phone}."
+        if phone
+        else "Usa el número que te enviamos por email (hello@cli-market.dev)."
+    )
+    phone_line_en = (
+        f"{verb_en} to {phone}."
+        if phone
+        else "Use the phone number we email you (hello@cli-market.dev)."
+    )
+    if lang == "es":
+        steps = [
+            f"Abre la app {app} en tu celular.",
+            phone_line_es,
+            f"Monto exacto: S/ {amount_pen:.2f}",
+            f"En mensaje o nota escribe: {reference}",
+            "Pro se activa ≤24 h hábiles tras confirmar el pago.",
+        ]
+        message = (
+            f"Paga con {app}: S/ {amount_pen:.2f} · ref {reference}. "
+            + (f"Número: {phone}. " if phone else "")
+            + "Copia los datos abajo o revisa tu email."
+        )
+    else:
+        steps = [
+            f"Open the {app} app on your phone.",
+            phone_line_en,
+            f"Exact amount: S/ {amount_pen:.2f}",
+            f"In message or note write: {reference}",
+            "Pro activates within 24 business hours after payment confirmation.",
+        ]
+        message = (
+            f"Pay with {app}: S/ {amount_pen:.2f} · ref {reference}. "
+            + (f"Phone: {phone}. " if phone else "")
+            + "Copy the details below or check your email."
+        )
+    return {
+        "payment_method": payment_label,
+        "payment_mode": "manual_transfer",
+        "payment_phone": phone or None,
+        "manual_steps": steps,
+        "message": message,
+        "qr_url": None,
+    }
 
 
 def _parse_pro_request_ref(external_reference: str) -> str | None:
@@ -1151,13 +1221,13 @@ def _start_pro_qr_checkout(
     payment_label = "plin" if method == "plin" else "yape"
     req = db_create_subscription_request(username, email, f"{payment_label}:S/{amount_pen:.2f}")
     request_id = req["id"]
-    yape_number = os.getenv("YAPE_PLIN_NUMBER", "")
-    qr_data = yape_number or f"{payment_label}-{request_id.lower()}"
-    if yape_number:
-        qr_data = f"yape://pay?phone={yape_number}&amount={amount_pen:.2f}&ref={request_id}"
-    qr_url = (
-        "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
-        + qr_data.replace(" ", "%20")
+    phone = _wallet_payment_phone()
+    wallet = _wallet_manual_transfer_fields(
+        method=method,
+        amount_pen=amount_pen,
+        reference=request_id,
+        lang=lang,
+        phone=phone,
     )
 
     sub_mail = send_pro_payment_email(
@@ -1177,35 +1247,20 @@ def _start_pro_qr_checkout(
 
     _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
 
-    if lang == "es":
-        message = (
-            f"Escanea con {payment_label.capitalize()}. Monto: S/ {amount_pen:.2f} "
-            f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}. "
-            "Pro se activa ≤24 h tras confirmar el pago."
-        )
-    else:
-        message = (
-            f"Scan with {payment_label.capitalize()}. Amount: S/ {amount_pen:.2f} "
-            f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}. "
-            "Pro activates within 24h after payment confirmation."
-        )
-
     return {
         "ok": True,
         "request_id": request_id,
         "username": username,
         "email": email,
-        "payment_method": payment_label,
         "amount_usd": float(PRO_PRICE_USD),
         "amount_pen": amount_pen,
         "currency": "PEN",
         "qr_reference": request_id,
-        "qr_url": qr_url,
         "auto_activate": False,
         "email_sent": sub_mail.get("sent", False),
         "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
         "notify_sent": notify_mail.get("sent", False),
-        "message": message,
+        **wallet,
     }
 
 
@@ -1440,11 +1495,11 @@ async def _start_procure_subscription(
     prefix = cfg["request_prefix"]
     return_url = os.getenv(
         "PROCURE_SUBSCRIBE_RETURN_URL",
-        "https://procure-copilot.contacto-8e4.workers.dev/dashboard?sub=success",
+        "https://cli-market.dev/?sub=success&audience=procure#procure",
     )
     cancel_url = os.getenv(
         "PROCURE_SUBSCRIBE_CANCEL_URL",
-        "https://cli-market.dev/#procure?sub=cancelled",
+        "https://cli-market.dev/?sub=cancelled&audience=procure#procure",
     )
 
     token = await _get_access_token()
@@ -1537,7 +1592,20 @@ async def _start_paypal_subscription(
     )
 
     plan_l = "starter" if plan == "starter" else "pro"
-    result = await create_subscription(username=username, plan=plan_l)
+    return_url = os.getenv(
+        "PRO_SUBSCRIBE_RETURN_URL",
+        "https://cli-market.dev/?sub=success#pricing",
+    )
+    cancel_url = os.getenv(
+        "PRO_SUBSCRIBE_CANCEL_URL",
+        "https://cli-market.dev/?sub=cancelled#pricing",
+    )
+    result = await create_subscription(
+        username=username,
+        plan=plan_l,
+        return_url=return_url,
+        cancel_url=cancel_url,
+    )
     if "approve_url" not in result:
         return {"error": result.get("error", "PayPal error"), "details": result}
     sub_id = result["subscription_id"]
