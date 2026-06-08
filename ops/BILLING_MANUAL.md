@@ -94,9 +94,18 @@ Si el widget embebido muestra **Sold out / Agotado**:
 
 **SLA:** ≤24 h hábiles para Yape/Plin y fallback hosted (`docs/ops/phase0-mitigation.md`).
 
+Atajo (recomendado tras confirmar Yape/Plin):
+
+```bash
+python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX --bitacora
+```
+
+Equivalente directo:
+
 ```bash
 python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
-python3 ops/activate_pro.py USERNAME --email cliente@example.com
+python3 ops/activate_pro.py --email cliente@example.com
+python3 ops/slack_cli.py activate-pro --email cliente@example.com --bitacora
 ```
 
 Journey completo: `ops/E2E_CLIENT_JOURNEY.md` · Sandbox: `ops/PAYPAL_SANDBOX.md`

@@ -48,7 +48,8 @@ market upgrade          # POST /billing/paypal — mismo rail PayPal REST
 - **Automática (PayPal/MP):** webhook `BILLING.SUBSCRIPTION.ACTIVATED` → `db_set_subscription(username, "pro")`
 - **Manual (Yape/Plin / fallback hosted button):** email a `hello@cli-market.dev` + ops:
 ```bash
-python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
+python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX --bitacora
+# o: python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX
 ```
 
 ### 6. Cliente verifica
