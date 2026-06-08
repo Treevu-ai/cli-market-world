@@ -8,14 +8,43 @@ on:
       - "cloudflare-pages.json"
       - ".github/workflows/deploy-landing-cloudflare.yml"
   workflow_dispatch:
+    inputs:
+      wrangler_deploy:
+        description: "Upload landing/out via wrangler (needs valid CLOUDFLARE_API_TOKEN)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: landing/package-lock.json
+
+      - name: Build static export
+        working-directory: landing
+        run: |
+          npm ci
+          npm run build
+
+      - name: Landing build OK
+        run: |
+          echo "Build passed. Production deploy is handled by Cloudflare Pages Git integration (check run: Cloudflare Pages)."
+
+  deploy-wrangler:
+    if: github.event_name == 'workflow_dispatch' && inputs.wrangler_deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -62,8 +91,25 @@ jobs:
           echo "id=$ID" >> "$GITHUB_OUTPUT"
           echo "Resolved account ID from API token"
 
+      - name: Verify Cloudflare API token (Pages)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ steps.cf_account.outputs.id }}
+        run: |
+          RESP=$(curl -sS -o /tmp/cf.json -w "%{http_code}" \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/pages/projects/cli-market-world")
+          if [ "$RESP" != "200" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN cannot read Pages project (HTTP $RESP). Rotate token: Account · Cloudflare Pages · Edit."
+            cat /tmp/cf.json | jq -r '.errors[]?.message // .' 2>/dev/null || cat /tmp/cf.json
+            exit 1
+          fi
+          echo "Token can access Pages project cli-market-world"
+
       - name: Deploy to Cloudflare Pages (wrangler)
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf_account.outputs.id }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ steps.cf_account.outputs.id }}
