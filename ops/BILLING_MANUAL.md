@@ -12,7 +12,7 @@ Sin integración PayPal directa. Flujo:
 
 ```bash
 # Link de pago — PayPal Hosted Button (recomendado)
-PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/B6YVFTG4MA73J
+PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/PLB-K47XCNUKG24P
 PRO_PRICE_LABEL=$39/month
 PRO_PRICE_USD=39
 
@@ -34,7 +34,7 @@ Sin SMTP: el endpoint devuelve el `payment_link` en JSON/CLI pero no envía emai
 
 Si el widget embebido muestra **Sold out / Agotado**:
 
-1. PayPal Business → **Payment links & buttons** → botón `B6YVFTG4MA73J`
+1. PayPal Business → **Payment links & buttons** → link `PLB-K47XCNUKG24P` (legacy: `B6YVFTG4MA73J` @ $49 — no usar)
 2. Verificar que el producto/plan Pro tenga **inventario ilimitado** o stock > 0
 3. Mientras tanto, el CTA principal en landing es el link directo `PRO_PAYMENT_URL` (botón verde post-solicitud)
 
