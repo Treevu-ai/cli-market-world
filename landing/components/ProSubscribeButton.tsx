@@ -176,21 +176,21 @@ export default function ProSubscribeButton() {
       <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/50 p-2.5">
         {isES ? (
           <>
-            Plan Pro: <strong>USD 39/mes</strong>, renovación automática vía PayPal. Puede cancelar en cualquier
-            momento desde su cuenta PayPal o escribiendo a{" "}
+            Plan Pro: <strong>USD 39/mes</strong>. Pagos y facturación por {MARKET_STATS.paymentsLabel} — mismos
+            canales que el checkout retail. Puede cancelar escribiendo a{" "}
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . Facturación en USD — Sinapsis Innovadora S.A.C. (RUC 20613045563).
+            . Comprobantes en USD — Sinapsis Innovadora S.A.C. (RUC 20613045563).
           </>
         ) : (
           <>
-            Pro plan: <strong>USD 39/mo</strong>, auto-renewal via PayPal. Cancel anytime from your PayPal account or
-            email{" "}
+            Pro plan: <strong>USD 39/mo</strong>. Billing via {MARKET_STATS.paymentsLabel} — same channels as retail
+            checkout. Cancel anytime by emailing{" "}
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
             </a>
-            . USD invoicing — Sinapsis Innovadora S.A.C. (tax ID 20613045563).
+            . USD receipts — Sinapsis Innovadora S.A.C. (tax ID 20613045563).
           </>
         )}
       </p>
@@ -213,8 +213,8 @@ export default function ProSubscribeButton() {
       </button>
       <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
         {isES
-          ? `${MARKET_STATS.paymentsLabel} · Checkout de productos vía MP/Yape con tier Pro`
-          : `${MARKET_STATS.paymentsLabel} · Product checkout via MP/Yape on Pro tier`}
+          ? `${MARKET_STATS.paymentsLabel} · Mismos canales para suscripción Pro y checkout retail`
+          : `${MARKET_STATS.paymentsLabel} · Same channels for Pro billing and retail checkout`}
       </p>
     </div>
   );

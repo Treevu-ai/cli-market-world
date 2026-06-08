@@ -18,7 +18,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cómo funciona el pago?",
-        a: `Aceptamos ${MARKET_STATS.paymentsLabel}. Checkout con tarjeta vía PayPal para pagos internacionales, y QR de Yape/Plin para pagos locales en Perú. La confirmación actualiza tu tier y orden automáticamente.`,
+        a: `Aceptamos ${MARKET_STATS.paymentsLabel}. Los mismos canales aplican a suscripciones Pro, facturación de Sinapsis Innovadora S.A.C. y checkout retail. La confirmación actualiza tu tier y orden automáticamente.`,
       },
       {
         q: "¿Mis agentes pueden usar esto sin intervención humana?",
@@ -30,7 +30,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "Build (API/MCP): Free 1.000 consultas/día; Pro USD 39/mes (10.000/día, alertas, full MCP + checkout PayPal). Enterprise a medida. Intelligence (datos comerciales): lista de espera en la sección Intelligence. Listado retailer: gratis siempre.",
+        a: `Build (API/MCP): Free 1.000 consultas/día; Pro USD 39/mes (10.000/día, alertas, full MCP + checkout ${MARKET_STATS.paymentsLabel}). Enterprise a medida. Intelligence (datos comerciales): lista de espera en la sección Intelligence. Listado retailer: gratis siempre.`,
       },
     ];
   }
@@ -46,7 +46,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How does payment work?",
-      a: `${MARKET_STATS.paymentsLabel}. Card checkout via PayPal for international payments, and Yape/Plin QR for local payments in Peru. Confirmation updates your tier and order automatically.`,
+      a: `${MARKET_STATS.paymentsLabel}. The same channels apply to Pro subscriptions, Sinapsis Innovadora S.A.C. billing, and retail checkout. Confirmation updates your tier and order automatically.`,
     },
       {
         q: "Can my agents use this autonomously?",
@@ -58,7 +58,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How much does it cost?",
-      a: "Build (API/MCP): Free 1,000 requests/day; Pro USD 39/mo (10,000/day, alerts, full MCP + PayPal checkout). Enterprise custom. Intelligence (commercial data): waitlist in the Intelligence section. Retailer listing: free forever.",
+      a: `Build (API/MCP): Free 1,000 requests/day; Pro USD 39/mo (10,000/day, alerts, full MCP + checkout ${MARKET_STATS.paymentsLabel}). Enterprise custom. Intelligence (commercial data): waitlist in the Intelligence section. Retailer listing: free forever.`,
     },
   ];
 }

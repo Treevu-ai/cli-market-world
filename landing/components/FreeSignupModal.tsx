@@ -170,12 +170,12 @@ export default function FreeSignupModal({
             <div>
               <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Pro</p>
               <h3 className="text-lg font-bold text-white">
-                {isES ? "Checkout PayPal — USD 39/mes" : "PayPal checkout — USD 39/mo"}
+                {isES ? "Pro — USD 39/mes" : "Pro — USD 39/mo"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES
-                  ? "Checkout PayPal en la sección de planes (Pro). Recomendado: market register antes."
-                  : "PayPal checkout in the plans section (Pro). Recommended: run market register first."}
+                  ? `${MARKET_STATS.paymentsLabel} en la sección de planes. Recomendado: market register antes.`
+                  : `${MARKET_STATS.paymentsLabel} in the plans section. Recommended: run market register first.`}
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
