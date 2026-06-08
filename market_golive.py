@@ -712,6 +712,8 @@ def render_go_live_html(*, days: int = 30, dashboard_data: dict[str, Any] | None
     data = go_live_summary(days=days, dashboard_data=dashboard_data)
     act = data["kpis"]["activation"]
     rev = data["kpis"]["revenue"]
+    pac = data["kpis"]["pro_activation"]
+    pr = data["kpis"]["pricing"]
     moat = data["kpis"]["data_moat"]
 
     status_color = {
