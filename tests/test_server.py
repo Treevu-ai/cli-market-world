@@ -757,7 +757,40 @@ def test_intel_inflation_country_filter_sql():
     assert r.status_code == 200, r.text
 
 
-def test_pro_checkout_yape_returns_manual_transfer(monkeypatch):
+def test_pro_checkout_yape_routes_to_mercadopago(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+
+    async def fake_pref(total, currency, ref, **kwargs):
+        return {
+            "checkout_url": "https://mp.test/checkout-yape",
+            "preference_id": "pref-yape",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
+    r = client.post(
+        "/billing/pro-checkout",
+        json={"email": "yape-pro@test.com", "payment_method": "yape", "lang": "es"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["payment_method"] == "yape"
+    assert data["payment_rail"] == "mercadopago"
+    assert data["payment_mode"] == "mercadopago_checkout"
+    assert data["checkout_url"] == "https://mp.test/checkout-yape"
+    assert data["request_id"].startswith("PRO-")
+    assert data["auto_activate"] is True
+
+
+def test_pro_checkout_yape_manual_transfer_fallback(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
@@ -769,7 +802,12 @@ def test_pro_checkout_yape_returns_manual_transfer(monkeypatch):
     )
     r = client.post(
         "/billing/pro-checkout",
-        json={"email": "yape-pro@test.com", "payment_method": "yape", "lang": "es"},
+        json={
+            "email": "yape-manual@test.com",
+            "payment_method": "yape",
+            "lang": "es",
+            "manual_transfer": True,
+        },
     )
     assert r.status_code == 200
     data = r.json()
@@ -777,7 +815,6 @@ def test_pro_checkout_yape_returns_manual_transfer(monkeypatch):
     assert data["payment_method"] == "yape"
     assert data["payment_mode"] == "manual_transfer"
     assert isinstance(data.get("manual_steps"), list) and len(data["manual_steps"]) >= 3
-    assert data["request_id"].startswith("PRO-")
     assert data["auto_activate"] is False
 
 

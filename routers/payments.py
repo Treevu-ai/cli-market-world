@@ -1356,20 +1356,29 @@ async def _start_pro_mercadopago_checkout(
     *,
     lang: str,
     funnel_source: str,
+    wallet_method: str = "",
 ) -> dict:
     from market_connectors.mercadopago_payments import create_preference
     from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
     from market_connectors.paypal_payments import PRO_PRICE_USD
 
     amount_pen = _pro_price_pen()
-    req = db_create_subscription_request(username, email, "mercadopago:pending")
+    wallet = (wallet_method or "").strip().lower()
+    pay_note = f"mercadopago:pending"
+    if wallet in ("yape", "plin"):
+        pay_note = f"{wallet}:mercadopago:pending"
+    req = db_create_subscription_request(username, email, pay_note)
     request_id = req["id"]
 
+    mp_return = f"https://cli-market.dev/?mp=success&ref={request_id}#pricing"
     mp = await create_preference(
         amount_pen,
         "PEN",
         f"CLI-Market-{request_id}",
         title="CLI Market Pro",
+        success_url=mp_return,
+        pending_url=f"https://cli-market.dev/?mp=pending&ref={request_id}#pricing",
+        failure_url=f"https://cli-market.dev/?mp=failure&ref={request_id}#pricing",
     )
     if not mp.get("checkout_url"):
         raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
@@ -1392,23 +1401,40 @@ async def _start_pro_mercadopago_checkout(
 
     _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
 
+    wallet_app = "Yape" if wallet == "yape" else "Plin" if wallet == "plin" else ""
     if lang == "es":
-        message = (
-            f"Complete el pago en Mercado Pago — S/ {amount_pen:.2f} "
-            f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}."
-        )
+        if wallet_app:
+            message = (
+                f"Abre Mercado Pago y paga con {wallet_app} — S/ {amount_pen:.2f} "
+                f"(USD {PRO_PRICE_USD:.0f}/mes). Pro se activa en minutos. Ref: {request_id}."
+            )
+        else:
+            message = (
+                f"Complete el pago en Mercado Pago — S/ {amount_pen:.2f} "
+                f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}."
+            )
     else:
-        message = (
-            f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
-            f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}."
-        )
+        if wallet_app:
+            message = (
+                f"Open Mercado Pago and pay with {wallet_app} — S/ {amount_pen:.2f} "
+                f"(USD {PRO_PRICE_USD:.0f}/mo). Pro activates in minutes. Ref: {request_id}."
+            )
+        else:
+            message = (
+                f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
+                f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}."
+            )
 
+    display_method = wallet if wallet in ("yape", "plin") else "mercadopago"
     return {
         "ok": True,
         "request_id": request_id,
         "username": username,
         "email": email,
-        "payment_method": "mercadopago",
+        "payment_method": display_method,
+        "payment_rail": "mercadopago",
+        "payment_mode": "mercadopago_checkout",
+        "wallet_checkout": bool(wallet_app),
         "amount_usd": float(PRO_PRICE_USD),
         "amount_pen": amount_pen,
         "currency": "PEN",
@@ -1438,8 +1464,6 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 status_code=400,
                 detail=f"payment_method must be one of: {', '.join(sorted(_PRO_BILLING_METHODS))}",
             )
-        if not email or not _EMAIL_RE.match(email):
-            raise HTTPException(status_code=400, detail="valid email is required")
 
         auth_user = ""
         if authorization:
@@ -1447,6 +1471,11 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 auth_user = require_user(authorization)
             except HTTPException:
                 auth_user = ""
+
+        if not email and auth_user:
+            email = (db_get_user_email(auth_user) or "").strip().lower()
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
 
         username = _resolve_pro_username(
             email,
@@ -1519,21 +1548,28 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
             out["approve_url"] = out.get("payment_link")
             return out
 
-        if method in ("yape", "plin"):
+        manual_transfer = bool(body.get("manual_transfer"))
+
+        if method in ("yape", "plin") and manual_transfer:
             return _start_pro_qr_checkout(
                 username,
                 email,
                 method=method,
                 lang=lang,
-                funnel_source=f"landing_pro_checkout_{method}",
+                funnel_source=f"landing_pro_checkout_{method}_manual",
             )
 
-        return await _start_pro_mercadopago_checkout(
-            username,
-            email,
-            lang=lang,
-            funnel_source="landing_pro_checkout_mercadopago",
-        )
+        if method in ("yape", "plin", "mercadopago"):
+            wallet_method = method if method in ("yape", "plin") else ""
+            return await _start_pro_mercadopago_checkout(
+                username,
+                email,
+                lang=lang,
+                funnel_source=f"landing_pro_checkout_{method}",
+                wallet_method=wallet_method,
+            )
+
+        raise HTTPException(status_code=400, detail=f"unsupported payment_method: {method}")
     except HTTPException:
         raise
     except ValueError as e:

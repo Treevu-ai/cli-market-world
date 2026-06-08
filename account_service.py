@@ -104,7 +104,14 @@ def upgrade_next_step(tier: str, *, lang: str = "es") -> dict[str, Any]:
 
 def _is_auto_activate_link(payment_link: str) -> bool:
     link = (payment_link or "").lower()
-    return "billing/subscriptions" in link or "/subscriptions?" in link
+    return (
+        "billing/subscriptions" in link
+        or "/subscriptions?" in link
+        or "mercadopago.com" in link
+        or "mercadolibre" in link
+        or "mercadopago:pending" in link
+        or ":mercadopago:pending" in link
+    )
 
 
 def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, Any]:
@@ -128,14 +135,19 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
     auto = _is_auto_activate_link(pending.get("payment_link") or "")
     if auto:
         label = "Procure" if is_procure_req else ("Starter" if is_starter else "Pro")
+        mp_pending = "mercadopago" in (pending.get("payment_link") or "").lower()
         return {
             "state": "starter_pending_auto" if is_starter else "pro_pending_auto",
             "activation": "auto",
             "request_id": req_id,
             "approve_url": pending.get("payment_link"),
             "message": (
-                f"{label} pendiente: confirme en PayPal — activación en segundos."
+                f"{label} pendiente: complete el pago en Mercado Pago — activación en minutos."
+                if es and mp_pending
+                else f"{label} pendiente: confirme en PayPal — activación en segundos."
                 if es
+                else f"{label} pending: complete Mercado Pago checkout — activates in minutes."
+                if mp_pending
                 else f"{label} pending: confirm on PayPal — activates in seconds."
             ),
         }

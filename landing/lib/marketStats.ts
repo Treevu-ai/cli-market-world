@@ -28,7 +28,7 @@ export const MARKET_STATS = {
   packageVersion: "1.9.6",
   ogImageUrl: "/og.png",
   license: "MIT",
-  paymentsLabel: "PayPal · Mercado Pago · QR (Yape/Plin)",
+  paymentsLabel: "PayPal · Mercado Pago · Yape/Plin",
   businessLines: 6,
   retailersPhraseEn: "68 retailers, 38 verified active",
   retailersPhraseEs: "68 retailers, 38 verificados activos",
