@@ -1003,7 +1003,7 @@ async def _start_paypal_subscription(
 
 @router.post("/billing/paypal")
 async def billing_paypal(authorization: str | None = Header(None)):
-    """PayPal Subscription for Pro plan ($79/mo) — authenticated CLI path."""
+    """PayPal Subscription for Pro plan ($39/mo) — authenticated CLI path."""
     username = require_user(authorization)
     try:
         email = db_get_user_email(username) or f"{username}@cli-market.dev"

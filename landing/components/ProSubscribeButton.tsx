@@ -147,8 +147,8 @@ export default function ProSubscribeButton() {
               ? "Abrir link de pago →"
               : "Open payment link →"
             : isES
-              ? "Suscribirse en PayPal — $79/mes →"
-              : "Subscribe on PayPal — $79/mo →"}
+              ? "Suscribirse en PayPal — $39/mes →"
+              : "Subscribe on PayPal — $39/mo →"}
         </a>
 
         <p className="text-xs text-[var(--cm-on-surface-variant)]/60 leading-relaxed">
@@ -189,7 +189,7 @@ export default function ProSubscribeButton() {
       <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70 leading-relaxed rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/50 p-2.5">
         {isES ? (
           <>
-            Plan Pro: <strong>USD 79/mes</strong>, renovación automática vía PayPal. Puede cancelar en cualquier
+            Plan Pro: <strong>USD 39/mes</strong>, renovación automática vía PayPal. Puede cancelar en cualquier
             momento desde su cuenta PayPal o escribiendo a{" "}
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
@@ -198,7 +198,7 @@ export default function ProSubscribeButton() {
           </>
         ) : (
           <>
-            Pro plan: <strong>USD 79/mo</strong>, auto-renewal via PayPal. Cancel anytime from your PayPal account or
+            Pro plan: <strong>USD 39/mo</strong>, auto-renewal via PayPal. Cancel anytime from your PayPal account or
             email{" "}
             <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] underline">
               hello@cli-market.dev
@@ -221,8 +221,8 @@ export default function ProSubscribeButton() {
             ? "Preparando pago..."
             : "Preparing checkout..."
           : isES
-            ? "Obtener Pro — $79/mes"
-            : "Get Pro — $79/mo"}
+            ? "Obtener Pro — $39/mes"
+            : "Get Pro — $39/mo"}
       </button>
       <p className="text-xs text-center text-[var(--cm-on-surface-variant)]/60">
         {isES
