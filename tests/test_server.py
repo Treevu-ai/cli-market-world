@@ -744,6 +744,19 @@ def test_intel_inflation_with_snapshot_rows():
     assert data["items"][0]["n_products"] >= 1
 
 
+def test_intel_inflation_country_filter_sql():
+    """Regression: country filter must stay in WHERE, not after GROUP BY."""
+    db_save_user("admin", hash_password("market"), "test@test.com")
+    from market_core import db_create_api_key
+
+    key = db_create_api_key("admin", "read", "t")["key"]
+    r = client.get(
+        "/v1/intel/inflation?country=PE",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    assert r.status_code == 200, r.text
+
+
 def test_pro_checkout_yape_returns_qr(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(

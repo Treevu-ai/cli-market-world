@@ -239,8 +239,7 @@ def get_inflation(
         # Per (line, currency) pairs with recent data
         pair_sql = """SELECT line, currency, COUNT(*) as n
                       FROM price_snapshots
-                      WHERE price > 0 AND price < 999999 AND queried_at >= ?
-                      GROUP BY line, currency"""
+                      WHERE price > 0 AND price < 999999 AND queried_at >= ?"""
         params: list = [recent_cutoff]
         if country:
             store_keys = [k for k, s in STORES.items() if s.get("country") == country.upper()]
@@ -252,6 +251,7 @@ def get_inflation(
         if line:
             pair_sql += " AND line = ?"
             params.append(line)
+        pair_sql += " GROUP BY line, currency"
 
         pairs = db.execute(pair_sql, params).fetchall()
 
