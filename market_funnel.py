@@ -18,6 +18,19 @@ FUNNEL_EVENTS = frozenset(
         "starter_subscribe",
         "starter_request",
         "request_pro",
+        "procure_subscribe",
+        "activated",
+    }
+)
+
+_DIGEST_EVENTS = frozenset(
+    {
+        "register",
+        "first_search",
+        "starter_subscribe",
+        "starter_request",
+        "request_pro",
+        "procure_subscribe",
         "activated",
     }
 )
@@ -129,6 +142,52 @@ def _median_minutes(pairs: list[float]) -> float | None:
     if not pairs:
         return None
     return round(statistics.median(pairs), 1)
+
+
+def funnel_recent_events(*, hours: int = 24) -> list[dict[str, Any]]:
+    """Recent funnel rows for Slack digest (newest first)."""
+    ensure_funnel_schema()
+    hours = max(1, min(hours, 168))
+    since = (datetime.now(timezone.utc) - timedelta(hours=hours)).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT event, username, meta, created_at
+        FROM funnel_events
+        WHERE created_at >= ? AND event IN ({})
+        ORDER BY created_at DESC
+        """.format(",".join("?" * len(_DIGEST_EVENTS))),
+        (since, *_DIGEST_EVENTS),
+    ).fetchall()
+    db.close()
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        meta_raw = row["meta"] or "{}"
+        try:
+            meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
+        except json.JSONDecodeError:
+            meta = {}
+        out.append(
+            {
+                "event": row["event"],
+                "username": row["username"] or "",
+                "meta": meta if isinstance(meta, dict) else {},
+                "created_at": row["created_at"],
+            }
+        )
+    return out
+
+
+def funnel_digest_counts(*, hours: int = 24) -> dict[str, int]:
+    """Event counts in the digest window."""
+    counts = {e: 0 for e in _DIGEST_EVENTS}
+    for row in funnel_recent_events(hours=hours):
+        ev = row.get("event", "")
+        if ev in counts:
+            counts[ev] += 1
+    return counts
 
 
 def funnel_summary(*, days: int = 30) -> dict[str, Any]:

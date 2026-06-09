@@ -11,8 +11,10 @@ DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
 DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # #suscripciones-cli-pro
+DEFAULT_CHANNEL_FUNNEL = ""  # auto-resolve #funnel-cli-market when empty
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
 CLI_MARKET_PRO_CHANNEL_NAME = "suscripciones-cli-pro"
+FUNNEL_CHANNEL_NAME = "funnel-cli-market"
 
 MAX_SLACK_TEXT = 3900
 
@@ -76,6 +78,23 @@ def channel_cli_market_pro() -> str:
     raise ValueError(
         "Subscriptions channel not configured. Set SLACK_CHANNEL_CLI_MARKET_PRO "
         f"to the ID of #{CLI_MARKET_PRO_CHANNEL_NAME}, or grant channels:read to the bot."
+    )
+
+
+def channel_funnel() -> str:
+    explicit = (
+        os.getenv("SLACK_CHANNEL_FUNNEL", "").strip() or DEFAULT_CHANNEL_FUNNEL
+    )
+    if explicit:
+        return explicit
+    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
+    if token:
+        resolved = _resolve_channel_by_name(token, FUNNEL_CHANNEL_NAME)
+        if resolved:
+            return resolved
+    raise ValueError(
+        "Funnel channel not configured. Set SLACK_CHANNEL_FUNNEL "
+        f"to the ID of #{FUNNEL_CHANNEL_NAME}, or grant channels:read to the bot."
     )
 
 
@@ -221,6 +240,14 @@ def deliver_to_command_control(text: str) -> None:
         text,
         channel=channel_command_control(),
         webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""),
+    )
+
+
+def deliver_to_funnel(text: str) -> None:
+    deliver(
+        text,
+        channel=channel_funnel(),
+        webhook_url=os.getenv("SLACK_WEBHOOK_FUNNEL", ""),
     )
 
 

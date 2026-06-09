@@ -21,6 +21,7 @@ from slack_notify import (
     channel_bitacora,
     channel_cli_market_pro,
     channel_command_control,
+    channel_funnel,
     channel_publicaciones,
     channel_revisiones_cursor,
 )
@@ -81,9 +82,13 @@ def main() -> None:
     except ValueError as exc:
         print(f"  ⚠ Command & Control: {exc}")
     try:
-        channels.append(("CLI Market Pro", channel_cli_market_pro()))
+        channels.append(("Suscripciones", channel_cli_market_pro()))
     except ValueError as exc:
-        print(f"  ⚠ CLI Market Pro: {exc}")
+        print(f"  ⚠ Suscripciones: {exc}")
+    try:
+        channels.append(("Funnel", channel_funnel()))
+    except ValueError as exc:
+        print(f"  ⚠ Funnel: {exc}")
 
     for label, cid in channels:
         print(f"  {label} ({cid})")

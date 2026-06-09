@@ -10,6 +10,7 @@ Usage:
   python3 ops/slack_cli.py post --publicaciones --file ops/daily/2026-05-29-content.md
   python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
   python3 ops/slack_cli.py command-control [--remote] [--dry-run]
+  python3 ops/slack_cli.py funnel-digest [--hours 24]
   python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX [--bitacora]
   # posts to #cli-market-pro by default
   python3 ops/slack_cli.py activate-pro --email cliente@example.com
@@ -173,6 +174,13 @@ def cmd_activate_pro(
     return 0
 
 
+def cmd_funnel_digest(*, slack: bool, hours: int) -> int:
+    args = [sys.executable, str(ROOT / "ops" / "funnel_digest_daily.py"), "--hours", str(hours)]
+    if slack:
+        args.append("--slack")
+    return subprocess.call(args, cwd=ROOT)
+
+
 def cmd_command_control(dry_run: bool, remote: bool, slack: bool, full: bool) -> int:
     args = [sys.executable, str(ROOT / "ops" / "command_control_daily.py")]
     if dry_run:
@@ -233,6 +241,13 @@ def main() -> int:
     p_ap.add_argument("--bitacora", action="store_true", help="Post confirmation to bitácora Slack")
     p_ap.add_argument("--dry-run", action="store_true", help="Print activate_pro command only")
 
+    p_fd = sub.add_parser(
+        "funnel-digest",
+        help="Adoption digest → #funnel-cli-market (default: no realtime funnel spam)",
+    )
+    p_fd.add_argument("--dry-run", action="store_true", help="Print only; no Slack")
+    p_fd.add_argument("--hours", type=int, default=24, help="Lookback window")
+
     p_cc = sub.add_parser(
         "command-control",
         help="Founder ops panel → #command-control-cli-market",
@@ -281,6 +296,8 @@ def main() -> int:
             bitacora=args.bitacora,
             dry_run=args.dry_run,
         )
+    if args.command == "funnel-digest":
+        return cmd_funnel_digest(slack=not args.dry_run, hours=args.hours)
     if args.command == "command-control":
         return cmd_command_control(
             dry_run=args.dry_run,
