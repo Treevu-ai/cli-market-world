@@ -43,6 +43,7 @@ Campos trackeados para sparklines:
 - `moat.total_indexed`, `moat.snapshots_24h`, `moat.coverage_7d_pct`
 - `index.registry_size`, `index.linkage_pct`
 - `golive.overall`, `pam.pass/fail/skip`
+- `adoption_index.score`, `adoption_index.grade`, `adoption_index.first_search`
 
 ## Diferencia con bitácora
 

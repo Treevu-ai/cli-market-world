@@ -75,6 +75,7 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
             ("1", "python ops/command_control_daily.py --slack", "Este panel (KPIs + checklist)"),
             ("2", "python ops/daily_briefing.py", "Bitácora producto + contenido → Slack"),
             ("3", "python ops/go_live_check.py --remote", "3 north-star KPIs + alerts"),
+            ("3b", "python ops/adoption_index.py --github", "Adoption Index V1 (score + snapshot)"),
             ("4", "python ops/production_acceptance.py --phase user --tier 2", "PAM tier 2 (smoke usuario)"),
         ],
     },
@@ -117,6 +118,7 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
 BOOKMARKS = [
     ("Landing", "https://cli-market.dev"),
     ("Dashboard", f"{API_BASE}/dashboard"),
+    ("Adoption Index", f"{API_BASE}/analytics/adoption-index"),
     ("Health", f"{API_BASE}/health"),
     ("Health DB", f"{API_BASE}/health/db"),
     ("PyPI", "https://pypi.org/project/cli-market-world/"),
@@ -243,6 +245,66 @@ def _fetch_dashboard_remote() -> dict[str, Any] | None:
         return None
 
 
+def _normalize_adoption_index_payload(data: dict[str, Any]) -> dict[str, Any]:
+    signals = data.get("signals") or {}
+    pypi = signals.get("pypi") or {}
+    funnel = signals.get("funnel") or {}
+    breakdown = data.get("breakdown") or {}
+    score = data.get("score")
+    return {
+        "ok": score is not None,
+        "score": float(score or 0),
+        "grade": data.get("grade") or "?",
+        "source": data.get("source", "unknown"),
+        "downloads_30d": pypi.get("downloads_30d"),
+        "downloads_7d": pypi.get("downloads_7d"),
+        "growth_pct": pypi.get("growth_pct_7d_vs_baseline"),
+        "first_search": funnel.get("first_search"),
+        "register": funnel.get("register"),
+        "request_pro": funnel.get("request_pro"),
+        "activated": funnel.get("activated"),
+        "real_usage_score": (breakdown.get("real_usage") or {}).get("score"),
+        "downloads_score": (breakdown.get("downloads") or {}).get("score"),
+        "computed_at": data.get("computed_at"),
+    }
+
+
+def _fetch_adoption_index(*, remote: bool) -> dict[str, Any]:
+    if remote:
+        try:
+            r = httpx.get(f"{API_BASE}/analytics/adoption-index", timeout=25)
+            if r.status_code == 200 and isinstance(r.json(), dict):
+                return _normalize_adoption_index_payload(r.json())
+        except Exception:
+            pass
+    try:
+        from market_adoption_index import compute_adoption_index, latest_snapshot, score_grade
+
+        snap = latest_snapshot()
+        if snap and snap.get("score") is not None:
+            payload = {
+                "score": snap["score"],
+                "grade": score_grade(float(snap["score"])),
+                "breakdown": snap.get("breakdown"),
+                "signals": snap.get("signals"),
+                "computed_at": snap.get("created_at"),
+                "source": "snapshot",
+            }
+        else:
+            live = compute_adoption_index(days=30, include_github=False)
+            payload = {
+                "score": live["score"],
+                "grade": live["grade"],
+                "breakdown": live["breakdown"],
+                "signals": live["signals"],
+                "computed_at": live["computed_at"],
+                "source": "live",
+            }
+        return _normalize_adoption_index_payload(payload)
+    except Exception:
+        return {"ok": False}
+
+
 def _fetch_index_stats_remote() -> dict[str, Any] | None:
     token = os.getenv("MARKET_API_TOKEN", "")
     if not token:
@@ -336,6 +398,7 @@ def _collect_metrics(*, remote: bool) -> dict[str, Any]:
             ][:5],
         },
         "pam": pam,
+        "adoption_index": _fetch_adoption_index(remote=remote),
     }
 
 
@@ -345,14 +408,18 @@ def _pct(rate: float | None) -> str:
     return f"{rate * 100:.1f}%"
 
 
-def _adoption_clause(gl: dict[str, Any]) -> str:
+def _adoption_clause(gl: dict[str, Any], adoption_index: dict[str, Any] | None = None) -> str:
     """Frase de adopción que no suene rota con funnel en cero."""
+    ai = adoption_index or {}
+    index_bit = ""
+    if ai.get("ok"):
+        index_bit = f" Adoption Index *{ai['score']:.0f}/100* ({ai['grade']})."
     reg = int(gl.get("register_30d", 0) or 0)
     activated = int(gl.get("activated_30d", 0) or 0)
     if reg > 0:
         return (
             f"Adopción (30 d): {reg} registros, búsqueda/registro {_pct(gl.get('search_per_register'))}, "
-            f"{activated} cuentas Pro activadas."
+            f"{activated} cuentas Pro activadas.{index_bit}"
         )
     if activated > 0:
         pro_note = (
@@ -361,8 +428,10 @@ def _adoption_clause(gl: dict[str, Any]) -> str:
             else f"{activated} cuentas Pro activadas manualmente."
         )
         return (
-            f"Adopción (30 d): funnel en soft-launch (0 registros públicos); {pro_note}"
+            f"Adopción (30 d): funnel en soft-launch (0 registros públicos); {pro_note}{index_bit}"
         )
+    if index_bit:
+        return f"Adopción (30 d): etapa pre-tracción — foco en moat y GTM.{index_bit}"
     return "Adopción (30 d): etapa pre-tracción — foco en moat y GTM."
 
 
@@ -401,7 +470,7 @@ def _executive_story(metrics: dict[str, Any]) -> str:
     return (
         f"Hoy operamos *{m['total_indexed']:,} precios* de *{m['stores_indexed']} retailers*; "
         f"el collector está *{fresh}* y actualizó *{m['snapshots_24h']:,}* precios en 24 h. "
-        f"{linkage_clause} {_adoption_clause(gl)} {quality}{caveat_txt}"
+        f"{linkage_clause} {_adoption_clause(gl, metrics.get('adoption_index'))} {quality}{caveat_txt}"
     )
 
 
@@ -443,7 +512,7 @@ def _audience_scripts(metrics: dict[str, Any]) -> list[str]:
         f"• *Dev / agente:* «Un endpoint: búsqueda, comparación y checkout. "
         f"{ix['registry_size']:,} Golden Records, linkage {ix['linkage_pct']:.0f}%, "
         f"{metrics['pam']['pass']} checks PAM en verde en producción.»",
-        f"• *Tú mismo (1 línea):* {_adoption_clause(gl)}",
+        f"• *Tú mismo (1 línea):* {_adoption_clause(gl, metrics.get('adoption_index'))}",
         "",
     ]
 
@@ -623,15 +692,71 @@ def _card_detail_lines(c: dict[str, str]) -> list[str]:
     return out
 
 
+def _fmt_int(n: int | float | None) -> str:
+    if n is None:
+        return "—"
+    return f"{int(n):,}"
+
+
+def _adoption_index_section(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> list[str]:
+    ai = metrics.get("adoption_index") or {}
+    if not ai.get("ok"):
+        return [
+            "*📈 Adoption Index V1*",
+            "",
+            "_Sin snapshot — `python ops/adoption_index.py` o cron `adoption-index-nightly`._",
+            "",
+        ]
+
+    def series() -> list[float]:
+        out: list[float] = []
+        for row in history:
+            node = row.get("adoption_index") or {}
+            try:
+                out.append(float(node.get("score", 0)))
+            except (TypeError, ValueError):
+                pass
+        return out
+
+    prev = history[-1].get("adoption_index", {}) if history else {}
+    prev_score = prev.get("score")
+    growth = ai.get("growth_pct")
+    growth_txt = f"{growth:+.1f}%" if isinstance(growth, (int, float)) else "—"
+
+    return [
+        "*📈 Adoption Index V1*",
+        "",
+        f"• Score: `{_sparkline(series())}` *{ai['score']:.1f}/100* · grade *{ai['grade']}*"
+        f"{_delta_str(ai['score'], prev_score)} · fuente `{ai.get('source', '?')}`",
+        f"• PyPI 30d: *{_fmt_int(ai.get('downloads_30d'))}* · 7d: *{_fmt_int(ai.get('downloads_7d'))}*"
+        f" · growth 7d: *{growth_txt}*",
+        f"• Embudo 30d: register *{_fmt_int(ai.get('register'))}* → first_search *"
+        f"{_fmt_int(ai.get('first_search'))}* · Pro *{_fmt_int(ai.get('request_pro'))}*"
+        f" → activated *{_fmt_int(ai.get('activated'))}*",
+        f"• Sub-scores: downloads *{ai.get('downloads_score', '—')}* · "
+        f"real usage *{ai.get('real_usage_score', '—')}*",
+        "",
+    ]
+
+
 def _scoreboard(metrics: dict[str, Any]) -> list[str]:
     """Tabla de un vistazo — números sin narrativa (ya cubierta arriba)."""
-    m, ix, gl, pam = (
+    m, ix, gl, pam, ai = (
         metrics["moat"],
         metrics["index"],
         metrics["golive"],
         metrics["pam"],
+        metrics.get("adoption_index") or {},
     )
     coll = "OK" if not m["collector_stale"] else "STALE"
+    adoption_line = (
+        f"Adoption Index {ai['score']:.0f}/100 ({ai['grade']})"
+        if ai.get("ok")
+        else "Adoption Index —"
+    )
     return [
         "*📊 Scoreboard*",
         "",
@@ -640,6 +765,7 @@ def _scoreboard(metrics: dict[str, Any]) -> list[str]:
         f"Index {ix['registry_size']:,} GR · linkage {ix['linkage_pct']:.1f}%",
         f"PAM {pam['pass']}/{pam['fail']}/{pam['skip']} (pass/fail/skip) · "
         f"go-live {gl.get('overall', '?')}",
+        adoption_line,
         "",
     ]
 
@@ -685,6 +811,12 @@ def _trend_reading(history: list[dict[str, Any]], current: dict[str, Any]) -> st
     ds = m1["snapshots_24h"] - int(m0.get("snapshots_24h", 0) or 0)
     if ds != 0:
         parts.append(f"refresh 24h {ds:+,}")
+    ai0 = prev.get("adoption_index", {})
+    ai1 = current.get("adoption_index") or {}
+    if ai0.get("score") is not None and ai1.get("ok"):
+        ds_score = float(ai1["score"]) - float(ai0.get("score", 0) or 0)
+        if abs(ds_score) >= 0.5:
+            parts.append(f"Adoption Index {ds_score:+.1f}pp")
     if not parts:
         return ""
     return "_Lectura tendencia vs ayer:_ " + " · ".join(parts) + "."
@@ -730,8 +862,16 @@ def _trend_section(history: list[dict[str, Any]], current: dict[str, Any]) -> li
         f"{_delta_str(ix['registry_size'], pi.get('registry_size'))}",
         f"• Linkage: `{_sparkline(series('index.linkage_pct'))}` *{ix['linkage_pct']:.1f}%*"
         f"{_delta_str(ix['linkage_pct'], pi.get('linkage_pct'), pct=True)}",
-        "",
     ]
+    ai = current.get("adoption_index") or {}
+    if ai.get("ok"):
+        pai = prev.get("adoption_index", {})
+        lines.append(
+            f"• Adoption Index: `{_sparkline(series('adoption_index.score'))}` "
+            f"*{ai['score']:.1f}*"
+            f"{_delta_str(ai['score'], pai.get('score'))}"
+        )
+    lines.append("")
     if reading:
         lines.append(reading)
         lines.append("")
@@ -773,12 +913,7 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
     lines.extend(_priority_actions(metrics))
     lines.extend(_audience_scripts(metrics))
     lines.extend(_scoreboard(metrics))
-    try:
-        from market_adoption import adoption_slack_lines
-
-        lines.extend(adoption_slack_lines(days=7))
-    except Exception:
-        pass
+    lines.extend(_adoption_index_section(metrics, history))
     lines.extend(_explain_section(cards, brief=brief))
     lines.extend(_trend_section(history, metrics))
 
