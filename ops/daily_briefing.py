@@ -541,9 +541,33 @@ def main() -> None:
                     print(f"Procure daily summary failed: {procure_result.get('error', procure_result)}")
 
         if both or content_only:
-            content_slack = build_slack_content_message(ds, day, today_doc, content_rel)
-            deliver_to_publicaciones(content_slack)
-            print("Slack → publicaciones redes.")
+            if data is None:
+                print("Fetching dashboard (gate + métricas para publicaciones)...")
+                data = monday.fetch_data()
+            from publish_pack import (
+                build_slack_publish_messages,
+                marketing_metrics_from_dashboard,
+            )
+
+            metrics = marketing_metrics_from_dashboard(data or {})
+            publish_msgs = build_slack_publish_messages(
+                ds=ds,
+                campaign_day=day,
+                for_date=today,
+                metrics=metrics,
+                post_utc_hour=POST_UTC_HOUR,
+            )
+            for i, msg in enumerate(publish_msgs, 1):
+                prefix = (
+                    f"📣 *Publicaciones ({i}/{len(publish_msgs)})*\n\n"
+                    if len(publish_msgs) > 1
+                    else ""
+                )
+                deliver_to_publicaciones(prefix + msg)
+            print(
+                f"Slack → publicaciones ({len(publish_msgs)} mensaje"
+                f"{'s' if len(publish_msgs) != 1 else ''}, gate + copy listo)."
+            )
 
     # Also refresh weekly price pulse when we fetched dashboard
     if data is not None and meta is not None and (both or product_only):
