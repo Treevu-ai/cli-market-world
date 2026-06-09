@@ -67,5 +67,5 @@ jobs:
         with:
           name: daily-briefing-${{ github.run_id }}
           path: |
-            ops/daily/
-            docs/metrics/price-pulse-*.md
+            cli-market-content/generated/daily/
+            cli-market-content/metrics/price-pulse-*.md

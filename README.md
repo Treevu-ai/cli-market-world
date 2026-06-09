@@ -47,9 +47,10 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 ```bash
 pip install cli-market-world
 market hello   # post-instalación: estadísticas + próximos pasos (API prod por defecto)
+market init    # cuenta + primera búsqueda + MCP (recomendado)
 
 # Solo para servidor local: export MARKET_API_URL=http://127.0.0.1:8765
-market login
+# Sesión existente: market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
@@ -118,9 +119,10 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 ```bash
 pip install cli-market-world
 market hello   # post-install: stats + next steps (production API by default)
+market init    # account + first search + MCP (recommended)
 
 # Local server only: export MARKET_API_URL=http://127.0.0.1:8765
-market login
+# Returning session: market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR

@@ -27,6 +27,8 @@ def test_format_pending_pro():
     assert "CLI Market Pro" in text
     assert "[REVENUE]" in text
     assert "activate-pro" in text
+    assert "market whoami" in text
+    assert "hello@cli-market.dev" in text
 
 
 def test_format_activated_procure():

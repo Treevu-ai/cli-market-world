@@ -142,15 +142,33 @@ export default function PaymentReturnBanner() {
                   : "Pro activates within minutes. Verify with market whoami."}
               </p>
               <p className="font-mono text-xs">pip install cli-market-world && market whoami</p>
+              <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
+                {isES
+                  ? "Confirmar tier en /account (pega tu API key sk-…)"
+                  : "Confirm tier on /account (paste your sk-… API key)"}
+              </a>
             </>
           )}
         </div>
       ) : isPending ? (
-        <p className="text-sm text-[var(--cm-on-surface-variant)]">
-          {isES
-            ? "Cuando Mercado Pago confirme el pago, Pro se activará automáticamente. Luego: market whoami"
-            : "When Mercado Pago confirms payment, Pro will activate automatically. Then: market whoami"}
-        </p>
+        <div className="space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
+          <p>
+            {isES
+              ? "Cuando Mercado Pago confirme el pago, Pro se activará automáticamente."
+              : "When Mercado Pago confirms payment, Pro will activate automatically."}
+          </p>
+          <ol className="list-decimal list-inside space-y-1 text-xs">
+            <li className="font-mono">market whoami</li>
+            <li>
+              {isES
+                ? "Si sigue en free tras 30 min: hello@cli-market.dev con la referencia de arriba"
+                : "If still free after 30 min: email hello@cli-market.dev with the reference above"}
+            </li>
+          </ol>
+          <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
+            {isES ? "Ver uso en /account →" : "View usage on /account →"}
+          </a>
+        </div>
       ) : (
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
           {isES

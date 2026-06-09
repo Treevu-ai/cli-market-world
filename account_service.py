@@ -159,9 +159,9 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
             "request_id": pending.get("id"),
             "approve_url": pending.get("payment_link"),
             "message": (
-                "Pro pendiente: complete el checkout en la landing (enlace por email)."
+                "Starter pendiente: complete el checkout en la landing (enlace por email)."
                 if es
-                else "Pro pending: complete checkout on the landing (link emailed)."
+                else "Starter pending: complete checkout on the landing (link emailed)."
             ),
         }
     return {

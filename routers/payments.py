@@ -1006,12 +1006,12 @@ def _send_starter_payment_email(
     from market_connectors.email_outbound import STARTER_PRICE_LABEL, _send
 
     if lang == "es":
-        subject = "Tu acceso Pro — CLI Market"
+        subject = "Tu acceso Starter — CLI Market"
         text = f"""Hola {username or ''},
 
-Recibimos tu solicitud de CLI Market Pro.
+Recibimos tu solicitud de CLI Market Starter.
 
-Plan Pro — {STARTER_PRICE_LABEL}
+Plan Starter — {STARTER_PRICE_LABEL}
 • 20.000 consultas API / día
 • Alertas + full MCP + checkout
 • Exportación / historial
@@ -1026,12 +1026,12 @@ Tras pagar en PayPal, Starter se activa en segundos (webhook). Verifique: market
 hello@cli-market.dev
 """
     else:
-        subject = "Your Pro access — CLI Market"
+        subject = "Your Starter access — CLI Market"
         text = f"""Hi {username or ''},
 
-We received your CLI Market Pro request.
+We received your CLI Market Starter request.
 
-Pro plan — {STARTER_PRICE_LABEL}
+Starter plan — {STARTER_PRICE_LABEL}
 • 20,000 API requests / day
 • Alerts + full MCP + checkout
 • CSV export / history
@@ -1046,8 +1046,8 @@ After PayPal payment, Starter activates in seconds (webhook). Verify: market who
 hello@cli-market.dev
 """
     html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
-<h2 style="color:#3afecf;">CLI Market Pro</h2>
-<p><a href="{checkout_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Pro checkout →</a></p>
+<h2 style="color:#3afecf;">CLI Market Starter</h2>
+<p><a href="{checkout_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Starter checkout →</a></p>
 </body></html>"""
     return _send(to_email, subject, text, html)
 
