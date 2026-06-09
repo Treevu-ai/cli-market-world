@@ -730,6 +730,11 @@ async def collect_one_pg(pool, store, queries):
                             err = str(retry_exc)
                     logger.warning("collect %s/%s: %s", store, q, err[:120])
                     cb.lose(store)
+        had_real_error = query_fail > 0
+        # Health decision: only penalize consecutive_failures on *real* errors (timeouts, 5xx, exceptions, 429 after retry).
+        # Pure empties (store doesn't carry the rotated query terms this cycle) are normal due to query rotation
+        # and should not increment streaks or poison success_pct for partial-catalog stores.
+        health_ok = (collected > 0 or query_ok > 0) and not had_real_error
         if pending:
             async with pool.acquire() as conn:
                 for prod in pending:
@@ -739,8 +744,8 @@ async def collect_one_pg(pool, store, queries):
                     except Exception as exc:
                         insert_errors.append(str(exc)[:120])
                         logger.warning("insert %s: %s", store, str(exc)[:120])
-                await pg_health(conn, store, collected > 0 or query_ok > 0)
-        elif query_ok > 0:
+                await pg_health(conn, store, health_ok)
+        elif query_ok > 0 or (query_empty > 0 and not had_real_error):
             async with pool.acquire() as conn:
                 await pg_health(conn, store, True)
         else:
@@ -773,7 +778,9 @@ async def collect_one_sqlite(db, store, queries):
         try:
             raw = await _fetch_store(store, q, page=1, limit=10)
             if not raw:
-                cb.lose(store)
+                # Do not treat empty as hard failure (rotation / partial catalog).
+                # Only lose on real exceptions below.
+                query_empty = query_empty + 1 if 'query_empty' in dir() else 1
                 continue
             query_ok += 1
             for p in raw:
@@ -801,7 +808,8 @@ async def run_collection(stores, queries):
     sl = list(stores)
     batch_size = max(1, min(PARALLEL, len(sl)))
     total = 0
-    ok = 0
+    yielded = 0          # stores that produced >=1 price this cycle
+    responded = 0        # stores that completed queries without hard exception (even if 0 prices due to rotation/empty)
     errs: list[str] = []
     if USE_PG:
         pool = await get_pool()
@@ -813,16 +821,19 @@ async def run_collection(stores, queries):
             tasks = [collect_one_pg(pool, s, queries) for s in batch]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             for store, r in zip(batch, results, strict=True):
+                responded += 1
                 if isinstance(r, Exception):
                     errs.append(f"{store}: {r}")
                     logger.warning("store %s exception: %s", store, str(r)[:160])
+                    responded -= 1  # hard failure, do not count as clean respond
                 elif r > 0:
                     total += r
-                    ok += 1
+                    yielded += 1
                 elif r == 0:
                     errs.append(f"{store}: 0 prices")
+                    # responded cleanly but no yield this rotation (very common with MAX_QUERIES_PER_LINE cap + rotation)
         async with pool.acquire() as c:
-            await pg_run_end(c, rid, ok, total, json.dumps(errs[:100]))
+            await pg_run_end(c, rid, yielded, total, json.dumps(errs[:100]))
         if total == 0 and len(sl) > 0:
             logger.warning(
                 "collection cycle saved 0 prices for %d stores (%d query errors logged)",
@@ -835,16 +846,24 @@ async def run_collection(stores, queries):
         for i in range(0, len(sl), batch_size):
             batch = sl[i:i + batch_size]
             for store in batch:
+                responded += 1
                 try:
                     r = await collect_one_sqlite(db, store, queries)
                     if r > 0:
                         total += r
-                        ok += 1
+                        yielded += 1
                 except Exception as exc:
                     errs.append(f"{store}: {exc}")
-        sq_run_end(db, rid, ok, total, json.dumps(errs[:100]))
+                    responded -= 1
+        sq_run_end(db, rid, yielded, total, json.dumps(errs[:100]))
         db.commit()
-    return {"stores_attempted":len(sl),"stores_succeeded":ok,"prices_collected":total,"errors":len(errs)}
+    return {
+        "stores_attempted": len(sl),
+        "stores_succeeded": yielded,   # legacy name kept for compatibility (now = yielded prices)
+        "stores_responded": responded,
+        "prices_collected": total,
+        "errors": len(errs),
+    }
 
 # ── Status / Report ─────────────────────────────────────────────────────────
 
@@ -925,13 +944,26 @@ async def main():
                 if args.queries:
                     queries = queries[:args.queries]
                 print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
-                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (capped rotation)")
+                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (capped rotation) | parallel={PARALLEL}")
                 t0 = time.monotonic()
                 r = await run_collection(stores, queries)
+                responded = r.get("stores_responded", r.get("stores_succeeded", 0))
+                attempted = r.get("stores_attempted", len(stores))
+                yielded = r.get("stores_succeeded", 0)
+                prices = r.get("prices_collected", 0)
+                errs = r.get("errors", 0)
+                dur = time.monotonic() - t0
+                y_pct = (yielded / attempted * 100) if attempted else 0.0
+                r_pct = (responded / attempted * 100) if attempted else 0.0
+
                 print(
-                    f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']}/{r['stores_attempted']} stores | "
-                    f"{time.monotonic()-t0:.1f}s | {r['errors']} errors"
+                    f"  ✓ {prices:,} prices in {dur:.1f}s  |  "
+                    f"yield {yielded}/{attempted} ({y_pct:.0f}%)  |  "
+                    f"responded cleanly {responded}/{attempted} ({r_pct:.0f}%)  |  "
+                    f"errors={errs}"
                 )
+                if errs:
+                    print(f"    (see full logs for the {errs} error(s); top ones in collector_runs.errors)")
                 # Evaluate price alerts after every collection cycle
                 try:
                     from market_alerts import evaluate_alerts
