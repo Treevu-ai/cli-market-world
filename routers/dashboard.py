@@ -563,7 +563,7 @@ def _dashboard_data():
     daily_last_7d = [d["snapshots"] for d in inventory_daily[-7:]] if len(inventory_daily) >= 7 else []
     avg_daily_7d = round(sum(daily_last_7d) / 7, 1) if daily_last_7d else 0
 
-    collector_interval_h = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
+    collector_interval_h = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
 
     failing_stores = db.execute(
         "SELECT store, consecutive_failures FROM store_health "

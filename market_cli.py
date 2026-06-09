@@ -1985,6 +1985,110 @@ def cmd_share(args):
     ))
 
 
+_TUTORIAL_UTM = "?utm_source=terminal&utm_campaign=tutorial"
+_MCP_SETUP_UTM = "?utm_source=terminal&utm_campaign=mcp-setup"
+
+
+def _detect_ide() -> str:
+    if os.environ.get("CURSOR_TRACE_ID") or os.environ.get("CURSOR_SESSION"):
+        return "cursor"
+    if os.environ.get("WINDSURF_SESSION") or os.environ.get("CODEIUM_WINDSURF"):
+        return "windsurf"
+    if os.environ.get("TERM_PROGRAM") == "vscode":
+        return "vscode"
+    return "cursor"
+
+
+def _claude_config_path() -> str:
+    if sys.platform == "win32":
+        base = os.environ.get("APPDATA") or os.path.join(os.path.expanduser("~"), "AppData", "Roaming")
+        return os.path.join(base, "Claude", "claude_desktop_config.json")
+    if sys.platform == "darwin":
+        return os.path.join(
+            os.path.expanduser("~"),
+            "Library",
+            "Application Support",
+            "Claude",
+            "claude_desktop_config.json",
+        )
+    return os.path.join(os.path.expanduser("~"), ".config", "Claude", "claude_desktop_config.json")
+
+
+def _looks_like_project_root(path: str) -> bool:
+    markers = (".git", "pyproject.toml", "package.json", "Cargo.toml", "go.mod")
+    return any(os.path.exists(os.path.join(path, name)) for name in markers)
+
+
+def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
+    """Return (config_dir, config_path, project_level)."""
+    if ide == "claude":
+        path = _claude_config_path()
+        return os.path.dirname(path), path, False
+
+    cwd = os.path.abspath(os.getcwd())
+    home = os.path.abspath(os.path.expanduser("~"))
+    subdir = { "cursor": ".cursor", "windsurf": ".windsurf", "vscode": ".vscode" }[ide]
+    filename = "mcp.json"
+    project_dir = os.path.join(cwd, subdir)
+    if cwd != home and (_looks_like_project_root(cwd) or os.path.isdir(project_dir)):
+        return project_dir, os.path.join(project_dir, filename), True
+
+    global_dir = os.path.join(home, subdir)
+    return global_dir, os.path.join(global_dir, filename), False
+
+
+def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
+    env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": "default"}
+    if token:
+        env["MARKET_API_TOKEN"] = token
+    return {"command": "market-mcp", "args": [], "env": env}
+
+
+def _merge_mcp_config(cfg_path: str, ide: str, server_entry: dict) -> dict:
+    servers_key = "servers" if ide == "vscode" else "mcpServers"
+    existing: dict = {}
+    if os.path.isfile(cfg_path):
+        with open(cfg_path, encoding="utf-8") as f:
+            existing = json.load(f)
+    merged = dict(existing)
+    bucket = dict(merged.get(servers_key) or {})
+    bucket["cli-market"] = server_entry
+    merged[servers_key] = bucket
+    return merged
+
+
+def _ping_api() -> tuple[bool, str]:
+    import time
+
+    import httpx
+
+    started = time.perf_counter()
+    try:
+        resp = httpx.get(f"{API}/health/db", timeout=10)
+        ms = int((time.perf_counter() - started) * 1000)
+        if resp.status_code == 200:
+            return True, f"200 OK ({ms}ms)"
+        return False, f"HTTP {resp.status_code}"
+    except Exception as exc:
+        return False, str(exc)[:60]
+
+
+def _report_onboarding_event(event: str, *, meta: dict | None = None, dedupe: bool = True) -> None:
+    try:
+        payload: dict = {
+            "event": event,
+            "dedupe": dedupe,
+            "session_id": _install_session_id(),
+            "meta": meta or {},
+        }
+        username = get_session_username()
+        if username:
+            payload["username"] = username
+        api("POST", "/v1/events", payload)
+    except Exception:
+        pass
+
+
 def cmd_tutorial(args):
     """Interactive 3-step tutorial (P0 from product handoff)."""
     country = getattr(args, "country", "PE") or "PE"
@@ -1994,83 +2098,101 @@ def cmd_tutorial(args):
         border_style="#00FF88",
     ))
     console.print("\nEjercicio 1/3: Buscar")
+    console.print(f'  $ market search "arroz" --country {country}')
     if demo:
-        console.print("  $ market search \"arroz\" --country PE")
         console.print("  ✓ 15 resultados. Precio mín: S/ 2.90/kg (Metro)")
     else:
-        # Use real search via existing logic (simplified call)
         try:
             ns = argparse.Namespace(query="arroz", country=country, limit=5, page=1, json=False, store=None, line=None)
             cmd_search(ns)
+            console.print("  ✓ Búsqueda completada")
         except Exception:
             console.print("  (usando demo data)")
             console.print("  ✓ 15 resultados. Precio mín: S/ 2.90/kg (Metro)")
     console.print("\nEjercicio 2/3: Comparar")
+    console.print(f'  $ market compare "aceite" --country {country}')
     if demo:
-        console.print("  $ market compare \"aceite\" --country PE")
         console.print("  ✓ 8 productos comparados. Spread: 12%")
     else:
         try:
             ns = argparse.Namespace(query="aceite", country=country, limit=5, json=False)
             cmd_compare(ns)
+            console.print("  ✓ Comparación completada")
         except Exception:
             console.print("  (usando demo data)")
             console.print("  ✓ 8 productos comparados. Spread: 12%")
     console.print("\nEjercicio 3/3: Exportar")
-    console.print("  $ market export --format json > precios.json  (o usa --json en search)")
-    console.print("  ✓ Exportado (simulado)")
-    console.print("\n[bold]Tutorial completo.[/] Próximo paso: `market mcp-setup --ide cursor`")
+    export_name = "precios-tutorial.json"
+    export_path = os.path.join(SESSION_FILE.parent, export_name)
+    sample = {
+        "tutorial": True,
+        "country": country,
+        "query": "arroz",
+        "items": [{"name": "Arroz extra", "price": 2.9, "store": "metro", "currency": "PEN"}],
+    }
+    os.makedirs(os.path.dirname(export_path), exist_ok=True)
+    with open(export_path, "w", encoding="utf-8") as f:
+        json.dump(sample, f, indent=2, ensure_ascii=False)
+    console.print(f"  $ market search \"arroz\" --country {country} --json > {export_name}")
+    console.print(f"  ✓ Exportado a {export_path}")
+    tools_url = f"https://cli-market.dev/tools{_TUTORIAL_UTM}"
+    console.print("\n[bold]Tutorial completo.[/]")
+    console.print("Próximo paso: `market mcp-setup --ide cursor`")
+    console.print(f"[dim]Docs MCP: {tools_url}[/]")
     if not demo:
         console.print("[dim]Usa --demo para modo sin collector live.[/]")
+    _report_onboarding_event(
+        "tutorial_completed",
+        meta={"country": country, "demo": demo, "export_path": export_path},
+        dedupe=True,
+    )
 
 
 def cmd_mcp_setup(args):
     """One-liner MCP config for IDEs (P0)."""
-    ide = getattr(args, "ide", "cursor") or "cursor"
+    ide = getattr(args, "ide", None) or _detect_ide()
     dry = getattr(args, "dry_run", False)
-    home = os.path.expanduser("~")
     token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
-    api_url = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
-
-    if ide == "cursor":
-        cfg_path = os.path.join(home, ".cursor", "mcp.json")
-        cfg = {
-            "mcpServers": {
-                "cli-market": {
-                    "command": "python",
-                    "args": ["-m", "market_mcp"],
-                    "env": {"MARKET_API_TOKEN": token, "MARKET_API_URL": api_url}
-                }
-            }
-        }
-    elif ide == "claude":
-        cfg_path = os.path.join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json")
-        cfg = {"mcpServers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
-    elif ide == "windsurf":
-        cfg_path = os.path.join(home, ".windsurf", "mcp.json")
-        cfg = {"mcpServers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
-    else:  # vscode
-        cfg_path = os.path.join(home, ".vscode", "mcp.json")
-        cfg = {"servers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
+    api_url = os.getenv("MARKET_API_URL", API)
+    cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
+    server_entry = _mcp_server_entry(token=token, api_url=api_url)
+    cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
+        {"servers": {"cli-market": server_entry}} if ide == "vscode" else {"mcpServers": {"cli-market": server_entry}}
+    )
 
     if dry:
         console.print(f"[dim]Dry-run for {ide}:[/]")
         console.print(json.dumps(cfg, indent=2))
         return
 
-    os.makedirs(os.path.dirname(cfg_path), exist_ok=True)
+    os.makedirs(cfg_dir, exist_ok=True)
     with open(cfg_path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
 
-    console.print(Panel.fit(
-        f"[bold]MCP Setup — {ide}[/]\n\n"
-        f"✓ Config written: {cfg_path}\n"
-        f"✓ Token: {token[:10]}...\n"
-        f"✓ API: {api_url}\n\n"
-        "[green]MCP config ready. 22 tools available.[/]\n\n"
-        "Reiniciá el IDE y preguntale a tu agente: \"Busca arroz en Perú\"",
-        border_style="#00FF88",
-    ))
+    ping_ok, ping_detail = _ping_api()
+    tool_count, _ = _mcp_profile_counts()
+    scope = "proyecto" if project_level else "global"
+    tools_url = f"https://cli-market.dev/tools{_MCP_SETUP_UTM}"
+    token_preview = f"{token[:10]}..." if len(token) > 10 else token
+    lines = [
+        f"[bold]MCP Setup — {ide}[/]",
+        "",
+        f"✓ Directorio detectado ({scope}): {cfg_dir}",
+        f"✓ Configuración escrita en: {cfg_path}",
+        f"✓ Token: {token_preview}",
+        f"{'✓' if ping_ok else '⚠'} Ping a API: {ping_detail}",
+        "",
+        f"[green]MCP config ready for {ide}. {tool_count} tools available.[/]",
+        "",
+        'Reiniciá el IDE y preguntale a tu agente: "Busca arroz en Perú"',
+        f"[dim]{tools_url}[/]",
+    ]
+    console.print(Panel.fit("\n".join(lines), border_style="#00FF88"))
+    _report_onboarding_event(
+        "mcp_setup_completed",
+        meta={"ide": ide, "project_level": project_level, "ping_ok": ping_ok},
+        dedupe=True,
+    )
 
 
 def cmd_upgrade(args):
@@ -2370,7 +2492,12 @@ def main():
     p.add_argument("--demo", action="store_true", help="Run with demo data (no live collector)")
 
     p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
-    p.add_argument("--ide", choices=["cursor", "claude", "windsurf", "vscode"], default="cursor")
+    p.add_argument(
+        "--ide",
+        choices=["cursor", "claude", "windsurf", "vscode"],
+        default=None,
+        help="IDE target (auto-detect if omitted)",
+    )
     p.add_argument("--dry-run", action="store_true", help="Print config without writing file")
 
     mcp_default, mcp_legacy = _mcp_profile_counts()

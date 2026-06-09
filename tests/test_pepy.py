@@ -38,7 +38,7 @@ def test_pepy_summary(mock_fetch):
     import market_pepy as mp
 
     mp._CACHE.clear()
-    mp._CACHE_AT = 0.0
+    mp._CACHE_AT = {}
     data = pepy_summary(force=True)
     assert data["ok"] is True
     assert data["total_downloads"] == 11155
@@ -51,7 +51,7 @@ def test_analytics_pypi_unconfigured():
     import market_pepy as mp
 
     mp._CACHE.clear()
-    mp._CACHE_AT = 0.0
+    mp._CACHE_AT = {}
     r = client.get("/analytics/pypi")
     assert r.status_code == 200
     body = r.json()
