@@ -18,10 +18,29 @@ CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-06-01")
 PERSONAL_OFFSET = int(os.getenv("LINKEDIN_PERSONAL_DAY_OFFSET", "0"))
 COMPANY_OFFSET = int(os.getenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1"))
 
+RICARDO_LABELS = {
+    "LinkedIn Personal": "LINKEDIN PERSONAL",
+    "LinkedIn Empresa": "LINKEDIN EMPRESA",
+    "DEV.to": "DEV.TO",
+    "Hacker News": "HACKER NEWS",
+    "Reddit": "REDDIT",
+}
+
 
 def format_publish_date(for_date: date) -> str:
     """User-facing label — ISO date, not campaign day number."""
     return for_date.isoformat()
+
+
+def ricardo_channel_label(label: str) -> str:
+    if label.startswith("Twitter"):
+        return "TWITTER / X"
+    return RICARDO_LABELS.get(label, label.upper())
+
+
+def ricardo_header(label: str, for_date: date) -> str:
+    channel = ricardo_channel_label(label)
+    return f"👋 *RICARDO — ESTE POST ES PARA {channel}* · `{for_date.isoformat()}`\n\n"
 
 
 def publish_close_command(for_date: date) -> str:
@@ -128,6 +147,17 @@ def _parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
     return fm, parts[2]
 
 
+def _scheduled_on_date(path, for_date: date) -> bool:
+    """Include draft unless frontmatter pins it to another publish date."""
+    if not path.is_file():
+        return False
+    fm, _ = _parse_frontmatter(path.read_text(encoding="utf-8"))
+    pub = (fm.get("published_at") or "").strip()
+    if pub and pub != for_date.isoformat():
+        return False
+    return True
+
+
 def _section(body: str, heading: str) -> str:
     pattern = rf"(?m)^#{{2,3}} {re.escape(heading)}\s*\n(.*?)(?=^#{{2,3}} |\Z)"
     m = re.search(pattern, body, re.DOTALL)
@@ -204,12 +234,12 @@ def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]
     if not personal.is_file():
         alt = linkedin_dir() / f"Day-{campaign_day + PERSONAL_OFFSET:02d}.md"
         personal = alt if alt.is_file() else personal
-    if personal.is_file():
+    if personal.is_file() and _scheduled_on_date(personal, for_date):
         items.append(("LinkedIn Personal", personal))
 
     cday = campaign_day + COMPANY_OFFSET
     company = _linkedin_company_dir() / f"Company-Day-{cday:02d}.md"
-    if company.is_file():
+    if company.is_file() and _scheduled_on_date(company, for_date):
         items.append(("LinkedIn Empresa", company))
 
     articles = {
@@ -327,7 +357,7 @@ def build_slack_publish_messages(
     """Ordered Slack messages for #publicaciones — gate, metrics, copy per channel."""
     pub_date = format_publish_date(for_date)
     intro = [
-        f"📋 *Publicar* · *{pub_date}*",
+        f"📋 *RICARDO — PUBLICACIONES DE HOY* · *{pub_date}*",
         f"Hora sugerida: *{post_utc_hour}:00 UTC* · sin link en cuerpo del post",
         "",
         "*Orden (cada red)*",
@@ -350,9 +380,11 @@ def build_slack_publish_messages(
 
     body_parts: list[str] = []
     for label, path in channel_items:
+        r_header = ricardo_header(label, for_date).rstrip()
         if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News", "Reddit"):
             copy = _load_channel_md(path)
             if copy:
+                body_parts.append(r_header)
                 body_parts.extend(
                     _channel_blocks(label, copy, metrics, campaign_day=campaign_day)
                 )
@@ -361,14 +393,16 @@ def build_slack_publish_messages(
             tw = _load_twitter_day(path, for_date)
             if tw:
                 post, comment = tw
+                post = apply_live_metrics(post, metrics)
                 body_parts += [
+                    r_header,
                     f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
                     "",
                     "*1) THREAD / POST* _(copiar y publicar)_",
                     "",
                     post,
                     "",
-                    "*2) REPLY CTA* _(primer reply al thread)_",
+                    f"💬 *RICARDO — PRIMER REPLY ({ricardo_channel_label(label)})* · `{pub_date}`",
                     "",
                     comment,
                     "",
@@ -380,6 +414,7 @@ def build_slack_publish_messages(
         if len(excerpt) > 2000:
             excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
         body_parts += [
+            r_header,
             f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
             "",
             "*1) POST*",
