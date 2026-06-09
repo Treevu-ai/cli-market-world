@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 
 from publish_pack import (
     apply_live_metrics,
+    build_publish_checklist_message,
     build_slack_publish_messages,
     gate_slack_lines,
     marketing_metrics_from_dashboard,
@@ -86,3 +87,16 @@ def test_build_slack_publish_messages_has_order_and_gate():
     assert "Data-gate" in joined
     assert "50,902" in joined
     assert all(len(m) <= 4000 for m in msgs)
+    assert "Checklist publicación" in msgs[-1]
+    assert "LI Personal" in msgs[-1]
+
+
+def test_publish_checklist_message():
+    text = build_publish_checklist_message(
+        campaign_day=8,
+        for_date=date(2026, 6, 8),
+        gate_pass=True,
+    )
+    assert "☐ LI Personal — post" in text
+    assert "☐ LI Personal — comentario" in text
+    assert "make publish day=8" in text
