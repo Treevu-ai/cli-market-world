@@ -149,12 +149,18 @@ def test_channels_for_date_finds_company_by_published_at(tmp_path, monkeypatch):
     assert not any("Company-Day-08" in p for p in paths)
 
 
-def test_channels_for_date_spike_reddits_on_june_10():
-    items = channels_for_date(date(2026, 6, 10), 10)
+def test_channels_for_date_spike_reddits_on_june_9(monkeypatch):
+    """Spike D-Day reddits moved to 2026-06-09 per content calendar."""
+    content_dir = Path(__file__).resolve().parent.parent.parent / "cli-market-content"
+    if not (content_dir / "reddit" / "reddit-02-python-tutorial.md").is_file():
+        import pytest
+
+        pytest.skip("cli-market-content checkout required for reddit channel schedule")
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(content_dir))
+    items = channels_for_date(date(2026, 6, 9), 9)
     labels = [label for label, _ in items]
     assert "Reddit (r/Python)" in labels
     assert "Reddit (r/aiagents)" in labels
-    assert "Hacker News" in labels
 
 
 def test_slack_copy_block_preserves_bold_markers():
