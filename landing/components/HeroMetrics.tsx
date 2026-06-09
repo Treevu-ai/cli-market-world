@@ -49,19 +49,24 @@ export default function HeroMetrics() {
 
   return (
     <div
-      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 w-full max-w-[900px] mx-auto"
+      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full max-w-[960px] mx-auto justify-items-center"
       aria-label={isES ? "Métricas de cobertura verificada" : "Verified coverage metrics"}
     >
       {metrics.map((m) => (
-        <div key={m.labelEn} className="hero-metric text-center sm:text-left">
+        <div
+          key={m.labelEn}
+          className="hero-metric flex flex-col items-center justify-center text-center w-full min-w-0 px-2"
+        >
           <p
-            className={`hero-metric-value ${
+            className={`hero-metric-value tabular-nums ${
               m.accent === "signal" ? "text-[var(--cm-signal)]" : "text-[var(--cm-ink)]"
             }`}
           >
             {m.value}
           </p>
-          <p className="hero-metric-label">{isES ? m.labelEs : m.labelEn}</p>
+          <p className="hero-metric-label max-w-[9.5rem] sm:max-w-[10.5rem] text-balance">
+            {isES ? m.labelEs : m.labelEn}
+          </p>
         </div>
       ))}
     </div>
