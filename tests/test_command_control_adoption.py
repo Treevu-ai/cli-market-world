@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 from command_control_daily import (  # noqa: E402
     _adoption_index_section,
     _normalize_adoption_index_payload,
+    _pypi_ci_suffix,
     _scoreboard,
 )
 
@@ -36,6 +37,19 @@ def test_normalize_adoption_index_payload():
     assert data["real_usage_score"] == 40
 
 
+def test_pypi_ci_suffix_renders_pro_annotation():
+    text = _pypi_ci_suffix(
+        {
+            "downloads_30d_raw": 3462,
+            "ci_share_pct_30d": 6.8,
+            "pypi_windows_source": "pro_no_ci",
+        }
+    )
+    assert "raw 3,462" in text
+    assert "CI 7%" in text
+    assert "no-CI" in text
+
+
 def test_adoption_index_section_renders_score():
     metrics = {
         "adoption_index": _normalize_adoption_index_payload(
@@ -45,7 +59,14 @@ def test_adoption_index_section_renders_score():
                 "source": "live",
                 "breakdown": {"real_usage": {"score": 17}, "downloads": {"score": 100}},
                 "signals": {
-                    "pypi": {"downloads_30d": 14000, "downloads_7d": 6200, "growth_pct_7d_vs_baseline": 50},
+                    "pypi": {
+                        "downloads_30d": 3226,
+                        "downloads_7d": 3226,
+                        "downloads_30d_raw": 3462,
+                        "ci_share_pct_30d": 6.8,
+                        "windows_source": "pro_no_ci",
+                        "growth_pct_7d_vs_baseline": 50,
+                    },
                     "funnel": {"register": 52, "first_search": 1, "request_pro": 1, "activated": 1},
                 },
             }
@@ -57,6 +78,8 @@ def test_adoption_index_section_renders_score():
     assert "66.4/100" in text
     assert "grade *C*" in text
     assert "first_search *1*" in text
+    assert "raw 3,462" in text
+    assert "no-CI" in text
 
 
 def test_scoreboard_includes_adoption_index():

@@ -201,7 +201,10 @@ def analytics_pypi_public():
             "downloads_last_24h": (multi.get("combined") or {}).get("downloads_last_24h"),
             "downloads_last_7d": (multi.get("combined") or {}).get("downloads_last_7d"),
             "downloads_last_30d": d30,
-            "downloads_last_30d_no_ci": None,  # requires pro key; see market_pepy
+            "downloads_last_30d_no_ci": (multi.get("combined") or {}).get("downloads_last_30d_no_ci"),
+            "downloads_last_7d_no_ci": (multi.get("combined") or {}).get("downloads_last_7d_no_ci"),
+            "ci_share_pct_30d": (multi.get("combined") or {}).get("ci_share_pct_30d"),
+            "windows_source": (multi.get("combined") or {}).get("windows_source"),
             "top_version_30d": base.get("top_version_30d"),
             "latest_version": base.get("latest_version"),
             "fetched_at": base.get("fetched_at"),

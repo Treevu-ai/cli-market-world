@@ -346,9 +346,18 @@ def compute_adoption_index(
             "downloads_core_30d": core_30d,
             "downloads_world_30d": world_30d,
             "downloads_combined_30d": downloads_30d,
-            # flat values are the combined (used for scoring)
+            # flat values are the combined (used for scoring; Pro no-CI when available)
             "downloads_30d": downloads_30d,
             "downloads_7d": downloads_7d,
+            "downloads_30d_raw": pypi.get("downloads_last_30d_raw"),
+            "downloads_7d_raw": pypi.get("downloads_last_7d_raw"),
+            "downloads_30d_no_ci": pypi.get("downloads_last_30d_no_ci"),
+            "downloads_7d_no_ci": pypi.get("downloads_last_7d_no_ci"),
+            "ci_share_pct_30d": pypi.get("ci_share_pct_30d"),
+            "daily_series_14d": pypi.get("daily_series_14d") or [],
+            "top_versions_30d": pypi.get("top_versions_30d") or [],
+            "windows_source": pypi.get("windows_source"),
+            "pro_time_range": pypi.get("pro_time_range"),
             "total_downloads": pypi.get("total_downloads"),
             "growth_pct_7d_vs_baseline": growth_pct,
         },
@@ -489,8 +498,24 @@ def adoption_index_markdown(payload: dict[str, Any]) -> str:
         "",
         "**Señales clave**",
         "",
-        f"- PyPI 30d (combined): **{pypi.get('downloads_30d', '—')}** · 7d: **{pypi.get('downloads_7d', '—')}**",
+        f"- PyPI 30d (combined): **{pypi.get('downloads_30d', '—')}** · 7d: **{pypi.get('downloads_7d', '—')}**"
+        f" · fuente: **{pypi.get('windows_source', '—')}**",
     ]
+    if pypi.get("downloads_30d_raw") is not None:
+        ci = pypi.get("ci_share_pct_30d")
+        ci_txt = f"{ci:.1f}%" if isinstance(ci, (int, float)) else "—"
+        lines.append(
+            f"- PyPI raw 30d: **{pypi.get('downloads_30d_raw', '—')}** · CI share: **{ci_txt}**"
+        )
+    top_versions = pypi.get("top_versions_30d") or []
+    if top_versions:
+        ver_txt = " · ".join(
+            f"{item.get('version')} ({item.get('downloads')})"
+            for item in top_versions[:3]
+            if isinstance(item, dict)
+        )
+        if ver_txt:
+            lines.append(f"- Top versiones 30d: {ver_txt}")
     # Pull out per-package (optimization: core is the intelligence/MCP layer with higher volume)
     core = pypi.get("downloads_core_30d")
     world = pypi.get("downloads_world_30d")
