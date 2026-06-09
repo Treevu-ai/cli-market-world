@@ -67,8 +67,13 @@ export default function FreeSignupModal({
 
   useEffect(() => {
     if (open) {
-      setStep(1);
-      setProfile(null);
+      if (plan === "free") {
+        setStep("dev-fast");
+        setProfile("dev");
+      } else {
+        setStep(1);
+        setProfile(null);
+      }
       setEmail("");
       setName("");
       setCompany("");
@@ -78,7 +83,7 @@ export default function FreeSignupModal({
       setError("");
       setRequestId("");
     }
-  }, [open]);
+  }, [open, plan]);
 
   useEffect(() => {
     if (!open) return;
