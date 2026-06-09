@@ -110,6 +110,9 @@ def format_subscription_message(
             lines.append(
                 f"• activar tras confirmar: `python ops/slack_cli.py activate-pro {ref}`"
             )
+        lines.append(
+            f"• cliente: `market whoami` cada hora · email hello@cli-market.dev con ref `{ref}`"
+        )
         return "\n".join(lines)
 
     lines = [
@@ -169,6 +172,9 @@ def pro_pending_slack_blocks(
     if amount_pen is not None:
         lines.append(f"• monto: S/ {amount_pen:.2f}")
     lines.append(f"• CLI fallback: `python ops/slack_cli.py activate-pro {ref}`")
+    lines.append(
+        f"• cliente: `market whoami` cada hora · email hello@cli-market.dev con ref `{ref}`"
+    )
     return [
         {"type": "section", "text": {"type": "mrkdwn", "text": "\n".join(lines)}},
         {

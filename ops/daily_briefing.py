@@ -532,53 +532,6 @@ def build_slack_product_message(
     return "\n".join(lines)
 
 
-def build_slack_content_message(
-    ds: str,
-    day: int,
-    today: dict[str, Any] | None,
-    content_rel: str,
-) -> str:
-    lines = [
-        f"📣 *Publicaciones redes* · {ds}",
-        f"Publicar *{POST_UTC_HOUR}:00 UTC* · sin link en cuerpo del post",
-        "",
-    ]
-
-    if not today:
-        lines.append(f"⚠️ No hay borrador `{_day_path_label(day)}`.")
-        lines.append(_repo_file_link(content_rel))
-        return "\n".join(lines)
-
-    fm = today["fm"]
-    pub = fm.get("published_at", "") or "⏳ pendiente"
-    lines += [
-        f"*{today['title']}*",
-        f"Estado: `{fm.get('status', '?')}` · Publicado: {pub} · Pilar: `{fm.get('pillar', '?')}`",
-        f"Archivo: `{today['path']}`",
-        "",
-    ]
-
-    if today["post"]:
-        lines += ["*Post (copiar a LinkedIn)*", "", today["post"], ""]
-    if today["comment"]:
-        lines += ["*Primer comentario*", "", today["comment"], ""]
-    if today["hashtags"]:
-        lines += ["*Hashtags*", "", today["hashtags"], ""]
-    if today["checklist"]:
-        lines += ["*Checklist*", "", today["checklist"], ""]
-
-    tomorrow = _load_day_doc(day + 1)
-    if tomorrow:
-        lines += [
-            "---",
-            f"*Mañana (Día {day + 1}):* {tomorrow['title']} · `{tomorrow['path']}`",
-            "",
-        ]
-
-    lines.append(_repo_file_link(content_rel))
-    return "\n".join(lines)
-
-
 def main() -> None:
     dry = "--dry-run" in sys.argv
     product_only = "--product" in sys.argv

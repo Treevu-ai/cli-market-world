@@ -7,7 +7,7 @@
 ## 0. Install (once)
 
 ```bash
-pip install cli-market
+pip install cli-market-world
 ```
 
 ---
@@ -148,6 +148,6 @@ $ market alerts list
 
 ---
 
-**Try it.** `pip install cli-market` · `market register` · No credit card.
+**Try it.** `pip install cli-market-world` · `market register` · No credit card.
 
 [cli-market.dev](https://cli-market.dev)

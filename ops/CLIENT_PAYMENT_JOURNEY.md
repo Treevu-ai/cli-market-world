@@ -33,8 +33,8 @@ flowchart TB
 
 ```bash
 python -m pip install cli-market-world
-market login          # elige tu usuario
-market whoami         # tier: free
+market init           # registra cuenta + primera búsqueda guiada
+market whoami         # tier: free · copia username
 ```
 
 ### 2. Suscribirse en la web
@@ -85,7 +85,7 @@ MCP: `market-mcp` con `MCP_TOOL_PROFILE=default` — ver [cli-market.dev/docs](h
 4. Crea credenciales si aún no las tienes:
 
 ```bash
-market register    # o market login
+market init        # o market register si solo necesitas credenciales
 market account     # copia sk-… (o la que recibiste en register)
 ```
 
@@ -121,10 +121,10 @@ Si aún no tienes cuenta:
 
 ```bash
 pip install cli-market-world
-market login
+market init
 ```
 
-Usa el mismo **usuario CLI** que indicaste al suscribirte.
+Usa el mismo **usuario CLI** que indicaste al suscribirte (`market whoami`).
 
 ¿Dudas? Responde a este email con tu ref `PRO-XXXXXXXX`.
 
@@ -144,7 +144,7 @@ Verifica:
 
 ```bash
 pip install cli-market-world
-market login
+market init
 market whoami
 ```
 
