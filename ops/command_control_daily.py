@@ -85,6 +85,7 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
             ("5", "python collect_prices.py --report", "Collector KPIs (crudo)"),
             ("5b", "python ops/collector_daily_report.py", "Collector daily sweep + health (auto)"),
             ("5c", "python ops/collector_daily_report.py --slack", "Post collector health a bitácora / C&C"),
+            ("5d", "python ops/observatory_daily.py", "Observatory snapshot (MAA + retención MCP)"),
             ("6", "curl -H 'Authorization: Bearer $MARKET_API_TOKEN' $API/index/stats", "Golden Records + linkage %"),
             ("7", "python ops/go_live_check.py --remote --json", "JSON para scripts / alertas"),
         ],
@@ -119,7 +120,9 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
 
 BOOKMARKS = [
     ("Landing", "https://cli-market.dev"),
+    ("Stats (público)", "https://cli-market.dev/stats"),
     ("Dashboard", f"{API_BASE}/dashboard"),
+    ("Observatory API", f"{API_BASE}/analytics/observatory"),
     ("Adoption Index", f"{API_BASE}/analytics/adoption-index"),
     ("Health", f"{API_BASE}/health"),
     ("Health DB", f"{API_BASE}/health/db"),
@@ -333,6 +336,32 @@ def _fetch_index_stats_local() -> dict[str, Any] | None:
         return None
 
 
+def _fetch_observatory(*, remote: bool) -> dict[str, Any]:
+    """MAA + MCP telemetry aggregates (30d window; DAA = 1d MAA)."""
+    if remote:
+        try:
+            r30 = httpx.get(f"{API_BASE}/analytics/observatory?days=30", timeout=25)
+            if r30.status_code == 200 and isinstance(r30.json(), dict):
+                data = r30.json()
+                try:
+                    r1 = httpx.get(f"{API_BASE}/analytics/observatory?days=1", timeout=15)
+                    if r1.status_code == 200:
+                        data["daa"] = int(r1.json().get("maa") or 0)
+                except Exception:
+                    data["daa"] = None
+                return data
+        except Exception:
+            pass
+    try:
+        from market_observatory import observatory_summary
+
+        data = observatory_summary(days=30)
+        data["daa"] = int(observatory_summary(days=1).get("maa") or 0)
+        return data
+    except Exception:
+        return {"telemetry_enabled": False}
+
+
 def _collect_metrics(*, remote: bool) -> dict[str, Any]:
     today = date.today().isoformat()
     dash = _fetch_dashboard_remote() if remote else None
@@ -401,6 +430,7 @@ def _collect_metrics(*, remote: bool) -> dict[str, Any]:
         },
         "pam": pam,
         "adoption_index": _fetch_adoption_index(remote=remote),
+        "observatory": _fetch_observatory(remote=remote),
     }
 
 
@@ -700,6 +730,52 @@ def _fmt_int(n: int | float | None) -> str:
     return f"{int(n):,}"
 
 
+def _observatory_section(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> list[str]:
+    obs = metrics.get("observatory") or {}
+    if not obs.get("telemetry_enabled"):
+        return [
+            "*🔭 Observatory (MAA)*",
+            "",
+            "_Telemetría MCP desactivada o sin datos — `OBSERVATORY_TELEMETRY=1` en Railway._",
+            "",
+        ]
+
+    def series() -> list[float]:
+        out: list[float] = []
+        for row in history:
+            node = row.get("observatory") or {}
+            try:
+                out.append(float(node.get("maa", 0)))
+            except (TypeError, ValueError):
+                pass
+        return out
+
+    prev = history[-1].get("observatory", {}) if history else {}
+    prev_maa = prev.get("maa")
+    maa = int(obs.get("maa") or 0)
+    daa = obs.get("daa")
+    daa_txt = f"*{_fmt_int(daa)}*" if daa is not None else "—"
+    sr = obs.get("success_rate")
+    sr_txt = f"{float(sr) * 100:.1f}%" if isinstance(sr, (int, float)) else "—"
+    ret7 = (obs.get("mcp_retention_7d") or {}).get("retention_rate")
+    ret_txt = f"{float(ret7) * 100:.1f}%" if isinstance(ret7, (int, float)) else "—"
+    calls = int(obs.get("calls_success") or 0)
+
+    return [
+        "*🔭 Observatory (MAA)*",
+        "",
+        f"• MAA 30d: `{_sparkline(series())}` *{maa:,}*"
+        f"{_delta_str(maa, prev_maa)} · DAA *{daa_txt}*",
+        f"• Consultas exitosas 30d: *{calls:,}* · success rate *{sr_txt}* · retención 7d *{ret_txt}*",
+        f"• Top tool: *{(obs.get('top_tools') or [{}])[0].get('name', '—')}* · "
+        f"países activos *{int(obs.get('countries_active') or 0)}*",
+        "",
+    ]
+
+
 def _adoption_index_section(
     metrics: dict[str, Any],
     history: list[dict[str, Any]],
@@ -759,6 +835,12 @@ def _scoreboard(metrics: dict[str, Any]) -> list[str]:
         if ai.get("ok")
         else "Adoption Index —"
     )
+    obs = metrics.get("observatory") or {}
+    maa_line = (
+        f"MAA {int(obs.get('maa') or 0):,}"
+        if obs.get("telemetry_enabled")
+        else "MAA —"
+    )
     return [
         "*📊 Scoreboard*",
         "",
@@ -768,6 +850,7 @@ def _scoreboard(metrics: dict[str, Any]) -> list[str]:
         f"PAM {pam['pass']}/{pam['fail']}/{pam['skip']} (pass/fail/skip) · "
         f"go-live {gl.get('overall', '?')}",
         adoption_line,
+        maa_line,
         "",
     ]
 
@@ -873,6 +956,14 @@ def _trend_section(history: list[dict[str, Any]], current: dict[str, Any]) -> li
             f"*{ai['score']:.1f}*"
             f"{_delta_str(ai['score'], pai.get('score'))}"
         )
+    obs = current.get("observatory") or {}
+    if obs.get("telemetry_enabled"):
+        pobs = prev.get("observatory", {})
+        lines.append(
+            f"• MAA: `{_sparkline(series('observatory.maa'))}` "
+            f"*{int(obs.get('maa') or 0):,}*"
+            f"{_delta_str(int(obs.get('maa') or 0), pobs.get('maa'))}"
+        )
     lines.append("")
     if reading:
         lines.append(reading)
@@ -915,6 +1006,7 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
     lines.extend(_priority_actions(metrics))
     lines.extend(_audience_scripts(metrics))
     lines.extend(_scoreboard(metrics))
+    lines.extend(_observatory_section(metrics, history))
     lines.extend(_adoption_index_section(metrics, history))
     lines.extend(_explain_section(cards, brief=brief))
     lines.extend(_trend_section(history, metrics))

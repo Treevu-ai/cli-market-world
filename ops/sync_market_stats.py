@@ -147,6 +147,14 @@ def _readme_mcp_section() -> str:
     )
 
 
+_PYPI_URL_PATTERN = re.compile(r"https://pypi\.org/project/cli-market(?:-world)*\b")
+
+
+def _normalize_pypi_urls(text: str) -> str:
+    """Canonicalize legacy or multiply-suffixed PyPI URLs (avoids cli-market-world-world…)."""
+    return _PYPI_URL_PATTERN.sub(s.PYPI_URL.rstrip("/"), text)
+
+
 def _replace_mcp_count(text: str, old: int, new: int, *, es: bool = False) -> str:
     replacements = [
         (f"{old} MCP tools", f"{new} MCP tools"),
@@ -171,8 +179,7 @@ def _apply_canonical_copy_patches(text: str) -> str:
     out = text
     out = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, out)
     out = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, out)
-    out = out.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
-    out = out.replace("https://pypi.org/project/cli-market", s.PYPI_URL.rstrip("/"))
+    out = _normalize_pypi_urls(out)
     out = re.sub(
         r"Thanks for your interest in contributing to CLI Market — \d+ retailers indexed, "
         r"\d+ verified active, \d+ countries, open source\.",
@@ -870,7 +877,7 @@ def sync_llms_txt() -> None:
         text = path.read_text(encoding="utf-8")
         text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
         text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
-        text = text.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
+        text = _normalize_pypi_urls(text)
         text = re.sub(
             r"- \d+ MCP tools \(.*?\)",
             f"- {counts['default']} curated MCP tools (Shop · Intel · Account; {counts['legacy']} legacy)",
@@ -898,7 +905,7 @@ def sync_llms_txt() -> None:
         text = full_path.read_text(encoding="utf-8")
         text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
         text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
-        text = text.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
+        text = _normalize_pypi_urls(text)
         text = re.sub(
             r"## \d+ MCP tools\n\n.*?(?=\n## Countries:)",
             _llms_bundle_section() + "\n",
