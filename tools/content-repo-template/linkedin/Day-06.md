@@ -10,19 +10,19 @@ tags:
   - linkedin
 ---
 
-# Day 06 — Por qué 36 herramientas MCP
+# Day 06 — Por qué 22 herramientas MCP
 
 **Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
 ## Hooks (elegir 1)
 
-1. **Behind the scenes:** ¿Por qué 36 herramientas MCP? Porque un agente necesita buscar, comparar, añadir al carrito Y pagar.
+1. **Behind the scenes:** ¿Por qué 22 herramientas MCP? Porque un agente necesita buscar, comparar, añadir al carrito Y pagar.
 2. **Design:** No basta con un endpoint `/search`. El comercio para agentes es un workflow completo.
 3. **Specific:** 36 tools. 6 categorías. Un agente que solo busca no compra.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-¿Por qué 36 herramientas MCP?
+¿Por qué 22 herramientas MCP?
 
 Porque un agente que solo puede "buscar productos" no compra nada.
 
@@ -50,7 +50,7 @@ Un agente con primitives claras devuelve JSON verificable.
 
 Eso es lo que publicamos en MCP: schemas estrictos, descripciones accionables, respuestas minificadas (85% menos tokens vs HTML crudo).
 
-60 retailers (30 verified). 8 países. 43K+ precios reales.
+68 retailers (38 verified). 8 países. 43K+ precios reales.
 
 Un `pip install`. Un servidor MCP. Listo para Cursor, Claude Desktop, o tu propio runtime.
 
@@ -63,7 +63,7 @@ Copia-pega configs MCP para Cursor y Claude 👇
 https://cli-market.dev/tools
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market-mcp
 ```
 

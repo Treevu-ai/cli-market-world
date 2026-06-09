@@ -27,7 +27,7 @@ tags:
 | 3 | [[Day-03]] | Stripe pagos / nosotros comercio | `ready` |
 | 4 | [[Day-04]] | 5 agentes, leche Wong vs Metro | `ready` |
 | 5 | [[Day-05]] | Carousel: 4 pasos agente compra | `ready` |
-| 6 | [[Day-06]] | Por qué 36 herramientas MCP | `ready` |
+| 6 | [[Day-06]] | Por qué 22 herramientas MCP | `ready` |
 | 7 | [[Day-07]] | [N] precios · 30 retailers (metrics) | `ready` ✅ [[metrics/price-pulse-2026-W22]] |
 
 ## Semana 2 — Data stories

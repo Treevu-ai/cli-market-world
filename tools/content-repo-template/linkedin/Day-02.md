@@ -41,9 +41,9 @@ Así que los agentes improvisan: scraping frágil, respuestas inventadas, o "no 
 
 Construí CLI Market porque me cansé de ver agentes inteligentes fallar en la tarea más simple: decir cuánto cuesta algo.
 
-Una capa. Una API. 30 retailers. 36 herramientas MCP.
+Una capa. Una API. 30 retailers. 22 herramientas MCP.
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 Los agentes ya saben pensar. Ahora pueden comprar.
 

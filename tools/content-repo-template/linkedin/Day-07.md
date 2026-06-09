@@ -31,7 +31,7 @@ Los números de esta semana:
 → **43,000+ precios verificados** · refresh cada **8 h**
 → **35 retailers verificados activos** · **60** en catálogo
 → **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
-→ **36 herramientas MCP**
+→ **22 herramientas MCP**
 → Cobertura verificable en dashboard público
 
 Cada precio viene de APIs de retailers reales (VTEX + Magento).
@@ -57,7 +57,7 @@ Dashboard + quickstart 👇
 https://cli-market.dev
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market hello
 market stats
 ```

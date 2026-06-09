@@ -12,13 +12,13 @@ status: shipped
 
 # DX Audit — Time to First Success
 
-**Goal:** A new Cursor user goes from `pip install cli-market` → first successful MCP search in **<10 minutes**.
+**Goal:** A new Cursor user goes from `pip install cli-market-world-world` → first successful MCP search in **<10 minutes**.
 
 ## Journey map
 
 | Step | Command / action | Friction (1–5) | Notes |
 |------|------------------|----------------|-------|
-| 1. Install | `pip install cli-market` | 1 | PyPI OK; post-install `market hello` guides next steps ✅ |
+| 1. Install | `pip install cli-market-world-world` | 1 | PyPI OK; post-install `market hello` guides next steps ✅ |
 | 2. Discover MCP | Read README or `/tools` | 2 | `/tools` has copy-paste configs ✅ |
 | 3. Configure Cursor | Add `mcp.json` server entry | 3 | Needs `python -m market_mcp` path; `/tools` reduces this |
 | 4. Auth | `market login` or `market_login` MCP | 2 | Demo creds in README; token persisted locally |
@@ -32,7 +32,7 @@ status: shipped
 ### ✅ Strengths
 
 - `market hello` post-install onboarding with CTA to MCP + GitHub
-- 36 MCP tools cover full commerce loop (search → cart → checkout)
+- 22 MCP tools cover full commerce loop (search → cart → checkout)
 - `/tools` page with Cursor/Claude/Windsurf configs
 - `llms.txt` + `server.json` for agent discovery
 - JSON output flags on CLI for agent consumption
@@ -60,7 +60,7 @@ Updated in `market_mcp.py`:
 ## Recommended quickstart (copy-paste)
 
 ```bash
-pip install cli-market
+pip install cli-market-world-world
 market hello
 market login --username demo --password demo
 market search "leche" --country PE --json

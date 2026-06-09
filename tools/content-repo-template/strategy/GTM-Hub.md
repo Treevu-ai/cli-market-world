@@ -54,7 +54,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Países | 8 | ✅ 8 |
 | MCP tools | 22 curated (46 legacy) | ✅ 22 + `/tools` |
 | Precios indexados | 51,000+, refresh 4h | ✅ |
-| Pitch | Commerce infrastructure for AI agents · `pip install cli-market-world` | ✅ |
+| Pitch | Commerce infrastructure for AI agents · `pip install cli-market-world-world-world` | ✅ |
 
 > Fuente única: `python3 ops/sync_market_stats.py` regenera `landing/lib/marketStats.ts`. Alinear copy a esos valores.
 

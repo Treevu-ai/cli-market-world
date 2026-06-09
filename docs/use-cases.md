@@ -58,10 +58,10 @@ r = requests.get(
 ```
 
 **What you get.**
-- 45,000+ verified prices, refreshed every 4 hours
+- 51,000+ verified prices, refreshed every 4 hours
 - Normalized by kg/L — compare 900ml vs 1L vs 6x625ml directly
 - P25/P50/P75 percentiles — median, not mean, for outlier-resistant analysis
-- 8 currencies, 8 countries, 66 retailers
+- 8 currencies, 8 countries, 68 retailers
 - CSV export up to 10K rows (Starter), unlimited (Pro+)
 
 **Use cases.** Inflation tracking. Market basket cost analysis. Retailer price positioning. Brand penetration studies.

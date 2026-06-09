@@ -18,8 +18,8 @@
       "id": "cli.pip_install",
       "phase": "manual",
       "tier": 1,
-      "name": "pip install cli-market en venv limpio",
-      "steps": "python -m venv /tmp/pam-venv && pip install -U cli-market && market hello"
+      "name": "pip install cli-market-world en venv limpio",
+      "steps": "python -m venv /tmp/pam-venv && pip install -U cli-market-world && market hello"
     },
     {
       "id": "cli.journey_synthetic",

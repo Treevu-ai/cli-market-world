@@ -36,7 +36,7 @@ Esto no es un índice oficial de inflación. Es señal de mercado en tiempo casi
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 
 ¿Qué producto te gustaría ver comparado en PE la próxima semana?""",
-        "comment": "Dashboard + comparar en terminal 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market\nmarket compare \"arroz\" --country PE\n```\n\nDatos: [[metrics/price-pulse-2026-W22]]",
+        "comment": "Dashboard + comparar en terminal 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world-world\nmarket compare \"arroz\" --country PE\n```\n\nDatos: [[metrics/price-pulse-2026-W22]]",
         "tags": "#AI #ecommerce #data #retail #Peru",
         "gate": True,
     },
@@ -132,7 +132,7 @@ Un agente puede preguntar "¿cuánto cuesta X en AR vs PE?" y obtener JSON en se
 
 Eso es infraestructura — no un chatbot que inventa precios.
 
-Open source. MIT. `pip install cli-market`
+Open source. MIT. `pip install cli-market-world-world`
 
 ¿En qué vertical retail te gustaría ver más cobertura?""",
         "comment": "Explorar líneas 👇\n\nhttps://cli-market.dev\n\n```\nmarket lines\n```",
@@ -160,7 +160,7 @@ Esta semana analizamos las búsquedas más frecuentes en CLI Market:
 5. #4 — Pañales / farmacia
 6. #5 — Electro (celulares)
 7. Insight: supermercados dominan, farmacias tienen mayor spread
-8. CTA: `pip install cli-market`
+8. CTA: `pip install cli-market-world-world`
 
 Los agentes no compran como humanos — buscan, comparan, optimizan.
 
@@ -227,7 +227,7 @@ PDFs, dashboards humanos, scraping frágil… pero no JSON unificado para MCP.
 
 Por eso construimos CLI Market: infraestructura de comercio para agentes.
 
-30 retailers. 36 herramientas MCP. 8 países. Open source.
+30 retailers. 22 herramientas MCP. 8 países. Open source.
 
 ¿Cuál insight te sorprende más?""",
         "comment": "Exportar datos (Pro) 👇\n\nhttps://cli-market.dev",
@@ -241,7 +241,7 @@ Por eso construimos CLI Market: infraestructura de comercio para agentes.
         "hooks": [
             "Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 8 países.",
             "Build in public: de un script Python a infraestructura de comercio para agentes.",
-            "El MVP era buscar leche en Wong. El producto es 36 herramientas MCP.",
+            "El MVP era buscar leche en Wong. El producto es 22 herramientas MCP.",
         ],
         "post": """Arranqué CLI Market con un solo conector VTEX y una pregunta:
 
@@ -251,7 +251,7 @@ Hoy:
 
 → 30 retailers verificados
 → 8 países (PE, AR, BR, MX, CO, CL, IT, FR)
-→ 36 herramientas MCP
+→ 22 herramientas MCP
 → Collector automático cada 8 horas
 → Open source, MIT
 
@@ -337,19 +337,19 @@ Alternativas que evaluamos:
 Python ganó por DX + async + ecosistema IA.
 
 ¿Tu agent stack es Python-first también?""",
-        "comment": "Quickstart 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market\n```",
+        "comment": "Quickstart 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world-world\n```",
         "tags": "#python #FastAPI #asyncio #AI #developers",
     },
     18: {
-        "title": "36 MCP tools MIT",
+        "title": "22 MCP tools MIT",
         "pillar": "build-in-public",
         "lang": "es",
         "hooks": [
-            "36 herramientas MCP. Todas documentadas. Open source. MIT.",
+            "22 herramientas MCP. Todas documentadas. Open source. MIT.",
             "No es un wrapper de scraping. Son 36 primitivas de comercio para agentes.",
             "El catálogo MCP más completo para e-commerce que conozco — y es open source.",
         ],
-        "post": """36 herramientas MCP.
+        "post": """22 herramientas MCP.
 
 Todas documentadas.
 
@@ -369,7 +369,7 @@ Porque los LLM eligen mejor con primitivas específicas:
 
 Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 ¿Qué tool te falta para tu agente?""",
         "comment": "Configs MCP 👇\n\nhttps://cli-market.dev/tools",
@@ -422,7 +422,7 @@ El moat no es el código — es la **frecuencia y confiabilidad** del dato.
 **Ya shipped (Alpha):**
 → Billing Pro manual (email + PayPal)
 → Form self-serve en /retailers
-→ 36 MCP tools + landing /tools
+→ 22 MCP tools + landing /tools
 → Collector + Price Pulse semanal
 
 **Jun 8 Beta:**
@@ -522,7 +522,7 @@ Tus productos **ya pueden** aparecer en búsquedas de agentes de IA.
 CLI Market unifica APIs de retail en una capa agent-ready:
 
 → Search, compare, cart, checkout
-→ 36 herramientas MCP
+→ 22 herramientas MCP
 → 8 países LATAM + EU
 
 **Registrar su tienda:**
@@ -587,7 +587,7 @@ Es **agent-first**.
 Copy-paste en tu terminal:
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market search "leche" --country PE
 ```
 
@@ -639,9 +639,9 @@ Stripe turned payments into APIs.
 
 CLI Market turns commerce into APIs.
 
-30 retailers. 8 countries. 36 MCP tools. Open source.
+30 retailers. 8 countries. 22 MCP tools. Open source.
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 Who's building agent-first commerce in your market?""",
         "comment": "Get started 👇\n\nhttps://cli-market.dev",
@@ -688,7 +688,7 @@ El hard part empieza ahora: escala + confiabilidad.
         "pillar": "social-proof",
         "lang": "es",
         "hooks": [
-            "30 días. 30 retailers. 8 países. 36 MCP tools. Recap.",
+            "30 días. 30 retailers. 8 países. 22 MCP tools. Recap.",
             "Milestone: lo que construimos en un mes de build in public.",
             "Números reales — no vanity metrics.",
         ],
@@ -698,7 +698,7 @@ Recap honesto:
 
 → **30 retailers** verificados (31 catálogo, 16 healthy hoy)
 → **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
-→ **36 herramientas MCP**
+→ **22 herramientas MCP**
 → **8,000+ precios** indexados (refresh 8h)
 → **Billing Pro** live (manual + PayPal)
 → **Self-serve** retailers en /retailers
@@ -761,7 +761,7 @@ Esto es lo que construí:
 
 Infraestructura de comercio para agentes de IA.
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 Esto es lo que viene:
 
@@ -782,7 +782,7 @@ Si eres developer: prueba el CLI.
 Si es retailer: registre su tienda.
 
 Nos vemos en el mes 2.""",
-        "comment": "Todo en un link 👇\n\nhttps://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin\n\n```\npip install cli-market\nmarket hello\n```",
+        "comment": "Todo en un link 👇\n\nhttps://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin\n\n```\npip install cli-market-world-world\nmarket hello\n```",
         "tags": "#AI #ecommerce #MCP #buildinpublic #milestone",
     },
 }

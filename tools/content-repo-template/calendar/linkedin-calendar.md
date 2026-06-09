@@ -30,7 +30,7 @@ index: "[[linkedin/00-Index]]"
 | 3 | "Stripe convirtió pagos en APIs. Nosotros convertimos comercio en APIs." | Bold claim |
 | 4 | "Probé 5 agentes de IA. Ninguno podía decirme cuánto cuesta la leche en Wong vs Metro." | Personal story |
 | 5 | Carousel: "4 pasos para que tu agente compre solo" | Educational |
-| 6 | "¿Por qué 36 herramientas MCP? Porque un agente necesita buscar, comparar, añadir al carrito Y pagar." | Behind the scenes |
+| 6 | "¿Por qué 22 herramientas MCP? Porque un agente necesita buscar, comparar, añadir al carrito Y pagar." | Behind the scenes |
 | 7 | "Esta semana: [N] precios frescos. 60 retailers (30 verificados). 8 países. Un solo `pip install`." | Data brag — usar [[metrics/price-pulse]] |
 
 ---
@@ -56,7 +56,7 @@ index: "[[linkedin/00-Index]]"
 | 15 | "Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 8 países." | Journey |
 | 16 | "El mayor desafío técnico no fue el código. Fue mantener 30 APIs externas sincronizadas." | Vulnerability |
 | 17 | "¿Por qué Python? Porque `httpx` + `asyncio` + `FastAPI` es imbatible para fan-out a 30 APIs." | Tech deep |
-| 18 | "36 herramientas MCP. Todas documentadas. Open source. MIT." | Social proof |
+| 18 | "22 herramientas MCP. Todas documentadas. Open source. MIT." | Social proof |
 | 19 | "El collector corre cada 8 horas. PostgreSQL. Railway. Cero intervención humana." | Autonomy |
 | 20 | "¿Qué sigue? Self-serve onboarding para retailers. PayPal live. Reportes semanales de inflación." | Roadmap |
 | 21 | "Mi error más grande: asumir que las APIs VTEX eran estables. Spoiler: no lo son." | Honest mistake |
@@ -70,10 +70,10 @@ index: "[[linkedin/00-Index]]"
 | 22 | "Este retailer peruano listó su tienda en CLI Market. 30 segundos. Sin código." | Case study |
 | 23 | "Si su tienda usa VTEX o Magento, sus productos ya pueden aparecer en búsquedas de IA." | Direct CTA |
 | 24 | "3 razones para registrar su tienda: 1. Gratis. 2. 30 segundos. 3. Agentes IA ya están comprando." | List post |
-| 25 | "Pruebe CLI Market ahora: `pip install cli-market && market search \"leche\" --country PE`" | Try it |
+| 25 | "Pruebe CLI Market ahora: `pip install cli-market-world-world && market search \"leche\" --country PE`" | Try it |
 | 26 | "El futuro del e-commerce no es mobile-first. Es agent-first." | Vision |
 | 27 | "¿Qué pasa cuando 1,000 agentes comparan precios en tiempo real? Eso estamos construyendo." | Ambition |
-| 28 | "60 retailers (30 verificados). 8 países. 3 plataformas. 36 herramientas MCP. PayPal + QR. Open source. MIT." | Recap |
+| 28 | "60 retailers (30 verificados). 8 países. 3 plataformas. 22 herramientas MCP. PayPal + QR. Open source. MIT." | Recap |
 | 29 | "Gracias a los 30 retailers que confiaron. A los que faltan: la puerta está abierta." | Gratitude |
 | 30 | "30 días. Esto es lo que construí. Esto es lo que viene." | Milestone |
 

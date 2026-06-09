@@ -24,6 +24,12 @@ from typing import Any
 
 import httpx
 
+CORE_ROOT = Path(__file__).resolve().parent.parent.parent / "cli-market-core"
+if str(CORE_ROOT) not in sys.path:
+    sys.path.insert(0, str(CORE_ROOT))
+
+from market_core import market_stats as ms  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_paths import content_root, metrics_dir  # noqa: E402
 
@@ -333,7 +339,7 @@ def build_price_pulse(data: dict, meta: dict) -> str:
         "## Hook LinkedIn (copiar)",
         "",
         f"Esta semana: **{snapshots:,}** precios frescos · **{active}** retailers activos · "
-        f"**{healthy}/{total}** tiendas saludables. Un solo `pip install cli-market`.",
+        f"**{healthy}/{total}** tiendas saludables. Un solo `{ms.PIP_INSTALL_CMD}`.",
         "",
         "Fuente: `/dashboard/data` · [[GTM-Hub]]",
         "",

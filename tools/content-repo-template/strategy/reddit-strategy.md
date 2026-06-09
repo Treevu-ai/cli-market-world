@@ -26,14 +26,14 @@ hub: "[[GTM-Hub]]"
 
 ## Phase 2: Content Calendar (Week 1-4)
 
-**Week 1**: r/aiagents — "36 MCP tools for commerce: what my agent can do now"
+**Week 1**: r/aiagents — "22 MCP tools for commerce: what my agent can do now"
 **Week 2**: r/Python — Tutorial: "How to build a price comparison agent in 10 lines"
 **Week 3**: r/dataisbeautiful — "Supermarket price spreads: Lima vs Buenos Aires vs São Paulo"
 **Week 4**: r/SideProject — "I built commerce infrastructure for AI agents — here's what I learned"
 
 ## Phase 3: AMA Plan (Month 2)
 - **Subreddit**: r/aiagents or r/ecommerce
-- **Topic**: "I turned 60 retailers (30 verified) into APIs for AI agents. AMA."
+- **Topic**: "I turned 68 retailers (38 verified) into APIs for AI agents. AMA."
 - **Prep**: 20 anticipated questions + data-backed answers
 - **Promotion**: Crosspost to r/MCP, r/ClaudeAI
 

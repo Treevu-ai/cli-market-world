@@ -18,7 +18,7 @@ tags:
 
 1. **Hook 1:** Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 8 países.
 2. **Hook 2:** Build in public: de un script Python a infraestructura de comercio para agentes.
-3. **Hook 3:** El MVP era buscar leche en Wong. El producto es 36 herramientas MCP.
+3. **Hook 3:** El MVP era buscar leche en Wong. El producto es 22 herramientas MCP.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -30,7 +30,7 @@ Hoy:
 
 → 60 retailers (30 verificados)
 → 8 países (PE, AR, BR, MX, CO, CL, IT, FR)
-→ 36 herramientas MCP
+→ 22 herramientas MCP
 → Collector automático cada 8 horas
 → Open source, MIT
 

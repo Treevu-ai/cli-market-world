@@ -134,6 +134,197 @@ def _replace_mcp_count(text: str, old: int, new: int, *, es: bool = False) -> st
     return out
 
 
+def _apply_canonical_copy_patches(text: str) -> str:
+    """Unify pip package name, PyPI URL, and market stats across marketing/docs copy."""
+    counts = _mcp_counts()
+    mcp_default = counts["default"]
+    out = text
+    out = out.replace("pip install cli-market-world-world-world", s.PIP_INSTALL_CMD)
+    out = out.replace("pip install cli-market", s.PIP_INSTALL_CMD)
+    out = out.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
+    out = re.sub(
+        r"Thanks for your interest in contributing to CLI Market — \d+ retailers indexed, "
+        r"\d+ verified active, \d+ countries, open source\.",
+        (
+            f"Thanks for your interest in contributing to CLI Market — "
+            f"{s.RETAILERS_DEFINED} retailers indexed, {s.RETAILERS_VERIFIED} verified active, "
+            f"{s.COUNTRIES} countries, open source."
+        ),
+        out,
+        count=1,
+    )
+    out = re.sub(
+        r"\d+ verified active \(\d+ in catalog\)",
+        f"{s.RETAILERS_VERIFIED} verified active ({s.RETAILERS_DEFINED} in catalog)",
+        out,
+    )
+    out = re.sub(
+        r"connectors for \d+ retailers whose",
+        f"connectors for {s.RETAILERS_DEFINED} retailers whose",
+        out,
+    )
+    out = re.sub(
+        r"~\d+K prices indexed",
+        f"~{s.PRICES_VERIFIED_LABEL} prices indexed",
+        out,
+        flags=re.I,
+    )
+    for price_pat in (
+        r"45,000\+",
+        r"45\.000\+",
+        r"~45K",
+        r"~45k",
+    ):
+        out = re.sub(price_pat, s.PRICES_VERIFIED_LABEL, out, flags=re.I)
+    out = re.sub(
+        r"\d+ retailers \(\d+ verificados activos\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verificados activos)",
+        out,
+    )
+    out = re.sub(
+        r"\d+ retailers \(\d+ verified active\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified active)",
+        out,
+    )
+    out = re.sub(
+        r"\d+ retailers \(\d+ verified\)",
+        f"{s.RETAILERS_DEFINED} retailers ({s.RETAILERS_VERIFIED} verified)",
+        out,
+    )
+    out = re.sub(
+        r"\b\d+ currencies, \d+ countries, \d+ retailers\b",
+        f"{s.COUNTRIES} currencies, {s.COUNTRIES} countries, {s.RETAILERS_DEFINED} retailers",
+        out,
+    )
+    out = re.sub(
+        r"\| Prices indexed \| [\d,]+\+ \|",
+        f"| Prices indexed | {s.PRICES_VERIFIED_LABEL} |",
+        out,
+        count=1,
+    )
+    out = re.sub(
+        r"\| Countries \| \d+ \(PE",
+        f"| Countries | {s.COUNTRIES} (PE",
+        out,
+        count=1,
+    )
+    out = re.sub(
+        r"\| MCP tools \| \d+ \(search",
+        f"| MCP tools | {mcp_default} default / {counts['full']} full (search",
+        out,
+        count=1,
+    )
+    out = re.sub(
+        r"- \d+ MCP tools, \d+ market indicators",
+        f"- {mcp_default} MCP tools (default), {s.INDICATORS_COUNT} market indicators",
+        out,
+    )
+    out = re.sub(
+        r"dashboard expone ~\d+K precios de \d+ tiendas",
+        (
+            f"dashboard expone {s.PRICES_VERIFIED_LABEL} precios de "
+            f"{s.RETAILERS_VERIFIED} tiendas"
+        ),
+        out,
+        flags=re.I,
+    )
+    out = re.sub(
+        r"\b\d+ países\b",
+        f"{s.COUNTRIES} países",
+        out,
+    )
+    out = re.sub(
+        r"\b\d+ countries\b",
+        f"{s.COUNTRIES} countries",
+        out,
+    )
+    for legacy_mcp in (36, 43, 46):
+        out = _replace_mcp_count(out, legacy_mcp, mcp_default)
+    out = re.sub(
+        r"B1\[pip install cli-market\]",
+        f"B1[{s.PIP_INSTALL_CMD}]",
+        out,
+    )
+    return out
+
+
+_MARKETING_COPY_FILES = (
+    "CONTRIBUTING.md",
+    "docs/use-cases.md",
+    "docs/dx-audit.md",
+    "ops/HN_POST.md",
+    "retailers-deck.md",
+    "ops/ONBOARDING_MAP.md",
+    "docs/agents/contexts/financial-analyst-context.md",
+    "ops/generate_linkedin_days.py",
+)
+
+
+def sync_marketing_copy() -> None:
+    """Patch stats and pip install command in docs, ops scripts, and content template."""
+    synced = 0
+    for rel in _MARKETING_COPY_FILES:
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        patched = _apply_canonical_copy_patches(text)
+        if patched != text:
+            path.write_text(patched, encoding="utf-8")
+            synced += 1
+        print(f"Synced {path}")
+
+    template_root = ROOT / "tools" / "content-repo-template"
+    if template_root.is_dir():
+        for path in sorted(template_root.rglob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            patched = _apply_canonical_copy_patches(text)
+            if patched != text:
+                path.write_text(patched, encoding="utf-8")
+                synced += 1
+            print(f"Synced {path}")
+
+    if synced == 0:
+        print("Marketing copy already canonical (no file changes)")
+
+
+def sync_content_repo_copy() -> None:
+    """Patch live cli-market-content when checked out beside cli-market-world."""
+    content_root = ROOT.parent / "cli-market-content"
+    if not content_root.is_dir():
+        print("SKIP content repo (cli-market-content not found)", file=sys.stderr)
+        return
+    synced = 0
+    for path in sorted(content_root.rglob("*")):
+        if path.suffix.lower() not in (".md", ".txt", ".json"):
+            continue
+        text = path.read_text(encoding="utf-8")
+        patched = _apply_canonical_copy_patches(text)
+        if patched != text:
+            path.write_text(patched, encoding="utf-8")
+            synced += 1
+        print(f"Synced {path}")
+    if synced == 0:
+        print("Content repo copy already canonical (no file changes)")
+
+
+def sync_root_svgs() -> None:
+    for rel in (
+        "end-screen.svg",
+        "mcp-registry.svg",
+        "mcp-tools-table.svg",
+        "social-preview.svg",
+    ):
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        patched = _apply_canonical_copy_patches(text)
+        if patched != text:
+            path.write_text(patched, encoding="utf-8")
+        print(f"Synced {path}")
+
+
 def write_market_stats_ts() -> None:
     counts = _mcp_counts()
     bundles = _bundle_tools_for_landing("default")
@@ -715,6 +906,9 @@ def main() -> None:
     sync_og_preview_svg()
     sync_og_png()
     sync_llms_txt()
+    sync_marketing_copy()
+    sync_content_repo_copy()
+    sync_root_svgs()
 
 
 if __name__ == "__main__":
