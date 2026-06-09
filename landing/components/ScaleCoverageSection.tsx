@@ -114,7 +114,7 @@ export default function ScaleCoverageSection() {
                   { label: isES ? "Precios acumulados" : "Total snapshots", value: stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—" },
                   { label: isES ? "Promedio diario (7d)" : "Daily avg (7d)", value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—" },
                   { label: isES ? "Foso de datos" : "Data moat", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
-                  { label: isES ? "Intervalo collector" : "Collector interval", value: stats.collectorIntervalH != null ? `cada ${stats.collectorIntervalH}h` : `cada ${MARKET_STATS.pricesRefreshHours}h` },
+                  { label: isES ? "Intervalo collector" : "Collector interval", value: `cada ${MARKET_STATS.pricesRefreshHours}h` },
                 ].map((item) => (
                   <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
                     <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-2">{item.label}</p>

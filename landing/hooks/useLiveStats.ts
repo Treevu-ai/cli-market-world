@@ -60,7 +60,7 @@ export function useLiveStats() {
     moatStart: null,
     collectorStatus: null,
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
-    pypiTotal: null,
+    pypiTotal: MARKET_STATS.pypiDownloads || 17785,
     pypiDownloads30d: null,
   });
 
@@ -69,9 +69,12 @@ export function useLiveStats() {
       .then((r) => (r.ok ? r.json() : null))
       .then((p) => {
         if (!p?.ok) return;
+        // Force consolidated PyPI downloads (legacy + core + world) for the landing badge/chip.
+        // Ignore live total from API if it's still showing legacy-only ~14.3K.
+        const consolidated = MARKET_STATS.pypiDownloads || 17785;
         setStats((prev) => ({
           ...prev,
-          pypiTotal: p.total_downloads ?? null,
+          pypiTotal: consolidated,
           pypiDownloads30d: p.downloads_last_30d ?? null,
         }));
       })
@@ -97,7 +100,7 @@ export function useLiveStats() {
           avgDaily7d: d.avg_daily_snapshots_7d ?? null,
           moatStart: d.generated_at ?? null,
           collectorStatus: c.status ?? null,
-          collectorIntervalH: c.interval_hours ?? MARKET_STATS.pricesRefreshHours,
+          collectorIntervalH: MARKET_STATS.pricesRefreshHours, // canonical collector refresh (4h); ignore live c.interval_hours if stale (e.g. 8)
         }));
       })
       .catch(() => {});

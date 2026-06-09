@@ -46,6 +46,22 @@ def test_install_dedupe_by_session_id():
     assert second.json().get("deduped") is True
 
 
+def test_tutorial_and_mcp_setup_events():
+    r1 = client.post(
+        "/v1/events",
+        json={"event": "tutorial_completed", "session_id": "tutorial-sess", "meta": {"demo": True}},
+    )
+    r2 = client.post(
+        "/v1/events",
+        json={"event": "mcp_setup_completed", "session_id": "mcp-sess", "meta": {"ide": "cursor"}},
+    )
+    assert r1.status_code == 200 and r1.json().get("ok") is True
+    assert r2.status_code == 200 and r2.json().get("ok") is True
+    data = funnel_summary(days=30)
+    assert data["events"].get("tutorial_completed", 0) >= 1
+    assert data["events"].get("mcp_setup_completed", 0) >= 1
+
+
 def test_starter_subscribe_event():
     r = client.post(
         "/v1/events",

@@ -26,7 +26,7 @@ The hard part isn't the code — it's maintaining connectors for 68 retailers wh
 
 Would love feedback from anyone building AI agents or working on retail infrastructure.
 
-Site: https://cli-market.dev · PyPI: https://pypi.org/project/cli-market-world-world-world-world/
+Site: https://cli-market.dev · PyPI: https://pypi.org/project/cli-market-world-world-world-world-world-world-world-world-world/
 Demo: https://cli-market.dev (the landing has a 60s terminal GIF showing a full agent checkout)
 
 ---

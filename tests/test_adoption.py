@@ -23,6 +23,35 @@ MOCK_PEPY = {
     "fetched_at": "2026-06-07T12:00:00+00:00",
 }
 
+# Shape expected by adoption_summary now (multi)
+MOCK_PEPY_MULTI = {
+    "ok": True,
+    "projects": ["cli-market-core", "cli-market-world"],
+    "combined": {
+        "ok": True,
+        "projects": ["cli-market-core", "cli-market-world"],
+        "total_downloads": 11155,
+        "downloads_last_7d": 900,
+        "downloads_last_30d": 3486,
+        "downloads_last_30d_no_ci": None,
+        "fetched_at": "2026-06-07T12:00:00+00:00",
+    },
+    "packages": {
+        "cli-market-core": {
+            "ok": True,
+            "project": "cli-market-core",
+            "total_downloads": 8000,
+            "downloads_last_7d": 650,
+            "downloads_last_30d": 2500,
+            "downloads_last_30d_no_ci": None,
+            "top_version_30d": "1.9.13",
+            "latest_version": "1.9.13",
+        },
+        "cli-market-world": MOCK_PEPY,
+    },
+    "fetched_at": "2026-06-07T12:00:00+00:00",
+}
+
 MOCK_FUNNEL = {
     "window_days": 30,
     "events": {
@@ -57,8 +86,8 @@ MOCK_FUNNEL = {
 
 
 @patch("market_adoption.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_adoption.pepy_summary", return_value=MOCK_PEPY)
-def test_adoption_summary(mock_pepy, mock_funnel):
+@patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
+def test_adoption_summary(mock_pepy_multi, mock_funnel):
     from market_adoption import adoption_summary
 
     data = adoption_summary(days=30)
@@ -71,19 +100,21 @@ def test_adoption_summary(mock_pepy, mock_funnel):
 
 
 @patch("market_adoption.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_adoption.pepy_summary", return_value=MOCK_PEPY)
-def test_adoption_markdown(mock_pepy, mock_funnel):
+@patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
+def test_adoption_markdown(mock_pepy_multi, mock_funnel):
     from market_adoption import adoption_markdown_section
 
     md = adoption_markdown_section(days=30)
     assert "## Adopción" in md
     assert "3,486" in md
     assert "register" in md.lower() or "Register" in md
+    # New per-package pull-out
+    assert "PyPI por paquete" in md or "cli-market-core" in md
 
 
 @patch("market_adoption.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_adoption.pepy_summary", return_value=MOCK_PEPY)
-def test_adoption_slack_lines(mock_pepy, mock_funnel):
+@patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
+def test_adoption_slack_lines(mock_pepy_multi, mock_funnel):
     from market_adoption import adoption_slack_lines
 
     lines = adoption_slack_lines(days=30)
@@ -91,6 +122,8 @@ def test_adoption_slack_lines(mock_pepy, mock_funnel):
     assert "Adopción" in text
     assert "PyPI" in text
     assert "Embudo" in text
+    # Combined + per package pulled out
+    assert "combined" in text.lower() or "cli-market-core" in text
 
 
 @patch("routers.funnel.adoption_summary")
@@ -110,8 +143,8 @@ def test_analytics_adoption_endpoint(mock_summary):
 
 
 @patch("market_adoption.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_adoption.pepy_summary", return_value=MOCK_PEPY)
-def test_daily_briefing_slack_includes_adoption(mock_pepy, mock_funnel):
+@patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
+def test_daily_briefing_slack_includes_adoption(mock_pepy_multi, mock_funnel):
     import importlib.util
     from pathlib import Path
 

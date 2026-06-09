@@ -11,9 +11,12 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 PEPY_BASE = "https://api.pepy.tech"
-_CACHE: dict[str, Any] = {}
-_CACHE_AT: float = 0.0
+# Per-project caches (support multiple PyPI packages: cli-market-core + cli-market-world)
+_CACHE: dict[str, dict[str, Any]] = {}
+_CACHE_AT: dict[str, float] = {}
 _CACHE_TTL_S = int(os.getenv("PEPY_CACHE_TTL_S", "3600"))
+
+DEFAULT_PYPI_PROJECTS: list[str] = ["cli-market-core", "cli-market-world"]
 
 
 def _api_key() -> str:
@@ -21,7 +24,16 @@ def _api_key() -> str:
 
 
 def project_name() -> str:
+    """Single project (for scripts / backward compat). Defaults to cli-market-world."""
     return (os.getenv("PEPY_PROJECT") or "cli-market-world").strip().lower()
+
+
+def pypi_projects() -> list[str]:
+    """List of PyPI projects to track for Adoption Index (combined traction)."""
+    env = os.getenv("PEPY_PROJECTS")
+    if env:
+        return [x.strip().lower() for x in env.split(",") if x.strip()]
+    return list(DEFAULT_PYPI_PROJECTS)
 
 
 def _fetch_json(path: str) -> dict[str, Any] | list[Any] | None:
@@ -79,16 +91,17 @@ def _top_version(by_version: dict[str, int]) -> str | None:
     return max(by_version.items(), key=lambda x: x[1])[0]
 
 
-def pepy_summary(*, force: bool = False) -> dict[str, Any]:
-    """Aggregate Pepy stats for the configured PyPI project."""
-    global _CACHE_AT
+def pepy_summary(*, project: str | None = None, force: bool = False) -> dict[str, Any]:
+    """Aggregate Pepy stats for a (or the configured) PyPI project.
+    project: explicit project name. If None, falls back to PEPY_PROJECT or "cli-market-world".
+    """
+    proj = (project or project_name()).strip().lower()
     now = time.time()
-    if not force and _CACHE and (now - _CACHE_AT) < _CACHE_TTL_S:
-        return dict(_CACHE)
+    if not force and proj in _CACHE and (now - _CACHE_AT.get(proj, 0.0)) < _CACHE_TTL_S:
+        return dict(_CACHE[proj])
 
-    project = project_name()
     out: dict[str, Any] = {
-        "project": project,
+        "project": proj,
         "configured": bool(_api_key()),
         "source": "pepy.tech",
         "fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -98,7 +111,7 @@ def pepy_summary(*, force: bool = False) -> dict[str, Any]:
         out["message"] = "PEPY_API_KEY not set"
         return out
 
-    base = _fetch_json(f"/api/v2/projects/{project}?includeMetadata=true")
+    base = _fetch_json(f"/api/v2/projects/{proj}?includeMetadata=true")
     if not isinstance(base, dict):
         out["ok"] = False
         out["message"] = "pepy fetch failed"
@@ -111,7 +124,7 @@ def pepy_summary(*, force: bool = False) -> dict[str, Any]:
     last_1, _ = _sum_downloads(downloads, since=today)
 
     pro = _fetch_json(
-        f"/service-api/v1/pro/projects/{project}/downloads"
+        f"/service-api/v1/pro/projects/{proj}/downloads"
         "?timeRange=THREE_MONTHS&includeCIDownloads=false"
     )
     downloads_no_ci: dict[str, dict[str, int]] = {}
@@ -134,9 +147,8 @@ def pepy_summary(*, force: bool = False) -> dict[str, Any]:
         }
     )
 
-    _CACHE.clear()
-    _CACHE.update(out)
-    _CACHE_AT = now
+    _CACHE[proj] = dict(out)
+    _CACHE_AT[proj] = now
     return dict(out)
 
 
@@ -150,3 +162,53 @@ def pepy_briefing_line() -> str:
     d7 = data.get("downloads_last_7d") or 0
     ver = data.get("top_version_30d") or "—"
     return f"PyPI (Pepy): {total:,} total · {d30:,} últimos 30d · {d7:,} 7d · top versión 30d: {ver}"
+
+
+def pepy_multi_summary(*, projects: list[str] | None = None, force: bool = False) -> dict[str, Any]:
+    """Fetch stats for multiple PyPI projects and return combined aggregates + per-project detail.
+    Used by Adoption Index to make total PyPI traction (core + world) visible and pull the numbers out.
+    """
+    projs = projects or pypi_projects()
+    packages: dict[str, dict[str, Any]] = {}
+    any_ok = False
+    agg_total = 0
+    agg_24h = 0
+    agg_7d = 0
+    agg_30d = 0
+    agg_30d_no_ci = 0
+    fetched_at = datetime.now(timezone.utc).isoformat()
+
+    for p in projs:
+        data = pepy_summary(project=p, force=force)
+        packages[p] = data
+        if data.get("ok"):
+            any_ok = True
+            agg_total += int(data.get("total_downloads") or 0)
+            agg_24h += int(data.get("downloads_last_24h") or 0)
+            agg_7d += int(data.get("downloads_last_7d") or 0)
+            agg_30d += int(data.get("downloads_last_30d") or 0)
+            no_ci = data.get("downloads_last_30d_no_ci")
+            if no_ci is not None:
+                agg_30d_no_ci += int(no_ci)
+
+    combined: dict[str, Any] = {
+        "ok": any_ok,
+        "projects": projs,
+        "total_downloads": agg_total,
+        "downloads_last_24h": agg_24h,
+        "downloads_last_7d": agg_7d,
+        "downloads_last_30d": agg_30d,
+        "downloads_last_30d_no_ci": agg_30d_no_ci or None if any(
+            isinstance(d, dict) and d.get("downloads_last_30d_no_ci") for d in packages.values()
+        ) else None,
+        "fetched_at": fetched_at,
+    }
+
+    return {
+        "ok": any_ok,
+        "source": "pepy.tech (multi)",
+        "projects": projs,
+        "combined": combined,
+        "packages": packages,
+        "fetched_at": fetched_at,
+    }
