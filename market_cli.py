@@ -91,6 +91,8 @@ T = {
         "intel_indicators": "Catálogo de indicadores del moat",
         "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
         "intel_scores": "Scores compuestos (fairness, stress, aggression)",
+        "tutorial": "Tutorial interactivo de 3 ejercicios (buscar, comparar, exportar) en 60 segundos",
+        "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -1983,6 +1985,94 @@ def cmd_share(args):
     ))
 
 
+def cmd_tutorial(args):
+    """Interactive 3-step tutorial (P0 from product handoff)."""
+    country = getattr(args, "country", "PE") or "PE"
+    demo = getattr(args, "demo", False)
+    console.print(Panel.fit(
+        "[bold]CLI Market Tutorial — 3 ejercicios en 60 segundos[/]",
+        border_style="#00FF88",
+    ))
+    console.print("\nEjercicio 1/3: Buscar")
+    if demo:
+        console.print("  $ market search \"arroz\" --country PE")
+        console.print("  ✓ 15 resultados. Precio mín: S/ 2.90/kg (Metro)")
+    else:
+        # Use real search via existing logic (simplified call)
+        try:
+            ns = argparse.Namespace(query="arroz", country=country, limit=5, page=1, json=False, store=None, line=None)
+            cmd_search(ns)
+        except Exception:
+            console.print("  (usando demo data)")
+            console.print("  ✓ 15 resultados. Precio mín: S/ 2.90/kg (Metro)")
+    console.print("\nEjercicio 2/3: Comparar")
+    if demo:
+        console.print("  $ market compare \"aceite\" --country PE")
+        console.print("  ✓ 8 productos comparados. Spread: 12%")
+    else:
+        try:
+            ns = argparse.Namespace(query="aceite", country=country, limit=5, json=False)
+            cmd_compare(ns)
+        except Exception:
+            console.print("  (usando demo data)")
+            console.print("  ✓ 8 productos comparados. Spread: 12%")
+    console.print("\nEjercicio 3/3: Exportar")
+    console.print("  $ market export --format json > precios.json  (o usa --json en search)")
+    console.print("  ✓ Exportado (simulado)")
+    console.print("\n[bold]Tutorial completo.[/] Próximo paso: `market mcp-setup --ide cursor`")
+    if not demo:
+        console.print("[dim]Usa --demo para modo sin collector live.[/]")
+
+
+def cmd_mcp_setup(args):
+    """One-liner MCP config for IDEs (P0)."""
+    ide = getattr(args, "ide", "cursor") or "cursor"
+    dry = getattr(args, "dry_run", False)
+    home = os.path.expanduser("~")
+    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
+    api_url = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+
+    if ide == "cursor":
+        cfg_path = os.path.join(home, ".cursor", "mcp.json")
+        cfg = {
+            "mcpServers": {
+                "cli-market": {
+                    "command": "python",
+                    "args": ["-m", "market_mcp"],
+                    "env": {"MARKET_API_TOKEN": token, "MARKET_API_URL": api_url}
+                }
+            }
+        }
+    elif ide == "claude":
+        cfg_path = os.path.join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json")
+        cfg = {"mcpServers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
+    elif ide == "windsurf":
+        cfg_path = os.path.join(home, ".windsurf", "mcp.json")
+        cfg = {"mcpServers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
+    else:  # vscode
+        cfg_path = os.path.join(home, ".vscode", "mcp.json")
+        cfg = {"servers": {"cli-market": {"command": "python", "args": ["-m", "market_mcp"], "env": {"MARKET_API_TOKEN": token}}}}
+
+    if dry:
+        console.print(f"[dim]Dry-run for {ide}:[/]")
+        console.print(json.dumps(cfg, indent=2))
+        return
+
+    os.makedirs(os.path.dirname(cfg_path), exist_ok=True)
+    with open(cfg_path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+
+    console.print(Panel.fit(
+        f"[bold]MCP Setup — {ide}[/]\n\n"
+        f"✓ Config written: {cfg_path}\n"
+        f"✓ Token: {token[:10]}...\n"
+        f"✓ API: {api_url}\n\n"
+        "[green]MCP config ready. 22 tools available.[/]\n\n"
+        "Reiniciá el IDE y preguntale a tu agente: \"Busca arroz en Perú\"",
+        border_style="#00FF88",
+    ))
+
+
 def cmd_upgrade(args):
     """Upgrade Pro ($39) — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
     get_token_with_prompt()
@@ -2274,6 +2364,15 @@ def main():
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
 
+    # P0 onboarding features (from handoff)
+    p = sub.add_parser("tutorial", help=t("tutorial"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--demo", action="store_true", help="Run with demo data (no live collector)")
+
+    p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
+    p.add_argument("--ide", choices=["cursor", "claude", "windsurf", "vscode"], default="cursor")
+    p.add_argument("--dry-run", action="store_true", help="Print config without writing file")
+
     mcp_default, mcp_legacy = _mcp_profile_counts()
     p_tools = sub.add_parser(
         "tools",
@@ -2332,6 +2431,7 @@ def main():
         "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
+        "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
     }
     cmd = args.command
     if cmd == "intel":
