@@ -4,6 +4,19 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-09] — P0 onboarding: tutorial + mcp-setup
+
+### cli-market-core v1.9.16
+- **Changed:** `PACKAGE_VERSION` bump (aligned with world release)
+
+### cli-market-world v1.9.16
+- **Added:** `market tutorial` — 3-step guided onboarding (search, compare, export) with `tutorial_completed` funnel event
+- **Added:** `market mcp-setup --ide {cursor|claude|windsurf|vscode}` — one-liner MCP config, API ping, project-dir detection
+- **Added:** Funnel events `tutorial_completed` and `mcp_setup_completed`
+- **Changed:** Adoption Index multi-PyPI Pepy rollup (core + world)
+
+---
+
 ## [2026-06-08] — CLI intel namespace + billing touchpoints
 
 ### cli-market-world v1.9.7
