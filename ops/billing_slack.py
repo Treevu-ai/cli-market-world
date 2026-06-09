@@ -1,4 +1,4 @@
-"""Slack notifications for subscriptions → #suscripciones-cli-pro."""
+"""Slack notifications — revenue → #suscripciones-cli-pro, funnel → #funnel-cli-market."""
 
 from __future__ import annotations
 
@@ -30,10 +30,25 @@ _FUNNEL_LABELS: dict[str, str] = {
 }
 
 
-def _slack_ready() -> bool:
+def _subscription_slack_ready() -> bool:
     return bool(
         os.getenv("SLACK_BOT_TOKEN", "").strip()
         or os.getenv("SLACK_WEBHOOK_CLI_MARKET_PRO", "").strip()
+    )
+
+
+def _funnel_slack_ready() -> bool:
+    return bool(
+        os.getenv("SLACK_BOT_TOKEN", "").strip()
+        or os.getenv("SLACK_WEBHOOK_FUNNEL", "").strip()
+    )
+
+
+def _funnel_realtime_enabled() -> bool:
+    return os.getenv("SLACK_FUNNEL_REALTIME", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
     )
 
 
@@ -69,7 +84,7 @@ def format_subscription_message(
     if st == "cancelled":
         reason = (source or "paypal_webhook").strip()
         lines = [
-            f"❌ *{label}* — suscripción cancelada",
+            f"❌ *[REVENUE]* {label} — suscripción cancelada",
             f"• usuario: `{user}`",
             f"• email: {mail}",
             f"• ref: `{ref}`",
@@ -80,7 +95,7 @@ def format_subscription_message(
 
     if st == "pending":
         lines = [
-            f"⏳ *{label}* — pago pendiente",
+            f"⏳ *[REVENUE]* {label} — pago pendiente",
             f"• ref: `{ref}`",
             f"• usuario CLI: `{user}`",
             f"• email: {mail}",
@@ -97,7 +112,7 @@ def format_subscription_message(
         return "\n".join(lines)
 
     lines = [
-        f"✅ *{label}* — suscripción activa",
+        f"✅ *[REVENUE]* {label} — suscripción activa",
         f"• usuario: `{user}`",
         f"• email: {mail}",
         f"• ref: `{ref}`",
@@ -122,7 +137,7 @@ def format_funnel_message(
     tier = (meta.get("tier") or meta.get("plan") or "").strip()
     email = (meta.get("email") or "").strip()
     source = (meta.get("source") or "").strip()
-    lines = [f"📥 *{label}*", f"• usuario: `{user}`"]
+    lines = [f"📥 *[FUNNEL]* {label}*", f"• usuario: `{user}`"]
     if tier:
         lines.append(f"• tier: {tier_label(tier) if tier in TIER_LABELS else tier}")
     if email:
@@ -146,7 +161,7 @@ def pro_pending_slack_blocks(
     mail = (email or "—").strip()
     method = (payment_method or "—").strip()
     lines = [
-        "⏳ *CLI Market Pro ($39)* — pago pendiente",
+        "⏳ *[REVENUE]* CLI Market Pro ($39) — pago pendiente",
         f"• ref: `{ref}` · usuario: `{user}`",
         f"• email: {mail} · método: {method}",
     ]
@@ -184,7 +199,7 @@ def notify_subscription(
     plan: str = "",
 ) -> bool:
     """Post subscription event to #suscripciones-cli-pro. Never raises."""
-    if not _slack_ready():
+    if not _subscription_slack_ready():
         logger.debug("Slack not configured; skip subscription notify")
         return False
     try:
@@ -235,23 +250,97 @@ def notify_funnel_event(
     username: str = "",
     meta: dict | None = None,
 ) -> bool:
-    """Post adoption funnel events (register, checkout) to subscriptions channel."""
+    """Post adoption funnel events to #funnel-cli-market when realtime mode is on."""
     ev = (event or "").strip().lower()
     if ev not in _FUNNEL_LABELS:
         return False
     if not _funnel_slack_enabled(ev):
         return False
-    if not _slack_ready():
+    if not _funnel_realtime_enabled():
+        return False
+    if not _funnel_slack_ready():
         return False
     try:
-        from slack_notify import deliver_to_cli_market_pro
+        from slack_notify import deliver_to_funnel
 
-        deliver_to_cli_market_pro(
+        deliver_to_funnel(
             format_funnel_message(event=ev, username=username, meta=meta),
         )
         return True
     except Exception as exc:
         logger.warning("Funnel Slack notify failed: %s", exc)
+        return False
+
+
+def format_funnel_digest_message(*, hours: int = 24) -> str:
+    """Daily adoption summary for #funnel-cli-market."""
+    from market_funnel import funnel_digest_counts, funnel_recent_events, funnel_summary
+
+    hours = max(1, min(hours, 168))
+    counts = funnel_digest_counts(hours=hours)
+    rows = funnel_recent_events(hours=hours)
+    summary = funnel_summary(days=1)
+    conv = summary.get("conversion") or {}
+
+    lines = [
+        f"📊 *[FUNNEL DIGEST]* últimas {hours}h",
+        "",
+        "*Conteos*",
+    ]
+    for ev, label in (
+        ("register", "registros"),
+        ("first_search", "primeras búsquedas"),
+        ("starter_subscribe", "checkout Starter"),
+        ("request_pro", "checkout Pro"),
+        ("procure_subscribe", "checkout Procure"),
+        ("activated", "activaciones (evento)"),
+    ):
+        n = counts.get(ev, 0)
+        if n:
+            lines.append(f"• {label}: {n}")
+
+    if not any(counts.values()):
+        lines.append("• sin eventos de adopción en la ventana")
+
+    lines.extend(["", "*Conversión (24h)*"])
+    for key, label in (
+        ("register_to_search", "registro → búsqueda"),
+        ("search_to_pro", "búsqueda → checkout Pro"),
+        ("pro_to_activated", "checkout Pro → activado"),
+    ):
+        val = conv.get(key)
+        if val is not None:
+            lines.append(f"• {label}: {val * 100:.1f}%")
+
+    ttfv = summary.get("ttfv_median_minutes")
+    if ttfv is not None:
+        lines.append(f"• TTFV mediana: {ttfv:.0f} min")
+
+    if rows:
+        lines.extend(["", "*Últimos eventos*"])
+        for row in rows[:12]:
+            ev = row.get("event", "")
+            user = (row.get("username") or "—").strip() or "—"
+            label = _FUNNEL_LABELS.get(ev, ev)
+            src = (row.get("meta") or {}).get("source", "")
+            extra = f" · {src}" if src else ""
+            lines.append(f"• {label}: `{user}`{extra}")
+
+    return "\n".join(lines)
+
+
+def notify_funnel_digest(*, hours: int = 24) -> bool:
+    """Post funnel digest to #funnel-cli-market. Never raises."""
+    if not _funnel_slack_ready():
+        logger.debug("Funnel Slack not configured; skip digest")
+        return False
+    try:
+        from slack_notify import deliver_to_funnel
+
+        deliver_to_funnel(format_funnel_digest_message(hours=hours))
+        return True
+    except Exception as exc:
+        logger.warning("Funnel digest Slack notify failed: %s", exc)
         return False
 
 
