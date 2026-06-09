@@ -142,6 +142,7 @@ def _apply_canonical_copy_patches(text: str) -> str:
     out = out.replace("pip install cli-market-world-world-world", s.PIP_INSTALL_CMD)
     out = out.replace("pip install cli-market", s.PIP_INSTALL_CMD)
     out = out.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
+    out = out.replace("https://pypi.org/project/cli-market", s.PYPI_URL.rstrip("/"))
     out = re.sub(
         r"Thanks for your interest in contributing to CLI Market — \d+ retailers indexed, "
         r"\d+ verified active, \d+ countries, open source\.",
@@ -257,6 +258,8 @@ _MARKETING_COPY_FILES = (
     "ops/ONBOARDING_MAP.md",
     "docs/agents/contexts/financial-analyst-context.md",
     "ops/generate_linkedin_days.py",
+    "ops/DEPLOYMENT_MONITORING_DAILY_COMMANDS.md",
+    "ops/PRICING-CHANGE-CHECKLIST.md",
 )
 
 

@@ -119,7 +119,7 @@ BOOKMARKS = [
     ("Dashboard", f"{API_BASE}/dashboard"),
     ("Health", f"{API_BASE}/health"),
     ("Health DB", f"{API_BASE}/health/db"),
-    ("PyPI", "https://pypi.org/project/cli-market"),
+    ("PyPI", "https://pypi.org/project/cli-market-world/"),
     ("GitHub", "https://github.com/Treevu-ai/cli-market-world"),
 ]
 

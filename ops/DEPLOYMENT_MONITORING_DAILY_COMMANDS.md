@@ -27,7 +27,7 @@ No vi caídas, errores 5xx ni datos vacíos. El collector parece funcionando (sn
   - https://cli-market-production.up.railway.app/health → `{"status": "healthy"}`
   - https://cli-market-production.up.railway.app/health/db → (detalle: backend postgresql, snapshots, tablas, pg_error)
 - **Docs + Tools (MCP catalog)**: https://cli-market.dev/docs y https://cli-market.dev/tools
-- **PyPI (versión, descargas, descripción)**: https://pypi.org/project/cli-market
+- **PyPI (versión, descargas, descripción)**: https://pypi.org/project/cli-market-world/
 - **Railway (servicios)**: Dashboard de Railway → servicio `cli-market-production` (API) + servicio collector separado (usa `railway.collector.toml`)
 - **Cloudflare Pages (landing)**: Dashboard Cloudflare → proyecto `cli-market-world`
 - **GitHub (deploys, CI, issues)**: https://github.com/Treevu-ai/cli-market-world (y el repo de content)
