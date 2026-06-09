@@ -10,6 +10,30 @@ import PayPalHostedButton from "@/components/PayPalHostedButton";
 import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
 import { PROCURE_PLANS } from "@/lib/procurePlans";
 import WalletManualTransfer from "@/components/WalletManualTransfer";
+import { checkoutRedirectFromResult } from "@/lib/safeCheckoutUrl";
+
+const CHECKOUT_HOST_SUFFIXES = [
+  "paypal.com",
+  "mercadopago.com",
+  "mercadopago.com.pe",
+  "mercadolibre.com",
+  "mercadolibre.com.pe",
+] as const;
+
+function sanitizeCheckoutHref(raw: string | null | undefined): string | null {
+  if (!raw?.trim()) return null;
+  try {
+    const u = new URL(raw.trim());
+    if (u.protocol !== "https:") return null;
+    const host = u.hostname.toLowerCase();
+    const allowed = CHECKOUT_HOST_SUFFIXES.some(
+      (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+    );
+    return allowed ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Landing Pro checkout: PayPal (USD) or Soles via Mercado Pago (Yape · Plin · tarjeta). */
 type PaymentMethod = "paypal" | "soles";
@@ -98,7 +122,7 @@ async function postCheckout(
 
 function checkoutSucceeded(data: CheckoutResult): boolean {
   if (!data.ok) return false;
-  const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
+  const redirectUrl = checkoutRedirectFromResult(data);
   const manualWallet =
     data.payment_mode === "manual_transfer" &&
     (data.payment_method === "yape" || data.payment_method === "plin");
@@ -135,6 +159,7 @@ export default function BillingCheckoutModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<CheckoutResult | null>(null);
+  const [trustedCheckoutHref, setTrustedCheckoutHref] = useState<string | null>(null);
   const [manualTransfer, setManualTransfer] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [detectingUser, setDetectingUser] = useState(false);
@@ -162,6 +187,7 @@ export default function BillingCheckoutModal({
       setUsername("");
       setError("");
       setResult(null);
+      setTrustedCheckoutHref(null);
       setPaymentMethod("soles");
       setManualTransfer(false);
       setApiKey("");
@@ -216,7 +242,8 @@ export default function BillingCheckoutModal({
   };
 
   const applyCheckoutResult = (data: CheckoutResult, source: string) => {
-    const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
+    const redirectUrl = checkoutRedirectFromResult(data);
+    setTrustedCheckoutHref(redirectUrl);
     recordFunnelEvent(isPro ? "request_pro" : "starter_subscribe", {
       username: data.username || username.trim() || undefined,
       meta: {
@@ -227,7 +254,8 @@ export default function BillingCheckoutModal({
         duplicate: Boolean(data.duplicate),
       },
     });
-    setResult({ ...data, approve_url: redirectUrl });
+    const { approve_url: _a, checkout_url: _c, payment_link: _p, ...rest } = data;
+    setResult(rest);
     setStep("done");
     setLoading(false);
   };
@@ -297,7 +325,6 @@ export default function BillingCheckoutModal({
     const isManualWallet = result.payment_mode === "manual_transfer";
     const isAutoWallet =
       result.wallet_checkout || ((method === "yape" || method === "plin") && !isManualWallet);
-    const redirectUrl = result.approve_url || result.checkout_url || result.payment_link;
     const resolvedUser = result.username || username.trim();
 
     return (
@@ -332,11 +359,20 @@ export default function BillingCheckoutModal({
             isES={isES}
           />
         )}
-        {redirectUrl && !isManualWallet && (
-          <a href={redirectUrl} target="_blank" rel="noopener noreferrer" className="btn-mint w-full inline-flex justify-center">
-            {paymentRedirectLabel(method, isES)}
-          </a>
-        )}
+        {(() => {
+          const href = sanitizeCheckoutHref(trustedCheckoutHref);
+          if (!href || isManualWallet) return null;
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-mint w-full inline-flex justify-center"
+            >
+              {paymentRedirectLabel(method, isES)}
+            </a>
+          );
+        })()}
         <div className="rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-3 py-3 text-xs text-[var(--cm-on-surface-variant)] space-y-1">
           {isPro ? (
             <>
