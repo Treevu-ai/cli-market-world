@@ -6,10 +6,10 @@
    https://cli-market-production.up.railway.app/slack/interactions
 3. railway variables set SLACK_SIGNING_SECRET=<secret>
 
-Usage:
+Usage (PowerShell: usar comillas, sin <>):
   python ops/setup_slack_interactivity.py
-  python ops/setup_slack_interactivity.py --signing-secret <secret>
-  python ops/setup_slack_interactivity.py --signing-secret <secret> --railway
+  python ops/setup_slack_interactivity.py --signing-secret "abc123..." 
+  python ops/setup_slack_interactivity.py --signing-secret "abc123..." --railway
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def main() -> int:
         print(
             "SLACK_SIGNING_SECRET: pendiente\n"
             "  api.slack.com/apps → Basic Information → App Credentials → Signing Secret\n"
-            "  python ops/setup_slack_interactivity.py --signing-secret <secret> --railway"
+            '  python ops/setup_slack_interactivity.py --signing-secret "TU_SECRET" --railway'
         )
 
     if args.verify or secret:
