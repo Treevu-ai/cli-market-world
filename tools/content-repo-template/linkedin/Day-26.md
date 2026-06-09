@@ -41,9 +41,9 @@ Stripe turned payments into APIs.
 
 CLI Market turns commerce into APIs.
 
-30 retailers. 8 countries. 36 MCP tools. Open source.
+30 retailers. 8 countries. 22 MCP tools. Open source.
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 Who's building agent-first commerce in your market?
 

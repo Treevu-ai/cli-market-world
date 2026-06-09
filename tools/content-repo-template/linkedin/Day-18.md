@@ -10,19 +10,19 @@ tags:
   - linkedin
 ---
 
-# Day 18 — 36 MCP tools MIT
+# Day 18 — 22 MCP tools MIT
 
 **Calendario:** [[linkedin-calendar]] · **Hub:** [[GTM-Hub]]
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** 36 herramientas MCP. Todas documentadas. Open source. MIT.
+1. **Hook 1:** 22 herramientas MCP. Todas documentadas. Open source. MIT.
 2. **Hook 2:** No es un wrapper de scraping. Son 36 primitivas de comercio para agentes.
 3. **Hook 3:** El catálogo MCP más completo para e-commerce que conozco — y es open source.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
-36 herramientas MCP.
+22 herramientas MCP.
 
 Todas documentadas.
 
@@ -42,7 +42,7 @@ Porque los LLM eligen mejor con primitivas específicas:
 
 Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 ¿Qué tool te falta para tu agente?
 

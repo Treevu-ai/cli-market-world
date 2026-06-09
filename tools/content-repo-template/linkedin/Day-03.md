@@ -38,10 +38,10 @@ AI agents can't shop in that world. They need one schema, one API, one install.
 
 That's CLI Market:
 
-→ 60 retailers (30 verified) across 8 countries
-→ 36 MCP tools — search, compare, basket, checkout
+→ 68 retailers (38 verified) across 8 countries
+→ 22 MCP tools — search, compare, basket, checkout
 → 43,000+ real prices, refreshed every 8 hours
-→ `pip install cli-market`
+→ `pip install cli-market-world-world`
 
 Open source. MIT.
 
@@ -55,7 +55,7 @@ What's the first product category you'd connect?
 
 **Versión ES (opcional como comentario fijado):**
 
-Stripe convirtió los pagos en APIs. Nosotros convertimos el comercio en APIs. 30 retailers, 36 herramientas MCP, un solo `pip install`.
+Stripe convirtió los pagos en APIs. Nosotros convertimos el comercio en APIs. 30 retailers, 22 herramientas MCP, un solo `pip install`.
 
 ## Primer comentario
 
@@ -64,7 +64,7 @@ Try it 👇
 https://cli-market.dev
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market search "rice" --country PE
 ```
 

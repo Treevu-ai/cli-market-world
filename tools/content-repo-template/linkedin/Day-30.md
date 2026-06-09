@@ -28,7 +28,7 @@ Esto es lo que construí:
 
 Infraestructura de comercio para agentes de IA.
 
-`pip install cli-market`
+`pip install cli-market-world-world`
 
 Esto es lo que viene:
 
@@ -57,7 +57,7 @@ Todo en un link 👇
 https://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market hello
 ```
 

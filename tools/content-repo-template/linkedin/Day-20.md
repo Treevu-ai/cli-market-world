@@ -27,7 +27,7 @@ tags:
 **Ya shipped (Alpha):**
 → Billing Pro manual (email + PayPal)
 → Form self-serve en /retailers
-→ 36 MCP tools + landing /tools
+→ 22 MCP tools + landing /tools
 → Collector + Price Pulse semanal
 
 **Jun 8 Beta:**

@@ -32,7 +32,7 @@ Embudo: **landing → pip install → MCP connect → first search**. Alineado c
 
 ```python
 # 1. Install
-pip install cli-market
+pip install cli-market-world-world
 
 # 2. Auth
 market login

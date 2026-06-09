@@ -33,8 +33,8 @@ Una llamada. Un JSON. Precios reales de góndola — actualizados cada 8 horas.
 Esto es lo que construimos con CLI Market: infraestructura de comercio para agentes de IA.
 
 → 60 retailers (30 verificados) en 8 países
-→ 36 herramientas MCP (buscar, comparar, carrito, checkout)
-→ `pip install cli-market` y listo
+→ 22 herramientas MCP (buscar, comparar, carrito, checkout)
+→ `pip install cli-market-world-world` y listo
 
 Stripe convirtió los pagos en APIs.
 
@@ -52,7 +52,7 @@ https://cli-market.dev
 
 Quickstart:
 ```
-pip install cli-market
+pip install cli-market-world-world
 market search "leche" --country PE
 ```
 

@@ -49,7 +49,7 @@ Por eso construimos CLI Market:
 
 → 60 retailers (30 verificados) en 8 países
 → Precios reales, refresh cada 8 horas
-→ Una API, un schema, `pip install cli-market`
+→ Una API, un schema, `pip install cli-market-world-world`
 
 La próxima vez que le preguntes a tu agente por la leche, que te responda con datos — no con suposiciones.
 
@@ -62,7 +62,7 @@ Probé la misma búsqueda con CLI Market 👇
 https://cli-market.dev
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market search "leche" --country PE --store wong
 market compare "leche entera" --country PE
 ```

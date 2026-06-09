@@ -36,7 +36,7 @@ Esta semana analizamos las búsquedas más frecuentes en CLI Market:
 5. #4 — Pañales / farmacia
 6. #5 — Electro (celulares)
 7. Insight: supermercados dominan, farmacias tienen mayor spread
-8. CTA: `pip install cli-market`
+8. CTA: `pip install cli-market-world-world`
 
 Los agentes no compran como humanos — buscan, comparan, optimizan.
 

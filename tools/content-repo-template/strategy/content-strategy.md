@@ -11,11 +11,11 @@ hub: "[[GTM-Hub]]"
 
 ## Article 1: "Commerce Infrastructure for AI Agents"
 **Type**: Educational guide | **Target**: AI developers, CTOs
-**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 66 retailers (36 verified), 43 tools, 11 countries
+**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 68 retailers (38 verified), 43 tools, 8 countries
 
 ## Article 2: "Add Commerce to Your AI Agent in 4 Lines"
 **Type**: Tutorial | **Target**: Python developers
-**Outline**: `pip install cli-market` → `market login` → `market search` → `market checkout` → MCP connect
+**Outline**: `pip install cli-market-world-world` → `market login` → `market search` → `market checkout` → MCP connect
 
 ## Article 3: "What 43,000 Prices Tell Us About LATAM Retail"
 **Type**: Data journalism | **Target**: Analysts, fintech

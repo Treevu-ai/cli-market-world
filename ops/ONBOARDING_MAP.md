@@ -36,7 +36,7 @@ flowchart LR
   A --> A2[README / PyPI]
   A --> A3[llms.txt / mcp.json]
 
-  B --> B1[pip install cli-market]
+  B --> B1[pip install cli-market-world-world]
   B --> B2[market hello]
 
   C --> C1[market login]
@@ -147,7 +147,7 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 
 | ID | Comando / archivo | Persona | Estado | Notas |
 |----|-------------------|---------|--------|-------|
-| T-10 | `pip install cli-market` | Dev | ✅ | PyPI |
+| T-10 | `pip install cli-market-world-world` | Dev | ✅ | PyPI |
 | T-11 | `market hello` | Dev | ⚠️ | Panel orientación; no API key |
 | T-12 | `market login` | Free | ⚠️ | Sin registro guiado en web |
 | T-13 | `market search` (vacío) | Free | ⚠️ | Banner con stats desactualizados |

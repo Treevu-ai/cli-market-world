@@ -38,7 +38,7 @@ Un agente puede preguntar "¿cuánto cuesta X en AR vs PE?" y obtener JSON en se
 
 Eso es infraestructura — no un chatbot que inventa precios.
 
-Open source. MIT. `pip install cli-market`
+Open source. MIT. `pip install cli-market-world-world`
 
 ¿En qué vertical retail te gustaría ver más cobertura?
 

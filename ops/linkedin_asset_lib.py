@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import shutil
 import signal
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,12 @@ from PIL import Image, ImageDraw, ImageFont
 from content_paths import assets_root, linkedin_dir, metrics_dir
 
 ROOT = Path(__file__).resolve().parent.parent
+CORE_ROOT = ROOT.parent / "cli-market-core"
+if str(CORE_ROOT) not in sys.path:
+    sys.path.insert(0, str(CORE_ROOT))
+
+from market_core import market_stats as ms  # noqa: E402
+from market_core.market_mcp_registry import public_tool_count  # noqa: E402
 
 
 class RegexTimeoutError(Exception):
@@ -145,7 +152,12 @@ def _header(draw: ImageDraw.ImageDraw, w: int, day: int, subtitle: str = "") -> 
 def _footer(draw: ImageDraw.ImageDraw, w: int, h: int) -> None:
     font_sm = load_font(17)
     draw.rectangle((0, h - 52, w, h), fill=PANEL)
-    draw.text((40, h - 38), "cli-market.dev  ·  pip install cli-market  ·  MIT", fill=MUTED, font=font_sm)
+    draw.text(
+        (40, h - 38),
+        f"cli-market.dev  ·  {ms.PIP_INSTALL_CMD}  ·  MIT",
+        fill=MUTED,
+        font=font_sm,
+    )
 
 
 def _wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int) -> list[str]:
@@ -412,24 +424,32 @@ TERMINAL_CFG: dict[int, dict[str, str]] = {
     25: {"query": "leche", "country": "PE", "command": 'market search "leche" --country PE'},
 }
 
-CAROUSEL_CFG: dict[int, list[tuple[str, str]]] = {
-    5: [
-        ("Instala", "pip install cli-market\nCLI + API + 36 herramientas MCP"),
-        ("Autentica", "market login\nFree tier · token listo"),
-        ("Busca y compara", 'market compare "arroz" --country PE\n30 retailers · 8 países'),
-        ("Checkout", "market checkout --payment yape\nPayPal · QR · el agente cierra la compra"),
-    ],
-    12: [
-        ("¿Qué compra un agente?", "Top búsquedas en CLI Market esta semana"),
-        ("#1 Leche", "PE · AR · BR — comparación multi-tienda"),
-        ("#2 Arroz", "Mayor variación entre cadenas en Lima"),
-        ("#3 Aceite", "Señal de góndola cada 8h"),
-        ("#4 Farmacia", "Spread alto entre retailers"),
-        ("#5 Electro", "Miles de SKUs indexados"),
-        ("Insight", "Supermercados dominan · farmacias = mayor spread"),
-        ("CTA", "pip install cli-market\ncli-market.dev/tools"),
-    ],
-}
+def _carousel_cfg() -> dict[int, list[tuple[str, str]]]:
+    mcp_n = public_tool_count("default")
+    return {
+        5: [
+            ("Instala", f"{ms.PIP_INSTALL_CMD}\nCLI + API + {mcp_n} herramientas MCP"),
+            ("Autentica", "market login\nFree tier · token listo"),
+            (
+                "Busca y compara",
+                f'market compare "arroz" --country PE\n{ms.RETAILERS_VERIFIED} retailers · {ms.COUNTRIES} países',
+            ),
+            ("Checkout", "market checkout --payment yape\nPayPal · QR · el agente cierra la compra"),
+        ],
+        12: [
+            ("¿Qué compra un agente?", "Top búsquedas en CLI Market esta semana"),
+            ("#1 Leche", "PE · AR · BR — comparación multi-tienda"),
+            ("#2 Arroz", "Mayor variación entre cadenas en Lima"),
+            ("#3 Aceite", "Señal de góndola cada 8h"),
+            ("#4 Farmacia", "Spread alto entre retailers"),
+            ("#5 Electro", "Miles de SKUs indexados"),
+            ("Insight", "Supermercados dominan · farmacias = mayor spread"),
+            ("CTA", f"{ms.PIP_INSTALL_CMD}\ncli-market.dev/tools"),
+        ],
+    }
+
+
+CAROUSEL_CFG: dict[int, list[tuple[str, str]]] = _carousel_cfg()
 
 METRICS_DAYS = {7, 10, 11, 14, 28, 30}
 DIAGRAM_DAYS = {2, 6}

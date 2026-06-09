@@ -21,7 +21,7 @@ Highest expected reach + technical depth + reusable demos.
 | 1 | 1 | Agente comparó 30 retailers en 0.8s | DEV Art. 1 hook, Twitter thread, landing hero |
 | 2 | 3 | Stripe pagos / nosotros comercio | DEV Art. 1 body, Twitter, outbound email |
 | 3 | 5 | Carousel 4 pasos agente compra | DEV Art. 2 tutorial, GitHub README |
-| 4 | 6 | Por qué 36 herramientas MCP | `/tools` page intro, DEV MCP post |
+| 4 | 6 | Por qué 22 herramientas MCP | `/tools` page intro, DEV MCP post |
 | 5 | 25 | pip install CTA | PyPI README, HN, Reddit |
 
 ---
@@ -42,8 +42,8 @@ Highest expected reach + technical depth + reusable demos.
 
 1. An AI agent compared 30 supermarkets in 0.8s. Here's how 🧵
 2. Problem: agents can reason but can't shop — 30 APIs, 30 auths
-3. CLI Market = one API, 36 MCP tools, 8 countries
-4. `pip install cli-market` + `market search "leche" --country PE`
+3. CLI Market = one API, 22 MCP tools, 8 countries
+4. `pip install cli-market-world-world` + `market search "leche" --country PE`
 5. Open source MIT → cli-market.dev
 
 ---
@@ -60,7 +60,7 @@ Highest expected reach + technical depth + reusable demos.
 
 **Carousel → numbered DEV post:**
 
-1. `pip install cli-market`
+1. `pip install cli-market-world-world`
 2. `market login`
 3. `market search "leche" --country PE`
 4. `market add` → `market checkout`
@@ -88,7 +88,7 @@ Highest expected reach + technical depth + reusable demos.
 **PyPI README:** Add "Try now" block at top:
 
 ```bash
-pip install cli-market && market search "leche" --country PE
+pip install cli-market-world-world && market search "leche" --country PE
 ```
 
 ---

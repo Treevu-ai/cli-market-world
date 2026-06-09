@@ -68,7 +68,7 @@
   <text x="780" y="670" font-family="monospace" font-size="10" fill="#555">Everything</text>
   <text x="500" y="730" text-anchor="middle" font-family="monospace" font-size="11" fill="#00FF88" letter-spacing="2" opacity="0.5">HIGHLIGHTED = COMPOSITE TOOLS (multi-step under one call)</text>
   <line x1="200" y1="750" x2="800" y2="750" stroke="#1A1A1A"/>
-  <text x="500" y="775" text-anchor="middle" font-family="monospace" font-size="10" fill="#333" letter-spacing="3">pip install cli-market</text>
+  <text x="500" y="775" text-anchor="middle" font-family="monospace" font-size="10" fill="#333" letter-spacing="3">pip install cli-market-world</text>
   <text x="500" y="800" text-anchor="middle" font-family="monospace" font-size="10" fill="#333" letter-spacing="2">io.github.Treevu-ai/cli-market</text>
   <text x="500" y="830" text-anchor="middle" font-family="monospace" font-size="9" fill="#333" letter-spacing="4">github.com/Treevu-ai/cli-market-world</text>
   <text x="500" y="860" text-anchor="middle" font-family="monospace" font-size="9" fill="#333" letter-spacing="4">MIT · 67 COUNTRIES · MCP REGISTRY</text>

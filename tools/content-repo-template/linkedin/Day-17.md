@@ -54,7 +54,7 @@ Quickstart 👇
 https://cli-market.dev
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 ```
 
 ## Hashtags

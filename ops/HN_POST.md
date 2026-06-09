@@ -22,11 +22,11 @@ How it works:
 
 Built in Python. MIT licensed. Open source.
 
-The hard part isn't the code — it's maintaining connectors for 66 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~45K prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
+The hard part isn't the code — it's maintaining connectors for 68 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~51,000+ prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
 
 Would love feedback from anyone building AI agents or working on retail infrastructure.
 
-Site: https://cli-market.dev · PyPI: https://pypi.org/project/cli-market/
+Site: https://cli-market.dev · PyPI: https://pypi.org/project/cli-market-world/
 Demo: https://cli-market.dev (the landing has a 60s terminal GIF showing a full agent checkout)
 
 ---

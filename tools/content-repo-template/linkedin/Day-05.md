@@ -31,8 +31,8 @@ La mayoría se queda en el paso 1: buscar en Google y adivinar precios.
 Este es el flujo que usamos en CLI Market para que un agente compre solo — sin scraping, sin 30 integraciones manuales.
 
 **Slide 1 — Instala**
-`pip install cli-market`
-Una dependencia. CLI + API + 36 herramientas MCP.
+`pip install cli-market-world-world`
+Una dependencia. CLI + API + 22 herramientas MCP.
 
 **Slide 2 — Autentica**
 `market login`
@@ -60,7 +60,7 @@ Guarda el carousel si estás construyendo agentes con capacidad de compra real.
 
 | Slide | Título | Body |
 |-------|--------|------|
-| 1 | Instala | `pip install cli-market` · CLI + API + MCP |
+| 1 | Instala | `pip install cli-market-world-world` · CLI + API + MCP |
 | 2 | Autentica | `market login` · Free tier |
 | 3 | Busca | `market search` / `market compare` · 30 retailers · 8 países |
 | 4 | Compra | `market checkout` · PayPal · Yape/Plin QR |
@@ -72,7 +72,7 @@ Guía completa + configs MCP 👇
 https://cli-market.dev
 
 ```
-pip install cli-market
+pip install cli-market-world-world
 market hello
 ```
 
