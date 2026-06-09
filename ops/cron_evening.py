@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Evening founder cron — funnel digest to #funnel-cli-market.
 
-Schedule (Railway cron, Task Scheduler, or GitHub Actions):
+Schedule (primary: GitHub Actions funnel-digest-evening.yml at 23:00 UTC):
+  0 23 * * *  curl -X POST "$MARKET_API_URL/admin/cron/funnel-digest" -H "Authorization: Bearer $MARKET_API_TOKEN"
+
+Local / Railway fallback:
   0 23 * * *  cd /app && python ops/cron_evening.py
 
 Usage:

@@ -5,6 +5,7 @@ Endpoints:
   POST /admin/collect         Trigger a price collection run synchronously
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
   POST /v1/admin/set-tier     Set a user's subscription tier (free|pro|enterprise)
+  POST /admin/cron/funnel-digest  Post evening funnel digest to Slack (#funnel-cli-market)
 
 Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicly.
 """
@@ -178,3 +179,29 @@ async def admin_scan_stores(
             )
     ok = [c for c in candidates if c["ok"]]
     return {"scanned": len(candidates), "working": len(ok), "candidates": candidates}
+
+
+@router.post("/admin/cron/funnel-digest")
+def admin_cron_funnel_digest(
+    authorization: str | None = Header(None),
+    hours: int = 24,
+):
+    """Post adoption funnel digest to #funnel-cli-market (evening cron)."""
+    require_admin(authorization)
+    hours = max(1, min(hours, 168))
+
+    import sys
+    from pathlib import Path
+
+    ops_dir = Path(__file__).resolve().parent.parent / "ops"
+    if str(ops_dir) not in sys.path:
+        sys.path.insert(0, str(ops_dir))
+    from billing_slack import format_funnel_digest_message, notify_funnel_digest
+
+    text = format_funnel_digest_message(hours=hours)
+    if not notify_funnel_digest(hours=hours):
+        raise HTTPException(
+            status_code=503,
+            detail="Slack funnel channel not configured or delivery failed",
+        )
+    return {"ok": True, "hours": hours, "posted": True, "preview": text[:800]}
