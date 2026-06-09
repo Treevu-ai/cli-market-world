@@ -136,6 +136,9 @@ export default function BillingCheckoutModal({
   const [error, setError] = useState("");
   const [result, setResult] = useState<CheckoutResult | null>(null);
   const [manualTransfer, setManualTransfer] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [detectingUser, setDetectingUser] = useState(false);
+  const [cliWizardOpen, setCliWizardOpen] = useState(true);
 
   useEffect(() => {
     if (!open) return;
@@ -161,6 +164,9 @@ export default function BillingCheckoutModal({
       setResult(null);
       setPaymentMethod("soles");
       setManualTransfer(false);
+      setApiKey("");
+      setDetectingUser(false);
+      setCliWizardOpen(true);
     }
   }, [open, kind]);
 
@@ -173,6 +179,41 @@ export default function BillingCheckoutModal({
     : isES
       ? `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mes`
       : `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mo`;
+
+  const detectUsernameFromApiKey = async () => {
+    const key = apiKey.trim();
+    if (!key.startsWith("sk-")) {
+      setError(
+        isES
+          ? "Pega una API key válida (sk-...) de market register"
+          : "Paste a valid API key (sk-...) from market register",
+      );
+      return;
+    }
+    setError("");
+    setDetectingUser(true);
+    try {
+      const r = await fetch(`${API_URL}/auth/whoami`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      const data = (await r.json()) as { username?: string; detail?: string };
+      if (r.ok && data.username) {
+        setUsername(data.username);
+        setCliWizardOpen(false);
+      } else {
+        const detail =
+          typeof data.detail === "string"
+            ? data.detail
+            : isES
+              ? "API key inválida o expirada"
+              : "Invalid or expired API key";
+        setError(detail);
+      }
+    } catch {
+      setError(isES ? "Error de red al verificar la API key" : "Network error verifying API key");
+    }
+    setDetectingUser(false);
+  };
 
   const applyCheckoutResult = (data: CheckoutResult, source: string) => {
     const redirectUrl = data.approve_url || data.checkout_url || data.payment_link;
@@ -444,6 +485,67 @@ export default function BillingCheckoutModal({
             </div>
           ) : (
             <div className="form-stack">
+              {isPro && (
+                <div className="rounded border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/50 px-3 py-3 space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setCliWizardOpen((v) => !v)}
+                    className="w-full text-left text-sm font-semibold text-white flex items-center justify-between gap-2"
+                  >
+                    <span>
+                      {isES
+                        ? "¿Aún no tienes usuario CLI?"
+                        : "Don't have a CLI user yet?"}
+                    </span>
+                    <span className="text-[var(--cm-on-surface-variant)] text-xs">
+                      {cliWizardOpen ? "▾" : "▸"}
+                    </span>
+                  </button>
+                  {cliWizardOpen && (
+                    <div className="space-y-2 text-xs text-[var(--cm-on-surface-variant)]">
+                      <p>
+                        {isES
+                          ? "Pro se activa en el usuario que pagas. Sigue estos pasos en tu terminal:"
+                          : "Pro activates on the user you pay for. Run these in your terminal:"}
+                      </p>
+                      <ol className="list-decimal list-inside space-y-1 font-mono text-[11px] text-white/90">
+                        <li>{MARKET_STATS.pipInstallCmd}</li>
+                        <li>market register</li>
+                        <li>market whoami</li>
+                      </ol>
+                      <p className="text-[10px] text-[var(--cm-on-surface-variant)]/70">
+                        {isES
+                          ? "Copia el username de whoami abajo, o pega tu API key para detectarlo."
+                          : "Copy the username from whoami below, or paste your API key to detect it."}
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          value={apiKey}
+                          onChange={(e) => setApiKey(e.target.value)}
+                          placeholder={isES ? "sk-... (opcional)" : "sk-... (optional)"}
+                          className="flex-1 input-cyber text-xs font-mono"
+                          autoComplete="off"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void detectUsernameFromApiKey()}
+                          disabled={detectingUser || !apiKey.trim()}
+                          className="shrink-0 rounded-full border border-[var(--cm-outline-variant)]/50 px-3 py-2 text-[11px] text-[var(--cm-on-surface-variant)] hover:text-white disabled:opacity-50"
+                        >
+                          {detectingUser
+                            ? isES
+                              ? "…"
+                              : "…"
+                            : isES
+                              ? "Detectar"
+                              : "Detect"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-sm text-[var(--cm-on-surface-variant)]">
                 {isES
                   ? "Datos para tu correo de bienvenida y activación Pro."

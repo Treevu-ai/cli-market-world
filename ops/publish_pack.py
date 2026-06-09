@@ -303,6 +303,15 @@ def _channels_for_date_fallback(for_date: date, campaign_day: int) -> list[tuple
     return items
 
 
+def slack_copy_block(text: str) -> str:
+    """Fenced Slack block — copy-paste body without mrkdwn mutation."""
+    body = (text or "").strip()
+    if not body:
+        return ""
+    safe = body.replace("```", "'''")
+    return f"```\n{safe}\n```"
+
+
 def _asset_line(copy: ChannelCopy, campaign_day: int) -> str:
     hint = (copy.asset_hint or "").strip()
     if hint:
@@ -338,9 +347,9 @@ def _channel_blocks(
         "",
     ]
     if post_with_tags:
-        lines += [post_with_tags, ""]
+        lines += [slack_copy_block(post_with_tags), ""]
     elif post:
-        lines += [post, ""]
+        lines += [slack_copy_block(post), ""]
 
     if label.startswith("LinkedIn"):
         asset = _asset_line(copy, campaign_day)
@@ -348,7 +357,7 @@ def _channel_blocks(
 
     lines += ["*2) PRIMER COMENTARIO* _(pegar justo después de publicar)_", ""]
     if copy.comment:
-        lines += [copy.comment.strip(), ""]
+        lines += [slack_copy_block(copy.comment.strip()), ""]
     else:
         lines += ["_(sin borrador de comentario — añadir CTA manual)_", ""]
 
@@ -427,11 +436,11 @@ def build_slack_publish_messages(
                     "",
                     "*1) THREAD / POST* _(copiar y publicar)_",
                     "",
-                    post,
+                    slack_copy_block(post),
                     "",
                     f"💬 *RICARDO — PRIMER REPLY ({ricardo_channel_label(label)})* · `{pub_date}`",
                     "",
-                    comment,
+                    slack_copy_block(comment),
                     "",
                 ]
                 continue

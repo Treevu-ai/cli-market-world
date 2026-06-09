@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 
 import httpx
 
@@ -131,8 +132,8 @@ def _chunk_text(text: str, limit: int = MAX_SLACK_TEXT) -> list[str]:
     return chunks
 
 
-def _md_to_slack(text: str) -> str:
-    """Lightweight markdown → Slack mrkdwn."""
+def _md_to_slack_plain(text: str) -> str:
+    """Lightweight markdown → Slack mrkdwn (non-fenced regions only)."""
     out: list[str] = []
     for line in text.splitlines():
         if line.startswith("### "):
@@ -145,6 +146,20 @@ def _md_to_slack(text: str) -> str:
             out.append(line.replace("|", " ").strip())
         else:
             out.append(line.replace("**", "*"))
+    return "\n".join(out)
+
+
+def _md_to_slack(text: str) -> str:
+    """Markdown → Slack mrkdwn; fenced ``` blocks pass through for copy-paste."""
+    parts = re.split(r"(```[\s\S]*?```)", text)
+    out: list[str] = []
+    for part in parts:
+        if part.startswith("```") and part.endswith("```"):
+            out.append(part)
+        else:
+            transformed = _md_to_slack_plain(part)
+            if transformed:
+                out.append(transformed)
     return "\n".join(out)
 
 
