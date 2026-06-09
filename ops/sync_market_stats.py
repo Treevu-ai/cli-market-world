@@ -24,6 +24,36 @@ from market_core.market_mcp_registry import (
     tool_in_profile,
 )
 
+# Ensure env (including PEPY_API_KEY) is loaded for pepy fetches inside the script
+try:
+    from ops.load_env import load_repo_env
+    load_repo_env()
+except Exception:
+    pass
+
+def _get_consolidated_pypi_downloads() -> int:
+    """Sum PyPI downloads across legacy (cli-market) + core + world for consolidated badges/metrics."""
+    try:
+        from market_pepy import pepy_multi_summary, pepy_summary
+        multi = pepy_multi_summary()
+        cw = int((multi.get("combined") or {}).get("total_downloads") or 0)
+        legacy = pepy_summary(project="cli-market")
+        leg = int(legacy.get("total_downloads") or 0) if legacy.get("ok") else 0
+        total = cw + leg
+        if total > 0:
+            return total
+    except Exception as e:
+        print(f"Warning: could not fetch consolidated PyPI downloads: {e}", file=sys.stderr)
+    # Fallback to a recent known value if fetch fails (update periodically)
+    return 17785
+
+_CONSOLIDATED_PYPI_DOWNLOADS = _get_consolidated_pypi_downloads()
+
+# Always use consolidated badge (custom shields with rounded k) + set project to main promoted one
+badge_k = _CONSOLIDATED_PYPI_DOWNLOADS // 1000
+s.PEPY_BADGE_URL = f"https://img.shields.io/badge/PyPI%20downloads-{badge_k}k-00d75f?logo=pypi"
+s.PEPY_PROJECT_URL = "https://pepy.tech/projects/cli-market-world"  # primary promoted project (world)
+
 OUT_TS = ROOT / "landing" / "lib" / "marketStats.ts"
 def _procure_stats_path() -> Path | None:
     candidates = [
@@ -361,6 +391,9 @@ export const MARKET_STATS = {{
   pypiUrl: "{s.PYPI_URL}",
   pepyProjectUrl: "{s.PEPY_PROJECT_URL}",
   pepyBadgeUrl: "{s.PEPY_BADGE_URL}",
+  pypiDownloads: {_CONSOLIDATED_PYPI_DOWNLOADS},
+  // Note: pepyBadgeUrl is a custom consolidated badge (legacy + core + world).
+  // The live hero "PYPI DOWNLOADS" comes from /analytics/pypi (also consolidated).
   pipInstallCmd: "{s.PIP_INSTALL_CMD}",
   packageVersion: "{s.PACKAGE_VERSION}",
   ogImageUrl: "/og.png",

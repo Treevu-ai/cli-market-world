@@ -1,4 +1,8 @@
-"""CLI Market Adoption Index — composite score from real product signals."""
+"""CLI Market Adoption Index — composite score from real product signals.
+
+PyPI downloads are now multi-project aware: cli-market-core + cli-market-world (combined for scoring,
+detailed per-package pulled out in signals["pypi"] / markdown). Legacy "cli-market" can be added via PEPY_PROJECTS.
+"""
 
 from __future__ import annotations
 
@@ -238,7 +242,9 @@ def compute_adoption_index(
     days: int = 30,
     include_github: bool = False,
 ) -> dict[str, Any]:
-    """Build Adoption Index V1 from Pepy + funnel (noise-filtered where noted)."""
+    """Build Adoption Index V1 from Pepy (multi: core+world combined) + funnel (noise-filtered where noted).
+    Downloads 30% weight now reflects total PyPI traction across the split packages.
+    """
     days = max(1, min(days, 90))
     adoption = adoption_summary(days=days)
     funnel = funnel_summary(days=days, exclude_noise=True)
@@ -258,7 +264,7 @@ def compute_adoption_index(
 
     dl_score = _norm_log(
         float(downloads_30d or 0),
-        target=_target("DOWNLOADS_30D", 200.0),
+        target=_target("DOWNLOADS_30D", 5000.0),  # updated target for combined core+world 30d traction
     )
     usage_score = _norm_log(
         float(first_search),
@@ -299,10 +305,27 @@ def compute_adoption_index(
         1,
     )
 
+    # Extract per-package for transparency (optimization: core carries the MCP/tools volume)
+    by_proj = pypi.get("by_project") or {}
+    core_30d = (by_proj.get("cli-market-core") or {}).get("downloads_last_30d") if isinstance(by_proj.get("cli-market-core"), dict) else None
+    world_30d = (by_proj.get("cli-market-world") or {}).get("downloads_last_30d") if isinstance(by_proj.get("cli-market-world"), dict) else None
+
     signals: dict[str, Any] = {
         "window_days": days,
         "pypi": {
             "ok": bool(pypi.get("ok")),
+            "projects": pypi.get("projects"),
+            "combined": pypi.get("combined") or {
+                "downloads_last_30d": downloads_30d,
+                "downloads_last_7d": downloads_7d,
+                "total_downloads": pypi.get("total_downloads"),
+            },
+            "by_project": by_proj,
+            # explicit for consumers / dashboards (optimization)
+            "downloads_core_30d": core_30d,
+            "downloads_world_30d": world_30d,
+            "downloads_combined_30d": downloads_30d,
+            # flat values are the combined (used for scoring)
             "downloads_30d": downloads_30d,
             "downloads_7d": downloads_7d,
             "total_downloads": pypi.get("total_downloads"),
@@ -429,7 +452,7 @@ def adoption_index_markdown(payload: dict[str, Any]) -> str:
         "|---|---:|---:|",
     ]
     labels = {
-        "downloads": "Downloads (PyPI 30d)",
+        "downloads": "Downloads (PyPI combined 30d)",
         "real_usage": "Real usage (first_search)",
         "growth": "Growth (7d vs baseline)",
         "activation": "Activation + retention",
@@ -443,8 +466,28 @@ def adoption_index_markdown(payload: dict[str, Any]) -> str:
         "",
         "**Señales clave**",
         "",
-        f"- PyPI 30d: **{pypi.get('downloads_30d', '—')}** · 7d: **{pypi.get('downloads_7d', '—')}**",
+        f"- PyPI 30d (combined): **{pypi.get('downloads_30d', '—')}** · 7d: **{pypi.get('downloads_7d', '—')}**",
     ]
+    # Pull out per-package (optimization: core is the intelligence/MCP layer with higher volume)
+    core = pypi.get("downloads_core_30d")
+    world = pypi.get("downloads_world_30d")
+    if core is not None or world is not None:
+        parts = []
+        if core is not None:
+            parts.append(f"core: {core:,}")
+        if world is not None:
+            parts.append(f"world: {world:,}")
+        lines.append(f"  packages: {' | '.join(parts)}")
+    elif pypi.get("by_project"):
+        # fallback to by_project if explicit not present
+        pkg_lines = []
+        for name, data in (pypi.get("by_project") or {}).items():
+            if isinstance(data, dict):
+                d30 = data.get("downloads_last_30d")
+                if d30 is not None:
+                    pkg_lines.append(f"{name}:{d30:,}")
+        if pkg_lines:
+            lines.append(f"  packages: {' | '.join(pkg_lines)}")
     if pypi.get("growth_pct_7d_vs_baseline") is not None:
         lines.append(f"- Growth 7d vs baseline: **{pypi['growth_pct_7d_vs_baseline']:+.1f}%**")
     lines += [

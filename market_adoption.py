@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from market_funnel import funnel_summary
-from market_pepy import pepy_summary
+from market_pepy import pepy_multi_summary, pepy_summary
 
 
 def _conv(num: int, den: int) -> float | None:
@@ -43,9 +43,13 @@ def adoption_recent_users(*, days: int = 30, limit: int = 50) -> dict[str, Any]:
 
 
 def adoption_summary(*, days: int = 30) -> dict[str, Any]:
-    """Merge Pepy PyPI stats with funnel aggregates (no PII)."""
+    """Merge Pepy PyPI stats (multi-project: core + world combined) with funnel aggregates (no PII)."""
     days = max(1, min(days, 90))
-    pepy = pepy_summary()
+    pypi_multi = pepy_multi_summary()
+    combined = pypi_multi.get("combined", {}) or {}
+    by_project = pypi_multi.get("packages", {}) or {}
+    projects = pypi_multi.get("projects") or ["cli-market-core", "cli-market-world"]
+
     funnel = funnel_summary(days=days)
 
     install = int(funnel["events"].get("install", 0) or 0)
@@ -59,9 +63,10 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
     pro_req = int(funnel["unique_users"].get("with_pro_request", 0) or 0)
     activated = int(funnel["unique_users"].get("activated", 0) or 0)
 
-    pypi_30d = pepy.get("downloads_last_30d") if pepy.get("ok") else None
-    pypi_7d = pepy.get("downloads_last_7d") if pepy.get("ok") else None
-    pypi_total = pepy.get("total_downloads") if pepy.get("ok") else None
+    # Use combined for volume metrics (so index + comparisons see total PyPI traction)
+    pypi_30d = combined.get("downloads_last_30d") if combined.get("ok") else None
+    pypi_7d = combined.get("downloads_last_7d") if combined.get("ok") else None
+    pypi_total = combined.get("total_downloads") if combined.get("ok") else None
 
     register_per_pypi = _conv(register, pypi_30d) if isinstance(pypi_30d, int) else None
     register_per_install = _conv(register, install)
@@ -69,7 +74,7 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
     install_per_pypi = _conv(install, pypi_30d) if isinstance(pypi_30d, int) else None
 
     notes: list[str] = []
-    if pepy.get("ok") and isinstance(pypi_30d, int) and pypi_30d > 0:
+    if combined.get("ok") and isinstance(pypi_30d, int) and pypi_30d > 0:
         if install == 0:
             notes.append(
                 "Sin eventos install en el embudo; Pepy cuenta `pip install`, no telemetría CLI."
@@ -79,26 +84,50 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
                 f"install (embudo) << Pepy 30d ({install:,} vs {pypi_30d:,}) — "
                 "la mayoría de descargas PyPI no reportan evento install."
             )
-    if not pepy.get("ok"):
-        notes.append(pepy.get("message") or "PyPI (Pepy) sin datos.")
+    if not combined.get("ok"):
+        notes.append("PyPI (Pepy multi) sin datos.")
     if register > 0 and first_search == 0:
         notes.append("Hay registros sin first_search en la ventana.")
 
     funnel_conv = funnel.get("conversion", {})
     pricing_health = _conv(activated, first_search)
 
+    # Rich pypi structure: combined for scoring/compat + by_project pulled out for visibility.
+    # Flat keys are populated from combined so existing consumers (markdown, slack, old index code) keep working.
+    pypi_flat: dict[str, Any] = {
+        "ok": bool(combined.get("ok") or pypi_multi.get("ok")),
+        "project": " + ".join(projects) if projects else "combined",
+        "projects": projects,
+        "total_downloads": pypi_total,
+        "downloads_last_7d": pypi_7d,
+        "downloads_last_30d": pypi_30d,
+        "downloads_last_30d_no_ci": combined.get("downloads_last_30d_no_ci"),
+        "top_version_30d": None,  # not meaningful across packages
+        "latest_version": None,
+        "combined": {
+            "total_downloads": combined.get("total_downloads"),
+            "downloads_last_7d": combined.get("downloads_last_7d"),
+            "downloads_last_30d": combined.get("downloads_last_30d"),
+            "downloads_last_30d_no_ci": combined.get("downloads_last_30d_no_ci"),
+        },
+        "by_project": {
+            name: {
+                "ok": bool(pkg.get("ok")),
+                "total_downloads": pkg.get("total_downloads"),
+                "downloads_last_7d": pkg.get("downloads_last_7d"),
+                "downloads_last_30d": pkg.get("downloads_last_30d"),
+                "downloads_last_30d_no_ci": pkg.get("downloads_last_30d_no_ci"),
+                "top_version_30d": pkg.get("top_version_30d"),
+                "latest_version": pkg.get("latest_version"),
+            }
+            for name, pkg in by_project.items()
+            if isinstance(pkg, dict)
+        },
+    }
+
     return {
         "window_days": days,
-        "pypi": {
-            "ok": bool(pepy.get("ok")),
-            "project": pepy.get("project"),
-            "total_downloads": pypi_total,
-            "downloads_last_7d": pypi_7d,
-            "downloads_last_30d": pypi_30d,
-            "downloads_last_30d_no_ci": pepy.get("downloads_last_30d_no_ci"),
-            "top_version_30d": pepy.get("top_version_30d"),
-            "latest_version": pepy.get("latest_version"),
-        },
+        "pypi": pypi_flat,
         "funnel": {
             "install": install,
             "register": register,
@@ -119,7 +148,7 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
             "pricing_health": pricing_health,
         },
         "notes": notes,
-        "fetched_at": pepy.get("fetched_at"),
+        "fetched_at": combined.get("fetched_at") or pypi_multi.get("fetched_at"),
     }
 
 
@@ -133,16 +162,16 @@ def adoption_markdown_section(*, days: int = 30) -> str:
     lines = [
         "## Adopción",
         "",
-        f"_Ventana embudo: **{w}d** · PyPI vía Pepy · embudo P3 (install → register → search → starter)_",
+        f"_Ventana embudo: **{w}d** · PyPI (core+world combined) vía Pepy · embudo P3 (install → register → search → starter)_",
         "",
         "| Métrica | Valor |",
         "|---|---|",
     ]
 
     if p.get("ok"):
-        lines.append(f"| PyPI total | {_fmt(p.get('total_downloads'))} |")
-        lines.append(f"| PyPI últimos 30d | {_fmt(p.get('downloads_last_30d'))} |")
-        lines.append(f"| PyPI últimos 7d | {_fmt(p.get('downloads_last_7d'))} |")
+        lines.append(f"| PyPI total (combined) | {_fmt(p.get('total_downloads'))} |")
+        lines.append(f"| PyPI últimos 30d (combined) | {_fmt(p.get('downloads_last_30d'))} |")
+        lines.append(f"| PyPI últimos 7d (combined) | {_fmt(p.get('downloads_last_7d'))} |")
         if p.get("top_version_30d"):
             lines.append(f"| Top versión 30d | `{p['top_version_30d']}` |")
     else:
@@ -155,6 +184,21 @@ def adoption_markdown_section(*, days: int = 30) -> str:
         f"| Embudo starter_subscribe | {_fmt(f['starter_subscribe'])} |",
         f"| Embudo request_pro | {_fmt(f['request_pro'])} |",
         f"| Embudo activated | {_fmt(f['activated'])} |",
+        "",
+    ]
+
+    # Pull out per-package PyPI breakdown (in addition to the combined rows in the table above)
+    by_proj = p.get("by_project") or {}
+    if by_proj:
+        lines.append("")
+        lines.append("**PyPI por paquete (30d)**")
+        for name in sorted(by_proj.keys()):
+            pkg = by_proj.get(name) or {}
+            d30 = pkg.get("downloads_last_30d")
+            if d30 is not None:
+                lines.append(f"- {name}: **{_fmt(d30)}**")
+
+    lines += [
         "",
         "**Conversión (embudo vs PyPI)**",
         "",
@@ -186,15 +230,27 @@ def adoption_slack_lines(*, days: int = 30) -> list[str]:
     c = data["comparison"]
     w = data["window_days"]
 
-    lines = [f"*Adopción ({w}d)* · PyPI vs embudo P3", ""]
+    lines = [f"*Adopción ({w}d)* · PyPI (core+world combined) vs embudo P3", ""]
 
     if p.get("ok"):
         lines.append(
-            f"• PyPI: *{_fmt(p.get('downloads_last_30d'))}* dl 30d · "
+            f"• PyPI (combined): *{_fmt(p.get('downloads_last_30d'))}* dl 30d · "
             f"*{_fmt(p.get('downloads_last_7d'))}* 7d · total *{_fmt(p.get('total_downloads'))}*"
         )
         if p.get("top_version_30d"):
             lines.append(f"  top versión 30d: `{p['top_version_30d']}`")
+
+        # Pull per-package numbers
+        by_proj = p.get("by_project") or {}
+        if by_proj:
+            pkg_parts = []
+            for name in sorted(by_proj.keys()):
+                d = by_proj.get(name) or {}
+                d30 = d.get("downloads_last_30d")
+                if d30 is not None:
+                    pkg_parts.append(f"{name}: *{d30:,}*")
+            if pkg_parts:
+                lines.append("  " + " | ".join(pkg_parts))
     else:
         lines.append("• PyPI: _sin datos Pepy_")
 

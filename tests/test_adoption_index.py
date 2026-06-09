@@ -16,10 +16,38 @@ MOCK_ADOPTION = {
     "window_days": 30,
     "pypi": {
         "ok": True,
-        "project": "cli-market-world",
+        "project": "cli-market-core + cli-market-world",
+        "projects": ["cli-market-core", "cli-market-world"],
         "total_downloads": 12000,
         "downloads_last_7d": 80,
         "downloads_last_30d": 240,
+        "downloads_last_30d_no_ci": None,
+        "combined": {
+            "total_downloads": 12000,
+            "downloads_last_7d": 80,
+            "downloads_last_30d": 240,
+            "downloads_last_30d_no_ci": None,
+        },
+        "by_project": {
+            "cli-market-core": {
+                "ok": True,
+                "total_downloads": 10000,
+                "downloads_last_7d": 60,
+                "downloads_last_30d": 180,
+                "downloads_last_30d_no_ci": None,
+                "top_version_30d": "1.9.13",
+                "latest_version": "1.9.13",
+            },
+            "cli-market-world": {
+                "ok": True,
+                "total_downloads": 2000,
+                "downloads_last_7d": 20,
+                "downloads_last_30d": 60,
+                "downloads_last_30d_no_ci": None,
+                "top_version_30d": "1.9.6",
+                "latest_version": "1.9.6",
+            },
+        },
     },
     "funnel": {
         "install": 12,
@@ -91,6 +119,12 @@ def test_compute_adoption_index_scores(mock_adopt, mock_funnel, mock_ret):
     weights = sum(b["weight"] for b in data["breakdown"].values())
     assert abs(weights - 1.0) < 0.001
     assert data["signals"]["agent_usage_proxy"]["value"] == 14
+    # Multi PyPI awareness: combined used for score, packages pulled out
+    pypi_sig = data["signals"].get("pypi", {})
+    assert pypi_sig.get("downloads_30d") == 240
+    assert "by_project" in pypi_sig
+    assert "cli-market-core" in (pypi_sig.get("by_project") or {})
+    assert pypi_sig.get("projects") == ["cli-market-core", "cli-market-world"]
 
 
 def test_growth_score_positive():
