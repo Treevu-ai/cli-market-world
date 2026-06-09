@@ -8,40 +8,50 @@ const cases = [
     icon: "🤖",
     title_es: "Agentes de compra",
     title_en: "Shopping agents",
-    desc_es: `Search, compare y canastas con ${MARKET_STATS.mcpTools} herramientas MCP. Build Free/Pro — checkout vía PayPal/Mercado Pago/QR.`,
-    desc_en: `Search, compare, and baskets with ${MARKET_STATS.mcpTools} MCP tools. Build Free/Pro — checkout via PayPal/Mercado Pago/QR.`,
+    before_es: "Scraping por retailer · parsers frágiles",
+    before_en: "Per-retailer scraping · fragile parsers",
+    after_es: `Una API + ${MARKET_STATS.mcpTools} MCP tools · canasta multi-cadena`,
+    after_en: `One API + ${MARKET_STATS.mcpTools} MCP tools · multi-chain basket`,
     href: "#pricing",
   },
   {
     icon: "📊",
     title_es: "Datos de mercado",
     title_en: "Market data",
-    desc_es: `${MARKET_STATS.pricesVerifiedLabel} precios normalizados, ${MARKET_STATS.indicatorsCount} indicadores, fuentes públicas (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
-    desc_en: `${MARKET_STATS.pricesVerifiedLabel} normalized prices, ${MARKET_STATS.indicatorsCount} indicators, public sources (OFF, Wikimedia, World Bank, IMF, Eurostat, BCB).`,
+    before_es: "IPC y encuestas con semanas de retraso",
+    before_en: "CPI and surveys weeks behind",
+    after_es: `${MARKET_STATS.pricesVerifiedLabel} precios/kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h`,
+    after_en: `${MARKET_STATS.pricesVerifiedLabel} per kg/L prices · refresh every ${MARKET_STATS.pricesRefreshHours}h`,
     href: "#coverage",
   },
   {
     icon: "\ud83e\uddfa",
     title_es: "Canasta multi-retailer",
     title_en: "Multi-retailer basket",
-    desc_es: "Compara tu carrito completo entre cadenas. Precios por kg/L para decisiones de compra informadas.",
-    desc_en: "Compare your full cart across chains. Per kg/L pricing for informed purchase decisions.",
+    before_es: "Comparar manualmente en 3+ apps",
+    before_en: "Manual comparison across 3+ apps",
+    after_es: "Un comando · mejor total por cadena",
+    after_en: "One command · best total per chain",
     href: "#api",
   },
   {
     icon: "📈",
     title_es: "Inflación desde góndola",
     title_en: "Shelf-price inflation",
-    desc_es: `Cambios reales de precios actualizados cada ${MARKET_STATS.pricesRefreshHours} horas, no estimaciones con 30 días de retraso.`,
-    desc_en: `Real price changes refreshed every ${MARKET_STATS.pricesRefreshHours} hours, not 30-day-lagged estimates.`,
-    href: "#coverage",
+    before_es: "Estimaciones macro, no góndola",
+    before_en: "Macro estimates, not shelf",
+    after_es: `Tendencias reales · ${MARKET_STATS.indicatorsCount} indicadores intel`,
+    after_en: `Real trends · ${MARKET_STATS.indicatorsCount} intel indicators`,
+    href: "#intelligence",
   },
   {
     icon: "🛒",
     title_es: "Compras de empresa",
     title_en: "Enterprise procurement",
-    desc_es: "Procure Copilot: comparar, aprobar y pagar sin programar. Infra CLI Market incluida desde $29/mes.",
-    desc_en: "Procure Copilot: compare, approve, and pay without code. CLI Market infra included from $29/mo.",
+    before_es: "WhatsApp + Excel para aprobar compras",
+    before_en: "WhatsApp + Excel to approve buys",
+    after_es: "Procure Copilot · comparar y aprobar sin código",
+    after_en: "Procure Copilot · compare and approve without code",
     href: "#procure",
   },
 ];
@@ -57,12 +67,12 @@ export default function UseCasesSection() {
           {isES ? "Casos de uso" : "Use cases"}
         </p>
         <h2 className="section-title">
-          {isES ? "Una API. Múltiples aplicaciones." : "One API. Multiple applications."}
+          {isES ? "¿Para quién es CLI Market?" : "Who is CLI Market for?"}
         </h2>
         <p className="section-intro max-w-xl">
           {isES
-            ? "Desde agentes de compra hasta equipos de datos: los mismos precios verificados para todos."
-            : "From shopping agents to data teams: the same verified prices for everyone."}
+            ? "Builders, equipos comerciales y operadores de compras — mismos precios verificados, distintas superficies."
+            : "Builders, commercial teams, and procurement operators — same verified prices, different surfaces."}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[800px] mx-auto text-left mb-12">
@@ -76,15 +86,26 @@ export default function UseCasesSection() {
               href={c.href}
               target={c.href.startsWith("http") ? "_blank" : undefined}
               rel={c.href.startsWith("http") ? "noopener" : undefined}
-              className="card-cyber card-cyber-interactive p-6 flex flex-col gap-4 hover:border-[var(--cm-mint)]/30 transition-colors"
+              className="card-cyber card-cyber-interactive p-6 flex flex-col gap-3 hover:border-[var(--cm-mint)]/30 transition-colors"
             >
               <span className="text-2xl" aria-hidden="true">{c.icon}</span>
               <h3 className="text-sm font-bold text-white">
                 {isES ? c.title_es : c.title_en}
               </h3>
-              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed flex-1">
-                {isES ? c.desc_es : c.desc_en}
-              </p>
+              <div className="space-y-2 text-sm leading-relaxed flex-1">
+                <p className="text-[var(--cm-on-surface-variant)]/60">
+                  <span className="font-mono text-[10px] uppercase tracking-wider mr-2">
+                    {isES ? "Antes" : "Before"}
+                  </span>
+                  {isES ? c.before_es : c.before_en}
+                </p>
+                <p className="text-[var(--cm-on-surface-variant)]">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--cm-mint)] mr-2">
+                    {isES ? "Con CLI Market" : "With CLI Market"}
+                  </span>
+                  {isES ? c.after_es : c.after_en}
+                </p>
+              </div>
               <span className="text-xs font-mono text-[var(--cm-mint)]">
                 {isES ? "Explorar →" : "Explore →"}
               </span>

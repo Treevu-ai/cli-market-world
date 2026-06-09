@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build && next-sitemap",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "deploy": "npm run build && npx wrangler pages deploy out --project-name=cli-market-world --branch=main",
     "og:png": "node scripts/rasterize_og.mjs public/og.svg public/og.png && node scripts/rasterize_og.mjs public/og-preview.svg public/og-preview.png"
   },

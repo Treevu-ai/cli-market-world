@@ -33,23 +33,42 @@ market search "leche" --country PE`}</pre>
           <div className="code-block-cyber px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-              <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · canasta AR</span>
-            </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
-# Carrefour vs Jumbo vs Vea · total por cadena · precio normalizado`}</pre>
-          </div>
-
-          <div className="code-block-cyber px-5 py-4">
-            <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">POST /products/compare</span>
             </div>
             <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`{
   "query": "aceite de girasol 900ml",
   "country": "AR",
   "limit": 8
-}
-# Mismo producto · varias cadenas · precio por litro`}</pre>
+}`}</pre>
+          </div>
+
+          <div className="code-block-cyber px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+              <span className="text-[10px] text-[var(--cm-mint)] ml-2 uppercase break-words">200 · response (ejemplo)</span>
+            </div>
+            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`{
+  "query": "aceite de girasol 900ml",
+  "country": "AR",
+  "results": [
+    { "store": "carrefour_ar", "price": 2899, "unit_price_per_l": 3221, "currency": "ARS" },
+    { "store": "jumbo_ar", "price": 3150, "unit_price_per_l": 3500, "currency": "ARS" }
+  ],
+  "cheapest": "carrefour_ar",
+  "normalized_unit": "per_l"
+}`}</pre>
+            <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono">
+              {isES ? "Precios ilustrativos · estructura real de la API" : "Illustrative prices · real API shape"}
+            </p>
+          </div>
+
+          <div className="code-block-cyber px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+              <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · canasta AR</span>
+            </div>
+            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
+# Carrefour vs Jumbo vs Vea · total por cadena · precio normalizado`}</pre>
           </div>
         </div>
 

@@ -27,7 +27,7 @@ export default function CoverageToUseCasesBridge() {
               <a href="#procure" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 equipos de compras
               </a>{" "}
-              usan Procure — tres productos, un solo moat de datos.
+              usan Procure — tres productos, un solo dataset de precios normalizados.
             </>
           ) : (
             <>
@@ -43,7 +43,7 @@ export default function CoverageToUseCasesBridge() {
               <a href="#procure" className="font-semibold text-[var(--cm-mint)] underline underline-offset-2 hover:brightness-110">
                 procurement teams
               </a>{" "}
-              use Procure — three products, one data moat.
+              use Procure — three products, one normalized price dataset.
             </>
           )}
         </p>

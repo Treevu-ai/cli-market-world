@@ -15,7 +15,6 @@ from market_adoption_index import (
 )
 from market_funnel import FUNNEL_EVENTS, funnel_summary, record_funnel_event
 from market_golive import go_live_summary, render_go_live_html
-from market_pepy import pepy_summary
 from server_deps import auth_user, check_rate_limit, require_admin
 
 router = APIRouter(tags=["funnel"])
@@ -241,7 +240,7 @@ def dashboard_pypi(authorization: str | None = Header(None)):
         from market_pepy import pepy_multi_summary, pepy_summary
         multi = pepy_multi_summary()
         leg = pepy_summary(project="cli-market")
-        base = pepy_summary()
+        pepy_summary()
         cw = (multi.get("combined") or {}).get("total_downloads") or 0
         lt = (leg.get("total_downloads") or 0) if leg.get("ok") else 0
         total = max(int(cw + lt), 17785)
