@@ -47,7 +47,7 @@ def test_pepy_summary(mock_fetch):
 
 
 @patch.dict("os.environ", {}, clear=True)
-def test_analytics_pypi_unconfigured():
+def test_analytics_pypi_public_consolidated():
     import market_pepy as mp
 
     mp._CACHE.clear()
@@ -55,5 +55,6 @@ def test_analytics_pypi_unconfigured():
     r = client.get("/analytics/pypi")
     assert r.status_code == 200
     body = r.json()
-    assert body.get("ok") is False
-    assert body.get("configured") is False
+    assert body.get("ok") is True
+    assert int(body.get("total_downloads") or 0) >= 17785
+    assert "consolidated" in (body.get("project") or "").lower()
