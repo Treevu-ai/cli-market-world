@@ -302,4 +302,47 @@ def build_slack_publish_messages(
         "---",
         f"_Marcar publicado:_ `cd cli-market-content && make publish day={campaign_day}`",
     ]
-    return _split_messages(["\n".join(intro)] + body_parts + ["\n".join(backlog)])
+    content_msgs = _split_messages(["\n".join(intro)] + body_parts + ["\n".join(backlog)])
+    content_msgs.append(
+        build_publish_checklist_message(
+            campaign_day=campaign_day,
+            for_date=for_date,
+            gate_pass=bool(metrics.get("gate_pass")),
+        )
+    )
+    return content_msgs
+
+
+def build_publish_checklist_message(
+    *,
+    campaign_day: int,
+    for_date: date,
+    gate_pass: bool,
+) -> str:
+    """Short closing checklist — tick mentally without leaving Slack."""
+    channel_items = channels_for_date(for_date, campaign_day)
+    lines = [
+        f"✅ *Checklist publicación* · Día {campaign_day}",
+        "",
+        "Marca al terminar cada paso (reacciona ✅ en Slack o mentalmente):",
+        "",
+        f"☐ Gate — {'abierto · publicar normal' if gate_pass else 'cerrado · contingencia'}",
+    ]
+
+    for label, _path in channel_items:
+        if label == "LinkedIn Personal":
+            lines.append("☐ LI Personal — post")
+            lines.append("☐ LI Personal — comentario")
+        elif label == "LinkedIn Empresa":
+            lines.append("☐ LI Empresa — post")
+            lines.append("☐ LI Empresa — comentario")
+        else:
+            lines.append(f"☐ {label} — publicado")
+
+    lines += [
+        "☐ Asset / imagen adjunta (si aplica)",
+        f"☐ `make publish day={campaign_day}`",
+        "",
+        "_Cuando todo esté hecho, el día GTM está cerrado._",
+    ]
+    return "\n".join(lines)
