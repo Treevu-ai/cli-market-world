@@ -6,6 +6,7 @@ Endpoints:
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
   POST /v1/admin/set-tier     Set a user's subscription tier (free|pro|enterprise)
   POST /admin/cron/funnel-digest  Post evening funnel digest to Slack (#funnel-cli-market)
+  POST /admin/cron/command-control  Post morning founder panel (#command-control-cli-market)
 
 Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicly.
 """
@@ -205,3 +206,31 @@ def admin_cron_funnel_digest(
             detail="Slack funnel channel not configured or delivery failed",
         )
     return {"ok": True, "hours": hours, "posted": True, "preview": text[:800]}
+
+
+@router.post("/admin/cron/command-control")
+def admin_cron_command_control(
+    authorization: str | None = Header(None),
+    full: bool = False,
+):
+    """Post founder Command & Control panel (morning cron)."""
+    require_admin(authorization)
+
+    import sys
+    from pathlib import Path
+
+    ops_dir = Path(__file__).resolve().parent.parent / "ops"
+    if str(ops_dir) not in sys.path:
+        sys.path.insert(0, str(ops_dir))
+    from command_control_daily import publish_command_control
+
+    try:
+        return publish_command_control(remote=True, brief=not full, save=True)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Slack command-control not configured: {exc}",
+        ) from exc
+    except Exception as exc:
+        logger.exception("command-control cron failed")
+        raise HTTPException(status_code=500, detail=str(exc)[:200]) from exc

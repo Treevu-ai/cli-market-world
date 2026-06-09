@@ -12,6 +12,9 @@ Usage:
   python ops/command_control_daily.py --dry-run    # no guarda ni postea
   python ops/command_control_daily.py --remote     # KPIs desde producción
 
+Schedule (primary: GitHub Actions command-control-morning.yml at 12:30 UTC):
+  curl -X POST "$MARKET_API_URL/admin/cron/command-control" -H "Authorization: Bearer $MARKET_API_TOKEN"
+
 Env:
   SLACK_BOT_TOKEN
   SLACK_CHANNEL_COMMAND_CONTROL   — ID del canal (o auto-resolve por nombre)
@@ -39,7 +42,18 @@ from load_env import load_repo_env  # noqa: E402
 
 load_repo_env()
 
-METRICS_DIR = Path(__file__).resolve().parent / "metrics" / "command-control"
+
+def _default_metrics_dir() -> Path:
+    override = os.getenv("COMMAND_CONTROL_METRICS_DIR", "").strip()
+    if override:
+        return Path(override)
+    data_root = os.getenv("MARKET_DATA_DIR", "").strip()
+    if data_root:
+        return Path(data_root) / "metrics" / "command-control"
+    return Path(__file__).resolve().parent / "metrics" / "command-control"
+
+
+METRICS_DIR = _default_metrics_dir()
 HISTORY_FILE = METRICS_DIR / "history.jsonl"
 CHANNEL_NAME = "command-control-cli-market"
 
@@ -783,6 +797,29 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
         "`python ops/command_control_daily.py --slack --remote`"
     )
     return "\n".join(lines)
+
+
+def publish_command_control(
+    *,
+    remote: bool = True,
+    brief: bool = True,
+    save: bool = True,
+) -> dict[str, Any]:
+    """Build panel, optionally persist metrics, post to #command-control-cli-market."""
+    metrics = _collect_metrics(remote=remote)
+    text = build_message(remote=remote, brief=brief)
+    if save:
+        _save_snapshot(metrics)
+    from slack_notify import deliver_to_command_control
+
+    deliver_to_command_control(text)
+    return {
+        "ok": True,
+        "posted": True,
+        "remote": remote,
+        "brief": brief,
+        "preview": text[:800],
+    }
 
 
 def main() -> int:

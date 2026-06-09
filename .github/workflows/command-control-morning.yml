@@ -1,0 +1,41 @@
+name: Command Control Morning
+
+on:
+  schedule:
+    # 12:30 UTC = 07:30 Perú — 30 min antes del daily briefing (13:00 UTC)
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Include full founder checklist (default brief panel)
+        type: boolean
+        default: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  command-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Post command-control panel via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          FULL="${{ github.event.inputs.full }}"
+          QS=""
+          if [ "$FULL" = "true" ]; then
+            QS="?full=true"
+          fi
+          CODE=$(curl -sS -o /tmp/command-control.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/command-control${QS}" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/command-control.json
+          if [ "$CODE" != "200" ]; then
+            echo "command-control failed HTTP $CODE"
+            exit 1
+          fi
