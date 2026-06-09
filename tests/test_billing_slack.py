@@ -25,6 +25,7 @@ def test_format_pending_pro():
         amount_pen=144.3,
     )
     assert "CLI Market Pro" in text
+    assert "[REVENUE]" in text
     assert "activate-pro" in text
 
 
@@ -72,10 +73,10 @@ def test_funnel_install_quiet_by_default(monkeypatch):
     assert notify_funnel_event(event="install", meta={"source": "test"}) is False
 
 
-def test_funnel_register_always_notifies(monkeypatch):
+def test_funnel_register_digest_mode_skips_realtime(monkeypatch):
     from billing_slack import notify_funnel_event
 
     monkeypatch.delenv("SLACK_FUNNEL_VERBOSE", raising=False)
-    monkeypatch.setenv("SLACK_BOT_TOKEN", "")
-    monkeypatch.setenv("SLACK_WEBHOOK_CLI_MARKET_PRO", "")
+    monkeypatch.delenv("SLACK_FUNNEL_REALTIME", raising=False)
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
     assert notify_funnel_event(event="register", username="newuser") is False

@@ -63,6 +63,8 @@ Orden sugerido cada mañana:
 4. `python ops/production_acceptance.py --phase user --tier 2`
 5. Content repo: `make today` → `make gate` → `make content`
 
+Tarde (~18:00): `python ops/funnel_digest_daily.py --slack` → `#funnel-cli-market` (adopción; dinero sigue en `#suscripciones-cli-pro`).
+
 ## Index API (Golden Records)
 
 Montado en la API world:
