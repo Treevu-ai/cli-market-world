@@ -6,11 +6,21 @@ interface Props {
   as?: "span" | "div"
   className?: string
   duration?: number
+  /** Play scramble once on mount (e.g. hero punch line). */
+  autoStart?: boolean
+  delay?: number
 }
 
 const CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`abcdefghijklmnopqrstuvwxyz0123456789"
 
-export default function ScrambleText({ text, as: Tag = "span", className = "", duration = 0.6 }: Props) {
+export default function ScrambleText({
+  text,
+  as: Tag = "span",
+  className = "",
+  duration = 0.6,
+  autoStart = false,
+  delay = 700,
+}: Props) {
   const [display, setDisplay] = useState(text)
   const timer = useRef<ReturnType<typeof setInterval>>(undefined)
   const animating = useRef(false)
@@ -47,6 +57,12 @@ export default function ScrambleText({ text, as: Tag = "span", className = "", d
     animating.current = false
     setDisplay(text)
   }, [text])
+
+  useEffect(() => {
+    if (!autoStart) return
+    const id = window.setTimeout(scramble, delay)
+    return () => window.clearTimeout(id)
+  }, [autoStart, delay, text])
 
   return (
     <Tag className={className} onMouseEnter={scramble}>

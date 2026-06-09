@@ -37,29 +37,17 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hero-terminal-headline text-balance max-w-[720px]"
+          className="hero-terminal-headline text-balance max-w-[820px]"
         >
           {isES ? (
             <>
-              La primera capa de inteligencia de precios para LatAm.
-              <br />
-              <span className="text-[var(--cm-data)]">
-                Obtén precios reales de góndola de {MARKET_STATS.retailersVerified} retailers en{" "}
-                {MARKET_STATS.countries} países.
-              </span>
-              <br />
-              Una sola API.
+              Obtén precios reales de góndola de {MARKET_STATS.retailersVerified} retailers en{" "}
+              {MARKET_STATS.countries} países.
             </>
           ) : (
             <>
-              The first shelf-price intelligence layer for LatAm.
-              <br />
-              <span className="text-[var(--cm-data)]">
-                Get real shelf prices from {MARKET_STATS.retailersVerified} retailers across{" "}
-                {MARKET_STATS.countries} countries.
-              </span>
-              <br />
-              One API.
+              Get real shelf prices from {MARKET_STATS.retailersVerified} retailers across{" "}
+              {MARKET_STATS.countries} countries.
             </>
           )}
         </motion.h1>
@@ -67,12 +55,34 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
-          className="mt-5 text-base sm:text-lg text-[var(--cm-ink)] max-w-[600px] font-medium"
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="hero-api-punch mt-5 sm:mt-6"
         >
-          {isES
-            ? "Disponible vía API, CLI y MCP para agentes de IA."
-            : "Available via API, CLI, and MCP for AI agents."}
+          <ScrambleText
+            text={isES ? "Una sola API" : "One API"}
+            autoStart
+            delay={550}
+            duration={0.75}
+          />
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.18, ease: "easeOut" }}
+          className="mt-5 text-base sm:text-lg text-[var(--cm-ink)] max-w-[640px] font-medium leading-relaxed"
+        >
+          {isES ? (
+            <>
+              La primera capa de inteligencia de precios para LatAm. Disponible vía API, CLI y MCP
+              para agentes de IA.
+            </>
+          ) : (
+            <>
+              The first shelf-price intelligence layer for LatAm. Available via API, CLI, and MCP
+              for AI agents.
+            </>
+          )}
         </motion.p>
 
         <motion.p
