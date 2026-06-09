@@ -37,21 +37,29 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hero-terminal-headline text-balance"
+          className="hero-terminal-headline text-balance max-w-[720px]"
         >
           {isES ? (
             <>
-              Precios comparables de{" "}
-              <span className="text-[var(--cm-data)]">{MARKET_STATS.retailersVerified} retailers</span>
+              La primera capa de inteligencia de precios para LatAm.
               <br />
-              <span className="text-[var(--cm-text-secondary)]">en LatAm — una sola API.</span>
+              <span className="text-[var(--cm-data)]">
+                Obtén precios reales de góndola de {MARKET_STATS.retailersVerified} retailers en{" "}
+                {MARKET_STATS.countries} países.
+              </span>
+              <br />
+              Una sola API.
             </>
           ) : (
             <>
-              Comparable prices from{" "}
-              <span className="text-[var(--cm-data)]">{MARKET_STATS.retailersVerified} retailers</span>
+              The first shelf-price intelligence layer for LatAm.
               <br />
-              <span className="text-[var(--cm-text-secondary)]">across LatAm — one API.</span>
+              <span className="text-[var(--cm-data)]">
+                Get real shelf prices from {MARKET_STATS.retailersVerified} retailers across{" "}
+                {MARKET_STATS.countries} countries.
+              </span>
+              <br />
+              One API.
             </>
           )}
         </motion.h1>
@@ -60,22 +68,22 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
-          className="mt-4 text-sm text-[var(--cm-text-secondary)] max-w-[560px]"
+          className="mt-5 text-base sm:text-lg text-[var(--cm-ink)] max-w-[600px] font-medium"
         >
           {isES
-            ? "La capa programable del retail físico de LatAm."
-            : "The programmable layer of physical retail in LatAm."}
+            ? "Disponible vía API, CLI y MCP para agentes de IA."
+            : "Available via API, CLI, and MCP for AI agents."}
         </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
-          className="hero-terminal-subhead mt-4 max-w-[680px]"
+          className="hero-terminal-subhead mt-3 max-w-[640px] text-sm"
         >
           {isES
-            ? `${MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados por kg/L · actualizados cada ${MARKET_STATS.pricesRefreshHours}h · ${MARKET_STATS.countries} países. Los catálogos son públicos; el valor está en agregar, normalizar y mantenerlos listos para usar.`
-            : `${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L · refreshed every ${MARKET_STATS.pricesRefreshHours}h · ${MARKET_STATS.countries} countries. Catalogs are public; the value is aggregating, normalizing, and keeping them ready to use.`}{" "}
+            ? `${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
+            : `${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
           <a href="#coverage" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
             {isES ? "Cobertura →" : "Coverage →"}
           </a>
