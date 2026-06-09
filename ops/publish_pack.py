@@ -158,6 +158,28 @@ def _scheduled_on_date(path, for_date: date) -> bool:
     return True
 
 
+def _find_published_on_date(directory, glob_pattern: str, for_date: date):
+    """Return draft whose frontmatter published_at matches for_date exactly."""
+    if not directory.is_dir():
+        return None
+    iso = for_date.isoformat()
+    for path in sorted(directory.glob(glob_pattern)):
+        fm, _ = _parse_frontmatter(path.read_text(encoding="utf-8"))
+        if (fm.get("published_at") or "").strip() == iso:
+            return path
+    return None
+
+
+def _resolve_linkedin_draft(directory, glob_pattern: str, offset_path, for_date: date):
+    """Prefer calendar published_at; fall back to offset filename when unscheduled."""
+    by_date = _find_published_on_date(directory, glob_pattern, for_date)
+    if by_date is not None:
+        return by_date
+    if offset_path.is_file() and _scheduled_on_date(offset_path, for_date):
+        return offset_path
+    return None
+
+
 def _section(body: str, heading: str) -> str:
     pattern = rf"(?m)^#{{2,3}} {re.escape(heading)}\s*\n(.*?)(?=^#{{2,3}} |\Z)"
     m = re.search(pattern, body, re.DOTALL)
@@ -230,16 +252,22 @@ def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]
     root = content_root()
     items: list[tuple[str, Any]] = []
 
-    personal = linkedin_dir() / f"Day-{campaign_day:02d}.md"
-    if not personal.is_file():
+    personal_offset = linkedin_dir() / f"Day-{campaign_day:02d}.md"
+    if not personal_offset.is_file():
         alt = linkedin_dir() / f"Day-{campaign_day + PERSONAL_OFFSET:02d}.md"
-        personal = alt if alt.is_file() else personal
-    if personal.is_file() and _scheduled_on_date(personal, for_date):
+        personal_offset = alt if alt.is_file() else personal_offset
+    personal = _resolve_linkedin_draft(
+        linkedin_dir(), "Day-*.md", personal_offset, for_date
+    )
+    if personal is not None:
         items.append(("LinkedIn Personal", personal))
 
     cday = campaign_day + COMPANY_OFFSET
-    company = _linkedin_company_dir() / f"Company-Day-{cday:02d}.md"
-    if company.is_file() and _scheduled_on_date(company, for_date):
+    company_offset = _linkedin_company_dir() / f"Company-Day-{cday:02d}.md"
+    company = _resolve_linkedin_draft(
+        _linkedin_company_dir(), "Company-Day-*.md", company_offset, for_date
+    )
+    if company is not None:
         items.append(("LinkedIn Empresa", company))
 
     articles = {
