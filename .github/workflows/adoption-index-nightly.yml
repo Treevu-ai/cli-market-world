@@ -1,0 +1,37 @@
+name: Adoption Index Nightly
+
+on:
+  schedule:
+    # 04:30 UTC — after collector refresh, before morning command-control
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  adoption-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Persist Adoption Index via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/adoption-index.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/adoption-index?days=30&github=1" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/adoption-index.json
+          if [ "$CODE" != "200" ]; then
+            echo "adoption-index cron failed HTTP $CODE"
+            exit 1
+          fi

@@ -43,7 +43,7 @@ Construí CLI Market porque me cansé de ver agentes inteligentes fallar en la t
 
 Una capa. Una API. 30 retailers. 22 herramientas MCP.
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 Los agentes ya saben pensar. Ahora pueden comprar.
 

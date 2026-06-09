@@ -27,7 +27,7 @@ Pruebe CLI Market ahora.
 Copy-paste en tu terminal:
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market search "leche" --country PE
 ```
 

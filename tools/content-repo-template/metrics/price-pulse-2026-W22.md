@@ -32,6 +32,6 @@ updated: 2026-05-30
 
 ## Hook LinkedIn (copiar)
 
-Esta semana: **37,731** precios frescos · **35** retailers activos · **20/36** tiendas saludables. Un solo `pip install cli-market-world-world`.
+Esta semana: **37,731** precios frescos · **35** retailers activos · **20/36** tiendas saludables. Un solo `pip install cli-market-world`.
 
 Fuente: `/dashboard/data` · [[GTM-Hub]]

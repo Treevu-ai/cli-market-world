@@ -42,7 +42,7 @@ Porque los LLM eligen mejor con primitivas específicas:
 
 Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 ¿Qué tool te falta para tu agente?
 

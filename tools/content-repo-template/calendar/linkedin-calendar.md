@@ -70,7 +70,7 @@ index: "[[linkedin/00-Index]]"
 | 22 | "Este retailer peruano listó su tienda en CLI Market. 30 segundos. Sin código." | Case study |
 | 23 | "Si su tienda usa VTEX o Magento, sus productos ya pueden aparecer en búsquedas de IA." | Direct CTA |
 | 24 | "3 razones para registrar su tienda: 1. Gratis. 2. 30 segundos. 3. Agentes IA ya están comprando." | List post |
-| 25 | "Pruebe CLI Market ahora: `pip install cli-market-world-world && market search \"leche\" --country PE`" | Try it |
+| 25 | "Pruebe CLI Market ahora: `pip install cli-market-world && market search \"leche\" --country PE`" | Try it |
 | 26 | "El futuro del e-commerce no es mobile-first. Es agent-first." | Vision |
 | 27 | "¿Qué pasa cuando 1,000 agentes comparan precios en tiempo real? Eso estamos construyendo." | Ambition |
 | 28 | "60 retailers (30 verificados). 8 países. 3 plataformas. 22 herramientas MCP. PayPal + QR. Open source. MIT." | Recap |

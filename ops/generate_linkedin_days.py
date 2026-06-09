@@ -36,7 +36,7 @@ Esto no es un índice oficial de inflación. Es señal de mercado en tiempo casi
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 
 ¿Qué producto te gustaría ver comparado en PE la próxima semana?""",
-        "comment": "Dashboard + comparar en terminal 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world-world\nmarket compare \"arroz\" --country PE\n```\n\nDatos: [[metrics/price-pulse-2026-W22]]",
+        "comment": "Dashboard + comparar en terminal 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world\nmarket compare \"arroz\" --country PE\n```\n\nDatos: [[metrics/price-pulse-2026-W22]]",
         "tags": "#AI #ecommerce #data #retail #Peru",
         "gate": True,
     },
@@ -132,7 +132,7 @@ Un agente puede preguntar "¿cuánto cuesta X en AR vs PE?" y obtener JSON en se
 
 Eso es infraestructura — no un chatbot que inventa precios.
 
-Open source. MIT. `pip install cli-market-world-world`
+Open source. MIT. `pip install cli-market-world`
 
 ¿En qué vertical retail te gustaría ver más cobertura?""",
         "comment": "Explorar líneas 👇\n\nhttps://cli-market.dev\n\n```\nmarket lines\n```",
@@ -160,7 +160,7 @@ Esta semana analizamos las búsquedas más frecuentes en CLI Market:
 5. #4 — Pañales / farmacia
 6. #5 — Electro (celulares)
 7. Insight: supermercados dominan, farmacias tienen mayor spread
-8. CTA: `pip install cli-market-world-world`
+8. CTA: `pip install cli-market-world`
 
 Los agentes no compran como humanos — buscan, comparan, optimizan.
 
@@ -337,7 +337,7 @@ Alternativas que evaluamos:
 Python ganó por DX + async + ecosistema IA.
 
 ¿Tu agent stack es Python-first también?""",
-        "comment": "Quickstart 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world-world\n```",
+        "comment": "Quickstart 👇\n\nhttps://cli-market.dev\n\n```\npip install cli-market-world\n```",
         "tags": "#python #FastAPI #asyncio #AI #developers",
     },
     18: {
@@ -369,7 +369,7 @@ Porque los LLM eligen mejor con primitivas específicas:
 
 Copia la config en Cursor/Claude: **cli-market.dev/tools**
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 ¿Qué tool te falta para tu agente?""",
         "comment": "Configs MCP 👇\n\nhttps://cli-market.dev/tools",
@@ -587,7 +587,7 @@ Es **agent-first**.
 Copy-paste en tu terminal:
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market search "leche" --country PE
 ```
 
@@ -641,7 +641,7 @@ CLI Market turns commerce into APIs.
 
 30 retailers. 8 countries. 22 MCP tools. Open source.
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 Who's building agent-first commerce in your market?""",
         "comment": "Get started 👇\n\nhttps://cli-market.dev",
@@ -761,7 +761,7 @@ Esto es lo que construí:
 
 Infraestructura de comercio para agentes de IA.
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 Esto es lo que viene:
 
@@ -782,7 +782,7 @@ Si eres developer: prueba el CLI.
 Si es retailer: registre su tienda.
 
 Nos vemos en el mes 2.""",
-        "comment": "Todo en un link 👇\n\nhttps://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin\n\n```\npip install cli-market-world-world\nmarket hello\n```",
+        "comment": "Todo en un link 👇\n\nhttps://cli-market.dev?utm_source=linkedin&utm_campaign=30d-fin\n\n```\npip install cli-market-world\nmarket hello\n```",
         "tags": "#AI #ecommerce #MCP #buildinpublic #milestone",
     },
 }

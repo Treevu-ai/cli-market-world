@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-STALE_PIP_RE = re.compile(r"pip install cli-market(?!-)")
+STALE_PIP_RE = re.compile(r"pip install cli-market(?:-world){2,}\b|pip install cli-market(?!-)")
 STALE_PYPI_RE = re.compile(r"https://pypi\.org/project/cli-market(?!-)")
 
 SKIP_DIRS = {
@@ -24,6 +24,7 @@ SKIP_DIRS = {
     "terminals",
     "cli_market_world.egg-info",
     "ops/generated",
+    "out",
 }
 
 SKIP_FILES = {

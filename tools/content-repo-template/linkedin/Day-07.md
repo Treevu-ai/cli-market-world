@@ -57,7 +57,7 @@ Dashboard + quickstart 👇
 https://cli-market.dev
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market hello
 market stats
 ```

@@ -15,7 +15,7 @@ hub: "[[GTM-Hub]]"
 
 ## Article 2: "Add Commerce to Your AI Agent in 4 Lines"
 **Type**: Tutorial | **Target**: Python developers
-**Outline**: `pip install cli-market-world-world` → `market login` → `market search` → `market checkout` → MCP connect
+**Outline**: `pip install cli-market-world` → `market login` → `market search` → `market checkout` → MCP connect
 
 ## Article 3: "What 43,000 Prices Tell Us About LATAM Retail"
 **Type**: Data journalism | **Target**: Analysts, fintech

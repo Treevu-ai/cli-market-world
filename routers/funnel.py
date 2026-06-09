@@ -7,6 +7,12 @@ from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import HTMLResponse
 
 from market_adoption import adoption_recent_users, adoption_summary
+from market_adoption_index import (
+    compute_adoption_index,
+    latest_snapshot,
+    list_snapshots,
+    score_grade,
+)
 from market_funnel import FUNNEL_EVENTS, funnel_summary, record_funnel_event
 from market_golive import go_live_summary, render_go_live_html
 from market_pepy import pepy_summary
@@ -88,6 +94,72 @@ def analytics_adoption_public(days: int = 30):
     """Public PyPI + funnel adoption comparison (no PII)."""
     days = max(1, min(days, 90))
     return adoption_summary(days=days)
+
+
+@router.get("/analytics/adoption-index")
+def analytics_adoption_index_public(
+    days: int = 30,
+    github: bool = False,
+    cached: bool = True,
+):
+    """Public Adoption Index V1 (composite score, no PII)."""
+    days = max(1, min(days, 90))
+    if cached:
+        snap = latest_snapshot()
+        if snap and snap.get("score") is not None:
+            return {
+                "scope": snap.get("scope"),
+                "version": "v1",
+                "score": snap["score"],
+                "grade": score_grade(float(snap["score"])),
+                "breakdown": snap.get("breakdown"),
+                "signals": _public_signals(snap.get("signals") or {}),
+                "computed_at": snap.get("created_at"),
+                "source": "snapshot",
+            }
+    live = compute_adoption_index(days=days, include_github=github)
+    return {
+        "scope": live["scope"],
+        "version": live["version"],
+        "score": live["score"],
+        "grade": live["grade"],
+        "breakdown": live["breakdown"],
+        "signals": _public_signals(live.get("signals") or {}),
+        "computed_at": live["computed_at"],
+        "source": "live",
+    }
+
+
+def _public_signals(signals: dict) -> dict:
+    """Strip internal notes; keep aggregate adoption signals only."""
+    out = {
+        "pypi": signals.get("pypi"),
+        "funnel": signals.get("funnel"),
+        "retention_7d": signals.get("retention_7d"),
+        "agent_usage_proxy": signals.get("agent_usage_proxy"),
+    }
+    gh = signals.get("github")
+    if isinstance(gh, dict) and gh.get("ok"):
+        out["github"] = gh
+    return out
+
+
+@router.get("/dashboard/adoption-index")
+def dashboard_adoption_index(
+    authorization: str | None = Header(None),
+    days: int = 30,
+    github: bool = True,
+    history: int = 14,
+):
+    """Admin: live Adoption Index + recent snapshots."""
+    require_admin(authorization)
+    days = max(1, min(days, 90))
+    history = max(0, min(history, 90))
+    live = compute_adoption_index(days=days, include_github=github)
+    return {
+        "live": live,
+        "history": list_snapshots(limit=history) if history else [],
+    }
 
 
 @router.get("/dashboard/adoption/recent")

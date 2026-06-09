@@ -34,7 +34,7 @@ Esto es lo que construimos con CLI Market: infraestructura de comercio para agen
 
 → 60 retailers (30 verificados) en 8 países
 → 22 herramientas MCP (buscar, comparar, carrito, checkout)
-→ `pip install cli-market-world-world` y listo
+→ `pip install cli-market-world` y listo
 
 Stripe convirtió los pagos en APIs.
 
@@ -52,7 +52,7 @@ https://cli-market.dev
 
 Quickstart:
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market search "leche" --country PE
 ```
 

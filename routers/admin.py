@@ -208,6 +208,23 @@ def admin_cron_funnel_digest(
     return {"ok": True, "hours": hours, "posted": True, "preview": text[:800]}
 
 
+@router.post("/admin/cron/adoption-index")
+def admin_cron_adoption_index(
+    authorization: str | None = Header(None),
+    days: int = 30,
+    github: bool = True,
+):
+    """Persist Adoption Index snapshot (nightly cron)."""
+    require_admin(authorization)
+    days = max(1, min(days, 90))
+
+    from market_adoption_index import compute_adoption_index, persist_snapshot
+
+    payload = compute_adoption_index(days=days, include_github=github)
+    saved = persist_snapshot(payload)
+    return {"ok": True, "score": payload["score"], "grade": payload["grade"], "snapshot": saved}
+
+
 @router.post("/admin/cron/command-control")
 def admin_cron_command_control(
     authorization: str | None = Header(None),
