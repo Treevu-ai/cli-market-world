@@ -47,7 +47,7 @@ Dashboard + comparar en terminal 👇
 https://cli-market.dev
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market compare "arroz" --country PE
 ```
 

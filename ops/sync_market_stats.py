@@ -139,8 +139,8 @@ def _apply_canonical_copy_patches(text: str) -> str:
     counts = _mcp_counts()
     mcp_default = counts["default"]
     out = text
-    out = out.replace("pip install cli-market-world-world-world", s.PIP_INSTALL_CMD)
-    out = out.replace("pip install cli-market", s.PIP_INSTALL_CMD)
+    out = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, out)
+    out = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, out)
     out = out.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
     out = out.replace("https://pypi.org/project/cli-market", s.PYPI_URL.rstrip("/"))
     out = re.sub(
@@ -835,8 +835,8 @@ def sync_llms_txt() -> None:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
-        text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
-        text = text.replace("pip install cli-market-world-world-world", s.PIP_INSTALL_CMD)
+        text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
+        text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
         text = text.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
         text = re.sub(
             r"- \d+ MCP tools \(.*?\)",
@@ -863,8 +863,8 @@ def sync_llms_txt() -> None:
     full_path = ROOT / "landing/public/llms-full.txt"
     if full_path.exists():
         text = full_path.read_text(encoding="utf-8")
-        text = text.replace("pip install cli-market", s.PIP_INSTALL_CMD)
-        text = text.replace("pip install cli-market-world-world-world", s.PIP_INSTALL_CMD)
+        text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
+        text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
         text = text.replace("https://pypi.org/project/cli-market/", s.PYPI_URL)
         text = re.sub(
             r"## \d+ MCP tools\n\n.*?(?=\n## Countries:)",

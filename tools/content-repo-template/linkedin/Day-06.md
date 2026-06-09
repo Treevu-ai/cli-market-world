@@ -63,7 +63,7 @@ Copia-pega configs MCP para Cursor y Claude 👇
 https://cli-market.dev/tools
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market-mcp
 ```
 

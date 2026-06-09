@@ -41,7 +41,7 @@ That's CLI Market:
 → 68 retailers (38 verified) across 8 countries
 → 22 MCP tools — search, compare, basket, checkout
 → 43,000+ real prices, refreshed every 8 hours
-→ `pip install cli-market-world-world`
+→ `pip install cli-market-world`
 
 Open source. MIT.
 
@@ -64,7 +64,7 @@ Try it 👇
 https://cli-market.dev
 
 ```
-pip install cli-market-world-world
+pip install cli-market-world
 market search "rice" --country PE
 ```
 

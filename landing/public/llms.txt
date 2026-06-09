@@ -43,11 +43,11 @@ Nuna Orgánica, Xray Chipped PE
 - **Cross-Border**: Single interface for 38 verified retailers.
 - **Data Moat**: Collector every 4h. Historical snapshots, inflation, 34 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru).
-- **Open Source**: MIT. pip install cli-market-world-world.
+- **Open Source**: MIT. pip install cli-market-world.
 
 ## Quick start (developers)
 
-1. `pip install cli-market-world-world`
+1. `pip install cli-market-world`
 2. `market register` — free API key (or `market login` if you have credentials)
 3. `market search "leche" --country PE`
 4. Intelligence: `market intel inflation -c PE` · `market intel indicators -c PE`

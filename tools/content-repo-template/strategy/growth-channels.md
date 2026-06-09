@@ -11,7 +11,7 @@ hub: "[[GTM-Hub]]"
 **Date**: 2026-05-28  
 
 ## Channel 1: PyPI as Growth Engine
-**Hypothesis**: Every `pip install cli-market-world-world` is a developer. Zero activation flow.
+**Hypothesis**: Every `pip install cli-market-world` is a developer. Zero activation flow.
 **Experiment**: Post-install `market hello` with CTA, track installs via PyPI API, `market share` referral command.
 **Target**: 50 installs/week → 10% activation → 5 new agents weekly.
 

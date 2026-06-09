@@ -43,7 +43,7 @@ CLI Market turns commerce into APIs.
 
 30 retailers. 8 countries. 22 MCP tools. Open source.
 
-`pip install cli-market-world-world`
+`pip install cli-market-world`
 
 Who's building agent-first commerce in your market?
 
