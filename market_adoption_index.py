@@ -87,6 +87,18 @@ def _norm_rate(rate: float | None, *, target: float) -> float:
     return round(min(100.0, max(0.0, (rate / target) * 100)), 1)
 
 
+def _observatory_maa(days: int) -> tuple[int | None, str | None]:
+    """MAA from agent_events when Observatory telemetry is active."""
+    try:
+        from market_observatory import count_maa, observatory_enabled
+
+        if observatory_enabled():
+            return count_maa(days=days, exclude_noise=True), "maa"
+    except Exception:
+        pass
+    return None, None
+
+
 def _growth_score(downloads_7d: int | None, downloads_30d: int | None) -> tuple[float, float | None]:
     if not downloads_7d or not downloads_30d or downloads_30d <= downloads_7d:
         pct = 100.0 if (downloads_7d or 0) > 0 and (downloads_30d or 0) <= (downloads_7d or 0) else 0.0
@@ -262,14 +274,23 @@ def compute_adoption_index(
     pro_req = int(funnel["unique_users"].get("with_pro_request", 0) or 0)
     activated = int(funnel["unique_users"].get("activated", 0) or 0)
 
+    maa, maa_source = _observatory_maa(days)
+    if maa_source == "maa":
+        usage_count = int(maa or 0)
+        usage_label = "MAA (agent_events)"
+        usage_note = "Observatory telemetry active"
+        usage_target = _target("MAA", 30.0)
+    else:
+        usage_count = first_search
+        usage_label = "first_search users (noise-filtered)"
+        usage_note = "MCP telemetry inactive — funnel proxy"
+        usage_target = _target("FIRST_SEARCH", 30.0)
+
     dl_score = _norm_log(
         float(downloads_30d or 0),
         target=_target("DOWNLOADS_30D", 5000.0),  # updated target for combined core+world 30d traction
     )
-    usage_score = _norm_log(
-        float(first_search),
-        target=_target("FIRST_SEARCH", 30.0),
-    )
+    usage_score = _norm_log(float(usage_count), target=usage_target)
     growth_score, growth_pct = _growth_score(
         int(downloads_7d) if isinstance(downloads_7d, int) else None,
         int(downloads_30d) if isinstance(downloads_30d, int) else None,
@@ -344,10 +365,12 @@ def compute_adoption_index(
             "ttfv_median_minutes": funnel.get("ttfv_median_minutes"),
         },
         "retention_7d": retention,
+        "maa": maa if maa_source == "maa" else None,
         "agent_usage_proxy": {
-            "label": "first_search users (noise-filtered)",
-            "value": first_search,
-            "note": "MCP execution telemetry pending gateway V2",
+            "label": usage_label,
+            "value": usage_count,
+            "note": usage_note,
+            "source": maa_source or "funnel",
         },
     }
 

@@ -2,13 +2,20 @@
 
 Instrucciones para agentes (Cursor, Cloud Agent, CI). Este archivo es la entrada única para cualquier agente que opere en el ecosistema CLI Market.
 
-## Repos del producto
+## Repos del producto (4 repos + GTM)
 
-| Repo | Propósito | Path local |
-|------|-----------|------------|
-| `cli-market-world` | Producto principal, API, ops, Slack, docs | `.` |
-| `cli-market-backend` | Collector, normalizador, billing, dashboard | `../cli-market-backend` |
-| `cli-market-content` | Contenido GTM, 10 canales, calendario, plantillas | `../cli-market-content` |
+| Repo | Propósito | Path local | Deploy / distribución |
+|------|-----------|------------|------------------------|
+| `cli-market-index` | Golden Records, entity resolution | `../cli-market-index` | Pin git en backend `requirements-private.txt` |
+| `cli-market-core` | Intelligence SDK — MCP, billing, indicators | `../cli-market-core` | PyPI `cli-market-core` |
+| `cli-market-backend` | **API producción** — collector, FastAPI, telemetría prod | `../cli-market-backend` | Railway |
+| `cli-market-world` | PyPI `cli-market-world`, landing, ops/CI, mirror API dev | `.` | PyPI + Cloudflare landing |
+
+**Orden de release** (cualquier feature cross-repo): **core → backend → world → index** (index solo si aplica). Checklists: `ops/PRICING-CHANGE-CHECKLIST.md`, `ops/OBSERVATORY-CHANGE-CHECKLIST.md`.
+
+| Repo auxiliar | Propósito | Path local |
+|---------------|-----------|------------|
+| `cli-market-content` | GTM autónomo — 10 canales, calendario | `../cli-market-content` |
 | `agency-agents` | Librería de definiciones de agentes | `../agency-agents` |
 
 ## Content repo (cli-market-content)
@@ -85,6 +92,21 @@ Estrategia canónica: `docs/pricing-strategy.md`
 | Datos | Intelligence / Price Pulse | Analistas, fintech | $300–500/mes |
 
 **GTM:** no mezclar `pip install` con Procure en el mismo post. Outbound compras → solo Procure.
+
+## Observatory (P0 — MCP Telemetry)
+
+PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-CHECKLIST.md`
+
+| Capa | Repo |
+|------|------|
+| Primitivas (`market_observatory`, identity, DDL) | `cli-market-core` → PyPI |
+| Middleware + routers prod | `cli-market-backend` → Railway |
+| Mirror API + ops + landing `/stats` | `cli-market-world` |
+| Golden Records | `cli-market-index` — sin cambios P0 |
+
+- North Star: **MAA** (Monthly Active Agents)
+- Prod telemetría: solo cuenta en **backend** desplegado; world mantiene mirror paridad
+- Jobs (world): `ops/adoption_index.py`, `ops/observatory_daily.py`, workflow `observatory-nightly.yml`
 
 ## Identidad visual
 

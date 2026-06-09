@@ -4,6 +4,23 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-09] — Observatory P0: MCP telemetry layer
+
+### cli-market-core v1.9.17
+- **Added:** `market_core.market_observatory` — `agent_events`, `agents`, `daily_observatory_metrics`, MAA, retention, `ObservatoryMiddleware`
+- **Added:** `X-Agent-ID` identity resolution priority chain
+
+### cli-market-backend
+- **Added:** Observatory middleware + `GET /analytics/observatory`, `/dashboard/observatory`
+- **Changed:** `requirements.txt` → `cli-market-core>=1.9.17`
+
+### cli-market-world v1.9.17
+- **Added:** Mirror Observatory API, `ops/observatory_daily.py`, nightly workflow
+- **Changed:** Adoption Index `real_usage` uses MAA when telemetry active
+- **Changed:** `cli-market-core>=1.9.17`
+
+---
+
 ## [2026-06-09] — P0 onboarding: tutorial + mcp-setup
 
 ### cli-market-core v1.9.16
