@@ -3,7 +3,7 @@
 
 Generates two markdown reports under ops/daily/:
   YYYY-MM-DD-product.md   — collector KPIs, store health (from production dashboard)
-  YYYY-MM-DD-content.md   — LinkedIn day N post draft, checklist, gates
+  YYYY-MM-DD-content.md   — unified channel calendar + LinkedIn detail, gates
 
 Usage:
   python3 ops/daily_briefing.py              # both reports + optional Slack
@@ -28,7 +28,7 @@ import importlib.util
 import os
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -120,25 +120,56 @@ def _day_file(day: int) -> Path | None:
     return alt if alt.is_file() else None
 
 
-def _load_day_doc(day: int) -> dict[str, Any] | None:
-    path = _day_file(day)
-    if not path:
+def _load_calendar_channels_module():
+    cal_path = content_root() / "scripts" / "calendar_channels.py"
+    if not cal_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("calendar_channels", cal_path)
+    if spec is None or spec.loader is None:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _channels_for_date(for_date: date) -> list[tuple[str, Path]]:
+    cal = _load_calendar_channels_module()
+    if cal is None:
+        return []
+    return cal.channels_for_date(for_date, _campaign_day(for_date), content_root())
+
+
+def _load_doc_from_path(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
         return None
     raw = path.read_text(encoding="utf-8")
     fm, body = _parse_frontmatter(raw)
-    title_m = re.search(r"^# Day \d+ — (.+)$", body, re.MULTILINE)
+    title_m = re.search(r"^# .+ — (.+)$", body, re.MULTILINE)
+    day_m = re.search(r"Day-(\d+)", path.name)
+    day_num = int(day_m.group(1)) if day_m else _campaign_day(date.today())
     return {
-        "day": day,
+        "day": day_num,
         "path": _path_label(path),
         "fm": fm,
-        "title": title_m.group(1).strip() if title_m else fm.get("title", f"Day {day}"),
+        "title": title_m.group(1).strip() if title_m else fm.get("title", path.stem),
         "hooks": _section(body, "Hooks (elegir 1)"),
-        "post": _section(body, "Post (copiar a LinkedIn — sin link en cuerpo)"),
+        "post": _section(body, "Post (copiar a LinkedIn — sin link en cuerpo)")
+        or _section(body, "Post"),
         "comment": _section(body, "Primer comentario"),
         "checklist": _section(body, "Checklist"),
         "hashtags": _section(body, "Hashtags"),
         "assets": _section(body, "Assets"),
     }
+
+
+def _load_day_doc(day: int) -> dict[str, Any] | None:
+    path = _day_file(day)
+    if not path:
+        return None
+    doc = _load_doc_from_path(path)
+    if doc:
+        doc["day"] = day
+    return doc
 
 
 def _gate_snippets() -> list[str]:
@@ -204,75 +235,133 @@ def build_product_report(data: dict, meta: dict, for_date: date) -> str:
     return f"{body}\n\n{stamp}\n"
 
 
+def _append_linkedin_detail(lines: list[str], doc: dict[str, Any], *, heading: str) -> None:
+    fm = doc["fm"]
+    published = fm.get("published_at", "")
+    status = fm.get("status", "?")
+    pillar = fm.get("pillar", "?")
+    lang = fm.get("lang", "es")
+    pub_label = published if published else "⏳ pendiente"
+    day_num = doc["day"]
+
+    lines += [
+        heading,
+        "",
+        "| Campo | Valor |",
+        "|-------|-------|",
+        f"| Archivo | `{doc['path']}` |",
+        f"| Estado | `{status}` |",
+        f"| Publicado | {pub_label} |",
+        f"| Pilar | {pillar} |",
+        f"| Idioma | {lang} |",
+        f"| Hora | {POST_UTC_HOUR}:00 UTC |",
+        "",
+    ]
+    asset_png = linkedin_dir() / "assets" / f"day-{day_num:02d}" / f"day-{day_num:02d}-linkedin.png"
+    if asset_png.is_file():
+        rel_asset = rel_to_content(asset_png)
+        lines += [
+            f"| **Imagen LinkedIn** | `{rel_asset}` |",
+            "",
+            (
+                "> Copiar el **Post** abajo y adjuntar esa imagen. "
+                f"Carousel: ver carpeta `assets/day-{day_num:02d}/`."
+            ),
+            "",
+        ]
+    if doc["hooks"]:
+        lines += ["### Hooks", "", doc["hooks"], ""]
+    if doc["post"]:
+        preview = doc["post"]
+        if len(preview) > 1200:
+            preview = preview[:1200] + "\n\n… _(ver archivo completo)_"
+        lines += ["### Post (copiar a LinkedIn — sin link en cuerpo)", "", preview, ""]
+    if doc["comment"]:
+        lines += ["### Primer comentario", "", doc["comment"], ""]
+    if doc["hashtags"]:
+        lines += ["### Hashtags", "", doc["hashtags"], ""]
+    if doc["assets"]:
+        lines += ["### Assets", "", doc["assets"], ""]
+    if doc["checklist"]:
+        lines += ["### Checklist", "", doc["checklist"], ""]
+
+
 def build_content_report(for_date: date) -> str:
     ds = for_date.isoformat()
     day = _campaign_day(for_date)
+    channels_today = _channels_for_date(for_date)
     lines = [
         f"# CLI Market — Daily Content Briefing {ds}",
         "",
-        f"_Calendario LinkedIn 30d · Día de campaña **{day}** · publicar **{POST_UTC_HOUR}:00 UTC**_",
+        (
+            f"_Calendario unificado · Día de campaña **{day}** · "
+            f"publicar **{POST_UTC_HOUR}:00 UTC**_"
+        ),
         "",
-        f"Ancla campaña: `{CAMPAIGN_START}` (Day 1) · [[linkedin-calendar]] · [[linkedin/00-Index]]",
+        f"Ancla campaña: `{CAMPAIGN_START}` (Day 1) · fuente: `scripts/calendar_channels.py`",
         "",
         "---",
         "",
+        "## Canales hoy",
+        "",
     ]
 
-    today = _load_day_doc(day)
-    if today:
-        fm = today["fm"]
-        published = fm.get("published_at", "")
-        status = fm.get("status", "?")
-        pillar = fm.get("pillar", "?")
-        lang = fm.get("lang", "es")
-        pub_label = published if published else "⏳ pendiente"
-
-        lines += [
-            f"## Hoy — Día {day}: {today['title']}",
-            "",
-            "| Campo | Valor |",
-            "|-------|-------|",
-            f"| Archivo | `{today['path']}` |",
-            f"| Estado | `{status}` |",
-            f"| Publicado | {pub_label} |",
-            f"| Pilar | {pillar} |",
-            f"| Idioma | {lang} |",
-            f"| Hora | {POST_UTC_HOUR}:00 UTC |",
-            "",
-        ]
-        asset_png = linkedin_dir() / "assets" / f"day-{day:02d}" / f"day-{day:02d}-linkedin.png"
-        if asset_png.is_file():
-            rel_asset = rel_to_content(asset_png)
-            lines += [
-                f"| **Imagen LinkedIn** | `{rel_asset}` |",
-                "",
-                "> Copiar el **Post** abajo y adjuntar esa imagen. Carousel: ver carpeta `assets/day-{:02d}/`.".format(day),
-                "",
-            ]
-        if today["hooks"]:
-            lines += ["### Hooks", "", today["hooks"], ""]
-        if today["post"]:
-            preview = today["post"]
-            if len(preview) > 1200:
-                preview = preview[:1200] + "\n\n… _(ver archivo completo)_"
-            lines += ["### Post (copiar a LinkedIn — sin link en cuerpo)", "", preview, ""]
-        if today["comment"]:
-            lines += ["### Primer comentario", "", today["comment"], ""]
-        if today["hashtags"]:
-            lines += ["### Hashtags", "", today["hashtags"], ""]
-        if today["assets"]:
-            lines += ["### Assets", "", today["assets"], ""]
-        if today["checklist"]:
-            lines += ["### Checklist", "", today["checklist"], ""]
+    if channels_today:
+        lines += ["| Canal | Archivo |", "|-------|---------|"]
+        for name, path in channels_today:
+            lines.append(f"| {name} | `{_path_label(path)}` |")
+        lines.append("")
     else:
         lines += [
-            f"## Hoy — Día {day}",
-            "",
-            f"⚠️ No existe `{_day_path_label(day)}`. Fin de calendario 30d o revisar `LINKEDIN_CAMPAIGN_START`.",
+            "_Sin canales programados._ Revisar `LINKEDIN_CAMPAIGN_START` o `calendar_channels.py`.",
             "",
         ]
 
-    # Satellite: AR canasta on day 9
+    personal_path = next((p for c, p in channels_today if c == "LinkedIn Personal"), None)
+    company_path = next((p for c, p in channels_today if c == "LinkedIn Empresa"), None)
+
+    if personal_path:
+        personal = _load_doc_from_path(personal_path)
+        if personal:
+            _append_linkedin_detail(
+                lines,
+                personal,
+                heading=f"## LinkedIn Personal — Día {personal['day']}: {personal['title']}",
+            )
+    elif day >= 1:
+        lines += [
+            f"## LinkedIn Personal — Día {day}",
+            "",
+            f"⚠️ Sin borrador resuelto para hoy (`{_day_path_label(day)}`).",
+            "",
+        ]
+
+    if company_path:
+        company = _load_doc_from_path(company_path)
+        if company:
+            fm = company["fm"]
+            lines += [
+                "---",
+                "",
+                f"## LinkedIn Empresa — {company['title']}",
+                "",
+                f"- Archivo: `{company['path']}` · estado `{fm.get('status', '?')}` · "
+                f"pub: {fm.get('published_at', '') or '⏳ pendiente'}",
+                "",
+            ]
+            if company["post"]:
+                preview = company["post"]
+                if len(preview) > 800:
+                    preview = preview[:800] + "\n\n… _(ver archivo completo)_"
+                lines += ["### Post empresa", "", preview, ""]
+
+    others = [(c, p) for c, p in channels_today if not c.startswith("LinkedIn")]
+    if others:
+        lines += ["---", "", "## Otros canales (archivos)", ""]
+        for name, path in others:
+            lines.append(f"- **{name}** · `{_path_label(path)}`")
+        lines.append("")
+
     if day == 9:
         ar = linkedin_dir() / "Day-09-AR.md"
         if ar.is_file():
@@ -286,21 +375,25 @@ def build_content_report(for_date: date) -> str:
                 "",
             ]
 
-    tomorrow = _load_day_doc(day + 1)
-    lines += ["---", "", f"## Mañana — Día {day + 1} (preview)", ""]
-    if tomorrow:
-        pub = tomorrow["fm"].get("published_at", "") or "pendiente"
-        lines += [
-            f"- **{tomorrow['title']}** · `{tomorrow['path']}` · estado `{tomorrow['fm'].get('status', '?')}` · pub: {pub}",
-            "",
-        ]
-        if tomorrow["hooks"]:
-            first_hook = tomorrow["hooks"].splitlines()[0][:120]
-            lines += [f"  Hook: {first_hook}", ""]
+    tomorrow_date = for_date + timedelta(days=1)
+    tomorrow_day = _campaign_day(tomorrow_date)
+    tomorrow_channels = _channels_for_date(tomorrow_date)
+    lines += ["---", "", f"## Mañana — {tomorrow_date.isoformat()} (Día {tomorrow_day})", ""]
+    if tomorrow_channels:
+        for name, path in tomorrow_channels:
+            doc = _load_doc_from_path(path) if name.startswith("LinkedIn") else None
+            if doc:
+                pub = doc["fm"].get("published_at", "") or "pendiente"
+                lines.append(
+                    f"- **{name}**: {doc['title']} · `{doc['path']}` · "
+                    f"estado `{doc['fm'].get('status', '?')}` · pub: {pub}"
+                )
+            else:
+                lines.append(f"- **{name}** · `{_path_label(path)}`")
+        lines.append("")
     else:
-        lines += ["_Sin borrador para mañana._", ""]
+        lines += ["_Sin canales programados para mañana._", ""]
 
-    # Unpublished days in campaign window
     unpublished: list[str] = []
     for d in range(1, min(day + 1, 31)):
         doc = _load_day_doc(d)
@@ -332,10 +425,10 @@ def build_content_report(for_date: date) -> str:
         "",
         "## Acciones rápidas",
         "",
-        f"1. Copiar post de `{_day_path_label(day)}` → LinkedIn (sin URL en cuerpo).",
-        "2. Primer comentario con link UTM.",
-        "3. Engagement 60 min.",
-        "4. Marcar `published_at: YYYY-MM-DD` en frontmatter del día.",
+        f"1. En content repo: `make content` (copy listo) o leer secciones arriba.",
+        f"2. Publicar canales de **Canales hoy** ({POST_UTC_HOUR}:00 UTC LinkedIn).",
+        f"3. Marcar publicado: `make publish date={ds}` (content repo).",
+        "4. Engagement 60 min en LinkedIn.",
         "",
     ]
     return "\n".join(lines)
@@ -523,7 +616,6 @@ def main() -> None:
         product_rel = _path_label(product_path)
         content_rel = _path_label(content_path)
         day = _campaign_day(today)
-        today_doc = _load_day_doc(day)
 
         if (both or product_only) and data is not None and meta is not None:
             product_slack = build_slack_product_message(ds, data, meta, product_rel)
