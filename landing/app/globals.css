@@ -309,6 +309,8 @@ section[id] {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cm-text-secondary);
+  text-align: center;
+  line-height: 1.35;
 }
 
 .hero-terminal-card {
