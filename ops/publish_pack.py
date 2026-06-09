@@ -149,6 +149,42 @@ def _linkedin_company_dir():
     return content_root() / "linkedin-company"
 
 
+_WEEKDAY_TWITTER = {
+    0: "Lunes",
+    1: "Martes",
+    2: "Miércoles",
+    3: "Jueves",
+    4: "Viernes",
+    5: "Sábado",
+    6: "Domingo",
+}
+
+
+def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
+    if not path.is_file():
+        return None
+    raw = path.read_text(encoding="utf-8")
+    _, body = _parse_frontmatter(raw)
+    heading = _WEEKDAY_TWITTER.get(for_date.weekday(), "")
+    if not heading:
+        return None
+    post = _section(body, f"{heading} — Thread: What 43K prices taught us about LATAM retail")
+    if not post:
+        post = _section(body, heading)
+    if not post:
+        post = _section(body, f"{heading} — Stat drop") or _section(body, f"{heading} — Hot take")
+    if not post:
+        return None
+    # Strip markdown code fence wrapper if present
+    post = re.sub(r"^```\n?", "", post.strip())
+    post = re.sub(r"\n?```$", "", post.strip())
+    comment = (
+        "Pro $39/mo — alertas + MCP + checkout para agentes que monitorean precios:\n"
+        "https://cli-market.dev/#pro-checkout?utm_source=twitter&utm_campaign=week2"
+    )
+    return post, comment
+
+
 def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]]:
     """Return (label, path) for active channels today."""
     root = content_root()
@@ -200,32 +236,55 @@ def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]
     return items
 
 
+def _asset_line(copy: ChannelCopy, campaign_day: int) -> str:
+    hint = (copy.asset_hint or "").strip()
+    if hint:
+        for line in hint.splitlines():
+            if "png" in line.lower() or "jpg" in line.lower() or "adjuntar" in line.lower():
+                return line.strip().strip("`")
+    return f"linkedin/assets/day-{campaign_day:02d}/day-{campaign_day:02d}-linkedin.png"
+
+
 def _channel_blocks(
     label: str,
     copy: ChannelCopy,
     metrics: dict[str, Any],
+    *,
+    campaign_day: int = 0,
 ) -> list[str]:
     gated_warn = ""
     if copy.data_gated and not metrics.get("gate_pass"):
         gated_warn = "⛔ _Data-gated — NO publicar hasta gate abierto._\n"
 
     post = apply_live_metrics(copy.post, metrics) if copy.post else ""
+    hashtags = (copy.hashtags or "").strip()
+    post_with_tags = post
+    if post and hashtags:
+        post_with_tags = f"{post.rstrip()}\n\n{hashtags}"
+
     lines = [
         f"━━━ *{label}* · `{copy.path_label}` ━━━",
         gated_warn.rstrip(),
         f"Estado: `{copy.status}`" + (" · data-gated" if copy.data_gated else ""),
         "",
+        "*1) POST + hashtags + imagen* _(copiar y publicar)_",
+        "",
     ]
-    if post:
-        lines += ["*Post (copiar tal cual)*", "", post, ""]
+    if post_with_tags:
+        lines += [post_with_tags, ""]
+    elif post:
+        lines += [post, ""]
+
+    if label.startswith("LinkedIn"):
+        asset = _asset_line(copy, campaign_day)
+        lines += [f"🖼 *Imagen:* `{asset}`", ""]
+
+    lines += ["*2) PRIMER COMENTARIO* _(pegar justo después de publicar)_", ""]
     if copy.comment:
-        lines += ["*Comentario / links*", "", copy.comment, ""]
-    if copy.hashtags:
-        lines += ["*Hashtags*", "", copy.hashtags, ""]
-    if copy.asset_hint:
-        lines += ["*Assets*", "", copy.asset_hint[:400], ""]
-    if copy.checklist:
-        lines += ["*Checklist*", "", copy.checklist[:500], ""]
+        lines += [copy.comment.strip(), ""]
+    else:
+        lines += ["_(sin borrador de comentario — añadir CTA manual)_", ""]
+
     return [ln for ln in lines if ln is not None]
 
 
@@ -260,11 +319,11 @@ def build_slack_publish_messages(
         f"📋 *Publicar hoy* · {ds} · *Día {campaign_day}*",
         f"Hora sugerida: *{post_utc_hour}:00 UTC* · sin link en cuerpo del post",
         "",
-        "*Orden*",
+        "*Orden (cada red)*",
         "1️⃣ Revisar gate + cifras (abajo)",
-        "2️⃣ Copiar *Post* de cada canal",
-        "3️⃣ Publicar → pegar *Comentario*",
-        "4️⃣ `make publish day=N` en content repo (o avisar en bitácora)",
+        "2️⃣ Copiar *POST + hashtags* → adjuntar imagen → publicar",
+        "3️⃣ Pegar *PRIMER COMENTARIO* con CTA",
+        "4️⃣ `make publish day=N` cuando cierres el día",
         "",
         *gate_slack_lines(metrics),
         "",
@@ -283,9 +342,27 @@ def build_slack_publish_messages(
         if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News", "Reddit"):
             copy = _load_channel_md(path)
             if copy:
-                body_parts.extend(_channel_blocks(label, copy, metrics))
+                body_parts.extend(
+                    _channel_blocks(label, copy, metrics, campaign_day=campaign_day)
+                )
                 continue
-        # Twitter / generic: first section of body
+        if label.startswith("Twitter"):
+            tw = _load_twitter_day(path, for_date)
+            if tw:
+                post, comment = tw
+                body_parts += [
+                    f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
+                    "",
+                    "*1) THREAD / POST* _(copiar y publicar)_",
+                    "",
+                    post,
+                    "",
+                    "*2) REPLY CTA* _(primer reply al thread)_",
+                    "",
+                    comment,
+                    "",
+                ]
+                continue
         raw = path.read_text(encoding="utf-8")
         _, body = _parse_frontmatter(raw)
         excerpt = body.strip()
@@ -293,6 +370,8 @@ def build_slack_publish_messages(
             excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
         body_parts += [
             f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
+            "",
+            "*1) POST*",
             "",
             excerpt,
             "",
@@ -331,13 +410,17 @@ def build_publish_checklist_message(
 
     for label, _path in channel_items:
         if label == "LinkedIn Personal":
-            lines.append("☐ LI Personal — post")
-            lines.append("☐ LI Personal — comentario")
+            lines.append("☐ LI Personal — post + hashtags + imagen")
+            lines.append("☐ LI Personal — primer comentario")
         elif label == "LinkedIn Empresa":
-            lines.append("☐ LI Empresa — post")
-            lines.append("☐ LI Empresa — comentario")
+            lines.append("☐ LI Empresa — post + hashtags + imagen")
+            lines.append("☐ LI Empresa — primer comentario")
+        elif label.startswith("Twitter"):
+            lines.append(f"☐ {label} — thread / tweet")
+            lines.append(f"☐ {label} — reply CTA")
         else:
-            lines.append(f"☐ {label} — publicado")
+            lines.append(f"☐ {label} — post publicado")
+            lines.append(f"☐ {label} — comentario / CTA")
 
     lines += [
         "☐ Asset / imagen adjunta (si aplica)",

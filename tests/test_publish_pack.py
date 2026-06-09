@@ -97,6 +97,6 @@ def test_publish_checklist_message():
         for_date=date(2026, 6, 8),
         gate_pass=True,
     )
-    assert "☐ LI Personal — post" in text
-    assert "☐ LI Personal — comentario" in text
+    assert "☐ LI Personal — post + hashtags + imagen" in text
+    assert "☐ LI Personal — primer comentario" in text
     assert "make publish day=8" in text
