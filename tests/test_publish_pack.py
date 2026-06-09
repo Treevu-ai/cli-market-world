@@ -10,6 +10,7 @@ from publish_pack import (
     apply_live_metrics,
     build_publish_checklist_message,
     build_slack_publish_messages,
+    channels_for_date,
     gate_slack_lines,
     marketing_metrics_from_dashboard,
     moat_paste_line,
@@ -86,11 +87,37 @@ def test_build_slack_publish_messages_has_order_and_gate():
     assert "Orden" in joined
     assert "Data-gate" in joined
     assert "50,902" in joined
+    assert "RICARDO — ESTE POST ES PARA LINKEDIN PERSONAL" in joined
     assert all(len(m) <= 4000 for m in msgs)
     assert "Checklist publicación" in msgs[-1]
     assert "2026-06-08" in msgs[0]
     assert "Día 8" not in msgs[0]
     assert "LI Personal" in msgs[-1]
+
+
+def test_channels_for_date_skips_company_on_other_publish_date(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "linkedin").mkdir()
+    (root / "linkedin-company").mkdir()
+    (root / "twitter").mkdir()
+    (root / "linkedin" / "Day-08.md").write_text(
+        "---\nstatus: ready\n---\n# Day 08\n\n## Post (copiar a LinkedIn — sin link en cuerpo)\n\ntest\n",
+        encoding="utf-8",
+    )
+    (root / "linkedin-company" / "Company-Day-07.md").write_text(
+        "---\npublished_at: 2026-06-10\nstatus: ready\n---\n# Company 07\n\n## Post\n\ntest\n",
+        encoding="utf-8",
+    )
+    (root / "twitter" / "tweets-w2.md").write_text(
+        "---\n---\n# Twitter\n\n## Lunes — Stat drop\n\ntweet\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(root))
+    monkeypatch.setenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1")
+
+    labels = [label for label, _ in channels_for_date(date(2026, 6, 8), 8)]
+    assert "LinkedIn Personal" in labels
+    assert "LinkedIn Empresa" not in labels
 
 
 def test_publish_checklist_message():

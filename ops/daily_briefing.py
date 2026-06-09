@@ -18,7 +18,7 @@ Env:
   SLACK_CHANNEL_PUBLICACIONES     — default C0B6ZJ1B9B8 (publicaciones redes)
   SLACK_WEBHOOK_BITACORA          — alternativa: webhook solo bitácora
   SLACK_WEBHOOK_PUBLICACIONES     — alternativa: webhook solo publicaciones
-  LINKEDIN_CAMPAIGN_START         — ISO date for Day 1 (default 2026-05-01)
+  LINKEDIN_CAMPAIGN_START         — ISO date for Day 1 (default 2026-06-01)
   LINKEDIN_POST_UTC_HOUR          — default 13 (from linkedin-calendar)
 """
 
@@ -72,7 +72,7 @@ def _dev_calendar_path() -> Path:
         return cal
     return ROOT / "docs" / "dev-calendar.md"
 
-CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-05-29")
+CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-06-01")
 POST_UTC_HOUR = int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
 
 
