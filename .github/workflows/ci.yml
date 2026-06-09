@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core>=1.9.5"
+          pip install "cli-market-core>=1.9.17"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
@@ -98,7 +98,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core>=1.9.5"
+          pip install "cli-market-core>=1.9.17"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "import inspect; from market_core.market_billing import db_create_subscription_request as f; assert 'prefix' in inspect.signature(f).parameters"
