@@ -446,7 +446,7 @@ def build_slack_content_message(
     content_rel: str,
 ) -> str:
     lines = [
-        f"📣 *Publicaciones redes* · {ds} · *Día {day}*",
+        f"📣 *Publicaciones redes* · {ds}",
         f"Publicar *{POST_UTC_HOUR}:00 UTC* · sin link en cuerpo del post",
         "",
     ]
