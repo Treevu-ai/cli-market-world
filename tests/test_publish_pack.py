@@ -120,6 +120,34 @@ def test_channels_for_date_skips_company_on_other_publish_date(tmp_path, monkeyp
     assert "LinkedIn Empresa" not in labels
 
 
+def test_channels_for_date_finds_company_by_published_at(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "linkedin").mkdir()
+    (root / "linkedin-company").mkdir()
+    (root / "linkedin" / "Day-09.md").write_text(
+        "---\nstatus: ready\n---\n# Day 09\n\n## Post (copiar a LinkedIn — sin link en cuerpo)\n\ntest\n",
+        encoding="utf-8",
+    )
+    (root / "linkedin-company" / "Company-Day-08.md").write_text(
+        "---\npublished_at: 2026-06-11\nstatus: ready\n---\n# Company 08\n\n## Post\n\nwrong day\n",
+        encoding="utf-8",
+    )
+    (root / "linkedin-company" / "Company-Day-06.md").write_text(
+        "---\npublished_at: 2026-06-09\nstatus: data-gated\n---\n# Company 06\n\n## Post\n\narroz\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(root))
+    monkeypatch.setenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1")
+
+    items = channels_for_date(date(2026, 6, 9), 9)
+    labels = [label for label, _ in items]
+    paths = [str(path) for _, path in items]
+    assert "LinkedIn Personal" in labels
+    assert "LinkedIn Empresa" in labels
+    assert any("Company-Day-06" in p for p in paths)
+    assert not any("Company-Day-08" in p for p in paths)
+
+
 def test_publish_checklist_message():
     text = build_publish_checklist_message(
         campaign_day=8,
