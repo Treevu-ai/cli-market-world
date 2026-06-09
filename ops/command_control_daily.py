@@ -83,6 +83,8 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
         "block": "📊 Data moat",
         "items": [
             ("5", "python collect_prices.py --report", "Collector KPIs (crudo)"),
+            ("5b", "python ops/collector_daily_report.py", "Collector daily sweep + health (auto)"),
+            ("5c", "python ops/collector_daily_report.py --slack", "Post collector health a bitácora / C&C"),
             ("6", "curl -H 'Authorization: Bearer $MARKET_API_TOKEN' $API/index/stats", "Golden Records + linkage %"),
             ("7", "python ops/go_live_check.py --remote --json", "JSON para scripts / alertas"),
         ],
