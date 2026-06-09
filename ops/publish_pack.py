@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import re
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 from content_paths import content_root, linkedin_dir, rel_to_content
@@ -35,6 +37,8 @@ def format_publish_date(for_date: date) -> str:
 def ricardo_channel_label(label: str) -> str:
     if label.startswith("Twitter"):
         return "TWITTER / X"
+    if label.startswith("Reddit"):
+        return label.upper()
     return RICARDO_LABELS.get(label, label.upper())
 
 
@@ -247,10 +251,31 @@ def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
     return post, comment
 
 
+def _load_calendar_channels_module():
+    cal_path = content_root() / "scripts" / "calendar_channels.py"
+    if not cal_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("calendar_channels", cal_path)
+    if spec is None or spec.loader is None:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]]:
     """Return (label, path) for active channels today."""
+    cal = _load_calendar_channels_module()
+    if cal is not None:
+        return cal.channels_for_date(for_date, campaign_day, content_root())
+
+    return _channels_for_date_fallback(for_date, campaign_day)
+
+
+def _channels_for_date_fallback(for_date: date, campaign_day: int) -> list[tuple[str, Path]]:
+    """Minimal fallback when content repo calendar_channels.py is unavailable."""
     root = content_root()
-    items: list[tuple[str, Any]] = []
+    items: list[tuple[str, Path]] = []
 
     personal_offset = linkedin_dir() / f"Day-{campaign_day:02d}.md"
     if not personal_offset.is_file():
@@ -269,32 +294,6 @@ def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]
     )
     if company is not None:
         items.append(("LinkedIn Empresa", company))
-
-    articles = {
-        date(2026, 6, 9): "devto-02-add-commerce-agent-4-lines.md",
-        date(2026, 6, 16): "devto-01-commerce-infrastructure.md",
-        date(2026, 6, 23): "devto-04-vtex-magento-dev-guide.md",
-    }
-    if for_date in articles:
-        p = root / "devto" / articles[for_date]
-        if p.is_file():
-            items.append(("DEV.to", p))
-
-    if for_date == date(2026, 6, 10):
-        p = root / "hn" / "hn-01-show-hn.md"
-        if p.is_file():
-            items.append(("Hacker News", p))
-
-    reddit_posts = {
-        date(2026, 6, 9): "reddit-01-sideproject.md",
-        date(2026, 6, 11): "reddit-02-python-tutorial.md",
-        date(2026, 6, 18): "reddit-03-dataisbeautiful.md",
-        date(2026, 6, 25): "reddit-04-aiagents.md",
-    }
-    if for_date in reddit_posts:
-        p = root / "reddit" / reddit_posts[for_date]
-        if p.is_file():
-            items.append(("Reddit", p))
 
     week_num = ((for_date - date(2026, 6, 1)).days // 7) + 1
     tw = root / "twitter" / f"tweets-w{week_num}.md"
@@ -409,7 +408,7 @@ def build_slack_publish_messages(
     body_parts: list[str] = []
     for label, path in channel_items:
         r_header = ricardo_header(label, for_date).rstrip()
-        if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News", "Reddit"):
+        if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News") or label.startswith("Reddit"):
             copy = _load_channel_md(path)
             if copy:
                 body_parts.append(r_header)
