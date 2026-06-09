@@ -3,14 +3,19 @@
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 
+from fastapi.testclient import TestClient
 from billing_slack import (
     format_funnel_digest_message,
     format_funnel_message,
     format_subscription_message,
     notify_funnel_event,
 )
+from market_server import app
+
+client = TestClient(app)
 
 
 def test_revenue_messages_have_prefix():
@@ -82,3 +87,52 @@ def test_funnel_digest_message_shape(monkeypatch):
     assert "[FUNNEL DIGEST]" in text
     assert "registros: 2" in text
     assert "alice" in text
+
+
+def test_admin_cron_funnel_digest_requires_admin(monkeypatch):
+    import server_deps
+
+    monkeypatch.setenv("MARKET_API_TOKEN", "admin-test-token")
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "admin-test-token")
+    r = client.post("/admin/cron/funnel-digest")
+    assert r.status_code == 401
+
+
+def test_admin_cron_funnel_digest_posts(monkeypatch):
+    import server_deps
+
+    monkeypatch.setenv("MARKET_API_TOKEN", "admin-test-token")
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "admin-test-token")
+    monkeypatch.setattr(
+        "billing_slack.format_funnel_digest_message",
+        lambda hours=24: "[FUNNEL DIGEST] test",
+    )
+    monkeypatch.setattr("billing_slack.notify_funnel_digest", lambda hours=24: True)
+
+    r = client.post(
+        "/admin/cron/funnel-digest?hours=12",
+        headers={"Authorization": "Bearer admin-test-token"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    assert body["hours"] == 12
+    assert body["posted"] is True
+
+
+def test_admin_cron_funnel_digest_slack_unconfigured(monkeypatch):
+    import server_deps
+
+    monkeypatch.setenv("MARKET_API_TOKEN", "admin-test-token")
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "admin-test-token")
+    monkeypatch.setattr(
+        "billing_slack.format_funnel_digest_message",
+        lambda hours=24: "[FUNNEL DIGEST] test",
+    )
+    monkeypatch.setattr("billing_slack.notify_funnel_digest", lambda hours=24: False)
+
+    r = client.post(
+        "/admin/cron/funnel-digest",
+        headers={"Authorization": "Bearer admin-test-token"},
+    )
+    assert r.status_code == 503

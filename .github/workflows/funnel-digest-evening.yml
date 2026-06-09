@@ -1,0 +1,37 @@
+name: Funnel Digest Evening
+
+on:
+  schedule:
+    # 23:00 UTC = 18:00 Perú (UTC-5) — digest vespertino de adopción
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: Lookback window (hours)
+        type: number
+        default: 24
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  funnel-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Post funnel digest via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          HOURS="${{ github.event.inputs.hours || 24 }}"
+          CODE=$(curl -sS -o /tmp/funnel-digest.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/funnel-digest?hours=${HOURS}" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/funnel-digest.json
+          if [ "$CODE" != "200" ]; then
+            echo "funnel-digest failed HTTP $CODE"
+            exit 1
+          fi
