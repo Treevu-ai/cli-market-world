@@ -13,9 +13,19 @@ from content_paths import content_root, linkedin_dir, rel_to_content
 MAX_SLACK_CHARS = 3800
 COVERAGE_THRESHOLD = 80.0
 MOAT_THRESHOLD = 40_000
+CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-06-01")
 
 PERSONAL_OFFSET = int(os.getenv("LINKEDIN_PERSONAL_DAY_OFFSET", "0"))
 COMPANY_OFFSET = int(os.getenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1"))
+
+
+def format_publish_date(for_date: date) -> str:
+    """User-facing label — ISO date, not campaign day number."""
+    return for_date.isoformat()
+
+
+def publish_close_command(for_date: date) -> str:
+    return f"make publish date={format_publish_date(for_date)}"
 
 
 @dataclass
@@ -315,15 +325,16 @@ def build_slack_publish_messages(
     post_utc_hour: int,
 ) -> list[str]:
     """Ordered Slack messages for #publicaciones — gate, metrics, copy per channel."""
+    pub_date = format_publish_date(for_date)
     intro = [
-        f"📋 *Publicar hoy* · {ds} · *Día {campaign_day}*",
+        f"📋 *Publicar* · *{pub_date}*",
         f"Hora sugerida: *{post_utc_hour}:00 UTC* · sin link en cuerpo del post",
         "",
         "*Orden (cada red)*",
         "1️⃣ Revisar gate + cifras (abajo)",
         "2️⃣ Copiar *POST + hashtags* → adjuntar imagen → publicar",
         "3️⃣ Pegar *PRIMER COMENTARIO* con CTA",
-        "4️⃣ `make publish day=N` cuando cierres el día",
+        f"4️⃣ `{publish_close_command(for_date)}` cuando cierres",
         "",
         *gate_slack_lines(metrics),
         "",
@@ -379,7 +390,7 @@ def build_slack_publish_messages(
 
     backlog = [
         "---",
-        f"_Marcar publicado:_ `cd cli-market-content && make publish day={campaign_day}`",
+        f"_Marcar publicado ({pub_date}):_ `cd cli-market-content && {publish_close_command(for_date)}`",
     ]
     content_msgs = _split_messages(["\n".join(intro)] + body_parts + ["\n".join(backlog)])
     content_msgs.append(
@@ -399,9 +410,10 @@ def build_publish_checklist_message(
     gate_pass: bool,
 ) -> str:
     """Short closing checklist — tick mentally without leaving Slack."""
+    pub_date = format_publish_date(for_date)
     channel_items = channels_for_date(for_date, campaign_day)
     lines = [
-        f"✅ *Checklist publicación* · Día {campaign_day}",
+        f"✅ *Checklist publicación* · {pub_date}",
         "",
         "Marca al terminar cada paso (reacciona ✅ en Slack o mentalmente):",
         "",
@@ -424,8 +436,8 @@ def build_publish_checklist_message(
 
     lines += [
         "☐ Asset / imagen adjunta (si aplica)",
-        f"☐ `make publish day={campaign_day}`",
+        f"☐ `{publish_close_command(for_date)}`",
         "",
-        "_Cuando todo esté hecho, el día GTM está cerrado._",
+        f"_Cuando todo esté hecho, GTM del {pub_date} cerrado._",
     ]
     return "\n".join(lines)

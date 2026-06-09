@@ -88,6 +88,8 @@ def test_build_slack_publish_messages_has_order_and_gate():
     assert "50,902" in joined
     assert all(len(m) <= 4000 for m in msgs)
     assert "Checklist publicación" in msgs[-1]
+    assert "2026-06-08" in msgs[0]
+    assert "Día 8" not in msgs[0]
     assert "LI Personal" in msgs[-1]
 
 
@@ -99,4 +101,5 @@ def test_publish_checklist_message():
     )
     assert "☐ LI Personal — post + hashtags + imagen" in text
     assert "☐ LI Personal — primer comentario" in text
-    assert "make publish day=8" in text
+    assert "make publish date=2026-06-08" in text
+    assert "Día 8" not in text
