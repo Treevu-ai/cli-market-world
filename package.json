@@ -3,6 +3,5 @@
   "private": true,
   "scripts": {
     "build": "cd landing && npm install && npm run build"
-  },
-
+  }
 }
