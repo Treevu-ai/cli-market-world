@@ -6,7 +6,7 @@ from fastapi import APIRouter, Header, HTTPException
 
 from fastapi.responses import HTMLResponse
 
-from market_adoption import adoption_summary
+from market_adoption import adoption_recent_users, adoption_summary
 from market_funnel import FUNNEL_EVENTS, funnel_summary, record_funnel_event
 from market_golive import go_live_summary, render_go_live_html
 from market_pepy import pepy_summary
@@ -88,6 +88,19 @@ def analytics_adoption_public(days: int = 30):
     """Public PyPI + funnel adoption comparison (no PII)."""
     days = max(1, min(days, 90))
     return adoption_summary(days=days)
+
+
+@router.get("/dashboard/adoption/recent")
+def dashboard_adoption_recent(
+    authorization: str | None = Header(None),
+    days: int = 30,
+    limit: int = 50,
+):
+    """Admin: recent real users with onboarding milestones (usernames only)."""
+    require_admin(authorization)
+    days = max(1, min(days, 90))
+    limit = max(1, min(limit, 200))
+    return adoption_recent_users(days=days, limit=limit)
 
 
 @router.get("/analytics/pypi")

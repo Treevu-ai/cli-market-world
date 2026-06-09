@@ -27,6 +27,7 @@ _FUNNEL_LABELS: dict[str, str] = {
     "request_pro": "checkout Pro iniciado",
     "activated": "suscripción activada",
     "procure_subscribe": "checkout Procure iniciado",
+    "onboarding_complete": "onboarding completo (market init)",
 }
 
 
@@ -277,9 +278,9 @@ def format_funnel_digest_message(*, hours: int = 24) -> str:
     from market_funnel import funnel_digest_counts, funnel_recent_events, funnel_summary
 
     hours = max(1, min(hours, 168))
-    counts = funnel_digest_counts(hours=hours)
-    rows = funnel_recent_events(hours=hours)
-    summary = funnel_summary(days=1)
+    counts = funnel_digest_counts(hours=hours, exclude_noise=True)
+    rows = funnel_recent_events(hours=hours, exclude_noise=True)
+    summary = funnel_summary(days=1, exclude_noise=True)
     conv = summary.get("conversion") or {}
 
     lines = [
@@ -293,6 +294,7 @@ def format_funnel_digest_message(*, hours: int = 24) -> str:
         ("starter_subscribe", "checkout Starter"),
         ("request_pro", "checkout Pro"),
         ("procure_subscribe", "checkout Procure"),
+        ("onboarding_complete", "market init completado"),
         ("activated", "activaciones (evento)"),
     ):
         n = counts.get(ev, 0)

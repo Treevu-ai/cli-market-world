@@ -26,6 +26,22 @@ def _fmt(n: int | None) -> str:
     return f"{n:,}"
 
 
+def adoption_recent_users(*, days: int = 30, limit: int = 50) -> dict[str, Any]:
+    """Admin view: real users with funnel milestones (smoke filtered)."""
+    from market_funnel import funnel_recent_users
+
+    days = max(1, min(days, 90))
+    limit = max(1, min(limit, 200))
+    users = funnel_recent_users(hours=days * 24, limit=limit, exclude_noise=True)
+    return {
+        "window_days": days,
+        "count": len(users),
+        "noise_filter": True,
+        "noise_patterns": ["smoke*", "deploy-test*", "shiptest*", "user-<hex>"],
+        "users": users,
+    }
+
+
 def adoption_summary(*, days: int = 30) -> dict[str, Any]:
     """Merge Pepy PyPI stats with funnel aggregates (no PII)."""
     days = max(1, min(days, 90))
