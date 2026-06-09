@@ -16,6 +16,8 @@ All notable changes to the CLI Market ecosystem.
 
 ### cli-market-world v1.9.17
 - **Added:** Mirror Observatory API, `ops/observatory_daily.py`, nightly workflow
+- **Added:** Landing `/stats` (data-gate público) + bloque Observatory en command-control
+- **Fixed:** `sync_market_stats.py` — URLs PyPI ya no duplican `-world`
 - **Changed:** Adoption Index `real_usage` uses MAA when telemetry active
 - **Changed:** `cli-market-core>=1.9.17`
 
