@@ -54,7 +54,7 @@ def test_funnel_register_realtime_to_funnel_channel(monkeypatch):
 def test_funnel_digest_message_shape(monkeypatch):
     monkeypatch.setattr(
         "market_funnel.funnel_digest_counts",
-        lambda hours=24: {
+        lambda hours=24, exclude_noise=True: {
             "register": 2,
             "request_pro": 1,
             "first_search": 0,
@@ -66,13 +66,13 @@ def test_funnel_digest_message_shape(monkeypatch):
     )
     monkeypatch.setattr(
         "market_funnel.funnel_recent_events",
-        lambda hours=24: [
+        lambda hours=24, exclude_noise=True: [
             {"event": "register", "username": "alice", "meta": {}, "created_at": "x"},
         ],
     )
     monkeypatch.setattr(
         "market_funnel.funnel_summary",
-        lambda days=1: {
+        lambda days=1, exclude_noise=True: {
             "conversion": {"register_to_search": 0.5},
             "ttfv_median_minutes": 12.0,
         },

@@ -1845,6 +1845,19 @@ def cmd_init(args):
         # Human: let doctor print its nice table + readiness
         cmd_doctor(argparse.Namespace(json=False))
 
+    try:
+        from market_funnel import record_funnel_event
+
+        if username:
+            record_funnel_event(
+                "onboarding_complete",
+                username=username,
+                meta={"source": "market_init", "search_done": bool(search_done)},
+                dedupe=True,
+            )
+    except Exception:
+        pass
+
     if is_json:
         data = _init_data(en, api_ok, account_created, bool(search_done), tier, username)
         data["doctor"] = {

@@ -759,6 +759,12 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
     lines.extend(_priority_actions(metrics))
     lines.extend(_audience_scripts(metrics))
     lines.extend(_scoreboard(metrics))
+    try:
+        from market_adoption import adoption_slack_lines
+
+        lines.extend(adoption_slack_lines(days=7))
+    except Exception:
+        pass
     lines.extend(_explain_section(cards, brief=brief))
     lines.extend(_trend_section(history, metrics))
 

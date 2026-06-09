@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -19,6 +20,7 @@ FUNNEL_EVENTS = frozenset(
         "starter_request",
         "request_pro",
         "procure_subscribe",
+        "onboarding_complete",
         "activated",
     }
 )
@@ -31,9 +33,23 @@ _DIGEST_EVENTS = frozenset(
         "starter_request",
         "request_pro",
         "procure_subscribe",
+        "onboarding_complete",
         "activated",
     }
 )
+
+_NOISE_PREFIXES = ("smoke", "deploy-test", "shiptest", "test-", "pam-")
+_NOISE_USER_HEX = re.compile(r"^user-[0-9a-f]{8,}$", re.I)
+
+
+def is_noise_username(username: str | None) -> bool:
+    """CI/smoke/auto-register accounts — exclude from founder adoption views."""
+    u = (username or "").strip().lower()
+    if not u:
+        return False
+    if any(u.startswith(p) for p in _NOISE_PREFIXES):
+        return True
+    return bool(_NOISE_USER_HEX.match(u))
 
 _FUNNEL_DDL_PG = """
 CREATE TABLE IF NOT EXISTS funnel_events (
@@ -144,7 +160,11 @@ def _median_minutes(pairs: list[float]) -> float | None:
     return round(statistics.median(pairs), 1)
 
 
-def funnel_recent_events(*, hours: int = 24) -> list[dict[str, Any]]:
+def funnel_recent_events(
+    *,
+    hours: int = 24,
+    exclude_noise: bool = True,
+) -> list[dict[str, Any]]:
     """Recent funnel rows for Slack digest (newest first)."""
     ensure_funnel_schema()
     hours = max(1, min(hours, 168))
@@ -164,6 +184,9 @@ def funnel_recent_events(*, hours: int = 24) -> list[dict[str, Any]]:
     db.close()
     out: list[dict[str, Any]] = []
     for row in rows:
+        user = row["username"] or ""
+        if exclude_noise and is_noise_username(user):
+            continue
         meta_raw = row["meta"] or "{}"
         try:
             meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
@@ -172,7 +195,7 @@ def funnel_recent_events(*, hours: int = 24) -> list[dict[str, Any]]:
         out.append(
             {
                 "event": row["event"],
-                "username": row["username"] or "",
+                "username": user,
                 "meta": meta if isinstance(meta, dict) else {},
                 "created_at": row["created_at"],
             }
@@ -180,17 +203,98 @@ def funnel_recent_events(*, hours: int = 24) -> list[dict[str, Any]]:
     return out
 
 
-def funnel_digest_counts(*, hours: int = 24) -> dict[str, int]:
+def funnel_digest_counts(*, hours: int = 24, exclude_noise: bool = True) -> dict[str, int]:
     """Event counts in the digest window."""
     counts = {e: 0 for e in _DIGEST_EVENTS}
-    for row in funnel_recent_events(hours=hours):
+    for row in funnel_recent_events(hours=hours, exclude_noise=exclude_noise):
         ev = row.get("event", "")
         if ev in counts:
             counts[ev] += 1
     return counts
 
 
-def funnel_summary(*, days: int = 30) -> dict[str, Any]:
+def funnel_recent_users(
+    *,
+    hours: int = 168,
+    limit: int = 50,
+    exclude_noise: bool = True,
+) -> list[dict[str, Any]]:
+    """Per-user adoption trail for admin dashboards (newest activity first)."""
+    ensure_funnel_schema()
+    hours = max(1, min(hours, 24 * 90))
+    limit = max(1, min(limit, 200))
+    since = (datetime.now(timezone.utc) - timedelta(hours=hours)).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT username, event, created_at, meta
+        FROM funnel_events
+        WHERE created_at >= ? AND username IS NOT NULL AND username != ''
+        ORDER BY created_at DESC
+        """,
+        (since,),
+    ).fetchall()
+    tiers: dict[str, str] = {}
+    try:
+        for row in db.execute("SELECT username, tier FROM subscriptions").fetchall():
+            tiers[row["username"]] = row["tier"] or "free"
+    except Exception:
+        pass
+    db.close()
+
+    users: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        user = (row["username"] or "").strip()
+        if not user or (exclude_noise and is_noise_username(user)):
+            continue
+        ev = row["event"]
+        ts = row["created_at"]
+        entry = users.setdefault(
+            user,
+            {
+                "username": user,
+                "tier": tiers.get(user, "free"),
+                "events": {},
+                "sources": [],
+                "last_activity_at": ts,
+            },
+        )
+        if ev not in entry["events"]:
+            entry["events"][ev] = ts
+        meta_raw = row["meta"] or "{}"
+        try:
+            meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
+        except json.JSONDecodeError:
+            meta = {}
+        src = (meta.get("source") or "").strip() if isinstance(meta, dict) else ""
+        if src and src not in entry["sources"]:
+            entry["sources"].append(src)
+
+    out: list[dict[str, Any]] = []
+    for entry in users.values():
+        evs = entry["events"]
+        out.append(
+            {
+                "username": entry["username"],
+                "tier": entry["tier"],
+                "registered_at": evs.get("register"),
+                "first_search_at": evs.get("first_search"),
+                "onboarding_complete_at": evs.get("onboarding_complete"),
+                "request_pro_at": evs.get("request_pro"),
+                "activated_at": evs.get("activated"),
+                "last_activity_at": entry["last_activity_at"],
+                "sources": entry["sources"][:5],
+                "has_search": "first_search" in evs,
+                "has_onboarding_complete": "onboarding_complete" in evs,
+            }
+        )
+    out.sort(key=lambda u: str(u.get("last_activity_at") or ""), reverse=True)
+    return out[:limit]
+
+
+def funnel_summary(*, days: int = 30, exclude_noise: bool = False) -> dict[str, Any]:
     ensure_funnel_schema()
     since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
     db = get_db()
@@ -205,8 +309,10 @@ def funnel_summary(*, days: int = 30) -> dict[str, Any]:
 
     for row in rows:
         ev = row["event"]
-        events[ev] = events.get(ev, 0) + 1
         user = row["username"]
+        if user and exclude_noise and is_noise_username(user):
+            continue
+        events[ev] = events.get(ev, 0) + 1
         if not user:
             continue
         ts = _parse_ts(row["created_at"])
