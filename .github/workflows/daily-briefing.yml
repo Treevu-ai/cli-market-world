@@ -34,7 +34,7 @@ jobs:
           SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
           SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
           LINKEDIN_CAMPAIGN_START: "2026-06-01"
-          LINKEDIN_PERSONAL_DAY_OFFSET: "2"
+          LINKEDIN_PERSONAL_DAY_OFFSET: "0"
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
           # Optional: GitHub secret CLI_MARKET_CONTENT_DIR if content repo is checked out alongside
           CLI_MARKET_CONTENT_DIR: ${{ secrets.CLI_MARKET_CONTENT_DIR }}

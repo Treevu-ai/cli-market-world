@@ -148,6 +148,14 @@ def test_channels_for_date_finds_company_by_published_at(tmp_path, monkeypatch):
     assert not any("Company-Day-08" in p for p in paths)
 
 
+def test_channels_for_date_spike_reddits_on_june_10():
+    items = channels_for_date(date(2026, 6, 10), 10)
+    labels = [label for label, _ in items]
+    assert "Reddit (r/Python)" in labels
+    assert "Reddit (r/aiagents)" in labels
+    assert "Hacker News" in labels
+
+
 def test_publish_checklist_message():
     text = build_publish_checklist_message(
         campaign_day=8,

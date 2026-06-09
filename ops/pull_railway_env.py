@@ -18,6 +18,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SKIP_KEYS = frozenset({"RAILWAY_ENVIRONMENT", "RAILWAY_ENVIRONMENT_ID", "RAILWAY_PROJECT_ID"})
 
+# Content-ops vars — not API runtime; keep canonical even if Railway has old values.
+CAMPAIGN_ENV_OVERRIDES = {
+    "LINKEDIN_CAMPAIGN_START": "2026-06-01",
+    "LINKEDIN_PERSONAL_DAY_OFFSET": "0",
+    "LINKEDIN_COMPANY_DAY_OFFSET": "-1",
+}
+
 
 def _railway_cmd() -> str:
     return "railway.cmd" if sys.platform == "win32" else "railway"
@@ -46,6 +53,8 @@ def build_env_lines(vars_map: dict[str, str]) -> list[str]:
         lines.append(f"{key}={val}")
     if db_public:
         lines.append(f"DATABASE_URL={db_public}")
+    for key, val in sorted(CAMPAIGN_ENV_OVERRIDES.items()):
+        lines.append(f"{key}={val}")
     return lines
 
 
