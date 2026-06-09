@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """CLI Market — Daily Briefing (product status + content calendar).
 
-Generates two markdown reports under ops/daily/:
-  YYYY-MM-DD-product.md   — collector KPIs, store health (from production dashboard)
-  YYYY-MM-DD-content.md   — unified channel calendar + LinkedIn detail, gates
+Generates two markdown reports:
+  ops/daily/YYYY-MM-DD-product.md — collector KPIs, store health (product repo)
+  generated/daily/YYYY-MM-DD-content.md — channel calendar + LinkedIn (content repo)
 
 Usage:
   python3 ops/daily_briefing.py              # both reports + optional Slack
@@ -52,14 +52,30 @@ def _day_path_label(day: int) -> str:
     return _path_label(linkedin_dir() / f"Day-{day:02d}.md")
 
 
-def _daily_dir() -> Path:
-    gen = content_root() / "generated" / "daily"
-    if content_root().name != "docs":
+def _product_daily_dir() -> Path:
+    """Product KPI reports live in the product repo (ops/daily/)."""
+    d = ROOT / "ops" / "daily"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _content_daily_dir() -> Path:
+    """Content calendar reports live in cli-market-content when external."""
+    root = content_root()
+    if root.name != "docs":
+        gen = root / "generated" / "daily"
         gen.mkdir(parents=True, exist_ok=True)
         return gen
     legacy = ROOT / "ops" / "daily"
     legacy.mkdir(parents=True, exist_ok=True)
     return legacy
+
+
+def _product_path_label(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 def _data_gate_path() -> Path:
@@ -435,10 +451,17 @@ def build_content_report(for_date: date) -> str:
 
 
 def _repo_file_link(rel_path: str) -> str:
-    repo = os.getenv("GITHUB_REPOSITORY", "")
     server = os.getenv("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
+    branch = os.getenv("GITHUB_REF_NAME", "main")
+    content_repo = os.getenv(
+        "CLI_MARKET_CONTENT_GITHUB_REPO", "Treevu-ai/cli-market-content"
+    ).strip()
+    if rel_path.startswith("generated/") and content_repo:
+        repo = content_repo
+    else:
+        repo = os.getenv("GITHUB_REPOSITORY", "")
     if repo:
-        return f"<{server}/{repo}/blob/main/{rel_path}|Ver reporte completo>"
+        return f"<{server}/{repo}/blob/{branch}/{rel_path}|Ver reporte completo>"
     return f"_Repo:_ `{rel_path}`"
 
 
@@ -540,14 +563,14 @@ def main() -> None:
 
     today = datetime.now(timezone.utc).date()
     ds = today.isoformat()
-    daily = _daily_dir()
-    daily.mkdir(parents=True, exist_ok=True)
+    product_dir = _product_daily_dir()
+    content_dir = _content_daily_dir()
 
     monday = _load_monday()
     data: dict | None = None
     meta: dict | None = None
-    product_path = daily / f"{ds}-product.md"
-    content_path = daily / f"{ds}-content.md"
+    product_path = product_dir / f"{ds}-product.md"
+    content_path = content_dir / f"{ds}-content.md"
 
     if both or product_only:
         print("Fetching dashboard (product)...")
@@ -566,8 +589,7 @@ def main() -> None:
             sys.path.insert(0, str(ops_dir))
         from slack_notify import deliver_to_bitacora, deliver_to_publicaciones
 
-        product_rel = _path_label(product_path)
-        content_rel = _path_label(content_path)
+        product_rel = _product_path_label(product_path)
         day = _campaign_day(today)
 
         if (both or product_only) and data is not None and meta is not None:
