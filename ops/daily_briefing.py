@@ -425,7 +425,7 @@ def build_content_report(for_date: date) -> str:
         "",
         "## Acciones rápidas",
         "",
-        f"1. En content repo: `make content` (copy listo) o leer secciones arriba.",
+        "1. En content repo: `make content` (copy listo) o leer secciones arriba.",
         f"2. Publicar canales de **Canales hoy** ({POST_UTC_HOUR}:00 UTC LinkedIn).",
         f"3. Marcar publicado: `make publish date={ds}` (content repo).",
         "4. Engagement 60 min en LinkedIn.",
@@ -567,7 +567,7 @@ def main() -> None:
         from slack_notify import deliver_to_bitacora, deliver_to_publicaciones
 
         product_rel = _path_label(product_path)
-        content_rel = _path_label(content_path)
+        _path_label(content_path)
         day = _campaign_day(today)
 
         if (both or product_only) and data is not None and meta is not None:

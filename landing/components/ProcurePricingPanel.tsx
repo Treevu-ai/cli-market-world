@@ -8,14 +8,14 @@ import ProcureSubscribeButton from "@/components/ProcureSubscribeButton";
 
 const BENEFITS_ES = [
   "Comparación automática en retailers verificados — sin WhatsApp ni Excel.",
-  "Data-gate: no recomienda compra si el moat está stale.",
+  "Data-gate: no recomienda compra si los precios están desactualizados.",
   "Starter compara; Pro añade aprobaciones gerente y checkout.",
   "Infraestructura CLI Market incluida — una sola factura.",
 ];
 
 const BENEFITS_EN = [
   "Automatic comparison across verified retailers — no WhatsApp or Excel.",
-  "Data-gate blocks recommendations when the moat is stale.",
+  "Data-gate blocks recommendations when prices are stale.",
   "Starter compares; Pro adds manager approvals and checkout.",
   "CLI Market infrastructure included — one invoice.",
 ];

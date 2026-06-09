@@ -771,7 +771,7 @@ async def collect_one_sqlite(db, store, queries):
     all inserts (orders of magnitude cheaper than open-per-row, and avoids
     `database is locked` storms under PARALLEL workers)."""
     queries = queries_for_store(store, queries)
-    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0
+    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0; query_empty=0
     for q, lf in queries:
         if lf and line!=lf: continue
         attempted += 1
@@ -780,7 +780,7 @@ async def collect_one_sqlite(db, store, queries):
             if not raw:
                 # Do not treat empty as hard failure (rotation / partial catalog).
                 # Only lose on real exceptions below.
-                query_empty = query_empty + 1 if 'query_empty' in dir() else 1
+                query_empty += 1
                 continue
             query_ok += 1
             for p in raw:

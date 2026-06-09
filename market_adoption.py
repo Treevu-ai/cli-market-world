@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from market_funnel import funnel_summary
-from market_pepy import pepy_multi_summary, pepy_summary
+from market_pepy import pepy_multi_summary
 
 
 def _conv(num: int, den: int) -> float | None:

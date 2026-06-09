@@ -190,7 +190,7 @@ def _format_report(last_run: dict, summary: dict, stores: list[dict], success_se
 
     lines.append("## Salud por fuente (store_health)")
     lines.append(f"- ok: **{summary['ok_count']}** | partial: **{summary['partial_count']}** | total: {summary['total']}")
-    lines.append(f"- store_success_pct global ≈ 50% (ver dashboard)")
+    lines.append("- store_success_pct global ≈ 50% (ver dashboard)")
     lines.append("")
 
     if summary["high_consec"]:

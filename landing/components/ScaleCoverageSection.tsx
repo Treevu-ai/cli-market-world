@@ -5,8 +5,6 @@ import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
-import FunnelMetrics from "@/components/FunnelMetrics";
-
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
   farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Cruz Verde CO/CL"],
@@ -70,6 +68,27 @@ export default function ScaleCoverageSection() {
           ))}
         </div>
 
+        <div className="mb-10 sm:mb-12 text-left max-w-3xl mx-auto">
+          <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3 text-center">
+            {isES ? "Retailers verificados (muestra)" : "Verified retailers (sample)"}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["Wong PE", "Metro PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Falabella CL"].map((store) => (
+              <span
+                key={store}
+                className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1"
+              >
+                {store}
+              </span>
+            ))}
+          </div>
+          <p className="text-center text-xs text-[var(--cm-on-surface-variant)]/60 mt-3 font-mono">
+            {isES
+              ? `Golden Record: mismo producto comparable entre cadenas · ${retailersVerified} activos`
+              : `Golden Record: same product comparable across chains · ${retailersVerified} active`}
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
@@ -77,7 +96,9 @@ export default function ScaleCoverageSection() {
             </p>
             <p className="text-3xl font-black text-white tabular-nums">{priceLong}</p>
             <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {isES ? "precios indexados · normalizados kg/L · 34 indicadores" : "indexed prices · kg/L normalized · 34 indicators"}
+              {isES
+                ? `precios indexados · normalizados kg/L · ${MARKET_STATS.indicatorsCount} indicadores`
+                : `indexed prices · kg/L normalized · ${MARKET_STATS.indicatorsCount} indicators`}
             </p>
           </div>
           <div className="card-cyber p-6">
@@ -113,7 +134,7 @@ export default function ScaleCoverageSection() {
                 {[
                   { label: isES ? "Precios acumulados" : "Total snapshots", value: stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—" },
                   { label: isES ? "Promedio diario (7d)" : "Daily avg (7d)", value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—" },
-                  { label: isES ? "Foso de datos" : "Data moat", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
+                  { label: isES ? "Serie histórica desde" : "Historical series since", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
                   { label: isES ? "Intervalo collector" : "Collector interval", value: `cada ${MARKET_STATS.pricesRefreshHours}h` },
                 ].map((item) => (
                   <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
@@ -201,8 +222,6 @@ export default function ScaleCoverageSection() {
             </div>
           </details>
         </div>
-
-        <FunnelMetrics />
 
         <p className="text-sm text-[var(--cm-on-surface-variant)]/70 mt-10">
           {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}

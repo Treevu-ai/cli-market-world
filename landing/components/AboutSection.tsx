@@ -60,7 +60,9 @@ export default function AboutSection() {
             )}
           </p>
           <p className="text-white font-medium">
-            {isES ? "Un solo moat de datos, dos productos: Intelligence y Build." : "One data moat, two products: Intelligence and Build."}
+            {isES
+              ? "Tres superficies — Build, Intelligence y Procure — sobre el mismo dataset verificado."
+              : "Three surfaces — Build, Intelligence, and Procure — on the same verified dataset."}
           </p>
         </div>
 

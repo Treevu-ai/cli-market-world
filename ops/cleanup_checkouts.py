@@ -96,7 +96,7 @@ def main() -> int:
     funnel_keep, funnel_del = _split_funnel_checkouts(db)
     subs_del = _subscription_rows_to_delete(db)
 
-    print(f"=== KEEP subscription_request ===")
+    print("=== KEEP subscription_request ===")
     keep = db.execute(
         "SELECT id, username, status, payment_link FROM subscription_requests WHERE id=?",
         (KEEP_REQUEST_ID,),

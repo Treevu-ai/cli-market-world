@@ -2241,7 +2241,7 @@ def cmd_upgrade(args):
             if es and payment in ("yape", "plin")
             else f"Preparing {payment} checkout..."
             if not es
-            else f"Preparando Mercado Pago..."
+            else "Preparando Mercado Pago..."
         )
         with ui.run_with_status(console, status_msg):
             data = cli_api("POST", "/billing/pro-checkout", payload)
@@ -2268,7 +2268,7 @@ def cmd_upgrade(args):
                 f"[cyan underline]{url}[/]\n\n"
                 + (f"[dim]Paga con {payment.upper()} en Mercado Pago. Pro se activa en minutos. Luego: market whoami[/]"
                    if es and payment in ("yape", "plin")
-                   else f"[dim]Activates in minutes via webhook. Then: market whoami[/]"
+                   else "[dim]Activates in minutes via webhook. Then: market whoami[/]"
                    if not es
                    else "[dim]Pro se activa en minutos (webhook). Luego: market whoami[/]"),
                 title="Upgrade",
@@ -2285,14 +2285,13 @@ def cmd_upgrade(args):
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
         return
-    web_hint = "https://cli-market.dev/#pricing"
     console.print(Panel.fit(
         f"[bold #00FF88]CLI Market {label}[/]\n\n"
         f"{data.get('message', '')}\n\n"
         f"[cyan underline]{url}[/]\n\n"
-        + (f"[dim]Se activa al confirmar en PayPal. Luego: market whoami\nYape/Plin: market upgrade --payment yape[/]"
+        + ("[dim]Se activa al confirmar en PayPal. Luego: market whoami\nYape/Plin: market upgrade --payment yape[/]"
            if es else
-           f"[dim]Activates on PayPal confirm. Then: market whoami\nYape/Plin: market upgrade --payment yape[/]"),
+           "[dim]Activates on PayPal confirm. Then: market whoami\nYape/Plin: market upgrade --payment yape[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))
