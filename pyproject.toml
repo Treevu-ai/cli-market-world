@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cli-market-world"
-version = "1.9.14"
+version = "1.9.15"
 description = "mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. 22 curated MCP tools (46 legacy), 34 indicators, 38 verified retailers in 8 countries. MIT."
 requires-python = ">=3.10"
 license = "MIT"
@@ -38,7 +38,6 @@ Repository = "https://github.com/Treevu-ai/cli-market-world"
 "Bug Tracker" = "https://github.com/Treevu-ai/cli-market-world/issues"
 
 [project.optional-dependencies]
-index = ["cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@2bfa6d210fc429e1c9c7780d7df9158eb0713a66"]
 playwright = ["playwright>=1.45.0"]
 
 [project.scripts]
