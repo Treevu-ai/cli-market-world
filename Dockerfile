@@ -23,8 +23,8 @@ RUN set -eux; \
 ARG CACHE_BUST=1
 COPY *.py pyproject.toml ./
 COPY routers/ ./routers/
-# Slack ops (funnel digest cron, revenue/funnel routing from API)
-COPY ops/billing_slack.py ops/slack_notify.py ./ops/
+# Slack ops (cron panels, revenue/funnel routing from API)
+COPY ops/billing_slack.py ops/slack_notify.py ops/load_env.py ops/command_control_daily.py ./ops/
 
 RUN mkdir -p /data
 ENV MARKET_DATA_DIR=/data
