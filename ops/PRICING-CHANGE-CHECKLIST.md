@@ -73,7 +73,7 @@ python3 -m build
 twine upload dist/cli_market-X.X.Y*
 
 # 5. Verificar en PyPI que el README muestre los precios correctos
-# https://pypi.org/project/cli-market-world-world-world-world-world-world-world-world-world/
+# https://pypi.org/project/cli-market-world-world-world-world-world-world-world-world-world-world/
 ```
 
 - [ ] `pyproject.toml` version bumpeado (paso 5)
@@ -81,7 +81,7 @@ twine upload dist/cli_market-X.X.Y*
 - [ ] `git fetch origin && git checkout origin/main -- README.md` ejecutado
 - [ ] `grep "Free\|Pro\|Enterprise" README.md | grep -E "\$|39"` muestra Free + Pro $39 (simplificado)
 - [ ] `python3 -m build && twine upload dist/cli_market-NUEVA_VERSION*`
-- [ ] https://pypi.org/project/cli-market-world-world-world-world-world-world-world-world-world/ muestra precios correctos
+- [ ] https://pypi.org/project/cli-market-world-world-world-world-world-world-world-world-world-world/ muestra precios correctos
 
 ## 8. Content (cli-market-content)
 
