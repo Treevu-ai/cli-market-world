@@ -59,7 +59,14 @@ export default function RetailerApplyForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Request failed");
+        const detail = typeof data.detail === "string" ? data.detail : "Request failed";
+        const friendly =
+          detail.includes("platform must be one of")
+            ? isES
+              ? "Plataforma no reconocida. Elija VTEX, Shopify, Magento, WooCommerce u Otra."
+              : "Unrecognized platform. Choose VTEX, Shopify, Magento, WooCommerce, or Other."
+            : detail;
+        throw new Error(friendly);
       }
       setAppId(data.application_id || "");
     } catch (err) {

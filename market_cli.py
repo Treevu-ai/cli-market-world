@@ -1464,10 +1464,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]ONBOARDING[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]you are here[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]API + account + MCP[/]\n"
-            "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... shown once[/]\n"
-            '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
-            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n\n"
+            "  [cyan]1.[/] [cyan]market init[/]         [dim]account + first search + MCP[/]\n"
+            '  [cyan]2.[/] [cyan]market search "milk" --country PE[/]\n'
+            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
+            "  [dim]     market register[/]  [dim]optional if you only need sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
             "  cli-market.dev/tools"
@@ -1477,10 +1477,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]INICIO RÁPIDO[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]estás aquí[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]API + cuenta + MCP[/]\n"
-            "  [cyan]2.[/] [cyan]market register[/]     [dim]sk-... una sola vez[/]\n"
-            '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
-            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n\n"
+            "  [cyan]1.[/] [cyan]market init[/]         [dim]cuenta + primera búsqueda + MCP[/]\n"
+            '  [cyan]2.[/] [cyan]market search "leche" --country PE[/]\n'
+            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
+            "  [dim]     market register[/]  [dim]opcional si solo necesitas sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
             "  cli-market.dev/tools"
@@ -1572,17 +1572,17 @@ def _hello_data(is_en: bool, ctx: dict | None = None) -> dict:
 
     onboarding = [
         {"step": 0, "cmd": "market hello", "description": "you are here" if is_en else "estás aquí", "current": True},
-        {"step": 1, "cmd": "market init", "description": "API + account + MCP" if is_en else "API + cuenta + MCP"},
-        {"step": 2, "cmd": "market register", "description": "sk-... shown once" if is_en else "sk-... una sola vez"},
-        {"step": 3, "cmd": 'market search "leche" --country PE', "description": "primera búsqueda verificada" if not is_en else "first verified search"},
-        {"step": 4, "cmd": "market doctor", "description": "readiness %" if is_en else "preparación %"},
+        {"step": 1, "cmd": "market init", "description": "account + first search + MCP" if is_en else "cuenta + primera búsqueda + MCP"},
+        {"step": 2, "cmd": 'market search "leche" --country PE', "description": "first verified search" if is_en else "primera búsqueda verificada"},
+        {"step": 3, "cmd": "market doctor", "description": "readiness %" if is_en else "preparación %"},
+        {"step": 4, "cmd": "market register", "description": "optional — sk-... only" if is_en else "opcional — solo sk-...", "optional": True},
     ]
     if pro_active:
         next_steps = ['market search "arroz" --country PE', "market account", "market doctor"]
     elif ctx and ctx.get("valid"):
         next_steps = ['market search "leche" --country PE', "market account", "market doctor"]
     else:
-        next_steps = ["market init", "market register", "market doctor"]
+        next_steps = ["market init", "market doctor"]
 
     payload = {
         "command": "hello",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import { MARKET_STATS } from "@/lib/marketStats";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 
 type AccountData = {
@@ -118,6 +119,33 @@ export default function AccountDashboard() {
             ? "Consulte tier, límites y consumo. La API key no se guarda en el navegador."
             : "View tier, limits, and consumption. Your API key is not stored in the browser."}
         </p>
+
+        {!data && (
+          <div className="card-cyber p-5 max-w-xl mx-auto mb-6 space-y-3 border border-[var(--cm-outline-variant)]/30">
+            <h2 className="text-sm font-bold text-[var(--cm-mint)] uppercase tracking-wider">
+              {isES ? "Primeros pasos" : "Getting started"}
+            </h2>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
+              <li>
+                <span className="font-mono text-xs text-white/90">{MARKET_STATS.pipInstallCmd}</span>
+              </li>
+              <li>
+                <span className="font-mono text-xs text-white/90">market init</span>
+                <span className="text-xs text-[var(--cm-on-surface-variant)]/70">
+                  {isES ? " — cuenta + primera búsqueda" : " — account + first search"}
+                </span>
+              </li>
+              <li>
+                {isES
+                  ? "Copia la API key (sk-…) y pégala abajo"
+                  : "Copy your API key (sk-…) and paste it below"}
+              </li>
+            </ol>
+            <a href="/docs#quickstart" className="text-xs text-[var(--cm-mint)] hover:underline inline-block">
+              {isES ? "Guía completa →" : "Full guide →"}
+            </a>
+          </div>
+        )}
 
         <div className="card-cyber p-6 space-y-4 max-w-xl mx-auto">
           <label className="block text-sm font-medium text-white">
