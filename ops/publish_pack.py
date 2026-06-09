@@ -1,0 +1,305 @@
+"""Slack-first publish pack — gate + live metrics + copy-paste per channel."""
+
+from __future__ import annotations
+
+import os
+import re
+from dataclasses import dataclass
+from datetime import date
+from typing import Any
+
+from content_paths import content_root, linkedin_dir, rel_to_content
+
+MAX_SLACK_CHARS = 3800
+COVERAGE_THRESHOLD = 80.0
+MOAT_THRESHOLD = 40_000
+
+PERSONAL_OFFSET = int(os.getenv("LINKEDIN_PERSONAL_DAY_OFFSET", "0"))
+COMPANY_OFFSET = int(os.getenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1"))
+
+
+@dataclass
+class ChannelCopy:
+    name: str
+    path_label: str
+    status: str
+    data_gated: bool
+    post: str
+    comment: str
+    hashtags: str
+    checklist: str
+    asset_hint: str
+
+
+def marketing_metrics_from_dashboard(data: dict[str, Any]) -> dict[str, Any]:
+    k = data.get("kpis") or {}
+    moat = data.get("moat_summary") or {}
+    coll = data.get("collector") or {}
+    coverage = float(k.get("coverage_7d_pct") or moat.get("coverage_7d_pct") or 0)
+    if 0 < coverage <= 1:
+        coverage *= 100
+    total = int(k.get("total_indexed") or moat.get("total_indexed") or 0)
+    snap = int(k.get("snapshots_24h") or moat.get("snapshots_24h") or 0)
+    stores = int(k.get("stores_indexed") or moat.get("stores_indexed") or 0)
+    gate_pass = bool(
+        moat.get("marketing_gate_pass")
+        if moat.get("marketing_gate_pass") is not None
+        else (coverage >= COVERAGE_THRESHOLD and total >= MOAT_THRESHOLD)
+    )
+    return {
+        "coverage_7d_pct": round(coverage, 1),
+        "total_indexed": total,
+        "snapshots_24h": snap,
+        "stores_indexed": stores,
+        "collector_status": coll.get("status") or moat.get("collector_status") or "?",
+        "gate_pass": gate_pass,
+    }
+
+
+def gate_slack_lines(metrics: dict[str, Any]) -> list[str]:
+    ok = metrics.get("gate_pass")
+    head = "✅ *Data-gate ABIERTO*" if ok else "⛔ *Data-gate CERRADO* — usar post de contingencia"
+    return [
+        head,
+        (
+            f"• *{metrics['total_indexed']:,}* indexados · "
+            f"*{metrics['snapshots_24h']:,}* refresh 24h · "
+            f"*{metrics['coverage_7d_pct']:.0f}%* coverage 7d · "
+            f"*{metrics['stores_indexed']}* retailers"
+        ),
+        f"• Collector: `{metrics['collector_status']}`",
+        "_Cifras live (prod). Pegar en posts data-gated — no abrir dashboard._",
+    ]
+
+
+def moat_paste_line(metrics: dict[str, Any]) -> str:
+    return (
+        f"**{metrics['snapshots_24h']:,}** precios refresh 24h · "
+        f"**{metrics['total_indexed']:,}** indexados · "
+        f"**{metrics['stores_indexed']}** retailers · "
+        f"**{metrics['coverage_7d_pct']:.0f}%** coverage 7d"
+    )
+
+
+def apply_live_metrics(text: str, metrics: dict[str, Any]) -> str:
+    """Refresh moat lines in post copy with live dashboard numbers."""
+    if not text.strip():
+        return text
+    snap = metrics["snapshots_24h"]
+    total = metrics["total_indexed"]
+    stores = metrics["stores_indexed"]
+    out = text
+    out = re.sub(
+        r"\*\*[\d,]+\*\*\s*precios[^\n]*refresh\s*24h[^\n]*",
+        moat_paste_line(metrics),
+        out,
+        flags=re.IGNORECASE,
+    )
+    out = re.sub(r"\*\*[\d,]+\*\*\s*precios en refresh 24h", f"**{snap:,}** precios en refresh 24h", out)
+    out = re.sub(r"\*\*[\d,]+\*\*\s*indexados", f"**{total:,}** indexados", out)
+    out = re.sub(r"\*\*[\d,]+\*\*\s*retailers[^\n]*", f"**{stores}** retailers fresh", out)
+    out = re.sub(r"~\s*[\d,]+\s*precios en refresh 24h", f"~{snap:,} precios en refresh 24h", out)
+    out = re.sub(r"\*\*100%\*\*", f"**{metrics['coverage_7d_pct']:.0f}%**", out, count=1)
+    return out
+
+
+def _parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    if not text.startswith("---"):
+        return {}, text
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}, text
+    fm: dict[str, str] = {}
+    for line in parts[1].strip().splitlines():
+        if ":" not in line:
+            continue
+        key, val = line.split(":", 1)
+        fm[key.strip()] = val.strip().strip('"')
+    return fm, parts[2]
+
+
+def _section(body: str, heading: str) -> str:
+    pattern = rf"(?m)^#{{2,3}} {re.escape(heading)}\s*\n(.*?)(?=^#{{2,3}} |\Z)"
+    m = re.search(pattern, body, re.DOTALL)
+    return m.group(1).strip() if m else ""
+
+
+def _load_channel_md(path) -> ChannelCopy | None:
+    if not path.is_file():
+        return None
+    raw = path.read_text(encoding="utf-8")
+    fm, body = _parse_frontmatter(raw)
+    title_m = re.search(r"^# .+ — (.+)$", body, re.MULTILINE)
+    status = (fm.get("status") or "?").lower()
+    return ChannelCopy(
+        name=title_m.group(1).strip() if title_m else path.stem,
+        path_label=rel_to_content(path),
+        status=status,
+        data_gated=status == "data-gated" or "data-gate" in body.lower(),
+        post=_section(body, "Post (copiar a LinkedIn — sin link en cuerpo)")
+        or _section(body, "Post"),
+        comment=_section(body, "Primer comentario"),
+        hashtags=_section(body, "Hashtags"),
+        checklist=_section(body, "Checklist"),
+        asset_hint=_section(body, "Assets"),
+    )
+
+
+def _linkedin_company_dir():
+    return content_root() / "linkedin-company"
+
+
+def channels_for_date(for_date: date, campaign_day: int) -> list[tuple[str, Any]]:
+    """Return (label, path) for active channels today."""
+    root = content_root()
+    items: list[tuple[str, Any]] = []
+
+    personal = linkedin_dir() / f"Day-{campaign_day:02d}.md"
+    if not personal.is_file():
+        alt = linkedin_dir() / f"Day-{campaign_day + PERSONAL_OFFSET:02d}.md"
+        personal = alt if alt.is_file() else personal
+    if personal.is_file():
+        items.append(("LinkedIn Personal", personal))
+
+    cday = campaign_day + COMPANY_OFFSET
+    company = _linkedin_company_dir() / f"Company-Day-{cday:02d}.md"
+    if company.is_file():
+        items.append(("LinkedIn Empresa", company))
+
+    articles = {
+        date(2026, 6, 9): "devto-02-add-commerce-agent-4-lines.md",
+        date(2026, 6, 16): "devto-01-commerce-infrastructure.md",
+        date(2026, 6, 23): "devto-04-vtex-magento-dev-guide.md",
+    }
+    if for_date in articles:
+        p = root / "devto" / articles[for_date]
+        if p.is_file():
+            items.append(("DEV.to", p))
+
+    if for_date == date(2026, 6, 10):
+        p = root / "hn" / "hn-01-show-hn.md"
+        if p.is_file():
+            items.append(("Hacker News", p))
+
+    reddit_posts = {
+        date(2026, 6, 9): "reddit-01-sideproject.md",
+        date(2026, 6, 11): "reddit-02-python-tutorial.md",
+        date(2026, 6, 18): "reddit-03-dataisbeautiful.md",
+        date(2026, 6, 25): "reddit-04-aiagents.md",
+    }
+    if for_date in reddit_posts:
+        p = root / "reddit" / reddit_posts[for_date]
+        if p.is_file():
+            items.append(("Reddit", p))
+
+    week_num = ((for_date - date(2026, 6, 1)).days // 7) + 1
+    tw = root / "twitter" / f"tweets-w{week_num}.md"
+    if tw.is_file():
+        items.append((f"Twitter/X W{week_num}", tw))
+
+    return items
+
+
+def _channel_blocks(
+    label: str,
+    copy: ChannelCopy,
+    metrics: dict[str, Any],
+) -> list[str]:
+    gated_warn = ""
+    if copy.data_gated and not metrics.get("gate_pass"):
+        gated_warn = "⛔ _Data-gated — NO publicar hasta gate abierto._\n"
+
+    post = apply_live_metrics(copy.post, metrics) if copy.post else ""
+    lines = [
+        f"━━━ *{label}* · `{copy.path_label}` ━━━",
+        gated_warn.rstrip(),
+        f"Estado: `{copy.status}`" + (" · data-gated" if copy.data_gated else ""),
+        "",
+    ]
+    if post:
+        lines += ["*Post (copiar tal cual)*", "", post, ""]
+    if copy.comment:
+        lines += ["*Comentario / links*", "", copy.comment, ""]
+    if copy.hashtags:
+        lines += ["*Hashtags*", "", copy.hashtags, ""]
+    if copy.asset_hint:
+        lines += ["*Assets*", "", copy.asset_hint[:400], ""]
+    if copy.checklist:
+        lines += ["*Checklist*", "", copy.checklist[:500], ""]
+    return [ln for ln in lines if ln is not None]
+
+
+def _split_messages(chunks: list[str]) -> list[str]:
+    """Split into Slack-safe messages."""
+    messages: list[str] = []
+    buf: list[str] = []
+    size = 0
+    for chunk in chunks:
+        part = chunk if chunk.endswith("\n") else chunk + "\n"
+        if size + len(part) > MAX_SLACK_CHARS and buf:
+            messages.append("\n".join(buf).strip())
+            buf = []
+            size = 0
+        buf.append(part.rstrip("\n"))
+        size += len(part)
+    if buf:
+        messages.append("\n".join(buf).strip())
+    return messages
+
+
+def build_slack_publish_messages(
+    *,
+    ds: str,
+    campaign_day: int,
+    for_date: date,
+    metrics: dict[str, Any],
+    post_utc_hour: int,
+) -> list[str]:
+    """Ordered Slack messages for #publicaciones — gate, metrics, copy per channel."""
+    intro = [
+        f"📋 *Publicar hoy* · {ds} · *Día {campaign_day}*",
+        f"Hora sugerida: *{post_utc_hour}:00 UTC* · sin link en cuerpo del post",
+        "",
+        "*Orden*",
+        "1️⃣ Revisar gate + cifras (abajo)",
+        "2️⃣ Copiar *Post* de cada canal",
+        "3️⃣ Publicar → pegar *Comentario*",
+        "4️⃣ `make publish day=N` en content repo (o avisar en bitácora)",
+        "",
+        *gate_slack_lines(metrics),
+        "",
+        "*Línea moat (pegar si el post pide cifras)*",
+        moat_paste_line(metrics),
+        "",
+    ]
+
+    channel_items = channels_for_date(for_date, campaign_day)
+    if not channel_items:
+        intro += ["⚠️ Sin borradores activos para hoy en content repo.", ""]
+        return _split_messages(["\n".join(intro)])
+
+    body_parts: list[str] = []
+    for label, path in channel_items:
+        if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News", "Reddit"):
+            copy = _load_channel_md(path)
+            if copy:
+                body_parts.extend(_channel_blocks(label, copy, metrics))
+                continue
+        # Twitter / generic: first section of body
+        raw = path.read_text(encoding="utf-8")
+        _, body = _parse_frontmatter(raw)
+        excerpt = body.strip()
+        if len(excerpt) > 2000:
+            excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
+        body_parts += [
+            f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
+            "",
+            excerpt,
+            "",
+        ]
+
+    backlog = [
+        "---",
+        f"_Marcar publicado:_ `cd cli-market-content && make publish day={campaign_day}`",
+    ]
+    return _split_messages(["\n".join(intro)] + body_parts + ["\n".join(backlog)])
