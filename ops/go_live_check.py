@@ -32,6 +32,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from load_env import load_repo_env  # noqa: E402
+
+load_repo_env()
+
 from market_golive import (  # noqa: E402
     go_live_markdown,
     go_live_slack_lines,
