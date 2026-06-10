@@ -21,8 +21,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "API · MCP · agents",
     title_es: "Construido para escalar.",
     title_en: "Built to scale.",
-    intro_es: "Free para probar, Starter para equipos en crecimiento, Pro cuando necesites checkout. Pro Founding: $29/mes (100 plazas).",
-    intro_en: "Free to try, Starter for growing teams, Pro when you need checkout. Pro Founding: $29/mo (100 seats).",
+    intro_es: "Para developers y agentes: API REST, CLI y MCP. Free para probar · Pro Founding $29/mes (100 plazas) · Enterprise a medida.",
+    intro_en: "For developers and agents: REST API, CLI, and MCP. Free to try · Pro Founding $29/mo (100 seats) · Enterprise custom.",
     hash: "#pricing",
   },
   {

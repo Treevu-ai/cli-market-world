@@ -170,8 +170,12 @@ const tiers: Tier[] = [
   },
 ];
 
-const BUILD_TIERS = tiers.filter((t) => t.name !== "Enterprise");
-const ENTERPRISE_TIER = tiers.find((t) => t.name === "Enterprise")!;
+/** Build tab: 3 cards max (design package). Starter / Pro estándar → footnote. */
+const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
+  ["Free", "Pro Founding", "Enterprise"].includes(t.name),
+);
+const STARTER_TIER = tiers.find((t) => t.name === "Starter")!;
+const PRO_TIER = tiers.find((t) => t.name === "Pro")!;
 
 function TierCard({
   tier,
@@ -224,11 +228,6 @@ function TierCard({
       </div>
 
       <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
-        {!tier.dark && (
-          <span className="block text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/70 mb-1 font-normal">
-            Build
-          </span>
-        )}
         {tier.name}
       </h3>
 
@@ -296,7 +295,7 @@ function scrollToPricingSection(focusId?: string) {
 export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const [billing, setBilling] = useState<Billing>("monthly");
+  const billing: Billing = "monthly";
   const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [foundingSeats, setFoundingSeats] = useState<number | null>(null);
@@ -397,89 +396,64 @@ export default function Pricing() {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
-          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-4 mt-4">
-            <button
-              type="button"
-              onClick={() => setBilling("monthly")}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                billing === "monthly"
-                  ? "bg-[var(--cm-surface-high)] text-white"
-                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
-              }`}
-            >
-              {isES ? "Mensual" : "Monthly"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setBilling("annual")}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
-                billing === "annual"
-                  ? "bg-[var(--cm-surface-high)] text-white"
-                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
-              }`}
-            >
-              {isES ? "Anual (solo Pro)" : "Annual (Pro only)"}
-              <span className="text-[10px] font-bold text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 px-1.5 py-0.5 rounded-full">
-                −17%
-              </span>
-            </button>
-          </div>
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-10 max-w-xl mx-auto">
-            {isES
-              ? "Pro Founding siempre es $29/mes. El toggle anual aplica solo al plan Pro estándar."
-              : "Pro Founding stays $29/mo. Annual billing applies to standard Pro only."}
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 max-w-6xl mx-auto mb-5">
-            {BUILD_TIERS.map((tier, i) => {
-              const checkoutKind =
-                tier.checkoutKind?.type === "build-pro"
-                  ? { type: "build-pro" as const, annual: billing === "annual" }
-                  : tier.checkoutKind;
-
-              return (
-                <motion.div
-                  key={tier.name}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.06 }}
-                  id={tier.name === "Pro" ? "pro-checkout" : undefined}
-                  className="scroll-mt-24"
-                >
-                  <TierCard tier={tier} isES={isES} billing={billing} foundingSeats={foundingSeats}>
-                    {tier.checkoutKind && checkoutKind ? (
-                      <ProSubscribeButton kind={checkoutKind} />
-                    ) : tier.name === "Free" ? (
-                      <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
-                        {isES ? tier.cta_es : tier.cta_en}
-                      </button>
-                    ) : tier.href ? (
-                      <a href={tier.href} className="btn-mint w-full">
-                        {isES ? tier.cta_es : tier.cta_en}
-                      </a>
-                    ) : null}
-                  </TierCard>
-                </motion.div>
-              );
-            })}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-6xl mx-auto mb-6 mt-4">
+            {BUILD_VISIBLE_TIERS.map((tier, i) => (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                id={tier.name === "Pro Founding" ? "pro-checkout" : undefined}
+                className="scroll-mt-24"
+              >
+                <TierCard tier={tier} isES={isES} billing={billing} foundingSeats={foundingSeats}>
+                  {tier.checkoutKind ? (
+                    <ProSubscribeButton kind={tier.checkoutKind} />
+                  ) : tier.name === "Free" ? (
+                    <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
+                      {isES ? tier.cta_es : tier.cta_en}
+                    </button>
+                  ) : tier.href ? (
+                    <a href={tier.href} className="btn-mint w-full">
+                      {isES ? tier.cta_es : tier.cta_en}
+                    </a>
+                  ) : null}
+                </TierCard>
+              </motion.div>
+            ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.28 }}
-            className="max-w-6xl mx-auto mb-8 scroll-mt-24"
-          >
-            <TierCard tier={ENTERPRISE_TIER} isES={isES} billing={billing}>
-              {ENTERPRISE_TIER.href ? (
-                <a href={ENTERPRISE_TIER.href} className="btn-mint w-full max-w-xs mx-auto block text-center">
-                  {isES ? ENTERPRISE_TIER.cta_es : ENTERPRISE_TIER.cta_en}
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-4 px-2">
+            {isES ? (
+              <>
+                ¿Plan intermedio?{" "}
+                <span className="text-[var(--cm-mint)]">
+                  {STARTER_TIER.price}/mes Starter
+                </span>{" "}
+                — 5.000 consultas/día, export CSV, sin checkout. Pro estándar{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mes</span> o{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/año</span>{" "}
+                en{" "}
+                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
+                  /docs#billing
                 </a>
-              ) : null}
-            </TierCard>
-          </motion.div>
+                .
+              </>
+            ) : (
+              <>
+                Need a mid-tier?{" "}
+                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> — 5k
+                req/day, CSV export, no checkout. Standard Pro{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mo</span> or{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/yr</span> via{" "}
+                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
+                  /docs#billing
+                </a>
+                .
+              </>
+            )}
+          </p>
 
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-14 px-2">
             {pricingBillingFootnote(isES)}{" "}
