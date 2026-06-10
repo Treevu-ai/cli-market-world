@@ -344,21 +344,15 @@ section[id] {
 /* Hero terminal animation + live playground */
 .hero-term-shell {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: min(40dvh, 340px);
+  aspect-ratio: 2.35 / 1;
+  max-height: min(28dvh, 260px);
   background: #0a0a0a;
-  padding: clamp(16px, 3.5%, 40px);
+  padding: clamp(12px, 2.5%, 28px);
   font-family: var(--font-mono);
-  font-size: clamp(10px, 1.7vw, 16px);
-  line-height: 1.9;
+  font-size: clamp(10px, 1.45vw, 14px);
+  line-height: 1.65;
   overflow: hidden;
   position: relative;
-}
-
-@media (min-width: 640px) {
-  .hero-term-shell {
-    max-height: none;
-  }
 }
 
 .hero-term-shell::after {
@@ -372,7 +366,7 @@ section[id] {
 .hero-term-line {
   white-space: pre-wrap;
   word-break: break-word;
-  min-height: 1.9em;
+  min-height: 1.65em;
   position: relative;
   z-index: 1;
 }
@@ -491,17 +485,18 @@ section[id] {
 .hero-term-live {
   display: flex;
   flex-direction: column;
-  min-height: 280px;
+  min-height: 200px;
+  max-height: min(28dvh, 260px);
 }
 
 .hero-term-live-output {
   flex: 1;
-  padding: clamp(16px, 3.5%, 40px);
+  min-height: 0;
+  padding: clamp(12px, 2.5%, 28px);
   font-family: var(--font-mono);
-  font-size: clamp(10px, 1.7vw, 16px);
-  line-height: 1.9;
+  font-size: clamp(10px, 1.45vw, 14px);
+  line-height: 1.65;
   overflow-y: auto;
-  max-height: min(40dvh, 320px);
 }
 
 .hero-term-live-form {
