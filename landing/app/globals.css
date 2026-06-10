@@ -558,6 +558,13 @@ section[id] {
   white-space: nowrap;
 }
 
+.hero-playground-try-live {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
 .hero-playground-get-key:disabled {
   opacity: 0.5;
 }
@@ -1065,6 +1072,10 @@ body > div[id*="paypal-cart"] {
   gap: 0.5rem;
   flex: 1;
   min-width: 4.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -1072,6 +1083,16 @@ body > div[id*="paypal-cart"] {
   color: var(--cm-on-surface-variant);
   opacity: 0.45;
   transition: opacity 0.25s, color 0.25s;
+}
+
+.scroll-story-dot:hover {
+  opacity: 0.75;
+}
+
+.scroll-story-dot:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cm-data) 60%, transparent);
+  outline-offset: 4px;
+  border-radius: var(--cm-radius-sm);
 }
 
 .scroll-story-dot-active {
@@ -1100,6 +1121,24 @@ body > div[id*="paypal-cart"] {
 .scroll-story-dot-label {
   text-align: center;
   line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .scroll-story-dot-label {
+    display: none;
+  }
+
+  .scroll-story-progress {
+    max-width: 18rem;
+  }
+
+  .scroll-story-headline {
+    max-width: none;
+  }
+
+  .scroll-story-visual {
+    min-height: auto;
+  }
 }
 
 .scroll-story-stage {

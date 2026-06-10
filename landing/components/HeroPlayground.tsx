@@ -76,6 +76,7 @@ export default function HeroPlayground() {
   const [loading, setLoading] = useState(false);
   const [claimingKey, setClaimingKey] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
+  const cmdInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -277,7 +278,10 @@ export default function HeroPlayground() {
         </button>
         <button
           type="button"
-          onClick={() => setMode("live")}
+          onClick={() => {
+            setMode("live");
+            window.requestAnimationFrame(() => cmdInputRef.current?.focus());
+          }}
           className={`hero-playground-tab ${mode === "live" ? "hero-playground-tab-active" : ""}`}
         >
           {isES ? "Probar API" : "Try the API"}
@@ -289,7 +293,21 @@ export default function HeroPlayground() {
         aria-label={isES ? "Terminal CLI Market" : "CLI Market terminal"}
       >
         {mode === "demo" ? (
-          <HeroTerminal />
+          <div>
+            <HeroTerminal />
+            <div className="flex justify-center border-t border-[var(--cm-outline-variant)]/25 px-4 py-3">
+              <button
+                type="button"
+                className="hero-playground-try-live text-xs font-mono uppercase tracking-wider text-[var(--cm-data)] hover:brightness-110"
+                onClick={() => {
+                  setMode("live");
+                  window.requestAnimationFrame(() => cmdInputRef.current?.focus());
+                }}
+              >
+                {isES ? "Probar tú mismo →" : "Try it yourself →"}
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="hero-term-live">
             <div ref={outputRef} className="hero-term-live-output">
@@ -349,6 +367,7 @@ export default function HeroPlayground() {
               <div className="flex gap-2 w-full mt-2">
                 <span className="hero-term-cmd py-2 shrink-0">$</span>
                 <input
+                  ref={cmdInputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   className="hero-term-cmd-input flex-1"
