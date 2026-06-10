@@ -7,11 +7,15 @@ import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { storeLabel } from "@/lib/storeLabels";
 import HeroTerminal from "@/components/HeroTerminal";
+import {
+  hasSeenPlaygroundDemo,
+  markPlaygroundDemoSeen,
+  persistPlaygroundKey,
+  readPlaygroundKey,
+  type PlaygroundMode,
+} from "@/lib/playground";
 
-const API_KEY_STORAGE = "cli_market_api_key";
 const DEMO_QUERIES = new Set(["arroz", "leche"]);
-
-type Mode = "demo" | "live";
 
 type LiveLine = { kind: "cmd" | "out" | "err"; text: string };
 
@@ -68,7 +72,7 @@ function CompareRows({ rows, isES }: { rows: CompareRow[]; isES: boolean }) {
 export default function HeroPlayground() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const [mode, setMode] = useState<Mode>("demo");
+  const [mode, setMode] = useState<PlaygroundMode>("demo");
   const [input, setInput] = useState('market compare "arroz" --country PE');
   const [apiKey, setApiKey] = useState("");
   const [lines, setLines] = useState<LiveLine[]>([]);
@@ -79,13 +83,24 @@ export default function HeroPlayground() {
   const cmdInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(API_KEY_STORAGE);
-      if (saved?.startsWith("sk-")) setApiKey(saved);
-    } catch {
-      /* ignore */
-    }
+    const saved = readPlaygroundKey();
+    if (saved.startsWith("sk-")) setApiKey(saved);
+    if (hasSeenPlaygroundDemo()) setMode("live");
   }, []);
+
+  useEffect(() => {
+    const onFocus = (e: Event) => {
+      const detail = (e as CustomEvent<{ mode?: PlaygroundMode }>).detail;
+      if (detail?.mode) setMode(detail.mode);
+      window.requestAnimationFrame(() => cmdInputRef.current?.focus());
+    };
+    window.addEventListener("playground-focus", onFocus);
+    return () => window.removeEventListener("playground-focus", onFocus);
+  }, []);
+
+  useEffect(() => {
+    if (mode === "demo") markPlaygroundDemoSeen();
+  }, [mode]);
 
   useEffect(() => {
     outputRef.current?.scrollTo({ top: outputRef.current.scrollHeight, behavior: "smooth" });
@@ -93,12 +108,7 @@ export default function HeroPlayground() {
 
   const persistKey = (key: string) => {
     setApiKey(key);
-    try {
-      if (key.startsWith("sk-")) window.localStorage.setItem(API_KEY_STORAGE, key);
-      else window.localStorage.removeItem(API_KEY_STORAGE);
-    } catch {
-      /* ignore */
-    }
+    persistPlaygroundKey(key);
   };
 
   const applyCompareData = useCallback(

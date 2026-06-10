@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
+import HeroPlayground from "@/components/HeroPlayground";
 import ScrollStorySection from "@/components/ScrollStorySection";
 import HowItWorks from "@/components/HowItWorks";
 import QuickstartAPI from "@/components/QuickstartAPI";
@@ -27,6 +28,13 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <ScrollStorySection />
+          <section
+            id="hero-playground-mobile"
+            className="md:hidden landing-container pb-12 -mt-2 scroll-mt-20"
+            aria-label="CLI Market playground"
+          >
+            <HeroPlayground />
+          </section>
           <UseCasesSection />
           <ScaleCoverageSection />
           <CoverageToUseCasesBridge />

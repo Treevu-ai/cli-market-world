@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats, formatMarketingPrices, refreshLabel } from "@/hooks/useLiveStats";
+import { useDemoCompareRows } from "@/hooks/useDemoCompareRows";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 function scrollViewports() {
@@ -69,12 +70,6 @@ const GONDOLA_ROWS = [
   { name: "Aceite 900ml", store: "Wong", price: "S/ 9.10" },
 ];
 
-const TERM_ROWS = [
-  { store: "Metro", price: 2.9, best: false },
-  { store: "Wong", price: 3.1, best: false },
-  { store: "Plaza Vea", price: 2.85, best: true },
-];
-
 function GondolaVisual() {
   return (
     <div className="scroll-story-visual-panel scroll-story-visual-gondola" aria-hidden="true">
@@ -102,7 +97,8 @@ function GondolaVisual() {
 }
 
 function TerminalVisual({ isES }: { isES: boolean }) {
-  const max = Math.max(...TERM_ROWS.map((r) => r.price));
+  const { rows } = useDemoCompareRows("arroz");
+  const max = Math.max(...rows.map((r) => r.price), 1);
   return (
     <div className="scroll-story-visual-panel scroll-story-visual-terminal" aria-hidden="true">
       <div className="scroll-story-term-chrome">
@@ -113,7 +109,7 @@ function TerminalVisual({ isES }: { isES: boolean }) {
       </div>
       <div className="scroll-story-term-body">
         <p className="scroll-story-term-cmd">$ market compare &quot;arroz&quot; --country PE</p>
-        {TERM_ROWS.map((r) => {
+        {rows.map((r) => {
           const w = max > 0 ? Math.round((r.price / max) * 100) : 0;
           return (
             <div
@@ -148,6 +144,7 @@ function DataVisual({
   sparkCoords,
   sparkLast,
   refreshText,
+  liveLoaded,
 }: {
   isES: boolean;
   pricesLabel: string;
@@ -155,6 +152,7 @@ function DataVisual({
   sparkCoords: string;
   sparkLast: string | null;
   refreshText: string;
+  liveLoaded: boolean;
 }) {
   return (
     <div className="scroll-story-visual-panel scroll-story-visual-data" aria-hidden="true">
@@ -163,24 +161,51 @@ function DataVisual({
         <span className="scroll-story-panel-meta">{refreshText}</span>
       </div>
       <div className="scroll-story-stat-grid">
-        <div className="scroll-story-stat-card">
-          <p className="scroll-story-stat-n">{pricesLabel}</p>
-          <p className="scroll-story-stat-l">{isES ? "precios indexados" : "indexed prices"}</p>
-        </div>
-        <div className="scroll-story-stat-card">
-          <p className="scroll-story-stat-n">{MARKET_STATS.retailersVerified}</p>
-          <p className="scroll-story-stat-l">{isES ? "retailers activos" : "active retailers"}</p>
-        </div>
-        <div className="scroll-story-stat-card">
-          <p className="scroll-story-stat-n">{snapshots ?? "—"}</p>
-          <p className="scroll-story-stat-l">{isES ? "snapshots 24h" : "snapshots 24h"}</p>
-        </div>
-        <div className="scroll-story-stat-card">
-          <p className="scroll-story-stat-n">{MARKET_STATS.countries}</p>
-          <p className="scroll-story-stat-l">{isES ? "países" : "countries"}</p>
-        </div>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="scroll-story-stat-card">
+            {!liveLoaded ? (
+              <>
+                <div className="scroll-story-stat-skeleton" />
+                <div className="scroll-story-stat-skeleton-sm" />
+              </>
+            ) : (
+              <>
+                <p className="scroll-story-stat-n">
+                  {i === 0
+                    ? pricesLabel
+                    : i === 1
+                      ? MARKET_STATS.retailersVerified
+                      : i === 2
+                        ? (snapshots ?? "—")
+                        : MARKET_STATS.countries}
+                </p>
+                <p className="scroll-story-stat-l">
+                  {i === 0
+                    ? isES
+                      ? "precios indexados"
+                      : "indexed prices"
+                    : i === 1
+                      ? isES
+                        ? "retailers activos"
+                        : "active retailers"
+                      : i === 2
+                        ? isES
+                          ? "snapshots 24h"
+                          : "snapshots 24h"
+                        : isES
+                          ? "países"
+                          : "countries"}
+                </p>
+              </>
+            )}
+          </div>
+        ))}
       </div>
-      {sparkCoords ? (
+      {!liveLoaded ? (
+        <div className="scroll-story-spark-wrap">
+          <div className="scroll-story-spark-skeleton" />
+        </div>
+      ) : sparkCoords ? (
         <div className="scroll-story-spark-wrap">
           <p className="scroll-story-spark-label">
             {isES ? "Serie del moat (10d)" : "Moat series (10d)"}
@@ -295,17 +320,23 @@ export default function ScrollStorySection() {
     const SWAP = 0.22;
     let activeIdx = 0;
 
+    const emitStoryAct = (idx: number) => {
+      window.dispatchEvent(new CustomEvent("scroll-story-act", { detail: { actIndex: idx } }));
+    };
+
     const markAct = (idx: number) => {
-      if (idx === activeIdx) return;
-      activeIdx = idx;
-      actEls.forEach((el, i) => {
-        el.classList.toggle("scroll-story-act-active", i === idx);
-        el.setAttribute("aria-hidden", i === idx ? "false" : "true");
-      });
-      dots.forEach((dot, i) => {
-        dot.classList.toggle("scroll-story-dot-active", i === idx);
-        dot.setAttribute("aria-selected", i === idx ? "true" : "false");
-      });
+      if (idx !== activeIdx) {
+        activeIdx = idx;
+        actEls.forEach((el, i) => {
+          el.classList.toggle("scroll-story-act-active", i === idx);
+          el.setAttribute("aria-hidden", i === idx ? "false" : "true");
+        });
+        dots.forEach((dot, i) => {
+          dot.classList.toggle("scroll-story-dot-active", i === idx);
+          dot.setAttribute("aria-selected", i === idx ? "true" : "false");
+        });
+      }
+      emitStoryAct(idx);
     };
 
     const actVisibleFrom: number[] = [0];
@@ -393,9 +424,27 @@ export default function ScrollStorySection() {
         dot.addEventListener("click", () => jumpToAct(i));
       });
 
+      const onKey = (e: KeyboardEvent) => {
+        if (!st.isActive) return;
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") return;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          jumpToAct(Math.min(activeIdx + 1, actEls.length - 1));
+        }
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          jumpToAct(Math.max(activeIdx - 1, 0));
+        }
+      };
+
       const onResize = () => ScrollTrigger.refresh();
       window.addEventListener("resize", onResize);
-      return () => window.removeEventListener("resize", onResize);
+      window.addEventListener("keydown", onKey);
+      return () => {
+        window.removeEventListener("resize", onResize);
+        window.removeEventListener("keydown", onKey);
+      };
     }, section);
 
     return () => ctx.revert();
@@ -470,6 +519,7 @@ export default function ScrollStorySection() {
                         sparkCoords={sparkCoords}
                         sparkLast={sparkLast}
                         refreshText={refreshLabel(isES)}
+                        liveLoaded={liveLoaded}
                       />
                     ) : null}
                     {act.id === "agent" ? <AgentVisual isES={isES} /> : null}
@@ -501,6 +551,7 @@ export default function ScrollStorySection() {
                 sparkCoords={sparkCoords}
                 sparkLast={sparkLast}
                 refreshText={refreshLabel(isES)}
+                liveLoaded={liveLoaded}
               />
             ) : null}
             {act.id === "agent" ? <AgentVisual isES={isES} /> : null}

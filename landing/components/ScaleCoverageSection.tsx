@@ -6,6 +6,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
 import MoatSparkline from "@/components/MoatSparkline";
+import LatAmCoverageMap from "@/components/LatAmCoverageMap";
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
   farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Cruz Verde CO/CL"],
@@ -124,6 +125,10 @@ export default function ScaleCoverageSection() {
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}
+        </div>
+
+        <div className="max-w-md mx-auto mb-10 sm:mb-14">
+          <LatAmCoverageMap />
         </div>
 
         <div className="mb-10 sm:mb-12 text-left max-w-3xl mx-auto">

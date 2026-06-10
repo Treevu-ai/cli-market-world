@@ -1471,6 +1471,56 @@ body > div[id*="paypal-cart"] {
   margin-top: 0.45rem;
 }
 
+.scroll-story-stat-skeleton {
+  height: 2rem;
+  width: 70%;
+  border-radius: var(--cm-radius-sm);
+  background: color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.scroll-story-stat-skeleton-sm {
+  height: 0.65rem;
+  width: 55%;
+  margin-top: 0.5rem;
+  border-radius: var(--cm-radius-sm);
+  background: color-mix(in srgb, var(--cm-outline-variant) 25%, transparent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.scroll-story-spark-skeleton {
+  height: 5rem;
+  width: 100%;
+  border-radius: var(--cm-radius-sm);
+  background: color-mix(in srgb, var(--cm-outline-variant) 30%, transparent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.latam-map-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 40%, transparent);
+  border-radius: var(--cm-radius-lg);
+  background: color-mix(in srgb, var(--cm-canvas) 80%, #000);
+  overflow: hidden;
+}
+
+.latam-map-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.latam-map-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--cm-signal) 75%, var(--cm-on-surface-variant));
+  font-family: var(--font-mono);
+}
+
 .scroll-story-spark-wrap {
   border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
   padding-top: 1rem;
