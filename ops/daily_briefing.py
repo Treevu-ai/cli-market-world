@@ -650,8 +650,9 @@ def main() -> None:
             )
             deliver_to_publicaciones(summary)
             for d in deliveries:
-                for chunk in _split_slack_delivery(d.text):
-                    deliver(chunk, channel=d.channel_id)
+                for msg in d.messages:
+                    for chunk in _split_slack_delivery(msg):
+                        deliver(chunk, channel=d.channel_id)
             labels = ", ".join(d.label for d in deliveries) or "ninguno"
             print(
                 f"Slack → publicaciones (índice) + {len(deliveries)} canal"

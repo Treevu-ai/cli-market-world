@@ -68,7 +68,12 @@ class ChannelCopy:
 class GtmChannelDelivery:
     label: str
     channel_id: str
-    text: str
+    messages: list[str]
+
+    @property
+    def text(self) -> str:
+        """Legacy single-blob view (tests / logs)."""
+        return "\n\n—\n\n".join(self.messages)
 
 
 def marketing_metrics_from_dashboard(data: dict[str, Any]) -> dict[str, Any]:
@@ -119,6 +124,154 @@ def moat_paste_line(metrics: dict[str, Any]) -> str:
         f"**{metrics['stores_indexed']}** retailers · "
         f"**{metrics['coverage_7d_pct']:.0f}%** coverage 7d"
     )
+
+
+def moat_paste_line_slack(metrics: dict[str, Any]) -> str:
+    """Slack mrkdwn — *bold* not **markdown**."""
+    return (
+        f"*{metrics['snapshots_24h']:,}* precios refresh 24h · "
+        f"*{metrics['total_indexed']:,}* indexados · "
+        f"*{metrics['stores_indexed']}* retailers · "
+        f"*{metrics['coverage_7d_pct']:.0f}%* coverage 7d"
+    )
+
+
+def _slack_divider() -> str:
+    return "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+
+def _build_channel_slack_messages(
+    label: str,
+    path,
+    *,
+    for_date: date,
+    metrics: dict[str, Any],
+    campaign_day: int,
+    post_utc_hour: int,
+) -> list[str]:
+    """One Slack post per step — easier to scan than a single wall of text."""
+    channel = ricardo_channel_label(label)
+    pub_date = format_publish_date(for_date)
+    path_label = rel_to_content(path)
+    messages: list[str] = []
+
+    header_lines = [
+        f"👋 *RICARDO — {channel}*",
+        f"📅 *{pub_date}* · sugerido *{post_utc_hour}:00 UTC*",
+        "",
+        *gate_slack_lines(metrics),
+        "",
+        f"📁 Borrador: `{path_label}`",
+    ]
+    messages.append("\n".join(header_lines))
+
+    if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News") or label.startswith("Reddit"):
+        copy = _load_channel_md(path)
+        if copy:
+            gated = ""
+            if copy.data_gated and not metrics.get("gate_pass"):
+                gated = "⛔ _Data-gated — NO publicar hasta gate abierto._\n\n"
+
+            post = apply_live_metrics(copy.post, metrics) if copy.post else ""
+            hashtags = (copy.hashtags or "").strip()
+            post_with_tags = post
+            if post and hashtags:
+                post_with_tags = f"{post.rstrip()}\n\n{hashtags}"
+
+            post_msg = [
+                _slack_divider(),
+                "*PASO 1 — COPIAR Y PUBLICAR*",
+                "_Pega en el cuerpo. Sin link en el post principal._",
+                _slack_divider(),
+                "",
+                gated.rstrip(),
+                f"Estado: `{copy.status}`" + (" · data-gated" if copy.data_gated else ""),
+                "",
+            ]
+            if post_with_tags:
+                post_msg.append(slack_copy_block(post_with_tags))
+            elif post:
+                post_msg.append(slack_copy_block(post))
+            else:
+                post_msg.append("_(sin borrador de post)_")
+            messages.append("\n".join(ln for ln in post_msg if ln is not None))
+
+            if label.startswith("LinkedIn"):
+                asset = _asset_line(copy, campaign_day)
+                messages.append(f"🖼 *Imagen:* adjuntar `{asset}`")
+
+            comment_msg = [
+                _slack_divider(),
+                "*PASO 2 — PRIMER COMENTARIO*",
+                "_Pégalo justo después de publicar._",
+                _slack_divider(),
+                "",
+            ]
+            if copy.comment:
+                comment_msg.append(slack_copy_block(copy.comment.strip()))
+            else:
+                comment_msg.append("_(sin borrador — añadir CTA manual)_")
+            messages.append("\n".join(comment_msg))
+            messages.append(
+                "\n".join(
+                    [
+                        _slack_divider(),
+                        f"✅ *Cerrar GTM:* `cd cli-market-content && {publish_close_command(for_date)}`",
+                    ]
+                )
+            )
+            return messages
+
+    if label.startswith("Twitter"):
+        tw = _load_twitter_day(path, for_date)
+        if tw:
+            post, comment = tw
+            post = apply_live_metrics(post, metrics)
+            messages.append(
+                "\n".join(
+                    [
+                        _slack_divider(),
+                        "*PASO 1 — THREAD / POST*",
+                        _slack_divider(),
+                        "",
+                        slack_copy_block(post),
+                    ]
+                )
+            )
+            messages.append(
+                "\n".join(
+                    [
+                        _slack_divider(),
+                        f"*PASO 2 — PRIMER REPLY ({channel})*",
+                        _slack_divider(),
+                        "",
+                        slack_copy_block(comment),
+                        "",
+                        f"✅ *Cerrar:* `cd cli-market-content && {publish_close_command(for_date)}`",
+                    ]
+                )
+            )
+            return messages
+
+    raw = path.read_text(encoding="utf-8")
+    _, body = _parse_frontmatter(raw)
+    excerpt = body.strip()
+    if len(excerpt) > 2000:
+        excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
+    messages.append(
+        "\n".join(
+            [
+                _slack_divider(),
+                "*PASO 1 — CONTENIDO*",
+                _slack_divider(),
+                "",
+                slack_copy_block(excerpt),
+                "",
+                f"✅ *Cerrar:* `cd cli-market-content && {publish_close_command(for_date)}`",
+            ]
+        )
+    )
+    return messages
 
 
 def apply_live_metrics(text: str, metrics: dict[str, Any]) -> str:
@@ -472,11 +625,14 @@ def build_gtm_channel_deliveries(
         summary.append("")
         return "\n".join(summary), []
 
-    summary.append("*Canales hoy* _(copy en cada canal Slack de la red)_")
+    summary.append("*Canales hoy* _(cada red = varios mensajes: contexto → post → comentario)_")
     for label, path in channel_items:
         ch = slack_channel_for_gtm_label(label) or channel_publicaciones()
         summary.append(f"• *{label}* → `{rel_to_content(path)}` · Slack `{ch}`")
     summary += [
+        "",
+        "*Línea moat (si el post pide cifras)*",
+        moat_paste_line_slack(metrics),
         "",
         f"_Cerrar GTM:_ `cd cli-market-content && {publish_close_command(for_date)}`",
         "",
@@ -489,29 +645,27 @@ def build_gtm_channel_deliveries(
 
     deliveries: list[GtmChannelDelivery] = []
     for label, path in channel_items:
-        parts = _channel_delivery_preamble(
-            label, for_date=for_date, metrics=metrics, post_utc_hour=post_utc_hour
-        )
-        parts.extend(_single_channel_slack_parts(
-            label, path, for_date=for_date, metrics=metrics, campaign_day=campaign_day
-        ))
-        parts += [
-            "---",
-            f"`{publish_close_command(for_date)}` cuando publiques",
-        ]
         channel_id = slack_channel_for_gtm_label(label) or channel_publicaciones()
+        msgs = _build_channel_slack_messages(
+            label,
+            path,
+            for_date=for_date,
+            metrics=metrics,
+            campaign_day=campaign_day,
+            post_utc_hour=post_utc_hour,
+        )
         deliveries.append(
-            GtmChannelDelivery(label=label, channel_id=channel_id, text="\n".join(parts))
+            GtmChannelDelivery(label=label, channel_id=channel_id, messages=msgs)
         )
         if mirror_threads and label.startswith("Twitter"):
             deliveries.append(
                 GtmChannelDelivery(
                     label="Threads (mirror X)",
                     channel_id=channel_threads(),
-                    text=(
-                        "🧵 *Mismo copy para Threads* — adaptar longitud/formato si hace falta\n\n"
-                        + deliveries[-1].text
-                    ),
+                    messages=[
+                        "🧵 *THREADS* — mismo copy que X. Adapta longitud/formato si hace falta.",
+                        *msgs[1:],
+                    ],
                 )
             )
 
