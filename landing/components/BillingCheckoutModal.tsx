@@ -39,7 +39,9 @@ function sanitizeCheckoutHref(raw: string | null | undefined): string | null {
 type PaymentMethod = "paypal" | "soles";
 
 export type BillingCheckoutKind =
-  | { type: "build-pro" }
+  | { type: "build-starter" }
+  | { type: "build-pro"; annual?: boolean }
+  | { type: "build-pro-founding" }
   | { type: "procure"; plan: ProcurePlanSlug };
 
 const PRO_PAYMENT_OPTIONS: {
@@ -147,7 +149,9 @@ export default function BillingCheckoutModal({
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
-  const isPro = kind.type === "build-pro";
+  const isPro = kind.type === "build-pro" || kind.type === "build-pro-founding";
+  const isStarter = kind.type === "build-starter";
+  const isFounding = kind.type === "build-pro-founding";
   const procureMeta = !isPro ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
 
   const [step, setStep] = useState<1 | 2 | "done">(1);
@@ -198,13 +202,25 @@ export default function BillingCheckoutModal({
 
   if (!open) return null;
 
-  const title = isPro
+  const title = isStarter
     ? isES
-      ? "Build Pro — USD 39/mes"
-      : "Build Pro — USD 39/mo"
-    : isES
-      ? `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mes`
-      : `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mo`;
+      ? "Build Starter — USD 24/mes"
+      : "Build Starter — USD 24/mo"
+    : isFounding
+      ? isES
+        ? "Pro Founding — USD 29/mes (100 plazas)"
+        : "Pro Founding — USD 29/mo (100 seats)"
+    : kind.type === "build-pro" && kind.annual
+      ? isES
+        ? "Build Pro — USD 390/año"
+        : "Build Pro — USD 390/yr"
+      : isPro
+        ? isES
+          ? "Build Pro — USD 39/mes"
+          : "Build Pro — USD 39/mo"
+        : isES
+          ? `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mes`
+          : `Procure ${procureMeta?.name ?? kind.plan} — USD ${procureMeta?.price ?? ""}/mo`;
 
   const detectUsernameFromApiKey = async () => {
     const key = apiKey.trim();
@@ -244,7 +260,7 @@ export default function BillingCheckoutModal({
   const applyCheckoutResult = (data: CheckoutResult, source: string) => {
     const redirectUrl = checkoutRedirectFromResult(data);
     setTrustedCheckoutHref(redirectUrl);
-    recordFunnelEvent(isPro ? "request_pro" : "starter_subscribe", {
+    recordFunnelEvent(isStarter ? "starter_subscribe" : "request_pro", {
       username: data.username || username.trim() || undefined,
       meta: {
         source,
@@ -266,7 +282,7 @@ export default function BillingCheckoutModal({
       setError(isES ? "Ingrese un email válido" : "Enter a valid email");
       return;
     }
-    if (isPro && !username.trim()) {
+    if ((isPro || isFounding) && !username.trim()) {
       setError(
         isES
           ? "Usuario CLI requerido — el de market whoami"
@@ -274,17 +290,45 @@ export default function BillingCheckoutModal({
       );
       return;
     }
+    let resolvedUsername = username.trim();
+    if (isStarter && !resolvedUsername) {
+      resolvedUsername = email.split("@")[0].replace(/[^a-z0-9_-]/gi, "").slice(0, 32) || "";
+    }
     setLoading(true);
     try {
       const payload = {
         email: email.trim(),
-        username: username.trim(),
+        username: resolvedUsername,
         display_name: displayName.trim() || undefined,
         lang: isES ? "es" : "en",
         ...(opts?.resend ? { resend: true } : {}),
       };
 
-      if (isPro) {
+      if (isPro || isStarter) {
+        const buildPlan = isStarter
+          ? "starter"
+          : isFounding
+            ? "pro_founding"
+            : kind.type === "build-pro" && kind.annual
+              ? "pro_annual"
+              : "pro";
+
+        if (isStarter || isFounding || paymentMethod === "paypal") {
+          const { ok, data } = await postCheckout("/billing/build-checkout", {
+            ...payload,
+            plan: buildPlan,
+            payment_method: "paypal",
+            ...(isFounding ? { promo_code: "founding100" } : {}),
+          });
+          if (ok && checkoutSucceeded(data)) {
+            applyCheckoutResult(data, `landing_build_checkout_${buildPlan}`);
+            return;
+          }
+          setError(parseApiError(data, isES ? "Error al preparar el pago" : "Error preparing checkout"));
+          setLoading(false);
+          return;
+        }
+
         const apiMethod = apiPaymentMethod(paymentMethod);
         const { ok, data } = await postCheckout("/billing/pro-checkout", {
           ...payload,
@@ -374,14 +418,16 @@ export default function BillingCheckoutModal({
           );
         })()}
         <div className="rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-3 py-3 text-xs text-[var(--cm-on-surface-variant)] space-y-1">
-          {isPro ? (
+          {isPro || isStarter ? (
             <>
               <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
               <p className="font-mono">pip install cli-market-world</p>
               <p className="font-mono">market login --username {resolvedUser || "TU_USUARIO"}</p>
               <p className="font-mono">market whoami</p>
               <p className="text-[var(--cm-on-surface-variant)]/80">
-                {isES ? "→ debe mostrar tier: pro" : "→ should show tier: pro"}
+                {isES
+                  ? `→ debe mostrar tier: ${isStarter ? "starter" : "pro"}`
+                  : `→ should show tier: ${isStarter ? "starter" : "pro"}`}
               </p>
             </>
           ) : (
@@ -458,7 +504,7 @@ export default function BillingCheckoutModal({
             renderSuccess()
           ) : step === 1 ? (
             <div className="form-stack">
-              {isPro && (
+              {isPro && !isStarter && (
                 <div className="space-y-2">
                   <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
                     {isES ? "Método de pago" : "Payment method"}
@@ -484,7 +530,14 @@ export default function BillingCheckoutModal({
                   </div>
                 </div>
               )}
-              {!isPro && procureMeta && (
+              {isStarter && (
+                <p className="text-xs rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-3 py-2 text-[var(--cm-on-surface-variant)]">
+                  {isES
+                    ? "Pago vía PayPal (USD). Export CSV + alertas — sin checkout retail."
+                    : "Pay via PayPal (USD). CSV export + alerts — no retail checkout."}
+                </p>
+              )}
+              {!isPro && !isStarter && procureMeta && (
                 <>
                   <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                     {isES ? procureMeta.description_es : procureMeta.description_en}
@@ -521,7 +574,7 @@ export default function BillingCheckoutModal({
             </div>
           ) : (
             <div className="form-stack">
-              {isPro && (
+              {(isPro || isFounding) && (
                 <div className="rounded border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/50 px-3 py-3 space-y-3">
                   <button
                     type="button"

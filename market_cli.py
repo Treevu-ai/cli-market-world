@@ -2196,17 +2196,24 @@ def cmd_mcp_setup(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade Pro ($39) — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
+    """Upgrade Starter/Pro — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    plan = (getattr(args, "plan", None) or "pro").strip().lower()
-    if plan != "pro":
+    plan = (getattr(args, "plan", None) or "pro").strip().lower().replace("-", "_")
+    if plan in ("founding",):
+        plan = "pro_founding"
+    if plan in ("annual",):
+        plan = "pro_annual"
+    if plan not in ("starter", "pro", "pro_founding", "pro_annual"):
         plan = "pro"
     payment = (getattr(args, "payment", None) or "").strip().lower()
     if not payment:
         payment = "mercadopago" if es else "paypal"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
     manual_wallet = bool(getattr(args, "manual_transfer", False))
+
+    from market_billing import price_label_for_plan
+    plan_label = price_label_for_plan(plan)
 
     if manual:
         email = (args.email or "").strip()
@@ -2278,9 +2285,12 @@ def cmd_upgrade(args):
         return
 
     endpoint = "/billing/paypal"
-    label = "Pro — $39/mo"
+    payload: dict = {"plan": plan}
+    if plan == "pro_founding":
+        payload["promo_code"] = (getattr(args, "promo_code", None) or "founding100").strip()
+    label = f"CLI Market {plan.replace('_', ' ').title()} — {plan_label}"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
-        data = cli_api("POST", endpoint, {})
+        data = cli_api("POST", endpoint, payload)
     url = data.get("approve_url", "")
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
@@ -2514,10 +2524,11 @@ def main():
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
         "--plan",
-        choices=["pro"],
+        choices=["starter", "pro", "pro_founding", "pro_annual", "founding", "annual"],
         default=None,
-        help="Build Pro ($39/mo) via PayPal subscription",
+        help="Build tier: starter ($24), pro ($39), pro_founding ($29), pro_annual ($390)",
     )
+    p.add_argument("--promo-code", dest="promo_code", help="Founding promo code (default founding100)")
     p.add_argument(
         "--payment",
         choices=["paypal", "mercadopago", "yape", "plin"],
