@@ -35,13 +35,13 @@ export const PROCURE_PLANS = [
     features_es: [
       "200 procurement/mes",
       "Flujo run → approve → checkout",
-      "PayPal · Mercado Pago · Yape/Plin",
+      "PayPal (USD) · Mercado Pago (soles)",
       "Sin suscripción Build aparte",
     ],
     features_en: [
       "200 procurements/mo",
       "run → approve → checkout flow",
-      "PayPal · Mercado Pago · Yape/Plin",
+      "PayPal (USD) · Mercado Pago (soles)",
       "No separate Build subscription",
     ],
     highlighted: true,

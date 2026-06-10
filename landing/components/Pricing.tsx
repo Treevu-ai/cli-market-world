@@ -15,6 +15,7 @@ import {
   isLegacyListedPricingHash,
   type PricingAudience,
 } from "@/lib/pricingAudiences";
+import { pricingBillingFootnote } from "@/lib/billingCopy";
 import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
 
 type Billing = "monthly" | "annual";
@@ -471,11 +472,11 @@ export default function Pricing() {
           </motion.div>
 
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-14 px-2">
+            {pricingBillingFootnote(isES)}{" "}
             {isES ? (
               <>
-                Pagos vía {MARKET_STATS.paymentsLabel} · Facturación USD · Sinapsis Innovadora S.A.C. · RUC
-                20613045563. Pro Founding: código <span className="text-[var(--cm-mint)]">founding100</span> al
-                checkout. Checkout programático para agentes:{" "}
+                Pro Founding: código <span className="text-[var(--cm-mint)]">founding100</span> al checkout.
+                Checkout programático:{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -483,10 +484,8 @@ export default function Pricing() {
               </>
             ) : (
               <>
-                Payments via {MARKET_STATS.paymentsLabel} · USD billing · Sinapsis Innovadora S.A.C. · tax ID
-                20613045563. Pro Founding uses promo{" "}
-                <span className="text-[var(--cm-mint)]">founding100</span> at checkout. Programmatic checkout for
-                agents:{" "}
+                Pro Founding promo: <span className="text-[var(--cm-mint)]">founding100</span> at checkout.
+                Programmatic checkout:{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>

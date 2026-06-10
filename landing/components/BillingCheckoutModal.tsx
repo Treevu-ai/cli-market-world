@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL, WALLET_MANUAL_FALLBACK } from "@/lib/api";
 import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { paymentsChannelsShort } from "@/lib/billingCopy";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
 import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
@@ -605,8 +606,8 @@ export default function BillingCheckoutModal({
               </div>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                 {isES
-                  ? `Facturación ${MARKET_STATS.paymentsLabel}.`
-                  : `Billing via ${MARKET_STATS.paymentsLabel}.`}
+                  ? `Facturación ${paymentsChannelsShort(true)} · comprobante en la moneda del pago.`
+                  : `Billing ${paymentsChannelsShort(false)} · receipt in payment currency.`}
               </p>
               <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
@@ -733,11 +734,11 @@ export default function BillingCheckoutModal({
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                 {isProStandard
                   ? isES
-                    ? `Facturación ${MARKET_STATS.paymentsLabel}.`
-                    : `Billing via ${MARKET_STATS.paymentsLabel}.`
+                    ? `Facturación ${paymentsChannelsShort(true)} · comprobante en la moneda del pago.`
+                    : `Billing ${paymentsChannelsShort(false)} · receipt in payment currency.`
                   : isES
-                    ? "Suscripción mensual vía PayPal."
-                    : "Monthly PayPal subscription."}
+                    ? "Suscripción mensual vía PayPal (USD)."
+                    : "Monthly PayPal subscription (USD)."}
               </p>
               <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}

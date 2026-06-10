@@ -1,4 +1,8 @@
 import { MARKET_STATS } from "@/lib/marketStats";
+import { paymentsChannelsShort, sinapsisBillingPolicy } from "@/lib/billingCopy";
+
+const billingEs = `${sinapsisBillingPolicy(true)} Canales: ${paymentsChannelsShort(true)}.`;
+const billingEn = `${sinapsisBillingPolicy(false)} Channels: ${paymentsChannelsShort(false)}.`;
 
 export const FAQ_SCHEMA_ES = [
   {
@@ -10,8 +14,8 @@ export const FAQ_SCHEMA_ES = [
     a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos. ${MARKET_STATS.platformsPhraseEs}.`,
   },
   {
-    q: "¿Cómo funciona el pago?",
-    a: `Aceptamos ${MARKET_STATS.paymentsLabel}. Los mismos canales aplican a suscripciones Pro, facturación de Sinapsis Innovadora S.A.C. y checkout retail.`,
+    q: "¿Cómo funciona el pago y la facturación?",
+    a: billingEs,
   },
   {
     q: "¿Los precios son reales?",
@@ -33,8 +37,8 @@ export const FAQ_SCHEMA_EN = [
     a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active. ${MARKET_STATS.platformsPhraseEn}.`,
   },
   {
-    q: "How does payment work?",
-    a: `${MARKET_STATS.paymentsLabel}. The same channels apply to Pro subscriptions, Sinapsis Innovadora S.A.C. billing, and retail checkout.`,
+    q: "How do payments and billing work?",
+    a: billingEn,
   },
   {
     q: "Are the prices real?",
