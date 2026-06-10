@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { storeLabel } from "@/lib/storeLabels";
 import HeroTerminal from "@/components/HeroTerminal";
 
 const API_KEY_STORAGE = "cli_market_api_key";
@@ -38,16 +39,6 @@ function parseCompareQuery(raw: string): string | null {
   return m?.[1]?.replace(/^["']|["']$/g, "") ?? null;
 }
 
-function storeLabel(store: string): string {
-  const map: Record<string, string> = {
-    metro_pe: "Metro",
-    wong_pe: "Wong",
-    plaza_vea_pe: "Plaza Vea",
-    plazavea: "Plaza Vea",
-  };
-  return map[store] ?? store.replace(/_/g, " ");
-}
-
 function CompareRows({ rows, isES }: { rows: CompareRow[]; isES: boolean }) {
   const max = Math.max(...rows.map((x) => x.price), 0);
   return (
@@ -71,64 +62,6 @@ function CompareRows({ rows, isES }: { rows: CompareRow[]; isES: boolean }) {
         );
       })}
     </>
-  );
-}
-
-function CachedDemoPanel({ isES }: { isES: boolean }) {
-  const [rows, setRows] = useState<CompareRow[]>([]);
-  const [meta, setMeta] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`${API_URL}/public/demo/compare?q=arroz`);
-        const data = (await res.json()) as ComparePayload;
-        if (cancelled || !res.ok) return;
-        const comp = data.comparison?.[0];
-        const prices = comp?.prices;
-        if (!prices || !Object.keys(prices).length) return;
-        const bestStore = comp.best_store ?? "";
-        const nextRows: CompareRow[] = Object.entries(prices)
-          .map(([store, price]) => ({ store, price, best: store === bestStore }))
-          .sort((a, b) => a.price - b.price);
-        setRows(nextRows);
-        const label = data.seed || data.stale
-          ? isES
-            ? "muestra · datos recientes"
-            : "sample · recent data"
-          : isES
-            ? "datos reales · cache ~1h"
-            : "live data · ~1h cache";
-        setMeta(`${comp.name ?? "arroz"} · ${label}`);
-      } catch {
-        /* ignore */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isES]);
-
-  if (loading && !rows.length) {
-    return (
-      <div className="hero-term-live border-t border-[var(--cm-outline-variant)]/30 px-4 py-3">
-        <p className="hero-term-line hero-term-muted text-xs">
-          {isES ? "Cargando compare real…" : "Loading real compare…"}
-        </p>
-      </div>
-    );
-  }
-  if (!rows.length) return null;
-
-  return (
-    <div className="hero-term-live border-t border-[var(--cm-outline-variant)]/30 px-4 py-3">
-      <p className="hero-term-line hero-term-out text-xs mb-2">{meta}</p>
-      <CompareRows rows={rows} isES={isES} />
-    </div>
   );
 }
 
@@ -356,10 +289,7 @@ export default function HeroPlayground() {
         aria-label={isES ? "Terminal CLI Market" : "CLI Market terminal"}
       >
         {mode === "demo" ? (
-          <>
-            <HeroTerminal />
-            <CachedDemoPanel isES={isES} />
-          </>
+          <HeroTerminal />
         ) : (
           <div className="hero-term-live">
             <div ref={outputRef} className="hero-term-live-output">

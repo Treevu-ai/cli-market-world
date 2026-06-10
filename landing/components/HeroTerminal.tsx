@@ -1,16 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { API_URL } from "@/lib/api";
+import { storeLabel } from "@/lib/storeLabels";
 
 const CMD1 = '$ market compare "arroz" --country PE';
 const CMD2 = '$ market basket "arroz:1 leche:1 aceite:1" --country PE';
 const OUT2 = "✓ CANASTA ÓPTIMA: metro_pe · S/ 24.10 · ahorro −S/ 3.45 (12.5%)";
 
-const ROWS = [
-  { lb: "Metro", pr: "S/ 2.90 /kg", w: 100, best: true },
-  { lb: "Wong", pr: "S/ 3.10 /kg", w: 96, best: false },
-  { lb: "Plaza Vea", pr: "S/ 3.25 /kg", w: 88, best: false },
-] as const;
+type TermRow = { lb: string; pr: string; w: number; best: boolean };
+
+const FALLBACK_ROWS: TermRow[] = [
+  { lb: "Metro", pr: "S/ 2.90", w: 100, best: true },
+  { lb: "Wong", pr: "S/ 3.10", w: 96, best: false },
+  { lb: "Plaza Vea", pr: "S/ 3.25", w: 88, best: false },
+];
+
+function rowsFromCompare(prices: Record<string, number>): TermRow[] {
+  const entries = Object.entries(prices)
+    .filter(([, p]) => p > 0)
+    .sort((a, b) => a[1] - b[1]);
+  if (entries.length < 2) return FALLBACK_ROWS;
+  const max = entries[entries.length - 1][1];
+  const bestStore = entries[0][0];
+  return entries.slice(0, 3).map(([store, price]) => ({
+    lb: storeLabel(store),
+    pr: `S/ ${price.toFixed(2)}`,
+    w: max > 0 ? Math.round((price / max) * 100) : 100,
+    best: store === bestStore,
+  }));
+}
 
 function sleep(ms: number, reduced: boolean) {
   return new Promise<void>((resolve) => {
@@ -27,10 +46,34 @@ type HeroTerminalProps = {
 export default function HeroTerminal({ className = "", loop = true }: HeroTerminalProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const runIdRef = useRef(0);
+  const [rows, setRows] = useState<TermRow[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let next = FALLBACK_ROWS;
+      try {
+        const res = await fetch(`${API_URL}/public/demo/compare?q=arroz`);
+        const data = await res.json();
+        if (!cancelled && res.ok) {
+          const prices = data?.comparison?.[0]?.prices as Record<string, number> | undefined;
+          if (prices && Object.keys(prices).length >= 2) {
+            next = rowsFromCompare(prices);
+          }
+        }
+      } catch {
+        /* fallback */
+      }
+      if (!cancelled) setRows(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    if (!root || !rows) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const runId = ++runIdRef.current;
@@ -76,7 +119,7 @@ export default function HeroTerminal({ className = "", loop = true }: HeroTermin
       if (cancelled || runId !== runIdRef.current) return;
 
       const rowEls: HTMLDivElement[] = [];
-      for (const r of ROWS) {
+      for (const r of rows) {
         const row = document.createElement("div");
         row.className = `hero-term-row${r.best ? " hero-term-row-best" : ""}`;
         row.innerHTML =
@@ -91,11 +134,12 @@ export default function HeroTerminal({ className = "", loop = true }: HeroTermin
         if (cancelled || runId !== runIdRef.current) return;
         rowEls[i].classList.add("hero-term-row-on");
         const fill = rowEls[i].querySelector<HTMLElement>(".hero-term-fill");
-        if (fill) fill.style.width = `${ROWS[i].w}%`;
+        if (fill) fill.style.width = `${rows[i].w}%`;
       }
       await sleep(1050, reduced);
       if (cancelled || runId !== runIdRef.current) return;
-      rowEls[0]?.classList.add("hero-term-row-tagged");
+      const bestIdx = rows.findIndex((r) => r.best);
+      if (bestIdx >= 0) rowEls[bestIdx]?.classList.add("hero-term-row-tagged");
 
       await sleep(450, reduced);
       if (cancelled || runId !== runIdRef.current) return;
@@ -122,7 +166,7 @@ export default function HeroTerminal({ className = "", loop = true }: HeroTermin
       cancelled = true;
       runIdRef.current += 1;
     };
-  }, [loop]);
+  }, [loop, rows]);
 
   return (
     <div
