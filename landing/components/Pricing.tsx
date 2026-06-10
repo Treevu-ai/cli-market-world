@@ -412,8 +412,10 @@ export default function Pricing() {
           ))}
         </div>
 
-        <h2 className="section-title">{isES ? activeTab.title_es : activeTab.title_en}</h2>
-        <p className="section-intro">{isES ? activeTab.intro_es : activeTab.intro_en}</p>
+        <div className="landing-section-header">
+          <h2 className="section-title">{isES ? activeTab.title_es : activeTab.title_en}</h2>
+          <p className="section-intro">{isES ? activeTab.intro_es : activeTab.intro_en}</p>
+        </div>
 
         <div
           id="pricing-panel-build"
@@ -422,7 +424,7 @@ export default function Pricing() {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-6xl mx-auto mb-6 mt-4">
+          <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 mt-4">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
                 key={tier.name}
@@ -461,7 +463,7 @@ export default function Pricing() {
             ))}
           </div>
 
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-4 px-2">
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-4">
             {isES ? (
               <>
                 ¿Plan intermedio?{" "}
@@ -492,7 +494,7 @@ export default function Pricing() {
             )}
           </p>
 
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-14 px-2">
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-14">
             {pricingBillingFootnote(isES)}{" "}
             {isES ? (
               <>

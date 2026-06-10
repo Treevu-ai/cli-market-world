@@ -51,7 +51,7 @@ export default function HeroMetrics() {
 
   return (
     <div
-      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full max-w-[960px] mx-auto justify-items-center"
+      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full landing-content-rail justify-items-center"
       aria-label={isES ? "Métricas de cobertura verificada" : "Verified coverage metrics"}
     >
       {metrics.map((m, i) => (

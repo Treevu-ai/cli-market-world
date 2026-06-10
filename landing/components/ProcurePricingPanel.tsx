@@ -30,7 +30,7 @@ export default function ProcurePricingPanel() {
       id="procure"
       className="brand-mode-operations scroll-mt-24 text-left"
     >
-      <div className="max-w-2xl mx-auto mb-10 space-y-4 text-center">
+      <div className="landing-content-narrow mb-10 space-y-4 text-center">
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
           {isES
             ? `${MARKET_STATS.retailersVerified} retailers verificados · misma API que Build · dashboard Procure incluido.`
@@ -48,7 +48,7 @@ export default function ProcurePricingPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-6xl mx-auto mb-10">
+      <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
         {PROCURE_PLANS.map((plan, i) => (
           <motion.div
             key={plan.slug}
@@ -88,7 +88,7 @@ export default function ProcurePricingPanel() {
         ))}
       </div>
 
-      <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {benefits.map((b) => (
           <p key={b} className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
             {b}

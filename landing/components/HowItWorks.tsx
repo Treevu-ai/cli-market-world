@@ -41,20 +41,22 @@ export default function HowItWorks() {
 
   return (
     <section id="how" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
-      <div className="landing-container text-center">
-        <p className="section-eyebrow mb-4 mt-2">
-          {isES ? "Cómo funciona" : "How it works"}
-        </p>
-        <h2 className="section-title">
-          {isES ? "Tres pasos hasta precios comparables." : "Three steps to comparable prices."}
-        </h2>
-        <p className="section-intro max-w-xl">
-          {isES
-            ? "Instala, compara y arma canastas. Init, Discover y MCP quedan en la ruta avanzada."
-            : "Install, compare, and build baskets. Init, Discover, and MCP live in the advanced path."}
-        </p>
+      <div className="landing-container-wide text-center">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4 mt-2">
+            {isES ? "Cómo funciona" : "How it works"}
+          </p>
+          <h2 className="section-title">
+            {isES ? "Tres pasos hasta precios comparables." : "Three steps to comparable prices."}
+          </h2>
+          <p className="section-intro">
+            {isES
+              ? "Instala, compara y arma canastas. Init, Discover y MCP quedan en la ruta avanzada."
+              : "Install, compare, and build baskets. Init, Discover, and MCP live in the advanced path."}
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left mb-8 min-w-0 max-w-4xl mx-auto">
+        <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-3 gap-5 text-left mb-8 min-w-0">
           {mainSteps.map((s, i) => (
             <motion.div
               key={s.label}
@@ -84,7 +86,7 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <details className="details-disclosure max-w-2xl mx-auto text-left mb-8">
+        <details className="details-disclosure landing-content-narrow text-left mb-8">
           <summary>{isES ? "Ruta developer: Init · Discover · MCP setup" : "Developer path: Init · Discover · MCP setup"}</summary>
           <div className="details-body pt-4 space-y-3">
             {devSteps.map((s) => (

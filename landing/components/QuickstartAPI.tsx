@@ -15,18 +15,20 @@ export default function QuickstartAPI() {
 
   return (
     <section id="api" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
-      <div className="landing-container text-center">
-        <p className="section-eyebrow mb-8">API</p>
-        <h2 className="section-title">
-          {isES ? "Una llamada. Datos verificados." : "One call. Verified data."}
-        </h2>
-        <p className="section-intro max-w-md">
-          {isES
-            ? "Todo lo que haces en la CLI está disponible vía HTTP. Busca, compara canastas y crea órdenes con JSON plano."
-            : "Everything in the CLI is available over HTTP. Search, compare baskets, and create orders with flat JSON."}
-        </p>
+      <div className="landing-container-wide text-center">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4">API</p>
+          <h2 className="section-title">
+            {isES ? "Una llamada. Datos verificados." : "One call. Verified data."}
+          </h2>
+          <p className="section-intro">
+            {isES
+              ? "Todo lo que haces en la CLI está disponible vía HTTP. Busca, compara canastas y crea órdenes con JSON plano."
+              : "Everything in the CLI is available over HTTP. Search, compare baskets, and create orders with flat JSON."}
+          </p>
+        </div>
 
-        <div className="text-left space-y-4 w-full max-w-[560px] min-w-0 mx-auto">
+        <div className="text-left space-y-4 w-full landing-content-narrow min-w-0">
           <PrereqBlock level="session" isES={isES} />
           <div className="code-block-cyber px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
