@@ -25,8 +25,8 @@ export default function ContactSection() {
         <div id="contact-retailers" className="scroll-mt-24 mt-12 text-center">
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
             {isES
-              ? "¿Es retailer VTEX/Shopify? Formulario dedicado — listado gratis, sin letra chica."
-              : "VTEX/Shopify retailer? Dedicated form — free listing."}
+              ? "¿Es retailer VTEX, Shopify, Magento o WooCommerce? Formulario dedicado — listado gratis, sin letra chica."
+              : "VTEX, Shopify, Magento, or WooCommerce retailer? Dedicated form — free listing."}
           </p>
           <a
             href="/retailers"

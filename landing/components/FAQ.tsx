@@ -17,7 +17,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Con qué retailers funciona?",
-        a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos, en ${MARKET_STATS.countries} países. 4 plataformas: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} marcas moda/beauty) y Magento (${MARKET_STATS.platformMagento}).`,
+        a: `${MARKET_STATS.retailersDefined} retailers en catálogo, ${MARKET_STATS.retailersVerified} verificados activos, en ${MARKET_STATS.countries} países. 4 plataformas: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} marcas moda/beauty), Magento (${MARKET_STATS.platformMagento}) y WooCommerce (${MARKET_STATS.platformWooCommerce} piloto FMCG).`,
       },
       {
         q: "¿Cómo funciona el pago y la facturación?",
@@ -49,7 +49,7 @@ function faqsFor(lang: "es" | "en") {
     },
     {
       q: "Which retailers do you support?",
-      a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active, across ${MARKET_STATS.countries} countries. 4 platforms: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} fashion/beauty brands), and Magento (${MARKET_STATS.platformMagento}).`,
+      a: `${MARKET_STATS.retailersDefined} retailers in catalog, ${MARKET_STATS.retailersVerified} verified active, across ${MARKET_STATS.countries} countries. 4 platforms: VTEX (${MARKET_STATS.platformVtex}), Shopify (${MARKET_STATS.platformShopify} fashion/beauty brands), Magento (${MARKET_STATS.platformMagento}), and WooCommerce (${MARKET_STATS.platformWooCommerce} FMCG pilot).`,
     },
     {
       q: "How do payments and billing work?",
