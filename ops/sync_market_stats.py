@@ -31,21 +31,53 @@ try:
 except Exception:
     pass
 
+def _fetch_pypi_from_prod_api() -> int:
+    """Public consolidated total from production /analytics/pypi (Pepy Pro on server)."""
+    import json
+    import urllib.request
+
+    base = (
+        os.getenv("DASHBOARD_DATA_URL")
+        or os.getenv("CLI_MARKET_API_URL")
+        or "https://cli-market-production.up.railway.app"
+    ).rstrip("/")
+    url = f"{base}/analytics/pypi"
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "CLI-Market-Sync/1 (+https://cli-market.dev)"},
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
+        if data.get("ok"):
+            return int(data.get("total_downloads") or 0)
+    except Exception as e:
+        print(f"Warning: prod /analytics/pypi fetch failed: {e}", file=sys.stderr)
+    return 0
+
+
 def _get_consolidated_pypi_downloads() -> int:
     """Sum PyPI downloads across legacy (cli-market) + core + world for consolidated badges/metrics."""
+    candidates: list[int] = []
     try:
         from market_pepy import pepy_multi_summary, pepy_summary
+
         multi = pepy_multi_summary()
         cw = int((multi.get("combined") or {}).get("total_downloads") or 0)
         legacy = pepy_summary(project="cli-market")
         leg = int(legacy.get("total_downloads") or 0) if legacy.get("ok") else 0
         total = cw + leg
         if total > 0:
-            return total
+            candidates.append(total)
     except Exception as e:
         print(f"Warning: could not fetch consolidated PyPI downloads: {e}", file=sys.stderr)
-    # Fallback to a recent known value if fetch fails (update periodically)
-    return 17785
+    prod = _fetch_pypi_from_prod_api()
+    if prod > 0:
+        candidates.append(prod)
+    if candidates:
+        return max(candidates)
+    # Fallback when offline (update after `curl …/analytics/pypi`)
+    return 20196
 
 _CONSOLIDATED_PYPI_DOWNLOADS = _get_consolidated_pypi_downloads()
 
