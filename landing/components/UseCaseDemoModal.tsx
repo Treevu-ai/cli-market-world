@@ -5,12 +5,12 @@ import { createPortal } from "react-dom";
 import { useLang } from "@/lib/LanguageContext";
 import { recordUseCaseDemoOpen } from "@/lib/funnel";
 import type { UseCaseDemo } from "@/lib/useCaseDemos";
-
-const OVERLAY =
-  "fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6 pointer-events-none";
-const BACKDROP = "absolute inset-0 bg-black/70 pointer-events-auto backdrop-blur-sm";
-const PANEL =
-  "relative pointer-events-auto w-full sm:max-w-[960px] card-cyber flex flex-col h-[min(92dvh,720px)] max-h-[92dvh] overflow-hidden animate-fade-in rounded-t-2xl sm:rounded-2xl";
+import {
+  LANDING_MODAL_BACKDROP,
+  LANDING_MODAL_OVERLAY,
+  LANDING_MODAL_PANEL,
+  LANDING_MODAL_PANEL_LG,
+} from "@/lib/modalLayout";
 
 export default function UseCaseDemoModal({
   open,
@@ -59,9 +59,9 @@ export default function UseCaseDemoModal({
   if (!mounted || !open || !useCase) return null;
 
   return createPortal(
-    <div className={OVERLAY} role="dialog" aria-modal="true" aria-labelledby="use-case-demo-title">
-      <button type="button" className={BACKDROP} aria-label={isES ? "Cerrar demo" : "Close demo"} onClick={onClose} />
-      <div className={PANEL}>
+    <div className={LANDING_MODAL_OVERLAY} role="dialog" aria-modal="true" aria-labelledby="use-case-demo-title">
+      <button type="button" className={LANDING_MODAL_BACKDROP} aria-label={isES ? "Cerrar demo" : "Close demo"} onClick={onClose} />
+      <div className={`${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_LG}`}>
         <div className="shrink-0 flex items-start justify-between gap-3 p-3 sm:p-6 sm:pb-3 border-b border-[var(--cm-outline-variant)]/20">
           <div className="text-left min-w-0">
             <p className="hidden sm:block font-label-caps text-[10px] text-[var(--cm-mint)]/70 mb-1">
@@ -84,8 +84,8 @@ export default function UseCaseDemoModal({
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 flex items-center justify-center overflow-hidden px-3 sm:px-6 py-2 sm:py-4 bg-[#0a0a0a]/40">
-          <div className="w-full h-full max-h-full rounded-xl border border-[var(--cm-mint)]/35 bg-[#0a0a0a] overflow-hidden shadow-[0_0_40px_rgba(58,254,207,0.12)] flex items-center justify-center">
+        <div className="flex-1 min-h-0 overflow-hidden px-3 sm:px-6 py-2 sm:py-4 bg-[#0a0a0a]/40">
+          <div className="hero-playground-terminal h-full min-h-[200px] flex items-center justify-center p-2 sm:p-4">
             <img
               key={useCase.id}
               src={useCase.gif}
@@ -93,7 +93,7 @@ export default function UseCaseDemoModal({
               width={920}
               height={520}
               draggable={false}
-              className="max-w-full max-h-full w-auto h-auto object-contain object-center block select-none"
+              className="max-w-full max-h-full w-auto h-auto object-contain object-center block select-none mx-auto"
               loading="eager"
               decoding="async"
             />

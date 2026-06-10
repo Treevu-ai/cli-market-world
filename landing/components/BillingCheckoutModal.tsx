@@ -12,6 +12,7 @@ import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
 import { PROCURE_PLANS } from "@/lib/procurePlans";
 import WalletManualTransfer from "@/components/WalletManualTransfer";
 import { checkoutRedirectFromResult } from "@/lib/safeCheckoutUrl";
+import { LANDING_MODAL_BACKDROP, LANDING_MODAL_OVERLAY, LANDING_MODAL_PANEL, LANDING_MODAL_PANEL_MD } from "@/lib/modalLayout";
 
 const CHECKOUT_HOST_SUFFIXES = [
   "paypal.com",
@@ -469,18 +470,18 @@ export default function BillingCheckoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6 pointer-events-none"
+      className={LANDING_MODAL_OVERLAY}
       role="dialog"
       aria-modal="true"
       aria-labelledby="billing-checkout-title"
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/50 pointer-events-auto"
+        className={LANDING_MODAL_BACKDROP}
         aria-label={isES ? "Cerrar" : "Close"}
         onClick={onClose}
       />
-      <div className="relative pointer-events-auto w-full sm:max-w-md max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--cm-outline-variant)]/50 bg-[var(--cm-surface-low)] shadow-xl">
+      <div className={`${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--cm-outline-variant)]/50 bg-[var(--cm-surface-low)] shadow-xl`}>
         <div className="flex items-start justify-between gap-3 border-b border-[var(--cm-outline-variant)]/30 px-5 py-4">
           <div className="min-w-0">
             {!isSingleStepBuild && step !== "done" && (

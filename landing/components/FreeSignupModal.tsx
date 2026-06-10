@@ -5,14 +5,16 @@ import { API_URL } from "@/lib/api";
 import { scrollToPricing } from "@/lib/funnel";
 
 import { MARKET_STATS } from "@/lib/marketStats";
+import {
+  LANDING_MODAL_BACKDROP,
+  LANDING_MODAL_OVERLAY,
+  LANDING_MODAL_PANEL,
+  LANDING_MODAL_PANEL_MD,
+} from "@/lib/modalLayout";
 
 const PYPI_URL = MARKET_STATS.pypiUrl;
 
-const MODAL_OVERLAY =
-  "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 pointer-events-none";
-const MODAL_BACKDROP = "absolute inset-0 bg-black/50 pointer-events-auto";
-const MODAL_PANEL =
-  "relative pointer-events-auto w-full sm:max-w-md card-cyber p-6 sm:p-8 animate-fade-in";
+const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber p-6 sm:p-8`;
 
 type Profile = "dev" | "business" | "other";
 
@@ -163,8 +165,8 @@ export default function FreeSignupModal({
   if (plan === "pro" || plan === "starter") {
     // legacy "starter" plan param supported for compat; renders Pro checkout flow
     return (
-      <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
-        <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+      <div role="dialog" aria-modal="true" className={LANDING_MODAL_OVERLAY}>
+        <div className={LANDING_MODAL_BACKDROP} aria-hidden onClick={onClose} />
         <div className={`${MODAL_PANEL} relative`}>
           <button
             onClick={onClose}
@@ -200,8 +202,8 @@ market whoami`}</pre>
   }
 
   return (
-    <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
-      <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+    <div role="dialog" aria-modal="true" className={LANDING_MODAL_OVERLAY}>
+      <div className={LANDING_MODAL_BACKDROP} aria-hidden onClick={onClose} />
       <div className={`${MODAL_PANEL} relative`}>
         <button
           onClick={onClose}
