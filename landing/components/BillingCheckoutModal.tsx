@@ -152,7 +152,8 @@ export default function BillingCheckoutModal({
   const isPro = kind.type === "build-pro" || kind.type === "build-pro-founding";
   const isStarter = kind.type === "build-starter";
   const isFounding = kind.type === "build-pro-founding";
-  const procureMeta = !isPro ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
+  const procureMeta =
+    kind.type === "procure" ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
 
   const [step, setStep] = useState<1 | 2 | "done">(1);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("soles");
