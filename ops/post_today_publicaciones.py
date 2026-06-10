@@ -61,7 +61,8 @@ def main() -> int:
     )
     deliver_to_publicaciones(summary)
     for d in deliveries:
-        deliver(d.text, channel=d.channel_id)
+        for msg in d.messages:
+            deliver(msg, channel=d.channel_id)
 
     print(
         f"Done — índice en #publicaciones + {len(deliveries)} canal"

@@ -100,6 +100,10 @@ def test_build_gtm_channel_deliveries_splits_per_channel():
     assert "LinkedIn Personal" in labels
     assert all(d.channel_id.startswith("C0") for d in deliveries)
     assert all("RICARDO" in d.text for d in deliveries)
+    li = next(d for d in deliveries if d.label == "LinkedIn Personal")
+    assert len(li.messages) >= 3
+    assert any("PASO 1" in m for m in li.messages)
+    assert any("PASO 2" in m for m in li.messages)
 
 
 def test_build_slack_publish_messages_has_order_and_gate():
