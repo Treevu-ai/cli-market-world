@@ -154,6 +154,7 @@ export default function BillingCheckoutModal({
   const isFounding = kind.type === "build-pro-founding";
   const isProStandard = kind.type === "build-pro";
   const isPayPalOnly = isStarter || isFounding;
+  const isSingleStepBuild = isPayPalOnly || isProStandard;
   const procureMeta =
     kind.type === "procure" ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
 
@@ -203,23 +204,23 @@ export default function BillingCheckoutModal({
 
   const title = isStarter
     ? isES
-      ? "Starter · $24/mes"
-      : "Starter · $24/mo"
+      ? "Build · Starter · $24/mes"
+      : "Build · Starter · $24/mo"
     : isFounding
       ? isES
-        ? "Pro Founding · $29/mes"
-        : "Pro Founding · $29/mo"
+        ? "Build · Pro Founding · $29/mes"
+        : "Build · Pro Founding · $29/mo"
       : kind.type === "build-pro" && kind.annual
         ? isES
-          ? "Pro · $390/año"
-          : "Pro · $390/yr"
+          ? "Build · Pro · $390/año"
+          : "Build · Pro · $390/yr"
         : isProStandard
           ? isES
-            ? "Pro · $39/mes"
-            : "Pro · $39/mo"
+            ? "Build · Pro · $39/mes"
+            : "Build · Pro · $39/mo"
           : isES
-            ? `Procure ${procureMeta?.name ?? kind.plan}`
-            : `Procure ${procureMeta?.name ?? kind.plan}`;
+            ? `Procure · ${procureMeta?.name ?? kind.plan}`
+            : `Procure · ${procureMeta?.name ?? kind.plan}`;
 
   const detectUsernameFromApiKey = async () => {
     const key = apiKey.trim();
@@ -481,7 +482,7 @@ export default function BillingCheckoutModal({
       <div className="relative pointer-events-auto w-full sm:max-w-md max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--cm-outline-variant)]/50 bg-[var(--cm-surface-low)] shadow-xl">
         <div className="flex items-start justify-between gap-3 border-b border-[var(--cm-outline-variant)]/30 px-5 py-4">
           <div className="min-w-0">
-            {!isPayPalOnly && step !== "done" && (
+            {!isSingleStepBuild && step !== "done" && (
               <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--cm-action)] mb-1">
                 {isES ? "Paso" : "Step"} {step} / 2
               </p>
@@ -510,6 +511,124 @@ export default function BillingCheckoutModal({
         <div className="px-5 py-5">
           {step === "done" ? (
             renderSuccess()
+          ) : isProStandard ? (
+            <div className="form-stack">
+              <div className="space-y-2">
+                <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
+                  {isES ? "Método de pago" : "Payment method"}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PRO_PAYMENT_OPTIONS.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`text-left text-sm px-3 py-2.5 rounded border transition-colors ${
+                        paymentMethod === m.id
+                          ? "border-[var(--cm-action)] bg-[var(--cm-action)]/10 text-white"
+                          : "border-[var(--cm-outline-variant)]/40 text-[var(--cm-on-surface-variant)]"
+                      }`}
+                    >
+                      <span className="block">{isES ? m.label_es : m.label_en}</span>
+                      <span className="block text-[10px] font-mono opacity-70 mt-0.5">
+                        {isES ? m.hint_es : m.hint_en}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/50 px-3 py-3 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setCliWizardOpen((v) => !v)}
+                  className="w-full text-left text-sm font-semibold text-white flex items-center justify-between gap-2"
+                >
+                  <span>{isES ? "¿Aún no tienes usuario CLI?" : "Don't have a CLI user yet?"}</span>
+                  <span className="text-[var(--cm-on-surface-variant)] text-xs">{cliWizardOpen ? "▾" : "▸"}</span>
+                </button>
+                {cliWizardOpen && (
+                  <div className="space-y-2 text-xs text-[var(--cm-on-surface-variant)]">
+                    <ol className="list-decimal list-inside space-y-1 font-mono text-[11px] text-white/90">
+                      <li>{MARKET_STATS.pipInstallCmd}</li>
+                      <li>market register</li>
+                      <li>market whoami</li>
+                    </ol>
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder={isES ? "sk-... (opcional)" : "sk-... (optional)"}
+                        className="flex-1 input-cyber text-xs font-mono"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void detectUsernameFromApiKey()}
+                        disabled={detectingUser || !apiKey.trim()}
+                        className="shrink-0 rounded-full border border-[var(--cm-outline-variant)]/50 px-3 py-2 text-[11px] text-[var(--cm-on-surface-variant)] hover:text-white disabled:opacity-50"
+                      >
+                        {detectingUser ? "…" : isES ? "Detectar" : "Detect"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                autoFocus
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={isES ? "Tu nombre" : "Your name"}
+                className="w-full input-cyber"
+              />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={isES ? "su@email.com" : "you@email.com"}
+                className="w-full input-cyber"
+              />
+              <div className="space-y-1">
+                <label htmlFor="checkout-username-pro" className="text-xs text-[var(--cm-on-surface-variant)]">
+                  {isES ? "Usuario CLI" : "CLI username"}
+                </label>
+                <input
+                  id="checkout-username-pro"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={isES ? "market whoami" : "market whoami"}
+                  className="w-full input-cyber text-sm"
+                />
+              </div>
+              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
+                {isES
+                  ? `Facturación ${MARKET_STATS.paymentsLabel}.`
+                  : `Billing via ${MARKET_STATS.paymentsLabel}.`}
+              </p>
+              <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
+              {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
+              <button
+                type="button"
+                onClick={() => submit()}
+                disabled={loading || !legal}
+                className="btn-mint w-full disabled:opacity-50"
+              >
+                {loading
+                  ? isES
+                    ? "Preparando…"
+                    : "Preparing…"
+                  : paymentMethod === "paypal"
+                    ? isES
+                      ? "Continuar en PayPal →"
+                      : "Continue on PayPal →"
+                    : isES
+                      ? "Continuar en Mercado Pago →"
+                      : "Continue on Mercado Pago →"}
+              </button>
+            </div>
           ) : isPayPalOnly ? (
             <div className="form-stack">
               <p className="text-sm text-[var(--cm-on-surface-variant)]">

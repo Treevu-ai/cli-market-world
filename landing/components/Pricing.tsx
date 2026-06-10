@@ -94,16 +94,16 @@ const tiers: Tier[] = [
     period_es: "/ mes · precio bloqueado",
     period_en: "/ mo · locked price",
     f_es: [
-      "Todo lo de Pro",
-      "Precio fijo de por vida",
-      "100 plazas · solo PayPal",
-      "Mismo checkout y MCP Pro",
+      "10.000 consultas / día (igual que Pro)",
+      "Precio $29 bloqueado de por vida",
+      "100 plazas — cuando se agoten, $39",
+      "Checkout PayPal + MCP Pro completo",
     ],
     f_en: [
-      "Everything in Pro",
-      "Lifetime locked price",
-      "100 seats · PayPal only",
-      "Same Pro checkout & MCP",
+      "10,000 requests / day (same as Pro)",
+      "Lifetime locked $29 price",
+      "100 seats — then $39",
+      "PayPal checkout + full Pro MCP",
     ],
     cta_es: "Aprovechar $29",
     cta_en: "Claim $29",
@@ -213,6 +213,11 @@ function TierCard({
       </div>
 
       <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
+        {!tier.dark && (
+          <span className="block text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/70 mb-1 font-normal">
+            Build
+          </span>
+        )}
         {tier.name}
       </h3>
 
