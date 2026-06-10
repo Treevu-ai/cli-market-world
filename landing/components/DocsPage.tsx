@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { sinapsisBillingPolicy, paymentsChannelsShort } from "@/lib/billingCopy";
 
 type SnippetTab = "curl" | "python" | "mcp";
 type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
@@ -213,9 +214,15 @@ market doctor`}</CodeBlock>
           <SectionHead n={3} title={t("Billing y planes", "Billing & plans")} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              "Build (API/MCP): Free, Starter ($24/mes), Pro ($39/mes o $390/año), Pro Founding ($29/mes, 100 plazas). Pagos vía PayPal y Mercado Pago.",
-              "Build (API/MCP): Free, Starter ($24/mo), Pro ($39/mo or $390/yr), Pro Founding ($29/mo, 100 seats). Payments via PayPal and Mercado Pago.",
+              "Build (API/MCP): Free, Starter ($24/mes), Pro ($39/mes o $390/año), Pro Founding ($29/mes, 100 plazas).",
+              "Build (API/MCP): Free, Starter ($24/mo), Pro ($39/mo or $390/yr), Pro Founding ($29/mo, 100 seats).",
             )}
+          </p>
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
+            {sinapsisBillingPolicy(isES)}
+          </p>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/80 mb-6">
+            {t("Canales:", "Channels:")} {paymentsChannelsShort(isES)}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
             {t("CHECKOUT PROGRAMÁTICO", "PROGRAMMATIC CHECKOUT")}
