@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { sinapsisBillingPolicy, paymentsChannelsShort } from "@/lib/billingCopy";
+import { prereqLabel, prereqSteps, type PrereqLevel } from "@/lib/docsInstall";
 
 type SnippetTab = "curl" | "python" | "mcp";
 type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
@@ -135,35 +136,50 @@ export default function DocsPage() {
               `CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
             )}
           </p>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="card-cyber header-strip p-6">
-              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE TIER</h4>
+              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE</h4>
               <p className="font-mono text-lg text-white">1,000 req/day</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("Lectura · búsqueda · MCP default.", "Read · search · default MCP profile.")}
               </p>
               <a href={MARKET_STATS.pypiUrl} className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block" target="_blank" rel="noopener noreferrer">
-                {t("pip install →", "pip install →")}
+                {MARKET_STATS.pipInstallCmd} →
               </a>
             </div>
-            <div className="card-cyber header-strip p-6 energy-border-active">
-              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO TIER</h4>
+            <div className="card-cyber header-strip p-6">
+              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER</h4>
+              <p className="font-mono text-lg text-white">5,000 req/day · USD 24/mo</p>
+              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
+                {t("3 claves API · export CSV · alertas · sin checkout retail.", "3 API keys · CSV export · alerts · no retail checkout.")}
+              </p>
+              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+                {t("Elegir Starter →", "Choose Starter →")}
+              </a>
+            </div>
+            <div className="card-cyber header-strip p-6 energy-border-active sm:col-span-2 lg:col-span-1">
+              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO</h4>
               <p className="font-mono text-lg text-white">10,000 req/day · USD 39/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
-                  `Checkout ${MARKET_STATS.paymentsLabel} · export · claves de escritura.`,
-                  `Checkout ${MARKET_STATS.paymentsLabel} · export · write API keys.`,
+                  `Checkout ${MARKET_STATS.paymentsLabel} · 10 claves · Intel MCP.`,
+                  `Checkout ${MARKET_STATS.paymentsLabel} · 10 keys · Intel MCP.`,
                 )}
               </p>
+              <p className="text-[10px] text-[var(--cm-signal)] mt-2 font-mono">
+                {t("Pro Founding: USD 29/mo · 100 plazas", "Pro Founding: USD 29/mo · 100 seats")}
+              </p>
               <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
-                {t("Configurar Pro →", "Set up Pro →")}
+                {t("Ver planes →", "View plans →")}
               </a>
             </div>
           </div>
+          <PrereqBlock level="cli" isES={isES} />
         </section>
 
         <section className="mb-16 scroll-mt-24" id="quickstart">
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
+          <PrereqBlock level="cli" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             {t(
               "De pip install a precios reales en ~5 min. Recomendado: onboarding guiado.",
@@ -184,6 +200,7 @@ market doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="auth">
           <SectionHead n={2} title={t("Autenticación", "Authentication")} />
+          <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               "Cuenta gratuita vía CLI o HTTP. La API key (sk-...) se muestra una sola vez.",
@@ -212,6 +229,7 @@ market doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="billing">
           <SectionHead n={3} title={t("Billing y planes", "Billing & plans")} />
+          <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               "Build (API/MCP): Free, Starter ($24/mes), Pro ($39/mes o $390/año), Pro Founding ($29/mes, 100 plazas).",
@@ -253,6 +271,7 @@ market upgrade --plan pro`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="doctor">
           <SectionHead n={4} title={t("Doctor / readiness", "Doctor / readiness")} />
+          <PrereqBlock level="cli" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               "Diagnóstico local: URL de API, salud, auth, tier, país por defecto y market-mcp en PATH.",
@@ -265,6 +284,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="compare">
           <SectionHead n={5} title="Compare" />
+          <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             <code className="text-[var(--cm-mint)]">POST /products/compare</code>
             {t(" — fuzzy match multi-retailer.", " — multi-retailer fuzzy match.")}
@@ -286,6 +306,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="basket">
           <SectionHead n={6} title="Basket" />
+          <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             <code className="text-[var(--cm-mint)]">POST /v1/basket/compare</code>
             {t(" — canasta multi-ítem por cadena.", " — multi-item basket by chain.")}
@@ -295,6 +316,13 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="intel">
           <SectionHead n={7} title="Intelligence" />
+          <PrereqBlock level="session" isES={isES} />
+          <p className="text-[var(--cm-on-surface-variant)] mb-2 text-sm">
+            {t(
+              "Export CSV (`market_export`) requiere Starter o superior. Checkout retail requiere Pro.",
+              "CSV export (`market_export`) requires Starter or above. Retail checkout requires Pro.",
+            )}
+          </p>
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t("Endpoints comerciales: ", "Commercial endpoints: ")}
             <code className="text-[var(--cm-mint)]">/v1/prices</code>,{" "}
@@ -308,6 +336,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="mcp">
           <SectionHead n={8} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
+          <PrereqBlock level="mcp" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               `Perfil default: ${MARKET_STATS.mcpTools} herramientas (Shop · Intel · Account). Legacy: ${MARKET_STATS.mcpToolsLegacy} con aliases. Configs en `,
@@ -363,12 +392,23 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="limits">
           <SectionHead n={9} title={t("Rate limits", "Rate limits")} />
-          <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
-            <li>Free: 1,000 {t("consultas/día", "requests/day")} · {MARKET_STATS.mcpTools} MCP tools</li>
-            <li>Starter: 5,000 {t("consultas/día", "requests/day")} · 3 API keys · USD 24/mo</li>
-            <li>Pro: 10,000 {t("consultas/día", "requests/day")} · checkout · USD 39/mo o 390/yr</li>
-            <li>Pro Founding: {t("mismos límites Pro · USD 29/mo bloqueado", "same Pro limits · locked USD 29/mo")}</li>
-            <li>Enterprise: {t("límites y SLAs a medida", "custom limits + SLAs")}</li>
+          <PrereqBlock level="cli" isES={isES} />
+          <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
+            <li>
+              <strong className="text-white">Free</strong> — 1,000 {t("consultas/día", "requests/day")} · 1 {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
+            </li>
+            <li>
+              <strong className="text-white">Starter</strong> — 5,000 {t("consultas/día", "requests/day")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 24/mo
+            </li>
+            <li>
+              <strong className="text-white">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 39/mo {t("o 390/año", "or 390/yr")}
+            </li>
+            <li>
+              <strong className="text-white">Pro Founding</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves", "keys")} · checkout · Intel MCP · USD 29/mo {t("bloqueado · 100 plazas", "locked · 100 seats")}
+            </li>
+            <li>
+              <strong className="text-white">Enterprise</strong> — {t("límites y SLAs a medida", "custom limits + SLAs")}
+            </li>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Planes completos en ", "Full plans at ")}{" "}
@@ -380,12 +420,29 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="errors">
           <SectionHead n={10} title={t("Errores", "Errors")} />
+          <PrereqBlock level="cli" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] text-sm">
             {t("401 token inválido · 429 rate limit · 503 collector degradado. OpenAPI completo: ", "401 invalid token · 429 rate limit · 503 collector degraded. Full OpenAPI: ")}
             <a href={`${API_URL}/docs`} className="text-[var(--cm-mint)] underline" target="_blank" rel="noopener noreferrer">
               {API_URL}/docs
             </a>
           </p>
+        </section>
+        <section className="mb-16 scroll-mt-24">
+          <div className="card-cyber header-strip p-8 text-center energy-border-active">
+            <h3 className="font-display text-xl font-semibold text-white mb-2">
+              {t("¿Listo para Starter o Pro?", "Ready for Starter or Pro?")}
+            </h3>
+            <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 max-w-md mx-auto">
+              {t(
+                "Free para lectura · Starter $24 para export · Pro $39 para checkout retail.",
+                "Free for read · Starter $24 for export · Pro $39 for retail checkout.",
+              )}
+            </p>
+            <a href="/#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">
+              {t("Ver planes Build →", "View Build plans →")}
+            </a>
+          </div>
         </section>
       </main>
 
@@ -434,6 +491,15 @@ market --json doctor`}</CodeBlock>
           </div>
         </div>
       </aside>
+    </div>
+  );
+}
+
+function PrereqBlock({ level, isES }: { level: PrereqLevel; isES: boolean }) {
+  return (
+    <div className="mb-6 rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-4 py-3">
+      <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80 mb-2 tracking-widest">{prereqLabel(isES)}</p>
+      <CodeBlock>{prereqSteps(level, isES).join("\n")}</CodeBlock>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import AnimatedMetricValue from "@/components/AnimatedMetricValue";
 
 type Metric = {
   value: string;
@@ -52,22 +54,28 @@ export default function HeroMetrics() {
       className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full max-w-[960px] mx-auto justify-items-center"
       aria-label={isES ? "Métricas de cobertura verificada" : "Verified coverage metrics"}
     >
-      {metrics.map((m) => (
-        <div
+      {metrics.map((m, i) => (
+        <motion.div
           key={m.labelEn}
           className="hero-metric flex flex-col items-center justify-center text-center w-full min-w-0 px-2"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.15 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
         >
           <p
             className={`hero-metric-value tabular-nums ${
               m.accent === "signal" ? "text-[var(--cm-signal)]" : "text-[var(--cm-ink)]"
             }`}
           >
-            {m.value}
+            <AnimatedMetricValue
+              value={m.value}
+              pulseSignal={m.accent === "signal" && m.value.includes("%")}
+            />
           </p>
           <p className="hero-metric-label max-w-[9.5rem] sm:max-w-[10.5rem] text-balance">
             {isES ? m.labelEs : m.labelEn}
           </p>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
