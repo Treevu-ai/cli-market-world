@@ -30,7 +30,7 @@ function faqsFor(lang: "es" | "en") {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: `Build (API/MCP): Free 1.000 consultas/día; Pro USD 39/mes (10.000/día, alertas, full MCP + checkout ${MARKET_STATS.paymentsLabel}). Enterprise a medida. Intelligence (datos comerciales): lista de espera en la sección Intelligence. Listado retailer: gratis siempre.`,
+        a: `Build (API/MCP): Free 1.000 consultas/día; Starter USD 24/mes (5.000/día); Pro USD 39/mes o USD 390/año (10.000/día, alertas, full MCP + checkout ${MARKET_STATS.paymentsLabel}); Pro Founding USD 29/mes (100 plazas, precio bloqueado). Enterprise a medida. Procure Copilot (compras): planes Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
       },
     ];
   }
@@ -58,7 +58,7 @@ function faqsFor(lang: "es" | "en") {
       },
     {
       q: "How much does it cost?",
-      a: `Build (API/MCP): Free 1,000 requests/day; Pro USD 39/mo (10,000/day, alerts, full MCP + checkout ${MARKET_STATS.paymentsLabel}). Enterprise custom. Intelligence (commercial data): waitlist in the Intelligence section. Retailer listing: free forever.`,
+      a: `Build (API/MCP): Free 1,000 requests/day; Starter USD 24/mo (5,000/day); Pro USD 39/mo or USD 390/yr (10,000/day, alerts, full MCP + checkout ${MARKET_STATS.paymentsLabel}); Pro Founding USD 29/mo (100 seats, locked price). Enterprise custom. Procure Copilot (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
     },
   ];
 }

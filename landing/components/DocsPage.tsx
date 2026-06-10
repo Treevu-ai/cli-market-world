@@ -33,6 +33,7 @@ const SIDEBAR = {
   start: [
     { id: "quickstart", es: "Quickstart", en: "Quickstart" },
     { id: "auth", es: "Autenticación", en: "Authentication" },
+    { id: "billing", es: "Billing y planes", en: "Billing & plans" },
     { id: "doctor", es: "Doctor / readiness", en: "Doctor / readiness" },
   ],
   core: [
@@ -208,8 +209,43 @@ market doctor`}</CodeBlock>
           <CodeBlock>{`Authorization: Bearer sk-...`}</CodeBlock>
         </section>
 
+        <section className="mb-16 scroll-mt-24" id="billing">
+          <SectionHead n={3} title={t("Billing y planes", "Billing & plans")} />
+          <p className="text-[var(--cm-on-surface-variant)] mb-4">
+            {t(
+              "Build (API/MCP): Free, Starter ($24/mes), Pro ($39/mes o $390/año), Pro Founding ($29/mes, 100 plazas). Pagos vía PayPal y Mercado Pago.",
+              "Build (API/MCP): Free, Starter ($24/mo), Pro ($39/mo or $390/yr), Pro Founding ($29/mo, 100 seats). Payments via PayPal and Mercado Pago.",
+            )}
+          </p>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
+            {t("CHECKOUT PROGRAMÁTICO", "PROGRAMMATIC CHECKOUT")}
+          </h3>
+          <CodeBlock>{`curl -X POST ${API_URL}/billing/build-checkout \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "plan": "starter",
+    "email": "dev@example.com",
+    "return_url": "https://cli-market.dev/#pricing",
+    "cancel_url": "https://cli-market.dev/#pricing"
+  }'`}</CodeBlock>
+          <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4 mb-4">
+            {t(
+              "Valores de plan: starter | pro | pro_founding | pro_annual. La respuesta incluye approve_url para redirigir al usuario. Pro Founding usa promo founding100 en PayPal.",
+              "Plan values: starter | pro | pro_founding | pro_annual. Response includes approve_url for redirect. Pro Founding uses PayPal promo founding100.",
+            )}
+          </p>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
+          <CodeBlock>{`market register
+market upgrade --plan starter
+market upgrade --plan pro`}</CodeBlock>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
+            {t("Precios completos: ", "Full pricing: ")}{" "}
+            <a href="/#pricing" className="text-[var(--cm-mint)] underline">/#pricing</a>.
+          </p>
+        </section>
+
         <section className="mb-16 scroll-mt-24" id="doctor">
-          <SectionHead n={3} title={t("Doctor / readiness", "Doctor / readiness")} />
+          <SectionHead n={4} title={t("Doctor / readiness", "Doctor / readiness")} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               "Diagnóstico local: URL de API, salud, auth, tier, país por defecto y market-mcp en PATH.",
@@ -221,7 +257,7 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="compare">
-          <SectionHead n={4} title="Compare" />
+          <SectionHead n={5} title="Compare" />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             <code className="text-[var(--cm-mint)]">POST /products/compare</code>
             {t(" — fuzzy match multi-retailer.", " — multi-retailer fuzzy match.")}
@@ -242,7 +278,7 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="basket">
-          <SectionHead n={5} title="Basket" />
+          <SectionHead n={6} title="Basket" />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             <code className="text-[var(--cm-mint)]">POST /v1/basket/compare</code>
             {t(" — canasta multi-ítem por cadena.", " — multi-item basket by chain.")}
@@ -251,7 +287,7 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="intel">
-          <SectionHead n={6} title="Intelligence" />
+          <SectionHead n={7} title="Intelligence" />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t("Endpoints comerciales: ", "Commercial endpoints: ")}
             <code className="text-[var(--cm-mint)]">/v1/prices</code>,{" "}
@@ -264,7 +300,7 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="mcp">
-          <SectionHead n={7} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
+          <SectionHead n={8} title={`MCP Tools (${MARKET_STATS.mcpTools})`} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               `Perfil default: ${MARKET_STATS.mcpTools} herramientas (Shop · Intel · Account). Legacy: ${MARKET_STATS.mcpToolsLegacy} con aliases. Configs en `,
@@ -319,10 +355,12 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="limits">
-          <SectionHead n={8} title={t("Rate limits", "Rate limits")} />
+          <SectionHead n={9} title={t("Rate limits", "Rate limits")} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 list-disc pl-5">
             <li>Free: 1,000 {t("consultas/día", "requests/day")} · {MARKET_STATS.mcpTools} MCP tools</li>
-            <li>Pro: 10,000 {t("consultas/día", "requests/day")} · checkout · export · USD 39/mo</li>
+            <li>Starter: 5,000 {t("consultas/día", "requests/day")} · 3 API keys · USD 24/mo</li>
+            <li>Pro: 10,000 {t("consultas/día", "requests/day")} · checkout · USD 39/mo o 390/yr</li>
+            <li>Pro Founding: {t("mismos límites Pro · USD 29/mo bloqueado", "same Pro limits · locked USD 29/mo")}</li>
             <li>Enterprise: {t("límites y SLAs a medida", "custom limits + SLAs")}</li>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
@@ -334,7 +372,7 @@ market --json doctor`}</CodeBlock>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="errors">
-          <SectionHead n={9} title={t("Errores", "Errors")} />
+          <SectionHead n={10} title={t("Errores", "Errors")} />
           <p className="text-[var(--cm-on-surface-variant)] text-sm">
             {t("401 token inválido · 429 rate limit · 503 collector degradado. OpenAPI completo: ", "401 invalid token · 429 rate limit · 503 collector degraded. Full OpenAPI: ")}
             <a href={`${API_URL}/docs`} className="text-[var(--cm-mint)] underline" target="_blank" rel="noopener noreferrer">

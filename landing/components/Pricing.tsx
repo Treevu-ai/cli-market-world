@@ -5,7 +5,6 @@ import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
-import ListedPricingPanel from "@/components/ListedPricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { API_URL } from "@/lib/api";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
@@ -13,6 +12,7 @@ import {
   PRICING_TABS,
   resolvePricingAudience,
   hashForAudience,
+  isLegacyListedPricingHash,
   type PricingAudience,
 } from "@/lib/pricingAudiences";
 import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
@@ -159,6 +159,9 @@ const tiers: Tier[] = [
   },
 ];
 
+const BUILD_TIERS = tiers.filter((t) => t.name !== "Enterprise");
+const ENTERPRISE_TIER = tiers.find((t) => t.name === "Enterprise")!;
+
 function TierCard({
   tier,
   isES,
@@ -297,14 +300,19 @@ export default function Pricing() {
 
   useEffect(() => {
     const syncFromLocation = () => {
+      const hash = window.location.hash;
+      if (isLegacyListedPricingHash(hash)) {
+        window.location.replace("/retailers");
+        return;
+      }
       const { state, audience: returnAudience } = readPaymentReturnState();
       const next = returnAudience === "procure" && state ? "procure" : resolvePricingAudience();
       setAudience(next);
-      const hash = window.location.hash.replace("#", "");
-      if (hash === "pro-checkout" || hash === "pricing-build" || hash === "pricing") {
-        scrollToPricingSection(hash === "pro-checkout" ? "pro-checkout" : undefined);
-      } else if (hash === "procure" || hash === "listed" || hash === "retailers") {
-        scrollToPricingSection(hash === "retailers" ? "listed" : hash);
+      const hashId = hash.replace("#", "");
+      if (hashId === "pro-checkout" || hashId === "pricing-build" || hashId === "pricing") {
+        scrollToPricingSection(hashId === "pro-checkout" ? "pro-checkout" : undefined);
+      } else if (hashId === "procure") {
+        scrollToPricingSection("procure");
       } else if (state) {
         scrollToPricingSection(returnAudience === "procure" ? "procure" : undefined);
       }
@@ -341,6 +349,8 @@ export default function Pricing() {
               key={tab.id}
               type="button"
               role="tab"
+              id={`pricing-tab-${tab.id}`}
+              aria-controls={`pricing-panel-${tab.id}`}
               aria-selected={audience === tab.id}
               onClick={() => setAudienceTab(tab.id)}
               className={`px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all flex flex-col items-center min-w-[5.5rem] ${
@@ -364,7 +374,13 @@ export default function Pricing() {
         <h2 className="section-title">{isES ? activeTab.title_es : activeTab.title_en}</h2>
         <p className="section-intro">{isES ? activeTab.intro_es : activeTab.intro_en}</p>
 
-        <div className={audience !== "build" ? "hidden" : undefined} aria-hidden={audience !== "build"} role="tabpanel">
+        <div
+          id="pricing-panel-build"
+          className={audience !== "build" ? "hidden" : undefined}
+          aria-hidden={audience !== "build"}
+          role="tabpanel"
+          aria-labelledby="pricing-tab-build"
+        >
           <div className="inline-flex items-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-4 mt-4">
             <button
               type="button"
@@ -398,8 +414,8 @@ export default function Pricing() {
               : "Pro Founding stays $29/mo. Annual billing applies to standard Pro only."}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 max-w-[88rem] mx-auto mb-8">
-            {tiers.map((tier, i) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 max-w-6xl mx-auto mb-5">
+            {BUILD_TIERS.map((tier, i) => {
               const checkoutKind =
                 tier.checkoutKind?.type === "build-pro"
                   ? { type: "build-pro" as const, annual: billing === "annual" }
@@ -433,22 +449,43 @@ export default function Pricing() {
             })}
           </div>
 
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed font-mono mb-14 px-2">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.28 }}
+            className="max-w-6xl mx-auto mb-8 scroll-mt-24"
+          >
+            <TierCard tier={ENTERPRISE_TIER} isES={isES} billing={billing}>
+              {ENTERPRISE_TIER.href ? (
+                <a href={ENTERPRISE_TIER.href} className="btn-mint w-full max-w-xs mx-auto block text-center">
+                  {isES ? ENTERPRISE_TIER.cta_es : ENTERPRISE_TIER.cta_en}
+                </a>
+              ) : null}
+            </TierCard>
+          </motion.div>
+
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/60 max-w-3xl mx-auto leading-relaxed mb-14 px-2">
             {isES ? (
               <>
                 Pagos vía {MARKET_STATS.paymentsLabel} · Facturación USD · Sinapsis Innovadora S.A.C. · RUC
                 20613045563. Pro Founding: código <span className="text-[var(--cm-mint)]">founding100</span> al
-                checkout. Agentes y automatización:{" "}
-                <span className="text-white/80">POST {API_URL}/billing/build-checkout</span> con plan{" "}
-                <span className="text-white/80">starter | pro | pro_founding | pro_annual</span>.
+                checkout. Checkout programático para agentes:{" "}
+                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
+                  /docs#billing
+                </a>
+                .
               </>
             ) : (
               <>
                 Payments via {MARKET_STATS.paymentsLabel} · USD billing · Sinapsis Innovadora S.A.C. · tax ID
                 20613045563. Pro Founding uses promo{" "}
-                <span className="text-[var(--cm-mint)]">founding100</span> at checkout. Agents & automation:{" "}
-                <span className="text-white/80">POST {API_URL}/billing/build-checkout</span> with plan{" "}
-                <span className="text-white/80">starter | pro | pro_founding | pro_annual</span>.
+                <span className="text-[var(--cm-mint)]">founding100</span> at checkout. Programmatic checkout for
+                agents:{" "}
+                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
+                  /docs#billing
+                </a>
+                .
               </>
             )}
           </p>
@@ -471,19 +508,13 @@ export default function Pricing() {
         </div>
 
         <div
+          id="pricing-panel-procure"
           className={audience !== "procure" ? "hidden" : undefined}
           aria-hidden={audience !== "procure"}
           role="tabpanel"
+          aria-labelledby="pricing-tab-procure"
         >
           <ProcurePricingPanel />
-        </div>
-
-        <div
-          className={audience !== "listed" ? "hidden" : undefined}
-          aria-hidden={audience !== "listed"}
-          role="tabpanel"
-        >
-          <ListedPricingPanel />
         </div>
       </div>
     </section>

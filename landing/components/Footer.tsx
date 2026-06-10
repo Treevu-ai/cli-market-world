@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 import {
   SECTION_NAV,
-  PRICING_LISTED_HASH,
+  RETAILERS_PAGE,
   PRICING_PROCURE_HASH,
 } from "@/lib/siteNav";
 
@@ -86,10 +86,10 @@ export default function Footer() {
             {isES ? "Compañía" : "Company"}
           </span>
           <a
-            href={PRICING_LISTED_HASH}
+            href={RETAILERS_PAGE}
             className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
           >
-            Listed — {isES ? "góndola gratis" : "free shelf"}
+            {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
           </a>
           <a
             href={PRICING_PROCURE_HASH}
@@ -147,8 +147,8 @@ export default function Footer() {
             >
               {id === "pricing"
                 ? isES
-                  ? "Planes (Build · Procure · Listed)"
-                  : "Plans (Build · Procure · Listed)"
+                  ? "Planes (Build · Procure)"
+                  : "Plans (Build · Procure)"
                 : isES
                   ? es
                   : en}

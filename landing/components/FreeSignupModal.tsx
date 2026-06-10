@@ -8,6 +8,12 @@ import { MARKET_STATS } from "@/lib/marketStats";
 
 const PYPI_URL = MARKET_STATS.pypiUrl;
 
+const MODAL_OVERLAY =
+  "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 pointer-events-none";
+const MODAL_BACKDROP = "absolute inset-0 bg-black/50 pointer-events-auto";
+const MODAL_PANEL =
+  "relative pointer-events-auto w-full sm:max-w-md card-cyber p-6 sm:p-8 animate-fade-in";
+
 type Profile = "dev" | "business" | "other";
 
 const PROFILES = [
@@ -157,13 +163,9 @@ export default function FreeSignupModal({
   if (plan === "pro" || plan === "starter") {
     // legacy "starter" plan param supported for compat; renders Pro checkout flow
     return (
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      >
-        <div className="card-cyber w-full max-w-md p-6 sm:p-8 relative animate-fade-in">
+      <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
+        <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+        <div className={`${MODAL_PANEL} relative`}>
           <button
             onClick={onClose}
             aria-label={isES ? "Cerrar" : "Close"}
@@ -198,13 +200,9 @@ market whoami`}</pre>
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="card-cyber w-full max-w-md p-6 sm:p-8 relative animate-fade-in">
+    <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
+      <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+      <div className={`${MODAL_PANEL} relative`}>
         <button
           onClick={onClose}
           aria-label={isES ? "Cerrar" : "Close"}
