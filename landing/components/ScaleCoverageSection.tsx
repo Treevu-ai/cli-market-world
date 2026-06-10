@@ -5,6 +5,7 @@ import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
+import MoatSparkline from "@/components/MoatSparkline";
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
   farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Cruz Verde CO/CL"],
@@ -182,6 +183,10 @@ export default function ScaleCoverageSection() {
           </div>
         </div>
 
+        <div className="max-w-3xl mx-auto mb-10">
+          <MoatSparkline />
+        </div>
+
         <div className="max-w-3xl mx-auto text-left space-y-4">
           <details className="details-disclosure">
             <summary>{isES ? "Métricas técnicas del collector" : "Collector technical metrics"}</summary>
@@ -274,9 +279,6 @@ export default function ScaleCoverageSection() {
           </details>
         </div>
 
-        <p className="text-sm text-[var(--cm-on-surface-variant)]/70 mt-10">
-          {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}
-        </p>
       </div>
     </section>
   );

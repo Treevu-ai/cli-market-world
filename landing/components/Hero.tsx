@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroDemo from "@/components/HeroDemo";
+import HeroPlayground from "@/components/HeroPlayground";
 import HeroMetrics from "@/components/HeroMetrics";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
@@ -92,8 +92,8 @@ export default function Hero() {
           className="hero-terminal-subhead mt-3 max-w-[640px] text-sm"
         >
           {isES
-            ? `${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
-            : `${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
+            ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
+            : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
           <a href="#coverage" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
             {isES ? "Cobertura →" : "Coverage →"}
           </a>
@@ -166,7 +166,7 @@ export default function Hero() {
           </a>
         </div>
 
-        <HeroDemo />
+        <HeroPlayground />
       </div>
     </section>
   );
