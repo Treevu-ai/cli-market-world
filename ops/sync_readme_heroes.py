@@ -11,7 +11,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMO_GIF = ROOT / "landing" / "public" / "demo.gif"
-HERO_MARKERS = ("assets/readme-hero.", "assets/cli-market-demo.", "<!-- readme-hero -->")
+# PyPI packages: relative assets/ paths 404 on pypi.org — use hosted demo GIF.
+PYPI_HERO_URL = "https://cli-market.dev/demo.gif"
+PYPI_PACKAGE_REPOS = frozenset({"cli-market-world", "cli-market-core", "procure-copilot"})
+HERO_MARKERS = ("assets/readme-hero.", "assets/cli-market-demo.", "<!-- readme-hero -->", PYPI_HERO_URL)
 
 REPO_CONFIG: dict[str, dict] = {
     "Treevu-ai": {
@@ -219,11 +222,15 @@ def _banner_svg(title: str, subtitle: str, tagline: str) -> str:
 """
 
 
-def _hero_block(ext: str, alt: str) -> str:
+def _hero_block(ext: str, alt: str, *, repo_name: str | None = None) -> str:
+    if repo_name in PYPI_PACKAGE_REPOS and ext == "gif":
+        src = PYPI_HERO_URL
+    else:
+        src = f"assets/readme-hero.{ext}"
     return (
         "<!-- readme-hero -->\n"
         "<div align=\"center\">\n\n"
-        f"<img src=\"assets/readme-hero.{ext}\" alt=\"{alt}\" width=\"100%\" />\n\n"
+        f"<img src=\"{src}\" alt=\"{alt}\" width=\"100%\" />\n\n"
         "</div>\n\n"
     )
 
@@ -296,7 +303,7 @@ def _apply_local(repo_path: Path, name: str, cfg: dict, *, dry_run: bool) -> str
         )
 
     text = readme.read_text(encoding="utf-8")
-    new_text = _inject_hero(text, _hero_block(ext, alt))
+    new_text = _inject_hero(text, _hero_block(ext, alt, repo_name=name))
     if new_text == text:
         return "skip:already-has-hero"
     readme.write_text(new_text, encoding="utf-8")

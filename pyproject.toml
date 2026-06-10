@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cli-market-world"
-version = "1.9.17"
-description = "mcp-name: io.github.Treevu-ai/cli-market-world - CLI Market: commerce API for AI agents. 22 curated MCP tools (46 legacy), 34 indicators, 38 verified retailers in 8 countries. MIT."
+version = "1.9.18"
+description = "Commerce infrastructure for AI agents — 22 MCP tools, 68 retailers (38 verified), 8 countries, 52k+ shelf prices. pip install cli-market-world."
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{name = "CLI Market", email = "hello@cli-market.dev"}]
@@ -19,7 +19,7 @@ classifiers = [
 ]
 # Intelligence layer ships separately on PyPI as cli-market-core.
 dependencies = [
-    "cli-market-core>=1.9.17",
+    "cli-market-core>=1.9.18",
     "httpx>=0.27",
     "rich>=13.0",
     "fastapi>=0.115",
@@ -33,9 +33,11 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://cli-market.dev"
-Documentation = "https://cli-market-production.up.railway.app/docs"
-Repository = "https://github.com/Treevu-ai/cli-market-world"
-"Bug Tracker" = "https://github.com/Treevu-ai/cli-market-world/issues"
+Documentation = "https://cli-market.dev/docs"
+"MCP Tools" = "https://cli-market.dev/tools"
+Stats = "https://cli-market.dev/stats"
+"API Reference" = "https://cli-market-production.up.railway.app/docs"
+"Bug Reports" = "mailto:hello@cli-market.dev"
 
 [project.optional-dependencies]
 playwright = ["playwright>=1.45.0"]
