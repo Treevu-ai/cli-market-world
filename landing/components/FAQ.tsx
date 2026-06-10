@@ -73,13 +73,15 @@ export default function FAQ() {
 
   return (
     <section id="faq" className="landing-section animate-fade-in">
-      <div className="landing-container-wide text-center max-w-3xl mx-auto">
-        <p className="section-eyebrow mb-4">FAQ</p>
-        <h2 className="section-title">
-          {isES ? "Preguntas frecuentes." : "Frequently asked questions."}
-        </h2>
+      <div className="landing-container-wide">
+        <div className="landing-section-header text-center">
+          <p className="section-eyebrow mb-4">FAQ</p>
+          <h2 className="section-title">
+            {isES ? "Preguntas frecuentes." : "Frequently asked questions."}
+          </h2>
+        </div>
 
-        <div className="text-left mt-12 space-y-0">
+        <div className="landing-content-narrow text-left space-y-0">
           {faqs.map((faq, i) => (
             <details
               key={i}

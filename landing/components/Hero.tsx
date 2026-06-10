@@ -20,12 +20,12 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="brand-mode-terminal hero-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[92vh] flex flex-col overflow-hidden"
+      className="brand-mode-terminal hero-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden"
     >
       <div className="hero-terminal-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="hero-terminal-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
 
-      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ export default function Hero() {
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
-        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
+        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full landing-content-rail">
           <a
             href={PRICING_BUILD_HASH}
             onClick={() => recordPipInstallIntent("landing_hero")}
@@ -175,7 +175,7 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="mt-4 w-full max-w-[960px] mx-auto sm:hidden">
+        <div className="mt-4 w-full landing-content-rail sm:hidden">
           <a
             href={PRICING_BUILD_HASH}
             onClick={() => recordPipInstallIntent("landing_hero")}

@@ -105,23 +105,25 @@ export default function ScaleCoverageSection() {
 
   return (
     <section id="coverage" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
-      <div className="landing-container text-center">
-        <p className="section-eyebrow mb-4">
-          {isES ? "Escala y cobertura" : "Scale and coverage"}
-        </p>
-        <h2 className="section-title">
-          {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
-        </h2>
-        <p className="inline-flex items-center gap-2 text-xs font-mono text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 border border-[var(--cm-mint)]/30 rounded-full px-3 py-1 mb-4">
-          {priceChip} · {refreshLabel(isES)}
-        </p>
-        <p className="section-intro">
-          {isES
-            ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`
-            : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
-        </p>
+      <div className="landing-container-wide text-center">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4">
+            {isES ? "Escala y cobertura" : "Scale and coverage"}
+          </p>
+          <h2 className="section-title">
+            {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
+          </h2>
+          <p className="inline-flex items-center gap-2 text-xs font-mono text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 border border-[var(--cm-mint)]/30 rounded-full px-3 py-1 mb-4">
+            {priceChip} · {refreshLabel(isES)}
+          </p>
+          <p className="section-intro">
+            {isES
+              ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`
+              : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
+        <div className="landing-content-rail grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}
@@ -131,7 +133,7 @@ export default function ScaleCoverageSection() {
           <LatAmCoverageMap />
         </div>
 
-        <div className="mb-10 sm:mb-12 text-left max-w-3xl mx-auto">
+        <div className="landing-content-rail mb-10 sm:mb-12 text-left">
           <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3 text-center">
             {isES ? "Retailers verificados (muestra)" : "Verified retailers (sample)"}
           </p>
@@ -152,7 +154,7 @@ export default function ScaleCoverageSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
+        <div className="landing-content-rail grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
@@ -188,11 +190,11 @@ export default function ScaleCoverageSection() {
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto mb-10">
+        <div className="landing-content-rail mb-10">
           <MoatSparkline />
         </div>
 
-        <div className="max-w-3xl mx-auto text-left space-y-4">
+        <div className="landing-content-rail text-left space-y-4">
           <details className="details-disclosure">
             <summary>{isES ? "Métricas técnicas del collector" : "Collector technical metrics"}</summary>
             <div className="details-body">

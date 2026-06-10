@@ -77,11 +77,11 @@ export default function IntelligenceSection() {
   return (
     <section
       id="intelligence"
-      className="landing-section animate-fade-in scroll-mt-20"
+      className="brand-mode-terminal landing-section landing-section-glow animate-fade-in scroll-mt-20"
     >
       <div className="landing-container-wide">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 mb-3">
+        <div className="landing-section-header">
+          <div className="inline-flex items-center justify-center gap-2 mb-3">
             <p className="section-eyebrow text-[var(--cm-mint)]">Intelligence</p>
             <span className="text-xs font-semibold bg-[var(--cm-mint)]/15 text-[var(--cm-mint)] border border-[var(--cm-mint)]/30 px-2 py-0.5 rounded-full">
               {isES ? "Próximamente" : "Coming soon"}
@@ -92,14 +92,14 @@ export default function IntelligenceSection() {
               ? "Precios reales de góndola. No estimaciones de 30 días."
               : "Real shelf prices. Not 30-day estimates."}
           </h2>
-          <p className="section-intro max-w-xl">
+          <p className="section-intro">
             {isES
               ? "Para equipos de pricing, trade marketing y análisis en CPG, retail y fintech. Los catálogos son públicos; el valor está en agregar, normalizar y mantener la serie lista para análisis."
               : "For pricing, trade marketing, and analytics teams in CPG, retail, and fintech. Catalogs are public; the value is aggregating, normalizing, and keeping the series analysis-ready."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+        <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           <div className="space-y-5">
             <div className="code-block-cyber px-4 py-3 text-left font-mono text-xs text-[var(--cm-on-surface-variant)]">
               <p className="text-[10px] uppercase tracking-wider text-[var(--cm-mint)]/70 mb-2">
