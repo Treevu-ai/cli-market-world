@@ -301,6 +301,22 @@ section[id] {
   text-shadow: 0 0 28px rgba(200, 255, 0, 0.12);
 }
 
+.hero-metric-value-signal {
+  animation: hero-metric-glow 2.8s ease-in-out infinite;
+}
+
+@keyframes hero-metric-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 28px rgba(200, 255, 0, 0.15);
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow: 0 0 44px rgba(200, 255, 0, 0.42);
+    filter: brightness(1.08);
+  }
+}
+
 .hero-metric-label {
   margin-top: 0.5rem;
   font-family: var(--font-mono);

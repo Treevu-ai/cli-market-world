@@ -31,7 +31,8 @@ const mainSteps = [
 const devSteps = [
   { cmd: "market init", label: "Init" },
   { cmd: "market discover --country PE", label: "Discover" },
-  { cmd: "market tools", label: `MCP · ${MARKET_STATS.mcpTools} tools` },
+  { cmd: "market mcp-setup --ide cursor", label: "MCP setup" },
+  { cmd: "market tools", label: `${MARKET_STATS.mcpTools} tools` },
 ];
 
 export default function HowItWorks() {
@@ -84,7 +85,7 @@ export default function HowItWorks() {
         </div>
 
         <details className="details-disclosure max-w-2xl mx-auto text-left mb-8">
-          <summary>{isES ? "Ruta developer: Init · Discover · MCP" : "Developer path: Init · Discover · MCP"}</summary>
+          <summary>{isES ? "Ruta developer: Init · Discover · MCP setup" : "Developer path: Init · Discover · MCP setup"}</summary>
           <div className="details-body pt-4 space-y-3">
             {devSteps.map((s) => (
               <div key={s.cmd} className="card-cyber px-4 py-3 flex items-center justify-between gap-4">
