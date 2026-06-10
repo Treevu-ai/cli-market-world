@@ -23,8 +23,8 @@ export const MARKET_STATS = {
   pypiPackageName: "cli-market-world",
   pypiUrl: "https://pypi.org/project/cli-market-world/",
   pepyProjectUrl: "https://pepy.tech/projects/cli-market-world",
-  pepyBadgeUrl: "https://img.shields.io/badge/PyPI%20downloads-17k-00d75f?logo=pypi",
-  pypiDownloads: 17785,
+  pepyBadgeUrl: "https://img.shields.io/badge/PyPI%20downloads-20k-00d75f?logo=pypi",
+  pypiDownloads: 20196,
   // Note: pepyBadgeUrl is a custom consolidated badge (legacy + core + world).
   // The live hero "PYPI DOWNLOADS" comes from /analytics/pypi (also consolidated).
   pipInstallCmd: "pip install cli-market-world",
