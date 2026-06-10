@@ -64,6 +64,7 @@ export default function RetailersPage() {
       desc: isES
         ? "Si est\u00e1s en VTEX con cat\u00e1logo p\u00fablico, probablemente ya sos indexable. Sin token necesario."
         : "If you're on VTEX with a public catalog, you're probably already indexable. No token needed.",
+    },
     {
       step: "04",
       title: isES ? "WooCommerce: Store API o REST API" : "WooCommerce: Store API or REST API",
