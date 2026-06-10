@@ -169,7 +169,7 @@ def _load_doc_from_path(path: Path) -> dict[str, Any] | None:
         "path": _path_label(path),
         "fm": fm,
         "title": title_m.group(1).strip() if title_m else fm.get("title", path.stem),
-        "hooks": _section(body, "Hooks (elegir 1)"),
+        "hooks": _section(body, "Hook (elegir 1)") or _section(body, "Hooks (elegir 1)"),
         "post": _section(body, "Post (copiar a LinkedIn — sin link en cuerpo)")
         or _section(body, "Post"),
         "comment": _section(body, "Primer comentario"),
