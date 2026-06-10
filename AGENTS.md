@@ -62,11 +62,29 @@ Canales (un propósito por canal):
 | **command-control** | `SLACK_CHANNEL_COMMAND_CONTROL` | Panel founder 1×/día (KPIs + checklist) |
 | **suscripciones-cli-pro** | `SLACK_CHANNEL_CLI_MARKET_PRO` | Solo `[REVENUE]`: pending / activated / cancelled |
 | **funnel-cli-market** | `SLACK_CHANNEL_FUNNEL` | `[FUNNEL DIGEST]` adopción (registro, checkout) |
-| **publicaciones** | `SLACK_CHANNEL_PUBLICACIONES` | Copy listo para pegar (GTM) |
+| **publicaciones** | `SLACK_CHANNEL_PUBLICACIONES` | Índice diario GTM (gate + checklist) |
+| **linkedin-personal** | `SLACK_CHANNEL_LINKEDIN_PERSONAL` | Copy LI founder |
+| **linkedin-empresa** | `SLACK_CHANNEL_LINKEDIN_COMPANY` | Copy LI página |
+| **twitter-x** | `SLACK_CHANNEL_TWITTER` | Tweets / threads |
+| **devto** | `SLACK_CHANNEL_DEVTO` | Artículos DEV.to |
+| **reddit** | `SLACK_CHANNEL_REDDIT` | Posts Reddit |
+| **hn** | `SLACK_CHANNEL_HN` | Show HN |
+| **threads** | `SLACK_CHANNEL_THREADS` | Threads (opcional: `SLACK_MIRROR_TWITTER_TO_THREADS=1`) |
+| **instagram** | `SLACK_CHANNEL_INSTAGRAM` | Grid IG (desde Jul) |
+| **whatsapp** | `SLACK_CHANNEL_WHATSAPP` | Canal WA (desde Jul) |
+| **newsletter** | `SLACK_CHANNEL_NEWSLETTER` | Price Pulse / Beehiiv |
+| **outbound** | `SLACK_CHANNEL_OUTBOUND` | Secuencias DM retailers |
 | **bitácora** | `SLACK_CHANNEL_BITACORA` | Salud producto, deploys, go-live |
 | **revisiones-cursor** | `SLACK_CHANNEL_REVISIONES_CURSOR` | PRs / agentes |
 
-Ritual diario: `command-control` (mañana) → `briefing` → `publicaciones`; `funnel-digest` (tarde). Funnel en tiempo real solo con `SLACK_FUNNEL_REALTIME=1`.
+Ritual diario (automático vía GitHub Actions, sin terminal):
+- **07:30 PET** — `command-control-morning.yml` → `#command-control`
+- **08:00 PET (13:00 UTC)** — `daily-briefing.yml` → índice en `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
+- **tarde** — `funnel-digest-evening.yml` → `#funnel-cli-market`
+
+Manual si hace falta: `python3 ops/slack_cli.py briefing`. Funnel en tiempo real solo con `SLACK_FUNNEL_REALTIME=1`.
+
+Secrets requeridos en GitHub: `SLACK_BOT_TOKEN`, `GH_PAT` (checkout cli-market-content). El bot debe estar invitado a todos los canales GTM.
 
 ```bash
 python3 ops/slack_cli.py command-control --remote   # panel founder (checklist + KPIs + tendencias)

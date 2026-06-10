@@ -15,7 +15,8 @@ Env:
   DASHBOARD_DATA_URL              — same as ops/monday.py
   SLACK_BOT_TOKEN                 — bot con chat:write (recomendado)
   SLACK_CHANNEL_BITACORA          — default C0B6V3Y9ZSP (bitácora producto)
-  SLACK_CHANNEL_PUBLICACIONES     — default C0B6ZJ1B9B8 (publicaciones redes)
+  SLACK_CHANNEL_PUBLICACIONES     — default C0B6ZJ1B9B8 (índice GTM)
+  SLACK_CHANNEL_LINKEDIN_PERSONAL … SLACK_CHANNEL_OUTBOUND — copy por red (ver AGENTS.md)
   SLACK_WEBHOOK_BITACORA          — alternativa: webhook solo bitácora
   SLACK_WEBHOOK_PUBLICACIONES     — alternativa: webhook solo publicaciones
   LINKEDIN_CAMPAIGN_START         — ISO date for Day 1 (default 2026-06-01)
@@ -470,6 +471,24 @@ def _repo_file_link(rel_path: str) -> str:
     return f"_Repo:_ `{rel_path}`"
 
 
+def _split_slack_delivery(text: str, limit: int = 3900) -> list[str]:
+    if len(text) <= limit:
+        return [text]
+    chunks: list[str] = []
+    buf: list[str] = []
+    size = 0
+    for line in text.splitlines(keepends=True):
+        if size + len(line) > limit and buf:
+            chunks.append("".join(buf))
+            buf = []
+            size = 0
+        buf.append(line)
+        size += len(line)
+    if buf:
+        chunks.append("".join(buf))
+    return chunks
+
+
 def _slack_configured() -> bool:
     return bool(
         os.getenv("SLACK_BOT_TOKEN")
@@ -617,28 +636,26 @@ def main() -> None:
                 print("Fetching dashboard (gate + métricas para publicaciones)...")
                 data = monday.fetch_data()
             from publish_pack import (
-                build_slack_publish_messages,
+                build_gtm_channel_deliveries,
                 marketing_metrics_from_dashboard,
             )
+            from slack_notify import deliver
 
             metrics = marketing_metrics_from_dashboard(data or {})
-            publish_msgs = build_slack_publish_messages(
-                ds=ds,
+            summary, deliveries = build_gtm_channel_deliveries(
                 campaign_day=day,
                 for_date=today,
                 metrics=metrics,
                 post_utc_hour=POST_UTC_HOUR,
             )
-            for i, msg in enumerate(publish_msgs, 1):
-                prefix = (
-                    f"📣 *Publicaciones ({i}/{len(publish_msgs)})*\n\n"
-                    if len(publish_msgs) > 1
-                    else ""
-                )
-                deliver_to_publicaciones(prefix + msg)
+            deliver_to_publicaciones(summary)
+            for d in deliveries:
+                for chunk in _split_slack_delivery(d.text):
+                    deliver(chunk, channel=d.channel_id)
+            labels = ", ".join(d.label for d in deliveries) or "ninguno"
             print(
-                f"Slack → publicaciones ({len(publish_msgs)} mensaje"
-                f"{'s' if len(publish_msgs) != 1 else ''}, gate + copy listo)."
+                f"Slack → publicaciones (índice) + {len(deliveries)} canal"
+                f"{'es' if len(deliveries) != 1 else ''} GTM ({labels})."
             )
 
     # Also refresh weekly price pulse when we fetched dashboard

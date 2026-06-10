@@ -64,6 +64,13 @@ class ChannelCopy:
     asset_hint: str
 
 
+@dataclass
+class GtmChannelDelivery:
+    label: str
+    channel_id: str
+    text: str
+
+
 def marketing_metrics_from_dashboard(data: dict[str, Any]) -> dict[str, Any]:
     k = data.get("kpis") or {}
     moat = data.get("moat_summary") or {}
@@ -364,6 +371,153 @@ def _channel_blocks(
     return [ln for ln in lines if ln is not None]
 
 
+def _single_channel_slack_parts(
+    label: str,
+    path,
+    *,
+    for_date: date,
+    metrics: dict[str, Any],
+    campaign_day: int,
+) -> list[str]:
+    """Slack body lines for one GTM channel (no gate intro)."""
+    pub_date = format_publish_date(for_date)
+    r_header = ricardo_header(label, for_date).rstrip()
+    if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News") or label.startswith("Reddit"):
+        copy = _load_channel_md(path)
+        if copy:
+            return [r_header, *_channel_blocks(label, copy, metrics, campaign_day=campaign_day)]
+    if label.startswith("Twitter"):
+        tw = _load_twitter_day(path, for_date)
+        if tw:
+            post, comment = tw
+            post = apply_live_metrics(post, metrics)
+            return [
+                r_header,
+                f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
+                "",
+                "*1) THREAD / POST* _(copiar y publicar)_",
+                "",
+                slack_copy_block(post),
+                "",
+                f"💬 *RICARDO — PRIMER REPLY ({ricardo_channel_label(label)})* · `{pub_date}`",
+                "",
+                slack_copy_block(comment),
+                "",
+            ]
+    raw = path.read_text(encoding="utf-8")
+    _, body = _parse_frontmatter(raw)
+    excerpt = body.strip()
+    if len(excerpt) > 2000:
+        excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
+    return [
+        r_header,
+        f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
+        "",
+        "*1) POST*",
+        "",
+        excerpt,
+        "",
+    ]
+
+
+def _channel_delivery_preamble(
+    label: str,
+    *,
+    for_date: date,
+    metrics: dict[str, Any],
+    post_utc_hour: int,
+) -> list[str]:
+    return [
+        f"📋 *{ricardo_channel_label(label)}* · `{format_publish_date(for_date)}` · {post_utc_hour}:00 UTC",
+        "",
+        *gate_slack_lines(metrics),
+        "",
+        "*Línea moat (pegar si el post pide cifras)*",
+        moat_paste_line(metrics),
+        "",
+    ]
+
+
+def build_gtm_channel_deliveries(
+    *,
+    campaign_day: int,
+    for_date: date,
+    metrics: dict[str, Any],
+    post_utc_hour: int,
+) -> tuple[str, list[GtmChannelDelivery]]:
+    """Summary → #publicaciones; copy → canal Slack de cada red."""
+    from slack_notify import (
+        channel_publicaciones,
+        channel_threads,
+        slack_channel_for_gtm_label,
+    )
+
+    pub_date = format_publish_date(for_date)
+    channel_items = channels_for_date(for_date, campaign_day)
+    mirror_threads = os.getenv("SLACK_MIRROR_TWITTER_TO_THREADS", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+    summary = [
+        f"📋 *RICARDO — ÍNDICE PUBLICACIONES* · *{pub_date}*",
+        f"Hora sugerida: *{post_utc_hour}:00 UTC*",
+        "",
+        *gate_slack_lines(metrics),
+        "",
+    ]
+    if not channel_items:
+        summary.append("⚠️ Sin borradores activos para hoy en content repo.")
+        summary.append("")
+        return "\n".join(summary), []
+
+    summary.append("*Canales hoy* _(copy en cada canal Slack de la red)_")
+    for label, path in channel_items:
+        ch = slack_channel_for_gtm_label(label) or channel_publicaciones()
+        summary.append(f"• *{label}* → `{rel_to_content(path)}` · Slack `{ch}`")
+    summary += [
+        "",
+        f"_Cerrar GTM:_ `cd cli-market-content && {publish_close_command(for_date)}`",
+        "",
+        build_publish_checklist_message(
+            campaign_day=campaign_day,
+            for_date=for_date,
+            gate_pass=bool(metrics.get("gate_pass")),
+        ),
+    ]
+
+    deliveries: list[GtmChannelDelivery] = []
+    for label, path in channel_items:
+        parts = _channel_delivery_preamble(
+            label, for_date=for_date, metrics=metrics, post_utc_hour=post_utc_hour
+        )
+        parts.extend(_single_channel_slack_parts(
+            label, path, for_date=for_date, metrics=metrics, campaign_day=campaign_day
+        ))
+        parts += [
+            "---",
+            f"`{publish_close_command(for_date)}` cuando publiques",
+        ]
+        channel_id = slack_channel_for_gtm_label(label) or channel_publicaciones()
+        deliveries.append(
+            GtmChannelDelivery(label=label, channel_id=channel_id, text="\n".join(parts))
+        )
+        if mirror_threads and label.startswith("Twitter"):
+            deliveries.append(
+                GtmChannelDelivery(
+                    label="Threads (mirror X)",
+                    channel_id=channel_threads(),
+                    text=(
+                        "🧵 *Mismo copy para Threads* — adaptar longitud/formato si hace falta\n\n"
+                        + deliveries[-1].text
+                    ),
+                )
+            )
+
+    return "\n".join(summary), deliveries
+
+
 def _split_messages(chunks: list[str]) -> list[str]:
     """Split into Slack-safe messages."""
     messages: list[str] = []
@@ -416,48 +570,15 @@ def build_slack_publish_messages(
 
     body_parts: list[str] = []
     for label, path in channel_items:
-        r_header = ricardo_header(label, for_date).rstrip()
-        if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News") or label.startswith("Reddit"):
-            copy = _load_channel_md(path)
-            if copy:
-                body_parts.append(r_header)
-                body_parts.extend(
-                    _channel_blocks(label, copy, metrics, campaign_day=campaign_day)
-                )
-                continue
-        if label.startswith("Twitter"):
-            tw = _load_twitter_day(path, for_date)
-            if tw:
-                post, comment = tw
-                post = apply_live_metrics(post, metrics)
-                body_parts += [
-                    r_header,
-                    f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
-                    "",
-                    "*1) THREAD / POST* _(copiar y publicar)_",
-                    "",
-                    slack_copy_block(post),
-                    "",
-                    f"💬 *RICARDO — PRIMER REPLY ({ricardo_channel_label(label)})* · `{pub_date}`",
-                    "",
-                    slack_copy_block(comment),
-                    "",
-                ]
-                continue
-        raw = path.read_text(encoding="utf-8")
-        _, body = _parse_frontmatter(raw)
-        excerpt = body.strip()
-        if len(excerpt) > 2000:
-            excerpt = excerpt[:2000] + "\n\n… _(ver archivo completo)_"
-        body_parts += [
-            r_header,
-            f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
-            "",
-            "*1) POST*",
-            "",
-            excerpt,
-            "",
-        ]
+        body_parts.extend(
+            _single_channel_slack_parts(
+                label,
+                path,
+                for_date=for_date,
+                metrics=metrics,
+                campaign_day=campaign_day,
+            )
+        )
 
     backlog = [
         "---",
