@@ -1239,16 +1239,12 @@ body > div[id*="paypal-cart"] {
   inset: 0;
   display: flex;
   align-items: center;
-  opacity: 0;
-  visibility: hidden;
   pointer-events: none;
   will-change: opacity, transform;
+  z-index: 1;
 }
 
 .scroll-story-act-active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
   z-index: 2;
 }
 
