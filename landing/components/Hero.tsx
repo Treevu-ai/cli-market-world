@@ -8,7 +8,7 @@ import HeroMetrics from "@/components/HeroMetrics";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { PRICING_LISTED_HASH, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { RETAILERS_PAGE, PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -122,7 +122,7 @@ export default function Hero() {
               {isES ? "Para developers" : "For developers"} · Build
             </span>
             <span className="text-base font-semibold">
-              <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
+              {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
             </span>
             <code className="font-mono text-xs text-[var(--cm-on-mint)]/85">{MARKET_STATS.pipInstallCmd}</code>
             {pypiChip ? (
@@ -151,11 +151,11 @@ export default function Hero() {
           </a>
 
           <a
-            href={PRICING_LISTED_HASH}
+            href={RETAILERS_PAGE}
             className="hero-terminal-card group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-text-secondary)]">
-              {isES ? "Para retailers" : "For retailers"} · Listed
+              {isES ? "Para retailers" : "For retailers"}
             </span>
             <span className="text-base font-semibold text-[var(--cm-ink)]">
               {isES ? "Tu góndola, visible — gratis →" : "Your shelf, visible — free →"}
