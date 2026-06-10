@@ -9,8 +9,8 @@ import { useDemoCompareRows } from "@/hooks/useDemoCompareRows";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 function scrollViewports() {
-  if (typeof window === "undefined") return 5;
-  return window.matchMedia("(max-width: 768px)").matches ? 3.75 : 5;
+  if (typeof window === "undefined") return 4.25;
+  return window.matchMedia("(max-width: 768px)").matches ? 3.25 : 4.25;
 }
 
 const ACTS = [
@@ -316,9 +316,11 @@ export default function ScrollStorySection() {
 
     const actEls = gsap.utils.toArray<HTMLElement>(".scroll-story-act", stage);
     const dots = gsap.utils.toArray<HTMLButtonElement>(".scroll-story-dot", progress);
-    const HOLD = 1;
-    const SWAP = 0.22;
+    const actCount = actEls.length;
+    const HOLD = 0.85;
+    const CROSSFADE = 0.18;
     let activeIdx = 0;
+    let jumpTween: gsap.core.Tween | null = null;
 
     const emitStoryAct = (idx: number) => {
       window.dispatchEvent(new CustomEvent("scroll-story-act", { detail: { actIndex: idx } }));
@@ -339,15 +341,18 @@ export default function ScrollStorySection() {
       emitStoryAct(idx);
     };
 
-    const actVisibleFrom: number[] = [0];
-    const actSnapProgress: number[] = [];
+    const actIndexFromProgress = (progress: number) =>
+      Math.min(actCount - 1, Math.max(0, Math.round(progress * (actCount - 1))));
+
+    const snapProgressForAct = (idx: number) =>
+      actCount <= 1 ? 0 : Math.min(idx, actCount - 1) / (actCount - 1);
 
     const ctx = gsap.context(() => {
-      gsap.set(actEls[0], { autoAlpha: 1, y: 0, pointerEvents: "auto" });
-      gsap.set(actEls.slice(1), { autoAlpha: 0, y: 18, pointerEvents: "none" });
+      gsap.set(actEls[0], { autoAlpha: 1, y: 0, pointerEvents: "auto", zIndex: 2 });
+      gsap.set(actEls.slice(1), { autoAlpha: 0, y: 16, pointerEvents: "none", zIndex: 1 });
       markAct(0);
 
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
       let cursor = HOLD;
 
       for (let i = 1; i < actEls.length; i++) {
@@ -355,69 +360,77 @@ export default function ScrollStorySection() {
         const cur = actEls[i];
         const swapAt = cursor;
 
-        tl.to(
-          prev,
-          { autoAlpha: 0, y: -14, duration: SWAP, pointerEvents: "none", ease: "power2.in" },
-          swapAt,
-        ).to(
-          cur,
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: SWAP,
-            pointerEvents: "auto",
-            ease: "power2.out",
-          },
-          swapAt + SWAP,
-        );
+        tl.addLabel(`act-${i}`, swapAt)
+          .to(
+            prev,
+            {
+              autoAlpha: 0,
+              y: -10,
+              duration: CROSSFADE,
+              pointerEvents: "none",
+              zIndex: 1,
+            },
+            swapAt,
+          )
+          .to(
+            cur,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: CROSSFADE,
+              pointerEvents: "auto",
+              zIndex: 2,
+            },
+            swapAt,
+          );
 
-        actVisibleFrom.push(swapAt + SWAP);
-        cursor = swapAt + SWAP * 2 + HOLD;
+        cursor = swapAt + CROSSFADE + HOLD;
       }
 
       tl.to({}, { duration: HOLD }, cursor);
-      const total = tl.duration();
-
-      for (let i = 0; i < actEls.length; i++) {
-        const start = actVisibleFrom[i];
-        const end = i < actEls.length - 1 ? actVisibleFrom[i + 1] : total;
-        actSnapProgress.push((start + end) / 2 / total);
-      }
 
       const st = ScrollTrigger.create({
         trigger: section,
         start: "top top",
         end: () => `+=${window.innerHeight * scrollViewports()}`,
         pin,
-        scrub: 0.65,
+        pinSpacing: true,
+        pinType: "fixed",
+        scrub: true,
         anticipatePin: 1,
+        fastScrollEnd: true,
         invalidateOnRefresh: true,
         animation: tl,
         snap: {
-          snapTo: actSnapProgress,
-          duration: { min: 0.2, max: 0.45 },
-          delay: 0.08,
+          snapTo: (progress) => snapProgressForAct(actIndexFromProgress(progress)),
+          duration: { min: 0.18, max: 0.42 },
+          delay: 0.06,
+          ease: "power2.inOut",
+          directional: true,
         },
         onUpdate: (self) => {
-          const t = self.progress * total;
-          let idx = 0;
-          for (let i = actVisibleFrom.length - 1; i >= 0; i--) {
-            if (t >= actVisibleFrom[i]) {
-              idx = i;
-              break;
-            }
-          }
-          markAct(idx);
+          markAct(actIndexFromProgress(self.progress));
           if (cue) {
-            gsap.set(cue, { autoAlpha: idx === 0 && self.progress < 0.1 ? 1 : 0 });
+            gsap.set(cue, { autoAlpha: self.progress < 0.06 ? 1 : 0 });
           }
         },
       });
 
       const jumpToAct = (idx: number) => {
-        const target = actSnapProgress[Math.min(idx, actSnapProgress.length - 1)] ?? 0;
+        const target = snapProgressForAct(idx);
         const y = st.start + (st.end - st.start) * target;
-        window.scrollTo({ top: y, behavior: "smooth" });
+        jumpTween?.kill();
+        const scrollPos = { y: window.scrollY };
+        jumpTween = gsap.to(scrollPos, {
+          y,
+          duration: 0.55,
+          ease: "power2.inOut",
+          overwrite: true,
+          onUpdate: () => window.scrollTo(0, scrollPos.y),
+          onComplete: () => {
+            jumpTween = null;
+          },
+        });
       };
 
       dots.forEach((dot, i) => {
@@ -442,12 +455,16 @@ export default function ScrollStorySection() {
       window.addEventListener("resize", onResize);
       window.addEventListener("keydown", onKey);
       return () => {
+        jumpTween?.kill();
         window.removeEventListener("resize", onResize);
         window.removeEventListener("keydown", onKey);
       };
     }, section);
 
-    return () => ctx.revert();
+    return () => {
+      jumpTween?.kill();
+      ctx.revert();
+    };
   }, []);
 
   return (
