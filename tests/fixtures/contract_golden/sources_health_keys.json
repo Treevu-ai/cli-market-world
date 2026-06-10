@@ -1,0 +1,17 @@
+{
+  "root": ["generated_at", "summary", "stores"],
+  "summary": ["ok", "partial", "dead", "total"],
+  "store_item": [
+    "store",
+    "store_name",
+    "country",
+    "success_pct",
+    "consecutive_failures",
+    "state",
+    "last_success",
+    "last_error",
+    "last_seen",
+    "fresh_24h",
+    "coverage_7d_pct"
+  ]
+}

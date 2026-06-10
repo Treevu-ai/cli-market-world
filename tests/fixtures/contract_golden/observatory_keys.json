@@ -1,0 +1,21 @@
+[
+  "window_days",
+  "maa",
+  "maa_proxy",
+  "maa_display",
+  "telemetry_maturity",
+  "maa_public_threshold",
+  "unique_agents",
+  "calls_total",
+  "calls_success",
+  "success_rate",
+  "countries_active",
+  "retailers_queried",
+  "mcp_retention_7d",
+  "mcp_retention_30d",
+  "weekly_agent_growth",
+  "top_tools",
+  "top_retailers",
+  "top_countries",
+  "telemetry_enabled"
+]

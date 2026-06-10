@@ -5,6 +5,7 @@ Endpoints:
   GET /health            Liveness check
   GET /health/collector  Collector freshness (last run, age, store coverage)
   GET /v1/sources/health Per-store scraping health (success rate + freshness)
+  GET /v1/capabilities   Public commerce capability matrix (checkout scope, payments)
   GET /lines             Catalog of business lines with their stores
   GET /stores            Catalog of retailers (filterable by country/line)
   GET /countries         Catalog of countries with store lists
@@ -195,6 +196,14 @@ def health_collector():
         "stores_total": len(STORES),
         "runs_total": total_runs,
     }
+
+
+@router.get("/v1/capabilities")
+def commerce_capabilities():
+    """Public matrix: what checkout does (CLI Market internal payment) vs retailer fulfillment."""
+    from market_core.commerce_capabilities import get_commerce_capabilities
+
+    return get_commerce_capabilities()
 
 
 @router.get("/v1/sources/health")

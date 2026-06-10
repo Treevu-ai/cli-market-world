@@ -37,7 +37,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas
 - 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
-- 🛍️ **Compra** — checkout con PayPal o QR (Yape / Plin)
+- 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
@@ -59,6 +59,8 @@ market ask "compra arroz al mejor precio"
 market intel indicators --country PE
 market intel enrichment -c PE
 ```
+
+**¿Qué hace `market checkout`?** Crea una orden en CLI Market y abre el pago (Yape/Plin manual, PayPal/MP vía gateway). **No** completa compras en Wong, Rappi ni Mercado Libre. Matriz completa: `GET /v1/capabilities`.
 
 #### 💵 Planes (simplificado — foco en 1 ICP principal: AI Agent Builders)
 
@@ -109,7 +111,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
 - 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
-- 🛍️ **Buy** — checkout with PayPal or QR (Yape / Plin)
+- 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
@@ -131,6 +133,8 @@ market ask "buy rice at the best price"
 market intel indicators --country PE
 market intel enrichment -c PE
 ```
+
+**What does `market checkout` do?** Creates a CLI Market order and opens payment (manual Yape/Plin, PayPal/MP via gateway). It does **not** complete purchases on Wong, Rappi, or Mercado Libre. Full matrix: `GET /v1/capabilities`.
 
 #### 💵 Pricing (simplified — focus on 1 primary ICP: AI Agent Builders)
 
@@ -164,7 +168,7 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 
 - **[Docs — quick start & MCP](https://cli-market.dev/docs)** — install, auth, compare, basket, intel, MCP setup
 - **[Use cases & pricing](https://cli-market.dev/#pricing)** — AI agent builders, procurement, intelligence pilots
-- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics (when gate open)
+- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics; **MAA** (Monthly Active Agents) is the north star
 
 ---
 

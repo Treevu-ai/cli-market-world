@@ -1,7 +1,8 @@
-"""Public cached compare demo for landing (no API key).
+"""Public demo flows for landing and `market demo` (no account).
 
 Endpoints:
-  GET /public/demo/compare?q=arroz   Whitelisted queries, 1h cache, IP rate limited.
+  POST /public/demo/session          Issue short-lived demo token (search/compare only)
+  GET  /public/demo/compare?q=arroz  Whitelisted queries, 1h cache, IP rate limited.
 """
 
 from __future__ import annotations
@@ -12,7 +13,8 @@ import os
 import time
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
+from pydantic import BaseModel
 
 from routers.search import SearchRequest, _compare_products
 from server_deps import check_rate_limit
@@ -71,6 +73,36 @@ def _wrap_payload(data: dict, *, cached_at: float | None, stale: bool, seed: boo
 async def _refresh_query(query: str) -> dict:
     body = SearchRequest(query=query, limit=5)
     return await _compare_products(body)
+
+
+class DemoSessionRequest(BaseModel):
+    fingerprint: str = ""
+
+
+@router.post("/demo/session")
+def create_demo_session(
+    request: Request,
+    body: DemoSessionRequest | None = None,
+    x_demo_fingerprint: str | None = Header(None, alias="X-Demo-Fingerprint"),
+):
+    """Mint a temporary demo token — search/compare only, no checkout."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"demo-session:{client_ip}")
+    from market_core.demo_tokens import issue_demo_token
+
+    fp = (x_demo_fingerprint or (body.fingerprint if body else "") or "").strip()
+    session = issue_demo_token(client_ip=client_ip, fingerprint=fp)
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "demo_session_created",
+            session_id=session.get("session_id"),
+            meta={"agent_source": "demo"},
+        )
+    except Exception:
+        pass
+    return {"ok": True, **session}
 
 
 @router.get("/demo/compare")

@@ -24,6 +24,8 @@ FUNNEL_EVENTS = frozenset(
         "tutorial_completed",
         "mcp_setup_completed",
         "use_case_demo",
+        "demo_session_created",
+        "demo_first_tool_call",
         "activated",
     }
 )
@@ -40,6 +42,8 @@ _DIGEST_EVENTS = frozenset(
         "tutorial_completed",
         "mcp_setup_completed",
         "use_case_demo",
+        "demo_session_created",
+        "demo_first_tool_call",
         "activated",
     }
 )

@@ -1,0 +1,41 @@
+name: Auth token expiry reminder
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          ref: main
+          path: .deps/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install deps
+        run: pip install -e ".deps/cli-market-core"
+
+      - name: Send session expiry reminders
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
+          BILLING_FROM_EMAIL: ${{ secrets.BILLING_FROM_EMAIL }}
+        run: python3 ops/auth_token_expiry_reminder.py --json

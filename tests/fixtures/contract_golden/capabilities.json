@@ -1,0 +1,22 @@
+{
+  "checkout": {
+    "scope": "cli_market_internal",
+    "retailer_fulfillment": false,
+    "receipt": "manual_boleta_not_sunat"
+  },
+  "payments": {
+    "methods": ["yape", "plin", "paypal", "mercadopago", "lemon", "wise"],
+    "confirmation_modes": {
+      "yape": "manual",
+      "plin": "manual",
+      "paypal": "aggregator",
+      "mercadopago": "aggregator",
+      "lemon": "aggregator",
+      "wise": "manual"
+    }
+  },
+  "search_compare": {
+    "source": "scraping_and_connectors",
+    "health_endpoint": "/v1/sources/health"
+  }
+}
