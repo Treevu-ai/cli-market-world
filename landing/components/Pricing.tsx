@@ -358,7 +358,7 @@ export default function Pricing() {
         <div
           role="tablist"
           aria-label={isES ? "Líneas de producto" : "Product lines"}
-          className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-6 max-w-full"
+          className="flex flex-row flex-nowrap items-stretch justify-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-6 w-full max-w-[320px] sm:max-w-[420px] mx-auto"
         >
           {PRICING_TABS.map((tab) => (
             <button
@@ -369,15 +369,15 @@ export default function Pricing() {
               aria-controls={`pricing-panel-${tab.id}`}
               aria-selected={audience === tab.id}
               onClick={() => setAudienceTab(tab.id)}
-              className={`px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all flex flex-col items-center min-w-[5.5rem] ${
+              className={`flex-1 min-w-0 px-3 sm:px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex flex-col items-center justify-center ${
                 audience === tab.id
                   ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
                   : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
-              <span>{tab.label}</span>
+              <span className="whitespace-nowrap">{tab.label}</span>
               <span
-                className={`text-[10px] font-mono font-normal mt-0.5 ${
+                className={`hidden sm:inline text-[10px] font-mono font-normal mt-0.5 ${
                   audience === tab.id ? "text-[var(--cm-on-mint)]/75" : "text-[var(--cm-on-surface-variant)]/60"
                 }`}
               >

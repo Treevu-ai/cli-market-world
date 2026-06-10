@@ -22,7 +22,7 @@ export default function HeroDemo() {
           }
           width={920}
           height={520}
-          className="w-full h-auto block"
+          className="w-full max-h-[min(40dvh,340px)] sm:max-h-none h-auto object-contain object-center block mx-auto"
           loading="eager"
           decoding="async"
         />
