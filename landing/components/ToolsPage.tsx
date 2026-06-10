@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import PrereqBlock from "@/components/PrereqBlock";
+import { recordPipInstallIntent } from "@/lib/funnel";
 
 const MCP_API_URL = "https://cli-market-production.up.railway.app";
 
@@ -82,6 +84,10 @@ export default function ToolsPage() {
 
   const bundleTools = MARKET_STATS.mcpBundles[bundleTab];
 
+  useEffect(() => {
+    recordPipInstallIntent("tools_page");
+  }, []);
+
   return (
     <>
       <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
@@ -109,6 +115,7 @@ export default function ToolsPage() {
 
       <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
         <div className="max-w-[720px] mx-auto">
+          <PrereqBlock level="mcp" isES={isES} />
           <div className="flex flex-wrap gap-2 mb-4 justify-center">
             {(Object.keys(MCP_CONFIG) as (keyof typeof MCP_CONFIG)[]).map((k) => (
               <button

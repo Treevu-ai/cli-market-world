@@ -11,6 +11,7 @@ export type FunnelEvent =
   | "starter_subscribe"
   | "starter_request"
   | "request_pro"
+  | "use_case_demo"
   | "activated";
 
 function newSessionId(): string {
@@ -82,4 +83,12 @@ export function scrollToProCheckout(): void {
 
 export function scrollToPricing(): void {
   document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Funnel: user opened a terminalizer use-case demo modal. */
+export function recordUseCaseDemoOpen(useCaseId: string): void {
+  recordFunnelEvent("use_case_demo", {
+    meta: { use_case_id: useCaseId, source: "landing_casos" },
+    dedupe: false,
+  });
 }
