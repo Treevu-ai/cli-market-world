@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
+import { recordUseCaseDemoOpen } from "@/lib/funnel";
 import type { UseCaseDemo } from "@/lib/useCaseDemos";
 
 const OVERLAY =
@@ -21,6 +22,11 @@ export default function UseCaseDemoModal({
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
+
+  useEffect(() => {
+    if (!open || !useCase) return;
+    recordUseCaseDemoOpen(useCase.id);
+  }, [open, useCase]);
 
   useEffect(() => {
     if (!open) return;

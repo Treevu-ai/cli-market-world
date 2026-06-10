@@ -5,7 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { sinapsisBillingPolicy, paymentsChannelsShort } from "@/lib/billingCopy";
-import { prereqLabel, prereqSteps, type PrereqLevel } from "@/lib/docsInstall";
+import PrereqBlock from "@/components/PrereqBlock";
 
 type SnippetTab = "curl" | "python" | "mcp";
 type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
@@ -491,15 +491,6 @@ market --json doctor`}</CodeBlock>
           </div>
         </div>
       </aside>
-    </div>
-  );
-}
-
-function PrereqBlock({ level, isES }: { level: PrereqLevel; isES: boolean }) {
-  return (
-    <div className="mb-6 rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-4 py-3">
-      <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80 mb-2 tracking-widest">{prereqLabel(isES)}</p>
-      <CodeBlock>{prereqSteps(level, isES).join("\n")}</CodeBlock>
     </div>
   );
 }

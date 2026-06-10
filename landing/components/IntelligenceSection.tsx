@@ -124,6 +124,28 @@ export default function IntelligenceSection() {
               </div>
             ))}
 
+            <div className="rounded-xl border border-[var(--cm-mint)]/35 bg-[var(--cm-mint)]/5 p-5 space-y-3">
+              <p className="text-xs font-semibold text-[var(--cm-mint)] uppercase tracking-wider">
+                {isES ? "Hoy en Build" : "Available in Build today"}
+              </p>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                {isES
+                  ? "Intel MCP y export ya están en planes Build: Starter ($24/mes) para export CSV/JSON; Pro ($39/mes) para checkout retail, alertas y el bundle intel completo."
+                  : "Intel MCP and export are already on Build plans: Starter ($24/mo) for CSV/JSON export; Pro ($39/mo) for retail checkout, alerts, and the full intel bundle."}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a href="/#pricing" className="btn-mint text-xs px-4 py-2">
+                  {isES ? "Ver Build →" : "See Build →"}
+                </a>
+                <a
+                  href="/docs#intel"
+                  className="text-xs font-mono text-[var(--cm-mint)] hover:underline self-center"
+                >
+                  {isES ? "Docs market intel →" : "market intel docs →"}
+                </a>
+              </div>
+            </div>
+
             <div className="mt-8 rounded-xl border border-[var(--cm-outline-variant)]/30 p-5 space-y-3">
               <p className="text-xs font-semibold text-[var(--cm-on-surface-variant)]/60 uppercase tracking-wider mb-3">
                 {isES ? "vs. el status quo" : "vs. the status quo"}

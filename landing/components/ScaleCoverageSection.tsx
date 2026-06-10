@@ -56,6 +56,9 @@ export default function ScaleCoverageSection() {
         <h2 className="section-title">
           {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
         </h2>
+        <p className="inline-flex items-center gap-2 text-xs font-mono text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 border border-[var(--cm-mint)]/30 rounded-full px-3 py-1 mb-4">
+          {priceChip} · {refreshLabel(isES)}
+        </p>
         <p className="section-intro">
           {isES
             ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`

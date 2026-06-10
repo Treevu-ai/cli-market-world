@@ -1,10 +1,17 @@
 "use client";
+import { useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import PrereqBlock from "@/components/PrereqBlock";
+import { recordPipInstallIntent } from "@/lib/funnel";
 
 export default function QuickstartAPI() {
   const { lang } = useLang();
   const isES = lang === "es";
+
+  useEffect(() => {
+    recordPipInstallIntent("api_section");
+  }, []);
 
   return (
     <section id="api" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
@@ -20,6 +27,7 @@ export default function QuickstartAPI() {
         </p>
 
         <div className="text-left space-y-4 w-full max-w-[560px] min-w-0 mx-auto">
+          <PrereqBlock level="session" isES={isES} />
           <div className="code-block-cyber px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-[var(--cm-outline-variant)]/30">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
