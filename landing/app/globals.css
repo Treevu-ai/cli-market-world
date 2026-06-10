@@ -58,6 +58,7 @@
   --cm-gutter: 24px;
   --cm-content-max: 1200px;
   --cm-container-max: 1280px;
+  --cm-sidenav-width: 3rem;
 
   /* Legacy Wise tokens — kept for sections not yet migrated */
   --wise-green: var(--cm-data);
@@ -130,16 +131,8 @@ section[id] {
   scroll-margin-top: 80px;
 }
 
-.landing-container {
-  width: 100%;
-  max-width: var(--cm-content-max);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
-  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
-  min-width: 0;
-}
-
+/* One horizontal rail — aligned with navbar / footer */
+.landing-container,
 .landing-container-wide {
   width: 100%;
   max-width: var(--cm-container-max);
@@ -148,6 +141,70 @@ section[id] {
   padding-left: max(var(--cm-gutter), env(safe-area-inset-left, 0px));
   padding-right: max(var(--cm-gutter), env(safe-area-inset-right, 0px));
   min-width: 0;
+}
+
+/* Primary content column inside sections (1200px) */
+.landing-content-rail {
+  width: 100%;
+  max-width: var(--cm-content-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Modals — center in content column (not full viewport) when SideNav is visible */
+.landing-modal-overlay {
+  position: fixed;
+  inset: 0;
+}
+
+@media (min-width: 1280px) {
+  .landing-modal-overlay {
+    left: var(--cm-sidenav-width);
+  }
+}
+
+.landing-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.landing-modal-panel {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hero playground — shared terminal chrome */
+.hero-playground-terminal {
+  width: 100%;
+  border-radius: var(--cm-radius-md);
+  border: 1px solid color-mix(in srgb, var(--cm-data) 35%, transparent);
+  background: #0a0a0a;
+  box-shadow: 0 0 40px rgba(58, 254, 207, 0.12);
+  overflow: hidden;
+  text-align: left;
+}
+
+/* Prose / headers (672px) */
+.landing-content-narrow {
+  width: 100%;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing-section-header {
+  text-align: center;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 3rem;
+}
+
+.landing-section-header .section-intro {
+  margin-bottom: 0;
 }
 
 /* Cyber design utilities */
@@ -485,28 +542,63 @@ section[id] {
 .hero-term-live {
   display: flex;
   flex-direction: column;
-  min-height: 200px;
-  max-height: min(28dvh, 260px);
+  width: 100%;
 }
 
 .hero-term-live-output {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  aspect-ratio: 2.35 / 1;
+  max-height: min(28dvh, 260px);
+  min-height: 180px;
   padding: clamp(12px, 2.5%, 28px);
   font-family: var(--font-mono);
   font-size: clamp(10px, 1.45vw, 14px);
   line-height: 1.65;
   overflow-y: auto;
+  background: #0a0a0a;
+  position: relative;
+}
+
+.hero-term-live-output::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0 1px, transparent 1px 3px);
+}
+
+.hero-term-live-output .hero-term-line,
+.hero-term-live-output .hero-term-row {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-term-live-form {
-  padding: 0.75rem 1rem 1rem;
+  padding: 0.75rem clamp(12px, 2.5%, 28px) 1rem;
   background: #070707;
+  border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 30%, transparent);
+}
+
+.hero-term-live-key-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.hero-term-live-cmd-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .hero-term-key-input,
 .hero-term-cmd-input {
-  width: 100%;
+  min-width: 0;
+  flex: 1 1 8rem;
   background: transparent;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 40%, transparent);
   border-radius: var(--cm-radius-sm);
@@ -514,7 +606,6 @@ section[id] {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--cm-ink);
-  margin-bottom: 0.5rem;
 }
 
 .hero-term-cmd-input {

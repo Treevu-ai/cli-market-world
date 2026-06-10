@@ -30,7 +30,7 @@ export default function Home() {
           <ScrollStorySection />
           <section
             id="hero-playground-mobile"
-            className="md:hidden landing-container pb-12 -mt-2 scroll-mt-20"
+            className="md:hidden landing-container-wide pb-12 -mt-2 scroll-mt-20 text-center"
             aria-label="CLI Market playground"
           >
             <HeroPlayground />

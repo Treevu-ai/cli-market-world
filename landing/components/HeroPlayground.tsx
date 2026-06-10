@@ -277,8 +277,8 @@ export default function HeroPlayground() {
   };
 
   return (
-    <div className="mt-12 w-full max-w-[920px]">
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+    <div className="mt-12 w-full landing-content-rail text-left">
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-4 w-full">
         <button
           type="button"
           onClick={() => setMode("demo")}
@@ -299,7 +299,7 @@ export default function HeroPlayground() {
       </div>
 
       <div
-        className="rounded-xl border border-[var(--cm-mint)]/35 bg-[#0a0a0a] shadow-[0_0_40px_rgba(58,254,207,0.12)] overflow-hidden text-left"
+        className="hero-playground-terminal"
         aria-label={isES ? "Terminal CLI Market" : "CLI Market terminal"}
       >
         {mode === "demo" ? (
@@ -343,24 +343,24 @@ export default function HeroPlayground() {
                 <div className="hero-term-line hero-term-muted">{isES ? "Consultando API…" : "Calling API…"}</div>
               ) : null}
             </div>
-            <form onSubmit={onSubmit} className="hero-term-live-form border-t border-[var(--cm-outline-variant)]/30">
+            <form onSubmit={onSubmit} className="hero-term-live-form">
               <label className="sr-only" htmlFor="hero-api-key">
                 API key
               </label>
-              <div className="flex flex-wrap gap-2 items-center">
+              <div className="hero-term-live-key-row">
                 <input
                   id="hero-api-key"
                   type="password"
                   value={apiKey}
                   onChange={(e) => persistKey(e.target.value)}
                   placeholder="sk-..."
-                  className="hero-term-key-input flex-1 min-w-[140px]"
+                  className="hero-term-key-input"
                   autoComplete="off"
                 />
                 {!apiKey.startsWith("sk-") ? (
                   <button
                     type="button"
-                    className="hero-playground-get-key"
+                    className="hero-playground-get-key shrink-0"
                     disabled={claimingKey}
                     onClick={() => void claimFreeKey()}
                   >
@@ -374,13 +374,13 @@ export default function HeroPlayground() {
                   </button>
                 ) : null}
               </div>
-              <div className="flex gap-2 w-full mt-2">
-                <span className="hero-term-cmd py-2 shrink-0">$</span>
+              <div className="hero-term-live-cmd-row">
+                <span className="hero-term-cmd shrink-0">$</span>
                 <input
                   ref={cmdInputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="hero-term-cmd-input flex-1"
+                  className="hero-term-cmd-input"
                   spellCheck={false}
                   aria-label={isES ? "Comando" : "Command"}
                 />
