@@ -1838,6 +1838,41 @@ body > div[id*="paypal-cart"] {
   }
 }
 
+/* ── Active brand ticker (/retailers) — one name at a time ── */
+.brand-ticker .brand-ticker-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 20px;
+  padding: 0 24px;
+  flex-wrap: wrap;
+}
+
+.brand-ticker-label,
+.brand-ticker-meta {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cm-on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+.brand-ticker-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--cm-ink);
+  min-width: 8rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-ticker-name {
+    min-width: 0;
+  }
+}
+
 /* ── /impact campaign page (docs/BRAND.md tokens) ── */
 .impact-page {
   background: var(--cm-void);
