@@ -94,13 +94,27 @@ export default function IntelligenceSection() {
           </h2>
           <p className="section-intro max-w-xl">
             {isES
-              ? "Para equipos de pricing, trade marketing y análisis en CPG, retail y fintech."
-              : "For pricing, trade marketing, and analytics teams in CPG, retail, and fintech."}
+              ? "Para equipos de pricing, trade marketing y análisis en CPG, retail y fintech. Los catálogos son públicos; el valor está en agregar, normalizar y mantener la serie lista para análisis."
+              : "For pricing, trade marketing, and analytics teams in CPG, retail, and fintech. Catalogs are public; the value is aggregating, normalizing, and keeping the series analysis-ready."}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
           <div className="space-y-5">
+            <div className="code-block-cyber px-4 py-3 text-left font-mono text-xs text-[var(--cm-on-surface-variant)]">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--cm-mint)]/70 mb-2">
+                {isES ? "spread · aceite 900ml · PE" : "spread · oil 900ml · PE"}
+              </p>
+              <p>Wong <span className="text-[var(--cm-data)]">S/ 18.90</span> /L</p>
+              <p>Metro <span className="text-[var(--cm-data)]">S/ 17.40</span> /L</p>
+              <p>Plaza Vea <span className="text-[var(--cm-data)]">S/ 19.20</span> /L</p>
+              <p className="mt-2 text-[var(--cm-signal)]">
+                {isES ? "Spread entre cadenas" : "Cross-chain spread"} · {isES ? "refresh cada" : "refresh every"} {MARKET_STATS.pricesRefreshHours}h
+              </p>
+              <p className="text-[10px] text-[var(--cm-on-surface-variant)]/50 mt-2">
+                {isES ? "Ilustración · precios normalizados por litro" : "Illustration · prices normalized per liter"}
+              </p>
+            </div>
             {benefits.map((b) => (
               <div key={b.icon} className="flex items-start gap-3">
                 <span className="text-xl shrink-0 mt-0.5">{b.icon}</span>
@@ -109,6 +123,28 @@ export default function IntelligenceSection() {
                 </p>
               </div>
             ))}
+
+            <div className="rounded-xl border border-[var(--cm-mint)]/35 bg-[var(--cm-mint)]/5 p-5 space-y-3">
+              <p className="text-xs font-semibold text-[var(--cm-mint)] uppercase tracking-wider">
+                {isES ? "Hoy en Build" : "Available in Build today"}
+              </p>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                {isES
+                  ? "Intel MCP y export ya están en planes Build: Starter ($24/mes) para export CSV/JSON; Pro ($39/mes) para checkout retail, alertas y el bundle intel completo."
+                  : "Intel MCP and export are already on Build plans: Starter ($24/mo) for CSV/JSON export; Pro ($39/mo) for retail checkout, alerts, and the full intel bundle."}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a href="/#pricing" className="btn-mint text-xs px-4 py-2">
+                  {isES ? "Ver Build →" : "See Build →"}
+                </a>
+                <a
+                  href="/docs#intel"
+                  className="text-xs font-mono text-[var(--cm-mint)] hover:underline self-center"
+                >
+                  {isES ? "Docs market intel →" : "market intel docs →"}
+                </a>
+              </div>
+            </div>
 
             <div className="mt-8 rounded-xl border border-[var(--cm-outline-variant)]/30 p-5 space-y-3">
               <p className="text-xs font-semibold text-[var(--cm-on-surface-variant)]/60 uppercase tracking-wider mb-3">

@@ -45,7 +45,7 @@ def main() -> int:
         print(f"  {u} -> free")
 
     keep = [r["username"] for r in paid if r["username"] in KEEP_PRO]
-    print(f"\n=== KEEP PRO ===")
+    print("\n=== KEEP PRO ===")
     for u in keep:
         print(f"  {u}")
 

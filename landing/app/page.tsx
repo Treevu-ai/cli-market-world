@@ -25,11 +25,11 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
-          <HowItWorks />
-          <QuickstartAPI />
+          <UseCasesSection />
           <ScaleCoverageSection />
           <CoverageToUseCasesBridge />
-          <UseCasesSection />
+          <HowItWorks />
+          <QuickstartAPI />
           <IntelligenceSection />
           <Pricing />
           <FAQ />

@@ -99,10 +99,11 @@ MOCK_RETENTION = {
 }
 
 
+@patch("market_adoption_index._observatory_maa", return_value=(None, None))
 @patch("market_adoption_index.funnel_retention_summary", return_value=MOCK_RETENTION)
 @patch("market_adoption_index.funnel_summary", return_value=MOCK_FUNNEL)
 @patch("market_adoption_index.adoption_summary", return_value=MOCK_ADOPTION)
-def test_compute_adoption_index_scores(mock_adopt, mock_funnel, mock_ret):
+def test_compute_adoption_index_scores(mock_adopt, mock_funnel, mock_ret, _mock_maa):
     from market_adoption_index import compute_adoption_index
 
     data = compute_adoption_index(days=30, include_github=False)
@@ -125,6 +126,22 @@ def test_compute_adoption_index_scores(mock_adopt, mock_funnel, mock_ret):
     assert "by_project" in pypi_sig
     assert "cli-market-core" in (pypi_sig.get("by_project") or {})
     assert pypi_sig.get("projects") == ["cli-market-core", "cli-market-world"]
+
+
+@patch("market_adoption_index._observatory_maa", return_value=(25, "maa"))
+@patch("market_adoption_index.funnel_retention_summary", return_value=MOCK_RETENTION)
+@patch("market_adoption_index.funnel_summary", return_value=MOCK_FUNNEL)
+@patch("market_adoption_index.adoption_summary", return_value=MOCK_ADOPTION)
+def test_compute_adoption_index_uses_maa_when_observatory_active(
+    mock_adopt, mock_funnel, mock_ret, _mock_maa
+):
+    from market_adoption_index import compute_adoption_index
+
+    data = compute_adoption_index(days=30, include_github=False)
+    proxy = data["signals"]["agent_usage_proxy"]
+    assert proxy["value"] == 25
+    assert proxy["source"] == "maa"
+    assert data["signals"]["maa"] == 25
 
 
 def test_growth_score_positive():

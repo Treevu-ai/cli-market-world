@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
+import AnimatedMetricValue from "@/components/AnimatedMetricValue";
 
 type Metric = {
   value: string;
@@ -14,7 +16,12 @@ type Metric = {
 export default function HeroMetrics() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { priceChip, pypiChip } = useLiveStats();
+  const { priceChip, stats } = useLiveStats();
+
+  const freshness =
+    stats.fresh24hPct != null
+      ? `${stats.fresh24hPct.toFixed(0)}%`
+      : `${MARKET_STATS.pricesRefreshHours}h`;
 
   const metrics: Metric[] = [
     {
@@ -24,9 +31,10 @@ export default function HeroMetrics() {
       accent: "data",
     },
     {
-      value: String(MARKET_STATS.retailersDefined),
-      labelEs: "RETAILERS",
-      labelEn: "RETAILERS",
+      value: String(MARKET_STATS.retailersVerified),
+      labelEs: "RETAILERS ACTIVOS",
+      labelEn: "ACTIVE RETAILERS",
+      accent: "data",
     },
     {
       value: String(MARKET_STATS.countries),
@@ -34,38 +42,40 @@ export default function HeroMetrics() {
       labelEn: "COUNTRIES",
     },
     {
-      value: String(MARKET_STATS.mcpTools),
-      labelEs: "HERRAMIENTAS MCP",
-      labelEn: "MCP TOOLS",
-      accent: "data",
+      value: freshness,
+      labelEs: stats.fresh24hPct != null ? "FRESCURA 24H" : "REFRESH",
+      labelEn: stats.fresh24hPct != null ? "24H FRESHNESS" : "REFRESH",
+      accent: "signal",
     },
   ];
 
-  if (pypiChip) {
-    metrics.push({
-      value: pypiChip,
-      labelEs: "DESCARGAS PYPI",
-      labelEn: "PYPI DOWNLOADS",
-      accent: "signal",
-    });
-  }
-
   return (
     <div
-      className="hero-metrics grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 w-full max-w-[1100px] mx-auto"
-      aria-label={isES ? "Métricas del moat de datos" : "Data moat metrics"}
+      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full max-w-[960px] mx-auto justify-items-center"
+      aria-label={isES ? "Métricas de cobertura verificada" : "Verified coverage metrics"}
     >
-      {metrics.map((m) => (
-        <div key={m.labelEn} className="hero-metric text-center sm:text-left">
+      {metrics.map((m, i) => (
+        <motion.div
+          key={m.labelEn}
+          className="hero-metric flex flex-col items-center justify-center text-center w-full min-w-0 px-2"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.15 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+        >
           <p
-            className={`hero-metric-value ${
+            className={`hero-metric-value tabular-nums ${
               m.accent === "signal" ? "text-[var(--cm-signal)]" : "text-[var(--cm-ink)]"
             }`}
           >
-            {m.value}
+            <AnimatedMetricValue
+              value={m.value}
+              pulseSignal={m.accent === "signal" && m.value.includes("%")}
+            />
           </p>
-          <p className="hero-metric-label">{isES ? m.labelEs : m.labelEn}</p>
-        </div>
+          <p className="hero-metric-label max-w-[9.5rem] sm:max-w-[10.5rem] text-balance">
+            {isES ? m.labelEs : m.labelEn}
+          </p>
+        </motion.div>
       ))}
     </div>
   );

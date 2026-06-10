@@ -28,8 +28,12 @@ export function formatPypiDownloads(n: number | null): string | null {
 }
 
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 45_000;
-  const n = indexed ?? fallback;
+  const fallback =
+    parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 53_000;
+  // Hero chip: never show depressed API glitches below marketing moat floor
+  const MOAT_FLOOR = 40_000;
+  let n = indexed ?? fallback;
+  if (n < MOAT_FLOOR) n = fallback;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
@@ -47,6 +51,8 @@ const REFRESH_MS = 5 * 60 * 1000;
 
 export function useLiveStats() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [liveLoaded, setLiveLoaded] = useState(false);
 
   const [stats, setStats] = useState<LiveStats>({
     indexed: null,
@@ -98,12 +104,13 @@ export function useLiveStats() {
           moatAgeHours: k.moat_age_hours ?? null,
           totalSnapshotsAll: d.total_snapshots_all ?? k.total_indexed ?? null,
           avgDaily7d: d.avg_daily_snapshots_7d ?? null,
-          moatStart: d.generated_at ?? null,
+          moatStart: d.moat_start ?? null,
           collectorStatus: c.status ?? null,
           collectorIntervalH: MARKET_STATS.pricesRefreshHours, // canonical collector refresh (4h); ignore live c.interval_hours if stale (e.g. 8)
         }));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLiveLoaded(true));
   };
 
   useEffect(() => {
@@ -119,6 +126,7 @@ export function useLiveStats() {
 
   return {
     stats,
+    liveLoaded,
     priceChip,
     priceLong,
     pypiChip,

@@ -32,7 +32,11 @@ load_repo_env()
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Setup Slack funnel digest channel")
-    p.add_argument("--channel-id", help="Slack channel ID for #funnel-cli-market")
+    p.add_argument(
+        "--channel-id",
+        default=os.getenv("SLACK_CHANNEL_FUNNEL", "C0B9G3T0T0A"),
+        help="Slack channel ID for #funnel-cli-market",
+    )
     p.add_argument("--railway", action="store_true", help="Set SLACK_CHANNEL_FUNNEL on Railway")
     p.add_argument("--verify", action="store_true", help="Check bot can resolve channel")
     p.add_argument("--send-test", action="store_true", help="Post test digest")

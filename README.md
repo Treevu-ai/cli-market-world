@@ -3,7 +3,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 <!-- readme-hero -->
 <div align="center">
 
-<img src="assets/readme-hero.gif" alt="CLI MARKET" width="100%" />
+<img src="https://cli-market.dev/demo.gif" alt="CLI MARKET — terminal demo" width="100%" />
 
 </div>
 
@@ -27,7 +27,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON.
 
 - 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 34 indicadores**
-- 💰 **Más de 52,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 💰 **Más de 53,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -40,7 +40,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 - 🛍️ **Compra** — checkout con PayPal o QR (Yape / Plin)
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs de API](https://cli-market-production.up.railway.app/docs) · 📊 [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
 #### 🚀 Inicio rápido
 
@@ -64,7 +64,7 @@ market intel enrichment -c PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Precio** | $0 | $39/mes | A medida |
+| **Precio** | $0 | Starter $24/mes · Pro $39/mes · Founding $29 · Anual $390 | A medida |
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -84,7 +84,7 @@ market intel enrichment -c PE
 | Equipo de **compras** (restaurante, hotel, agro) — sin código | **Procure Copilot** | $29–149/mes (infra CLI Market incluida en Pro+) |
 | Analista / fintech que necesita **datos**, no checkout | **Intelligence** | $300–500/mes |
 
-Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [docs/pricing-strategy.md](docs/pricing-strategy.md).
+Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes y pricing](https://cli-market.dev/#pricing).
 
 ---
 
@@ -99,7 +99,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema.
 
 - 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 34 indicators**
-- 💰 **52,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 💰 **53,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
@@ -112,7 +112,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 - 🛍️ **Buy** — checkout with PayPal or QR (Yape / Plin)
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [API docs](https://cli-market-production.up.railway.app/docs) · 📊 [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
 #### 🚀 Quick start
 
@@ -136,7 +136,7 @@ market intel enrichment -c PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Price** | $0 | $39/mo | Custom |
+| **Price** | $0 | Starter $24/mo · Pro $39/mo · Founding $29 · Annual $390 | Custom |
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
@@ -156,25 +156,24 @@ market intel enrichment -c PE
 | **Procurement** team (no code) | **Procure Copilot** | $29–149/mo (CLI Market infra bundled on Pro+) |
 | Analyst / fintech needing **data**, not checkout | **Intelligence** | $300–500/mo |
 
-Procurement teams do **not** need a separate CLI Market Pro subscription. See [docs/pricing-strategy.md](docs/pricing-strategy.md).
+Procurement teams do **not** need a separate CLI Market Pro subscription. See [pricing](https://cli-market.dev/#pricing).
 
 ---
 
 ## 📖 Learn more
 
-- **[Use Cases](docs/use-cases.md)** — AI agent builders, data scientists, retailers. Who is this for?
-- **[Terminal Demo](docs/demo-walkthrough.md)** — 8-command walkthrough: search → compare → basket → checkout.
+- **[Docs — quick start & MCP](https://cli-market.dev/docs)** — install, auth, compare, basket, intel, MCP setup
+- **[Use cases & pricing](https://cli-market.dev/#pricing)** — AI agent builders, procurement, intelligence pilots
+- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics (when gate open)
 
 ---
 
 ## 🏗️ Ecosystem architecture
 
-![Ecosystem Pipeline](docs/assets/ecosystem-pipeline.svg)
-
 CLI Market is composed of 4 specialized repositories, each with a single responsibility:
 
 ```
-cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retailers, 45k prices
+cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retailers, 52k+ prices
        |
        v  raw snapshots
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
@@ -207,7 +206,7 @@ Every price in CLI Market is traceable and verifiable. The [live dashboard](http
 - **Trazabilidad de outliers** — group size, band (`median ± k·IQR`), acceptable bounds, scraper health state, capture timestamp
 - **Foso de datos** — `inventory_daily[]` time series + growth stats (total snapshots, daily avg, days tracked)
 
-All six capabilities are backed by the same 46,000+, refreshed every 4 hours by the collector daemon.
+All six capabilities are backed by the same **52,000+** shelf prices, refreshed every 4 hours by the collector daemon.
 
 ---
 

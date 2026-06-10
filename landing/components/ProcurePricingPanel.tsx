@@ -8,15 +8,15 @@ import ProcureSubscribeButton from "@/components/ProcureSubscribeButton";
 
 const BENEFITS_ES = [
   "Comparación automática en retailers verificados — sin WhatsApp ni Excel.",
-  "Data-gate: no recomienda compra si el moat está stale.",
-  "Starter compara; Pro añade aprobaciones gerente y checkout.",
+  "Data-gate: no recomienda compra si los precios están desactualizados.",
+  "Compare compara; Ops añade aprobaciones gerente y checkout.",
   "Infraestructura CLI Market incluida — una sola factura.",
 ];
 
 const BENEFITS_EN = [
   "Automatic comparison across verified retailers — no WhatsApp or Excel.",
-  "Data-gate blocks recommendations when the moat is stale.",
-  "Starter compares; Pro adds manager approvals and checkout.",
+  "Data-gate blocks recommendations when prices are stale.",
+  "Compare compares; Ops adds manager approvals and checkout.",
   "CLI Market infrastructure included — one invoice.",
 ];
 
@@ -38,12 +38,12 @@ export default function ProcurePricingPanel() {
         </p>
         <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
           <p className="font-semibold text-white mb-1">
-            {isES ? "¿Build Pro o Procure?" : "Build Pro or Procure?"}
+            {isES ? "¿Build Pro o Procure Ops?" : "Build Pro or Procure Ops?"}
           </p>
           <p>
             {isES
-              ? "Build Pro ($39) es para quien integra la API/MCP en código. Procure es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
-              : "Build Pro ($39) is for developers integrating the API/MCP. Procure is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
+              ? "Build Pro ($39) es para quien integra la API/MCP en código. Procure Ops ($79) es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
+              : "Build Pro ($39) is for developers integrating the API/MCP. Procure Ops ($79) is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
           </p>
         </div>
       </div>
@@ -65,6 +65,9 @@ export default function ProcurePricingPanel() {
                 {isES ? "Más popular" : "Most popular"}
               </span>
             )}
+            <p className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/70 mb-1">
+              Procure
+            </p>
             <h3 className="text-lg font-bold text-white">{plan.name}</h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2 min-h-[2.5rem]">
               {isES ? plan.description_es : plan.description_en}

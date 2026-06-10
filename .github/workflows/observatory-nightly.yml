@@ -1,0 +1,33 @@
+name: Observatory nightly
+
+on:
+  schedule:
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          pip install -e .
+          pip install "cli-market-core>=1.9.17" \
+            || pip install -e ../cli-market-core 2>/dev/null || true
+
+      - name: Observatory daily snapshot
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          OBSERVATORY_TELEMETRY: "1"
+        run: python3 ops/observatory_daily.py --json

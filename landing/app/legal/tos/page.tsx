@@ -82,13 +82,14 @@ export default function TermsOfService() {
             <h3>6.1 Pagos, suscripciones y facturación</h3>
             <ul>
               <li>
-                Los pagos del plan Pro (USD 39/mes u opción anual publicada en la landing), de
-                servicios SaaS de Sinapsis Innovadora S.A.C. y el checkout de productos retail
-                utilizan los mismos canales: PayPal, Mercado Pago, Yape y Plin, según
-                disponibilidad regional y tier activo.
+                Sinapsis Innovadora S.A.C. (RUC 20613045563) factura suscripciones Build y Procure
+                en dólares estadounidenses (USD) vía PayPal y en soles (PEN) vía Yape, Plin o
+                tarjeta Mercado Pago. El comprobante se emite en la moneda del pago. Planes publicados:
+                Starter USD 24/mes, Pro USD 39/mes (u opción anual), Pro Founding USD 29/mes (cupos
+                limitados) y tiers Procure según la landing.
               </li>
               <li>
-                La activación del tier Pro ocurre automáticamente tras la confirmación del pago.
+                La activación del tier pagado ocurre automáticamente tras la confirmación del pago.
                 Puede verificar con <code>market whoami</code>.
               </li>
               <li>
@@ -99,9 +100,7 @@ export default function TermsOfService() {
                 ley o la política del procesador de pagos.
               </li>
               <li>
-                Facturación de suscripciones y servicios SaaS en dólares estadounidenses (USD).
-                Emisor: Sinapsis Innovadora S.A.C., RUC 20613045563 — solicite comprobante por
-                correo a{" "}
+                Solicite comprobante por correo a{" "}
                 <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a> tras el pago.
               </li>
             </ul>
@@ -230,13 +229,14 @@ export default function TermsOfService() {
             <h3>6.1 Payments, subscriptions, and invoicing</h3>
             <ul>
               <li>
-                Payments for the Pro plan (USD 39/mo or published annual option), Sinapsis
-                Innovadora S.A.C. SaaS services, and retail product checkout use the same
-                channels: PayPal, Mercado Pago, Yape, and Plin, depending on region and active
-                tier.
+                Sinapsis Innovadora S.A.C. (tax ID 20613045563) invoices Build and Procure
+                subscriptions in US dollars (USD) via PayPal and in soles (PEN) via Yape, Plin, or
+                Mercado Pago card. Receipts match the payment currency. Published plans include
+                Starter USD 24/mo, Pro USD 39/mo (or annual option), Pro Founding USD 29/mo
+                (limited seats), and Procure tiers as listed on the landing page.
               </li>
               <li>
-                Pro tier activates automatically after payment confirmation. Verify with{" "}
+                Paid tier activates automatically after payment confirmation. Verify with{" "}
                 <code>market whoami</code>.
               </li>
               <li>
@@ -247,8 +247,7 @@ export default function TermsOfService() {
                 law or the payment processor&apos;s policy.
               </li>
               <li>
-                Subscription and SaaS services are invoiced in US dollars (USD). Issuer:
-                Sinapsis Innovadora S.A.C., tax ID 20613045563 — request receipts by email at{" "}
+                Request receipts by email at{" "}
                 <a href="mailto:hello@cli-market.dev">hello@cli-market.dev</a> after payment.
               </li>
             </ul>

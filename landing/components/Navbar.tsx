@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { SECTION_NAV } from "@/lib/siteNav";
+import { SECTION_NAV, PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 function Logo() {
   return (
@@ -72,7 +72,7 @@ export default function Navbar() {
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href="/#api"
+            href={PRICING_BUILD_HASH}
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-2 hover:brightness-110 transition-all whitespace-nowrap"
           >
             {primaryCta}
@@ -102,7 +102,7 @@ export default function Navbar() {
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             PyPI
           </a>
-          <a href="/#api" onClick={close}
+          <a href={PRICING_BUILD_HASH} onClick={close}
              className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-1">
             {mobileCta}
           </a>

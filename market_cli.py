@@ -2196,17 +2196,24 @@ def cmd_mcp_setup(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade Pro ($39) — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
+    """Upgrade Starter/Pro — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    plan = (getattr(args, "plan", None) or "pro").strip().lower()
-    if plan != "pro":
+    plan = (getattr(args, "plan", None) or "pro").strip().lower().replace("-", "_")
+    if plan in ("founding",):
+        plan = "pro_founding"
+    if plan in ("annual",):
+        plan = "pro_annual"
+    if plan not in ("starter", "pro", "pro_founding", "pro_annual"):
         plan = "pro"
     payment = (getattr(args, "payment", None) or "").strip().lower()
     if not payment:
         payment = "mercadopago" if es else "paypal"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
     manual_wallet = bool(getattr(args, "manual_transfer", False))
+
+    from market_billing import price_label_for_plan
+    plan_label = price_label_for_plan(plan)
 
     if manual:
         email = (args.email or "").strip()
@@ -2241,7 +2248,7 @@ def cmd_upgrade(args):
             if es and payment in ("yape", "plin")
             else f"Preparing {payment} checkout..."
             if not es
-            else f"Preparando Mercado Pago..."
+            else "Preparando Mercado Pago..."
         )
         with ui.run_with_status(console, status_msg):
             data = cli_api("POST", "/billing/pro-checkout", payload)
@@ -2268,7 +2275,7 @@ def cmd_upgrade(args):
                 f"[cyan underline]{url}[/]\n\n"
                 + (f"[dim]Paga con {payment.upper()} en Mercado Pago. Pro se activa en minutos. Luego: market whoami[/]"
                    if es and payment in ("yape", "plin")
-                   else f"[dim]Activates in minutes via webhook. Then: market whoami[/]"
+                   else "[dim]Activates in minutes via webhook. Then: market whoami[/]"
                    if not es
                    else "[dim]Pro se activa en minutos (webhook). Luego: market whoami[/]"),
                 title="Upgrade",
@@ -2278,21 +2285,23 @@ def cmd_upgrade(args):
         return
 
     endpoint = "/billing/paypal"
-    label = "Pro — $39/mo"
+    payload: dict = {"plan": plan}
+    if plan == "pro_founding":
+        payload["promo_code"] = (getattr(args, "promo_code", None) or "founding100").strip()
+    label = f"CLI Market {plan.replace('_', ' ').title()} — {plan_label}"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
-        data = cli_api("POST", endpoint, {})
+        data = cli_api("POST", endpoint, payload)
     url = data.get("approve_url", "")
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
         return
-    web_hint = "https://cli-market.dev/#pricing"
     console.print(Panel.fit(
         f"[bold #00FF88]CLI Market {label}[/]\n\n"
         f"{data.get('message', '')}\n\n"
         f"[cyan underline]{url}[/]\n\n"
-        + (f"[dim]Se activa al confirmar en PayPal. Luego: market whoami\nYape/Plin: market upgrade --payment yape[/]"
+        + ("[dim]Se activa al confirmar en PayPal. Luego: market whoami\nYape/Plin: market upgrade --payment yape[/]"
            if es else
-           f"[dim]Activates on PayPal confirm. Then: market whoami\nYape/Plin: market upgrade --payment yape[/]"),
+           "[dim]Activates on PayPal confirm. Then: market whoami\nYape/Plin: market upgrade --payment yape[/]"),
         title="Upgrade",
         border_style="#00FF88",
     ))
@@ -2515,10 +2524,11 @@ def main():
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
         "--plan",
-        choices=["pro"],
+        choices=["starter", "pro", "pro_founding", "pro_annual", "founding", "annual"],
         default=None,
-        help="Build Pro ($39/mo) via PayPal subscription",
+        help="Build tier: starter ($24), pro ($39), pro_founding ($29), pro_annual ($390)",
     )
+    p.add_argument("--promo-code", dest="promo_code", help="Founding promo code (default founding100)")
     p.add_argument(
         "--payment",
         choices=["paypal", "mercadopago", "yape", "plin"],

@@ -11,6 +11,9 @@ export const metadata: Metadata = {
     "AI shopping API",
     "Model Context Protocol",
     "cli-market MCP",
+    "market mcp-setup",
+    "Cursor MCP config",
+    "Claude Desktop MCP",
   ],
   alternates: {
     canonical: "/tools",

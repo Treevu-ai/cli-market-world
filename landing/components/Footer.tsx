@@ -3,7 +3,11 @@ import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { SECTION_NAV, PRICING_LISTED_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
+import {
+  SECTION_NAV,
+  RETAILERS_PAGE,
+  PRICING_PROCURE_HASH,
+} from "@/lib/siteNav";
 
 export default function Footer() {
   const { lang } = useLang();
@@ -35,22 +39,44 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Desarrolladores" : "Developers"}
           </span>
-          <a href="/docs#quickstart" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Quickstart API" : "Quickstart API"}
+          <a
+            href="/docs#quickstart"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Quickstart API" : "API quickstart"}
           </a>
-          <a href={`${API_URL}/docs`} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors" target="_blank" rel="noopener noreferrer">
-            OpenAPI
+          <a
+            href={`${API_URL}/docs`}
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenAPI (Swagger)
           </a>
-          <a href="/tools" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "Referencia MCP" : "MCP Tool Reference"}
+          <a
+            href="/tools"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Referencia MCP" : "MCP reference"}
           </a>
-          <a href="/docs#quickstart" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/#how"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Demo en terminal" : "Terminal demo"}
           </a>
-          <a href="/docs#mcp" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/docs#mcp"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Integración MCP" : "MCP integration"}
           </a>
-          <a href={MARKET_STATS.pypiUrl} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors" target="_blank" rel="noopener noreferrer">
+          <a
+            href={MARKET_STATS.pypiUrl}
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             PyPI
           </a>
         </div>
@@ -59,25 +85,52 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 mb-1">
             {isES ? "Compañía" : "Company"}
           </span>
-          <a href={PRICING_LISTED_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            Listed — {isES ? "góndola gratis" : "free shelf"}
+          <a
+            href={RETAILERS_PAGE}
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
           </a>
-          <a href={PRICING_PROCURE_HASH} className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href={PRICING_PROCURE_HASH}
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             Procure Copilot
           </a>
-          <a href="/retailers" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/retailers"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Catálogo retailers" : "Retailer catalog"}
           </a>
-          <a href="/intelligence-pilot-es.md" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
-            {isES ? "One-pager Intelligence" : "Intelligence one-pager"}
+          <a
+            href="/#intelligence"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Intelligence / Price Pulse" : "Intelligence / Price Pulse"}
           </a>
-          <a href="/#about" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/stats"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Métricas públicas" : "Public stats"}
+          </a>
+          <a
+            href="/#about"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Nosotros" : "About"}
           </a>
-          <a href="/#contact" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/#contact"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Contacto" : "Contact"}
           </a>
-          <a href="mailto:hello@cli-market.dev" className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="mailto:hello@cli-market.dev"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             hello@cli-market.dev
           </a>
         </div>
@@ -94,19 +147,11 @@ export default function Footer() {
             >
               {id === "pricing"
                 ? isES
-                  ? "Planes (Build · Procure · Listed)"
-                  : "Plans (Build · Procure · Listed)"
-                : id === "api"
-                  ? isES
-                    ? "API en vivo"
-                    : "Live API"
-                  : id === "casos"
-                    ? isES
-                      ? "Casos de uso"
-                      : "Use cases"
-                    : isES
-                      ? es
-                      : en}
+                  ? "Planes (Build · Procure)"
+                  : "Plans (Build · Procure)"
+                : isES
+                  ? es
+                  : en}
             </a>
           ))}
         </div>
@@ -117,13 +162,22 @@ export default function Footer() {
           <span className="font-label-caps text-[var(--cm-mint)] opacity-50 text-[10px]">
             {isES ? "Legal" : "Legal"}
           </span>
-          <a href="/legal/tos" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/legal/tos"
+            className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Términos de Servicio" : "Terms of Service"}
           </a>
-          <a href="/legal/privacy" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/legal/privacy"
+            className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Política de Privacidad" : "Privacy Policy"}
           </a>
-          <a href="/legal/dla" className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors">
+          <a
+            href="/legal/dla"
+            className="font-mono text-xs text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
             {isES ? "Licencia de Datos (ALD)" : "Data License (DLA)"}
           </a>
         </div>

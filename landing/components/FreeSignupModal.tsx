@@ -2,11 +2,17 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
-import { scrollToProCheckout } from "@/lib/funnel";
+import { scrollToPricing } from "@/lib/funnel";
 
 import { MARKET_STATS } from "@/lib/marketStats";
 
 const PYPI_URL = MARKET_STATS.pypiUrl;
+
+const MODAL_OVERLAY =
+  "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-6 pointer-events-none";
+const MODAL_BACKDROP = "absolute inset-0 bg-black/50 pointer-events-auto";
+const MODAL_PANEL =
+  "relative pointer-events-auto w-full sm:max-w-md card-cyber p-6 sm:p-8 animate-fade-in";
 
 type Profile = "dev" | "business" | "other";
 
@@ -60,9 +66,9 @@ export default function FreeSignupModal({
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
 
-  const goToProCheckout = () => {
+  const goToPricing = () => {
     onClose();
-    window.setTimeout(scrollToProCheckout, 150);
+    window.setTimeout(scrollToPricing, 150);
   };
 
   useEffect(() => {
@@ -157,13 +163,9 @@ export default function FreeSignupModal({
   if (plan === "pro" || plan === "starter") {
     // legacy "starter" plan param supported for compat; renders Pro checkout flow
     return (
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      >
-        <div className="card-cyber w-full max-w-md p-6 sm:p-8 relative animate-fade-in">
+      <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
+        <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+        <div className={`${MODAL_PANEL} relative`}>
           <button
             onClick={onClose}
             aria-label={isES ? "Cerrar" : "Close"}
@@ -173,14 +175,14 @@ export default function FreeSignupModal({
           </button>
           <div className="space-y-5 text-center sm:text-left">
             <div>
-              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Pro</p>
+              <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Build</p>
               <h3 className="text-lg font-bold text-white">
-                {isES ? "Pro — USD 39/mes" : "Pro — USD 39/mo"}
+                {isES ? "Planes Build — desde $24/mes" : "Build plans — from $24/mo"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES
-                  ? `${MARKET_STATS.paymentsLabel} en la sección de planes. Recomendado: market register antes.`
-                  : `${MARKET_STATS.paymentsLabel} in the plans section. Recommended: run market register first.`}
+                  ? "Starter, Pro Founding ($29) o Pro ($39). Pagos en la sección Planes."
+                  : "Starter, Pro Founding ($29), or Pro ($39). Checkout in the Plans section."}
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
@@ -188,8 +190,8 @@ export default function FreeSignupModal({
 market register
 market whoami`}</pre>
             </div>
-            <button type="button" className="btn-mint w-full" onClick={goToProCheckout}>
-              {isES ? "Ir al checkout Pro →" : "Go to Pro checkout →"}
+            <button type="button" className="btn-mint w-full" onClick={goToPricing}>
+              {isES ? "Ver planes Build →" : "See Build plans →"}
             </button>
           </div>
         </div>
@@ -198,13 +200,9 @@ market whoami`}</pre>
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="card-cyber w-full max-w-md p-6 sm:p-8 relative animate-fade-in">
+    <div role="dialog" aria-modal="true" className={MODAL_OVERLAY}>
+      <div className={MODAL_BACKDROP} aria-hidden onClick={onClose} />
+      <div className={`${MODAL_PANEL} relative`}>
         <button
           onClick={onClose}
           aria-label={isES ? "Cerrar" : "Close"}
@@ -300,8 +298,8 @@ market doctor`}</pre>
               <a href="/docs#quickstart" className="btn-mint text-center" onClick={onClose}>
                 {isES ? "Ver quickstart →" : "View quickstart →"}
               </a>
-              <button type="button" className="btn-mint w-full" onClick={goToProCheckout}>
-                {isES ? "¿Necesita alertas y MCP full? Pro $39/mes →" : "Need alerts + full MCP? Pro $39/mo →"}
+              <button type="button" className="btn-mint w-full" onClick={goToPricing}>
+                {isES ? "Ver planes Build (desde $24) →" : "See Build plans (from $24) →"}
               </button>
               <button
                 type="button"

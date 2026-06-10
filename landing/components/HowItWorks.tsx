@@ -4,27 +4,13 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 
-const steps = [
+const mainSteps = [
   {
     cmd: MARKET_STATS.pipInstallCmd,
-    out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · MIT`,
-    out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · MIT`,
+    out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · cuenta free con market init`,
+    out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · free account via market init`,
     label: "Install",
     icon: "↓",
-  },
-  {
-    cmd: "market init",
-    out_es: `Cuenta free · ${MARKET_STATS.retailersVerified} retailers · ${MARKET_STATS.mcpTools} MCP`,
-    out_en: `Free account · ${MARKET_STATS.retailersVerified} retailers · ${MARKET_STATS.mcpTools} MCP`,
-    label: "Init",
-    icon: "⚡",
-  },
-  {
-    cmd: "market discover --country PE",
-    out_es: "Shop bundle · retailers + líneas + países en una llamada",
-    out_en: "Shop bundle · retailers + lines + countries in one call",
-    label: "Discover",
-    icon: "🛒",
   },
   {
     cmd: 'market compare "arroz" --country PE',
@@ -40,13 +26,13 @@ const steps = [
     label: "Basket",
     icon: "🧺",
   },
-  {
-    cmd: "market tools",
-    out_es: `Shop · Intel · Account · ${MARKET_STATS.mcpTools} tools (46 legacy)`,
-    out_en: `Shop · Intel · Account · ${MARKET_STATS.mcpTools} tools (46 legacy)`,
-    label: "MCP",
-    icon: "🔌",
-  },
+];
+
+const devSteps = [
+  { cmd: "market init", label: "Init" },
+  { cmd: "market discover --country PE", label: "Discover" },
+  { cmd: "market mcp-setup --ide cursor", label: "MCP setup" },
+  { cmd: "market tools", label: `${MARKET_STATS.mcpTools} tools` },
 ];
 
 export default function HowItWorks() {
@@ -60,18 +46,18 @@ export default function HowItWorks() {
           {isES ? "Cómo funciona" : "How it works"}
         </p>
         <h2 className="section-title">
-          {isES ? "Del install a datos verificados en minutos." : "From install to verified data in minutes."}
+          {isES ? "Tres pasos hasta precios comparables." : "Three steps to comparable prices."}
         </h2>
         <p className="section-intro max-w-xl">
           {isES
-            ? `Init → Discover → Compare → Basket → MCP. ${MARKET_STATS.mcpTools} herramientas, bundles Shop/Intel/Account, checkout Pro.`
-            : `Init → Discover → Compare → Basket → MCP. ${MARKET_STATS.mcpTools} tools, Shop/Intel/Account bundles, Pro checkout.`}
+            ? "Instala, compara y arma canastas. Init, Discover y MCP quedan en la ruta avanzada."
+            : "Install, compare, and build baskets. Init, Discover, and MCP live in the advanced path."}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left mb-12 min-w-0">
-          {steps.map((s, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left mb-8 min-w-0 max-w-4xl mx-auto">
+          {mainSteps.map((s, i) => (
             <motion.div
-              key={i}
+              key={s.label}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -98,11 +84,28 @@ export default function HowItWorks() {
           ))}
         </div>
 
+        <details className="details-disclosure max-w-2xl mx-auto text-left mb-8">
+          <summary>{isES ? "Ruta developer: Init · Discover · MCP setup" : "Developer path: Init · Discover · MCP setup"}</summary>
+          <div className="details-body pt-4 space-y-3">
+            {devSteps.map((s) => (
+              <div key={s.cmd} className="card-cyber px-4 py-3 flex items-center justify-between gap-4">
+                <span className="text-xs font-bold text-white">{s.label}</span>
+                <code className="text-xs font-mono text-[var(--cm-on-surface-variant)]">{s.cmd}</code>
+              </div>
+            ))}
+            <p className="text-xs text-[var(--cm-on-surface-variant)]/70 font-mono">
+              {isES
+                ? `Bundles Shop · Intel · Account · checkout Pro vía ${MARKET_STATS.paymentsLabel}`
+                : `Shop · Intel · Account bundles · Pro checkout via ${MARKET_STATS.paymentsLabel}`}
+            </p>
+          </div>
+        </details>
+
         <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mb-6 font-mono">
           {isES ? `Checkout ${MARKET_STATS.paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${MARKET_STATS.paymentsLabel} · requires Pro plan + email activation`}
         </p>
 
-        <p className="mt-8">
+        <p className="mt-4">
           <a href="/docs#quickstart" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo completa de 8 pasos →" : "Full 8-step walkthrough →"}
           </a>

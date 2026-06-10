@@ -441,7 +441,7 @@ def build_content_report(for_date: date) -> str:
         "",
         "## Acciones rápidas",
         "",
-        f"1. En content repo: `make content` (copy listo) o leer secciones arriba.",
+        "1. En content repo: `make content` (copy listo) o leer secciones arriba.",
         f"2. Publicar canales de **Canales hoy** ({POST_UTC_HOUR}:00 UTC LinkedIn).",
         f"3. Marcar publicado: `make publish date={ds}` (content repo).",
         "4. Engagement 60 min en LinkedIn.",
@@ -451,15 +451,20 @@ def build_content_report(for_date: date) -> str:
 
 
 def _repo_file_link(rel_path: str) -> str:
+    """Product reports → product repo; content reports → cli-market-content."""
     server = os.getenv("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
-    branch = os.getenv("GITHUB_REF_NAME", "main")
     content_repo = os.getenv(
-        "CLI_MARKET_CONTENT_GITHUB_REPO", "Treevu-ai/cli-market-content"
+        "GITHUB_CONTENT_REPOSITORY",
+        os.getenv("CLI_MARKET_CONTENT_GITHUB_REPO", "Treevu-ai/cli-market-content"),
     ).strip()
+    product_branch = os.getenv("GITHUB_REF_NAME", "main").strip()
+    content_branch = os.getenv("GITHUB_CONTENT_REF", "main").strip()
     if rel_path.startswith("generated/") and content_repo:
         repo = content_repo
+        branch = content_branch
     else:
         repo = os.getenv("GITHUB_REPOSITORY", "")
+        branch = product_branch
     if repo:
         return f"<{server}/{repo}/blob/{branch}/{rel_path}|Ver reporte completo>"
     return f"_Repo:_ `{rel_path}`"

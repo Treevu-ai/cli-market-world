@@ -22,13 +22,21 @@ export default function BillingCheckoutTrigger({
   const [open, setOpen] = useState(false);
 
   const defaultLabel =
-    kind.type === "build-pro"
+    kind.type === "build-starter"
       ? isES
-        ? "Configurar Pro →"
-        : "Set up Pro →"
-      : isES
-        ? "Suscribir →"
-        : "Subscribe →";
+        ? "Elegir Starter →"
+        : "Choose Starter →"
+      : kind.type === "build-pro-founding"
+        ? isES
+          ? "Aprovechar $29 →"
+          : "Claim $29 →"
+      : kind.type === "build-pro"
+        ? isES
+          ? "Elegir Pro →"
+          : "Choose Pro →"
+        : isES
+          ? "Suscribir →"
+          : "Subscribe →";
 
   const label = isES ? label_es ?? defaultLabel : label_en ?? defaultLabel;
 

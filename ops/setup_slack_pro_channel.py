@@ -35,9 +35,9 @@ def main() -> int:
         if not cid.startswith("C"):
             print("✗ Channel ID must start with C", file=sys.stderr)
             return 1
-        print(f"Set on Railway:")
+        print("Set on Railway:")
         print(f"  railway variables set SLACK_CHANNEL_CLI_MARKET_PRO={cid}")
-        print(f"Set locally in .env:")
+        print("Set locally in .env:")
         print(f"  SLACK_CHANNEL_CLI_MARKET_PRO={cid}")
         os.environ["SLACK_CHANNEL_CLI_MARKET_PRO"] = cid
 
