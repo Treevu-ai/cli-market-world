@@ -116,7 +116,7 @@ export default function TermsOfService() {
 
             <h2>8. Retailers de Terceros</h2>
             <p>
-              CLI Market se conecta a APIs de retailers de terceros (VTEX, Shopify, Magento).
+              CLI Market se conecta a APIs de retailers de terceros (VTEX, Shopify, Magento, WooCommerce).
               CLI Market no es responsable de la disponibilidad de productos o precisión de
               precios reportados por los retailers, transacciones fallidas por errores del lado
               del retailer, ni cambios en estructuras de API. Los usuarios son responsables del
@@ -263,7 +263,7 @@ export default function TermsOfService() {
 
             <h2>8. Third-Party Retailers</h2>
             <p>
-              CLI Market connects to third-party retailer APIs (VTEX, Shopify, Magento). CLI
+              CLI Market connects to third-party retailer APIs (VTEX, Shopify, Magento, WooCommerce). CLI
               Market is not responsible for product availability or pricing accuracy as reported
               by retailers, failed transactions due to retailer-side errors, or changes to
               retailer API structures. Users are responsible for compliance with retailer terms

@@ -179,6 +179,31 @@ export default function DocsPage() {
 
         <section className="mb-16 scroll-mt-24" id="quickstart">
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            {[
+              { tier: "FREE", price: "$0", note: t("1k req/día · MCP default", "1k req/day · default MCP") },
+              { tier: "STARTER", price: "USD 24/mo", note: t("5k · export CSV", "5k · CSV export") },
+              { tier: "PRO", price: "USD 39/mo", note: t("10k · checkout retail", "10k · retail checkout") },
+              { tier: "FOUNDING", price: "USD 29/mo", note: t("100 plazas · Pro", "100 seats · Pro") },
+            ].map((p) => (
+              <div key={p.tier} className="card-cyber p-4 text-left">
+                <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80">{p.tier}</p>
+                <p className="font-mono text-sm text-white mt-1">{p.price}</p>
+                <p className="text-[10px] text-[var(--cm-on-surface-variant)]/70 mt-1">{p.note}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-[var(--cm-on-surface-variant)]/80 mb-6">
+            {t("Detalle en ", "Details in ")}{" "}
+            <a href="#billing" className="text-[var(--cm-mint)] underline">
+              Billing
+            </a>
+            {" · "}
+            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+              /#pricing
+            </a>
+            .
+          </p>
           <PrereqBlock level="cli" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             {t(

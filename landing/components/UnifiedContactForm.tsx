@@ -96,6 +96,7 @@ export default function UnifiedContactForm() {
         contact_email: contactEmail,
         website,
         api_token: apiToken || undefined,
+        lang: isES ? "es" : "en",
       }),
     });
     const data = await res.json();
@@ -228,7 +229,9 @@ export default function UnifiedContactForm() {
             </label>
             <input type="password" value={apiToken} onChange={(e) => setApiToken(e.target.value)} className="input-cyber font-mono" placeholder="shpat_... or integration token" />
             <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">
-              {isES ? "Catálogos VTEX públicos generalmente no requieren token." : "VTEX public catalogs often need no token."}
+              {isES
+                ? "VTEX y WooCommerce Store API pública suelen no requerir token."
+                : "VTEX and public WooCommerce Store API often need no token."}
             </p>
           </div>
         </>
