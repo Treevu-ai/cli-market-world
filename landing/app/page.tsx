@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
+import ScrollStorySection from "@/components/ScrollStorySection";
 import HowItWorks from "@/components/HowItWorks";
 import QuickstartAPI from "@/components/QuickstartAPI";
 import UseCasesSection from "@/components/UseCasesSection";
@@ -25,6 +26,7 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
+          <ScrollStorySection />
           <UseCasesSection />
           <ScaleCoverageSection />
           <CoverageToUseCasesBridge />
