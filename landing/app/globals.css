@@ -545,6 +545,23 @@ section[id] {
   opacity: 0.5;
 }
 
+.hero-playground-get-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--cm-data) 45%, transparent);
+  color: var(--cm-data);
+  background: color-mix(in srgb, var(--cm-data) 6%, transparent);
+  white-space: nowrap;
+}
+
+.hero-playground-get-key:disabled {
+  opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-term-cursor {
     animation: none;
