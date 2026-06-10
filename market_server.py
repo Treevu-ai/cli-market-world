@@ -153,6 +153,7 @@ from routers.media import router as media_router
 from routers.misc import router as misc_router
 from routers.orders import router as orders_router
 from routers.payments import router as payments_router
+from routers.public_demo import router as public_demo_router
 from routers.slack_ops import router as slack_ops_router
 from routers.retailers import router as retailers_router
 from routers.retailer_admin import router as retailer_admin_router
@@ -179,6 +180,7 @@ for r in (
     misc_router,
     orders_router,
     payments_router,
+    public_demo_router,
     retailers_router,
     retailer_admin_router,
     search_router,

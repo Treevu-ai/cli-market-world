@@ -144,10 +144,8 @@ async def _search_products(body: SearchRequest):
     return response
 
 
-@router.post("/products/compare")
-async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
-    """Cross-store comparison with brand+name fuzzy matching."""
-    require_api_key(authorization)
+async def _compare_products(body: SearchRequest) -> dict:
+    """Cross-store comparison with brand+name fuzzy matching (no auth)."""
     stores = _resolve_search_stores(body)
     all_raw: dict[str, list] = {}
     for store in stores:
@@ -219,6 +217,13 @@ async def compare_products(body: SearchRequest, authorization: str | None = Head
 
     comparison.sort(key=lambda x: x["best_price"])
     return {"query": body.query, "comparison": comparison, "stores_compared": len(stores)}
+
+
+@router.post("/products/compare")
+async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
+    """Cross-store comparison with brand+name fuzzy matching."""
+    require_api_key(authorization)
+    return await _compare_products(body)
 
 
 @router.post("/v1/basket/compare")

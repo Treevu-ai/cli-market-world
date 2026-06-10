@@ -1,19 +1,32 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
+import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import HeroTerminal from "@/components/HeroTerminal";
 
 const API_KEY_STORAGE = "cli_market_api_key";
+const DEMO_QUERIES = new Set(["arroz", "leche"]);
 
 type Mode = "demo" | "live";
 
 type LiveLine = { kind: "cmd" | "out" | "err"; text: string };
 
 type CompareRow = { store: string; price: number; best: boolean };
+
+type ComparePayload = {
+  comparison?: Array<{
+    name?: string;
+    prices?: Record<string, number>;
+    best_store?: string;
+    best_price?: number;
+  }>;
+  stale?: boolean;
+  seed?: boolean;
+  cached_at?: string;
+};
 
 function parseCompareQuery(raw: string): string | null {
   const trimmed = raw.trim();
@@ -30,8 +43,93 @@ function storeLabel(store: string): string {
     metro_pe: "Metro",
     wong_pe: "Wong",
     plaza_vea_pe: "Plaza Vea",
+    plazavea: "Plaza Vea",
   };
   return map[store] ?? store.replace(/_/g, " ");
+}
+
+function CompareRows({ rows, isES }: { rows: CompareRow[]; isES: boolean }) {
+  const max = Math.max(...rows.map((x) => x.price), 0);
+  return (
+    <>
+      {rows.map((r) => {
+        const w = max > 0 ? Math.round((r.price / max) * 100) : 0;
+        return (
+          <div
+            key={r.store}
+            className={`hero-term-row hero-term-row-on${r.best ? " hero-term-row-best hero-term-row-tagged" : ""}`}
+          >
+            <span className="hero-term-lb">{storeLabel(r.store)}</span>
+            <div className="hero-term-track">
+              <div className="hero-term-fill" style={{ width: `${w}%` }} />
+            </div>
+            <span className="hero-term-price">
+              S/ {r.price.toFixed(2)}
+              {r.best ? <span className="hero-term-tag">✓ {isES ? "MEJOR" : "BEST"}</span> : null}
+            </span>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function CachedDemoPanel({ isES }: { isES: boolean }) {
+  const [rows, setRows] = useState<CompareRow[]>([]);
+  const [meta, setMeta] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/public/demo/compare?q=arroz`);
+        const data = (await res.json()) as ComparePayload;
+        if (cancelled || !res.ok) return;
+        const comp = data.comparison?.[0];
+        const prices = comp?.prices;
+        if (!prices || !Object.keys(prices).length) return;
+        const bestStore = comp.best_store ?? "";
+        const nextRows: CompareRow[] = Object.entries(prices)
+          .map(([store, price]) => ({ store, price, best: store === bestStore }))
+          .sort((a, b) => a.price - b.price);
+        setRows(nextRows);
+        const label = data.seed || data.stale
+          ? isES
+            ? "muestra · datos recientes"
+            : "sample · recent data"
+          : isES
+            ? "datos reales · cache ~1h"
+            : "live data · ~1h cache";
+        setMeta(`${comp.name ?? "arroz"} · ${label}`);
+      } catch {
+        /* ignore */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isES]);
+
+  if (loading && !rows.length) {
+    return (
+      <div className="hero-term-live border-t border-[var(--cm-outline-variant)]/30 px-4 py-3">
+        <p className="hero-term-line hero-term-muted text-xs">
+          {isES ? "Cargando compare real…" : "Loading real compare…"}
+        </p>
+      </div>
+    );
+  }
+  if (!rows.length) return null;
+
+  return (
+    <div className="hero-term-live border-t border-[var(--cm-outline-variant)]/30 px-4 py-3">
+      <p className="hero-term-line hero-term-out text-xs mb-2">{meta}</p>
+      <CompareRows rows={rows} isES={isES} />
+    </div>
+  );
 }
 
 export default function HeroPlayground() {
@@ -43,6 +141,7 @@ export default function HeroPlayground() {
   const [lines, setLines] = useState<LiveLine[]>([]);
   const [rows, setRows] = useState<CompareRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [claimingKey, setClaimingKey] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,16 +167,96 @@ export default function HeroPlayground() {
     }
   };
 
+  const applyCompareData = useCallback(
+    (data: ComparePayload, query: string, opts?: { cached?: boolean }) => {
+      const comp = data.comparison?.[0];
+      if (!comp?.prices || !Object.keys(comp.prices).length) {
+        setLines((prev) => [
+          ...prev,
+          {
+            kind: "out",
+            text: isES ? "Sin resultados para esa búsqueda." : "No results for that query.",
+          },
+        ]);
+        return;
+      }
+
+      const prices = comp.prices;
+      const bestStore = comp.best_store ?? "";
+      const nextRows: CompareRow[] = Object.entries(prices)
+        .map(([store, price]) => ({ store, price, best: store === bestStore }))
+        .sort((a, b) => a.price - b.price);
+      setRows(nextRows);
+
+      const cacheNote = opts?.cached
+        ? isES
+          ? " · demo cache"
+          : " · demo cache"
+        : "";
+      setLines((prev) => [
+        ...prev,
+        {
+          kind: "out",
+          text: `${comp.name ?? query} · ${Object.keys(prices).length} ${isES ? "tiendas" : "stores"} · ${isES ? "mejor" : "best"} ${storeLabel(bestStore)} S/ ${comp.best_price?.toFixed?.(2) ?? comp.best_price}${cacheNote}`,
+        },
+      ]);
+    },
+    [isES],
+  );
+
+  const claimFreeKey = useCallback(async () => {
+    setClaimingKey(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || typeof data.api_key !== "string") {
+        setLines((prev) => [
+          ...prev,
+          {
+            kind: "err",
+            text: isES ? "No se pudo crear la key. Intenta en /account." : "Could not create key. Try /account.",
+          },
+        ]);
+        return;
+      }
+      persistKey(data.api_key);
+      recordFunnelEvent("register", {
+        username: typeof data.username === "string" ? data.username : undefined,
+        meta: { source: "hero_playground" },
+        dedupe: false,
+      });
+      setLines((prev) => [
+        ...prev,
+        {
+          kind: "out",
+          text: isES
+            ? "✓ API key Free creada. Ejecuta de nuevo tu compare."
+            : "✓ Free API key created. Run your compare again.",
+        },
+      ]);
+    } catch {
+      setLines((prev) => [
+        ...prev,
+        { kind: "err", text: isES ? "Error de red al registrar." : "Network error during register." },
+      ]);
+    } finally {
+      setClaimingKey(false);
+    }
+  }, [isES]);
+
   const runCompare = useCallback(
     async (query: string) => {
-      if (!apiKey.startsWith("sk-")) {
+      const q = query.toLowerCase();
+      const useDemo = !apiKey.startsWith("sk-") && DEMO_QUERIES.has(q);
+
+      if (!apiKey.startsWith("sk-") && !useDemo) {
         setLines((prev) => [
           ...prev,
           {
             kind: "err",
             text: isES
-              ? "Necesitas API key gratis (tier Free). Regístrate en /account y pégala abajo."
-              : "Free-tier API key required. Register at /account and paste it below.",
+              ? `Sin key: prueba "arroz" o "leche" (demo cache) o obtén key gratis abajo.`
+              : `No key: try "arroz" or "leche" (demo cache) or get a free key below.`,
           },
         ]);
         return;
@@ -86,6 +265,20 @@ export default function HeroPlayground() {
       setLoading(true);
       setRows([]);
       try {
+        if (useDemo) {
+          const res = await fetch(`${API_URL}/public/demo/compare?q=${encodeURIComponent(q)}`);
+          const data = (await res.json()) as ComparePayload & { detail?: string };
+          if (!res.ok) {
+            setLines((prev) => [
+              ...prev,
+              { kind: "err", text: typeof data.detail === "string" ? data.detail : `Error ${res.status}` },
+            ]);
+            return;
+          }
+          applyCompareData(data, query, { cached: true });
+          return;
+        }
+
         const res = await fetch(`${API_URL}/products/compare`, {
           method: "POST",
           headers: {
@@ -94,7 +287,7 @@ export default function HeroPlayground() {
           },
           body: JSON.stringify({ query, limit: 5 }),
         });
-        const data = await res.json().catch(() => ({}));
+        const data = (await res.json()) as ComparePayload & { detail?: string };
         if (!res.ok) {
           const detail =
             typeof data.detail === "string"
@@ -105,33 +298,7 @@ export default function HeroPlayground() {
           setLines((prev) => [...prev, { kind: "err", text: detail }]);
           return;
         }
-
-        const comp = (data.comparison ?? [])[0];
-        if (!comp?.prices || !Object.keys(comp.prices).length) {
-          setLines((prev) => [
-            ...prev,
-            {
-              kind: "out",
-              text: isES ? "Sin resultados para esa búsqueda." : "No results for that query.",
-            },
-          ]);
-          return;
-        }
-
-        const prices = comp.prices as Record<string, number>;
-        const bestStore = comp.best_store as string;
-        const max = Math.max(...Object.values(prices));
-        const nextRows: CompareRow[] = Object.entries(prices)
-          .map(([store, price]) => ({ store, price, best: store === bestStore }))
-          .sort((a, b) => a.price - b.price);
-        setRows(nextRows);
-        setLines((prev) => [
-          ...prev,
-          {
-            kind: "out",
-            text: `${comp.name ?? query} · ${Object.keys(prices).length} ${isES ? "tiendas" : "stores"} · ${isES ? "mejor" : "best"} ${storeLabel(bestStore)} S/ ${comp.best_price?.toFixed?.(2) ?? comp.best_price}`,
-          },
-        ]);
+        applyCompareData(data, query);
       } catch {
         setLines((prev) => [
           ...prev,
@@ -141,7 +308,7 @@ export default function HeroPlayground() {
         setLoading(false);
       }
     },
-    [apiKey, isES],
+    [apiKey, isES, applyCompareData],
   );
 
   const onSubmit = (e: FormEvent) => {
@@ -189,15 +356,18 @@ export default function HeroPlayground() {
         aria-label={isES ? "Terminal CLI Market" : "CLI Market terminal"}
       >
         {mode === "demo" ? (
-          <HeroTerminal />
+          <>
+            <HeroTerminal />
+            <CachedDemoPanel isES={isES} />
+          </>
         ) : (
           <div className="hero-term-live">
             <div ref={outputRef} className="hero-term-live-output">
               {lines.length === 0 ? (
                 <p className="hero-term-line hero-term-muted text-sm">
                   {isES
-                    ? "Escribe un comando compare. Usa tu API key gratis (tier Free)."
-                    : "Type a compare command. Uses your free-tier API key."}
+                    ? 'Sin key: compare "arroz" o "leche" (cache). Otras búsquedas → key gratis abajo.'
+                    : 'No key: compare "arroz" or "leche" (cache). Other queries → free key below.'}
                 </p>
               ) : null}
               {lines.map((l, i) => (
@@ -210,25 +380,7 @@ export default function HeroPlayground() {
                   {l.text}
                 </div>
               ))}
-              {rows.map((r) => {
-                const max = Math.max(...rows.map((x) => x.price));
-                const w = max > 0 ? Math.round((r.price / max) * 100) : 0;
-                return (
-                  <div
-                    key={r.store}
-                    className={`hero-term-row hero-term-row-on${r.best ? " hero-term-row-best hero-term-row-tagged" : ""}`}
-                  >
-                    <span className="hero-term-lb">{storeLabel(r.store)}</span>
-                    <div className="hero-term-track">
-                      <div className="hero-term-fill" style={{ width: `${w}%` }} />
-                    </div>
-                    <span className="hero-term-price">
-                      S/ {r.price.toFixed(2)}
-                      {r.best ? <span className="hero-term-tag">✓ {isES ? "MEJOR" : "BEST"}</span> : null}
-                    </span>
-                  </div>
-                );
-              })}
+              <CompareRows rows={rows} isES={isES} />
               {loading ? (
                 <div className="hero-term-line hero-term-muted">{isES ? "Consultando API…" : "Calling API…"}</div>
               ) : null}
@@ -237,16 +389,34 @@ export default function HeroPlayground() {
               <label className="sr-only" htmlFor="hero-api-key">
                 API key
               </label>
-              <input
-                id="hero-api-key"
-                type="password"
-                value={apiKey}
-                onChange={(e) => persistKey(e.target.value)}
-                placeholder="sk-..."
-                className="hero-term-key-input"
-                autoComplete="off"
-              />
-              <div className="flex gap-2 w-full">
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  id="hero-api-key"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => persistKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="hero-term-key-input flex-1 min-w-[140px]"
+                  autoComplete="off"
+                />
+                {!apiKey.startsWith("sk-") ? (
+                  <button
+                    type="button"
+                    className="hero-playground-get-key"
+                    disabled={claimingKey}
+                    onClick={() => void claimFreeKey()}
+                  >
+                    {claimingKey
+                      ? isES
+                        ? "Creando…"
+                        : "Creating…"
+                      : isES
+                        ? "Key gratis"
+                        : "Free key"}
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex gap-2 w-full mt-2">
                 <span className="hero-term-cmd py-2 shrink-0">$</span>
                 <input
                   value={input}
@@ -255,26 +425,18 @@ export default function HeroPlayground() {
                   spellCheck={false}
                   aria-label={isES ? "Comando" : "Command"}
                 />
-                <button type="submit" className="hero-playground-run" disabled={loading}>
+                <button type="submit" className="hero-playground-run" disabled={loading || claimingKey}>
                   {isES ? "Ejecutar" : "Run"}
                 </button>
               </div>
-              {!apiKey.startsWith("sk-") ? (
-                <p className="text-[10px] font-mono text-[var(--cm-on-surface-variant)]/70 mt-2">
-                  {isES ? "Sin key → " : "No key → "}
-                  <Link href="/account" className="text-[var(--cm-data)] underline underline-offset-2">
-                    {isES ? "crear cuenta gratis" : "free account"}
-                  </Link>
-                </p>
-              ) : null}
             </form>
           </div>
         )}
       </div>
       <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono text-center">
         {isES
-          ? `▸ compare real · tier Free · ${MARKET_STATS.retailersVerified} verificados · ${MARKET_STATS.mcpTools} MCP`
-          : `▸ live compare · free tier · ${MARKET_STATS.retailersVerified} verified · ${MARKET_STATS.mcpTools} MCP`}
+          ? `▸ arroz/leche sin key (cache) · compare real con key Free · ${MARKET_STATS.retailersVerified} verificados`
+          : `▸ arroz/leche no key (cache) · live compare with free key · ${MARKET_STATS.retailersVerified} verified`}
       </p>
     </div>
   );
