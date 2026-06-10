@@ -24,19 +24,19 @@ export default function BillingCheckoutTrigger({
   const defaultLabel =
     kind.type === "build-starter"
       ? isES
-        ? "Suscribir Starter →"
-        : "Subscribe Starter →"
+        ? "Elegir Starter →"
+        : "Choose Starter →"
       : kind.type === "build-pro-founding"
         ? isES
-          ? "Pro Founding $29 →"
-          : "Pro Founding $29 →"
-        : kind.type === "build-pro"
-          ? isES
-            ? "Configurar Pro →"
-            : "Set up Pro →"
-          : isES
-            ? "Suscribir →"
-            : "Subscribe →";
+          ? "Aprovechar $29 →"
+          : "Claim $29 →"
+      : kind.type === "build-pro"
+        ? isES
+          ? "Elegir Pro →"
+          : "Choose Pro →"
+        : isES
+          ? "Suscribir →"
+          : "Subscribe →";
 
   const label = isES ? label_es ?? defaultLabel : label_en ?? defaultLabel;
 
