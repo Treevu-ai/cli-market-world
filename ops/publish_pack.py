@@ -57,6 +57,9 @@ class ChannelCopy:
     path_label: str
     status: str
     data_gated: bool
+    preamble: str
+    sections: list[tuple[str, str]]
+    hooks: str
     post: str
     comment: str
     hashtags: str
@@ -170,48 +173,19 @@ def _build_channel_slack_messages(
         if copy:
             gated = ""
             if copy.data_gated and not metrics.get("gate_pass"):
-                gated = "⛔ _Data-gated — NO publicar hasta gate abierto._\n\n"
+                gated = "⛔ _Data-gated — NO publicar hasta gate abierto._"
 
-            post = apply_live_metrics(copy.post, metrics) if copy.post else ""
-            hashtags = (copy.hashtags or "").strip()
-            post_with_tags = post
-            if post and hashtags:
-                post_with_tags = f"{post.rstrip()}\n\n{hashtags}"
-
-            post_msg = [
+            meta = [
                 _slack_divider(),
-                "*PASO 1 — COPIAR Y PUBLICAR*",
-                "_Pega en el cuerpo. Sin link en el post principal._",
-                _slack_divider(),
-                "",
-                gated.rstrip(),
+                "*BORRADOR — content repo*",
                 f"Estado: `{copy.status}`" + (" · data-gated" if copy.data_gated else ""),
-                "",
-            ]
-            if post_with_tags:
-                post_msg.append(slack_copy_block(post_with_tags))
-            elif post:
-                post_msg.append(slack_copy_block(post))
-            else:
-                post_msg.append("_(sin borrador de post)_")
-            messages.append("\n".join(ln for ln in post_msg if ln is not None))
-
-            if label.startswith("LinkedIn"):
-                asset = _asset_line(copy, campaign_day)
-                messages.append(f"🖼 *Imagen:* adjuntar `{asset}`")
-
-            comment_msg = [
+                "_Cada bloque = misma sección que en GitHub. Sin omitir._",
                 _slack_divider(),
-                "*PASO 2 — PRIMER COMENTARIO*",
-                "_Pégalo justo después de publicar._",
-                _slack_divider(),
-                "",
             ]
-            if copy.comment:
-                comment_msg.append(slack_copy_block(copy.comment.strip()))
-            else:
-                comment_msg.append("_(sin borrador — añadir CTA manual)_")
-            messages.append("\n".join(comment_msg))
+            messages.append("\n".join(meta))
+            messages.extend(
+                _slack_messages_from_channel_copy(copy, metrics, gated_warn=gated)
+            )
             messages.append(
                 "\n".join(
                     [
@@ -225,13 +199,13 @@ def _build_channel_slack_messages(
     if label.startswith("Twitter"):
         tw = _load_twitter_day(path, for_date)
         if tw:
-            post, comment = tw
+            heading, post = tw
             post = apply_live_metrics(post, metrics)
             messages.append(
                 "\n".join(
                     [
                         _slack_divider(),
-                        "*PASO 1 — THREAD / POST*",
+                        f"*{heading}*",
                         _slack_divider(),
                         "",
                         slack_copy_block(post),
@@ -242,11 +216,6 @@ def _build_channel_slack_messages(
                 "\n".join(
                     [
                         _slack_divider(),
-                        f"*PASO 2 — PRIMER REPLY ({channel})*",
-                        _slack_divider(),
-                        "",
-                        slack_copy_block(comment),
-                        "",
                         f"✅ *Cerrar:* `cd cli-market-content && {publish_close_command(for_date)}`",
                     ]
                 )
@@ -322,6 +291,10 @@ def _scheduled_on_date(path, for_date: date) -> bool:
     return True
 
 
+def _is_already_published_fm(fm: dict[str, str]) -> bool:
+    return (fm.get("status") or "").strip().lower() == "published"
+
+
 def _find_published_on_date(directory, glob_pattern: str, for_date: date):
     """Return draft whose frontmatter published_at matches for_date exactly."""
     if not directory.is_dir():
@@ -329,6 +302,8 @@ def _find_published_on_date(directory, glob_pattern: str, for_date: date):
     iso = for_date.isoformat()
     for path in sorted(directory.glob(glob_pattern)):
         fm, _ = _parse_frontmatter(path.read_text(encoding="utf-8"))
+        if _is_already_published_fm(fm):
+            continue
         if (fm.get("published_at") or "").strip() == iso:
             return path
     return None
@@ -350,6 +325,54 @@ def _section(body: str, heading: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+def _body_preamble(body: str) -> str:
+    """Title + metadata lines before the first ## / ### section."""
+    m = re.search(r"(?m)^#{2,3} ", body)
+    if not m:
+        return body.strip()
+    return body[: m.start()].strip()
+
+
+def _iter_body_sections(body: str) -> list[tuple[str, str]]:
+    """All ## / ### sections in file order — mirrors content-repo markdown."""
+    pattern = re.compile(r"(?m)^(#{2,3})\s+(.+?)\s*\n")
+    matches = list(pattern.finditer(body))
+    sections: list[tuple[str, str]] = []
+    for i, m in enumerate(matches):
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(body)
+        sections.append((m.group(2).strip(), body[start:end].strip()))
+    return sections
+
+
+def _section_content_by_heading_prefix(
+    sections: list[tuple[str, str]], *prefixes: str
+) -> str:
+    for heading, content in sections:
+        for prefix in prefixes:
+            if heading == prefix or heading.startswith(prefix):
+                return content
+    return ""
+
+
+def _hooks_section(body: str, sections: list[tuple[str, str]]) -> str:
+    text = _section_content_by_heading_prefix(
+        sections, "Hook (elegir 1)", "Hooks (elegir 1)", "Hook", "Hooks"
+    )
+    if text:
+        return text
+    for heading in (
+        "Hook (elegir 1)",
+        "Hooks (elegir 1)",
+        "Hook",
+        "Hooks",
+    ):
+        text = _section(body, heading)
+        if text:
+            return text
+    return ""
+
+
 def _load_channel_md(path) -> ChannelCopy | None:
     if not path.is_file():
         return None
@@ -357,18 +380,63 @@ def _load_channel_md(path) -> ChannelCopy | None:
     fm, body = _parse_frontmatter(raw)
     title_m = re.search(r"^# .+ — (.+)$", body, re.MULTILINE)
     status = (fm.get("status") or "?").lower()
+    preamble = _body_preamble(body)
+    sections = _iter_body_sections(body)
+    post = _section(body, "Post (copiar a LinkedIn — sin link en cuerpo)") or _section(
+        body, "Post"
+    )
     return ChannelCopy(
         name=title_m.group(1).strip() if title_m else path.stem,
         path_label=rel_to_content(path),
         status=status,
         data_gated=status == "data-gated" or "data-gate" in body.lower(),
-        post=_section(body, "Post (copiar a LinkedIn — sin link en cuerpo)")
-        or _section(body, "Post"),
+        preamble=preamble,
+        sections=sections,
+        hooks=_hooks_section(body, sections),
+        post=post,
         comment=_section(body, "Primer comentario"),
         hashtags=_section(body, "Hashtags"),
-        checklist=_section(body, "Checklist"),
-        asset_hint=_section(body, "Assets"),
+        checklist=_section_content_by_heading_prefix(sections, "Checklist"),
+        asset_hint=_section_content_by_heading_prefix(sections, "Assets"),
     )
+
+
+def _slack_messages_from_channel_copy(
+    copy: ChannelCopy,
+    metrics: dict[str, Any],
+    *,
+    gated_warn: str = "",
+) -> list[str]:
+    """One Slack message per markdown section — exact content-repo parity."""
+    messages: list[str] = []
+    if copy.preamble:
+        preamble = apply_live_metrics(copy.preamble, metrics)
+        messages.append(
+            "\n".join(
+                [
+                    _slack_divider(),
+                    "*ENCABEZADO*",
+                    _slack_divider(),
+                    "",
+                    slack_copy_block(preamble),
+                ]
+            )
+        )
+    for heading, content in copy.sections:
+        body = apply_live_metrics(content, metrics) if content else ""
+        block = slack_copy_block(body) if body else "_(sección vacía en borrador)_"
+        msg_lines = [
+            _slack_divider(),
+            f"*{heading}*",
+            _slack_divider(),
+            "",
+        ]
+        if gated_warn and heading.startswith("Post"):
+            msg_lines.append(gated_warn.rstrip())
+            msg_lines.append("")
+        msg_lines.append(block)
+        messages.append("\n".join(msg_lines))
+    return messages
 
 
 def _linkedin_company_dir():
@@ -391,24 +459,17 @@ def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
         return None
     raw = path.read_text(encoding="utf-8")
     _, body = _parse_frontmatter(raw)
-    heading = _WEEKDAY_TWITTER.get(for_date.weekday(), "")
-    if not heading:
+    weekday = _WEEKDAY_TWITTER.get(for_date.weekday(), "")
+    if not weekday:
         return None
-    post = _section(body, f"{heading} — Thread: What 43K prices taught us about LATAM retail")
-    if not post:
-        post = _section(body, heading)
-    if not post:
-        post = _section(body, f"{heading} — Stat drop") or _section(body, f"{heading} — Hot take")
-    if not post:
-        return None
-    # Strip markdown code fence wrapper if present
-    post = re.sub(r"^```\n?", "", post.strip())
-    post = re.sub(r"\n?```$", "", post.strip())
-    comment = (
-        "Pro $39/mo — alertas + MCP + checkout para agentes que monitorean precios:\n"
-        "https://cli-market.dev/#pro-checkout?utm_source=twitter&utm_campaign=week2"
-    )
-    return post, comment
+    for heading, content in _iter_body_sections(body):
+        if not heading.startswith(weekday):
+            continue
+        post = content.strip()
+        post = re.sub(r"^```\n?", "", post)
+        post = re.sub(r"\n?```$", "", post)
+        return heading, post.strip()
+    return None
 
 
 def _load_calendar_channels_module():
@@ -488,38 +549,32 @@ def _channel_blocks(
     *,
     campaign_day: int = 0,
 ) -> list[str]:
+    del campaign_day  # assets live inside copy.sections from content repo
     gated_warn = ""
     if copy.data_gated and not metrics.get("gate_pass"):
         gated_warn = "⛔ _Data-gated — NO publicar hasta gate abierto._\n"
-
-    post = apply_live_metrics(copy.post, metrics) if copy.post else ""
-    hashtags = (copy.hashtags or "").strip()
-    post_with_tags = post
-    if post and hashtags:
-        post_with_tags = f"{post.rstrip()}\n\n{hashtags}"
 
     lines = [
         f"━━━ *{label}* · `{copy.path_label}` ━━━",
         gated_warn.rstrip(),
         f"Estado: `{copy.status}`" + (" · data-gated" if copy.data_gated else ""),
-        "",
-        "*1) POST + hashtags + imagen* _(copiar y publicar)_",
+        "_Borrador completo — mismas secciones que en content repo._",
         "",
     ]
-    if post_with_tags:
-        lines += [slack_copy_block(post_with_tags), ""]
-    elif post:
-        lines += [slack_copy_block(post), ""]
-
-    if label.startswith("LinkedIn"):
-        asset = _asset_line(copy, campaign_day)
-        lines += [f"🖼 *Imagen:* `{asset}`", ""]
-
-    lines += ["*2) PRIMER COMENTARIO* _(pegar justo después de publicar)_", ""]
-    if copy.comment:
-        lines += [slack_copy_block(copy.comment.strip()), ""]
-    else:
-        lines += ["_(sin borrador de comentario — añadir CTA manual)_", ""]
+    if copy.preamble:
+        lines += [
+            "*ENCABEZADO*",
+            "",
+            slack_copy_block(apply_live_metrics(copy.preamble, metrics)),
+            "",
+        ]
+    for heading, content in copy.sections:
+        body = apply_live_metrics(content, metrics) if content else ""
+        lines += [f"*{heading}*", ""]
+        if body:
+            lines += [slack_copy_block(body), ""]
+        else:
+            lines += ["_(sección vacía)_", ""]
 
     return [ln for ln in lines if ln is not None]
 
@@ -542,19 +597,15 @@ def _single_channel_slack_parts(
     if label.startswith("Twitter"):
         tw = _load_twitter_day(path, for_date)
         if tw:
-            post, comment = tw
+            heading, post = tw
             post = apply_live_metrics(post, metrics)
             return [
                 r_header,
                 f"━━━ *{label}* · `{rel_to_content(path)}` ━━━",
                 "",
-                "*1) THREAD / POST* _(copiar y publicar)_",
+                f"*{heading}*",
                 "",
                 slack_copy_block(post),
-                "",
-                f"💬 *RICARDO — PRIMER REPLY ({ricardo_channel_label(label)})* · `{pub_date}`",
-                "",
-                slack_copy_block(comment),
                 "",
             ]
     raw = path.read_text(encoding="utf-8")
