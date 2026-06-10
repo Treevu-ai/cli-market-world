@@ -494,8 +494,8 @@ export default function BillingCheckoutModal({
             {isFounding && step !== "done" && (
               <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
                 {isES
-                  ? "Precio bloqueado · mismas capacidades que Pro"
-                  : "Locked price · same capabilities as Pro"}
+                  ? "10k consultas/día · 10 API keys · checkout retail · 10 alertas"
+                  : "10k req/day · 10 API keys · retail checkout · 10 alerts"}
               </p>
             )}
           </div>
