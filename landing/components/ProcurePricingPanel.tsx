@@ -65,9 +65,6 @@ export default function ProcurePricingPanel() {
                 {isES ? "Más popular" : "Most popular"}
               </span>
             )}
-            <p className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/70 mb-1">
-              Procure
-            </p>
             <h3 className="text-lg font-bold text-white">{plan.name}</h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2 min-h-[2.5rem]">
               {isES ? plan.description_es : plan.description_en}
