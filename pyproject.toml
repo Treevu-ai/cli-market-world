@@ -37,7 +37,7 @@ Documentation = "https://cli-market.dev/docs"
 "MCP Tools" = "https://cli-market.dev/tools"
 Stats = "https://cli-market.dev/stats"
 "API Reference" = "https://cli-market-production.up.railway.app/docs"
-"Bug Reports" = "mailto:hello@cli-market.dev"
+Support = "https://cli-market.dev/docs"
 
 [project.optional-dependencies]
 playwright = ["playwright>=1.45.0"]
