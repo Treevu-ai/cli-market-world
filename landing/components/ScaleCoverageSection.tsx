@@ -14,6 +14,20 @@ const vtexLines = {
 
 const magentoStores = ["Falabella PE/CL/CO", "Paris CL", "Ripley CL", "Liverpool MX", "El Palacio MX"];
 
+function LiveMetricValue({
+  value,
+  liveLoaded,
+}: {
+  value: string | null;
+  liveLoaded: boolean;
+}) {
+  if (value) return <>{value}</>;
+  if (!liveLoaded) {
+    return <span className="inline-block w-16 h-8 bg-white/10 rounded animate-pulse" aria-hidden />;
+  }
+  return null;
+}
+
 function Counter({ end, label, delay }: { end: number; label: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
@@ -38,7 +52,47 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
 export default function ScaleCoverageSection() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { priceLong, priceChip, stats, retailersVerified, retailersDefined } = useLiveStats();
+  const { priceLong, priceChip, stats, liveLoaded, retailersVerified, retailersDefined } = useLiveStats();
+
+  const freshnessPct =
+    stats.fresh24hPct != null ? `${stats.fresh24hPct.toFixed(0)}%` : null;
+  const freshnessSub = [
+    stats.snapshots24h != null ? `${stats.snapshots24h.toLocaleString()} snapshots 24h` : null,
+    stats.moatAgeHours != null
+      ? `${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const coveragePct =
+    stats.coverage7dPct != null ? `${stats.coverage7dPct.toFixed(0)}%` : null;
+  const coverageSub = [
+    `${retailersVerified} ${isES ? "verificados" : "verified"}`,
+    stats.collectorStatus ? `collector ${stats.collectorStatus}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const technicalMetrics = [
+    {
+      label: isES ? "Precios acumulados" : "Total snapshots",
+      value:
+        stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : null,
+    },
+    {
+      label: isES ? "Promedio diario (7d)" : "Daily avg (7d)",
+      value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : null,
+    },
+    {
+      label: isES ? "Serie histórica desde" : "Historical series since",
+      value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : null,
+    },
+    {
+      label: isES ? "Intervalo collector" : "Collector interval",
+      value: `cada ${MARKET_STATS.pricesRefreshHours}h`,
+    },
+  ].filter((item) => item.value != null);
 
   const scaleStats = [
     { end: retailersDefined, label: isES ? "retailers catálogo" : "retailers in catalog" },
@@ -108,24 +162,23 @@ export default function ScaleCoverageSection() {
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Frescura" : "Freshness"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">
-              {stats.fresh24hPct != null ? `${stats.fresh24hPct.toFixed(0)}%` : "—"}
+            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+              <LiveMetricValue value={freshnessPct} liveLoaded={liveLoaded} />
             </p>
-            <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {stats.snapshots24h != null ? `${stats.snapshots24h.toLocaleString()} snapshots 24h` : "—"}
-              {stats.moatAgeHours != null ? ` · ${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h` : ""}
-            </p>
+            {freshnessSub ? (
+              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{freshnessSub}</p>
+            ) : null}
           </div>
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Cobertura" : "Coverage"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">
-              {stats.coverage7dPct != null ? `${stats.coverage7dPct.toFixed(0)}%` : "—"}
+            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+              <LiveMetricValue value={coveragePct} liveLoaded={liveLoaded} />
             </p>
-            <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {retailersVerified} {isES ? "verificados ·" : "verified ·"} collector {stats.collectorStatus ?? "—"}
-            </p>
+            {coverageSub ? (
+              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{coverageSub}</p>
+            ) : null}
           </div>
         </div>
 
@@ -134,12 +187,7 @@ export default function ScaleCoverageSection() {
             <summary>{isES ? "Métricas técnicas del collector" : "Collector technical metrics"}</summary>
             <div className="details-body">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                {[
-                  { label: isES ? "Precios acumulados" : "Total snapshots", value: stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—" },
-                  { label: isES ? "Promedio diario (7d)" : "Daily avg (7d)", value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—" },
-                  { label: isES ? "Serie histórica desde" : "Historical series since", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
-                  { label: isES ? "Intervalo collector" : "Collector interval", value: `cada ${MARKET_STATS.pricesRefreshHours}h` },
-                ].map((item) => (
+                {technicalMetrics.map((item) => (
                   <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
                     <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-2">{item.label}</p>
                     <p className="text-lg font-bold text-white tabular-nums">{item.value}</p>
