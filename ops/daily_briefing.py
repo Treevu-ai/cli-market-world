@@ -435,10 +435,16 @@ def build_content_report(for_date: date) -> str:
 
 
 def _repo_file_link(rel_path: str) -> str:
-    repo = os.getenv("GITHUB_REPOSITORY", "")
+    """Daily reports live in cli-market-content, not the product repo."""
     server = os.getenv("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
-    if repo:
-        return f"<{server}/{repo}/blob/main/{rel_path}|Ver reporte completo>"
+    content_repo = os.getenv(
+        "GITHUB_CONTENT_REPOSITORY", "Treevu-ai/cli-market-content"
+    ).strip()
+    branch = os.getenv("GITHUB_CONTENT_REF", "main").strip()
+    if content_repo:
+        return (
+            f"<{server}/{content_repo}/blob/{branch}/{rel_path}|Ver reporte completo>"
+        )
     return f"_Repo:_ `{rel_path}`"
 
 
