@@ -24,8 +24,12 @@ function faqsFor(lang: "es" | "en") {
         a: `${billingPolicy} Canales: ${channels}. La confirmación actualiza tu tier u orden automáticamente. Comprobante: hello@cli-market.dev.`,
       },
       {
+        q: "¿El agente compra en el supermercado?",
+        a: `No directamente en el sitio del retailer. CLI Market unifica búsqueda y comparación en ${MARKET_STATS.retailersVerified} tiendas; checkout Pro crea una orden interna y cobra con Yape/Plin/PayPal (LATAM). No ejecuta el checkout de Wong, Rappi ni Mercado Libre. Ver GET /v1/capabilities.`,
+      },
+      {
         q: "¿Mis agentes pueden usar esto sin intervención humana?",
-        a: `En gran parte. Las ${MARKET_STATS.mcpTools} herramientas MCP permiten que tu agente busque, compare y arme canastas de forma autónoma. El pago aún requiere aprobación humana, y el checkout autónomo está en roadmap.`,
+        a: `Búsqueda, comparación y canasta: sí, vía las ${MARKET_STATS.mcpTools} herramientas MCP. Pago: Yape/Plin requieren confirmación manual hoy; PayPal/Mercado Pago cierran vía webhook cuando el gateway está configurado.`,
       },
       {
         q: "¿Los precios son reales?",
@@ -52,8 +56,12 @@ function faqsFor(lang: "es" | "en") {
       a: `${billingPolicy} Channels: ${channels}. Confirmation updates your tier or order automatically. Receipts: hello@cli-market.dev.`,
     },
     {
+      q: "Does the agent buy on the retailer's website?",
+      a: `No — not on the retailer's own checkout. CLI Market unifies search/compare across ${MARKET_STATS.retailersVerified} stores; Pro checkout creates an internal order and charges via Yape/Plin/PayPal (LATAM). It does not complete checkout on Wong, Rappi, or Mercado Libre. See GET /v1/capabilities.`,
+    },
+    {
       q: "Can my agents use this autonomously?",
-      a: `Mostly. All ${MARKET_STATS.mcpTools} MCP tools let your agent search, compare, and build baskets autonomously. Payment still requires human approval, and autonomous checkout is on the roadmap.`,
+      a: `Search, compare, and basket: yes, via ${MARKET_STATS.mcpTools} MCP tools. Payment: Yape/Plin need manual confirmation today; PayPal/Mercado Pago close via webhook when the gateway is configured.`,
     },
     {
       q: "Are the prices real?",

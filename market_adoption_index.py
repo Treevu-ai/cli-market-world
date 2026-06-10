@@ -87,16 +87,23 @@ def _norm_rate(rate: float | None, *, target: float) -> float:
     return round(min(100.0, max(0.0, (rate / target) * 100)), 1)
 
 
-def _observatory_maa(days: int) -> tuple[int | None, str | None]:
-    """MAA from agent_events when Observatory telemetry is active."""
+def _observatory_maa(days: int) -> tuple[int | None, str | None, int | None]:
+    """MAA + proxy from Observatory when telemetry is active."""
     try:
-        from market_observatory import count_maa, observatory_enabled
+        from market_observatory import MAA_PUBLIC_THRESHOLD, observatory_enabled, observatory_summary
 
         if observatory_enabled():
-            return count_maa(days=days, exclude_noise=True), "maa"
+            summary = observatory_summary(days=days)
+            maa = int(summary.get("maa") or 0)
+            proxy = int(summary.get("maa_proxy") or 0)
+            if maa >= MAA_PUBLIC_THRESHOLD:
+                return maa, "maa", proxy
+            if proxy > 0:
+                return proxy, "maa_proxy", maa
+            return maa, "maa", proxy
     except Exception:
         pass
-    return None, None
+    return None, None, None
 
 
 def _growth_score(downloads_7d: int | None, downloads_30d: int | None) -> tuple[float, float | None]:
@@ -274,11 +281,16 @@ def compute_adoption_index(
     pro_req = int(funnel["unique_users"].get("with_pro_request", 0) or 0)
     activated = int(funnel["unique_users"].get("activated", 0) or 0)
 
-    maa, maa_source = _observatory_maa(days)
+    maa, maa_source, maa_raw = _observatory_maa(days)
     if maa_source == "maa":
         usage_count = int(maa or 0)
         usage_label = "MAA (agent_events)"
         usage_note = "Observatory telemetry active"
+        usage_target = _target("MAA", 30.0)
+    elif maa_source == "maa_proxy":
+        usage_count = int(maa or 0)
+        usage_label = "MAA proxy (active API keys)"
+        usage_note = f"Early telemetry — raw MAA {maa_raw or 0}"
         usage_target = _target("MAA", 30.0)
     else:
         usage_count = first_search
@@ -374,12 +386,19 @@ def compute_adoption_index(
             "ttfv_median_minutes": funnel.get("ttfv_median_minutes"),
         },
         "retention_7d": retention,
-        "maa": maa if maa_source == "maa" else None,
+        "maa": maa_raw if maa_source in ("maa", "maa_proxy") else None,
+        "maa_proxy": usage_count if maa_source == "maa_proxy" else None,
         "agent_usage_proxy": {
             "label": usage_label,
             "value": usage_count,
             "note": usage_note,
             "source": maa_source or "funnel",
+        },
+        "maa_vs_pypi": {
+            "downloads_30d": downloads_30d,
+            "usage_value": usage_count,
+            "usage_source": maa_source or "funnel",
+            "note": "MAA (north star) vs PyPI downloads — different funnel stages",
         },
     }
 
@@ -538,6 +557,12 @@ def adoption_index_markdown(payload: dict[str, Any]) -> str:
             lines.append(f"  packages: {' | '.join(pkg_lines)}")
     if pypi.get("growth_pct_7d_vs_baseline") is not None:
         lines.append(f"- Growth 7d vs baseline: **{pypi['growth_pct_7d_vs_baseline']:+.1f}%**")
+    maa_vs = s.get("maa_vs_pypi") or {}
+    if maa_vs.get("usage_value") is not None:
+        lines.append(
+            f"- MAA vs PyPI: **{maa_vs.get('usage_value')}** ({maa_vs.get('usage_source')}) "
+            f"vs **{maa_vs.get('downloads_30d', '—')}** downloads 30d — _{maa_vs.get('note', '')}_"
+        )
     lines += [
         f"- Embudo: register **{funnel.get('register', '—')}** → first_search **{funnel.get('first_search', '—')}**",
         f"- Retention 7d post-search: **{ret.get('retention_rate', '—')}** "

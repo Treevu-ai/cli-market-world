@@ -92,6 +92,7 @@ T = {
         "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
         "intel_scores": "Scores compuestos (fairness, stress, aggression)",
         "tutorial": "Tutorial interactivo de 3 ejercicios (buscar, comparar, exportar) en 60 segundos",
+        "demo": "Demo sin cuenta: token temporal + search/compare en <5 min",
         "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
     },
     "en": {
@@ -133,6 +134,8 @@ T = {
         "intel_indicators": "Moat indicator catalog",
         "intel_enrichment": "Enrichment signals (OFF, Wiki, weather, CPI)",
         "intel_scores": "Composite scores (fairness, stress, aggression)",
+        "tutorial": "Interactive 3-step tutorial (search, compare, export) in 60 seconds",
+        "demo": "No-account demo: temp token + search/compare in under 5 minutes",
     },
 }
 
@@ -665,6 +668,8 @@ def cmd_checkout(args):
     msg = data.get("message", "Orden creada — pago pendiente")
     console.print(f"[#00FF88]✓ {msg}[/]")
     console.print(f"[bold]Orden: {order_id}[/] — Total: {currency} {total:.2f} — Estado: {status}")
+    if data.get("confirmation_mode") == "manual":
+        console.print("[yellow]Confirmación manual: el pago se valida por webhook o confirmación ops.[/]")
     if data.get("qr_url"):
         console.print(f"[dim]QR: {data['qr_url']}[/]")
 
@@ -1466,9 +1471,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]ONBOARDING[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]you are here[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]account + first search + MCP[/]\n"
-            '  [cyan]2.[/] [cyan]market search "milk" --country PE[/]\n'
-            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
+            "  [cyan]1.[/] [cyan]market demo[/]         [dim]no account · search + compare[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]account + checkout + MCP[/]\n"
+            '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
             "  [dim]     market register[/]  [dim]optional if you only need sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
@@ -1479,9 +1485,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]INICIO RÁPIDO[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]estás aquí[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]cuenta + primera búsqueda + MCP[/]\n"
-            '  [cyan]2.[/] [cyan]market search "leche" --country PE[/]\n'
-            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
+            "  [cyan]1.[/] [cyan]market demo[/]         [dim]sin cuenta · buscar + comparar[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]cuenta + checkout + MCP[/]\n"
+            '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
             "  [dim]     market register[/]  [dim]opcional si solo necesitas sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
@@ -1720,9 +1727,9 @@ def cmd_hello(args):
         hint = "run market account" if is_en else "ejecute market account"
     else:
         hint = (
-            "run market init to begin"
+            "run market demo to try live prices"
             if is_en
-            else "ejecute market init para comenzar"
+            else "ejecute market demo para probar precios reales"
         )
     console.print(
         f"[bold #00FF88]market>[/] [dim]{hint}[/][bold #00FF88]_[/]"
@@ -2089,10 +2096,102 @@ def _report_onboarding_event(event: str, *, meta: dict | None = None, dedupe: bo
         pass
 
 
+def _demo_api(method: str, path: str, token: str, json_data: dict | None = None) -> dict:
+    import httpx
+
+    headers: dict[str, str] = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    url = f"{API}{path}"
+    if method == "GET":
+        resp = httpx.get(url, headers=headers, timeout=30)
+    else:
+        resp = httpx.post(url, headers=headers, json=json_data or {}, timeout=30)
+    if resp.status_code >= 400:
+        detail = resp.json().get("detail", resp.text) if resp.headers.get("content-type", "").startswith("application/json") else resp.text
+        return {"error": detail, "status": resp.status_code}
+    return resp.json()
+
+
+def cmd_demo(args):
+    """Unified dev activation: demo token → search → compare (no account)."""
+    country = getattr(args, "country", "PE") or "PE"
+    is_en = ui.is_en()
+    console.print(Panel.fit(
+        "[bold]CLI Market Demo[/] — "
+        + ("no account, live prices in <5 min" if is_en else "sin cuenta, precios reales en <5 min"),
+        border_style="#00FF88",
+    ))
+    console.print("[dim]Fetching demo session...[/]" if is_en else "[dim]Obteniendo sesión demo...[/]")
+    session = _demo_api("POST", "/public/demo/session", "", {})
+    if session.get("error"):
+        console.print(f"[red]{session['error']}[/]")
+        sys.exit(1)
+    token = session.get("demo_token") or ""
+    if not token:
+        console.print("[red]Demo session failed[/]" if is_en else "[red]No se pudo crear la sesión demo[/]")
+        sys.exit(1)
+    expires = session.get("expires_at", "?")
+    remaining = session.get("requests_remaining", session.get("max_requests", 50))
+    console.print(
+        f"[green]✓[/] Demo token · expires {expires} · {remaining} requests left"
+        if is_en
+        else f"[green]✓[/] Token demo · expira {expires} · {remaining} requests"
+    )
+
+    query = "leche"
+    console.print(f'\n[cyan]1/2[/] market search "{query}" --country {country}')
+    search = _demo_api("POST", "/products/search", token, {"query": query, "limit": 5})
+    if search.get("error"):
+        console.print(f"[yellow]{search['error']}[/]")
+        if search.get("status") != 401:
+            console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
+    else:
+        total = search.get("total", len(search.get("results", [])))
+        console.print(f"[green]✓[/] {total} results" if is_en else f"[green]✓[/] {total} resultados")
+        if search.get("source_health", {}).get("summary"):
+            sh = search["source_health"]["summary"]
+            console.print(f"[dim]store health: ok={sh.get('ok', 0)} partial={sh.get('partial', 0)} dead={sh.get('dead', 0)}[/]")
+
+    console.print(f'\n[cyan]2/2[/] market compare "{query}" --country {country}')
+    compare = _demo_api("POST", "/products/compare", token, {"query": query, "limit": 5})
+    if compare.get("error"):
+        console.print(f"[yellow]{compare['error']}[/]")
+    else:
+        n = len(compare.get("comparison", []))
+        stores = compare.get("stores_compared", "?")
+        console.print(
+            f"[green]✓[/] {n} products across {stores} stores"
+            if is_en
+            else f"[green]✓[/] {n} productos en {stores} tiendas"
+        )
+
+    if ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, {
+            "command": "demo",
+            "session": session,
+            "search": search,
+            "compare": compare,
+            "next_commands": ["market init", "market register", "market mcp-setup --ide cursor"],
+        }), console)
+        return
+
+    console.print()
+    console.print(
+        "[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP"
+        if is_en
+        else "[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP"
+    )
+    console.print("[dim]Demo tokens cannot checkout. Register when you need cart/payments.[/]" if is_en else "[dim]Los tokens demo no pueden hacer checkout. Registrate para carrito y pagos.[/]")
+    _report_onboarding_event("use_case_demo", meta={"flow": "market_demo", "country": country, "agent_source": "demo"})
+
+
 def cmd_tutorial(args):
     """Interactive 3-step tutorial (P0 from product handoff)."""
     country = getattr(args, "country", "PE") or "PE"
     demo = getattr(args, "demo", False)
+    if demo:
+        console.print("[dim]Tip: `market demo` is the preferred no-account path. tutorial --demo uses offline fallbacks.[/]")
     console.print(Panel.fit(
         "[bold]CLI Market Tutorial — 3 ejercicios en 60 segundos[/]",
         border_style="#00FF88",
@@ -2500,6 +2599,9 @@ def main():
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
     p.add_argument("--demo", action="store_true", help="Run with demo data (no live collector)")
 
+    p = sub.add_parser("demo", help=t("demo"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+
     p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
     p.add_argument(
         "--ide",
@@ -2568,7 +2670,7 @@ def main():
         "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
-        "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
+        "demo": cmd_demo, "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
     }
     cmd = args.command
     if cmd == "intel":

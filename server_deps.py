@@ -36,12 +36,30 @@ def auth_user(token: str) -> str:
 
     Raises 401 on invalid credentials.
     """
+    if token.startswith("demo-"):
+        from market_core.demo_tokens import validate_demo_token
+
+        sess = validate_demo_token(token)
+        if not sess:
+            raise HTTPException(status_code=401, detail="Demo token expired or invalid. Run: market demo")
+        return f"demo:{sess['session_id']}"
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
         return "admin"
     if token.startswith("sk-"):
         key_data = db_validate_api_key(token)
         if key_data:
             return key_data["username"]
+    from market_core.auth_tokens import lookup_session_token
+
+    session = lookup_session_token(token)
+    if session:
+        if session.get("expired"):
+            raise HTTPException(
+                status_code=401,
+                detail="Session token expired. Run: market login or refresh.",
+                headers={"X-Token-Expired": "true"},
+            )
+        return session["username"]
     users = db_get_users()
     for username, data in users.items():
         if data.get("token") == token:
@@ -148,7 +166,18 @@ def require_api_key(authorization: str | None) -> str:
                 "or upgrade to Pro at /billing/paypal."
             ),
         )
-    username = auth_user(authorization.replace("Bearer ", ""))
+    token = authorization.replace("Bearer ", "").strip()
+    if token.startswith("demo-"):
+        from market_core.demo_tokens import consume_demo_request
+
+        sess = consume_demo_request(token)
+        if not sess:
+            raise HTTPException(
+                status_code=401,
+                detail="Demo token expired or quota exhausted. Run: market demo",
+            )
+        return f"demo:{sess['session_id']}"
+    username = auth_user(token)
     sub = db_get_subscription(username)
     # -1 means unlimited (enterprise); skip rate limiting entirely.
     if sub["req_limit_min"] != -1:
@@ -194,7 +223,13 @@ def require_pro(authorization: str | None) -> str:
 def require_checkout_access(username: str) -> None:
     """Raise 403 if user's tier cannot use checkout (unless legacy bypass)."""
     from market_core import user_can_checkout
+    from market_core.demo_tokens import is_demo_username
 
+    if is_demo_username(username):
+        raise HTTPException(
+            status_code=403,
+            detail="Demo tokens cannot checkout. Run: market init",
+        )
     if user_can_checkout(username):
         return
     raise HTTPException(

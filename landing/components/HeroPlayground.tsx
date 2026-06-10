@@ -14,6 +14,7 @@ import {
   readPlaygroundKey,
   type PlaygroundMode,
 } from "@/lib/playground";
+import { ensureDemoSession, readDemoToken } from "@/lib/demoSession";
 
 const DEMO_QUERIES = new Set(["arroz", "leche"]);
 
@@ -86,6 +87,7 @@ export default function HeroPlayground() {
     const saved = readPlaygroundKey();
     if (saved.startsWith("sk-")) setApiKey(saved);
     if (hasSeenPlaygroundDemo()) setMode("live");
+    void ensureDemoSession(typeof window !== "undefined" ? window.location.hostname : "");
   }, []);
 
   useEffect(() => {
@@ -191,16 +193,17 @@ export default function HeroPlayground() {
   const runCompare = useCallback(
     async (query: string) => {
       const q = query.toLowerCase();
-      const useDemo = !apiKey.startsWith("sk-") && DEMO_QUERIES.has(q);
+      const demoToken = readDemoToken();
+      const useCachedDemo = !apiKey.startsWith("sk-") && !demoToken.startsWith("demo-") && DEMO_QUERIES.has(q);
 
-      if (!apiKey.startsWith("sk-") && !useDemo) {
+      if (!apiKey.startsWith("sk-") && !demoToken.startsWith("demo-") && !useCachedDemo) {
         setLines((prev) => [
           ...prev,
           {
             kind: "err",
             text: isES
-              ? `Sin key: prueba "arroz" o "leche" (demo cache) o obtén key gratis abajo.`
-              : `No key: try "arroz" or "leche" (demo cache) or get a free key below.`,
+              ? `Sin key: espera el token demo o prueba "arroz"/"leche" (cache).`
+              : `No key: wait for demo token or try "arroz"/"leche" (cache).`,
           },
         ]);
         return;
@@ -209,7 +212,7 @@ export default function HeroPlayground() {
       setLoading(true);
       setRows([]);
       try {
-        if (useDemo) {
+        if (useCachedDemo) {
           const res = await fetch(`${API_URL}/public/demo/compare?q=${encodeURIComponent(q)}`);
           const data = (await res.json()) as ComparePayload & { detail?: string };
           if (!res.ok) {
@@ -223,11 +226,12 @@ export default function HeroPlayground() {
           return;
         }
 
+        const bearer = apiKey.startsWith("sk-") ? apiKey : demoToken;
         const res = await fetch(`${API_URL}/products/compare`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
+            Authorization: `Bearer ${bearer}`,
           },
           body: JSON.stringify({ query, limit: 5 }),
         });
