@@ -7,7 +7,10 @@ import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats, formatMarketingPrices, refreshLabel } from "@/hooks/useLiveStats";
 import { MARKET_STATS } from "@/lib/marketStats";
 
-const SCROLL_VIEWPORTS = 5.5;
+function scrollViewports() {
+  if (typeof window === "undefined") return 5;
+  return window.matchMedia("(max-width: 768px)").matches ? 3.75 : 5;
+}
 
 const ACTS = [
   {
@@ -279,7 +282,7 @@ export default function ScrollStorySection() {
     const stage = actsRef.current;
     const progress = progressRef.current;
     const cue = cueRef.current;
-    if (!section || !pin || !stage) return;
+    if (!section || !pin || !stage || !progress) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
@@ -287,54 +290,35 @@ export default function ScrollStorySection() {
     gsap.registerPlugin(ScrollTrigger);
 
     const actEls = gsap.utils.toArray<HTMLElement>(".scroll-story-act", stage);
-    const dots = gsap.utils.toArray<HTMLElement>(".scroll-story-dot", progress);
+    const dots = gsap.utils.toArray<HTMLButtonElement>(".scroll-story-dot", progress);
     const HOLD = 1;
     const SWAP = 0.22;
-
-    const setActiveDot = (idx: number) => {
-      dots.forEach((dot, i) => {
-        dot.classList.toggle("scroll-story-dot-active", i === idx);
-      });
-    };
+    let activeIdx = 0;
 
     const markAct = (idx: number) => {
+      if (idx === activeIdx) return;
+      activeIdx = idx;
       actEls.forEach((el, i) => {
         el.classList.toggle("scroll-story-act-active", i === idx);
         el.setAttribute("aria-hidden", i === idx ? "false" : "true");
       });
-      setActiveDot(idx);
+      dots.forEach((dot, i) => {
+        dot.classList.toggle("scroll-story-dot-active", i === idx);
+        dot.setAttribute("aria-selected", i === idx ? "true" : "false");
+      });
     };
+
+    const actVisibleFrom: number[] = [0];
+    const actSnapProgress: number[] = [];
 
     const ctx = gsap.context(() => {
       gsap.set(actEls[0], { autoAlpha: 1, y: 0, pointerEvents: "auto" });
       gsap.set(actEls.slice(1), { autoAlpha: 0, y: 18, pointerEvents: "none" });
       markAct(0);
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: () => `+=${window.innerHeight * SCROLL_VIEWPORTS}`,
-          pin,
-          scrub: 0.65,
-          anticipatePin: 1,
-          snap: {
-            snapTo: (value) => {
-              const step = 1 / (actEls.length - 1);
-              return Math.round(value / step) * step;
-            },
-            duration: { min: 0.2, max: 0.45 },
-            delay: 0.08,
-          },
-          onUpdate: (self) => {
-            if (cue) {
-              gsap.set(cue, { autoAlpha: self.progress < 0.08 ? 1 : 0 });
-            }
-          },
-        },
-      });
-
+      const tl = gsap.timeline();
       let cursor = HOLD;
+
       for (let i = 1; i < actEls.length; i++) {
         const prev = actEls[i - 1];
         const cur = actEls[i];
@@ -344,22 +328,74 @@ export default function ScrollStorySection() {
           prev,
           { autoAlpha: 0, y: -14, duration: SWAP, pointerEvents: "none", ease: "power2.in" },
           swapAt,
-        )
-          .to(
-            cur,
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: SWAP,
-              pointerEvents: "auto",
-              ease: "power2.out",
-            },
-            swapAt + SWAP,
-          )
-          .call(() => markAct(i), undefined, swapAt + SWAP);
+        ).to(
+          cur,
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: SWAP,
+            pointerEvents: "auto",
+            ease: "power2.out",
+          },
+          swapAt + SWAP,
+        );
 
-        cursor += SWAP * 2 + HOLD;
+        actVisibleFrom.push(swapAt + SWAP);
+        cursor = swapAt + SWAP * 2 + HOLD;
       }
+
+      tl.to({}, { duration: HOLD }, cursor);
+      const total = tl.duration();
+
+      for (let i = 0; i < actEls.length; i++) {
+        const start = actVisibleFrom[i];
+        const end = i < actEls.length - 1 ? actVisibleFrom[i + 1] : total;
+        actSnapProgress.push((start + end) / 2 / total);
+      }
+
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: () => `+=${window.innerHeight * scrollViewports()}`,
+        pin,
+        scrub: 0.65,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        animation: tl,
+        snap: {
+          snapTo: actSnapProgress,
+          duration: { min: 0.2, max: 0.45 },
+          delay: 0.08,
+        },
+        onUpdate: (self) => {
+          const t = self.progress * total;
+          let idx = 0;
+          for (let i = actVisibleFrom.length - 1; i >= 0; i--) {
+            if (t >= actVisibleFrom[i]) {
+              idx = i;
+              break;
+            }
+          }
+          markAct(idx);
+          if (cue) {
+            gsap.set(cue, { autoAlpha: idx === 0 && self.progress < 0.1 ? 1 : 0 });
+          }
+        },
+      });
+
+      const jumpToAct = (idx: number) => {
+        const target = actSnapProgress[Math.min(idx, actSnapProgress.length - 1)] ?? 0;
+        const y = st.start + (st.end - st.start) * target;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      };
+
+      dots.forEach((dot, i) => {
+        dot.addEventListener("click", () => jumpToAct(i));
+      });
+
+      const onResize = () => ScrollTrigger.refresh();
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
     }, section);
 
     return () => ctx.revert();
@@ -386,13 +422,25 @@ export default function ScrollStorySection() {
             </p>
           </header>
 
-          <div ref={progressRef} className="scroll-story-progress" role="tablist" aria-hidden="true">
-            <div className="scroll-story-progress-rail" />
-            {ACTS.map((act) => (
-              <span key={act.id} className={`scroll-story-dot${act.idx === "01" ? " scroll-story-dot-active" : ""}`}>
+          <div
+            ref={progressRef}
+            className="scroll-story-progress"
+            role="tablist"
+            aria-label={isES ? "Actos de la historia" : "Story acts"}
+          >
+            <div className="scroll-story-progress-rail" aria-hidden="true" />
+            {ACTS.map((act, i) => (
+              <button
+                key={act.id}
+                type="button"
+                role="tab"
+                aria-selected={i === 0}
+                aria-label={`${isES ? act.title_es : act.title_en} — ${isES ? act.headline_es : act.headline_en}`}
+                className={`scroll-story-dot${i === 0 ? " scroll-story-dot-active" : ""}`}
+              >
                 <span className="scroll-story-dot-idx">{act.idx}</span>
                 <span className="scroll-story-dot-label">{isES ? act.title_es : act.title_en}</span>
-              </span>
+              </button>
             ))}
           </div>
 
