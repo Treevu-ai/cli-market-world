@@ -64,7 +64,7 @@ market intel enrichment -c PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Precio** | $0 | $39/mes | A medida |
+| **Precio** | $0 | Starter $24/mes · Pro $39/mes · Founding $29 · Anual $390 | A medida |
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -136,7 +136,7 @@ market intel enrichment -c PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Price** | $0 | $39/mo | Custom |
+| **Price** | $0 | Starter $24/mo · Pro $39/mo · Founding $29 · Annual $390 | Custom |
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |

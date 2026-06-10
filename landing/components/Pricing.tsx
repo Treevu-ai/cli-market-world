@@ -60,6 +60,27 @@ const tiers: Tier[] = [
     href: MARKET_STATS.pypiUrl,
   },
   {
+    name: "Starter",
+    price: "$24",
+    latamPrice: "S/92",
+    period_es: "/ mes",
+    period_en: "/ month",
+    f_es: [
+      "5,000 consultas / día",
+      "3 claves API · export CSV",
+      "3 alertas de precio",
+      "Full MCP (sin checkout retail)",
+    ],
+    f_en: [
+      "5,000 requests / day",
+      "3 API keys · CSV export",
+      "3 price alerts",
+      "Full MCP (no retail checkout)",
+    ],
+    cta_es: "Suscribir Starter",
+    cta_en: "Subscribe Starter",
+  },
+  {
     name: "Pro",
     price: "$39",
     latamPrice: "S/149",
@@ -82,8 +103,8 @@ const tiers: Tier[] = [
     cta_es: "Configurar suscripción",
     cta_en: "Set up subscription",
     featured: true,
-    proNote_es: `Pagos: ${MARKET_STATS.paymentsLabel} — mismos canales para suscripción Pro y checkout retail. Facturación USD · Sinapsis Innovadora S.A.C. · RUC 20613045563.`,
-    proNote_en: `Payments: ${MARKET_STATS.paymentsLabel} — same channels for Pro billing and retail checkout. USD invoicing · Sinapsis Innovadora S.A.C. · tax ID 20613045563.`,
+    proNote_es: `Founding: $29/mes (100 plazas) · Anual $390/año. Pagos: ${MARKET_STATS.paymentsLabel}. Facturación USD · Sinapsis Innovadora S.A.C. · RUC 20613045563.`,
+    proNote_en: `Founding: $29/mo (100 seats) · Annual $390/yr. Payments: ${MARKET_STATS.paymentsLabel}. USD billing · Sinapsis Innovadora S.A.C. · tax ID 20613045563.`,
   },
   {
     name: "Enterprise",
@@ -318,7 +339,7 @@ export default function Pricing() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto mb-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 max-w-7xl mx-auto mb-14">
             {tiers.map((tier, i) => (
               <motion.div
                 key={tier.name}
@@ -326,6 +347,7 @@ export default function Pricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
+                className={tier.name === "Enterprise" ? "sm:col-span-2 xl:col-span-1" : undefined}
               >
                 <TierCard
                   tier={tier}
@@ -340,9 +362,15 @@ export default function Pricing() {
                   }
                 >
                   {tier.name === "Pro" ? (
-                    <div id="pro-checkout" className="scroll-mt-24">
-                      <ProSubscribeButton />
+                    <div id="pro-checkout" className="scroll-mt-24 space-y-2">
+                      <ProSubscribeButton kind={{ type: "build-pro", annual: billing === "annual" }} />
+                      <ProSubscribeButton
+                        kind={{ type: "build-pro-founding" }}
+                        className="w-full rounded-full border border-[var(--cm-mint)]/40 py-2.5 text-sm font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10"
+                      />
                     </div>
+                  ) : tier.name === "Starter" ? (
+                    <ProSubscribeButton kind={{ type: "build-starter" }} />
                   ) : tier.name === "Free" ? (
                     <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
                       {isES ? tier.cta_es : tier.cta_en}
