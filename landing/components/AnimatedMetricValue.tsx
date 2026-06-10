@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { animate, useInView } from "framer-motion";
 
 type Parsed =
@@ -54,26 +54,43 @@ type Props = {
 export default function AnimatedMetricValue({ value, className = "", pulseSignal = false }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-24px" });
-  const parsed = parseMetricValue(value);
-  const [display, setDisplay] = useState(parsed.kind === "text" ? parsed.display : "0");
-  const lastAnimated = useRef<string | null>(null);
+  const parsed = useMemo(() => parseMetricValue(value), [value]);
+  const finalDisplay = useMemo(
+    () => (parsed.kind === "text" ? parsed.display : parsed.format(parsed.end)),
+    [parsed],
+  );
+  const [display, setDisplay] = useState(finalDisplay);
+  const runId = useRef(0);
 
   useEffect(() => {
     if (parsed.kind === "text") {
       setDisplay(parsed.display);
       return;
     }
-    if (!inView) return;
-    if (lastAnimated.current === value) return;
-    lastAnimated.current = value;
+    if (!inView) {
+      setDisplay(finalDisplay);
+      return;
+    }
+
+    const id = ++runId.current;
+    setDisplay(parsed.format(0));
 
     const controls = animate(0, parsed.end, {
       duration: 1.35,
       ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => setDisplay(parsed.format(v)),
+      onUpdate: (v) => {
+        if (runId.current === id) setDisplay(parsed.format(v));
+      },
+      onComplete: () => {
+        if (runId.current === id) setDisplay(finalDisplay);
+      },
     });
-    return () => controls.stop();
-  }, [inView, value, parsed]);
+
+    return () => {
+      controls.stop();
+      if (runId.current === id) setDisplay(finalDisplay);
+    };
+  }, [inView, value, parsed, finalDisplay]);
 
   return (
     <span

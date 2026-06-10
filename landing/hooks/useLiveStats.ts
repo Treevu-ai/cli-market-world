@@ -28,8 +28,12 @@ export function formatPypiDownloads(n: number | null): string | null {
 }
 
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 45_000;
-  const n = indexed ?? fallback;
+  const fallback =
+    parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 53_000;
+  // Hero chip: never show depressed API glitches below marketing moat floor
+  const MOAT_FLOOR = 40_000;
+  let n = indexed ?? fallback;
+  if (n < MOAT_FLOOR) n = fallback;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
