@@ -592,7 +592,6 @@ def _single_channel_slack_parts(
     campaign_day: int,
 ) -> list[str]:
     """Slack body lines for one GTM channel (no gate intro)."""
-    pub_date = format_publish_date(for_date)
     r_header = ricardo_header(label, for_date).rstrip()
     if label.startswith("LinkedIn") or label in ("DEV.to", "Hacker News") or label.startswith("Reddit"):
         copy = _load_channel_md(path)
