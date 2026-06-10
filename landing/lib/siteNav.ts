@@ -6,6 +6,7 @@ export type NavItem = {
 
 /** Section anchors on the home page — order matches page.tsx (Navbar + SideNav + Footer). */
 export const SECTION_NAV: NavItem[] = [
+  { id: "story", es: "Historia", en: "Story" },
   { id: "casos", es: "Casos de uso", en: "Use cases" },
   { id: "coverage", es: "Cobertura", en: "Coverage" },
   { id: "how", es: "Cómo funciona", en: "How it works" },
