@@ -4,6 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 
+export interface InventoryDailyPoint {
+  day: string;
+  snapshots: number;
+}
+
 export interface LiveStats {
   indexed: number | null;
   snapshots24h: number | null;
@@ -18,6 +23,7 @@ export interface LiveStats {
   collectorIntervalH: number | null;
   pypiTotal: number | null;
   pypiDownloads30d: number | null;
+  inventoryDaily: InventoryDailyPoint[] | null;
 }
 
 export function formatPypiDownloads(n: number | null): string | null {
@@ -68,6 +74,7 @@ export function useLiveStats() {
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
     pypiTotal: MARKET_STATS.pypiDownloads || 17785,
     pypiDownloads30d: null,
+    inventoryDaily: null,
   });
 
   const fetchStats = () => {
@@ -107,6 +114,12 @@ export function useLiveStats() {
           moatStart: d.moat_start ?? null,
           collectorStatus: c.status ?? null,
           collectorIntervalH: MARKET_STATS.pricesRefreshHours, // canonical collector refresh (4h); ignore live c.interval_hours if stale (e.g. 8)
+          inventoryDaily: Array.isArray(d.inventory_daily)
+            ? d.inventory_daily.map((row: { day?: string; snapshots?: number }) => ({
+                day: String(row.day ?? ""),
+                snapshots: Number(row.snapshots ?? 0),
+              }))
+            : null,
         }));
       })
       .catch(() => {})

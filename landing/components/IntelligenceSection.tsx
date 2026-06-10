@@ -6,17 +6,17 @@ import { API_URL } from "@/lib/api";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const BENEFITS_ES = [
-  { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} precios de góndola actualizados cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
-  { icon: "📐", text: "Precios normalizados por kg/L para comparar categorías entre cadenas y países" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} indicadores intel: spread entre cadenas, inflación real, tendencias (CLI: market intel)` },
-  { icon: "🌎", text: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países — sin scraping, APIs públicas de catálogo` },
+  { icon: "▸", text: `Precios de góndola cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
+  { icon: "●", text: "Precios normalizados por kg/L para comparar categorías entre cadenas y países" },
+  { icon: "▲", text: `${MARKET_STATS.indicatorsCount} indicadores intel: spread entre cadenas, inflación real, tendencias (CLI: market intel)` },
+  { icon: "▸", text: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países — sin scraping, APIs públicas de catálogo` },
 ];
 
 const BENEFITS_EN = [
-  { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} shelf prices refreshed every ${MARKET_STATS.pricesRefreshHours}h — not 30-day-lagged estimates` },
-  { icon: "📐", text: "Prices normalized per kg/L to compare categories across chains and countries" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} intel indicators: chain spread, real inflation, historical trends (CLI: market intel)` },
-  { icon: "🌎", text: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} countries — no scraping, public catalog APIs` },
+  { icon: "▸", text: `Shelf prices every ${MARKET_STATS.pricesRefreshHours}h — not 30-day-lagged estimates` },
+  { icon: "●", text: "Prices normalized per kg/L to compare categories across chains and countries" },
+  { icon: "▲", text: `${MARKET_STATS.indicatorsCount} intel indicators: chain spread, real inflation, historical trends (CLI: market intel)` },
+  { icon: "▸", text: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} countries — no scraping, public catalog APIs` },
 ];
 
 export default function IntelligenceSection() {
@@ -116,8 +116,8 @@ export default function IntelligenceSection() {
               </p>
             </div>
             {benefits.map((b) => (
-              <div key={b.icon} className="flex items-start gap-3">
-                <span className="text-xl shrink-0 mt-0.5">{b.icon}</span>
+              <div key={b.text} className="flex items-start gap-3">
+                <span className="text-sm shrink-0 mt-0.5 font-mono text-[var(--cm-data)]">{b.icon}</span>
                 <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                   {b.text}
                 </p>
@@ -151,19 +151,19 @@ export default function IntelligenceSection() {
                 {isES ? "vs. el status quo" : "vs. the status quo"}
               </p>
               {(isES ? [
-                ["❌", "IPC oficial — 30 días de retraso"],
-                ["❌", "Encuestas de campo — costosas y puntuales"],
-                ["❌", "Scraping propio — frágil, legal gray zone"],
-                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} precios, APIs públicas`],
+                ["×", "IPC oficial — 30 días de retraso"],
+                ["×", "Encuestas de campo — costosas y puntuales"],
+                ["×", "Scraping propio — frágil, legal gray zone"],
+                ["✓", `CLI Market Intelligence — 4h refresh, APIs públicas de catálogo`],
               ] : [
-                ["❌", "Official CPI — 30-day lag"],
-                ["❌", "Field price surveys — expensive and one-off"],
-                ["❌", "In-house scraping — fragile, legal gray zone"],
-                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} prices, public APIs`],
+                ["×", "Official CPI — 30-day lag"],
+                ["×", "Field price surveys — expensive and one-off"],
+                ["×", "In-house scraping — fragile, legal gray zone"],
+                ["✓", `CLI Market Intelligence — 4h refresh, public catalog APIs`],
               ]).map(([icon, text]) => (
                 <div key={text} className="flex items-start gap-2">
-                  <span className="text-sm shrink-0">{icon}</span>
-                  <p className={`text-sm ${icon === "✅" ? "text-[var(--cm-mint)] font-medium" : "text-[var(--cm-on-surface-variant)]/60 line-through"}`}>
+                  <span className="text-sm shrink-0 font-mono">{icon}</span>
+                  <p className={`text-sm ${icon === "✓" ? "text-[var(--cm-mint)] font-medium" : "text-[var(--cm-on-surface-variant)]/60 line-through"}`}>
                     {text}
                   </p>
                 </div>
