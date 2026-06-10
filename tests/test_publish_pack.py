@@ -188,18 +188,23 @@ def test_channels_for_date_finds_company_by_published_at(tmp_path, monkeypatch):
     assert not any("Company-Day-08" in p for p in paths)
 
 
-def test_channels_for_date_skips_published_spike_reddits_on_june_10(monkeypatch):
-    """After spike is marked published, reddits must not reappear on the same date."""
+def test_activation_blitz_june_10_channels(monkeypatch):
+    """Activation Blitz routes Day-11 + one Reddit, not spike Day-10."""
     content_dir = Path(__file__).resolve().parent.parent.parent / "cli-market-content"
-    if not (content_dir / "reddit" / "reddit-02-python-tutorial.md").is_file():
+    if not (content_dir / "scripts" / "calendar_channels.py").is_file():
         import pytest
 
-        pytest.skip("cli-market-content checkout required for reddit channel schedule")
+        pytest.skip("cli-market-content checkout required for activation schedule")
     monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(content_dir))
     items = channels_for_date(date(2026, 6, 10), 10)
     labels = [label for label, _ in items]
-    assert "Reddit (r/Python)" not in labels
+    paths = [path.name for _, path in items]
+    assert "Day-11.md" in paths
+    assert "Day-10.md" not in paths
+    assert "Reddit (r/Python)" in labels
     assert "Reddit (r/aiagents)" not in labels
+    assert "WhatsApp" in labels
+    assert "Instagram" in labels
 
 
 def test_slack_copy_block_preserves_bold_markers():

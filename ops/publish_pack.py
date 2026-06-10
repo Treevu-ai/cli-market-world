@@ -454,7 +454,7 @@ _WEEKDAY_TWITTER = {
 }
 
 
-def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
+def _load_weekday_section(path, for_date: date) -> tuple[str, str] | None:
     if not path.is_file():
         return None
     raw = path.read_text(encoding="utf-8")
@@ -470,6 +470,10 @@ def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
         post = re.sub(r"\n?```$", "", post)
         return heading, post.strip()
     return None
+
+
+def _load_twitter_day(path, for_date: date) -> tuple[str, str] | None:
+    return _load_weekday_section(path, for_date)
 
 
 def _load_calendar_channels_module():
@@ -594,10 +598,10 @@ def _single_channel_slack_parts(
         copy = _load_channel_md(path)
         if copy:
             return [r_header, *_channel_blocks(label, copy, metrics, campaign_day=campaign_day)]
-    if label.startswith("Twitter"):
-        tw = _load_twitter_day(path, for_date)
-        if tw:
-            heading, post = tw
+    if label.startswith("Twitter") or label.startswith("WhatsApp") or label.startswith("Instagram"):
+        section = _load_weekday_section(path, for_date)
+        if section:
+            heading, post = section
             post = apply_live_metrics(post, metrics)
             return [
                 r_header,
