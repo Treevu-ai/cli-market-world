@@ -30,6 +30,7 @@ cli-market-content/
 docs/linkedin/assets/**/*.png
 docs/linkedin/assets/**/*.gif
 ops/daily/*.md
+!ops/daily/*-product.md
 !ops/daily/.gitkeep
 ops/reports/*.md
 ops/reports/pam-*.json

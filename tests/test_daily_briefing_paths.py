@@ -59,3 +59,36 @@ https://cli-market.dev
     assert "linkedin/Day-02.md" in report
     assert "Test title" in report
     assert "/home/" not in report or str(content) not in report
+
+
+def test_product_daily_dir_is_in_product_repo(monkeypatch, tmp_path):
+    content = tmp_path / "cli-market-content"
+    (content / "linkedin").mkdir(parents=True)
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(content))
+    monkeypatch.chdir(REPO_ROOT)
+
+    import daily_briefing
+
+    product_dir = daily_briefing._product_daily_dir()
+    content_dir = daily_briefing._content_daily_dir()
+    assert product_dir == REPO_ROOT / "ops" / "daily"
+    assert content_dir == content / "generated" / "daily"
+
+
+def test_repo_file_link_product_vs_content(monkeypatch):
+    import daily_briefing
+
+    monkeypatch.setenv("GITHUB_REPOSITORY", "Treevu-ai/cli-market-world")
+    monkeypatch.setenv(
+        "CLI_MARKET_CONTENT_GITHUB_REPO", "Treevu-ai/cli-market-content"
+    )
+
+    product_link = daily_briefing._repo_file_link("ops/daily/2026-06-09-product.md")
+    assert "cli-market-world" in product_link
+    assert "ops/daily/2026-06-09-product.md" in product_link
+
+    content_link = daily_briefing._repo_file_link(
+        "generated/daily/2026-06-09-content.md"
+    )
+    assert "cli-market-content" in content_link
+    assert "generated/daily/2026-06-09-content.md" in content_link
