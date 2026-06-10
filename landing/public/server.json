@@ -6,12 +6,12 @@
     "url": "https://cli-market.dev",
     "source": "website"
   },
-  "version": "1.9.23",
+  "version": "1.9.24",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "cli-market",
-      "version": "1.9.23",
+      "version": "1.9.24",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"

@@ -1096,7 +1096,7 @@ body > div[id*="paypal-cart"] {
   min-height: 100dvh;
   display: flex;
   align-items: center;
-  padding: 5.5rem 0 3.5rem;
+  padding: 4.5rem 0 2.75rem;
   overflow: hidden;
 }
 
@@ -1117,7 +1117,7 @@ body > div[id*="paypal-cart"] {
 
 .scroll-story-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .scroll-story-sub {
@@ -1135,7 +1135,7 @@ body > div[id*="paypal-cart"] {
   justify-content: space-between;
   gap: 0.5rem;
   max-width: 52rem;
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 1.75rem;
   padding: 0 0.5rem;
 }
 
@@ -1229,7 +1229,7 @@ body > div[id*="paypal-cart"] {
 
 .scroll-story-stage {
   position: relative;
-  min-height: min(76vh, 680px);
+  height: clamp(380px, 50vh, 460px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -1240,26 +1240,30 @@ body > div[id*="paypal-cart"] {
   display: flex;
   align-items: center;
   pointer-events: none;
-  will-change: opacity, transform;
+  will-change: opacity, transform, visibility;
   z-index: 1;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .scroll-story-act-active {
   z-index: 2;
+  visibility: visible;
 }
 
 .scroll-story-act-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2.5rem;
+  gap: 1.5rem;
   width: 100%;
+  height: 100%;
   align-items: center;
 }
 
 @media (min-width: 900px) {
   .scroll-story-act-grid {
-    grid-template-columns: 0.95fr 1.05fr;
-    gap: 4rem;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 2.5rem;
   }
 }
 
@@ -1273,37 +1277,44 @@ body > div[id*="paypal-cart"] {
 
 .scroll-story-headline {
   font-family: var(--font-display, var(--font-sans));
-  font-size: clamp(2.1rem, 5.5vw, 3.75rem);
+  font-size: clamp(1.85rem, 4.8vw, 3.25rem);
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.02em;
   color: var(--cm-ink);
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.85rem;
   max-width: 14ch;
 }
 
 .scroll-story-body {
-  font-size: clamp(1rem, 1.6vw, 1.125rem);
-  line-height: 1.7;
+  font-size: clamp(0.95rem, 1.45vw, 1.05rem);
+  line-height: 1.6;
   color: var(--cm-on-surface-variant);
-  max-width: 46ch;
+  max-width: 42ch;
 }
 
 .scroll-story-visual {
-  min-height: min(52vh, 480px);
+  min-height: 0;
+  height: clamp(220px, 34vh, 300px);
+  max-height: 300px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .scroll-story-visual-panel {
   width: 100%;
+  height: 100%;
+  max-height: 300px;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
   border-radius: var(--cm-radius-lg);
-  padding: 1.5rem 1.35rem;
+  padding: 1rem 1rem;
   background: color-mix(in srgb, var(--cm-surface-low) 85%, #000);
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.45),
     0 0 0 1px color-mix(in srgb, var(--cm-data) 4%, transparent);
+  display: flex;
+  flex-direction: column;
 }
 
 .scroll-story-visual-gondola {
@@ -1315,6 +1326,8 @@ body > div[id*="paypal-cart"] {
   overflow: hidden;
   border-color: color-mix(in srgb, var(--cm-data) 35%, transparent);
   box-shadow: 0 0 60px color-mix(in srgb, var(--cm-data) 10%, transparent);
+  display: flex;
+  flex-direction: column;
 }
 
 .scroll-story-visual-data {
@@ -1330,7 +1343,8 @@ body > div[id*="paypal-cart"] {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -1355,29 +1369,34 @@ body > div[id*="paypal-cart"] {
 }
 
 .scroll-story-panel-foot {
-  margin-top: 1.25rem;
+  margin-top: auto;
+  padding-top: 0.65rem;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--cm-on-surface-variant);
   opacity: 0.85;
+  flex-shrink: 0;
 }
 
 .scroll-story-gondola-rack {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.4rem;
+  flex: 1;
+  min-height: 0;
+  justify-content: center;
 }
 
 .scroll-story-shelf {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 40%, transparent);
   border-radius: var(--cm-radius-sm);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12px;
   background: color-mix(in srgb, var(--cm-canvas) 60%, transparent);
 }
 
@@ -1453,23 +1472,26 @@ body > div[id*="paypal-cart"] {
 }
 
 .scroll-story-term-body {
-  padding: 1.35rem 1.25rem 1.5rem;
+  padding: 0.85rem 1rem 1rem;
   font-family: var(--font-mono);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .scroll-story-term-cmd {
   color: var(--cm-data);
-  font-size: 14px;
-  margin-bottom: 1.25rem;
+  font-size: 13px;
+  margin-bottom: 0.75rem;
 }
 
 .scroll-story-term-row {
   display: grid;
-  grid-template-columns: 5.5rem 1fr auto;
-  gap: 0.75rem;
+  grid-template-columns: 5rem 1fr auto;
+  gap: 0.55rem;
   align-items: center;
-  margin-bottom: 0.65rem;
-  font-size: 13px;
+  margin-bottom: 0.45rem;
+  font-size: 12px;
 }
 
 .scroll-story-term-lb {
@@ -1520,8 +1542,9 @@ body > div[id*="paypal-cart"] {
 .scroll-story-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.85rem;
-  margin-bottom: 1.25rem;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -1531,14 +1554,14 @@ body > div[id*="paypal-cart"] {
 }
 
 .scroll-story-stat-card {
-  padding: 0.85rem 0.75rem;
+  padding: 0.55rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
   border-radius: var(--cm-radius-sm);
   background: color-mix(in srgb, var(--cm-canvas) 50%, transparent);
 }
 
 .scroll-story-stat-n {
-  font-size: clamp(1.75rem, 3.5vw, 2.35rem);
+  font-size: clamp(1.25rem, 2.8vw, 1.65rem);
   font-weight: 800;
   color: var(--cm-ink);
   font-variant-numeric: tabular-nums;
@@ -1546,11 +1569,11 @@ body > div[id*="paypal-cart"] {
 }
 
 .scroll-story-stat-l {
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: 9px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--cm-on-surface-variant);
-  margin-top: 0.45rem;
+  margin-top: 0.3rem;
 }
 
 .scroll-story-stat-skeleton {
@@ -1571,7 +1594,7 @@ body > div[id*="paypal-cart"] {
 }
 
 .scroll-story-spark-skeleton {
-  height: 5rem;
+  height: 3.25rem;
   width: 100%;
   border-radius: var(--cm-radius-sm);
   background: color-mix(in srgb, var(--cm-outline-variant) 30%, transparent);
@@ -1605,53 +1628,58 @@ body > div[id*="paypal-cart"] {
 
 .scroll-story-spark-wrap {
   border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
-  padding-top: 1rem;
+  padding-top: 0.65rem;
+  margin-top: auto;
+  flex-shrink: 0;
+  min-height: 0;
 }
 
 .scroll-story-spark-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 9px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--cm-on-surface-variant);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.4rem;
 }
 
 .scroll-story-spark {
   width: 100%;
-  height: 5rem;
+  height: 3.25rem;
   color: var(--cm-data);
 }
 
 .scroll-story-spark-meta {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--cm-on-surface-variant);
-  margin-top: 0.65rem;
+  margin-top: 0.35rem;
 }
 
 .scroll-story-agent-flow {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 0.65rem 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .scroll-story-agent-node {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.75rem 1rem;
-  min-width: 5.5rem;
+  gap: 0.2rem;
+  padding: 0.45rem 0.35rem;
+  min-width: 0;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 50%, transparent);
   border-radius: var(--cm-radius-md);
   color: var(--cm-on-surface-variant);
   background: color-mix(in srgb, var(--cm-canvas) 40%, transparent);
+  text-align: center;
+  line-height: 1.15;
 }
 
 .scroll-story-agent-node-k {
@@ -1673,23 +1701,46 @@ body > div[id*="paypal-cart"] {
 .scroll-story-agent-arrow {
   color: var(--cm-on-surface-variant);
   opacity: 0.5;
-  font-size: 1.25rem;
+  font-size: 0.95rem;
+  text-align: center;
 }
 
 .scroll-story-tool-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.65rem;
+  gap: 0.45rem;
+  flex: 1;
+  min-height: 0;
+  align-content: start;
 }
 
 .scroll-story-tool-chip {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--cm-on-surface-variant);
-  padding: 0.65rem 0.75rem;
+  padding: 0.45rem 0.55rem;
   border: 1px solid color-mix(in srgb, var(--cm-outline-variant) 35%, transparent);
   border-radius: var(--cm-radius-sm);
   background: color-mix(in srgb, var(--cm-canvas) 35%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .scroll-story-agent-flow {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 0.35rem;
+  }
+
+  .scroll-story-agent-node:nth-child(1) { grid-column: 1 / 3; }
+  .scroll-story-agent-arrow:nth-child(2) { grid-column: 3; }
+  .scroll-story-agent-node:nth-child(3) { grid-column: 4; }
+  .scroll-story-agent-arrow:nth-child(4) { grid-column: 1; grid-row: 2; }
+  .scroll-story-agent-node:nth-child(5) { grid-column: 2 / 4; }
+  .scroll-story-agent-arrow:nth-child(6) { grid-column: 4; grid-row: 2; }
+  .scroll-story-agent-node:nth-child(7) { grid-column: 1 / -1; grid-row: 3; }
 }
 
 .scroll-story-cue {

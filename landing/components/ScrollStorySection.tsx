@@ -9,8 +9,8 @@ import { useDemoCompareRows } from "@/hooks/useDemoCompareRows";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 function scrollViewports() {
-  if (typeof window === "undefined") return 4.25;
-  return window.matchMedia("(max-width: 768px)").matches ? 3.25 : 4.25;
+  if (typeof window === "undefined") return 5;
+  return window.matchMedia("(max-width: 768px)").matches ? 4 : 5;
 }
 
 const ACTS = [
@@ -66,8 +66,6 @@ const GONDOLA_ROWS = [
   { name: "Arroz Extra 1kg", store: "Metro", price: "S/ 3.20" },
   { name: "Arroz Extra 1kg", store: "Wong", price: "S/ 3.45" },
   { name: "Arroz Extra 1kg", store: "Plaza Vea", price: "S/ 2.90", best: true },
-  { name: "Leche Gloria 900ml", store: "Metro", price: "S/ 4.80" },
-  { name: "Aceite 900ml", store: "Wong", price: "S/ 9.10" },
 ];
 
 function GondolaVisual() {
@@ -317,8 +315,8 @@ export default function ScrollStorySection() {
     const actEls = gsap.utils.toArray<HTMLElement>(".scroll-story-act", stage);
     const dots = gsap.utils.toArray<HTMLButtonElement>(".scroll-story-dot", progress);
     const actCount = actEls.length;
-    const HOLD = 0.85;
-    const CROSSFADE = 0.18;
+    const HOLD = 1.05;
+    const CROSSFADE = 0.22;
     let activeIdx = 0;
     let jumpTween: gsap.core.Tween | null = null;
 
@@ -341,15 +339,19 @@ export default function ScrollStorySection() {
       emitStoryAct(idx);
     };
 
-    const actIndexFromProgress = (progress: number) =>
-      Math.min(actCount - 1, Math.max(0, Math.round(progress * (actCount - 1))));
+    const actIndexFromProgress = (progress: number) => {
+      if (actCount <= 1) return 0;
+      const slot = 1 / (actCount - 1);
+      const idx = Math.floor((progress + slot * 0.12) / slot);
+      return Math.min(actCount - 1, Math.max(0, idx));
+    };
 
     const snapProgressForAct = (idx: number) =>
       actCount <= 1 ? 0 : Math.min(idx, actCount - 1) / (actCount - 1);
 
     const ctx = gsap.context(() => {
       gsap.set(actEls[0], { autoAlpha: 1, y: 0, pointerEvents: "auto", zIndex: 2 });
-      gsap.set(actEls.slice(1), { autoAlpha: 0, y: 16, pointerEvents: "none", zIndex: 1 });
+      gsap.set(actEls.slice(1), { autoAlpha: 0, y: 12, pointerEvents: "none", zIndex: 1, visibility: "hidden" });
       markAct(0);
 
       const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
@@ -365,10 +367,11 @@ export default function ScrollStorySection() {
             prev,
             {
               autoAlpha: 0,
-              y: -10,
+              y: -8,
               duration: CROSSFADE,
               pointerEvents: "none",
               zIndex: 1,
+              visibility: "hidden",
             },
             swapAt,
           )
@@ -380,6 +383,7 @@ export default function ScrollStorySection() {
               duration: CROSSFADE,
               pointerEvents: "auto",
               zIndex: 2,
+              visibility: "visible",
             },
             swapAt,
           );
