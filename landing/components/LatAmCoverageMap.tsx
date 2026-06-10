@@ -113,7 +113,7 @@ export default function LatAmCoverageMap() {
 
       for (const d of DOTS) {
         const tw = reduced ? 0 : Math.sin(t / 900 + d.ph) * 0.25;
-        ctx.fillStyle = `rgba(255, 178, 36, ${0.13 + tw * 0.08})`;
+        ctx.fillStyle = `rgba(58, 254, 207, ${0.13 + tw * 0.08})`;
         ctx.beginPath();
         ctx.arc(d.x * sx, d.y * sy, 1.4, 0, Math.PI * 2);
         ctx.fill();
@@ -123,13 +123,13 @@ export default function LatAmCoverageMap() {
         const px = n.x * sx;
         const py = n.y * sy;
         const pulse = reduced ? 0 : ((t / 1100 + i * 0.7) % 1);
-        ctx.strokeStyle = `rgba(61, 220, 132, ${(1 - pulse) * 0.5})`;
+        ctx.strokeStyle = `rgba(58, 254, 207, ${(1 - pulse) * 0.5})`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(px, py, 5 + pulse * 20, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.fillStyle = "#3DDC84";
-        ctx.shadowColor = "#3DDC84";
+        ctx.fillStyle = "#3afecf";
+        ctx.shadowColor = "#3afecf";
         ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.arc(px, py, 3.4, 0, Math.PI * 2);
