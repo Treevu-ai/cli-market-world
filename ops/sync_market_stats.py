@@ -923,11 +923,23 @@ def sync_llms_txt() -> None:
             count=1,
         )
         text = re.sub(
-            r"- Pricing \(.*?\): Free \$0 \(.*?\), Pro \$39/mo \(.*?\), Enterprise custom.*",
-            "- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1,000 req/día), "
-            "Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)",
+            r"- Pricing \(.*?\):.*",
+            "- Pricing (Build, foco ICP AI Agent Builders): Free $0 (1,000 req/día), "
+            "Starter $24/mo (5,000 req/día, CSV export), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), "
+            "Pro Founding $29/mo (100 plazas), Enterprise custom (SLAs, high limits)",
             text,
             count=1,
+        )
+        text = re.sub(
+            r"## Billing \(Build Pro\)\n\n- Web: POST /billing/pro-checkout.*",
+            "## Billing (Build)\n\n"
+            "- Free: `market register` · Starter/Pro: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)\n"
+            "- Plans: starter | pro | pro_founding | pro_annual · Pro Founding promo: founding100\n"
+            "- CLI: `market upgrade` → POST /billing/paypal\n"
+            "- After pay: `market whoami` · `market account`",
+            text,
+            count=1,
+            flags=re.DOTALL,
         )
         path.write_text(text, encoding="utf-8")
         print(f"Synced {path}")
@@ -938,6 +950,20 @@ def sync_llms_txt() -> None:
         text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
         text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
         text = _normalize_pypi_urls(text)
+        text = re.sub(
+            r"> Package: pip install cli-market-world \(v[\d.]+\)",
+            f"> Package: {s.PIP_INSTALL_CMD} (v{s.PACKAGE_VERSION})",
+            text,
+            count=1,
+        )
+        text = re.sub(
+            r"> Stats: .*",
+            f"> Stats: {s.RETAILERS_DEFINED} retailers · {s.RETAILERS_VERIFIED} verified · "
+            f"{s.PRICES_VERIFIED_LABEL} prices · {s.PLATFORMS} platforms "
+            f"(VTEX, Shopify, Magento, WooCommerce)",
+            text,
+            count=1,
+        )
         text = re.sub(
             r"## \d+ MCP tools\n\n.*?(?=\n## Countries:)",
             _llms_bundle_section() + "\n",

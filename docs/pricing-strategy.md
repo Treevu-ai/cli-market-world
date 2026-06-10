@@ -8,7 +8,7 @@ Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un
 
 | Si el buyer… | Vende | No vender |
 |--------------|-------|-----------|
-| Construye agentes o productos con API/MCP | **CLI Market Pro** ($39/mes) | Procure |
+| Construye agentes o productos con API/MCP | **CLI Market Build** (Free / Starter $24 / Pro $39 / Pro Founding $29) | Procure |
 | Opera compras (gerente, comprador, CFO) | **Procure Copilot** ($29–149/mes) | CLI Market Pro por separado |
 | Analiza inflación, spreads, canasta (sin ejecutar compra) | **Intelligence** ($300–500/mes) | Procure Starter ni CLI Market Pro |
 
@@ -22,8 +22,10 @@ Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un
 
 | Plan | Precio | Job | Incluye | No incluye |
 |------|--------|-----|---------|------------|
-| Free | $0 | Probar API | Search, compare, 1k req/día | Checkout, export, alertas |
+| Free | $0 | Probar API | Search, compare, 1k req/día, MCP default | Checkout, export, alertas |
+| Starter | **$24/mes** | Export y alertas sin checkout | 5k req/día, 3 claves API, export CSV, 3 alertas | Checkout retail |
 | Pro | **$39/mes** | Embeber comercio en *tu* agente/producto | MCP completo, checkout, alertas, export | UI procurement, aprobaciones, auditoría D1 |
+| Pro Founding | **$29/mes** (100 plazas) | Mismo que Pro con precio bloqueado | Igual que Pro · promo `founding100` | — |
 | Enterprise | A medida | Plataformas, alto volumen | SLA, feeds, white-label | — |
 
 **Checkout Pro** = para quien integra `market_checkout` en software propio, no para equipos de compras que deberían usar Procure.
@@ -65,7 +67,7 @@ No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upse
 
 ```
 ¿Escribe código o configura MCP?
-  Sí → CLI Market Pro $39
+  Sí → CLI Market Build (Free · Starter $24 · Pro $39 · Pro Founding $29)
   No → ¿Ejecuta compras con aprobación gerente?
          Sí → Procure Pro $79+
          No → ¿Solo quiere comparar precios sin pagar?
