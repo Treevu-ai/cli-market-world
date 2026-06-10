@@ -61,6 +61,7 @@ export default function RetailerApplyForm({
           contact_email: contactEmail,
           website,
           api_token: apiToken || undefined,
+          lang: isES ? "es" : "en",
         }),
       });
       const data = await res.json();
@@ -100,8 +101,8 @@ export default function RetailerApplyForm({
         </p>
         <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
           {isES
-            ? "Validamos el acceso de solo lectura al catálogo y le escribimos en 24 horas hábiles. Gratis para siempre."
-            : "We validate read-only catalog access and email you within 24 business hours. Free forever."}
+            ? "Revisamos acceso de solo lectura al catálogo y le enviamos confirmación por email en minutos (≤24h hábiles para activación). Gratis para siempre."
+            : "We review read-only catalog access and send email confirmation within minutes (≤24 business hours to go live). Free forever."}
         </p>
       </div>
     );

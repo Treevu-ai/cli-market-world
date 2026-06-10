@@ -695,6 +695,37 @@ def test_contact_starter_request(monkeypatch):
     assert data["request_id"].startswith("STR-")
     assert data.get("email_sent") is True
 
+
+def test_retailer_apply_sends_ack_email(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_retailer_application_received_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_retailer_application_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/v1/retailers/apply",
+        json={
+            "store_name": "Nuna Orgánica",
+            "platform": "woocommerce",
+            "country": "PE",
+            "contact_email": "retailer@test.com",
+            "contact_name": "Ana",
+            "website": "https://nuna.example",
+            "lang": "es",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["application_id"].startswith("RET-")
+    assert data.get("email_sent") is True
+    assert data.get("notify_sent") is True
+
+
 def test_contact_pro_triggers_billing_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
