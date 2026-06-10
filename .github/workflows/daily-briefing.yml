@@ -46,6 +46,8 @@ jobs:
           LINKEDIN_PERSONAL_DAY_OFFSET: "0"
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
           CLI_MARKET_CONTENT_DIR: ${{ github.workspace }}/cli-market-content
+          GITHUB_CONTENT_REPOSITORY: Treevu-ai/cli-market-content
+          GITHUB_CONTENT_REF: main
           PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
         run: python3 ops/daily_briefing.py
 
@@ -54,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add generated/daily/ 2>/dev/null || true
+          git add generated/daily/ metrics/price-pulse-*.md 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "No content report changes to commit."
           else
