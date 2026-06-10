@@ -177,8 +177,8 @@ export default function RetailerApplyForm() {
       <div>
         <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
           {isES
-            ? "Token API de solo lectura (Shopify/Magento — opcional)"
-            : "Read-only API token (Shopify/Magento — optional)"}
+            ? "Token API de solo lectura (Shopify/Magento/WooCommerce — opcional)"
+            : "Read-only API token (Shopify/Magento/WooCommerce — optional)"}
         </label>
         <input
           type="password"

@@ -29,10 +29,11 @@ const MSG_PLACEHOLDERS_EN: Record<string, string> = {
 };
 
 const PLATFORMS = [
-  { value: "vtex",     label: "VTEX" },
-  { value: "shopify",  label: "Shopify" },
-  { value: "magento",  label: "Magento" },
-  { value: "other",    label: "Other" },
+  { value: "vtex", label: "VTEX" },
+  { value: "shopify", label: "Shopify" },
+  { value: "magento", label: "Magento" },
+  { value: "woocommerce", label: "WooCommerce" },
+  { value: "other", label: "Other" },
 ];
 const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
 

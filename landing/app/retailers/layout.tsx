@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 export const metadata: Metadata = {
-  title: "List Your Store — Free GEO for AI Agents (VTEX, Shopify, Magento)",
+  title: "List Your Store — Free GEO for AI Agents (VTEX, Shopify, Magento, WooCommerce)",
   description:
-    `List your store on CLI Market for free. VTEX, Shopify, or Magento. 30 seconds, zero code. Your products visible in AI agent searches via MCP tools and commerce API. ${MARKET_STATS.retailersPhraseEn}, ${MARKET_STATS.pricesVerifiedLabel} verified price data points.`,
+    `List your store on CLI Market for free. VTEX, Shopify, Magento, or WooCommerce. 30 seconds, zero code. Your products visible in AI agent searches via MCP tools and commerce API. ${MARKET_STATS.retailersPhraseEn}, ${MARKET_STATS.pricesVerifiedLabel} verified price data points.`,
   keywords: [
     "GEO generative engine optimization",
     "list store AI agents",
     "VTEX API integration",
+    "WooCommerce Store API",
     "MCP tools for e-commerce",
     "AI commerce API",
   ],
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "CLI Market for Retailers — Your brand inside AI agents",
     description:
-      "Free listing for VTEX, Shopify, Magento. 30 seconds. AI agents discover and compare your products.",
+      "Free listing for VTEX, Shopify, Magento, WooCommerce. 30 seconds. AI agents discover and compare your products.",
     url: "https://cli-market.dev/retailers",
     type: "website",
   },

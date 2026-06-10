@@ -271,6 +271,16 @@ export default function ScaleCoverageSection() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">WooCommerce</p>
+                    <div className="flex flex-wrap gap-2">
+                      {MARKET_STATS.woocommerceStores.map((store) => (
+                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                          {store}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 

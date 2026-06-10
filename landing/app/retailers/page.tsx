@@ -64,7 +64,15 @@ export default function RetailersPage() {
       desc: isES
         ? "Si est\u00e1s en VTEX con cat\u00e1logo p\u00fablico, probablemente ya sos indexable. Sin token necesario."
         : "If you're on VTEX with a public catalog, you're probably already indexable. No token needed.",
-      cmd: isES ? "Cero acci\u00f3n requerida \u2014 detectamos tiendas VTEX autom\u00e1ticamente" : "Zero action required \u2014 we auto-detect VTEX stores",
+    {
+      step: "04",
+      title: isES ? "WooCommerce: Store API o REST API" : "WooCommerce: Store API or REST API",
+      desc: isES
+        ? "Muchas tiendas Woo exponen cat\u00e1logo v\u00eda Store API p\u00fablica (solo URL). Si no, crea consumer key/secret de solo lectura en REST API v3."
+        : "Many Woo shops expose catalog via public Store API (URL only). Otherwise create read-only consumer key/secret via REST API v3.",
+      cmd: isES
+        ? "WooCommerce \u2192 Ajustes \u2192 Avanzado \u2192 REST API \u2192 Add key (Read)"
+        : "WooCommerce \u2192 Settings \u2192 Advanced \u2192 REST API \u2192 Add key (Read)",
     },
   ];
 
@@ -86,8 +94,8 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento o VTEX. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
-                    : "Generate a read-only API token from your Shopify, Magento, or VTEX admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
+                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento, VTEX o WooCommerce. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
+                    : "Generate a read-only API token from your Shopify, Magento, VTEX, or WooCommerce admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
                 },
               },
               {
@@ -106,8 +114,8 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "VTEX, Shopify y Magento. Nos conectamos via APIs p\u00fablicas de cat\u00e1logo \u2014 cero desarrollo de tu lado."
-                    : "VTEX, Shopify, and Magento. We connect via public catalog APIs \u2014 zero development required from your side.",
+                    ? "VTEX, Shopify, Magento y WooCommerce. Nos conectamos v\u00eda APIs p\u00fablicas de cat\u00e1logo \u2014 cero desarrollo de tu lado."
+                    : "VTEX, Shopify, Magento, and WooCommerce. We connect via public catalog APIs \u2014 zero development required from your side.",
                 },
               },
               {
