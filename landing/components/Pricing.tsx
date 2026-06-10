@@ -7,6 +7,8 @@ import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { API_URL } from "@/lib/api";
+import { persistPlaygroundKey, scrollToPlayground } from "@/lib/playground";
+import { recordFunnelEvent } from "@/lib/funnel";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
 import {
   PRICING_TABS,
@@ -298,7 +300,31 @@ export default function Pricing() {
   const billing: Billing = "monthly";
   const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
+  const [claimingFree, setClaimingFree] = useState(false);
   const [foundingSeats, setFoundingSeats] = useState<number | null>(null);
+
+  const handleInstantFreeKey = async () => {
+    setClaimingFree(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && typeof data.api_key === "string") {
+        persistPlaygroundKey(data.api_key);
+        recordFunnelEvent("register", {
+          username: typeof data.username === "string" ? data.username : undefined,
+          meta: { source: "pricing_free" },
+          dedupe: false,
+        });
+        scrollToPlayground("live");
+        return;
+      }
+      setFreeModalOpen(true);
+    } catch {
+      setFreeModalOpen(true);
+    } finally {
+      setClaimingFree(false);
+    }
+  };
 
   const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
@@ -411,8 +437,19 @@ export default function Pricing() {
                   {tier.checkoutKind ? (
                     <ProSubscribeButton kind={tier.checkoutKind} />
                   ) : tier.name === "Free" ? (
-                    <button type="button" onClick={() => setFreeModalOpen(true)} className="btn-mint w-full">
-                      {isES ? tier.cta_es : tier.cta_en}
+                    <button
+                      type="button"
+                      disabled={claimingFree}
+                      onClick={() => void handleInstantFreeKey()}
+                      className="btn-mint w-full disabled:opacity-60"
+                    >
+                      {claimingFree
+                        ? isES
+                          ? "Creando key…"
+                          : "Creating key…"
+                        : isES
+                          ? tier.cta_es
+                          : tier.cta_en}
                     </button>
                   ) : tier.href ? (
                     <a href={tier.href} className="btn-mint w-full">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
@@ -14,6 +15,7 @@ export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { pypiChip } = useLiveStats();
+  const [pathsOpen, setPathsOpen] = useState(false);
 
   return (
     <section
@@ -23,7 +25,7 @@ export default function Hero() {
       <div className="hero-terminal-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="hero-terminal-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
 
-      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -103,16 +105,23 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-10 sm:mt-12 w-full"
+          className="mt-8 sm:mt-12 w-full"
         >
           <HeroMetrics />
         </motion.div>
 
-        <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60">
+        <a
+          href="#story"
+          className="mt-5 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--cm-data)] hover:brightness-110 transition-colors"
+        >
+          {isES ? "Ver historia góndola → agente ↓" : "See shelf → agent story ↓"}
+        </a>
+
+        <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
+        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
           <a
             href={PRICING_BUILD_HASH}
             onClick={() => recordPipInstallIntent("landing_hero")}
@@ -166,7 +175,52 @@ export default function Hero() {
           </a>
         </div>
 
-        <HeroPlayground />
+        <div className="mt-4 w-full max-w-[960px] mx-auto sm:hidden">
+          <a
+            href={PRICING_BUILD_HASH}
+            onClick={() => recordPipInstallIntent("landing_hero")}
+            className="btn-action hero-terminal-cta-primary flex flex-col items-start gap-2 px-5 py-4 w-full text-left"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
+              {isES ? "Para developers" : "For developers"} · Build
+            </span>
+            <span className="text-base font-semibold">
+              {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
+            </span>
+          </a>
+          <button
+            type="button"
+            onClick={() => setPathsOpen((v) => !v)}
+            className="mt-2 w-full text-xs font-mono text-[var(--cm-on-surface-variant)] py-2"
+            aria-expanded={pathsOpen}
+          >
+            {pathsOpen
+              ? isES
+                ? "Ocultar otros caminos ▲"
+                : "Hide other paths ▲"
+              : isES
+                ? "Intelligence · Retailers ▼"
+                : "Intelligence · Retailers ▼"}
+          </button>
+          {pathsOpen ? (
+            <div className="mt-2 grid grid-cols-1 gap-2">
+              <a href="#intelligence" className="hero-terminal-card px-5 py-4 text-left block">
+                <span className="text-sm font-semibold text-[var(--cm-ink)]">
+                  {isES ? "Spreads e inflación →" : "Spreads & inflation →"}
+                </span>
+              </a>
+              <a href={RETAILERS_PAGE} className="hero-terminal-card px-5 py-4 text-left block">
+                <span className="text-sm font-semibold text-[var(--cm-ink)]">
+                  {isES ? "Tu góndola, visible →" : "Your shelf, visible →"}
+                </span>
+              </a>
+            </div>
+          ) : null}
+        </div>
+
+        <div id="hero-playground" className="hidden md:block w-full scroll-mt-24">
+          <HeroPlayground />
+        </div>
       </div>
     </section>
   );
