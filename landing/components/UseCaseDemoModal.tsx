@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useLang } from "@/lib/LanguageContext";
 import { recordUseCaseDemoOpen } from "@/lib/funnel";
 import type { UseCaseDemo } from "@/lib/useCaseDemos";
+import { MARKET_STATS } from "@/lib/marketStats";
 import {
   LANDING_MODAL_BACKDROP,
   LANDING_MODAL_OVERLAY,
@@ -103,8 +104,8 @@ export default function UseCaseDemoModal({
         <div className="shrink-0 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2 sm:gap-3 p-3 sm:p-6 pt-2 sm:pt-3 border-t border-[var(--cm-outline-variant)]/20 bg-[var(--cm-surface-low)] safe-bottom">
           <p className="hidden sm:block text-[10px] font-mono text-[var(--cm-on-surface-variant)]/70">
             {isES
-              ? "pip install cli-market-world · animación terminalizer"
-              : "pip install cli-market-world · terminalizer animation"}
+              ? `${MARKET_STATS.pipInstallCmd} · animación terminalizer`
+              : `${MARKET_STATS.pipInstallCmd} · terminalizer animation`}
           </p>
           <div className="flex flex-row gap-2 w-full sm:w-auto sm:ml-auto">
             <button
