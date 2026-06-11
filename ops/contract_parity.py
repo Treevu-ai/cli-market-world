@@ -30,12 +30,22 @@ PARITY_EXACT: dict[str, set[str]] = {
     "/v1/capabilities": {"get"},
     "/v1/sources/health": {"get"},
     "/v1/retailers/apply": {"post"},
+    # Semantic index (Golden Records) — world mirror ↔ backend prod
+    "/index/resolve": {"post"},
+    "/resolve": {"get"},
+    "/index/lookup/{product_id}": {"get"},
+    "/index/stats": {"get"},
+    "/index/backfill": {"post"},
 }
 
 CHECKOUT_PREFIX = "/checkout/"
 
 _CORE_PIN_RE = re.compile(
     r"cli-market-core\s*>=\s*(\d+)\.(\d+)\.(\d+)",
+    re.IGNORECASE,
+)
+_INDEX_PIN_RE = re.compile(
+    r"cli-market-index\[postgres\]\s*@\s*git\+https://github\.com/Treevu-ai/cli-market-index@([0-9a-f]{40})",
     re.IGNORECASE,
 )
 
@@ -145,6 +155,35 @@ def check_core_pins(
     return errors
 
 
+def parse_index_pin(text: str, *, label: str) -> str:
+    match = _INDEX_PIN_RE.search(text)
+    if not match:
+        raise SystemExit(f"{label}: no cli-market-index git pin found")
+    return match.group(1).lower()
+
+
+def check_index_pins(
+    world_railway_req: Path | None = None,
+    backend_private_req: Path | None = None,
+) -> list[str]:
+    world_railway_req = world_railway_req or ROOT / "requirements-railway.txt"
+    backend_private_req = backend_private_req or ROOT.parent / "cli-market-backend" / "requirements-private.txt"
+    errors: list[str] = []
+
+    if not world_railway_req.is_file():
+        return [f"world requirements-railway missing: {world_railway_req}"]
+    if not backend_private_req.is_file():
+        return [f"backend requirements-private missing: {backend_private_req}"]
+
+    w_pin = parse_index_pin(world_railway_req.read_text(encoding="utf-8"), label="world requirements-railway.txt")
+    b_pin = parse_index_pin(backend_private_req.read_text(encoding="utf-8"), label="backend requirements-private.txt")
+
+    if w_pin != b_pin:
+        errors.append(f"cli-market-index pin mismatch: world={w_pin[:12]}… backend={b_pin[:12]}…")
+
+    return errors
+
+
 def default_backend_path() -> Path | None:
     for candidate in (
         ROOT / ".deps" / "cli-market-backend",
@@ -165,6 +204,8 @@ def main(argv: list[str] | None = None) -> int:
     backend_path = args.backend_path or default_backend_path()
     backend_req = (backend_path / "requirements.txt") if backend_path else None
     pin_errors = check_core_pins(backend_requirements=backend_req)
+    index_pin_errors = check_index_pins()
+    pin_errors = pin_errors + index_pin_errors
     if pin_errors:
         for line in pin_errors:
             print(f"PIN FAIL: {line}", file=sys.stderr)
@@ -172,7 +213,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     if args.pins_only:
-        print("OK: cli-market-core pins aligned")
+        print("OK: cli-market-core and cli-market-index pins aligned")
         return 0
 
     if backend_path is None:
@@ -203,8 +244,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(
-        f"OK: OpenAPI parity ({len(PARITY_EXACT)} exact paths + "
-        f"{len(_checkout_paths(world_spec))} checkout paths) · pins aligned"
+        f"OK: OpenAPI parity ({len(PARITY_EXACT)} exact paths incl. index + "
+        f"{len(_checkout_paths(world_spec))} checkout paths) · core/index pins aligned"
     )
     return 0
 
