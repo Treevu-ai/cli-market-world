@@ -2340,12 +2340,51 @@ body > div[id*="paypal-cart"] {
   min-width: 60px;
 }
 
+.impact-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.impact-hero-badges .impact-eyebrow {
+  margin-bottom: 0;
+}
+
+.impact-linkage-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--cm-radius-pill);
+  border: 1px solid color-mix(in srgb, var(--cm-signal) 35%, transparent);
+  background: color-mix(in srgb, var(--cm-signal) 8%, transparent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cm-text-secondary);
+}
+
+.impact-linkage-chip-n {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--cm-signal);
+}
+
 .impact-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1px;
   background: color-mix(in srgb, var(--cm-data) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--cm-data) 18%, transparent);
+}
+
+.impact-stat-linkage .impact-stat-n {
+  color: var(--cm-signal);
 }
 
 .impact-stat {

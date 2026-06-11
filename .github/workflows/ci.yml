@@ -158,6 +158,9 @@ jobs:
       - name: Production smoke
         run: bash ops/smoke_e2e.sh
 
+      - name: Doctor prod gate
+        run: python3 ops/doctor_prod_gate.py
+
       - name: Collector health gate
         run: |
           python3 - <<'PY'
