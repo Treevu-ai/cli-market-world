@@ -23,6 +23,7 @@ export interface LiveStats {
   collectorIntervalH: number | null;
   pypiTotal: number | null;
   pypiDownloads30d: number | null;
+  goldenLinkagePct: number | null;
   inventoryDaily: InventoryDailyPoint[] | null;
 }
 
@@ -89,6 +90,8 @@ export function useLiveStats() {
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
     pypiTotal: MARKET_STATS.pypiDownloads || 20196,
     pypiDownloads30d: null,
+    goldenLinkagePct:
+      MARKET_STATS.goldenLinkagePct > 0 ? MARKET_STATS.goldenLinkagePct : null,
     inventoryDaily: null,
   });
 
@@ -106,6 +109,17 @@ export function useLiveStats() {
           pypiDownloads30d:
             p?.downloads_last_30d != null ? Number(p.downloads_last_30d) : null,
         }));
+      })
+      .catch(() => {});
+
+    fetch(`${API_URL}/health/stats`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (!s) return;
+        const raw = s.golden_linkage_pct ?? s.linkage_pct;
+        const pct = raw != null ? Number(raw) : NaN;
+        if (!Number.isFinite(pct) || pct <= 0) return;
+        setStats((prev) => ({ ...prev, goldenLinkagePct: pct }));
       })
       .catch(() => {});
 
@@ -152,6 +166,9 @@ export function useLiveStats() {
 
   const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
   const pypiChip = formatPypiDownloads(stats.pypiTotal);
+  const goldenLinkagePct =
+    stats.goldenLinkagePct ??
+    (MARKET_STATS.goldenLinkagePct > 0 ? MARKET_STATS.goldenLinkagePct : null);
 
   return {
     stats,
@@ -159,6 +176,7 @@ export function useLiveStats() {
     priceChip,
     priceLong,
     pypiChip,
+    goldenLinkagePct,
     retailersDefined: MARKET_STATS.retailersDefined,
     retailersVerified: MARKET_STATS.retailersVerified,
     retailersPhraseEn: MARKET_STATS.retailersPhraseEn,

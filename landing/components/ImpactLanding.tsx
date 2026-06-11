@@ -22,7 +22,9 @@ const COVERAGE_ROWS = [
 export default function ImpactLanding() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { pypiChip } = useLiveStats();
+  const { pypiChip, goldenLinkagePct } = useLiveStats();
+  const linkageRounded =
+    goldenLinkagePct != null && goldenLinkagePct > 0 ? Math.round(goldenLinkagePct) : null;
   const spreadPctRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -96,11 +98,22 @@ export default function ImpactLanding() {
 
       <div className="impact-hero">
         <div>
-          <div className="impact-eyebrow">
-            <span className="impact-live-dot" />
-            {isES
-              ? `COLLECTOR EN VIVO · REFRESH ${MARKET_STATS.pricesRefreshHours}H`
-              : `LIVE COLLECTOR · ${MARKET_STATS.pricesRefreshHours}H REFRESH`}
+          <div className="impact-hero-badges">
+            <div className="impact-eyebrow">
+              <span className="impact-live-dot" />
+              {isES
+                ? `COLLECTOR EN VIVO · REFRESH ${MARKET_STATS.pricesRefreshHours}H`
+                : `LIVE COLLECTOR · ${MARKET_STATS.pricesRefreshHours}H REFRESH`}
+            </div>
+            {linkageRounded != null ? (
+              <div
+                className="impact-linkage-chip"
+                title={isES ? "Snapshots ligados a golden records" : "Snapshots linked to golden records"}
+              >
+                <span className="impact-linkage-chip-n">{linkageRounded}%</span>
+                <span>{isES ? "golden linkage" : "golden linkage"}</span>
+              </div>
+            ) : null}
           </div>
           <h1>
             {isES ? (
@@ -159,6 +172,14 @@ export default function ImpactLanding() {
             </div>
             <div className="impact-stat-l">{isES ? "Herramientas MCP" : "MCP tools"}</div>
           </div>
+          {linkageRounded != null ? (
+            <div className="impact-stat impact-stat-linkage">
+              <div className="impact-stat-n" data-count={linkageRounded} data-suffix="%">
+                0
+              </div>
+              <div className="impact-stat-l">{isES ? "Linkage golden" : "Golden linkage"}</div>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -212,9 +233,11 @@ export default function ImpactLanding() {
                 <b>{MARKET_STATS.indicatorsCount}</b>
                 <span>{isES ? "indicadores intel" : "intel indicators"}</span>
               </div>
-              {MARKET_STATS.goldenLinkagePct > 0 ? (
+              {linkageRounded != null ? (
                 <div>
-                  <b>{Math.round(MARKET_STATS.goldenLinkagePct)}%</b>
+                  <b data-count={linkageRounded} data-suffix="%">
+                    0
+                  </b>
                   <span>{isES ? "linkage golden" : "golden linkage"}</span>
                 </div>
               ) : null}
