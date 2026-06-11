@@ -343,3 +343,88 @@ def pepy_multi_summary(*, projects: list[str] | None = None, force: bool = False
         "packages": packages,
         "fetched_at": fetched_at,
     }
+
+
+_LEGACY_PYPI = "cli-market"
+_CONSOLIDATED_PROJECTS = ("cli-market-core", "cli-market-world")
+_V2_PUBLIC_CACHE: dict[str, int] = {}
+_V2_PUBLIC_CACHE_AT: float = 0.0
+_V2_PUBLIC_TTL_S = 3600
+
+
+def _pepy_v2_public_total(project: str) -> int:
+    """Public Pepy v2 totals — no API key (legacy + core + world sum)."""
+    global _V2_PUBLIC_CACHE_AT
+    now = time.time()
+    if _V2_PUBLIC_CACHE and now - _V2_PUBLIC_CACHE_AT < _V2_PUBLIC_TTL_S:
+        return int(_V2_PUBLIC_CACHE.get(project, 0))
+    totals: dict[str, int] = {}
+    for name in (_LEGACY_PYPI, *_CONSOLIDATED_PROJECTS):
+        try:
+            url = f"https://pepy.tech/api/v2/projects/{name}"
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "CLI-Market-Pepy/1 (+https://cli-market.dev)"},
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                data = json.loads(resp.read().decode())
+            totals[name] = int(data.get("total_downloads") or 0)
+        except Exception:
+            totals[name] = int(_V2_PUBLIC_CACHE.get(name, 0))
+    _V2_PUBLIC_CACHE.clear()
+    _V2_PUBLIC_CACHE.update(totals)
+    _V2_PUBLIC_CACHE_AT = now
+    return int(totals.get(project, 0))
+
+
+def consolidated_pypi_analytics(*, force: bool = False) -> dict[str, Any]:
+    """Consolidated downloads: legacy cli-market + cli-market-core + cli-market-world."""
+    fetched_at = datetime.now(timezone.utc).isoformat()
+    breakdown: dict[str, int | None] = {
+        "legacy": None,
+        "core": None,
+        "world": None,
+    }
+    total = 0
+    d30 = 0
+    source = "pepy.tech (consolidated)"
+
+    try:
+        multi = pepy_multi_summary(force=force)
+        leg = pepy_summary(project=_LEGACY_PYPI, force=force)
+        if multi.get("ok") or leg.get("ok"):
+            breakdown["legacy"] = int(leg.get("total_downloads") or 0) if leg.get("ok") else None
+            breakdown["core"] = int(
+                ((multi.get("packages") or {}).get("cli-market-core") or {}).get("total_downloads") or 0
+            ) or None
+            breakdown["world"] = int(
+                ((multi.get("packages") or {}).get("cli-market-world") or {}).get("total_downloads") or 0
+            ) or None
+            total = int(
+                (breakdown["legacy"] or 0)
+                + (breakdown["core"] or 0)
+                + (breakdown["world"] or 0)
+            )
+            d30 = int(
+                ((multi.get("combined") or {}).get("downloads_last_30d") or 0)
+                + (leg.get("downloads_last_30d") or 0 if leg.get("ok") else 0)
+            )
+    except Exception:
+        pass
+
+    if total <= 0:
+        source = "pepy.tech (v2 public)"
+        breakdown["legacy"] = _pepy_v2_public_total(_LEGACY_PYPI)
+        breakdown["core"] = _pepy_v2_public_total("cli-market-core")
+        breakdown["world"] = _pepy_v2_public_total("cli-market-world")
+        total = int(breakdown["legacy"] + breakdown["core"] + breakdown["world"])
+
+    return {
+        "ok": total > 0,
+        "project": "consolidated (cli-market + cli-market-core + cli-market-world)",
+        "source": source,
+        "total_downloads": total,
+        "downloads_last_30d": d30 or None,
+        "breakdown": breakdown,
+        "fetched_at": fetched_at,
+    }

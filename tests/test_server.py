@@ -179,6 +179,20 @@ def test_analytics_stats():
     assert "backend" in data
 
 
+def test_health_stats_moat_kpis():
+    r = client.get("/health/stats")
+    assert r.status_code == 200
+    data = r.json()
+    for key in (
+        "total_indexed",
+        "golden_linkage_pct",
+        "linkage_pct",
+        "collector_status",
+        "generated_at",
+    ):
+        assert key in data, f"missing {key}"
+
+
 # ── New tests: stores, lines, countries content ────────────────────────────
 
 def test_lines_count():

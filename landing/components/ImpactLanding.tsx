@@ -212,6 +212,12 @@ export default function ImpactLanding() {
                 <b>{MARKET_STATS.indicatorsCount}</b>
                 <span>{isES ? "indicadores intel" : "intel indicators"}</span>
               </div>
+              {MARKET_STATS.goldenLinkagePct > 0 ? (
+                <div>
+                  <b>{Math.round(MARKET_STATS.goldenLinkagePct)}%</b>
+                  <span>{isES ? "linkage golden" : "golden linkage"}</span>
+                </div>
+              ) : null}
               <div>
                 <b>{MARKET_STATS.pricesRefreshHours}h</b>
                 <span>{isES ? "frescura" : "freshness"}</span>

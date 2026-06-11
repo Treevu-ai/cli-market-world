@@ -27,10 +27,25 @@ export interface LiveStats {
 }
 
 export function formatPypiDownloads(n: number | null): string | null {
-  if (n == null || n <= 0) return null;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
-  if (n >= 1_000) return `${Math.round(n / 100) / 10}K+`.replace(/\.0K/, "K");
+  if (n == null || !Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    return `${m >= 10 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, "")}M+`;
+  }
+  if (n >= 1_000) {
+    const k = n / 1_000;
+    return `${k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, "")}K+`;
+  }
   return n.toLocaleString();
+}
+
+export function parsePypiTotal(payload: {
+  ok?: boolean;
+  total_downloads?: number | string | null;
+} | null): number | null {
+  if (!payload?.ok) return null;
+  const n = Number(payload.total_downloads);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
@@ -81,14 +96,15 @@ export function useLiveStats() {
     fetch(`${API_URL}/analytics/pypi`)
       .then((r) => (r.ok ? r.json() : null))
       .then((p) => {
-        if (!p?.ok) return;
-        // Force consolidated PyPI downloads (legacy + core + world) for the landing badge/chip.
-        // Ignore live total from API if it's still showing legacy-only ~14.3K.
-        const consolidated = MARKET_STATS.pypiDownloads || 20196;
+        const live = parsePypiTotal(p);
+        const fallback = MARKET_STATS.pypiDownloads > 0 ? MARKET_STATS.pypiDownloads : null;
+        const total = live ?? fallback;
+        if (total == null) return;
         setStats((prev) => ({
           ...prev,
-          pypiTotal: consolidated,
-          pypiDownloads30d: p.downloads_last_30d ?? null,
+          pypiTotal: total,
+          pypiDownloads30d:
+            p?.downloads_last_30d != null ? Number(p.downloads_last_30d) : null,
         }));
       })
       .catch(() => {});
