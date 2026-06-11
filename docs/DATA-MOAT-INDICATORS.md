@@ -6,7 +6,7 @@ Documento de referencia para el esquema de indicadores en CLI Market. Complement
 
 ### `indicator_definitions`
 
-Catálogo estático de indicadores (**21** en total).
+Catálogo estático de indicadores (**38** keys en catálogo; 34 legacy + 4 regional macro Phase 1).
 
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
