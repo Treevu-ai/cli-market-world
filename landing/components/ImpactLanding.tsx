@@ -349,6 +349,8 @@ export default function ImpactLanding() {
           <Link href="/tools">MCP Registry</Link>
           {" · "}
           <Link href="/stats">{isES ? "Métricas públicas" : "Public metrics"}</Link>
+          {" · "}
+          <Link href="/">{isES ? "Home" : "Home"}</Link>
         </div>
       </footer>
     </div>

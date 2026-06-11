@@ -116,6 +116,12 @@ export default function Footer() {
             {isES ? "Métricas públicas" : "Public stats"}
           </a>
           <a
+            href="/impact"
+            className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
+          >
+            {isES ? "Impacto · deck en vivo" : "Impact · live deck"}
+          </a>
+          <a
             href="/#about"
             className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
           >
