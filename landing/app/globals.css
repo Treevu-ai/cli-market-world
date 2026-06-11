@@ -398,6 +398,66 @@ section[id] {
   box-shadow: 0 0 20px rgba(58, 254, 207, 0.08);
 }
 
+/* Hero path cards — dev / commercial / retailers (4-row grid) */
+.hero-path-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  min-height: 11.5rem;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  text-decoration: none;
+  border-radius: var(--cm-radius-lg);
+}
+
+.hero-path-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.hero-path-card__title {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.hero-path-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.375rem;
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: 0.625rem;
+}
+
+.hero-path-card__foot {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+@media (max-width: 639px) {
+  .hero-path-card {
+    min-height: 0;
+  }
+
+  .hero-path-card__body {
+    min-height: 0;
+  }
+}
+
 /* Hero terminal animation + live playground */
 .hero-term-shell {
   width: 100%;
