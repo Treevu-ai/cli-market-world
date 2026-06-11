@@ -60,13 +60,10 @@ def _get_consolidated_pypi_downloads() -> int:
     """Sum PyPI downloads across legacy (cli-market) + core + world for consolidated badges/metrics."""
     candidates: list[int] = []
     try:
-        from market_pepy import pepy_multi_summary, pepy_summary
+        from market_pepy import consolidated_pypi_analytics
 
-        multi = pepy_multi_summary()
-        cw = int((multi.get("combined") or {}).get("total_downloads") or 0)
-        legacy = pepy_summary(project="cli-market")
-        leg = int(legacy.get("total_downloads") or 0) if legacy.get("ok") else 0
-        total = cw + leg
+        data = consolidated_pypi_analytics()
+        total = int(data.get("total_downloads") or 0)
         if total > 0:
             candidates.append(total)
     except Exception as e:
@@ -76,7 +73,6 @@ def _get_consolidated_pypi_downloads() -> int:
         candidates.append(prod)
     if candidates:
         return max(candidates)
-    # Fallback when offline (update after `curl …/analytics/pypi`)
     return 20196
 
 _CONSOLIDATED_PYPI_DOWNLOADS = _get_consolidated_pypi_downloads()
@@ -423,6 +419,7 @@ export const MARKET_STATS = {{
   mcpDefaultProfile: "default",
   mcpBundles: {json.dumps(bundles, ensure_ascii=False)},
   indicatorsCount: {s.INDICATORS_COUNT},
+  goldenLinkagePct: {s.GOLDEN_LINKAGE_PCT},
   enrichmentSourcesLabel: "{s.ENRICHMENT_SOURCES_LABEL}",
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},

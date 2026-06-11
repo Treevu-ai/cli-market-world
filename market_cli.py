@@ -1280,6 +1280,44 @@ def _collect_doctor_checks() -> tuple[list[tuple[str, str, str]], bool]:
 
     checks.append(("País", ui.get_default_country(), "ok"))
     checks.append(("Countries", str(len(COUNTRIES)), "ok"))
+
+    try:
+        src = httpx.get(f"{API}/v1/sources/health", timeout=15)
+        if src.status_code == 200:
+            body = src.json()
+            if body.get("error"):
+                checks.append(("Sources health", body["error"], "warn"))
+            else:
+                sm = body.get("summary") or {}
+                checks.append((
+                    "Sources health",
+                    f"{sm.get('ok', 0)} ok · {sm.get('partial', 0)} partial · {sm.get('dead', 0)} dead",
+                    "ok" if int(sm.get("dead", 0) or 0) == 0 else "warn",
+                ))
+        else:
+            checks.append(("Sources health", f"HTTP {src.status_code}", "warn"))
+    except Exception as exc:
+        checks.append(("Sources health", str(exc)[:60], "warn"))
+
+    try:
+        stats = httpx.get(f"{API}/health/stats", timeout=15)
+        if stats.status_code == 200:
+            body = stats.json()
+            linkage = body.get("golden_linkage_pct", body.get("linkage_pct"))
+            if linkage is not None:
+                pct = float(linkage)
+                checks.append((
+                    "Golden linkage",
+                    f"{pct:.1f}%",
+                    "ok" if pct >= 50 else "warn",
+                ))
+            else:
+                checks.append(("Golden linkage", "no data", "warn"))
+        else:
+            checks.append(("Golden linkage", f"HTTP {stats.status_code}", "warn"))
+    except Exception as exc:
+        checks.append(("Golden linkage", str(exc)[:60], "warn"))
+
     mcp_bin = shutil.which("market-mcp")
     checks.append(("market-mcp", mcp_bin or "not in PATH", "ok" if mcp_bin else "warn"))
     checks.append(("MCP snippet", "cli-market.dev/tools", "ok"))

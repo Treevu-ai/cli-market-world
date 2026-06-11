@@ -133,12 +133,20 @@ export default function Hero() {
             <span className="text-base font-semibold">
               {isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
             </span>
-            <code className="font-mono text-xs text-[var(--cm-on-mint)]/85">{MARKET_STATS.pipInstallCmd}</code>
-            {pypiChip ? (
-              <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65">
-                {pypiChip} {isES ? "instalaciones PyPI" : "PyPI installs"}
-              </span>
-            ) : null}
+            <div className="flex flex-col gap-1.5 w-full">
+              <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all">
+                {MARKET_STATS.pipInstallCmd}
+              </code>
+              {pypiChip ? (
+                <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65 tabular-nums">
+                  <span className="text-[var(--cm-on-mint)]/45" aria-hidden="true">
+                    ·{" "}
+                  </span>
+                  <span className="font-semibold text-[var(--cm-on-mint)]/80">{pypiChip}</span>{" "}
+                  {isES ? "instalaciones PyPI" : "PyPI installs"}
+                </span>
+              ) : null}
+            </div>
             <span className="text-[10px] text-[var(--cm-on-mint)]/60">
               API · CLI · {MARKET_STATS.mcpTools} MCP tools
             </span>

@@ -4,6 +4,24 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-11] — Health stats on prod + golden linkage visibility
+
+### cli-market-core v1.9.30
+- **Added:** `market_core.health_stats` — `build_health_stats()`, `compute_linkage_metrics()`, shared `derive_collector_status()`
+- **Added:** `GOLDEN_LINKAGE_PCT` in `market_stats` (live from `GET /health/stats`)
+- **Added:** Tests for sources health ok/partial/dead classification (ticket 3.1)
+
+### cli-market-backend
+- **Added:** `GET /health/stats` on production API — moat KPIs, `golden_linkage_pct`, `sources_summary`
+
+### cli-market-world v1.9.30
+- **Changed:** `/health/stats` uses shared core builder + index `registry_size`
+- **Changed:** `market doctor` — sources health + golden linkage rows
+- **Changed:** Landing `goldenLinkagePct` via `ops/sync_market_stats.py`
+- **Fixed:** PyPI installs chip — consolidated total from `/analytics/pypi` (legacy + core + world), clearer layout in hero Build card
+
+---
+
 ## [2026-06-11] — Indicator cron + Phase 2 composite scores
 
 ### cli-market-core v1.9.29
