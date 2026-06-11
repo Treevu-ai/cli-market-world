@@ -203,8 +203,9 @@ def main(argv: list[str] | None = None) -> int:
 
     backend_path = args.backend_path or default_backend_path()
     backend_req = (backend_path / "requirements.txt") if backend_path else None
+    backend_private_req = (backend_path / "requirements-private.txt") if backend_path else None
     pin_errors = check_core_pins(backend_requirements=backend_req)
-    index_pin_errors = check_index_pins()
+    index_pin_errors = check_index_pins(backend_private_req=backend_private_req)
     pin_errors = pin_errors + index_pin_errors
     if pin_errors:
         for line in pin_errors:
