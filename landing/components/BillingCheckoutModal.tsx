@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL, WALLET_MANUAL_FALLBACK } from "@/lib/api";
 import { recordFunnelEvent } from "@/lib/funnel";
@@ -174,6 +176,10 @@ export default function BillingCheckoutModal({
   const [apiKey, setApiKey] = useState("");
   const [detectingUser, setDetectingUser] = useState(false);
   const [cliWizardOpen, setCliWizardOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -202,7 +208,7 @@ export default function BillingCheckoutModal({
     }
   }, [open, kind]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const title = isStarter
     ? isES
@@ -468,7 +474,7 @@ export default function BillingCheckoutModal({
 
   const selectedOption = PRO_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod);
 
-  return (
+  return createPortal(
     <div
       className={LANDING_MODAL_OVERLAY}
       role="dialog"
@@ -882,6 +888,7 @@ export default function BillingCheckoutModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

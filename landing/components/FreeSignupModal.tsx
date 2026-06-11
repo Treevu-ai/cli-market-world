@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { scrollToPricing } from "@/lib/funnel";
@@ -14,7 +16,7 @@ import {
 
 const PYPI_URL = MARKET_STATS.pypiUrl;
 
-const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber p-6 sm:p-8`;
+const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber p-6 sm:p-8 max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl`;
 
 type Profile = "dev" | "business" | "other";
 
@@ -67,6 +69,10 @@ export default function FreeSignupModal({
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(open);
 
   const goToPricing = () => {
     onClose();
@@ -160,11 +166,11 @@ export default function FreeSignupModal({
     setLoading(false);
   };
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   if (plan === "pro" || plan === "starter") {
     // legacy "starter" plan param supported for compat; renders Pro checkout flow
-    return (
+    return createPortal(
       <div role="dialog" aria-modal="true" className={LANDING_MODAL_OVERLAY}>
         <div className={LANDING_MODAL_BACKDROP} aria-hidden onClick={onClose} />
         <div className={`${MODAL_PANEL} relative`}>
@@ -197,11 +203,12 @@ market whoami`}</pre>
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
-  return (
+  return createPortal(
     <div role="dialog" aria-modal="true" className={LANDING_MODAL_OVERLAY}>
       <div className={LANDING_MODAL_BACKDROP} aria-hidden onClick={onClose} />
       <div className={`${MODAL_PANEL} relative`}>
@@ -467,6 +474,7 @@ market doctor`}</pre>
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
