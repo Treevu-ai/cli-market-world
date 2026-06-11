@@ -451,10 +451,26 @@ section[id] {
 @media (max-width: 639px) {
   .hero-path-card {
     min-height: 0;
+    padding: 1.125rem 1.25rem;
+  }
+
+  .hero-path-card__eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-path-card__title {
+    font-size: 1.0625rem;
   }
 
   .hero-path-card__body {
     min-height: 0;
+  }
+
+  .hero-path-card__foot {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    line-height: 1.45;
   }
 }
 
@@ -910,6 +926,11 @@ body.cookie-banner-active {
   padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* Cookie banner must not block mobile nav links (z-100 vs dropdown). */
+body.mobile-nav-open [data-cookie-banner="true"] {
+  display: none;
+}
+
 /* Fade-in on scroll */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
@@ -1094,6 +1115,12 @@ select.input-cyber option {
   .landing-mobile-menu a {
     display: inline-flex;
     align-items: center;
+  }
+
+  .paypal-hosted-button-wrap,
+  .paypal-hosted-button {
+    max-width: 100%;
+    overflow: hidden;
   }
 }
 

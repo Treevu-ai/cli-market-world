@@ -58,7 +58,7 @@ export default function PayPalHostedButton({ className = "" }: Props) {
     <div className={`paypal-hosted-button-wrap w-full min-w-0 ${className}`}>
       <div
         id={containerId}
-        className="paypal-hosted-button w-full min-w-[280px] min-h-[48px]"
+        className="paypal-hosted-button w-full min-w-0 sm:min-w-[280px] min-h-[48px] max-w-full"
       />
     </div>
   );

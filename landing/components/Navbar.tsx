@@ -31,12 +31,17 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle("mobile-nav-open", open);
+    return () => document.body.classList.remove("mobile-nav-open");
+  }, [open]);
+
   const close = () => setOpen(false);
   const primaryCta = isES ? "Empezar con la API — gratis →" : "Start with the API — free →";
   const mobileCta = isES ? "API gratis →" : "Free API →";
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+    <nav className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300 ${
       scrolled ? "bg-[var(--cm-background)]/90 backdrop-blur-md border-b border-[var(--cm-outline-variant)]/30" : "bg-[var(--cm-background)] border-b border-transparent"
     }`} aria-label={isES ? "Navegación principal" : "Main navigation"}>
       <div className="landing-container-wide flex items-center justify-between h-14 md:h-16 gap-4">
