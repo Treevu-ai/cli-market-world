@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLang } from "@/lib/LanguageContext";
 import { recordUseCaseDemoOpen } from "@/lib/funnel";
 import type { UseCaseDemo } from "@/lib/useCaseDemos";
@@ -33,28 +34,15 @@ export default function UseCaseDemoModal({
     recordUseCaseDemoOpen(useCase.id);
   }, [open, useCase]);
 
+  useBodyScrollLock(open);
+
   useEffect(() => {
     if (!open) return;
-
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   if (!mounted || !open || !useCase) return null;
