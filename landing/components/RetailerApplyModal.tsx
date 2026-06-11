@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useLang } from "@/lib/LanguageContext";
 import RetailerApplyForm from "@/components/RetailerApplyForm";
 import {
@@ -21,6 +23,10 @@ export default function RetailerApplyModal({
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -31,9 +37,9 @@ export default function RetailerApplyModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div role="dialog" aria-modal="true" className={LANDING_MODAL_OVERLAY}>
       <div className={LANDING_MODAL_BACKDROP} aria-hidden onClick={onClose} />
       <div className={`${MODAL_PANEL} relative`}>
@@ -49,6 +55,7 @@ export default function RetailerApplyModal({
           <RetailerApplyForm variant="modal" onSuccess={onClose} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

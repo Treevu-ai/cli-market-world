@@ -1911,12 +1911,15 @@ body > div[id*="paypal-cart"] {
 /* ── Price ticker (hero + /impact) ── */
 .price-ticker {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   border-top: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--cm-outline-variant) 45%, transparent);
   background: var(--cm-surface-low);
   overflow: hidden;
   white-space: nowrap;
   padding: 13px 0;
+  contain: inline-size;
 }
 
 .price-ticker::before,
@@ -2034,6 +2037,8 @@ body > div[id*="paypal-cart"] {
   font-size: 15px;
   line-height: 1.6;
   min-height: 100svh;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .impact-page::after {
@@ -2775,5 +2780,51 @@ body > div[id*="paypal-cart"] {
 
   .impact-footer {
     padding: 36px 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .impact-nav {
+    padding: 12px 16px;
+  }
+
+  .impact-nav-cta {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .impact-hero {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .impact-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .impact-eyebrow {
+    white-space: normal;
+    flex-wrap: wrap;
+    line-height: 1.45;
+    letter-spacing: 0.14em;
+  }
+
+  .impact-hero h1 {
+    font-size: clamp(1.75rem, 8.5vw, 2.25rem);
+  }
+
+  .impact-spread-meta {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .impact-cov-row .impact-rt {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .impact-stat {
+    padding: 28px 16px;
   }
 }
