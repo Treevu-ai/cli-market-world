@@ -99,7 +99,7 @@ MOCK_RETENTION = {
 }
 
 
-@patch("market_adoption_index._observatory_maa", return_value=(None, None))
+@patch("market_adoption_index._observatory_maa", return_value=(None, None, None))
 @patch("market_adoption_index.funnel_retention_summary", return_value=MOCK_RETENTION)
 @patch("market_adoption_index.funnel_summary", return_value=MOCK_FUNNEL)
 @patch("market_adoption_index.adoption_summary", return_value=MOCK_ADOPTION)
@@ -128,7 +128,7 @@ def test_compute_adoption_index_scores(mock_adopt, mock_funnel, mock_ret, _mock_
     assert pypi_sig.get("projects") == ["cli-market-core", "cli-market-world"]
 
 
-@patch("market_adoption_index._observatory_maa", return_value=(25, "maa"))
+@patch("market_adoption_index._observatory_maa", return_value=(25, "maa", 10))
 @patch("market_adoption_index.funnel_retention_summary", return_value=MOCK_RETENTION)
 @patch("market_adoption_index.funnel_summary", return_value=MOCK_FUNNEL)
 @patch("market_adoption_index.adoption_summary", return_value=MOCK_ADOPTION)
@@ -141,7 +141,7 @@ def test_compute_adoption_index_uses_maa_when_observatory_active(
     proxy = data["signals"]["agent_usage_proxy"]
     assert proxy["value"] == 25
     assert proxy["source"] == "maa"
-    assert data["signals"]["maa"] == 25
+    assert data["signals"]["maa"] == 10  # maa_raw when Observatory active
 
 
 def test_growth_score_positive():
