@@ -1,8 +1,8 @@
 # Shared core library — PyPI (reproducible pin via == in production if needed).
-cli-market-core>=1.9.26
+cli-market-core>=1.9.27
 
 # Semantic moat — Golden Record persistence (SQLite dev / Postgres prod).
-cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@d7ce1b32493bd9bae242cf63f25d7f67344295a7
+cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@f062748
 
 # Runtime dep the web tier imports directly (also pulled in transitively by the
 # core, kept explicit so the server's Playwright fallback always resolves).
