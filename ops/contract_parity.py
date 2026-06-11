@@ -29,6 +29,7 @@ PARITY_EXACT: dict[str, set[str]] = {
     "/analytics/observatory": {"get"},
     "/v1/capabilities": {"get"},
     "/v1/sources/health": {"get"},
+    "/v1/retailers/apply": {"post"},
 }
 
 CHECKOUT_PREFIX = "/checkout/"
