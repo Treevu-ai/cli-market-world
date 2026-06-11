@@ -11,7 +11,9 @@ Instrucciones para agentes (Cursor, Cloud Agent, CI). Este archivo es la entrada
 | `cli-market-backend` | **API producción** — collector, FastAPI, telemetría prod | `../cli-market-backend` | Railway |
 | `cli-market-world` | PyPI `cli-market-world`, landing, ops/CI, mirror API dev | `.` | PyPI + Cloudflare landing |
 
-**Orden de release** (cualquier feature cross-repo): **core → backend → world → index** (index solo si aplica). Checklists: `ops/PRICING-CHANGE-CHECKLIST.md`, `ops/OBSERVATORY-CHANGE-CHECKLIST.md`.
+**Orden de release** (cualquier feature cross-repo): **core → backend → world → index** (index solo si aplica). Checklists: `ops/PRICING-CHANGE-CHECKLIST.md`, `ops/OBSERVATORY-CHANGE-CHECKLIST.md`, `ops/RELEASE-DISPERSION.md`.
+
+**PyPI (dos paquetes, una marca):** CTA GTM = `pip install cli-market-world` (incluye `cli-market-core`). Railway pin = solo `cli-market-core`. Doc canónica: `docs/PYPI-PACKAGE-MODEL.md`.
 
 | Repo auxiliar | Propósito | Path local |
 |---------------|-----------|------------|

@@ -56,6 +56,8 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Precios indexados | 51,000+, refresh 4h | ✅ |
 | Pitch | Commerce infrastructure for AI agents · `pip install cli-market-world` | ✅ |
 
+> **PyPI dual-package:** `cli-market-world` es el CTA developer (incluye `cli-market-core` automáticamente). No cambiar pitch a `cli-market-core`. Ver `docs/PYPI-PACKAGE-MODEL.md`.
+
 > Fuente única: `python3 ops/sync_market_stats.py` regenera `landing/lib/marketStats.ts`. Alinear copy a esos valores.
 
 Si un post contradice esta tabla → **no publicar** hasta actualizar tabla o producto.

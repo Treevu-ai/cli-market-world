@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { PROCURE_APP_URL } from "@/lib/procurePlans";
 import { buildPlanLabel, normalizeBuildPlanSlug, type BuildPlanSlug } from "@/lib/buildPlans";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export type PaymentReturnState = "success" | "pending" | "cancelled" | null;
 export type PaymentReturnProvider = "paypal" | "mercadopago" | null;
@@ -155,7 +156,7 @@ export default function PaymentReturnBanner() {
                   ? `${planLabel ?? "Tu plan Build"} se activa en minutos. Verifica con market whoami.`
                   : `${planLabel ?? "Your Build plan"} activates within minutes. Verify with market whoami.`}
               </p>
-              <p className="font-mono text-xs">pip install cli-market-world && market whoami</p>
+              <p className="font-mono text-xs">{`${MARKET_STATS.pipInstallCmd} && market whoami`}</p>
               <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
                 {isES
                   ? "Confirmar tier en /account (pega tu API key sk-…)"

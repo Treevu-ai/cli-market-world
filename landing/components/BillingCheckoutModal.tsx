@@ -423,7 +423,7 @@ export default function BillingCheckoutModal({
           {isPro || isStarter ? (
             <>
               <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
-              <p className="font-mono">pip install cli-market-world</p>
+              <p className="font-mono">{MARKET_STATS.pipInstallCmd}</p>
               <p className="font-mono">market login --username {resolvedUser || "TU_USUARIO"}</p>
               <p className="font-mono">market whoami</p>
               <p className="text-[var(--cm-on-surface-variant)]/80">

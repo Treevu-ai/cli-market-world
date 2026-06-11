@@ -35,7 +35,7 @@ def _script() -> list[ScriptLine]:
     return [
         ("dim", '🤖 AGENT: "Compara arroz en Perú y arma una canasta."', 10),
         ("dim", "", 2),
-        ("prompt", "pip install cli-market-world", 8),
+        ("prompt", f"pip install {pkg}", 8),
         ("out", f"✓ {pkg} {ver}", 8),
         ("dim", "", 2),
         ("prompt", "market init", 6),
@@ -60,7 +60,7 @@ def _script() -> list[ScriptLine]:
         ("out", f"MCP:        {mcp} curated ({mcp_legacy} legacy)", 4),
         ("out", "Tiempo:     <15 segundos", 4),
         ("head", "─────────────────", 2),
-        ("dim", "cli-market.dev  ·  MIT  ·  pip install cli-market-world", 22),
+        ("dim", f"cli-market.dev  ·  MIT  ·  pip install {pkg}", 22),
     ]
 
 

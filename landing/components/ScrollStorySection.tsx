@@ -258,7 +258,7 @@ function AgentVisual({ isES }: { isES: boolean }) {
         ))}
       </div>
       <p className="scroll-story-panel-foot">
-        {isES ? "▸ pip install cli-market-world" : "▸ pip install cli-market-world"}
+        {`▸ ${MARKET_STATS.pipInstallCmd}`}
       </p>
     </div>
   );
