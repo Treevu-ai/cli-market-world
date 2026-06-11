@@ -26,7 +26,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 34 indicadores**
+- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 44 indicadores**
 - 💰 **Más de 54,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
@@ -100,7 +100,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema.
 
-- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 34 indicators**
+- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 44 indicators**
 - 💰 **54,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
@@ -214,7 +214,7 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 22 MCP tools (default profile) · 34 indicators
+## 🔧 22 MCP tools (default profile) · 44 indicators
 
 `market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 
