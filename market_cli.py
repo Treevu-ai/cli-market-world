@@ -458,10 +458,12 @@ def cmd_search(args):
         console.print(welcome_banner())
         return
     params = {"query": args.query, "limit": args.limit, "page": args.page}
-    if args.store: params["store"] = args.store
+    if args.store:
+        params["store"] = args.store
     if args.country:
-        params["store"] = [k for k, v in STORES.items() if v["country"] == args.country][0] if [k for k, v in STORES.items() if v["country"] == args.country] else None
-    if args.line: params["line"] = args.line
+        params["country"] = args.country
+    if args.line:
+        params["line"] = args.line
     with console.status(f"[cyan]Buscando '{args.query}'..."):
         data = cli_api("POST", "/products/search", params)
     results = data.get("results", [])
@@ -512,8 +514,13 @@ def cmd_search(args):
     ])
 
 def cmd_compare(args):
+    params = {"query": args.query, "line": args.line, "limit": args.limit}
+    if args.store:
+        params["store"] = args.store
+    if args.country:
+        params["country"] = args.country
     with console.status(f"[cyan]Comparando '{args.query}'..."):
-        data = cli_api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
+        data = cli_api("POST", "/products/compare", params)
     comp = data.get("comparison", [])
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=[
@@ -2518,6 +2525,7 @@ def main():
     # compare
     p = sub.add_parser("compare", help=t("compare"))
     p.add_argument("query", nargs="?", default="")
+    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
