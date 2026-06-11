@@ -339,28 +339,20 @@ export default function ScrollStorySection() {
       emitStoryAct(idx);
     };
 
-    const actIndexFromProgress = (progress: number) => {
-      if (actCount <= 1) return 0;
-      const slot = 1 / (actCount - 1);
-      const idx = Math.floor((progress + slot * 0.12) / slot);
-      return Math.min(actCount - 1, Math.max(0, idx));
-    };
-
-    const snapProgressForAct = (idx: number) =>
-      actCount <= 1 ? 0 : Math.min(idx, actCount - 1) / (actCount - 1);
-
     const ctx = gsap.context(() => {
       gsap.set(actEls[0], { autoAlpha: 1, y: 0, pointerEvents: "auto", zIndex: 2 });
       gsap.set(actEls.slice(1), { autoAlpha: 0, y: 12, pointerEvents: "none", zIndex: 1, visibility: "hidden" });
       markAct(0);
 
       const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+      const actSwapTimes = [0];
       let cursor = HOLD;
 
       for (let i = 1; i < actEls.length; i++) {
         const prev = actEls[i - 1];
         const cur = actEls[i];
         const swapAt = cursor;
+        actSwapTimes.push(swapAt);
 
         tl.addLabel(`act-${i}`, swapAt)
           .to(
@@ -392,6 +384,26 @@ export default function ScrollStorySection() {
       }
 
       tl.to({}, { duration: HOLD }, cursor);
+
+      const totalDuration = tl.duration();
+      const actIndexFromProgress = (progress: number) => {
+        const t = progress * totalDuration;
+        let idx = 0;
+        for (let i = actSwapTimes.length - 1; i >= 0; i--) {
+          if (t >= actSwapTimes[i] - 1e-6) {
+            idx = i;
+            break;
+          }
+        }
+        return Math.min(actCount - 1, idx);
+      };
+
+      const snapProgressForAct = (idx: number) => {
+        const start = actSwapTimes[idx] ?? 0;
+        const end =
+          idx < actCount - 1 ? (actSwapTimes[idx + 1] ?? totalDuration) : totalDuration;
+        return ((start + end) / 2) / totalDuration;
+      };
 
       const st = ScrollTrigger.create({
         trigger: section,
