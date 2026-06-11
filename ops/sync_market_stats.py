@@ -672,9 +672,15 @@ def sync_server_json() -> None:
         data = json.loads(path.read_text(encoding="utf-8"))
         data["description"] = desc
         data["version"] = s.PACKAGE_VERSION
+        data["repository"] = {
+            "url": "https://github.com/Treevu-ai/cli-market-world",
+            "source": "github",
+        }
         if data.get("packages"):
             pkg = data["packages"][0]
             pkg["version"] = s.PACKAGE_VERSION
+            if pkg.get("registryType") == "pypi":
+                pkg["identifier"] = "cli-market-world"
             env_vars = list(pkg.get("environmentVariables") or [])
             by_name = {e["name"]: e for e in env_vars}
             by_name["MCP_TOOL_PROFILE"] = {

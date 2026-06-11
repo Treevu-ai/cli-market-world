@@ -55,11 +55,11 @@ flowchart LR
 | Paso | Touchpoint | Estado | Owner |
 |------|------------|--------|-------|
 | Descubrimiento | `Hero`, `HowItWorks`, README | ✅ Existe | Marketing |
-| Install | PyPI `cli-market` | ✅ | Product |
+| Install | PyPI `cli-market-world` | ✅ | Product (`cli-market` legacy frozen) |
 | Orientación | `market hello` | ⚠️ No emite API key; stats a veces stale | CLI |
 | Auth | `market login` | ⚠️ Requiere credenciales conocidas; register no visible en UX | API + CLI |
 | Aha | search → compare → basket | ✅ PAM tier 1 PASS | Product |
-| MCP | `/tools`, `mcp.json` | ⚠️ Comando inconsistente (`market-mcp` vs `python -m market_mcp`) | DX |
+| MCP | `/tools`, `mcp.json` | ✅ | `market-mcp` + `MCP_TOOL_PROFILE=default` (22 tools) |
 | Docs | `DocsPage`, `demo-walkthrough.md` | ⚠️ Alerts en demo vs límites tier; refresh 4h vs 8h | Docs |
 | Upgrade | `market upgrade`, Pricing Pro | ⚠️ Manual post-pago | Billing + Ops |
 
@@ -138,7 +138,7 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 | T-02 | `HowItWorks.tsx` | Dev | ✅ | 6 pasos; link demo-walkthrough |
 | T-03 | `Pricing.tsx` | All | ⚠️ | Starter “trial” → formulario, no cuenta |
 | T-04 | `FAQ.tsx` | All | ✅ | Checkout autónomo en roadmap |
-| T-05 | `llms.txt` / `mcp.json` | Agent | ⚠️ | Inconsistencia comando MCP |
+| T-05 | `llms.txt` / `mcp.json` | Agent | ✅ | `market-mcp`, prod API URL |
 | T-06 | README.md | Dev | ✅ | Quick start alineado en general |
 | T-07 | `docs/use-cases.md` | All | ✅ | 3 perfiles |
 | T-08 | `landing.visual` (PAM) | Ops | ✅ | Stats vs `/dashboard/data` |
@@ -169,9 +169,9 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 | ID | Archivo | Persona | Estado | Notas |
 |----|---------|---------|--------|-------|
 | T-30 | `landing/app/tools` | Dev | ✅ | Snippets Cursor/Claude/VS Code |
-| T-31 | `mcp.json` (repo) | Dev | ⚠️ | `market-mcp` sin env |
-| T-32 | `.vscode/mcp.json` | Dev | ⚠️ | `python -m market_mcp` — distinto |
-| T-33 | `server.json` | Dev | ⚠️ | Registry schema |
+| T-31 | `mcp.json` (repo) | Dev | ✅ | `market-mcp` + env prod |
+| T-32 | `.vscode/mcp.json` | Dev | ✅ | Alineado con snippet canónico |
+| T-33 | `server.json` | Dev | ✅ | Registry `cli-market-world@1.9.25+` |
 | T-34 | PAM `mcp.cursor` | Ops | 🔵 Manual tier 1 |
 | T-35 | PAM `mcp.full_suite` | Ops | 🔵 Manual tier 3 |
 
