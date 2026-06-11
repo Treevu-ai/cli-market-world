@@ -37,17 +37,10 @@ def test_parse_core_pin_from_pyproject():
 
 
 def test_compare_openapi_identical_specs():
-    spec = {
-        "paths": {
-            "/products/search": {"post": {}},
-            "/products/compare": {"post": {}},
-            "/analytics/observatory": {"get": {}},
-            "/v1/capabilities": {"get": {}},
-            "/v1/sources/health": {"get": {}},
-            "/checkout/yape": {"post": {}},
-            "/checkout/webhook": {"post": {}},
-        }
-    }
+    paths = {p: {m: {}} for p, methods in PARITY_EXACT.items() for m in methods}
+    paths["/checkout/yape"] = {"post": {}}
+    paths["/checkout/webhook"] = {"post": {}}
+    spec = {"paths": paths}
     assert compare_openapi(spec, spec) == []
 
 
