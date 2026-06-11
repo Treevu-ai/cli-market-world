@@ -28,7 +28,7 @@ export const MARKET_STATS = {
   // Note: pepyBadgeUrl is a custom consolidated badge (legacy + core + world).
   // The live hero "PYPI DOWNLOADS" comes from /analytics/pypi (also consolidated).
   pipInstallCmd: "pip install cli-market-world",
-  packageVersion: "1.9.28",
+  packageVersion: "1.9.29",
   ogImageUrl: "/og.png",
   license: "MIT",
   paymentsLabel: "PayPal (USD) · Yape · Plin · Mercado Pago (soles)",
