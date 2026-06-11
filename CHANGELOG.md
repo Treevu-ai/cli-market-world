@@ -4,6 +4,22 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-11] — Indicator cron + Phase 2 composite scores
+
+### cli-market-core v1.9.29
+- **Added:** 6 Phase 2 composite scores — `commodity_pressure`, `wage_affordability`, `producer_pressure`, `search_momentum`, `monetary_shelf_gap`, `commodity_transmission`
+- **Fixed:** `refresh_after_collection` aggregates `phase2_written`
+
+### cli-market-backend
+- **Added:** `POST /admin/cron/indicators-refresh` — nightly macro + Phase 2 refresh
+- **Changed:** `cli-market-core>=1.9.29`
+
+### cli-market-world v1.9.29
+- **Added:** `.github/workflows/indicators-nightly.yml` (05:00 UTC), `ops/indicators_daily.py`
+- **Added:** Mirror `POST /admin/cron/indicators-refresh`
+
+---
+
 ## [2026-06-10] — Data moat Phase 2: commodity, CEPAL, Trends (44 indicators)
 
 ### cli-market-core v1.9.28

@@ -161,6 +161,12 @@ Scope: `{CC}:subcat:{item}` — items: canasta completa (`leche`, `arroz`, `acei
 | `macro_validation` | `imf_wb_cpi_gap` | Consistencia IMF vs World Bank |
 | `labor_stress` | `macro_unemployment_rate` | Presión laboral / desempleo |
 | `growth_outlook` | `imf_gdp_growth_yoy` | Expansión vs desaceleración PIB |
+| `commodity_pressure` | `commodity_input_pressure` | Presión costo inputs commodities (global) |
+| `wage_affordability` | `real_wage_basket_ratio` | Salario real vs canasta (CEPAL) |
+| `producer_pressure` | `ipp_food_co` | Presión precios productor alimentos (CO) |
+| `search_momentum` | `gtrends_search_momentum` | Demanda búsqueda básicos (Google Trends RSS) |
+| `monetary_shelf_gap` | `bcrp_shelf_gap` | Brecha expectativa BCRP vs góndola (PE) |
+| `commodity_transmission` | `commodity_transmission_lag` | Lag transmisión commodity → góndola |
 
 ---
 
@@ -219,6 +225,7 @@ Endpoints existentes **sin cambios de contrato**:
 |--------|--------|
 | Collector cada 8h | Alimenta `price_snapshots` + `price_history` + **refresh automático de indicadores** |
 | `POST /v1/intel/refresh` | Tras collector o cron diario para macro |
+| `POST /admin/cron/indicators-refresh` | Cron nightly (GitHub Actions `indicators-nightly.yml`) |
 | **Auto** — `collect_prices.py` | Tras cada corrida (daemon o once), `INDICATOR_AUTO_REFRESH=1` (default) |
 
 ### CLI
