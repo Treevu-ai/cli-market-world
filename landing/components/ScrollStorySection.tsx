@@ -247,7 +247,7 @@ function AgentVisual({ isES }: { isES: boolean }) {
         <span className="scroll-story-agent-arrow">→</span>
         <div className="scroll-story-agent-node">
           <span className="scroll-story-agent-node-k">04</span>
-          <span>VTEX</span>
+          <span>Retail API</span>
         </div>
       </div>
       <div className="scroll-story-tool-grid">
