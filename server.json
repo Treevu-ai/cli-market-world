@@ -6,12 +6,12 @@
     "url": "https://github.com/Treevu-ai/cli-market-world",
     "source": "github"
   },
-  "version": "1.9.25",
+  "version": "1.9.28",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "cli-market-world",
-      "version": "1.9.25",
+      "version": "1.9.28",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"
