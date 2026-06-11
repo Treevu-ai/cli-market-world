@@ -17,6 +17,10 @@ All notable changes to the CLI Market ecosystem.
 ### cli-market-world v1.9.29
 - **Added:** `.github/workflows/indicators-nightly.yml` (05:00 UTC), `ops/indicators_daily.py`
 - **Added:** Mirror `POST /admin/cron/indicators-refresh`
+- **Changed:** Index pin `9d05013`, landing `packageVersion: 1.9.29`
+
+### cli-market-index @ `9d05013`
+- **Fixed:** mypy type args on `export_taxonomy_registry`
 
 ---
 
