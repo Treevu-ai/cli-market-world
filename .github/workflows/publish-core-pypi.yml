@@ -1,0 +1,96 @@
+# One-shot (reusable): build cli-market-core 1.9.34 from world patch → PyPI.
+# Also syncs Treevu-ai/cli-market-core main + tag v1.9.34 when GH_PAT has push.
+#
+# Manual: Actions → Publish cli-market-core (patch) → Run workflow
+
+name: Publish cli-market-core (patch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Target core version (must match patch)"
+        required: false
+        default: "1.9.34"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-core:
+    name: Build & publish cli-market-core ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+          path: cli-market-core
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Apply Observatory patch
+        run: |
+          set -eux
+          test -f ops/patches/cli-market-core-1.9.34.patch
+          cd cli-market-core
+          git apply --check ../ops/patches/cli-market-core-1.9.34.patch
+          git apply ../ops/patches/cli-market-core-1.9.34.patch
+          grep -q 'version = "${{ inputs.version }}"' pyproject.toml
+          grep -q 'PACKAGE_VERSION = "${{ inputs.version }}"' market_core/market_stats.py
+
+      - name: Test observatory
+        run: |
+          pip install -e ./cli-market-core pytest
+          python -m pytest cli-market-core/tests/test_observatory.py -q -o addopts=
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build cli-market-core/
+
+      - name: Publish cli-market-core to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: cli-market-core/dist/
+
+      - name: Sync cli-market-core git (main + tag)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          VERSION: ${{ inputs.version }}
+        continue-on-error: true
+        run: |
+          set -eux
+          cd cli-market-core
+          git config user.email "hello@cli-market.dev"
+          git config user.name "CLI Market Release"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          BRANCH="release/core-${VERSION}"
+          git checkout -B "$BRANCH"
+          git add market_core/market_observatory.py market_core/market_stats.py pyproject.toml
+          git diff --cached --quiet && echo "No git changes" && exit 0
+          git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
+          git push -f origin "$BRANCH"
+          gh pr create --repo Treevu-ai/cli-market-core \
+            --base main --head "$BRANCH" \
+            --title "release(core): ${VERSION} — Observatory backport" \
+            --body "Automated from cli-market-world publish-core-pypi workflow." \
+            || true
+          gh pr merge --repo Treevu-ai/cli-market-core --merge "$BRANCH" --admin || true
+          git checkout main
+          git pull origin main
+          git tag -f "v${VERSION}"
+          git push origin "v${VERSION}" --force
+
+      - name: Verify PyPI
+        run: |
+          sleep 15
+          pip index versions cli-market-core | head -3
