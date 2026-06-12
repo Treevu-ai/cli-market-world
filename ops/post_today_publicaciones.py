@@ -58,6 +58,7 @@ def main() -> int:
         for_date=for_date,
         metrics=metrics,
         post_utc_hour=POST_UTC_HOUR,
+        dashboard_data=data,
     )
     deliver_to_publicaciones(summary)
     for d in deliveries:
