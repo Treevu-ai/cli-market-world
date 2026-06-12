@@ -1,10 +1,10 @@
-# Deploy API + collector on Railway (trigger latest GitHub commit on connected services).
+# Deploy API + collector on Railway.
 #
-# Setup (once):
-#   1. https://railway.com/account/tokens → Create token (Team → No team)
-#   2. GitHub repo → Settings → Secrets → Actions → RAILWAY_API_TOKEN
-#      (Project tokens from Railway project settings are read-only — they will NOT deploy.)
-#   3. Optional: Cursor Cloud → Secrets → RAILWAY_API_TOKEN (for agent CLI deploy)
+# Tokens (pick one or both — GitHub → Settings → Secrets → Actions):
+#   RAILWAY_API_TOKEN — account token → GraphQL deploy latest GitHub commit
+#     https://railway.com/account/tokens (Team → No team)
+#   RAILWAY_TOKEN — project token → `railway up` uploads this checkout (no account token needed)
+#     Railway project → Settings → Tokens → Create
 #
 # Manual: Actions → Deploy Railway → Run workflow
 
@@ -42,9 +42,10 @@ jobs:
   deploy:
     name: Deploy Railway (${{ github.event_name == 'workflow_dispatch' && inputs.target || 'api' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
-      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN || secrets.RAILWAY_TOKEN || vars.RAILWAY_API_TOKEN || vars.RAILWAY_TOKEN }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
       RAILWAY_COLLECTOR_SERVICE_ID: ${{ vars.RAILWAY_COLLECTOR_SERVICE_ID }}
     steps:
@@ -54,16 +55,26 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate Railway token
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate Railway credentials
         run: |
-          if [ -z "${RAILWAY_API_TOKEN}" ]; then
-            echo "::error::Missing RAILWAY_API_TOKEN. Use an ACCOUNT token from https://railway.com/account/tokens (not the read-only project token). Add as GitHub Actions secret RAILWAY_API_TOKEN."
+          if [ -z "${RAILWAY_API_TOKEN}" ] && [ -z "${RAILWAY_TOKEN}" ]; then
+            echo "::error::Missing Railway credentials. Add GitHub secret RAILWAY_TOKEN (project token, easiest) and/or RAILWAY_API_TOKEN (account token). See ops/RAILWAY_DEPLOY.md"
             exit 1
           fi
-          echo "Railway token present (length ${#RAILWAY_API_TOKEN})"
+          if [ -n "${RAILWAY_API_TOKEN}" ]; then
+            echo "RAILWAY_API_TOKEN present (length ${#RAILWAY_API_TOKEN})"
+          fi
+          if [ -n "${RAILWAY_TOKEN}" ]; then
+            echo "RAILWAY_TOKEN present (length ${#RAILWAY_TOKEN})"
+          fi
 
       - name: List Railway services
         run: python3 ops/railway_deploy.py --list-services
+        continue-on-error: true
 
       - name: Trigger Railway deploy
         run: |
@@ -76,32 +87,11 @@ jobs:
     runs-on: ubuntu-latest
     if: always() && needs.deploy.result == 'success'
     steps:
-      - name: Wait for health
-        run: |
-          API="https://cli-market-production.up.railway.app"
-          for i in $(seq 1 30); do
-            code=$(curl -sS -o /tmp/health.json -w "%{http_code}" "$API/health" || echo 000)
-            if [ "$code" = "200" ]; then
-              echo "Health OK after ${i} attempts"
-              cat /tmp/health.json
-              exit 0
-            fi
-            echo "Attempt $i: HTTP $code — waiting 20s"
-            sleep 20
-          done
-          echo "::error::API /health did not return 200 after 10 minutes"
-          exit 1
+      - uses: actions/checkout@v6
 
-      - name: Check OpenAPI version
-        run: |
-          ver=$(curl -sS https://cli-market-production.up.railway.app/openapi.json | python3 -c "import sys,json; print(json.load(sys.stdin)['info']['version'])")
-          echo "Prod OpenAPI version: $ver"
-          curl -sS "https://cli-market-production.up.railway.app/analytics/observatory?days=30" | python3 -c "
-          import sys,json
-          d=json.load(sys.stdin)
-          tools=[t['name'] for t in d.get('top_tools',[])]
-          print('index_stats in top_tools:', 'index_stats' in tools)
-          "
-          if [ "$ver" = "1.9.30" ]; then
-            echo "::warning::Still on 1.9.30 after deploy — confirm Railway service is linked to this GitHub repo/branch"
-          fi
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Wait and verify production
+        run: python3 ops/railway_prod_status.py --wait --min-version 1.9.33
