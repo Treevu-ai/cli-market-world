@@ -1019,8 +1019,6 @@ def test_mercadopago_webhook_activates_pro_request(monkeypatch):
 
 
 def test_activate_pro_by_request_id(monkeypatch):
-    import subprocess
-
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
@@ -1051,18 +1049,10 @@ def test_activate_pro_by_request_id(monkeypatch):
     from market_core import db_find_subscription_request, db_get_subscription
 
     assert db_get_subscription("admin")["tier"] == "free"
-    env = os.environ.copy()
-    for key in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_PASS"):
-        env[key] = ""
-    env["GMAIL_DRAFTS_ENABLED"] = "0"
-    proc = subprocess.run(
-        [sys.executable, "ops/activate_pro.py", "admin", "--request-id", req_id],
-        cwd=str(Path(__file__).parent.parent),
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert proc.returncode == 0, proc.stderr + proc.stdout
+    from conftest import run_activate_pro_cli
+
+    code, stdout, stderr = run_activate_pro_cli("admin", "--request-id", req_id)
+    assert code == 0, stderr + stdout
     assert db_get_subscription("admin")["tier"] == "pro"
     req = db_find_subscription_request(request_id=req_id)
     assert req["status"] == "activated"
