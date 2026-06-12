@@ -1,4 +1,4 @@
-# One-shot ops: deploy collector + demote erroneous Pro tier.
+# One-shot ops: deploy collector + demote erroneous Pro tier + revoke leaked key.
 # Trigger: push to ops/triggers/collector-demote.trigger
 
 name: Ops Collector Deploy and Demote
@@ -14,6 +14,10 @@ on:
         description: CLI username to demote to free
         required: false
         default: user-f04c6042d6da
+      api_key:
+        description: sk- API key to revoke (optional)
+        required: false
+        default: ""
 
 concurrency:
   group: ops-collector-demote
@@ -53,28 +57,38 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: python3 ops/railway_deploy.py --target collector
 
-  demote-user:
+  incident-response:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: deploy-collector
-    if: always()
+    timeout-minutes: 15
     env:
       MARKET_API_URL: https://cli-market-production.up.railway.app
     steps:
       - uses: actions/checkout@v6
 
-      - name: Demote user to free
-        env:
-          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+      - name: Load trigger params
+        id: params
         run: |
+          TRIGGER="ops/triggers/collector-demote.trigger"
           USER="${{ github.event.inputs.username }}"
+          API_KEY="${{ github.event.inputs.api_key }}"
           if [ -z "$USER" ]; then
-            USER=$(grep -E '^username=' ops/triggers/collector-demote.trigger | head -1 | cut -d= -f2-)
+            USER=$(grep -E '^username=' "$TRIGGER" | head -1 | cut -d= -f2-)
+          fi
+          if [ -z "$API_KEY" ]; then
+            API_KEY=$(grep -E '^api_key=' "$TRIGGER" | head -1 | cut -d= -f2-)
           fi
           if [ -z "$USER" ]; then
             echo "::error::No username in trigger file or workflow input"
             exit 1
           fi
+          echo "username=$USER" >> "$GITHUB_OUTPUT"
+          echo "api_key=$API_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Demote user to free
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+        run: |
+          USER="${{ steps.params.outputs.username }}"
           CODE=$(curl -sS -o /tmp/set-tier.json -w "%{http_code}" \
             -X POST "${MARKET_API_URL}/v1/admin/set-tier" \
             -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
@@ -86,3 +100,32 @@ jobs:
             exit 1
           fi
           echo "Demoted ${USER} to free"
+
+      - name: Revoke leaked API key
+        if: steps.params.outputs.api_key != ''
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+        run: |
+          API_KEY="${{ steps.params.outputs.api_key }}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            CODE=$(curl -sS -o /tmp/revoke-key.json -w "%{http_code}" \
+              -X POST "${MARKET_API_URL}/v1/admin/revoke-api-key" \
+              -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"api_key\":\"${API_KEY}\"}")
+            cat /tmp/revoke-key.json
+            if [ "$CODE" = "200" ]; then
+              echo "Revoked API key prefix ${API_KEY:0:10}…"
+              exit 0
+            fi
+            if [ "$CODE" = "404" ]; then
+              echo "Attempt $attempt: key not found or endpoint not deployed yet (HTTP 404)"
+            else
+              echo "Attempt $attempt: revoke-api-key HTTP $CODE"
+            fi
+            if [ "$attempt" -lt 10 ]; then
+              sleep 60
+            fi
+          done
+          echo "::error::revoke-api-key failed after retries"
+          exit 1
