@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GITHUB_TOKEN
 
 COPY requirements-railway.txt .
-ARG CACHE_BUST=2026061203
+ARG CACHE_BUST=2026061204
 RUN set -eux; \
     if [ -z "${GITHUB_TOKEN}" ]; then \
       echo "error: GITHUB_TOKEN build arg required for private cli-market-index (git+https)" >&2; \
