@@ -76,7 +76,22 @@ def main() -> int:
 
     days = args.days if args.days is not None else (7 if args.spike else 30)
     dash = _fetch_dashboard_remote() if args.remote else None
-    summary = go_live_summary(days=days, dashboard_data=dash)
+    try:
+        summary = go_live_summary(days=days, dashboard_data=dash)
+    except Exception as exc:
+        if not args.remote:
+            raise
+        summary = {
+            "kpis": (dash or {}).get("kpis", {}),
+            "alerts": [
+                {
+                    "severity": "info",
+                    "code": "funnel_local_skip",
+                    "message": f"Funnel local omitido en --remote ({exc.__class__.__name__})",
+                }
+            ],
+            "mode": "remote_dashboard_only",
+        }
 
     if args.remote:
         try:
@@ -157,7 +172,7 @@ def main() -> int:
             deliver_to_bitacora("\n".join(lines))
             print("Slack → bitácora (go-live alerts).", file=sys.stderr)
 
-    return 1 if summary["overall_status"] == "critical" else 0
+    return 1 if summary.get("overall_status") == "critical" else 0
 
 
 if __name__ == "__main__":

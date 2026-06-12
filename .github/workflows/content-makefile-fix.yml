@@ -45,9 +45,15 @@ jobs:
             changed=1
             echo "Removed literal Python version prefix from recipes"
           fi
+          if grep -qE '^PYTHON\s*' Makefile; then
+            sed -i -E 's/^PYTHON\s*(\?)?=\s*.*/PYTHON ?= python3/' Makefile
+            changed=1
+            echo "Normalized PYTHON variable to python3 (was python3 --version output)"
+          fi
           if [ "$changed" = 0 ]; then
             echo "Makefile already fixed — no sed changes"
           fi
+          grep -n '^PYTHON' Makefile || true
           grep -n '^gate:' Makefile || true
           grep -A1 '^gate:' Makefile | head -3
 
@@ -56,6 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -f scripts/check-gate.py ]; then
+            python3 scripts/check-gate.py
             make gate
           else
             echo "::warning::scripts/check-gate.py missing — skip make gate"

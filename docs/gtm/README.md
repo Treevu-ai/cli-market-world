@@ -8,6 +8,7 @@ Material comercial y posicionamiento. **Claims públicos:** usar solo métricas 
 |-----------|---------|-----|
 | 1 | [pitch-agentic-protocols.md](./pitch-agentic-protocols.md) | Reuniones B2B confidenciales, PSPs (Culqi/BCP/Niubiz), data room estratégico |
 | 2 | [api-positioning-es.md](../../tools/content-repo-template/strategy/api-positioning-es.md) | Copy API / landing ES (tagline, bloque PSP) |
+| 3 | [indice-canasta-pe.md](../../landing/public/indice-canasta-pe.md) | Señal pública data moat PE — regenerar con `ops/canasta_pe_index.py` |
 
 ## Intelligence (Puerta C)
 
