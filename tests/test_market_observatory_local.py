@@ -15,6 +15,7 @@ from market_observatory import (
     classify_route,
     compute_daily_observatory_metrics,
     normalize_tool_name,
+    observatory_snapshot_streak,
     record_agent_event,
 )
 
@@ -92,3 +93,24 @@ def test_compute_daily_observatory_metrics_sqlite_row(monkeypatch, tmp_path):
     payload = compute_daily_observatory_metrics(day=date.today())
     assert payload["daily_active_agents"] >= 1
     assert payload["date"] == date.today().isoformat()
+
+
+def test_observatory_snapshot_streak_sqlite(monkeypatch, tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    monkeypatch.setenv("MARKET_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("OBSERVATORY_TELEMETRY", "1")
+    import market_core.market_core as mc
+
+    mc._db_initialized = False
+    mc.USE_PG = False
+    mc.DATA_DIR = data_dir
+    mc.DB_FILE = data_dir / "market.db"
+    mc.ensure_db_initialized()
+
+    compute_daily_observatory_metrics(day=date.today())
+    streak = observatory_snapshot_streak(days=7)
+    assert streak["window_days"] == 7
+    assert streak["snapshots_found"] >= 1
+    assert streak["target"] == 7
+    assert "ok" in streak

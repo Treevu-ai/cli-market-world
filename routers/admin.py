@@ -189,7 +189,7 @@ def admin_cron_funnel_digest(
     authorization: str | None = Header(None),
     hours: int = 24,
 ):
-    """Post adoption funnel digest to #funnel-cli-market (evening cron)."""
+    """Post adoption funnel digest to #funnel-cli-market (morning-ops-chain ~08:00 PET)."""
     require_admin(authorization)
     hours = max(1, min(hours, 168))
 

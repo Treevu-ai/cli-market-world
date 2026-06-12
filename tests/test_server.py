@@ -67,7 +67,9 @@ def test_whoami_no_token():
 def test_whoami_with_token():
     r = client.get("/auth/whoami", headers={"Authorization": "Bearer test-token-123"})
     assert r.status_code == 200
-    assert r.json()["username"] == "admin"
+    body = r.json()
+    assert body["username"] == "admin"
+    assert body["tier"] in ("free", "pro", "starter", "builder", "enterprise", "admin")
 
 
 def test_cart_empty():

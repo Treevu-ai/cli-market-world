@@ -718,6 +718,31 @@ def observatory_summary(*, days: int = 30) -> dict[str, Any]:
     }
 
 
+def observatory_snapshot_streak(*, days: int = 7) -> dict[str, Any]:
+    """Count daily_observatory_metrics rows in the last N calendar days (inclusive)."""
+    from datetime import timedelta
+
+    ensure_observatory_schema()
+    days = max(1, min(days, 30))
+    cutoff = (date.today() - timedelta(days=days - 1)).isoformat()
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT COUNT(*) AS n FROM daily_observatory_metrics WHERE date >= ?",
+            (cutoff,),
+        ).fetchone()
+        found = int(row["n"] or 0) if row else 0
+    finally:
+        db.close()
+    return {
+        "window_days": days,
+        "snapshots_found": found,
+        "target": days,
+        "ok": found >= days,
+        "cutoff_date": cutoff,
+    }
+
+
 def compute_daily_observatory_metrics(*, day: date | None = None) -> dict[str, Any]:
     """Upsert one daily snapshot row."""
     day = day or date.today()

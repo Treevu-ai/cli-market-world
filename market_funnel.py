@@ -26,6 +26,7 @@ FUNNEL_EVENTS = frozenset(
         "use_case_demo",
         "demo_session_created",
         "demo_first_tool_call",
+        "mcp_tool_call",
         "activated",
     }
 )

@@ -109,6 +109,7 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 - [x] `python ops/adoption_index.py` — `agent_usage_proxy` reemplazado por MAA cuando telemetry madura
 - [x] `python ops/command_control_daily.py --remote` — MAA visible
 - [ ] Adoption Index nightly CI — verde 7 días consecutivos post-deploy (validar 2026-06-19)
+- [x] Streak monitor — `GET /admin/observatory/streak` + `ops/observatory_streak.py --remote`
 - [x] `GET /analytics/observatory?days=30` prod — 7 preguntas del PRD §1
 - [ ] Landing `/stats` — data-gate OK (`make gate` en content repo si cifra en creative)
 - [x] PAM — casos `public.observatory`, `admin.observatory_*` en `ops/pam_matrix.yaml`

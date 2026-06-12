@@ -100,6 +100,30 @@ jobs:
       - name: PAM tier 1 (public, landing, user)
         run: python ops/production_acceptance.py --phase public,landing,user --tier 1
 
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: 9d050131e9e5b16381581d1916e386f34d319ca6
+          path: .deps/cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          ref: main
+          path: .deps/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+
+      - name: PAM tier 1.5 (synthetic journey)
+        env:
+          MARKET_SKIP_LIVE: "1"
+        run: |
+          pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
+          pip install -e ".deps/cli-market-core"
+          pip install -e ".deps/cli-market-index[postgres]"
+          pip install -e .
+          pytest tests/test_funnel.py::test_pam_journey_synthetic -q
+
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v6

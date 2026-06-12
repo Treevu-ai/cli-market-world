@@ -117,7 +117,7 @@ ruff check .
 
 | Item | Notas |
 |------|-------|
-| Checkout autónomo PayPal REST | `/billing/paypal` + webhooks (código existe, desactivado) |
+| Checkout autónomo PayPal REST | `/billing/paypal` + `/checkout/paypal-webhook` — código + tests en prod; go-live: `docs/ops/GO-LIVE-CHECKOUT.md` |
 | `inventory_daily[]` | Dashboard Fase 4 — serie temporal |
 | Gráfica inflación por tienda | Requiere 2ª captura histórica |
 | Cron post-collector | `backfill_confidence.py` tras cada run collector |

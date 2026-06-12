@@ -1,0 +1,68 @@
+# Fix broken $(python3 --version) prefix in cli-market-content Makefile.
+# Trigger: bump ops/content-makefile.trigger on main, or workflow_dispatch.
+
+name: Fix content Makefile
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/content-makefile.trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fix-makefile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-content
+          ref: main
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+
+      - name: Patch Makefile gate/publish recipes
+        working-directory: cli-market-content
+        run: |
+          set -euo pipefail
+          test -f Makefile
+          if grep -q '\$(python3 --version)' Makefile; then
+            sed -i 's/\$(python3 --version) //g' Makefile
+            echo "Removed invalid \$(python3 --version) prefix from Makefile"
+          else
+            echo "Makefile already fixed — no changes"
+          fi
+          grep -n '^gate:' Makefile || true
+          grep -A1 '^gate:' Makefile | head -3
+
+      - name: Verify make gate
+        working-directory: cli-market-content
+        run: |
+          set -euo pipefail
+          if [ -f scripts/check-gate.py ]; then
+            make gate
+          else
+            echo "::warning::scripts/check-gate.py missing — skip make gate"
+          fi
+
+      - name: Commit and push
+        working-directory: cli-market-content
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No Makefile changes to push"
+            exit 0
+          fi
+          git add Makefile
+          git commit -m "fix(makefile): remove invalid python3 --version prefix on gate/publish"
+          git push
