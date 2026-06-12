@@ -2,6 +2,8 @@
 
 Endpoints:
   GET  /admin/debug-fetch     Test fetch_store + product_from_json for one store/query
+  POST /admin/activate-pro-request  Activate Pro from pending PRO- request (manual)
+  POST /admin/resend-pro-activation-email  Resend Pro welcome email for activated request
   POST /admin/collect         Trigger a price collection run synchronously
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
   POST /v1/admin/set-tier     Set a user's subscription tier (free|pro|enterprise)
@@ -73,6 +75,63 @@ def admin_activate_pro_request(
         raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
     username = next(a.split(":", 1)[1] for a in actions if a.startswith("pro_activated:"))
     return {"ok": True, "request_id": request_id, "username": username, "actions": actions}
+
+
+@router.post("/admin/resend-pro-activation-email")
+def admin_resend_pro_activation_email(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Resend Pro welcome email (new CLI password) for an activated PRO- request."""
+    require_admin(authorization)
+    request_id = (body.get("request_id") or body.get("ref") or "").strip().upper()
+    if not request_id.startswith("PRO-"):
+        raise HTTPException(status_code=400, detail="request_id must be PRO-XXXXXXXX")
+
+    email_override = (body.get("email") or "").strip()
+    from routers.payments import resend_pro_activation_email
+
+    actions = resend_pro_activation_email(request_id, email_override=email_override)
+    logger.info(
+        "audit admin_resend_pro_activation request_id=%s email_override=%s actions=%s",
+        request_id,
+        bool(email_override),
+        actions,
+    )
+
+    if actions[0].startswith("request_not_found:"):
+        raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
+    if actions[0].startswith("request_not_activated:"):
+        raise HTTPException(
+            status_code=409,
+            detail={"request_id": request_id, "actions": actions, "hint": "activate Pro first"},
+        )
+    if actions[0].startswith("user_not_pro:"):
+        raise HTTPException(
+            status_code=409,
+            detail={"request_id": request_id, "actions": actions, "hint": "user tier is not pro"},
+        )
+    if actions[0].startswith("request_no_user:"):
+        raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
+
+    sent = any(a.startswith("activation_email:") for a in actions)
+    skipped = next((a for a in actions if a.startswith("activation_email_skipped:")), "")
+    reason = skipped.split(":", 1)[1] if ":" in skipped else None
+    from market_core import db_find_subscription_request
+
+    req = db_find_subscription_request(request_id=request_id)
+    username = (req or {}).get("username") or ""
+    email = email_override or (req or {}).get("email") or ""
+
+    return {
+        "ok": sent,
+        "request_id": request_id,
+        "username": username,
+        "email": email,
+        "sent": sent,
+        "reason": reason,
+        "actions": actions,
+    }
 
 
 @router.post("/v1/admin/set-tier")
