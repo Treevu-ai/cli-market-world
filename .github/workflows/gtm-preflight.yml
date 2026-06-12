@@ -45,7 +45,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install httpx
 
-      - name: make gate && make today
+      - name: Content gate + today
         working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
         env:
           MARKET_API_URL: ${{ env.MARKET_API_URL }}
@@ -54,11 +54,19 @@ jobs:
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
         run: |
           set -euo pipefail
-          if [ -f Makefile ] && grep -q '^gate:' Makefile; then
+          # Makefile gate/today may use $(python3 --version) as command → "Python: No such file"
+          if [ -f scripts/check-gate.py ]; then
+            python3 scripts/check-gate.py
+          elif [ -f Makefile ] && grep -q '^gate:' Makefile; then
             make gate
+          else
+            python3 "${{ github.workspace }}/ops/gtm_gate_remote.py"
+          fi
+          if [ -f scripts/status.py ]; then
+            python3 scripts/status.py
+          elif [ -f Makefile ] && grep -q '^today:' Makefile; then
             make today
           else
-            echo "::warning::Makefile gate/today missing — running world daily_briefing --content"
-            pip install httpx
+            pip install "cli-market-core>=1.9.34" httpx
             python3 "${{ github.workspace }}/ops/daily_briefing.py" --content --dry-run
           fi
