@@ -31,10 +31,10 @@ Visa + OpenAI, Mastercard Agent Pay, PayPal ACS están estandarizando el checkou
 
 **La consecuencia directa:** con checkout resuelto, el cuello de botella se mueve al **descubrimiento y comparación**. Los agentes necesitan saber *dónde comprar*, *a qué precio*, y *cuándo* es el mejor momento. CLI Market vive exactamente ahí.
 
-### Señales de validación
-- **43%** de retailers globales piloteando agentes hoy — demanda real de datos normalizados, no en 2028
-- OpenAI Instant Checkout falló (<30 comercios) — la fricción de integración es el problema real; CLI Market es el anti-fricción
-- Amazon ofreciendo agentes a retailers vía AWS — el retailer mediano necesita alternativa para no depender 100% de Amazon
+### Señales de validación *(intel de mercado — citar fuente antes de posts públicos)*
+- **~43%** de retailers globales piloteando agentes — demanda de datos normalizados, no en 2028. *[Fuente pendiente: añadir estudio/industry report antes de GTM público]*
+- OpenAI Instant Checkout con adopción limitada (orden de magnitud: decenas de comercios, no cientos) — la fricción de integración es el problema real; CLI Market es el anti-fricción. *[Fuente pendiente: verificar conteo merchants ACP/Instant Checkout, corte Q2 2026]*
+- Amazon ofreciendo agentes a retailers vía AWS — el retailer mediano necesita alternativa para no depender 100% de Amazon. *[Fuente pendiente: comunicado AWS/agent commerce]*
 
 ---
 
@@ -53,7 +53,7 @@ Visa + OpenAI, Mastercard Agent Pay, PayPal ACS están estandarizando el checkou
 | Rieles de pago LATAM | PayPal · Yape · Plin |
 | PyPI downloads | 27K |
 
-Una sola API · Un schema JSON · Compatible con ACP y UCP.
+Una sola API · Un schema JSON · Diseñado para mapear a ACP y UCP (MCP-native hoy; adapters de protocolo según demanda — ver `docs/STRATEGY.md`).
 
 ---
 
@@ -123,7 +123,7 @@ Publicarlo es la primera señal para cualquier PSP, inversor o partner: el moat 
 
 | Urgencia | Acción |
 |----------|--------|
-| **Inmediato** | Actualizar pitch con framing UCP/ACP middleware → material para Dante Soto |
+| **Inmediato** | Usar este pitch en reunión Dante Soto (Culqi/BCP) — framing UCP/ACP middleware ✅ (PR #157) |
 | **Corto plazo** | Publicar Índice Canasta Perú como señal pública del data moat |
 | **Vigilancia** | Monitorear si Culqi, Niubiz o BCP mencionan "agent pay" en comunicaciones públicas |
 
