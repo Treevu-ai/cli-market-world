@@ -229,6 +229,7 @@ def notify_subscription(
             (status or "").strip().lower() == "pending"
             and (tier or "").strip().lower() == "pro"
             and os.getenv("SLACK_BOT_TOKEN", "").strip()
+            and (payment_method or "").strip().lower() in ("yape", "plin")
         ):
             blocks = pro_pending_slack_blocks(
                 username=username,

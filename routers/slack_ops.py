@@ -94,6 +94,15 @@ async def slack_interactions(request: Request):
             "text": f"✅ Pro activado para `{username}` (ref `{request_id}`). Cliente: `market whoami`",
         }
 
+    if any(a.startswith("payment_not_manual:") for a in result):
+        return {
+            "response_type": "ephemeral",
+            "text": (
+                f"`{request_id}` es PayPal/Mercado Pago — no se activa manualmente. "
+                "Espere el webhook tras el pago."
+            ),
+        }
+
     return {
         "response_type": "ephemeral",
         "text": f"No se pudo activar `{request_id}`: {', '.join(result)}",
