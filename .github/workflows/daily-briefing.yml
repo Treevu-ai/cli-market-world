@@ -41,7 +41,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install httpx
+        run: |
+          pip install "cli-market-core>=1.9.34" httpx
 
       - name: Verify content checkout
         run: |
