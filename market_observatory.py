@@ -738,7 +738,7 @@ def compute_daily_observatory_metrics(*, day: date | None = None) -> dict[str, A
         """,
         (day_start, day_end, True),
     ).fetchone()
-    daa = int((daa_row or {}).get("n") or 0)
+    daa = int(daa_row["n"] or 0) if daa_row else 0
 
     payload = {
         "date": day_str,

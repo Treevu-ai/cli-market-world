@@ -221,12 +221,12 @@ def main() -> int:
 
     md_lines = [
         f"# Mobile audit — {BASE_URL}",
-        f"",
+        "",
         f"**Fecha:** {date.today().isoformat()}",
         f"**Issues:** {len(issues)}",
-        f"",
+        "",
         "## Resumen por severidad",
-        f"",
+        "",
     ]
     for sev in ("S0", "S1", "S2"):
         items = [i for i in issues if i.get("severity") == sev]
