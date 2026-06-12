@@ -18,13 +18,13 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 ## 🇪🇸 Español
 
-### Infraestructura de comercio para agentes de IA — un solo `pip install`, una API, cero scraping.
+### Infraestructura de comercio para agentes de IA — el middleware LATAM entre UCP/ACP y los retailers que aún no están listos.
 
-> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio en una.**
+> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una — y es el único middleware preparado para UCP y ACP cuando el comercio agéntico llegue a la región.**
 
-Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exige su propia autenticación, su propia lógica de búsqueda y no comparten carrito — así que los agentes fallan antes de la primera consulta.
+Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Walmart) ya están estandarizando cómo los agentes descubren y evalúan productos. Falabella, Ripley, Wong, Metro no van a implementar estos protocolos solos. CLI Market es el puente.
 
-**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
 
 - 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 44 indicadores**
 - 💰 **Más de 55,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
@@ -35,10 +35,11 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 - 🔎 **Busca** cualquier producto en 68 retailers (38 verificados activos) de 8 países
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
-- 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas
+- 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
 - 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
+- 🔗 **Protocol-ready** — schema JSON normalizado listo para UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
@@ -92,13 +93,13 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 ## 🇬🇧 English
 
-### Commerce infrastructure for AI agents — one `pip install`, one API, zero scraping.
+### Commerce infrastructure for AI agents — the LATAM middleware between UCP/ACP protocols and retailers that aren't ready yet.
 
-> **Stripe turned payments into APIs. CLI Market turns commerce into one.**
+> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one — and is the only middleware ready for UCP and ACP when agentic commerce reaches the region.**
 
-AI agents still can't shop in the real world. Every retailer means separate auth, separate search logic, no shared cart — so agents fail before the first query.
+Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) are already standardizing how agents discover and evaluate products. Falabella, Ripley, Wong, Metro won't implement these protocols on their own. CLI Market is the bridge.
 
-**CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema.
+**CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
 
 - 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 44 indicators**
 - 💰 **55,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
@@ -109,10 +110,11 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 - 🔎 **Search** any product across 68 retailers (38 verified active) in 8 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
-- 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
+- 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*
 - 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
+- 🔗 **Protocol-ready** — normalized JSON schema ready for UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
