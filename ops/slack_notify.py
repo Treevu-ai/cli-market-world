@@ -8,8 +8,20 @@ import re
 import httpx
 
 # CLI Market workspace — override via env if channels move
-DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones redes
+DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones — resumen diario GTM
 DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
+# GTM — un canal Slack por red (copy listo para pegar)
+DEFAULT_CHANNEL_LINKEDIN_PERSONAL = "C0B96T74RE3"
+DEFAULT_CHANNEL_LINKEDIN_COMPANY = "C0B9Q70C64R"
+DEFAULT_CHANNEL_TWITTER = "C0B9NBU8X7C"
+DEFAULT_CHANNEL_DEVTO = "C0B96TJC3CP"
+DEFAULT_CHANNEL_REDDIT = "C0B9ND493GS"
+DEFAULT_CHANNEL_HN = "C0BAGP1EHPA"
+DEFAULT_CHANNEL_THREADS = "C0B9G1GA7PV"
+DEFAULT_CHANNEL_INSTAGRAM = "C0B9S2WQ6SG"
+DEFAULT_CHANNEL_WHATSAPP = "C0B9NELR490"
+DEFAULT_CHANNEL_NEWSLETTER = "C0BAGNR374Y"
+DEFAULT_CHANNEL_OUTBOUND = "C0B9NEEB97U"
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
 DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # #suscripciones-cli-pro
 DEFAULT_CHANNEL_FUNNEL = "C0B9G3T0T0A"  # funnel-cli-market
@@ -32,6 +44,77 @@ def channel_revisiones_cursor() -> str:
     return os.getenv(
         "SLACK_CHANNEL_REVISIONES_CURSOR", DEFAULT_CHANNEL_REVISIONES_CURSOR
     )
+
+
+def channel_linkedin_personal() -> str:
+    return os.getenv("SLACK_CHANNEL_LINKEDIN_PERSONAL", DEFAULT_CHANNEL_LINKEDIN_PERSONAL)
+
+
+def channel_linkedin_company() -> str:
+    return os.getenv("SLACK_CHANNEL_LINKEDIN_COMPANY", DEFAULT_CHANNEL_LINKEDIN_COMPANY)
+
+
+def channel_twitter() -> str:
+    return os.getenv("SLACK_CHANNEL_TWITTER", DEFAULT_CHANNEL_TWITTER)
+
+
+def channel_devto() -> str:
+    return os.getenv("SLACK_CHANNEL_DEVTO", DEFAULT_CHANNEL_DEVTO)
+
+
+def channel_reddit() -> str:
+    return os.getenv("SLACK_CHANNEL_REDDIT", DEFAULT_CHANNEL_REDDIT)
+
+
+def channel_hn() -> str:
+    return os.getenv("SLACK_CHANNEL_HN", DEFAULT_CHANNEL_HN)
+
+
+def channel_threads() -> str:
+    return os.getenv("SLACK_CHANNEL_THREADS", DEFAULT_CHANNEL_THREADS)
+
+
+def channel_instagram() -> str:
+    return os.getenv("SLACK_CHANNEL_INSTAGRAM", DEFAULT_CHANNEL_INSTAGRAM)
+
+
+def channel_whatsapp() -> str:
+    return os.getenv("SLACK_CHANNEL_WHATSAPP", DEFAULT_CHANNEL_WHATSAPP)
+
+
+def channel_newsletter() -> str:
+    return os.getenv("SLACK_CHANNEL_NEWSLETTER", DEFAULT_CHANNEL_NEWSLETTER)
+
+
+def channel_outbound() -> str:
+    return os.getenv("SLACK_CHANNEL_OUTBOUND", DEFAULT_CHANNEL_OUTBOUND)
+
+
+def slack_channel_for_gtm_label(label: str) -> str | None:
+    """Map calendar_channels label → Slack channel ID."""
+    if label.startswith("LinkedIn Personal"):
+        return channel_linkedin_personal()
+    if label == "LinkedIn Empresa":
+        return channel_linkedin_company()
+    if label.startswith("Twitter"):
+        return channel_twitter()
+    if label == "DEV.to":
+        return channel_devto()
+    if label.startswith("Reddit"):
+        return channel_reddit()
+    if label == "Hacker News":
+        return channel_hn()
+    if label.startswith("Instagram"):
+        return channel_instagram()
+    if label.startswith("WhatsApp"):
+        return channel_whatsapp()
+    if label.startswith("Newsletter") or label.startswith("Price Pulse"):
+        return channel_newsletter()
+    if label.startswith("Outbound"):
+        return channel_outbound()
+    if label.startswith("Threads"):
+        return channel_threads()
+    return None
 
 
 def _resolve_channel_by_name(token: str, name: str) -> str | None:
@@ -240,6 +323,16 @@ def deliver_to_publicaciones(text: str) -> None:
         channel=channel_publicaciones(),
         webhook_url=os.getenv("SLACK_WEBHOOK_PUBLICACIONES", ""),
     )
+
+
+def deliver_to_gtm_channel(label: str, text: str) -> str:
+    """Post to the Slack channel for a GTM calendar label. Returns channel ID used."""
+    channel_id = slack_channel_for_gtm_label(label)
+    if not channel_id:
+        deliver_to_publicaciones(text)
+        return channel_publicaciones()
+    deliver(text, channel=channel_id)
+    return channel_id
 
 
 def deliver_to_revisiones_cursor(text: str) -> None:

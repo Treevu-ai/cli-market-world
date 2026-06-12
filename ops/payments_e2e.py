@@ -698,6 +698,86 @@ def run_landing_pricing_smoke(landing: str, rep: Report) -> None:
         rep.add("landing", "procure-redirect", "FAIL", f"status={status}", ms)
 
 
+def run_p0a_idempotency(base: str, rep: Report, admin: str) -> None:
+    """P0-A: Idempotency-Key, confirmation_mode, webhook dedup (live API)."""
+    pro_key = _load_pro_api_key()
+    set_tier_live = _endpoint_available(base, "/v1/admin/set-tier")
+    token = pro_key
+    if not token and admin and set_tier_live:
+        user, token = register_user(base)
+        product = search_first_product(base, token)
+        if not product or not add_cart_item(base, token, product):
+            rep.add("p0a", "setup", "SKIP", "cart setup failed")
+            return
+        if not set_tier(base, admin, user, "pro"):
+            rep.add("p0a", "setup", "SKIP", "set-tier pro failed")
+            return
+    elif not token:
+        rep.add("p0a", "idempotency", "SKIP", "needs MARKET_PRO_API_KEY or admin set-tier")
+        rep.add("p0a", "confirmation_mode", "SKIP", "needs pro checkout access")
+        return
+
+    product = search_first_product(base, token)
+    if not product:
+        rep.add("p0a", "setup", "FAIL", "no search product")
+        return
+
+    idem = f"e2e-idem-{uuid.uuid4().hex[:12]}"
+    if not add_cart_item(base, token, product):
+        rep.add("p0a", "idempotency", "FAIL", "cart/add failed")
+        return
+    try:
+        s1, d1, ms1 = http_json(
+            base,
+            "POST",
+            "/checkout/yape",
+            token=token,
+            extra_headers={"Idempotency-Key": idem},
+        )
+        if not add_cart_item(base, token, product):
+            rep.add("p0a", "idempotency", "FAIL", "cart/add replay failed")
+            return
+        s2, d2, ms2 = http_json(
+            base,
+            "POST",
+            "/checkout/yape",
+            token=token,
+            extra_headers={"Idempotency-Key": idem},
+        )
+    except RuntimeError as exc:
+        rep.add("p0a", "idempotency", "FAIL", str(exc))
+        return
+
+    if s1 == 200 and s2 == 200 and isinstance(d1, dict) and isinstance(d2, dict):
+        if d1.get("order_id") and d1.get("order_id") == d2.get("order_id"):
+            rep.add("p0a", "idempotency", "PASS", d1["order_id"], ms1 + ms2)
+        else:
+            rep.add("p0a", "idempotency", "FAIL", f"orders differ {d1} vs {d2}")
+    elif s1 in (501, 502):
+        rep.add("p0a", "idempotency", "SKIP", f"gateway {s1}")
+    else:
+        rep.add("p0a", "idempotency", "FAIL", f"status {s1}/{s2}")
+
+    if s1 == 200 and isinstance(d1, dict):
+        mode = d1.get("confirmation_mode") or ("manual" if d1.get("auto_activate") is False else "")
+        scope = (d1.get("capabilities") or {}).get("checkout_scope")
+        if mode == "manual" or scope == "cli_market_internal":
+            rep.add("p0a", "confirmation_mode", "PASS", f"mode={mode} scope={scope}", ms1)
+        else:
+            rep.add("p0a", "confirmation_mode", "FAIL", str(d1))
+
+    try:
+        status, cap, ms = http_json(base, "GET", "/v1/capabilities")
+        if status == 200 and isinstance(cap, dict) and cap.get("checkout", {}).get("scope") == "cli_market_internal":
+            rep.add("p0a", "capabilities", "PASS", "cli_market_internal", ms)
+        elif status == 404:
+            rep.add("p0a", "capabilities", "SKIP", "not deployed yet")
+        else:
+            rep.add("p0a", "capabilities", "FAIL", f"status={status} {cap}", ms)
+    except RuntimeError as exc:
+        rep.add("p0a", "capabilities", "FAIL", str(exc))
+
+
 def run_legacy_endpoints(base: str, rep: Report, run_id: str) -> None:
     """Backward-compat billing paths still wired in CLI/landing."""
     cases = (
@@ -727,7 +807,7 @@ def print_report(rep: Report) -> None:
         groups.setdefault(row.group, []).append(row)
 
     print("\n=== Payments E2E Report ===\n")
-    for group in ("config", "billing", "tier", "retail", "procure", "landing", "legacy"):
+    for group in ("config", "p0a", "billing", "tier", "retail", "procure", "landing", "legacy"):
         rows = groups.get(group, [])
         if not rows:
             continue
@@ -780,6 +860,7 @@ def main() -> int:
         return 1
 
     run_config_probes(base, rep)
+    run_p0a_idempotency(base, rep, admin)
     run_billing_channels(base, rep, run_id)
     run_procure_billing(base, rep, run_id)
     run_tier_gates(base, rep, admin)

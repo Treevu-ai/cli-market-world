@@ -9,8 +9,9 @@ export default function AboutSection() {
   return (
     <section id="about" className="landing-section landing-section-alt animate-fade-in">
       <div className="landing-container-wide text-center">
-        <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">{isES ? "Sobre nosotros" : "About us"}</p>
-        <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-[1.1] font-bold text-[var(--cm-mint)] mb-6 tracking-tight">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4 text-[var(--cm-mint)]">{isES ? "Sobre nosotros" : "About us"}</p>
+          <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-[1.1] font-bold text-[var(--cm-mint)] tracking-tight">
           {isES ? (
             <>
               Construido en Perú.
@@ -24,9 +25,10 @@ export default function AboutSection() {
               Operating in {MARKET_STATS.countries} countries.
             </>
           )}
-        </h2>
+          </h2>
+        </div>
 
-        <div className="text-base text-[var(--cm-on-surface-variant)] max-w-lg mx-auto mb-12 leading-relaxed space-y-4">
+        <div className="landing-content-narrow text-base text-[var(--cm-on-surface-variant)] mb-12 leading-relaxed space-y-4">
           <p>
             {isES ? (
               <>

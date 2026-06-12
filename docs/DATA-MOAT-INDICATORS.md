@@ -6,7 +6,7 @@ Documento de referencia para el esquema de indicadores en CLI Market. Complement
 
 ### `indicator_definitions`
 
-Catálogo estático de indicadores (**21** en total).
+Catálogo estático de indicadores (**44** keys en catálogo; 34 legacy + 4 Phase 1 + 6 Phase 2).
 
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
@@ -61,7 +61,7 @@ Cache de respuestas Open Food Facts (barcode/search) para no repetir llamadas.
 
 ---
 
-## Indicadores (34)
+## Indicadores (44)
 
 ### Core moat + macro (10)
 
@@ -109,6 +109,28 @@ Cache de respuestas Open Food Facts (barcode/search) para no repetir llamadas.
 | `wb_gdp_growth_yoy` | macro | World Bank `NY.GDP.MKTP.KD.ZG` | 7d | Crecimiento PIB |
 | `imf_wb_cpi_gap` | composite | computed | 7d | IMF CPI − World Bank CPI |
 
+### Phase 1 — macro regional (4)
+
+| Key | Categoría | Fuente | Refresh | Fórmula resumida |
+|-----|-----------|--------|---------|------------------|
+| `fx_ars_blue_gap` | macro | [dolarapi.com](https://dolarapi.com) | 24h | Brecha blue vs oficial (AR) |
+| `bcrp_inflation_expectation_12m` | macro | BCRP | 7d | Expectativa inflación 12m (PE) |
+| `bcrp_reference_rate` | macro | BCRP | 7d | Tasa de referencia (PE) |
+| `fuel_price_index_pe` | logistics | OSINERGMIN | 7d | Precio combustible Lima (PE) |
+
+### Phase 2 — commodity, CEPAL, demand RSS, composites (6)
+
+| Key | Categoría | Fuente | Refresh | Fórmula resumida |
+|-----|-----------|--------|---------|------------------|
+| `commodity_input_pressure` | macro | World Bank `AG.PRD.FOOD.XD` | 7d | YoY índice commodities alimentos (global) |
+| `real_wage_basket_ratio` | affordability | [CEPAL](https://api-cepalstat.cepal.org) | 7d | Poder adquisitivo salario mínimo vs canasta |
+| `ipp_food_co` | macro | DANE / WB `FP.CPI.FOOD.ZG` | 7d | Presión precios productor alimentos (CO) |
+| `gtrends_search_momentum` | demand | Google Trends RSS | 24h | Hits básicos hoy / baseline 7d |
+| `bcrp_shelf_gap` | composite | computed | 7d | BCRP expectativa 12m − momentum góndola (PE) |
+| `commodity_transmission_lag` | composite | computed | 7d | commodity pressure − staple momentum |
+
+> **Proxies documentados:** FAO fenixservices bloqueado en CI → WB global; DANE IPP sin REST público → food CPI YoY CO; Google Trends sin API oficial → RSS geo por país.
+
 ### Por subcategoría (3 tipos × 10 básicos)
 
 Scope: `{CC}:subcat:{item}` — items: canasta completa (`leche`, `arroz`, `aceite`, `azucar`, `huevos`, `pan`, `cafe`, `pollo`, `queso`, `jabon`)
@@ -139,6 +161,12 @@ Scope: `{CC}:subcat:{item}` — items: canasta completa (`leche`, `arroz`, `acei
 | `macro_validation` | `imf_wb_cpi_gap` | Consistencia IMF vs World Bank |
 | `labor_stress` | `macro_unemployment_rate` | Presión laboral / desempleo |
 | `growth_outlook` | `imf_gdp_growth_yoy` | Expansión vs desaceleración PIB |
+| `commodity_pressure` | `commodity_input_pressure` | Presión costo inputs commodities (global) |
+| `wage_affordability` | `real_wage_basket_ratio` | Salario real vs canasta (CEPAL) |
+| `producer_pressure` | `ipp_food_co` | Presión precios productor alimentos (CO) |
+| `search_momentum` | `gtrends_search_momentum` | Demanda búsqueda básicos (Google Trends RSS) |
+| `monetary_shelf_gap` | `bcrp_shelf_gap` | Brecha expectativa BCRP vs góndola (PE) |
+| `commodity_transmission` | `commodity_transmission_lag` | Lag transmisión commodity → góndola |
 
 ---
 
@@ -197,12 +225,13 @@ Endpoints existentes **sin cambios de contrato**:
 |--------|--------|
 | Collector cada 8h | Alimenta `price_snapshots` + `price_history` + **refresh automático de indicadores** |
 | `POST /v1/intel/refresh` | Tras collector o cron diario para macro |
+| `POST /admin/cron/indicators-refresh` | Cron nightly (GitHub Actions `indicators-nightly.yml`) |
 | **Auto** — `collect_prices.py` | Tras cada corrida (daemon o once), `INDICATOR_AUTO_REFRESH=1` (default) |
 
 ### CLI
 
 ```bash
-market intel indicators              # catálogo de 34 indicadores
+market intel indicators              # catálogo de 44 indicadores
 market intel indicators -c PE        # catálogo + scores PE
 market intel enrichment -c PE        # señales OFF / Wiki / clima / food CPI
 market intel scores -c PE            # scores compuestos

@@ -1,6 +1,6 @@
 # CLI Market — Estrategia de Producto y Plan de Actualización
 
-> **Documento de decisión consolidado** · v1.0 · Mayo 2026
+> **Documento de decisión consolidado** · v1.0 · Mayo 2026 · **Métricas canónicas (jun 2026):** `python3 ops/sync_market_stats.py` → `landing/lib/marketStats.ts` (38 verified · 22 MCP default · 54k+ prices · 4 platforms incl. WooCommerce). Pricing Build: Free / Starter $24 / Pro $39 / Pro Founding $29 — ver `docs/pricing-strategy.md`.
 > Autor: Ricardo Cuba (Sinapsis Innovadora) · Estado: propuesta para revisión
 > Alcance: posicionamiento, modelo de negocio calibrado a Perú, decisión sobre protocolos de comercio agéntico (UCP/ACP), y MVP del Índice de Canasta.
 
@@ -9,7 +9,7 @@
 ## TL;DR
 
 1. **El producto no es "un CLI para comprar". Es una capa de agregación y normalización de datos de comercio LatAm con interfaz agente-nativa.** El moat es la data normalizada, el rail Yape/Plin y el histórico de precios — no el protocolo ni la interfaz.
-2. **Acción inmediata:** unificar el mensaje público en **41 retailers verificados / 36 MCP tools**. El "3,760" es el universo VTEX teórico, no cobertura real, y la inconsistencia quema credibilidad técnica.
+2. **Acción inmediata (jun 2026):** unificar el mensaje público con **`ops/sync_market_stats.py`** (38 retailers verificados · 22 MCP curated · 4 plataformas). El "3,760" es universo VTEX teórico, no cobertura real.
 3. **UCP (Google) no es una decisión arquitectónica hoy.** Es un connector futuro, igual que VTEX/Shopify/Magento. Cero urgencia (26 implementaciones reales a mayo 2026). Apuesta: MCP-native + agregación horizontal LatAm.
 4. **El cash está en la línea de Data de Inflación, no en el API metering.** Modelo calibrado a Perú: caja acumulada 3 años ≈ **USD 392K (Base)**, con USD 40K no dilutivo de ProInnóvate en Año 1.
 5. **MVP del Índice de Canasta construido y demostrable.** El gancho de venta: la señal de alta frecuencia anualiza ~15.8% vs. meta oficial 2.4% — gap relevante para research/medios/banca en año electoral.

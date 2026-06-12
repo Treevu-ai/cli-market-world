@@ -1,4 +1,4 @@
-export type PricingAudience = "build" | "procure" | "listed";
+export type PricingAudience = "build" | "procure";
 
 export type PricingTab = {
   id: PricingAudience;
@@ -21,8 +21,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "API · MCP · agents",
     title_es: "Construido para escalar.",
     title_en: "Built to scale.",
-    intro_es: "Integra precios de góndola en tu agente o producto. Free para empezar, Pro cuando necesites checkout.",
-    intro_en: "Plug shelf prices into your agent or product. Free to start, Pro when you need checkout.",
+    intro_es: "Para developers y agentes: API REST, CLI y MCP. Free · Starter $24/mes · Pro Founding $29/mes (100 plazas) · Pro $39/mes · Enterprise a medida.",
+    intro_en: "For developers and agents: REST API, CLI, and MCP. Free · Starter $24/mo · Pro Founding $29/mo (100 seats) · Pro $39/mo · Enterprise custom.",
     hash: "#pricing",
   },
   {
@@ -36,27 +36,19 @@ export const PRICING_TABS: PricingTab[] = [
     intro_en: "For restaurants, hotels, and procurement teams. Same data as Build, with governance and audit trail.",
     hash: "#procure",
   },
-  {
-    id: "listed",
-    label: "Listed",
-    hint_es: "Góndola visible · $0",
-    hint_en: "Shelf visible · $0",
-    title_es: "Tu góndola, en el radar de los agentes.",
-    title_en: "Your shelf, on every agent's radar.",
-    intro_es: "VTEX, Shopify, Magento o WooCommerce — 30 segundos, sin código, gratis para siempre.",
-    intro_en: "VTEX, Shopify, Magento, or WooCommerce — 30 seconds, no code, free forever.",
-    hash: "#listed",
-  },
 ];
+
+/** Legacy hashes from when Listed lived under #pricing — retailer signup is on /retailers. */
+export function isLegacyListedPricingHash(hash: string): boolean {
+  const h = hash.replace("#", "");
+  return h === "listed" || h === "retailers";
+}
 
 export function resolvePricingAudience(): PricingAudience {
   if (typeof window === "undefined") return "build";
   const hash = window.location.hash.replace("#", "");
   const param = new URLSearchParams(window.location.search).get("audience");
   if (hash === "procure" || param === "procure") return "procure";
-  if (hash === "listed" || hash === "retailers" || param === "listed" || param === "retailers") {
-    return "listed";
-  }
   return "build";
 }
 

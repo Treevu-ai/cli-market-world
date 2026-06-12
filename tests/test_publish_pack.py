@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 
 from publish_pack import (
     apply_live_metrics,
+    build_gtm_channel_deliveries,
     build_publish_checklist_message,
     build_slack_publish_messages,
     channels_for_date,
@@ -16,6 +17,7 @@ from publish_pack import (
     moat_paste_line,
     slack_copy_block,
 )
+from slack_notify import slack_channel_for_gtm_label
 
 
 def test_marketing_metrics_from_dashboard():
@@ -66,6 +68,43 @@ def test_moat_paste_line_format():
     )
     assert "1,000" in line
     assert "2,000" in line
+
+
+def test_slack_channel_for_gtm_label_maps_calendar_names():
+    assert slack_channel_for_gtm_label("LinkedIn Personal") == "C0B96T74RE3"
+    assert slack_channel_for_gtm_label("LinkedIn Personal (AR)") == "C0B96T74RE3"
+    assert slack_channel_for_gtm_label("LinkedIn Empresa") == "C0B9Q70C64R"
+    assert slack_channel_for_gtm_label("Twitter/X W2") == "C0B9NBU8X7C"
+    assert slack_channel_for_gtm_label("Reddit (r/Python)") == "C0B9ND493GS"
+    assert slack_channel_for_gtm_label("DEV.to") == "C0B96TJC3CP"
+    assert slack_channel_for_gtm_label("Hacker News") == "C0BAGP1EHPA"
+
+
+def test_build_gtm_channel_deliveries_splits_per_channel():
+    summary, deliveries = build_gtm_channel_deliveries(
+        campaign_day=8,
+        for_date=date(2026, 6, 8),
+        metrics={
+            "gate_pass": True,
+            "total_indexed": 50902,
+            "snapshots_24h": 40126,
+            "coverage_7d_pct": 100,
+            "stores_indexed": 38,
+            "collector_status": "ok",
+        },
+        post_utc_hour=13,
+    )
+    assert "ÍNDICE PUBLICACIONES" in summary
+    assert deliveries
+    labels = {d.label for d in deliveries}
+    assert "LinkedIn Personal" in labels
+    assert all(d.channel_id.startswith("C0") for d in deliveries)
+    assert all("RICARDO" in d.text for d in deliveries)
+    li = next(d for d in deliveries if d.label == "LinkedIn Personal")
+    assert len(li.messages) >= 3
+    joined_li = "\n".join(li.messages)
+    assert "Post (copiar a LinkedIn" in joined_li or "Post" in joined_li
+    assert "Primer comentario" in joined_li
 
 
 def test_build_slack_publish_messages_has_order_and_gate():
@@ -149,18 +188,23 @@ def test_channels_for_date_finds_company_by_published_at(tmp_path, monkeypatch):
     assert not any("Company-Day-08" in p for p in paths)
 
 
-def test_channels_for_date_spike_reddits_on_june_9(monkeypatch):
-    """Spike D-Day reddits moved to 2026-06-09 per content calendar."""
+def test_activation_blitz_june_10_channels(monkeypatch):
+    """Activation Blitz routes Day-11 + one Reddit, not spike Day-10."""
     content_dir = Path(__file__).resolve().parent.parent.parent / "cli-market-content"
-    if not (content_dir / "reddit" / "reddit-02-python-tutorial.md").is_file():
+    if not (content_dir / "scripts" / "calendar_channels.py").is_file():
         import pytest
 
-        pytest.skip("cli-market-content checkout required for reddit channel schedule")
+        pytest.skip("cli-market-content checkout required for activation schedule")
     monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(content_dir))
-    items = channels_for_date(date(2026, 6, 9), 9)
+    items = channels_for_date(date(2026, 6, 10), 10)
     labels = [label for label, _ in items]
+    paths = [path.name for _, path in items]
+    assert "Day-11.md" in paths
+    assert "Day-10.md" not in paths
     assert "Reddit (r/Python)" in labels
-    assert "Reddit (r/aiagents)" in labels
+    assert "Reddit (r/aiagents)" not in labels
+    assert "WhatsApp" in labels
+    assert "Instagram" in labels
 
 
 def test_slack_copy_block_preserves_bold_markers():
@@ -222,6 +266,89 @@ def test_md_to_slack_preserves_fenced_copy():
     out = slack_notify._md_to_slack(raw)
     assert "**keep bold**" in out
     assert "*Header*" in out
+
+
+def test_slack_matches_all_content_repo_sections(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "linkedin-company").mkdir()
+    (root / "linkedin").mkdir()
+    (root / "twitter").mkdir()
+    (root / "linkedin-company" / "Company-Day-08.md").write_text(
+        """---
+status: ready
+published_at: 2026-06-10
+---
+# Company Day 08 — Arroz
+
+**Calendario:** [[company-calendar]]
+
+## Hook (elegir 1)
+
+1. **Dato de mercado:** Hook A
+
+## Post (copiar a LinkedIn — sin link en cuerpo)
+
+Cuerpo del post.
+
+## Primer comentario
+
+hello@cli-market.dev
+
+## Assets
+
+**Ruta sugerida:** `linkedin-company/assets/company-day-08/`
+
+## Checklist pre-publicación
+
+- [ ] CTA activo
+""",
+        encoding="utf-8",
+    )
+    (root / "linkedin" / "Day-11.md").write_text(
+        """---
+status: ready
+published_at: 2026-06-10
+---
+# Day 11 — Electro
+
+## Post (copiar a LinkedIn — sin link en cuerpo)
+
+Post personal.
+
+## Primer comentario
+
+https://cli-market.dev
+""",
+        encoding="utf-8",
+    )
+    (root / "twitter" / "tweets-w2.md").write_text(
+        "---\n---\n# Twitter\n\n## Miércoles — Hot take\n\n```\ntweet body\n```\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(root))
+    monkeypatch.setenv("LINKEDIN_COMPANY_DAY_OFFSET", "-1")
+
+    _, deliveries = build_gtm_channel_deliveries(
+        campaign_day=10,
+        for_date=date(2026, 6, 10),
+        metrics={
+            "gate_pass": True,
+            "total_indexed": 50902,
+            "snapshots_24h": 40126,
+            "coverage_7d_pct": 100,
+            "stores_indexed": 38,
+            "collector_status": "ok",
+        },
+        post_utc_hour=13,
+    )
+    company = next(d for d in deliveries if d.label == "LinkedIn Empresa")
+    joined = "\n".join(company.messages)
+    assert "Hook A" in joined
+    assert "Cuerpo del post" in joined
+    assert "hello@cli-market.dev" in joined
+    assert "company-day-08" in joined
+    assert "Checklist pre-publicación" in joined
+    assert "CTA activo" in joined
 
 
 def test_publish_checklist_message():

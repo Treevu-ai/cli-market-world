@@ -516,3 +516,68 @@ def _refresh_internal_indicators(db, *, country: str | None = None, line: str | 
             logger.warning("_refresh_internal: %s skipped: %s", key, e)
 
     return written
+
+
+# ── Price Pulse async jobs (Intelligence tier) ────────────────────────────────
+
+
+class PricePulseSubmit(BaseModel):
+    country: str = "PE"
+    callback_url: str = ""
+
+    @field_validator("country")
+    @classmethod
+    def _country_code(cls, v: str) -> str:
+        c = (v or "PE").strip().upper()[:2]
+        if len(c) != 2:
+            raise ValueError("country must be 2-letter ISO code")
+        return c
+
+
+@router.post("/price-pulse")
+def submit_price_pulse(
+    body: PricePulseSubmit,
+    authorization: str | None = Header(None),
+):
+    """Enqueue Price Pulse report generation (async worker)."""
+    username = require_pro(authorization)
+    from market_core.intel_jobs import db_create_intel_job
+
+    job = db_create_intel_job(
+        username,
+        job_type="price_pulse",
+        country=body.country,
+        callback_url=(body.callback_url or "").strip(),
+    )
+    return {"ok": True, **job}
+
+
+@router.get("/price-pulse/{job_id}")
+def get_price_pulse_status(job_id: str, authorization: str | None = Header(None)):
+    username = require_pro(authorization)
+    from market_core.intel_jobs import db_get_intel_job
+
+    job = db_get_intel_job(job_id)
+    if not job or job.get("username") != username:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+@router.get("/price-pulse/{job_id}/download")
+def download_price_pulse_report(job_id: str, authorization: str | None = Header(None)):
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    username = require_pro(authorization)
+    from market_core.intel_jobs import db_get_intel_job
+
+    job = db_get_intel_job(job_id)
+    if not job or job.get("username") != username:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.get("status") != "completed":
+        raise HTTPException(status_code=409, detail=f"Job status is {job.get('status')}")
+    path = (job.get("output_path") or "").strip()
+    if not path or not Path(path).is_file():
+        raise HTTPException(status_code=404, detail="Report file missing")
+    return FileResponse(path, media_type="text/markdown", filename=Path(path).name)

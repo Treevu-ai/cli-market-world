@@ -1,14 +1,26 @@
 "use client";
 
+import { useState } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import RetailerApplyForm from "@/components/RetailerApplyForm";
+import ActiveBrandTicker from "@/components/ActiveBrandTicker";
+import RetailerApplyModal from "@/components/RetailerApplyModal";
+import ScrambleText from "@/components/ScrambleText";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
+
+const fadeUp = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-40px" },
+  transition: { duration: 0.45, ease: "easeOut" as const },
+};
 
 export default function RetailersPage() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const [applyOpen, setApplyOpen] = useState(false);
 
   const stats = [
     { n: String(MARKET_STATS.retailersVerified), l: isES ? "Retailers activos" : "Retailers live" },
@@ -64,7 +76,16 @@ export default function RetailersPage() {
       desc: isES
         ? "Si est\u00e1s en VTEX con cat\u00e1logo p\u00fablico, probablemente ya sos indexable. Sin token necesario."
         : "If you're on VTEX with a public catalog, you're probably already indexable. No token needed.",
-      cmd: isES ? "Cero acci\u00f3n requerida \u2014 detectamos tiendas VTEX autom\u00e1ticamente" : "Zero action required \u2014 we auto-detect VTEX stores",
+    },
+    {
+      step: "04",
+      title: isES ? "WooCommerce: Store API o REST API" : "WooCommerce: Store API or REST API",
+      desc: isES
+        ? "Muchas tiendas Woo exponen cat\u00e1logo v\u00eda Store API p\u00fablica (solo URL). Si no, crea consumer key/secret de solo lectura en REST API v3."
+        : "Many Woo shops expose catalog via public Store API (URL only). Otherwise create read-only consumer key/secret via REST API v3.",
+      cmd: isES
+        ? "WooCommerce \u2192 Ajustes \u2192 Avanzado \u2192 REST API \u2192 Add key (Read)"
+        : "WooCommerce \u2192 Settings \u2192 Advanced \u2192 REST API \u2192 Add key (Read)",
     },
   ];
 
@@ -86,8 +107,8 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento o VTEX. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
-                    : "Generate a read-only API token from your Shopify, Magento, or VTEX admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
+                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento, VTEX o WooCommerce. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
+                    : "Generate a read-only API token from your Shopify, Magento, VTEX, or WooCommerce admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
                 },
               },
               {
@@ -106,8 +127,8 @@ export default function RetailersPage() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "VTEX, Shopify y Magento. Nos conectamos via APIs p\u00fablicas de cat\u00e1logo \u2014 cero desarrollo de tu lado."
-                    : "VTEX, Shopify, and Magento. We connect via public catalog APIs \u2014 zero development required from your side.",
+                    ? "VTEX, Shopify, Magento y WooCommerce. Nos conectamos v\u00eda APIs p\u00fablicas de cat\u00e1logo \u2014 cero desarrollo de tu lado."
+                    : "VTEX, Shopify, Magento, and WooCommerce. We connect via public catalog APIs \u2014 zero development required from your side.",
                 },
               },
               {
@@ -137,14 +158,34 @@ export default function RetailersPage() {
 
       <div className="relative z-10">
         <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
-          <div className="max-w-[720px] mx-auto">
+          <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
             <p className="section-eyebrow mb-4">
               {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
             </p>
             <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-white mb-3 tracking-tight">
-              {isES
-                ? "Tu marca, dentro de agentes de IA. Gratis. Hoy."
-                : "Your brand, inside AI agents. Free. Today."}
+              {isES ? (
+                <>
+                  Tu marca, dentro de agentes de IA.{" "}
+                  <ScrambleText
+                    text="Gratis. Hoy."
+                    autoStart
+                    delay={600}
+                    duration={0.6}
+                    className="text-[var(--cm-mint)]"
+                  />
+                </>
+              ) : (
+                <>
+                  Your brand, inside AI agents.{" "}
+                  <ScrambleText
+                    text="Free. Today."
+                    autoStart
+                    delay={600}
+                    duration={0.6}
+                    className="text-[var(--cm-mint)]"
+                  />
+                </>
+              )}
             </h1>
             <p className="text-[11px] text-[#ffbd2e] max-w-[500px] mx-auto mb-6 font-medium">
               {isES ? "Gratis para siempre. Cupos limitados por pa\u00eds." : "Free forever. Limited spots per country."}
@@ -154,74 +195,107 @@ export default function RetailersPage() {
                 ? "Cuando tus productos est\u00e1n indexados en CLI Market, los agentes de IA los descubren, comparan y dirigen tr\u00e1fico de compra a tu tienda. Esto es GEO \u2014 el SEO de la era de los agentes."
                 : "When your products are indexed in CLI Market, AI agents discover, compare, and drive purchase traffic to your store. This is GEO \u2014 the SEO of the agent era."}
             </p>
-          </div>
+            <button
+              type="button"
+              onClick={() => setApplyOpen(true)}
+              className="btn-mint mt-8 px-8"
+            >
+              {isES ? "Listar mi tienda — gratis" : "List my store — free"}
+            </button>
+          </motion.div>
         </section>
 
+        <ActiveBrandTicker />
+
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20 landing-section-alt">
-          <div className="max-w-[720px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <motion.div {...fadeUp} className="max-w-[720px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {stats.map((s) => (
               <div key={s.l}>
                 <div className="text-3xl font-black text-[var(--cm-mint)]">{s.n}</div>
                 <div className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{s.l}</div>
               </div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
-          <div className="max-w-[720px] mx-auto">
+          <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
             <h2 className="section-title mb-12 text-center">
               {isES ? "Lo que obtienes" : "What you get"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {benefits.map((b) => (
-                <div key={b.t} className="card-cyber header-strip p-6">
+              {benefits.map((b, i) => (
+                <motion.div
+                  key={b.t}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className="card-cyber header-strip p-6"
+                >
                   <div className="text-2xl mb-3">{b.i}</div>
                   <h3 className="text-sm font-bold text-white mb-2">{b.t}</h3>
                   <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{b.d}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
-          <div className="max-w-[560px] mx-auto">
+          <motion.div {...fadeUp} className="max-w-[560px] mx-auto">
             <h2 className="section-title mb-12 text-center">
               {isES ? "C\u00f3mo aparecer \u2014 30 segundos" : "How to get listed \u2014 30 seconds"}
             </h2>
             <div className="space-y-4">
-              {steps.map((s) => (
-                <div key={s.step} className="card-cyber p-5 flex gap-4">
+              {steps.map((s, i) => (
+                <motion.div
+                  key={s.step}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: i * 0.06 }}
+                  className="card-cyber p-5 flex gap-4"
+                >
                   <span className="text-[var(--cm-mint)] font-bold text-lg shrink-0">{s.step}</span>
                   <div>
                     <h3 className="text-sm font-bold text-white mb-1">{s.title}</h3>
                     <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed mb-2">{s.desc}</p>
-                    <code className="text-[11px] text-[var(--cm-mint)]/80 bg-[var(--cm-surface-lowest)] px-2 py-0.5 rounded font-mono">{s.cmd}</code>
+                    {s.cmd ? (
+                      <code className="text-[11px] text-[var(--cm-mint)]/80 bg-[var(--cm-surface-lowest)] px-2 py-0.5 rounded font-mono">
+                        {s.cmd}
+                      </code>
+                    ) : null}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         <section className="py-24 px-[var(--cm-gutter)] text-center">
-          <div className="max-w-[520px] mx-auto">
+          <motion.div {...fadeUp} className="max-w-[520px] mx-auto">
             <h2 className="section-title mb-2">
               {isES ? "\u00bfListo para aparecer?" : "Ready to get listed?"}
             </h2>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-8">
-              {isES ? "Gratis. Para siempre. Formulario abajo." : "Free. Forever. Self-serve form below."}
+              {isES
+                ? "VTEX, Shopify, Magento o WooCommerce — formulario en 30 segundos."
+                : "VTEX, Shopify, Magento, or WooCommerce — 30-second form."}
             </p>
-            <RetailerApplyForm />
+            <button type="button" onClick={() => setApplyOpen(true)} className="btn-mint px-8">
+              {isES ? "Abrir formulario — gratis" : "Open form — free"}
+            </button>
             <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-8">
               {isES ? "\u00bfPrefieres email? " : "Prefer email? "}
               <a href="mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing" className="text-[var(--cm-mint)] underline">
                 hello@cli-market.dev
               </a>
             </p>
-          </div>
+          </motion.div>
         </section>
+
+        <RetailerApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
 
         <Footer />
       </div>

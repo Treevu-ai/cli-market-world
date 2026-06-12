@@ -49,7 +49,8 @@ Campos trackeados para sparklines:
 
 | Canal | Propósito |
 |-------|-----------|
-| **bitácora** | Narrativa producto + contenido (daily_briefing) |
+| **bitácora** | Narrativa producto (daily_briefing) |
+| **GTM por red** | Copy del día → `SLACK_CHANNEL_LINKEDIN_*`, `TWITTER`, `DEVTO`, etc. (08:00 PET, Actions) |
 | **command-control** | Checklist founder + métricas ops + tendencias |
 
 ## Comandos del checklist (resumen)

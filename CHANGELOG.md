@@ -4,22 +4,95 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
-## [2026-06-12] — Observatory P0 closure: telemetry quality + command-control UX
+## [2026-06-12] — Observatory P0 closure: mirror-first telemetry (Railway prod)
 
-### cli-market-core v1.9.34
-- **Fixed:** Observatory extracts `retailer` / `country` from JSON body (search/compare/basket)
-- **Fixed:** Skip `/index/*` admin routes from telemetry; normalize tool names via registry
-- **Fixed:** `weekly_agent_growth` with 7-day windows; filter internal tools from public aggregates
-- **Added:** `get_agent_id()` + `X-Agent-ID` on all CLI/MCP API calls
-- **Added:** Noise filter for `demo_*` agents
-
-### cli-market-world v1.9.19
-- **Added:** Local `market_observatory.py` with P0 telemetry fixes (ahead of core PyPI 1.9.34)
+### cli-market-world v1.9.33
+- **Added:** Full `market_observatory.py` in world (mirror/prod deploy before core PyPI backport)
+- **Fixed:** Extract `retailer` / `country` from JSON body; skip `/index/*`; normalize tool names
+- **Fixed:** Filter internal tools (`index_stats`, etc.) from public aggregates; `weekly_agent_growth`
 - **Added:** `market_agent_id.py` — `X-Agent-ID` + `MARKET_AGENT_ID` for MCP setup
 - **Changed:** Command-control panel order (semáforo → prioridades → scoreboard → tracción)
-- **Changed:** Adoption Index exposes top-level `maa` + `mcp_retention_7d` in signals
-- **Changed:** `market mcp-setup` writes `MARKET_AGENT_ID` into MCP env
-- **Changed:** `cli-market-core>=1.9.34`
+- **Changed:** Adoption Index — top-level `maa`, `maa_proxy`, `mcp_retention_7d` in signals
+
+### cli-market-core (pending PyPI)
+- Observatory fixes + `get_agent_id()` queued for core v1.9.34 after mirror deploy verified
+
+---
+
+## [2026-06-11] — Health stats on prod + golden linkage visibility
+
+### cli-market-core v1.9.30
+- **Added:** `market_core.health_stats` — `build_health_stats()`, `compute_linkage_metrics()`, shared `derive_collector_status()`
+- **Added:** `GOLDEN_LINKAGE_PCT` in `market_stats` (live from `GET /health/stats`)
+- **Added:** Tests for sources health ok/partial/dead classification (ticket 3.1)
+
+### cli-market-backend
+- **Added:** `GET /health/stats` on production API — moat KPIs, `golden_linkage_pct`, `sources_summary`
+
+### cli-market-world v1.9.30
+- **Changed:** `/health/stats` uses shared core builder + index `registry_size`
+- **Changed:** `market doctor` — sources health + golden linkage rows
+- **Changed:** Landing `goldenLinkagePct` via `ops/sync_market_stats.py`
+- **Fixed:** PyPI installs chip — consolidated total from `/analytics/pypi` (legacy + core + world), clearer layout in hero Build card
+
+---
+
+## [2026-06-11] — Indicator cron + Phase 2 composite scores
+
+### cli-market-core v1.9.29
+- **Added:** 6 Phase 2 composite scores — `commodity_pressure`, `wage_affordability`, `producer_pressure`, `search_momentum`, `monetary_shelf_gap`, `commodity_transmission`
+- **Fixed:** `refresh_after_collection` aggregates `phase2_written`
+
+### cli-market-backend
+- **Added:** `POST /admin/cron/indicators-refresh` — nightly macro + Phase 2 refresh
+- **Changed:** `cli-market-core>=1.9.29`
+
+### cli-market-world v1.9.29
+- **Added:** `.github/workflows/indicators-nightly.yml` (05:00 UTC), `ops/indicators_daily.py`
+- **Added:** Mirror `POST /admin/cron/indicators-refresh`
+- **Changed:** Index pin `9d05013`, landing `packageVersion: 1.9.29`
+
+### cli-market-index @ `9d05013`
+- **Fixed:** mypy type args on `export_taxonomy_registry`
+
+---
+
+## [2026-06-10] — Data moat Phase 2: commodity, CEPAL, Trends (44 indicators)
+
+### cli-market-core v1.9.28
+- **Added:** 6 Phase 2 indicators — `commodity_input_pressure`, `real_wage_basket_ratio`, `ipp_food_co`, `gtrends_search_momentum`, `bcrp_shelf_gap`, `commodity_transmission_lag`
+- **Added:** External fetchers in `market_enrich_sources` — CEPAL salary/basket, World Bank food production index, Google Trends RSS
+- **Changed:** `compute_price_dispersion` and `compute_staple_price_momentum` prefer golden `canonical_product_id` + taxonomy cache
+- **Changed:** Catalog **38 → 44** indicator definitions
+
+### cli-market-backend
+- **Changed:** `requirements.txt` → `cli-market-core>=1.9.28`
+- **Fixed:** Docker build — `CACHE_BUST` invalidates pip layer; accepts `GITHUB_TOKEN` or `GH_TOKEN` for private index clone
+
+### cli-market-world v1.9.28
+- **Changed:** Pins, contract parity, landing `indicatorsCount: 44`, `packageVersion: 1.9.28`
+- **Added:** `docs/PYPI-PACKAGE-MODEL.md`, `ops/RELEASE-DISPERSION.md`, `ops/smoke_phase2_prod.py`
+- **Changed:** Landing TSX uses `MARKET_STATS.pipInstallCmd` (no hardcoded `pip install`)
+
+### cli-market-index @ `9c8f74d`
+- **Added:** Canasta registry + golden record attributes (`export_taxonomy_registry`, `infer_category` canasta paths)
+
+---
+
+## [2026-06-09] — Data moat Phase 0+1: golden taxonomy + regional macro (38 indicators)
+
+### cli-market-core v1.9.27
+- **Added:** Golden taxonomy bridge — `canonical_price_buckets()`, `staple_price_deltas_golden()` in `golden_taxonomy.py`
+- **Added:** 4 Phase 1 macro indicators — `fx_ars_blue_gap`, `bcrp_inflation_expectation_12m`, `bcrp_reference_rate`, `fuel_price_index_pe`
+- **Changed:** Basket/dispersion reads prefer `canonical_product_id` when taxonomy cache is present
+
+### cli-market-backend
+- **Added:** Post-certify taxonomy export hook; pin `cli-market-core>=1.9.27`
+- **Changed:** `requirements-private.txt` — full 40-char `cli-market-index` pin
+
+### cli-market-world v1.9.27
+- **Changed:** Mirror parity for taxonomy bridge; CI index pin `9c8f74d`
+- **Changed:** `docs/DATA-MOAT-INDICATORS.md` — Phase 0/1 catalog
 
 ---
 

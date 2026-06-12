@@ -1,17 +1,41 @@
-# CLI Market — Submit to MCP Registry
+# CLI Market — MCP Registry
 
-## Process (via mcp-publisher CLI)
+Canonical server: **`io.github.Treevu-ai/cli-market-world`** · PyPI **`cli-market-world`** · vía `server.json` en repo root.
+
+## Publish (manual)
 
 ```bash
-git clone https://github.com/modelcontextprotocol/registry
-cd registry
-make publisher
-./bin/mcp-publisher publish --repo https://pypi.org/project/cli-market-world/
+# From cli-market-world repo root (after PyPI release)
+mcp-publisher validate
+mcp-publisher login github          # device flow, or: login github --token "$GITHUB_TOKEN"
+mcp-publisher publish
 ```
 
-The mcp.json at repo root is auto-parsed. Uses GitHub OAuth for namespace verification.
+## Publish (CI)
+
+Tag `v*` → workflow **Publish PyPI** publica a PyPI y luego al MCP Registry (`github-oidc`, sin secret extra).
+
+## Deprecate legacy entry
+
+La entrada **`io.github.Treevu-ai/cli-market`** (PyPI `cli-market` congelado) debe quedar deprecated:
+
+```bash
+mcp-publisher login github
+bash ops/deprecate_legacy_mcp_registry.sh
+```
+
+## Manifest rules
+
+| Campo | Valor |
+|-------|--------|
+| `name` | `io.github.Treevu-ai/cli-market-world` |
+| `packages[0].identifier` | `cli-market-world` |
+| `repository.url` | `https://github.com/Treevu-ai/cli-market-world` |
+| `repository.source` | `github` |
+| PyPI README | línea `mcp-name: io.github.Treevu-ai/cli-market-world` |
+
+`ops/sync_market_stats.py` mantiene `server.json` + `landing/public/server.json` en cada release.
 
 ## After publishing
 
-Searchable at registry.modelcontextprotocol.io by: "commerce", "shopping", "prices", "retail".
-One-click install for Claude Desktop, DeepSeek, and any MCP client.
+Searchable at [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) · keywords: commerce, shopping, prices, retail.

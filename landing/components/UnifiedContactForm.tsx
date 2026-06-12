@@ -29,10 +29,11 @@ const MSG_PLACEHOLDERS_EN: Record<string, string> = {
 };
 
 const PLATFORMS = [
-  { value: "vtex",     label: "VTEX" },
-  { value: "shopify",  label: "Shopify" },
-  { value: "magento",  label: "Magento" },
-  { value: "other",    label: "Other" },
+  { value: "vtex", label: "VTEX" },
+  { value: "shopify", label: "Shopify" },
+  { value: "magento", label: "Magento" },
+  { value: "woocommerce", label: "WooCommerce" },
+  { value: "other", label: "Other" },
 ];
 const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
 
@@ -95,6 +96,7 @@ export default function UnifiedContactForm() {
         contact_email: contactEmail,
         website,
         api_token: apiToken || undefined,
+        lang: isES ? "es" : "en",
       }),
     });
     const data = await res.json();
@@ -227,7 +229,9 @@ export default function UnifiedContactForm() {
             </label>
             <input type="password" value={apiToken} onChange={(e) => setApiToken(e.target.value)} className="input-cyber font-mono" placeholder="shpat_... or integration token" />
             <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">
-              {isES ? "Catálogos VTEX públicos generalmente no requieren token." : "VTEX public catalogs often need no token."}
+              {isES
+                ? "VTEX y WooCommerce Store API pública suelen no requerir token."
+                : "VTEX and public WooCommerce Store API often need no token."}
             </p>
           </div>
         </>

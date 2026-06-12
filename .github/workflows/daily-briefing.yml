@@ -2,9 +2,18 @@ name: Daily Briefing
 
 on:
   schedule:
-    # 13:00 UTC — aligned with LinkedIn posting window (docs/linkedin-calendar.md)
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC — copy GTM a cada canal Slack
     - cron: "0 13 * * *"
   workflow_dispatch:
+    inputs:
+      content_only:
+        description: Solo contenido GTM (sin bitácora producto)
+        type: boolean
+        default: false
+      dry_run:
+        description: Generar archivos sin enviar a Slack
+        type: boolean
+        default: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -12,7 +21,7 @@ env:
 jobs:
   briefing:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     permissions:
       contents: write
 
@@ -35,23 +44,66 @@ jobs:
       - name: Verify content repo checkout
         run: test -f cli-market-content/scripts/calendar_channels.py
 
-      - name: Generate daily product + content reports
+      - name: Generate reports + Slack (GTM por canal)
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
           SLACK_CHANNEL_PUBLICACIONES: "C0B6ZJ1B9B8"
+          SLACK_CHANNEL_LINKEDIN_PERSONAL: "C0B96T74RE3"
+          SLACK_CHANNEL_LINKEDIN_COMPANY: "C0B9Q70C64R"
+          SLACK_CHANNEL_TWITTER: "C0B9NBU8X7C"
+          SLACK_CHANNEL_DEVTO: "C0B96TJC3CP"
+          SLACK_CHANNEL_REDDIT: "C0B9ND493GS"
+          SLACK_CHANNEL_HN: "C0BAGP1EHPA"
+          SLACK_CHANNEL_THREADS: "C0B9G1GA7PV"
+          SLACK_CHANNEL_INSTAGRAM: "C0B9S2WQ6SG"
+          SLACK_CHANNEL_WHATSAPP: "C0B9NELR490"
+          SLACK_CHANNEL_NEWSLETTER: "C0BAGNR374Y"
+          SLACK_CHANNEL_OUTBOUND: "C0B9NEEB97U"
+          SLACK_MIRROR_TWITTER_TO_THREADS: "0"
           SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
           SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
           LINKEDIN_CAMPAIGN_START: "2026-06-01"
           LINKEDIN_PERSONAL_DAY_OFFSET: "0"
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
+          LINKEDIN_POST_UTC_HOUR: "13"
           CLI_MARKET_CONTENT_DIR: ${{ github.workspace }}/cli-market-content
+          CLI_MARKET_CONTENT_GITHUB_REPO: Treevu-ai/cli-market-content
           GITHUB_CONTENT_REPOSITORY: Treevu-ai/cli-market-content
           GITHUB_CONTENT_REF: main
+          GITHUB_REF_NAME: ${{ github.ref_name }}
           PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
-        run: python3 ops/daily_briefing.py
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+            echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
+            exit 1
+          fi
+          ARGS=()
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          if [ "${{ github.event.inputs.content_only }}" = "true" ]; then
+            python3 ops/daily_briefing.py "${ARGS[@]}" --content
+          else
+            python3 ops/daily_briefing.py "${ARGS[@]}"
+          fi
+
+      - name: Commit product daily reports
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ops/daily/*-product.md 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No product report changes to commit."
+          else
+            git commit -m "chore: daily product briefing $(date -u +%Y-%m-%d)"
+            git push
+          fi
 
       - name: Commit content daily reports
+        if: github.event.inputs.dry_run != 'true'
         working-directory: cli-market-content
         run: |
           git config user.name "github-actions[bot]"
@@ -65,6 +117,7 @@ jobs:
           fi
 
       - name: Upload artifacts
+        if: github.event.inputs.dry_run != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: daily-briefing-${{ github.run_id }}

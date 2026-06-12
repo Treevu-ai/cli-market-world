@@ -43,12 +43,29 @@ logger = logging.getLogger("market.server").getChild("search")
 router = APIRouter(tags=["search"])
 
 
+def _attach_source_health(response: dict, store_ids: list[str]) -> dict:
+    try:
+        from market_core.source_health import health_for_stores
+
+        db = get_db()
+        try:
+            response["source_health"] = health_for_stores(db, store_ids)
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.debug("source_health attach skipped: %s", exc)
+    return response
+
+
 def _resolve_search_stores(body: SearchRequest) -> list[str]:
     stores = [body.store] if body.store else get_default_stores()
     if _STORE_CREDENTIALS_AVAILABLE and callable(store_exists):
         stores = [s for s in stores if store_exists(s)]
     if body.line and body.line in LINES and _STORE_CREDENTIALS_AVAILABLE:
         stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
+    if body.country:
+        cc = body.country.strip().upper()
+        stores = [s for s in stores if STORES.get(s, {}).get("country") == cc]
     return stores
 
 
@@ -56,6 +73,7 @@ class SearchRequest(BaseModel):
     query: str
     store: str | None = None
     line: str | None = None
+    country: str | None = None
     page: int = 1
     limit: int = PAGE_SIZE
 
@@ -80,6 +98,18 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
     username = require_api_key(authorization)
     try:
         result = await _search_products(body)
+        if username.startswith("demo:"):
+            try:
+                from market_funnel import record_funnel_event
+
+                record_funnel_event(
+                    "demo_first_tool_call",
+                    session_id=username.split(":", 1)[-1],
+                    meta={"tool": "search", "query": body.query, "agent_source": "demo"},
+                    dedupe=True,
+                )
+            except Exception:
+                pass
         try:
             from market_funnel import maybe_first_search
             maybe_first_search(username, query=body.query)
@@ -91,46 +121,59 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def _search_products(body: SearchRequest):
-    stores = _resolve_search_stores(body)
-
-    PARALLEL_BATCH = 20
-    SEARCH_TIMEOUT = float(os.getenv("SEARCH_TIMEOUT", "15.0"))
+async def _parallel_fetch_stores(
+    stores: list[str],
+    query: str,
+    page: int,
+    limit: int,
+) -> tuple[dict[str, list], list[dict]]:
+    """Fetch retailer product lists in parallel batches (shared by search + compare)."""
+    parallel_batch = 20
+    timeout_s = float(os.getenv("SEARCH_TIMEOUT", "15.0"))
+    all_raw: dict[str, list] = {}
+    errors: list[dict] = []
 
     async def fetch_one(store: str):
         try:
-            raw = await fetch_store(store, body.query, body.page, body.limit)
+            raw = await fetch_store(store, query, page, limit)
             return store, raw, None
         except Exception as e:
             return store, [], str(e)
 
-    results: list[dict] = []
-    errors: list[dict] = []
-    for i in range(0, len(stores), PARALLEL_BATCH):
-        batch = stores[i : i + PARALLEL_BATCH]
+    for i in range(0, len(stores), parallel_batch):
+        batch = stores[i : i + parallel_batch]
         batch_tasks = [fetch_one(s) for s in batch]
         try:
-            batch_results = await asyncio.wait_for(asyncio.gather(*batch_tasks), timeout=SEARCH_TIMEOUT)
+            batch_results = await asyncio.wait_for(asyncio.gather(*batch_tasks), timeout=timeout_s)
         except asyncio.TimeoutError:
-            for s in batch:
-                errors.append({"store": s, "error": "timeout"})
+            errors.extend({"store": s, "error": "timeout"} for s in batch)
             break
         except Exception as e:
-            logger.error("Search batch error: %s", e)
+            logger.error("Fetch batch error: %s", e)
             errors.append({"store": "batch", "error": str(e)})
             break
         for store, raw, err in batch_results:
             if err:
                 errors.append({"store": store, "error": err})
-                continue
-            for p in raw:
-                try:
-                    prod = product_from_json(p, store)
-                    prod["line"] = STORES[store]["line"]
-                    prod["line_name"] = LINES[STORES[store]["line"]]["name"]
-                    results.append(prod)
-                except Exception as pe:
-                    errors.append({"store": store, "product_id": str(p)[:80], "error": str(pe)})
+            else:
+                all_raw[store] = raw
+    return all_raw, errors
+
+
+async def _search_products(body: SearchRequest):
+    stores = _resolve_search_stores(body)
+    all_raw, errors = await _parallel_fetch_stores(stores, body.query, body.page, body.limit)
+
+    results: list[dict] = []
+    for store, raw in all_raw.items():
+        for p in raw:
+            try:
+                prod = product_from_json(p, store)
+                prod["line"] = STORES[store]["line"]
+                prod["line_name"] = LINES[STORES[store]["line"]]["name"]
+                results.append(prod)
+            except Exception as pe:
+                errors.append({"store": store, "product_id": str(p)[:80], "error": str(pe)})
 
     results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
     for p in results:
@@ -141,20 +184,13 @@ async def _search_products(body: SearchRequest):
     if errors:
         response["partial"] = True
         response["errors"] = errors
-    return response
+    return _attach_source_health(response, stores)
 
 
-@router.post("/products/compare")
-async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
-    """Cross-store comparison with brand+name fuzzy matching."""
-    require_api_key(authorization)
+async def _compare_products(body: SearchRequest) -> dict:
+    """Cross-store comparison with brand+name fuzzy matching (no auth)."""
     stores = _resolve_search_stores(body)
-    all_raw: dict[str, list] = {}
-    for store in stores:
-        try:
-            all_raw[store] = await fetch_store(store, body.query, body.page, body.limit)
-        except Exception:
-            all_raw[store] = []
+    all_raw, errors = await _parallel_fetch_stores(stores, body.query, body.page, body.limit)
 
     all_products = {}
     for s, raw in all_raw.items():
@@ -218,7 +254,32 @@ async def compare_products(body: SearchRequest, authorization: str | None = Head
                 )
 
     comparison.sort(key=lambda x: x["best_price"])
-    return {"query": body.query, "comparison": comparison, "stores_compared": len(stores)}
+    payload: dict = {"query": body.query, "comparison": comparison, "stores_compared": len(all_raw)}
+    if body.country:
+        payload["country"] = body.country.strip().upper()
+    if errors:
+        payload["partial"] = True
+        payload["errors"] = errors
+    return _attach_source_health(payload, list(all_raw.keys()) or stores)
+
+
+@router.post("/products/compare")
+async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
+    """Cross-store comparison with brand+name fuzzy matching."""
+    username = require_api_key(authorization)
+    if username.startswith("demo:"):
+        try:
+            from market_funnel import record_funnel_event
+
+            record_funnel_event(
+                "demo_first_tool_call",
+                session_id=username.split(":", 1)[-1],
+                meta={"tool": "compare", "query": body.query, "agent_source": "demo"},
+                dedupe=True,
+            )
+        except Exception:
+            pass
+    return await _compare_products(body)
 
 
 @router.post("/v1/basket/compare")

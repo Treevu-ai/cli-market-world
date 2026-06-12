@@ -14,15 +14,15 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Header
 
 from market_core import STORES, get_db
-from server_deps import require_pro
+from server_deps import require_export
 
 router = APIRouter(tags=["data-export"])
 
 
 @router.post("/v1/data/export")
 def data_export(body: dict, authorization: str | None = Header(None)):
-    """Export data moat as JSON or CSV. Requires Pro tier. Filters: country, line, limit (≤1000)."""
-    require_pro(authorization)
+    """Export data moat as JSON or CSV. Requires Starter+ with export enabled."""
+    require_export(authorization)
     country = body.get("country")
     line = body.get("line")
     fmt = body.get("format", "json")
@@ -62,8 +62,8 @@ def data_export(body: dict, authorization: str | None = Header(None)):
 
 @router.post("/v1/data/export-history")
 def data_export_history(body: dict, authorization: str | None = Header(None)):
-    """Export historical price data. Requires Pro tier."""
-    require_pro(authorization)
+    """Export historical price data. Requires Starter+ with export enabled."""
+    require_export(authorization)
     days = body.get("days", 30)
     since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     line = body.get("line")

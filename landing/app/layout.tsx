@@ -20,6 +20,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 const siteUrl = "https://cli-market.dev";
 const ogImage = `${siteUrl}/og.png`;
+const ogVideoMp4 = `${siteUrl}/cli-market-hero.mp4`;
+const ogVideoWebm = `${siteUrl}/cli-market-hero.webm`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -54,6 +56,20 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "CLI Market — commerce infrastructure for AI agents",
+      },
+    ],
+    videos: [
+      {
+        url: ogVideoMp4,
+        width: 1280,
+        height: 720,
+        type: "video/mp4",
+      },
+      {
+        url: ogVideoWebm,
+        width: 1280,
+        height: 720,
+        type: "video/webm",
       },
     ],
   },
@@ -110,7 +126,10 @@ const jsonLd = {
       },
       offers: [
         { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Starter", price: "24", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Pro Founding", price: "29", priceCurrency: "USD" },
         { "@type": "Offer", name: "Pro", price: "39", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Pro Annual", price: "390", priceCurrency: "USD" },
         { "@type": "Offer", name: "Enterprise", price: "custom", priceCurrency: "USD" },
       ],
     },
@@ -133,6 +152,11 @@ export default function RootLayout({
     <html lang="es" className={`dark h-full ${GeistSans.variable}`}>
       <head>
         <link rel="alternate" type="application/json" href="/server.json" title="MCP server manifest" />
+        <meta property="og:video" content={ogVideoMp4} />
+        <meta property="og:video:secure_url" content={ogVideoMp4} />
+        <meta property="og:video:type" content="video/mp4" />
+        <meta property="og:video:width" content="1280" />
+        <meta property="og:video:height" content="720" />
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} h-full bg-[var(--cm-background)] text-[var(--cm-on-surface)] antialiased overflow-x-hidden`}

@@ -5,6 +5,8 @@ import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
+import MoatSparkline from "@/components/MoatSparkline";
+import LatAmCoverageMap from "@/components/LatAmCoverageMap";
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
   farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Cruz Verde CO/CL"],
@@ -13,6 +15,20 @@ const vtexLines = {
 };
 
 const magentoStores = ["Falabella PE/CL/CO", "Paris CL", "Ripley CL", "Liverpool MX", "El Palacio MX"];
+
+function LiveMetricValue({
+  value,
+  liveLoaded,
+}: {
+  value: string | null;
+  liveLoaded: boolean;
+}) {
+  if (value) return <>{value}</>;
+  if (!liveLoaded) {
+    return <span className="inline-block w-16 h-8 bg-white/10 rounded animate-pulse" aria-hidden />;
+  }
+  return null;
+}
 
 function Counter({ end, label, delay }: { end: number; label: string; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -38,7 +54,47 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
 export default function ScaleCoverageSection() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { priceLong, priceChip, stats, retailersVerified, retailersDefined } = useLiveStats();
+  const { priceLong, priceChip, stats, liveLoaded, retailersVerified, retailersDefined } = useLiveStats();
+
+  const freshnessPct =
+    stats.fresh24hPct != null ? `${stats.fresh24hPct.toFixed(0)}%` : null;
+  const freshnessSub = [
+    stats.snapshots24h != null ? `${stats.snapshots24h.toLocaleString()} snapshots 24h` : null,
+    stats.moatAgeHours != null
+      ? `${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const coveragePct =
+    stats.coverage7dPct != null ? `${stats.coverage7dPct.toFixed(0)}%` : null;
+  const coverageSub = [
+    `${retailersVerified} ${isES ? "verificados" : "verified"}`,
+    stats.collectorStatus ? `collector ${stats.collectorStatus}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const technicalMetrics = [
+    {
+      label: isES ? "Precios acumulados" : "Total snapshots",
+      value:
+        stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : null,
+    },
+    {
+      label: isES ? "Promedio diario (7d)" : "Daily avg (7d)",
+      value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : null,
+    },
+    {
+      label: isES ? "Serie histórica desde" : "Historical series since",
+      value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : null,
+    },
+    {
+      label: isES ? "Intervalo collector" : "Collector interval",
+      value: `cada ${MARKET_STATS.pricesRefreshHours}h`,
+    },
+  ].filter((item) => item.value != null);
 
   const scaleStats = [
     { end: retailersDefined, label: isES ? "retailers catálogo" : "retailers in catalog" },
@@ -49,26 +105,35 @@ export default function ScaleCoverageSection() {
 
   return (
     <section id="coverage" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
-      <div className="landing-container text-center">
-        <p className="section-eyebrow mb-4">
-          {isES ? "Escala y cobertura" : "Scale and coverage"}
-        </p>
-        <h2 className="section-title">
-          {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
-        </h2>
-        <p className="section-intro">
-          {isES
-            ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`
-            : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
-        </p>
+      <div className="landing-container-wide text-center">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4">
+            {isES ? "Escala y cobertura" : "Scale and coverage"}
+          </p>
+          <h2 className="section-title">
+            {isES ? "Cobertura retail en LatAm" : "Retail coverage across LatAm"}
+          </h2>
+          <p className="inline-flex items-center gap-2 text-xs font-mono text-[var(--cm-mint)] bg-[var(--cm-mint)]/10 border border-[var(--cm-mint)]/30 rounded-full px-3 py-1 mb-4">
+            {priceChip} · {refreshLabel(isES)}
+          </p>
+          <p className="section-intro">
+            {isES
+              ? `${MARKET_STATS.platformsPhraseEs}. ${priceLong} precios verificados · ${refreshLabel(isES)}.`
+              : `${MARKET_STATS.platformsPhraseEn}. ${priceLong} verified prices · ${refreshLabel(isES)}.`}
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
+        <div className="landing-content-rail grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}
         </div>
 
-        <div className="mb-10 sm:mb-12 text-left max-w-3xl mx-auto">
+        <div className="max-w-md mx-auto mb-10 sm:mb-14">
+          <LatAmCoverageMap />
+        </div>
+
+        <div className="landing-content-rail mb-10 sm:mb-12 text-left">
           <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3 text-center">
             {isES ? "Retailers verificados (muestra)" : "Verified retailers (sample)"}
           </p>
@@ -89,7 +154,7 @@ export default function ScaleCoverageSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
+        <div className="landing-content-rail grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
@@ -105,38 +170,36 @@ export default function ScaleCoverageSection() {
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Frescura" : "Freshness"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">
-              {stats.fresh24hPct != null ? `${stats.fresh24hPct.toFixed(0)}%` : "—"}
+            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+              <LiveMetricValue value={freshnessPct} liveLoaded={liveLoaded} />
             </p>
-            <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {stats.snapshots24h != null ? `${stats.snapshots24h.toLocaleString()} snapshots 24h` : "—"}
-              {stats.moatAgeHours != null ? ` · ${isES ? "último" : "last"} ${stats.moatAgeHours.toFixed(1)}h` : ""}
-            </p>
+            {freshnessSub ? (
+              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{freshnessSub}</p>
+            ) : null}
           </div>
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Cobertura" : "Coverage"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">
-              {stats.coverage7dPct != null ? `${stats.coverage7dPct.toFixed(0)}%` : "—"}
+            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+              <LiveMetricValue value={coveragePct} liveLoaded={liveLoaded} />
             </p>
-            <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-              {retailersVerified} {isES ? "verificados ·" : "verified ·"} collector {stats.collectorStatus ?? "—"}
-            </p>
+            {coverageSub ? (
+              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">{coverageSub}</p>
+            ) : null}
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto text-left space-y-4">
+        <div className="landing-content-rail mb-10">
+          <MoatSparkline />
+        </div>
+
+        <div className="landing-content-rail text-left space-y-4">
           <details className="details-disclosure">
             <summary>{isES ? "Métricas técnicas del collector" : "Collector technical metrics"}</summary>
             <div className="details-body">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                {[
-                  { label: isES ? "Precios acumulados" : "Total snapshots", value: stats.totalSnapshotsAll != null ? stats.totalSnapshotsAll.toLocaleString() : "—" },
-                  { label: isES ? "Promedio diario (7d)" : "Daily avg (7d)", value: stats.avgDaily7d != null ? stats.avgDaily7d.toLocaleString() : "—" },
-                  { label: isES ? "Serie histórica desde" : "Historical series since", value: stats.moatStart != null ? stats.moatStart.slice(0, 10) : "—" },
-                  { label: isES ? "Intervalo collector" : "Collector interval", value: `cada ${MARKET_STATS.pricesRefreshHours}h` },
-                ].map((item) => (
+                {technicalMetrics.map((item) => (
                   <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
                     <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-2">{item.label}</p>
                     <p className="text-lg font-bold text-white tabular-nums">{item.value}</p>
@@ -208,6 +271,16 @@ export default function ScaleCoverageSection() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">WooCommerce</p>
+                    <div className="flex flex-wrap gap-2">
+                      {MARKET_STATS.woocommerceStores.map((store) => (
+                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                          {store}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -223,9 +296,6 @@ export default function ScaleCoverageSection() {
           </details>
         </div>
 
-        <p className="text-sm text-[var(--cm-on-surface-variant)]/70 mt-10">
-          {isES ? `${MARKET_STATS.pricesVerifiedLabel} precios indexados` : `${MARKET_STATS.pricesVerifiedLabel} prices indexed`}
-        </p>
       </div>
     </section>
   );
