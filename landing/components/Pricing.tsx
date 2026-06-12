@@ -17,7 +17,11 @@ import {
   isLegacyListedPricingHash,
   type PricingAudience,
 } from "@/lib/pricingAudiences";
-import { pricingBillingFootnote } from "@/lib/billingCopy";
+import {
+  PAYMENTS_PLACEHOLDER,
+  formatPaymentsFeature,
+} from "@/lib/billingCopy";
+import { usePaymentsChannels, usePricingBillingFootnote } from "@/lib/useBillingCopy";
 import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
 
 type Billing = "monthly" | "annual";
@@ -103,14 +107,14 @@ const tiers: Tier[] = [
     f_es: [
       "10.000 consultas / día",
       "10 claves API (lectura y escritura)",
-      `Checkout retail · ${MARKET_STATS.paymentsLabel}`,
+      `Checkout retail · ${PAYMENTS_PLACEHOLDER}`,
       "10 alertas · historial 12 meses",
       "Precio $29 bloqueado · 100 plazas",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
-      `Retail checkout · ${MARKET_STATS.paymentsLabel}`,
+      `Retail checkout · ${PAYMENTS_PLACEHOLDER}`,
       "10 alerts · 12-month history",
       "Locked $29 price · 100 seats",
     ],
@@ -130,14 +134,14 @@ const tiers: Tier[] = [
     f_es: [
       "10.000 consultas / día",
       "10 claves API (lectura y escritura)",
-      `Checkout retail · ${MARKET_STATS.paymentsLabel}`,
+      `Checkout retail · ${PAYMENTS_PLACEHOLDER}`,
       "10 alertas · historial 12 meses",
       "Export CSV · MCP Intel completo",
     ],
     f_en: [
       "10,000 requests / day",
       "10 API keys (read + write)",
-      `Retail checkout · ${MARKET_STATS.paymentsLabel}`,
+      `Retail checkout · ${PAYMENTS_PLACEHOLDER}`,
       "10 alerts · 12-month history",
       "CSV export · full Intel MCP",
     ],
@@ -184,12 +188,14 @@ function TierCard({
   isES,
   billing,
   foundingSeats,
+  paymentsLabel,
   children,
 }: {
   tier: Tier;
   isES: boolean;
   billing: Billing;
   foundingSeats?: number | null;
+  paymentsLabel: string;
   children?: React.ReactNode;
 }) {
   const isAnnual = billing === "annual" && tier.annualPrice;
@@ -202,7 +208,9 @@ function TierCard({
     : isES
       ? tier.period_es
       : tier.period_en;
-  const features = (isES ? tier.f_es : tier.f_en).slice(0, FEATURE_COUNT);
+  const features = (isES ? tier.f_es : tier.f_en)
+    .slice(0, FEATURE_COUNT)
+    .map((line) => formatPaymentsFeature(line, paymentsLabel));
 
   return (
     <div
@@ -302,6 +310,8 @@ export default function Pricing() {
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [claimingFree, setClaimingFree] = useState(false);
   const [foundingSeats, setFoundingSeats] = useState<number | null>(null);
+  const paymentsLabel = usePaymentsChannels(isES);
+  const billingFootnote = usePricingBillingFootnote(isES);
 
   const handleInstantFreeKey = async () => {
     setClaimingFree(true);
@@ -435,7 +445,13 @@ export default function Pricing() {
                 id={tier.name === "Pro Founding" ? "pro-checkout" : undefined}
                 className="scroll-mt-24"
               >
-                <TierCard tier={tier} isES={isES} billing={billing} foundingSeats={foundingSeats}>
+                <TierCard
+                  tier={tier}
+                  isES={isES}
+                  billing={billing}
+                  foundingSeats={foundingSeats}
+                  paymentsLabel={paymentsLabel}
+                >
                   {tier.checkoutKind ? (
                     <ProSubscribeButton kind={tier.checkoutKind} />
                   ) : tier.name === "Free" ? (
@@ -495,7 +511,7 @@ export default function Pricing() {
           </p>
 
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-14">
-            {pricingBillingFootnote(isES)}{" "}
+            {billingFootnote}{" "}
             {isES ? (
               <>
                 Pro Founding: código <span className="text-[var(--cm-mint)]">founding100</span> al checkout.
