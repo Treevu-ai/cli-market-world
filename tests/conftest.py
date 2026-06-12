@@ -14,6 +14,33 @@ os.environ["DATABASE_URL"] = ""
 os.environ.setdefault("MARKET_LEGACY_CHECKOUT", "1")
 
 
+def run_activate_pro_cli(*argv: str) -> tuple[int, str, str]:
+    """Run activate_pro.main() in-process — same SQLite DB as the test runner."""
+    import io
+    import sys
+    from contextlib import redirect_stderr, redirect_stdout
+    from pathlib import Path
+
+    ops_dir = Path(__file__).resolve().parent.parent / "ops"
+    root = ops_dir.parent
+    for entry in (str(ops_dir), str(root)):
+        if entry not in sys.path:
+            sys.path.insert(0, entry)
+
+    import activate_pro  # noqa: WPS433 — ops script, not a package
+
+    old_argv = sys.argv
+    out_buf = io.StringIO()
+    err_buf = io.StringIO()
+    try:
+        sys.argv = ["activate_pro.py", *argv]
+        with redirect_stdout(out_buf), redirect_stderr(err_buf):
+            code = activate_pro.main()
+    finally:
+        sys.argv = old_argv
+    return code, out_buf.getvalue(), err_buf.getvalue()
+
+
 @pytest.fixture
 def isolated_db(monkeypatch, tmp_path):
     """SQLite test DB with market_core state reset (package + implementation module)."""

@@ -22,11 +22,12 @@ _retry() {
 echo "→ API health"
 _retry curl -sf "$API/" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('status')=='running', d"
 
-echo "→ Pro request (no SMTP ok — expects payment_link)"
-_retry curl -sf -X POST "$API/billing/request-pro" \
+echo "→ Pro checkout (yape — expects checkout_url or payment_link)"
+SMOKE_USER="smoke-ci"
+_retry curl -sf -X POST "$API/billing/pro-checkout" \
   -H "Content-Type: application/json" \
-  -d '{"email":"smoke+'"$(date +%s)"'@cli-market.dev","lang":"es"}' \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('ok') and d.get('payment_link'), d; print('  ref:', d.get('request_id'))"
+  -d '{"email":"smoke+'"$(date +%s)"'@cli-market.dev","username":"'"$SMOKE_USER"'","lang":"es","payment_method":"yape"}' \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('ok') and (d.get('payment_link') or d.get('checkout_url') or d.get('approve_url')), d; print('  ref:', d.get('request_id'))"
 
 echo "→ Landing llms.txt"
 _retry curl -sfI "https://cli-market.dev/llms.txt" | head -1 | grep -q "200"
