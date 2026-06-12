@@ -1425,6 +1425,41 @@ def test_admin_set_tier_unknown_user(monkeypatch):
     assert r.status_code == 404
 
 
+def test_admin_revoke_api_key(monkeypatch):
+    import server_deps
+    from market_core import db_create_api_key, db_validate_api_key
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    db_save_user("revoke-me", hash_password("market"), "revoke@test.com")
+    created = db_create_api_key("revoke-me", "read", "incident-test")
+    assert db_validate_api_key(created["key"]) is not None
+
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post(
+        "/v1/admin/revoke-api-key",
+        headers=h,
+        json={"api_key": created["key"]},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    assert body["username"] == "revoke-me"
+    assert db_validate_api_key(created["key"]) is None
+
+
+def test_admin_revoke_api_key_not_found(monkeypatch):
+    import server_deps
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post(
+        "/v1/admin/revoke-api-key",
+        headers=h,
+        json={"api_key": "sk-not-a-real-key-value-at-all"},
+    )
+    assert r.status_code == 404
+
+
 def test_data_export_blocked_on_free_tier():
     from market_core import db_create_api_key, db_set_subscription
 

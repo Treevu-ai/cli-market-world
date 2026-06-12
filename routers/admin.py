@@ -7,6 +7,7 @@ Endpoints:
   POST /admin/collect         Trigger a price collection run synchronously
   POST /v1/admin/scan-stores  Probe known retailer domains for liveness
   POST /v1/admin/set-tier     Set a user's subscription tier (free|pro|enterprise)
+  POST /v1/admin/revoke-api-key  Revoke a leaked or compromised sk- API key
   POST /admin/cron/funnel-digest  Post evening funnel digest to Slack (#funnel-cli-market)
   POST /admin/cron/command-control  Post morning founder panel (#command-control-cli-market)
   POST /admin/cron/adoption-index  Persist Adoption Index snapshot (nightly cron)
@@ -158,6 +159,31 @@ def admin_set_tier(
         raise HTTPException(status_code=404, detail=f"user not found: {username}")
     db_set_subscription(username, tier)
     return {"username": username, "subscription": db_get_subscription(username)}
+
+
+@router.post("/v1/admin/revoke-api-key")
+def admin_revoke_api_key(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Revoke a compromised API key by raw sk- value (admin-only)."""
+    require_admin(authorization)
+    api_key = (body.get("api_key") or body.get("key") or "").strip()
+    if not api_key:
+        raise HTTPException(status_code=400, detail="api_key required")
+
+    from account_service import revoke_api_key_by_value
+
+    result = revoke_api_key_by_value(api_key)
+    if not result:
+        raise HTTPException(status_code=404, detail="api key not found or already revoked")
+    logger.info(
+        "audit admin_revoke_api_key username=%s key_id=%s prefix=%s",
+        result["username"],
+        result["key_id"],
+        api_key[:10],
+    )
+    return {"ok": True, **result}
 
 
 @router.post("/admin/collect")
