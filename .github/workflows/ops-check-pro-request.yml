@@ -1,0 +1,52 @@
+name: Ops Check Pro Request
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ops/triggers/check-pro-request.trigger
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: PRO-XXXXXXXX
+        required: false
+        default: PRO-D2CF329D
+      fix_pending:
+        description: Mark request activated if tier already pro
+        required: false
+        default: "true"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Check subscription request
+        run: |
+          REQ="${{ github.event.inputs.request_id }}"
+          if [ -z "$REQ" ]; then
+            REQ=$(grep -E '^request_id=' ops/triggers/check-pro-request.trigger | head -1 | cut -d= -f2-)
+          fi
+          FIX=""
+          FIX_INPUT="${{ github.event.inputs.fix_pending }}"
+          if [ "$FIX_INPUT" = "true" ] || grep -q '^fix_pending=true' ops/triggers/check-pro-request.trigger 2>/dev/null; then
+            FIX="--fix-pending"
+          fi
+          pip install -q psycopg2-binary asyncpg
+          python3 ops/check_subscription_request.py "$REQ" $FIX
