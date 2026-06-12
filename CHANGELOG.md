@@ -4,6 +4,20 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-12] — World 1.9.34 + Observatory P0 prod closure
+
+### cli-market-world v1.9.34
+- **Changed:** Pin `cli-market-core==1.9.34`; Railway prod OpenAPI **1.9.34**
+- **Fixed:** Dockerfile `GITHUB_TOKEN` / `GH_PAT` fallback for private `cli-market-index` clone
+- **Added:** `publish-core-pypi.yml` workflow; release scripts for core backport
+- **Changed:** OpenAPI version from `pyproject.toml`; Railway verify uses Observatory P0 gate
+
+### cli-market-core v1.9.34 (PyPI)
+- **Changed:** Observatory backport — tool normalization, internal filter, sqlite3.Row DAA fix
+- **Fixed:** `PACKAGE_VERSION` aligned with wheel version (was 1.9.30 in 1.9.33)
+
+---
+
 ## [2026-06-12] — Force Railway redeploy (1.9.33 + core pin)
 
 ### cli-market-world v1.9.33
