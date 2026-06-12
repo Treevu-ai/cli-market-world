@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GITHUB_TOKEN
 
 COPY requirements-railway.txt .
+ARG CACHE_BUST=2026061203
 RUN set -eux; \
     if [ -z "${GITHUB_TOKEN}" ]; then \
       echo "error: GITHUB_TOKEN build arg required for private cli-market-index (git+https)" >&2; \
@@ -19,8 +20,6 @@ RUN set -eux; \
     git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"; \
     pip install --no-cache-dir -r requirements-railway.txt; \
     rm -f /root/.gitconfig
-
-ARG CACHE_BUST=2026061202
 COPY *.py pyproject.toml ./
 COPY routers/ ./routers/
 # Slack ops (cron panels, revenue/funnel routing from API)

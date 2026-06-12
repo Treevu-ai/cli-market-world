@@ -55,18 +55,22 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.wait:
-        for attempt in range(1, 31):
+        target = _parse_version(args.min_version) if args.min_version else None
+        for attempt in range(1, 41):
             try:
                 _fetch_json("/health", timeout=15)
-                print(f"Health OK (attempt {attempt})")
-                break
+                data = snapshot()
+                ver = _parse_version(str(data.get("version", "")))
+                print(f"Attempt {attempt}: health OK, version={data.get('version')}")
+                if target is None or ver >= target:
+                    break
             except Exception as exc:
-                print(f"Attempt {attempt}: {exc} — sleep 20s")
-                time.sleep(20)
+                print(f"Attempt {attempt}: {exc} — sleep 30s")
+                time.sleep(30)
         else:
-            print("ERROR: /health did not succeed after 30 attempts", file=sys.stderr)
+            print("ERROR: prod did not reach target version after 40 attempts", file=sys.stderr)
             return 1
-        time.sleep(10)
+        time.sleep(5)
 
     try:
         data = snapshot()
