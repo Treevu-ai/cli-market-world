@@ -26,21 +26,17 @@ jobs:
 
       - uses: actions/checkout@v6
         id: checkout-content
-        continue-on-error: true
         with:
           repository: Treevu-ai/cli-market-content
           path: cli-market-content
           token: ${{ secrets.GH_PAT }}
 
-      - name: Resolve content root
+      - name: Verify content checkout
         run: |
-          if [ -d cli-market-content/linkedin ]; then
-            echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
-            echo "Using cli-market-content checkout"
-          else
-            echo "::warning::cli-market-content checkout failed — using tools/content-repo-template (update GH_PAT read on content repo)"
-            echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/tools/content-repo-template" >> "$GITHUB_ENV"
-          fi
+          set -euo pipefail
+          test -d cli-market-content/linkedin
+          echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
+          echo "Using cli-market-content checkout ($(git -C cli-market-content rev-parse --short HEAD))"
 
       - name: Install content repo deps
         working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}

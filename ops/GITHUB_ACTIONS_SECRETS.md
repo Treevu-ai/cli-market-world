@@ -15,7 +15,7 @@ Secrets required for scheduled workflows. Configure in **Settings → Secrets an
 | Symptom | Fix |
 |---------|-----|
 | Observatory nightly: `DATABASE_URL secret missing` | Fixed in main — workflow calls `POST /admin/observatory/snapshot` with `MARKET_API_TOKEN` |
-| Daily briefing: `Not Found` on cli-market-content | Add `Treevu-ai/cli-market-content` to `GH_PAT` repositories (read). Fallback: `tools/content-repo-template` |
+| Daily briefing / GTM preflight: `Not Found` on cli-market-content | Add `Treevu-ai/cli-market-content` to `GH_PAT` repositories (read). Workflows require real checkout (no template fallback). |
 | Sync backend core pin: `403` on push | Add `GH_PAT_BACKEND_WRITE` with write on backend, or apply PR manually |
 | PAM admin cases skip | Set `MARKET_API_TOKEN` in workflow env / secrets |
 
