@@ -25,16 +25,28 @@ jobs:
           path: cli-market-content
           token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
       - name: Patch Makefile gate/publish recipes
         working-directory: cli-market-content
         run: |
           set -euo pipefail
           test -f Makefile
+          changed=0
           if grep -q '\$(python3 --version)' Makefile; then
             sed -i 's/\$(python3 --version) //g' Makefile
-            echo "Removed invalid \$(python3 --version) prefix from Makefile"
-          else
-            echo "Makefile already fixed — no changes"
+            changed=1
+            echo "Removed invalid \$(python3 --version) prefix"
+          fi
+          if grep -qE '^[[:space:]]+Python [0-9]' Makefile; then
+            sed -i -E 's/^([[:space:]]+)Python [0-9.]+ /\1/' Makefile
+            changed=1
+            echo "Removed literal Python version prefix from recipes"
+          fi
+          if [ "$changed" = 0 ]; then
+            echo "Makefile already fixed — no sed changes"
           fi
           grep -n '^gate:' Makefile || true
           grep -A1 '^gate:' Makefile | head -3
