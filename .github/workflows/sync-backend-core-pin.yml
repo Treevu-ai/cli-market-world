@@ -35,7 +35,8 @@ jobs:
 
       - name: Verify PyPI version exists
         run: |
-          VER="${{ github.event.inputs.version }}"
+          VER="${{ github.event.inputs.version || '1.9.34' }}"
+          echo "CORE_PIN_VER=${VER}" >> "$GITHUB_ENV"
           python3 -m pip index versions "cli-market-core" | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"
 
       - name: Bump backend requirements.txt
@@ -43,12 +44,12 @@ jobs:
           BACKEND_DIR: ${{ github.workspace }}/cli-market-backend
         run: |
           chmod +x ops/sync_backend_core_pin.sh
-          ./ops/sync_backend_core_pin.sh "${{ github.event.inputs.version }}"
+          ./ops/sync_backend_core_pin.sh "${CORE_PIN_VER}"
 
       - name: Save patch artifact (always)
         if: always()
         run: |
-          VER="${{ github.event.inputs.version }}"
+          VER="${CORE_PIN_VER}"
           mkdir -p /tmp/backend-pin
           cp cli-market-backend/requirements.txt /tmp/backend-pin/requirements.txt
           git -C cli-market-backend diff requirements.txt > "/tmp/backend-pin/requirements-${VER}.patch" || true
@@ -60,7 +61,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: backend-core-pin-${{ github.event.inputs.version }}
+          name: backend-core-pin-${{ env.CORE_PIN_VER }}
           path: /tmp/backend-pin/
           retention-days: 14
 
@@ -88,7 +89,7 @@ jobs:
         working-directory: cli-market-backend
         run: |
           set -euo pipefail
-          VER="${{ github.event.inputs.version }}"
+          VER="${CORE_PIN_VER}"
           BRANCH="chore/core-pin-${VER}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -110,7 +111,7 @@ jobs:
       - name: Manual apply instructions
         if: steps.write_token.outputs.has_write != 'true'
         run: |
-          VER="${{ github.event.inputs.version }}"
+          VER="${CORE_PIN_VER}"
           echo "## Backend pin — manual apply required" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "GH_PAT can read backend but not push. Add secret **GH_PAT_BACKEND_WRITE** (fine-grained PAT with Contents write on \`Treevu-ai/cli-market-backend\`), then re-run this workflow." >> "$GITHUB_STEP_SUMMARY"
