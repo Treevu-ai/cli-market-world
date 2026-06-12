@@ -1051,16 +1051,14 @@ def test_activate_pro_by_request_id(monkeypatch):
     from market_core import db_find_subscription_request, db_get_subscription
 
     assert db_get_subscription("admin")["tier"] == "free"
-    env = os.environ.copy()
-    for key in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_PASS"):
-        env[key] = ""
-    env["GMAIL_DRAFTS_ENABLED"] = "0"
+    from conftest import activate_pro_subprocess_env
+
     proc = subprocess.run(
         [sys.executable, "ops/activate_pro.py", "admin", "--request-id", req_id],
         cwd=str(Path(__file__).parent.parent),
         capture_output=True,
         text=True,
-        env=env,
+        env=activate_pro_subprocess_env(),
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
     assert db_get_subscription("admin")["tier"] == "pro"

@@ -62,18 +62,10 @@ def test_build_context_links_email_username_password():
     assert ctx["password"] == "pass-123"
 
 
-def _subprocess_test_env() -> dict:
-    import os
-
-    env = os.environ.copy()
-    for key in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_PASS"):
-        env[key] = ""
-    env["GMAIL_DRAFTS_ENABLED"] = "0"
-    return env
-
-
 def test_activate_pro_persists_display_name_override():
     from market_core import ensure_db_initialized
+
+    from conftest import activate_pro_subprocess_env
 
     ensure_db_initialized()
     req = db_create_subscription_request("dn-ops-user", "dn-ops@test.com", "yape:manual")
@@ -90,7 +82,7 @@ def test_activate_pro_persists_display_name_override():
         cwd=str(Path(__file__).parent.parent),
         capture_output=True,
         text=True,
-        env=_subprocess_test_env(),
+        env=activate_pro_subprocess_env(),
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
     updated = db_find_subscription_request(request_id=req["id"])
