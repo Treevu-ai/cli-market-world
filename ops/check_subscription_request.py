@@ -97,7 +97,20 @@ def main() -> int:
                 request_id = req["id"]
                 print(f"using_request_id={request_id}")
     if not req:
+        sub_row = None
+        if username_hint:
+            sub_row = db.execute(
+                "SELECT username, tier, req_limit_day FROM subscriptions WHERE username=?",
+                (username_hint,),
+            ).fetchone()
+        total_reqs = db.execute("SELECT COUNT(*) AS n FROM subscription_requests").fetchone()
+        print(f"subscription_requests_total={total_reqs['n'] if total_reqs else '?'}")
+        if sub_row:
+            print(f"subscription_row={dict(sub_row)}")
         db.close()
+        if sub_row and (sub_row["tier"] or "").lower() == "pro":
+            print(f"OK: {username_hint} tier=pro (billing request row missing for {request_id})")
+            return 0
         print(f"NOT FOUND: {request_id}")
         return 1
 

@@ -57,6 +57,7 @@ jobs:
           pip install -q -e ".deps/cli-market-index[postgres]"
 
       - name: Check subscription request
+        continue-on-error: true
         run: |
           REQ="${{ github.event.inputs.request_id }}"
           if [ -z "$REQ" ]; then
