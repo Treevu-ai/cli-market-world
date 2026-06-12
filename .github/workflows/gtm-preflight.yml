@@ -39,11 +39,13 @@ jobs:
           echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
           echo "Using cli-market-content checkout ($(git -C cli-market-content rev-parse --short HEAD))"
 
-      - name: Install content repo deps
-        working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
+      - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install httpx
+          pip install "cli-market-core>=1.9.34" httpx
+          python3 -c "from market_core import market_stats"
+          if [ -f "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt" ]; then
+            pip install -r "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt"
+          fi
 
       - name: Content gate + today
         working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
@@ -54,19 +56,14 @@ jobs:
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
         run: |
           set -euo pipefail
-          # Makefile gate/today may use $(python3 --version) as command → "Python: No such file"
+          # Never call `make gate` — content Makefile prefixes $(python3 --version) → breaks CI
           if [ -f scripts/check-gate.py ]; then
             python3 scripts/check-gate.py
-          elif [ -f Makefile ] && grep -q '^gate:' Makefile; then
-            make gate
           else
             python3 "${{ github.workspace }}/ops/gtm_gate_remote.py"
           fi
           if [ -f scripts/status.py ]; then
             python3 scripts/status.py
-          elif [ -f Makefile ] && grep -q '^today:' Makefile; then
-            make today
           else
-            pip install "cli-market-core>=1.9.34" httpx
             python3 "${{ github.workspace }}/ops/daily_briefing.py" --content --dry-run
           fi
