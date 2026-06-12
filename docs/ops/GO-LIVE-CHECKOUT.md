@@ -89,6 +89,28 @@ Expect:
 If any of `live`, `webhook_configured`, `plan_id_configured` is `false`, the
 matching env var from step 1 is missing or wrong.
 
+### Prod evidence (2026-06-12)
+
+Verified after merge #160 — no Railway env changes required:
+
+```bash
+curl -s https://cli-market-production.up.railway.app/paypal-status | jq
+```
+
+```json
+{
+  "configured": true,
+  "sandbox": false,
+  "live": true,
+  "webhook_configured": true,
+  "plan_id_configured": true,
+  "starter_plan_id_configured": true,
+  "webhook_url": "https://cli-market-production.up.railway.app/checkout/paypal-webhook"
+}
+```
+
+`ops/go_live_check.py --remote` must not emit `paypal_webhook_missing` or `paypal_sandbox_mode`.
+
 ---
 
 ## 5. End-to-end test purchase (the real gate)

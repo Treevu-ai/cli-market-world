@@ -1,0 +1,49 @@
+# Regenerate public Índice Canasta Perú from production dashboard data.
+# Schedule: Monday 08:00 PET (13:00 UTC). Manual: workflow_dispatch or bump ops/canasta-pe-weekly.trigger.
+
+name: Canasta PE weekly
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/canasta-pe-weekly.trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  DASHBOARD_DATA_URL: https://cli-market-production.up.railway.app/dashboard/data
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate indice-canasta-pe.md
+        run: python3 ops/canasta_pe_index.py --write landing/public/indice-canasta-pe.md
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet landing/public/indice-canasta-pe.md; then
+            echo "Índice Canasta PE unchanged — skip commit"
+            exit 0
+          fi
+          git add landing/public/indice-canasta-pe.md
+          git commit -m "chore(gtm): refresh Índice Canasta Perú ($(date -u +%Y-%m-%d))"
+          git push
