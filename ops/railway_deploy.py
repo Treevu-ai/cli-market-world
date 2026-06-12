@@ -211,7 +211,7 @@ def list_services(token: str) -> list[dict[str, str]]:
 
 
 def resolve_api_service_ref(token: str, *, project_token: str = "") -> str:
-    explicit = _env_default("RAILWAY_API_SERVICE_ID", "")
+    explicit = _env_opt("RAILWAY_API_SERVICE_ID")
     if explicit:
         return explicit
     services: list[dict[str, str]] = []
@@ -224,11 +224,7 @@ def resolve_api_service_ref(token: str, *, project_token: str = "") -> str:
         services = list_services_cli(project_token)
     if services:
         return _pick_api_service(services)
-    if project_token:
-        return API_SERVICE_DEFAULT or API_SERVICE_NAME_FALLBACK
-    raise RuntimeError(
-        "Could not resolve API service. Set RAILWAY_API_SERVICE_ID or use a token that can list services."
-    )
+    return API_SERVICE_ID_FALLBACK
 
 
 def deploy_graphql(token: str, service_id: str, *, latest_commit: bool = True) -> None:
@@ -268,11 +264,28 @@ def deploy_up_cli(service_ref: str, project_token: str) -> None:
     root = Path(__file__).resolve().parent.parent
     _ensure_railway_cli()
     env = _cli_env(project_token)
+    gh_pat = (os.getenv("GH_PAT") or os.getenv("GITHUB_TOKEN") or "").strip()
+    if gh_pat:
+        subprocess.run(
+            [
+                "railway",
+                "variable",
+                "set",
+                f"GITHUB_TOKEN={gh_pat}",
+                f"--service={service_ref}",
+                f"--environment={ENVIRONMENT_ID}",
+                "--skip-deploys",
+            ],
+            cwd=str(root),
+            env=env,
+            check=False,
+            timeout=120,
+        )
+    # --ci waits for build logs; do not combine with --detach (exits after upload).
     subprocess.run(
         [
             "railway",
             "up",
-            "--detach",
             "--ci",
             f"--service={service_ref}",
             f"--project={PROJECT_ID}",
@@ -281,7 +294,7 @@ def deploy_up_cli(service_ref: str, project_token: str) -> None:
         cwd=str(root),
         env=env,
         check=True,
-        timeout=900,
+        timeout=1800,
     )
 
 

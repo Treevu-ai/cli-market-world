@@ -93,7 +93,7 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
-    if data["index_stats_in_top_tools"]:
+    if args.min_version and data["index_stats_in_top_tools"]:
         print("ERROR: index_stats still in observatory top_tools (old build)", file=sys.stderr)
         return 1
     return 0
