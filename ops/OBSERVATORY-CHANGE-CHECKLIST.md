@@ -8,10 +8,11 @@ PRD: `docs/prd-observatory-p0.md` §0
 
 ## Orden de ejecución
 
+**Prod actual:** Railway despliega desde **cli-market-world** (`Dockerfile` + `requirements-railway.txt`). No hay repo backend separado accesible — mirror = prod.
+
 ```
-cli-market-core  →  PyPI
-cli-market-backend  →  Railway
-cli-market-world  →  PyPI tag + landing
+cli-market-world  →  Railway (mirror-first: telemetría P0 aquí)
+cli-market-core   →  PyPI (backport después de smoke prod)
 cli-market-index  →  (sin cambio P0)
 ```
 

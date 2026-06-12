@@ -106,6 +106,17 @@ def _observatory_maa(days: int) -> tuple[int | None, str | None, int | None]:
     return None, None, None
 
 
+def _observatory_mcp_retention(days: int) -> dict[str, Any] | None:
+    try:
+        from market_observatory import mcp_retention_summary, observatory_enabled
+
+        if observatory_enabled():
+            return mcp_retention_summary(days=days, return_within_days=7)
+    except Exception:
+        pass
+    return None
+
+
 def _growth_score(downloads_7d: int | None, downloads_30d: int | None) -> tuple[float, float | None]:
     if not downloads_7d or not downloads_30d or downloads_30d <= downloads_7d:
         pct = 100.0 if (downloads_7d or 0) > 0 and (downloads_30d or 0) <= (downloads_7d or 0) else 0.0
@@ -282,6 +293,7 @@ def compute_adoption_index(
     activated = int(funnel["unique_users"].get("activated", 0) or 0)
 
     maa, maa_source, maa_raw = _observatory_maa(days)
+    mcp_retention = _observatory_mcp_retention(days) if maa_source in ("maa", "maa_proxy") else None
     if maa_source == "maa":
         usage_count = int(maa or 0)
         usage_label = "MAA (agent_events)"
@@ -386,6 +398,7 @@ def compute_adoption_index(
             "ttfv_median_minutes": funnel.get("ttfv_median_minutes"),
         },
         "retention_7d": retention,
+        "mcp_retention_7d": mcp_retention,
         "maa": maa_raw if maa_source in ("maa", "maa_proxy") else None,
         "maa_proxy": usage_count if maa_source == "maa_proxy" else None,
         "agent_usage_proxy": {
@@ -412,6 +425,7 @@ def compute_adoption_index(
         "version": "v1",
         "score": score,
         "grade": score_grade(score),
+        "maa": maa if maa_source == "maa" else None,
         "weights": _WEIGHTS_V1,
         "breakdown": breakdown,
         "signals": signals,
