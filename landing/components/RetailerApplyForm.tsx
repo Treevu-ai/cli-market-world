@@ -15,7 +15,13 @@ const PLATFORMS = [
 
 const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
 
-export default function RetailerApplyForm() {
+export default function RetailerApplyForm({
+  variant = "inline",
+  onSuccess,
+}: {
+  variant?: "inline" | "modal";
+  onSuccess?: () => void;
+}) {
   const { lang } = useLang();
   const isES = lang === "es";
 
@@ -55,6 +61,7 @@ export default function RetailerApplyForm() {
           contact_email: contactEmail,
           website,
           api_token: apiToken || undefined,
+          lang: isES ? "es" : "en",
         }),
       });
       const data = await res.json();
@@ -69,6 +76,7 @@ export default function RetailerApplyForm() {
         throw new Error(friendly);
       }
       setAppId(data.application_id || "");
+      onSuccess?.();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error";
       setError(msg);
@@ -93,18 +101,30 @@ export default function RetailerApplyForm() {
         </p>
         <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
           {isES
-            ? "Validamos el acceso de solo lectura al catálogo y le escribimos en 24 horas hábiles. Gratis para siempre."
-            : "We validate read-only catalog access and email you within 24 business hours. Free forever."}
+            ? "Revisamos acceso de solo lectura al catálogo y le enviamos confirmación por email en minutos (≤24h hábiles para activación). Gratis para siempre."
+            : "We review read-only catalog access and send email confirmation within minutes (≤24 business hours to go live). Free forever."}
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="card-cyber p-6 md:p-8 max-w-[520px] mx-auto space-y-4 text-left">
-      <h3 className="text-lg font-semibold text-white text-center">
-        {isES ? "Liste su tienda — 30 segundos" : "List your store — 30 seconds"}
-      </h3>
+    <form
+      onSubmit={submit}
+      className={`${
+        variant === "inline" ? "card-cyber p-6 md:p-8 max-w-[520px] mx-auto" : ""
+      } space-y-4 text-left`}
+    >
+      <div className={variant === "modal" ? "text-center mb-2" : ""}>
+        <h3 className="text-lg font-semibold text-white text-center">
+          {isES ? "Liste su tienda — 30 segundos" : "List your store — 30 seconds"}
+        </h3>
+        <p className="text-xs text-[var(--cm-on-surface-variant)] text-center mt-2 leading-relaxed">
+          {isES
+            ? "VTEX, Shopify, Magento o WooCommerce. Token de catálogo de solo lectura — gratis para siempre."
+            : "VTEX, Shopify, Magento, or WooCommerce. Read-only catalog token — free forever."}
+        </p>
+      </div>
 
       <div>
         <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
@@ -177,8 +197,8 @@ export default function RetailerApplyForm() {
       <div>
         <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
           {isES
-            ? "Token API de solo lectura (Shopify/Magento — opcional)"
-            : "Read-only API token (Shopify/Magento — optional)"}
+            ? "Token API de solo lectura (Shopify / Magento / WooCommerce — opcional)"
+            : "Read-only API token (Shopify / Magento / WooCommerce — optional)"}
         </label>
         <input
           type="password"
@@ -189,8 +209,8 @@ export default function RetailerApplyForm() {
         />
         <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-1">
           {isES
-            ? "Los catálogos VTEX públicos generalmente no requieren token."
-            : "VTEX public catalogs often need no token."}
+            ? "VTEX y WooCommerce Store API pública suelen no requerir token."
+            : "VTEX and public WooCommerce Store API often need no token."}
         </p>
       </div>
 

@@ -19,7 +19,7 @@ hub: "[[GTM-Hub]]"
 4. **Meta descriptions**: Present but keyword density low for "AI commerce API", "MCP tools", "price data". ✅ Improved homepage + /retailers
 5. **Canonical URLs**: Missing — risk of duplicate content if mirrored. ✅ Done (`metadataBase` + `alternates.canonical`)
 6. **/tools page**: MCP configs for Cursor/Claude. ✅ Done (`landing/app/tools/`)
-7. **llms.txt alignment**: 30 retailers, 8 countries, 36 MCP. ✅ Done 2026-05-28
+7. **llms.txt alignment**: auto-sync via `ops/sync_market_stats.py` (38 verified · 22 MCP · 8 countries · WooCommerce). ✅ Jun 2026
 
 ## Keyword Strategy
 | Keyword | Volume | Difficulty | Current Rank | Action |

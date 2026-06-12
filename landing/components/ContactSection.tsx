@@ -10,21 +10,23 @@ export default function ContactSection() {
   return (
     <section id="contact" className="landing-section scroll-mt-24 animate-fade-in">
       <div className="landing-container-wide">
-        <p className="section-eyebrow mb-2 text-center">{isES ? "Contacto" : "Contact"}</p>
-        <h2 className="section-title text-center">{isES ? "Hablemos" : "Let's talk"}</h2>
-        <p className="section-intro text-center">
-          {isES
-            ? "Enterprise, retailers, prensa o consulta general — un solo formulario."
-            : "Enterprise, retailers, press, or general inquiry — one form."}
-        </p>
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-2">{isES ? "Contacto" : "Contact"}</p>
+          <h2 className="section-title">{isES ? "Hablemos" : "Let's talk"}</h2>
+          <p className="section-intro">
+            {isES
+              ? "Enterprise, retailers, prensa o consulta general — un solo formulario."
+              : "Enterprise, retailers, press, or general inquiry — one form."}
+          </p>
+        </div>
         <div id="contact-general" className="scroll-mt-24">
           <UnifiedContactForm />
         </div>
         <div id="contact-retailers" className="scroll-mt-24 mt-12 text-center">
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
             {isES
-              ? "¿Es retailer VTEX/Shopify? Formulario dedicado — listado gratis, sin letra chica."
-              : "VTEX/Shopify retailer? Dedicated form — free listing."}
+              ? "¿Es retailer VTEX, Shopify, Magento o WooCommerce? Formulario dedicado — listado gratis, sin letra chica."
+              : "VTEX, Shopify, Magento, or WooCommerce retailer? Dedicated form — free listing."}
           </p>
           <a
             href="/retailers"

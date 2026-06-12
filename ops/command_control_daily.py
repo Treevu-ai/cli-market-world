@@ -779,6 +779,9 @@ def _observatory_section(
     prev = history[-1].get("observatory", {}) if history else {}
     prev_maa = prev.get("maa")
     maa = int(obs.get("maa") or 0)
+    maa_proxy = int(obs.get("maa_proxy") or 0)
+    maa_display = maa if maa >= 10 else (maa_proxy or maa)
+    maa_note = " (proxy)" if maa < 10 and maa_proxy > 0 else ""
     daa = obs.get("daa")
     daa_txt = f"*{_fmt_int(daa)}*" if daa is not None else "—"
     sr = obs.get("success_rate")
@@ -790,8 +793,8 @@ def _observatory_section(
     return [
         "*🔭 Observatory (MAA)*",
         "",
-        f"• MAA 30d: `{_sparkline(series())}` *{maa:,}*"
-        f"{_delta_str(maa, prev_maa)} · DAA *{daa_txt}*",
+        f"• MAA 30d: `{_sparkline(series())}` *{maa_display:,}*{maa_note}"
+        f"{_delta_str(maa_display, prev_maa)} · raw MAA *{maa:,}* · DAA *{daa_txt}*",
         f"• Consultas exitosas 30d: *{calls:,}* · success rate *{sr_txt}* · retención 7d *{ret_txt}*",
         f"• Top tool: *{(obs.get('top_tools') or [{}])[0].get('name', '—')}* · "
         f"países activos *{int(obs.get('countries_active') or 0)}*",

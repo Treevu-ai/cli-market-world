@@ -25,7 +25,7 @@ jobs:
       - name: Install build deps
         run: |
           pip install build
-          pip install "cli-market-core>=1.9.6" \
+          pip install "cli-market-core>=1.9.25" \
             || pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@a574643"
 
       - name: Build cli-market-world
@@ -35,3 +35,33 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-mcp-registry:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync server.json version from tag
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .packages[0].version = $v |
+            .packages[0].identifier = "cli-market-world"
+          ' server.json > server.tmp && mv server.tmp server.json
+          echo "MCP registry version: $VERSION"
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Validate and publish to MCP Registry
+        run: |
+          ./mcp-publisher validate
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

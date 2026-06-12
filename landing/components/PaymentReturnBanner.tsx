@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { PROCURE_APP_URL } from "@/lib/procurePlans";
+import { buildPlanLabel, normalizeBuildPlanSlug, type BuildPlanSlug } from "@/lib/buildPlans";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export type PaymentReturnState = "success" | "pending" | "cancelled" | null;
 export type PaymentReturnProvider = "paypal" | "mercadopago" | null;
@@ -12,9 +14,10 @@ export function readPaymentReturnState(): {
   audience: "build" | "procure";
   provider: PaymentReturnProvider;
   ref: string | null;
+  buildPlan: BuildPlanSlug | null;
 } {
   if (typeof window === "undefined") {
-    return { state: null, audience: "build", provider: null, ref: null };
+    return { state: null, audience: "build", provider: null, ref: null, buildPlan: null };
   }
   const params = new URLSearchParams(window.location.search);
   const sub = params.get("sub");
@@ -22,6 +25,7 @@ export function readPaymentReturnState(): {
   const mp = params.get("mp");
   const audience = params.get("audience") === "procure" ? "procure" : "build";
   const ref = params.get("ref");
+  const buildPlan = normalizeBuildPlanSlug(params.get("plan"));
 
   let state: PaymentReturnState = null;
   let provider: PaymentReturnProvider = null;
@@ -37,7 +41,7 @@ export function readPaymentReturnState(): {
     provider = mp === "failure" ? "mercadopago" : "paypal";
   }
 
-  return { state, audience, provider, ref };
+  return { state, audience, provider, ref, buildPlan };
 }
 
 export function clearPaymentReturnQuery(): void {
@@ -47,6 +51,8 @@ export function clearPaymentReturnQuery(): void {
   url.searchParams.delete("payment");
   url.searchParams.delete("mp");
   url.searchParams.delete("ref");
+  url.searchParams.delete("plan");
+  url.searchParams.delete("audience");
   window.history.replaceState(null, "", url.pathname + url.search + url.hash);
 }
 
@@ -58,6 +64,7 @@ export default function PaymentReturnBanner() {
   const [audience, setAudience] = useState<"build" | "procure">("build");
   const [provider, setProvider] = useState<PaymentReturnProvider>(null);
   const [ref, setRef] = useState<string | null>(null);
+  const [buildPlan, setBuildPlan] = useState<BuildPlanSlug | null>(null);
 
   useEffect(() => {
     const next = readPaymentReturnState();
@@ -66,6 +73,7 @@ export default function PaymentReturnBanner() {
     setAudience(next.audience);
     setProvider(next.provider);
     setRef(next.ref);
+    setBuildPlan(next.buildPlan);
     setVisible(true);
     clearPaymentReturnQuery();
   }, []);
@@ -77,15 +85,22 @@ export default function PaymentReturnBanner() {
   const isPending = state === "pending";
   const isMp = provider === "mercadopago";
 
+  const planLabel = buildPlanLabel(buildPlan, isES);
+
   const title = (() => {
     if (isSuccess) {
       if (isProcure) {
         return isES ? "Suscripción Procure confirmada" : "Procure subscription confirmed";
       }
-      if (isMp) {
-        return isES ? "Pago Mercado Pago recibido — Build Pro" : "Mercado Pago payment received — Build Pro";
+      if (planLabel) {
+        return isES
+          ? `${planLabel} confirmado en PayPal`
+          : `${planLabel} confirmed on PayPal`;
       }
-      return isES ? "Suscripción Build Pro confirmada en PayPal" : "Build Pro subscription confirmed on PayPal";
+      if (isMp) {
+        return isES ? "Pago Mercado Pago recibido — Build" : "Mercado Pago payment received — Build";
+      }
+      return isES ? "Suscripción Build confirmada en PayPal" : "Build subscription confirmed on PayPal";
     }
     if (isPending) {
       return isES ? "Pago Mercado Pago pendiente de confirmación" : "Mercado Pago payment pending confirmation";
@@ -138,10 +153,10 @@ export default function PaymentReturnBanner() {
             <>
               <p>
                 {isES
-                  ? "Pro se activa en minutos. Verifica con market whoami."
-                  : "Pro activates within minutes. Verify with market whoami."}
+                  ? `${planLabel ?? "Tu plan Build"} se activa en minutos. Verifica con market whoami.`
+                  : `${planLabel ?? "Your Build plan"} activates within minutes. Verify with market whoami.`}
               </p>
-              <p className="font-mono text-xs">pip install cli-market-world && market whoami</p>
+              <p className="font-mono text-xs">{`${MARKET_STATS.pipInstallCmd} && market whoami`}</p>
               <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
                 {isES
                   ? "Confirmar tier en /account (pega tu API key sk-…)"
@@ -154,8 +169,8 @@ export default function PaymentReturnBanner() {
         <div className="space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
           <p>
             {isES
-              ? "Cuando Mercado Pago confirme el pago, Pro se activará automáticamente."
-              : "When Mercado Pago confirms payment, Pro will activate automatically."}
+              ? "Cuando Mercado Pago confirme el pago, tu plan Build se activará automáticamente."
+              : "When Mercado Pago confirms payment, your Build plan will activate automatically."}
           </p>
           <ol className="list-decimal list-inside space-y-1 text-xs">
             <li className="font-mono">market whoami</li>

@@ -8,6 +8,10 @@ export type ObservatoryRank = { name: string; count: number };
 export type ObservatoryStats = {
   window_days: number;
   maa: number;
+  maa_proxy?: number;
+  maa_display?: number;
+  telemetry_maturity?: "early" | "established";
+  maa_public_threshold?: number;
   calls_success: number;
   countries_active: number;
   retailers_queried: number;
@@ -43,11 +47,18 @@ export function useObservatoryStats(days = 30) {
     };
   }, [days]);
 
-  const showMaa =
-    !!data?.telemetry_enabled && (data.maa ?? 0) >= MAA_PUBLIC_THRESHOLD;
+  const showMaa = !!data?.telemetry_enabled;
+
+  const maaIsProxy =
+    !!data && (data.maa ?? 0) < MAA_PUBLIC_THRESHOLD && (data.maa_proxy ?? 0) > 0;
+
+  const maaValue =
+    data && (data.maa ?? 0) >= MAA_PUBLIC_THRESHOLD
+      ? data.maa
+      : (data?.maa_display ?? data?.maa_proxy ?? data?.maa ?? 0);
 
   const showQueries =
     !!data?.telemetry_enabled && (data.calls_success ?? 0) > 0;
 
-  return { data, loading, showMaa, showQueries };
+  return { data, loading, showMaa, showQueries, maaValue, maaIsProxy };
 }

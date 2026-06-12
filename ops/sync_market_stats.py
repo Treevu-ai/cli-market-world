@@ -31,21 +31,49 @@ try:
 except Exception:
     pass
 
+def _fetch_pypi_from_prod_api() -> int:
+    """Public consolidated total from production /analytics/pypi (Pepy Pro on server)."""
+    import json
+    import urllib.request
+
+    base = (
+        os.getenv("DASHBOARD_DATA_URL")
+        or os.getenv("CLI_MARKET_API_URL")
+        or "https://cli-market-production.up.railway.app"
+    ).rstrip("/")
+    url = f"{base}/analytics/pypi"
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "CLI-Market-Sync/1 (+https://cli-market.dev)"},
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
+        if data.get("ok"):
+            return int(data.get("total_downloads") or 0)
+    except Exception as e:
+        print(f"Warning: prod /analytics/pypi fetch failed: {e}", file=sys.stderr)
+    return 0
+
+
 def _get_consolidated_pypi_downloads() -> int:
     """Sum PyPI downloads across legacy (cli-market) + core + world for consolidated badges/metrics."""
+    candidates: list[int] = []
     try:
-        from market_pepy import pepy_multi_summary, pepy_summary
-        multi = pepy_multi_summary()
-        cw = int((multi.get("combined") or {}).get("total_downloads") or 0)
-        legacy = pepy_summary(project="cli-market")
-        leg = int(legacy.get("total_downloads") or 0) if legacy.get("ok") else 0
-        total = cw + leg
+        from market_pepy import consolidated_pypi_analytics
+
+        data = consolidated_pypi_analytics()
+        total = int(data.get("total_downloads") or 0)
         if total > 0:
-            return total
+            candidates.append(total)
     except Exception as e:
         print(f"Warning: could not fetch consolidated PyPI downloads: {e}", file=sys.stderr)
-    # Fallback to a recent known value if fetch fails (update periodically)
-    return 17785
+    prod = _fetch_pypi_from_prod_api()
+    if prod > 0:
+        candidates.append(prod)
+    if candidates:
+        return max(candidates)
+    return 20196
 
 _CONSOLIDATED_PYPI_DOWNLOADS = _get_consolidated_pypi_downloads()
 
@@ -391,6 +419,7 @@ export const MARKET_STATS = {{
   mcpDefaultProfile: "default",
   mcpBundles: {json.dumps(bundles, ensure_ascii=False)},
   indicatorsCount: {s.INDICATORS_COUNT},
+  goldenLinkagePct: {s.GOLDEN_LINKAGE_PCT},
   enrichmentSourcesLabel: "{s.ENRICHMENT_SOURCES_LABEL}",
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},
@@ -640,9 +669,15 @@ def sync_server_json() -> None:
         data = json.loads(path.read_text(encoding="utf-8"))
         data["description"] = desc
         data["version"] = s.PACKAGE_VERSION
+        data["repository"] = {
+            "url": "https://github.com/Treevu-ai/cli-market-world",
+            "source": "github",
+        }
         if data.get("packages"):
             pkg = data["packages"][0]
             pkg["version"] = s.PACKAGE_VERSION
+            if pkg.get("registryType") == "pypi":
+                pkg["identifier"] = "cli-market-world"
             env_vars = list(pkg.get("environmentVariables") or [])
             by_name = {e["name"]: e for e in env_vars}
             by_name["MCP_TOOL_PROFILE"] = {
@@ -891,11 +926,23 @@ def sync_llms_txt() -> None:
             count=1,
         )
         text = re.sub(
-            r"- Pricing \(.*?\): Free \$0 \(.*?\), Pro \$39/mo \(.*?\), Enterprise custom.*",
-            "- Pricing (simplificado, foco 1 ICP: AI Agent Builders): Free $0 (1,000 req/día), "
-            "Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)",
+            r"- Pricing \(.*?\):.*",
+            "- Pricing (Build, foco ICP AI Agent Builders): Free $0 (1,000 req/día), "
+            "Starter $24/mo (5,000 req/día, CSV export), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), "
+            "Pro Founding $29/mo (100 plazas), Enterprise custom (SLAs, high limits)",
             text,
             count=1,
+        )
+        text = re.sub(
+            r"## Billing \(Build Pro\)\n\n- Web: POST /billing/pro-checkout.*",
+            "## Billing (Build)\n\n"
+            "- Free: `market register` · Starter/Pro: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)\n"
+            "- Plans: starter | pro | pro_founding | pro_annual · Pro Founding promo: founding100\n"
+            "- CLI: `market upgrade` → POST /billing/paypal\n"
+            "- After pay: `market whoami` · `market account`",
+            text,
+            count=1,
+            flags=re.DOTALL,
         )
         path.write_text(text, encoding="utf-8")
         print(f"Synced {path}")
@@ -906,6 +953,20 @@ def sync_llms_txt() -> None:
         text = re.sub(r"pip install cli-market(?:-world)+\b", s.PIP_INSTALL_CMD, text)
         text = re.sub(r"pip install cli-market\b(?!-)", s.PIP_INSTALL_CMD, text)
         text = _normalize_pypi_urls(text)
+        text = re.sub(
+            r"> Package: pip install cli-market-world \(v[\d.]+\)",
+            f"> Package: {s.PIP_INSTALL_CMD} (v{s.PACKAGE_VERSION})",
+            text,
+            count=1,
+        )
+        text = re.sub(
+            r"> Stats: .*",
+            f"> Stats: {s.RETAILERS_DEFINED} retailers · {s.RETAILERS_VERIFIED} verified · "
+            f"{s.PRICES_VERIFIED_LABEL} prices · {s.PLATFORMS} platforms "
+            f"(VTEX, Shopify, Magento, WooCommerce)",
+            text,
+            count=1,
+        )
         text = re.sub(
             r"## \d+ MCP tools\n\n.*?(?=\n## Countries:)",
             _llms_bundle_section() + "\n",

@@ -4,6 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 
+export interface InventoryDailyPoint {
+  day: string;
+  snapshots: number;
+}
+
 export interface LiveStats {
   indexed: number | null;
   snapshots24h: number | null;
@@ -18,18 +23,39 @@ export interface LiveStats {
   collectorIntervalH: number | null;
   pypiTotal: number | null;
   pypiDownloads30d: number | null;
+  goldenLinkagePct: number | null;
+  inventoryDaily: InventoryDailyPoint[] | null;
 }
 
 export function formatPypiDownloads(n: number | null): string | null {
-  if (n == null || n <= 0) return null;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
-  if (n >= 1_000) return `${Math.round(n / 100) / 10}K+`.replace(/\.0K/, "K");
+  if (n == null || !Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    return `${m >= 10 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, "")}M+`;
+  }
+  if (n >= 1_000) {
+    const k = n / 1_000;
+    return `${k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, "")}K+`;
+  }
   return n.toLocaleString();
 }
 
+export function parsePypiTotal(payload: {
+  ok?: boolean;
+  total_downloads?: number | string | null;
+} | null): number | null {
+  if (!payload?.ok) return null;
+  const n = Number(payload.total_downloads);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export function formatMarketingPrices(indexed: number | null): { chip: string; long: string } {
-  const fallback = parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 45_000;
-  const n = indexed ?? fallback;
+  const fallback =
+    parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/,/g, "").replace("+", ""), 10) || 53_000;
+  // Hero chip: never show depressed API glitches below marketing moat floor
+  const MOAT_FLOOR = 40_000;
+  let n = indexed ?? fallback;
+  if (n < MOAT_FLOOR) n = fallback;
   const k = Math.round(n / 1000);
   return {
     chip: `${k}K+`,
@@ -48,6 +74,8 @@ const REFRESH_MS = 5 * 60 * 1000;
 export function useLiveStats() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [liveLoaded, setLiveLoaded] = useState(false);
+
   const [stats, setStats] = useState<LiveStats>({
     indexed: null,
     snapshots24h: null,
@@ -60,23 +88,38 @@ export function useLiveStats() {
     moatStart: null,
     collectorStatus: null,
     collectorIntervalH: MARKET_STATS.pricesRefreshHours,
-    pypiTotal: MARKET_STATS.pypiDownloads || 17785,
+    pypiTotal: MARKET_STATS.pypiDownloads || 20196,
     pypiDownloads30d: null,
+    goldenLinkagePct:
+      MARKET_STATS.goldenLinkagePct > 0 ? MARKET_STATS.goldenLinkagePct : null,
+    inventoryDaily: null,
   });
 
   const fetchStats = () => {
     fetch(`${API_URL}/analytics/pypi`)
       .then((r) => (r.ok ? r.json() : null))
       .then((p) => {
-        if (!p?.ok) return;
-        // Force consolidated PyPI downloads (legacy + core + world) for the landing badge/chip.
-        // Ignore live total from API if it's still showing legacy-only ~14.3K.
-        const consolidated = MARKET_STATS.pypiDownloads || 17785;
+        const live = parsePypiTotal(p);
+        const fallback = MARKET_STATS.pypiDownloads > 0 ? MARKET_STATS.pypiDownloads : null;
+        const total = live ?? fallback;
+        if (total == null) return;
         setStats((prev) => ({
           ...prev,
-          pypiTotal: consolidated,
-          pypiDownloads30d: p.downloads_last_30d ?? null,
+          pypiTotal: total,
+          pypiDownloads30d:
+            p?.downloads_last_30d != null ? Number(p.downloads_last_30d) : null,
         }));
+      })
+      .catch(() => {});
+
+    fetch(`${API_URL}/health/stats`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (!s) return;
+        const raw = s.golden_linkage_pct ?? s.linkage_pct;
+        const pct = raw != null ? Number(raw) : NaN;
+        if (!Number.isFinite(pct) || pct <= 0) return;
+        setStats((prev) => ({ ...prev, goldenLinkagePct: pct }));
       })
       .catch(() => {});
 
@@ -98,12 +141,19 @@ export function useLiveStats() {
           moatAgeHours: k.moat_age_hours ?? null,
           totalSnapshotsAll: d.total_snapshots_all ?? k.total_indexed ?? null,
           avgDaily7d: d.avg_daily_snapshots_7d ?? null,
-          moatStart: d.generated_at ?? null,
+          moatStart: d.moat_start ?? null,
           collectorStatus: c.status ?? null,
           collectorIntervalH: MARKET_STATS.pricesRefreshHours, // canonical collector refresh (4h); ignore live c.interval_hours if stale (e.g. 8)
+          inventoryDaily: Array.isArray(d.inventory_daily)
+            ? d.inventory_daily.map((row: { day?: string; snapshots?: number }) => ({
+                day: String(row.day ?? ""),
+                snapshots: Number(row.snapshots ?? 0),
+              }))
+            : null,
         }));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLiveLoaded(true));
   };
 
   useEffect(() => {
@@ -116,12 +166,17 @@ export function useLiveStats() {
 
   const { chip: priceChip, long: priceLong } = formatMarketingPrices(stats.indexed);
   const pypiChip = formatPypiDownloads(stats.pypiTotal);
+  const goldenLinkagePct =
+    stats.goldenLinkagePct ??
+    (MARKET_STATS.goldenLinkagePct > 0 ? MARKET_STATS.goldenLinkagePct : null);
 
   return {
     stats,
+    liveLoaded,
     priceChip,
     priceLong,
     pypiChip,
+    goldenLinkagePct,
     retailersDefined: MARKET_STATS.retailersDefined,
     retailersVerified: MARKET_STATS.retailersVerified,
     retailersPhraseEn: MARKET_STATS.retailersPhraseEn,

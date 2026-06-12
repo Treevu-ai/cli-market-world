@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
+import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 
 type AccountData = {
   username: string;
@@ -259,14 +260,26 @@ export default function AccountDashboard() {
                   </pre>
                 )}
                 {data.upgrade.next_tier === "pro" ? (
-                  <div id="account-pro-upgrade">
+                  <div id="account-pro-upgrade" className="space-y-3">
                     <ProSubscribeButton />
+                  </div>
+                ) : data.upgrade.next_tier === "starter" ? (
+                  <div id="account-starter-upgrade" className="space-y-3">
+                    <BillingCheckoutTrigger kind={{ type: "build-starter" }} />
                   </div>
                 ) : data.upgrade.url ? (
                   <a href={data.upgrade.url} className="btn-mint inline-flex">
                     {data.upgrade.cta || (isES ? "Ver planes →" : "View plans →")}
                   </a>
                 ) : null}
+                <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
+                  <a href="/#pricing" className="text-xs text-[var(--cm-mint)] hover:underline">
+                    {isES ? "Comparar planes Build →" : "Compare Build plans →"}
+                  </a>
+                  <a href="/docs#billing" className="text-xs text-[var(--cm-mint)] hover:underline">
+                    {isES ? "Facturación Sinapsis →" : "Sinapsis billing →"}
+                  </a>
+                </div>
               </div>
             )}
           </div>

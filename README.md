@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-17k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-20k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -26,8 +26,8 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 34 indicadores**
-- 💰 **Más de 52,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 44 indicadores**
+- 💰 **Más de 54,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -37,7 +37,7 @@ Los agentes de IA todavía no pueden comprar en el mundo real. Cada retailer exi
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas
 - 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
-- 🛍️ **Compra** — checkout con PayPal o QR (Yape / Plin)
+- 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
@@ -60,11 +60,13 @@ market intel indicators --country PE
 market intel enrichment -c PE
 ```
 
+**¿Qué hace `market checkout`?** Crea una orden en CLI Market y abre el pago (Yape/Plin manual, PayPal/MP vía gateway). **No** completa compras en Wong, Rappi ni Mercado Libre. Matriz completa: `GET /v1/capabilities`.
+
 #### 💵 Planes (simplificado — foco en 1 ICP principal: AI Agent Builders)
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Precio** | $0 | $39/mes | A medida |
+| **Precio** | $0 | Starter $24/mes · Pro $39/mes · Founding $29 · Anual $390 | A medida |
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -98,8 +100,8 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema.
 
-- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 34 indicators**
-- 💰 **52,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 44 indicators**
+- 💰 **54,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
@@ -109,7 +111,7 @@ AI agents still can't shop in the real world. Every retailer means separate auth
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours
 - 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
-- 🛍️ **Buy** — checkout with PayPal or QR (Yape / Plin)
+- 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
@@ -132,11 +134,13 @@ market intel indicators --country PE
 market intel enrichment -c PE
 ```
 
+**What does `market checkout` do?** Creates a CLI Market order and opens payment (manual Yape/Plin, PayPal/MP via gateway). It does **not** complete purchases on Wong, Rappi, or Mercado Libre. Full matrix: `GET /v1/capabilities`.
+
 #### 💵 Pricing (simplified — focus on 1 primary ICP: AI Agent Builders)
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Price** | $0 | $39/mo | Custom |
+| **Price** | $0 | Starter $24/mo · Pro $39/mo · Founding $29 · Annual $390 | Custom |
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
@@ -164,7 +168,7 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 
 - **[Docs — quick start & MCP](https://cli-market.dev/docs)** — install, auth, compare, basket, intel, MCP setup
 - **[Use cases & pricing](https://cli-market.dev/#pricing)** — AI agent builders, procurement, intelligence pilots
-- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics (when gate open)
+- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics; **MAA** (Monthly Active Agents) is the north star
 
 ---
 
@@ -210,7 +214,7 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 22 MCP tools (default profile) · 34 indicators
+## 🔧 22 MCP tools (default profile) · 44 indicators
 
 `market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 

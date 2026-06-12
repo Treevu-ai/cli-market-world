@@ -1,29 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroDemo from "@/components/HeroDemo";
+import HeroPlayground from "@/components/HeroPlayground";
 import HeroMetrics from "@/components/HeroMetrics";
+import HeroPathCard from "@/components/HeroPathCard";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { PRICING_LISTED_HASH, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { RETAILERS_PAGE, PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { pypiChip } = useLiveStats();
+  const [pathsOpen, setPathsOpen] = useState(false);
 
   return (
     <section
       id="hero"
-      className="brand-mode-terminal hero-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[92vh] flex flex-col overflow-hidden"
+      className="brand-mode-terminal hero-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden"
     >
       <div className="hero-terminal-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="hero-terminal-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
 
-      <div className="flex-1 flex flex-col justify-center items-center landing-container pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -92,8 +95,8 @@ export default function Hero() {
           className="hero-terminal-subhead mt-3 max-w-[640px] text-sm"
         >
           {isES
-            ? `${MARKET_STATS.pricesVerifiedLabel} precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
-            : `${MARKET_STATS.pricesVerifiedLabel} prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
+            ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
+            : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
           <a href="#coverage" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
             {isES ? "Cobertura →" : "Coverage →"}
           </a>
@@ -103,70 +106,150 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-10 sm:mt-12 w-full"
+          className="mt-8 sm:mt-12 w-full"
         >
           <HeroMetrics />
         </motion.div>
 
-        <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60">
+        <a
+          href="#story"
+          className="mt-5 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--cm-data)] hover:brightness-110 transition-colors"
+        >
+          {isES ? "Ver historia góndola → agente ↓" : "See shelf → agent story ↓"}
+        </a>
+
+        <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] mx-auto">
-          <a
+        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full landing-content-rail items-stretch">
+          <HeroPathCard
             href={PRICING_BUILD_HASH}
+            variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
-            className="btn-action hero-terminal-cta-primary group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start shadow-[0_0_24px_rgba(200,255,0,0.15)]"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-mint)]/70">
-              {isES ? "Para developers" : "For developers"} · Build
-            </span>
-            <span className="text-base font-semibold">
-              <ScrambleText text={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"} />
-            </span>
-            <code className="font-mono text-xs text-[var(--cm-on-mint)]/85">{MARKET_STATS.pipInstallCmd}</code>
-            {pypiChip ? (
-              <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65">
-                {pypiChip} {isES ? "instalaciones PyPI" : "PyPI installs"}
-              </span>
-            ) : null}
-            <span className="text-[10px] text-[var(--cm-on-mint)]/60">
-              API · CLI · {MARKET_STATS.mcpTools} MCP tools
-            </span>
-          </a>
+            eyebrow={isES ? "Para developers · Build" : "For developers · Build"}
+            title={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
+            body={
+              <>
+                <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all leading-relaxed">
+                  {MARKET_STATS.pipInstallCmd}
+                </code>
+                {pypiChip ? (
+                  <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65 tabular-nums">
+                    <span className="font-semibold text-[var(--cm-on-mint)]/80">{pypiChip}</span>{" "}
+                    {isES ? "instalaciones PyPI" : "PyPI installs"}
+                  </span>
+                ) : (
+                  <span className="text-xs text-[var(--cm-on-mint)]/55">
+                    {isES ? "MIT · sin tarjeta" : "MIT · no card required"}
+                  </span>
+                )}
+              </>
+            }
+            foot={`API · CLI · ${MARKET_STATS.mcpTools} MCP tools`}
+          />
 
-          <a
+          <HeroPathCard
             href="#intelligence"
-            className="hero-terminal-card group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start ring-1 ring-[var(--cm-signal)]/25"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-signal)]/80">
-              {isES ? "Para equipos comerciales" : "For commercial teams"} · Intelligence
-            </span>
-            <span className="text-base font-semibold text-[var(--cm-ink)]">
-              {isES ? "Spreads e inflación desde góndola →" : "Shelf spreads & inflation →"}
-            </span>
-            <span className="text-xs text-[var(--cm-text-secondary)]">
-              {isES ? `${MARKET_STATS.indicatorsCount} indicadores · lista de espera` : `${MARKET_STATS.indicatorsCount} indicators · waitlist`}
-            </span>
-          </a>
+            variant="signal"
+            eyebrow={isES ? "Para equipos comerciales · Intelligence" : "For commercial teams · Intelligence"}
+            title={isES ? "Spreads e inflación desde góndola →" : "Shelf spreads & inflation →"}
+            body={
+              <>
+                <span className="text-xs font-mono text-[var(--cm-signal)]/90 tabular-nums">
+                  {MARKET_STATS.indicatorsCount} {isES ? "indicadores" : "indicators"}
+                  {MARKET_STATS.goldenLinkagePct > 0
+                    ? ` · ${MARKET_STATS.goldenLinkagePct}% ${isES ? "linkage" : "linkage"}`
+                    : ""}
+                </span>
+                <span className="text-xs text-[var(--cm-text-secondary)]">
+                  {isES ? "Lista de espera · Price Pulse" : "Waitlist · Price Pulse"}
+                </span>
+              </>
+            }
+            foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}
+          />
 
-          <a
-            href={PRICING_LISTED_HASH}
-            className="hero-terminal-card group flex flex-col items-center gap-2 px-6 py-5 hover:scale-[1.02] transition-all duration-200 text-left sm:items-start"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-text-secondary)]">
-              {isES ? "Para retailers" : "For retailers"} · Listed
-            </span>
-            <span className="text-base font-semibold text-[var(--cm-ink)]">
-              {isES ? "Tu góndola, visible — gratis →" : "Your shelf, visible — free →"}
-            </span>
-            <span className="text-xs text-[var(--cm-text-secondary)]">
-              {isES ? "30 segundos · sin código" : "30 seconds · no code"}
-            </span>
-          </a>
+          <HeroPathCard
+            href={RETAILERS_PAGE}
+            variant="default"
+            eyebrow={isES ? "Para retailers · Partner" : "For retailers · Partner"}
+            title={isES ? "Tu góndola, visible — gratis →" : "Your shelf, visible — free →"}
+            body={
+              <>
+                <span className="text-xs font-mono text-[var(--cm-ink)]/90 tabular-nums">
+                  {MARKET_STATS.retailersVerified} {isES ? "retailers verificados" : "verified retailers"}
+                </span>
+                <span className="text-xs text-[var(--cm-text-secondary)]">
+                  {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+                </span>
+              </>
+            }
+            foot={isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn}
+          />
         </div>
 
-        <HeroDemo />
+        <div className="mt-4 w-full landing-content-rail sm:hidden grid gap-2">
+          <HeroPathCard
+            href={PRICING_BUILD_HASH}
+            variant="primary"
+            onClick={() => recordPipInstallIntent("landing_hero")}
+            eyebrow={isES ? "Para developers · Build" : "For developers · Build"}
+            title={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
+            body={
+              <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all">
+                {MARKET_STATS.pipInstallCmd}
+              </code>
+            }
+            foot={`API · CLI · ${MARKET_STATS.mcpTools} MCP tools`}
+          />
+          <button
+            type="button"
+            onClick={() => setPathsOpen((v) => !v)}
+            className="w-full text-xs font-mono text-[var(--cm-on-surface-variant)] py-2"
+            aria-expanded={pathsOpen}
+          >
+            {pathsOpen
+              ? isES
+                ? "Ocultar otros caminos ▲"
+                : "Hide other paths ▲"
+              : isES
+                ? "Intelligence · Retailers ▼"
+                : "Intelligence · Retailers ▼"}
+          </button>
+          {pathsOpen ? (
+            <div className="grid grid-cols-1 gap-2">
+              <HeroPathCard
+                href="#intelligence"
+                variant="signal"
+                eyebrow={isES ? "Para equipos comerciales · Intelligence" : "For commercial teams · Intelligence"}
+                title={isES ? "Spreads e inflación →" : "Spreads & inflation →"}
+                body={
+                  <span className="text-xs text-[var(--cm-text-secondary)]">
+                    {MARKET_STATS.indicatorsCount} {isES ? "indicadores · waitlist" : "indicators · waitlist"}
+                  </span>
+                }
+                foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}
+              />
+              <HeroPathCard
+                href={RETAILERS_PAGE}
+                variant="default"
+                eyebrow={isES ? "Para retailers · Partner" : "For retailers · Partner"}
+                title={isES ? "Tu góndola, visible →" : "Your shelf, visible →"}
+                body={
+                  <span className="text-xs text-[var(--cm-text-secondary)]">
+                    {isES ? "30 segundos · sin código" : "30 seconds · no code"}
+                  </span>
+                }
+                foot={isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        <div id="hero-playground" className="hidden md:block w-full scroll-mt-24">
+          <HeroPlayground />
+        </div>
       </div>
     </section>
   );

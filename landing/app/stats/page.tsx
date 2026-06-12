@@ -42,7 +42,7 @@ function RankList({
 export default function StatsPage() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { data, loading, showMaa, showQueries } = useObservatoryStats(30);
+  const { data, loading, showMaa, showQueries, maaValue, maaIsProxy } = useObservatoryStats(30);
 
   const catalogStats = [
     {
@@ -64,10 +64,16 @@ export default function StatsPage() {
   ];
 
   const agentStats = [
-    showMaa
+    showMaa && maaValue > 0
       ? {
-          n: data!.maa.toLocaleString(),
-          l: isES ? "Agentes activos (30 d)" : "Active agents (30d)",
+          n: maaValue.toLocaleString(),
+          l: maaIsProxy
+            ? isES
+              ? "Agentes activos (proxy, 30 d)"
+              : "Active agents (proxy, 30d)"
+            : isES
+              ? "Agentes activos (MAA, 30 d)"
+              : "Active agents (MAA, 30d)",
         }
       : null,
     showQueries
@@ -92,8 +98,8 @@ export default function StatsPage() {
         </h1>
         <p className="text-[var(--cm-on-surface-variant)] text-sm md:text-base mb-10 max-w-2xl">
           {isES
-            ? "Cifras del catálogo verificadas por el collector. Las métricas de agentes solo se publican cuando la telemetría está activa y superan el umbral de prueba social."
-            : "Catalog figures verified by the collector. Agent metrics are shown only when telemetry is active and above our public disclosure threshold."}
+            ? "Cifras del catálogo verificadas por el collector. MAA es la north star; antes del umbral 10 mostramos un proxy (API keys activas 30d)."
+            : "Catalog figures verified by the collector. MAA is our north star; below the threshold of 10 we show a proxy (active API keys, 30d)."}
         </p>
 
         <section className="mb-12" aria-labelledby="catalog-heading">
@@ -155,8 +161,8 @@ export default function StatsPage() {
         ) : (
           <p className="text-sm text-[var(--cm-on-surface-variant)]/80 border border-[var(--cm-outline-variant)]/25 rounded-lg p-4">
             {isES
-              ? "Las métricas de agentes se publicarán cuando la telemetría MCP acumule volumen suficiente (umbral interno)."
-              : "Agent metrics will appear once MCP telemetry reaches our public disclosure threshold."}
+              ? "Telemetría MCP activa pero sin volumen aún — vuelve cuando haya consultas o agentes activos."
+              : "MCP telemetry is on but volume is still building — check back as queries and agents accumulate."}
           </p>
         )}
 

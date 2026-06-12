@@ -309,6 +309,23 @@ def report_status() -> None:
     print("\nWorkflow:  1) --prepare  2) run agents manually  3) --assemble")
 
 
+def submit_job(*, country: str = "PE", callback_url: str = "", local: bool = False) -> dict:
+    """Enqueue Price Pulse via POST /v1/intel/price-pulse (Pro tier)."""
+    base = os.getenv("MARKET_API_URL", "").rstrip("/") or (
+        "http://127.0.0.1:8765" if local else "https://cli-market-production.up.railway.app"
+    )
+    token = os.getenv("MARKET_API_TOKEN") or os.getenv("CLI_MARKET_TOKEN", "")
+    if not token:
+        raise RuntimeError("Set MARKET_API_TOKEN or CLI_MARKET_TOKEN for --submit")
+    url = f"{base}/v1/intel/price-pulse"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    body = {"country": country.upper()[:2], "callback_url": callback_url}
+    r = httpx.post(url, json=body, headers=headers, timeout=30)
+    if r.status_code >= 400:
+        raise RuntimeError(f"submit failed {r.status_code}: {r.text[:300]}")
+    return r.json()
+
+
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Price Pulse Multi-Agent Coordinator")
@@ -316,11 +333,28 @@ def main() -> None:
     parser.add_argument("--assemble", action="store_true", help="Assemble outputs into final report")
     parser.add_argument("--run", action="store_true", help="Prepare + assemble")
     parser.add_argument("--report", action="store_true", help="Show file status")
+    parser.add_argument("--submit", action="store_true", help="Enqueue async job via API")
+    parser.add_argument("--country", default="PE", help="Country for --submit (ISO 2-letter)")
+    parser.add_argument("--callback-url", default="", help="Webhook URL when job completes")
     parser.add_argument("--local", action="store_true", help="Use localhost")
     args = parser.parse_args()
 
     if args.report:
         report_status()
+        return
+
+    if args.submit:
+        try:
+            result = submit_job(
+                country=args.country,
+                callback_url=args.callback_url,
+                local=args.local,
+            )
+        except RuntimeError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+        print(f"✅ Job queued: {result.get('job_id')} status={result.get('status')}")
+        print(f"   Poll: GET /v1/intel/price-pulse/{result.get('job_id')}")
         return
 
     if not any([args.prepare, args.assemble, args.run]):

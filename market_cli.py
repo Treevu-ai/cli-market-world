@@ -17,6 +17,7 @@ Uso:
 """
 
 import argparse
+import html
 import json
 import os
 import sys
@@ -40,7 +41,7 @@ from market_stats import (
     PRICES_REFRESH_HOURS, PACKAGE_VERSION,
 )
 
-console = Console()
+console = Console(legacy_windows=False)
 
 
 def _mcp_profile_counts() -> tuple[int, int]:
@@ -92,6 +93,7 @@ T = {
         "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
         "intel_scores": "Scores compuestos (fairness, stress, aggression)",
         "tutorial": "Tutorial interactivo de 3 ejercicios (buscar, comparar, exportar) en 60 segundos",
+        "demo": "Demo sin cuenta: token temporal + search/compare en <5 min",
         "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
     },
     "en": {
@@ -133,6 +135,8 @@ T = {
         "intel_indicators": "Moat indicator catalog",
         "intel_enrichment": "Enrichment signals (OFF, Wiki, weather, CPI)",
         "intel_scores": "Composite scores (fairness, stress, aggression)",
+        "tutorial": "Interactive 3-step tutorial (search, compare, export) in 60 seconds",
+        "demo": "No-account demo: temp token + search/compare in under 5 minutes",
     },
 }
 
@@ -155,6 +159,7 @@ def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
     p = parent.add_parser("inflation", help=helps["inflation"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7, help="Ventana de análisis en días (default 7)")
 
     p = parent.add_parser("indicators", help=helps["indicators"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
@@ -455,10 +460,12 @@ def cmd_search(args):
         console.print(welcome_banner())
         return
     params = {"query": args.query, "limit": args.limit, "page": args.page}
-    if args.store: params["store"] = args.store
+    if args.store:
+        params["store"] = args.store
     if args.country:
-        params["store"] = [k for k, v in STORES.items() if v["country"] == args.country][0] if [k for k, v in STORES.items() if v["country"] == args.country] else None
-    if args.line: params["line"] = args.line
+        params["country"] = args.country
+    if args.line:
+        params["line"] = args.line
     with console.status(f"[cyan]Buscando '{args.query}'..."):
         data = cli_api("POST", "/products/search", params)
     results = data.get("results", [])
@@ -509,8 +516,13 @@ def cmd_search(args):
     ])
 
 def cmd_compare(args):
+    params = {"query": args.query, "line": args.line, "limit": args.limit}
+    if args.store:
+        params["store"] = args.store
+    if args.country:
+        params["country"] = args.country
     with console.status(f"[cyan]Comparando '{args.query}'..."):
-        data = cli_api("POST", "/products/compare", {"query": args.query, "line": args.line, "limit": args.limit})
+        data = cli_api("POST", "/products/compare", params)
     comp = data.get("comparison", [])
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=[
@@ -665,6 +677,8 @@ def cmd_checkout(args):
     msg = data.get("message", "Orden creada — pago pendiente")
     console.print(f"[#00FF88]✓ {msg}[/]")
     console.print(f"[bold]Orden: {order_id}[/] — Total: {currency} {total:.2f} — Estado: {status}")
+    if data.get("confirmation_mode") == "manual":
+        console.print("[yellow]Confirmación manual: el pago se valida por webhook o confirmación ops.[/]")
     if data.get("qr_url"):
         console.print(f"[dim]QR: {data['qr_url']}[/]")
 
@@ -823,8 +837,12 @@ def cmd_basket(args):
 
 def cmd_inflation(args):
     params = []
-    if args.country: params.append(f"country={args.country}")
-    if args.line: params.append(f"line={args.line}")
+    if args.country:
+        params.append(f"country={args.country}")
+    if args.line:
+        params.append(f"line={args.line}")
+    days = getattr(args, "days", None) or 7
+    params.append(f"days={days}")
     qs = "&".join(params)
     with console.status("[cyan]Calculando inflación..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
@@ -847,13 +865,14 @@ def cmd_inflation(args):
         table.add_column("Línea" if not ui.is_en() else "Line", max_width=28)
         table.add_column("Antes" if not ui.is_en() else "Before", style="dim")
         table.add_column("Ahora" if not ui.is_en() else "Now", style="dim")
-        table.add_column("Δ %", justify="right")
+        table.add_column("Delta %", justify="right")
         for i in items[:15]:
             delta = float(i.get("delta_pct") or 0)
             cur = i.get("currency") or ""
             before = float(i.get("avg_before") or i.get("first_price") or 0)
             now = float(i.get("avg_now") or i.get("last_price") or 0)
-            label = (i.get("line") or i.get("line_key") or i.get("product") or "?")[:28]
+            raw_label = i.get("line") or i.get("line_key") or i.get("product") or "?"
+            label = html.unescape(str(raw_label))[:28]
             c = "#FF6B35" if delta > 0 else "#00FF88"
             table.add_row(
                 label,
@@ -1104,7 +1123,7 @@ def cmd_tools(args):
 
 def cmd_alerts(args):
     if args.action == "list":
-        data = cli_api("POST", "/v1/alerts", {"product": "", "action": "list"})
+        data = cli_api("GET", "/v1/alerts")
         alerts_list = data.get("alerts", [])
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(True, {"alerts": alerts_list}, next_commands=["market alerts", "market whoami"]), console)
@@ -1113,15 +1132,42 @@ def cmd_alerts(args):
             console.print("[yellow]No hay alertas configuradas.[/]")
             return
         for a in alerts_list:
-            console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}%")
+            product = a.get("product_query") or a.get("product") or "?"
+            condition = a.get("condition") or "?"
+            threshold = a.get("threshold_pct", "?")
+            console.print(f"  [{a.get('id', '?')}] {product} | {condition} | threshold: {threshold}%")
     else:
         tier = ui.fetch_tier()
         ui.tier_gate(console, "alerts_create", tier, json_args=args)
-        data = cli_api("POST", "/v1/alerts", {"product": args.product, "threshold_pct": args.threshold, "action": "create"})
+        if not args.product:
+            console.print("[red]Indica --product para crear una alerta.[/]")
+            return
+        email = getattr(args, "email", None) or ""
+        if not email:
+            try:
+                prefs = cli_api("GET", "/auth/subscription")
+                email = (prefs.get("email") or "").strip()
+            except Exception:
+                email = ""
+        if not email:
+            console.print("[red]Indica --email para recibir notificaciones de la alerta.[/]")
+            return
+        condition = getattr(args, "condition", None) or "price_drop"
+        data = cli_api(
+            "POST",
+            "/v1/alerts",
+            {
+                "condition": condition,
+                "product_query": args.product,
+                "threshold_pct": args.threshold,
+                "notify_email": email,
+            },
+        )
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(True, {"created": data}, next_commands=["market alerts --action list"]), console)
             return
-        console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
+        alert = data.get("alert", {})
+        console.print(f"[#3cffd0]✓ Alerta creada: {alert.get('id', '?')} — {args.product}[/]")
 
 def cmd_about(args):
     mcp_default, mcp_legacy = _mcp_profile_counts()
@@ -1275,6 +1321,44 @@ def _collect_doctor_checks() -> tuple[list[tuple[str, str, str]], bool]:
 
     checks.append(("País", ui.get_default_country(), "ok"))
     checks.append(("Countries", str(len(COUNTRIES)), "ok"))
+
+    try:
+        src = httpx.get(f"{API}/v1/sources/health", timeout=15)
+        if src.status_code == 200:
+            body = src.json()
+            if body.get("error"):
+                checks.append(("Sources health", body["error"], "warn"))
+            else:
+                sm = body.get("summary") or {}
+                checks.append((
+                    "Sources health",
+                    f"{sm.get('ok', 0)} ok · {sm.get('partial', 0)} partial · {sm.get('dead', 0)} dead",
+                    "ok" if int(sm.get("dead", 0) or 0) == 0 else "warn",
+                ))
+        else:
+            checks.append(("Sources health", f"HTTP {src.status_code}", "warn"))
+    except Exception as exc:
+        checks.append(("Sources health", str(exc)[:60], "warn"))
+
+    try:
+        stats = httpx.get(f"{API}/health/stats", timeout=15)
+        if stats.status_code == 200:
+            body = stats.json()
+            linkage = body.get("golden_linkage_pct", body.get("linkage_pct"))
+            if linkage is not None:
+                pct = float(linkage)
+                checks.append((
+                    "Golden linkage",
+                    f"{pct:.1f}%",
+                    "ok" if pct >= 50 else "warn",
+                ))
+            else:
+                checks.append(("Golden linkage", "no data", "warn"))
+        else:
+            checks.append(("Golden linkage", f"HTTP {stats.status_code}", "warn"))
+    except Exception as exc:
+        checks.append(("Golden linkage", str(exc)[:60], "warn"))
+
     mcp_bin = shutil.which("market-mcp")
     checks.append(("market-mcp", mcp_bin or "not in PATH", "ok" if mcp_bin else "warn"))
     checks.append(("MCP snippet", "cli-market.dev/tools", "ok"))
@@ -1466,9 +1550,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]ONBOARDING[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]you are here[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]account + first search + MCP[/]\n"
-            '  [cyan]2.[/] [cyan]market search "milk" --country PE[/]\n'
-            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
+            "  [cyan]1.[/] [cyan]market demo[/]         [dim]no account · search + compare[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]account + checkout + MCP[/]\n"
+            '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
             "  [dim]     market register[/]  [dim]optional if you only need sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
@@ -1479,9 +1564,10 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
         body = (
             "[bold #00FF88]INICIO RÁPIDO[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]estás aquí[/]\n"
-            "  [cyan]1.[/] [cyan]market init[/]         [dim]cuenta + primera búsqueda + MCP[/]\n"
-            '  [cyan]2.[/] [cyan]market search "leche" --country PE[/]\n'
-            "  [cyan]3.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
+            "  [cyan]1.[/] [cyan]market demo[/]         [dim]sin cuenta · buscar + comparar[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]cuenta + checkout + MCP[/]\n"
+            '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
+            "  [cyan]4.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
             "  [dim]     market register[/]  [dim]opcional si solo necesitas sk-...[/]\n\n"
             "[bold #00FF88]DOCS[/]\n"
             "  cli-market.dev/docs#quickstart\n"
@@ -1720,9 +1806,9 @@ def cmd_hello(args):
         hint = "run market account" if is_en else "ejecute market account"
     else:
         hint = (
-            "run market init to begin"
+            "run market demo to try live prices"
             if is_en
-            else "ejecute market init para comenzar"
+            else "ejecute market demo para probar precios reales"
         )
     console.print(
         f"[bold #00FF88]market>[/] [dim]{hint}[/][bold #00FF88]_[/]"
@@ -2094,10 +2180,102 @@ def _report_onboarding_event(event: str, *, meta: dict | None = None, dedupe: bo
         pass
 
 
+def _demo_api(method: str, path: str, token: str, json_data: dict | None = None) -> dict:
+    import httpx
+
+    headers: dict[str, str] = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    url = f"{API}{path}"
+    if method == "GET":
+        resp = httpx.get(url, headers=headers, timeout=30)
+    else:
+        resp = httpx.post(url, headers=headers, json=json_data or {}, timeout=30)
+    if resp.status_code >= 400:
+        detail = resp.json().get("detail", resp.text) if resp.headers.get("content-type", "").startswith("application/json") else resp.text
+        return {"error": detail, "status": resp.status_code}
+    return resp.json()
+
+
+def cmd_demo(args):
+    """Unified dev activation: demo token → search → compare (no account)."""
+    country = getattr(args, "country", "PE") or "PE"
+    is_en = ui.is_en()
+    console.print(Panel.fit(
+        "[bold]CLI Market Demo[/] — "
+        + ("no account, live prices in <5 min" if is_en else "sin cuenta, precios reales en <5 min"),
+        border_style="#00FF88",
+    ))
+    console.print("[dim]Fetching demo session...[/]" if is_en else "[dim]Obteniendo sesión demo...[/]")
+    session = _demo_api("POST", "/public/demo/session", "", {})
+    if session.get("error"):
+        console.print(f"[red]{session['error']}[/]")
+        sys.exit(1)
+    token = session.get("demo_token") or ""
+    if not token:
+        console.print("[red]Demo session failed[/]" if is_en else "[red]No se pudo crear la sesión demo[/]")
+        sys.exit(1)
+    expires = session.get("expires_at", "?")
+    remaining = session.get("requests_remaining", session.get("max_requests", 50))
+    console.print(
+        f"[green]✓[/] Demo token · expires {expires} · {remaining} requests left"
+        if is_en
+        else f"[green]✓[/] Token demo · expira {expires} · {remaining} requests"
+    )
+
+    query = "leche"
+    console.print(f'\n[cyan]1/2[/] market search "{query}" --country {country}')
+    search = _demo_api("POST", "/products/search", token, {"query": query, "limit": 5})
+    if search.get("error"):
+        console.print(f"[yellow]{search['error']}[/]")
+        if search.get("status") != 401:
+            console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
+    else:
+        total = search.get("total", len(search.get("results", [])))
+        console.print(f"[green]✓[/] {total} results" if is_en else f"[green]✓[/] {total} resultados")
+        if search.get("source_health", {}).get("summary"):
+            sh = search["source_health"]["summary"]
+            console.print(f"[dim]store health: ok={sh.get('ok', 0)} partial={sh.get('partial', 0)} dead={sh.get('dead', 0)}[/]")
+
+    console.print(f'\n[cyan]2/2[/] market compare "{query}" --country {country}')
+    compare = _demo_api("POST", "/products/compare", token, {"query": query, "limit": 5})
+    if compare.get("error"):
+        console.print(f"[yellow]{compare['error']}[/]")
+    else:
+        n = len(compare.get("comparison", []))
+        stores = compare.get("stores_compared", "?")
+        console.print(
+            f"[green]✓[/] {n} products across {stores} stores"
+            if is_en
+            else f"[green]✓[/] {n} productos en {stores} tiendas"
+        )
+
+    if ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, {
+            "command": "demo",
+            "session": session,
+            "search": search,
+            "compare": compare,
+            "next_commands": ["market init", "market register", "market mcp-setup --ide cursor"],
+        }), console)
+        return
+
+    console.print()
+    console.print(
+        "[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP"
+        if is_en
+        else "[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP"
+    )
+    console.print("[dim]Demo tokens cannot checkout. Register when you need cart/payments.[/]" if is_en else "[dim]Los tokens demo no pueden hacer checkout. Registrate para carrito y pagos.[/]")
+    _report_onboarding_event("use_case_demo", meta={"flow": "market_demo", "country": country, "agent_source": "demo"})
+
+
 def cmd_tutorial(args):
     """Interactive 3-step tutorial (P0 from product handoff)."""
     country = getattr(args, "country", "PE") or "PE"
     demo = getattr(args, "demo", False)
+    if demo:
+        console.print("[dim]Tip: `market demo` is the preferred no-account path. tutorial --demo uses offline fallbacks.[/]")
     console.print(Panel.fit(
         "[bold]CLI Market Tutorial — 3 ejercicios en 60 segundos[/]",
         border_style="#00FF88",
@@ -2201,17 +2379,24 @@ def cmd_mcp_setup(args):
 
 
 def cmd_upgrade(args):
-    """Upgrade Pro ($39) — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
+    """Upgrade Starter/Pro — PayPal, Mercado Pago, or Yape/Plin via MP checkout."""
     get_token_with_prompt()
     es = get_lang() == "es"
-    plan = (getattr(args, "plan", None) or "pro").strip().lower()
-    if plan != "pro":
+    plan = (getattr(args, "plan", None) or "pro").strip().lower().replace("-", "_")
+    if plan in ("founding",):
+        plan = "pro_founding"
+    if plan in ("annual",):
+        plan = "pro_annual"
+    if plan not in ("starter", "pro", "pro_founding", "pro_annual"):
         plan = "pro"
     payment = (getattr(args, "payment", None) or "").strip().lower()
     if not payment:
         payment = "mercadopago" if es else "paypal"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
     manual_wallet = bool(getattr(args, "manual_transfer", False))
+
+    from market_billing import price_label_for_plan
+    plan_label = price_label_for_plan(plan)
 
     if manual:
         email = (args.email or "").strip()
@@ -2283,9 +2468,12 @@ def cmd_upgrade(args):
         return
 
     endpoint = "/billing/paypal"
-    label = "Pro — $39/mo"
+    payload: dict = {"plan": plan}
+    if plan == "pro_founding":
+        payload["promo_code"] = (getattr(args, "promo_code", None) or "founding100").strip()
+    label = f"CLI Market {plan.replace('_', ' ').title()} — {plan_label}"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
-        data = cli_api("POST", endpoint, {})
+        data = cli_api("POST", endpoint, payload)
     url = data.get("approve_url", "")
     if getattr(args, "json", False):
         ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
@@ -2379,6 +2567,7 @@ def main():
     # compare
     p = sub.add_parser("compare", help=t("compare"))
     p.add_argument("query", nargs="?", default="")
+    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
@@ -2492,11 +2681,20 @@ def main():
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
+    p.add_argument(
+        "--condition",
+        choices=["price_jump", "price_drop", "price_min_30d", "dispersion_anomaly"],
+        default="price_drop",
+    )
+    p.add_argument("--email", help="Email para notificaciones (requerido en create si no hay en cuenta)")
 
     # P0 onboarding features (from handoff)
     p = sub.add_parser("tutorial", help=t("tutorial"))
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
     p.add_argument("--demo", action="store_true", help="Run with demo data (no live collector)")
+
+    p = sub.add_parser("demo", help=t("demo"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
 
     p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
     p.add_argument(
@@ -2522,10 +2720,11 @@ def main():
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
         "--plan",
-        choices=["pro"],
+        choices=["starter", "pro", "pro_founding", "pro_annual", "founding", "annual"],
         default=None,
-        help="Build Pro ($39/mo) via PayPal subscription",
+        help="Build tier: starter ($24), pro ($39), pro_founding ($29), pro_annual ($390)",
     )
+    p.add_argument("--promo-code", dest="promo_code", help="Founding promo code (default founding100)")
     p.add_argument(
         "--payment",
         choices=["paypal", "mercadopago", "yape", "plin"],
@@ -2565,7 +2764,7 @@ def main():
         "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
-        "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
+        "demo": cmd_demo, "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
     }
     cmd = args.command
     if cmd == "intel":

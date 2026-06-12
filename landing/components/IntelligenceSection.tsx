@@ -6,17 +6,17 @@ import { API_URL } from "@/lib/api";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const BENEFITS_ES = [
-  { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} precios de góndola actualizados cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
-  { icon: "📐", text: "Precios normalizados por kg/L para comparar categorías entre cadenas y países" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} indicadores intel: spread entre cadenas, inflación real, tendencias (CLI: market intel)` },
-  { icon: "🌎", text: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países — sin scraping, APIs públicas de catálogo` },
+  { icon: "▸", text: `Precios de góndola cada ${MARKET_STATS.pricesRefreshHours}h — no estimaciones con 30 días de retraso` },
+  { icon: "●", text: "Precios normalizados por kg/L para comparar categorías entre cadenas y países" },
+  { icon: "▲", text: `${MARKET_STATS.indicatorsCount} indicadores intel: spread entre cadenas, inflación real, tendencias (CLI: market intel)` },
+  { icon: "▸", text: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países — sin scraping, APIs públicas de catálogo` },
 ];
 
 const BENEFITS_EN = [
-  { icon: "⚡", text: `${MARKET_STATS.pricesVerifiedLabel} shelf prices refreshed every ${MARKET_STATS.pricesRefreshHours}h — not 30-day-lagged estimates` },
-  { icon: "📐", text: "Prices normalized per kg/L to compare categories across chains and countries" },
-  { icon: "📊", text: `${MARKET_STATS.indicatorsCount} intel indicators: chain spread, real inflation, historical trends (CLI: market intel)` },
-  { icon: "🌎", text: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} countries — no scraping, public catalog APIs` },
+  { icon: "▸", text: `Shelf prices every ${MARKET_STATS.pricesRefreshHours}h — not 30-day-lagged estimates` },
+  { icon: "●", text: "Prices normalized per kg/L to compare categories across chains and countries" },
+  { icon: "▲", text: `${MARKET_STATS.indicatorsCount} intel indicators: chain spread, real inflation, historical trends (CLI: market intel)` },
+  { icon: "▸", text: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} countries — no scraping, public catalog APIs` },
 ];
 
 export default function IntelligenceSection() {
@@ -77,11 +77,11 @@ export default function IntelligenceSection() {
   return (
     <section
       id="intelligence"
-      className="landing-section animate-fade-in scroll-mt-20"
+      className="brand-mode-terminal landing-section landing-section-glow animate-fade-in scroll-mt-20"
     >
       <div className="landing-container-wide">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 mb-3">
+        <div className="landing-section-header">
+          <div className="inline-flex items-center justify-center gap-2 mb-3">
             <p className="section-eyebrow text-[var(--cm-mint)]">Intelligence</p>
             <span className="text-xs font-semibold bg-[var(--cm-mint)]/15 text-[var(--cm-mint)] border border-[var(--cm-mint)]/30 px-2 py-0.5 rounded-full">
               {isES ? "Próximamente" : "Coming soon"}
@@ -92,14 +92,14 @@ export default function IntelligenceSection() {
               ? "Precios reales de góndola. No estimaciones de 30 días."
               : "Real shelf prices. Not 30-day estimates."}
           </h2>
-          <p className="section-intro max-w-xl">
+          <p className="section-intro">
             {isES
               ? "Para equipos de pricing, trade marketing y análisis en CPG, retail y fintech. Los catálogos son públicos; el valor está en agregar, normalizar y mantener la serie lista para análisis."
               : "For pricing, trade marketing, and analytics teams in CPG, retail, and fintech. Catalogs are public; the value is aggregating, normalizing, and keeping the series analysis-ready."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+        <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           <div className="space-y-5">
             <div className="code-block-cyber px-4 py-3 text-left font-mono text-xs text-[var(--cm-on-surface-variant)]">
               <p className="text-[10px] uppercase tracking-wider text-[var(--cm-mint)]/70 mb-2">
@@ -116,32 +116,54 @@ export default function IntelligenceSection() {
               </p>
             </div>
             {benefits.map((b) => (
-              <div key={b.icon} className="flex items-start gap-3">
-                <span className="text-xl shrink-0 mt-0.5">{b.icon}</span>
+              <div key={b.text} className="flex items-start gap-3">
+                <span className="text-sm shrink-0 mt-0.5 font-mono text-[var(--cm-data)]">{b.icon}</span>
                 <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                   {b.text}
                 </p>
               </div>
             ))}
 
+            <div className="rounded-xl border border-[var(--cm-mint)]/35 bg-[var(--cm-mint)]/5 p-5 space-y-3">
+              <p className="text-xs font-semibold text-[var(--cm-mint)] uppercase tracking-wider">
+                {isES ? "Hoy en Build" : "Available in Build today"}
+              </p>
+              <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
+                {isES
+                  ? "Intel MCP y export ya están en planes Build: Starter ($24/mes) para export CSV/JSON; Pro ($39/mes) para checkout retail, alertas y el bundle intel completo."
+                  : "Intel MCP and export are already on Build plans: Starter ($24/mo) for CSV/JSON export; Pro ($39/mo) for retail checkout, alerts, and the full intel bundle."}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a href="/#pricing" className="btn-mint text-xs px-4 py-2">
+                  {isES ? "Ver Build →" : "See Build →"}
+                </a>
+                <a
+                  href="/docs#intel"
+                  className="text-xs font-mono text-[var(--cm-mint)] hover:underline self-center"
+                >
+                  {isES ? "Docs market intel →" : "market intel docs →"}
+                </a>
+              </div>
+            </div>
+
             <div className="mt-8 rounded-xl border border-[var(--cm-outline-variant)]/30 p-5 space-y-3">
               <p className="text-xs font-semibold text-[var(--cm-on-surface-variant)]/60 uppercase tracking-wider mb-3">
                 {isES ? "vs. el status quo" : "vs. the status quo"}
               </p>
               {(isES ? [
-                ["❌", "IPC oficial — 30 días de retraso"],
-                ["❌", "Encuestas de campo — costosas y puntuales"],
-                ["❌", "Scraping propio — frágil, legal gray zone"],
-                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} precios, APIs públicas`],
+                ["×", "IPC oficial — 30 días de retraso"],
+                ["×", "Encuestas de campo — costosas y puntuales"],
+                ["×", "Scraping propio — frágil, legal gray zone"],
+                ["✓", `CLI Market Intelligence — 4h refresh, APIs públicas de catálogo`],
               ] : [
-                ["❌", "Official CPI — 30-day lag"],
-                ["❌", "Field price surveys — expensive and one-off"],
-                ["❌", "In-house scraping — fragile, legal gray zone"],
-                ["✅", `CLI Market Intelligence — 4h, ${MARKET_STATS.pricesVerifiedLabel} prices, public APIs`],
+                ["×", "Official CPI — 30-day lag"],
+                ["×", "Field price surveys — expensive and one-off"],
+                ["×", "In-house scraping — fragile, legal gray zone"],
+                ["✓", `CLI Market Intelligence — 4h refresh, public catalog APIs`],
               ]).map(([icon, text]) => (
                 <div key={text} className="flex items-start gap-2">
-                  <span className="text-sm shrink-0">{icon}</span>
-                  <p className={`text-sm ${icon === "✅" ? "text-[var(--cm-mint)] font-medium" : "text-[var(--cm-on-surface-variant)]/60 line-through"}`}>
+                  <span className="text-sm shrink-0 font-mono">{icon}</span>
+                  <p className={`text-sm ${icon === "✓" ? "text-[var(--cm-mint)] font-medium" : "text-[var(--cm-on-surface-variant)]/60 line-through"}`}>
                     {text}
                   </p>
                 </div>

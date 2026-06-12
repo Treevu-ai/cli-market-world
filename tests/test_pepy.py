@@ -121,5 +121,5 @@ def test_analytics_pypi_public_consolidated():
     assert r.status_code == 200
     body = r.json()
     assert body.get("ok") is True
-    assert int(body.get("total_downloads") or 0) >= 17785
+    assert int(body.get("total_downloads") or 0) >= 20196
     assert "consolidated" in (body.get("project") or "").lower()

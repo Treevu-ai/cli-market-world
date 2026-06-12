@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { SECTION_NAV } from "@/lib/siteNav";
+import { SECTION_NAV, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { useActiveSection } from "@/hooks/useActiveSection";
 
 function Logo() {
   return (
@@ -21,6 +22,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { lang, setLang } = useLang();
+  const { active } = useActiveSection();
   const isES = lang === "es";
 
   useEffect(() => {
@@ -29,12 +31,17 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle("mobile-nav-open", open);
+    return () => document.body.classList.remove("mobile-nav-open");
+  }, [open]);
+
   const close = () => setOpen(false);
   const primaryCta = isES ? "Empezar con la API — gratis →" : "Start with the API — free →";
   const mobileCta = isES ? "API gratis →" : "Free API →";
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+    <nav className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300 ${
       scrolled ? "bg-[var(--cm-background)]/90 backdrop-blur-md border-b border-[var(--cm-outline-variant)]/30" : "bg-[var(--cm-background)] border-b border-transparent"
     }`} aria-label={isES ? "Navegación principal" : "Main navigation"}>
       <div className="landing-container-wide flex items-center justify-between h-14 md:h-16 gap-4">
@@ -45,8 +52,14 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-5">
           {SECTION_NAV.map(({ id, es, en }) => (
-            <a key={id} href={`/#${id}`}
-               className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors whitespace-nowrap">
+            <a
+              key={id}
+              href={`/#${id}`}
+              aria-current={active === id ? "true" : undefined}
+              className={`text-xs font-medium transition-colors whitespace-nowrap ${
+                active === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              }`}
+            >
               {isES ? es : en}
             </a>
           ))}
@@ -72,7 +85,7 @@ export default function Navbar() {
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href="/#api"
+            href={PRICING_BUILD_HASH}
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-2 hover:brightness-110 transition-all whitespace-nowrap"
           >
             {primaryCta}
@@ -89,8 +102,15 @@ export default function Navbar() {
       {open && (
         <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
           {SECTION_NAV.map(({ id, es, en }) => (
-            <a key={id} href={`/#${id}`} onClick={close}
-               className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
+            <a
+              key={id}
+              href={`/#${id}`}
+              onClick={close}
+              aria-current={active === id ? "true" : undefined}
+              className={`text-sm font-medium transition-colors ${
+                active === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              }`}
+            >
               {isES ? es : en}
             </a>
           ))}
@@ -102,7 +122,7 @@ export default function Navbar() {
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             PyPI
           </a>
-          <a href="/#api" onClick={close}
+          <a href={PRICING_BUILD_HASH} onClick={close}
              className="inline-flex items-center justify-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-1">
             {mobileCta}
           </a>

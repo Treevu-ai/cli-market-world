@@ -1,11 +1,16 @@
 # PyPI release — cli-market-world + cli-market-core
 
-## Packages (new PyPI account)
+> Modelo canónico (marca vs paquetes, CTA GTM, versiones visibles): **`docs/PYPI-PACKAGE-MODEL.md`**  
+> Post-release landing/GTM/assets: **`ops/RELEASE-DISPERSION.md`**
 
-| Package | Repo | Install |
-|---------|------|---------|
-| `cli-market-core` | `cli-market-core` | `pip install cli-market-core` |
-| `cli-market-world` | `cli-market-world` | `pip install cli-market-world` |
+## Packages
+
+| Package | Repo | Quién instala | Install |
+|---------|------|---------------|---------|
+| `cli-market-core` | `cli-market-core` | Backend Railway, SDK-only | `pip install cli-market-core` |
+| `cli-market-world` | `cli-market-world` | Developers, GTM CTA | `pip install cli-market-world` |
+
+`cli-market-world` depende de `cli-market-core` en PyPI. **CTA público siempre world.**
 
 Legacy `cli-market` on the old account (`Ricardo_Cuba`) is frozen at 1.9.5.
 
@@ -27,12 +32,13 @@ Or configure [Trusted Publishers](https://docs.pypi.org/trusted-publishers/) per
 1. **core** first: `gh workflow run publish-pypi.yml -R Treevu-ai/cli-market-core --ref main`
 2. Verify: `pip index versions cli-market-core`
 3. **world**: `gh workflow run publish-pypi.yml -R Treevu-ai/cli-market-world --ref main`
-4. Verify: `pip install cli-market-world==1.9.5 && market hello`
+4. Verify: `pip install cli-market-world==X.Y.Z && market hello`
+5. Dispersion: `python ops/sync_market_stats.py` (+ GIFs si aplica) — ver `RELEASE-DISPERSION.md`
 
 ## Version
 
-- See `pyproject.toml` in each repo (`1.9.5` target).
-- Tag optional: `git tag vX.Y.Z && git push origin vX.Y.Z` (workflow also supports `workflow_dispatch` on `main`).
+- Mismo número en core y world (`pyproject.toml` en cada repo).
+- Tag: `git tag vX.Y.Z && git push origin vX.Y.Z` (dispara `publish-pypi.yml` en push tag).
 
 ## Verify
 

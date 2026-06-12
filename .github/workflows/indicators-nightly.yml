@@ -1,0 +1,33 @@
+name: Indicators nightly
+
+on:
+  schedule:
+    # 05:00 UTC — after adoption-index (04:30), refreshes macro + Phase 2 on prod DB
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  indicators-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Refresh indicators via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/indicators-refresh.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/indicators-refresh" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/indicators-refresh.json
+          if [ "$CODE" != "200" ]; then
+            echo "indicators-refresh cron failed HTTP $CODE"
+            exit 1
+          fi

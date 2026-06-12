@@ -15,6 +15,7 @@ STALE_PYPI_RE = re.compile(r"https://pypi\.org/project/cli-market(?!-)")
 SKIP_DIRS = {
     ".git",
     ".github",
+    ".deps",
     "__pycache__",
     "node_modules",
     ".coverage",

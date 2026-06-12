@@ -116,5 +116,22 @@ def test_cmd_inflation_renders_api_shape(monkeypatch):
 
     import argparse
 
-    market_cli.cmd_inflation(argparse.Namespace(country="PE", line=None, json=False))
+    market_cli.cmd_inflation(argparse.Namespace(country="PE", line=None, days=7, json=False))
     assert printed
+
+
+def test_cmd_alerts_list_uses_get(monkeypatch):
+    calls: list[tuple] = []
+
+    def fake_api(method, path, body=None):
+        calls.append((method, path, body))
+        return {"alerts": [{"id": "ALT-1", "product_query": "leche", "condition": "price_drop", "threshold_pct": 5.0}]}
+
+    monkeypatch.setattr(market_cli, "cli_api", fake_api)
+    monkeypatch.setattr(market_cli.console, "print", lambda *a, **k: None)
+    monkeypatch.setattr(market_cli.ui, "is_json_mode", lambda: False)
+
+    import argparse
+
+    market_cli.cmd_alerts(argparse.Namespace(action="list", product=None, threshold=5.0, condition="price_drop", email=None))
+    assert calls == [("GET", "/v1/alerts", None)]

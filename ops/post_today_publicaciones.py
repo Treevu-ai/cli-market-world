@@ -14,11 +14,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from publish_pack import (  # noqa: E402
     CAMPAIGN_START,
-    build_slack_publish_messages,
+    build_gtm_channel_deliveries,
     channels_for_date,
     marketing_metrics_from_dashboard,
 )
-from slack_notify import deliver_to_publicaciones  # noqa: E402
+from slack_notify import deliver, deliver_to_publicaciones  # noqa: E402
 
 POST_UTC_HOUR = int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
 
@@ -53,18 +53,21 @@ def main() -> int:
     data = monday.fetch_data()
     metrics = marketing_metrics_from_dashboard(data or {})
 
-    msgs = build_slack_publish_messages(
-        ds=iso,
+    summary, deliveries = build_gtm_channel_deliveries(
         campaign_day=campaign_day,
         for_date=for_date,
         metrics=metrics,
         post_utc_hour=POST_UTC_HOUR,
     )
-    for i, msg in enumerate(msgs, 1):
-        prefix = f"📣 *Publicaciones ({i}/{len(msgs)})*\n\n" if len(msgs) > 1 else ""
-        deliver_to_publicaciones(prefix + msg)
+    deliver_to_publicaciones(summary)
+    for d in deliveries:
+        for msg in d.messages:
+            deliver(msg, channel=d.channel_id)
 
-    print(f"Done — {len(msgs)} mensaje(s) enviado(s) a #publicaciones.")
+    print(
+        f"Done — índice en #publicaciones + {len(deliveries)} canal"
+        f"{'es' if len(deliveries) != 1 else ''} GTM."
+    )
     return 0
 
 
