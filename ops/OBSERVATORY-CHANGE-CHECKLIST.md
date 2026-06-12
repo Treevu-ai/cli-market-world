@@ -111,7 +111,9 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 - [ ] Adoption Index nightly CI — verde 7 días consecutivos post-deploy (validar 2026-06-19)
 - [x] Streak monitor — `GET /admin/observatory/streak` + `ops/observatory_streak.py --remote`
 - [x] `GET /analytics/observatory?days=30` prod — 7 preguntas del PRD §1
+- [x] Content `make gate` — workflow `content-makefile-fix` verde run 27435504653 (2026-06-12)
 - [ ] Landing `/stats` — data-gate OK (`make gate` en content repo si cifra en creative)
+- [x] PayPal go-live probe — `webhook_configured: true` prod 2026-06-12 (`/paypal-status`)
 - [x] PAM — casos `public.observatory`, `admin.observatory_*` en `ops/pam_matrix.yaml`
 
 ---

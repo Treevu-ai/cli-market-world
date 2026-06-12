@@ -11,6 +11,7 @@ type FunnelData = {
   funnel_steps: FunnelStep[];
   conversion: Record<string, number | null>;
   ttfv_median_minutes: number | null;
+  ttc_median_hours: number | null;
 };
 
 const STEP_LABELS: Record<string, { es: string; en: string }> = {
@@ -40,6 +41,8 @@ export default function FunnelMetrics() {
   if (visible.length < 2) return null;
 
   const ttfv = data.ttfv_median_minutes;
+  const ttc = data.ttc_median_hours;
+  const conv = data.conversion || {};
 
   return (
     <details className="details-disclosure mt-8 max-w-2xl mx-auto text-left">
@@ -66,12 +69,31 @@ export default function FunnelMetrics() {
             </div>
           );
         })}
-        {ttfv != null && (
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/70 pt-2">
-            {isES
-              ? `TTFV mediana: ${ttfv} min (registro → primera búsqueda)`
-              : `Median TTFV: ${ttfv} min (register → first search)`}
-          </p>
+        {(ttfv != null || ttc != null || conv.search_to_pro != null) && (
+          <div className="text-xs text-[var(--cm-on-surface-variant)]/70 pt-2 space-y-1">
+            {ttfv != null && (
+              <p>
+                {isES
+                  ? `TTFV mediana: ${ttfv} min (registro → primera búsqueda)`
+                  : `Median TTFV: ${ttfv} min (register → first search)`}
+              </p>
+            )}
+            {ttc != null && (
+              <p>
+                {isES
+                  ? `TTC mediana: ${ttc} h (checkout Pro → activado)`
+                  : `Median TTC: ${ttc} h (Pro checkout → activated)`}
+              </p>
+            )}
+            {conv.search_to_pro != null && (
+              <p>
+                {isES ? "Conversión búsqueda → Pro:" : "Search → Pro conversion:"}{" "}
+                <span className="font-mono text-white/80">
+                  {(Number(conv.search_to_pro) * 100).toFixed(1)}%
+                </span>
+              </p>
+            )}
+          </div>
         )}
       </div>
     </details>
