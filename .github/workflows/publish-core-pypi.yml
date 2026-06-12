@@ -69,6 +69,8 @@ jobs:
         continue-on-error: true
         run: |
           set -eux
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_TOKEN="$GH_PAT"
           cd cli-market-core
           git config user.email "hello@cli-market.dev"
           git config user.name "CLI Market Release"
