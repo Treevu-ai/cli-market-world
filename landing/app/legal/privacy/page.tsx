@@ -6,8 +6,8 @@ export default function PrivacyPolicy() {
     <LegalPage
       titleES="Política de Privacidad"
       titleEN="Privacy Policy"
-      updatedES="6 de junio de 2026"
-      updatedEN="June 6, 2026"
+      updatedES="12 de junio de 2026"
+      updatedEN="June 12, 2026"
     >
       {(isES) =>
         isES ? (
@@ -32,6 +32,15 @@ export default function PrivacyPolicy() {
                 las consultas más allá de lo necesario para la limitación de tasa y facturación.
               </li>
               <li>
+                <strong>Telemetría de agentes (Observatory):</strong> cuando usas herramientas MCP
+                o la API instrumentada, registramos identificadores de agente (hash, clave API o
+                sesión), nombre de herramienta, éxito o fallo, país y retailer consultado. No
+                almacenamos el texto completo de tus consultas en esta capa. Las métricas se
+                publican solo de forma agregada (por ejemplo agentes activos mensuales y
+                retención) en <code>/analytics/observatory</code> y la página pública{" "}
+                <code>/stats</code>.
+              </li>
+              <li>
                 <strong>Datos de transacción:</strong> detalles del pedido y eventos de
                 confirmación de pago de PayPal. No almacenamos números de tarjeta
                 ni credenciales de pago completas.
@@ -48,6 +57,10 @@ export default function PrivacyPolicy() {
               <li>Para responder a tus consultas y solicitudes de soporte.</li>
               <li>Para enviar correos transaccionales (confirmaciones de pedido, alertas de cuenta). No enviamos correos de marketing sin consentimiento explícito.</li>
               <li>Para detectar y prevenir abusos, fraude y accesos no autorizados.</li>
+              <li>
+                Para medir adopción agregada de agentes MCP y mejorar herramientas (sin publicar
+                datos personales ni contenido de consultas).
+              </li>
               <li>Para cumplir obligaciones legales.</li>
             </ul>
             <p>No vendemos, alquilamos ni compartimos tus datos personales con terceros con fines de marketing.</p>
@@ -174,6 +187,14 @@ export default function PrivacyPolicy() {
                 necessary for rate limiting and billing.
               </li>
               <li>
+                <strong>Agent telemetry (Observatory):</strong> when you use MCP tools or
+                instrumented API routes, we record agent identifiers (hash, API key, or session),
+                tool name, success or failure, country, and retailer queried. We do not store
+                full query text in this layer. Metrics are published only in aggregate form (for
+                example monthly active agents and retention) at{" "}
+                <code>/analytics/observatory</code> and the public <code>/stats</code> page.
+              </li>
+              <li>
                 <strong>Transaction data:</strong> order details and payment confirmation events
                 (via PayPal). We do not store card numbers or full payment credentials.
               </li>
@@ -189,6 +210,10 @@ export default function PrivacyPolicy() {
               <li>To respond to your inquiries and support requests.</li>
               <li>To send transactional emails (order confirmations, account alerts). We do not send marketing emails without explicit opt-in.</li>
               <li>To detect and prevent abuse, fraud, and unauthorized access.</li>
+              <li>
+                To measure aggregate MCP agent adoption and improve tools (without publishing
+                personal data or query content).
+              </li>
               <li>To fulfill legal obligations.</li>
             </ul>
             <p>We do not sell, rent, or share your personal data with third parties for marketing purposes.</p>

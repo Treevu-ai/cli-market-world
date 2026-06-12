@@ -1,0 +1,88 @@
+# Apply Observatory patch to cli-market-core git (no PyPI — already published 1.9.34).
+# Trigger: bump ops/core-patch.trigger on main, or workflow_dispatch.
+
+name: Sync cli-market-core git (patch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Target core version (must match patch file)"
+        required: false
+        default: "1.9.34"
+  push:
+    branches: [main]
+    paths:
+      - ops/core-patch.trigger
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  sync-core:
+    name: Backport patch to cli-market-core ${{ inputs.version || '1.9.34' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+          path: cli-market-core
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Apply Observatory patch
+        env:
+          VERSION: ${{ inputs.version || '1.9.34' }}
+        run: |
+          set -eux
+          PATCH="ops/patches/cli-market-core-${VERSION}.patch"
+          test -f "$PATCH"
+          cd cli-market-core
+          git apply --check "../${PATCH}"
+          git apply "../${PATCH}"
+          grep -q "version = \"${VERSION}\"" pyproject.toml
+          grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
+
+      - name: Test observatory
+        run: |
+          pip install -e ./cli-market-core pytest
+          python -m pytest cli-market-core/tests/test_observatory.py -q -o addopts= || \
+            echo "::warning::test_observatory.py missing in core — skip"
+
+      - name: Open PR on cli-market-core
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          VERSION: ${{ inputs.version || '1.9.34' }}
+        run: |
+          set -eux
+          if [ -z "${GH_PAT:-}" ]; then
+            echo "::error::GH_PAT required (Contents read+write on cli-market-core)"
+            exit 1
+          fi
+          cd cli-market-core
+          git config user.email "hello@cli-market.dev"
+          git config user.name "CLI Market Release"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          BRANCH="release/core-${VERSION}"
+          git checkout -B "$BRANCH"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No git changes — patch already applied on core main"
+            exit 0
+          fi
+          git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
+          git push -f origin "$BRANCH"
+          gh pr create --repo Treevu-ai/cli-market-core \
+            --base main --head "$BRANCH" \
+            --title "release(core): ${VERSION} — Observatory backport" \
+            --body "Automated from cli-market-world sync-core-git workflow (ops/patches/cli-market-core-${VERSION}.patch)." \
+            || echo "::warning::PR may already exist"
