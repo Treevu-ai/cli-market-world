@@ -123,12 +123,21 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
             "activation": None,
             "request_id": None,
             "message": None,
+            "eta": None,
+            "verify_cli": "market whoami",
         }
 
     email = db_get_user_email(username) or ""
     pending = db_find_subscription_request(email=email) if email else None
     if not pending or pending.get("status") != "pending":
-        return {"state": "none", "activation": None, "request_id": None, "message": None}
+        return {
+            "state": "none",
+            "activation": None,
+            "request_id": None,
+            "message": None,
+            "eta": None,
+            "verify_cli": "market whoami",
+        }
 
     req_id = pending.get("id") or ""
     is_starter = req_id.startswith("STR-") or req_id.startswith("PCS-")
@@ -137,11 +146,22 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
     if auto:
         label = "Procure" if is_procure_req else ("Starter" if is_starter else "Pro")
         mp_pending = "mercadopago" in (pending.get("payment_link") or "").lower()
+        eta = (
+            "minutos tras confirmar Mercado Pago"
+            if es and mp_pending
+            else "segundos tras confirmar PayPal"
+            if es
+            else "minutes after Mercado Pago confirm"
+            if mp_pending
+            else "seconds after PayPal confirm"
+        )
         return {
             "state": "starter_pending_auto" if is_starter else "pro_pending_auto",
             "activation": "auto",
             "request_id": req_id,
             "approve_url": pending.get("payment_link"),
+            "eta": eta,
+            "verify_cli": "market whoami",
             "message": (
                 f"{label} pendiente: complete el pago en Mercado Pago — activación en minutos."
                 if es and mp_pending
@@ -158,6 +178,8 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
             "activation": "manual",
             "request_id": pending.get("id"),
             "approve_url": pending.get("payment_link"),
+            "eta": "≤24 h hábiles" if es else "within 24 business hours",
+            "verify_cli": "market whoami",
             "message": (
                 "Starter pendiente: complete el checkout en la landing (enlace por email)."
                 if es
@@ -169,6 +191,8 @@ def _billing_status(username: str, tier: str, *, lang: str = "es") -> dict[str, 
         "activation": "manual",
         "request_id": pending.get("id"),
         "approve_url": pending.get("payment_link"),
+        "eta": "≤24 h hábiles" if es else "within 24 business hours",
+        "verify_cli": "market whoami",
         "message": (
             "Pro pendiente: activación manual ≤24 h hábiles tras confirmar pago."
             if es

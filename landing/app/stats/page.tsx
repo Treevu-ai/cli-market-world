@@ -166,7 +166,16 @@ export default function StatsPage() {
           </p>
         )}
 
-        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-8">
+        <p className="text-sm text-[var(--cm-on-surface-variant)] mt-8">
+          <a
+            href="/indice-canasta-pe.md"
+            className="text-[var(--cm-mint)] hover:underline font-mono text-xs"
+          >
+            {isES ? "Índice Canasta Perú (markdown público) →" : "Peru basket index (public markdown) →"}
+          </a>
+        </p>
+
+        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mt-4">
           {isES
             ? `Ventana: 30 días · refresh catálogo cada ${MARKET_STATS.pricesRefreshHours}h · sin PII`
             : `Window: 30 days · catalog refresh every ${MARKET_STATS.pricesRefreshHours}h · no PII`}

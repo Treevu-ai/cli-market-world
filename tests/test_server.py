@@ -681,6 +681,8 @@ def test_auth_account_shows_pending_pro_billing(monkeypatch):
     assert billing.get("state") == "pro_pending_auto"
     assert billing.get("activation") == "auto"
     assert billing.get("request_id", "").startswith("PRO-")
+    assert billing.get("eta")
+    assert billing.get("verify_cli") == "market whoami"
 
 
 def test_contact_starter_request(monkeypatch):

@@ -38,6 +38,8 @@ type AccountData = {
     request_id?: string | null;
     approve_url?: string | null;
     message?: string | null;
+    eta?: string | null;
+    verify_cli?: string | null;
   };
 };
 
@@ -211,6 +213,17 @@ export default function AccountDashboard() {
                   {isES ? "Facturación" : "Billing"}
                 </h2>
                 <p className="text-sm text-[var(--cm-on-surface-variant)]">{data.billing.message}</p>
+                {data.billing.eta && (
+                  <p className="text-xs text-[var(--cm-on-surface-variant)]">
+                    {isES ? "ETA activación:" : "Activation ETA:"}{" "}
+                    <span className="font-mono text-yellow-300/90">{data.billing.eta}</span>
+                  </p>
+                )}
+                {data.billing.verify_cli && (
+                  <p className="text-xs font-mono text-[var(--cm-mint)]">
+                    {data.billing.verify_cli}
+                  </p>
+                )}
                 {data.billing.request_id && (
                   <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]/70">
                     ref: {data.billing.request_id}

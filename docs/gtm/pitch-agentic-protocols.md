@@ -124,7 +124,7 @@ Publicarlo es la primera señal para cualquier PSP, inversor o partner: el moat 
 | Urgencia | Acción |
 |----------|--------|
 | **Inmediato** | Usar este pitch en reunión Dante Soto (Culqi/BCP) — framing UCP/ACP middleware ✅ (PR #157) |
-| **Corto plazo** | Publicar Índice Canasta Perú como señal pública del data moat |
+| **Corto plazo** | Índice Canasta Perú publicado → `landing/public/indice-canasta-pe.md` (`ops/canasta_pe_index.py`) |
 | **Vigilancia** | Monitorear si Culqi, Niubiz o BCP mencionan "agent pay" en comunicaciones públicas |
 
 ---
