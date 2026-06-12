@@ -1018,7 +1018,40 @@ def test_mercadopago_webhook_activates_pro_request(monkeypatch):
     assert db_get_subscription("admin")["tier"] == "free"
     r = client.post("/checkout/mercadopago-webhook?data.id=pay-1")
     assert r.status_code == 200
-    assert any("pro_activated:admin" in a for a in r.json().get("actions", []))
+    actions = r.json().get("actions", [])
+    assert any("pro_activated:admin" in a for a in actions)
+    assert "activation_email:mp-webhook@test.com" in actions
+    assert db_get_subscription("admin")["tier"] == "pro"
+
+
+def test_mercadopago_webhook_activation_email_skipped_when_smtp_fails(monkeypatch):
+    from market_core import db_create_subscription_request, db_get_subscription
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    req = db_create_subscription_request("admin", "mp-skip@test.com", "mercadopago:test")
+    request_id = req["id"]
+
+    async def fake_get_payment(payment_id):
+        return {
+            "status": "approved",
+            "external_reference": f"CLI-Market-{request_id}",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.get_payment", fake_get_payment)
+    monkeypatch.setattr("market_connectors.mercadopago_payments.webhook_secret", lambda: "")
+    monkeypatch.setattr(
+        "market_connectors.mercadopago_payments.parse_webhook_payment_id",
+        lambda **kw: ("pay-2", "payment"),
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        lambda **kw: {"sent": False, "reason": "smtp_not_configured"},
+    )
+
+    r = client.post("/checkout/mercadopago-webhook?data.id=pay-2")
+    assert r.status_code == 200
+    actions = r.json().get("actions", [])
+    assert "activation_email_skipped:smtp_not_configured" in actions
     assert db_get_subscription("admin")["tier"] == "pro"
 
 
@@ -1085,6 +1118,70 @@ def test_admin_activate_pro_rejects_paypal_without_force(monkeypatch):
     assert r.status_code == 404
     assert "payment_not_manual" in str(r.json())
     assert db_get_subscription("paypal-user")["tier"] == "free"
+
+
+def test_admin_resend_pro_activation_email(monkeypatch):
+    import server_deps
+    from market_core import (
+        db_create_subscription_request,
+        db_find_subscription_request,
+        db_get_subscription,
+        db_mark_subscription_request_activated,
+        db_set_subscription,
+    )
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    req = db_create_subscription_request(
+        "resend-user",
+        "resend@test.com",
+        "https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=x",
+    )
+    request_id = req["id"]
+    db_set_subscription("resend-user", "pro")
+    db_mark_subscription_request_activated(request_id, "resend-user")
+    sent = []
+
+    def fake_activation_email(**kw):
+        sent.append(kw)
+        return {"sent": True, "to": kw["to_email"], "ops_notified": True}
+
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        fake_activation_email,
+    )
+
+    r = client.post(
+        "/admin/resend-pro-activation-email",
+        json={"request_id": request_id},
+        headers={"Authorization": "Bearer ops-secret-token"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["sent"] is True
+    assert body["username"] == "resend-user"
+    assert "activation_email:resend@test.com" in body["actions"]
+    assert "activation_draft_notify:resend@test.com" in body["actions"]
+    assert sent and sent[0]["username"] == "resend-user"
+    assert db_find_subscription_request(request_id=request_id)["status"] == "activated"
+
+
+def test_admin_resend_pro_activation_email_rejects_pending(monkeypatch):
+    import server_deps
+    from market_core import db_create_subscription_request
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    req = db_create_subscription_request(
+        "pending-user",
+        "pending@test.com",
+        "yape:999",
+    )
+    r = client.post(
+        "/admin/resend-pro-activation-email",
+        json={"request_id": req["id"]},
+        headers={"Authorization": "Bearer ops-secret-token"},
+    )
+    assert r.status_code == 409
+    assert "request_not_activated" in str(r.json())
 
 
 def test_admin_requires_token_when_configured(monkeypatch):

@@ -51,6 +51,7 @@ from market_core import (
     db_mark_subscription_request_emailed,
     db_mark_subscription_requests_activated_for_user,
     db_find_subscription_request,
+    db_get_subscription,
     db_recent_subscription_request,
     db_update_subscription_request_payment_link,
     db_save_billing_pending,
@@ -830,6 +831,12 @@ async def mercadopago_webhook(request: Request):
     pro_request_id = _parse_pro_request_ref(ext_ref)
     if status == "approved" and pro_request_id:
         actions.extend(_activate_pro_from_request(pro_request_id, source="mercadopago_webhook"))
+        logger.info(
+            "mercadopago_webhook pro_request_id=%s payment_id=%s actions=%s",
+            pro_request_id,
+            payment_id,
+            actions,
+        )
     elif status == "approved" and order_id:
         if db_update_order_status(order_id, "paid"):
             actions.append(f"paid:{order_id}")
@@ -979,6 +986,124 @@ def _send_pro_activated_email_with_credentials(**kwargs) -> dict:
 _MANUAL_PRO_ACTIVATION_SOURCES = frozenset({"slack_interaction", "admin_api", "ops_manual"})
 
 
+def _pro_payment_method_from_request(req: dict) -> str:
+    pay_url = (req.get("payment_link") or "").strip().lower()
+    if pay_url.startswith("plin:"):
+        return "plin"
+    if pay_url.startswith("mercadopago") or "mercadopago.com" in pay_url:
+        return "mercadopago"
+    if pay_url.startswith("paypal") or "paypal.com" in pay_url:
+        return "paypal"
+    if pay_url.startswith("yape:"):
+        return "yape"
+    return "yape"
+
+
+def _append_pro_activation_email_actions(
+    actions: list[str],
+    *,
+    username: str,
+    email: str,
+    request_id: str,
+    payment_method: str,
+    source: str,
+    display_name: str = "",
+) -> dict:
+    """Send Pro welcome email; append audit tokens and log SMTP outcome."""
+    if not email:
+        actions.append("activation_email_skipped:no_email")
+        logger.warning(
+            "Pro activation email skipped (no email) username=%s request_id=%s source=%s",
+            username,
+            request_id,
+            source,
+        )
+        return {"sent": False, "reason": "no_email"}
+
+    try:
+        mail = _send_pro_activated_email_with_credentials(
+            to_email=email,
+            username=username,
+            lang="es",
+            request_id=request_id,
+            payment_method=payment_method,
+            source=source,
+            display_name=display_name,
+        )
+        if mail.get("sent"):
+            actions.append(f"activation_email:{email}")
+            logger.info(
+                "Pro activation email sent to=%s username=%s request_id=%s source=%s",
+                email,
+                username,
+                request_id,
+                source,
+            )
+        else:
+            reason = mail.get("reason", "err")
+            actions.append(f"activation_email_skipped:{reason}")
+            logger.warning(
+                "Pro activation email skipped to=%s username=%s request_id=%s reason=%s source=%s",
+                email,
+                username,
+                request_id,
+                reason,
+                source,
+            )
+        if mail.get("ops_notified"):
+            actions.append(f"activation_draft_notify:{email}")
+        return mail
+    except Exception:
+        logger.exception(
+            "Pro activation email failed username=%s request_id=%s source=%s",
+            username,
+            request_id,
+            source,
+        )
+        actions.append("activation_email_failed")
+        return {"sent": False, "reason": "exception"}
+
+
+def resend_pro_activation_email(
+    request_id: str,
+    *,
+    source: str = "admin_resend",
+    email_override: str = "",
+) -> list[str]:
+    """Resend Pro welcome email for an already-activated billing request."""
+    req = db_find_subscription_request(request_id=request_id)
+    if not req:
+        return [f"request_not_found:{request_id}"]
+    if (req.get("status") or "").lower() != "activated":
+        return [f"request_not_activated:{request_id}"]
+
+    username = (req.get("username") or "").strip()
+    if not username:
+        return [f"request_no_user:{request_id}"]
+
+    sub = db_get_subscription(username) or {}
+    if (sub.get("tier") or "").lower() != "pro":
+        return [f"user_not_pro:{username}"]
+
+    email = (
+        (email_override or "").strip()
+        or (req.get("email") or "").strip()
+        or db_get_user_email(username)
+        or ""
+    )
+    actions: list[str] = [f"resend:{request_id}"]
+    _append_pro_activation_email_actions(
+        actions,
+        username=username,
+        email=email,
+        request_id=request_id,
+        payment_method=_pro_payment_method_from_request(req),
+        source=source,
+        display_name=(req.get("display_name") or "").strip(),
+    )
+    return actions
+
+
 def _activate_pro_from_request(request_id: str, *, source: str, force: bool = False) -> list[str]:
     """Mark subscription request paid and upgrade user to Pro."""
     req = db_find_subscription_request(request_id=request_id)
@@ -1012,33 +1137,17 @@ def _activate_pro_from_request(request_id: str, *, source: str, force: bool = Fa
     except Exception:
         pass
 
-    pay_url = (req.get("payment_link") or "").strip().lower()
-    method = "yape"
-    if pay_url.startswith("plin:"):
-        method = "plin"
-    elif pay_url.startswith("mercadopago"):
-        method = "mercadopago"
-    elif pay_url.startswith("paypal"):
-        method = "paypal"
-
-    try:
-        email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
-        if email:
-            mail = _send_pro_activated_email_with_credentials(
-                to_email=email,
-                username=username,
-                lang="es",
-                request_id=request_id,
-                payment_method=method,
-                source=source,
-                display_name=(req.get("display_name") or "").strip(),
-            )
-            if mail.get("sent"):
-                actions.append(f"activation_email:{email}")
-            if mail.get("ops_notified"):
-                actions.append(f"activation_draft_notify:{email}")
-    except Exception:
-        logger.exception("Pro activation email failed for %s", username)
+    method = _pro_payment_method_from_request(req)
+    email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
+    _append_pro_activation_email_actions(
+        actions,
+        username=username,
+        email=email,
+        request_id=request_id,
+        payment_method=method,
+        source=source,
+        display_name=(req.get("display_name") or "").strip(),
+    )
     _slack_notify_build_pro(
         username=username,
         email=(req.get("email") or "").strip() or db_get_user_email(username) or "",
