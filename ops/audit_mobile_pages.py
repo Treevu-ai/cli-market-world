@@ -211,7 +211,7 @@ def write_report(findings: list) -> int:
     (OUT_DIR / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
     lines = [
-        f"# Mobile audit — all pages",
+        "# Mobile audit — all pages",
         "",
         f"**Base:** {BASE_URL}",
         f"**Fecha:** {date.today().isoformat()}",

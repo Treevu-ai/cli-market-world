@@ -504,11 +504,11 @@ def _executive_story(metrics: dict[str, Any]) -> str:
         else f"⚠️ PAM con {pam['fail']} fallo(s) — revisar antes de demos."
     )
 
-    caveat_txt = (" " + " · ".join(caveats)) if caveats else ""
+    caveat_txt = (" · " + " · ".join(caveats)) if caveats else ""
     return (
         f"Hoy operamos *{m['total_indexed']:,} precios* de *{m['stores_indexed']} retailers*; "
         f"el collector está *{fresh}* y actualizó *{m['snapshots_24h']:,}* precios en 24 h. "
-        f"{linkage_clause} {_adoption_clause(gl, metrics.get('adoption_index'))} {quality}"
+        f"{linkage_clause} {_adoption_clause(gl, metrics.get('adoption_index'))} {quality}{caveat_txt}"
     )
 
 

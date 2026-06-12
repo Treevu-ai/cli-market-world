@@ -4,6 +4,16 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-12] — Force Railway redeploy (1.9.33 + core pin)
+
+### cli-market-world v1.9.33
+- **Changed:** `requirements-railway.txt` pin `cli-market-core>=1.9.33`
+- **Changed:** Dockerfile `CACHE_BUST` bump to force image rebuild on Railway
+- **Fixed:** `compute_daily_observatory_metrics` sqlite3.Row `.get` crash in nightly job
+- **Fixed:** CI lint (ruff) blockers on `main`
+
+---
+
 ## [2026-06-12] — Observatory P0 closure: mirror-first telemetry (Railway prod)
 
 ### cli-market-world v1.9.33
