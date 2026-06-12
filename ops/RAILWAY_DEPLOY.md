@@ -6,25 +6,33 @@
 |---------|--------|
 | `git push main` no mueve Railway | No había workflow de deploy; integración GitHub nativa desconectada |
 | GitHub Action `RAILWAY_TOKEN` vacío | Secret mal nombrado, en Variables en vez de Secrets, o repo sin acceso |
-| Project token no despliega | **Project tokens son read-only** — no pueden `serviceInstanceDeploy` |
+| Project token + GraphQL | **Project tokens no pueden** `serviceInstanceDeploy` — usar `railway up` (soportado en CI) |
 
 ## Setup correcto (una vez)
 
-### 1. Token de cuenta (NO project token)
+Elige **una** opción (A es más rápida):
 
-1. https://railway.com/account/tokens
-2. **Team → No team** (o tu team) → **Create token**
-3. Copia el token (suele empezar con formato distinto al UUID del project token)
+### Opción A — Project token (recomendado, 2 min)
 
-### 2. GitHub Actions secret
-
-https://github.com/Treevu-ai/cli-market-world/settings/secrets/actions
+1. Railway → tu proyecto → **Settings** → **Tokens** → **Create token**
+2. GitHub → https://github.com/Treevu-ai/cli-market-world/settings/secrets/actions
 
 | Name | Value |
 |------|--------|
-| `RAILWAY_API_TOKEN` | token del paso 1 |
+| `RAILWAY_TOKEN` | project token (UUID) del paso 1 |
 
-> Si ya creaste `RAILWAY_TOKEN` con project token, **reemplázalo** o añade `RAILWAY_API_TOKEN` con account token.
+El workflow sube el código del checkout con `railway up` — no requiere account token.
+
+### Opción B — Account token (GraphQL, latest commit de GitHub)
+
+1. https://railway.com/account/tokens → **Team → No team** → **Create token**
+2. GitHub secret:
+
+| Name | Value |
+|------|--------|
+| `RAILWAY_API_TOKEN` | account token del paso 1 |
+
+Puedes tener **ambos** secrets; account token se usa primero, project token como fallback.
 
 ### 3. (Opcional) Cursor Cloud Agent
 
