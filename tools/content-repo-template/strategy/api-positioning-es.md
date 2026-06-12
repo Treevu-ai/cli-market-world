@@ -24,7 +24,7 @@ El mercado está construyendo dos capas que definen el comercio de los próximos
 
 Con checkout resuelto, el cuello de botella se mueve al **descubrimiento y comparación** — exactamente donde vive CLI Market.
 
-**Validación:** el fracaso de OpenAI Instant Checkout (<30 comercios) confirma que la fricción de integración es el problema real. CLI Market es exactamente el anti-fricción.
+**Validación (intel de mercado):** OpenAI Instant Checkout muestra adopción limitada (decenas de comercios, no cientos) — la fricción de integración es el problema real. CLI Market es el anti-fricción. *[Fuente pendiente antes de post público]*
 
 ## Bloque de valor
 
@@ -36,7 +36,7 @@ Tu retailer peruano/LATAM disponible en cualquier agente que use UCP o ACP, sin 
 
 ```bash
 market search "leche" --country PE
-# → precios de Metro, Wong, Plaza Vea en <2s · schema único · UCP/ACP-ready
+# → precios de Metro, Wong, Plaza Vea en <2s · schema único · mapeable a UCP/ACP
 
 market basket "arroz:1 aceite:1 leche:1" --country AR
 # → compara el total de la canasta entre Carrefour, Jumbo y Vea
@@ -55,11 +55,11 @@ Nadie puede replicar esto en 6 meses.
 - Normalización por kg/L para comparaciones justas entre cadenas
 - Historial de hasta **12 meses** (Pro) / completo (Enterprise)
 - Filtro de outliers y descuentos sospechosos documentado en dashboard
-- **68 retailers · 8 países · schema único**
+- **38 retailers verificados activos · 8 países · schema único**
 
 ## Pitch ventas / inversión (una línea)
 
-Stripe convirtió los pagos en una API. CLI Market convierte el comercio LATAM en una — y es el único middleware preparado para UCP y ACP cuando el comercio agéntico llegue a la región.
+Stripe convirtió los pagos en una API. CLI Market convierte el comercio LATAM en una — middleware LATAM preparado para integración UCP y ACP cuando el comercio agéntico llegue a la región.
 
 ## Para conversaciones con PSPs (Culqi/BCP/Niubiz)
 

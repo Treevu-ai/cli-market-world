@@ -20,7 +20,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 ### Infraestructura de comercio para agentes de IA — el middleware LATAM entre UCP/ACP y los retailers que aún no están listos.
 
-> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una — y es el único middleware preparado para UCP y ACP cuando el comercio agéntico llegue a la región.**
+> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una — middleware LATAM preparado para integración UCP y ACP cuando el comercio agéntico llegue a la región.**
 
 Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Walmart) ya están estandarizando cómo los agentes descubren y evalúan productos. Falabella, Ripley, Wong, Metro no van a implementar estos protocolos solos. CLI Market es el puente.
 
@@ -39,7 +39,7 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 - 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
-- 🔗 **Protocol-ready** — schema JSON normalizado listo para UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
+- 🔗 **Protocol-ready** — schema JSON normalizado, diseñado para mapear a UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
@@ -95,7 +95,7 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 ### Commerce infrastructure for AI agents — the LATAM middleware between UCP/ACP protocols and retailers that aren't ready yet.
 
-> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one — and is the only middleware ready for UCP and ACP when agentic commerce reaches the region.**
+> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one — LATAM middleware built for UCP and ACP integration when agentic commerce reaches the region.**
 
 Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) are already standardizing how agents discover and evaluate products. Falabella, Ripley, Wong, Metro won't implement these protocols on their own. CLI Market is the bridge.
 
@@ -114,7 +114,7 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 - 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
-- 🔗 **Protocol-ready** — normalized JSON schema ready for UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
+- 🔗 **Protocol-ready** — normalized JSON schema designed to map to UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
 
 🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
