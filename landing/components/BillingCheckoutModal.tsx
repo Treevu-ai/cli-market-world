@@ -7,13 +7,18 @@ import { useLang } from "@/lib/LanguageContext";
 import { API_URL, WALLET_MANUAL_FALLBACK } from "@/lib/api";
 import { recordFunnelEvent } from "@/lib/funnel";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { paymentsChannelsShort } from "@/lib/billingCopy";
+import { paymentsChannelsForCheckout } from "@/lib/billingCopy";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 import PayPalHostedButton from "@/components/PayPalHostedButton";
 import { PROCURE_APP_URL, type ProcurePlanSlug } from "@/lib/procurePlans";
 import { PROCURE_PLANS } from "@/lib/procurePlans";
 import WalletManualTransfer from "@/components/WalletManualTransfer";
 import { checkoutRedirectFromResult } from "@/lib/safeCheckoutUrl";
+import {
+  defaultProPaymentMethod,
+  orderProPaymentOptions,
+  type ProCheckoutPaymentId,
+} from "@/lib/checkoutLocale";
 import { LANDING_MODAL_BACKDROP, LANDING_MODAL_OVERLAY, LANDING_MODAL_PANEL, LANDING_MODAL_PANEL_MD } from "@/lib/modalLayout";
 
 const CHECKOUT_HOST_SUFFIXES = [
@@ -40,7 +45,7 @@ function sanitizeCheckoutHref(raw: string | null | undefined): string | null {
 }
 
 /** Landing Pro checkout: PayPal (USD) or Soles via Mercado Pago (Yape · Plin · tarjeta). */
-type PaymentMethod = "paypal" | "soles";
+type PaymentMethod = ProCheckoutPaymentId;
 
 export type BillingCheckoutKind =
   | { type: "build-starter" }
@@ -200,12 +205,13 @@ export default function BillingCheckoutModal({
       setError("");
       setResult(null);
       setTrustedCheckoutHref(null);
-      setPaymentMethod("soles");
       setManualTransfer(false);
       setApiKey("");
       setDetectingUser(false);
       setCliWizardOpen(true);
+      return;
     }
+    setPaymentMethod(defaultProPaymentMethod());
   }, [open, kind]);
 
   if (!open || !mounted) return null;
@@ -473,6 +479,8 @@ export default function BillingCheckoutModal({
   };
 
   const selectedOption = PRO_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod);
+  const paymentOptions = orderProPaymentOptions(PRO_PAYMENT_OPTIONS);
+  const recommendedMethod = defaultProPaymentMethod();
 
   return createPortal(
     <div
@@ -526,7 +534,7 @@ export default function BillingCheckoutModal({
                   {isES ? "Método de pago" : "Payment method"}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {PRO_PAYMENT_OPTIONS.map((m) => (
+                  {paymentOptions.map((m) => (
                     <button
                       key={m.id}
                       type="button"
@@ -537,7 +545,14 @@ export default function BillingCheckoutModal({
                           : "border-[var(--cm-outline-variant)]/40 text-[var(--cm-on-surface-variant)]"
                       }`}
                     >
-                      <span className="block">{isES ? m.label_es : m.label_en}</span>
+                      <span className="block">
+                        {isES ? m.label_es : m.label_en}
+                        {m.id === recommendedMethod ? (
+                          <span className="ml-1.5 text-[10px] font-mono text-[var(--cm-mint)]">
+                            {isES ? "recomendado" : "recommended"}
+                          </span>
+                        ) : null}
+                      </span>
                       <span className="block text-[10px] font-mono opacity-70 mt-0.5">
                         {isES ? m.hint_es : m.hint_en}
                       </span>
@@ -613,8 +628,8 @@ export default function BillingCheckoutModal({
               </div>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                 {isES
-                  ? `Facturación ${paymentsChannelsShort(true)} · comprobante en la moneda del pago.`
-                  : `Billing ${paymentsChannelsShort(false)} · receipt in payment currency.`}
+                  ? `Facturación ${paymentsChannelsForCheckout(true)} · comprobante en la moneda del pago.`
+                  : `Billing ${paymentsChannelsForCheckout(false)} · receipt in payment currency.`}
               </p>
               <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
@@ -706,7 +721,7 @@ export default function BillingCheckoutModal({
                     {isES ? "Método de pago" : "Payment method"}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {PRO_PAYMENT_OPTIONS.map((m) => (
+                    {paymentOptions.map((m) => (
                       <button
                         key={m.id}
                         type="button"
@@ -717,7 +732,14 @@ export default function BillingCheckoutModal({
                             : "border-[var(--cm-outline-variant)]/40 text-[var(--cm-on-surface-variant)]"
                         }`}
                       >
-                        <span className="block">{isES ? m.label_es : m.label_en}</span>
+                        <span className="block">
+                          {isES ? m.label_es : m.label_en}
+                          {m.id === recommendedMethod ? (
+                            <span className="ml-1.5 text-[10px] font-mono text-[var(--cm-mint)]">
+                              {isES ? "recomendado" : "recommended"}
+                            </span>
+                          ) : null}
+                        </span>
                         <span className="block text-[10px] font-mono opacity-70 mt-0.5">
                           {isES ? m.hint_es : m.hint_en}
                         </span>
@@ -741,8 +763,8 @@ export default function BillingCheckoutModal({
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
                 {isProStandard
                   ? isES
-                    ? `Facturación ${paymentsChannelsShort(true)} · comprobante en la moneda del pago.`
-                    : `Billing ${paymentsChannelsShort(false)} · receipt in payment currency.`
+                    ? `Facturación ${paymentsChannelsForCheckout(true)} · comprobante en la moneda del pago.`
+                    : `Billing ${paymentsChannelsForCheckout(false)} · receipt in payment currency.`
                   : isES
                     ? "Suscripción mensual vía PayPal (USD)."
                     : "Monthly PayPal subscription (USD)."}

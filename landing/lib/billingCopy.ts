@@ -1,5 +1,7 @@
 /** Sinapsis Innovadora billing — USD (PayPal) vs soles (Yape · Plin · Mercado Pago). */
 
+import { isPeruCheckoutAudience } from "@/lib/checkoutLocale";
+
 export const SINAPSIS_BILLING = {
   entity: "Sinapsis Innovadora S.A.C.",
   taxId: "20613045563",
@@ -10,6 +12,18 @@ export function paymentsChannelsShort(isES: boolean): string {
   return isES
     ? "PayPal (USD) · Yape · Plin · Mercado Pago (soles)"
     : "PayPal (USD) · Yape · Plin · Mercado Pago (soles)";
+}
+
+/** Checkout modal — Peru audience lists soles first; international lists PayPal first. */
+export function paymentsChannelsForCheckout(isES: boolean): string {
+  if (isPeruCheckoutAudience()) {
+    return isES
+      ? "Mercado Pago (soles) · Yape · Plin · PayPal (USD)"
+      : "Mercado Pago (soles) · Yape · Plin · PayPal (USD)";
+  }
+  return isES
+    ? "PayPal (USD) · Mercado Pago (soles) · Yape · Plin"
+    : "PayPal (USD) · Mercado Pago (soles) · Yape · Plin";
 }
 
 /** Full billing policy for FAQ, pricing footnote, and docs. */
