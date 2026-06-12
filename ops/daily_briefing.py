@@ -647,6 +647,7 @@ def main() -> None:
                 for_date=today,
                 metrics=metrics,
                 post_utc_hour=POST_UTC_HOUR,
+                dashboard_data=data,
             )
             deliver_to_publicaciones(summary)
             for d in deliveries:

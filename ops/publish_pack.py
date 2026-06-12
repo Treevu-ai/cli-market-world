@@ -10,6 +10,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from company_ar_gate import resolve_company_price_marker
 from content_paths import content_root, linkedin_dir, rel_to_content
 
 MAX_SLACK_CHARS = 3800
@@ -151,6 +152,7 @@ def _build_channel_slack_messages(
     metrics: dict[str, Any],
     campaign_day: int,
     post_utc_hour: int,
+    dashboard_data: dict[str, Any] | None = None,
 ) -> list[str]:
     """One Slack post per step — easier to scan than a single wall of text."""
     channel = ricardo_channel_label(label)
@@ -184,7 +186,12 @@ def _build_channel_slack_messages(
             ]
             messages.append("\n".join(meta))
             messages.extend(
-                _slack_messages_from_channel_copy(copy, metrics, gated_warn=gated)
+                _slack_messages_from_channel_copy(
+                    copy,
+                    metrics,
+                    gated_warn=gated,
+                    dashboard_data=dashboard_data,
+                )
             )
             messages.append(
                 "\n".join(
@@ -243,7 +250,12 @@ def _build_channel_slack_messages(
     return messages
 
 
-def apply_live_metrics(text: str, metrics: dict[str, Any]) -> str:
+def apply_live_metrics(
+    text: str,
+    metrics: dict[str, Any],
+    *,
+    dashboard_data: dict[str, Any] | None = None,
+) -> str:
     """Refresh moat lines in post copy with live dashboard numbers."""
     if not text.strip():
         return text
@@ -262,6 +274,8 @@ def apply_live_metrics(text: str, metrics: dict[str, Any]) -> str:
     out = re.sub(r"\*\*[\d,]+\*\*\s*retailers[^\n]*", f"**{stores}** retailers fresh", out)
     out = re.sub(r"~\s*[\d,]+\s*precios en refresh 24h", f"~{snap:,} precios en refresh 24h", out)
     out = re.sub(r"\*\*100%\*\*", f"**{metrics['coverage_7d_pct']:.0f}%**", out, count=1)
+    if dashboard_data:
+        out = resolve_company_price_marker(out, dashboard_data)
     return out
 
 
@@ -406,11 +420,12 @@ def _slack_messages_from_channel_copy(
     metrics: dict[str, Any],
     *,
     gated_warn: str = "",
+    dashboard_data: dict[str, Any] | None = None,
 ) -> list[str]:
     """One Slack message per markdown section — exact content-repo parity."""
     messages: list[str] = []
     if copy.preamble:
-        preamble = apply_live_metrics(copy.preamble, metrics)
+        preamble = apply_live_metrics(copy.preamble, metrics, dashboard_data=dashboard_data)
         messages.append(
             "\n".join(
                 [
@@ -423,7 +438,11 @@ def _slack_messages_from_channel_copy(
             )
         )
     for heading, content in copy.sections:
-        body = apply_live_metrics(content, metrics) if content else ""
+        body = (
+            apply_live_metrics(content, metrics, dashboard_data=dashboard_data)
+            if content
+            else ""
+        )
         block = slack_copy_block(body) if body else "_(sección vacía en borrador)_"
         msg_lines = [
             _slack_divider(),
@@ -651,6 +670,7 @@ def build_gtm_channel_deliveries(
     for_date: date,
     metrics: dict[str, Any],
     post_utc_hour: int,
+    dashboard_data: dict[str, Any] | None = None,
 ) -> tuple[str, list[GtmChannelDelivery]]:
     """Summary → #publicaciones; copy → canal Slack de cada red."""
     from slack_notify import (
@@ -707,6 +727,7 @@ def build_gtm_channel_deliveries(
             metrics=metrics,
             campaign_day=campaign_day,
             post_utc_hour=post_utc_hour,
+            dashboard_data=dashboard_data,
         )
         deliveries.append(
             GtmChannelDelivery(label=label, channel_id=channel_id, messages=msgs)
