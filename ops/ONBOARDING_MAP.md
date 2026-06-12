@@ -248,9 +248,9 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 | # | Acción | Persona | Esfuerzo |
 |---|--------|---------|----------|
 | 11 | Auto-activate Pro vía PayPal webhook como path principal en landing | Pro | ✅ paypal-subscribe + upgrade CLI |
-| 12 | Email transaccional post-pago con estado + ETA si manual | Pro | M |
-| 13 | Starter checkout self-serve o quitar “14 días gratis” del CTA | Starter | L |
-| 14 | Dashboard cliente: usage, tier, próximo paso upgrade | Pro | L |
+| 12 | Email transaccional post-pago con estado + ETA si manual | Pro | ✅ core emails + `billing.eta` en `/auth/account` |
+| 13 | Starter checkout self-serve o quitar “14 días gratis” del CTA | Starter | ✅ `Elegir Starter` + `build-starter` checkout (sin trial 14d) |
+| 14 | Dashboard cliente: usage, tier, próximo paso upgrade | Pro | ✅ `market account` + `/account` + `billing.eta` |
 
 ### P3 — Instrumentación
 

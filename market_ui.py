@@ -745,14 +745,18 @@ def print_account_dashboard(console: Console, data: dict[str, Any]) -> None:
     billing = data.get("billing") or {}
     if billing.get("message"):
         console.print()
+        billing_body = f"[yellow]{billing['message']}[/]"
+        if billing.get("eta"):
+            billing_body += (
+                f"\n[dim]{'ETA:' if lang_es else 'ETA:'}[/] [bold]{billing['eta']}[/]"
+            )
+        if billing.get("verify_cli"):
+            billing_body += f"\n[dim]verify:[/] [cyan]{billing['verify_cli']}[/]"
+        if billing.get("request_id"):
+            billing_body += f"\n[dim]ref:[/] [cyan]{billing.get('request_id', '')}[/]"
         console.print(
             Panel(
-                f"[yellow]{billing['message']}[/]"
-                + (
-                    f"\n[dim]ref:[/] [cyan]{billing.get('request_id', '')}[/]"
-                    if billing.get("request_id")
-                    else ""
-                ),
+                billing_body,
                 title=f"[bold {MINT}]{'Facturación' if lang_es else 'Billing'}[/]",
                 border_style="yellow",
                 box=box.ROUNDED,
