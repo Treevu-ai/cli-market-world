@@ -20,7 +20,8 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           set -euo pipefail
-          if [ -z "${GH_PAT:-}" ]; then
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          if [ -z "${GH_PAT}" ]; then
             echo "::error::GH_PAT is not set in repository secrets"
             exit 1
           fi
