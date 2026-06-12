@@ -188,6 +188,26 @@ cases:
       json_min:
         kpis.total_indexed: "{{threshold.min_indexed}}"
 
+  - id: public.observatory
+    tier: 1
+    phase: public
+    name: Observatory public aggregates (MAA, retention, tools)
+    method: GET
+    path: /analytics/observatory?days=30
+    expect:
+      status: 200
+      json_has:
+        - window_days
+        - maa
+        - calls_total
+        - calls_success
+        - success_rate
+        - mcp_retention_7d
+        - top_tools
+        - top_countries
+        - telemetry_enabled
+    notes: "PRD §1 — seven founder questions; no PII"
+
   - id: public.dashboard_html
     tier: 1
     phase: public
@@ -762,6 +782,33 @@ cases:
     skip_if_env_missing: [MARKET_API_TOKEN]
     expect:
       status: 200
+
+  - id: admin.observatory_dashboard
+    tier: 2
+    phase: admin
+    run_order: 12
+    name: Observatory admin dashboard API
+    method: GET
+    path: /dashboard/observatory?days=30
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json_has: [maa, calls_total, telemetry_enabled]
+
+  - id: admin.observatory_snapshot
+    tier: 2
+    phase: admin
+    run_order: 13
+    name: Observatory daily snapshot (cron)
+    method: POST
+    path: /admin/observatory/snapshot
+    auth: admin
+    skip_if_env_missing: [MARKET_API_TOKEN]
+    expect:
+      status: 200
+      json_has: [ok, date, unique_agents, calls_total]
+    notes: "Idempotent upsert; same path as morning-ops-chain observatory-snapshot"
 
   - id: admin.store_credentials
     tier: 2

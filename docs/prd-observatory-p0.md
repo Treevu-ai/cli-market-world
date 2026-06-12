@@ -469,27 +469,29 @@ Durante P0 **no** se desarrolla:
 
 ## 13. Criterios de aceptación P0
 
+> **Verificación 2026-06-12** — evidencia en prod (`cli-market-production.up.railway.app`, OpenAPI 1.9.34). Pendientes marcados explícitamente.
+
 ### Ecosistema (4 repos)
 
-- [ ] `cli-market-core` publicado en PyPI con módulo `market_observatory`
-- [ ] `cli-market-backend` y `cli-market-world` pinnean la **misma** versión mínima de core
-- [ ] Archivos mirror (§0.2) diff-clean entre backend y world antes de release
-- [ ] Railway prod desplegado desde backend **antes** de publicar tag PyPI world
-- [ ] `CHANGELOG.md` actualizado en cada repo tocado
-- [ ] `cli-market-index` sin cambios de código (o justificación documentada si cambia)
+- [x] `cli-market-core` publicado en PyPI con módulo `market_observatory` — **1.9.34** (`pip index versions`)
+- [x] `cli-market-backend` y `cli-market-world` pinnean la **misma** versión mínima de core — **≥1.9.34** (sync workflow 2026-06-12; backend ya pinneado)
+- [ ] Archivos mirror (§0.2) diff-clean entre backend y world antes de release — requiere checkout local de ambos repos
+- [x] Railway prod desplegado — **mirror-first desde cli-market-world** (AGENTS.md actualizado 2026-06-12; no backend separado en deploy)
+- [x] `CHANGELOG.md` actualizado en cada repo tocado — world **1.9.34** con entrada Observatory
+- [x] `cli-market-index` sin cambios de código — pin sin cambio P0
 
 ### Telemetría y producto
 
-- [ ] ≥95% de llamadas MCP/API instrumentadas en server-side pasan por `agent_events`
-- [ ] 100% de eventos tienen `agent_id` resoluble (ningún NULL)
-- [ ] `daily_observatory_metrics` generado automáticamente 7 días consecutivos sin fallo
-- [ ] `GET /analytics/observatory?days=30` responde las 7 preguntas del §1
-- [ ] Adoption Index `real_usage` usa MAA, no solo `first_search`
-- [ ] `mcp_retention_7d` calculado con cohorte §5, documentado en API
-- [ ] command-control muestra MAA + sparkline sin consultas manuales
-- [ ] `/stats` publicado con data-gate; sin PII
-- [ ] Noise filter excluye smoke/CI de métricas founder
-- [ ] Tests cubren: identity resolution, aggregation, retention, public API shape
+- [ ] ≥95% de llamadas MCP/API instrumentadas en server-side pasan por `agent_events` — sin auditoría cuantitativa aún
+- [ ] 100% de eventos tienen `agent_id` resoluble (ningún NULL) — sin auditoría DB
+- [ ] `daily_observatory_metrics` generado automáticamente 7 días consecutivos sin fallo — cron recién estabilizado; validar post 2026-06-19
+- [x] `GET /analytics/observatory?days=30` responde las 7 preguntas del §1 — prod 2026-06-12: MAA=30, calls=79/65 ok, top_tools, PE, retention 52.8%
+- [x] Adoption Index `real_usage` usa MAA, no solo `first_search` — `market_adoption_index._observatory_maa()` cuando MAA ≥ umbral
+- [x] `mcp_retention_7d` calculado con cohorte §5, documentado en API — campo `mcp_retention_7d` en respuesta pública
+- [x] command-control muestra MAA + sparkline sin consultas manuales — `ops/command_control_daily.py` consulta `/analytics/observatory`
+- [x] `/stats` publicado con data-gate; sin PII — `landing/app/stats/page.tsx` + `useObservatoryStats`
+- [ ] Noise filter excluye smoke/CI de métricas founder — implementado en core; sin validación cuantitativa
+- [x] Tests cubren: identity resolution, aggregation, retention, public API shape — `tests/test_observatory.py`, `tests/test_market_observatory_local.py`
 
 ---
 

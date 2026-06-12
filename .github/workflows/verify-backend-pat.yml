@@ -1,0 +1,77 @@
+name: Verify backend PAT + contract parity
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/contract-parity.trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Probe backend repo access
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_PAT:-}" ]; then
+            echo "::error::GH_PAT is not set in repository secrets"
+            exit 1
+          fi
+          CODE=$(curl -sS -o /tmp/backend-repo.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/Treevu-ai/cli-market-backend)
+          echo "GH_PAT → cli-market-backend HTTP ${CODE}"
+          if [ "$CODE" = "200" ]; then
+            python3 -c "import json; r=json.load(open('/tmp/backend-repo.json')); print('default_branch=', r.get('default_branch'), 'private=', r.get('private'))"
+          else
+            echo "::error::GH_PAT cannot read Treevu-ai/cli-market-backend (HTTP ${CODE})"
+            echo "Fine-grained PAT: add cli-market-backend with Contents: Read (same token as core/index checkout)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-backend
+          ref: main
+          path: .deps/cli-market-backend
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: 9d050131e9e5b16381581d1916e386f34d319ca6
+          path: .deps/cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          ref: main
+          path: .deps/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install deps for OpenAPI load
+        run: |
+          pip install -e ".deps/cli-market-core"
+          pip install -e ".deps/cli-market-index[postgres]"
+          pip install fastapi uvicorn pydantic httpx psycopg2-binary asyncpg python-multipart
+
+      - name: Contract parity (pins + OpenAPI)
+        run: python ops/contract_parity.py --backend-path .deps/cli-market-backend
+
+      - name: Verify checkout
+        run: echo "backend HEAD $(git -C .deps/cli-market-backend rev-parse --short HEAD)"
