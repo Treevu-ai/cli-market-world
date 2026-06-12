@@ -21,9 +21,9 @@ jobs:
 
       - name: Install deps
         run: |
+          # Local market_observatory.py (world) is ahead of PyPI until core 1.9.34 ships.
           pip install -e .
-          pip install "cli-market-core>=1.9.34" \
-            || pip install -e vendor/cli-market-core 2>/dev/null || true
+          pip install "cli-market-core==1.9.33"
 
       - name: Observatory daily snapshot
         env:
