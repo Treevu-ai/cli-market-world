@@ -23,7 +23,9 @@ about to add one — instead, find or create the right router.
 from __future__ import annotations
 
 import os
+import tomllib
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -100,6 +102,18 @@ async def lifespan(_app: FastAPI):
 from market_core.market_mcp_registry import public_tool_count
 from market_stats import PACKAGE_VERSION, RETAILERS_VERIFIED, COUNTRIES as MS_COUNTRIES
 
+
+def _world_api_version() -> str:
+    """OpenAPI version = world release (pyproject), not core PACKAGE_VERSION."""
+    try:
+        data = tomllib.loads(
+            (Path(__file__).resolve().parent / "pyproject.toml").read_text(encoding="utf-8")
+        )
+        return str(data["project"]["version"])
+    except Exception:
+        return PACKAGE_VERSION
+
+
 _MCP_DEFAULT = public_tool_count("default")
 _MCP_LEGACY = public_tool_count("legacy")
 
@@ -110,7 +124,7 @@ app = FastAPI(
         f"{_MCP_DEFAULT} curated MCP tools ({_MCP_LEGACY} legacy), "
         f"{MS_COUNTRIES} countries. Agent-ready."
     ),
-    version=PACKAGE_VERSION,
+    version=_world_api_version(),
     lifespan=lifespan,
 )
 
