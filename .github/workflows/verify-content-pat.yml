@@ -15,41 +15,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Probe GH_PAT_CONTENT
-        if: ${{ secrets.GH_PAT_CONTENT != '' }}
+      - name: Probe content repo access
         env:
-          TOKEN: ${{ secrets.GH_PAT_CONTENT }}
+          GH_PAT_CONTENT: ${{ secrets.GH_PAT_CONTENT }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           set -euo pipefail
-          CODE=$(curl -sS -o /tmp/content-repo.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/Treevu-ai/cli-market-content)
-          echo "GH_PAT_CONTENT → HTTP ${CODE}"
-          if [ "$CODE" = "200" ]; then
-            python3 -c "import json; r=json.load(open('/tmp/content-repo.json')); print('default_branch=', r.get('default_branch'), 'private=', r.get('private'))"
+          if [ -n "${GH_PAT_CONTENT:-}" ]; then
+            TOKEN="${GH_PAT_CONTENT}"
+            LABEL="GH_PAT_CONTENT"
+          elif [ -n "${GH_PAT:-}" ]; then
+            TOKEN="${GH_PAT}"
+            LABEL="GH_PAT"
           else
-            echo "::error::GH_PAT_CONTENT cannot read Treevu-ai/cli-market-content (HTTP ${CODE})"
+            echo "::error::Neither GH_PAT_CONTENT nor GH_PAT is set in repository secrets"
             exit 1
           fi
-
-      - name: Probe GH_PAT (fallback)
-        if: ${{ secrets.GH_PAT_CONTENT == '' }}
-        env:
-          TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          set -euo pipefail
           CODE=$(curl -sS -o /tmp/content-repo.json -w "%{http_code}" \
             -H "Authorization: Bearer ${TOKEN}" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/Treevu-ai/cli-market-content)
-          echo "GH_PAT → HTTP ${CODE}"
+          echo "${LABEL} → HTTP ${CODE}"
           if [ "$CODE" = "200" ]; then
             python3 -c "import json; r=json.load(open('/tmp/content-repo.json')); print('default_branch=', r.get('default_branch'), 'private=', r.get('private'))"
           else
-            echo "::error::GH_PAT cannot read Treevu-ai/cli-market-content (HTTP ${CODE})."
-            echo "Fine-grained PAT: Repository access must include cli-market-content + Contents: Read."
-            echo "After updating the PAT on github.com, paste the new token into Settings → Secrets → GH_PAT (or GH_PAT_CONTENT)."
+            echo "::error::${LABEL} cannot read Treevu-ai/cli-market-content (HTTP ${CODE})"
+            echo "Fine-grained PAT: Repository access must include cli-market-content + Contents: Read and write."
+            echo "After updating the PAT on github.com, paste the new token into Settings → Secrets."
             echo "Org SSO: authorize the PAT for Treevu-ai if required."
             exit 1
           fi
