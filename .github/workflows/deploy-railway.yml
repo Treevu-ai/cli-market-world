@@ -1,13 +1,12 @@
 # Deploy API + collector to Railway from cli-market-world (mirror = prod).
 #
-# One-time setup (Railway Dashboard):
-#   1. Project → Settings → Tokens → Create project token
-#   2. GitHub repo → Settings → Secrets → RAILWAY_TOKEN = <project token>
-#   3. GitHub repo → Settings → Variables:
-#        RAILWAY_API_SERVICE_ID       = <API service UUID>
-#        RAILWAY_COLLECTOR_SERVICE_ID = 3813265a-1862-44a7-a723-62afa8a88dcf  (known collector)
+# One-time setup:
+#   1. Railway → Project → Settings → Tokens → Create project token
+#   2. GitHub → Settings → Secrets → RAILWAY_TOKEN = <project token>
+#   3. (Opcional) GitHub → Settings → Variables → RAILWAY_API_SERVICE_ID
+#      Si no lo pones, el workflow intenta detectar el servicio API automáticamente.
 #
-# Manual trigger: Actions → Deploy Railway → Run workflow
+# Manual: Actions → Deploy Railway → Run workflow
 
 name: Deploy Railway
 
@@ -42,6 +41,7 @@ env:
   RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
   API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
   COLLECTOR_SERVICE_ID: ${{ vars.RAILWAY_COLLECTOR_SERVICE_ID }}
+  COLLECTOR_DEFAULT: "3813265a-1862-44a7-a723-62afa8a88dcf"
 
 jobs:
   deploy-api:
@@ -55,19 +55,64 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate Railway credentials
+      - name: Validate Railway token
         run: |
           if [ -z "${RAILWAY_TOKEN}" ]; then
-            echo "::error::Missing secret RAILWAY_TOKEN. Railway → Project → Settings → Tokens → add to GitHub Secrets."
-            exit 1
-          fi
-          if [ -z "${API_SERVICE_ID}" ]; then
-            echo "::error::Missing variable RAILWAY_API_SERVICE_ID. Railway → API service → Settings → Service ID → GitHub Variables."
+            echo "::error::Missing secret RAILWAY_TOKEN. Railway → Project → Settings → Tokens → GitHub Secrets."
             exit 1
           fi
 
+      - name: Resolve API service ID
+        id: resolve
+        run: |
+          if [ -n "${API_SERVICE_ID}" ]; then
+            echo "Using RAILWAY_API_SERVICE_ID from GitHub Variables"
+            echo "service_id=${API_SERVICE_ID}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Auto-detecting API service (set RAILWAY_API_SERVICE_ID to skip)..."
+          railway service list --json > /tmp/services.json
+          SERVICE_ID=$(python3 <<'PY'
+          import json
+          import os
+          import sys
+
+          collector = os.environ.get("COLLECTOR_DEFAULT", "")
+          skip_names = ("postgres", "redis", "database", "db", "collector")
+          raw = json.load(open("/tmp/services.json"))
+          items = raw if isinstance(raw, list) else raw.get("services") or raw.get("data") or []
+          candidates: list[tuple[str, str]] = []
+          for s in items:
+              sid = (s.get("id") or s.get("serviceId") or "").strip()
+              name = (s.get("name") or "").strip()
+              lname = name.lower()
+              if not sid or sid == collector:
+                  continue
+              if any(x in lname for x in skip_names):
+                  continue
+              candidates.append((lname, sid))
+          prefs = ("cli-market-production", "production", "api", "world", "backend", "web")
+          for pref in prefs:
+              for lname, sid in candidates:
+                  if pref in lname:
+                      print(sid)
+                      sys.exit(0)
+          if len(candidates) == 1:
+              print(candidates[0][1])
+          elif candidates:
+              print(sorted(candidates)[0][1])
+          PY
+          )
+          if [ -z "${SERVICE_ID}" ]; then
+            echo "::error::Could not auto-detect API service. Set GitHub variable RAILWAY_API_SERVICE_ID (see ops/RAILWAY_DEPLOY.md)."
+            cat /tmp/services.json
+            exit 1
+          fi
+          echo "Resolved API service_id=${SERVICE_ID}"
+          echo "service_id=${SERVICE_ID}" >> "$GITHUB_OUTPUT"
+
       - name: railway up (API)
-        run: railway up --service="${API_SERVICE_ID}" --detach
+        run: railway up --service="${{ steps.resolve.outputs.service_id }}" --detach
 
   deploy-collector:
     name: Deploy collector
@@ -79,19 +124,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate Railway credentials
+      - name: Validate Railway token
         run: |
           if [ -z "${RAILWAY_TOKEN}" ]; then
             echo "::error::Missing secret RAILWAY_TOKEN."
             exit 1
           fi
-          if [ -z "${COLLECTOR_SERVICE_ID}" ]; then
-            echo "::error::Missing variable RAILWAY_COLLECTOR_SERVICE_ID (default: 3813265a-1862-44a7-a723-62afa8a88dcf)."
-            exit 1
-          fi
 
       - name: railway up (collector)
-        run: railway up --service="${COLLECTOR_SERVICE_ID}" --detach
+        run: |
+          SVC="${COLLECTOR_SERVICE_ID:-$COLLECTOR_DEFAULT}"
+          echo "Deploying collector service_id=${SVC}"
+          railway up --service="${SVC}" --detach
 
   verify-api:
     name: Verify prod version
