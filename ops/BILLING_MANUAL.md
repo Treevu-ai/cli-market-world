@@ -59,6 +59,61 @@ SMTP_USE_TLS=true
 
 Sin SMTP: el endpoint devuelve `approve_url` en JSON/modal pero no envía email.
 
+## Email en checkout (quién lo genera)
+
+`POST /billing/pro-checkout` **no inventa** el email del cliente: guarda `body.email` tal como lo envía el modal, curl o script (normalizado a minúsculas). El backend solo lo usa para la solicitud `PRO-` y, tras activación, para el correo de bienvenida Pro (contraseña CLI — **no** la `sk-`).
+
+### Plus-addressing en `@cli-market.dev`
+
+Google Workspace entrega todo `*@cli-market.dev` al buzón principal (`hello@cli-market.dev`). Los prefijos ayudan a filtrar en Gmail y a distinguir origen del pago en ops.
+
+| Prefijo | Quién lo genera | Uso |
+|---------|-----------------|-----|
+| `e2e+{método}+{run_id}@…` | `ops/payments_e2e.py` | E2E automatizado (PayPal, MP, Yape, Plin, Procure) |
+| `pam+{método}+{{run_id}}@…` | `ops/pam_matrix.yaml` | Matriz PAM / regresión manual |
+| `pago-real+{método}+{id}@…` | **Manual** (modal, curl, script local) | Pago real en prod con etiqueta legible; `{id}` suele ser 8 hex del run o del usuario |
+
+Ejemplos reales:
+
+```
+e2e+mp+a1b2c3d4@cli-market.dev      # E2E Mercado Pago
+pam+mp+{{run_id}}@cli-market.dev    # PAM (plantilla)
+pago-real+mp+8a3ea8af@cli-market.dev # Pago real MP — ref PRO-D2CF329D
+```
+
+`pago-real+…` **no está hardcodeado** en el repo: es convención ops para pagos reales que quieres rastrear sin mezclarlos con `e2e+` o `pam+`. El segmento `{método}` es informativo (`mp`, `pp`, `yape`, `plin`); la activación depende del webhook o de ops, no del local-part del email.
+
+### Copia ops del correo de activación
+
+No hay BCC al cliente. Tras enviar el email al cliente con éxito, el backend manda un borrador separado `[Pro activado — borrador]` a `BILLING_NOTIFY_EMAIL` (`hello@cli-market.dev`). Si SMTP falla al cliente, **no** se envía el borrador ops.
+
+Tokens en logs Railway / webhook `actions`:
+
+- `activation_email:…` — enviado al cliente
+- `activation_email_skipped:…` — omitido (SMTP deshabilitado o duplicado reciente)
+- `activation_draft_notify:…` — borrador ops enviado
+- `activation_email_failed` — fallo SMTP
+
+Rails con logging unificado: PayPal Pro webhook, Mercado Pago, Yape/Plin manual, admin resend. Excepción: `ops/activate_pro.py` (inline, sin `actions`).
+
+## Reenviar correo de activación Pro
+
+Solo para solicitudes **ya activadas** (`tier=pro`) con ref `PRO-`. Genera **nueva contraseña CLI** y reenvía el mismo template de bienvenida.
+
+```bash
+# CLI (requiere MARKET_API_TOKEN)
+python3 ops/resend_pro_activation_email.py PRO-D2CF329D
+python3 ops/resend_pro_activation_email.py PRO-D2CF329D --email otro@ejemplo.com
+
+# API directa
+curl -X POST https://cli-market-production.up.railway.app/admin/resend-pro-activation-email \
+  -H "Authorization: Bearer $MARKET_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"request_id":"PRO-D2CF329D"}'
+```
+
+GitHub Actions: workflow `ops-resend-pro-email.yml` (disparador en `ops/triggers/resend-pro-email.trigger`).
+
 ## Endpoints
 
 | Endpoint | Uso |
