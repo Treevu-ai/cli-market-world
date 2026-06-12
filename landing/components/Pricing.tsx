@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
+import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
@@ -483,13 +484,23 @@ export default function Pricing() {
             {isES ? (
               <>
                 ¿Plan intermedio?{" "}
-                <span className="text-[var(--cm-mint)]">
-                  {STARTER_TIER.price}/mes Starter
-                </span>{" "}
-                — 5.000 consultas/día, export CSV, sin checkout. Pro estándar{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mes</span> o{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/año</span>{" "}
-                en{" "}
+                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mes Starter</span> — 5.000
+                consultas/día, export CSV, sin checkout. Pro estándar{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mes</span>{" "}
+                <BillingCheckoutTrigger
+                  kind={{ type: "build-pro" }}
+                  className="inline-flex align-middle ml-1 mr-0.5 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
+                  label_es="Elegir Pro →"
+                  label_en="Choose Pro →"
+                />{" "}
+                o <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/año</span>{" "}
+                <BillingCheckoutTrigger
+                  kind={{ type: "build-pro", annual: true }}
+                  className="inline-flex align-middle ml-1 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
+                  label_es="Pro anual →"
+                  label_en="Pro annual →"
+                />
+                . Detalle en{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -498,10 +509,23 @@ export default function Pricing() {
             ) : (
               <>
                 Need a mid-tier?{" "}
-                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> — 5k
-                req/day, CSV export, no checkout. Standard Pro{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mo</span> or{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/yr</span> via{" "}
+                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> — 5k req/day,
+                CSV export, no checkout. Standard Pro{" "}
+                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mo</span>{" "}
+                <BillingCheckoutTrigger
+                  kind={{ type: "build-pro" }}
+                  className="inline-flex align-middle ml-1 mr-0.5 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
+                  label_es="Elegir Pro →"
+                  label_en="Choose Pro →"
+                />{" "}
+                or <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/yr</span>{" "}
+                <BillingCheckoutTrigger
+                  kind={{ type: "build-pro", annual: true }}
+                  className="inline-flex align-middle ml-1 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
+                  label_es="Pro anual →"
+                  label_en="Pro annual →"
+                />
+                . Details in{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
