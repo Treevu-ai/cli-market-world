@@ -28,8 +28,9 @@ jobs:
         id: checkout-content
         with:
           repository: Treevu-ai/cli-market-content
+          ref: main
           path: cli-market-content
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
 
       - name: Verify content checkout
         run: |
