@@ -1,0 +1,56 @@
+name: Ops Resend Pro Activation Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: PRO-XXXXXXXX
+        required: false
+        default: PRO-D2CF329D
+  push:
+    branches: [main]
+    paths:
+      - ops/triggers/resend-pro-email.trigger
+
+jobs:
+  resend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resend Pro welcome email
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+          MARKET_API_URL: ${{ vars.MARKET_API_URL }}
+        run: |
+          REQ="${{ github.event.inputs.request_id }}"
+          if [ -z "$REQ" ]; then
+            REQ=$(grep -E '^request_id=' ops/triggers/resend-pro-email.trigger 2>/dev/null | head -1 | cut -d= -f2- | tr -d '\r')
+          fi
+          REQ="${REQ:-PRO-D2CF329D}"
+          API="${MARKET_API_URL:-https://cli-market-production.up.railway.app}"
+          if [ -z "$MARKET_API_TOKEN" ]; then
+            echo "::error::MARKET_API_TOKEN secret missing"
+            exit 1
+          fi
+          CODE=$(curl -sS -o /tmp/resend-pro.json -w "%{http_code}" \
+            -X POST "${API}/admin/resend-pro-activation-email" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"request_id\":\"${REQ}\"}")
+          cat /tmp/resend-pro.json
+          echo ""
+          echo "HTTP ${CODE}"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::resend failed HTTP ${CODE}"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, sys
+          body = json.load(open("/tmp/resend-pro.json"))
+          if not body.get("sent"):
+              print(f"::error::email not sent: {body.get('reason')} actions={body.get('actions')}")
+              sys.exit(1)
+          print(f"OK sent to {body.get('email')} user={body.get('username')}")
+          PY
