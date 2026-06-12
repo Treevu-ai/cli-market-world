@@ -266,20 +266,26 @@ def deploy_up_cli(service_ref: str, project_token: str) -> None:
     env = _cli_env(project_token)
     gh_pat = (os.getenv("GH_PAT") or os.getenv("GITHUB_TOKEN") or "").strip()
     if gh_pat:
-        subprocess.run(
-            [
-                "railway",
-                "variable",
-                "set",
-                f"GITHUB_TOKEN={gh_pat}",
-                f"--service={service_ref}",
-                f"--environment={ENVIRONMENT_ID}",
-                "--skip-deploys",
-            ],
-            cwd=str(root),
-            env=env,
-            check=False,
-            timeout=120,
+        for var_name in ("GITHUB_TOKEN", "GH_PAT"):
+            subprocess.run(
+                [
+                    "railway",
+                    "variable",
+                    "set",
+                    f"{var_name}={gh_pat}",
+                    f"--service={service_ref}",
+                    f"--environment={ENVIRONMENT_ID}",
+                    "--skip-deploys",
+                ],
+                cwd=str(root),
+                env=env,
+                check=False,
+                timeout=120,
+            )
+    else:
+        print(
+            "WARNING: GH_PAT / GITHUB_TOKEN not set — Docker build will fail on cli-market-index clone",
+            file=sys.stderr,
         )
     # --ci waits for build logs; do not combine with --detach (exits after upload).
     subprocess.run(
