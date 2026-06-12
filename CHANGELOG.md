@@ -4,6 +4,25 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-12] — Observatory P0 closure: telemetry quality + command-control UX
+
+### cli-market-core v1.9.34
+- **Fixed:** Observatory extracts `retailer` / `country` from JSON body (search/compare/basket)
+- **Fixed:** Skip `/index/*` admin routes from telemetry; normalize tool names via registry
+- **Fixed:** `weekly_agent_growth` with 7-day windows; filter internal tools from public aggregates
+- **Added:** `get_agent_id()` + `X-Agent-ID` on all CLI/MCP API calls
+- **Added:** Noise filter for `demo_*` agents
+
+### cli-market-world v1.9.19
+- **Added:** Local `market_observatory.py` with P0 telemetry fixes (ahead of core PyPI 1.9.34)
+- **Added:** `market_agent_id.py` — `X-Agent-ID` + `MARKET_AGENT_ID` for MCP setup
+- **Changed:** Command-control panel order (semáforo → prioridades → scoreboard → tracción)
+- **Changed:** Adoption Index exposes top-level `maa` + `mcp_retention_7d` in signals
+- **Changed:** `market mcp-setup` writes `MARKET_AGENT_ID` into MCP env
+- **Changed:** `cli-market-core>=1.9.34`
+
+---
+
 ## [2026-06-09] — Observatory P0: MCP telemetry layer
 
 ### cli-market-core v1.9.17

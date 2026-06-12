@@ -25,6 +25,7 @@ ops/.rotation-local.txt
 
 # GTM / LinkedIn content lives in private cli-market-content (see docs/CONTENT.md)
 cli-market-content/
+vendor/
 
 # Legacy paths (if content was ever generated inside product repo)
 docs/linkedin/assets/**/*.png

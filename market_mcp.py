@@ -1,5 +1,9 @@
 """Console entry and thin re-export layer for MCP server (`market-mcp` after pip install)."""
 
+from market_agent_id import patch_core_api_agent_header
+
+patch_core_api_agent_header()
+
 from market_core.market_mcp import api, get_token, handle_tool, main
 
 __all__ = ["api", "get_token", "handle_tool", "main"]

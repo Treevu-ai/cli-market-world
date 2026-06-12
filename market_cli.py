@@ -2038,7 +2038,12 @@ def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
 
 
 def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
+    from market_agent_id import get_agent_id
+
     env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": "default"}
+    agent_id = get_agent_id()
+    if agent_id:
+        env["MARKET_AGENT_ID"] = agent_id
     if token:
         env["MARKET_API_TOKEN"] = token
     return {"command": "market-mcp", "args": [], "env": env}
@@ -2343,6 +2348,9 @@ def _report_install_event(*, source: str = "cli") -> bool:
 
 
 def main():
+    from market_agent_id import patch_core_api_agent_header
+
+    patch_core_api_agent_header()
     sys.argv = _normalize_market_argv(sys.argv)
     if len(sys.argv) > 1 and sys.argv[1] in _META_CMDS:
         ns = argparse.Namespace(json="--json" in sys.argv)
