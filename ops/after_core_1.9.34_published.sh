@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VER="1.9.34"
-if ! pip index versions "cli-market-core" 2>/dev/null | grep -q "$VER"; then
+if ! python3 -m pip index versions "cli-market-core" 2>/dev/null | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"; then
   echo "error: cli-market-core $VER not on PyPI yet" >&2
   exit 1
 fi
