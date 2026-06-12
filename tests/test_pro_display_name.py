@@ -1,6 +1,5 @@
 """Display name resolution for Pro welcome emails."""
 
-import subprocess
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -65,26 +64,18 @@ def test_build_context_links_email_username_password():
 def test_activate_pro_persists_display_name_override():
     from market_core import ensure_db_initialized
 
-    from conftest import activate_pro_subprocess_env
+    from conftest import run_activate_pro_cli
 
     ensure_db_initialized()
     req = db_create_subscription_request("dn-ops-user", "dn-ops@test.com", "yape:manual")
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "ops/activate_pro.py",
-            "dn-ops-user",
-            "--request-id",
-            req["id"],
-            "--display-name",
-            "Antonio Cuba",
-        ],
-        cwd=str(Path(__file__).parent.parent),
-        capture_output=True,
-        text=True,
-        env=activate_pro_subprocess_env(),
+    code, stdout, stderr = run_activate_pro_cli(
+        "dn-ops-user",
+        "--request-id",
+        req["id"],
+        "--display-name",
+        "Antonio Cuba",
     )
-    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert code == 0, stderr + stdout
     updated = db_find_subscription_request(request_id=req["id"])
     assert updated["display_name"] == "Antonio Cuba"
-    assert "Display name saved" in proc.stdout
+    assert "Display name saved" in stdout
