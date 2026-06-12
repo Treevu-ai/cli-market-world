@@ -387,6 +387,33 @@ def test_paypal_webhook_subscription_activated(monkeypatch):
     assert sent and sent[0]["username"] == "admin"
 
 
+def test_paypal_webhook_activation_email_skipped_when_smtp_fails(monkeypatch):
+    from unittest.mock import AsyncMock, patch
+    from market_core import db_create_subscription_request, db_save_billing_pending, db_get_subscription
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    db_save_billing_pending("I-SUB456", "paypal", "admin", "subscription")
+    db_create_subscription_request("admin", "paypal-skip@test.com", "https://paypal.test/approve")
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        lambda **kw: {"sent": False, "reason": "smtp_not_configured"},
+    )
+    event = {
+        "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
+        "resource": {"id": "I-SUB456", "custom_id": "admin", "status": "ACTIVE", "locale": "es_ES"},
+    }
+    with patch("market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID", "WH-TEST"):
+        with patch(
+            "market_connectors.paypal_payments.verify_webhook_signature",
+            new=AsyncMock(return_value=True),
+        ):
+            r = client.post("/checkout/paypal-webhook", json=event)
+    assert r.status_code == 200
+    actions = r.json().get("actions", [])
+    assert "activation_email_skipped:smtp_not_configured" in actions
+    assert db_get_subscription("admin")["tier"] == "pro"
+
+
 def test_paypal_webhook_payment_capture_marks_order_paid():
     from unittest.mock import AsyncMock, patch
     from market_core import db_create_order

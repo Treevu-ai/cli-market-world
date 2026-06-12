@@ -314,36 +314,48 @@ async def _handle_paypal_event(event: dict) -> dict:
                 pass
             if marked:
                 actions.append(f"requests_closed:{marked}")
-            try:
-                email = db_get_user_email(username) or ""
-                if email:
-                    lang = (resource.get("locale") or "es")[:2].lower()
-                    if lang not in ("es", "en"):
-                        lang = "es"
-                    if tier in ("starter", "procure_starter"):
+            email = db_get_user_email(username) or ""
+            lang = (resource.get("locale") or "es")[:2].lower()
+            if lang not in ("es", "en"):
+                lang = "es"
+            if tier in ("starter", "procure_starter"):
+                try:
+                    if email:
                         from market_connectors.email_outbound import send_starter_activated_email
+
                         mail = send_starter_activated_email(
                             to_email=email,
                             username=username,
                             lang=lang,
                             subscription_id=sub_id,
                         )
+                        if mail.get("sent"):
+                            actions.append(f"activation_email:{email}")
+                        else:
+                            actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
                     else:
-                        mail = _send_pro_activated_email_with_credentials(
-                            to_email=email,
-                            username=username,
-                            lang=lang,
-                            subscription_id=sub_id,
-                            payment_method="paypal",
-                            source="paypal_webhook",
-                        )
-                    if mail.get("sent"):
-                        actions.append(f"activation_email:{email}")
-                    else:
-                        actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
-            except Exception:
-                logger.exception("%s activation email failed for %s", tier, username)
-                actions.append("activation_email_failed")
+                        actions.append("activation_email_skipped:no_email")
+                except Exception:
+                    logger.exception("%s activation email failed for %s", tier, username)
+                    actions.append("activation_email_failed")
+            else:
+                _append_pro_activation_email_actions(
+                    actions,
+                    username=username,
+                    email=email,
+                    request_id="",
+                    payment_method="paypal",
+                    source="paypal_webhook",
+                    lang=lang,
+                    subscription_id=sub_id or "",
+                )
+            logger.info(
+                "paypal_webhook subscription_activated username=%s tier=%s subscription_id=%s actions=%s",
+                username,
+                tier,
+                sub_id,
+                actions,
+            )
             _slack_notify_subscription(
                 tier=tier,
                 username=username,
@@ -1008,14 +1020,17 @@ def _append_pro_activation_email_actions(
     payment_method: str,
     source: str,
     display_name: str = "",
+    lang: str = "es",
+    subscription_id: str = "",
 ) -> dict:
     """Send Pro welcome email; append audit tokens and log SMTP outcome."""
+    billing_ref = request_id or subscription_id or "-"
     if not email:
         actions.append("activation_email_skipped:no_email")
         logger.warning(
-            "Pro activation email skipped (no email) username=%s request_id=%s source=%s",
+            "Pro activation email skipped (no email) username=%s billing_ref=%s source=%s",
             username,
-            request_id,
+            billing_ref,
             source,
         )
         return {"sent": False, "reason": "no_email"}
@@ -1024,29 +1039,30 @@ def _append_pro_activation_email_actions(
         mail = _send_pro_activated_email_with_credentials(
             to_email=email,
             username=username,
-            lang="es",
+            lang=lang,
             request_id=request_id,
             payment_method=payment_method,
             source=source,
             display_name=display_name,
+            subscription_id=subscription_id,
         )
         if mail.get("sent"):
             actions.append(f"activation_email:{email}")
             logger.info(
-                "Pro activation email sent to=%s username=%s request_id=%s source=%s",
+                "Pro activation email sent to=%s username=%s billing_ref=%s source=%s",
                 email,
                 username,
-                request_id,
+                billing_ref,
                 source,
             )
         else:
             reason = mail.get("reason", "err")
             actions.append(f"activation_email_skipped:{reason}")
             logger.warning(
-                "Pro activation email skipped to=%s username=%s request_id=%s reason=%s source=%s",
+                "Pro activation email skipped to=%s username=%s billing_ref=%s reason=%s source=%s",
                 email,
                 username,
-                request_id,
+                billing_ref,
                 reason,
                 source,
             )
@@ -1055,9 +1071,9 @@ def _append_pro_activation_email_actions(
         return mail
     except Exception:
         logger.exception(
-            "Pro activation email failed username=%s request_id=%s source=%s",
+            "Pro activation email failed username=%s billing_ref=%s source=%s",
             username,
-            request_id,
+            billing_ref,
             source,
         )
         actions.append("activation_email_failed")
