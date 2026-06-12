@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -32,19 +32,30 @@ jobs:
       - name: Verify content checkout
         run: test -d cli-market-content/linkedin
 
-      - name: make publish
+      - name: Mark published (skip broken Makefile)
         working-directory: cli-market-content
         env:
           PUBLISH_DATE: ${{ github.event.inputs.date || '2026-06-12' }}
         run: |
           set -euo pipefail
-          if [ -f Makefile ] && grep -q '^publish:' Makefile; then
-            make publish "date=${PUBLISH_DATE}" || make publish "date=${PUBLISH_DATE}" day=12 || make publish day=12
+          # Never call `make publish` — content Makefile uses $(python3 --version) → breaks CI
+          if [ -f scripts/mark-published.py ]; then
+            python3 scripts/mark-published.py --date "${PUBLISH_DATE}" \
+              || python3 scripts/mark-published.py --day 12
           elif [ -f scripts/publish.py ]; then
-            python3 scripts/publish.py --date "${PUBLISH_DATE}" || python3 scripts/publish.py --day 12
+            python3 scripts/publish.py --date "${PUBLISH_DATE}"
           else
-            echo "::error::No Makefile publish target or scripts/publish.py in content repo"
+            echo "::error::scripts/mark-published.py not found in content repo"
             exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "chore: mark published ${PUBLISH_DATE}"
+            git push
+          else
+            echo "No content repo changes (already published?)"
           fi
 
       - name: Show git status
