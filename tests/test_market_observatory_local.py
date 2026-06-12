@@ -2,6 +2,7 @@
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from market_observatory import (
     _extract_geo_retailer,
     _weekly_agent_growth,
     classify_route,
+    compute_daily_observatory_metrics,
     normalize_tool_name,
     record_agent_event,
 )
@@ -65,3 +67,28 @@ def test_internal_tool_not_recorded(monkeypatch, tmp_path):
 def test_weekly_agent_growth_calc():
     day_agents = {f"2026-06-{d:02d}": {f"a{d}"} for d in range(1, 15)}
     assert _weekly_agent_growth(day_agents) is not None
+
+
+def test_compute_daily_observatory_metrics_sqlite_row(monkeypatch, tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    monkeypatch.setenv("MARKET_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("OBSERVATORY_TELEMETRY", "1")
+    import market_core.market_core as mc
+
+    mc._db_initialized = False
+    mc.USE_PG = False
+    mc.DATA_DIR = data_dir
+    mc.DB_FILE = data_dir / "market.db"
+    mc.ensure_db_initialized()
+
+    record_agent_event(
+        agent_id="agent-daily-1",
+        tool_name="market_search",
+        success=True,
+        retailer="wong-pe",
+        country="PE",
+    )
+    payload = compute_daily_observatory_metrics(day=date.today())
+    assert payload["daily_active_agents"] >= 1
+    assert payload["date"] == date.today().isoformat()

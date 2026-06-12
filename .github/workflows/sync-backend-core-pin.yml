@@ -1,0 +1,66 @@
+name: Sync backend core pin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: cli-market-core minimum version (e.g. 1.9.34)
+        type: string
+        default: "1.9.34"
+
+permissions:
+  contents: read
+
+jobs:
+  bump-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-backend
+          ref: main
+          path: cli-market-backend
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Verify PyPI version exists
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          python3 -m pip index versions "cli-market-core" | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"
+
+      - name: Bump backend requirements.txt
+        env:
+          BACKEND_DIR: ${{ github.workspace }}/cli-market-backend
+        run: |
+          chmod +x ops/sync_backend_core_pin.sh
+          ./ops/sync_backend_core_pin.sh "${{ github.event.inputs.version }}"
+
+      - name: Open PR on cli-market-backend
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        working-directory: cli-market-backend
+        run: |
+          set -euo pipefail
+          VER="${{ github.event.inputs.version }}"
+          BRANCH="chore/core-pin-${VER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet requirements.txt; then
+            echo "Backend already pinned to cli-market-core>=${VER}"
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git add requirements.txt
+          git commit -m "chore(deps): pin cli-market-core>=${VER}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(deps): pin cli-market-core>=${VER}" \
+            --body "Automated from cli-market-world \`sync-backend-core-pin\` workflow after world release ${VER}."

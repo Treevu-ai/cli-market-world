@@ -1,0 +1,46 @@
+name: GTM preflight
+
+on:
+  schedule:
+    # 12:55 UTC — 5 min before daily briefing (13:00 UTC)
+    - cron: "55 12 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  gate-and-today:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-content
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install content repo deps
+        working-directory: cli-market-content
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install httpx
+
+      - name: make gate && make today
+        working-directory: cli-market-content
+        env:
+          MARKET_API_URL: ${{ env.MARKET_API_URL }}
+          LINKEDIN_CAMPAIGN_START: "2026-06-01"
+          LINKEDIN_PERSONAL_DAY_OFFSET: "2"
+          LINKEDIN_COMPANY_DAY_OFFSET: "-1"
+        run: |
+          set -euo pipefail
+          make gate
+          make today
