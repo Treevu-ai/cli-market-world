@@ -115,6 +115,26 @@ curl -s https://cli-market-production.up.railway.app/paypal-status | jq
 
 ## 5. End-to-end test purchase (the real gate)
 
+### Scripted flow (recommended)
+
+```bash
+# Phase A — automated (register, export 403, PayPal approve URL)
+python3 ops/paypal_live_e2e.py --prepare
+
+# Phase B — manual: open approve_url in browser, approve with live PayPal
+
+# Phase C — automated (wait for webhook, assert Pro + export 200)
+python3 ops/paypal_live_e2e.py --poll --timeout 600
+python3 ops/paypal_live_e2e.py --verify
+
+# Or block until approval (prepare + poll + verify in one terminal)
+python3 ops/paypal_live_e2e.py --full --timeout 600
+```
+
+State (username, `sk-`, `approve_url`) is saved to `ops/.paypal-e2e-state.json` (gitignored).
+
+### Manual curl (same steps)
+
 1. Register a throwaway account and grab its `sk-` key:
    ```bash
    curl -s -X POST https://cli-market-production.up.railway.app/auth/register | jq
