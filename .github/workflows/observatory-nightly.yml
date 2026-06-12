@@ -21,12 +21,32 @@ jobs:
 
       - name: Install deps
         run: |
+          # Full implementation lives in repo market_observatory.py (not market_core re-export).
           pip install -e .
           pip install "cli-market-core==1.9.34"
+
+      - name: Verify observatory import + prod DB secret
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::DATABASE_URL secret missing — nightly snapshot must write to prod Postgres"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import inspect
+          import market_observatory as mo
+          path = inspect.getfile(mo).replace("\\", "/")
+          if "/site-packages/market_core/" in path:
+              raise SystemExit(f"market_observatory must be world-local, got {path}")
+          assert hasattr(mo, "compute_daily_observatory_metrics")
+          print(f"OK: {path}")
+          PY
 
       - name: Observatory daily snapshot
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
           OBSERVATORY_TELEMETRY: "1"
+          GITHUB_ACTIONS: "true"
         run: python3 ops/observatory_daily.py --json

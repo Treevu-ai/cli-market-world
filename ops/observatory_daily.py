@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -27,6 +28,19 @@ load_repo_env()
 from market_observatory import compute_daily_observatory_metrics, observatory_summary  # noqa: E402
 
 
+def _require_prod_database() -> None:
+    """Nightly CI must upsert into prod Postgres, not an ephemeral SQLite file."""
+    if os.getenv("DATABASE_URL", "").strip():
+        return
+    if os.getenv("GITHUB_ACTIONS") == "true" or os.getenv("CI") == "true":
+        print(
+            "error: DATABASE_URL is required for observatory snapshot in CI "
+            "(set GitHub secret DATABASE_URL)",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="CLI Market Observatory daily snapshot")
     parser.add_argument("--json", action="store_true", help="Print JSON to stdout")
@@ -37,6 +51,7 @@ def main() -> int:
         payload = observatory_summary(days=30)
         payload["dry_run"] = True
     else:
+        _require_prod_database()
         payload = compute_daily_observatory_metrics()
 
     if args.json:
