@@ -70,6 +70,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
         run: |
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
           if [ -z "${GH_TOKEN}" ]; then
             echo "has_write=false" >> "$GITHUB_OUTPUT"
             echo "::warning::GH_PAT_BACKEND_WRITE not set — will skip auto-PR (download artifact instead)"
@@ -89,6 +91,8 @@ jobs:
         working-directory: cli-market-backend
         run: |
           set -euo pipefail
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
           VER="${CORE_PIN_VER}"
           BRANCH="chore/core-pin-${VER}"
           git config user.name "github-actions[bot]"

@@ -27,6 +27,8 @@ Repo: `https://github.com/Treevu-ai/cli-market-content` (private). CI `Not Found
 
 **Important:** editing PAT permissions on github.com does **not** update the secret — you must paste the token value again if you regenerated it.
 
+**Trailing newline:** if a PAT was pasted with an accidental Enter at the end, git push URLs break. Workflows `sync-core-git` and `publish-core-pypi` strip `\n`/`\r` from `GH_PAT` before use (fix merged 2026-06-12).
+
 ### Fine-grained PAT — `GH_PAT` must read `cli-market-backend`
 
 CI `contract_parity.py` checks out `Treevu-ai/cli-market-backend`. If checkout fails with HTTP 404:
