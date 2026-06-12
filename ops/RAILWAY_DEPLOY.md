@@ -94,4 +94,5 @@ curl -s "https://cli-market-production.up.railway.app/analytics/observatory?days
 |---------|-----|
 | Project | `d0353d46-78c9-4949-a03f-3ecdb78f06aa` |
 | Environment (production) | `036bd72a-f6d8-4c51-b2ab-50cfb261468b` |
+| API service | `6e74bc38-bbf2-4815-bac4-38092067d3b1` |
 | Collector service | `3813265a-1862-44a7-a723-62afa8a88dcf` |
