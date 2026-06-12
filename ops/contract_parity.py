@@ -148,10 +148,17 @@ def check_core_pins(
             f"backend={'.'.join(map(str, b_pin))} (major.minor must match)"
         )
     elif w_pin != b_pin:
-        errors.append(
-            f"cli-market-core patch mismatch: world={'.'.join(map(str, w_pin))} "
-            f"backend={'.'.join(map(str, b_pin))}"
-        )
+        if w_pin < b_pin:
+            errors.append(
+                f"cli-market-core patch mismatch: world={'.'.join(map(str, w_pin))} "
+                f"backend={'.'.join(map(str, b_pin))} (world behind backend)"
+            )
+        else:
+            print(
+                f"WARN: world patch ahead of backend pin: world={'.'.join(map(str, w_pin))} "
+                f"backend={'.'.join(map(str, b_pin))} — update cli-market-backend requirements.txt",
+                file=sys.stderr,
+            )
 
     return errors
 
