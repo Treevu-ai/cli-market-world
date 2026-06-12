@@ -5,6 +5,10 @@ on:
     # 12:55 UTC — 5 min before daily briefing (13:00 UTC)
     - cron: "55 12 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/gtm-ci-run.trigger
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

@@ -5,6 +5,10 @@ on:
     # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC — copy GTM a cada canal Slack
     - cron: "0 13 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/gtm-ci-run.trigger
     inputs:
       content_only:
         description: Solo contenido GTM (sin bitácora producto)
@@ -88,17 +92,25 @@ jobs:
             exit 1
           fi
           ARGS=()
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN="false"
+          CONTENT_ONLY="false"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DRY_RUN="${{ github.event.inputs.dry_run }}"
+            CONTENT_ONLY="${{ github.event.inputs.content_only }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            DRY_RUN="true"
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
           fi
-          if [ "${{ github.event.inputs.content_only }}" = "true" ]; then
+          if [ "$CONTENT_ONLY" = "true" ]; then
             python3 ops/daily_briefing.py "${ARGS[@]}" --content
           else
             python3 ops/daily_briefing.py "${ARGS[@]}"
           fi
 
       - name: Commit product daily reports
-        if: github.event.inputs.dry_run != 'true'
+        if: github.event_name != 'push' && (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -111,7 +123,7 @@ jobs:
           fi
 
       - name: Commit content daily reports
-        if: github.event.inputs.dry_run != 'true'
+        if: github.event_name != 'push' && (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true')
         working-directory: cli-market-content
         run: |
           git config user.name "github-actions[bot]"
@@ -125,7 +137,7 @@ jobs:
           fi
 
       - name: Upload artifacts
-        if: github.event.inputs.dry_run != 'true'
+        if: github.event_name != 'push' && (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true')
         uses: actions/upload-artifact@v6
         with:
           name: daily-briefing-${{ github.run_id }}
