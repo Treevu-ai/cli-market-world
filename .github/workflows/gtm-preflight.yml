@@ -17,24 +17,39 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Remote data-gate (prod dashboard)
+        run: python3 ops/gtm_gate_remote.py
+
       - uses: actions/checkout@v6
+        id: checkout-content
+        continue-on-error: true
         with:
           repository: Treevu-ai/cli-market-content
           path: cli-market-content
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
+      - name: Resolve content root
+        run: |
+          if [ -d cli-market-content/linkedin ]; then
+            echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
+            echo "Using cli-market-content checkout"
+          else
+            echo "::warning::cli-market-content checkout failed — using tools/content-repo-template (update GH_PAT read on content repo)"
+            echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/tools/content-repo-template" >> "$GITHUB_ENV"
+          fi
 
       - name: Install content repo deps
-        working-directory: cli-market-content
+        working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install httpx
 
       - name: make gate && make today
-        working-directory: cli-market-content
+        working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
         env:
           MARKET_API_URL: ${{ env.MARKET_API_URL }}
           LINKEDIN_CAMPAIGN_START: "2026-06-01"
@@ -42,5 +57,11 @@ jobs:
           LINKEDIN_COMPANY_DAY_OFFSET: "-1"
         run: |
           set -euo pipefail
-          make gate
-          make today
+          if [ -f Makefile ] && grep -q '^gate:' Makefile; then
+            make gate
+            make today
+          else
+            echo "::warning::Makefile gate/today missing — running world daily_briefing --content"
+            pip install httpx
+            python3 "${{ github.workspace }}/ops/daily_briefing.py" --content --dry-run
+          fi
