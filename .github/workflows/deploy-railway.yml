@@ -1,0 +1,124 @@
+# Deploy API + collector to Railway from cli-market-world (mirror = prod).
+#
+# One-time setup (Railway Dashboard):
+#   1. Project → Settings → Tokens → Create project token
+#   2. GitHub repo → Settings → Secrets → RAILWAY_TOKEN = <project token>
+#   3. GitHub repo → Settings → Variables:
+#        RAILWAY_API_SERVICE_ID       = <API service UUID>
+#        RAILWAY_COLLECTOR_SERVICE_ID = 3813265a-1862-44a7-a723-62afa8a88dcf  (known collector)
+#
+# Manual trigger: Actions → Deploy Railway → Run workflow
+
+name: Deploy Railway
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "api | collector | both"
+        required: false
+        default: both
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "Dockerfile.collector"
+      - "requirements-railway.txt"
+      - "railway.toml"
+      - "railway.collector.toml"
+      - "*.py"
+      - "routers/**"
+      - "ops/billing_slack.py"
+      - "ops/slack_notify.py"
+      - "ops/load_env.py"
+      - "ops/command_control_daily.py"
+      - ".github/workflows/deploy-railway.yml"
+
+concurrency:
+  group: deploy-railway-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
+  COLLECTOR_SERVICE_ID: ${{ vars.RAILWAY_COLLECTOR_SERVICE_ID }}
+
+jobs:
+  deploy-api:
+    name: Deploy API (cli-market-production)
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'api' || inputs.target == 'both'))
+      || (github.event_name == 'push')
+    container: ghcr.io/railwayapp/cli:5.2.0
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Railway credentials
+        run: |
+          if [ -z "${RAILWAY_TOKEN}" ]; then
+            echo "::error::Missing secret RAILWAY_TOKEN. Railway → Project → Settings → Tokens → add to GitHub Secrets."
+            exit 1
+          fi
+          if [ -z "${API_SERVICE_ID}" ]; then
+            echo "::error::Missing variable RAILWAY_API_SERVICE_ID. Railway → API service → Settings → Service ID → GitHub Variables."
+            exit 1
+          fi
+
+      - name: railway up (API)
+        run: railway up --service="${API_SERVICE_ID}" --detach
+
+  deploy-collector:
+    name: Deploy collector
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' && (inputs.target == 'collector' || inputs.target == 'both')
+    container: ghcr.io/railwayapp/cli:5.2.0
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Railway credentials
+        run: |
+          if [ -z "${RAILWAY_TOKEN}" ]; then
+            echo "::error::Missing secret RAILWAY_TOKEN."
+            exit 1
+          fi
+          if [ -z "${COLLECTOR_SERVICE_ID}" ]; then
+            echo "::error::Missing variable RAILWAY_COLLECTOR_SERVICE_ID (default: 3813265a-1862-44a7-a723-62afa8a88dcf)."
+            exit 1
+          fi
+
+      - name: railway up (collector)
+        run: railway up --service="${COLLECTOR_SERVICE_ID}" --detach
+
+  verify-api:
+    name: Verify prod version
+    needs: deploy-api
+    runs-on: ubuntu-latest
+    if: always() && needs.deploy-api.result == 'success'
+    steps:
+      - name: Wait for health
+        run: |
+          API="https://cli-market-production.up.railway.app"
+          for i in $(seq 1 24); do
+            code=$(curl -sS -o /tmp/health.json -w "%{http_code}" "$API/health" || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "Health OK after ${i} attempts"
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $code — waiting 15s"
+            sleep 15
+          done
+          echo "::error::API /health did not return 200 after 6 minutes"
+          exit 1
+
+      - name: Check OpenAPI version
+        run: |
+          ver=$(curl -sS https://cli-market-production.up.railway.app/openapi.json | python3 -c "import sys,json; print(json.load(sys.stdin)['info']['version'])")
+          echo "Prod OpenAPI version: $ver"
+          if [ "$ver" = "1.9.30" ]; then
+            echo "::warning::Still on 1.9.30 — confirm deploy finished or service ID is correct"
+          fi
