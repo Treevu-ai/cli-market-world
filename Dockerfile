@@ -20,7 +20,7 @@ RUN set -eux; \
     pip install --no-cache-dir -r requirements-railway.txt; \
     rm -f /root/.gitconfig
 
-ARG CACHE_BUST=1
+ARG CACHE_BUST=2026061202
 COPY *.py pyproject.toml ./
 COPY routers/ ./routers/
 # Slack ops (cron panels, revenue/funnel routing from API)
