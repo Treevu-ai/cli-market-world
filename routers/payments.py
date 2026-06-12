@@ -64,6 +64,7 @@ from market_core import (
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
 from routers.billing.pro_helpers import (
     duplicate_mp_checkout_payload,
+    is_manual_wallet_pro_payment_link,
     is_mp_billing_method,
     mp_pay_note,
     wallet_manual_fallback_enabled,
@@ -975,13 +976,21 @@ def _send_pro_activated_email_with_credentials(**kwargs) -> dict:
     )
 
 
-def _activate_pro_from_request(request_id: str, *, source: str) -> list[str]:
+_MANUAL_PRO_ACTIVATION_SOURCES = frozenset({"slack_interaction", "admin_api", "ops_manual"})
+
+
+def _activate_pro_from_request(request_id: str, *, source: str, force: bool = False) -> list[str]:
     """Mark subscription request paid and upgrade user to Pro."""
     req = db_find_subscription_request(request_id=request_id)
     if not req:
         return [f"request_not_found:{request_id}"]
     if (req.get("status") or "").lower() == "activated":
         return [f"already_activated:{request_id}"]
+
+    payment_link = (req.get("payment_link") or "").strip()
+    if source in _MANUAL_PRO_ACTIVATION_SOURCES and not force:
+        if not is_manual_wallet_pro_payment_link(payment_link):
+            return [f"payment_not_manual:{request_id}"]
 
     username = (req.get("username") or "").strip()
     if not username:

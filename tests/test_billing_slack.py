@@ -82,3 +82,58 @@ def test_funnel_register_digest_mode_skips_realtime(monkeypatch):
     monkeypatch.delenv("SLACK_FUNNEL_REALTIME", raising=False)
     monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
     assert notify_funnel_event(event="register", username="newuser") is False
+
+
+def test_pending_pro_paypal_skips_activate_button(monkeypatch):
+    from billing_slack import notify_subscription
+
+    delivered: dict = {}
+
+    def fake_deliver(text, blocks=None):
+        delivered["text"] = text
+        delivered["blocks"] = blocks
+        return True
+
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
+    monkeypatch.setattr("slack_notify.deliver_to_cli_market_pro", fake_deliver)
+
+    assert notify_subscription(
+        tier="pro",
+        status="pending",
+        username="free-user",
+        email="u@test.com",
+        request_id="PRO-PAYPAL",
+        payment_method="paypal",
+    )
+    assert delivered["blocks"] is None
+
+
+def test_pending_pro_yape_includes_activate_button(monkeypatch):
+    from billing_slack import notify_subscription
+
+    delivered: dict = {}
+
+    def fake_deliver(text, blocks=None):
+        delivered["text"] = text
+        delivered["blocks"] = blocks
+        return True
+
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
+    monkeypatch.setattr("slack_notify.deliver_to_cli_market_pro", fake_deliver)
+
+    assert notify_subscription(
+        tier="pro",
+        status="pending",
+        username="pe-user",
+        email="u@test.com",
+        request_id="PRO-YAPE",
+        payment_method="yape",
+        amount_pen=144.3,
+    )
+    assert delivered["blocks"] is not None
+    action_ids = [
+        el.get("action_id")
+        for block in delivered["blocks"]
+        for el in (block.get("elements") or [])
+    ]
+    assert "activate_pro_request" in action_ids
