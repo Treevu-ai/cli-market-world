@@ -2,8 +2,8 @@ name: Adoption Index Nightly
 
 on:
   schedule:
-    # 04:30 UTC — after collector refresh, before morning command-control
-    - cron: "30 4 * * *"
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
+    - cron: "0 13 * * *"
   workflow_dispatch:
 
 env:

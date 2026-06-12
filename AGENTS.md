@@ -79,10 +79,12 @@ Canales (un propósito por canal):
 | **bitácora** | `SLACK_CHANNEL_BITACORA` | Salud producto, deploys, go-live |
 | **revisiones-cursor** | `SLACK_CHANNEL_REVISIONES_CURSOR` | PRs / agentes |
 
-Ritual diario (automático vía GitHub Actions, sin terminal):
-- **07:30 PET** — `command-control-morning.yml` → `#command-control`
-- **08:00 PET (13:00 UTC)** — `daily-briefing.yml` → índice en `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
-- **tarde** — `funnel-digest-evening.yml` → `#funnel-cli-market`
+Ritual diario (automático vía GitHub Actions, **08:00 PET = 13:00 UTC**):
+- `command-control-morning.yml` → `#command-control`
+- `gtm-preflight.yml` → gate + `make today` (content)
+- `daily-briefing.yml` → índice en `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
+- `funnel-digest-evening.yml` → `#funnel-cli-market`
+- `adoption-index-nightly.yml`, `indicators-nightly.yml`, `observatory-nightly.yml`, `pam-nightly.yml` (jobs nocturnos / métricas)
 
 Manual si hace falta: `python3 ops/slack_cli.py briefing`. Funnel en tiempo real solo con `SLACK_FUNNEL_REALTIME=1`.
 
