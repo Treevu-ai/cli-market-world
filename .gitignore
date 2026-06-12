@@ -22,6 +22,7 @@ docs/awesome-claude-code/
 .env
 .env.local
 ops/.rotation-local.txt
+ops/.paypal-e2e-state.json
 
 # GTM / LinkedIn content lives in private cli-market-content (see docs/CONTENT.md)
 cli-market-content/
