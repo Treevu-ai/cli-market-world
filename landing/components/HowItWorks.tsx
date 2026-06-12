@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { usePaymentsChannels } from "@/lib/useBillingCopy";
 import { recordPipInstallIntent } from "@/lib/funnel";
 
 const mainSteps = [
@@ -38,6 +39,7 @@ const devSteps = [
 export default function HowItWorks() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const paymentsLabel = usePaymentsChannels(isES);
 
   return (
     <section id="how" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
@@ -97,14 +99,14 @@ export default function HowItWorks() {
             ))}
             <p className="text-xs text-[var(--cm-on-surface-variant)]/70 font-mono">
               {isES
-                ? `Bundles Shop · Intel · Account · checkout Pro vía ${MARKET_STATS.paymentsLabel}`
-                : `Shop · Intel · Account bundles · Pro checkout via ${MARKET_STATS.paymentsLabel}`}
+                ? `Bundles Shop · Intel · Account · checkout Pro vía ${paymentsLabel}`
+                : `Shop · Intel · Account bundles · Pro checkout via ${paymentsLabel}`}
             </p>
           </div>
         </details>
 
         <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mb-6 font-mono">
-          {isES ? `Checkout ${MARKET_STATS.paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${MARKET_STATS.paymentsLabel} · requires Pro plan + email activation`}
+          {isES ? `Checkout ${paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${paymentsLabel} · requires Pro plan + email activation`}
         </p>
 
         <p className="mt-4">
