@@ -20,11 +20,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  run:
+  deploy-collector:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      MARKET_API_URL: https://cli-market-production.up.railway.app
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
       RAILWAY_COLLECTOR_SERVICE_ID: ${{ vars.RAILWAY_COLLECTOR_SERVICE_ID }}
@@ -53,6 +52,16 @@ jobs:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           GH_PAT: ${{ secrets.GH_PAT }}
         run: python3 ops/railway_deploy.py --target collector
+
+  demote-user:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: deploy-collector
+    if: always()
+    env:
+      MARKET_API_URL: https://cli-market-production.up.railway.app
+    steps:
+      - uses: actions/checkout@v6
 
       - name: Demote user to free
         env:
