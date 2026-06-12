@@ -90,6 +90,87 @@ def _graphql(token: str, query: str, variables: dict | None = None) -> dict:
     return payload.get("data") or {}
 
 
+def _cli_env(project_token: str) -> dict[str, str]:
+    env = os.environ.copy()
+    env.pop("RAILWAY_API_TOKEN", None)
+    env["RAILWAY_TOKEN"] = project_token
+    return env
+
+
+def _run_railway_json(args: list[str], project_token: str, *, timeout: int = 120) -> object:
+    _ensure_railway_cli()
+    proc = subprocess.run(
+        args,
+        capture_output=True,
+        text=True,
+        env=_cli_env(project_token),
+        cwd=str(Path(__file__).resolve().parent.parent),
+        timeout=timeout,
+    )
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip()[:800]
+        raise RuntimeError(f"railway CLI failed ({proc.returncode}): {detail}")
+    raw = (proc.stdout or "").strip()
+    if not raw:
+        raise RuntimeError("railway CLI returned empty stdout")
+    return json.loads(raw)
+
+
+def list_services_cli(project_token: str) -> list[dict[str, str]]:
+    payload = _run_railway_json(
+        [
+            "railway",
+            "service",
+            "list",
+            f"--project={PROJECT_ID}",
+            f"--environment={ENVIRONMENT_ID}",
+            "--json",
+        ],
+        project_token,
+    )
+    rows: list[dict] = []
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict):
+        for key in ("services", "data", "items"):
+            if isinstance(payload.get(key), list):
+                rows = payload[key]
+                break
+        if not rows and payload.get("id") and payload.get("name"):
+            rows = [payload]
+    out: list[dict[str, str]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        sid = str(row.get("id") or row.get("serviceId") or "").strip()
+        name = str(row.get("name") or row.get("serviceName") or "").strip()
+        if sid:
+            out.append({"id": sid, "name": name or sid})
+    return out
+
+
+def _pick_api_service(services: list[dict[str, str]]) -> str:
+    candidates: list[tuple[str, str]] = []
+    for s in services:
+        sid, name = s["id"], s["name"]
+        lname = name.lower()
+        if sid == COLLECTOR_DEFAULT or any(x in lname for x in SKIP_NAME_PARTS):
+            continue
+        candidates.append((lname, sid))
+    for pref in API_NAME_PREFS:
+        for lname, sid in candidates:
+            if pref in lname:
+                return sid
+    if len(candidates) == 1:
+        return candidates[0][1]
+    if candidates:
+        return sorted(candidates)[0][1]
+    raise RuntimeError(
+        "Could not resolve API service. Set RAILWAY_API_SERVICE_ID. "
+        f"Services seen: {services}"
+    )
+
+
 def list_services(token: str) -> list[dict[str, str]]:
     query = """
     query projectServices($id: String!) {
@@ -110,31 +191,24 @@ def list_services(token: str) -> list[dict[str, str]]:
     return [{"id": e["node"]["id"], "name": e["node"]["name"]} for e in edges if e.get("node")]
 
 
-def resolve_api_service_ref(token: str) -> str:
+def resolve_api_service_ref(token: str, *, project_token: str = "") -> str:
     explicit = (os.getenv("RAILWAY_API_SERVICE_ID") or "").strip()
     if explicit:
         return explicit
-    if _is_project_token(token):
+    services: list[dict[str, str]] = []
+    if account := (token if token and not _is_project_token(token) else ""):
+        try:
+            services = list_services(account)
+        except RuntimeError:
+            services = []
+    if not services and project_token:
+        services = list_services_cli(project_token)
+    if services:
+        return _pick_api_service(services)
+    if project_token:
         return API_SERVICE_DEFAULT
-    services = list_services(token)
-    candidates: list[tuple[str, str]] = []
-    for s in services:
-        sid, name = s["id"], s["name"]
-        lname = name.lower()
-        if sid == COLLECTOR_DEFAULT or any(x in lname for x in SKIP_NAME_PARTS):
-            continue
-        candidates.append((lname, sid))
-    for pref in API_NAME_PREFS:
-        for lname, sid in candidates:
-            if pref in lname:
-                return sid
-    if len(candidates) == 1:
-        return candidates[0][1]
-    if candidates:
-        return sorted(candidates)[0][1]
     raise RuntimeError(
-        "Could not resolve API service. Set RAILWAY_API_SERVICE_ID. "
-        f"Services seen: {services}"
+        "Could not resolve API service. Set RAILWAY_API_SERVICE_ID or use a token that can list services."
     )
 
 
@@ -174,7 +248,7 @@ def deploy_up_cli(service_ref: str, project_token: str) -> None:
     """Upload checked-out repo to Railway (works with project token)."""
     root = Path(__file__).resolve().parent.parent
     _ensure_railway_cli()
-    env = {**os.environ, "RAILWAY_TOKEN": project_token}
+    env = _cli_env(project_token)
     subprocess.run(
         [
             "railway",
@@ -213,21 +287,24 @@ def main() -> int:
 
     list_token = account_token or project_token
     if args.list_services:
-        if not account_token:
-            print(
-                "list-services needs account token; project token cannot list via GraphQL.",
-                file=sys.stderr,
-            )
-            print(f"(default API service name: {API_SERVICE_DEFAULT})")
-            print(f"collector\t{COLLECTOR_DEFAULT}")
-            return 0
-        for s in list_services(list_token):
+        services: list[dict[str, str]] = []
+        if account_token:
+            try:
+                services = list_services(account_token)
+            except RuntimeError as exc:
+                print(f"GraphQL list failed: {exc}", file=sys.stderr)
+        if not services and project_token:
+            services = list_services_cli(project_token)
+        if not services:
+            print("No services listed — set RAILWAY_API_SERVICE_ID", file=sys.stderr)
+            return 1
+        for s in services:
             print(f"{s['id']}\t{s['name']}")
         return 0
 
     targets: list[tuple[str, str]] = []
     if args.target in ("api", "both"):
-        api_ref = resolve_api_service_ref(list_token)
+        api_ref = resolve_api_service_ref(list_token, project_token=project_token)
         targets.append(("api", api_ref))
     if args.target in ("collector", "both"):
         targets.append(("collector", COLLECTOR_DEFAULT))
