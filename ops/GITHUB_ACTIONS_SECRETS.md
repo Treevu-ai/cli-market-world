@@ -4,9 +4,9 @@ Secrets required for scheduled workflows. Configure in **Settings → Secrets an
 
 | Secret | Workflows | Scope / notes |
 |--------|-----------|----------------|
-| `MARKET_API_TOKEN` | Observatory nightly, adoption-index, indicators, command-control, PAM | Admin bearer token (same as Railway `MARKET_API_TOKEN`) |
-| `GH_PAT` | CI checkout (index, core, backend), daily-briefing, gtm-preflight | **Read** on: world, core, index, **cli-market-content**, cli-market-backend |
-| `GH_PAT_CONTENT` | daily-briefing, gtm-preflight (optional) | **Read** on `cli-market-content` only — use if `GH_PAT` cannot include all repos |
+| `MARKET_API_TOKEN` | **morning-ops-chain**, observatory, adoption-index, indicators, command-control, funnel-digest, PAM | Admin bearer token (same as Railway `MARKET_API_TOKEN`) |
+| `GH_PAT` | CI checkout (index, core, backend), morning-ops-chain (GTM steps), daily-briefing, gtm-preflight | **Read** on: world, core, index, **cli-market-content**, cli-market-backend |
+| `GH_PAT_CONTENT` | morning-ops-chain, daily-briefing, gtm-preflight (optional) | **Read** on `cli-market-content` only — use if `GH_PAT` cannot include all repos |
 | `GH_PAT_BACKEND_WRITE` | sync-backend-core-pin (optional) | **Write** on `cli-market-backend` only |
 | `SLACK_BOT_TOKEN` | daily-briefing, command-control (via API) | Bot invited to all GTM channels |
 | `DATABASE_URL` | auth-token-expiry-reminder (if used) | Postgres URL — **not** required for Observatory nightly (uses API cron) |
@@ -26,6 +26,17 @@ Repo: `https://github.com/Treevu-ai/cli-market-content` (private). CI `Not Found
 7. Actions → **Verify content PAT** → Run workflow (must show HTTP 200 + checkout OK)
 
 **Important:** editing PAT permissions on github.com does **not** update the secret — you must paste the token value again if you regenerated it.
+
+## Morning ops chain
+
+Daily cron lives in **`morning-ops-chain.yml`** only. Child workflows (`adoption-index-nightly`, `gtm-preflight`, etc.) are `workflow_dispatch` for ad-hoc runs.
+
+| Risk | Mitigation |
+|------|------------|
+| Any early job fails → no GTM that day | Fix upstream job; or run `gtm-preflight` + `daily-briefing` manually via dispatch |
+| PAM flake blocks briefing | Re-run chain from failed job, or dispatch briefing workflows directly |
+| "Re-run all jobs" on old run | Uses stale YAML — use **Run workflow** or bump `ops/gtm-ci-run.trigger` |
+| `make gate` in content repo | Broken locally (`$(python3 --version)`); CI uses `scripts/check-gate.py` |
 
 ## Common failures
 
