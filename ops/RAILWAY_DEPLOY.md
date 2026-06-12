@@ -28,14 +28,31 @@ GitHub → `Treevu-ai/cli-market-world` → **Settings** → **Secrets** → `RA
 
 > Usa **Project Token**, no el API token de cuenta.
 
-### 2. Service IDs (Variables de repo)
+### 2. (Opcional) Service IDs — solo si el auto-detect falla
 
-GitHub → **Settings** → **Variables**:
+Con `RAILWAY_TOKEN` basta para el deploy API: el workflow lista servicios y elige el que no es Postgres/collector.
 
-| Variable | Valor |
-|----------|--------|
-| `RAILWAY_COLLECTOR_SERVICE_ID` | `3813265a-1862-44a7-a723-62afa8a88dcf` |
-| `RAILWAY_API_SERVICE_ID` | UUID del servicio API en Railway (Settings del servicio que sirve `cli-market-production.up.railway.app`) |
+Si falla, añade **Variables** en GitHub:
+
+**URL directa:** https://github.com/Treevu-ai/cli-market-world/settings/variables/actions
+
+1. Click **New repository variable**
+2. Repite para cada fila:
+
+| Name | Value |
+|------|--------|
+| `RAILWAY_API_SERVICE_ID` | ver abajo cómo copiarlo en Railway |
+| `RAILWAY_COLLECTOR_SERVICE_ID` | `3813265a-1862-44a7-a723-62afa8a88dcf` (opcional; hay default) |
+
+#### Cómo copiar `RAILWAY_API_SERVICE_ID` en Railway
+
+1. Abre https://railway.com/dashboard
+2. Entra al proyecto **CLI Market** (o el que tenga `cli-market-production.up.railway.app`)
+3. En el canvas, click el **servicio API** — el que tiene dominio `cli-market-production` (no Postgres, no collector)
+4. Pestaña **Settings** → baja hasta **Service ID** → copiar UUID  
+   **O** mira la URL del navegador:
+   `https://railway.com/project/<PROJECT_ID>/service/<ESTE_ES_EL_SERVICE_ID>`
+5. Pega ese UUID en GitHub como valor de `RAILWAY_API_SERVICE_ID`
 
 ### 3. Disparar deploy
 
