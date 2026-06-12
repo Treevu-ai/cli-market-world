@@ -2,8 +2,8 @@ name: GTM preflight
 
 on:
   schedule:
-    # 12:55 UTC — 5 min before daily briefing (13:00 UTC)
-    - cron: "55 12 * * *"
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
+    - cron: "0 13 * * *"
   workflow_dispatch:
   push:
     branches: [main]

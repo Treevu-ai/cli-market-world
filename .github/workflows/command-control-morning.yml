@@ -2,8 +2,8 @@ name: Command Control Morning
 
 on:
   schedule:
-    # 12:30 UTC = 07:30 Perú — 30 min antes del daily briefing (13:00 UTC)
-    - cron: "30 12 * * *"
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
+    - cron: "0 13 * * *"
   workflow_dispatch:
     inputs:
       full:

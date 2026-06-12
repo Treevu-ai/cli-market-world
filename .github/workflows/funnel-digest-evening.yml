@@ -2,8 +2,8 @@ name: Funnel Digest Evening
 
 on:
   schedule:
-    # 23:00 UTC = 18:00 Perú (UTC-5) — digest vespertino de adopción
-    - cron: "0 23 * * *"
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
+    - cron: "0 13 * * *"
   workflow_dispatch:
     inputs:
       hours:
