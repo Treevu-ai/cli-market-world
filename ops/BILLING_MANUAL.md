@@ -94,7 +94,7 @@ Tokens en logs Railway / webhook `actions`:
 - `activation_draft_notify:…` — borrador ops enviado
 - `activation_email_failed` — fallo SMTP
 
-Rails con logging unificado: PayPal Pro webhook, Mercado Pago, Yape/Plin manual, admin resend. Excepción: `ops/activate_pro.py` (inline, sin `actions`).
+Rails con logging unificado: PayPal Pro webhook, Mercado Pago, Yape/Plin manual, admin resend, **`ops/activate_pro.py`** (vía `_activate_pro_from_request` / `_append_pro_activation_email_actions`).
 
 ## Reenviar correo de activación Pro
 

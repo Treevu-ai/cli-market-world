@@ -17,6 +17,30 @@ from market_core import (
 from procure_billing import is_procure_tier, resolve_tier_config, tier_to_procure_plan
 
 
+def revoke_api_key_by_value(api_key: str) -> dict | None:
+    """Revoke a compromised sk- key. Returns {username, key_id} or None."""
+    import hashlib
+
+    raw = (api_key or "").strip()
+    if not raw.startswith("sk-"):
+        return None
+    key_hash = hashlib.sha256(raw.encode()).hexdigest()
+    db = get_db()
+    row = db.execute(
+        "SELECT id, username FROM api_keys WHERE key_hash=?",
+        (key_hash,),
+    ).fetchone()
+    if not row:
+        db.close()
+        return None
+    key_id = row["id"]
+    username = row["username"]
+    db.execute("DELETE FROM api_keys WHERE id=?", (key_id,))
+    db.commit()
+    db.close()
+    return {"username": username, "key_id": key_id}
+
+
 def _rate_count(db, key: str, window_start: float) -> int:
     row = db.execute(
         "SELECT SUM(counter) as n FROM rate_limits WHERE key=? AND window_start >= ?",

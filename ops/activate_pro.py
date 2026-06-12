@@ -18,11 +18,109 @@ load_repo_env()
 
 from market_core import (  # noqa: E402
     db_find_subscription_request,
-    db_mark_subscription_request_activated,
     db_set_subscription,
     db_update_subscription_request_display_name,
     ensure_db_initialized,
 )
+
+
+def _print_activation_actions(actions: list[str]) -> int:
+    if any(a.startswith("pro_activated:") for a in actions):
+        username = next(a.split(":", 1)[1] for a in actions if a.startswith("pro_activated:"))
+        print(f"✓ Pro activated for {username}")
+    elif any(a.startswith("already_activated:") for a in actions):
+        print(f"✗ Already activated: {actions[0]}", file=sys.stderr)
+        return 1
+    elif any(a.startswith("payment_not_manual:") for a in actions):
+        print(
+            "✗ Refuses to activate: payment is PayPal/Mercado Pago — wait for webhook "
+            "or pass --force after manual verification.",
+            file=sys.stderr,
+        )
+        return 1
+    elif any(a.startswith("request_not_found:") for a in actions):
+        print(f"✗ {actions[0]}", file=sys.stderr)
+        return 1
+    else:
+        print(f"✗ Activation failed: {', '.join(actions)}", file=sys.stderr)
+        return 1
+
+    for action in actions:
+        if action.startswith("request_closed:"):
+            print(f"✓ Request {action.split(':', 1)[1]} marked activated")
+        elif action.startswith("activation_email:"):
+            print(f"✓ Activation email sent to {action.split(':', 1)[1]}")
+        elif action.startswith("activation_draft_notify:"):
+            print("✓ Draft reply sent to hello@cli-market.dev")
+        elif action.startswith("activation_email_skipped:"):
+            print(f"⚠ Email not sent: {action.split(':', 1)[1]}", file=sys.stderr)
+        elif action == "activation_email_failed":
+            print("⚠ Activation email failed", file=sys.stderr)
+    return 0
+
+
+def _activate_username_only(
+    username: str,
+    *,
+    customer_email: str,
+    request_id: str,
+    display_name: str,
+    pay_method: str,
+) -> int:
+    """Activate Pro without a PRO- billing request (comps / legacy ops)."""
+    result = db_set_subscription(username, "pro")
+    print(f"✓ Pro activated for {result['username']}")
+
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": "ops_manual", "request_id": request_id or None},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+
+    actions: list[str] = [f"pro_activated:{username}"]
+    if customer_email:
+        from routers.payments import _append_pro_activation_email_actions
+
+        _append_pro_activation_email_actions(
+            actions,
+            username=username,
+            email=customer_email,
+            request_id=request_id,
+            payment_method=pay_method,
+            source="ops_manual",
+            display_name=display_name,
+        )
+        for action in actions:
+            if action.startswith("activation_email:"):
+                print(f"✓ Activation email sent to {action.split(':', 1)[1]}")
+            elif action.startswith("activation_draft_notify:"):
+                print("✓ Draft reply sent to hello@cli-market.dev")
+            elif action.startswith("activation_email_skipped:"):
+                print(f"⚠ Email not sent: {action.split(':', 1)[1]}", file=sys.stderr)
+            elif action == "activation_email_failed":
+                print("⚠ Activation email failed", file=sys.stderr)
+
+    try:
+        from billing_slack import notify_pro_subscription
+
+        notify_pro_subscription(
+            status="activated",
+            username=username,
+            email=customer_email,
+            request_id=request_id,
+            source="ops_manual",
+            payment_method=pay_method,
+        )
+    except Exception:
+        pass
+
+    return 0
 
 
 def main() -> int:
@@ -62,44 +160,25 @@ def main() -> int:
     if not username:
         p.error("Provide username, --email, or --request-id")
 
-    if req and not args.force:
-        payment_link = (req.get("payment_link") or "").strip()
-        from routers.billing.pro_helpers import is_manual_wallet_pro_payment_link
-
-        if not is_manual_wallet_pro_payment_link(payment_link):
-            print(
-                "✗ Refuses to activate: payment is PayPal/Mercado Pago — wait for webhook "
-                "or pass --force after manual verification.",
-                file=sys.stderr,
-            )
-            return 1
-
-    result = db_set_subscription(username, "pro")
-    print(f"✓ Pro activated for {result['username']}")
-
-    try:
-        from market_funnel import record_funnel_event
-
-        record_funnel_event(
-            "activated",
-            username=username,
-            meta={"source": "ops_manual", "request_id": request_id or None},
-            dedupe=True,
-        )
-    except Exception:
-        pass
-
-    if not request_id and req:
-        request_id = req.get("id", "")
     display_override = (args.display_name or "").strip()
-    if request_id and display_override:
-        if db_update_subscription_request_display_name(request_id, display_override):
-            print(f"✓ Display name saved: {display_override}")
-            if req:
-                req["display_name"] = display_override
     if request_id:
-        db_mark_subscription_request_activated(request_id, username)
-        print(f"✓ Request {request_id} marked activated")
+        if display_override:
+            if db_update_subscription_request_display_name(request_id, display_override):
+                print(f"✓ Display name saved: {display_override}")
+                if req:
+                    req["display_name"] = display_override
+
+        from routers.payments import _activate_pro_from_request
+
+        actions = _activate_pro_from_request(
+            request_id,
+            source="ops_manual",
+            force=args.force,
+        )
+        code = _print_activation_actions(actions)
+        if code == 0:
+            print("\nNext: ask customer to run `market login` once, then `market` — Pro shows in the top bar.")
+        return code
 
     customer_email = ""
     if req:
@@ -109,64 +188,22 @@ def main() -> int:
 
     pay_method = "yape"
     if req:
-        pay_url = (req.get("payment_link") or "").strip().lower()
-        if pay_url.startswith("plin:"):
-            pay_method = "plin"
-        elif pay_url.startswith("mercadopago"):
-            pay_method = "mercadopago"
+        from routers.payments import _pro_payment_method_from_request
 
-    if customer_email:
-        try:
-            from account_service import build_pro_email_context, provision_pro_login_credentials
-            from market_connectors.email_outbound import send_pro_activated_email
+        pay_method = _pro_payment_method_from_request(req)
+    elif customer_email:
+        pay_method = "yape"
 
-            login_password = provision_pro_login_credentials(username)
-            ctx = build_pro_email_context(
-                username,
-                email=customer_email,
-                password=login_password,
-                display_name=display_override or (req.get("display_name") if req else "") or "",
-                request_id=request_id,
-                lang="es",
-                payment_method=pay_method,
-            )
-            mail = send_pro_activated_email(
-                to_email=ctx["email"] or customer_email,
-                username=ctx["username"],
-                lang=ctx["lang"],
-                request_id=ctx["request_id"],
-                payment_method=ctx["payment_method"],
-                source="ops_manual",
-                password=ctx["password"],
-                display_name=ctx["display_name"],
-            )
-            if mail.get("sent"):
-                print(f"✓ Activation email sent to {customer_email}")
-            if mail.get("gmail_draft"):
-                print(f"✓ Gmail draft created for {customer_email}")
-            elif mail.get("ops_notified"):
-                print("✓ Draft reply sent to hello@cli-market.dev")
-            elif not mail.get("sent"):
-                print(f"⚠ Email not sent: {mail.get('reason', 'unknown')}", file=sys.stderr)
-        except Exception as exc:
-            print(f"⚠ Activation email failed: {exc}", file=sys.stderr)
-
-    try:
-        from billing_slack import notify_pro_subscription
-
-        notify_pro_subscription(
-            status="activated",
-            username=username,
-            email=customer_email,
-            request_id=request_id,
-            source="ops_manual",
-            payment_method=pay_method,
-        )
-    except Exception:
-        pass
-
-    print("\nNext: ask customer to run `market login` once, then `market` — Pro shows in the top bar.")
-    return 0
+    code = _activate_username_only(
+        username,
+        customer_email=customer_email,
+        request_id=request_id,
+        display_name=display_override or (req.get("display_name") if req else "") or "",
+        pay_method=pay_method,
+    )
+    if code == 0:
+        print("\nNext: ask customer to run `market login` once, then `market` — Pro shows in the top bar.")
+    return code
 
 
 if __name__ == "__main__":
