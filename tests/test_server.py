@@ -1077,6 +1077,30 @@ def test_admin_disabled_without_token(monkeypatch):
     assert r.status_code == 503
 
 
+def test_admin_contacts_list(monkeypatch):
+    import server_deps
+    from market_core import get_db
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    db = get_db()
+    db.execute(
+        """
+        INSERT INTO contacts (chat_id, first_name, username, last_message, created_at, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+        """,
+        ("pam-contact-1", "starter", "ops@example.com", "[starter] PAM test lead"),
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/admin/contacts", headers={"Authorization": "Bearer ops-secret-token"})
+    assert r.status_code == 200
+    body = r.json()
+    assert "contacts" in body
+    assert body["count"] >= 1
+    assert any(c["chat_id"] == "pam-contact-1" for c in body["contacts"])
+
+
 # ── Intelligence brief (PR3) ─────────────────────────────────────────────────
 
 def test_intel_brief_requires_auth():

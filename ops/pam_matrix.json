@@ -1053,6 +1053,22 @@
       }
     },
     {
+      "id": "admin.contacts",
+      "tier": 1,
+      "phase": "admin",
+      "run_order": 10,
+      "name": "Admin contacts inbox",
+      "method": "GET",
+      "path": "/admin/contacts",
+      "auth": "admin",
+      "skip_if_env_missing": [
+        "MARKET_API_TOKEN"
+      ],
+      "expect": {
+        "status": 200
+      }
+    },
+    {
       "id": "admin.retailer_applications",
       "tier": 1,
       "phase": "admin",
