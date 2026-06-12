@@ -144,7 +144,7 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 
 Prod API (`cli-market-production.up.railway.app`) **no** se actualiza solo con push a `main`. Requiere:
 
-1. **Secret `RAILWAY_API_TOKEN`** — account token de https://railway.com/account/tokens (no project token)
+1. **Secret `RAILWAY_TOKEN`** (project token, más fácil) o **`RAILWAY_API_TOKEN`** (account token)
 2. En **GitHub Actions secrets** y/o **Cursor Cloud secrets**
 3. Disparar: `python3 ops/railway_deploy.py --target both` o workflow **Deploy Railway**
 

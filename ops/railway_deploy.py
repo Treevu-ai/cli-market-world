@@ -24,6 +24,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -34,16 +36,34 @@ GRAPHQL_URL = "https://backboard.railway.com/graphql/v2"
 PROJECT_ID = os.getenv("RAILWAY_PROJECT_ID", "d0353d46-78c9-4949-a03f-3ecdb78f06aa")
 ENVIRONMENT_ID = os.getenv("RAILWAY_ENVIRONMENT_ID", "036bd72a-f6d8-4c51-b2ab-50cfb261468b")
 COLLECTOR_DEFAULT = os.getenv("RAILWAY_COLLECTOR_SERVICE_ID", "3813265a-1862-44a7-a723-62afa8a88dcf")
+API_SERVICE_DEFAULT = os.getenv("RAILWAY_API_SERVICE_NAME", "cli-market-production")
 SKIP_NAME_PARTS = ("postgres", "redis", "database", "db", "collector")
 API_NAME_PREFS = ("cli-market-production", "production", "api", "world", "backend", "web")
+_PROJECT_TOKEN_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
 
 
-def _token() -> str:
-    for key in ("RAILWAY_API_TOKEN", "RAILWAY_TOKEN", "RAILWAY_PROJECT_TOKEN"):
-        val = (os.getenv(key) or "").strip()
-        if val:
-            return val
-    return ""
+def _is_project_token(token: str) -> bool:
+    return bool(_PROJECT_TOKEN_RE.match(token))
+
+
+def _tokens() -> tuple[str, str]:
+    """Return (account_token, project_token)."""
+    account = (os.getenv("RAILWAY_API_TOKEN") or "").strip()
+    project = (os.getenv("RAILWAY_TOKEN") or os.getenv("RAILWAY_PROJECT_TOKEN") or "").strip()
+    if account and _is_project_token(account) and not project:
+        project = account
+        account = ""
+    elif account and _is_project_token(account) and project:
+        account = ""
+    return account, project
+
+
+def _any_token() -> str:
+    account, project = _tokens()
+    return account or project
 
 
 def _graphql(token: str, query: str, variables: dict | None = None) -> dict:
@@ -90,10 +110,12 @@ def list_services(token: str) -> list[dict[str, str]]:
     return [{"id": e["node"]["id"], "name": e["node"]["name"]} for e in edges if e.get("node")]
 
 
-def resolve_api_service_id(token: str) -> str:
+def resolve_api_service_ref(token: str) -> str:
     explicit = (os.getenv("RAILWAY_API_SERVICE_ID") or "").strip()
     if explicit:
         return explicit
+    if _is_project_token(token):
+        return API_SERVICE_DEFAULT
     services = list_services(token)
     candidates: list[tuple[str, str]] = []
     for s in services:
@@ -137,16 +159,36 @@ def deploy_graphql(token: str, service_id: str, *, latest_commit: bool = True) -
     )
 
 
-def deploy_cli(service_id: str) -> None:
+def _ensure_railway_cli() -> str:
+    path = shutil.which("railway")
+    if path:
+        return path
+    subprocess.run(["npm", "install", "-g", "@railway/cli"], check=True, timeout=300)
+    path = shutil.which("railway")
+    if not path:
+        raise RuntimeError("railway CLI not found after npm install")
+    return path
+
+
+def deploy_up_cli(service_ref: str, project_token: str) -> None:
+    """Upload checked-out repo to Railway (works with project token)."""
     root = Path(__file__).resolve().parent.parent
-    token = _token()
-    env = {**os.environ, "RAILWAY_TOKEN": token} if token else os.environ.copy()
+    _ensure_railway_cli()
+    env = {**os.environ, "RAILWAY_TOKEN": project_token}
     subprocess.run(
-        ["railway", "up", f"--service={service_id}", "--detach"],
+        [
+            "railway",
+            "up",
+            "--detach",
+            "--ci",
+            f"--service={service_ref}",
+            f"--project={PROJECT_ID}",
+            f"--environment={ENVIRONMENT_ID}",
+        ],
         cwd=str(root),
         env=env,
         check=True,
-        timeout=600,
+        timeout=900,
     )
 
 
@@ -158,46 +200,65 @@ def main() -> int:
     parser.add_argument("--use-cli", action="store_true", help="Force railway up instead of GraphQL")
     args = parser.parse_args()
 
-    token = _token()
-    if not token:
+    account_token, project_token = _tokens()
+    if not account_token and not project_token:
         print(
-            "ERROR: Set RAILWAY_API_TOKEN (account token, recommended) or RAILWAY_TOKEN.\n"
-            "  Account token: https://railway.com/account/tokens → Team → No team\n"
-            "  GitHub: Settings → Secrets → RAILWAY_API_TOKEN\n"
-            "  Cursor Cloud: dashboard → Secrets → RAILWAY_API_TOKEN",
+            "ERROR: Set RAILWAY_API_TOKEN (account) and/or RAILWAY_TOKEN (project).\n"
+            "  Account (GraphQL latest commit): https://railway.com/account/tokens\n"
+            "  Project (railway up from CI): Railway project → Settings → Tokens\n"
+            "  GitHub: Settings → Secrets → Actions",
             file=sys.stderr,
         )
         return 1
 
+    list_token = account_token or project_token
     if args.list_services:
-        for s in list_services(token):
+        if not account_token:
+            print(
+                "list-services needs account token; project token cannot list via GraphQL.",
+                file=sys.stderr,
+            )
+            print(f"(default API service name: {API_SERVICE_DEFAULT})")
+            print(f"collector\t{COLLECTOR_DEFAULT}")
+            return 0
+        for s in list_services(list_token):
             print(f"{s['id']}\t{s['name']}")
         return 0
 
     targets: list[tuple[str, str]] = []
     if args.target in ("api", "both"):
-        api_id = resolve_api_service_id(token)
-        targets.append(("api", api_id))
+        api_ref = resolve_api_service_ref(list_token)
+        targets.append(("api", api_ref))
     if args.target in ("collector", "both"):
         targets.append(("collector", COLLECTOR_DEFAULT))
 
-    for label, sid in targets:
-        print(f"Deploy {label}: service_id={sid}")
+    use_cli_only = args.use_cli or (not account_token and bool(project_token))
+
+    for label, service_ref in targets:
+        print(f"Deploy {label}: service={service_ref}")
         if args.dry_run:
             continue
-        if args.use_cli:
-            deploy_cli(sid)
-        else:
-            try:
-                deploy_graphql(token, sid, latest_commit=True)
-                print(f"  GraphQL serviceInstanceDeploy OK ({label})")
-            except RuntimeError as exc:
-                msg = str(exc)
-                if "Not Authorized" in msg or "not authorized" in msg.lower():
-                    print("  GraphQL deploy denied — retrying with railway CLI...", file=sys.stderr)
-                    deploy_cli(sid)
-                else:
-                    raise
+        if use_cli_only:
+            if not project_token:
+                raise RuntimeError(
+                    f"CLI deploy for {label} requires RAILWAY_TOKEN (project token)"
+                )
+            deploy_up_cli(service_ref, project_token)
+            print(f"  railway up OK ({label})")
+            continue
+        try:
+            deploy_graphql(account_token, service_ref, latest_commit=True)
+            print(f"  GraphQL serviceInstanceDeploy OK ({label})")
+        except RuntimeError as exc:
+            msg = str(exc)
+            if project_token and (
+                "Not Authorized" in msg or "not authorized" in msg.lower()
+            ):
+                print("  GraphQL denied — falling back to railway up...", file=sys.stderr)
+                deploy_up_cli(service_ref, project_token)
+                print(f"  railway up OK ({label})")
+            else:
+                raise
 
     return 0
 
