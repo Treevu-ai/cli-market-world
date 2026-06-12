@@ -13,6 +13,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+API_SERVICE_ID_DEFAULT = "6e74bc38-bbf2-4815-bac4-38092067d3b1"
+
 from market_core import (  # noqa: E402
     db_find_subscription_request,
     db_get_subscription,
@@ -30,8 +32,12 @@ def _load_railway_database_url() -> str:
     env = os.environ.copy()
     env.pop("RAILWAY_API_TOKEN", None)
     env["RAILWAY_TOKEN"] = token
+    service_id = (
+        os.getenv("RAILWAY_API_SERVICE_ID", API_SERVICE_ID_DEFAULT).strip()
+        or API_SERVICE_ID_DEFAULT
+    )
     proc = subprocess.run(
-        [railway, "variables", "--json", "--service", os.getenv("RAILWAY_API_SERVICE_ID", "6e74bc38-bbf2-4815-bac4-38092067d3b1")],
+        [railway, "variables", "--json", "--service", service_id],
         capture_output=True,
         text=True,
         cwd=str(ROOT),
