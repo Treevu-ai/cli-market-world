@@ -40,3 +40,16 @@ def test_classify_route_skips_health():
     from market_observatory import classify_route
 
     assert classify_route("GET", "/health") == (None, None)
+    assert classify_route("GET", "/index/stats") == (None, None)
+
+
+def test_internal_tool_skipped():
+    from market_observatory import record_agent_event
+
+    result = record_agent_event(
+        agent_id="obs-test-agent",
+        tool_name="index_stats",
+        success=True,
+        identity_source="x_agent_id",
+    )
+    assert result.get("skipped") is True
