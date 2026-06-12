@@ -6,8 +6,8 @@ Secrets required for scheduled workflows. Configure in **Settings → Secrets an
 |--------|-----------|----------------|
 | `MARKET_API_TOKEN` | **morning-ops-chain**, observatory, adoption-index, indicators, command-control, funnel-digest, PAM | Admin bearer token (same as Railway `MARKET_API_TOKEN`) |
 | `GH_PAT` | CI checkout (index, core, backend), morning-ops-chain (GTM steps), daily-briefing, gtm-preflight | **Read** on: world, core, index, **cli-market-content**, cli-market-backend |
-| `GH_PAT_CONTENT` | morning-ops-chain, daily-briefing, gtm-preflight (optional) | **Read** on `cli-market-content` only — use if `GH_PAT` cannot include all repos |
-| `GH_PAT_BACKEND_WRITE` | sync-backend-core-pin (optional) | **Write** on `cli-market-backend` only |
+| `GH_PAT_CONTENT` | morning-ops-chain, daily-briefing, gtm-preflight, verify-content-pat | **Read and write** on `cli-market-content` — commits de `generated/daily/` |
+| `GH_PAT_BACKEND_WRITE` | sync-backend-core-pin | **Read and write** on `cli-market-backend` only — auto-PR del pin de core |
 | `SLACK_BOT_TOKEN` | daily-briefing, command-control (via API) | Bot invited to all GTM channels |
 | `DATABASE_URL` | auth-token-expiry-reminder (if used) | Postgres URL — **not** required for Observatory nightly (uses API cron) |
 
@@ -20,12 +20,45 @@ Repo: `https://github.com/Treevu-ai/cli-market-content` (private). CI `Not Found
 1. GitHub → Settings → Developer settings → Fine-grained tokens → **Generate**
 2. Resource owner: **Treevu-ai**
 3. Repository access: **Only select** → add `cli-market-content` (and other repos CI needs)
-4. Permissions → Repository → **Contents: Read**
+4. Permissions → Repository → **Contents: Read and write** (write = Daily Briefing hace `git push` al content repo)
 5. If org uses SSO: **Authorize** the token for Treevu-ai
-6. Copy token → `cli-market-world` → Settings → Secrets → update **`GH_PAT`** (or set **`GH_PAT_CONTENT`**)
-7. Actions → **Verify content PAT** → Run workflow (must show HTTP 200 + checkout OK)
+6. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_CONTENT`**
+7. Bump `ops/gtm-ci-run.trigger` en `main` → dispara **Verify content PAT** + GTM smoke
 
 **Important:** editing PAT permissions on github.com does **not** update the secret — you must paste the token value again if you regenerated it.
+
+### Fine-grained PAT — `cli-market-backend` (`GH_PAT_BACKEND_WRITE`)
+
+1. GitHub → Settings → Developer settings → Fine-grained tokens → **Generate**
+2. **Token name:** `cli-market-world-backend-write`
+3. **Resource owner:** **Treevu-ai**
+4. **Repository access:** **Only select** → `cli-market-backend`
+5. **Permissions → Contents:** **Read and write**
+6. **Pull requests:** **Read and write** (para que `gh pr create` funcione en el workflow)
+7. SSO → **Authorize** for Treevu-ai
+8. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
+9. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.34`)
+
+Verificar token antes de guardar:
+
+```bash
+export GH_PAT_BACKEND_WRITE="github_pat_..."
+curl -sS -o /dev/null -w "read repo HTTP %{http_code}\n" \
+  -H "Authorization: Bearer $GH_PAT_BACKEND_WRITE" \
+  https://api.github.com/repos/Treevu-ai/cli-market-backend
+# Expect: 200
+```
+
+## Hoy — founder (2026-06-12)
+
+| # | Acción | Dónde |
+|---|--------|-------|
+| 1 | Publicar posts del día | Local: `cd cli-market-content && make publish date=2026-06-12` |
+| 2 | Secret `GH_PAT_BACKEND_WRITE` | [Secrets](https://github.com/Treevu-ai/cli-market-world/settings/secrets/actions) → guía arriba |
+| 3 | Bump backend pin CI | Tras secret: editar `ops/backend-pin.trigger` → commit `main` |
+| 4 | Morning Ops Chain | **Mañana 08:00 PET** — revisar Actions entonces |
+
+GTM copy ya en Slack (`#publicaciones`, `#linkedin-personal`). Falta publicar en redes + `make publish`.
 
 ## Morning ops chain
 

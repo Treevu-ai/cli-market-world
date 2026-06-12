@@ -117,14 +117,15 @@ fc ..\cli-market-backend\routers\observatory.py .\routers\observatory.py
 
 ---
 
-## 6. Versiones alineadas (plantilla release)
+## 6. Versiones alineadas (release 2026-06-12)
 
 | Artefacto | Versión |
 |-----------|---------|
-| cli-market-core PyPI | |
-| cli-market-world PyPI | |
-| cli-market-backend deploy SHA | |
-| cli-market-index pin (sin cambio) | `2bfa6d2…` |
+| cli-market-core PyPI | **1.9.34** |
+| cli-market-world PyPI | **1.9.34** |
+| Railway prod (world deploy) | OpenAPI **1.9.34** · deploy verde 2026-06-12 |
+| cli-market-backend pin | **pendiente** — `GH_PAT_BACKEND_WRITE` + bump `ops/backend-pin.trigger` |
+| cli-market-index pin (sin cambio) | `9d050131e9e5b16381581d1916e386f34d319ca6` |
 
 ---
 

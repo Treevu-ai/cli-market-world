@@ -57,15 +57,17 @@ Campos trackeados para sparklines:
 
 Ver `ops/DEPLOYMENT_MONITORING_DAILY_COMMANDS.md` para el runbook completo.
 
-Orden sugerido cada mañana:
+Orden sugerido cada mañana (automático vía `morning-ops-chain.yml` @ 08:00 PET):
 
-1. `python ops/command_control_daily.py --slack --remote`
-2. `python ops/daily_briefing.py`
-3. `python ops/go_live_check.py --remote`
-4. `python ops/production_acceptance.py --phase user --tier 2`
-5. Content repo: `make today` → `make gate` → `make content`
+1. Revisar Actions → **Morning Ops Chain** (9 jobs verdes)
+2. Publicar en redes el copy que ya está en Slack GTM
+3. Content repo: `make publish date=YYYY-MM-DD`
 
-Tarde (~18:00): `python ops/funnel_digest_daily.py --slack` → `#funnel-cli-market` (adopción; dinero sigue en `#suscripciones-cli-pro`).
+Manual si la cadena falló: `gtm-preflight` + `daily-briefing` (bump `ops/gtm-ci-run.trigger`).
+
+**Hoy (post-briefing):** copy en `#publicaciones` y `#linkedin-personal` → publicar LI → `cd cli-market-content && make publish date=2026-06-12`
+
+Funnel digest: mismo bloque matutino (chain) → `#funnel-cli-market`. Revenue sigue en `#suscripciones-cli-pro`.
 
 ## Index API (Golden Records)
 

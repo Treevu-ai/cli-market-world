@@ -8,8 +8,8 @@ Instrucciones para agentes (Cursor, Cloud Agent, CI). Este archivo es la entrada
 |------|-----------|------------|------------------------|
 | `cli-market-index` | Golden Records, entity resolution | `../cli-market-index` | Pin git en backend `requirements-private.txt` |
 | `cli-market-core` | Intelligence SDK — MCP, billing, indicators | `../cli-market-core` | PyPI `cli-market-core` |
-| `cli-market-backend` | **API producción** — collector, FastAPI, telemetría prod | `../cli-market-backend` | Railway |
-| `cli-market-world` | PyPI `cli-market-world`, landing, ops/CI, mirror API dev | `.` | PyPI + Cloudflare landing |
+| `cli-market-backend` | Mirror API — paridad con prod; pin `cli-market-core` | `../cli-market-backend` | Sin deploy directo (sync manual / auto-PR) |
+| `cli-market-world` | **Railway prod** + PyPI `cli-market-world`, landing, ops/CI | `.` | Railway + PyPI + Cloudflare landing |
 
 **Orden de release** (cualquier feature cross-repo): **core → backend → world → index** (index solo si aplica). Checklists: `ops/PRICING-CHANGE-CHECKLIST.md`, `ops/OBSERVATORY-CHANGE-CHECKLIST.md`, `ops/RELEASE-DISPERSION.md`.
 
