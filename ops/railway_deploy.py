@@ -259,7 +259,7 @@ def _ensure_railway_cli() -> str:
     return path
 
 
-def deploy_up_cli(service_ref: str, project_token: str) -> None:
+def deploy_up_cli(service_ref: str, project_token: str, *, collector: bool = False) -> None:
     """Upload checked-out repo to Railway (works with project token)."""
     root = Path(__file__).resolve().parent.parent
     _ensure_railway_cli()
@@ -287,16 +287,32 @@ def deploy_up_cli(service_ref: str, project_token: str) -> None:
             "WARNING: GH_PAT / GITHUB_TOKEN not set — Docker build will fail on cli-market-index clone",
             file=sys.stderr,
         )
-    # --ci waits for build logs; do not combine with --detach (exits after upload).
+    cmd = [
+        "railway",
+        "up",
+        "--ci",
+        f"--service={service_ref}",
+        f"--project={PROJECT_ID}",
+        f"--environment={ENVIRONMENT_ID}",
+    ]
+    if collector:
+        subprocess.run(
+            [
+                "railway",
+                "variable",
+                "set",
+                "RAILWAY_DOCKERFILE_PATH=Dockerfile.collector",
+                f"--service={service_ref}",
+                f"--environment={ENVIRONMENT_ID}",
+                "--skip-deploys",
+            ],
+            cwd=str(root),
+            env=env,
+            check=False,
+            timeout=120,
+        )
     subprocess.run(
-        [
-            "railway",
-            "up",
-            "--ci",
-            f"--service={service_ref}",
-            f"--project={PROJECT_ID}",
-            f"--environment={ENVIRONMENT_ID}",
-        ],
+        cmd,
         cwd=str(root),
         env=env,
         check=True,
@@ -358,7 +374,7 @@ def main() -> int:
                 raise RuntimeError(
                     f"CLI deploy for {label} requires RAILWAY_TOKEN (project token)"
                 )
-            deploy_up_cli(service_ref, project_token)
+            deploy_up_cli(service_ref, project_token, collector=(label == "collector"))
             print(f"  railway up OK ({label})")
             continue
         try:
@@ -370,7 +386,7 @@ def main() -> int:
                 "Not Authorized" in msg or "not authorized" in msg.lower()
             ):
                 print("  GraphQL denied — falling back to railway up...", file=sys.stderr)
-                deploy_up_cli(service_ref, project_token)
+                deploy_up_cli(service_ref, project_token, collector=(label == "collector"))
                 print(f"  railway up OK ({label})")
             else:
                 raise

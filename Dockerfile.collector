@@ -10,11 +10,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 libpango-1.0-0 libcairo2 libasound2 && \
     rm -rf /var/lib/apt/lists/*
 
+ARG GITHUB_TOKEN
+ARG GH_PAT
+
 # The data-moat modules + market_connectors/ now come from cli-market-core
 # (public repo — no auth needed). Only the collector entrypoint stays in-tree.
 COPY requirements-railway.txt .
-RUN pip install --no-cache-dir -r requirements-railway.txt && \
-    playwright install chromium
+RUN set -eux; \
+    TOKEN="${GITHUB_TOKEN:-${GH_PAT:-}}"; \
+    if [ -n "${TOKEN}" ]; then \
+      git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"; \
+    fi; \
+    pip install --no-cache-dir -r requirements-railway.txt && \
+    playwright install chromium; \
+    rm -f /root/.gitconfig
 
 COPY collect_prices.py ./
 
