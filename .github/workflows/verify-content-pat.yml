@@ -2,6 +2,10 @@ name: Verify content PAT
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ops/gtm-ci-run.trigger
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
