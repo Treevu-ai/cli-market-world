@@ -84,7 +84,7 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 
 - [x] `landing/app/stats/page.tsx` — consume `/analytics/observatory`
 - [x] `landing/app/legal/privacy/page.tsx` — telemetría agregada MCP (2026-06-12)
-- [ ] `ops/sync_market_stats.py` — ejecutar post-release si `/stats` expone cifras en `MARKET_STATS`
+- [x] `ops/sync_market_stats.py` — ejecutado 2026-06-12 (PyPI 27k, linkage 84.4%, v1.9.34)
 
 ### 3e. Release
 
