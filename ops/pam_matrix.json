@@ -1,7 +1,7 @@
 {
   "version": "1.1.0",
   "product": "CLI Market",
-  "updated": "2026-06-06",
+  "updated": "2026-06-12",
   "defaults": {
     "api_base": "https://cli-market-production.up.railway.app",
     "landing_base": "https://cli-market.dev",
@@ -19,7 +19,7 @@
       "phase": "manual",
       "tier": 1,
       "name": "pip install cli-market-world en venv limpio",
-      "steps": "python -m venv /tmp/pam-venv && pip install -U cli-market-world && market hello"
+      "steps": "python -m venv /tmp/pam-venv && pip install -U cli-market && market hello"
     },
     {
       "id": "cli.journey_synthetic",
@@ -61,7 +61,7 @@
       "phase": "manual",
       "tier": 3,
       "name": "E2E Pro request + PayPal sandbox",
-      "steps": "Ver ops/E2E_CLIENT_JOURNEY.md — request-pro → activate_pro → market checkout"
+      "steps": "Ver ops/E2E_CLIENT_JOURNEY.md — pro-checkout → activate_pro → market checkout"
     },
     {
       "id": "payments.mp",
@@ -348,11 +348,12 @@
       "id": "public.billing_request_pro",
       "tier": 1,
       "phase": "public",
-      "name": "Pro upgrade funnel (request-pro fallback)",
+      "name": "Pro upgrade funnel (request-pro legacy)",
       "method": "POST",
       "path": "/billing/request-pro",
       "body": {
         "email": "pam+{{run_id}}@cli-market.dev",
+        "username": "pam-user",
         "lang": "es"
       },
       "expect": {
@@ -375,6 +376,7 @@
       "path": "/billing/pro-checkout",
       "body": {
         "email": "pam+pp+{{run_id}}@cli-market.dev",
+        "username": "pam-user",
         "lang": "es",
         "payment_method": "paypal"
       },
@@ -394,11 +396,12 @@
       "id": "public.billing_pro_checkout_yape",
       "tier": 1,
       "phase": "public",
-      "name": "Pro checkout Yape QR channel",
+      "name": "Pro checkout Yape channel",
       "method": "POST",
       "path": "/billing/pro-checkout",
       "body": {
         "email": "pam+yape+{{run_id}}@cli-market.dev",
+        "username": "pam-user",
         "lang": "es",
         "payment_method": "yape"
       },
@@ -406,9 +409,9 @@
         "status": 200,
         "json_has": [
           "ok",
-          "qr_url",
           "request_id",
-          "amount_pen"
+          "amount_pen",
+          "checkout_url"
         ]
       }
     },
@@ -416,11 +419,12 @@
       "id": "public.billing_pro_checkout_plin",
       "tier": 1,
       "phase": "public",
-      "name": "Pro checkout Plin QR channel",
+      "name": "Pro checkout Plin channel",
       "method": "POST",
       "path": "/billing/pro-checkout",
       "body": {
         "email": "pam+plin+{{run_id}}@cli-market.dev",
+        "username": "pam-user",
         "lang": "es",
         "payment_method": "plin"
       },
@@ -428,9 +432,9 @@
         "status": 200,
         "json_has": [
           "ok",
-          "qr_url",
           "request_id",
-          "amount_pen"
+          "amount_pen",
+          "checkout_url"
         ]
       }
     },
@@ -443,6 +447,7 @@
       "path": "/billing/pro-checkout",
       "body": {
         "email": "pam+mp+{{run_id}}@cli-market.dev",
+        "username": "pam-user",
         "lang": "es",
         "payment_method": "mercadopago"
       },

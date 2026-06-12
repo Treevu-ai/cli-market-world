@@ -6,7 +6,7 @@
 
 version: "1.1.0"
 product: CLI Market
-updated: "2026-06-06"
+updated: "2026-06-12"
 
 defaults:
   api_base: https://cli-market-production.up.railway.app
@@ -55,7 +55,7 @@ manual_checklist:
     phase: manual
     tier: 3
     name: "E2E Pro request + PayPal sandbox"
-    steps: "Ver ops/E2E_CLIENT_JOURNEY.md — request-pro → activate_pro → market checkout"
+    steps: "Ver ops/E2E_CLIENT_JOURNEY.md — pro-checkout → activate_pro → market checkout"
   - id: payments.mp
     phase: manual
     tier: 3
@@ -258,11 +258,12 @@ cases:
   - id: public.billing_request_pro
     tier: 1
     phase: public
-    name: Pro upgrade funnel (request-pro fallback)
+    name: Pro upgrade funnel (request-pro legacy)
     method: POST
     path: /billing/request-pro
     body:
       email: "pam+{{run_id}}@cli-market.dev"
+      username: pam-user
       lang: es
     expect:
       status: 200
@@ -278,6 +279,7 @@ cases:
     path: /billing/pro-checkout
     body:
       email: "pam+pp+{{run_id}}@cli-market.dev"
+      username: pam-user
       lang: es
       payment_method: paypal
     expect:
@@ -287,30 +289,32 @@ cases:
   - id: public.billing_pro_checkout_yape
     tier: 1
     phase: public
-    name: Pro checkout Yape QR channel
+    name: Pro checkout Yape channel
     method: POST
     path: /billing/pro-checkout
     body:
       email: "pam+yape+{{run_id}}@cli-market.dev"
+      username: pam-user
       lang: es
       payment_method: yape
     expect:
       status: 200
-      json_has: [ok, qr_url, request_id, amount_pen]
+      json_has: [ok, request_id, amount_pen, checkout_url]
 
   - id: public.billing_pro_checkout_plin
     tier: 1
     phase: public
-    name: Pro checkout Plin QR channel
+    name: Pro checkout Plin channel
     method: POST
     path: /billing/pro-checkout
     body:
       email: "pam+plin+{{run_id}}@cli-market.dev"
+      username: pam-user
       lang: es
       payment_method: plin
     expect:
       status: 200
-      json_has: [ok, qr_url, request_id, amount_pen]
+      json_has: [ok, request_id, amount_pen, checkout_url]
 
   - id: public.billing_pro_checkout_mercadopago
     tier: 1
@@ -320,6 +324,7 @@ cases:
     path: /billing/pro-checkout
     body:
       email: "pam+mp+{{run_id}}@cli-market.dev"
+      username: pam-user
       lang: es
       payment_method: mercadopago
     expect:
