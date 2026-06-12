@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { sinapsisBillingPolicy, paymentsChannelsShort } from "@/lib/billingCopy";
+import { sinapsisBillingPolicy } from "@/lib/billingCopy";
+import { usePaymentsChannels } from "@/lib/useBillingCopy";
 import PrereqBlock from "@/components/PrereqBlock";
 
 type SnippetTab = "curl" | "python" | "mcp";
@@ -80,6 +81,7 @@ print(r.json())`,
 export default function DocsPage() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const paymentsLabel = usePaymentsChannels(isES);
   const [tab, setTab] = useState<SnippetTab>("curl");
   const [bundleTab, setBundleTab] = useState<BundleKey>("shop");
   const [copied, setCopied] = useState(false);
@@ -162,8 +164,8 @@ export default function DocsPage() {
               <p className="font-mono text-lg text-white">10,000 req/day · USD 39/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
-                  `Checkout ${MARKET_STATS.paymentsLabel} · 10 claves · Intel MCP.`,
-                  `Checkout ${MARKET_STATS.paymentsLabel} · 10 keys · Intel MCP.`,
+                  `Checkout ${paymentsLabel} · 10 claves · Intel MCP.`,
+                  `Checkout ${paymentsLabel} · 10 keys · Intel MCP.`,
                 )}
               </p>
               <p className="text-[10px] text-[var(--cm-signal)] mt-2 font-mono">
@@ -265,7 +267,7 @@ market doctor`}</CodeBlock>
             {sinapsisBillingPolicy(isES)}
           </p>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/80 mb-6">
-            {t("Canales:", "Channels:")} {paymentsChannelsShort(isES)}
+            {t("Canales:", "Channels:")} {paymentsLabel}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
             {t("CHECKOUT PROGRAMÁTICO", "PROGRAMMATIC CHECKOUT")}

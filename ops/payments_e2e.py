@@ -294,11 +294,16 @@ def run_billing_channels(base: str, rep: Report, run_id: str) -> None:
                 rep.add("billing", f"pro-checkout/{method}", "FAIL", "no approve_url", ms)
                 continue
         elif method in ("yape", "plin"):
-            if data.get("payment_mode") != "manual_transfer" and not data.get("manual_steps"):
-                rep.add("billing", f"pro-checkout/{method}", "FAIL", "no manual_transfer", ms)
-                continue
-            if data.get("amount_pen") is None:
-                rep.add("billing", f"pro-checkout/{method}", "FAIL", "no amount_pen", ms)
+            manual = data.get("payment_mode") == "manual_transfer" or data.get("manual_steps")
+            mp_url = data.get("checkout_url") or data.get("approve_url") or ""
+            if manual:
+                if data.get("amount_pen") is None:
+                    rep.add("billing", f"pro-checkout/{method}", "FAIL", "no amount_pen", ms)
+                    continue
+            elif str(mp_url).startswith("http"):
+                pass  # routed to Mercado Pago checkout (default in prod)
+            else:
+                rep.add("billing", f"pro-checkout/{method}", "FAIL", "no manual_transfer or checkout_url", ms)
                 continue
         elif method == "mercadopago":
             url = data.get("checkout_url") or data.get("approve_url") or ""
