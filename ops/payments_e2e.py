@@ -673,7 +673,7 @@ def run_landing_pricing_smoke(landing: str, rep: Report) -> None:
         ("anchor-procure", 'id="procure"'),
         ("anchor-listed", 'id="listed"'),
         ("pro-checkout", 'id="pro-checkout"'),
-        ("cta-pro-modal", "Configurar Pro"),
+        ("cta-pro-modal", "Elegir Pro"),
         ("cta-procure-modal", "Suscribir con PayPal"),
         ("section-glow", "landing-section-glow"),
         ("hero-terminal", "hero-terminal"),

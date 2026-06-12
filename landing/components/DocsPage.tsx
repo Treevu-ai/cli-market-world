@@ -7,6 +7,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { sinapsisBillingPolicy } from "@/lib/billingCopy";
 import { usePaymentsChannels } from "@/lib/useBillingCopy";
 import PrereqBlock from "@/components/PrereqBlock";
+import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 
 type SnippetTab = "curl" | "python" | "mcp";
 type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
@@ -269,6 +270,24 @@ market doctor`}</CodeBlock>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/80 mb-6">
             {t("Canales:", "Channels:")} {paymentsLabel}
           </p>
+          <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
+            {t("CHECKOUT EN LA WEB", "WEB CHECKOUT")}
+          </h3>
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed">
+            {t(
+              "Pro estándar: elige PayPal (USD) o soles (Mercado Pago · Yape · Plin). En Perú, soles aparece recomendado.",
+              "Standard Pro: choose PayPal (USD) or soles (Mercado Pago · Yape · Plin). In Peru, soles is recommended.",
+            )}
+          </p>
+          <div className="flex flex-wrap gap-3 mb-8">
+            <BillingCheckoutTrigger kind={{ type: "build-pro" }} className="btn-mint" />
+            <BillingCheckoutTrigger
+              kind={{ type: "build-pro", annual: true }}
+              className="rounded-full border border-[var(--cm-outline-variant)]/50 px-5 py-2.5 text-sm font-semibold text-white hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-colors"
+              label_es="Pro anual $390/año →"
+              label_en="Pro annual $390/yr →"
+            />
+          </div>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
             {t("CHECKOUT PROGRAMÁTICO", "PROGRAMMATIC CHECKOUT")}
           </h3>
