@@ -1056,10 +1056,35 @@ def test_activate_pro_by_request_id(monkeypatch):
     from conftest import run_activate_pro_cli
 
     code, stdout, stderr = run_activate_pro_cli("admin", "--request-id", req_id)
+    assert code == 1
+    assert db_get_subscription("admin")["tier"] == "free"
+
+    code, stdout, stderr = run_activate_pro_cli("admin", "--request-id", req_id, "--force")
     assert code == 0, stderr + stdout
     assert db_get_subscription("admin")["tier"] == "pro"
     req = db_find_subscription_request(request_id=req_id)
     assert req["status"] == "activated"
+
+
+def test_admin_activate_pro_rejects_paypal_without_force(monkeypatch):
+    import server_deps
+    from market_core import db_create_subscription_request, db_get_subscription
+
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    req = db_create_subscription_request(
+        "paypal-user",
+        "paypal@test.com",
+        "https://www.paypal.com/billing/subscriptions?ba_token=x",
+    )
+    assert db_get_subscription("paypal-user")["tier"] == "free"
+    r = client.post(
+        "/admin/activate-pro-request",
+        json={"request_id": req["id"]},
+        headers={"Authorization": "Bearer ops-secret-token"},
+    )
+    assert r.status_code == 404
+    assert "payment_not_manual" in str(r.json())
+    assert db_get_subscription("paypal-user")["tier"] == "free"
 
 
 def test_admin_requires_token_when_configured(monkeypatch):

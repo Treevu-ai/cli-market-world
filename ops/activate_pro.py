@@ -31,6 +31,11 @@ def main() -> int:
     p.add_argument("--email", help="Lookup latest Pro request by subscriber email")
     p.add_argument("--request-id", dest="request_id", help="Pro request ref (PRO-XXXXXXXX)")
     p.add_argument("--display-name", dest="display_name", help="Friendly name for welcome email")
+    p.add_argument(
+        "--force",
+        action="store_true",
+        help="Override manual-payment guard (PayPal/MP requests — ops only)",
+    )
     args = p.parse_args()
 
     ensure_db_initialized()
@@ -56,6 +61,18 @@ def main() -> int:
 
     if not username:
         p.error("Provide username, --email, or --request-id")
+
+    if req and not args.force:
+        payment_link = (req.get("payment_link") or "").strip()
+        from routers.billing.pro_helpers import is_manual_wallet_pro_payment_link
+
+        if not is_manual_wallet_pro_payment_link(payment_link):
+            print(
+                "✗ Refuses to activate: payment is PayPal/Mercado Pago — wait for webhook "
+                "or pass --force after manual verification.",
+                file=sys.stderr,
+            )
+            return 1
 
     result = db_set_subscription(username, "pro")
     print(f"✓ Pro activated for {result['username']}")

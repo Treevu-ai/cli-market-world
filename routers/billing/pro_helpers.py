@@ -23,6 +23,14 @@ def is_mp_billing_method(method: str) -> bool:
     return (method or "").strip().lower() in ("mercadopago", "yape", "plin")
 
 
+def is_manual_wallet_pro_payment_link(payment_link: str) -> bool:
+    """Yape/Plin in-app transfer — ops activates after confirming bank receipt."""
+    low = (payment_link or "").strip().lower()
+    if not low.startswith(("yape:", "plin:")):
+        return False
+    return "mercadopago" not in low
+
+
 def is_mercadopago_checkout_link(payment_link: str) -> bool:
     link = (payment_link or "").strip()
     if not link:

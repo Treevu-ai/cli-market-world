@@ -63,10 +63,11 @@ def admin_activate_pro_request(
     request_id = (body.get("request_id") or body.get("ref") or "").strip().upper()
     if not request_id.startswith("PRO-"):
         raise HTTPException(status_code=400, detail="request_id must be PRO-XXXXXXXX")
+    force = bool(body.get("force"))
 
     from routers.payments import _activate_pro_from_request
 
-    actions = _activate_pro_from_request(request_id, source="admin_api")
+    actions = _activate_pro_from_request(request_id, source="admin_api", force=force)
     logger.info("audit admin_activate_pro request_id=%s actions=%s", request_id, actions)
     if not any(a.startswith("pro_activated:") for a in actions):
         raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
