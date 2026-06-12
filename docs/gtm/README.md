@@ -1,6 +1,17 @@
-# GTM — Intelligence (Puerta C)
+# GTM Hub
 
-Material comercial para el piloto **Intelligence** ($300–500/mes). Orden de uso recomendado:
+Material comercial y posicionamiento. **Claims públicos:** usar solo métricas de esta carpeta o [cli-market.dev/stats](https://cli-market.dev/stats) (data-gate). Intel de mercado sin fuente verificada → no publicar en redes.
+
+## Posicionamiento agéntico (PSP / inversores)
+
+| Prioridad | Archivo | Uso |
+|-----------|---------|-----|
+| 1 | [pitch-agentic-protocols.md](./pitch-agentic-protocols.md) | Reuniones B2B confidenciales, PSPs (Culqi/BCP/Niubiz), data room estratégico |
+| 2 | [api-positioning-es.md](../../tools/content-repo-template/strategy/api-positioning-es.md) | Copy API / landing ES (tagline, bloque PSP) |
+
+## Intelligence (Puerta C)
+
+Material para el piloto **Intelligence** ($300–500/mes):
 
 | Prioridad | Archivo | Uso |
 |-----------|---------|-----|
