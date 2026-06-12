@@ -140,6 +140,16 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 - Data-gate: verificar antes de publicar posts data-gated. `make gate` en content repo.
 - Imágenes: regenerar con `python3 ops/generate_all_linkedin_assets.py --patch`
 
+## Cursor Cloud — Railway deploy
+
+Prod API (`cli-market-production.up.railway.app`) **no** se actualiza solo con push a `main`. Requiere:
+
+1. **Secret `RAILWAY_API_TOKEN`** — account token de https://railway.com/account/tokens (no project token)
+2. En **GitHub Actions secrets** y/o **Cursor Cloud secrets**
+3. Disparar: `python3 ops/railway_deploy.py --target both` o workflow **Deploy Railway**
+
+Runbook: `ops/RAILWAY_DEPLOY.md`
+
 ## Cuándo usar cada agente
 
 | Necesidad | Agente | Contexto |
