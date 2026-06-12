@@ -97,8 +97,6 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             DRY_RUN="${{ github.event.inputs.dry_run }}"
             CONTENT_ONLY="${{ github.event.inputs.content_only }}"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            DRY_RUN="true"
           fi
           if [ "$DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
