@@ -224,6 +224,23 @@ def require_pro(authorization: str | None) -> str:
     return username
 
 
+def require_export(authorization: str | None) -> str:
+    """Require Starter+ with export enabled (CSV/JSON data moat pulls)."""
+    from market_billing import db_get_subscription, price_label_for_plan
+
+    username = require_api_key(authorization)
+    sub = db_get_subscription(username)
+    if not sub.get("export"):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"Data export requires CLI Market Starter ({price_label_for_plan('starter')}) or higher. "
+                "Run: market upgrade --plan starter"
+            ),
+        )
+    return username
+
+
 def require_checkout_access(username: str) -> None:
     """Raise 403 if user's tier cannot use checkout (unless legacy bypass)."""
     from market_core import user_can_checkout

@@ -17,6 +17,7 @@ Uso:
 """
 
 import argparse
+import html
 import json
 import os
 import sys
@@ -40,7 +41,7 @@ from market_stats import (
     PRICES_REFRESH_HOURS, PACKAGE_VERSION,
 )
 
-console = Console()
+console = Console(legacy_windows=False)
 
 
 def _mcp_profile_counts() -> tuple[int, int]:
@@ -158,6 +159,7 @@ def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
     p = parent.add_parser("inflation", help=helps["inflation"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7, help="Ventana de análisis en días (default 7)")
 
     p = parent.add_parser("indicators", help=helps["indicators"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
@@ -835,8 +837,12 @@ def cmd_basket(args):
 
 def cmd_inflation(args):
     params = []
-    if args.country: params.append(f"country={args.country}")
-    if args.line: params.append(f"line={args.line}")
+    if args.country:
+        params.append(f"country={args.country}")
+    if args.line:
+        params.append(f"line={args.line}")
+    days = getattr(args, "days", None) or 7
+    params.append(f"days={days}")
     qs = "&".join(params)
     with console.status("[cyan]Calculando inflación..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
@@ -859,13 +865,14 @@ def cmd_inflation(args):
         table.add_column("Línea" if not ui.is_en() else "Line", max_width=28)
         table.add_column("Antes" if not ui.is_en() else "Before", style="dim")
         table.add_column("Ahora" if not ui.is_en() else "Now", style="dim")
-        table.add_column("Δ %", justify="right")
+        table.add_column("Delta %", justify="right")
         for i in items[:15]:
             delta = float(i.get("delta_pct") or 0)
             cur = i.get("currency") or ""
             before = float(i.get("avg_before") or i.get("first_price") or 0)
             now = float(i.get("avg_now") or i.get("last_price") or 0)
-            label = (i.get("line") or i.get("line_key") or i.get("product") or "?")[:28]
+            raw_label = i.get("line") or i.get("line_key") or i.get("product") or "?"
+            label = html.unescape(str(raw_label))[:28]
             c = "#FF6B35" if delta > 0 else "#00FF88"
             table.add_row(
                 label,
@@ -1116,7 +1123,7 @@ def cmd_tools(args):
 
 def cmd_alerts(args):
     if args.action == "list":
-        data = cli_api("POST", "/v1/alerts", {"product": "", "action": "list"})
+        data = cli_api("GET", "/v1/alerts")
         alerts_list = data.get("alerts", [])
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(True, {"alerts": alerts_list}, next_commands=["market alerts", "market whoami"]), console)
@@ -1125,15 +1132,42 @@ def cmd_alerts(args):
             console.print("[yellow]No hay alertas configuradas.[/]")
             return
         for a in alerts_list:
-            console.print(f"  🔔 {a['product']} | threshold: {a['threshold_pct']}%")
+            product = a.get("product_query") or a.get("product") or "?"
+            condition = a.get("condition") or "?"
+            threshold = a.get("threshold_pct", "?")
+            console.print(f"  [{a.get('id', '?')}] {product} | {condition} | threshold: {threshold}%")
     else:
         tier = ui.fetch_tier()
         ui.tier_gate(console, "alerts_create", tier, json_args=args)
-        data = cli_api("POST", "/v1/alerts", {"product": args.product, "threshold_pct": args.threshold, "action": "create"})
+        if not args.product:
+            console.print("[red]Indica --product para crear una alerta.[/]")
+            return
+        email = getattr(args, "email", None) or ""
+        if not email:
+            try:
+                prefs = cli_api("GET", "/auth/subscription")
+                email = (prefs.get("email") or "").strip()
+            except Exception:
+                email = ""
+        if not email:
+            console.print("[red]Indica --email para recibir notificaciones de la alerta.[/]")
+            return
+        condition = getattr(args, "condition", None) or "price_drop"
+        data = cli_api(
+            "POST",
+            "/v1/alerts",
+            {
+                "condition": condition,
+                "product_query": args.product,
+                "threshold_pct": args.threshold,
+                "notify_email": email,
+            },
+        )
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.emit_json(ui.json_response(True, {"created": data}, next_commands=["market alerts --action list"]), console)
             return
-        console.print(f"[#3cffd0]✓ Alerta creada para {args.product}[/]")
+        alert = data.get("alert", {})
+        console.print(f"[#3cffd0]✓ Alerta creada: {alert.get('id', '?')} — {args.product}[/]")
 
 def cmd_about(args):
     mcp_default, mcp_legacy = _mcp_profile_counts()
@@ -2639,6 +2673,12 @@ def main():
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
     p.add_argument("--product")
     p.add_argument("--threshold", type=float, default=5.0)
+    p.add_argument(
+        "--condition",
+        choices=["price_jump", "price_drop", "price_min_30d", "dispersion_anomaly"],
+        default="price_drop",
+    )
+    p.add_argument("--email", help="Email para notificaciones (requerido en create si no hay en cuenta)")
 
     # P0 onboarding features (from handoff)
     p = sub.add_parser("tutorial", help=t("tutorial"))

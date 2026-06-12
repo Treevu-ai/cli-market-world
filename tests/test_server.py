@@ -1256,3 +1256,29 @@ def test_admin_set_tier_unknown_user(monkeypatch):
     h = {"Authorization": "Bearer ops-secret-token"}
     r = client.post("/v1/admin/set-tier", headers=h, json={"username": "ghost", "tier": "pro"})
     assert r.status_code == 404
+
+
+def test_data_export_blocked_on_free_tier():
+    from market_core import db_create_api_key, db_set_subscription
+
+    db_save_user("freeuser", hash_password("market"), "free@test.com")
+    db_set_subscription("freeuser", "free")
+    key = db_create_api_key("freeuser", "read", "export-test")["key"]
+    r = client.post(
+        "/v1/data/export",
+        headers={"Authorization": f"Bearer {key}"},
+        json={"country": "PE", "format": "json", "limit": 5},
+    )
+    assert r.status_code == 403
+    assert "Starter" in r.json()["detail"]
+
+
+def test_alerts_list_get():
+    from market_core import db_create_api_key, db_set_subscription
+
+    db_save_user("prouser", hash_password("market"), "pro@test.com")
+    db_set_subscription("prouser", "pro")
+    key = db_create_api_key("prouser", "read", "alerts-test")["key"]
+    r = client.get("/v1/alerts", headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code == 200
+    assert "alerts" in r.json()
