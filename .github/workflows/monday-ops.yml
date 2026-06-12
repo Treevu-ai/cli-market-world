@@ -2,6 +2,7 @@ name: Monday Ops Playbook
 
 on:
   schedule:
+    # Lunes 08:00 America/Lima (PET) = 13:00 UTC
     - cron: "0 13 * * 1"
   workflow_dispatch:
 

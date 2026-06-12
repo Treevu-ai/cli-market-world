@@ -112,10 +112,10 @@ Workflow: `.github/workflows/pam-nightly.yml`
 
 | Job | Cuándo | Qué corre |
 |-----|--------|-----------|
-| `pam-tier1` | Diario 06:00 UTC | `public,landing,user` tier 1 — sin secretos |
+| `pam-tier1` | Diario 08:00 PET (13:00 UTC) | `public,landing,user` tier 1 — sin secretos |
 | `pam-tier2` | Tras tier 1 | + `admin,post` tier 2 — `MARKET_API_TOKEN` en **Secrets** (o variable de repo) |
 
-| `pam-tier3` | Lunes 07:00 UTC | Admin destructive aislado (`--tier 3`) |
+| `pam-tier3` | Lunes 08:00 PET (13:00 UTC) | Admin destructive aislado (`--tier 3`) |
 
 Destructive en nightly tier 2: **no** (SKIP). Tier 3 weekly o `workflow_dispatch` en **PAM Tier 3 Weekly**.
 
