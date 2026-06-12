@@ -1,10 +1,10 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.9.30)
+> Package: pip install cli-market-world (v1.9.34)
 > Command: market-mcp
 > API: https://cli-market-production.up.railway.app
-> Stats: 68 retailers · 38 verified · 54,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
+> Stats: 68 retailers · 38 verified · 55,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
 > Payments: PayPal · Mercado Pago · Yape/Plin transfer (Peru, manual)
 > FMCG pilot: Nuna Orgánica PE (406 SKUs, WooCommerce Store API)
 
