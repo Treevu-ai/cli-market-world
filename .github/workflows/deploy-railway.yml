@@ -42,7 +42,7 @@ jobs:
   deploy:
     name: Deploy Railway (${{ github.event_name == 'workflow_dispatch' && inputs.target || 'api' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       # Do not set empty RAILWAY_API_TOKEN — Railway CLI errors if both token env vars exist.
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -82,6 +82,7 @@ jobs:
       - name: Trigger Railway deploy
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           TARGET="${{ github.event_name == 'workflow_dispatch' && inputs.target || 'api' }}"
           python3 ops/railway_deploy.py --target "$TARGET"
