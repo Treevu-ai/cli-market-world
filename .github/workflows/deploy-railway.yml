@@ -100,4 +100,7 @@ jobs:
           python-version: "3.12"
 
       - name: Wait and verify production
-        run: python3 ops/railway_prod_status.py --wait --min-version 1.9.33
+        run: |
+          python3 ops/railway_prod_status.py --wait \
+            --observatory-p0 \
+            --min-version-from-pyproject
