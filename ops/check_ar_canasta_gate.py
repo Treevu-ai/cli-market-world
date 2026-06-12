@@ -17,6 +17,8 @@ import sys
 import time
 import urllib.request
 
+from company_ar_gate import is_ar_store
+
 DEFAULT_URL = "https://cli-market-production.up.railway.app/dashboard/data"
 TRIO = ("Carrefour", "Jumbo", "Vea")
 
@@ -30,7 +32,7 @@ def find_ar_row(canasta: list[dict], label: str) -> dict | None:
     key = label.lower()
     for row in canasta:
         name = (row.get("store_name") or "").lower()
-        if key in name and "ar" in name:
+        if key in name and is_ar_store(row.get("store_name") or ""):
             return row
     return None
 
