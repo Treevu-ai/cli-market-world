@@ -1,12 +1,12 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { paymentsChannelsShort, sinapsisBillingPolicy } from "@/lib/billingCopy";
+import { sinapsisBillingPolicy } from "@/lib/billingCopy";
+import { usePaymentsChannels } from "@/lib/useBillingCopy";
 
-function faqsFor(lang: "es" | "en") {
+function faqsFor(lang: "es" | "en", channels: string) {
   const isES = lang === "es";
   const rp = isES ? MARKET_STATS.retailersPhraseEs : MARKET_STATS.retailersPhraseEn;
-  const channels = paymentsChannelsShort(isES);
   const billingPolicy = sinapsisBillingPolicy(isES);
 
   if (isES) {
@@ -76,8 +76,9 @@ function faqsFor(lang: "es" | "en") {
 
 export default function FAQ() {
   const { lang } = useLang();
-  const faqs = faqsFor(lang);
   const isES = lang === "es";
+  const paymentsLabel = usePaymentsChannels(isES);
+  const faqs = faqsFor(lang, paymentsLabel);
 
   return (
     <section id="faq" className="landing-section animate-fade-in">

@@ -2,8 +2,12 @@
 
 import LegalPage from "@/components/LegalPage";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { usePaymentsChannels } from "@/lib/useBillingCopy";
 
 export default function DataLicenseAgreement() {
+  const paymentsLabelEs = usePaymentsChannels(true);
+  const paymentsLabelEn = usePaymentsChannels(false);
+
   return (
     <LegalPage
       titleES="Acuerdo de Licencia de Datos (ALD)"
@@ -62,7 +66,7 @@ export default function DataLicenseAgreement() {
               </li>
               <li>
                 <strong>Pro:</strong> 10.000 consultas/día · checkout · exportación CSV ·{" "}
-                {MARKET_STATS.paymentsLabel} · USD 39/mes.
+                {paymentsLabelEs} · USD 39/mes.
               </li>
               <li>
                 <strong>Enterprise / Intelligence:</strong> límites ampliados, endpoints comerciales
@@ -153,7 +157,7 @@ export default function DataLicenseAgreement() {
               </li>
               <li>
                 <strong>Pro:</strong> 10,000 requests/day · checkout · CSV export ·{" "}
-                {MARKET_STATS.paymentsLabel} · USD 39/mo.
+                {paymentsLabelEn} · USD 39/mo.
               </li>
               <li>
                 <strong>Enterprise / Intelligence:</strong> expanded limits, commercial endpoints,
