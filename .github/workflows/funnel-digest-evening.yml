@@ -1,4 +1,4 @@
-name: Funnel Digest Evening
+name: Funnel Digest (manual)
 
 on:
   # Scheduled via morning-ops-chain.yml (08:00 PET)

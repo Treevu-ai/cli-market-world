@@ -518,7 +518,7 @@ cases:
     auth: user
     expect:
       status: 200
-      json_has: [username]
+      json_has: [username, tier]
 
   - id: user.search
     tier: 1

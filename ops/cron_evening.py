@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""Evening founder cron — funnel digest to #funnel-cli-market.
+"""Manual funnel digest — same payload as morning-ops-chain (08:00 PET).
 
-Schedule (primary: GitHub Actions funnel-digest-evening.yml at 23:00 UTC):
-  0 23 * * *  curl -X POST "$MARKET_API_URL/admin/cron/funnel-digest" -H "Authorization: Bearer $MARKET_API_TOKEN"
-
-Local / Railway fallback:
-  0 23 * * *  cd /app && python ops/cron_evening.py
+Primary schedule: `.github/workflows/morning-ops-chain.yml` step `funnel-digest`.
+Ad-hoc / Railway fallback only.
 
 Usage:
   python ops/cron_evening.py

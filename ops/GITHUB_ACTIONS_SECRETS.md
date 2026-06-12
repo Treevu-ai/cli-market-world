@@ -93,6 +93,7 @@ git commit -m "chore(stats): sync landing after X.Y.Z"
 | 3 | `GH_PAT` read on `cli-market-backend` | Bump `ops/contract-parity.trigger` post-merge |
 | 4 | Core git backport 1.9.34 | Bump `ops/core-patch.trigger` post-merge |
 | 5 | Morning Ops Chain | **Mañana 08:00 PET** |
+| 6 | Content `make gate` fix | Bump `ops/content-makefile.trigger` (needs `GH_PAT_CONTENT`) |
 
 ## Morning ops chain
 
