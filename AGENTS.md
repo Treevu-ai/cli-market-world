@@ -134,7 +134,7 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 
 - North Star: **MAA** (Monthly Active Agents)
 - Prod telemetría: solo cuenta en **backend** desplegado; world mantiene mirror paridad
-- Jobs (world): `ops/adoption_index.py`, `ops/observatory_daily.py`, `ops/indicators_daily.py`, workflows `observatory-nightly.yml`, `indicators-nightly.yml`
+- Jobs (world): `ops/adoption_index.py`, `ops/observatory_daily.py`, `ops/indicators_daily.py`, `ops/canasta_pe_index.py`, workflows `observatory-nightly.yml`, `indicators-nightly.yml`, `canasta-pe-weekly.yml` (lunes 08:00 PET)
 
 ## Identidad visual
 

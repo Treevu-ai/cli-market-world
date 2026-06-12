@@ -254,11 +254,11 @@ Leyenda: ✅ OK · ⚠️ Fricción · 🔴 Roto / ausente · 🔵 Manual ops
 
 ### P3 — Instrumentación
 
-| # | Acción | Esfuerzo |
-|---|--------|----------|
-| 15 | Eventos: install, login, register, first_search, request_pro, activated | M |
-| 16 | Funnel dashboard (TTFV, TTC, drop-off por paso) | L |
-| 17 | PAM tier 1.5: synthetic `market init` journey en CI | M |
+| # | Acción | Esfuerzo | Estado |
+|---|--------|----------|--------|
+| 15 | Eventos: install, login, register, first_search, request_pro, activated, mcp_tool_call | M | ✅ `FUNNEL_EVENTS` + `/v1/events` |
+| 16 | Funnel dashboard (TTFV, TTC, drop-off por paso) | L | ✅ `/analytics/funnel` + `FunnelMetrics` en `/stats` |
+| 17 | PAM tier 1.5: synthetic `market init` journey en CI | M | ✅ `morning-ops-chain` → `test_pam_journey_synthetic` |
 
 ---
 

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
 import { useObservatoryStats, type ObservatoryRank } from "@/hooks/useObservatoryStats";
+import FunnelMetrics from "@/components/FunnelMetrics";
 
 function RankList({
   title,
@@ -165,6 +166,13 @@ export default function StatsPage() {
               : "MCP telemetry is on but volume is still building — check back as queries and agents accumulate."}
           </p>
         )}
+
+        <section className="mb-10" aria-labelledby="funnel-heading">
+          <h2 id="funnel-heading" className="text-lg text-white mb-2">
+            {isES ? "Embudo de onboarding" : "Onboarding funnel"}
+          </h2>
+          <FunnelMetrics />
+        </section>
 
         <p className="text-sm text-[var(--cm-on-surface-variant)] mt-8">
           <a
