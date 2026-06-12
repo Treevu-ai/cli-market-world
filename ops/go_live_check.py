@@ -78,6 +78,67 @@ def main() -> int:
     dash = _fetch_dashboard_remote() if args.remote else None
     summary = go_live_summary(days=days, dashboard_data=dash)
 
+    if args.remote:
+        try:
+            pr = httpx.get(f"{API_BASE}/paypal-status", timeout=15)
+            if pr.status_code == 200:
+                ps = pr.json()
+                summary["paypal"] = ps
+                alerts = summary.setdefault("alerts", [])
+                if not ps.get("configured"):
+                    alerts.append(
+                        {
+                            "severity": "warn",
+                            "code": "paypal_not_configured",
+                            "message": "PayPal no configurado en prod — ver docs/ops/GO-LIVE-CHECKOUT.md",
+                        }
+                    )
+                elif ps.get("sandbox"):
+                    alerts.append(
+                        {
+                            "severity": "warn",
+                            "code": "paypal_sandbox_mode",
+                            "message": "PayPal en sandbox — go-live pendiente (PAYPAL_SANDBOX=false)",
+                        }
+                    )
+                elif not ps.get("webhook_configured"):
+                    alerts.append(
+                        {
+                            "severity": "warn",
+                            "code": "paypal_webhook_missing",
+                            "message": "PAYPAL_WEBHOOK_ID vacío — auto-activación Pro no funcionará",
+                        }
+                    )
+        except Exception:
+            pass
+
+    if args.remote:
+        try:
+            token = os.getenv("MARKET_API_TOKEN", "")
+            if token:
+                sr = httpx.get(
+                    f"{API_BASE}/admin/observatory/streak",
+                    params={"days": 7},
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=20,
+                )
+                if sr.status_code == 200:
+                    streak = sr.json()
+                    summary["observatory_streak"] = streak
+                    if not streak.get("ok"):
+                        summary.setdefault("alerts", []).append(
+                            {
+                                "severity": "warn",
+                                "code": "observatory_streak",
+                                "message": (
+                                    f"Observatory snapshots {streak.get('snapshots_found')}/"
+                                    f"{streak.get('target')} — meta 7d consecutivos (PRD §13)"
+                                ),
+                            }
+                        )
+        except Exception:
+            pass
+
     if args.json:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
     elif args.spike:

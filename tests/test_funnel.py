@@ -62,6 +62,21 @@ def test_tutorial_and_mcp_setup_events():
     assert data["events"].get("mcp_setup_completed", 0) >= 1
 
 
+def test_mcp_tool_call_event():
+    r = client.post(
+        "/v1/events",
+        json={
+            "event": "mcp_tool_call",
+            "dedupe": False,
+            "meta": {"tool": "market_search", "success": True, "source": "mcp_client"},
+        },
+    )
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+    data = funnel_summary(days=30)
+    assert data["events"].get("mcp_tool_call", 0) >= 1
+
+
 def test_starter_subscribe_event():
     r = client.post(
         "/v1/events",
@@ -92,6 +107,7 @@ def test_pam_journey_synthetic():
 
     who = client.get("/auth/whoami", headers=headers)
     assert who.status_code == 200
+    assert who.json().get("tier") == "free"
 
     search = client.post(
         "/products/search",

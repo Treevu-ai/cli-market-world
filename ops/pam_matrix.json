@@ -727,7 +727,8 @@
       "expect": {
         "status": 200,
         "json_has": [
-          "username"
+          "username",
+          "tier"
         ]
       }
     },
