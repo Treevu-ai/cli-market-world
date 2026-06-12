@@ -1,9 +1,7 @@
 name: Observatory nightly
 
 on:
-  schedule:
-    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
-    - cron: "0 13 * * *"
+  # Scheduled via morning-ops-chain.yml (08:00 PET)
   workflow_dispatch:
 
 env:

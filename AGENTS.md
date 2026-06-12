@@ -79,12 +79,18 @@ Canales (un propósito por canal):
 | **bitácora** | `SLACK_CHANNEL_BITACORA` | Salud producto, deploys, go-live |
 | **revisiones-cursor** | `SLACK_CHANNEL_REVISIONES_CURSOR` | PRs / agentes |
 
-Ritual diario (automático vía GitHub Actions, **08:00 PET = 13:00 UTC**):
-- `command-control-morning.yml` → `#command-control`
-- `gtm-preflight.yml` → gate + `make today` (content)
-- `daily-briefing.yml` → índice en `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
-- `funnel-digest-evening.yml` → `#funnel-cli-market`
-- `adoption-index-nightly.yml`, `indicators-nightly.yml`, `observatory-nightly.yml`, `pam-nightly.yml` (jobs nocturnos / métricas)
+Ritual diario (automático vía **`morning-ops-chain.yml`**, **08:00 PET = 13:00 UTC** — jobs encadenados, sin carreras):
+
+1. adoption-index → indicators → observatory snapshot
+2. PAM tier1 → tier2
+3. command-control → `#command-control`
+4. gtm-preflight → gate + content `check-gate.py` / `status.py`
+5. daily-briefing → `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
+6. funnel-digest → `#funnel-cli-market`
+
+Ad-hoc (sin cadena): `workflow_dispatch` en cada workflow individual, o bump `ops/gtm-ci-run.trigger` en `main` (solo GTM preflight + briefing).
+
+**No usar "Re-run all jobs"** en runs fallidos viejos — reutilizan YAML antiguo. Usar **Run workflow** o bump del trigger.
 
 Manual si hace falta: `python3 ops/slack_cli.py briefing`. Funnel en tiempo real solo con `SLACK_FUNNEL_REALTIME=1`.
 

@@ -1,0 +1,331 @@
+name: Morning Ops Chain
+
+# Single 08:00 PET cron — jobs run in dependency order (no parallel races).
+# Individual workflows keep workflow_dispatch for ad-hoc runs.
+on:
+  schedule:
+    # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+  PAM_LANDING_URL: https://cli-market.dev
+
+permissions:
+  contents: read
+
+jobs:
+  adoption-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Persist Adoption Index via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/adoption-index.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/adoption-index?days=30&github=1" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/adoption-index.json
+          if [ "$CODE" != "200" ]; then
+            echo "adoption-index cron failed HTTP $CODE"
+            exit 1
+          fi
+
+  indicators-refresh:
+    needs: adoption-index
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Refresh indicators via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/indicators-refresh.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/indicators-refresh" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/indicators-refresh.json
+          if [ "$CODE" != "200" ]; then
+            echo "indicators-refresh cron failed HTTP $CODE"
+            exit 1
+          fi
+
+  observatory-snapshot:
+    needs: indicators-refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Observatory snapshot via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MARKET_API_TOKEN:-}" ]; then
+            echo "::error::MARKET_API_TOKEN secret missing — required for POST /admin/observatory/snapshot"
+            exit 1
+          fi
+          CODE=$(curl -sS -o /tmp/observatory-snapshot.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/observatory/snapshot" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/observatory-snapshot.json
+          if [ "$CODE" != "200" ]; then
+            echo "observatory snapshot failed HTTP $CODE"
+            exit 1
+          fi
+
+  pam-tier1:
+    needs: observatory-snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PAM tier 1 (public, landing, user)
+        run: python ops/production_acceptance.py --phase public,landing,user --tier 1
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pam-tier1-${{ github.run_id }}
+          path: ops/reports/pam-*.json
+          if-no-files-found: ignore
+
+  pam-tier2:
+    needs: pam-tier1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PAM tier 2 (+ admin, post)
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: python ops/production_acceptance.py --phase public,landing,user,admin --tier 2
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pam-tier2-${{ github.run_id }}
+          path: ops/reports/pam-*.json
+          if-no-files-found: ignore
+
+  command-control:
+    needs: pam-tier2
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Post command-control panel via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/command-control.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/command-control" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/command-control.json
+          if [ "$CODE" != "200" ]; then
+            echo "command-control failed HTTP $CODE"
+            exit 1
+          fi
+
+  gtm-preflight:
+    needs: command-control
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Remote data-gate (prod dashboard)
+        run: python3 ops/gtm_gate_remote.py
+
+      - uses: actions/checkout@v6
+        id: checkout-content
+        with:
+          repository: Treevu-ai/cli-market-content
+          ref: main
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+
+      - name: Verify content checkout
+        run: |
+          set -euo pipefail
+          test -d cli-market-content/linkedin
+          echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
+          echo "Using cli-market-content checkout ($(git -C cli-market-content rev-parse --short HEAD))"
+
+      - name: Install dependencies
+        run: |
+          pip install "cli-market-core>=1.9.34" httpx
+          python3 -c "from market_core import market_stats"
+          if [ -f "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt" ]; then
+            pip install -r "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt"
+          fi
+
+      - name: Content gate + today
+        working-directory: ${{ env.CLI_MARKET_CONTENT_DIR }}
+        env:
+          MARKET_API_URL: ${{ env.MARKET_API_URL }}
+          LINKEDIN_CAMPAIGN_START: "2026-06-01"
+          LINKEDIN_PERSONAL_DAY_OFFSET: "2"
+          LINKEDIN_COMPANY_DAY_OFFSET: "-1"
+        run: |
+          set -euo pipefail
+          if [ -f scripts/check-gate.py ]; then
+            python3 scripts/check-gate.py
+          else
+            python3 "${{ github.workspace }}/ops/gtm_gate_remote.py"
+          fi
+          if [ -f scripts/status.py ]; then
+            python3 scripts/status.py
+          else
+            python3 "${{ github.workspace }}/ops/daily_briefing.py" --content --dry-run
+          fi
+
+  daily-briefing:
+    needs: gtm-preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        id: checkout-content
+        with:
+          repository: Treevu-ai/cli-market-content
+          ref: main
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install "cli-market-core>=1.9.34" httpx
+          python3 -c "from market_core import market_stats; print('market_core OK')"
+
+      - name: Verify content checkout
+        run: |
+          set -euo pipefail
+          test -d cli-market-content/linkedin
+          echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
+          echo "Using cli-market-content checkout ($(git -C cli-market-content rev-parse --short HEAD))"
+
+      - name: Generate reports + Slack (GTM por canal)
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
+          SLACK_CHANNEL_PUBLICACIONES: "C0B6ZJ1B9B8"
+          SLACK_CHANNEL_LINKEDIN_PERSONAL: "C0B96T74RE3"
+          SLACK_CHANNEL_LINKEDIN_COMPANY: "C0B9Q70C64R"
+          SLACK_CHANNEL_TWITTER: "C0B9NBU8X7C"
+          SLACK_CHANNEL_DEVTO: "C0B96TJC3CP"
+          SLACK_CHANNEL_REDDIT: "C0B9ND493GS"
+          SLACK_CHANNEL_HN: "C0BAGP1EHPA"
+          SLACK_CHANNEL_THREADS: "C0B9G1GA7PV"
+          SLACK_CHANNEL_INSTAGRAM: "C0B9S2WQ6SG"
+          SLACK_CHANNEL_WHATSAPP: "C0B9NELR490"
+          SLACK_CHANNEL_NEWSLETTER: "C0BAGNR374Y"
+          SLACK_CHANNEL_OUTBOUND: "C0B9NEEB97U"
+          SLACK_MIRROR_TWITTER_TO_THREADS: "0"
+          SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
+          SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
+          LINKEDIN_CAMPAIGN_START: "2026-06-01"
+          LINKEDIN_PERSONAL_DAY_OFFSET: "0"
+          LINKEDIN_COMPANY_DAY_OFFSET: "-1"
+          LINKEDIN_POST_UTC_HOUR: "13"
+          CLI_MARKET_CONTENT_DIR: ${{ env.CLI_MARKET_CONTENT_DIR }}
+          CLI_MARKET_CONTENT_GITHUB_REPO: Treevu-ai/cli-market-content
+          GITHUB_CONTENT_REPOSITORY: Treevu-ai/cli-market-content
+          GITHUB_CONTENT_REF: main
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+            echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
+            exit 1
+          fi
+          python3 ops/daily_briefing.py
+
+      - name: Commit product daily reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ops/daily/*-product.md 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No product report changes to commit."
+          else
+            git commit -m "chore: daily product briefing $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Commit content daily reports
+        working-directory: cli-market-content
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add generated/daily/ metrics/price-pulse-*.md 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No content report changes to commit."
+          else
+            git commit -m "chore: daily briefing $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: daily-briefing-${{ github.run_id }}
+          path: |
+            cli-market-content/generated/daily/
+            cli-market-content/metrics/price-pulse-*.md
+
+  funnel-digest:
+    needs: daily-briefing
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post funnel digest via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          CODE=$(curl -sS -o /tmp/funnel-digest.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/funnel-digest?hours=24" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/funnel-digest.json
+          if [ "$CODE" != "200" ]; then
+            echo "funnel-digest failed HTTP $CODE"
+            exit 1
+          fi
