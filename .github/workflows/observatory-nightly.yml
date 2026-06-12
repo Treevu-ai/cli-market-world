@@ -5,48 +5,33 @@ on:
     - cron: "15 6 * * *"
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
 permissions:
   contents: read
 
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Install deps
-        run: |
-          # Full implementation lives in repo market_observatory.py (not market_core re-export).
-          pip install -e .
-          pip install "cli-market-core==1.9.34"
-
-      - name: Verify observatory import + prod DB secret
+      - name: Observatory snapshot via production API
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
         run: |
-          if [ -z "${DATABASE_URL}" ]; then
-            echo "::error::DATABASE_URL secret missing — nightly snapshot must write to prod Postgres"
+          set -euo pipefail
+          if [ -z "${MARKET_API_TOKEN:-}" ]; then
+            echo "::error::MARKET_API_TOKEN secret missing — required for POST /admin/observatory/snapshot"
             exit 1
           fi
-          python3 - <<'PY'
-          import inspect
-          import market_observatory as mo
-          path = inspect.getfile(mo).replace("\\", "/")
-          if "/site-packages/market_core/" in path:
-              raise SystemExit(f"market_observatory must be world-local, got {path}")
-          assert hasattr(mo, "compute_daily_observatory_metrics")
-          print(f"OK: {path}")
-          PY
-
-      - name: Observatory daily snapshot
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
-          OBSERVATORY_TELEMETRY: "1"
-          GITHUB_ACTIONS: "true"
-        run: python3 ops/observatory_daily.py --json
+          CODE=$(curl -sS -o /tmp/observatory-snapshot.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/observatory/snapshot" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/observatory-snapshot.json
+          if [ "$CODE" != "200" ]; then
+            echo "observatory snapshot failed HTTP $CODE"
+            exit 1
+          fi
