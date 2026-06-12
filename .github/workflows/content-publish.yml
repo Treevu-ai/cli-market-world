@@ -1,0 +1,52 @@
+name: Content publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: Publish date (YYYY-MM-DD)
+        type: string
+        default: "2026-06-12"
+  push:
+    branches: [main]
+    paths:
+      - ops/content-publish.trigger
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-content
+          ref: main
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+
+      - name: Verify content checkout
+        run: test -d cli-market-content/linkedin
+
+      - name: make publish
+        working-directory: cli-market-content
+        env:
+          PUBLISH_DATE: ${{ github.event.inputs.date || '2026-06-12' }}
+        run: |
+          set -euo pipefail
+          if [ -f Makefile ] && grep -q '^publish:' Makefile; then
+            make publish "date=${PUBLISH_DATE}" || make publish "date=${PUBLISH_DATE}" day=12 || make publish day=12
+          elif [ -f scripts/publish.py ]; then
+            python3 scripts/publish.py --date "${PUBLISH_DATE}" || python3 scripts/publish.py --day 12
+          else
+            echo "::error::No Makefile publish target or scripts/publish.py in content repo"
+            exit 1
+          fi
+
+      - name: Show git status
+        working-directory: cli-market-content
+        run: git status --short && git log -1 --oneline
