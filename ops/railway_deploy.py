@@ -35,8 +35,27 @@ from pathlib import Path
 GRAPHQL_URL = "https://backboard.railway.com/graphql/v2"
 PROJECT_ID = os.getenv("RAILWAY_PROJECT_ID", "d0353d46-78c9-4949-a03f-3ecdb78f06aa")
 ENVIRONMENT_ID = os.getenv("RAILWAY_ENVIRONMENT_ID", "036bd72a-f6d8-4c51-b2ab-50cfb261468b")
-COLLECTOR_DEFAULT = os.getenv("RAILWAY_COLLECTOR_SERVICE_ID", "3813265a-1862-44a7-a723-62afa8a88dcf")
-API_SERVICE_DEFAULT = os.getenv("RAILWAY_API_SERVICE_NAME", "cli-market-production")
+API_SERVICE_ID_DEFAULT = "6e74bc38-bbf2-4815-bac4-38092067d3b1"
+COLLECTOR_SERVICE_ID_DEFAULT = "3813265a-1862-44a7-a723-62afa8a88dcf"
+
+
+def _env_default(name: str, default: str) -> str:
+    raw = os.getenv(name)
+    if raw is None or not str(raw).strip():
+        return default
+    return str(raw).strip()
+
+
+def _env_opt(name: str) -> str:
+    raw = os.getenv(name)
+    if raw is None or not str(raw).strip():
+        return ""
+    return str(raw).strip()
+
+
+COLLECTOR_DEFAULT = _env_default("RAILWAY_COLLECTOR_SERVICE_ID", COLLECTOR_SERVICE_ID_DEFAULT)
+API_SERVICE_ID_FALLBACK = API_SERVICE_ID_DEFAULT
+API_SERVICE_NAME_FALLBACK = _env_default("RAILWAY_API_SERVICE_NAME", "cli-market-production")
 SKIP_NAME_PARTS = ("postgres", "redis", "database", "db", "collector")
 API_NAME_PREFS = ("cli-market-production", "production", "api", "world", "backend", "web")
 _PROJECT_TOKEN_RE = re.compile(
@@ -192,7 +211,7 @@ def list_services(token: str) -> list[dict[str, str]]:
 
 
 def resolve_api_service_ref(token: str, *, project_token: str = "") -> str:
-    explicit = (os.getenv("RAILWAY_API_SERVICE_ID") or "").strip()
+    explicit = _env_default("RAILWAY_API_SERVICE_ID", "")
     if explicit:
         return explicit
     services: list[dict[str, str]] = []
@@ -206,7 +225,7 @@ def resolve_api_service_ref(token: str, *, project_token: str = "") -> str:
     if services:
         return _pick_api_service(services)
     if project_token:
-        return API_SERVICE_DEFAULT
+        return API_SERVICE_DEFAULT or API_SERVICE_NAME_FALLBACK
     raise RuntimeError(
         "Could not resolve API service. Set RAILWAY_API_SERVICE_ID or use a token that can list services."
     )
