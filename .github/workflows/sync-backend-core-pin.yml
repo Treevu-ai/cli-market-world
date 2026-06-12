@@ -7,6 +7,10 @@ on:
         description: cli-market-core minimum version (e.g. 1.9.34)
         type: string
         default: "1.9.34"
+  push:
+    branches: [main]
+    paths:
+      - ops/backend-pin.trigger
 
 permissions:
   contents: read
