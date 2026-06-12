@@ -68,4 +68,30 @@ jobs:
             FIX="--fix-pending"
           fi
           pip install -q psycopg2-binary asyncpg
-          python3 ops/check_subscription_request.py "$REQ" $FIX
+          python3 ops/check_subscription_request.py "$REQ" --username user-69986a5620f9 $FIX
+
+      - name: Force-close request via admin API if still pending
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN }}
+        run: |
+          REQ="${{ github.event.inputs.request_id }}"
+          if [ -z "$REQ" ]; then
+            REQ=$(grep -E '^request_id=' ops/triggers/check-pro-request.trigger | head -1 | cut -d= -f2-)
+          fi
+          if [ -z "$MARKET_API_TOKEN" ]; then
+            echo "MARKET_API_TOKEN missing — skip admin close"
+            exit 0
+          fi
+          CODE=$(curl -sS -o /tmp/admin-activate.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL:-https://cli-market-production.up.railway.app}/admin/activate-pro-request" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"request_id\":\"${REQ}\",\"force\":true}")
+          cat /tmp/admin-activate.json
+          if [ "$CODE" = "200" ]; then
+            echo "Admin closed request ${REQ}"
+          elif [ "$CODE" = "404" ]; then
+            echo "Admin: request not found or already handled (HTTP 404) — tier may already be pro"
+          else
+            echo "::warning::admin activate HTTP $CODE"
+          fi

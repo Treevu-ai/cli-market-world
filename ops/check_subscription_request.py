@@ -53,6 +53,7 @@ def _load_railway_database_url() -> str:
 def main() -> int:
     p = argparse.ArgumentParser(description="Check Pro subscription request status")
     p.add_argument("request_id", help="PRO-XXXXXXXX")
+    p.add_argument("--username", default="", help="CLI username hint if ref lookup fails")
     p.add_argument(
         "--fix-pending",
         action="store_true",
@@ -61,6 +62,7 @@ def main() -> int:
     args = p.parse_args()
 
     request_id = args.request_id.strip().upper()
+    username_hint = (args.username or "").strip()
     if not request_id.startswith("PRO-"):
         print(f"Invalid ref: {request_id}", file=sys.stderr)
         return 1
@@ -75,7 +77,27 @@ def main() -> int:
 
     ensure_db_initialized()
     req = db_find_subscription_request(request_id=request_id)
+    db = get_db()
     if not req:
+        like = db.execute(
+            "SELECT id, username, email, status, payment_link, created_at "
+            "FROM subscription_requests WHERE id LIKE ? OR username=? ORDER BY created_at DESC LIMIT 10",
+            (f"{request_id[:8]}%", username_hint or ""),
+        ).fetchall()
+        if like:
+            print("nearby_requests:")
+            for row in like:
+                print(f"  {dict(row)}")
+            for row in like:
+                if (row["id"] or "").upper() == request_id:
+                    req = dict(row)
+                    break
+            if not req and len(like) == 1:
+                req = dict(like[0])
+                request_id = req["id"]
+                print(f"using_request_id={request_id}")
+    if not req:
+        db.close()
         print(f"NOT FOUND: {request_id}")
         return 1
 
@@ -91,7 +113,6 @@ def main() -> int:
     print(f"subscription_tier={tier}")
     print(f"payment_link={(req.get('payment_link') or '')[:120]}")
 
-    db = get_db()
     activated_events = db.execute(
         "SELECT event, meta, created_at FROM funnel_events "
         "WHERE username=? AND event='activated' ORDER BY created_at DESC LIMIT 3",
