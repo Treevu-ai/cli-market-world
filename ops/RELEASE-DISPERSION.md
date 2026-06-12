@@ -46,6 +46,8 @@ git push origin main
 ## Backend / ops
 
 - [ ] `requirements.txt` pin `cli-market-core>=X.Y.Z`
+- [ ] **Auto-PR:** Actions → `Sync backend core pin` (secret `GH_PAT_BACKEND_WRITE` con Contents write en `cli-market-backend`; `GH_PAT` solo lectura no alcanza)
+- [ ] **Fallback manual:** artifact `backend-core-pin-X.Y.Z` del workflow run
 - [ ] `CACHE_BUST` en Dockerfiles si hubo race PyPI
 - [ ] `contract_parity.py` OK en CI world
 

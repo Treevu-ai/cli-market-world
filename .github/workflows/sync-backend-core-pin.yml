@@ -41,9 +41,46 @@ jobs:
           chmod +x ops/sync_backend_core_pin.sh
           ./ops/sync_backend_core_pin.sh "${{ github.event.inputs.version }}"
 
-      - name: Open PR on cli-market-backend
+      - name: Save patch artifact (always)
+        if: always()
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          mkdir -p /tmp/backend-pin
+          cp cli-market-backend/requirements.txt /tmp/backend-pin/requirements.txt
+          git -C cli-market-backend diff requirements.txt > "/tmp/backend-pin/requirements-${VER}.patch" || true
+          if [ ! -s "/tmp/backend-pin/requirements-${VER}.patch" ]; then
+            echo "No diff — backend already at cli-market-core>=${VER}" > "/tmp/backend-pin/requirements-${VER}.patch"
+          fi
+
+      - name: Upload backend pin patch
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-core-pin-${{ github.event.inputs.version }}
+          path: /tmp/backend-pin/
+          retention-days: 14
+
+      - name: Check backend write token
+        id: write_token
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
+        run: |
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_BACKEND_WRITE not set — will skip auto-PR (download artifact instead)"
+            exit 0
+          fi
+          if gh api repos/Treevu-ai/cli-market-backend --jq '.permissions.push' 2>/dev/null | grep -q true; then
+            echo "has_write=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_BACKEND_WRITE cannot push to cli-market-backend — refresh token with Contents: Read and write on that repo"
+          fi
+
+      - name: Open PR on cli-market-backend
+        if: steps.write_token.outputs.has_write == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
         working-directory: cli-market-backend
         run: |
           set -euo pipefail
@@ -60,7 +97,28 @@ jobs:
           git commit -m "chore(deps): pin cli-market-core>=${VER}"
           git push -u origin "$BRANCH"
           gh pr create \
+            --repo Treevu-ai/cli-market-backend \
             --base main \
             --head "$BRANCH" \
             --title "chore(deps): pin cli-market-core>=${VER}" \
             --body "Automated from cli-market-world \`sync-backend-core-pin\` workflow after world release ${VER}."
+
+      - name: Manual apply instructions
+        if: steps.write_token.outputs.has_write != 'true'
+        run: |
+          VER="${{ github.event.inputs.version }}"
+          echo "## Backend pin — manual apply required" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "GH_PAT can read backend but not push. Add secret **GH_PAT_BACKEND_WRITE** (fine-grained PAT with Contents write on \`Treevu-ai/cli-market-backend\`), then re-run this workflow." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Or apply locally:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`bash" >> "$GITHUB_STEP_SUMMARY"
+          echo "cd cli-market-backend" >> "$GITHUB_STEP_SUMMARY"
+          echo "git checkout -b chore/core-pin-${VER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "# requirements.txt line → cli-market-core>=${VER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "git commit -am \"chore(deps): pin cli-market-core>=${VER}\"" >> "$GITHUB_STEP_SUMMARY"
+          echo "git push -u origin chore/core-pin-${VER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "gh pr create --repo Treevu-ai/cli-market-backend --base main --head chore/core-pin-${VER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Set GH_PAT_BACKEND_WRITE or apply patch from workflow artifact backend-core-pin-${VER}"
+          exit 1
