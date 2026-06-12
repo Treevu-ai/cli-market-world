@@ -33,10 +33,34 @@ except ImportError:
     guess_store_id = _unavailable
     reject_retailer_application = _unavailable
 
+from market_core import get_db
+
 from server_deps import require_admin
 from backend_interface import credential_summary, get_default_stores, invalidate_credential_cache
 
 router = APIRouter(prefix="/admin", tags=["admin-retailers"])
+
+
+@router.get("/contacts")
+def list_contacts(
+    limit: int = 100,
+    authorization: str | None = Header(None),
+):
+    require_admin(authorization)
+    capped = max(1, min(limit, 500))
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT chat_id, first_name, username, last_message, created_at, updated_at
+        FROM contacts
+        ORDER BY created_at DESC
+        LIMIT ?
+        """,
+        (capped,),
+    ).fetchall()
+    db.close()
+    contacts = [dict(r) for r in rows]
+    return {"contacts": contacts, "count": len(contacts)}
 
 
 @router.get("/retailer-applications")
