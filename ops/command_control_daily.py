@@ -508,7 +508,7 @@ def _executive_story(metrics: dict[str, Any]) -> str:
     return (
         f"Hoy operamos *{m['total_indexed']:,} precios* de *{m['stores_indexed']} retailers*; "
         f"el collector está *{fresh}* y actualizó *{m['snapshots_24h']:,}* precios en 24 h. "
-        f"{linkage_clause} {_adoption_clause(gl, metrics.get('adoption_index'))} {quality}{caveat_txt}"
+        f"{linkage_clause} {_adoption_clause(gl, metrics.get('adoption_index'))} {quality}"
     )
 
 
@@ -868,18 +868,33 @@ def _scoreboard(metrics: dict[str, Any]) -> list[str]:
         if obs.get("telemetry_enabled")
         else "MAA —"
     )
+    pam = metrics["pam"]
+    pam_total = int(pam.get("pass", 0) or 0) + int(pam.get("fail", 0) or 0) + int(pam.get("skip", 0) or 0)
+    pam_line = (
+        f"PAM {pam['pass']}/{pam['fail']}/{pam['skip']} (pass/fail/skip)"
+        if pam_total
+        else "PAM sin corrida reciente"
+    )
     return [
         "*📊 Scoreboard*",
         "",
         f"Moat {m['total_indexed']:,} · 24h {m['snapshots_24h']:,} · "
         f"coverage {m['coverage_7d_pct']:.0f}% · collector {coll}",
         f"Index {ix['registry_size']:,} GR · linkage {ix['linkage_pct']:.1f}%",
-        f"PAM {pam['pass']}/{pam['fail']}/{pam['skip']} (pass/fail/skip) · "
-        f"go-live {gl.get('overall', '?')}",
+        f"{pam_line} · go-live {gl.get('overall', '?')}",
         adoption_line,
         maa_line,
         "",
     ]
+
+
+def _traction_section(metrics: dict[str, Any], history: list[dict[str, Any]]) -> list[str]:
+    """Adoption Index + Observatory in one block."""
+    obs_lines = _observatory_section(metrics, history)
+    ai_lines = _adoption_index_section(metrics, history)
+    if not obs_lines and not ai_lines:
+        return []
+    return ["*📈 Tracción (30d)*", ""] + obs_lines[2:-1] + ai_lines[2:-1] + [""]
 
 
 def _priority_actions(metrics: dict[str, Any]) -> list[str]:
@@ -893,6 +908,12 @@ def _priority_actions(metrics: dict[str, Any]) -> list[str]:
         actions.append((1, "🔴 Collector stale → revisar servicio collector en Railway + `python collect_prices.py --status`"))
     if m["coverage_7d_pct"] < COVERAGE_7D_TARGET:
         actions.append((2, f"🟡 Coverage {m['coverage_7d_pct']:.0f}% < {COVERAGE_7D_TARGET:.0f}% → `make gate-remote` y tiendas con <30% éxito"))
+    if m["store_success_pct"] < STORE_SUCCESS_WARN and not any("Tiendas sanas" in a[1] for a in actions):
+        actions.append((
+            3,
+            f"🟡 Tiendas sanas {m['healthy_stores']}/{m['total_stores']} ({m['store_success_pct']:.0f}%) "
+            "→ revisar conectores",
+        ))
     if metrics["index"]["linkage_pct"] < LINKAGE_TARGET:
         actions.append((3, f"🟡 Linkage {metrics['index']['linkage_pct']:.1f}% → `POST /index/backfill` o esperar ciclo index post-collector"))
     for a in gl.get("alerts", [])[:2]:
@@ -1021,27 +1042,33 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
     lines = [
         f"🎛️ *Command & Control* · {metrics['date']}",
         "",
-        "*📣 En una frase*",
-        _executive_story(metrics),
-        "",
         f"{status_emoji} *Go-live:* {gl.get('overall', '?')} · "
         f"moat {gl.get('moat_status', '?')} · "
         f"collector {'stale' if metrics['moat']['collector_stale'] else metrics['moat']['collector_status']}",
         "",
     ]
-    lines.extend(_story_layers(metrics))
     lines.extend(_priority_actions(metrics))
-    lines.extend(_audience_scripts(metrics))
     lines.extend(_scoreboard(metrics))
-    lines.extend(_observatory_section(metrics, history))
-    lines.extend(_adoption_index_section(metrics, history))
+    lines.extend(_traction_section(metrics, history))
     lines.extend(_explain_section(cards, brief=brief))
     lines.extend(_trend_section(history, metrics))
 
     if brief:
-        lines.append("_Checklist completo:_ `python ops/command_control_daily.py --slack --full`")
-        lines.append("")
+        lines.extend([
+            "*📣 Resumen*",
+            _executive_story(metrics),
+            "",
+            "_Pitch por audiencia + checklist:_ `python ops/command_control_daily.py --slack --full`",
+            "",
+        ])
     else:
+        lines.extend([
+            "*📣 En una frase*",
+            _executive_story(metrics),
+            "",
+        ])
+        lines.extend(_story_layers(metrics))
+        lines.extend(_audience_scripts(metrics))
         lines.extend(_checklist_section())
 
     lines.append("*🔗 Bookmarks*")

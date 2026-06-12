@@ -22,8 +22,8 @@ jobs:
       - name: Install deps
         run: |
           pip install -e .
-          pip install "cli-market-core>=1.9.17" \
-            || pip install -e ../cli-market-core 2>/dev/null || true
+          pip install "cli-market-core>=1.9.34" \
+            || pip install -e vendor/cli-market-core 2>/dev/null || true
 
       - name: Observatory daily snapshot
         env:

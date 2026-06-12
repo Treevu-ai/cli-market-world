@@ -4,6 +4,21 @@ All notable changes to the CLI Market ecosystem.
 
 ---
 
+## [2026-06-12] — Observatory P0 closure: mirror-first telemetry (Railway prod)
+
+### cli-market-world v1.9.33
+- **Added:** Full `market_observatory.py` in world (mirror/prod deploy before core PyPI backport)
+- **Fixed:** Extract `retailer` / `country` from JSON body; skip `/index/*`; normalize tool names
+- **Fixed:** Filter internal tools (`index_stats`, etc.) from public aggregates; `weekly_agent_growth`
+- **Added:** `market_agent_id.py` — `X-Agent-ID` + `MARKET_AGENT_ID` for MCP setup
+- **Changed:** Command-control panel order (semáforo → prioridades → scoreboard → tracción)
+- **Changed:** Adoption Index — top-level `maa`, `maa_proxy`, `mcp_retention_7d` in signals
+
+### cli-market-core (pending PyPI)
+- Observatory fixes + `get_agent_id()` queued for core v1.9.34 after mirror deploy verified
+
+---
+
 ## [2026-06-11] — Health stats on prod + golden linkage visibility
 
 ### cli-market-core v1.9.30
