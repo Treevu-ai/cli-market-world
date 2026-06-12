@@ -1,6 +1,6 @@
 # Índice Canasta Perú
 
-**Actualizado:** 2026-06-12 18:43 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-production.up.railway.app/dashboard/data)
+**Actualizado:** 2026-06-12 19:15 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-production.up.railway.app/dashboard/data)
 
 Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa. Señal pública del data moat — ver [`docs/gtm/pitch-agentic-protocols.md`](../docs/gtm/pitch-agentic-protocols.md).
 
