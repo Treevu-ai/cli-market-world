@@ -57,6 +57,7 @@ T = {
         "desc": "Agentic Market CLI — compras desde la terminal.",
         "usage": "market <comando> [opciones]",
         "login": "Autenticarse", "search": "Buscar productos", "compare": "Comparar precios entre tiendas",
+        "investigate": "Reporte profundo de mercado (search + compare + intel)",
         "add": "Agregar al carrito (usa # de tabla o product_id)", "cart": "Ver carrito",
         "cart_remove": "Eliminar un producto del carrito", "cart_update": "Cambiar cantidad de un producto en el carrito",
         "cart_clear": "Vaciar el carrito por completo", "checkout": "Finalizar compra",
@@ -100,6 +101,7 @@ T = {
         "desc": "Agentic Market CLI — purchases from the terminal.",
         "usage": "market <command> [options]",
         "login": "Authenticate", "search": "Search products", "compare": "Compare prices across stores",
+        "investigate": "Deep market report (search + compare + intel)",
         "add": "Add to cart (use table # or product_id)", "cart": "View cart",
         "cart_remove": "Remove product from cart", "cart_update": "Change product quantity in cart",
         "cart_clear": "Clear entire cart", "checkout": "Complete purchase",
@@ -566,6 +568,96 @@ def cmd_compare(args):
         table.add_row(*row)
     console.print()
     console.print(table)
+
+def _missions_enabled() -> bool:
+    return os.environ.get("MARKET_MISSIONS", "1").strip().lower() not in ("0", "false", "no")
+
+
+def _dispatch_investigate(
+    query: str,
+    country: str,
+    *,
+    line: str | None = None,
+    include_intel: bool = True,
+    intel_days: int = 30,
+):
+    from market_core.market_missions import run_investigate
+
+    return run_investigate(
+        query,
+        country,
+        line=line,
+        include_intel=include_intel,
+        intel_days=intel_days,
+    )
+
+
+def cmd_investigate(args):
+    en = ui.is_en()
+    if not _missions_enabled():
+        msg = "Investigate missions are disabled (MARKET_MISSIONS=0)." if en else "Misiones investigate deshabilitadas (MARKET_MISSIONS=0)."
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.json_exit(console, False, error=msg, next_commands=["market search \"leche\" --country PE"])
+        console.print(f"[yellow]{msg}[/]")
+        sys.exit(1)
+
+    query = (args.query or "").strip()
+    if not query:
+        hint = 'market investigate "arroz" --country PE'
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.json_exit(console, False, error="query required", next_commands=[hint])
+        console.print(f"[yellow]{'Query required' if en else 'Query requerido'}[/]")
+        ui.print_hints(console, [hint])
+        sys.exit(1)
+
+    tier = ui.fetch_tier()
+    ui.tier_gate(console, "investigate", tier, json_args=args)
+
+    country = args.country or ui.get_default_country()
+    if args.country:
+        ui.set_default_country(args.country)
+
+    try:
+        with console.status(f"[cyan]{'Running investigate mission...' if en else 'Ejecutando misión investigate...'}[/]"):
+            report = _dispatch_investigate(
+                query,
+                country,
+                line=args.line,
+                include_intel=not getattr(args, "no_intel", False),
+                intel_days=getattr(args, "days", 30) or 30,
+            )
+    except ImportError:
+        msg = (
+            "Investigate requires cli-market-core>=1.9.36. Run: pip install -U cli-market-world"
+            if en
+            else "Investigate requiere cli-market-core>=1.9.36. Ejecuta: pip install -U cli-market-world"
+        )
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.json_exit(console, False, error=msg, next_commands=["market doctor"])
+        ui.print_actionable_error(console, msg)
+        sys.exit(1)
+
+    ok = report.get("status") != "error"
+    q = query.replace('"', '\\"')
+    next_cmds = [
+        f'market compare "{q}" --country {country}',
+        f'market intel inflation --country {country}',
+    ]
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(ok, report, error=report.get("error"), next_commands=next_cmds),
+            console,
+        )
+        sys.exit(0 if ok else 1)
+
+    if report.get("error"):
+        console.print(f"[red]{report['error']}[/]")
+        sys.exit(1)
+
+    ui.print_investigate_report(console, report)
+    if report.get("status") == "partial":
+        sys.exit(1)
 
 def cmd_add(args):
     pid = args.product_id
@@ -2572,6 +2664,14 @@ def main():
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
 
+    # investigate
+    p = sub.add_parser("investigate", help=t("investigate"))
+    p.add_argument("query", nargs="?", default="")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--no-intel", action="store_true", help="Skip intel inflation section")
+    p.add_argument("--days", type=int, default=30, help="Intel inflation window (days)")
+
     # add
     p = sub.add_parser("add", help=t("add"))
     p.add_argument("product_id")
@@ -2751,6 +2851,7 @@ def main():
 
     handlers = {
         "login": cmd_login, "search": cmd_search, "compare": cmd_compare,
+        "investigate": cmd_investigate,
         "add": cmd_add, "cart": cmd_cart,
         "cart-remove": cmd_cart_remove, "cart-update": cmd_cart_update,
         "cart-clear": cmd_cart_clear, "checkout": cmd_checkout,
