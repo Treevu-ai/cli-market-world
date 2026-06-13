@@ -104,6 +104,7 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
         "items": [
             ("12", "python ops/production_acceptance.py --tier 2", "PAM completo tier 2"),
             ("13", "python ops/payments_e2e.py", "Rails de pago (PayPal/MP/Yape/Plin)"),
+            ("13b", "python ops/paypal_live_e2e.py --status", "GO-LIVE §5 PayPal live E2E gate"),
             ("14", "python ops/go_live_check.py --spike --remote", "Post-spike pricing decision"),
             ("15", "cd ../cli-market-content && make week2", "Monetización semana 2"),
         ],
