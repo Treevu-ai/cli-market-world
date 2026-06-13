@@ -4,8 +4,8 @@ Ejecutar después de cada release PyPI (core + world + backend pin). Evita drift
 
 ## Pre-flight
 
-- [x] `pip index versions cli-market-core` → **1.9.34** (2026-06-12)
-- [x] `pip index versions cli-market-world` → **1.9.34**
+- [x] `pip index versions cli-market-core` → **1.9.36** (2026-06-13)
+- [x] `pip index versions cli-market-world` → **1.9.36**
 - [x] Railway `/health` → 200
 
 ## Automático (world repo)

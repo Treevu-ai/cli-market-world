@@ -56,7 +56,7 @@ curl -sS -o /dev/null -w "backend HTTP %{http_code}\n" \
 6. **Pull requests:** **Read and write** (para que `gh pr create` funcione en el workflow)
 7. SSO → **Authorize** for Treevu-ai
 8. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
-9. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.34`)
+9. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.36`)
 10. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
 
 Verificar token antes de guardar:
@@ -71,7 +71,7 @@ curl -sS -o /dev/null -w "read repo HTTP %{http_code}\n" \
 
 ### Core git backport (`sync-core-git` workflow)
 
-PyPI `cli-market-core` **1.9.34** ya publicado. Falta alinear git en `Treevu-ai/cli-market-core`:
+PyPI `cli-market-core` **1.9.36** publicado. Git en `Treevu-ai/cli-market-core` se alinea vía workflow **Sync cli-market-core git (patch)**.
 
 1. `GH_PAT` con **Contents: Read and write** en `cli-market-core` (+ Pull requests write para `gh pr create`)
 2. Bump `ops/core-patch.trigger` en `main` → workflow **Sync cli-market-core git (patch)**
