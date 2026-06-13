@@ -58,6 +58,7 @@ curl -sS -o /dev/null -w "backend HTTP %{http_code}\n" \
 8. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
 9. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.36`)
 10. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
+11. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
 
 Verificar token antes de guardar:
 

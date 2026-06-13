@@ -62,7 +62,8 @@
 
 | Item | Owner | Notas |
 |------|-------|-------|
-| Merge backend PR #22 | eng | Auto-PR `chore/observatory-mirror-20260613` — cierra gap streak en mirror |
+| Merge backend PR #22 | eng | Auto-PR observatory mirror — cierra gap streak |
+| Merge backend CI PR (sync-backend-ci) | eng | Fix `ModuleNotFoundError: persistence` en test collection |
 | PayPal live E2E GO-LIVE §5 | founder | `ops/paypal_live_e2e.py --prepare` + aprobación manual + `--verify` |
 | Observatory adoption CI 7 días | eng | Validar post-deploy ~2026-06-19 (`observatory-nightly`) |
 | Landing `/stats` data-gate | GTM | `make gate` en content repo antes de creative con cifras |
