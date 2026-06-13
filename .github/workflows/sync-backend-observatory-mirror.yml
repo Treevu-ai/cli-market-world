@@ -1,0 +1,124 @@
+name: Sync backend observatory mirror
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - market_observatory.py
+      - routers/observatory.py
+      - ops/observatory-mirror.trigger
+
+permissions:
+  contents: read
+
+jobs:
+  sync-observatory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-backend
+          ref: main
+          path: cli-market-backend
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Copy Observatory mirror files world → backend
+        env:
+          BACKEND_DIR: ${{ github.workspace }}/cli-market-backend
+        run: |
+          chmod +x ops/sync_backend_observatory_mirror.sh
+          ./ops/sync_backend_observatory_mirror.sh
+
+      - name: Save patch artifact (always)
+        if: always()
+        run: |
+          mkdir -p /tmp/observatory-mirror
+          git -C cli-market-backend diff > /tmp/observatory-mirror/observatory-mirror.patch || true
+          if [ ! -s /tmp/observatory-mirror/observatory-mirror.patch ]; then
+            echo "No diff — backend observatory mirror already matches world" \
+              > /tmp/observatory-mirror/observatory-mirror.patch
+          fi
+
+      - name: Upload observatory mirror patch
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-observatory-mirror
+          path: /tmp/observatory-mirror/
+          retention-days: 14
+
+      - name: Check backend write token
+        id: write_token
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
+        run: |
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_BACKEND_WRITE not set — will skip auto-PR (download artifact instead)"
+            exit 0
+          fi
+          if gh api repos/Treevu-ai/cli-market-backend --jq '.permissions.push' 2>/dev/null | grep -q true; then
+            echo "has_write=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_BACKEND_WRITE cannot push to cli-market-backend"
+          fi
+
+      - name: Open PR on cli-market-backend
+        if: steps.write_token.outputs.has_write == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
+        working-directory: cli-market-backend
+        run: |
+          set -euo pipefail
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
+          BRANCH="chore/observatory-mirror-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "Backend observatory mirror already matches world"
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git add market_observatory.py routers/observatory.py
+          git commit -m "chore(mirror): sync Observatory routes from cli-market-world
+
+Includes GET /admin/observatory/streak (core 1.9.35+).
+Automated by cli-market-world sync-backend-observatory-mirror workflow."
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --repo Treevu-ai/cli-market-backend \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(mirror): sync Observatory routes from world" \
+            --body "Automated from cli-market-world \`sync-backend-observatory-mirror\` after world Observatory mirror change.
+
+Closes mirror gap noted by T-177 (\`/admin/observatory/streak\`)."
+
+      - name: Detect backend diff
+        id: diff
+        run: |
+          if git -C cli-market-backend diff --quiet; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Manual apply instructions
+        if: steps.write_token.outputs.has_write != 'true' && steps.diff.outputs.has_diff == 'true'
+        run: |
+          echo "## Observatory mirror — manual apply required" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download artifact **backend-observatory-mirror** or run locally:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`bash" >> "$GITHUB_STEP_SUMMARY"
+          echo "BACKEND_DIR=../cli-market-backend ./ops/sync_backend_observatory_mirror.sh" >> "$GITHUB_STEP_SUMMARY"
+          echo "cd cli-market-backend && git checkout -b chore/observatory-mirror && git commit -am 'chore(mirror): sync Observatory from world'" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::Set GH_PAT_BACKEND_WRITE or apply patch from workflow artifact backend-observatory-mirror"

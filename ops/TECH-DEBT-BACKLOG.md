@@ -1,6 +1,6 @@
 # Tech debt backlog — CLI Market multirepo
 
-**Last updated:** 2026-06-12 · **Owner:** PM + eng  
+**Last updated:** 2026-06-13 · **Owner:** PM + eng  
 **North star de deuda:** paridad multirepo verificable, gates CI duros en revenue/data, Observatory auditado antes de claims GTM.
 
 ---
@@ -14,7 +14,8 @@
 | T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | ✅ Shipped |
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | ✅ Shipped |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | ✅ Shipped |
-| T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped |
+| T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped (#185) |
+| T-178 | backend | `chore: sync observatory mirror from world (streak route)` | 🔄 PR world workflow |
 
 ### Entregables Now (#172)
 
