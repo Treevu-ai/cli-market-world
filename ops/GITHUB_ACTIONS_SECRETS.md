@@ -59,7 +59,13 @@ curl -sS -o /dev/null -w "backend HTTP %{http_code}\n" \
 9. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
 10. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.36`)
 11. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
-12. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
+12. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `ruff.toml` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
+
+### `GH_PAT` en **cli-market-backend** (no solo en world)
+
+El workflow CI del backend usa `${{ secrets.GH_PAT }}` para checkout de `cli-market-index` (repo privado). Ese secret debe existir también en **cli-market-backend → Settings → Secrets → Actions** con **Contents: Read** en `cli-market-index`.
+
+Sin él, los jobs `test` / `test-pg` fallan al clonar el index aunque `lint` pase.
 
 **`GH_PAT_BACKEND_WRITE` must include `Workflows: Read and write`** on `cli-market-backend` — GitHub rejects pushes to `.github/workflows/*` without it. Si falta, el workflow sube solo `pytest.ini` y deja el patch de `ci.yml` en el artifact `backend-ci-parity`.
 
@@ -119,7 +125,8 @@ Daily cron lives in **`morning-ops-chain.yml`** only. Child workflows (`adoption
 | Observatory nightly: `DATABASE_URL secret missing` | Fixed in main — workflow calls `POST /admin/observatory/snapshot` with `MARKET_API_TOKEN` |
 | Daily briefing / GTM preflight: `Not Found` on cli-market-content | PAT in secret lacks read on private repo — follow checklist above; run **Verify content PAT** |
 | Sync backend core pin: `403` on push | Add `GH_PAT_BACKEND_WRITE` with write on backend, or apply PR manually |
-| PAM admin cases skip | Set `MARKET_API_TOKEN` in workflow env / secrets |
+| Sync backend CI: test job index checkout 404 | Add `GH_PAT` to **cli-market-backend** repo secrets (read `cli-market-index`) |
+| Backend CI lint: E402 on `market_server.py` | Sync `ruff.toml` from world (`ops/backend-parity/ruff.toml`) — default ruff is stricter |
 
 ## Verify locally
 

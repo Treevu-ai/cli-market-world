@@ -1,0 +1,20 @@
+# Canonical ruff config for cli-market-backend — maintained in cli-market-world.
+# Without this file, default ruff rules (e.g. E402) fail on market_server.py imports.
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "landing/",
+    ".market/",
+    "dist/",
+    "build/",
+    "*.egg-info/",
+    "docs/financial-services/",
+    ".deps/",
+]
+
+[lint]
+select = ["F", "E9", "W6", "B"]
+ignore = ["B008", "B904"]
+
+[lint.per-file-ignores]
+"tests/*" = ["E402", "F401"]

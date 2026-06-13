@@ -1,1 +1,1 @@
-2026-06-13T19:00:00Z re-trigger verify backend ci.yml on main
+2026-06-13T20:30:00Z sync ruff.toml parity — fix backend CI lint E402
