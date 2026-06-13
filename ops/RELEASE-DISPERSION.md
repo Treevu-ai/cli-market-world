@@ -10,20 +10,22 @@ Ejecutar después de cada release PyPI (core + world + backend pin). Evita drift
 
 ## Automático (world repo)
 
+> **CI:** El job `release-dispersion` en `publish-pypi.yml` ejecuta los pasos 1 y 4 automáticamente después de cada release (tag `v*`). Solo los pasos 2–3 requieren intervención manual.
+
 ```bash
 cd cli-market-world
 
-# 1. Stats → landing, README, OG, MCP manifests, content templates
+# 1. Stats → landing, README, OG, MCP manifests, content templates  ← CI lo hace
 python ops/sync_market_stats.py
 
-# 2. GIFs terminalizer (si cambió versión visible o métricas en hero)
+# 2. GIFs terminalizer (si cambió versión visible o métricas en hero)  ← manual
 python ops/generate_demo_gif.py
 python ops/generate_usecase_gifs.py
 
-# 3. README heroes multi-repo (releases mayores)
-python ops/sync_readme_heroes.py   # opcional
+# 3. README heroes multi-repo (releases mayores)  ← manual, opcional
+python ops/sync_readme_heroes.py
 
-# 4. Commit + push → Cloudflare landing deploy
+# 4. Commit + push → Cloudflare landing deploy  ← CI lo hace
 git add landing/ README.md pyproject.toml server.json mcp.json docs/
 git commit -m "chore(stats): sync landing and assets after X.Y.Z"
 git push origin main

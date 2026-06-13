@@ -106,3 +106,62 @@ jobs:
           ./mcp-publisher validate
           ./mcp-publisher login github-oidc
           ./mcp-publisher publish
+
+  release-dispersion:
+    needs: publish-mcp-registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Dispersion for version: ${VERSION}"
+
+      - name: Install cli-market-world (published version)
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          pip install "cli-market-world==${VERSION}" || pip install "cli-market-world>=${VERSION}"
+
+      - name: Sync landing stats + manifests
+        run: python ops/sync_market_stats.py
+
+      - name: Commit dispersion changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          VERSION="${{ steps.ver.outputs.version }}"
+          git add landing/ README.md server.json mcp.json docs/ pyproject.toml 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No dispersion changes to commit."
+          else
+            git commit -m "chore(stats): sync landing and assets after ${VERSION}"
+            git push origin HEAD:main
+          fi
+
+      - name: Trigger backend core-pin sync
+        if: ${{ secrets.GH_PAT != '' }}
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer ${GH_PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/Treevu-ai/cli-market-world/actions/workflows/sync-backend-core-pin.yml/dispatches" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"version\":\"${VERSION}\"}}" \
+            && echo "Dispatched sync-backend-core-pin for ${VERSION}" \
+            || echo "::warning::Could not dispatch sync-backend-core-pin (non-fatal)"
