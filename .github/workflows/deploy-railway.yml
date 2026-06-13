@@ -75,6 +75,9 @@ jobs:
             echo "RAILWAY_TOKEN present (length ${#RAILWAY_TOKEN})"
           fi
 
+      - name: Verify cli-market-core pin exists on PyPI
+        run: python3 ops/verify_railway_core_pin.py
+
       - name: List Railway services
         run: python3 ops/railway_deploy.py --list-services
         continue-on-error: true

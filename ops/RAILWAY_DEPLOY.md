@@ -7,6 +7,26 @@
 | `git push main` no mueve Railway | No había workflow de deploy; integración GitHub nativa desconectada |
 | GitHub Action `RAILWAY_TOKEN` vacío | Secret mal nombrado, en Variables en vez de Secrets, o repo sin acceso |
 | Project token + GraphQL | **Project tokens no pueden** `serviceInstanceDeploy` — usar `railway up` (soportado en CI) |
+| Deploy API falla en `pip install` | Pin `cli-market-core==X` en `requirements-railway.txt` pero **X no está en PyPI** — ver abajo |
+| Prod sigue en versión vieja (ej. 1.9.34) | Build falló; Railway sirve el último deploy exitoso |
+| Servicio API distinto en dashboard | Actualiza `RAILWAY_API_SERVICE_ID` en GitHub Variables al UUID correcto |
+
+### Pin core vs PyPI (Jun 2026)
+
+El merge de `#176` fijó `cli-market-core==1.9.36` **antes** de publicar 1.9.36 en PyPI. El Dockerfile falla con:
+
+```text
+ERROR: No matching distribution found for cli-market-core==1.9.36
+```
+
+**Orden correcto:**
+
+1. GitHub Actions → **Publish cli-market-core (patch)** → `version: 1.9.36`
+2. Verificar: `python3 ops/verify_railway_core_pin.py` o `pip index versions cli-market-core`
+3. `ops/after_core_1.9.36_published.sh` (re-pin world + CI)
+4. **Deploy Railway** → `deploy-railway.yml` → `target: api`
+
+Hotfix temporal: pin `==1.9.35` en `requirements-railway.txt` hasta que 1.9.36 exista en PyPI.
 
 ## Setup correcto (una vez)
 
@@ -94,5 +114,5 @@ curl -s "https://cli-market-production.up.railway.app/analytics/observatory?days
 |---------|-----|
 | Project | `d0353d46-78c9-4949-a03f-3ecdb78f06aa` |
 | Environment (production) | `036bd72a-f6d8-4c51-b2ab-50cfb261468b` |
-| API service | `6e74bc38-bbf2-4815-bac4-38092067d3b1` |
+| API service | `6e74bc38-bbf2-4815-bac4-38092067d3b1` (legacy) · si Railway muestra otro UUID (ej. `078b2ef9-…`), actualiza `RAILWAY_API_SERVICE_ID` |
 | Collector service | `3813265a-1862-44a7-a723-62afa8a88dcf` |
