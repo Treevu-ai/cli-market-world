@@ -81,26 +81,35 @@ jobs:
           BRANCH="chore/ci-index-checkout-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
+          if git diff --quiet && git diff --cached --quiet; then
             echo "Backend CI already matches world template"
             exit 0
           fi
-          git checkout -b "$BRANCH"
-          git add pytest.ini
-          git commit -m "fix(ci): register integration pytest mark"
-          git push -u origin "$BRANCH"
-          git add .github/workflows/ci.yml
-          git commit -m "fix(ci): checkout cli-market-index in CI" || true
-          if ! git push origin "$BRANCH"; then
-            echo "::warning::Push of .github/workflows/ci.yml blocked — add Workflows: Read and write to GH_PAT_BACKEND_WRITE on cli-market-backend"
+          git fetch origin
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git stash push -u -m "sync-backend-ci" -- pytest.ini .github/workflows/ci.yml || true
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            git stash pop || true
+          else
+            git checkout -b "$BRANCH"
           fi
+          git add pytest.ini .github/workflows/ci.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "fix(ci): cli-market-index checkout + pytest integration mark"
+          fi
+          git pull --rebase origin "$BRANCH"
+          git push -u origin "$BRANCH"
           PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
-          gh pr create \
-            --repo Treevu-ai/cli-market-backend \
-            --base main \
-            --head "$BRANCH" \
-            --title "fix(ci): install cli-market-index for test collection" \
-            --body "$PR_BODY"
+          if gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend >/dev/null 2>&1; then
+            gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend --json url --jq .url
+          else
+            gh pr create \
+              --repo Treevu-ai/cli-market-backend \
+              --base main \
+              --head "$BRANCH" \
+              --title "fix(ci): install cli-market-index for test collection" \
+              --body "$PR_BODY"
+          fi
 
       - name: Detect backend diff
         id: diff
