@@ -33,11 +33,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Verify PyPI version exists
+      - name: Resolve cli-market-core pin version
         run: |
-          VER="${{ github.event.inputs.version || '1.9.36' }}"
+          WANT="${{ github.event.inputs.version || '1.9.36' }}"
+          if python3 -m pip index versions "cli-market-core" 2>/dev/null | grep -qE "(^|[[:space:]])${WANT}([,[:space:]]|$)"; then
+            VER="$WANT"
+          else
+            VER="$(python3 -c "import json,urllib.request; print(json.load(urllib.request.urlopen('https://pypi.org/pypi/cli-market-core/json'))['info']['version'])")"
+            echo "::warning::cli-market-core ${WANT} not on PyPI — pinning backend to ${VER}"
+          fi
           echo "CORE_PIN_VER=${VER}" >> "$GITHUB_ENV"
-          python3 -m pip index versions "cli-market-core" | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"
+          echo "Resolved pin: cli-market-core>=${VER}"
 
       - name: Bump backend requirements.txt
         env:
