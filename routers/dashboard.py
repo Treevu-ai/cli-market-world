@@ -9,6 +9,7 @@ Endpoints:
 from __future__ import annotations
 
 import os
+import threading
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -37,6 +38,7 @@ router = APIRouter(tags=["dashboard"])
 _dashboard_data_cache: dict | None = None
 _dashboard_data_cache_at: float = 0.0
 _DASHBOARD_CACHE_TTL = 120  # seconds
+_dashboard_cache_lock = threading.Lock()
 
 
 def _cached_dashboard_data() -> dict:
@@ -49,11 +51,12 @@ def _cached_dashboard_data() -> dict:
     except Exception:
         pass
     now = time.monotonic()
-    if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
-        return _dashboard_data_cache
-    data = _dashboard_data()
-    _dashboard_data_cache = data
-    _dashboard_data_cache_at = now
+    with _dashboard_cache_lock:
+        if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
+            return _dashboard_data_cache
+        data = _dashboard_data()
+        _dashboard_data_cache = data
+        _dashboard_data_cache_at = now
     return data
 
 

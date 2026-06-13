@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -350,14 +351,16 @@ _CONSOLIDATED_PROJECTS = ("cli-market-core", "cli-market-world")
 _V2_PUBLIC_CACHE: dict[str, int] = {}
 _V2_PUBLIC_CACHE_AT: float = 0.0
 _V2_PUBLIC_TTL_S = 3600
+_pepy_cache_lock = threading.Lock()
 
 
 def _pepy_v2_public_total(project: str) -> int:
     """Public Pepy v2 totals — no API key (legacy + core + world sum)."""
     global _V2_PUBLIC_CACHE_AT
     now = time.time()
-    if _V2_PUBLIC_CACHE and now - _V2_PUBLIC_CACHE_AT < _V2_PUBLIC_TTL_S:
-        return int(_V2_PUBLIC_CACHE.get(project, 0))
+    with _pepy_cache_lock:
+        if _V2_PUBLIC_CACHE and now - _V2_PUBLIC_CACHE_AT < _V2_PUBLIC_TTL_S:
+            return int(_V2_PUBLIC_CACHE.get(project, 0))
     totals: dict[str, int] = {}
     for name in (_LEGACY_PYPI, *_CONSOLIDATED_PROJECTS):
         try:
@@ -370,10 +373,12 @@ def _pepy_v2_public_total(project: str) -> int:
                 data = json.loads(resp.read().decode())
             totals[name] = int(data.get("total_downloads") or 0)
         except Exception:
-            totals[name] = int(_V2_PUBLIC_CACHE.get(name, 0))
-    _V2_PUBLIC_CACHE.clear()
-    _V2_PUBLIC_CACHE.update(totals)
-    _V2_PUBLIC_CACHE_AT = now
+            with _pepy_cache_lock:
+                totals[name] = int(_V2_PUBLIC_CACHE.get(name, 0))
+    with _pepy_cache_lock:
+        _V2_PUBLIC_CACHE.clear()
+        _V2_PUBLIC_CACHE.update(totals)
+        _V2_PUBLIC_CACHE_AT = now
     return int(totals.get(project, 0))
 
 
