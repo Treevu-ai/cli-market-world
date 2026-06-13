@@ -1,1 +1,1 @@
-2026-06-13T07:00:00Z backend CI: index checkout + pytest.ini (fixes persistence import)
+2026-06-13T07:10:00Z re-trigger after YAML fix #191
