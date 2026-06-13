@@ -3,7 +3,7 @@
 **Last updated:** 2026-06-13 (N-1 closed) · **Owner:** PM + eng  
 **North star de deuda:** paridad multirepo verificable, gates CI duros en revenue/data, Observatory auditado antes de claims GTM.
 
-**Sprint activo:** N-2 — desacoplar GTM de `morning-ops-chain`
+**Sprint activo:** N-3 — tests slack_ops, media, retailer_admin
 
 ---
 
@@ -39,7 +39,7 @@
 | ID | Item | Repo | Effort |
 |----|------|------|--------|
 | ~~N-1~~ | ~~Partir `routers/payments.py`~~ | world | ✅ Merged 2026-06-13 (#210 #211 #212) |
-| N-2 | Desacoplar GTM de `morning-ops-chain` (briefing independiente) | world | M |
+| ~~N-2~~ | ~~Desacoplar GTM de `morning-ops-chain`~~ | world | ✅ Merged 2026-06-13 (#213) |
 | N-3 | Tests `slack_ops`, `media`, `retailer_admin` | world | M |
 | N-4 | Automatizar `RELEASE-DISPERSION.md` post-PyPI | world | S |
 | N-6 | `tests/test_price_confidence.py` + `test_market_basket.py` | world | M |
