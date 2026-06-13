@@ -89,18 +89,13 @@ jobs:
           git add pytest.ini .github/workflows/ci.yml
           git commit -m "fix(ci): checkout cli-market-index + register integration mark"
           git push -u origin "$BRANCH"
+          PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
           gh pr create \
             --repo Treevu-ai/cli-market-backend \
             --base main \
             --head "$BRANCH" \
             --title "fix(ci): install cli-market-index for test collection" \
-            --body "Automated from cli-market-world sync-backend-ci.
-
-Fixes collection errors in test_funnel.py, test_observatory.py, test_pepy.py (ModuleNotFoundError: persistence).
-
-- Checkout Treevu-ai/cli-market-index in CI
-- pip install -e .deps/cli-market-index[postgres]
-- pytest.ini registers integration mark"
+            --body "$PR_BODY"
 
       - name: Detect backend diff
         id: diff
