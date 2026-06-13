@@ -15,7 +15,8 @@
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | ✅ Shipped |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | ✅ Shipped |
 | T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped (#185) |
-| T-178 | backend | `chore: sync observatory mirror from world (streak route)` | 🔄 PR world workflow |
+| T-178 | backend | `chore: sync observatory mirror from world (streak route)` | ✅ Shipped (#186) |
+| N-5 | world | `ops: linkage_pct alerts in command-control` | 🔄 PR |
 
 ### Entregables Now (#172)
 
@@ -36,7 +37,6 @@
 | N-2 | Desacoplar GTM de `morning-ops-chain` (briefing independiente) | world | M |
 | N-3 | Tests `slack_ops`, `media`, `retailer_admin` | world | M |
 | N-4 | Automatizar `RELEASE-DISPERSION.md` post-PyPI | world | S |
-| N-5 | Alerta linkage_pct en command-control | world + index | S |
 | N-6 | `tests/test_price_confidence.py` + `test_market_basket.py` | world | M |
 | N-7 | Actualizar phase6/7 docs o crear tests faltantes | world | S |
 
