@@ -96,6 +96,7 @@ T = {
         "tutorial": "Tutorial interactivo de 3 ejercicios (buscar, comparar, exportar) en 60 segundos",
         "demo": "Demo sin cuenta: token temporal + search/compare en <5 min",
         "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
+        "mcp": "Centro MCP (solo lectura): tools + salud doctor",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -139,6 +140,7 @@ T = {
         "intel_scores": "Composite scores (fairness, stress, aggression)",
         "tutorial": "Interactive 3-step tutorial (search, compare, export) in 60 seconds",
         "demo": "No-account demo: temp token + search/compare in under 5 minutes",
+        "mcp": "MCP center (read-only): tools + doctor health",
     },
 }
 
@@ -1213,6 +1215,56 @@ def cmd_tools(args):
         ],
     )
 
+
+def cmd_mcp(args):
+    """Read-only MCP center: doctor health + tool registry."""
+    profile = getattr(args, "profile", None) or "default"
+    checks, ok = _collect_doctor_checks()
+    pct, summary = ui.readiness_score(checks)
+
+    try:
+        from market_core.market_mcp_registry import list_tools
+    except Exception as e:
+        if getattr(args, "json", False) or ui.is_json_mode():
+            ui.emit_json(ui.json_response(False, error=f"MCP tools unavailable: {e}"), console)
+            sys.exit(1)
+        console.print("[yellow]MCP tools catalog not available in this build.[/]")
+        sys.exit(1)
+
+    tools = list_tools(profile)
+    mcp_default, mcp_legacy = _mcp_profile_counts()
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(
+                ok,
+                {
+                    "profile": profile,
+                    "tools": tools,
+                    "total": len(tools),
+                    "default_total": mcp_default,
+                    "legacy_total": mcp_legacy,
+                    "readiness_pct": pct,
+                    "readiness_summary": summary,
+                    "checks": [{"name": n, "detail": d, "status": s} for n, d, s in checks],
+                },
+                next_commands=["market mcp-setup", "market doctor", "market tools"],
+            ),
+            console,
+        )
+        sys.exit(0 if ok else 1)
+
+    ui.print_mcp_center(
+        console,
+        profile=profile,
+        tools=tools,
+        checks=checks,
+        readiness_pct=pct,
+        readiness_summary=summary,
+        ok=ok,
+    )
+
+
 def cmd_alerts(args):
     if args.action == "list":
         data = cli_api("GET", "/v1/alerts")
@@ -2068,17 +2120,79 @@ def cmd_init(args):
     console.print(f"{ui.PROMPT} [dim]{'ready' if en else 'listo'}[/][bold #00FF88]_[/]")
 
 
+def _shell_parse_investigate(rest: list[str]) -> argparse.Namespace:
+    ns = argparse.Namespace(
+        query="",
+        country=None,
+        line=None,
+        no_intel=False,
+        days=30,
+        json=False,
+    )
+    i = 0
+    while i < len(rest):
+        tok = rest[i]
+        if tok in ("--country", "-c") and i + 1 < len(rest):
+            ns.country = rest[i + 1]
+            i += 2
+        elif tok == "--no-intel":
+            ns.no_intel = True
+            i += 1
+        elif tok == "--days" and i + 1 < len(rest):
+            ns.days = int(rest[i + 1])
+            i += 2
+        elif tok == "--line" and i + 1 < len(rest):
+            ns.line = rest[i + 1]
+            i += 2
+        elif not tok.startswith("-") and not ns.query:
+            ns.query = tok
+            i += 1
+        else:
+            i += 1
+    return ns
+
+
+def _shell_mission_help(console: Console) -> None:
+    en = ui.is_en()
+    if en:
+        console.print(
+            "[cyan]investigate QUERY[/]  [cyan]compare QUERY[/]  [cyan]intel inflation[/]  "
+            "[cyan]doctor[/]  [cyan]mcp[/]  [cyan]whoami[/]  [cyan]search QUERY[/]  "
+            "[cyan]hello[/]  [cyan]exit[/]"
+        )
+    else:
+        console.print(
+            "[cyan]investigate QUERY[/]  [cyan]compare QUERY[/]  [cyan]intel inflation[/]  "
+            "[cyan]doctor[/]  [cyan]mcp[/]  [cyan]whoami[/]  [cyan]search QUERY[/]  "
+            "[cyan]hello[/]  [cyan]exit[/]"
+        )
+
+
 def cmd_shell(args):
     """Interactive REPL — agent-style session."""
     import shlex
     en = ui.is_en()
     tier = ui.fetch_tier()
-    ui.print_context_bar(console, tier=tier)
-    console.print(Panel(
-        "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]whoami[/]  [dim]doctor[/]",
-        title="CLI Market Shell" if en else "Sesion CLI Market",
-        border_style=ui.MINT,
-    ))
+    ctx = ui.fetch_session_context()
+    username = (ctx or {}).get("username")
+    missions = _missions_enabled()
+
+    if missions:
+        observatory = ui.fetch_observatory_public()
+        ui.print_mission_control(
+            console,
+            tier=tier,
+            observatory=observatory,
+            username=username,
+        )
+    else:
+        ui.print_context_bar(console, tier=tier, username=username)
+        console.print(Panel(
+            "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]whoami[/]  [dim]doctor[/]",
+            title="CLI Market Shell" if en else "Sesion CLI Market",
+            border_style=ui.MINT,
+        ))
+
     while True:
         try:
             line = console.input(f"{ui.PROMPT} ").strip()
@@ -2088,7 +2202,10 @@ def cmd_shell(args):
         if not line or line.lower() in ("exit", "quit", "q"):
             break
         if line.lower() == "help":
-            console.print("[cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]whoami[/]  [cyan]doctor[/]  [cyan]cart[/]  [cyan]hello[/]  [cyan]init[/]")
+            if missions:
+                _shell_mission_help(console)
+            else:
+                console.print("[cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]whoami[/]  [cyan]doctor[/]  [cyan]cart[/]  [cyan]hello[/]  [cyan]init[/]")
             continue
         try:
             tokens = shlex.split(line)
@@ -2097,8 +2214,15 @@ def cmd_shell(args):
             continue
         if not tokens:
             continue
+
+        cmd = tokens[0]
+        rest = tokens[1:]
+        if len(tokens) >= 2 and tokens[0] == "intel":
+            cmd = tokens[1]
+            rest = tokens[2:]
+
         ns = argparse.Namespace(
-            command=tokens[0],
+            command=cmd,
             json=getattr(args, "json", False),
             query="",
             store=None,
@@ -2124,25 +2248,52 @@ def cmd_shell(args):
             password="",
             lang_code=None,
             refresh=False,
+            profile="default",
+            no_intel=False,
+            days=30,
         )
-        cmd = tokens[0]
-        rest = tokens[1:]
         handlers = {
-            "search": cmd_search, "compare": cmd_compare, "account": cmd_account,
-        "whoami": cmd_whoami,
-            "doctor": cmd_doctor, "cart": cmd_cart, "hello": cmd_hello,
-            "register": cmd_register, "init": cmd_init, "countries": cmd_countries,
-            "lines": cmd_lines, "about": cmd_about,
+            "search": cmd_search,
+            "compare": cmd_compare,
+            "account": cmd_account,
+            "whoami": cmd_whoami,
+            "doctor": cmd_doctor,
+            "cart": cmd_cart,
+            "hello": cmd_hello,
+            "register": cmd_register,
+            "init": cmd_init,
+            "countries": cmd_countries,
+            "lines": cmd_lines,
+            "about": cmd_about,
         }
+        if missions:
+            handlers.update({
+                "investigate": cmd_investigate,
+                "mcp": cmd_mcp,
+                "inflation": cmd_inflation,
+            })
+
         if cmd not in handlers:
-            console.print(f"[yellow]Unknown: {cmd}[/]")
+            console.print(f"[yellow]{'Unknown' if en else 'Desconocido'}: {cmd}[/]")
             continue
-        if cmd in ("search", "compare") and rest:
+
+        if cmd == "investigate":
+            inv = _shell_parse_investigate(rest)
+            ns.query = inv.query
+            ns.country = inv.country
+            ns.line = inv.line
+            ns.no_intel = inv.no_intel
+            ns.days = inv.days
+        elif cmd in ("search", "compare") and rest:
             ns.query = rest[0]
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
-        if cmd == "login" and len(rest) >= 2:
+        elif cmd == "mcp":
+            for i, tok in enumerate(rest):
+                if tok == "--profile" and i + 1 < len(rest):
+                    ns.profile = rest[i + 1]
+        elif cmd == "login" and len(rest) >= 2:
             ns.username, ns.password = rest[0], rest[1]
         handlers[cmd](ns)
 
@@ -2816,6 +2967,13 @@ def main():
         default="default",
         help="MCP tool profile (default: curated Shop/Intel/Account)",
     )
+    p_mcp = sub.add_parser("mcp", help=t("mcp"))
+    p_mcp.add_argument(
+        "--profile",
+        choices=["default", "legacy", "full"],
+        default="default",
+        help="MCP tool profile (default: curated Shop/Intel/Account)",
+    )
     sub.add_parser("hello", help=t("hello"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
@@ -2862,6 +3020,7 @@ def main():
         "enrich": cmd_enrich, "basket": cmd_basket,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
+        "mcp": cmd_mcp,
         "alerts": cmd_alerts,
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
