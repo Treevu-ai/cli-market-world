@@ -7,11 +7,10 @@ from fastapi.testclient import TestClient
 from market_core import db_create_api_key, db_save_user, ensure_db_initialized
 from market_server import app, hash_password
 
-ensure_db_initialized()
-
 
 @pytest.fixture
 def v1_client(isolated_db):
+    ensure_db_initialized()
     db_save_user("intel-user", hash_password("market"), "intel@test.com")
     key = db_create_api_key("intel-user", "read", "data-v1-smoke")["key"]
     headers = {"Authorization": f"Bearer {key}"}
