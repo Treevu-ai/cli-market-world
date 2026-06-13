@@ -8,6 +8,7 @@ Secrets required for scheduled workflows. Configure in **Settings → Secrets an
 | `GH_PAT` | CI checkout (index, core, backend), contract parity, sync-core-git, morning-ops-chain (GTM steps), daily-briefing, gtm-preflight | **Read** on: world, core, index, backend, content · **Write** on: core (git backport PR) |
 | `GH_PAT_CONTENT` | morning-ops-chain, daily-briefing, gtm-preflight, verify-content-pat | **Read and write** on `cli-market-content` — commits de `generated/daily/` |
 | `GH_PAT_BACKEND_WRITE` | sync-backend-core-pin | **Read and write** on `cli-market-backend` only — auto-PR del pin de core |
+| `PAYPAL_E2E_API_KEY` | go_live_check `--remote` (optional) | `sk-` de la compra de prueba §5 — CI/command-control verifica tier=pro sin `ops/.paypal-e2e-pass.json` local |
 | `SLACK_BOT_TOKEN` | daily-briefing, command-control (via API) | Bot invited to all GTM channels |
 | `DATABASE_URL` | auth-token-expiry-reminder (if used) | Postgres URL — **not** required for Observatory nightly (uses API cron) |
 

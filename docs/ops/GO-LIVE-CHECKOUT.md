@@ -117,6 +117,8 @@ curl -s https://cli-market-production.up.railway.app/paypal-status | jq
 
 ### Scripted flow (recommended)
 
+**Linux / macOS / Git Bash:**
+
 ```bash
 # Phase A — automated (register, export 403, PayPal approve URL)
 python3 ops/paypal_live_e2e.py --prepare
@@ -131,7 +133,33 @@ python3 ops/paypal_live_e2e.py --verify
 python3 ops/paypal_live_e2e.py --full --timeout 600
 ```
 
+**Windows (PowerShell)** — do not use `python3` if Windows opens the Microsoft Store. Use the wrapper or `py -3`:
+
+```powershell
+.\ops\paypal_live_e2e.ps1 --prepare
+# approve in browser, then:
+.\ops\paypal_live_e2e.ps1 --verify
+.\ops\paypal_live_e2e.ps1 --status
+```
+
+Equivalent without the wrapper (if Python is on PATH):
+
+```powershell
+py -3 ops\paypal_live_e2e.py --prepare
+py -3 ops\paypal_live_e2e.py --verify
+```
+
+If `py` is missing, install Python from [python.org](https://www.python.org/downloads/) with **Add to PATH**, or disable the Store alias: **Settings → Apps → Advanced app settings → App execution aliases** → turn off `python.exe` and `python3.exe`.
+
 State (username, `sk-`, `approve_url`) is saved to `ops/.paypal-e2e-state.json` (gitignored).
+
+After a successful `--verify`, pass evidence is written to `ops/.paypal-e2e-pass.json`
+(gitignored). `ops/go_live_check.py --remote` reads this file (or `PAYPAL_E2E_API_KEY`
+secret for remote tier check) and emits `paypal_e2e_pending` until §5 passes.
+
+```bash
+python3 ops/paypal_live_e2e.py --status   # not_started | awaiting_approval | passed
+```
 
 ### Manual curl (same steps)
 
@@ -167,6 +195,27 @@ If the tier doesn't flip in step 4, check the API logs for the webhook line
   `billing_pending` table keyed by subscription id; make sure `/billing/paypal`
   recorded the pending row.
 - Webhook signature failing → `PAYPAL_WEBHOOK_ID` mismatch.
+
+### Troubleshooting `paypal_live_e2e.py --prepare`
+
+**`FAIL: export on free tier expected 403, got 200`**
+
+Production is allowing data export for `tier=free` users. That means the export
+tier gate is not enforcing on the deployed API (redeploy required):
+
+1. GitHub → **Actions** → **Deploy Railway** → Run workflow → `target: api`
+2. Confirm after deploy:
+   ```powershell
+   py -3 -c "import urllib.request,json; r=urllib.request.urlopen(urllib.request.Request('https://cli-market-production.up.railway.app/auth/register', method='POST')); k=json.load(r)['api_key']; req=urllib.request.Request('https://cli-market-production.up.railway.app/v1/data/export', data=b'{}', method='POST', headers={'Authorization':'Bearer '+k,'Content-Type':'application/json'}); print(urllib.request.urlopen(req).status)"
+   ```
+   Expect **403** (not 200).
+
+To test the PayPal approval + webhook loop while redeploy is pending (does **not**
+count as a full §5 pass):
+
+```powershell
+py -3 ops\paypal_live_e2e.py --prepare --force-export-gate
+```
 
 ---
 

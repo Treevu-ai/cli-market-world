@@ -1,0 +1,41 @@
+name: PayPal live E2E (GO-LIVE §5)
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Gate phase to run against production API
+        required: true
+        default: status
+        type: choice
+        options:
+          - status
+          - prepare
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: PayPal live E2E gate
+        run: |
+          set -euo pipefail
+          case "${{ inputs.phase }}" in
+            prepare)
+              python3 ops/paypal_live_e2e.py --prepare --json
+              echo "::notice::Open approve_url in browser, approve live PayPal, then run locally: python3 ops/paypal_live_e2e.py --verify"
+              ;;
+            status)
+              python3 ops/paypal_live_e2e.py --status
+              ;;
+          esac
