@@ -19,12 +19,7 @@ from typing import Any
 from fastapi import HTTPException
 
 # The shared core is a hard dependency now: a missing import should fail loudly
-# at startup rather than silently degrade. These flags are kept True for the
-# call sites (routers/search.py, routers/health.py) that still read them.
-BACKEND_AVAILABLE = True
-_STORE_CREDENTIALS_AVAILABLE = True
-_SOURCE_HEALTH_AVAILABLE = True
-_RETAILER_ONBOARDING_AVAILABLE = True
+# at startup rather than silently degrade.
 
 from market_indicators import (
     ENRICHMENT_INDICATOR_KEYS,
@@ -73,9 +68,6 @@ from data_v1_service import (
 # These were private-backend-only; keep them as 503 stubs so the affected
 # endpoints respond cleanly instead of crashing at import.
 
-_SCORES_AVAILABLE = True
-
-
 def get_scores(*args: Any, **kwargs: Any) -> Any:
     return _core_get_scores(*args, **kwargs)
 
@@ -85,11 +77,6 @@ def submit_retailer_application(*_a: Any, **_kw: Any) -> dict:
 
 
 __all__ = [
-    "BACKEND_AVAILABLE",
-    "_SCORES_AVAILABLE",
-    "_STORE_CREDENTIALS_AVAILABLE",
-    "_SOURCE_HEALTH_AVAILABLE",
-    "_RETAILER_ONBOARDING_AVAILABLE",
     # market_indicators
     "ENRICHMENT_INDICATOR_KEYS",
     "INDICATOR_DEFINITIONS",
