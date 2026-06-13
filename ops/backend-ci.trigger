@@ -1,1 +1,1 @@
-2026-06-13T10:00:00Z re-trigger after reset/clean + split push fallback
+2026-06-13T11:00:00Z re-trigger after graceful workflow-scope fallback

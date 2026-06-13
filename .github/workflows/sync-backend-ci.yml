@@ -81,6 +81,7 @@ jobs:
           GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
           export GH_TOKEN
           BRANCH="chore/ci-index-checkout-$(date -u +%Y%m%d)"
+          CI_YML_BLOCKED=false
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin
@@ -94,26 +95,31 @@ jobs:
           cp "$PARITY_DIR/pytest.ini" pytest.ini
           mkdir -p .github/workflows
           cp "$PARITY_DIR/ci.yml" .github/workflows/ci.yml
-          if git diff --quiet pytest.ini .github/workflows/ci.yml; then
-            echo "Branch $BRANCH already matches world template"
-          else
+          if ! git diff --quiet pytest.ini .github/workflows/ci.yml; then
             git add pytest.ini .github/workflows/ci.yml
             git commit -m "fix(ci): cli-market-index checkout + pytest integration mark"
             git pull --rebase origin "$BRANCH" 2>/dev/null || true
             if ! git push -u origin "$BRANCH" 2>&1 | tee /tmp/backend-ci-push.log; then
               if grep -qi workflow /tmp/backend-ci-push.log; then
                 echo "::warning::Push rejected — add Workflows: Read and write to GH_PAT_BACKEND_WRITE"
+                CI_YML_BLOCKED=true
                 git reset --hard HEAD~1
                 cp "$PARITY_DIR/pytest.ini" pytest.ini
                 git add pytest.ini
-                git commit -m "fix(ci): add pytest.ini integration mark"
-                git push -u origin "$BRANCH"
+                if ! git diff --cached --quiet; then
+                  git commit -m "fix(ci): add pytest.ini integration mark"
+                  git push -u origin "$BRANCH"
+                else
+                  echo "pytest.ini already on remote branch"
+                fi
                 echo "::warning::ci.yml not pushed — apply from artifact backend-ci-parity or re-run after PAT update"
               else
                 cat /tmp/backend-ci-push.log
                 exit 1
               fi
             fi
+          else
+            echo "Branch $BRANCH already matches world template"
           fi
           PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
           if gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend >/dev/null 2>&1; then
@@ -125,6 +131,11 @@ jobs:
               --head "$BRANCH" \
               --title "fix(ci): install cli-market-index for test collection" \
               --body "$PR_BODY"
+          fi
+          if [ "$CI_YML_BLOCKED" = true ]; then
+            echo "## Backend CI — ci.yml needs manual apply or PAT Workflows scope" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "pytest.ini is on the backend PR branch. Download artifact **backend-ci-parity** for \`.github/workflows/ci.yml\` (cli-market-index checkout)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Detect backend diff
