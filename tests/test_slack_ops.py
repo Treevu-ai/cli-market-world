@@ -114,6 +114,8 @@ def test_slack_invalid_pro_ref_returns_ephemeral(monkeypatch):
 
 
 def test_slack_unauthorized_user_blocked(monkeypatch):
+    # Ensure user-restriction check is active (DEFAULT_TOKEN must be truthy)
+    monkeypatch.setattr("routers.slack_ops.DEFAULT_TOKEN", "test-token-123")
     monkeypatch.setenv("SLACK_ACTIVATE_PRO_USERS", "U_ALLOWED")
     import routers.slack_ops as _slack_mod
     monkeypatch.setattr(_slack_mod, "DEFAULT_TOKEN", "test-token-123")
