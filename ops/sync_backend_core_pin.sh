@@ -4,7 +4,7 @@
 #   BACKEND_DIR=../cli-market-backend ./ops/sync_backend_core_pin.sh 1.9.34
 set -euo pipefail
 
-VER="${1:-1.9.34}"
+VER="${1:-1.9.35}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BACKEND_DIR="${BACKEND_DIR:-$ROOT/../cli-market-backend}"
 REQ="$BACKEND_DIR/requirements.txt"

@@ -1,4 +1,3 @@
-# Bump this file (commit to main) after setting GH_PAT_BACKEND_WRITE in repo secrets.
-# Triggers sync-backend-core-pin.yml → auto-PR cli-market-core>=1.9.34 on cli-market-backend.
-# Requires: fine-grained PAT with Contents + Pull requests write on cli-market-backend only.
-# Last triggered: 2026-06-12T17:15:00Z sync cli-market-core>=1.9.34 (retry with default ver)
+# Bump this file (commit to main) after cli-market-core 1.9.35 is on PyPI.
+# Triggers sync-backend-core-pin.yml → auto-PR cli-market-core>=1.9.35 on cli-market-backend.
+# 2026-06-13T00:30:00Z — T-173 post-publish

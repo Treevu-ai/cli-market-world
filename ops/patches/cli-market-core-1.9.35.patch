@@ -1,0 +1,85 @@
+diff --git a/market_core/market_observatory.py b/market_core/market_observatory.py
+index ef63e62..9dc6bf8 100644
+--- a/market_core/market_observatory.py
++++ b/market_core/market_observatory.py
+@@ -717,6 +717,30 @@ def observatory_summary(*, days: int = 30) -> dict[str, Any]:
+         "telemetry_enabled": observatory_enabled(),
+     }
+ 
++def observatory_snapshot_streak(*, days: int = 7) -> dict[str, Any]:
++    """Count daily_observatory_metrics rows in the last N calendar days (inclusive)."""
++    ensure_observatory_schema()
++    days = max(1, min(days, 30))
++    cutoff = (date.today() - timedelta(days=days - 1)).isoformat()
++    db = get_db()
++    try:
++        row = db.execute(
++            "SELECT COUNT(*) AS n FROM daily_observatory_metrics WHERE date >= ?",
++            (cutoff,),
++        ).fetchone()
++        found = int(row["n"] or 0) if row else 0
++    finally:
++        db.close()
++    return {
++        "window_days": days,
++        "snapshots_found": found,
++        "target": days,
++        "ok": found >= days,
++        "cutoff_date": cutoff,
++    }
++
++
++
+ 
+ def compute_daily_observatory_metrics(*, day: date | None = None) -> dict[str, Any]:
+     """Upsert one daily snapshot row."""
+diff --git a/market_core/market_stats.py b/market_core/market_stats.py
+index 5d13e86..3672a98 100644
+--- a/market_core/market_stats.py
++++ b/market_core/market_stats.py
+@@ -81,7 +81,7 @@ def _live_golden_linkage_pct(fallback: float = 0.0) -> float:
+ 
+ GOLDEN_LINKAGE_PCT = _live_golden_linkage_pct()
+ PYPI_PACKAGE_NAME = "cli-market-world"
+-PACKAGE_VERSION = "1.9.34"
++PACKAGE_VERSION = "1.9.35"
+ LICENSE = "MIT"
+ PYPI_URL = f"https://pypi.org/project/{PYPI_PACKAGE_NAME}/"
+ PEPY_PROJECT_URL = f"https://pepy.tech/projects/{PYPI_PACKAGE_NAME}"
+diff --git a/pyproject.toml b/pyproject.toml
+index f30830e..079ecd5 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "cli-market-core"
+-version = "1.9.34"
++version = "1.9.35"
+ description = "CLI Market intelligence layer — indicators, billing, MCP primitives, and retailer connectors. Dependency of cli-market-world."
+ requires-python = ">=3.10"
+ license = "MIT"
+diff --git a/tests/test_observatory.py b/tests/test_observatory.py
+index 59c3422..ebf9798 100644
+--- a/tests/test_observatory.py
++++ b/tests/test_observatory.py
+@@ -86,3 +86,19 @@ def test_noise_filter_skips_smoke():
+         success=True,
+     )
+     assert result.get("skipped") is True
++
++
++def test_observatory_snapshot_streak(obs_db):
++    from datetime import date
++
++    from market_core.market_observatory import (
++        compute_daily_observatory_metrics,
++        observatory_snapshot_streak,
++    )
++
++    compute_daily_observatory_metrics(day=date.today())
++    streak = observatory_snapshot_streak(days=7)
++    assert streak["window_days"] == 7
++    assert streak["snapshots_found"] >= 1
++    assert streak["target"] == 7
++    assert "ok" in streak
