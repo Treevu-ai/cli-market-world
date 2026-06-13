@@ -1,0 +1,115 @@
+# cli-market-core PyPI publish via commit — no workflow_dispatch needed.
+# Edit ops/core-publish.trigger and push to main.
+
+name: Publish cli-market-core (trigger)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ops/core-publish.trigger"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read version from trigger file
+        id: ver
+        run: |
+          VERSION="$(grep -E '^VERSION=' ops/core-publish.trigger | head -1 | cut -d= -f2- | tr -d ' \r')"
+          test -n "$VERSION"
+          echo "version=${VERSION}" >> "$GITHUB_ENV"
+          echo "Publishing cli-market-core ${VERSION}"
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+          path: cli-market-core
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Apply core patch
+        run: |
+          set -eux
+          PATCH="ops/patches/cli-market-core-${VERSION}.patch"
+          test -f "$PATCH"
+          cd cli-market-core
+          if [ "$VERSION" = "1.9.36" ] && ! grep -q 'PACKAGE_VERSION = "1.9.35"' market_core/market_stats.py; then
+            git apply --check "../ops/patches/cli-market-core-1.9.35.patch"
+            git apply "../ops/patches/cli-market-core-1.9.35.patch"
+          fi
+          git apply --check "../${PATCH}"
+          git apply "../${PATCH}"
+          grep -q "version = \"${VERSION}\"" pyproject.toml
+          grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
+
+      - name: Test core patch
+        run: |
+          pip install -e ./cli-market-core pytest
+          python -m pytest cli-market-core/tests/test_observatory.py cli-market-core/tests/test_market_missions.py -q -o addopts=
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build cli-market-core/
+
+      - name: Publish cli-market-core to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: cli-market-core/dist/
+
+      - name: Sync cli-market-core git (main + tag)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        continue-on-error: true
+        run: |
+          set -eux
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_TOKEN="$GH_PAT"
+          cd cli-market-core
+          git config user.email "hello@cli-market.dev"
+          git config user.name "CLI Market Release"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          BRANCH="release/core-${VERSION}"
+          git checkout -B "$BRANCH"
+          git add market_core/market_missions.py market_core/market_stats.py pyproject.toml tests/test_market_missions.py tests/test_observatory.py
+          git diff --cached --quiet && echo "No git changes" && exit 0
+          git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
+          git push -f origin "$BRANCH"
+          gh pr create --repo Treevu-ai/cli-market-core \
+            --base main --head "$BRANCH" \
+            --title "release(core): ${VERSION} — Observatory backport" \
+            --body "Automated from cli-market-world core-pypi-trigger workflow." \
+            || true
+          gh pr merge --repo Treevu-ai/cli-market-core --merge "$BRANCH" --admin || true
+          git checkout main
+          git pull origin main
+          git tag -f "v${VERSION}"
+          git push origin "v${VERSION}" --force
+
+      - name: Verify PyPI propagation
+        run: |
+          PKG="cli-market-core"
+          for i in $(seq 1 24); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "✓ ${PKG} ${VERSION} visible on PyPI (attempt ${i})"
+              pip index versions cli-market-core | head -3
+              exit 0
+            fi
+            echo "Attempt ${i}/24: waiting 10s..."
+            sleep 10
+          done
+          echo "ERROR: ${PKG} ${VERSION} not visible on PyPI after publish"
+          exit 1
