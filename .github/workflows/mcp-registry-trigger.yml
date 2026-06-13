@@ -1,0 +1,64 @@
+# MCP Registry publish via commit — no workflow_dispatch needed.
+# Edit ops/mcp-publish.trigger and push to main.
+
+name: Publish PyPI MCP (trigger)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ops/mcp-publish.trigger"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-mcp-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read version from trigger file
+        id: ver
+        run: |
+          VERSION="$(grep -E '^VERSION=' ops/mcp-publish.trigger | head -1 | cut -d= -f2- | tr -d ' \r')"
+          test -n "$VERSION"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "MCP registry version: ${VERSION}"
+
+      - name: Sync server.json version
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .packages[0].version = $v |
+            .packages[0].identifier = "cli-market-world"
+          ' server.json > server.tmp && mv server.tmp server.json
+          cp server.json landing/public/server.json
+
+      - name: Wait for PyPI package
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          PKG="cli-market-world"
+          for i in $(seq 1 12); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "Found ${PKG} ${VERSION} on PyPI"
+              exit 0
+            fi
+            echo "Attempt ${i}/12: waiting 10s..."
+            sleep 10
+          done
+          echo "ERROR: ${PKG} ${VERSION} not on PyPI"
+          exit 1
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Validate and publish to MCP Registry
+        run: |
+          ./mcp-publisher validate
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
