@@ -11,7 +11,7 @@
 |----|------|--------|--------|
 | **#172** | world | `fix(ops): tech debt Now block — tests v1, observatory shim, CI pin` | ✅ Merged |
 | **T-173** | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | ✅ Shipped |
-| T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | Pendiente |
+| T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | ✅ Shipped |
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | Pendiente |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | Pendiente (`ops/paypal_live_e2e.py`) |
 | T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | Pendiente |
