@@ -12,7 +12,7 @@ PRD: `docs/prd-observatory-p0.md` §0 · Criterios §13 actualizados 2026-06-12
 
 ```
 cli-market-world  →  Railway (mirror-first: telemetría P0 aquí) ✅
-cli-market-core   →  PyPI 1.9.34 ✅
+cli-market-core   →  PyPI 1.9.36 ✅
 cli-market-index  →  (sin cambio P0) ✅
 ```
 
@@ -32,7 +32,7 @@ cli-market-index  →  (sin cambio P0) ✅
 - [x] CI verde
 - [x] Tag + publish PyPI `cli-market-core`
 
-**Versión anotar aquí:** `core 1.9.34`
+**Versión anotar aquí:** `core 1.9.36` (1.9.35 = streak export)
 
 ---
 
@@ -40,7 +40,7 @@ cli-market-index  →  (sin cambio P0) ✅
 
 > Prod corre en world; backend repo mantiene paridad y pin de dependencias.
 
-- [x] `requirements.txt` — `cli-market-core>=1.9.34` (sync workflow 2026-06-12)
+- [x] `requirements.txt` — `cli-market-core>=1.9.36` (sync workflow; PR #22 pendiente merge streak route)
 - [x] `market_observatory.py` — thin shim: import desde `cli-market-core`
 - [x] `market_server.py` — `ObservatoryMiddleware` (fail-open, async batch)
 - [x] `routers/observatory.py` — `/analytics/observatory`, `/dashboard/observatory`
@@ -64,12 +64,13 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 - [x] `market_server.py` (middleware)
 - [x] `routers/observatory.py`
 - [x] `server_deps.py` (si cambió en backend)
-- [x] Diff backend ↔ world — `ops/mirror_diff_gate.py` en CI (T-177); auto-sync → `sync-backend-observatory-mirror.yml` (T-178)
+- [x] Diff backend ↔ world — `ops/mirror_diff_gate.py` en CI (T-177 #185); auto-sync → `sync-backend-observatory-mirror.yml` (T-178 #186/#188)
+- [ ] Backend merge PR #22 — `chore/observatory-mirror-20260613` (auto-PR post T-178; cierra NOTE world-ahead en streak)
 
 ### 3b. Dependencias PyPI
 
-- [x] `pyproject.toml` — `version` bump → **1.9.34**
-- [x] `pyproject.toml` — `cli-market-core>=1.9.34`
+- [x] `pyproject.toml` — `version` bump → **1.9.36**
+- [x] `pyproject.toml` — `cli-market-core>=1.9.36`
 - [x] `[tool.setuptools] py-modules` — incluir `market_observatory` si es shim local
 
 ### 3c. Ops y Adoption Index (solo world)
@@ -84,15 +85,15 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 
 - [x] `landing/app/stats/page.tsx` — consume `/analytics/observatory`
 - [x] `landing/app/legal/privacy/page.tsx` — telemetría agregada MCP (2026-06-12)
-- [x] `ops/sync_market_stats.py` — ejecutado 2026-06-12 (PyPI 27k, linkage 84.4%, v1.9.34)
+- [x] `ops/sync_market_stats.py` — ejecutado 2026-06-12 (PyPI 27k, linkage 84.4%; re-sync post 1.9.36 si creative data-gated)
 
 ### 3e. Release
 
 - [x] Tests `tests/test_observatory*.py` verdes
 - [x] `CHANGELOG.md` — entrada world + core
-- [x] Tag `v*` → workflow Publish PyPI → **1.9.34**
+- [x] Tag `v*` → workflow Publish PyPI → **1.9.36**
 
-**Versión anotar aquí:** `world 1.9.34`
+**Versión anotar aquí:** `world 1.9.36`
 
 ---
 
@@ -119,15 +120,16 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 
 ---
 
-## 6. Versiones alineadas (release 2026-06-12)
+## 6. Versiones alineadas (release 2026-06-13)
 
 | Artefacto | Versión |
 |-----------|---------|
-| cli-market-core PyPI | **1.9.34** |
-| cli-market-world PyPI | **1.9.34** |
-| Railway prod (world deploy) | OpenAPI **1.9.34** · deploy verde 2026-06-12 |
-| cli-market-backend pin | **1.9.34** — sync workflow 2026-06-12 (`GH_PAT_BACKEND_WRITE`) |
+| cli-market-core PyPI | **1.9.36** (1.9.35 streak · 1.9.34 Observatory P0) |
+| cli-market-world PyPI | **1.9.36** |
+| Railway prod (world deploy) | pin `cli-market-core==1.9.36` · `requirements-railway.txt` |
+| cli-market-backend pin | **≥1.9.36** — sync workflow; mirror PR **#22** pendiente merge |
 | cli-market-index pin (sin cambio) | `9d050131e9e5b16381581d1916e386f34d319ca6` |
+| Mirror gate CI | `ops/mirror_diff_gate.py` vía `contract_parity.py` (T-177) |
 
 ---
 

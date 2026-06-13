@@ -3,29 +3,34 @@
 **Last updated:** 2026-06-13 · **Owner:** PM + eng  
 **North star de deuda:** paridad multirepo verificable, gates CI duros en revenue/data, Observatory auditado antes de claims GTM.
 
+**Sprint cerrado:** ciclo Now (T-172 → T-178, N-5) completado 2026-06-13. Sin PRs activos en este bloque.
+
 ---
 
-## 🟢 Now — PRs pequeños (este ciclo)
+## ✅ Sprint cerrado — Now (2026-06-08 → 2026-06-13)
 
-| PR | Repo | Título | Estado |
-|----|------|--------|--------|
+| ID | Repo | Entrega | Estado |
+|----|------|---------|--------|
 | **#172** | world | `fix(ops): tech debt Now block — tests v1, observatory shim, CI pin` | ✅ Merged |
 | **T-173** | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | ✅ Shipped |
-| T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | ✅ Shipped |
-| T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | ✅ Shipped |
-| T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | ✅ Shipped |
-| T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped (#185) |
-| T-178 | backend | `chore: sync observatory mirror from world (streak route)` | ✅ Shipped (#186) |
-| N-5 | world | `ops: linkage_pct alerts in command-control` | 🔄 PR |
+| **T-174** | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | ✅ Shipped |
+| **T-175** | world | `ci: require backend contract parity when GH_PAT has backend read` | ✅ Shipped |
+| **T-176** | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | ✅ Shipped |
+| **T-177** | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped (#185) |
+| **T-178** | backend | `chore: sync observatory mirror from world (streak route)` | ✅ Shipped (#186, #188) |
+| **N-5** | world | `ops: linkage_pct alerts in command-control` | ✅ Shipped (#187) |
 
-### Entregables Now (#172)
+### Entregables Now (#172 + ciclo)
 
 - [x] `ops/TECH-DEBT-BACKLOG.md` (este doc)
 - [x] `tests/test_data_v1.py` — smoke `/v1/*`
-- [x] `ops/verify_phase_docs.py` + manifest required tests
+- [x] `ops/verify_phase_docs.py` + manifest required tests (13/13)
 - [x] CI/Railway pin `cli-market-core` @ **1.9.36** — post-PyPI 2026-06-13
 - [x] `market_observatory.py` → pure shim (core **1.9.36** on PyPI)
 - [x] `ops/observatory_audit.py` — auditoría cuantitativa PRD §13
+- [x] `ops/mirror_diff_gate.py` + CI en `contract_parity.py` (T-177)
+- [x] `sync-backend-observatory-mirror.yml` auto-PR backend (T-178)
+- [x] Linkage alerts en command-control (N-5)
 
 ---
 
@@ -53,21 +58,35 @@
 
 ---
 
+## 👤 Ops humano (no código — backlog operativo)
+
+| Item | Owner | Notas |
+|------|-------|-------|
+| Merge backend PR #22 | eng | Auto-PR `chore/observatory-mirror-20260613` — cierra gap streak en mirror |
+| PayPal live E2E GO-LIVE §5 | founder | `ops/paypal_live_e2e.py --prepare` + aprobación manual + `--verify` |
+| Observatory adoption CI 7 días | eng | Validar post-deploy ~2026-06-19 (`observatory-nightly`) |
+| Landing `/stats` data-gate | GTM | `make gate` en content repo antes de creative con cifras |
+| `observatory_daily.py --dry-run` | eng | Requiere `DATABASE_URL` en entorno con DB prod/staging |
+
+---
+
 ## ❌ No es deuda (mantener)
 
 - Stripe off · Procure billing separado · Yape/Plin manual con guard PayPal/MP · Index sin telemetry P0
 
 ---
 
-## Métricas de cierre
+## Métricas de cierre (sprint Now)
 
-| Métrica | Baseline | Target |
-|---------|----------|--------|
-| `/v1/*` con test smoke | 0/5 | 5/5 |
-| CI core ref | `main` | PyPI `==1.9.36` + git tag `v1.9.36` |
-| `market_observatory` LOC world | ~900 | shim <20 |
-| PRD §13 Observatory | ~60% | 100% |
-| Phase docs → missing tests | ≥5 refs | 0 (manifest) |
+| Métrica | Baseline | Target | Actual |
+|---------|----------|--------|--------|
+| `/v1/*` con test smoke | 0/5 | 5/5 | **5/5** ✅ |
+| CI core ref | `main` | PyPI `==1.9.36` | **1.9.36** ✅ |
+| `market_observatory` LOC world | ~900 | shim <20 | **shim** ✅ |
+| PRD §13 Observatory | ~60% | 100% | **~95%** (ops humano pendiente) |
+| Phase docs → missing tests | ≥5 refs | 0 required | **0/13 required** ✅ (3 optional phase5/7) |
+| Mirror gate CI | none | semantic parity | **contract_parity** ✅ |
+| Linkage alerts command-control | none | warn + drop | **N-5** ✅ |
 
 ---
 
