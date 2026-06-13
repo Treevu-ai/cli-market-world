@@ -48,15 +48,27 @@ jobs:
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
-      - name: Checkout backend (optional — needs GH_PAT read on cli-market-backend in this repo)
+      - name: Probe GH_PAT backend read access
+        id: probe-backend
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: python ops/probe_gh_pat_backend.py
+
+      - name: Checkout backend (required when GH_PAT has read)
         id: checkout-backend
-        continue-on-error: true
+        continue-on-error: ${{ steps.probe-backend.outputs.ok != 'true' }}
         uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-backend
           ref: main
           path: .deps/cli-market-backend
           token: ${{ secrets.GH_PAT }}
+
+      - name: Fail when backend checkout required but failed
+        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome != 'success'
+        run: |
+          echo "::error::GH_PAT can read cli-market-backend but checkout failed — fix GH_PAT or repo access"
+          exit 1
 
       - name: Install dependencies
         run: |
@@ -66,13 +78,13 @@ jobs:
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
 
       - name: Contract parity (OpenAPI + core pin)
-        if: steps.checkout-backend.outcome == 'success'
+        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
         run: python ops/contract_parity.py --backend-path .deps/cli-market-backend
 
-      - name: Contract parity skipped (backend checkout failed)
-        if: steps.checkout-backend.outcome != 'success'
+      - name: Contract parity skipped (GH_PAT cannot read backend)
+        if: steps.probe-backend.outputs.ok != 'true'
         run: |
-          echo "::warning::cli-market-backend checkout failed — skipping OpenAPI parity. Update GH_PAT secret in cli-market-world (not backend repo) with read access to Treevu-ai/cli-market-backend."
+          echo "::warning::GH_PAT cannot read Treevu-ai/cli-market-backend — contract parity skipped. Add Contents: Read on backend repo to the fine-grained PAT in cli-market-world secrets."
 
       - name: Verify phase docs / required tests
         run: python ops/verify_phase_docs.py --audit-docs
@@ -118,15 +130,27 @@ jobs:
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
-      - name: Checkout backend (optional — needs GH_PAT read on cli-market-backend in this repo)
+      - name: Probe GH_PAT backend read access
+        id: probe-backend
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: python ops/probe_gh_pat_backend.py
+
+      - name: Checkout backend (required when GH_PAT has read)
         id: checkout-backend
-        continue-on-error: true
+        continue-on-error: ${{ steps.probe-backend.outputs.ok != 'true' }}
         uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-backend
           ref: main
           path: .deps/cli-market-backend
           token: ${{ secrets.GH_PAT }}
+
+      - name: Fail when backend checkout required but failed
+        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome != 'success'
+        run: |
+          echo "::error::GH_PAT can read cli-market-backend but checkout failed — fix GH_PAT or repo access"
+          exit 1
 
       - name: Install dependencies
         run: |
@@ -136,13 +160,13 @@ jobs:
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
 
       - name: Contract parity (OpenAPI + core pin)
-        if: steps.checkout-backend.outcome == 'success'
+        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
         run: python ops/contract_parity.py --backend-path .deps/cli-market-backend
 
-      - name: Contract parity skipped (backend checkout failed)
-        if: steps.checkout-backend.outcome != 'success'
+      - name: Contract parity skipped (GH_PAT cannot read backend)
+        if: steps.probe-backend.outputs.ok != 'true'
         run: |
-          echo "::warning::cli-market-backend checkout failed — skipping OpenAPI parity. Update GH_PAT secret in cli-market-world (not backend repo) with read access to Treevu-ai/cli-market-backend."
+          echo "::warning::GH_PAT cannot read Treevu-ai/cli-market-backend — contract parity skipped. Add Contents: Read on backend repo to the fine-grained PAT in cli-market-world secrets."
 
       - name: Verify phase docs / required tests
         run: python ops/verify_phase_docs.py --audit-docs
