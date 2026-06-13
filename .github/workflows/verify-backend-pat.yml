@@ -15,30 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
+      - uses: actions/checkout@v6
+
       - name: Probe backend repo access
+        id: probe-backend
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           set -euo pipefail
-          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
           if [ -z "${GH_PAT}" ]; then
             echo "::error::GH_PAT is not set in repository secrets"
             exit 1
           fi
-          CODE=$(curl -sS -o /tmp/backend-repo.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${GH_PAT}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/Treevu-ai/cli-market-backend)
-          echo "GH_PAT → cli-market-backend HTTP ${CODE}"
-          if [ "$CODE" = "200" ]; then
-            python3 -c "import json; r=json.load(open('/tmp/backend-repo.json')); print('default_branch=', r.get('default_branch'), 'private=', r.get('private'))"
-          else
-            echo "::error::GH_PAT cannot read Treevu-ai/cli-market-backend (HTTP ${CODE})"
+          python ops/probe_gh_pat_backend.py
+          if [ "${{ steps.probe-backend.outputs.ok }}" != "true" ]; then
+            echo "::error::GH_PAT cannot read Treevu-ai/cli-market-backend"
             echo "Fine-grained PAT: add cli-market-backend with Contents: Read (same token as core/index checkout)."
             exit 1
           fi
-
-      - uses: actions/checkout@v6
 
       - uses: actions/checkout@v6
         with:
