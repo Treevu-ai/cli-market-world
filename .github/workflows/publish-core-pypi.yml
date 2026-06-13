@@ -2,7 +2,7 @@
 # Also syncs Treevu-ai/cli-market-core main + tag v{version} when GH_PAT has push.
 #
 # Manual: Actions → Publish cli-market-core (patch) → Run workflow
-# T-173: default 1.9.35 (observatory_snapshot_streak); run once with 1.9.34 if git tag missing.
+# T-173: default 1.9.35 (observatory_snapshot_streak); 1.9.36 = investigate mission.
 
 name: Publish cli-market-core (patch)
 
@@ -12,7 +12,7 @@ on:
       version:
         description: "Target core version (must match ops/patches/cli-market-core-{version}.patch)"
         required: false
-        default: "1.9.35"
+        default: "1.9.36"
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Apply Observatory patch
+      - name: Apply core patch
         env:
           VERSION: ${{ inputs.version }}
         run: |
@@ -45,15 +45,19 @@ jobs:
           PATCH="ops/patches/cli-market-core-${VERSION}.patch"
           test -f "$PATCH"
           cd cli-market-core
+          if [ "$VERSION" = "1.9.36" ] && ! grep -q 'PACKAGE_VERSION = "1.9.35"' market_core/market_stats.py; then
+            git apply --check "../ops/patches/cli-market-core-1.9.35.patch"
+            git apply "../ops/patches/cli-market-core-1.9.35.patch"
+          fi
           git apply --check "../${PATCH}"
           git apply "../${PATCH}"
           grep -q "version = \"${VERSION}\"" pyproject.toml
           grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
 
-      - name: Test observatory
+      - name: Test core patch
         run: |
           pip install -e ./cli-market-core pytest
-          python -m pytest cli-market-core/tests/test_observatory.py -q -o addopts=
+          python -m pytest cli-market-core/tests/test_observatory.py cli-market-core/tests/test_market_missions.py -q -o addopts=
 
       - name: Build package
         run: |
@@ -100,7 +104,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
           BRANCH="release/core-${VERSION}"
           git checkout -B "$BRANCH"
-          git add market_core/market_observatory.py market_core/market_stats.py pyproject.toml tests/test_observatory.py
+          git add market_core/market_missions.py market_core/market_stats.py pyproject.toml tests/test_market_missions.py tests/test_observatory.py
           git diff --cached --quiet && echo "No git changes" && exit 0
           git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
           git push -f origin "$BRANCH"
