@@ -10,7 +10,7 @@
 | PR | Repo | Título | Estado |
 |----|------|--------|--------|
 | **#172** | world | `fix(ops): tech debt Now block — tests v1, observatory shim, CI pin` | ✅ Merged |
-| **T-173** | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | En curso (#173) |
+| **T-173** | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | ✅ Shipped |
 | T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | Pendiente |
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | Pendiente |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | Pendiente (`ops/paypal_live_e2e.py`) |
@@ -22,7 +22,7 @@
 - [x] `tests/test_data_v1.py` — smoke `/v1/*`
 - [x] `ops/verify_phase_docs.py` + manifest required tests
 - [ ] CI/Railway pin `cli-market-core` @ **1.9.35** — run `ops/after_core_1.9.35_published.sh` post-PyPI
-- [x] `market_observatory.py` → shim (+ streak fallback until core **1.9.35** on PyPI)
+- [x] `market_observatory.py` → pure shim (core **1.9.36** on PyPI)
 - [x] `ops/observatory_audit.py` — auditoría cuantitativa PRD §13
 
 ---
