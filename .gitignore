@@ -43,3 +43,4 @@ ops/reports/pam-*.json
 docs/sunat_manual.pdf
 docs/financial-services/
 .next/
+.contract-parity-data/
