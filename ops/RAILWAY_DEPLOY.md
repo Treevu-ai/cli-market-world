@@ -28,6 +28,17 @@ ERROR: No matching distribution found for cli-market-core==1.9.36
 
 Hotfix temporal: pin `==1.9.35` en `requirements-railway.txt` hasta que 1.9.36 exista en PyPI.
 
+### Build falla en pip install (exit code 1)
+
+| Log / síntoma | Causa | Fix |
+|---------------|-------|-----|
+| `No matching distribution found for cli-market-core==1.9.36` | Pin adelantado a PyPI | Pin `==1.9.35` o publicar 1.9.36 primero |
+| `Repository not found` al clonar `cli-market-index` | Sin token o PAT sin acceso al repo privado | Railway service → Variables → `GITHUB_TOKEN` = fine-grained PAT con **read** en `Treevu-ai/cli-market-index` |
+| `BUILD FAILED: missing GITHUB_TOKEN/GH_PAT` | Variable no inyectada al build | Deploy vía **Deploy Railway** workflow (sync GH_PAT) o set manual en dashboard |
+| Deploy GraphQL sin `RAILWAY_TOKEN` | Account token no sube GH_PAT al servicio | Añadir secret `RAILWAY_TOKEN` (project) además de `RAILWAY_API_TOKEN`, o set `GITHUB_TOKEN` manual en Railway |
+
+El workflow **Deploy Railway** sincroniza `GH_PAT` → `GITHUB_TOKEN` + `GH_PAT` en el servicio API antes de cada deploy.
+
 ## Setup correcto (una vez)
 
 Elige **una** opción (A es más rápida):

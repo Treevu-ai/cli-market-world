@@ -259,34 +259,47 @@ def _ensure_railway_cli() -> str:
     return path
 
 
+def _sync_github_build_tokens(service_ref: str, project_token: str) -> None:
+    """Ensure Railway service has tokens for Dockerfile ARG GITHUB_TOKEN/GH_PAT."""
+    root = Path(__file__).resolve().parent.parent
+    gh_pat = (os.getenv("GH_PAT") or os.getenv("GITHUB_TOKEN") or "").strip()
+    if not gh_pat:
+        print(
+            "WARNING: GH_PAT / GITHUB_TOKEN not set — Docker build will fail on cli-market-index clone",
+            file=sys.stderr,
+        )
+        return
+    env = _cli_env(project_token)
+    for var_name in ("GITHUB_TOKEN", "GH_PAT"):
+        proc = subprocess.run(
+            [
+                "railway",
+                "variable",
+                "set",
+                f"{var_name}={gh_pat}",
+                f"--service={service_ref}",
+                f"--environment={ENVIRONMENT_ID}",
+                "--skip-deploys",
+            ],
+            cwd=str(root),
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if proc.returncode != 0:
+            detail = (proc.stderr or proc.stdout or "").strip()[:400]
+            print(f"WARNING: failed to set {var_name} on service: {detail}", file=sys.stderr)
+        else:
+            print(f"  synced {var_name} on service {service_ref}")
+
+
 def deploy_up_cli(service_ref: str, project_token: str, *, collector: bool = False) -> None:
     """Upload checked-out repo to Railway (works with project token)."""
     root = Path(__file__).resolve().parent.parent
     _ensure_railway_cli()
     env = _cli_env(project_token)
-    gh_pat = (os.getenv("GH_PAT") or os.getenv("GITHUB_TOKEN") or "").strip()
-    if gh_pat:
-        for var_name in ("GITHUB_TOKEN", "GH_PAT"):
-            subprocess.run(
-                [
-                    "railway",
-                    "variable",
-                    "set",
-                    f"{var_name}={gh_pat}",
-                    f"--service={service_ref}",
-                    f"--environment={ENVIRONMENT_ID}",
-                    "--skip-deploys",
-                ],
-                cwd=str(root),
-                env=env,
-                check=False,
-                timeout=120,
-            )
-    else:
-        print(
-            "WARNING: GH_PAT / GITHUB_TOKEN not set — Docker build will fail on cli-market-index clone",
-            file=sys.stderr,
-        )
+    _sync_github_build_tokens(service_ref, project_token)
     cmd = [
         "railway",
         "up",
@@ -369,6 +382,8 @@ def main() -> int:
         print(f"Deploy {label}: service={service_ref}")
         if args.dry_run:
             continue
+        if project_token and label == "api":
+            _sync_github_build_tokens(service_ref, project_token)
         if use_cli_only:
             if not project_token:
                 raise RuntimeError(

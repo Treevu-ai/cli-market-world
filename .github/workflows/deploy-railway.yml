@@ -75,6 +75,13 @@ jobs:
             echo "RAILWAY_TOKEN present (length ${#RAILWAY_TOKEN})"
           fi
 
+      - name: Require GH_PAT for Docker build (private cli-market-index)
+        run: |
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "::error::Missing GitHub secret GH_PAT — Docker build clones private Treevu-ai/cli-market-index"
+            exit 1
+          fi
+
       - name: Verify cli-market-core pin exists on PyPI
         run: python3 ops/verify_railway_core_pin.py
 
