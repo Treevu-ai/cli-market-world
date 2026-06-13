@@ -27,7 +27,7 @@ Continúa `docs/ops/phase6-intelligence-api.md`. Cierra el backlog de **confiden
 | 7.4 | `/v1/prices?clean=1` usa `confidence='ok'` + paginación SQL | `data_v1_service.py` |
 | 7.5 | Índices compuestos query `/v1/prices` | `idx_ps_store_line_queried`, `idx_ps_line_currency`, `idx_ps_confidence` |
 | 7.6 | Sync incremental template → content repo | `ops/sync_content_template.py` |
-| 7.7 | Tests | `tests/test_price_confidence.py`, `tests/test_data_v1.py`, `tests/test_sync_content_template.py` |
+| 7.7 | Tests | `tests/test_price_confidence.py`, `tests/test_data_v1.py`, `tests/test_sync_content_template.py`, `tests/test_market_basket.py` ✅ todos merged |
 
 ### Valores `confidence`
 
@@ -106,8 +106,8 @@ Documentación: `ops/BILLING_MANUAL.md`, `ops/E2E_CLIENT_JOURNEY.md`, sandbox op
 ## Verificación CI
 
 ```bash
-pytest tests/test_price_confidence.py tests/test_data_v1.py tests/test_sync_content_template.py -q
-pytest tests/test_market_basket.py tests/test_regression.py -q -k "dashboard or prices"
+pytest tests/test_price_confidence.py tests/test_data_v1.py tests/test_sync_content_template.py tests/test_market_basket.py -q
+pytest tests/test_regression.py -q -k "dashboard or prices"
 ruff check .
 ```
 
