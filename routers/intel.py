@@ -263,20 +263,20 @@ def get_inflation(
             ln = pair["line"]
             cur = pair["currency"] or ""
             recent_avg = db.execute(
-                """SELECT ROUND(AVG(price)::numeric, 2) as avg_price
+                """SELECT AVG(price) as avg_price
                    FROM price_snapshots
                    WHERE line=? AND currency=? AND price>0 AND price<999999 AND queried_at>=?""",
                 (ln, cur, recent_cutoff),
             ).fetchone()
             older_avg = db.execute(
-                """SELECT ROUND(AVG(price)::numeric, 2) as avg_price
+                """SELECT AVG(price) as avg_price
                    FROM price_snapshots
                    WHERE line=? AND currency=? AND price>0 AND price<999999
                      AND queried_at>=? AND queried_at<?""",
                 (ln, cur, older_cutoff, recent_cutoff),
             ).fetchone()
-            r_avg = float(recent_avg["avg_price"] or 0) if recent_avg else 0.0
-            o_avg = float(older_avg["avg_price"] or 0) if older_avg else 0.0
+            r_avg = round(float(recent_avg["avg_price"] or 0), 2) if recent_avg else 0.0
+            o_avg = round(float(older_avg["avg_price"] or 0), 2) if older_avg else 0.0
             delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg > 0 else 0
             deltas.append(delta)
             items.append({
