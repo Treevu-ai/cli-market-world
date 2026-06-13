@@ -1,1 +1,1 @@
-2026-06-13T21:00:00Z force ruff --config ruff.toml in backend CI lint step
+2026-06-13T22:00:00Z backend CI embeds ruff.toml in workflow — no separate file required
