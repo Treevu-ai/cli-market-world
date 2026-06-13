@@ -137,6 +137,7 @@ jobs:
     needs: pam-tier1
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
@@ -180,6 +181,7 @@ jobs:
     needs: command-control
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
