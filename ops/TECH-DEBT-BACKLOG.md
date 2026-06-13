@@ -21,7 +21,7 @@
 - [x] `ops/TECH-DEBT-BACKLOG.md` (este doc)
 - [x] `tests/test_data_v1.py` — smoke `/v1/*`
 - [x] `ops/verify_phase_docs.py` + manifest required tests
-- [ ] CI/Railway pin `cli-market-core` @ **1.9.35** — run `ops/after_core_1.9.35_published.sh` post-PyPI
+- [x] CI/Railway pin `cli-market-core` @ **1.9.36** — post-PyPI 2026-06-13
 - [x] `market_observatory.py` → pure shim (core **1.9.36** on PyPI)
 - [x] `ops/observatory_audit.py` — auditoría cuantitativa PRD §13
 
@@ -63,7 +63,7 @@
 | Métrica | Baseline | Target |
 |---------|----------|--------|
 | `/v1/*` con test smoke | 0/5 | 5/5 |
-| CI core ref | `main` | PyPI `==1.9.35` + git tags `v1.9.34`, `v1.9.35` |
+| CI core ref | `main` | PyPI `==1.9.36` + git tag `v1.9.36` |
 | `market_observatory` LOC world | ~900 | shim <20 |
 | PRD §13 Observatory | ~60% | 100% |
 | Phase docs → missing tests | ≥5 refs | 0 (manifest) |

@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VER="1.9.36"
-if ! python3 -m pip index versions "cli-market-core" 2>/dev/null | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"; then
+if ! curl -fsSL "https://pypi.org/pypi/cli-market-core/${VER}/json" >/dev/null 2>&1; then
   echo "error: cli-market-core $VER not on PyPI yet — run Publish cli-market-core (patch) workflow first" >&2
   exit 1
 fi
