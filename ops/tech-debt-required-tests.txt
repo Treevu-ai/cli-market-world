@@ -1,0 +1,7 @@
+tests/test_data_v1.py
+tests/test_revoke_api_key.py
+tests/test_observatory.py
+tests/test_observatory_shim.py
+tests/test_sync_content_template.py
+tests/test_regression.py
+tests/test_pro_payment_guard.py
