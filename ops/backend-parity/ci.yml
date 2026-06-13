@@ -26,7 +26,10 @@ jobs:
           python-version: "3.12"
 
       - name: Lint
-        run: pip install ruff && ruff check .
+        run: |
+          pip install "ruff==0.15.17"
+          test -f ruff.toml || test -f pyproject.toml
+          ruff check .
 
   test:
     runs-on: ubuntu-latest
