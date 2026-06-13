@@ -13,7 +13,7 @@ from routers.search import SearchRequest, _resolve_search_stores
 
 @pytest.fixture(autouse=True)
 def _mock_store_exists(monkeypatch):
-    monkeypatch.setattr("routers.search._STORE_CREDENTIALS_AVAILABLE", False)
+    monkeypatch.setattr("routers.search.store_exists", lambda _s: True)
 
 
 def test_resolve_search_stores_filters_by_country():

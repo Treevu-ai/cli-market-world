@@ -36,7 +36,7 @@ from market_core import (
 )
 from server_deps import require_api_key
 
-from backend_interface import get_store_profile, store_exists, _STORE_CREDENTIALS_AVAILABLE
+from backend_interface import get_store_profile, store_exists
 
 logger = logging.getLogger("market.server").getChild("search")
 
@@ -59,9 +59,8 @@ def _attach_source_health(response: dict, store_ids: list[str]) -> dict:
 
 def _resolve_search_stores(body: SearchRequest) -> list[str]:
     stores = [body.store] if body.store else get_default_stores()
-    if _STORE_CREDENTIALS_AVAILABLE and callable(store_exists):
-        stores = [s for s in stores if store_exists(s)]
-    if body.line and body.line in LINES and _STORE_CREDENTIALS_AVAILABLE:
+    stores = [s for s in stores if store_exists(s)]
+    if body.line and body.line in LINES:
         stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
     if body.country:
         cc = body.country.strip().upper()
