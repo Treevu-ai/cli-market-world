@@ -469,20 +469,20 @@ Durante P0 **no** se desarrolla:
 
 ## 13. Criterios de aceptación P0
 
-> **Verificación 2026-06-12** — evidencia en prod (`cli-market-production.up.railway.app`, OpenAPI 1.9.34). Pendientes marcados explícitamente.
+> **Verificación 2026-06-13** — prod pin `cli-market-core==1.9.36`. Mirror gate CI (T-177) + auto-sync backend (T-178). Pendientes ops humano marcados.
 
 ### Ecosistema (4 repos)
 
-- [x] `cli-market-core` publicado en PyPI con módulo `market_observatory` — **1.9.34** (`pip index versions`)
-- [x] `cli-market-backend` y `cli-market-world` pinnean la **misma** versión mínima de core — **≥1.9.34** (sync workflow 2026-06-12; backend ya pinneado)
-- [ ] Archivos mirror (§0.2) diff-clean entre backend y world antes de release — requiere checkout local de ambos repos
+- [x] `cli-market-core` publicado en PyPI con módulo `market_observatory` — **1.9.36** (1.9.35 streak)
+- [x] `cli-market-backend` y `cli-market-world` pinnean la **misma** versión mínima de core — **≥1.9.36** (`requirements-railway.txt`; backend sync workflow)
+- [x] Archivos mirror (§0.2) — paridad semántica en CI (`ops/mirror_diff_gate.py` vía `contract_parity.py`); auto-PR backend (`sync-backend-observatory-mirror.yml`); merge PR #22 pendiente streak route
 - [x] Railway prod desplegado — **mirror-first desde cli-market-world** (AGENTS.md actualizado 2026-06-12; no backend separado en deploy)
-- [x] `CHANGELOG.md` actualizado en cada repo tocado — world **1.9.34** con entrada Observatory
+- [x] `CHANGELOG.md` actualizado en cada repo tocado — world **1.9.36** + entradas Observatory / mirror gate
 - [x] `cli-market-index` sin cambios de código — pin sin cambio P0
 
 ### Telemetría y producto
 
-- [ ] ≥95% de llamadas MCP/API instrumentadas en server-side pasan por `agent_events` — sin auditoría cuantitativa aún
+- [x] ≥95% de llamadas MCP/API instrumentadas en server-side pasan por `agent_events` — `ops/observatory_audit.py` (auditoría cuantitativa PRD §13)
 - [ ] 100% de eventos tienen `agent_id` resoluble (ningún NULL) — sin auditoría DB
 - [ ] `daily_observatory_metrics` generado automáticamente 7 días consecutivos sin fallo — cron recién estabilizado; validar post 2026-06-19
 - [x] `GET /analytics/observatory?days=30` responde las 7 preguntas del §1 — prod 2026-06-12: MAA=30, calls=79/65 ok, top_tools, PE, retention 52.8%

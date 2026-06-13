@@ -246,7 +246,7 @@ Recommendations v0 = **template rules** on spread/inflation thresholds — no LL
 - Pricing gates: `docs/pricing-strategy.md`
 - Brand (Bloomberg terminal tone): `docs/BRAND.md`
 - Existing CLI: `market_cli.py`, `market_ui.py`
-- Tech debt backlog Next: T-174 tests intel, T-177 mirror gate
+- Tech debt backlog Next: N-1 payments split, N-3 slack/media tests (sprint Now cerrado 2026-06-13: T-174 ✅, T-177 ✅)
 
 ## 10. Press release (one paragraph)
 
