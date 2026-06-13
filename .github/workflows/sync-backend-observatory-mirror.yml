@@ -88,19 +88,14 @@ jobs:
           fi
           git checkout -b "$BRANCH"
           git add market_observatory.py routers/observatory.py
-          git commit -m "chore(mirror): sync Observatory routes from cli-market-world
-
-Includes GET /admin/observatory/streak (core 1.9.35+).
-Automated by cli-market-world sync-backend-observatory-mirror workflow."
+          git commit -m "chore(mirror): sync Observatory routes from cli-market-world (streak, core 1.9.35+)"
           git push -u origin "$BRANCH"
           gh pr create \
             --repo Treevu-ai/cli-market-backend \
             --base main \
             --head "$BRANCH" \
             --title "chore(mirror): sync Observatory routes from world" \
-            --body "Automated from cli-market-world \`sync-backend-observatory-mirror\` after world Observatory mirror change.
-
-Closes mirror gap noted by T-177 (\`/admin/observatory/streak\`)."
+            --body "Automated from cli-market-world sync-backend-observatory-mirror. Closes T-177 streak route gap."
 
       - name: Detect backend diff
         id: diff
