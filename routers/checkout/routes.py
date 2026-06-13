@@ -19,6 +19,8 @@ from routers.billing.notifications import _notify_procure_payment
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
 
+_QR_SERVICE_URL = os.getenv("QR_SERVICE_URL", "https://api.qrserver.com/v1/create-qr-code/")
+
 
 def _cart_total(cart: list[dict]) -> float:
     return round(sum(i["price"] * i["quantity"] for i in cart), 2)
@@ -245,7 +247,7 @@ async def checkout_wise(
         "status": "pending",
         "wise_available": wise_ok,
         "wise_pay_link": wise_pay_me,
-        "wise_qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={wise_pay_me}",
+        "wise_qr_url": f"{_QR_SERVICE_URL}?size=250x250&data={wise_pay_me}" if _QR_SERVICE_URL else None,
         "instructions": {
             "pay_link": wise_pay_me,
             "reference": order_id,
