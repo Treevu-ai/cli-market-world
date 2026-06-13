@@ -270,9 +270,23 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {line}", file=sys.stderr)
         return 1
 
+    # T-177 — Observatory mirror (semantic; world may lead backend on new routes)
+    ops_dir = Path(__file__).resolve().parent
+    if str(ops_dir) not in sys.path:
+        sys.path.insert(0, str(ops_dir))
+    from mirror_diff_gate import compare_mirror
+
+    mirror_errors = compare_mirror(ROOT, backend_path)
+    if mirror_errors:
+        print("MIRROR DIFF FAIL:", file=sys.stderr)
+        for line in mirror_errors:
+            print(f"  - {line}", file=sys.stderr)
+        return 1
+
     print(
         f"OK: OpenAPI parity ({len(PARITY_EXACT)} exact paths incl. index + "
-        f"{len(_checkout_paths(world_spec))} checkout paths) · core/index pins aligned"
+        f"{len(_checkout_paths(world_spec))} checkout paths) · core/index pins aligned · "
+        "Observatory mirror OK"
     )
     return 0
 

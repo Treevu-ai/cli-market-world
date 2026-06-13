@@ -6,6 +6,7 @@ tests/test_paypal_live_e2e.py
 tests/test_revoke_api_key.py
 tests/test_observatory.py
 tests/test_observatory_shim.py
+tests/test_mirror_diff_gate.py
 tests/test_sync_content_template.py
 tests/test_regression.py
 tests/test_pro_payment_guard.py
