@@ -48,13 +48,6 @@ jobs:
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: v1.9.34
-          path: .deps/cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
       - name: Checkout backend (optional — needs GH_PAT read on cli-market-backend in this repo)
         id: checkout-backend
         continue-on-error: true
@@ -67,7 +60,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".deps/cli-market-core"
+          pip install "cli-market-core==1.9.34"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
@@ -125,13 +118,6 @@ jobs:
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: v1.9.34
-          path: .deps/cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
       - name: Checkout backend (optional — needs GH_PAT read on cli-market-backend in this repo)
         id: checkout-backend
         continue-on-error: true
@@ -144,7 +130,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".deps/cli-market-core"
+          pip install "cli-market-core==1.9.34"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"

@@ -21,7 +21,7 @@
 - [x] `ops/TECH-DEBT-BACKLOG.md` (este doc)
 - [x] `tests/test_data_v1.py` — smoke `/v1/*`
 - [x] `ops/verify_phase_docs.py` + manifest required tests
-- [x] CI pin `cli-market-core` @ **v1.9.34** (no `main`)
+- [x] CI pin `cli-market-core` @ **1.9.34** PyPI (git tag `v1.9.34` pending — T-173)
 - [x] `market_observatory.py` → shim core (+ `observatory_snapshot_streak` en vendor core)
 - [x] `ops/observatory_audit.py` — auditoría cuantitativa PRD §13
 
@@ -63,7 +63,7 @@
 | Métrica | Baseline | Target |
 |---------|----------|--------|
 | `/v1/*` con test smoke | 0/5 | 5/5 |
-| CI core ref | `main` | tag release |
+| CI core ref | `main` | PyPI `==1.9.34` (→ git tag when T-173 lands) |
 | `market_observatory` LOC world | ~900 | shim <20 |
 | PRD §13 Observatory | ~60% | 100% |
 | Phase docs → missing tests | ≥5 refs | 0 (manifest) |
