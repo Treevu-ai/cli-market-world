@@ -114,7 +114,7 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 - [x] Content `make gate` — workflow `content-makefile-fix` verde run 27435504653 (2026-06-12)
 - [ ] Landing `/stats` — data-gate OK (`make gate` en content repo si cifra en creative)
 - [x] PayPal go-live probe — `webhook_configured: true` prod 2026-06-12 (`/paypal-status`)
-- [ ] PayPal live E2E compra — `ops/paypal_live_e2e.py --prepare` + aprobación manual + `--verify` (paso 5 GO-LIVE)
+- [ ] PayPal live E2E compra — `ops/paypal_live_e2e.py --prepare` + aprobación manual + `--verify` → `ops/.paypal-e2e-pass.json` (paso 5 GO-LIVE; `--status` para comprobar)
 - [x] PAM — casos `public.observatory`, `admin.observatory_*` en `ops/pam_matrix.yaml`
 
 ---

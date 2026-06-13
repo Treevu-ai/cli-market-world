@@ -133,6 +133,14 @@ python3 ops/paypal_live_e2e.py --full --timeout 600
 
 State (username, `sk-`, `approve_url`) is saved to `ops/.paypal-e2e-state.json` (gitignored).
 
+After a successful `--verify`, pass evidence is written to `ops/.paypal-e2e-pass.json`
+(gitignored). `ops/go_live_check.py --remote` reads this file (or `PAYPAL_E2E_API_KEY`
+secret for remote tier check) and emits `paypal_e2e_pending` until §5 passes.
+
+```bash
+python3 ops/paypal_live_e2e.py --status   # not_started | awaiting_approval | passed
+```
+
 ### Manual curl (same steps)
 
 1. Register a throwaway account and grab its `sk-` key:

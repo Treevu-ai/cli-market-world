@@ -124,6 +124,32 @@ def main() -> int:
                             "message": "PAYPAL_WEBHOOK_ID vacío — auto-activación Pro no funcionará",
                         }
                     )
+                else:
+                    from paypal_live_e2e import gate_status, verify  # noqa: E402
+
+                    gs = gate_status()
+                    e2e_key = (os.getenv("PAYPAL_E2E_API_KEY") or "").strip()
+                    if e2e_key:
+                        remote = verify(e2e_key, write_pass=False)
+                        if remote.get("ok"):
+                            gs = {
+                                "status": "passed",
+                                "passed": True,
+                                "source": "PAYPAL_E2E_API_KEY",
+                                "username": remote.get("username"),
+                            }
+                    summary["paypal_e2e"] = gs
+                    if not gs.get("passed"):
+                        alerts.append(
+                            {
+                                "severity": "warn",
+                                "code": "paypal_e2e_pending",
+                                "message": (
+                                    "GO-LIVE §5 pendiente — "
+                                    "ops/paypal_live_e2e.py --prepare + aprobación manual + --verify"
+                                ),
+                            }
+                        )
         except Exception:
             pass
 
