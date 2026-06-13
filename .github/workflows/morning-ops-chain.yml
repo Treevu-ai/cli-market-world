@@ -234,17 +234,62 @@ jobs:
             python3 "${{ github.workspace }}/ops/daily_briefing.py" --content --dry-run
           fi
 
-  daily-briefing:
+  product-briefing:
     needs: gtm-preflight
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install "cli-market-core==1.9.36" httpx \
+            || pip install "cli-market-core>=1.9.35" httpx
+          python3 -c "from market_core import market_stats; print('market_core OK')"
+
+      - name: Product briefing + Slack bitácora
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
+          SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ] && [ -z "${SLACK_WEBHOOK_BITACORA:-}" ]; then
+            echo "::warning::No SLACK_BOT_TOKEN or SLACK_WEBHOOK_BITACORA — product briefing will skip Slack delivery"
+          fi
+          python3 ops/daily_briefing.py --product
+
+      - name: Commit product daily reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ops/daily/*-product.md 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No product report changes to commit."
+          else
+            git commit -m "chore: daily product briefing $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+  gtm-briefing:
+    needs: product-briefing
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    continue-on-error: true
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/checkout@v6
-        id: checkout-content
         with:
           repository: Treevu-ai/cli-market-content
           ref: main
@@ -268,7 +313,7 @@ jobs:
           echo "CLI_MARKET_CONTENT_DIR=${{ github.workspace }}/cli-market-content" >> "$GITHUB_ENV"
           echo "Using cli-market-content checkout ($(git -C cli-market-content rev-parse --short HEAD))"
 
-      - name: Generate reports + Slack (GTM por canal)
+      - name: GTM channel deliveries + Slack publicaciones
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_BITACORA: "C0B6V3Y9ZSP"
@@ -285,7 +330,6 @@ jobs:
           SLACK_CHANNEL_NEWSLETTER: "C0BAGNR374Y"
           SLACK_CHANNEL_OUTBOUND: "C0B9NEEB97U"
           SLACK_MIRROR_TWITTER_TO_THREADS: "0"
-          SLACK_WEBHOOK_BITACORA: ${{ secrets.SLACK_WEBHOOK_BITACORA }}
           SLACK_WEBHOOK_PUBLICACIONES: ${{ secrets.SLACK_WEBHOOK_PUBLICACIONES }}
           LINKEDIN_CAMPAIGN_START: "2026-06-01"
           LINKEDIN_PERSONAL_DAY_OFFSET: "0"
@@ -303,19 +347,7 @@ jobs:
             echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
             exit 1
           fi
-          python3 ops/daily_briefing.py
-
-      - name: Commit product daily reports
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ops/daily/*-product.md 2>/dev/null || true
-          if git diff --staged --quiet; then
-            echo "No product report changes to commit."
-          else
-            git commit -m "chore: daily product briefing $(date -u +%Y-%m-%d)"
-            git push
-          fi
+          python3 ops/daily_briefing.py --content
 
       - name: Commit content daily reports
         working-directory: cli-market-content
@@ -326,20 +358,20 @@ jobs:
           if git diff --staged --quiet; then
             echo "No content report changes to commit."
           else
-            git commit -m "chore: daily briefing $(date -u +%Y-%m-%d)"
+            git commit -m "chore: daily GTM briefing $(date -u +%Y-%m-%d)"
             git push
           fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: daily-briefing-${{ github.run_id }}
+          name: gtm-briefing-${{ github.run_id }}
           path: |
             cli-market-content/generated/daily/
             cli-market-content/metrics/price-pulse-*.md
 
   funnel-digest:
-    needs: daily-briefing
+    needs: product-briefing
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:

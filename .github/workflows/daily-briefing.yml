@@ -12,6 +12,10 @@ on:
         description: Solo contenido GTM (sin bitácora producto)
         type: boolean
         default: false
+      product_only:
+        description: Solo briefing producto (sin entrega GTM por canal)
+        type: boolean
+        default: false
       dry_run:
         description: Generar archivos sin enviar a Slack
         type: boolean
@@ -86,23 +90,34 @@ jobs:
           PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
         run: |
           set -euo pipefail
-          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
-            echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
-            exit 1
-          fi
           ARGS=()
           DRY_RUN="false"
           CONTENT_ONLY="false"
+          PRODUCT_ONLY="false"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             DRY_RUN="${{ github.event.inputs.dry_run }}"
             CONTENT_ONLY="${{ github.event.inputs.content_only }}"
+            PRODUCT_ONLY="${{ github.event.inputs.product_only }}"
           fi
           if [ "$DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
           fi
-          if [ "$CONTENT_ONLY" = "true" ]; then
+          if [ "$PRODUCT_ONLY" = "true" ]; then
+            if [ -z "${SLACK_BOT_TOKEN:-}" ] && [ -z "${SLACK_WEBHOOK_BITACORA:-}" ]; then
+              echo "::warning::No Slack token — product briefing will skip Slack delivery"
+            fi
+            python3 ops/daily_briefing.py "${ARGS[@]}" --product
+          elif [ "$CONTENT_ONLY" = "true" ]; then
+            if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+              echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
+              exit 1
+            fi
             python3 ops/daily_briefing.py "${ARGS[@]}" --content
           else
+            if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+              echo "::error::SLACK_BOT_TOKEN required for per-channel GTM delivery"
+              exit 1
+            fi
             python3 ops/daily_briefing.py "${ARGS[@]}"
           fi
 
