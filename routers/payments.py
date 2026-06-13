@@ -56,12 +56,15 @@ from routers.billing.pro_helpers import (
     wallet_manual_fallback_enabled,
 )
 from routers.billing.notifications import (
+    _append_pro_activation_email_actions,  # noqa: F401 — re-export for ops/activate_pro.py
     _pro_payment_method_from_request,  # noqa: F401 — re-export for ops/activate_pro.py
     _slack_notify_build_pro,
     _slack_notify_subscription,
     resend_pro_activation_email,  # noqa: F401 — re-export for routers/admin.py
 )
 from routers.billing.activation import (
+    _activate_pro_from_request,  # noqa: F401 — re-export for admin.py, slack_ops.py, tests
+    _parse_pro_request_ref,  # noqa: F401 — re-export for ops/activate_pro.py
     _pro_price_pen,
     _record_plan_funnel_event,
     _wallet_manual_transfer_fields,
