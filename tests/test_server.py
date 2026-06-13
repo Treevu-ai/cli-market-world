@@ -657,7 +657,7 @@ def test_paypal_subscribe_public(monkeypatch):
 def test_request_starter_creates_subscription_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
-        "routers.payments._send_starter_payment_email",
+        "routers.billing.activation._send_starter_payment_email",
         lambda **kw: {"sent": True, "to": kw["to_email"]},
     )
     monkeypatch.setattr(
