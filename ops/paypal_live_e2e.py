@@ -244,6 +244,7 @@ def main() -> int:
             print(f"  approve_url: {prep['approve_url']}")
             print(f"  state: {STATE_PATH}")
             print("\nNext: open approve_url → approve live PayPal → python3 ops/paypal_live_e2e.py --verify")
+            print("Windows: .\\ops\\paypal_live_e2e.ps1 --verify")
         return 0
 
     if not api_key:

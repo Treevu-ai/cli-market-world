@@ -117,6 +117,8 @@ curl -s https://cli-market-production.up.railway.app/paypal-status | jq
 
 ### Scripted flow (recommended)
 
+**Linux / macOS / Git Bash:**
+
 ```bash
 # Phase A — automated (register, export 403, PayPal approve URL)
 python3 ops/paypal_live_e2e.py --prepare
@@ -130,6 +132,24 @@ python3 ops/paypal_live_e2e.py --verify
 # Or block until approval (prepare + poll + verify in one terminal)
 python3 ops/paypal_live_e2e.py --full --timeout 600
 ```
+
+**Windows (PowerShell)** — do not use `python3` if Windows opens the Microsoft Store. Use the wrapper or `py -3`:
+
+```powershell
+.\ops\paypal_live_e2e.ps1 --prepare
+# approve in browser, then:
+.\ops\paypal_live_e2e.ps1 --verify
+.\ops\paypal_live_e2e.ps1 --status
+```
+
+Equivalent without the wrapper (if Python is on PATH):
+
+```powershell
+py -3 ops\paypal_live_e2e.py --prepare
+py -3 ops\paypal_live_e2e.py --verify
+```
+
+If `py` is missing, install Python from [python.org](https://www.python.org/downloads/) with **Add to PATH**, or disable the Store alias: **Settings → Apps → Advanced app settings → App execution aliases** → turn off `python.exe` and `python3.exe`.
 
 State (username, `sk-`, `approve_url`) is saved to `ops/.paypal-e2e-state.json` (gitignored).
 
