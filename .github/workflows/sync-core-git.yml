@@ -9,7 +9,7 @@ on:
       version:
         description: "Target core version (must match patch file)"
         required: false
-        default: "1.9.35"
+        default: "1.9.36"
   push:
     branches: [main]
     paths:
@@ -23,7 +23,7 @@ env:
 
 jobs:
   sync-core:
-    name: Backport patch to cli-market-core ${{ inputs.version || '1.9.35' }}
+    name: Backport patch to cli-market-core ${{ inputs.version || '1.9.36' }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Apply Observatory patch
         env:
-          VERSION: ${{ inputs.version || '1.9.35' }}
+          VERSION: ${{ inputs.version || '1.9.36' }}
         run: |
           set -eux
           PATCH="ops/patches/cli-market-core-${VERSION}.patch"
@@ -52,16 +52,16 @@ jobs:
           grep -q "version = \"${VERSION}\"" pyproject.toml
           grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
 
-      - name: Test observatory
+      - name: Test core patch
         run: |
           pip install -e ./cli-market-core pytest
-          python -m pytest cli-market-core/tests/test_observatory.py -q -o addopts= || \
-            echo "::warning::test_observatory.py missing in core — skip"
+          python -m pytest cli-market-core/tests/test_observatory.py cli-market-core/tests/test_market_missions.py -q -o addopts= || \
+            echo "::warning::core tests missing — skip"
 
       - name: Open PR on cli-market-core
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-          VERSION: ${{ inputs.version || '1.9.35' }}
+          VERSION: ${{ inputs.version || '1.9.36' }}
         run: |
           set -eux
           GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
