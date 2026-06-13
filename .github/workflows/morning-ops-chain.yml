@@ -390,3 +390,36 @@ jobs:
             echo "funnel-digest failed HTTP $CODE"
             exit 1
           fi
+
+  ceo-metrics:
+    needs: product-briefing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install "cli-market-core==1.9.36" httpx \
+            || pip install "cli-market-core>=1.9.35" httpx
+
+      - name: CEO / Founder / PO daily metrics → #ceo-metrics
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_CEO_METRICS: "C0B9W7794BD"
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+          PEPY_API_KEY: ${{ secrets.PEPY_API_KEY }}
+          MARKET_API_URL: ${{ env.MARKET_API_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+            echo "::warning::SLACK_BOT_TOKEN not set — CEO metrics will print only (no Slack delivery)"
+            python3 ops/ceo_metrics_report.py --remote
+          else
+            python3 ops/ceo_metrics_report.py --remote --slack
+          fi
