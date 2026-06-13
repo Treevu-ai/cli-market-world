@@ -122,15 +122,23 @@ jobs:
             echo "Branch $BRANCH already matches world template"
           fi
           PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
-          if gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend >/dev/null 2>&1; then
-            gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend --json url --jq .url
+          PR_URL="$(gh pr list --repo Treevu-ai/cli-market-backend --head "Treevu-ai:${BRANCH}" --json url --jq '.[0].url' 2>/dev/null || true)"
+          if [ -n "$PR_URL" ] && [ "$PR_URL" != "null" ]; then
+            echo "$PR_URL"
           else
             gh pr create \
               --repo Treevu-ai/cli-market-backend \
               --base main \
               --head "$BRANCH" \
               --title "fix(ci): install cli-market-index for test collection" \
-              --body "$PR_BODY"
+              --body "$PR_BODY" 2>&1 | tee /tmp/backend-ci-pr.log || {
+              if grep -qi 'already exists' /tmp/backend-ci-pr.log; then
+                gh pr list --repo Treevu-ai/cli-market-backend --head "Treevu-ai:${BRANCH}" --json url --jq '.[0].url'
+              else
+                cat /tmp/backend-ci-pr.log
+                exit 1
+              fi
+            }
           fi
           if [ "$CI_YML_BLOCKED" = true ]; then
             echo "## Backend CI — ci.yml needs manual apply or PAT Workflows scope" >> "$GITHUB_STEP_SUMMARY"
