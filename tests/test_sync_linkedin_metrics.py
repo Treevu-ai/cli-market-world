@@ -239,7 +239,7 @@ _METRICS = {
 def test_patch_day_file_dry_run_no_write(tmp_path):
     f = tmp_path / "Day-07.md"
     f.write_text(_DAY_CONTENT, encoding="utf-8")
-    _patch_day_file(f, _METRICS, dry_run=True)
+    changed = _patch_day_file(f, _METRICS, dry_run=True)
     # Content should still be original (dry run — no write)
     assert f.read_text(encoding="utf-8") == _DAY_CONTENT
 
