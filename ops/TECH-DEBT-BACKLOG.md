@@ -9,8 +9,8 @@
 
 | PR | Repo | Título | Estado |
 |----|------|--------|--------|
-| **#172** | world | `fix(ops): tech debt Now block — tests v1, observatory shim, CI pin` | En curso |
-| T-173 | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | Patch en vendor; backport vía `sync-core-git` |
+| **#172** | world | `fix(ops): tech debt Now block — tests v1, observatory shim, CI pin` | ✅ Merged |
+| **T-173** | core | `feat(observatory): export observatory_snapshot_streak` → PyPI **1.9.35** | En curso (#173) |
 | T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | Pendiente |
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | Pendiente |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | Pendiente (`ops/paypal_live_e2e.py`) |
@@ -21,8 +21,8 @@
 - [x] `ops/TECH-DEBT-BACKLOG.md` (este doc)
 - [x] `tests/test_data_v1.py` — smoke `/v1/*`
 - [x] `ops/verify_phase_docs.py` + manifest required tests
-- [x] CI pin `cli-market-core` @ **1.9.34** PyPI (git tag `v1.9.34` pending — T-173)
-- [x] `market_observatory.py` → shim core (+ `observatory_snapshot_streak` en vendor core)
+- [ ] CI/Railway pin `cli-market-core` @ **1.9.35** — run `ops/after_core_1.9.35_published.sh` post-PyPI
+- [x] `market_observatory.py` → shim (+ streak fallback until core **1.9.35** on PyPI)
 - [x] `ops/observatory_audit.py` — auditoría cuantitativa PRD §13
 
 ---
@@ -63,7 +63,7 @@
 | Métrica | Baseline | Target |
 |---------|----------|--------|
 | `/v1/*` con test smoke | 0/5 | 5/5 |
-| CI core ref | `main` | PyPI `==1.9.34` (→ git tag when T-173 lands) |
+| CI core ref | `main` | PyPI `==1.9.35` + git tags `v1.9.34`, `v1.9.35` |
 | `market_observatory` LOC world | ~900 | shim <20 |
 | PRD §13 Observatory | ~60% | 100% |
 | Phase docs → missing tests | ≥5 refs | 0 (manifest) |

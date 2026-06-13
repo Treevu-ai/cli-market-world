@@ -1,4 +1,4 @@
-# Apply Observatory patch to cli-market-core git (no PyPI — already published 1.9.34).
+# Apply Observatory patch to cli-market-core git (no PyPI — use publish-core-pypi for releases).
 # Trigger: bump ops/core-patch.trigger on main, or workflow_dispatch.
 
 name: Sync cli-market-core git (patch)
@@ -9,7 +9,7 @@ on:
       version:
         description: "Target core version (must match patch file)"
         required: false
-        default: "1.9.34"
+        default: "1.9.35"
   push:
     branches: [main]
     paths:
@@ -23,7 +23,7 @@ env:
 
 jobs:
   sync-core:
-    name: Backport patch to cli-market-core ${{ inputs.version || '1.9.34' }}
+    name: Backport patch to cli-market-core ${{ inputs.version || '1.9.35' }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Apply Observatory patch
         env:
-          VERSION: ${{ inputs.version || '1.9.34' }}
+          VERSION: ${{ inputs.version || '1.9.35' }}
         run: |
           set -eux
           PATCH="ops/patches/cli-market-core-${VERSION}.patch"
@@ -61,7 +61,7 @@ jobs:
       - name: Open PR on cli-market-core
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-          VERSION: ${{ inputs.version || '1.9.34' }}
+          VERSION: ${{ inputs.version || '1.9.35' }}
         run: |
           set -eux
           GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"

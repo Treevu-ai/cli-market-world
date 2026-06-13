@@ -1,7 +1,8 @@
-# One-shot (reusable): build cli-market-core 1.9.34 from world patch → PyPI.
-# Also syncs Treevu-ai/cli-market-core main + tag v1.9.34 when GH_PAT has push.
+# Build cli-market-core from world patch → PyPI.
+# Also syncs Treevu-ai/cli-market-core main + tag v{version} when GH_PAT has push.
 #
 # Manual: Actions → Publish cli-market-core (patch) → Run workflow
+# T-173: default 1.9.35 (observatory_snapshot_streak); run once with 1.9.34 if git tag missing.
 
 name: Publish cli-market-core (patch)
 
@@ -9,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Target core version (must match patch)"
+        description: "Target core version (must match ops/patches/cli-market-core-{version}.patch)"
         required: false
-        default: "1.9.34"
+        default: "1.9.35"
 
 permissions:
   contents: read
@@ -37,14 +38,17 @@ jobs:
           python-version: "3.12"
 
       - name: Apply Observatory patch
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           set -eux
-          test -f ops/patches/cli-market-core-1.9.34.patch
+          PATCH="ops/patches/cli-market-core-${VERSION}.patch"
+          test -f "$PATCH"
           cd cli-market-core
-          git apply --check ../ops/patches/cli-market-core-1.9.34.patch
-          git apply ../ops/patches/cli-market-core-1.9.34.patch
-          grep -q 'version = "${{ inputs.version }}"' pyproject.toml
-          grep -q 'PACKAGE_VERSION = "${{ inputs.version }}"' market_core/market_stats.py
+          git apply --check "../${PATCH}"
+          git apply "../${PATCH}"
+          grep -q "version = \"${VERSION}\"" pyproject.toml
+          grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
 
       - name: Test observatory
         run: |
@@ -62,6 +66,25 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: cli-market-core/dist/
 
+      - name: Ensure git tag v1.9.34 on cli-market-core
+        if: inputs.version == '1.9.35'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        continue-on-error: true
+        run: |
+          set -eux
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_TOKEN="$GH_PAT"
+          cd cli-market-core
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          git fetch origin main --tags
+          if git rev-parse "v1.9.34" >/dev/null 2>&1; then
+            echo "Tag v1.9.34 already exists"
+            exit 0
+          fi
+          git tag "v1.9.34" "origin/main"
+          git push origin "v1.9.34"
+
       - name: Sync cli-market-core git (main + tag)
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -77,7 +100,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
           BRANCH="release/core-${VERSION}"
           git checkout -B "$BRANCH"
-          git add market_core/market_observatory.py market_core/market_stats.py pyproject.toml
+          git add market_core/market_observatory.py market_core/market_stats.py pyproject.toml tests/test_observatory.py
           git diff --cached --quiet && echo "No git changes" && exit 0
           git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
           git push -f origin "$BRANCH"
