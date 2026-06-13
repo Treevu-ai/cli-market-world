@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: cli-market-core minimum version (e.g. 1.9.35)
+        description: cli-market-core minimum version (e.g. 1.9.36)
         type: string
-        default: "1.9.34"
+        default: "1.9.36"
   push:
     branches: [main]
     paths:
@@ -35,7 +35,7 @@ jobs:
 
       - name: Verify PyPI version exists
         run: |
-          VER="${{ github.event.inputs.version || '1.9.35' }}"
+          VER="${{ github.event.inputs.version || '1.9.36' }}"
           echo "CORE_PIN_VER=${VER}" >> "$GITHUB_ENV"
           python3 -m pip index versions "cli-market-core" | grep -qE "(^|[[:space:]])${VER}([,[:space:]]|$)"
 
