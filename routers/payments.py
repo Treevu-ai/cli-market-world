@@ -17,6 +17,7 @@ Endpoints:
   GET  /checkout/rates      FX rates with PEN base (Wise; fallback if down)
   POST /billing/request-pro  Email payment link (manual Pro — default)
   POST /billing/pro-checkout  Pro billing — PayPal / Mercado Pago / Yape / Plin (landing)
+  POST /billing/build-checkout  Build tier checkout — starter | pro | pro_founding | pro_annual (landing)
   POST /billing/request-starter  Email Starter checkout link (fallback)
   POST /billing/paypal      PayPal Subscription (authenticated CLI)
   POST /billing/paypal-subscribe  PayPal Subscription (landing — auto-activate)
@@ -356,6 +357,14 @@ async def _handle_paypal_event(event: dict) -> dict:
                 sub_id,
                 actions,
             )
+            if (kind or "").strip().lower() == "pro_founding":
+                try:
+                    from market_billing import FOUNDING_PROMO_CODE, db_record_promo_redemption
+
+                    db_record_promo_redemption(username, FOUNDING_PROMO_CODE, "pro_founding")
+                    actions.append(f"founding_redeemed:{username}")
+                except Exception:
+                    logger.exception("founding promo redemption failed for %s", username)
             _slack_notify_subscription(
                 tier=tier,
                 username=username,
@@ -1732,11 +1741,14 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                         return dup
 
         if method == "paypal":
+            plan = _normalize_build_plan(body.get("plan") or "pro")
+            if plan == "pro_founding":
+                _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
             try:
                 out = await _start_paypal_subscription(
                     username,
                     email,
-                    plan="pro",
+                    plan=plan,
                     lang=lang,
                     funnel_source="landing_pro_checkout_paypal",
                 )
@@ -1936,6 +1948,37 @@ async def _start_procure_subscription(
     }
 
 
+def _normalize_build_plan(plan: str) -> str:
+    from market_billing import normalize_billing_plan
+
+    return normalize_billing_plan(plan)
+
+
+def _validate_founding_plan(username: str, promo_code: str, *, lang: str) -> None:
+    from market_billing import validate_founding_available
+
+    ok, err = validate_founding_available(username, promo_code or "")
+    if not ok:
+        detail = err
+        if lang == "es" and "full" in err.lower():
+            detail = "Oferta Founding agotada (100 plazas)"
+        raise HTTPException(status_code=400, detail=detail)
+
+
+def _paypal_plan_labels(plan: str) -> tuple[str, str, float]:
+    """Return (display_label, billing_kind, amount_usd) for PayPal checkout."""
+    from market_billing import price_usd_for_plan
+
+    p = _normalize_build_plan(plan)
+    labels = {
+        "starter": "Starter",
+        "pro": "Pro",
+        "pro_founding": "Pro Founding",
+        "pro_annual": "Pro Annual",
+    }
+    return labels.get(p, "Pro"), p, price_usd_for_plan(p)
+
+
 async def _start_paypal_subscription(
     username: str,
     email: str,
@@ -1944,13 +1987,17 @@ async def _start_paypal_subscription(
     lang: str = "en",
     funnel_source: str = "paypal_subscribe",
 ) -> dict:
-    from market_connectors.paypal_payments import STARTER_PRICE_USD, PRO_PRICE_USD, create_subscription
+    from market_billing import price_label_for_plan, tier_for_billing_plan
+    from market_connectors.paypal_payments import create_subscription
     from market_connectors.email_outbound import (
         send_pro_subscribe_pending_email,
         send_starter_subscribe_pending_email,
     )
 
-    plan_l = "starter" if plan == "starter" else "pro"
+    plan_slug = _normalize_build_plan(plan)
+    plan_label, billing_kind, amount_usd = _paypal_plan_labels(plan_slug)
+    tier = tier_for_billing_plan(plan_slug)
+    amount_label = price_label_for_plan(plan_slug)
     return_url = os.getenv(
         "PRO_SUBSCRIBE_RETURN_URL",
         "https://cli-market.dev/?sub=success#pricing",
@@ -1961,7 +2008,7 @@ async def _start_paypal_subscription(
     )
     result = await create_subscription(
         username=username,
-        plan=plan_l,
+        plan=plan_slug,
         return_url=return_url,
         cancel_url=cancel_url,
     )
@@ -1969,10 +2016,10 @@ async def _start_paypal_subscription(
         return {"error": result.get("error", "PayPal error"), "details": result}
     sub_id = result["subscription_id"]
     approve = result["approve_url"]
-    db_save_billing_pending(sub_id, "paypal", username, plan_l)
-    prefix = "STR" if plan_l == "starter" else "PRO"
+    db_save_billing_pending(sub_id, "paypal", username, billing_kind)
+    prefix = "STR" if plan_slug == "starter" else "PRO"
     req = db_create_subscription_request(username, email, approve, prefix=prefix)
-    if plan_l == "starter":
+    if plan_slug == "starter":
         mail = send_starter_subscribe_pending_email(
             to_email=email,
             username=username,
@@ -1980,8 +2027,6 @@ async def _start_paypal_subscription(
             request_id=req["id"],
             lang=lang,
         )
-        amount_label = f"${STARTER_PRICE_USD:.0f}/mo"
-        plan_label = "Starter"
     else:
         mail = send_pro_subscribe_pending_email(
             to_email=email,
@@ -1990,25 +2035,23 @@ async def _start_paypal_subscription(
             request_id=req["id"],
             lang=lang,
         )
-        amount_label = f"${PRO_PRICE_USD:.0f}/mo"
-        plan_label = "Pro"
     if mail.get("sent"):
         db_mark_subscription_request_emailed(req["id"])
     _record_plan_funnel_event(
-        plan_l,
+        tier,
         username=username,
         email=email,
         source=funnel_source,
     )
     _slack_notify_subscription(
-        tier=plan_l,
+        tier=tier,
         status="pending",
         username=username,
         email=email,
         request_id=req["id"],
         source=funnel_source,
         payment_method="paypal",
-        amount_usd=STARTER_PRICE_USD if plan_l == "starter" else PRO_PRICE_USD,
+        amount_usd=amount_usd,
         plan=plan_label,
     )
     return {
@@ -2016,7 +2059,8 @@ async def _start_paypal_subscription(
         "subscription_id": sub_id,
         "approve_url": approve,
         "plan": plan_label,
-        "tier": plan_l,
+        "tier": tier,
+        "plan_slug": plan_slug,
         "amount": amount_label,
         "username": username,
         "auto_activate": True,
@@ -2025,20 +2069,34 @@ async def _start_paypal_subscription(
         "email_error": mail.get("reason") if not mail.get("sent") else None,
     }
 
+
 @router.post("/billing/paypal")
-async def billing_paypal(authorization: str | None = Header(None)):
-    """PayPal Subscription for Pro plan ($39/mo) — authenticated CLI path."""
+async def billing_paypal(body: dict = Body(default={}), authorization: str | None = Header(None)):
+    """PayPal subscription — CLI path (starter | pro | pro_founding | pro_annual)."""
     username = require_user(authorization)
     try:
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        plan = _normalize_build_plan(body.get("plan") or "pro")
+        if plan == "pro_founding":
+            _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
         out = await _start_paypal_subscription(
-            username, email, plan="pro", lang="en", funnel_source="cli_billing_paypal",
+            username,
+            email,
+            plan=plan,
+            lang=lang,
+            funnel_source="cli_billing_paypal",
         )
         if out.get("ok"):
+            label = out.get("plan") or "Pro"
             out["message"] = (
-                "Confirme en PayPal; Pro se activa en segundos. Revise su email con el enlace."
+                f"Confirme en PayPal; {label} se activa en segundos. Revise su email con el enlace."
+                if lang == "es" and out.get("email_sent")
+                else f"Confirme en PayPal; {label} se activa en segundos (email no enviado — SMTP)."
+                if lang == "es"
+                else f"Confirm on PayPal; {label} activates in seconds. Check your email for the link."
                 if out.get("email_sent")
-                else "Confirme en PayPal; Pro se activa en segundos (email no enviado — SMTP)."
+                else f"Confirm on PayPal; {label} activates in seconds (email not sent — SMTP)."
             )
             return out
         raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
@@ -2191,6 +2249,85 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
         raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
     except Exception as e:
         logger.exception("billing_starter_subscribe failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
+
+
+@router.post("/billing/build-checkout")
+async def billing_build_checkout(body: dict, authorization: str | None = Header(None)):
+    """Build tier PayPal checkout from landing — starter | pro | pro_founding | pro_annual."""
+    try:
+        check_rate_limit("billing-build-checkout")
+        email = (body.get("email") or "").strip().lower()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+        method = (body.get("payment_method") or "paypal").strip().lower()
+        plan = _normalize_build_plan(body.get("plan") or "pro")
+
+        if method != "paypal":
+            raise HTTPException(
+                status_code=400,
+                detail="build-checkout only supports payment_method=paypal",
+            )
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+
+        auth_user = ""
+        if authorization:
+            try:
+                auth_user = require_user(authorization)
+            except HTTPException:
+                auth_user = ""
+
+        if plan != "starter" and not auth_user and not (body.get("username") or "").strip():
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "username is required — run market login first or enter your CLI user"
+                    if lang != "es"
+                    else "usuario CLI requerido — ejecuta market login o ingresa tu usuario"
+                ),
+            )
+
+        username = _resolve_pro_username(
+            email,
+            body_username=(body.get("username") or ""),
+            auth_username=auth_user,
+        )
+
+        if plan == "pro_founding":
+            _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
+
+        out = await _start_paypal_subscription(
+            username,
+            email,
+            plan=plan,
+            lang=lang,
+            funnel_source=f"landing_build_checkout_{plan}",
+        )
+        if not out.get("ok"):
+            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+
+        label = out.get("plan") or "Pro"
+        if lang == "es":
+            out["message"] = (
+                f"Confirme {label} en PayPal — se activa en segundos (webhook). "
+                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                + "Luego: market whoami"
+            )
+        else:
+            out["message"] = (
+                f"Confirm {label} on PayPal — activates in seconds (webhook). "
+                + ("We emailed you the link. " if out.get("email_sent") else "")
+                + "Then: market whoami"
+            )
+        out["payment_method"] = "paypal"
+        out["payment_link"] = out.get("approve_url") or out.get("payment_link")
+        return out
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=501, detail=f"PayPal not configured: {e}") from e
+    except Exception as e:
+        logger.exception("billing_build_checkout failed")
         raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
