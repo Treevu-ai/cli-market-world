@@ -209,6 +209,13 @@ def tier_gate(console: Console, feature: str, tier: str, *, json_args: Any = Non
             if en
             else "Alertas de precio requieren Pro."
         )
+    elif feature == "investigate" and tier_l not in STARTER_TIERS:
+        allowed = False
+        msg = (
+            "Investigate requires Starter tier or higher."
+            if en
+            else "Investigate requiere plan Starter o superior."
+        )
 
     if allowed:
         return True
@@ -347,6 +354,110 @@ def price_data_footer(console: Console) -> None:
             f"actualizacion cada {PRICES_REFRESH_HOURS}h · APIs de catalogo[/]"
         )
     console.print(line)
+
+
+def print_investigate_report(console: Console, report: dict[str, Any]) -> None:
+    """Rich renderer for market_missions.run_investigate payload."""
+    from market_core import fmt_price
+
+    en = is_en()
+    query = report.get("query") or "?"
+    country = report.get("country") or get_default_country()
+    insights = report.get("insights") or {}
+    sections = report.get("sections") or {}
+
+    header = (
+        f"MISSION · investigate · {query} · {country}"
+        if en
+        else f"MISIÓN · investigate · {query} · {country}"
+    )
+    console.print()
+    console.print(Panel(header, border_style=MINT, box=box.ROUNDED))
+
+    retailers = insights.get("retailers_scanned")
+    skus = insights.get("skus_matched")
+    if retailers is not None or skus is not None:
+        sources = (
+            f"{retailers or '?'} retailers · {skus or '?'} SKUs matched"
+            if en
+            else f"{retailers or '?'} retailers · {skus or '?'} SKUs"
+        )
+        console.print(f"[dim]{'Sources' if en else 'Fuentes'}[/]     [bold]{sources}[/]")
+
+    leader = insights.get("leader") or {}
+    if leader.get("store_name"):
+        price = leader.get("price")
+        currency = leader.get("currency") or "PEN"
+        price_str = fmt_price(price, currency) if price is not None else "—"
+        console.print(
+            f"[dim]{'Leader' if en else 'Líder'}[/]      "
+            f"[bold]{leader['store_name']}[/] {price_str}"
+        )
+
+    laggard = insights.get("laggard") or {}
+    if laggard.get("store_name"):
+        pct = laggard.get("pct_vs_mean")
+        pct_str = f"+{pct:.0f}% vs mean" if pct is not None else ""
+        if not en and pct is not None:
+            pct_str = f"+{pct:.0f}% vs media"
+        console.print(
+            f"[dim]{'Laggard' if en else 'Rezagado'}[/]    "
+            f"[bold]{laggard['store_name']}[/] [yellow]{pct_str}[/]"
+        )
+
+    spread = insights.get("spread_pct_max")
+    if spread is not None:
+        console.print(
+            f"[dim]{'Spread' if en else 'Spread'}[/]      "
+            f"[bold]{spread:.1f}%[/] max"
+        )
+
+    inflation = insights.get("inflation_line") or {}
+    infl_section = sections.get("inflation") or {}
+    if inflation:
+        line = inflation.get("line") or query
+        delta = float(inflation.get("delta_pct") or 0)
+        days = inflation.get("days") or 30
+        console.print(
+            f"[dim]{'Inflation' if en else 'Inflación'}[/]   "
+            f"{line} [{('#FF6B35' if delta > 0 else MINT)}]{delta:+.1f}%[/] ({days}d)"
+        )
+    elif infl_section.get("status") == "unavailable":
+        console.print(
+            f"[dim]{'Inflation' if en else 'Inflación'}[/]   "
+            f"[yellow]{'unavailable' if en else 'no disponible'}[/]"
+        )
+
+    unavailable = [
+        name
+        for name, section in sections.items()
+        if section.get("status") == "unavailable"
+    ]
+    if unavailable:
+        console.print(
+            f"[dim]{'Partial' if en else 'Parcial'}[/] — "
+            f"{', '.join(unavailable)} "
+            f"{'unavailable' if en else 'no disponible'}"
+        )
+
+    recs = report.get("recommendations") or []
+    if recs:
+        title = "Recommendations (rules-based, v0)" if en else "Recomendaciones (reglas, v0)"
+        console.print()
+        console.print(f"[bold {MINT}]{title}[/]")
+        for i, rec in enumerate(recs, 1):
+            console.print(f"  {i}. {rec.get('text', '')}")
+
+    price_data_footer(console)
+    q = query.replace('"', '\\"')
+    print_hints(
+        console,
+        [
+            f'market compare "{q}" --country {country}',
+            f'market intel inflation --country {country}',
+            "market doctor",
+        ],
+    )
 
 
 def fetch_tier() -> str:
