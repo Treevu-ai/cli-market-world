@@ -64,7 +64,7 @@ Diff cero en paths relativos (verificar con checkout local de backend):
 - [x] `market_server.py` (middleware)
 - [x] `routers/observatory.py`
 - [x] `server_deps.py` (si cambió en backend)
-- [x] Diff backend ↔ world — `ops/mirror_diff_gate.py` en CI (T-177; reemplaza `fc` manual)
+- [x] Diff backend ↔ world — `ops/mirror_diff_gate.py` en CI (T-177); auto-sync → `sync-backend-observatory-mirror.yml` (T-178)
 
 ### 3b. Dependencias PyPI
 
