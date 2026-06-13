@@ -954,7 +954,7 @@ def test_pro_checkout_yape_routes_to_mercadopago(monkeypatch):
 
 def test_pro_checkout_persists_display_name(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
-    monkeypatch.setattr("routers.payments.wallet_manual_fallback_enabled", lambda: True)
+    monkeypatch.setattr("routers.billing.routes.wallet_manual_fallback_enabled", lambda: True)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
         lambda **kw: {"sent": True, "to": kw["to_email"]},
@@ -983,7 +983,7 @@ def test_pro_checkout_persists_display_name(monkeypatch):
 
 def test_pro_checkout_yape_manual_transfer_fallback(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
-    monkeypatch.setattr("routers.payments.wallet_manual_fallback_enabled", lambda: True)
+    monkeypatch.setattr("routers.billing.routes.wallet_manual_fallback_enabled", lambda: True)
     monkeypatch.setattr(
         "market_connectors.email_outbound.send_pro_payment_email",
         lambda **kw: {"sent": True, "to": kw["to_email"]},

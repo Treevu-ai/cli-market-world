@@ -23,7 +23,6 @@ from routers.billing.notifications import (  # noqa: F401
     _pro_payment_method_from_request,
     resend_pro_activation_email,
 )
-
 router = APIRouter(tags=["payments"])
 router.include_router(_billing_routes_router)
 router.include_router(_checkout_routes_router)
