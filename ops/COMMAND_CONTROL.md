@@ -41,7 +41,7 @@ Cada ejecución (sin `--dry-run`) appendea una línea JSON en:
 Campos trackeados para sparklines:
 
 - `moat.total_indexed`, `moat.snapshots_24h`, `moat.coverage_7d_pct`
-- `index.registry_size`, `index.linkage_pct`
+- `index.registry_size`, `index.linkage_pct`, `index.linkage_level`, `index.linkage_alerts`
 - `golive.overall`, `pam.pass/fail/skip`
 - `adoption_index.score`, `adoption_index.grade`, `adoption_index.first_search`
 
@@ -74,6 +74,7 @@ Funnel digest: mismo bloque matutino (chain) → `#funnel-cli-market`. Revenue s
 Montado en la API world:
 
 - `GET /index/stats` — `registry_size`, `linkage_pct`
+- Alertas linkage en panel C&C cuando `< 85%` meta, `< 70%` crítico, o caída `≥ 2pp` vs ayer
 - `POST /index/resolve` — entity resolution
 - `POST /index/backfill` — admin batch link
 
