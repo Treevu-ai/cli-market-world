@@ -15,13 +15,9 @@ from market_core.market_observatory import (
     classify_route,
     compute_daily_observatory_metrics,
     normalize_tool_name,
+    observatory_snapshot_streak,
     record_agent_event,
 )
-
-try:
-    from market_core.market_observatory import observatory_snapshot_streak
-except ImportError:
-    observatory_snapshot_streak = None  # cli-market-core < 1.9.35
 
 
 def test_normalize_tool_name_maps_agent_ask():
@@ -100,8 +96,6 @@ def test_compute_daily_observatory_metrics_sqlite_row(monkeypatch, tmp_path):
 
 
 def test_observatory_snapshot_streak_sqlite(monkeypatch, tmp_path):
-    if observatory_snapshot_streak is None:
-        pytest.skip("observatory_snapshot_streak requires cli-market-core>=1.9.35")
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     monkeypatch.setenv("MARKET_DATA_DIR", str(data_dir))
