@@ -119,7 +119,8 @@ jobs:
           MARKET_SKIP_LIVE: "1"
         run: |
           pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install -e ".deps/cli-market-core"
+          pip install "cli-market-core==1.9.36" \
+            || pip install "cli-market-core>=1.9.35"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install -e .
           pytest tests/test_funnel.py::test_pam_journey_synthetic -q
@@ -206,7 +207,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core>=1.9.36" httpx
+          pip install "cli-market-core==1.9.36" httpx \
+            || pip install "cli-market-core>=1.9.35" httpx
           python3 -c "from market_core import market_stats"
           if [ -f "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt" ]; then
             pip install -r "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt"
@@ -255,7 +257,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core>=1.9.36" httpx
+          pip install "cli-market-core==1.9.36" httpx \
+            || pip install "cli-market-core>=1.9.35" httpx
           python3 -c "from market_core import market_stats; print('market_core OK')"
 
       - name: Verify content checkout

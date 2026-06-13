@@ -11,7 +11,8 @@ if ! curl -fsSL "https://pypi.org/pypi/cli-market-core/${VER}/json" >/dev/null 2
 fi
 
 sed -i "s/^version = \".*\"/version = \"$VER\"/" pyproject.toml
-sed -i "s/cli-market-core>=.*/cli-market-core>=$VER\"/" pyproject.toml
+# pyproject min stays >=1.9.35 so pip install -e . works during PyPI propagation lag
+sed -i 's/cli-market-core>=.*/cli-market-core>=1.9.35"/' pyproject.toml
 sed -i "s/^cli-market-core==.*/cli-market-core==$VER/" requirements-railway.txt
 sed -i 's/cli-market-core==1\.9\.[0-9]*/cli-market-core=='"$VER"'/g' .github/workflows/ci.yml
 sed -i 's/cli-market-core>=1\.9\.[0-9]*/cli-market-core>='"$VER"'/g' .github/workflows/morning-ops-chain.yml
