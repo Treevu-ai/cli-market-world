@@ -52,13 +52,14 @@ curl -sS -o /dev/null -w "backend HTTP %{http_code}\n" \
 2. **Token name:** `cli-market-world-backend-write`
 3. **Resource owner:** **Treevu-ai**
 4. **Repository access:** **Only select** → `cli-market-backend`
-5. **Permissions → Contents:** **Read and write**
+5. **Permissions → Repository → Contents:** **Read and write**
 6. **Pull requests:** **Read and write** (para que `gh pr create` funcione en el workflow)
-7. SSO → **Authorize** for Treevu-ai
-8. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
-9. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.36`)
-10. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
-11. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
+7. **Workflows:** **Read and write** (requerido para push de `.github/workflows/ci.yml`)
+8. SSO → **Authorize** for Treevu-ai
+9. Copy token → `cli-market-world` → Settings → Secrets → **`GH_PAT_BACKEND_WRITE`**
+10. Bump `ops/backend-pin.trigger` en `main` → dispara **Sync backend core pin** (auto-PR `cli-market-core>=1.9.36`)
+11. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
+12. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
 
 **`GH_PAT_BACKEND_WRITE` must include `Workflows: Read and write`** on `cli-market-backend` — GitHub rejects pushes to `.github/workflows/*` without it. Si falta, el workflow sube solo `pytest.ini` y deja el patch de `ci.yml` en el artifact `backend-ci-parity`.
 
