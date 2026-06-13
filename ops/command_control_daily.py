@@ -134,6 +134,8 @@ BOOKMARKS = [
 # Meta internas (alineadas con market_golive.py)
 COVERAGE_7D_TARGET = 80.0
 LINKAGE_TARGET = 85.0
+LINKAGE_WARN_BELOW = 70.0
+LINKAGE_DROP_ALERT_PP = 2.0
 STORE_SUCCESS_WARN = 70.0
 
 
@@ -650,7 +652,7 @@ def _metric_cards(metrics: dict[str, Any], history: list[dict[str, Any]]) -> lis
             "level": _metric_level(
                 ix["linkage_pct"],
                 target=LINKAGE_TARGET,
-                warn_below=70,
+                warn_below=LINKAGE_WARN_BELOW,
             ),
             "meta": f"Meta ≥ {LINKAGE_TARGET:.0f}%",
             "meaning": "Qué porcentaje del moat ya está etiquetado con un Golden Record (canonical_product_id).",
@@ -898,7 +900,92 @@ def _traction_section(metrics: dict[str, Any], history: list[dict[str, Any]]) ->
     return ["*📈 Tracción (30d)*", ""] + obs_lines[2:-1] + ai_lines[2:-1] + [""]
 
 
-def _priority_actions(metrics: dict[str, Any]) -> list[str]:
+def _linkage_level(linkage_pct: float) -> str:
+    return _metric_level(
+        linkage_pct,
+        target=LINKAGE_TARGET,
+        warn_below=LINKAGE_WARN_BELOW,
+    )
+
+
+def _linkage_alerts(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Golden Record linkage alerts for command-control (N-5)."""
+    ix = metrics.get("index") or {}
+    pct = float(ix.get("linkage_pct") or 0)
+    alerts: list[dict[str, str]] = []
+    level = _linkage_level(pct)
+    if level == "critical":
+        alerts.append(
+            {
+                "severity": "critical",
+                "message": (
+                    f"Linkage {pct:.1f}% < {LINKAGE_WARN_BELOW:.0f}% — "
+                    "moat sin identidad semántica; `POST /index/backfill` (admin)"
+                ),
+            }
+        )
+    elif level == "warn":
+        alerts.append(
+            {
+                "severity": "warn",
+                "message": (
+                    f"Linkage {pct:.1f}% < meta {LINKAGE_TARGET:.0f}% — "
+                    "backfill index o esperar ciclo post-collector"
+                ),
+            }
+        )
+    if history:
+        prev_pct = float((history[-1].get("index") or {}).get("linkage_pct") or 0)
+        drop = prev_pct - pct
+        if drop >= LINKAGE_DROP_ALERT_PP:
+            sev = "critical" if drop >= 5.0 else "warn"
+            alerts.append(
+                {
+                    "severity": sev,
+                    "message": (
+                        f"Linkage cayó {drop:.1f}pp vs ayer ({prev_pct:.1f}% → {pct:.1f}%) — "
+                        "revisar backfill / regresión index"
+                    ),
+                }
+            )
+    return alerts
+
+
+def _linkage_alerts_section(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> list[str]:
+    alerts = _linkage_alerts(metrics, history)
+    if not alerts:
+        return []
+    lines = ["*⚠️ Alertas Golden Records (linkage)*", ""]
+    for alert in alerts:
+        icon = "🔴" if alert["severity"] == "critical" else "🟡"
+        lines.append(f"{icon} {alert['message']}")
+    lines.append("")
+    return lines
+
+
+def _enrich_index_metrics(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> dict[str, Any]:
+    out = dict(metrics)
+    ix = dict(out.get("index") or {})
+    pct = float(ix.get("linkage_pct") or 0)
+    ix["linkage_level"] = _linkage_level(pct)
+    ix["linkage_alerts"] = _linkage_alerts(out, history)
+    out["index"] = ix
+    return out
+
+
+def _priority_actions(
+    metrics: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> list[str]:
     """1–4 acciones concretas según estado (no checklist genérico)."""
     m, pam, gl = metrics["moat"], metrics["pam"], metrics["golive"]
     actions: list[tuple[int, str]] = []
@@ -915,8 +1002,10 @@ def _priority_actions(metrics: dict[str, Any]) -> list[str]:
             f"🟡 Tiendas sanas {m['healthy_stores']}/{m['total_stores']} ({m['store_success_pct']:.0f}%) "
             "→ revisar conectores",
         ))
-    if metrics["index"]["linkage_pct"] < LINKAGE_TARGET:
-        actions.append((3, f"🟡 Linkage {metrics['index']['linkage_pct']:.1f}% → `POST /index/backfill` o esperar ciclo index post-collector"))
+    for alert in _linkage_alerts(metrics, history):
+        pri = 1 if alert["severity"] == "critical" else 3
+        icon = "🔴" if alert["severity"] == "critical" else "🟡"
+        actions.append((pri, f"{icon} {alert['message']}"))
     for a in gl.get("alerts", [])[:2]:
         sev = a.get("severity", "warn")
         icon = "🔴" if sev == "critical" else "🟡"
@@ -1048,7 +1137,8 @@ def build_message(*, remote: bool = False, brief: bool = True) -> str:
         f"collector {'stale' if metrics['moat']['collector_stale'] else metrics['moat']['collector_status']}",
         "",
     ]
-    lines.extend(_priority_actions(metrics))
+    lines.extend(_linkage_alerts_section(metrics, history))
+    lines.extend(_priority_actions(metrics, history))
     lines.extend(_scoreboard(metrics))
     lines.extend(_traction_section(metrics, history))
     lines.extend(_explain_section(cards, brief=brief))
@@ -1123,7 +1213,8 @@ def main() -> int:
     brief = not args.full
 
     if args.json:
-        print(json.dumps(metrics, indent=2, ensure_ascii=False))
+        history = _load_history()
+        print(json.dumps(_enrich_index_metrics(metrics, history), indent=2, ensure_ascii=False))
     else:
         print(build_message(remote=args.remote, brief=brief))
 
