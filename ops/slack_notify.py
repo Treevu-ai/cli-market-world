@@ -25,6 +25,7 @@ DEFAULT_CHANNEL_OUTBOUND = "C0B9NEEB97U"
 DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
 DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # #suscripciones-cli-pro
 DEFAULT_CHANNEL_FUNNEL = "C0B9G3T0T0A"  # funnel-cli-market
+DEFAULT_CHANNEL_CEO_METRICS = "C0B9W7794BD"  # ceo-metrics — reporte diario CEO/Founder
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
 CLI_MARKET_PRO_CHANNEL_NAME = "suscripciones-cli-pro"
 FUNNEL_CHANNEL_NAME = "funnel-cli-market"
@@ -348,6 +349,18 @@ def deliver_to_command_control(text: str) -> None:
         text,
         channel=channel_command_control(),
         webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""),
+    )
+
+
+def channel_ceo_metrics() -> str:
+    return os.getenv("SLACK_CHANNEL_CEO_METRICS", DEFAULT_CHANNEL_CEO_METRICS)
+
+
+def deliver_to_ceo_metrics(text: str) -> None:
+    deliver(
+        text,
+        channel=channel_ceo_metrics(),
+        webhook_url=os.getenv("SLACK_WEBHOOK_CEO_METRICS", ""),
     )
 
 
