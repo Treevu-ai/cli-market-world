@@ -73,6 +73,7 @@ jobs:
         if: steps.write_token.outputs.has_write == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
+          PARITY_DIR: ${{ github.workspace }}/ops/backend-parity
         working-directory: cli-market-backend
         run: |
           set -euo pipefail
@@ -81,24 +82,23 @@ jobs:
           BRANCH="chore/ci-index-checkout-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "Backend CI already matches world template"
-            exit 0
-          fi
           git fetch origin
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            git stash push -u -m "sync-backend-ci" -- pytest.ini .github/workflows/ci.yml || true
             git checkout -B "$BRANCH" "origin/$BRANCH"
-            git stash pop || true
           else
             git checkout -b "$BRANCH"
           fi
-          git add pytest.ini .github/workflows/ci.yml
-          if ! git diff --cached --quiet; then
+          cp "$PARITY_DIR/pytest.ini" pytest.ini
+          mkdir -p .github/workflows
+          cp "$PARITY_DIR/ci.yml" .github/workflows/ci.yml
+          if git diff --quiet pytest.ini .github/workflows/ci.yml; then
+            echo "Branch $BRANCH already matches world template"
+          else
+            git add pytest.ini .github/workflows/ci.yml
             git commit -m "fix(ci): cli-market-index checkout + pytest integration mark"
+            git pull --rebase origin "$BRANCH"
+            git push -u origin "$BRANCH"
           fi
-          git pull --rebase origin "$BRANCH"
-          git push -u origin "$BRANCH"
           PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
           if gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend >/dev/null 2>&1; then
             gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend --json url --jq .url
