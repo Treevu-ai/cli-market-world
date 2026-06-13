@@ -1,1 +1,1 @@
-2026-06-13T11:00:00Z re-trigger after graceful workflow-scope fallback
+2026-06-13T12:00:00Z re-trigger after gh pr list head lookup fix
