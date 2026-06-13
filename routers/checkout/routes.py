@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-from fastapi import APIRouter, Body, Header, HTTPException, Request
+from fastapi import APIRouter, Body, Header, HTTPException
 from market_core import (
     db_clear_cart,
     db_create_order,

@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 import os
 import re
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request
 from market_core import (
     db_claim_webhook_event,
     db_delete_billing_pending,
