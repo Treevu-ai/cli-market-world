@@ -1,1 +1,1 @@
-2026-06-13T20:30:00Z sync ruff.toml parity — fix backend CI lint E402
+2026-06-13T21:00:00Z force ruff --config ruff.toml in backend CI lint step
