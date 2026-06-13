@@ -16,19 +16,13 @@ from fastapi import APIRouter, Body, Header, HTTPException
 from market_core import (
     db_create_subscription_request,
     db_find_subscription_request,
-    db_get_billing_pending,
     db_get_user_email,
     db_mark_subscription_request_emailed,
-    db_mark_subscription_requests_activated_for_user,
     db_recent_subscription_request,
     db_save_billing_pending,
-    db_set_subscription,
     db_update_subscription_request_payment_link,
 )
-from market_security import is_production_deploy
 from routers.billing.activation import (
-    _activate_pro_from_request,
-    _parse_pro_request_ref,
     _pro_price_pen,
     _record_plan_funnel_event,
     _wallet_manual_transfer_fields,
@@ -37,19 +31,16 @@ from routers.billing.activation import (
     process_starter_subscription_request,
 )
 from routers.billing.notifications import (
-    _append_pro_activation_email_actions,
-    _pro_payment_method_from_request,
     _slack_notify_build_pro,
     _slack_notify_subscription,
 )
 from routers.billing.pro_helpers import (
     duplicate_mp_checkout_payload,
-    is_manual_wallet_pro_payment_link,
     is_mp_billing_method,
     mp_pay_note,
     wallet_manual_fallback_enabled,
 )
-from server_deps import check_rate_limit, require_api_key, require_user
+from server_deps import check_rate_limit, require_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
