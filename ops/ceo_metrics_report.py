@@ -101,6 +101,11 @@ def _fetch_adoption() -> dict[str, Any]:
     return data or {}
 
 
+def _fetch_index_stats() -> dict[str, Any]:
+    data = _get("/index/stats")
+    return data or {}
+
+
 def _fetch_pypi() -> dict[str, Any]:
     """Pull latest PyPI metadata (public, no auth)."""
     try:
@@ -207,6 +212,7 @@ def build_report(*, remote: bool = False) -> str:
     dash = _fetch_dashboard() if remote else {}
     funnel = _fetch_funnel() if remote else {}
     adoption = _fetch_adoption() if remote else {}
+    index_data = _fetch_index_stats() if remote else {}
     pypi = _fetch_pypi()
     pepy = _fetch_pepy()
     content = _content_today()
@@ -214,7 +220,6 @@ def build_report(*, remote: bool = False) -> str:
     kpis = dash.get("kpis", {})
     coll = dash.get("collector", {})
     moat = dash.get("moat_summary", {})
-    index_data = dash.get("index", {})
 
     # Adoption index
     adoption_score = adoption.get("score") or dash.get("adoption_index", {}).get("score")
