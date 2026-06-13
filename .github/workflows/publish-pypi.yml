@@ -2,6 +2,15 @@ name: Publish PyPI
 
 on:
   workflow_dispatch:
+    inputs:
+      mcp_registry_only:
+        description: "Skip PyPI upload — only publish to MCP Registry (package must already be on PyPI)"
+        type: boolean
+        default: false
+      version:
+        description: "Version for MCP-only run (tag push ignores this)"
+        required: false
+        default: "1.9.36"
   push:
     tags:
       - "v*"
@@ -12,6 +21,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.event_name == 'push' || inputs.mcp_registry_only != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: pypi
@@ -38,6 +48,10 @@ jobs:
 
   publish-mcp-registry:
     needs: publish
+    if: |
+      always() &&
+      (needs.publish.result == 'success' || needs.publish.result == 'skipped') &&
+      needs.publish.result != 'failure'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -46,15 +60,42 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Sync server.json version from tag
+      - name: Resolve release version
+        id: ver
         run: |
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "MCP registry version: ${VERSION}"
+
+      - name: Sync server.json version
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
           jq --arg v "$VERSION" '
             .version = $v |
             .packages[0].version = $v |
             .packages[0].identifier = "cli-market-world"
           ' server.json > server.tmp && mv server.tmp server.json
-          echo "MCP registry version: $VERSION"
+          cp server.json landing/public/server.json
+
+      - name: Wait for PyPI propagation
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          PKG="cli-market-world"
+          echo "Waiting for ${PKG}==${VERSION} on PyPI (MCP registry validates against PyPI)..."
+          for i in $(seq 1 36); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "Found ${PKG} ${VERSION} on PyPI (attempt ${i})"
+              exit 0
+            fi
+            echo "Attempt ${i}/36: not yet available, sleeping 10s..."
+            sleep 10
+          done
+          echo "Timeout: ${PKG} ${VERSION} not visible on PyPI after 6 minutes"
+          exit 1
 
       - name: Install mcp-publisher
         run: |
