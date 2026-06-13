@@ -48,11 +48,9 @@ from market_core import (
     db_get_billing_pending,
     db_get_user_email,
     db_create_subscription_request,
-    db_mark_subscription_request_activated,
     db_mark_subscription_request_emailed,
     db_mark_subscription_requests_activated_for_user,
     db_find_subscription_request,
-    db_get_subscription,
     db_recent_subscription_request,
     db_update_subscription_request_payment_link,
     db_save_billing_pending,
@@ -66,7 +64,6 @@ from market_core import (
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
 from routers.billing.pro_helpers import (
     duplicate_mp_checkout_payload,
-    is_manual_wallet_pro_payment_link,
     is_mp_billing_method,
     mp_pay_note,
     wallet_manual_fallback_enabled,
@@ -74,11 +71,10 @@ from routers.billing.pro_helpers import (
 from routers.billing.notifications import (
     _append_pro_activation_email_actions,
     _notify_procure_payment,
-    _pro_payment_method_from_request,
-    _send_pro_activated_email_with_credentials,
+    _pro_payment_method_from_request,  # noqa: F401 — re-export for ops/activate_pro.py
     _slack_notify_build_pro,
     _slack_notify_subscription,
-    resend_pro_activation_email,
+    resend_pro_activation_email,  # noqa: F401 — re-export for routers/admin.py
 )
 from routers.billing.activation import (
     _activate_pro_from_request,
