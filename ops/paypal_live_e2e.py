@@ -133,13 +133,43 @@ def subscription_tier(base: str, api_key: str) -> str | None:
     return data.get("tier")
 
 
-def prepare(*, write_state: bool = True) -> dict:
+def assert_free_before_checkout(
+    base: str,
+    api_key: str,
+    *,
+    force_export_gate: bool = False,
+) -> tuple[str, int]:
+    """Confirm new user is free; export should be 403 until Starter+."""
+    tier = subscription_tier(base, api_key)
+    if tier != "free":
+        raise SystemExit(f"FAIL: expected free tier before PayPal E2E, got {tier!r}")
+
+    free_export = export_status(base, api_key)
+    if free_export == 403:
+        return tier, free_export
+    if free_export == 200 and force_export_gate:
+        print(
+            "::warning::export returned 200 on free tier — prod export gate misconfigured; "
+            "redeploy Railway API (Deploy Railway workflow, target api)",
+            file=sys.stderr,
+        )
+        return tier, free_export
+
+    raise SystemExit(
+        f"FAIL: export on free tier expected 403, got {free_export}\n"
+        "Prod export gate not enforcing (subscription tier is free but export is open).\n"
+        "Fix: GitHub → Actions → Deploy Railway → target api\n"
+        "PayPal webhook test only (not a full §5 pass): add --force-export-gate"
+    )
+
+
+def prepare(*, write_state: bool = True, force_export_gate: bool = False) -> dict:
     base = _base()
     username, api_key = register_user(base)
 
-    free_export = export_status(base, api_key)
-    if free_export != 403:
-        raise SystemExit(f"FAIL: export on free tier expected 403, got {free_export}")
+    tier, free_export = assert_free_before_checkout(
+        base, api_key, force_export_gate=force_export_gate
+    )
 
     status, data, _ = http_json(base, "POST", "/billing/paypal", token=api_key)
     if status != 200 or not isinstance(data, dict) or not data.get("ok"):
@@ -157,6 +187,7 @@ def prepare(*, write_state: bool = True) -> dict:
         "subscription_id": data.get("subscription_id"),
         "request_id": data.get("request_id"),
         "approve_url": approve_url,
+        "tier_before": tier,
         "free_export_status": free_export,
         "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
@@ -204,6 +235,11 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=300, help="Poll timeout seconds")
     parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--no-state", action="store_true", help="Do not write ops/.paypal-e2e-state.json")
+    parser.add_argument(
+        "--force-export-gate",
+        action="store_true",
+        help="Continue prepare when free-tier export returns 200 (prod gate drift; not a full §5 pass)",
+    )
     args = parser.parse_args()
 
     if not any((args.prepare, args.poll, args.verify, args.full, args.status)):
@@ -217,7 +253,7 @@ def main() -> int:
     api_key = (args.api_key or "").strip() or _load_state().get("api_key", "")
 
     if args.full:
-        prep = prepare(write_state=not args.no_state)
+        prep = prepare(write_state=not args.no_state, force_export_gate=args.force_export_gate)
         if args.json:
             print(json.dumps({**prep, "next": "open approve_url in browser"}, indent=2))
         else:
@@ -234,7 +270,7 @@ def main() -> int:
         return 0 if result["ok"] else 1
 
     if args.prepare:
-        prep = prepare(write_state=not args.no_state)
+        prep = prepare(write_state=not args.no_state, force_export_gate=args.force_export_gate)
         if args.json:
             print(json.dumps(prep, indent=2))
         else:

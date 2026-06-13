@@ -226,11 +226,12 @@ def require_pro(authorization: str | None) -> str:
 
 def require_export(authorization: str | None) -> str:
     """Require Starter+ with export enabled (CSV/JSON data moat pulls)."""
-    from market_billing import db_get_subscription, price_label_for_plan
+    from market_billing import TIERS, db_get_subscription, price_label_for_plan
 
     username = require_api_key(authorization)
     sub = db_get_subscription(username)
-    if not sub.get("export"):
+    tier = sub.get("tier", "free")
+    if not TIERS.get(tier, TIERS["free"]).get("export"):
         raise HTTPException(
             status_code=403,
             detail=(

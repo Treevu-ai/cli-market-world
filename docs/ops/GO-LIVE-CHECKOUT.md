@@ -196,6 +196,27 @@ If the tier doesn't flip in step 4, check the API logs for the webhook line
   recorded the pending row.
 - Webhook signature failing → `PAYPAL_WEBHOOK_ID` mismatch.
 
+### Troubleshooting `paypal_live_e2e.py --prepare`
+
+**`FAIL: export on free tier expected 403, got 200`**
+
+Production is allowing data export for `tier=free` users. That means the export
+tier gate is not enforcing on the deployed API (redeploy required):
+
+1. GitHub → **Actions** → **Deploy Railway** → Run workflow → `target: api`
+2. Confirm after deploy:
+   ```powershell
+   py -3 -c "import urllib.request,json; r=urllib.request.urlopen(urllib.request.Request('https://cli-market-production.up.railway.app/auth/register', method='POST')); k=json.load(r)['api_key']; req=urllib.request.Request('https://cli-market-production.up.railway.app/v1/data/export', data=b'{}', method='POST', headers={'Authorization':'Bearer '+k,'Content-Type':'application/json'}); print(urllib.request.urlopen(req).status)"
+   ```
+   Expect **403** (not 200).
+
+To test the PayPal approval + webhook loop while redeploy is pending (does **not**
+count as a full §5 pass):
+
+```powershell
+py -3 ops\paypal_live_e2e.py --prepare --force-export-gate
+```
+
 ---
 
 ## 6. Email confirmations (optional but recommended)

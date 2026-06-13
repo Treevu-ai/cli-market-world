@@ -57,6 +57,8 @@ def test_prepare_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
 
     def fake_http(base, method, path, *, token="", body=None, **kwargs):
         calls.append((method, path, token))
+        if path == "/auth/subscription":
+            return 200, {"subscription": {"tier": "free", "export": False}}, 1.0
         if path == "/v1/data/export":
             return 403, {}, 1.0
         if path == "/billing/paypal":
@@ -75,9 +77,36 @@ def test_prepare_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
 
 def test_prepare_fails_when_export_not_403():
     with patch.object(gate, "register_user", lambda _b: ("u", "sk")), patch.object(
-        gate, "export_status", lambda _b, _k: 200
-    ):
+        gate, "subscription_tier", lambda _b, _k: "free"
+    ), patch.object(gate, "export_status", lambda _b, _k: 200):
         with pytest.raises(SystemExit, match="403"):
+            gate.prepare(write_state=False)
+
+
+def test_prepare_force_export_gate_on_open_export():
+    def fake_http(base, method, path, *, token="", body=None, **kwargs):
+        if path == "/auth/subscription":
+            return 200, {"subscription": {"tier": "free"}}, 1.0
+        if path == "/v1/data/export":
+            return 200, {"data": []}, 1.0
+        if path == "/billing/paypal":
+            return 200, {"ok": True, "approve_url": "https://paypal.test/x"}, 1.0
+        raise AssertionError(path)
+
+    with patch.object(gate, "register_user", lambda _b: ("u", "sk")), patch.object(
+        gate, "http_json", fake_http
+    ):
+        prep = gate.prepare(write_state=False, force_export_gate=True)
+
+    assert prep["free_export_status"] == 200
+    assert prep["tier_before"] == "free"
+
+
+def test_prepare_fails_when_not_free():
+    with patch.object(gate, "register_user", lambda _b: ("u", "sk")), patch.object(
+        gate, "subscription_tier", lambda _b, _k: "pro"
+    ):
+        with pytest.raises(SystemExit, match="free tier"):
             gate.prepare(write_state=False)
 
 
