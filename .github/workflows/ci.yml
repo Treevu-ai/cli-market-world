@@ -77,13 +77,9 @@ jobs:
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
 
-      - name: Contract parity (OpenAPI + core pin)
+      - name: Contract parity (OpenAPI + core pin + Observatory mirror)
         if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
         run: python ops/contract_parity.py --backend-path .deps/cli-market-backend
-
-      - name: Mirror diff gate (Observatory + server_deps)
-        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
-        run: python ops/mirror_diff_gate.py --backend-path .deps/cli-market-backend
 
       - name: Contract parity skipped (GH_PAT cannot read backend)
         if: steps.probe-backend.outputs.ok != 'true'
@@ -163,13 +159,9 @@ jobs:
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
 
-      - name: Contract parity (OpenAPI + core pin)
+      - name: Contract parity (OpenAPI + core pin + Observatory mirror)
         if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
         run: python ops/contract_parity.py --backend-path .deps/cli-market-backend
-
-      - name: Mirror diff gate (Observatory + server_deps)
-        if: steps.probe-backend.outputs.ok == 'true' && steps.checkout-backend.outcome == 'success'
-        run: python ops/mirror_diff_gate.py --backend-path .deps/cli-market-backend
 
       - name: Contract parity skipped (GH_PAT cannot read backend)
         if: steps.probe-backend.outputs.ok != 'true'
