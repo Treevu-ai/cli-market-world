@@ -19,8 +19,11 @@ Tag `v*` → workflow **Publish PyPI** publica a PyPI y luego al MCP Registry (`
 
 Si PyPI OK pero MCP falló con `PyPI package 'cli-market-world' not found (status: 404)`:
 
-1. **GitHub Actions** → **Publish MCP Registry** → Run workflow (version = la ya publicada en PyPI, ej. `1.9.36`)
-2. O manual local (después de confirmar `curl -fsSL https://pypi.org/pypi/cli-market-world/VERSION/json`):
+1. **GitHub Actions** → **Publish PyPI** → **Run workflow**
+2. Marcar **`mcp_registry_only: true`**
+3. **`version`**: la ya publicada en PyPI (ej. `1.9.36`)
+
+O manual local (después de confirmar `curl -fsSL https://pypi.org/pypi/cli-market-world/VERSION/json`):
 
 ```bash
 # Sync version in server.json first, then:
