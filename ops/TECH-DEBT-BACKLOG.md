@@ -3,7 +3,7 @@
 **Last updated:** 2026-06-13 · **Owner:** PM + eng  
 **North star de deuda:** paridad multirepo verificable, gates CI duros en revenue/data, Observatory auditado antes de claims GTM.
 
-**Sprint cerrado:** ciclo Now (T-172 → T-178, N-5) completado 2026-06-13. Sin PRs activos en este bloque.
+**Sprint activo:** N-1 — split `routers/payments.py` · plan: `ops/SPRINT-N1-PAYMENTS-SPLIT.md`
 
 ---
 
@@ -38,7 +38,7 @@
 
 | ID | Item | Repo | Effort |
 |----|------|------|--------|
-| N-1 | Partir `routers/payments.py` (webhooks / checkout / email) | world | L |
+| N-1 | Partir `routers/payments.py` (webhooks / checkout / email) | world | L | 🔄 In progress — ver `ops/SPRINT-N1-PAYMENTS-SPLIT.md` |
 | N-2 | Desacoplar GTM de `morning-ops-chain` (briefing independiente) | world | M |
 | N-3 | Tests `slack_ops`, `media`, `retailer_admin` | world | M |
 | N-4 | Automatizar `RELEASE-DISPERSION.md` post-PyPI | world | S |
@@ -63,7 +63,7 @@
 | Item | Owner | Notas |
 |------|-------|-------|
 | Merge backend PR #22 | eng | Auto-PR observatory mirror — cierra gap streak |
-| Merge backend CI PR (sync-backend-ci) | eng | Fix `ModuleNotFoundError: persistence` en test collection |
+| Merge backend CI PR (sync-backend-ci) | eng | ✅ Resuelto 2026-06-13 — ruff embed + CI verde |
 | PayPal live E2E GO-LIVE §5 | founder | `ops/paypal_live_e2e.py --prepare` + aprobación manual + `--verify` |
 | Observatory adoption CI 7 días | eng | Validar post-deploy ~2026-06-19 (`observatory-nightly`) |
 | Landing `/stats` data-gate | GTM | `make gate` en content repo antes de creative con cifras |
