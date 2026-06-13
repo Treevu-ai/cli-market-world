@@ -26,7 +26,7 @@ jobs:
         run: |
           VERSION="$(grep -E '^VERSION=' ops/core-publish.trigger | head -1 | cut -d= -f2- | tr -d ' \r')"
           test -n "$VERSION"
-          echo "version=${VERSION}" >> "$GITHUB_ENV"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
           echo "Publishing cli-market-core ${VERSION}"
 
       - uses: actions/checkout@v6
