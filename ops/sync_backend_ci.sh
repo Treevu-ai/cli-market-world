@@ -20,6 +20,9 @@ mkdir -p "$BACKEND_DIR/.github/workflows"
 cp "$PARITY_DIR/pytest.ini" "$BACKEND_DIR/pytest.ini"
 echo "synced: pytest.ini"
 
+cp "$PARITY_DIR/ruff.toml" "$BACKEND_DIR/ruff.toml"
+echo "synced: ruff.toml"
+
 cp "$PARITY_DIR/ci.yml" "$BACKEND_DIR/.github/workflows/ci.yml"
 echo "synced: .github/workflows/ci.yml"
 

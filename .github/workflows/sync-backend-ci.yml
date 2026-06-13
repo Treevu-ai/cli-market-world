@@ -37,7 +37,7 @@ jobs:
         if: always()
         run: |
           mkdir -p /tmp/backend-ci
-          git -C cli-market-backend add -N pytest.ini .github/workflows/ci.yml 2>/dev/null || true
+          git -C cli-market-backend add -N pytest.ini ruff.toml .github/workflows/ci.yml 2>/dev/null || true
           git -C cli-market-backend diff HEAD > /tmp/backend-ci/backend-ci.patch || true
           if [ ! -s /tmp/backend-ci/backend-ci.patch ]; then
             echo "No diff — backend CI already matches world template" > /tmp/backend-ci/backend-ci.patch
@@ -88,15 +88,16 @@ jobs:
           git reset --hard origin/main
           git clean -fd
           cp "$PARITY_DIR/pytest.ini" pytest.ini
+          cp "$PARITY_DIR/ruff.toml" ruff.toml
           mkdir -p .github/workflows
           cp "$PARITY_DIR/ci.yml" .github/workflows/ci.yml
-          if git diff --quiet pytest.ini .github/workflows/ci.yml; then
+          if git diff --quiet pytest.ini ruff.toml .github/workflows/ci.yml; then
             echo "Backend main already matches world CI template"
             exit 0
           fi
           git checkout -b "$BRANCH"
-          git add pytest.ini .github/workflows/ci.yml
-          git commit -m "fix(ci): cli-market-index checkout + pytest integration mark"
+          git add pytest.ini ruff.toml .github/workflows/ci.yml
+          git commit -m "fix(ci): ruff parity + cli-market-index checkout + pytest integration mark"
           if ! git push -u origin "$BRANCH" 2>&1 | tee /tmp/backend-ci-push.log; then
             if grep -qi workflow /tmp/backend-ci-push.log; then
               echo "::warning::Push rejected — re-paste GH_PAT_BACKEND_WRITE after adding Workflows: Read and write"
@@ -107,7 +108,7 @@ jobs:
             fi
           fi
           if [ "$CI_YML_BLOCKED" != true ]; then
-            PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
+            PR_BODY="Automated from cli-market-world sync-backend-ci. Adds ruff.toml (fixes lint E402 on market_server.py), cli-market-index checkout, pytest.ini integration mark."
             PR_URL="$(gh pr list --repo Treevu-ai/cli-market-backend --state open --head "Treevu-ai:${BRANCH}" --json url --jq '.[0].url' 2>/dev/null || true)"
             if [ -n "$PR_URL" ] && [ "$PR_URL" != "null" ]; then
               echo "$PR_URL"
@@ -116,7 +117,7 @@ jobs:
                 --repo Treevu-ai/cli-market-backend \
                 --base main \
                 --head "$BRANCH" \
-                --title "fix(ci): install cli-market-index for test collection" \
+                --title "fix(ci): ruff parity + cli-market-index checkout for tests" \
                 --body "$PR_BODY" 2>&1 | tee /tmp/backend-ci-pr.log || {
                 if grep -qi 'already exists' /tmp/backend-ci-pr.log; then
                   gh pr list --repo Treevu-ai/cli-market-backend --state open --head "Treevu-ai:${BRANCH}" --json url --jq '.[0].url'
