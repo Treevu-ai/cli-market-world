@@ -45,6 +45,10 @@ _CORE_PIN_RE = re.compile(
     r"cli-market-core\s*>=\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
 )
+_CORE_PIN_EQ_RE = re.compile(
+    r"cli-market-core\s*==\s*(\d+)\.(\d+)\.(\d+)",
+    re.IGNORECASE,
+)
 _INDEX_PIN_RE = re.compile(
     r"cli-market-index\[postgres\]\s*@\s*git\+https://github\.com/Treevu-ai/cli-market-index@([0-9a-f]{40})",
     re.IGNORECASE,
@@ -124,18 +128,32 @@ def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
     return int(match.group(1)), int(match.group(2)), int(match.group(3))
 
 
+def parse_core_pin_eq(text: str, *, label: str) -> tuple[int, int, int]:
+    match = _CORE_PIN_EQ_RE.search(text)
+    if not match:
+        raise SystemExit(f"{label}: no cli-market-core==X.Y.Z pin found")
+    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+
+
 def check_core_pins(
     world_pyproject: Path | None = None,
+    world_railway_req: Path | None = None,
     backend_requirements: Path | None = None,
 ) -> list[str]:
     world_pyproject = world_pyproject or ROOT / "pyproject.toml"
+    world_railway_req = world_railway_req or ROOT / "requirements-railway.txt"
     backend_requirements = backend_requirements or ROOT.parent / "cli-market-backend" / "requirements.txt"
     errors: list[str] = []
 
-    if not world_pyproject.is_file():
-        return [f"world pyproject missing: {world_pyproject}"]
-
-    w_pin = parse_core_pin(world_pyproject.read_text(encoding="utf-8"), label="world pyproject.toml")
+    if world_railway_req.is_file():
+        w_pin = parse_core_pin_eq(
+            world_railway_req.read_text(encoding="utf-8"),
+            label="world requirements-railway.txt",
+        )
+    elif world_pyproject.is_file():
+        w_pin = parse_core_pin(world_pyproject.read_text(encoding="utf-8"), label="world pyproject.toml")
+    else:
+        return [f"world core pin missing: {world_railway_req} or {world_pyproject}"]
 
     if not backend_requirements.is_file():
         return [f"backend requirements missing: {backend_requirements}"]
