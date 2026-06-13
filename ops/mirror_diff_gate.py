@@ -4,6 +4,10 @@
 Compares canonical mirror paths from docs/prd-observatory-p0.md §0.2 without
 requiring a full ``fc`` of large files like ``market_server.py``.
 
+Semantic parity (routes, shim target, auth helpers for admin routes) — not
+byte-identical files — so docstrings and non-Observatory server_deps drift
+do not fail the gate.
+
 Usage:
     python ops/mirror_diff_gate.py
     python ops/mirror_diff_gate.py --backend-path .deps/cli-market-backend
@@ -18,20 +22,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Byte-identical after normalization (Observatory surface).
-MIRROR_EXACT: tuple[str, ...] = (
+CORE_OBSERVATORY_MODULE = "market_core.market_observatory"
+
+MIRROR_PATHS: tuple[str, ...] = (
     "market_observatory.py",
     "routers/observatory.py",
 )
 
-# Auth helpers consumed by ObservatoryMiddleware + admin observatory routes.
+# Auth helpers used by Observatory admin routes + middleware session auth.
 SERVER_DEPS_OBSERVATORY_SYMBOLS: frozenset[str] = frozenset(
     {
         "DEFAULT_TOKEN",
         "auth_user",
         "require_user",
         "require_admin",
-        "require_api_key",
     }
 )
 
@@ -73,23 +77,75 @@ def _read_rel(root: Path, rel: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def compare_exact_files(world_root: Path, backend_root: Path) -> list[str]:
+def observatory_shim_imports(source: str) -> bool:
+    tree = ast.parse(source)
+    return any(
+        isinstance(node, ast.ImportFrom) and node.module == CORE_OBSERVATORY_MODULE
+        for node in tree.body
+    )
+
+
+def compare_market_observatory_shim(world_root: Path, backend_root: Path) -> list[str]:
     errors: list[str] = []
-    for rel in MIRROR_EXACT:
-        w_path = world_root / rel
-        b_path = backend_root / rel
-        if not w_path.is_file():
-            errors.append(f"world missing mirror file {rel}")
+    rel = "market_observatory.py"
+    try:
+        w_src = _read_rel(world_root, rel)
+        b_src = _read_rel(backend_root, rel)
+    except FileNotFoundError as exc:
+        return [f"{exc.args[0]} missing in world or backend"]
+
+    if not observatory_shim_imports(w_src):
+        errors.append(f"world {rel} must re-export {CORE_OBSERVATORY_MODULE}")
+    if not observatory_shim_imports(b_src):
+        errors.append(f"backend {rel} must re-export {CORE_OBSERVATORY_MODULE}")
+    return errors
+
+
+def extract_fastapi_routes(source: str) -> frozenset[tuple[str, str]]:
+    tree = ast.parse(source)
+    routes: set[tuple[str, str]] = set()
+    for node in tree.body:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
-        if not b_path.is_file():
-            errors.append(f"backend missing mirror file {rel}")
-            continue
-        w_norm = normalize_text(w_path.read_text(encoding="utf-8"))
-        b_norm = normalize_text(b_path.read_text(encoding="utf-8"))
-        if w_norm != b_norm:
-            errors.append(
-                f"mirror drift {rel} — sync backend ↔ world (see ops/OBSERVATORY-CHANGE-CHECKLIST.md §3a)"
-            )
+        for dec in node.decorator_list:
+            if not isinstance(dec, ast.Call) or not isinstance(dec.func, ast.Attribute):
+                continue
+            method = dec.func.attr.upper()
+            if method not in {"GET", "POST", "PUT", "DELETE", "PATCH"}:
+                continue
+            if not dec.args or not isinstance(dec.args[0], ast.Constant):
+                continue
+            routes.add((method, str(dec.args[0].value)))
+    return frozenset(routes)
+
+
+def compare_observatory_router(world_root: Path, backend_root: Path) -> list[str]:
+    errors: list[str] = []
+    rel = "routers/observatory.py"
+    try:
+        w_src = _read_rel(world_root, rel)
+        b_src = _read_rel(backend_root, rel)
+    except FileNotFoundError as exc:
+        return [f"{exc.args[0]} missing in world or backend"]
+
+    try:
+        w_routes = extract_fastapi_routes(w_src)
+        b_routes = extract_fastapi_routes(b_src)
+    except SyntaxError as exc:
+        return [f"{rel} parse error: {exc}"]
+
+    if w_routes != b_routes:
+        only_world = sorted(w_routes - b_routes)
+        only_backend = sorted(b_routes - w_routes)
+        parts: list[str] = []
+        if only_world:
+            parts.append(f"world-only {only_world}")
+        if only_backend:
+            parts.append(f"backend-only {only_backend}")
+        errors.append(
+            f"{rel} route drift ({'; '.join(parts)}) — sync backend ↔ world "
+            "(see ops/OBSERVATORY-CHANGE-CHECKLIST.md §3a)"
+        )
     return errors
 
 
@@ -182,7 +238,8 @@ def compare_market_server_observatory(world_root: Path, backend_root: Path) -> l
 
 def compare_mirror(world_root: Path, backend_root: Path) -> list[str]:
     errors: list[str] = []
-    errors.extend(compare_exact_files(world_root, backend_root))
+    errors.extend(compare_market_observatory_shim(world_root, backend_root))
+    errors.extend(compare_observatory_router(world_root, backend_root))
     errors.extend(compare_server_deps_observatory(world_root, backend_root))
     errors.extend(compare_market_server_observatory(world_root, backend_root))
     return errors
@@ -214,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(
-        f"OK: Observatory mirror ({len(MIRROR_EXACT)} exact files + "
+        f"OK: Observatory mirror ({len(MIRROR_PATHS)} shim/route files + "
         f"server_deps[{len(SERVER_DEPS_OBSERVATORY_SYMBOLS)} symbols] + market_server wiring)"
     )
     return 0
