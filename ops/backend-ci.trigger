@@ -1,1 +1,1 @@
-2026-06-13T08:00:00Z re-trigger after idempotent branch fix #195
+2026-06-13T09:00:00Z re-trigger after stash fix (copy parity, no stash pop)
