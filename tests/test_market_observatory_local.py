@@ -1,4 +1,4 @@
-"""Tests for world-local market_observatory (P0 telemetry fixes)."""
+"""Tests for Observatory telemetry (core via world shim)."""
 
 import json
 import sys
@@ -9,15 +9,15 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from market_observatory import (
+from market_core.market_observatory import (
     _extract_geo_retailer,
     _weekly_agent_growth,
     classify_route,
     compute_daily_observatory_metrics,
     normalize_tool_name,
-    observatory_snapshot_streak,
     record_agent_event,
 )
+from market_observatory import observatory_snapshot_streak
 
 
 def test_normalize_tool_name_maps_agent_ask():
