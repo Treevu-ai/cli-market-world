@@ -14,7 +14,7 @@
 | T-174 | world | `test(intel): add test_sources_health + test_dashboard_view_model smoke` | ✅ Shipped |
 | T-175 | world | `ci: require backend contract parity when GH_PAT has backend read` | ✅ Shipped |
 | T-176 | world | `ops: PayPal live E2E gate — close GO-LIVE §5` | ✅ Shipped |
-| T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | Pendiente |
+| T-177 | core + backend + world | `chore: mirror diff gate observatory + server_deps` | ✅ Shipped |
 
 ### Entregables Now (#172)
 
