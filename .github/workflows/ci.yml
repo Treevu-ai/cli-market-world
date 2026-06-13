@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-core
-          ref: main
+          ref: v1.9.34
           path: .deps/cli-market-core
           token: ${{ secrets.GH_PAT }}
 
@@ -80,6 +80,9 @@ jobs:
         if: steps.checkout-backend.outcome != 'success'
         run: |
           echo "::warning::cli-market-backend checkout failed — skipping OpenAPI parity. Update GH_PAT secret in cli-market-world (not backend repo) with read access to Treevu-ai/cli-market-backend."
+
+      - name: Verify phase docs / required tests
+        run: python ops/verify_phase_docs.py --audit-docs
 
       - name: Run tests
         run: pytest tests/test_checkout_payments.py tests/ -q -m "not integration"
@@ -125,7 +128,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-core
-          ref: main
+          ref: v1.9.34
           path: .deps/cli-market-core
           token: ${{ secrets.GH_PAT }}
 
@@ -154,6 +157,9 @@ jobs:
         if: steps.checkout-backend.outcome != 'success'
         run: |
           echo "::warning::cli-market-backend checkout failed — skipping OpenAPI parity. Update GH_PAT secret in cli-market-world (not backend repo) with read access to Treevu-ai/cli-market-backend."
+
+      - name: Verify phase docs / required tests
+        run: python ops/verify_phase_docs.py --audit-docs
 
       - name: Run tests against PostgreSQL
         run: pytest tests/test_checkout_payments.py tests/ -q -m "not integration"
