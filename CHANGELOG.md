@@ -11,10 +11,8 @@ All notable changes to the CLI Market ecosystem.
 - **Added:** core test `test_observatory_snapshot_streak`
 - **Changed:** git tags `v1.9.34` (backport on main) + `v1.9.35`
 
-### cli-market-world v1.9.35
-- **Changed:** `market_observatory.py` → pure shim (no world fallback)
-- **Changed:** Pin `cli-market-core==1.9.35`; CI + Railway
-- **Added:** `ops/patches/cli-market-core-1.9.35.patch`, `ops/publish_core_1.9.35.sh`
+### cli-market-world (post-PyPI via `ops/after_core_1.9.35_published.sh`)
+- **Changed:** Pin `cli-market-core==1.9.35`; remove shim streak fallback
 
 ## [2026-06-12] — World 1.9.34 + Observatory P0 prod closure
 

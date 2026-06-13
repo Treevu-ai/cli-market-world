@@ -6,7 +6,7 @@ on:
       version:
         description: cli-market-core minimum version (e.g. 1.9.35)
         type: string
-        default: "1.9.35"
+        default: "1.9.34"
   push:
     branches: [main]
     paths:

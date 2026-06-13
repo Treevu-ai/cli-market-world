@@ -1,3 +1,2 @@
-# Bump this file (commit to main) after cli-market-core 1.9.35 is on PyPI.
+# Bump AFTER cli-market-core 1.9.35 is on PyPI (run ops/after_core_1.9.35_published.sh first).
 # Triggers sync-backend-core-pin.yml → auto-PR cli-market-core>=1.9.35 on cli-market-backend.
-# 2026-06-13T00:30:00Z — T-173 post-publish
