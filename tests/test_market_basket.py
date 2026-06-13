@@ -110,7 +110,7 @@ def test_build_canasta_basica_at_most_ten_stores(isolated_db):
     mc.ensure_db_initialized()
     db = mc.get_db()
     for i in range(12):
-        for j, (name, prod_prefix) in enumerate([
+        for _j, (name, prod_prefix) in enumerate([
             ("Leche Gloria 1L", "l"),
             ("Arroz Costeño 1kg", "a"),
             ("Aceite Vegetal 1L", "ac"),
@@ -189,7 +189,7 @@ def test_build_canasta_snapshot_comparable_flag(isolated_db):
         ("Leche Gloria 1L", "l"), ("Arroz Costeño 1kg", "a"), ("Aceite Vegetal 1L", "ac"),
         ("Azúcar Rubia 1kg", "az"), ("Huevo Blanco 18 Piezas", "h"), ("Pan Integral", "p"),
     ]
-    for pid, (name, prefix) in enumerate(items):
+    for _pid, (name, prefix) in enumerate(items):
         _insert_snapshot(db, product_id=f"{prefix}1", store="full_store", store_name="Full Store", name=name, price=5.0)
     # partial store: only 2 items
     _insert_snapshot(db, product_id="l2", store="partial_store", store_name="Partial Store", name="Leche Gloria 1L", price=3.5)
