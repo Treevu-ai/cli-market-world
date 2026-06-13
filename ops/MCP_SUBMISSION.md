@@ -13,7 +13,21 @@ mcp-publisher publish
 
 ## Publish (CI)
 
-Tag `v*` → workflow **Publish PyPI** publica a PyPI y luego al MCP Registry (`github-oidc`, sin secret extra).
+Tag `v*` → workflow **Publish PyPI** publica a PyPI y luego al MCP Registry (`github-oidc`, sin secret extra). El job MCP espera hasta 6 min a que PyPI propague el paquete antes de publicar.
+
+## Re-publish (MCP only)
+
+Si PyPI OK pero MCP falló con `PyPI package 'cli-market-world' not found (status: 404)`:
+
+1. **GitHub Actions** → **Publish MCP Registry** → Run workflow (version = la ya publicada en PyPI, ej. `1.9.36`)
+2. O manual local (después de confirmar `curl -fsSL https://pypi.org/pypi/cli-market-world/VERSION/json`):
+
+```bash
+# Sync version in server.json first, then:
+mcp-publisher validate
+mcp-publisher login github
+mcp-publisher publish
+```
 
 ## Deprecate legacy entry
 

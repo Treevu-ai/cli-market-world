@@ -54,7 +54,24 @@ jobs:
             .packages[0].version = $v |
             .packages[0].identifier = "cli-market-world"
           ' server.json > server.tmp && mv server.tmp server.json
+          cp server.json landing/public/server.json
           echo "MCP registry version: $VERSION"
+
+      - name: Wait for PyPI propagation
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          PKG="cli-market-world"
+          echo "Waiting for ${PKG}==${VERSION} on PyPI (MCP registry validates against PyPI)..."
+          for i in $(seq 1 36); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "Found ${PKG} ${VERSION} on PyPI (attempt ${i})"
+              exit 0
+            fi
+            echo "Attempt ${i}/36: not yet available, sleeping 10s..."
+            sleep 10
+          done
+          echo "Timeout: ${PKG} ${VERSION} not visible on PyPI after 6 minutes"
+          exit 1
 
       - name: Install mcp-publisher
         run: |

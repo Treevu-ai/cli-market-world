@@ -1,0 +1,59 @@
+# Re-publish to MCP Registry without re-uploading to PyPI.
+# Use when PyPI publish succeeded but MCP failed (e.g. propagation 404).
+
+name: Publish MCP Registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "PyPI version already published (must exist on pypi.org)"
+        required: false
+        default: "1.9.36"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-mcp-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync server.json to version
+        run: |
+          VERSION="${{ inputs.version }}"
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .packages[0].version = $v |
+            .packages[0].identifier = "cli-market-world"
+          ' server.json > server.tmp && mv server.tmp server.json
+          cp server.json landing/public/server.json
+          echo "MCP registry version: $VERSION"
+
+      - name: Wait for PyPI package
+        run: |
+          VERSION="${{ inputs.version }}"
+          PKG="cli-market-world"
+          for i in $(seq 1 12); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "Found ${PKG} ${VERSION} on PyPI"
+              exit 0
+            fi
+            echo "Attempt ${i}/12: waiting 10s..."
+            sleep 10
+          done
+          echo "ERROR: ${PKG} ${VERSION} not on PyPI — publish PyPI first"
+          exit 1
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Validate and publish to MCP Registry
+        run: |
+          ./mcp-publisher validate
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
