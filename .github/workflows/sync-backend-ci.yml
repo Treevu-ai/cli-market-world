@@ -37,7 +37,8 @@ jobs:
         if: always()
         run: |
           mkdir -p /tmp/backend-ci
-          git -C cli-market-backend diff > /tmp/backend-ci/backend-ci.patch || true
+          git -C cli-market-backend add -N pytest.ini .github/workflows/ci.yml 2>/dev/null || true
+          git -C cli-market-backend diff HEAD > /tmp/backend-ci/backend-ci.patch || true
           if [ ! -s /tmp/backend-ci/backend-ci.patch ]; then
             echo "No diff — backend CI already matches world template" > /tmp/backend-ci/backend-ci.patch
           fi
@@ -83,6 +84,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin
+          git reset --hard origin/main
+          git clean -fd
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BRANCH"
           else
@@ -96,8 +99,21 @@ jobs:
           else
             git add pytest.ini .github/workflows/ci.yml
             git commit -m "fix(ci): cli-market-index checkout + pytest integration mark"
-            git pull --rebase origin "$BRANCH"
-            git push -u origin "$BRANCH"
+            git pull --rebase origin "$BRANCH" 2>/dev/null || true
+            if ! git push -u origin "$BRANCH" 2>&1 | tee /tmp/backend-ci-push.log; then
+              if grep -qi workflow /tmp/backend-ci-push.log; then
+                echo "::warning::Push rejected — add Workflows: Read and write to GH_PAT_BACKEND_WRITE"
+                git reset --hard HEAD~1
+                cp "$PARITY_DIR/pytest.ini" pytest.ini
+                git add pytest.ini
+                git commit -m "fix(ci): add pytest.ini integration mark"
+                git push -u origin "$BRANCH"
+                echo "::warning::ci.yml not pushed — apply from artifact backend-ci-parity or re-run after PAT update"
+              else
+                cat /tmp/backend-ci-push.log
+                exit 1
+              fi
+            fi
           fi
           PR_BODY="Automated from cli-market-world sync-backend-ci. Fixes test collection (ModuleNotFoundError: persistence). Adds cli-market-index checkout + pytest.ini integration mark."
           if gh pr view "$BRANCH" --repo Treevu-ai/cli-market-backend >/dev/null 2>&1; then
