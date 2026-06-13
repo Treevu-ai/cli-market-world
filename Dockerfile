@@ -12,7 +12,7 @@ ARG GITHUB_TOKEN
 ARG GH_PAT
 
 COPY requirements-railway.txt .
-ARG CACHE_BUST=202606131045
+ARG CACHE_BUST=202606131050
 RUN set -eux; \
     TOKEN="${GITHUB_TOKEN:-${GH_PAT:-}}"; \
     if [ -z "${TOKEN}" ]; then \
