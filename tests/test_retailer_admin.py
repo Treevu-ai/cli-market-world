@@ -21,7 +21,9 @@ _AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
 
 
 @pytest.fixture(autouse=True)
-def clean_db():
+def clean_db(monkeypatch):
+    import server_deps
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
     db = get_db()
     for table in ["retailer_applications", "contacts", "app_users", "rate_limits"]:
         db.execute(f"DELETE FROM {table}")
