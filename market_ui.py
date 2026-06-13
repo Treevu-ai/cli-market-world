@@ -16,7 +16,13 @@ from rich.table import Table
 from rich import box
 
 from market_core import API, SESSION_FILE, LANG_FILE, get_token, get_session_username, api
-from market_stats import PACKAGE_VERSION, PRICES_REFRESH_HOURS
+from market_stats import (
+    COUNTRIES,
+    PACKAGE_VERSION,
+    PRICES_REFRESH_HOURS,
+    PRICES_VERIFIED_LABEL,
+    RETAILERS_VERIFIED,
+)
 
 # ── Theme (Antigravity / Codex / Claude inspired) ─────────────────────────────
 
@@ -354,6 +360,169 @@ def price_data_footer(console: Console) -> None:
             f"actualizacion cada {PRICES_REFRESH_HOURS}h · APIs de catalogo[/]"
         )
     console.print(line)
+
+
+def fetch_observatory_public(*, days: int = 30, timeout: float = 12.0) -> dict[str, Any] | None:
+    """Best-effort public Observatory metrics (GET /analytics/observatory)."""
+    try:
+        from market_core.market_observatory import MAA_PUBLIC_THRESHOLD
+    except ImportError:
+        MAA_PUBLIC_THRESHOLD = 10
+    try:
+        resp = httpx.get(f"{API}/analytics/observatory?days={days}", timeout=timeout)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        if not isinstance(data, dict):
+            return None
+        maa = int(data.get("maa") or 0)
+        proxy = int(data.get("maa_proxy") or 0)
+        if maa >= MAA_PUBLIC_THRESHOLD:
+            data["display_maa"] = maa
+            data["display_label"] = "maa"
+        elif proxy > 0:
+            data["display_maa"] = proxy
+            data["display_label"] = "maa_proxy"
+        elif maa > 0:
+            data["display_maa"] = maa
+            data["display_label"] = "maa"
+        else:
+            data["display_maa"] = None
+            data["display_label"] = None
+        return data
+    except Exception:
+        return None
+
+
+def print_mission_control(
+    console: Console,
+    *,
+    tier: str,
+    observatory: dict[str, Any] | None = None,
+    username: str | None = None,
+) -> None:
+    """Mission Control header for market shell startup."""
+    en = is_en()
+    title = f"CLI MARKET OS · v{PACKAGE_VERSION}"
+    console.print()
+    console.print(Panel(title, border_style=MINT, box=box.HEAVY, padding=(0, 1)))
+
+    freshness = f"{PRICES_REFRESH_HOURS}h"
+    stats = Table.grid(padding=(0, 2))
+    stats.add_column(style="dim")
+    stats.add_column(style="bold")
+    stats.add_column(style="dim")
+    stats.add_column(style="bold")
+    stats.add_row(
+        "Freshness" if en else "Frescura",
+        freshness,
+        "Retailers" if en else "Retailers",
+        str(RETAILERS_VERIFIED),
+    )
+    stats.add_row(
+        "Countries" if en else "Países",
+        str(COUNTRIES),
+        "Prices" if en else "Precios",
+        PRICES_VERIFIED_LABEL,
+    )
+    console.print(stats)
+
+    if observatory and observatory.get("display_maa") is not None:
+        label = observatory.get("display_label") or "maa"
+        proxy_note = " (proxy)" if label == "maa_proxy" else ""
+        console.print(
+            f"[dim]{'Agents (MAA)' if en else 'Agentes (MAA)'}[/]  "
+            f"[bold {MINT}]{observatory['display_maa']}{proxy_note}[/]  "
+            f"[dim]30d[/]"
+        )
+
+    console.print("[dim]" + ("─" * 40) + "[/]")
+    missions_title = "MISSIONS" if en else "MISIONES"
+    console.print(f"[bold {MINT}]{missions_title}[/]")
+    menu = [
+        ("1", "investigate QUERY", "Deep market report" if en else "Reporte profundo de mercado"),
+        ("2", "compare QUERY", "Multi-retailer prices" if en else "Precios multi-retailer"),
+        ("3", "intel inflation", "Line inflation (PE default)" if en else "Inflación por línea (PE default)"),
+        ("4", "doctor", "API · auth · MCP health" if en else "Salud API · auth · MCP"),
+        ("5", "mcp", "Tool registry (read-only)" if en else "Registro de tools (solo lectura)"),
+    ]
+    for num, cmd, desc in menu:
+        console.print(f"  [cyan]{num}[/]  [bold]{cmd:<22}[/] [dim]{desc}[/]")
+    console.print("[dim]" + ("─" * 40) + "[/]")
+
+    tier_l = (tier or "free").lower()
+    user = username or ("anon" if en else "anónimo")
+    if not get_token():
+        hint = (
+            "Sign in with market register / market login to unlock investigate."
+            if en
+            else "Inicia sesión con market register / market login para desbloquear investigate."
+        )
+        console.print(f"[dim]{hint}[/]")
+    elif tier_l not in STARTER_TIERS:
+        hint = (
+            "Investigate requires Starter+. Run market upgrade."
+            if en
+            else "Investigate requiere Starter+. Ejecuta market upgrade."
+        )
+        console.print(f"[dim]{hint}[/]")
+    else:
+        console.print(f"[dim]{'tier' if en else 'tier'}[/] [bold]{tier}[/] · [dim]user[/] [bold]{user}[/]")
+
+
+def print_mcp_center(
+    console: Console,
+    *,
+    profile: str,
+    tools: list[dict[str, Any]],
+    checks: list[tuple[str, str, str]],
+    readiness_pct: int,
+    readiness_summary: str,
+    ok: bool,
+) -> None:
+    """Read-only MCP center: doctor health + tool catalog."""
+    en = is_en()
+    status_style = MINT if ok else WARN
+    print_section_header(
+        console,
+        "MCP Center" if en else "Centro MCP",
+        subtitle=(
+            f"profile {profile} · {len(tools)} tools · readiness {readiness_pct}%"
+            if en
+            else f"perfil {profile} · {len(tools)} tools · readiness {readiness_pct}%"
+        ),
+        meta="read-only · market mcp-setup to install",
+    )
+    console.print(
+        Panel(
+            f"[bold {status_style}]{readiness_summary}[/]",
+            title=f"[bold {MINT}]{'Health' if en else 'Salud'}[/]",
+            border_style=status_style,
+            box=box.ROUNDED,
+        )
+    )
+
+    key_checks = ("API health", "Auth", "Tier", "market-mcp")
+    table = Table(show_header=True, header_style=f"bold {MINT}", box=table_box(), border_style=TABLE_BORDER)
+    table.add_column("Check")
+    table.add_column("Detail")
+    table.add_column("Status")
+    for name, detail, status in checks:
+        if name not in key_checks:
+            continue
+        style = {"ok": "green", "fail": "red", "warn": "yellow"}.get(status, "dim")
+        table.add_row(name, detail, f"[{style}]{status}[/]")
+    console.print(table)
+    console.print()
+    print_mcp_tools_catalog(console, profile=profile)
+    print_intel_footer(
+        console,
+        [
+            "market mcp-setup",
+            "market mcp-setup --ide cursor",
+            "market doctor",
+        ],
+    )
 
 
 def print_investigate_report(console: Console, report: dict[str, Any]) -> None:
