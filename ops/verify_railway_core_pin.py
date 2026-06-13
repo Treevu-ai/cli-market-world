@@ -28,8 +28,20 @@ def _pypi_versions() -> set[str]:
     return set((data.get("releases") or {}).keys())
 
 
+def _version_on_pypi(version: str) -> bool:
+    url = f"https://pypi.org/pypi/cli-market-core/{version}/json"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            return resp.status == 200
+    except OSError:
+        return False
+
+
 def main() -> int:
     pin = _pinned_version()
+    if _version_on_pypi(pin):
+        print(f"OK: cli-market-core=={pin} available on PyPI")
+        return 0
     available = _pypi_versions()
     if pin not in available:
         latest = max(available, key=lambda v: tuple(int(x) for x in v.split(".")))
