@@ -126,8 +126,8 @@ Daily cron lives in **`morning-ops-chain.yml`** only. Child workflows (`adoption
 | Daily briefing / GTM preflight: `Not Found` on cli-market-content | PAT in secret lacks read on private repo — follow checklist above; run **Verify content PAT** |
 | Sync backend core pin: `403` on push | Add `GH_PAT_BACKEND_WRITE` with write on backend, or apply PR manually |
 | Sync backend CI: test job index checkout 404 | Add `GH_PAT` to **cli-market-backend** repo secrets (read `cli-market-index`) |
-| Backend CI lint: E402 on `market_server.py` | Sync `ruff.toml` from world — CI must run `ruff check --config ruff.toml .` (not bare `ruff check .`) |
-| Backend CI lint: 79 errors E401/E701/E402 | `ruff.toml` not on backend main — merge sync PR or copy `ops/backend-parity/ruff.toml` → `ruff.toml` |
+| Backend CI lint: log shows `pip install ruff && ruff check .` | Backend still has **old** `.github/workflows/ci.yml` — replace entire file from `ops/backend-parity/ci.yml` (embeds ruff config in CI) |
+| Backend CI lint: 79 errors E401/E701/E402 | Default ruff rules — fixed when CI writes `ruff.toml` via embedded Python step + `ruff check --config ruff.toml .` |
 
 ## Verify locally
 

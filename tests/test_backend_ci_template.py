@@ -19,8 +19,9 @@ def test_backend_pytest_ini_registers_integration_mark():
 def test_backend_ci_lint_uses_ruff_config_file():
     ci = Path(__file__).resolve().parent.parent / "ops" / "backend-parity" / "ci.yml"
     text = ci.read_text(encoding="utf-8")
+    assert "ruff==0.15.17" in text
+    assert 'Path("ruff.toml").write_text' in text
     assert "ruff check --config ruff.toml" in text
-    assert "ruff.toml missing" in text
 
 
 def test_backend_ruff_toml_matches_world_lint_profile():
