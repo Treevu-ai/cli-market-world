@@ -18,7 +18,7 @@ except ImportError:
     from market_core.market_observatory import ensure_observatory_schema
 
     def observatory_snapshot_streak(*, days: int = 7) -> dict[str, Any]:
-        """Fallback until cli-market-core >1.9.34 (see ops/patches + T-173)."""
+        """Fallback until cli-market-core 1.9.35 on PyPI (T-173). Remove after publish."""
         ensure_observatory_schema()
         days = max(1, min(days, 30))
         cutoff = (date.today() - timedelta(days=days - 1)).isoformat()
