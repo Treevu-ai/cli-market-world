@@ -60,6 +60,8 @@ curl -sS -o /dev/null -w "backend HTTP %{http_code}\n" \
 10. Bump `ops/observatory-mirror.trigger` en `main` → dispara **Sync backend observatory mirror** (auto-PR `routers/observatory.py` + shim)
 11. Bump `ops/backend-ci.trigger` en `main` → dispara **Sync backend CI** (auto-PR `pytest.ini` + `.github/workflows/ci.yml` con checkout `cli-market-index`)
 
+**`GH_PAT_BACKEND_WRITE` must include `Workflows: Read and write`** on `cli-market-backend` — GitHub rejects pushes to `.github/workflows/*` without it. Si falta, el workflow sube solo `pytest.ini` y deja el patch de `ci.yml` en el artifact `backend-ci-parity`.
+
 Verificar token antes de guardar:
 
 ```bash
