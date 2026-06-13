@@ -12,19 +12,19 @@ ARG GITHUB_TOKEN
 ARG GH_PAT
 
 COPY requirements-railway.txt .
-ARG CACHE_BUST=202606130326
+ARG CACHE_BUST=202606130410
 RUN set -eux; \
     TOKEN="${GITHUB_TOKEN:-${GH_PAT:-}}"; \
     if [ -z "${TOKEN}" ]; then \
-      echo "error: GITHUB_TOKEN (or GH_PAT) build arg required for private cli-market-index" >&2; \
+      echo "BUILD FAILED: set GITHUB_TOKEN or GH_PAT on the Railway API service (read Treevu-ai/cli-market-index). See ops/RAILWAY_DEPLOY.md" >&2; \
       exit 1; \
     fi; \
     git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"; \
-    pip install --no-cache-dir -r requirements-railway.txt || { \
-      echo "=== pip install failed — retrying verbose ===" >&2; \
-      pip install -vvv --no-cache-dir -r requirements-railway.txt; \
+    if ! pip install --no-cache-dir -r requirements-railway.txt; then \
+      echo "BUILD FAILED: pip install — core pin must exist on PyPI; index clone needs valid GITHUB_TOKEN/GH_PAT" >&2; \
+      pip install -vvv --no-cache-dir -r requirements-railway.txt 2>&1 | tail -100 || true; \
       exit 1; \
-    }; \
+    fi; \
     rm -f /root/.gitconfig
 COPY *.py pyproject.toml ./
 COPY routers/ ./routers/
