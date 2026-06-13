@@ -22,6 +22,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Routes both repos must expose (Observatory P0 contract).
+OBSERVATORY_REQUIRED_BOTH: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("GET", "/analytics/observatory"),
+        ("GET", "/dashboard/observatory"),
+        ("POST", "/admin/observatory/snapshot"),
+    }
+)
+
 CORE_OBSERVATORY_MODULE = "market_core.market_observatory"
 
 MIRROR_PATHS: tuple[str, ...] = (
@@ -138,14 +147,27 @@ def compare_observatory_router(world_root: Path, backend_root: Path) -> list[str
         only_world = sorted(w_routes - b_routes)
         only_backend = sorted(b_routes - w_routes)
         parts: list[str] = []
-        if only_world:
-            parts.append(f"world-only {only_world}")
         if only_backend:
             parts.append(f"backend-only {only_backend}")
-        errors.append(
-            f"{rel} route drift ({'; '.join(parts)}) — sync backend ↔ world "
-            "(see ops/OBSERVATORY-CHANGE-CHECKLIST.md §3a)"
-        )
+            errors.append(
+                f"{rel} route drift ({'; '.join(parts)}) — sync backend ↔ world "
+                "(see ops/OBSERVATORY-CHANGE-CHECKLIST.md §3a)"
+            )
+        missing_required = sorted(OBSERVATORY_REQUIRED_BOTH - b_routes)
+        if missing_required:
+            errors.append(
+                f"{rel} backend missing required routes {missing_required} — "
+                "sync from world (prod mirror source)"
+            )
+        missing_world = sorted(OBSERVATORY_REQUIRED_BOTH - w_routes)
+        if missing_world:
+            errors.append(f"{rel} world missing required routes {missing_world}")
+        if only_world and not errors:
+            print(
+                f"NOTE: world ahead of backend on observatory routes: {only_world} "
+                "(OK — prod deploys from world; sync backend when convenient)",
+                file=sys.stderr,
+            )
     return errors
 
 

@@ -120,7 +120,20 @@ def test_extract_fastapi_routes():
     assert ("POST", "/admin/observatory/snapshot") in routes
 
 
-def test_compare_observatory_router_detects_route_drift(tmp_path: Path):
+def test_compare_observatory_router_allows_world_ahead_streak(tmp_path: Path):
+    world = tmp_path / "world"
+    backend = tmp_path / "backend"
+    world.mkdir()
+    backend.mkdir()
+    (world / "routers").mkdir()
+    (backend / "routers").mkdir()
+    (world / "routers" / "observatory.py").write_text(ROUTER, encoding="utf-8")
+    backend_router = ROUTER.replace("@router.get(\"/admin/observatory/streak\")\n", "")
+    (backend / "routers" / "observatory.py").write_text(backend_router, encoding="utf-8")
+    assert compare_observatory_router(world, backend) == []
+
+
+def test_compare_observatory_router_detects_backend_only_route(tmp_path: Path):
     world = tmp_path / "world"
     backend = tmp_path / "backend"
     world.mkdir()
@@ -129,9 +142,10 @@ def test_compare_observatory_router_detects_route_drift(tmp_path: Path):
     (backend / "routers").mkdir()
     (world / "routers" / "observatory.py").write_text(ROUTER, encoding="utf-8")
     short_router = ROUTER.replace("@router.get(\"/admin/observatory/streak\")\n", "")
+    short_router += '@router.get("/admin/observatory/extra")\ndef extra():\n    return {}\n'
     (backend / "routers" / "observatory.py").write_text(short_router, encoding="utf-8")
     errors = compare_observatory_router(world, backend)
-    assert any("route drift" in e for e in errors)
+    assert any("backend-only" in e or "backend missing" in e for e in errors)
 
 
 def test_compare_mirror_ok_on_identical_trees(tmp_path: Path):
