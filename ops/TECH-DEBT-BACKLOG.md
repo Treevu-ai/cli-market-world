@@ -38,7 +38,7 @@
 
 | ID | Item | Repo | Effort |
 |----|------|------|--------|
-| N-1 | Partir `routers/payments.py` (webhooks / checkout / email) | world | L | 🔄 In progress — ver `ops/SPRINT-N1-PAYMENTS-SPLIT.md` |
+| N-1 | Partir `routers/payments.py` (webhooks / checkout / email) 🔄 In progress — ver `ops/SPRINT-N1-PAYMENTS-SPLIT.md` | world | L |
 | N-2 | Desacoplar GTM de `morning-ops-chain` (briefing independiente) | world | M |
 | N-3 | Tests `slack_ops`, `media`, `retailer_admin` | world | M |
 | N-4 | Automatizar `RELEASE-DISPERSION.md` post-PyPI | world | S |
