@@ -263,7 +263,6 @@ def build_report(*, remote: bool = False) -> str:
     # PyPI — consolidated across cli-market + cli-market-core + cli-market-world
     pypi_version = pypi.get("version", "?")
     pepy_total = pypi_consolidated.get("total") if pypi_consolidated.get("ok") else None
-    pepy_source = pypi_consolidated.get("source", "?")
     pepy_packages = pypi_consolidated.get("packages", {})
 
     # Alerts from dashboard
