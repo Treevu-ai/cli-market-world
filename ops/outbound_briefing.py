@@ -2,14 +2,23 @@
 
 Maintains a target list with start dates and generates the correct message
 for each target based on the day of their sequence (1, 3, 7, 10, 14).
+
+Activation flow (no code edits needed):
+  POST /admin/ops/activate-outbound-target  {"target_id": "tottus-pe", "start_date": "2026-06-14"}
+  The API persists the date in the DB; this script fetches it at runtime.
+  Falls back to start_date fields in TARGETS if the API is unreachable.
 """
 
 from __future__ import annotations
 
 import argparse
+import logging
+import os
 import sys
 from datetime import date
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # ── Target list ────────────────────────────────────────────────────────────────
 # Add targets here as you add them to the sequence.
@@ -245,12 +254,44 @@ Antonio · CLI Market
 
 # ── Core logic ─────────────────────────────────────────────────────────────────
 
+def _fetch_activations(api_url: str, api_token: str) -> dict[str, str]:
+    """Fetch {target_id: start_date} from the API. Returns {} on any error."""
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            f"{api_url.rstrip('/')}/admin/ops/outbound-activations",
+            headers={"Authorization": f"Bearer {api_token}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            import json
+            return json.loads(resp.read())
+    except Exception as exc:
+        logger.warning("outbound: could not fetch activations from API (%s) — using TARGETS fallback", exc)
+        return {}
+
+
+def _resolve_start_dates(api_activations: dict[str, str]) -> dict[str, str | None]:
+    """Merge API activations (authoritative) with TARGETS fallback start_dates."""
+    resolved: dict[str, str | None] = {}
+    for t in TARGETS:
+        tid = t["id"]
+        if tid in api_activations:
+            resolved[tid] = api_activations[tid]
+        else:
+            resolved[tid] = t["start_date"]
+    return resolved
+
+
 def _day_offset(start: date, today: date) -> int:
     return (today - start).days + 1
 
 
-def build_briefing(today: date | None = None) -> str:
+def build_briefing(today: date | None = None, api_activations: dict[str, str] | None = None) -> str:
     today = today or date.today()
+    if api_activations is None:
+        api_activations = {}
+    start_dates = _resolve_start_dates(api_activations)
+
     lines: list[str] = [
         f"🎯 *Outbound Briefing — {today.strftime('%a %d %b %Y')}*",
         f"{'─' * 42}",
@@ -260,10 +301,11 @@ def build_briefing(today: date | None = None) -> str:
     due_today: list[tuple[dict, int, str]] = []
 
     for t in TARGETS:
-        if t["start_date"] is None:
+        sd = start_dates.get(t["id"])
+        if sd is None:
             pending.append(t)
             continue
-        start = date.fromisoformat(t["start_date"])
+        start = date.fromisoformat(sd)
         day = _day_offset(start, today)
         if day in SEQUENCE_DAYS:
             due_today.append((t, day, SEQUENCE_DAYS[day]))
@@ -281,7 +323,7 @@ def build_briefing(today: date | None = None) -> str:
                 f"  └ LinkedIn: {t['linkedin_url']}"
             )
         lines.append(
-            "\n_Para activar un target: actualiza `start_date` en `ops/outbound_briefing.py` con la fecha de hoy._"
+            "\n_Para activar: POST /admin/ops/activate-outbound-target — o llena el form del Workflow Builder en #outbound_"
         )
 
     # Due today
@@ -305,7 +347,6 @@ def build_briefing(today: date | None = None) -> str:
 
     lines.append(f"\n{'─' * 42}")
     lines.append("_Para agregar un target: edita `TARGETS` en `ops/outbound_briefing.py`_")
-    lines.append(f"_Para activar Día 1: pon `\"start_date\": \"{today.isoformat()}\"` en el target_")
 
     return "\n".join(lines)
 
@@ -317,10 +358,17 @@ def main() -> int:
     parser.add_argument("--slack", action="store_true", help="Postear a #outbound")
     parser.add_argument("--dry-run", action="store_true", help="Solo imprimir")
     parser.add_argument("--date", help="Fecha YYYY-MM-DD (default: hoy)")
+    parser.add_argument("--api-url", default=os.getenv("MARKET_API_URL", ""), help="Base URL del API")
+    parser.add_argument("--api-token", default=os.getenv("MARKET_API_TOKEN", ""), help="Bearer token del API")
     args = parser.parse_args()
 
     today = date.fromisoformat(args.date) if args.date else date.today()
-    text = build_briefing(today)
+
+    api_activations: dict[str, str] = {}
+    if args.api_url and args.api_token:
+        api_activations = _fetch_activations(args.api_url, args.api_token)
+
+    text = build_briefing(today, api_activations)
     print(text)
 
     if args.slack and not args.dry_run:
