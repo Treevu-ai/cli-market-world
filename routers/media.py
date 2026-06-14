@@ -45,43 +45,28 @@ def _parse_ticket_price(text: str) -> float | None:
 router = APIRouter(tags=["media"])
 
 
-async def _fetch_public_url(url: str) -> bytes:
-    try:
-        safe_url = validate_public_http_url(url)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
-        r = await client.get(safe_url)
-        if r.status_code != 200:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Cannot fetch resource: HTTP {r.status_code}",
-            )
-        return r.content
-
-
-# ── Ticket scanning (OCR via tesseract) ───────────────────────────────────────
-
-@router.post("/v1/ticket/scan")
-async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
-    """Upload a ticket image → OCR → match each line against the data moat
-    to surface potential savings vs the cheapest known store."""
+def _run_tesseract(image_bytes: bytes) -> str:
+    """Write bytes to a temp file, run tesseract, return OCR text."""
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-        tmp.write(await file.read())
+        tmp.write(image_bytes)
         tmp_path = tmp.name
     try:
         result = subprocess.run(
             ["tesseract", tmp_path, "stdout", "-l", "spa", "--psm", "6"],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True, text=True, timeout=30,
         )
-        ocr_text = result.stdout.strip() if result.returncode == 0 else ""
+        return result.stdout.strip() if result.returncode == 0 else ""
     except FileNotFoundError:
-        ocr_text = "[Tesseract no instalado. Instalar: sudo apt install tesseract-ocr tesseract-ocr-spa]"
+        return "[Tesseract no instalado. Instalar: sudo apt install tesseract-ocr tesseract-ocr-spa]"
     finally:
         os.unlink(tmp_path)
-    lines = [ln.strip() for ln in ocr_text.split("\n") if ln.strip() and len(ln.strip()) > 3]
+
+
+def _match_ocr_against_moat(ocr_text: str) -> dict:
+    """Match OCR lines against the price moat and compute per-item savings."""
     from datetime import datetime, timedelta, timezone
 
+    lines = [ln.strip() for ln in ocr_text.split("\n") if ln.strip() and len(ln.strip()) > 3]
     freshness_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     db = get_db()
     items_found: list[dict] = []
@@ -129,26 +114,38 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
     }
 
 
+async def _fetch_public_url(url: str) -> bytes:
+    try:
+        safe_url = validate_public_http_url(url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
+        r = await client.get(safe_url)
+        if r.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot fetch resource: HTTP {r.status_code}",
+            )
+        return r.content
+
+
+# ── Ticket scanning (OCR via tesseract) ───────────────────────────────────────
+
+@router.post("/v1/ticket/scan")
+async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
+    """Upload a ticket image → OCR → match each line against the data moat
+    to surface potential savings vs the cheapest known store."""
+    ocr_text = _run_tesseract(await file.read())
+    return _match_ocr_against_moat(ocr_text)
+
+
 @router.post("/v1/ticket/scan-url")
 async def ticket_scan_url(body: dict):
-    """OCR from a public image URL. Same as /v1/ticket/scan but without upload."""
+    """OCR from a public image URL — same matching + savings logic as /v1/ticket/scan."""
     url = body.get("url", "")
-    country = body.get("country")
     content = await _fetch_public_url(url)
-    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-        tmp.write(content)
-        tmp_path = tmp.name
-    try:
-        result = subprocess.run(
-            ["tesseract", tmp_path, "stdout", "-l", "spa", "--psm", "6"],
-            capture_output=True, text=True, timeout=30,
-        )
-        ocr_text = result.stdout.strip() if result.returncode == 0 else ""
-    except FileNotFoundError:
-        ocr_text = "[Tesseract no instalado]"
-    finally:
-        os.unlink(tmp_path)
-    return {"ocr_text": ocr_text[:1000], "country": country, "message": "OCR completado"}
+    ocr_text = _run_tesseract(content)
+    return _match_ocr_against_moat(ocr_text)
 
 
 # ── Voice transcription (Whisper) ─────────────────────────────────────────────
