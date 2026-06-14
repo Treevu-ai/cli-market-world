@@ -34,7 +34,7 @@ def _pro_price_pen() -> float:
     """USD Pro price converted to PEN for Yape/Plin/Mercado Pago."""
     from market_connectors.paypal_payments import PRO_PRICE_USD
 
-    raw = os.getenv("PRO_PEN_PER_USD", "3.7")
+    raw = os.getenv("PRO_PEN_PER_USD", "3.75")
     try:
         pen_per_usd = float(str(raw).strip())
     except (TypeError, ValueError):
