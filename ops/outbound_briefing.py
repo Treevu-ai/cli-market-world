@@ -287,7 +287,7 @@ def build_briefing(today: date | None = None) -> str:
     # Due today
     if due_today:
         lines.append(f"\n*🔔 ACCIÓN HOY — {len(due_today)} mensajes para enviar*")
-        for t, day, action in due_today:
+        for t, _day, action in due_today:
             lines.append(f"\n{'─' * 30}")
             if action == "linkedin":
                 lines.append(_msg_linkedin(t))
@@ -304,7 +304,7 @@ def build_briefing(today: date | None = None) -> str:
         lines.append("\n✅ Sin acciones de outbound para hoy.")
 
     lines.append(f"\n{'─' * 42}")
-    lines.append(f"_Para agregar un target: edita `TARGETS` en `ops/outbound_briefing.py`_")
+    lines.append("_Para agregar un target: edita `TARGETS` en `ops/outbound_briefing.py`_")
     lines.append(f"_Para activar Día 1: pon `\"start_date\": \"{today.isoformat()}\"` en el target_")
 
     return "\n".join(lines)
