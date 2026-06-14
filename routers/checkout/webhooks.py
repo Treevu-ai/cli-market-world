@@ -277,7 +277,7 @@ def checkout_webhook(order_id: str = "", status: str = "paid", secret: str = "")
     return payload
 
 
-@router.api_route("/checkout/mercadopago-webhook", methods=["GET", "POST"])
+@router.api_route("/checkout/mercadopago-webhook", methods=["GET", "POST"], operation_id="mercadopago_webhook")
 async def mercadopago_webhook(request: Request):
     """Mercado Pago notifications — validate signature, mark order paid."""
     from market_connectors.mercadopago_payments import (
