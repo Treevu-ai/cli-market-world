@@ -113,6 +113,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+    env:
+      GH_PAT: ${{ secrets.GH_PAT }}
     steps:
       - uses: actions/checkout@v6
 
@@ -153,9 +155,7 @@ jobs:
           fi
 
       - name: Trigger backend core-pin sync
-        if: ${{ secrets.GH_PAT != '' }}
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+        if: ${{ env.GH_PAT != '' }}
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
           curl -fsSL -X POST \
