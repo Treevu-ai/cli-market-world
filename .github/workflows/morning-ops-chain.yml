@@ -447,3 +447,30 @@ jobs:
           else
             python3 ops/ceo_metrics_report.py --remote --slack
           fi
+
+  outbound-briefing:
+    needs: ceo-metrics
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Outbound briefing → #outbound
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+            echo "::warning::SLACK_BOT_TOKEN not set — outbound briefing will print only"
+            python3 ops/outbound_briefing.py
+          else
+            python3 ops/outbound_briefing.py --slack
+          fi
