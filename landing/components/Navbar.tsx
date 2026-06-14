@@ -67,6 +67,12 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-3 shrink-0">
           <a
+            href="/retailers"
+            className="text-xs font-medium text-[var(--cm-mint)] hover:brightness-110 transition-colors whitespace-nowrap"
+          >
+            {isES ? "Para retailers" : "For retailers"}
+          </a>
+          <a
             href="/account"
             className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
           >
@@ -114,6 +120,10 @@ export default function Navbar() {
               {isES ? es : en}
             </a>
           ))}
+          <a href="/retailers" onClick={close}
+             className="text-sm font-medium text-[var(--cm-mint)] hover:brightness-110 transition-colors">
+            {isES ? "Para retailers" : "For retailers"}
+          </a>
           <a href="/account" onClick={close}
              className="text-sm font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors">
             {isES ? "Cuenta" : "Account"}
