@@ -19,7 +19,6 @@ from urllib.parse import parse_qs
 
 from fastapi import APIRouter, Body, Header, HTTPException, Request
 
-from market_core import db_activate_outbound_target, db_deactivate_outbound_target, db_get_outbound_activations
 from server_deps import DEFAULT_TOKEN, require_admin
 
 logger = logging.getLogger(__name__)
@@ -142,10 +141,11 @@ def activate_outbound_target(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"invalid start_date: {start_date_raw}")
 
+    from datetime import date as _date, timedelta
+    from market_core import db_activate_outbound_target
     db_activate_outbound_target(target_id, start_date_raw, notes)
     logger.info("outbound_activate api target=%s start=%s", target_id, start_date_raw)
 
-    from datetime import date as _date, timedelta
     start = _date.fromisoformat(start_date_raw)
     reminders = {
         day: (start + timedelta(days=day - 1)).isoformat()
@@ -171,6 +171,7 @@ def deactivate_outbound_target(
     if not target_id:
         raise HTTPException(status_code=400, detail="target_id required")
 
+    from market_core import db_deactivate_outbound_target
     db_deactivate_outbound_target(target_id)
     return {"ok": True, "target_id": target_id}
 
@@ -181,4 +182,5 @@ def get_outbound_activations(
 ):
     """Return all active outbound targets as {target_id: start_date}."""
     require_admin(authorization)
+    from market_core import db_get_outbound_activations
     return db_get_outbound_activations()
