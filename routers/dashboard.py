@@ -505,7 +505,7 @@ def _dashboard_data():
     movers: list[dict] = []
     for key, recent in recent_map.items():
         older = older_map.get(key)
-        if older and older["price"] > 0:
+        if older:
             delta_pct = round((recent["price"] - older["price"]) / older["price"] * 100, 1)
             movers.append({
                 "product_id": recent["product_id"],

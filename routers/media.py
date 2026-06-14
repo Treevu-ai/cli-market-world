@@ -23,8 +23,24 @@ import tempfile
 import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+import re
+
 from market_core import get_db
 from market_security import validate_public_http_url
+
+_PRICE_RE = re.compile(r"(\d[\d.,]*)")
+
+
+def _parse_ticket_price(text: str) -> float | None:
+    """Extract the rightmost number in an OCR ticket line as the item price."""
+    nums = _PRICE_RE.findall(text)
+    if not nums:
+        return None
+    raw = nums[-1].replace(",", ".")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
 
 router = APIRouter(tags=["media"])
 
@@ -64,8 +80,12 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
     finally:
         os.unlink(tmp_path)
     lines = [ln.strip() for ln in ocr_text.split("\n") if ln.strip() and len(ln.strip()) > 3]
+    from datetime import datetime, timedelta, timezone
+
+    freshness_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     db = get_db()
     items_found: list[dict] = []
+    total_savings = 0.0
     for line in lines[:20]:
         words = line.split()
         if len(words) < 2:
@@ -73,26 +93,33 @@ async def ticket_scan(file: UploadFile = File(...), country: str | None = None):
         query = "%" + "%".join(words[:3]) + "%"
         row = db.execute(
             "SELECT name, store_name, price, currency FROM price_snapshots "
-            "WHERE name LIKE ? ORDER BY price ASC LIMIT 1",
-            (query,),
+            "WHERE name LIKE ? AND queried_at >= ? AND price > 0 ORDER BY price ASC LIMIT 1",
+            (query, freshness_cutoff),
         ).fetchone()
         if row:
+            ticket_price = _parse_ticket_price(line)
+            best_price = float(row["price"])
+            saving: float | None = None
+            if ticket_price is not None and ticket_price > best_price:
+                saving = round(ticket_price - best_price, 2)
+                total_savings += saving
             items_found.append(
                 {
                     "ticket_text": line[:50],
+                    "ticket_price": ticket_price,
                     "best_match": row["name"],
                     "store": row["store_name"],
-                    "price": row["price"],
+                    "best_price": best_price,
                     "currency": row["currency"],
+                    "saving": saving,
                 }
             )
     db.close()
-    savings = sum((i.get("price", 0) or 0) for i in items_found) if items_found else 0
     return {
         "ocr_text": ocr_text[:500],
         "items_detected": len(lines),
         "items_matched": len(items_found),
-        "potential_savings": round(savings, 2),
+        "potential_savings": round(total_savings, 2),
         "items": items_found,
         "message": (
             "Compara contra los precios mas baratos de nuestro data moat."
