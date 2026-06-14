@@ -41,7 +41,8 @@ from market_stats import (
     PRICES_REFRESH_HOURS, PACKAGE_VERSION,
 )
 
-console = Console(legacy_windows=False)
+_NO_COLOR = bool(os.environ.get("NO_COLOR", ""))
+console = Console(no_color=_NO_COLOR)
 
 
 def _mcp_profile_counts() -> tuple[int, int]:
@@ -2549,7 +2550,7 @@ def cmd_tutorial(args):
             console.print("  ✓ 8 productos comparados. Spread: 12%")
     console.print("\nEjercicio 3/3: Exportar")
     export_name = "precios-tutorial.json"
-    export_path = os.path.join(SESSION_FILE.parent, export_name)
+    export_path = SESSION_FILE.parent / export_name
     sample = {
         "tutorial": True,
         "country": country,
