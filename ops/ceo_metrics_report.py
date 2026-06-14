@@ -117,34 +117,47 @@ def _fetch_pypi() -> dict[str, Any]:
         return {"ok": False}
 
 
-def _fetch_pepy() -> dict[str, Any]:
-    """Downloads from pepy.tech (requires PEPY_API_KEY or public endpoint)."""
+def _fetch_pypi_consolidated() -> dict[str, Any]:
+    """Consolidated PyPI downloads across cli-market + cli-market-core + cli-market-world.
+
+    Priority:
+      1. Production /analytics/pypi (Pepy Pro, consolidated, requires no auth)
+      2. Sum individual pepy.tech public endpoints (rate-limited)
+    """
+    # 1. Try production API — public endpoint, no auth needed
+    try:
+        r = httpx.get(f"{API_BASE}/analytics/pypi", timeout=8)
+        if r.status_code == 200:
+            data = r.json()
+            if data.get("ok") and data.get("total_downloads"):
+                return {
+                    "total": int(data["total_downloads"]),
+                    "packages": data.get("packages", {}),
+                    "source": "prod",
+                    "ok": True,
+                }
+    except Exception:
+        pass
+
+    # 2. Fall back to individual pepy.tech public endpoints
+    pkgs = ["cli-market", "cli-market-core", "cli-market-world"]
     pepy_key = os.getenv("PEPY_API_KEY", "").strip()
-    if not pepy_key:
-        # Try public endpoint (rate-limited)
+    headers = {"X-Api-Key": pepy_key} if pepy_key else {}
+    totals: dict[str, int] = {}
+    for pkg in pkgs:
         try:
             r = httpx.get(
-                f"https://api.pepy.tech/api/v2/projects/{PYPI_PACKAGE}",
+                f"https://api.pepy.tech/api/v2/projects/{pkg}",
+                headers=headers,
                 timeout=8,
             )
             if r.status_code == 200:
-                data = r.json()
-                total = data.get("total_downloads", 0)
-                return {"total": total, "ok": True}
+                totals[pkg] = int(r.json().get("total_downloads", 0))
         except Exception:
             pass
-        return {"ok": False}
-    try:
-        r = httpx.get(
-            f"https://api.pepy.tech/api/v2/projects/{PYPI_PACKAGE}",
-            headers={"X-Api-Key": pepy_key},
-            timeout=8,
-        )
-        r.raise_for_status()
-        data = r.json()
-        return {"total": data.get("total_downloads", 0), "ok": True}
-    except Exception:
-        return {"ok": False}
+    if totals:
+        return {"total": sum(totals.values()), "packages": totals, "source": "pepy", "ok": True}
+    return {"ok": False}
 
 
 def _content_today() -> dict[str, Any]:
@@ -214,7 +227,7 @@ def build_report(*, remote: bool = False) -> str:
     adoption = _fetch_adoption() if remote else {}
     index_data = _fetch_index_stats() if remote else {}
     pypi = _fetch_pypi()
-    pepy = _fetch_pepy()
+    pypi_consolidated = _fetch_pypi_consolidated()
     content = _content_today()
 
     kpis = dash.get("kpis", {})
@@ -247,9 +260,11 @@ def build_report(*, remote: bool = False) -> str:
     linkage_pct = float((index_data or {}).get("linkage_pct", 0) or 0)
     index_size = int((index_data or {}).get("registry_size", 0) or 0)
 
-    # PyPI
+    # PyPI — consolidated across cli-market + cli-market-core + cli-market-world
     pypi_version = pypi.get("version", "?")
-    pepy_total = pepy.get("total") if pepy.get("ok") else None
+    pepy_total = pypi_consolidated.get("total") if pypi_consolidated.get("ok") else None
+    pepy_source = pypi_consolidated.get("source", "?")
+    pepy_packages = pypi_consolidated.get("packages", {})
 
     # Alerts from dashboard
     alerts = [a for a in dash.get("alerts", []) if a.get("severity") in ("critical", "warn")][:3]
@@ -279,13 +294,14 @@ def build_report(*, remote: bool = False) -> str:
         "✅" if pypi_version == "1.9.36" else "⚠️",
     ))
 
+    pypi_total_fmt = f"{pepy_total:,}" if pepy_total else "—"
     lines.append(_row(
-        "Producto", "Descargas totales PyPI",
-        "Total histórico de descargas del paquete cli-market-world en PyPI (pepy.tech).",
-        "North-star de adopción acumulada. Meta 100K PyPI = moat defensivo vs competencia.",
+        "Producto", "Descargas totales PyPI (consolidado)",
+        "Total histórico consolidado: cli-market + cli-market-core + cli-market-world.",
+        "North-star de adopción acumulada. Meta 100K = moat defensivo. Suma los 3 paquetes.",
         "→ 100K (plan)",
-        _fmt(pepy_total, k=True) if pepy_total else "Ver pepy.tech",
-        "✅" if pepy_total and pepy_total >= 1000 else "⚠️" if pepy_total else "❓",
+        pypi_total_fmt,
+        "✅" if pepy_total and pepy_total >= 50000 else "⚠️" if pepy_total and pepy_total >= 10000 else "🔴" if pepy_total else "❓",
     ))
 
     lines.append(_row(
@@ -440,12 +456,21 @@ def build_report(*, remote: bool = False) -> str:
     else:
         lines.append("📢 *Canales hoy:* no hay publicaciones programadas para hoy")
 
+    pkg_breakdown = ""
+    if pepy_packages:
+        parts = [f"{k}: {v:,}" for k, v in sorted(pepy_packages.items(), key=lambda x: -x[1])]
+        pkg_breakdown = " · ".join(parts)
+    pypi_100k_real = (
+        f"{pepy_total:,} ({pepy_total/100_000*100:.1f}%)"
+        + (f"\n   _Desglose:_ {pkg_breakdown}" if pkg_breakdown else "")
+    ) if pepy_total else "—"
+
     lines.append(_row(
-        "GTM", "Plan PyPI 100K",
-        "Meta de 100,000 descargas totales en PyPI como indicador de defensibilidad del moat.",
-        "North-star GTM. Cuando alcancemos 100K, el costo de replicar el moat supera 12 meses.",
+        "GTM", "Plan PyPI 100K (consolidado)",
+        "Meta de 100,000 descargas totales consolidadas (3 paquetes) como north-star de adopción.",
+        "North-star GTM. 100K = moat defensivo. Suma cli-market + cli-market-core + cli-market-world.",
         "100K total",
-        f"{_fmt(pepy_total, k=True)} ({pepy_total/100_000*100:.1f}%)" if pepy_total else "Ver pepy.tech",
+        pypi_100k_real,
         _status(pepy_total or 0, 100_000) if pepy_total else "❓",
     ))
 
