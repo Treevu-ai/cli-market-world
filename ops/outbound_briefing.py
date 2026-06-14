@@ -179,7 +179,7 @@ CLI Market es el índice de precios para agentes de IA en LATAM — {comps} ya e
 
 def _msg_email(t: dict) -> str:
     comps = ", ".join(t["competitors_indexed"]) if t["competitors_indexed"] else "retailers de tu categoría"
-    subj_a = f"Tus productos ya pueden aparecer en búsquedas de IA — sin costo"
+    subj_a = "Tus productos ya pueden aparecer en búsquedas de IA — sin costo"
     subj_b = f"{comps} {'ya están' if t['competitors_indexed'] else 'están'} en CLI Market. ¿Y {t['retailer']}?"
     return f"""📧 *Email — Día 3*
 *Para:* {t["email"]}
