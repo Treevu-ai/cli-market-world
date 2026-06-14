@@ -1,4 +1,10 @@
-"""Slack interactivity for ops (Pro activation from #cli-market-pro)."""
+"""Slack interactivity for ops (Pro activation from #cli-market-pro).
+
+Outbound CRM endpoints:
+  POST /admin/ops/activate-outbound-target   Activate a target (Day 1 sent)
+  POST /admin/ops/deactivate-outbound-target Remove a target activation
+  GET  /admin/ops/outbound-activations       Return all {target_id: start_date}
+"""
 
 from __future__ import annotations
 
@@ -8,11 +14,12 @@ import json
 import logging
 import os
 import time
+from datetime import date
 from urllib.parse import parse_qs
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Body, Header, HTTPException, Request
 
-from server_deps import DEFAULT_TOKEN
+from server_deps import DEFAULT_TOKEN, require_admin
 
 logger = logging.getLogger(__name__)
 
@@ -107,3 +114,73 @@ async def slack_interactions(request: Request):
         "response_type": "ephemeral",
         "text": f"No se pudo activar `{request_id}`: {', '.join(result)}",
     }
+
+
+# ── Outbound CRM ──────────────────────────────────────────────────────────────
+
+@router.post("/admin/ops/activate-outbound-target")
+def activate_outbound_target(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Mark a retailer target as Day 1 contacted.
+
+    Body: {"target_id": "tottus-pe", "start_date": "2026-06-14", "notes": "..."}
+    Called by Slack Workflow Builder webhook after filling the activation form.
+    """
+    require_admin(authorization)
+
+    target_id = (body.get("target_id") or "").strip()
+    start_date_raw = (body.get("start_date") or "").strip() or date.today().isoformat()
+    notes = (body.get("notes") or "").strip()
+
+    if not target_id:
+        raise HTTPException(status_code=400, detail="target_id required")
+    try:
+        date.fromisoformat(start_date_raw)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"invalid start_date: {start_date_raw}")
+
+    from datetime import date as _date, timedelta
+    from market_core import db_activate_outbound_target
+    db_activate_outbound_target(target_id, start_date_raw, notes)
+    logger.info("outbound_activate api target=%s start=%s", target_id, start_date_raw)
+
+    start = _date.fromisoformat(start_date_raw)
+    reminders = {
+        day: (start + timedelta(days=day - 1)).isoformat()
+        for day in (3, 7, 10, 14)
+    }
+    return {
+        "ok": True,
+        "target_id": target_id,
+        "start_date": start_date_raw,
+        "sequence_dates": reminders,
+    }
+
+
+@router.post("/admin/ops/deactivate-outbound-target")
+def deactivate_outbound_target(
+    body: dict = Body(...),
+    authorization: str | None = Header(None),
+):
+    """Remove a target from the active outbound sequence."""
+    require_admin(authorization)
+
+    target_id = (body.get("target_id") or "").strip()
+    if not target_id:
+        raise HTTPException(status_code=400, detail="target_id required")
+
+    from market_core import db_deactivate_outbound_target
+    db_deactivate_outbound_target(target_id)
+    return {"ok": True, "target_id": target_id}
+
+
+@router.get("/admin/ops/outbound-activations")
+def get_outbound_activations(
+    authorization: str | None = Header(None),
+):
+    """Return all active outbound targets as {target_id: start_date}."""
+    require_admin(authorization)
+    from market_core import db_get_outbound_activations
+    return db_get_outbound_activations()
