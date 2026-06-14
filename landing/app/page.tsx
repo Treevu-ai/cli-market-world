@@ -11,6 +11,7 @@ import IntelligenceSection from "@/components/IntelligenceSection";
 
 
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
+import RetailerCTABanner from "@/components/RetailerCTABanner";
 import CoverageToUseCasesBridge from "@/components/CoverageToUseCasesBridge";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
@@ -39,6 +40,7 @@ export default function Home() {
           </section>
           <UseCasesSection />
           <ScaleCoverageSection />
+          <RetailerCTABanner />
           <CoverageToUseCasesBridge />
           <HowItWorks />
           <QuickstartAPI />
