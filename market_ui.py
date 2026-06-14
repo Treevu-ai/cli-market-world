@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from contextlib import contextmanager
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Iterator
 
@@ -306,11 +308,19 @@ def mcp_cursor_snippet() -> str:
     return json.dumps(get_mcp_config(), indent=2)
 
 
+def _cursor_mcp_path() -> str:
+    if sys.platform == "win32":
+        appdata = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+        return str(Path(appdata) / "Cursor" / "User" / "globalStorage" / "cursor.mcp" / "mcp.json")
+    return "~/.cursor/mcp.json"
+
+
 def mcp_snippet_panel(console: Console, width: int | None = None) -> None:
     en = is_en()
     title = "MCP / Cursor" if en else "MCP / Cursor"
+    cursor_path = _cursor_mcp_path()
     body = (
-        f"[dim]{'Paste in' if en else 'Pegar en'} ~/.cursor/mcp.json[/]\n\n"
+        f"[dim]{'Paste in' if en else 'Pegar en'} {cursor_path}[/]\n\n"
         f"[white]{mcp_cursor_snippet()}[/]"
     )
     console.print(
