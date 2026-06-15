@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-30k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-32k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -27,7 +27,7 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
 
 - 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 44 indicadores**
-- 💰 **Más de 55,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 💰 **Más de 56,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -102,7 +102,7 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
 
 - 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 44 indicators**
-- 💰 **55,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 💰 **56,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
