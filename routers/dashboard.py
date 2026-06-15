@@ -460,16 +460,18 @@ def _dashboard_data():
         """
     ).fetchall()
 
-    seen_lines: set[str] = set()
-    cheapest_dedup: list[dict] = []
+    seen_lines: dict[str, dict] = {}
     for r in cheapest_by_line:
         line_id = r.get("line") or ""
-        if not line_id or line_id in seen_lines:
+        if not line_id:
             continue
-        seen_lines.add(line_id)
         item = dict(r)
         item["line_name"] = canonical_line_name(line_id)
-        cheapest_dedup.append(item)
+        item["avg_price_usd"] = price_to_usd(float(item.get("avg_price") or 0), item.get("currency") or "")
+        usd = item["avg_price_usd"] or float("inf")
+        if line_id not in seen_lines or usd < (seen_lines[line_id]["avg_price_usd"] or float("inf")):
+            seen_lines[line_id] = item
+    cheapest_dedup = list(seen_lines.values())
 
     # ── Coverage ─────────────────────────────────────────────────────────────
     stores_24h = active_stores_24h
