@@ -132,11 +132,11 @@ def test_shell_mission_control_startup(monkeypatch):
 
 def test_shell_legacy_when_missions_disabled(monkeypatch):
     monkeypatch.setenv("MARKET_MISSIONS", "0")
-    mock_bar = MagicMock()
-    monkeypatch.setattr(market_cli.ui, "print_context_bar", mock_bar)
+    rendered = []
+    monkeypatch.setattr(market_cli, "_render_splash", lambda is_en, ctx: rendered.append(True))
     monkeypatch.setattr(market_cli.console, "input", lambda *a, **k: "")
     market_cli.cmd_shell(argparse.Namespace(json=False))
-    mock_bar.assert_called_once()
+    assert rendered, "_render_splash should be called when missions disabled"
 
 
 def test_shell_parse_investigate_flags():
