@@ -91,6 +91,7 @@ T = {
         "shell": "Sesión interactiva tipo agente (REPL)",
         "intel": "Intelligence / data moat (analistas, Price Pulse)",
         "intel_inflation": "Inflación por línea y país",
+        "intel_brief": "Brief ejecutivo: headline + señales + scores (una llamada)",
         "intel_indicators": "Catálogo de indicadores del moat",
         "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
         "intel_scores": "Scores compuestos (fairness, stress, aggression)",
@@ -136,6 +137,7 @@ T = {
         "shell": "Interactive agent-style session (REPL)",
         "intel": "Intelligence / data moat (analysts, Price Pulse)",
         "intel_inflation": "Inflation by line and country",
+        "intel_brief": "Executive brief: headline + shelf signals + scores (one call)",
         "intel_indicators": "Moat indicator catalog",
         "intel_enrichment": "Enrichment signals (OFF, Wiki, weather, CPI)",
         "intel_scores": "Composite scores (fairness, stress, aggression)",
@@ -161,6 +163,12 @@ def _normalize_market_argv(argv: list[str]) -> list[str]:
 
 def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
     """Register intelligence CLI commands on *parent* (market intel * or hidden legacy)."""
+    p = parent.add_parser("brief", help=helps.get("brief", "Executive intel brief"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--catalog", action="store_true", help="Incluir catálogo completo de indicadores")
+
     p = parent.add_parser("inflation", help=helps["inflation"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
@@ -1180,6 +1188,126 @@ def cmd_scores(args):
     if disclaimer:
         console.print(f"[dim]{disclaimer}[/]")
     ui.print_intel_footer(console, ["market intel indicators -c PE", "market intel enrichment -c PE"])
+
+
+def cmd_intel_brief(args):
+    """Executive intel brief: headline + shelf signals + scores in one call."""
+    is_en = ui.is_en()
+    params = []
+    cc = getattr(args, "country", None)
+    line = getattr(args, "line", None)
+    days = getattr(args, "days", None) or 7
+    catalog = getattr(args, "catalog", False)
+    if cc:
+        params.append(f"country={cc}")
+    if line:
+        params.append(f"line={line}")
+    params.append(f"days={days}")
+    if catalog:
+        params.append("include_catalog=true")
+    qs = "&".join(params)
+    scope = cc or ("LATAM" if not line else line)
+
+    with console.status(f"[cyan]{'Generando brief' if not is_en else 'Generating brief'} — {scope}..."):
+        data = cli_api("GET", f"/v1/intel/brief?{qs}" if qs else "/v1/intel/brief")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=[
+            f"market intel brief --country {cc or 'PE'}",
+            "market intel inflation --country PE",
+            "market intel scores --country PE",
+        ]), console)
+        return
+
+    headline = data.get("headline", "")
+    shelf = data.get("shelf", {})
+    macro_gap = data.get("macro_gap", {})
+    confidence = data.get("confidence", {})
+    scores = data.get("scores", {})
+    sources = data.get("sources", [])
+    disclaimer = data.get("disclaimer", "")
+
+    # ── Headline panel ───────────────────────────────────────────────────────
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{headline}[/]",
+        title=f"[bold #3cffd0]CLI Market Intel Brief — {scope}[/]",
+        subtitle=f"[dim]{days}d window[/]",
+        border_style="#3cffd0",
+    ))
+
+    # ── Shelf signals ────────────────────────────────────────────────────────
+    shelf_labels = {
+        "shelf_inflation_avg_pct": ("Inflación góndola" if not is_en else "Shelf inflation", "%"),
+        "staple_momentum_7d_pct": ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", "%"),
+        "promo_intensity": ("Intensidad promo" if not is_en else "Promo intensity", ""),
+        "price_dispersion": ("Dispersión de precios" if not is_en else "Price dispersion", ""),
+        "basket_stress_index": ("Índice estrés canasta" if not is_en else "Basket stress index", ""),
+    }
+    if shelf:
+        t_shelf = Table(
+            title="[bold white]" + ("Señales de góndola" if not is_en else "Shelf signals") + "[/]",
+            border_style=ui.TABLE_BORDER,
+        )
+        t_shelf.add_column("Señal" if not is_en else "Signal", max_width=30)
+        t_shelf.add_column("Valor" if not is_en else "Value", justify="right")
+        for key, val in shelf.items():
+            label, unit = shelf_labels.get(key, (key, ""))
+            if isinstance(val, float):
+                color = "#FF6B35" if val > 0 else "#00FF88"
+                fmt = f"[{color}]{val:+.2f}{unit}[/]" if unit == "%" else f"{val:.2f}"
+            else:
+                fmt = str(val)
+            t_shelf.add_row(label, fmt)
+        if macro_gap:
+            gap = macro_gap.get("collector_vs_official_gap_pp")
+            if gap is not None:
+                color = "#FF6B35" if gap > 0 else "#00FF88"
+                t_shelf.add_row(
+                    "Gap vs CPI oficial" if not is_en else "Gap vs official CPI",
+                    f"[{color}]{gap:+.1f} pp[/]",
+                )
+        console.print()
+        console.print(t_shelf)
+
+    # ── Scores ───────────────────────────────────────────────────────────────
+    if scores:
+        t_scores = Table(
+            title="[bold white]" + ("Scores compuestos" if not is_en else "Composite scores") + "[/]",
+            border_style=ui.TABLE_BORDER,
+        )
+        t_scores.add_column("Score", max_width=26)
+        t_scores.add_column("Valor" if not is_en else "Value", justify="center", width=8)
+        t_scores.add_column("Label" if is_en else "Nivel", max_width=12)
+        for name, sc in list(scores.items())[:8]:
+            val = sc.get("score")
+            label = sc.get("label", "")
+            if val is not None:
+                color = "#FF6B35" if float(val) > 60 else "#00FF88"
+                t_scores.add_row(name.replace("_", " "), f"[{color}]{val:.0f}[/]", label)
+        console.print()
+        console.print(t_scores)
+
+    # ── Confidence + sources ─────────────────────────────────────────────────
+    freshness = confidence.get("moat_freshness_pct")
+    stores = confidence.get("stores_active")
+    meta_parts = []
+    if freshness is not None:
+        meta_parts.append(f"freshness {freshness:.0f}%")
+    if stores is not None:
+        meta_parts.append(f"{stores} stores")
+    if sources:
+        meta_parts.append("sources: " + ", ".join(sources))
+    if meta_parts:
+        console.print(f"\n[dim]{' · '.join(meta_parts)}[/]")
+    if disclaimer:
+        console.print(f"[dim]{disclaimer}[/]")
+
+    ui.print_intel_footer(console, [
+        f"market intel brief --country {cc or 'PE'} --days 14",
+        "market intel inflation --country PE",
+        "market intel scores --country PE",
+    ])
 
 
 def cmd_enrichment(args):
@@ -3035,12 +3163,20 @@ def main():
     _attach_intel_parsers(
         intel_sub,
         {
+            "brief": t("intel_brief"),
             "inflation": t("intel_inflation"),
             "indicators": t("intel_indicators"),
             "enrichment": t("intel_enrichment"),
             "scores": t("intel_scores"),
         },
     )
+
+    # intel-brief top-level alias (matches 'market intel-brief --country PE' used in demo GIF)
+    p = sub.add_parser("intel-brief", help=t("intel_brief"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--catalog", action="store_true")
 
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
@@ -3133,6 +3269,7 @@ def main():
         "countries": cmd_countries, "lines": cmd_lines,
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket,
+        "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
