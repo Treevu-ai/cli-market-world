@@ -813,6 +813,25 @@ def print_indicator_catalog(console: Console, items: list[dict[str, Any]]) -> No
     )
 
 
+_SCORE_HINTS: dict[str, tuple[str, str]] = {
+    "retail_aggression":   ("Intensidad de descuentos y promos activas en góndola", "How aggressively retailers are discounting right now"),
+    "price_fairness":      ("Qué tan competitivos son los precios vs histórico y competidores", "How fair prices are vs historical range and competitors"),
+    "basket_stress":       ("Presión sobre la canasta básica (0=sin estrés, 1=crítico)", "Pressure on the basic basket (0=none, 1=critical)"),
+    "data_confidence":     ("Frescura y cobertura de los datos (bajo=datos con lag)", "Data freshness and coverage (low=stale snapshots)"),
+    "macro_alignment":     ("Alineación entre precios de góndola y macro (CPI, inflación)", "Alignment between shelf prices and macro indicators (CPI)"),
+    "demand_outlook":      ("Perspectiva de demanda a 30d según búsquedas y volumen", "30-day demand outlook based on search trends and volume"),
+    "logistics_risk":      ("Riesgo de desabasto o quiebre de stock por logística", "Risk of stock-outs or supply disruption"),
+    "staple_demand":       ("Demanda específica de productos básicos (arroz, aceite, etc.)", "Demand for staple products (rice, oil, sugar, etc.)"),
+    "macro_validation":    ("Consistencia interna del modelo con datos macro externos", "Internal model consistency with external macro data"),
+    "labor_stress":        ("Presión salarial y laboral que puede impactar precios", "Labor cost pressure that could push prices up"),
+    "search_momentum":     ("Velocidad de crecimiento en búsquedas de productos", "Growth rate of product search queries"),
+    "food_premium":        ("Prima de precio en alimentos premium vs básicos", "Price premium of premium food vs staples"),
+    "nutrition_quality":   ("Calidad nutricional promedio de productos en góndola", "Average nutritional quality of products in shelf"),
+    "product_intelligence":("Riqueza de datos de producto (nombre, marca, categoría)", "Product data richness (name, brand, category coverage)"),
+    "growth_outlook":      ("Perspectiva de crecimiento del mercado a mediano plazo", "Medium-term market growth outlook"),
+}
+
+
 def scores_table(scores: dict[str, Any], *, title: str | None = None) -> Table:
     lang = "en" if is_en() else "es"
     table = Table(
@@ -825,10 +844,13 @@ def scores_table(scores: dict[str, Any], *, title: str | None = None) -> Table:
     table.add_column("Score", style="bold")
     table.add_column("Valor" if lang == "es" else "Value", justify="right")
     table.add_column("Señal" if lang == "es" else "Signal")
+    table.add_column("Qué indica" if lang == "es" else "What it means", style="dim", no_wrap=False)
     for name, info in scores.items():
         if not isinstance(info, dict):
             continue
-        table.add_row(name, str(info.get("score", "—")), info.get("label", ""))
+        hints = _SCORE_HINTS.get(name, ("", ""))
+        hint = hints[0] if lang == "es" else hints[1]
+        table.add_row(name, str(info.get("score", "—")), info.get("label", ""), hint)
     return table
 
 
