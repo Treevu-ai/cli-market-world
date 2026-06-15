@@ -291,11 +291,23 @@ def get_inflation(
                 "n_products": int(pair["n"] or 0),
             })
 
-        avg_inflation = round(sum(deltas) / len(deltas), 1) if deltas else 0.0
+        weighted_sum = sum(
+            it["delta_pct"] * it["n_products"] for it in items if it["n_products"] > 0
+        )
+        total_n = sum(it["n_products"] for it in items if it["n_products"] > 0)
+        avg_inflation = round(weighted_sum / total_n, 1) if total_n > 0 else 0.0
+
+        currencies_in_result = list({it["currency"] for it in items if it["currency"]})
+        mixed_currency = len(currencies_in_result) > 1
 
         return {
             "items": items,
             "avg_inflation_pct": avg_inflation,
+            "avg_inflation_note": (
+                "Promedio ponderado por n_products. Mezcla monedas: interprete por currency."
+                if mixed_currency
+                else "Promedio ponderado por n_products."
+            ),
             "days": days,
             "country": country,
             "line": line,

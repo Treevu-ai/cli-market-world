@@ -323,7 +323,11 @@ def build_briefing(today: date | None = None, api_activations: dict[str, str] | 
                 f"  └ LinkedIn: {t['linkedin_url']}"
             )
         lines.append(
-            "\n_Para activar: POST /admin/ops/activate-outbound-target — o llena el form del Workflow Builder en #outbound_"
+            "\n_Para activar (cross-platform):_\n"
+            "```\n"
+            "py ops/activate_outbound_target.py --target-id <id> --start-date YYYY-MM-DD\n"
+            "```\n"
+            "_O usa el form del Workflow Builder en #outbound_"
         )
 
     # Due today
