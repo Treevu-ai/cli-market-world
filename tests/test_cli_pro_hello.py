@@ -89,7 +89,8 @@ def test_hello_default_emits_pro_context(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "acubatruweb" in out
     assert "pro" in out.lower()
-    assert "CUENTA PRO" in out or "PRO ACCOUNT" in out
+    # New splash shows tier in left panel and "Build Pro" in footer
+    assert "Build Pro" in out or "pro" in out.lower()
 
 
 def argparse_ns(**kwargs):
