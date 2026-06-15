@@ -98,6 +98,7 @@ T = {
         "demo": "Demo sin cuenta: token temporal + search/compare en <5 min",
         "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
         "mcp": "Centro MCP (solo lectura): tools + salud doctor",
+        "discover": "Cobertura de retailers en una llamada: líneas, tiendas y países",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -141,7 +142,9 @@ T = {
         "intel_scores": "Composite scores (fairness, stress, aggression)",
         "tutorial": "Interactive 3-step tutorial (search, compare, export) in 60 seconds",
         "demo": "No-account demo: temp token + search/compare in under 5 minutes",
+        "mcp_setup": "One-liner MCP setup for Cursor/Claude/etc.",
         "mcp": "MCP center (read-only): tools + doctor health",
+        "discover": "Retail coverage in one call: lines, stores, and countries",
     },
 }
 
@@ -851,6 +854,44 @@ def cmd_lines(args):
         table.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
     console.print()
     console.print(table)
+
+def cmd_discover(args):
+    """Retail coverage in one call — combines lines + countries (mirrors market_discover MCP tool)."""
+    country_filter = (getattr(args, "country", None) or "").upper() or None
+    line_filter = getattr(args, "line", None) or None
+    data_c = cli_api("GET", "/countries")
+    data_l = cli_api("GET", "/lines")
+    countries = data_c.get("countries", {})
+    lines = data_l.get("lines", {})
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(True, {"countries": countries, "lines": lines}, next_commands=["market search", "market compare"]),
+            console,
+        )
+        return
+    table_c = Table(title="[bold #3cffd0]Cobertura — Países[/]", border_style=ui.TABLE_BORDER)
+    table_c.add_column("País", style="bold")
+    table_c.add_column("Tiendas")
+    table_c.add_column("Cant.", justify="center")
+    for code, info in sorted(countries.items()):
+        if country_filter and code != country_filter:
+            continue
+        table_c.add_row(info["name"], ", ".join(info["stores"]), str(info["count"]))
+    console.print()
+    console.print(table_c)
+    table_l = Table(title="[bold #3cffd0]Líneas de negocio[/]", border_style=ui.TABLE_BORDER)
+    table_l.add_column("Línea", style="bold")
+    table_l.add_column("Retailers")
+    table_l.add_column("Cant.", justify="center")
+    for lid, info in lines.items():
+        if line_filter and lid != line_filter:
+            continue
+        stores_str = ", ".join(s["name"] for s in info["stores"].values())
+        table_l.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
+    console.print()
+    console.print(table_l)
+    console.print("\n[dim]market search --country PE · market compare --line super[/]")
+
 
 def cmd_categories(args):
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
@@ -2884,6 +2925,11 @@ def main():
     # lines
     sub.add_parser("lines", help=t("lines"))
 
+    # discover (combined: lines + countries — mirrors market_discover MCP tool)
+    p = sub.add_parser("discover", help=t("discover"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
     # whoami
     sub.add_parser("account", help="Dashboard: tier, uso y upgrade")
     sub.add_parser("whoami", help=t("whoami"))
@@ -3016,13 +3062,14 @@ def main():
         "cart-clear": cmd_cart_clear, "checkout": cmd_checkout,
         "orders": cmd_orders, "reorder": cmd_reorder,
         "ask": cmd_ask, "preferences": cmd_preferences,
-        "countries": cmd_countries, "lines": cmd_lines,
+        "countries": cmd_countries, "lines": cmd_lines, "discover": cmd_discover,
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
         "alerts": cmd_alerts,
+        "account": cmd_account,
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
         "demo": cmd_demo, "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
