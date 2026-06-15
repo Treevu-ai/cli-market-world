@@ -5,6 +5,7 @@ Endpoints:
   GET    /cart                  View current cart + total
   PUT    /cart/update           Change quantity by cart_id or product_id
   DELETE /cart/{product_id}     Remove an item by cart_id or product_id
+  DELETE /cart                  Clear entire cart (bulk)
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from pydantic import BaseModel
 from market_core import (
     STORES,
     db_add_to_cart,
+    db_clear_cart,
     db_get_cart,
     db_remove_cart_item,
     db_update_cart_item,
@@ -85,6 +87,16 @@ def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None
     db_update_cart_item(username, int(item["cart_id"]), body.quantity)
     cart = db_get_cart(username)
     return {"message": "Carrito actualizado", "cart": cart}
+
+
+@router.delete("/cart")
+def cart_clear(authorization: str | None = Header(None)):
+    """Remove all items from the cart in a single operation."""
+    username = require_user(authorization)
+    cart = db_get_cart(username)
+    n = len(cart)
+    db_clear_cart(username)
+    return {"message": f"Carrito vaciado ({n} items eliminados)", "items_removed": n}
 
 
 @router.delete("/cart/{product_id}")

@@ -730,9 +730,24 @@ def cmd_cart_clear(args):
     if not cart:
         console.print("[yellow]Carrito ya está vacío[/]")
         return
-    for item in cart:
-        cli_api("DELETE", f"/cart/{item['product_id']}")
-    console.print("[#3cffd0]✓ Carrito vaciado[/]")
+    is_en = ui.is_en()
+    total = sum(i["price"] * i["quantity"] for i in cart)
+    n = len(cart)
+    confirm_msg = (
+        f"Clear {n} item(s) — {fmt_price(total)}? [y/N] "
+        if is_en
+        else f"¿Vaciar {n} item(s) — {fmt_price(total)}? [s/N] "
+    )
+    try:
+        resp = input(confirm_msg).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        console.print("\n[dim]Cancelado[/]")
+        return
+    if resp not in ("s", "y"):
+        console.print("[dim]Cancelado[/]")
+        return
+    result = cli_api("DELETE", "/cart")
+    console.print(f"[#3cffd0]✓ {result.get('message', 'Carrito vaciado')}[/]")
 
 def cmd_checkout(args):
     tier = ui.fetch_tier()
@@ -800,11 +815,102 @@ def cmd_reorder(args):
     console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_ask(args):
-    data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+    is_en = ui.is_en()
+    with console.status("[cyan]Procesando...[/]" if not is_en else "[cyan]Processing...[/]"):
+        data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market hello"]), console)
+        ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market cart"]), console)
         return
-    console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
+
+    action = data.get("action", "search")
+    query = data.get("query", "")
+    qty = data.get("quantity", 1)
+    error = data.get("error") or data.get("detail")
+
+    if error:
+        console.print(f"[red]{error}[/]")
+        return
+
+    console.print(f"[dim]→ {action}" + (f": \"{query}\"" if query else "") + "[/]")
+
+    if action == "search" and query:
+        with console.status(f"[cyan]Buscando '{query}'...[/]"):
+            results = cli_api("POST", "/products/search", {"query": query, "limit": 5})
+        products = results.get("results", [])
+        if not products:
+            console.print(f"[yellow]Sin resultados para '{query}'[/]")
+            return
+        table = Table(border_style=ui.TABLE_BORDER, show_header=True)
+        table.add_column("#", style="dim", width=3, justify="right")
+        table.add_column("Producto", max_width=38)
+        table.add_column("Tienda", max_width=12)
+        table.add_column("Precio", style="yellow", justify="right")
+        for i, p in enumerate(products, 1):
+            table.add_row(
+                str(i), p["name"][:38],
+                p.get("store_name", p.get("store", "?")),
+                fmt_price(p.get("price", 0), p.get("currency", "PEN")),
+            )
+        console.print()
+        console.print(table)
+        p0 = products[0]
+        confirm_msg = (
+            f"Add {qty}x {p0['name'][:35]} ({fmt_price(p0['price'])}) to cart? [y/N] "
+            if is_en
+            else f"¿Agregar {qty}x {p0['name'][:35]} ({fmt_price(p0['price'])}) al carrito? [s/N] "
+        )
+        try:
+            resp = input(confirm_msg).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelado[/]")
+            return
+        if resp in ("s", "y"):
+            cli_api("POST", "/cart/add", {
+                "product_id": p0.get("product_id", p0.get("id", "")),
+                "name": p0["name"],
+                "price": p0["price"],
+                "store": p0.get("store", ""),
+                "quantity": qty,
+            })
+            console.print("[#3cffd0]✓ Agregado al carrito[/]" if not is_en else "[#3cffd0]✓ Added to cart[/]")
+            console.print("[dim]market cart · market checkout[/]")
+        else:
+            console.print("[dim]Usa market add <ID> cuando estés listo[/]" if not is_en else "[dim]Use market add <ID> when ready[/]")
+
+    elif action == "compare" and query:
+        with console.status(f"[cyan]Comparando '{query}'...[/]"):
+            results = cli_api("POST", "/products/compare", {"query": query, "limit": 5})
+        comparison = results.get("comparison", [])
+        if not comparison:
+            console.print(f"[yellow]Sin resultados para '{query}'[/]")
+            return
+        table = Table(border_style=ui.TABLE_BORDER, show_header=True)
+        table.add_column("Producto", max_width=36)
+        table.add_column("Mejor tienda", max_width=14)
+        table.add_column("Mejor precio", style="yellow", justify="right")
+        for item in comparison[:5]:
+            table.add_row(
+                item.get("name", "")[:36],
+                item.get("best_store", "?"),
+                fmt_price(item.get("best_price", 0)),
+            )
+        console.print()
+        console.print(table)
+        console.print(f"[dim]market compare \"{query}\" para ver todos los precios[/]")
+
+    elif action == "cart":
+        cmd_cart(args)
+
+    elif action == "checkout":
+        console.print("[dim]Usa: market checkout --payment yape|plin|tarjeta[/]" if not is_en else "[dim]Use: market checkout --payment yape|plin|card[/]")
+
+    elif action == "reorder":
+        result = cli_api("POST", "/orders/reorder")
+        console.print(f"[#3cffd0]✓ {result.get('message', 'OK')}[/]")
+
+    else:
+        console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_preferences(args):
     data = cli_api("GET", "/agent/preferences")
@@ -2851,8 +2957,9 @@ def main():
     p.add_argument("product_id")
     p.add_argument("quantity", type=int)
 
-    # cart-clear
+    # cart-clear / clear-cart (alias)
     sub.add_parser("cart-clear", help=t("cart_clear"))
+    sub.add_parser("clear-cart", help=t("cart_clear"))
 
     # checkout
     p = sub.add_parser("checkout", help=t("checkout"))
@@ -3020,7 +3127,7 @@ def main():
         "investigate": cmd_investigate,
         "add": cmd_add, "cart": cmd_cart,
         "cart-remove": cmd_cart_remove, "cart-update": cmd_cart_update,
-        "cart-clear": cmd_cart_clear, "checkout": cmd_checkout,
+        "cart-clear": cmd_cart_clear, "clear-cart": cmd_cart_clear, "checkout": cmd_checkout,
         "orders": cmd_orders, "reorder": cmd_reorder,
         "ask": cmd_ask, "preferences": cmd_preferences,
         "countries": cmd_countries, "lines": cmd_lines,
