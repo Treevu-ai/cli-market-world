@@ -2473,7 +2473,11 @@ def cmd_demo(args):
     if search.get("error"):
         console.print(f"[yellow]{search['error']}[/]")
         if search.get("status") != 401:
-            console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
+            if sys.platform == "win32":
+                console.print("[dim]Tip: py -m pip install -U cli-market-world[/]")
+                console.print("[dim]     market demo[/]")
+            else:
+                console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
     else:
         total = search.get("total", len(search.get("results", [])))
         console.print(f"[green]✓[/] {total} results" if is_en else f"[green]✓[/] {total} resultados")
@@ -2505,11 +2509,14 @@ def cmd_demo(args):
         return
 
     console.print()
-    console.print(
-        "[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP"
-        if is_en
-        else "[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP"
-    )
+    if is_en:
+        console.print("[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP")
+        if sys.platform == "win32":
+            console.print("[dim]On PowerShell: run each command on its own line.[/]")
+    else:
+        console.print("[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP")
+        if sys.platform == "win32":
+            console.print("[dim]En PowerShell: ejecuta cada comando en su propia línea.[/]")
     console.print("[dim]Demo tokens cannot checkout. Register when you need cart/payments.[/]" if is_en else "[dim]Los tokens demo no pueden hacer checkout. Registrate para carrito y pagos.[/]")
     _report_onboarding_event("use_case_demo", meta={"flow": "market_demo", "country": country, "agent_source": "demo"})
 
