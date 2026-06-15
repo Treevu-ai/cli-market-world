@@ -2464,7 +2464,7 @@ def cmd_shell(args):
     else:
         ui.print_context_bar(console, tier=tier, username=username)
         console.print(Panel(
-            "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]whoami[/]  [dim]doctor[/]",
+            "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]cart[/]  [dim]brief[/]  [dim]whoami[/]  [dim]doctor[/]",
             title="CLI Market Shell" if en else "Sesion CLI Market",
             border_style=ui.MINT,
         ))
@@ -2481,7 +2481,18 @@ def cmd_shell(args):
             if missions:
                 _shell_mission_help(console)
             else:
-                console.print("[cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]whoami[/]  [cyan]doctor[/]  [cyan]cart[/]  [cyan]hello[/]  [cyan]init[/]")
+                console.print(
+                    "[bold]Búsqueda:[/]  [cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]basket item:qty ...[/]\n"
+                    "[bold]Carrito:[/]   [cyan]add ID[/]  [cyan]cart[/]  [cyan]cart-remove ID[/]  [cyan]cart-clear[/]  [cyan]checkout[/]\n"
+                    "[bold]Pedidos:[/]   [cyan]orders[/]  [cyan]reorder[/]  [cyan]ask PROMPT[/]\n"
+                    "[bold]Datos:[/]     [cyan]brief[/]  [cyan]inflation[/]  [cyan]indicators[/]  [cyan]scores[/]  [cyan]enrichment[/]\n"
+                    "[bold]Catálogo:[/]  [cyan]discover[/]  [cyan]categories[/]  [cyan]barcode CODE[/]  [cyan]enrich ID[/]\n"
+                    "[bold]Alertas:[/]   [cyan]alerts list[/]  [cyan]alerts create --product X[/]\n"
+                    "[bold]Cuenta:[/]    [cyan]whoami[/]  [cyan]account[/]  [cyan]preferences[/]  [cyan]upgrade[/]  [cyan]share[/]\n"
+                    "[bold]Setup:[/]     [cyan]init[/]  [cyan]register[/]  [cyan]login USER PASS[/]  [cyan]doctor[/]  [cyan]lang CODE[/]\n"
+                    "[bold]MCP:[/]       [cyan]tools[/]  [cyan]mcp-setup[/]  [cyan]demo[/]  [cyan]tutorial[/]\n"
+                    "[dim]exit / quit / q → salir[/]"
+                )
             continue
         try:
             tokens = shlex.split(line)
@@ -2527,19 +2538,57 @@ def cmd_shell(args):
             profile="default",
             no_intel=False,
             days=30,
+            quantity=1,
+            catalog=False,
+            condition="price_drop",
+            plan=None,
+            promo_code=None,
+            manual_transfer=False,
+            demo=False,
+            ide=None,
+            dry_run=False,
         )
         handlers = {
+            "login": cmd_login,
             "search": cmd_search,
             "compare": cmd_compare,
+            "add": cmd_add,
+            "cart": cmd_cart,
+            "cart-remove": cmd_cart_remove,
+            "cart-update": cmd_cart_update,
+            "cart-clear": cmd_cart_clear,
+            "clear-cart": cmd_cart_clear,
+            "checkout": cmd_checkout,
+            "orders": cmd_orders,
+            "reorder": cmd_reorder,
+            "ask": cmd_ask,
+            "preferences": cmd_preferences,
             "account": cmd_account,
             "whoami": cmd_whoami,
             "doctor": cmd_doctor,
-            "cart": cmd_cart,
             "hello": cmd_hello,
             "register": cmd_register,
             "init": cmd_init,
             "countries": cmd_countries,
             "lines": cmd_lines,
+            "discover": cmd_discover,
+            "categories": cmd_categories,
+            "barcode": cmd_barcode,
+            "enrich": cmd_enrich,
+            "basket": cmd_basket,
+            "indicators": cmd_indicators,
+            "enrichment": cmd_enrichment,
+            "scores": cmd_scores,
+            "brief": cmd_intel_brief,
+            "intel-brief": cmd_intel_brief,
+            "tools": cmd_tools,
+            "alerts": cmd_alerts,
+            "lang": cmd_lang,
+            "share": cmd_share,
+            "upgrade": cmd_upgrade,
+            "demo": cmd_demo,
+            "tutorial": cmd_tutorial,
+            "mcp-setup": cmd_mcp_setup,
             "about": cmd_about,
         }
         if missions:
@@ -2553,6 +2602,7 @@ def cmd_shell(args):
             console.print(f"[yellow]{'Unknown' if en else 'Desconocido'}: {cmd}[/]")
             continue
 
+        # ── Argument parsing per command ───────────────────────────────────
         if cmd == "investigate":
             inv = _shell_parse_investigate(rest)
             ns.query = inv.query
@@ -2561,33 +2611,120 @@ def cmd_shell(args):
             ns.no_intel = inv.no_intel
             ns.days = inv.days
         elif cmd in ("search", "compare") and rest:
-            ns.query = rest[0]
+            pos = [t for t in rest if not t.startswith("-")]
+            ns.query = pos[0] if pos else ""
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
+                elif tok in ("--store", "-s") and i + 1 < len(rest):
+                    ns.store = rest[i + 1]
+                elif tok in ("--limit", "-n") and i + 1 < len(rest):
+                    try:
+                        ns.limit = int(rest[i + 1])
+                    except ValueError:
+                        pass
+        elif cmd == "add" and rest:
+            ns.product_id = rest[0]
+            for i, tok in enumerate(rest[1:], 1):
+                if tok in ("--qty", "-q") and i + 1 < len(rest):
+                    try:
+                        ns.qty = int(rest[i + 1])
+                    except ValueError:
+                        pass
+        elif cmd in ("cart-remove", "enrich") and rest:
+            ns.product_id = rest[0]
+        elif cmd == "cart-update" and rest:
+            ns.product_id = rest[0]
+            ns.quantity = int(rest[1]) if len(rest) > 1 else 1
+        elif cmd in ("reorder",) and rest:
+            ns.order_id = rest[0]
+        elif cmd == "ask" and rest:
+            ns.prompt = " ".join(rest)
+        elif cmd == "barcode" and rest:
+            ns.code = rest[0]
+        elif cmd == "basket" and rest:
+            pos = [t for t in rest if not t.startswith("-")]
+            ns.items = pos
+            for i, tok in enumerate(rest):
+                if tok in ("--country", "-c") and i + 1 < len(rest):
+                    ns.country = rest[i + 1]
+        elif cmd == "alerts" and rest:
+            ns.action = rest[0] if rest[0] in ("list", "create") else "list"
+            for i, tok in enumerate(rest):
+                if tok in ("--product", "-p") and i + 1 < len(rest):
+                    ns.product = rest[i + 1]
+                elif tok in ("--threshold", "-t") and i + 1 < len(rest):
+                    try:
+                        ns.threshold = float(rest[i + 1])
+                    except ValueError:
+                        pass
+                elif tok == "--email" and i + 1 < len(rest):
+                    ns.email = rest[i + 1]
+        elif cmd in ("discover", "inflation", "indicators", "enrichment", "scores",
+                     "brief", "intel-brief", "basket") and rest:
+            for i, tok in enumerate(rest):
+                if tok in ("--country", "-c") and i + 1 < len(rest):
+                    ns.country = rest[i + 1]
+                elif tok in ("--line", "-l") and i + 1 < len(rest):
+                    ns.line = rest[i + 1]
+                elif tok in ("--days", "-d") and i + 1 < len(rest):
+                    try:
+                        ns.days = int(rest[i + 1])
+                    except ValueError:
+                        pass
         elif cmd == "mcp":
             for i, tok in enumerate(rest):
                 if tok == "--profile" and i + 1 < len(rest):
                     ns.profile = rest[i + 1]
+        elif cmd == "lang" and rest:
+            ns.lang_code = rest[0]
         elif cmd == "login" and len(rest) >= 2:
             ns.username, ns.password = rest[0], rest[1]
-        handlers[cmd](ns)
+        elif cmd == "checkout" and rest:
+            for i, tok in enumerate(rest):
+                if tok in ("--payment", "-p") and i + 1 < len(rest):
+                    ns.payment = rest[i + 1]
+
+        try:
+            handlers[cmd](ns)
+        except Exception as exc:
+            console.print(f"[red]{exc}[/]")
 
 
 def cmd_share(args):
-    """Generate referral link for growth tracking."""
+    """Generate referral link and register it with the backend for tracking."""
     import hashlib
     seed = get_token() or "cli-market"
     ref = hashlib.sha256(seed.encode()).hexdigest()[:8]
     url = f"https://cli-market.dev/?ref={ref}"
+
+    stats: dict = {}
+    try:
+        data = cli_api("POST", "/auth/referral", {"ref_code": ref})
+        installs = data.get("install_count", 0)
+        activated = data.get("activated_count", 0)
+        stats = {"installs": installs, "activated": activated}
+    except Exception:
+        pass
+
+    try:
+        sdata = cli_api("GET", "/auth/referral/stats")
+        stats["total_installs"] = sdata.get("total_installs", 0)
+        stats["total_activated"] = sdata.get("total_activated", 0)
+    except Exception:
+        pass
+
     if getattr(args, "json", False):
-        console.print(json.dumps({"referral_url": url, "ref": ref}, indent=2))
+        console.print(json.dumps({"referral_url": url, "ref": ref, **stats}, indent=2))
         return
-    console.print(Panel.fit(
-        f"[bold]Share CLI Market[/]\n\n{url}\n\n"
-        "[dim]When developers install via your link, we track activation (opt-in).[/]",
-        border_style="#00FF88",
-    ))
+
+    lines = [f"[bold]Share CLI Market[/]\n\n[bold #00FF88]{url}[/]"]
+    if stats:
+        installs = stats.get("total_installs", stats.get("installs", 0))
+        activated = stats.get("total_activated", stats.get("activated", 0))
+        lines.append(f"\n[dim]📊 {installs} install{'s' if installs != 1 else ''} vía tu link · {activated} activados[/]")
+    lines.append("\n[dim]Comparte el link — cada dev que instale vía tu referral queda registrado.[/]")
+    console.print(Panel.fit("\n".join(lines), border_style="#00FF88"))
 
 
 _TUTORIAL_UTM = "?utm_source=terminal&utm_campaign=tutorial"
