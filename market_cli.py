@@ -2072,6 +2072,147 @@ def _hello_contact_panel(is_en: bool, width: int) -> Panel:
     return Panel(body, title=title, border_style="dim", box=box.ROUNDED, padding=(1, 2), width=width)
 
 
+# ── Two-panel splash screen (market hello + market shell) ────────────────────
+
+_SPLASH_ICON = (
+    "  ╔══════════════╗  ",
+    "  ║  ◉        ◉  ║  ",
+    "  ║       ▲       ║  ",
+    "  ║    ╰──────╯   ║  ",
+    "  ╠══════════════╣  ",
+    "  ║  C L I - M K T ║  ",
+    "  ╚══════════════╝  ",
+)
+
+
+def _splash_left(is_en: bool, ctx: dict | None) -> Panel:
+    username = (ctx or {}).get("username") or ("developer" if is_en else "developer")
+    tier = (ctx or {}).get("tier", "free")
+    sub = (ctx or {}).get("subscription") or {}
+    req_day = sub.get("req_limit_day", "1,000")
+    mcp_count = _mcp_profile_counts()[0]
+
+    greeting = (
+        f"Welcome back, [bold cyan]{username}[/]!"
+        if is_en
+        else f"Bienvenido de vuelta, [bold cyan]{username}[/]!"
+    )
+    if not (ctx and ctx.get("valid")):
+        greeting = (
+            "[bold white]Commerce API for AI Agents[/]"
+            if is_en
+            else "[bold white]API de comercio para agentes IA[/]"
+        )
+
+    icon = "\n".join(f"[bold #00FF88]{line}[/]" for line in _SPLASH_ICON)
+
+    info_rows = [
+        (("Tier" if is_en else "Tier"), f"[bold #00FF88]{tier}[/]"),
+        (("Retailers" if is_en else "Retailers"), f"[bold]{RETAILERS_VERIFIED}[/] [dim]· {MS_COUNTRIES} {'countries' if is_en else 'países'}[/]"),
+        ("MCP tools", f"[bold #00FF88]{mcp_count}[/] [dim]curated[/]"),
+        ("API", f"[dim]{_hello_api_host()}[/]"),
+        (("Limit/day" if is_en else "Límite/día"), f"[dim]{req_day} req[/]"),
+    ]
+    info = "\n".join(f"[dim]{k}:[/]{' ' * max(1, 10 - len(k))}{v}" for k, v in info_rows)
+
+    body = f"[bold white]{greeting}[/]\n\n{icon}\n\n{info}"
+    return Panel(
+        body,
+        title=f"[bold #00FF88]CLI Market[/]  [dim]v{PACKAGE_VERSION}[/]",
+        border_style="#00FF88",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    )
+
+
+def _splash_right(is_en: bool) -> Panel:
+    tips_hdr = "[bold white]Quick commands[/]" if is_en else "[bold white]Comandos frecuentes[/]"
+    tips = [
+        ("search",    '"arroz" --country PE'),
+        ("compare",   '"leche" --country PE'),
+        ("basket",    "arroz:2 aceite:1 --country PE"),
+        ("brief",     "--country PE"),
+        ("mcp-setup", "--ide cursor"),
+        ("shell",     ""),
+    ]
+    tips_lines = "\n".join(
+        f"  [dim]›[/] [cyan]market {cmd}[/]{' [dim]' + arg + '[/]' if arg else ''}"
+        for cmd, arg in tips
+    )
+
+    news_hdr = (
+        f"[bold white]What's new — v{PACKAGE_VERSION}[/]"
+        if is_en
+        else f"[bold white]Novedades — v{PACKAGE_VERSION}[/]"
+    )
+    news = [
+        ("REPL", f"40 {'commands' if is_en else 'comandos'} → [cyan]market shell[/]"),
+        ("market share", f"referral {'tracking' if is_en else 'con tracking'}"),
+        ("market alerts", f"real SQL {'threshold' if is_en else 'threshold'} filter"),
+        ("market discover", "· [cyan]market basket[/]"),
+    ]
+    news_lines = "\n".join(
+        f"  [dim]✦[/] [cyan]{k}[/] [dim]—[/] {v}" for k, v in news
+    )
+
+    body = f"{tips_hdr}\n{tips_lines}\n\n{news_hdr}\n{news_lines}"
+    return Panel(
+        body,
+        border_style="#30363d",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    )
+
+
+def _splash_footer(is_en: bool, ctx: dict | None) -> Panel:
+    if ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")):
+        msg = (
+            "[bold #00FF88]Build Pro[/] [dim]active[/]  [dim]·[/]  "
+            "[cyan]market account[/] [dim]for usage[/]  [dim]·[/]  "
+            '[cyan]market search "rice" --country PE[/] [dim]to start[/]'
+            if is_en else
+            "[bold #00FF88]Build Pro[/] [dim]activo[/]  [dim]·[/]  "
+            "[cyan]market account[/] [dim]para uso[/]  [dim]·[/]  "
+            '[cyan]market search "arroz" --country PE[/] [dim]para empezar[/]'
+        )
+    elif ctx and ctx.get("valid"):
+        msg = (
+            "[dim]Starter active[/]  [dim]·[/]  [cyan]market upgrade[/] [dim]for Pro[/]  [dim]·[/]  "
+            '[cyan]market search "rice" --country PE[/]'
+            if is_en else
+            "[dim]Starter activo[/]  [dim]·[/]  [cyan]market upgrade[/] [dim]para Pro[/]  [dim]·[/]  "
+            '[cyan]market search "arroz" --country PE[/]'
+        )
+    else:
+        msg = (
+            "[cyan]market init[/] [dim]→ activate  ·[/]  "
+            "[cyan]market demo[/] [dim]→ live prices without account  ·[/]  "
+            "[cyan]market register[/] [dim]→ API key only[/]"
+            if is_en else
+            "[cyan]market init[/] [dim]→ activar  ·[/]  "
+            "[cyan]market demo[/] [dim]→ precios sin cuenta  ·[/]  "
+            "[cyan]market register[/] [dim]→ solo API key[/]"
+        )
+    return Panel(msg, border_style="#30363d", box=box.ROUNDED, padding=(0, 2))
+
+
+def _render_splash(is_en: bool, ctx: dict | None) -> None:
+    """Two-panel welcome screen shared by cmd_hello and cmd_shell."""
+    # Top badge line
+    mcp_count = _mcp_profile_counts()[0]
+    console.print(
+        f" [bold #00FF88]CLI Market[/]  [dim]v{PACKAGE_VERSION}[/]  "
+        f"[dim]──[/]  [bold]{RETAILERS_VERIFIED}[/] [dim]retailers[/]  "
+        f"[dim]──[/]  [bold #00FF88]{mcp_count}[/] [dim]MCP tools[/]  "
+        f"[dim]──[/]  [dim]MIT · pip install cli-market-world[/]"
+    )
+    # Two panels
+    console.print(Columns([_splash_left(is_en, ctx), _splash_right(is_en)], equal=False, expand=True))
+    # Footer
+    console.print(_splash_footer(is_en, ctx))
+    console.print()
+
+
 def _hello_data(is_en: bool, ctx: dict | None = None) -> dict:
     """Structured data for `market hello --json` (agent / machine readable)."""
     platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
@@ -2161,79 +2302,17 @@ def cmd_hello(args):
         return
 
     # Human pretty path
-    width = min(max(console.width, 80), 100)
     _report_install_event(source="hello")
 
-    console.print()
-    if ctx and ctx.get("valid"):
-        ui.print_context_bar(
-            console,
-            tier=ctx.get("tier", "?"),
-            username=ctx.get("username"),
-        )
-    elif ctx and not ctx.get("valid"):
+    if ctx and not ctx.get("valid"):
         stale_user = ctx.get("username") or get_session_username()
-        console.print(
-            Panel.fit(
-                (
-                    f"[yellow]Sesión expirada.[/] [cyan]market login --username {stale_user}[/]"
-                    if not is_en and stale_user and stale_user != "?"
-                    else f"[yellow]Session expired.[/] [cyan]market login --username {stale_user}[/]"
-                    if stale_user and stale_user != "?"
-                    else "[yellow]Sesión expirada.[/] [cyan]market login[/]"
-                    if not is_en
-                    else "[yellow]Session expired.[/] [cyan]market login[/]"
-                ),
-                border_style="yellow",
-            )
-        )
+        login_cmd = f"market login --username {stale_user}" if stale_user and stale_user != "?" else "market login"
+        console.print(Panel.fit(
+            f"[yellow]{'Session expired' if is_en else 'Sesión expirada'}.[/] [cyan]{login_cmd}[/]",
+            border_style="yellow",
+        ))
 
-    console.print(_hello_wordmark_panel(is_en, width))
-    if ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")):
-        console.print(
-            _hello_pro_panel(
-                is_en,
-                width,
-                username=ctx.get("username", "?"),
-                sub=ctx.get("subscription") or {},
-            )
-        )
-    elif not ctx or not ctx.get("valid"):
-        console.print(_hello_activation_panel(is_en, width))
-    console.print(_hello_status_bar(is_en, width, ctx=ctx if ctx and ctx.get("valid") else None))
-    col_w = max((width - 6) // 2, 36)
-    console.print(
-        Columns(
-            [
-                _hello_capabilities_panel(is_en, col_w),
-                _hello_quickstart_panel(is_en, col_w),
-            ],
-            equal=True,
-            expand=False,
-        )
-    )
-    console.print(_hello_intermediate_panel(is_en, width))
-    console.print(_hello_insight_panel(is_en, width))
-    console.print(_hello_contact_panel(is_en, width))
-    ui.mcp_snippet_panel(console, width)
-    if ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")):
-        hint = (
-            'run market search "rice" --country PE'
-            if is_en
-            else 'ejecute market search "arroz" --country PE'
-        )
-    elif ctx and ctx.get("valid"):
-        hint = "run market account" if is_en else "ejecute market account"
-    else:
-        hint = (
-            "run market demo to try live prices"
-            if is_en
-            else "ejecute market demo para probar precios reales"
-        )
-    console.print(
-        f"[bold #00FF88]market>[/] [dim]{hint}[/][bold #00FF88]_[/]"
-    )
-    console.print()
+    _render_splash(is_en, ctx)
 
 
 
@@ -2462,12 +2541,7 @@ def cmd_shell(args):
             username=username,
         )
     else:
-        ui.print_context_bar(console, tier=tier, username=username)
-        console.print(Panel(
-            "[dim]help[/]  [dim]exit[/]  [dim]search leche --country PE[/]  [dim]cart[/]  [dim]brief[/]  [dim]whoami[/]  [dim]doctor[/]",
-            title="CLI Market Shell" if en else "Sesion CLI Market",
-            border_style=ui.MINT,
-        ))
+        _render_splash(en, ctx)
 
     while True:
         try:
