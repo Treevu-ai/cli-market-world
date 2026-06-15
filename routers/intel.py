@@ -327,24 +327,41 @@ def get_alerts(
     limit: int = Query(10, ge=1, le=50),
     authorization: str | None = Header(None),
 ):
-    """Alert when a product's price changed beyond threshold_pct."""
+    """Products with active discounts >= threshold_pct on list_price.
+
+    Returns items where (list_price - price) / list_price * 100 >= threshold_pct,
+    ordered by deepest discount first. Used by the market_price_alerts MCP tool.
+    """
     require_api_key(authorization)
     db = get_db()
     try:
-        params: list = [f"%{product}%"]
+        params: list = [f"%{product}%", threshold_pct / 100.0]
         store_clause = ""
         if store:
             store_clause = "AND store = ?"
             params.append(store)
         rows = db.execute(
             f"""SELECT product_id, store, store_name, name, price, list_price, currency,
-                       queried_at
+                       url, queried_at,
+                       ROUND((list_price - price) * 100.0 / list_price, 1) AS discount_pct
                 FROM price_snapshots
-                WHERE name LIKE ? AND price > 0 {store_clause}
-                ORDER BY queried_at DESC LIMIT ?""",
-            params + [limit * 2],
+                WHERE name LIKE ?
+                  AND price > 0
+                  AND list_price > price
+                  AND (list_price - price) / list_price >= ?
+                  {store_clause}
+                ORDER BY (list_price - price) / list_price DESC
+                LIMIT ?""",
+            params + [limit],
         ).fetchall()
-        return {"product": product, "store": store, "threshold_pct": threshold_pct, "results": [dict(r) for r in rows]}
+        results = [dict(r) for r in rows]
+        return {
+            "product": product,
+            "store": store,
+            "threshold_pct": threshold_pct,
+            "total": len(results),
+            "results": results,
+        }
     finally:
         db.close()
 
