@@ -30,6 +30,7 @@ from market_core import (
     STORES,
     fetch_store,
     get_db,
+    price_to_usd,
     product_from_json,
     save_price_snapshot,
     save_search_query,
@@ -332,13 +333,19 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
                 "items_found": len(found),
                 "items_requested": len(body.items),
             }
-    best = min(results, key=lambda s: results[s]["total"]) if results else None
+    def _total_usd(store_key: str) -> float:
+        r = results[store_key]
+        usd = price_to_usd(r["total"], r["currency"])
+        return usd if usd is not None else r["total"]
+
+    best = min(results, key=_total_usd) if results else None
     return {
         "source": "live",
         "basket": body.items,
         "comparison": results,
         "best_store": best,
         "best_total": results[best]["total"] if best else None,
+        "best_total_usd": _total_usd(best) if best else None,
         "stores_compared": len(results),
     }
 

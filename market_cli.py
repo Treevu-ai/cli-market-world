@@ -91,6 +91,7 @@ T = {
         "shell": "Sesión interactiva tipo agente (REPL)",
         "intel": "Intelligence / data moat (analistas, Price Pulse)",
         "intel_inflation": "Inflación por línea y país",
+        "intel_brief": "Brief ejecutivo: headline + señales + scores (una llamada)",
         "intel_indicators": "Catálogo de indicadores del moat",
         "intel_enrichment": "Enriquecimiento (OFF, Wiki, clima, CPI)",
         "intel_scores": "Scores compuestos (fairness, stress, aggression)",
@@ -137,6 +138,7 @@ T = {
         "shell": "Interactive agent-style session (REPL)",
         "intel": "Intelligence / data moat (analysts, Price Pulse)",
         "intel_inflation": "Inflation by line and country",
+        "intel_brief": "Executive brief: headline + shelf signals + scores (one call)",
         "intel_indicators": "Moat indicator catalog",
         "intel_enrichment": "Enrichment signals (OFF, Wiki, weather, CPI)",
         "intel_scores": "Composite scores (fairness, stress, aggression)",
@@ -164,6 +166,12 @@ def _normalize_market_argv(argv: list[str]) -> list[str]:
 
 def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
     """Register intelligence CLI commands on *parent* (market intel * or hidden legacy)."""
+    p = parent.add_parser("brief", help=helps.get("brief", "Executive intel brief"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--catalog", action="store_true", help="Incluir catálogo completo de indicadores")
+
     p = parent.add_parser("inflation", help=helps["inflation"])
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
@@ -733,9 +741,24 @@ def cmd_cart_clear(args):
     if not cart:
         console.print("[yellow]Carrito ya está vacío[/]")
         return
-    for item in cart:
-        cli_api("DELETE", f"/cart/{item['product_id']}")
-    console.print("[#3cffd0]✓ Carrito vaciado[/]")
+    is_en = ui.is_en()
+    total = sum(i["price"] * i["quantity"] for i in cart)
+    n = len(cart)
+    confirm_msg = (
+        f"Clear {n} item(s) — {fmt_price(total)}? [y/N] "
+        if is_en
+        else f"¿Vaciar {n} item(s) — {fmt_price(total)}? [s/N] "
+    )
+    try:
+        resp = input(confirm_msg).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        console.print("\n[dim]Cancelado[/]")
+        return
+    if resp not in ("s", "y"):
+        console.print("[dim]Cancelado[/]")
+        return
+    result = cli_api("DELETE", "/cart")
+    console.print(f"[#3cffd0]✓ {result.get('message', 'Carrito vaciado')}[/]")
 
 def cmd_checkout(args):
     tier = ui.fetch_tier()
@@ -803,11 +826,102 @@ def cmd_reorder(args):
     console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_ask(args):
-    data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+    is_en = ui.is_en()
+    with console.status("[cyan]Procesando...[/]" if not is_en else "[cyan]Processing...[/]"):
+        data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market hello"]), console)
+        ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market cart"]), console)
         return
-    console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
+
+    action = data.get("action", "search")
+    query = data.get("query", "")
+    qty = data.get("quantity", 1)
+    error = data.get("error") or data.get("detail")
+
+    if error:
+        console.print(f"[red]{error}[/]")
+        return
+
+    console.print(f"[dim]→ {action}" + (f": \"{query}\"" if query else "") + "[/]")
+
+    if action == "search" and query:
+        with console.status(f"[cyan]Buscando '{query}'...[/]"):
+            results = cli_api("POST", "/products/search", {"query": query, "limit": 5})
+        products = results.get("results", [])
+        if not products:
+            console.print(f"[yellow]Sin resultados para '{query}'[/]")
+            return
+        table = Table(border_style=ui.TABLE_BORDER, show_header=True)
+        table.add_column("#", style="dim", width=3, justify="right")
+        table.add_column("Producto", max_width=38)
+        table.add_column("Tienda", max_width=12)
+        table.add_column("Precio", style="yellow", justify="right")
+        for i, p in enumerate(products, 1):
+            table.add_row(
+                str(i), p["name"][:38],
+                p.get("store_name", p.get("store", "?")),
+                fmt_price(p.get("price", 0), p.get("currency", "PEN")),
+            )
+        console.print()
+        console.print(table)
+        p0 = products[0]
+        confirm_msg = (
+            f"Add {qty}x {p0['name'][:35]} ({fmt_price(p0['price'])}) to cart? [y/N] "
+            if is_en
+            else f"¿Agregar {qty}x {p0['name'][:35]} ({fmt_price(p0['price'])}) al carrito? [s/N] "
+        )
+        try:
+            resp = input(confirm_msg).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Cancelado[/]")
+            return
+        if resp in ("s", "y"):
+            cli_api("POST", "/cart/add", {
+                "product_id": p0.get("product_id", p0.get("id", "")),
+                "name": p0["name"],
+                "price": p0["price"],
+                "store": p0.get("store", ""),
+                "quantity": qty,
+            })
+            console.print("[#3cffd0]✓ Agregado al carrito[/]" if not is_en else "[#3cffd0]✓ Added to cart[/]")
+            console.print("[dim]market cart · market checkout[/]")
+        else:
+            console.print("[dim]Usa market add <ID> cuando estés listo[/]" if not is_en else "[dim]Use market add <ID> when ready[/]")
+
+    elif action == "compare" and query:
+        with console.status(f"[cyan]Comparando '{query}'...[/]"):
+            results = cli_api("POST", "/products/compare", {"query": query, "limit": 5})
+        comparison = results.get("comparison", [])
+        if not comparison:
+            console.print(f"[yellow]Sin resultados para '{query}'[/]")
+            return
+        table = Table(border_style=ui.TABLE_BORDER, show_header=True)
+        table.add_column("Producto", max_width=36)
+        table.add_column("Mejor tienda", max_width=14)
+        table.add_column("Mejor precio", style="yellow", justify="right")
+        for item in comparison[:5]:
+            table.add_row(
+                item.get("name", "")[:36],
+                item.get("best_store", "?"),
+                fmt_price(item.get("best_price", 0)),
+            )
+        console.print()
+        console.print(table)
+        console.print(f"[dim]market compare \"{query}\" para ver todos los precios[/]")
+
+    elif action == "cart":
+        cmd_cart(args)
+
+    elif action == "checkout":
+        console.print("[dim]Usa: market checkout --payment yape|plin|tarjeta[/]" if not is_en else "[dim]Use: market checkout --payment yape|plin|card[/]")
+
+    elif action == "reorder":
+        result = cli_api("POST", "/orders/reorder")
+        console.print(f"[#3cffd0]✓ {result.get('message', 'OK')}[/]")
+
+    else:
+        console.print(f"[#3cffd0]✓ {data.get('message', 'OK')}[/]")
 
 def cmd_preferences(args):
     data = cli_api("GET", "/agent/preferences")
@@ -1115,6 +1229,126 @@ def cmd_scores(args):
     if disclaimer:
         console.print(f"[dim]{disclaimer}[/]")
     ui.print_intel_footer(console, ["market intel indicators -c PE", "market intel enrichment -c PE"])
+
+
+def cmd_intel_brief(args):
+    """Executive intel brief: headline + shelf signals + scores in one call."""
+    is_en = ui.is_en()
+    params = []
+    cc = getattr(args, "country", None)
+    line = getattr(args, "line", None)
+    days = getattr(args, "days", None) or 7
+    catalog = getattr(args, "catalog", False)
+    if cc:
+        params.append(f"country={cc}")
+    if line:
+        params.append(f"line={line}")
+    params.append(f"days={days}")
+    if catalog:
+        params.append("include_catalog=true")
+    qs = "&".join(params)
+    scope = cc or ("LATAM" if not line else line)
+
+    with console.status(f"[cyan]{'Generando brief' if not is_en else 'Generating brief'} — {scope}..."):
+        data = cli_api("GET", f"/v1/intel/brief?{qs}" if qs else "/v1/intel/brief")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=[
+            f"market intel brief --country {cc or 'PE'}",
+            "market intel inflation --country PE",
+            "market intel scores --country PE",
+        ]), console)
+        return
+
+    headline = data.get("headline", "")
+    shelf = data.get("shelf", {})
+    macro_gap = data.get("macro_gap", {})
+    confidence = data.get("confidence", {})
+    scores = data.get("scores", {})
+    sources = data.get("sources", [])
+    disclaimer = data.get("disclaimer", "")
+
+    # ── Headline panel ───────────────────────────────────────────────────────
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{headline}[/]",
+        title=f"[bold #3cffd0]CLI Market Intel Brief — {scope}[/]",
+        subtitle=f"[dim]{days}d window[/]",
+        border_style="#3cffd0",
+    ))
+
+    # ── Shelf signals ────────────────────────────────────────────────────────
+    shelf_labels = {
+        "shelf_inflation_avg_pct": ("Inflación góndola" if not is_en else "Shelf inflation", "%"),
+        "staple_momentum_7d_pct": ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", "%"),
+        "promo_intensity": ("Intensidad promo" if not is_en else "Promo intensity", ""),
+        "price_dispersion": ("Dispersión de precios" if not is_en else "Price dispersion", ""),
+        "basket_stress_index": ("Índice estrés canasta" if not is_en else "Basket stress index", ""),
+    }
+    if shelf:
+        t_shelf = Table(
+            title="[bold white]" + ("Señales de góndola" if not is_en else "Shelf signals") + "[/]",
+            border_style=ui.TABLE_BORDER,
+        )
+        t_shelf.add_column("Señal" if not is_en else "Signal", max_width=30)
+        t_shelf.add_column("Valor" if not is_en else "Value", justify="right")
+        for key, val in shelf.items():
+            label, unit = shelf_labels.get(key, (key, ""))
+            if isinstance(val, float):
+                color = "#FF6B35" if val > 0 else "#00FF88"
+                fmt = f"[{color}]{val:+.2f}{unit}[/]" if unit == "%" else f"{val:.2f}"
+            else:
+                fmt = str(val)
+            t_shelf.add_row(label, fmt)
+        if macro_gap:
+            gap = macro_gap.get("collector_vs_official_gap_pp")
+            if gap is not None:
+                color = "#FF6B35" if gap > 0 else "#00FF88"
+                t_shelf.add_row(
+                    "Gap vs CPI oficial" if not is_en else "Gap vs official CPI",
+                    f"[{color}]{gap:+.1f} pp[/]",
+                )
+        console.print()
+        console.print(t_shelf)
+
+    # ── Scores ───────────────────────────────────────────────────────────────
+    if scores:
+        t_scores = Table(
+            title="[bold white]" + ("Scores compuestos" if not is_en else "Composite scores") + "[/]",
+            border_style=ui.TABLE_BORDER,
+        )
+        t_scores.add_column("Score", max_width=26)
+        t_scores.add_column("Valor" if not is_en else "Value", justify="center", width=8)
+        t_scores.add_column("Label" if is_en else "Nivel", max_width=12)
+        for name, sc in list(scores.items())[:8]:
+            val = sc.get("score")
+            label = sc.get("label", "")
+            if val is not None:
+                color = "#FF6B35" if float(val) > 60 else "#00FF88"
+                t_scores.add_row(name.replace("_", " "), f"[{color}]{val:.0f}[/]", label)
+        console.print()
+        console.print(t_scores)
+
+    # ── Confidence + sources ─────────────────────────────────────────────────
+    freshness = confidence.get("moat_freshness_pct")
+    stores = confidence.get("stores_active")
+    meta_parts = []
+    if freshness is not None:
+        meta_parts.append(f"freshness {freshness:.0f}%")
+    if stores is not None:
+        meta_parts.append(f"{stores} stores")
+    if sources:
+        meta_parts.append("sources: " + ", ".join(sources))
+    if meta_parts:
+        console.print(f"\n[dim]{' · '.join(meta_parts)}[/]")
+    if disclaimer:
+        console.print(f"[dim]{disclaimer}[/]")
+
+    ui.print_intel_footer(console, [
+        f"market intel brief --country {cc or 'PE'} --days 14",
+        "market intel inflation --country PE",
+        "market intel scores --country PE",
+    ])
 
 
 def cmd_enrichment(args):
@@ -2514,7 +2748,11 @@ def cmd_demo(args):
     if search.get("error"):
         console.print(f"[yellow]{search['error']}[/]")
         if search.get("status") != 401:
-            console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
+            if sys.platform == "win32":
+                console.print("[dim]Tip: py -m pip install -U cli-market-world[/]")
+                console.print("[dim]     market demo[/]")
+            else:
+                console.print("[dim]Tip: pip install -U cli-market-world && market demo[/]")
     else:
         total = search.get("total", len(search.get("results", [])))
         console.print(f"[green]✓[/] {total} results" if is_en else f"[green]✓[/] {total} resultados")
@@ -2546,11 +2784,14 @@ def cmd_demo(args):
         return
 
     console.print()
-    console.print(
-        "[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP"
-        if is_en
-        else "[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP"
-    )
+    if is_en:
+        console.print("[bold]Next:[/] [cyan]market init[/] — account + checkout + MCP")
+        if sys.platform == "win32":
+            console.print("[dim]On PowerShell: run each command on its own line.[/]")
+    else:
+        console.print("[bold]Siguiente:[/] [cyan]market init[/] — cuenta + checkout + MCP")
+        if sys.platform == "win32":
+            console.print("[dim]En PowerShell: ejecuta cada comando en su propia línea.[/]")
     console.print("[dim]Demo tokens cannot checkout. Register when you need cart/payments.[/]" if is_en else "[dim]Los tokens demo no pueden hacer checkout. Registrate para carrito y pagos.[/]")
     _report_onboarding_event("use_case_demo", meta={"flow": "market_demo", "country": country, "agent_source": "demo"})
 
@@ -2885,8 +3126,9 @@ def main():
     p.add_argument("product_id")
     p.add_argument("quantity", type=int)
 
-    # cart-clear
+    # cart-clear / clear-cart (alias)
     sub.add_parser("cart-clear", help=t("cart_clear"))
+    sub.add_parser("clear-cart", help=t("cart_clear"))
 
     # checkout
     p = sub.add_parser("checkout", help=t("checkout"))
@@ -2967,12 +3209,20 @@ def main():
     _attach_intel_parsers(
         intel_sub,
         {
+            "brief": t("intel_brief"),
             "inflation": t("intel_inflation"),
             "indicators": t("intel_indicators"),
             "enrichment": t("intel_enrichment"),
             "scores": t("intel_scores"),
         },
     )
+
+    # intel-brief top-level alias (matches 'market intel-brief --country PE' used in demo GIF)
+    p = sub.add_parser("intel-brief", help=t("intel_brief"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--catalog", action="store_true")
 
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
@@ -3059,12 +3309,13 @@ def main():
         "investigate": cmd_investigate,
         "add": cmd_add, "cart": cmd_cart,
         "cart-remove": cmd_cart_remove, "cart-update": cmd_cart_update,
-        "cart-clear": cmd_cart_clear, "checkout": cmd_checkout,
+        "cart-clear": cmd_cart_clear, "clear-cart": cmd_cart_clear, "checkout": cmd_checkout,
         "orders": cmd_orders, "reorder": cmd_reorder,
         "ask": cmd_ask, "preferences": cmd_preferences,
         "countries": cmd_countries, "lines": cmd_lines, "discover": cmd_discover,
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket,
+        "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
