@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { SECTION_NAV, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { TOP_NAV, TOP_NAV_GROUP, PRICING_BUILD_HASH } from "@/lib/siteNav";
 import { useActiveSection } from "@/hooks/useActiveSection";
 
 function Logo() {
@@ -24,6 +24,7 @@ export default function Navbar() {
   const { lang, setLang } = useLang();
   const { active } = useActiveSection();
   const isES = lang === "es";
+  const activeGroup = TOP_NAV_GROUP[active] ?? active;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -51,13 +52,13 @@ export default function Navbar() {
         </a>
 
         <div className="hidden lg:flex items-center gap-5">
-          {SECTION_NAV.map(({ id, es, en }) => (
+          {TOP_NAV.map(({ id, es, en }) => (
             <a
               key={id}
               href={`/#${id}`}
-              aria-current={active === id ? "true" : undefined}
+              aria-current={activeGroup === id ? "true" : undefined}
               className={`text-xs font-medium transition-colors whitespace-nowrap ${
-                active === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                activeGroup === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
               {isES ? es : en}
@@ -107,14 +108,14 @@ export default function Navbar() {
 
       {open && (
         <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
-          {SECTION_NAV.map(({ id, es, en }) => (
+          {TOP_NAV.map(({ id, es, en }) => (
             <a
               key={id}
               href={`/#${id}`}
               onClick={close}
-              aria-current={active === id ? "true" : undefined}
+              aria-current={activeGroup === id ? "true" : undefined}
               className={`text-sm font-medium transition-colors ${
-                active === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                activeGroup === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
               {isES ? es : en}
