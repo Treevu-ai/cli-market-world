@@ -123,11 +123,17 @@ export default function ScaleCoverageSection() {
           </p>
         </div>
 
-        <div className="landing-content-rail grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-14">
+        <div className="landing-content-rail grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
           ))}
         </div>
+
+        <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]/50 text-center mb-10 sm:mb-14 max-w-lg mx-auto">
+          {isES
+            ? `${retailersVerified} verificados = precios activos y en producción · ${retailersDefined} en catálogo = integrados, algunos en proceso de activación`
+            : `${retailersVerified} verified = active, live prices · ${retailersDefined} in catalog = integrated, some pending activation`}
+        </p>
 
         <div className="max-w-md mx-auto mb-10 sm:mb-14">
           <LatAmCoverageMap />
