@@ -2131,7 +2131,7 @@ def _splash_right(is_en: bool) -> Panel:
         ("search",    '"arroz" --country PE'),
         ("compare",   '"leche" --country PE'),
         ("basket",    "arroz:2 aceite:1 --country PE"),
-        ("brief",     "--country PE"),
+        ("intel brief", "--country PE"),
         ("mcp-setup", "--ide cursor"),
         ("shell",     ""),
     ]

@@ -12,6 +12,7 @@ export const SECTION_NAV: NavItem[] = [
   { id: "how", es: "Cómo funciona", en: "How it works" },
   { id: "api", es: "API en vivo", en: "Live API" },
   { id: "intelligence", es: "Intelligence", en: "Intelligence" },
+  { id: "in-production", es: "En producción", en: "In production" },
   { id: "pricing", es: "Planes", en: "Pricing" },
   { id: "faq", es: "FAQ", en: "FAQ" },
   { id: "contact", es: "Contacto", en: "Contact" },
