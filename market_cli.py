@@ -1546,8 +1546,9 @@ def cmd_whoami(args):
 
 def cmd_register(args):
     """Create a free account via POST /auth/register and persist API key locally."""
+    ref_code = getattr(args, "ref", None)
     with ui.run_with_status(console, "Creando cuenta..." if not ui.is_en() else "Creating account..."):
-        data = api("POST", "/auth/register")
+        data = api("POST", "/auth/register", {"ref_code": ref_code} if ref_code else None)
     if isinstance(data, dict) and data.get("error"):
         if getattr(args, "json", False):
             ui.json_exit(console, False, error=data["error"], next_commands=ui.error_next_commands(None, data["error"]))
@@ -1793,6 +1794,7 @@ def cmd_init(args):
         reg_args = argparse.Namespace(
             json=False,
             skip_search=True,
+            ref=getattr(args, "ref", None),
         )
         cmd_register(reg_args)
         account_created = True
@@ -2734,6 +2736,11 @@ def main():
         action="store_true",
         help="Skip guided first search after account creation",
     )
+    p.add_argument(
+        "--ref",
+        default=None,
+        help="Referral code from market share (credits the referrer)",
+    )
 
     # doctor
     sub.add_parser("doctor", help=t("doctor"))
@@ -2742,6 +2749,11 @@ def main():
         "--skip-search",
         action="store_true",
         help="Skip guided first search during onboarding",
+    )
+    p.add_argument(
+        "--ref",
+        default=None,
+        help="Referral code from market share (credits the referrer)",
     )
     sub.add_parser("shell", help=t("shell"))
 
