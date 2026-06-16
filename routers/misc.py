@@ -3,12 +3,13 @@
 Endpoints:
   POST /favorites             Add/remove/list user favorite products
   POST /v1/utils/exchange     Static currency conversion
-  POST /telegram/webhook      Telegram bot inbound webhook
+  POST /telegram/webhook      Telegram bot inbound webhook (messages + inline queries)
 """
 
 from __future__ import annotations
 
 import os
+import uuid
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Request
@@ -98,6 +99,43 @@ async def _send_telegram(chat_id: str, text: str) -> bool:
         return False
 
 
+async def _answer_inline_query(inline_query_id: str, results: list[dict]) -> bool:
+    if not TELEGRAM_TOKEN:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerInlineQuery",
+                json={"inline_query_id": inline_query_id, "results": results, "cache_time": 30},
+            )
+            return r.status_code == 200
+    except Exception:
+        return False
+
+
+def _inline_price_results(query: str) -> list[dict]:
+    """Build InlineQueryResultArticle list for `@climarketbot <product>` in any chat."""
+    db = get_db()
+    rows = db.execute(
+        "SELECT * FROM price_snapshots WHERE name LIKE ? ORDER BY queried_at DESC LIMIT 10",
+        (f"%{query}%",),
+    ).fetchall()
+    db.close()
+    results = []
+    for r in rows:
+        text = f"\U0001f50d <b>{r['name']}</b>\n{r['store_name']} — {r['currency']} {r['price']}\n\nVía @climarketbot — t.me/climarketbot"
+        results.append(
+            {
+                "type": "article",
+                "id": str(uuid.uuid4()),
+                "title": r["name"],
+                "description": f"{r['store_name']} — {r['currency']} {r['price']}",
+                "input_message_content": {"message_text": text, "parse_mode": "HTML"},
+            }
+        )
+    return results
+
+
 @router.post("/telegram/webhook")
 async def telegram_webhook(request: Request):
     """Webhook endpoint registered in @BotFather → receives Telegram updates."""
@@ -107,6 +145,15 @@ async def telegram_webhook(request: Request):
         body = await request.json()
     except Exception:
         return {"status": "invalid_json"}
+
+    inline_query = body.get("inline_query")
+    if inline_query:
+        query = (inline_query.get("query") or "").strip()
+        inline_query_id = inline_query.get("id", "")
+        results = _inline_price_results(query) if query else []
+        await _answer_inline_query(inline_query_id, results)
+        return {"status": "ok", "inline_results": len(results)}
+
     message = body.get("message", {})
     chat = message.get("chat", {})
     text = (message.get("text") or "").strip().lower()
