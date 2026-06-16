@@ -94,6 +94,11 @@ async def lifespan(_app: FastAPI):
         alert_if_unhealthy(source="api-startup")
     except Exception as e:
         logger.warning("Moat health check failed (non-fatal): %s", e)
+    try:
+        from routers.misc import register_telegram_commands
+        await register_telegram_commands()
+    except Exception as e:
+        logger.warning("Telegram command menu registration skipped: %s", e)
     yield
 
 

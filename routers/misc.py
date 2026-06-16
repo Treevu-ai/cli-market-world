@@ -99,6 +99,32 @@ async def _send_telegram(chat_id: str, text: str) -> bool:
         return False
 
 
+TELEGRAM_COMMANDS = [
+    {"command": "start", "description": "Bienvenida y lista de comandos"},
+    {"command": "search", "description": "Buscar precios — ej. /search leche"},
+    {"command": "status", "description": "Estado de la plataforma"},
+    {"command": "coverage", "description": "Cobertura por línea y país"},
+    {"command": "pricing", "description": "Planes y acceso"},
+    {"command": "docs", "description": "Documentación y API"},
+    {"command": "help", "description": "Ayuda"},
+]
+
+
+async def register_telegram_commands() -> bool:
+    """Register the native Telegram command menu. Idempotent — safe to call on every startup."""
+    if not TELEGRAM_TOKEN:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setMyCommands",
+                json={"commands": TELEGRAM_COMMANDS},
+            )
+            return r.status_code == 200
+    except Exception:
+        return False
+
+
 async def _answer_inline_query(inline_query_id: str, results: list[dict]) -> bool:
     if not TELEGRAM_TOKEN:
         return False
@@ -157,6 +183,10 @@ async def telegram_webhook(request: Request):
     message = body.get("message", {})
     chat = message.get("chat", {})
     text = (message.get("text") or "").strip().lower()
+    if text.startswith("/"):
+        parts = text.split(maxsplit=1)
+        parts[0] = parts[0].split("@")[0]
+        text = " ".join(parts)
     chat_id = str(chat.get("id", ""))
     first_name = chat.get("first_name", "")
     if not text or not chat_id:
@@ -233,9 +263,19 @@ async def telegram_webhook(request: Request):
     elif text in ("/docs", "docs", "api"):
         reply = (
             "<b>Documentación:</b>\n"
-            "\u2022 Swagger: /docs\n"
+            "\u2022 Swagger: cli-market-production.up.railway.app/docs\n"
             "\u2022 llms.txt: cli-market.dev/llms.txt\n"
             "\u2022 Docs: cli-market.dev/docs"
+        )
+    elif text in ("/help", "help", "ayuda"):
+        reply = (
+            "<b>Comandos disponibles:</b>\n"
+            "/search [producto] \u2014 buscar precios, ej. /search leche\n"
+            "/status \u2014 estado de la plataforma\n"
+            "/coverage \u2014 cobertura por l\u00ednea y pa\u00eds\n"
+            "/pricing \u2014 planes y acceso\n"
+            "/docs \u2014 documentaci\u00f3n y API\n\n"
+            "Tambi\u00e9n puedes escribir <code>@climarketbot producto</code> en cualquier chat."
         )
     else:
         reply = "<b>CLI Market Bot</b>\n\nComandos: /search /status /coverage /pricing /docs /help"
