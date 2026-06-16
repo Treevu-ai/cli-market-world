@@ -12,6 +12,7 @@ import IntelligenceSection from "@/components/IntelligenceSection";
 
 
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
+import InProductionSection from "@/components/InProductionSection";
 import RetailerCTABanner from "@/components/RetailerCTABanner";
 import CoverageToUseCasesBridge from "@/components/CoverageToUseCasesBridge";
 import Pricing from "@/components/Pricing";
@@ -47,6 +48,7 @@ export default function Home() {
           <HowItWorks />
           <QuickstartAPI />
           <IntelligenceSection />
+          <InProductionSection />
           <Pricing />
           <FAQ />
           <ContactSection />
