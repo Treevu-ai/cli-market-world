@@ -278,7 +278,11 @@ jobs:
             echo "No product report changes to commit."
           else
             git commit -m "chore: daily product briefing $(date -u +%Y-%m-%d)"
-            git push
+            for i in 1 2 3; do
+              git pull --rebase origin "${GITHUB_REF_NAME}" && git push && break
+              echo "Push rejected (attempt ${i}/3), retrying after rebase..."
+              sleep 5
+            done
           fi
 
   gtm-briefing:
@@ -361,7 +365,11 @@ jobs:
             echo "No content report changes to commit."
           else
             git commit -m "chore: daily GTM briefing $(date -u +%Y-%m-%d)"
-            git push
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              echo "Push rejected (attempt ${i}/3), retrying after rebase..."
+              sleep 5
+            done
           fi
 
       - name: Upload artifacts
