@@ -12,6 +12,18 @@ function faqsFor(lang: "es" | "en", channels: string) {
   if (isES) {
     return [
       {
+        q: "¿Cómo conecto CLI Market a claude.ai, ChatGPT o Cursor?",
+        a: `Para claude.ai: ve a Configuración → Conectores → añade URL remota: https://cli-market-production.up.railway.app/mcp?token=TU_API_KEY. Para Cursor/VS Code: añade una entrada en mcp.json con command "market-mcp" y env MARKET_API_KEY=TU_KEY. Para ChatGPT: importa el spec OpenAPI desde https://cli-market-production.up.railway.app/mcp/openapi/shop.json con autenticación Bearer. Obtén tu API key gratis en cli-market.dev → Pricing → Free.`,
+      },
+      {
+        q: "¿Qué pueden hacer las herramientas MCP de forma autónoma?",
+        a: `Búsqueda, comparación de precios entre ${MARKET_STATS.retailersVerified} tiendas, canastas y exportación de datos: 100% autónomo. Pago: Yape/Plin requieren confirmación manual del usuario hoy (flujo de aprobación Pro). PayPal cierra automáticamente vía webhook cuando el gateway está activo. Los ${MARKET_STATS.mcpTools} herramientas incluyen market_search, market_compare, market_basket, market_intel_brief y más.`,
+      },
+      {
+        q: "¿Cómo obtengo una API key?",
+        a: `pip install cli-market-world → market login → se genera tu key automáticamente. El tier Free incluye 1.000 consultas/día sin tarjeta de crédito. Tu key también activa el endpoint MCP remoto (claude.ai, ChatGPT, Cursor) y la CLI local.`,
+      },
+      {
         q: "¿Qué es CLI Market?",
         a: `CLI Market es infraestructura de comercio para agentes de IA y equipos comerciales: ${MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados por kg/L sobre ${rp}. Build (Free/Starter/Pro) para integrar API y MCP; Procure para compras con aprobaciones. Cero scraping.`,
       },
@@ -43,6 +55,18 @@ function faqsFor(lang: "es" | "en", channels: string) {
   }
 
   return [
+    {
+      q: "How do I connect CLI Market to claude.ai, ChatGPT, or Cursor?",
+      a: `For claude.ai: go to Settings → Connectors → add remote URL: https://cli-market-production.up.railway.app/mcp?token=YOUR_API_KEY. For Cursor/VS Code: add an entry in mcp.json with command "market-mcp" and env MARKET_API_KEY=YOUR_KEY. For ChatGPT: import the OpenAPI spec from https://cli-market-production.up.railway.app/mcp/openapi/shop.json with Bearer auth. Get your free API key at cli-market.dev → Pricing → Free.`,
+    },
+    {
+      q: "What can the MCP tools do autonomously?",
+      a: `Search, price comparison across ${MARKET_STATS.retailersVerified} stores, baskets, and data export: fully autonomous. Payment: Yape/Plin require manual user confirmation today (Pro approval flow). PayPal closes automatically via webhook when the gateway is active. The ${MARKET_STATS.mcpTools} tools include market_search, market_compare, market_basket, market_intel_brief, and more.`,
+    },
+    {
+      q: "How do I get an API key?",
+      a: `pip install cli-market-world → market login → your key is generated automatically. The Free tier includes 1,000 requests/day with no credit card. Your key also activates the remote MCP endpoint (claude.ai, ChatGPT, Cursor) and the local CLI.`,
+    },
     {
       q: "What is CLI Market?",
       a: `CLI Market is commerce infrastructure for AI agents and commercial teams: ${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L across ${rp}. Build (Free/Starter/Pro) for API and MCP; Procure for procurement with approvals. Zero scraping.`,
