@@ -27,10 +27,22 @@ export default function Hero() {
       <div className="hero-terminal-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
 
       <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--cm-data)]/30 bg-[var(--cm-data)]/8 px-3 py-1"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--cm-data)] animate-pulse" aria-hidden="true" />
+          <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-data)]">
+            {isES ? "Capa de comercio para agentes de IA · LATAM" : "Commerce layer for AI agents · LATAM"}
+          </span>
+        </motion.div>
+
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
           className="hero-terminal-eyebrow mb-4"
         >
           CLI MARKET
@@ -78,12 +90,12 @@ export default function Hero() {
           {isES ? (
             <>
               La primera capa de inteligencia de precios para LatAm. Disponible vía API, CLI y MCP
-              para agentes de IA.
+              — ahora visible en claude.ai, ChatGPT y Cursor.
             </>
           ) : (
             <>
               The first shelf-price intelligence layer for LatAm. Available via API, CLI, and MCP
-              for AI agents.
+              — now discoverable in claude.ai, ChatGPT, and Cursor.
             </>
           )}
         </motion.p>
@@ -163,7 +175,7 @@ export default function Hero() {
                     : ""}
                 </span>
                 <span className="text-xs text-[var(--cm-text-secondary)]">
-                  {isES ? "Lista de espera · Price Pulse" : "Waitlist · Price Pulse"}
+                  {isES ? "Lista de espera · Q3 2026" : "Waitlist · Q3 2026"}
                 </span>
               </>
             }
@@ -226,7 +238,7 @@ export default function Hero() {
                 title={isES ? "Spreads e inflación →" : "Spreads & inflation →"}
                 body={
                   <span className="text-xs text-[var(--cm-text-secondary)]">
-                    {MARKET_STATS.indicatorsCount} {isES ? "indicadores · waitlist" : "indicators · waitlist"}
+                    {MARKET_STATS.indicatorsCount} {isES ? "indicadores · Q3 2026" : "indicators · Q3 2026"}
                   </span>
                 }
                 foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}

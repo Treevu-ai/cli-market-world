@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import PriceTicker from "@/components/PriceTicker";
+import AgenticWaveBand from "@/components/AgenticWaveBand";
 import HeroPlayground from "@/components/HeroPlayground";
 import ScrollStorySection from "@/components/ScrollStorySection";
 import HowItWorks from "@/components/HowItWorks";
@@ -30,6 +31,7 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <PriceTicker />
+          <AgenticWaveBand />
           <ScrollStorySection />
           <section
             id="hero-playground-mobile"
