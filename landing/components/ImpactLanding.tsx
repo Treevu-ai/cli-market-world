@@ -149,7 +149,7 @@ export default function ImpactLanding() {
       <section className="impact-section">
         <div className="impact-stats impact-rv">
           <div className="impact-stat">
-            <div className="impact-stat-n" data-count="53000" data-suffix="+">
+            <div className="impact-stat-n" data-count={parseInt(MARKET_STATS.pricesVerifiedLabel.replace(/[^0-9]/g, ""), 10)} data-suffix="+">
               0
             </div>
             <div className="impact-stat-l">{isES ? "Precios verificados" : "Verified prices"}</div>
