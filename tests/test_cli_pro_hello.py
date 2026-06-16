@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import market_core
 import market_cli
+import market_cli_hello
 import market_ui as ui
 
 
@@ -60,7 +61,7 @@ def test_hello_json_includes_pro_auth(monkeypatch):
 
     monkeypatch.setattr(ui, "api", fake_api)
     monkeypatch.setattr(market_cli.ui, "api", fake_api)
-    data = market_cli._hello_data(is_en=False, ctx=ui.fetch_session_context())
+    data = market_cli_hello._hello_data(is_en=False, ctx=ui.fetch_session_context())
     assert data["auth"]["pro_active"] is True
     assert data["auth"]["username"] == "acubatruweb"
     assert "market account" in data["next_steps"][1]
@@ -81,7 +82,7 @@ def test_hello_default_emits_pro_context(monkeypatch, capsys):
 
     monkeypatch.setattr(ui, "api", fake_api)
     monkeypatch.setattr(market_cli.ui, "api", fake_api)
-    monkeypatch.setattr(market_cli, "_report_install_event", lambda **kwargs: None)
+    monkeypatch.setattr(market_cli_hello, "_report_install_event", lambda **kwargs: None)
     monkeypatch.setattr(market_cli.ui, "maybe_version_notice", lambda *a, **k: None)
     monkeypatch.setattr(market_cli.ui, "mcp_snippet_panel", lambda *a, **k: None)
 
