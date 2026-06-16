@@ -9,6 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import market_cli
+import market_cli_telemetry
 import market_core
 
 
@@ -32,7 +33,7 @@ def test_report_install_event_once(monkeypatch):
         calls.append(body or {})
         return {"ok": True}
 
-    monkeypatch.setattr(market_cli, "api", fake_api)
+    monkeypatch.setattr(market_cli_telemetry, "api", fake_api)
 
     assert market_cli._report_install_event(source="hello") is True
     assert market_cli._report_install_event(source="hello") is False
@@ -43,7 +44,7 @@ def test_report_install_event_once(monkeypatch):
 
 
 def test_install_session_id_is_stable(monkeypatch):
-    monkeypatch.setattr(market_cli, "api", lambda *a, **k: {"ok": True})
+    monkeypatch.setattr(market_cli_telemetry, "api", lambda *a, **k: {"ok": True})
     market_cli._report_install_event(source="cli")
     sid1 = market_cli._install_session_id()
     sid2 = market_cli._install_session_id()
