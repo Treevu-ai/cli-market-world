@@ -21,6 +21,33 @@ export const SECTION_NAV: NavItem[] = [
 /** Side rail includes hero home dot. Build · Procure live under #pricing; retailer listing on /retailers. */
 export const SIDE_NAV: NavItem[] = [{ id: "hero", es: "Inicio", en: "Home" }, ...SECTION_NAV];
 
+/**
+ * Top navbar — condensed to 5 groups so the menu doesn't sprawl across all
+ * SECTION_NAV anchors. Each group anchors to its first/primary section;
+ * the rest stay reachable via the in-page SideNav dots.
+ */
+export const TOP_NAV: NavItem[] = [
+  { id: "how", es: "Producto", en: "Product" },
+  { id: "coverage", es: "Cobertura", en: "Coverage" },
+  { id: "api", es: "API en vivo", en: "Live API" },
+  { id: "pricing", es: "Planes", en: "Pricing" },
+  { id: "faq", es: "FAQ", en: "FAQ" },
+];
+
+/** Maps every SECTION_NAV anchor id to the TOP_NAV group it belongs to, for active-state highlighting. */
+export const TOP_NAV_GROUP: Record<string, string> = {
+  story: "how",
+  casos: "how",
+  intelligence: "how",
+  how: "how",
+  coverage: "coverage",
+  "in-production": "coverage",
+  api: "api",
+  pricing: "pricing",
+  faq: "faq",
+  contact: "faq",
+};
+
 /** Leading slash so pricing tabs work from any route (/docs, /stats, …). */
 export const PRICING_BUILD_HASH = "/#pricing";
 export const PRICING_PROCURE_HASH = "/#procure";
