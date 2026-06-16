@@ -107,6 +107,7 @@ export default function UnifiedContactForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     if (!legal) {
       setError(
         isES
