@@ -46,6 +46,6 @@ def test_report_install_event_once(monkeypatch):
 def test_install_session_id_is_stable(monkeypatch):
     monkeypatch.setattr(market_cli_telemetry, "api", lambda *a, **k: {"ok": True})
     market_cli._report_install_event(source="cli")
-    sid1 = market_cli._install_session_id()
-    sid2 = market_cli._install_session_id()
+    sid1 = market_cli_telemetry._install_session_id()
+    sid2 = market_cli_telemetry._install_session_id()
     assert sid1 == sid2

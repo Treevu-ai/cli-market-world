@@ -25,23 +25,18 @@ import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich import box
-from rich.align import Align
-from rich.text import Text
-from rich.columns import Columns
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, SESSION_FILE, get_token, get_session_username, api, API,
+    STORES, LINES, COUNTRIES, SESSION_FILE, get_token, api, API,
     fmt_price, store_color, save_last_search, load_last_search,
 )
 import market_ui as ui
 from market_stats import (
-    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED,
-    PRICES_VERIFIED_LABEL, INDICATORS_COUNT, PLATFORM_LIST_ES, PLATFORM_LIST_EN,
-    PRICES_REFRESH_HOURS, PACKAGE_VERSION,
+    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
 )
-from market_cli_i18n import T, get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
-from market_cli_telemetry import _install_session_id, _report_install_event, _report_onboarding_event
+from market_cli_i18n import get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
+from market_cli_telemetry import _report_install_event, _report_onboarding_event
 from market_cli_hello import cmd_hello, _render_splash, _mcp_profile_counts
 
 _NO_COLOR = bool(os.environ.get("NO_COLOR", ""))
