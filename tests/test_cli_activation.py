@@ -82,6 +82,44 @@ def test_register_runs_activation_search(monkeypatch):
     assert market_cli._activation_search_done() is True
 
 
+def test_register_passes_ref_code(monkeypatch):
+    calls: list[dict] = []
+
+    def fake_api(method, path, body=None):
+        calls.append({"method": method, "path": path, "body": body})
+        return {"username": "user-x", "api_key": "sk-x"}
+
+    monkeypatch.setattr(market_cli, "api", fake_api)
+    monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    panel = MagicMock()
+    panel.fit = MagicMock(return_value="panel")
+    monkeypatch.setattr(market_cli, "Panel", panel)
+
+    import argparse
+
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref="ref-abc123"))
+    assert calls == [{"method": "POST", "path": "/auth/register", "body": {"ref_code": "ref-abc123"}}]
+
+
+def test_register_without_ref_sends_no_body(monkeypatch):
+    calls: list[dict] = []
+
+    def fake_api(method, path, body=None):
+        calls.append({"method": method, "path": path, "body": body})
+        return {"username": "user-x", "api_key": "sk-x"}
+
+    monkeypatch.setattr(market_cli, "api", fake_api)
+    monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    panel = MagicMock()
+    panel.fit = MagicMock(return_value="panel")
+    monkeypatch.setattr(market_cli, "Panel", panel)
+
+    import argparse
+
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref=None))
+    assert calls == [{"method": "POST", "path": "/auth/register", "body": None}]
+
+
 class _FakeStatus:
     def __enter__(self):
         return self
