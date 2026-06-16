@@ -10,7 +10,7 @@
 
 ## Core Purpose
 
-Commerce infrastructure for AI agents. 68 retailers, 38 verified active across 8 countries and 6 business lines — search, compare, and export via a single API. 46,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
+Commerce infrastructure for AI agents. 68 retailers, 38 verified active across 8 countries and 6 business lines — search, compare, and export via a single API. 56,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
 
 ## Key Numbers
 
@@ -18,7 +18,7 @@ Commerce infrastructure for AI agents. 68 retailers, 38 verified active across 8
 - 8 countries (AR, BR, CL, CO, FR, IT, MX, PE)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
 - 22 curated MCP tools (Shop · Intel · Account; 46 legacy)
-- 34 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
+- 44 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
 - Pricing (Build, foco ICP AI Agent Builders): Free $0 (1,000 req/día), Starter $24/mo (5,000 req/día, CSV export), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Pro Founding $29/mo (100 plazas), Enterprise custom (SLAs, high limits)
@@ -41,7 +41,7 @@ Nuna Orgánica, Xray Chipped PE
 - **Token Efficiency**: Minified JSON (~85% less context vs raw HTML).
 - **Predictable Tools**: 22 curated MCP tools in Shop/Intel/Account bundles.
 - **Cross-Border**: Single interface for 38 verified retailers.
-- **Data Moat**: Collector every 4h. Historical snapshots, inflation, 34 indicators.
+- **Data Moat**: Collector every 4h. Historical snapshots, inflation, 44 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru).
 - **Open Source**: MIT. pip install cli-market-world.
 
