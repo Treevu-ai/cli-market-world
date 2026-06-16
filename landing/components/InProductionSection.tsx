@@ -17,15 +17,21 @@ type Signal = {
 export default function InProductionSection() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { pypiChip, priceChip, retailersVerified } = useLiveStats();
+  const { pypiChip, priceChip, retailersVerified, stats } = useLiveStats();
+  const monthly30d = stats.pypiDownloads30d != null && stats.pypiDownloads30d > 0
+    ? `+${Math.round(stats.pypiDownloads30d / 1000)}K este mes`
+    : null;
+  const monthly30dEn = stats.pypiDownloads30d != null && stats.pypiDownloads30d > 0
+    ? `+${Math.round(stats.pypiDownloads30d / 1000)}K this month`
+    : null;
 
   const signals: Signal[] = [
     {
       icon: "📦",
       labelEs: "Paquete PyPI",
       labelEn: "PyPI Package",
-      valueEs: `${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} descargas`,
-      valueEn: `${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} downloads`,
+      valueEs: `${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} descargas${monthly30d ? ` · ${monthly30d}` : ""}`,
+      valueEn: `${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} downloads${monthly30dEn ? ` · ${monthly30dEn}` : ""}`,
       accent: true,
     },
     {
@@ -146,8 +152,8 @@ export default function InProductionSection() {
         {/* Social proof line */}
         <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]/50 text-center max-w-lg mx-auto">
           {isES
-            ? `Código abierto MIT · ${MARKET_STATS.pypiDownloads.toLocaleString()}+ descargas · ${MARKET_STATS.mcpTools} herramientas MCP · ${retailersVerified} retailers verificados`
-            : `Open source MIT · ${MARKET_STATS.pypiDownloads.toLocaleString()}+ downloads · ${MARKET_STATS.mcpTools} MCP tools · ${retailersVerified} verified retailers`}
+            ? `Código abierto MIT · ${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} descargas${monthly30d ? ` (${monthly30d})` : ""} · ${MARKET_STATS.mcpTools} herramientas MCP · ${retailersVerified} retailers verificados`
+            : `Open source MIT · ${pypiChip || `${MARKET_STATS.pypiDownloads.toLocaleString()}+`} downloads${monthly30dEn ? ` (${monthly30dEn})` : ""} · ${MARKET_STATS.mcpTools} MCP tools · ${retailersVerified} verified retailers`}
         </p>
       </div>
     </section>
