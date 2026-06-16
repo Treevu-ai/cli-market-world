@@ -16,14 +16,14 @@ type Metric = {
 export default function HeroMetrics() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { priceChip, stats } = useLiveStats();
+  const { priceChip, stats, pypiChip } = useLiveStats();
 
   const freshness =
     stats.fresh24hPct != null
       ? `${stats.fresh24hPct.toFixed(0)}%`
       : `${MARKET_STATS.pricesRefreshHours}h`;
 
-  const metrics: Metric[] = [
+  const baseMetrics: Metric[] = [
     {
       value: priceChip,
       labelEs: "PRECIOS VERIFICADOS",
@@ -49,9 +49,23 @@ export default function HeroMetrics() {
     },
   ];
 
+  const metrics: Metric[] = pypiChip
+    ? [
+        ...baseMetrics,
+        {
+          value: pypiChip,
+          labelEs: "DESCARGAS PYPI",
+          labelEn: "PYPI DOWNLOADS",
+          accent: "data",
+        },
+      ]
+    : baseMetrics;
+
+  const colClass = metrics.length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4";
+
   return (
     <div
-      className="hero-metrics grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full landing-content-rail justify-items-center"
+      className={`hero-metrics grid grid-cols-2 ${colClass} gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-0 w-full landing-content-rail justify-items-center`}
       aria-label={isES ? "Métricas de cobertura verificada" : "Verified coverage metrics"}
     >
       {metrics.map((m, i) => (
