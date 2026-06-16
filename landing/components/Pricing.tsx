@@ -435,6 +435,32 @@ export default function Pricing() {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
+          {/* Founding urgency banner */}
+          <div className="landing-content-rail mb-4 mt-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-xl border border-[var(--cm-action)]/30 bg-[var(--cm-action)]/5 px-5 py-3 text-sm">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-[var(--cm-action)] animate-pulse shrink-0" aria-hidden />
+                <span className="font-semibold text-white">Pro Founding</span>
+              </span>
+              <span className="text-[var(--cm-on-surface-variant)]">—</span>
+              <span className="font-mono text-[var(--cm-action)] font-bold">$29<span className="text-xs font-normal text-[var(--cm-on-surface-variant)]">/mo · locked</span></span>
+              <span className="text-[var(--cm-on-surface-variant)]">·</span>
+              <span className="text-[var(--cm-on-surface-variant)]">
+                {foundingSeats != null
+                  ? isES
+                    ? <><strong className="text-white">{foundingSeats}</strong> de 100 plazas restantes</>
+                    : <><strong className="text-white">{foundingSeats}</strong> of 100 seats left</>
+                  : isES
+                    ? "100 plazas · oferta limitada"
+                    : "100 seats · limited offer"}
+              </span>
+              <span className="text-[var(--cm-on-surface-variant)]">·</span>
+              <span className="text-[var(--cm-on-surface-variant)]/70 font-mono text-xs">
+                {isES ? "código" : "code"} <span className="text-[var(--cm-mint)]">founding100</span>
+              </span>
+            </div>
+          </div>
+
           <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 mt-4">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
