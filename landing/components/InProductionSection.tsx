@@ -54,8 +54,8 @@ export default function InProductionSection() {
       icon: "☁️",
       labelEs: "Infraestructura",
       labelEn: "Infrastructure",
-      valueEs: "Railway (API) · Cloudflare Pages (landing) · uptime 99.9%",
-      valueEn: "Railway (API) · Cloudflare Pages (landing) · 99.9% uptime",
+      valueEs: "Railway (API) · Cloudflare Pages (landing) · edge global",
+      valueEn: "Railway (API) · Cloudflare Pages (landing) · global edge",
     },
     {
       icon: "⚖️",
