@@ -36,7 +36,7 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
-- 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
+- 🧠 **Enriquecimiento** — 44 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 - 🔗 **Protocol-ready** — schema JSON normalizado, diseñado para mapear a UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
@@ -111,7 +111,7 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*
-- 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
+- 🧠 **Enrichment** — 44 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 - 🔗 **Protocol-ready** — normalized JSON schema designed to map to UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
