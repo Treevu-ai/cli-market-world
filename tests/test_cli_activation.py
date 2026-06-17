@@ -52,9 +52,12 @@ def test_run_activation_search_once(monkeypatch):
 
     assert market_cli._run_activation_search() is True
     assert market_cli._run_activation_search() is False
-    assert len(calls) == 1
+    assert len(calls) == 2
     assert calls[0]["path"] == "/products/search"
     assert calls[0]["body"]["query"] == "leche"
+    assert calls[1]["path"] == "/v1/events"
+    assert calls[1]["body"]["event"] == "first_search"
+    assert calls[1]["body"]["meta"]["source"] == "activation"
     assert market_cli._activation_search_done() is True
 
 
