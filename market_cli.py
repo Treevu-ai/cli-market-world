@@ -266,6 +266,10 @@ def _run_activation_search(*, skip: bool = False) -> bool:
         console.print(table)
         ui.price_data_footer(console)
         _mark_activation_search_done()
+        try:
+            api("POST", "/v1/events", {"event": "first_search", "meta": {"query": query, "source": "activation"}})
+        except Exception:
+            pass
         title = "TTFV" if en else "TTFV"
         console.print(
             Panel(
@@ -373,6 +377,10 @@ def cmd_search(args):
     if not results:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
+    try:
+        api("POST", "/v1/events", {"event": "first_search", "meta": {"query": args.query}})
+    except Exception:
+        pass
     table = Table(title=f'[bold white]Resultados: "{args.query}" ({data["total"]})[/]', border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=36, no_wrap=False)
@@ -1567,7 +1575,7 @@ def cmd_register(args):
         f"API key: [bold white]{key}[/]\n\n"
         "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n\n"
         "Prueba: [cyan]market search \"leche\" --country PE[/]\n"
-        "MCP: [cyan]https://cli-market.dev/tools[/]",
+        f"MCP (claude.ai): [cyan]{API}/mcp?token={key}[/]",
         title="CLI Market",
         border_style="#00FF88",
     ))
