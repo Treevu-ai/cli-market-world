@@ -18,6 +18,7 @@ import difflib
 import logging
 import os
 import re
+import unicodedata
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException
@@ -42,6 +43,46 @@ from backend_interface import get_store_profile, store_exists
 logger = logging.getLogger("market.server").getChild("search")
 
 router = APIRouter(tags=["search"])
+
+
+# ── Relevance filter ────────────────────────────────────────────────────
+
+def _normalize_text(text: str) -> str:
+    """Lowercase, strip accents (panó → pano), keep alphanum+spaces."""
+    text = text.lower()
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+    return re.sub(r"[^a-z0-9\s]", " ", text)
+
+
+def _word_set(text: str) -> frozenset[str]:
+    return frozenset(w for w in _normalize_text(text).split() if len(w) >= 2)
+
+
+def _query_tokens(query: str) -> list[str]:
+    """Normalized tokens from the user query (min 2 chars)."""
+    return [w for w in _normalize_text(query).split() if len(w) >= 2]
+
+
+def _is_relevant(product_name: str, q_tokens: list[str], *, require_all: bool = False) -> bool:
+    """True if the query tokens appear as complete words in the product name.
+
+    Matching is word-boundary based to prevent prefix false-positives: query
+    'pan' should not match 'pantalon' because 'pan' is not a standalone word there.
+
+    require_all=False (default): at least one token must match. Used where the
+    caller sees the full result list and picks themselves.
+    require_all=True: every token must match. Used by the basket auto-picker, which
+    selects a single product per item with no human in the loop; one-token matching
+    there silently picks cross-brand / cross-type products (e.g. query
+    'leche evaporada gloria entera' matching 'Shake Capuccino UHT Gloria').
+    """
+    if not q_tokens:
+        return True
+    name_words = _word_set(product_name)
+    if require_all:
+        return all(qt in name_words for qt in q_tokens)
+    return any(qt in name_words for qt in q_tokens)
 
 
 def _attach_source_health(response: dict, store_ids: list[str]) -> dict:
@@ -297,31 +338,40 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
         for item in body.items:
             try:
                 raw = await fetch_store(store, item["name"])
-                if raw:
-                    best = min(
-                        raw,
-                        key=lambda p: float(
-                            (
-                                p.get("items", [{}])[0]
-                                .get("sellers", [{}])[0]
-                                .get("commertialOffer", {})
-                                .get("Price", 0)
-                                or 0
-                            )
-                            or float("inf")
-                        ),
-                    )
-                    prod = product_from_json(best, store)
-                    q = item.get("qty", 1)
-                    t += prod["price"] * q
-                    found.append(
-                        {
-                            "name": prod["name"][:40],
-                            "price": prod["price"],
-                            "qty": q,
-                            "subtotal": round(prod["price"] * q, 2),
-                        }
-                    )
+                if not raw:
+                    continue
+                # Convert and filter: only keep products where every query word
+                # appears as a complete word in the product name. The basket
+                # auto-picks a single product per item, so one-token matching
+                # silently selects cross-brand / cross-type products
+                # (e.g. "leche evaporada gloria entera" → "Shake Capuccino UHT Gloria").
+                q_tokens = _query_tokens(item["name"])
+                candidates: list[dict] = []
+                for p in raw:
+                    try:
+                        prod = product_from_json(p, store)
+                        if not q_tokens or _is_relevant(
+                            prod.get("name", ""), q_tokens, require_all=True
+                        ):
+                            candidates.append(prod)
+                    except Exception:
+                        continue
+                if not candidates:
+                    continue
+                best_prod = min(
+                    candidates,
+                    key=lambda p: p["price"] if p["price"] > 0 else float("inf"),
+                )
+                q = item.get("qty", 1)
+                t += best_prod["price"] * q
+                found.append(
+                    {
+                        "name": best_prod["name"][:40],
+                        "price": best_prod["price"],
+                        "qty": q,
+                        "subtotal": round(best_prod["price"] * q, 2),
+                    }
+                )
             except Exception:
                 continue
         if found:
