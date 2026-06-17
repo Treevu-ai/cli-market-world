@@ -81,7 +81,7 @@ def api_host() -> str:
     return API.replace("https://", "").replace("http://", "").rstrip("/")
 
 
-# ── JSON envelope for agents ───────────────────────────────────────────────────────
+# ── JSON envelope for agents ───────────────────────────────────────────────
 
 def json_response(
     ok: bool,
@@ -135,7 +135,7 @@ def json_exit(
     sys.exit(0 if ok else (code if code is not None else 1))
 
 
-# ── Actionable errors & hints ─────────────────────────────────────────────────────
+# ── Actionable errors & hints ───────────────────────────────────────────────────
 
 def error_next_commands(status: int | None, message: str) -> list[str]:
     msg = (message or "").lower()
@@ -195,7 +195,7 @@ def print_context_bar(
     console.print(Panel(line, border_style="dim", box=box.HEAVY, padding=(0, 1)))
 
 
-# ── Tier gates ─────────────────────────────────────────────────────────────────────────
+# ── Tier gates ──────────────────────────────────────────────────────────────────────────
 
 def tier_gate(console: Console, feature: str, tier: str, *, json_args: Any = None) -> bool:
     """Return True if allowed. On deny, print guidance and exit."""
@@ -245,7 +245,7 @@ def tier_gate(console: Console, feature: str, tier: str, *, json_args: Any = Non
     return False
 
 
-# ── Status phases (Codex-style) ──────────────────────────────────────────────────────
+# ── Status phases (Codex-style) ────────────────────────────────────────────────────────
 
 @contextmanager
 def status_phases(console: Console, phases: list[str]) -> Iterator[None]:
@@ -258,7 +258,7 @@ def run_with_status(console: Console, label: str):
     return console.status(f"[cyan]{label}[/]")
 
 
-# ── Doctor readiness ──────────────────────────────────────────────────────────────
+# ── Doctor readiness ───────────────────────────────────────────────────────────────────
 
 def readiness_score(checks: list[tuple[str, str, str]]) -> tuple[int, str]:
     weights = {
@@ -290,7 +290,7 @@ def readiness_score(checks: list[tuple[str, str, str]]) -> tuple[int, str]:
     return pct, summary
 
 
-# ── MCP snippets ────────────────────────────────────────────────────────────────────
+# ── MCP snippets ───────────────────────────────────────────────────────────────────────
 
 def get_mcp_config() -> dict:
     """Machine-readable MCP server configuration for agents / Cursor / Claude etc."""
@@ -330,7 +330,7 @@ def mcp_snippet_panel(console: Console, width: int | None = None) -> None:
     )
 
 
-# ── Version notice ─────────────────────────────────────────────────────────────────────
+# ── Version notice ──────────────────────────────────────────────────────────────────────────────
 
 def maybe_version_notice(console: Console) -> None:
     flag = SESSION_FILE.parent / "version_check"
@@ -599,9 +599,10 @@ def print_investigate_report(console: Console, report: dict[str, Any]) -> None:
         line = inflation.get("line") or query
         delta = float(inflation.get("delta_pct") or 0)
         days = inflation.get("days") or 30
+        infl_color = "#FF6B35" if delta > 0 else MINT
         console.print(
             f"[dim]{'Inflation' if en else 'Inflación'}[/]   "
-            f"{line} [({'#FF6B35' if delta > 0 else MINT})]{{delta:+.1f}}%[/] ({days}d)"
+            f"{line} [{infl_color}]{delta:+.1f}%[/] ({days}d)"
         )
     elif infl_section.get("status") == "unavailable":
         console.print(
@@ -675,7 +676,7 @@ def is_pro_tier(tier: str | None) -> bool:
     return (tier or "free").lower() in PRO_TIERS
 
 
-# ── Grouped terminal layouts (MCP tools + data moat) ──────────────────────────────────────────────────
+# ── Grouped terminal layouts (MCP tools + data moat) ───────────────────────────────────────────────────────
 
 INDICATOR_SHELF_CATEGORIES = frozenset(
     {"retail", "product", "quality", "affordability", "demand", "logistics"}
@@ -1005,7 +1006,7 @@ def print_intel_footer(console: Console, hints: list[str]) -> None:
     print_hints(console, hints)
 
 
-# ── Account dashboard (P2 #14) ──────────────────────────────────────────────────────────────────────
+# ── Account dashboard (P2 #14) ──────────────────────────────────────────────────────────────────────────────
 
 def _usage_bar(used: int, limit: Any, *, width: int = 24) -> str:
     if limit in (None, "unlimited") or (isinstance(limit, int) and limit < 0):
