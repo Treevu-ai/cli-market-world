@@ -23,6 +23,7 @@ FUNNEL_EVENTS = frozenset(
         "onboarding_complete",
         "tutorial_completed",
         "mcp_setup_completed",
+        "mcp_connect",
         "use_case_demo",
         "demo_session_created",
         "demo_first_tool_call",
@@ -61,6 +62,19 @@ def is_noise_username(username: str | None) -> bool:
     if any(u.startswith(p) for p in _NOISE_PREFIXES):
         return True
     return bool(_NOISE_USER_HEX.match(u))
+
+
+def _parse_meta(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str) and value:
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
 
 _FUNNEL_DDL_PG = """
 CREATE TABLE IF NOT EXISTS funnel_events (
@@ -396,6 +410,93 @@ def funnel_summary(*, days: int = 30, exclude_noise: bool = False) -> dict[str, 
         "ttc_median_hours": _median_minutes(ttc),
         "funnel_steps": funnel_steps,
     }
+
+
+def mcp_analytics(*, days: int = 30, include_test: bool = False) -> dict[str, Any]:
+    """MCP connection and tool-call analytics grouped by client."""
+    ensure_funnel_schema()
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    db = get_db()
+    rows = db.execute(
+        "SELECT event, username, meta, created_at FROM funnel_events WHERE event IN (?, ?) AND created_at >= ?",
+        ("mcp_connect", "mcp_tool_call", since),
+    ).fetchall()
+    db.close()
+
+    connects_by_client: dict[str, int] = {}
+    tool_calls_by_client: dict[str, int] = {}
+    tool_calls_by_tool: dict[str, int] = {}
+    tool_calls_by_client_tool: dict[str, dict[str, int]] = {}
+    unique_tokens: set[str] = set()
+    unique_tokens_by_client: dict[str, set[str]] = {}
+    protocol_versions: dict[str, int] = {}
+    unknown_raw_samples: list[str] = []
+
+    for row in rows:
+        meta = _parse_meta(row["meta"])
+        username = row["username"] or ""
+        if not include_test and is_noise_username(username):
+            continue
+
+        client = meta.get("client") or "unknown"
+        event = row["event"]
+
+        if event == "mcp_connect":
+            connects_by_client[client] = connects_by_client.get(client, 0) + 1
+            if username:
+                unique_tokens.add(username)
+                unique_tokens_by_client.setdefault(client, set()).add(username)
+            proto = meta.get("protocol_version") or "unknown"
+            protocol_versions[proto] = protocol_versions.get(proto, 0) + 1
+            if client == "unknown":
+                raw = (meta.get("client_raw") or "").strip()
+                if raw and raw not in unknown_raw_samples:
+                    unknown_raw_samples.append(raw)
+        elif event == "mcp_tool_call":
+            tool = meta.get("tool") or "unknown"
+            tool_calls_by_client[client] = tool_calls_by_client.get(client, 0) + 1
+            tool_calls_by_tool[tool] = tool_calls_by_tool.get(tool, 0) + 1
+            tool_calls_by_client_tool.setdefault(client, {})
+            tool_calls_by_client_tool[client][tool] = (
+                tool_calls_by_client_tool[client].get(tool, 0) + 1
+            )
+
+    total_connects = sum(connects_by_client.values())
+    total_tool_calls = sum(tool_calls_by_client.values())
+
+    result: dict[str, Any] = {
+        "window_days": days,
+        "connections": {
+            "total": total_connects,
+            "unique_tokens": len(unique_tokens),
+            "by_client": dict(sorted(connects_by_client.items(), key=lambda x: -x[1])),
+            "unique_by_client": {
+                k: len(v)
+                for k, v in sorted(
+                    unique_tokens_by_client.items(), key=lambda x: -len(x[1])
+                )
+            },
+            "by_protocol_version": dict(
+                sorted(protocol_versions.items(), key=lambda x: -x[1])
+            ),
+        },
+        "tool_calls": {
+            "total": total_tool_calls,
+            "by_client": dict(sorted(tool_calls_by_client.items(), key=lambda x: -x[1])),
+            "by_tool": dict(sorted(tool_calls_by_tool.items(), key=lambda x: -x[1])),
+            "by_client_and_tool": {
+                k: dict(sorted(v.items(), key=lambda x: -x[1]))
+                for k, v in sorted(
+                    tool_calls_by_client_tool.items(),
+                    key=lambda x: -sum(x[1].values()),
+                )
+            },
+        },
+        "includes_test_traffic": include_test,
+    }
+    if unknown_raw_samples:
+        result["unknown_client_raw_samples"] = unknown_raw_samples[:20]
+    return result
 
 
 def maybe_first_search(username: str, *, query: str = "") -> None:
