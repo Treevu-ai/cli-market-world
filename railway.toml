@@ -4,6 +4,10 @@
 #   Settings → Config-as-code → Config file path → /railway.collector.toml
 #
 # Add PostgreSQL from Railway dashboard → auto-injects DATABASE_URL
+#
+# NOTE: Dockerfile uses mcr.microsoft.com/playwright/python:v1.45.0-jammy
+# to provide Chromium + system deps for the VTEX scraping fallback.
+# Build time is longer (~3-4 min) than the previous python:3.12-slim build.
 
 [build]
 builder = "DOCKERFILE"
@@ -11,4 +15,5 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/health"
+healthcheckTimeout = 300
 numReplicas = 1

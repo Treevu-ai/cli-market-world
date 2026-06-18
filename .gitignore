@@ -17,6 +17,7 @@ docs/awesome-claude-code/
 .obsidian/workspace-mobile.json
 .obsidian/hotkeys.json
 .cursor/*
+.vscode/
 !.cursor/rules/
 !.cursor/rules/**
 .env
@@ -44,3 +45,6 @@ docs/sunat_manual.pdf
 docs/financial-services/
 .next/
 .contract-parity-data/
+
+# Build artifacts
+.wheel-check/
