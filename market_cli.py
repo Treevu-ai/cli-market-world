@@ -436,8 +436,8 @@ def cmd_search(args):
         if nag < 5:
             console.print()
             console.print(
-                f"[dim]Using demo account ([cyan]admin/market[/]). "
-                f"[bold #FFD600]Create your free account?[/] [cyan]market init[/][/]"
+                "[dim]Using demo account ([cyan]admin/market[/]). "
+                "[bold #FFD600]Create your free account?[/] [cyan]market init[/][/]"
             )
             _write_nag_count(nag + 1)
 
