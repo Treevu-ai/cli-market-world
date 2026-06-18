@@ -2,6 +2,16 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-06-18] — CLI fixes: --version, i18n, Win UTF-8, onboarding, demo nag
+
+### cli-market-world v1.9.42
+- **Added:** `--version` flag to CLI parser with `cli-market-world {PACKAGE_VERSION}`
+- **Added:** Mini-tutorial onboarding for new users without session (`market_cli_hello.py`)
+- **Added:** Demo account nag after 5 searches suggesting `market init`
+- **Fixed:** Windows cp1252 terminal encoding — force UTF-8 stdout
+- **Fixed:** `ModuleNotFoundError` for `market_cli_i18n` via full extraction from `market_cli.py`
+- **Changed:** `argparse` description now includes live stats (retailers, countries, indicators)
+
 ---
 
 ## [2026-06-13] — Core 1.9.35 observatory_snapshot_streak (T-173)

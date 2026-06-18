@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-32k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-37k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -26,8 +26,8 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 44 indicadores**
-- 💰 **Más de 56,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 63 indicadores**
+- 💰 **Más de 60,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -36,7 +36,7 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
-- 🧠 **Enriquecimiento** — 44 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
+- 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 - 🔗 **Protocol-ready** — schema JSON normalizado, diseñado para mapear a UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
@@ -101,8 +101,8 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
 
-- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 44 indicators**
-- 💰 **56,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 63 indicators**
+- 💰 **60,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
@@ -111,7 +111,7 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*
-- 🧠 **Enrichment** — 44 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
+- 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 - 🔗 **Protocol-ready** — normalized JSON schema designed to map to UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
@@ -216,7 +216,7 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 22 MCP tools (default profile) · 44 indicators
+## 🔧 22 MCP tools (default profile) · 63 indicators
 
 `market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 
