@@ -510,5 +510,27 @@ def cmd_hello(args):
             f"[yellow]{'Session expired' if is_en else 'Sesión expirada'}.[/] [cyan]{login_cmd}[/]",
             border_style="yellow",
         ))
+    elif ctx is None:
+        # New user without session: show 3-step onboarding mini-tutorial
+        steps = [
+            ("1", "market init", "Create free account" if is_en else "Crear cuenta gratuita"),
+            ("2", 'market search "arroz"', "Your first search" if is_en else "Tu primera busqueda"),
+            ("3", 'market compare "leche"', "Compare prices" if is_en else "Compara precios"),
+        ]
+        console.print()
+        console.print(Panel(
+            "[bold]Welcome to CLI Market![/]\n\n"
+            + "\n".join(
+                f"  [bold #00FF88]{n}[/] [cyan]{cmd}[/]  [dim]{desc}[/]"
+                for n, cmd, desc in steps
+            )
+            + "\n\n[dim]Or run [cyan]market tutorial[/] for a guided walkthrough.",
+            border_style=ui.MINT,
+        ))
+        console.print(
+            f"[dim]v{PACKAGE_VERSION}[/]  |  "
+            f"{RETAILERS_VERIFIED} retailers  |  {MS_COUNTRIES} countries"
+        )
+        return
 
     _render_splash(is_en, ctx)

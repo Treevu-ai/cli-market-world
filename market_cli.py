@@ -28,12 +28,12 @@ from rich import box
 from rich.table import Table
 
 from market_core import (
-    STORES, LINES, COUNTRIES, SESSION_FILE, get_token, api, API,
+    STORES, LINES, COUNTRIES, SESSION_FILE, get_token, get_session_username, api, API,
     fmt_price, store_color, save_last_search, load_last_search,
 )
 import market_ui as ui
 from market_stats import (
-    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
+    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, INDICATORS_COUNT, PACKAGE_VERSION,
 )
 from market_cli_i18n import get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
 from market_cli_telemetry import _report_install_event, _report_onboarding_event
@@ -44,6 +44,19 @@ console = Console(no_color=_NO_COLOR)
 
 _ = lambda x: x
 
+
+def _read_nag_count() -> int:
+    try:
+        return int((SESSION_FILE.parent / ".nag_count").read_text().strip())
+    except Exception:
+        return 0
+
+
+def _write_nag_count(n: int) -> None:
+    try:
+        (SESSION_FILE.parent / ".nag_count").write_text(str(n))
+    except Exception:
+        pass
 
 def _normalize_market_argv(argv: list[str]) -> list[str]:
     """Map legacy top-level commands without cluttering --help."""
@@ -416,6 +429,17 @@ def cmd_search(args):
         "market add 1 --qty 2",
         "market basket leche:1",
     ])
+    token = get_token()
+    username = get_session_username()
+    if not token or username in (None, "admin"):
+        nag = _read_nag_count()
+        if nag < 5:
+            console.print()
+            console.print(
+                f"[dim]Using demo account ([cyan]admin/market[/]). "
+                f"[bold #FFD600]Create your free account?[/] [cyan]market init[/][/]"
+            )
+            _write_nag_count(nag + 1)
 
 def cmd_compare(args):
     params = {"query": args.query, "line": args.line, "limit": args.limit}
@@ -2626,6 +2650,8 @@ def main():
     from market_agent_id import patch_core_api_agent_header
 
     patch_core_api_agent_header()
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.argv = _normalize_market_argv(sys.argv)
     if len(sys.argv) > 1 and sys.argv[1] in _META_CMDS:
         ns = argparse.Namespace(json="--json" in sys.argv)
@@ -2633,8 +2659,16 @@ def main():
             return cmd_about(ns)
         return cmd_share(ns)
 
-    parser = argparse.ArgumentParser(description=t("desc"), usage=t("usage"))
+    parser = argparse.ArgumentParser(
+        description=f"CLI Market v{PACKAGE_VERSION} — Commerce infrastructure for AI agents. "
+                    f"{RETAILERS_VERIFIED} verified retailers, {MS_COUNTRIES} countries, {INDICATORS_COUNT} indicators.",
+        usage="market <command> [options]",
+    )
     parser.add_argument("--json", action="store_true", help=t("json_help"))
+    parser.add_argument(
+        "--version", action="version",
+        version=f"cli-market-world {PACKAGE_VERSION}"
+    )
     sub = parser.add_subparsers(dest="command")
 
     # login
