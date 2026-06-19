@@ -132,6 +132,9 @@ def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
     match = _CORE_URL_RE.search(text)
     if match:
         return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    match = _CORE_PIN_EQ_RE.search(text)
+    if match:
+        return int(match.group(1)), int(match.group(2)), int(match.group(3))
     raise SystemExit(f"{label}: no cli-market-core>=X.Y.Z pin or @ URL found")
 
 
