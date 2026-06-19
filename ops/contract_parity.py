@@ -45,6 +45,10 @@ _CORE_PIN_RE = re.compile(
     r"cli-market-core\s*>=\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
 )
+_CORE_URL_RE = re.compile(
+    r"cli-market-core\s*@\s*https://[^\s]*cli_market_core-(\d+)\.(\d+)\.(\d+)-",
+    re.IGNORECASE,
+)
 _CORE_PIN_EQ_RE = re.compile(
     r"cli-market-core\s*==\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
@@ -123,9 +127,12 @@ def compare_openapi(world_spec: dict[str, Any], backend_spec: dict[str, Any]) ->
 
 def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
     match = _CORE_PIN_RE.search(text)
-    if not match:
-        raise SystemExit(f"{label}: no cli-market-core>=X.Y.Z pin found")
-    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    if match:
+        return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    match = _CORE_URL_RE.search(text)
+    if match:
+        return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    raise SystemExit(f"{label}: no cli-market-core>=X.Y.Z pin or @ URL found")
 
 
 def parse_core_pin_eq(text: str, *, label: str) -> tuple[int, int, int]:
