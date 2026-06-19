@@ -18,15 +18,15 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 ## 🇪🇸 Español
 
-### Infraestructura de comercio para agentes de IA — el middleware LATAM entre UCP/ACP y los retailers que aún no están listos.
+### Infraestructura de comercio para agentes de IA — el middleware LATAM que conecta con los retailers que aún no están listos.
 
-> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una — middleware LATAM preparado para integración UCP y ACP cuando el comercio agéntico llegue a la región.**
+> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una.**
 
-Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Walmart) ya están estandarizando cómo los agentes descubren y evalúan productos. Falabella, Ripley, Wong, Metro no van a implementar estos protocolos solos. CLI Market es el puente.
+Falabella, Ripley, Wong, Metro no van a exponer APIs de comercio por su cuenta. CLI Market es el puente.
 
-**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **81 retailers (41 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **81 retailers (41 verificados activos)** en **8 países**. Un único esquema JSON listo para integrar.
 
-- 🌍 **81 retailers (41 verificados activos) · 8 países · 4 plataformas · 24 herramientas MCP (46 legacy) · 44 indicadores**
+- 🌍 **81 retailers (41 verificados activos) · 8 países · 4 plataformas**
 - 💰 **Más de 61,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
@@ -36,34 +36,31 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
-- 🧠 **Enriquecimiento** — 34 indicadores de mercado a partir de datos de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
+- 🧠 **Enriquecimiento** — datos de mercado a partir de góndola + APIs públicas (OFF, Wikimedia, IMF, Eurostat, BCB, Banco Mundial)
 - 🛍️ **Compra** — orden interna CLI Market + pago LATAM (PayPal / Yape / Plin); no checkout en sitio del retailer
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
-- 🔗 **Protocol-ready** — schema JSON normalizado, diseñado para mapear a UCP (Google/Shopify/Visa) y ACP (OpenAI/Stripe); el retailer LATAM no implementa el protocolo por su cuenta
+- 🔗 **API-first** — schema JSON normalizado, listo para integrar; el retailer LATAM no expone APIs por su cuenta
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
 #### 🚀 Inicio rápido
 
 ```bash
 pip install cli-market-world
-market hello   # post-instalación: estadísticas + próximos pasos (API prod por defecto)
-market init    # cuenta + primera búsqueda + MCP (recomendado)
+market hello   # post-instalación: estadísticas + próximos pasos
+market init    # cuenta + primera búsqueda (recomendado)
 
-# Solo para servidor local: export MARKET_API_URL=http://127.0.0.1:8765
-# Sesión existente: market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "compra arroz al mejor precio"
-market intel indicators --country PE
-market intel enrichment -c PE
+market intel brief --country PE
 ```
 
-**¿Qué hace `market checkout`?** Crea una orden en CLI Market y abre el pago (Yape/Plin manual, PayPal/MP vía gateway). **No** completa compras en Wong, Rappi ni Mercado Libre. Matriz completa: `GET /v1/capabilities`.
+**¿Qué hace `market checkout`?** Crea una orden en CLI Market y abre el pago (Yape/Plin manual, PayPal/MP vía gateway). **No** completa compras en Wong, Rappi ni Mercado Libre.
 
-#### 💵 Planes (simplificado — foco en 1 ICP principal: AI Agent Builders)
+#### 💵 Planes
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
@@ -71,7 +68,7 @@ market intel enrichment -c PE
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
-| **Agente intel** | — | Ilimitado | Ilimitado + white-label |
+| **Intel** | — | Ilimitado | Ilimitado + white-label |
 | **Alertas de precio** | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
 | **Historial de precios** | 7 días | 12 meses | Completo |
 | **Exportar datos** | — | CSV ilimitado + cron | Feed directo S3/webhook |
@@ -93,15 +90,15 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 ## 🇬🇧 English
 
-### Commerce infrastructure for AI agents — the LATAM middleware between UCP/ACP protocols and retailers that aren't ready yet.
+### Commerce infrastructure for AI agents — the LATAM middleware connecting retailers that aren't ready yet.
 
-> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one — LATAM middleware built for UCP and ACP integration when agentic commerce reaches the region.**
+> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one.**
 
-Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) are already standardizing how agents discover and evaluate products. Falabella, Ripley, Wong, Metro won't implement these protocols on their own. CLI Market is the bridge.
+Falabella, Ripley, Wong, Metro won't expose commerce APIs on their own. CLI Market is the bridge.
 
-**CLI Market fixes that.** One `pip install`. One API call across **81 retailers (41 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
+**CLI Market fixes that.** One `pip install`. One API call across **81 retailers (41 verified active)** in **8 countries**. One JSON schema ready to integrate.
 
-- 🌍 **81 retailers (41 verified active) · 8 countries · 4 platforms · 24 curated MCP tools (46 legacy) · 44 indicators**
+- 🌍 **81 retailers (41 verified active) · 8 countries · 4 platforms**
 - 💰 **61,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
@@ -111,34 +108,31 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*
-- 🧠 **Enrichment** — 34 market indicators from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
+- 🧠 **Enrichment** — market data from shelf data + public APIs (OFF, Wikimedia, IMF, Eurostat, BCB, World Bank)
 - 🛍️ **Buy** — internal CLI Market order + LATAM payment (PayPal / Yape / Plin); not retailer-site checkout
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
-- 🔗 **Protocol-ready** — normalized JSON schema designed to map to UCP (Google/Shopify/Visa) and ACP (OpenAI/Stripe); LATAM retailers don't implement the protocol themselves
+- 🔗 **API-first** — normalized JSON schema, ready to integrate; LATAM retailers don't expose APIs themselves
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [MCP /tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
 
 #### 🚀 Quick start
 
 ```bash
 pip install cli-market-world
-market hello   # post-install: stats + next steps (production API by default)
-market init    # account + first search + MCP (recommended)
+market hello   # post-install: stats + next steps
+market init    # account + first search (recommended)
 
-# Local server only: export MARKET_API_URL=http://127.0.0.1:8765
-# Returning session: market login
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
 market ask "buy rice at the best price"
-market intel indicators --country PE
-market intel enrichment -c PE
+market intel brief --country PE
 ```
 
-**What does `market checkout` do?** Creates a CLI Market order and opens payment (manual Yape/Plin, PayPal/MP via gateway). It does **not** complete purchases on Wong, Rappi, or Mercado Libre. Full matrix: `GET /v1/capabilities`.
+**What does `market checkout` do?** Creates a CLI Market order and opens payment (manual Yape/Plin, PayPal/MP via gateway). It does **not** complete purchases on Wong, Rappi, or Mercado Libre.
 
-#### 💵 Pricing (simplified — focus on 1 primary ICP: AI Agent Builders)
+#### 💵 Pricing
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
@@ -146,7 +140,7 @@ market intel enrichment -c PE
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
-| **Intel agent** | — | Unlimited | Unlimited + white-label |
+| **Intel** | — | Unlimited | Unlimited + white-label |
 | **Price alerts** | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |
 | **Price history** | 7 days | 12 months | Full dataset |
 | **Export** | — | CSV unlimited + cron | Direct S3/webhook feed |
@@ -168,15 +162,15 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 
 ## 📖 Learn more
 
-- **[Docs — quick start & MCP](https://cli-market.dev/docs)** — install, auth, compare, basket, intel, MCP setup
-- **[Use cases & pricing](https://cli-market.dev/#pricing)** — AI agent builders, procurement, intelligence pilots
-- **[Public stats / data-gate](https://cli-market.dev/stats)** — live moat metrics; **MAA** (Monthly Active Agents) is the north star
+- **[Docs — quick start](https://cli-market.dev/docs)** — install, auth, compare, basket, intel, setup
+- **[Use cases & pricing](https://cli-market.dev/#pricing)** — developers, procurement, intelligence
+- **[Public stats / data-gate](https://cli-market.dev/stats)** — live data metrics; **MAA** (Monthly Active Agents) is the north star
 
 ---
 
 ## 🏗️ Ecosystem architecture
 
-CLI Market is composed of 4 specialized repositories, each with a single responsibility:
+CLI Market is composed of 4 specialized repositories:
 
 ```
 cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retailers, 52k+ prices
@@ -185,17 +179,17 @@ cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retail
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
        |
        v  canonical identities
-cli-market-core      Intelligence — indicators, stats, billing, connectors, 24 MCP tools (default)
+cli-market-core      Intelligence — data, stats, billing, connectors, API tools
        |
        v  structured intelligence
-cli-market-world     Exposure — landing, docs, MCP registry, deployment configs (THIS REPO)
+cli-market-world     Exposure — landing, docs, deployment configs (THIS REPO)
 ```
 
 | Repo | Visibility | Role |
 |---|---|---|
 | `cli-market-backend` | Private | Scrapers + FastAPI API |
 | `cli-market-index` | Private | Entity resolution engine |
-| `cli-market-core` | Public | Intelligence + MCP tools |
+| `cli-market-core` | Public | Intelligence + API tools |
 | `cli-market-world` | Private | Landing + docs (this repo) |
 | `cli-market-content` | Private | GTM + content calendar |
 
@@ -203,7 +197,7 @@ cli-market-world     Exposure — landing, docs, MCP registry, deployment config
 
 ## 📊 Dashboard auditability
 
-Every price in CLI Market is traceable and verifiable. The [live dashboard](https://cli-market-production.up.railway.app/dashboard) exposes:
+Every price in CLI Market is traceable. The [live dashboard](https://cli-market-production.up.railway.app/dashboard) exposes:
 
 - **Cobertura 7 días** — `coverage_7d_pct` per retailer: what % of each store's catalog refreshed in the last week
 - **Normalización por kg/L** — unit price visible next to shelf price (e.g. `PEN 4.20/kg`), with counter of non-parseable names
@@ -216,7 +210,7 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 24 MCP tools (default profile) · 44 indicators
+## 🔧 API tools (Shop · Intel · Account)
 
 `market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_barcode` `market_ticket` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 

@@ -21,7 +21,7 @@ from market_cli_i18n import get_lang
 from market_cli_telemetry import _report_install_event
 from market_stats import (
     COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED,
-    PRICES_VERIFIED_LABEL, INDICATORS_COUNT, PLATFORM_LIST_ES, PLATFORM_LIST_EN,
+    PRICES_VERIFIED_LABEL, PLATFORM_LIST_ES, PLATFORM_LIST_EN,
     PRICES_REFRESH_HOURS, PACKAGE_VERSION,
 )
 
@@ -74,7 +74,7 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
         body = (
             "[bold white]Post-install activation[/]\n"
             "[dim]You installed[/] [cyan]cli-market[/][dim]. Run[/] [bold cyan]market init[/] "
-            "[dim]for API key, readiness,[/] [bold]first verified search[/][dim], and MCP snippet.[/]\n"
+            "[dim]for API key, readiness,[/] [bold]first verified search[/][dim].[/]\n"
             "[dim]Or[/] [cyan]market register[/] [dim]if you only need credentials.[/]"
         )
         title = "[bold #00FF88]NEXT STEP[/]"
@@ -82,7 +82,7 @@ def _hello_activation_panel(is_en: bool, width: int) -> Panel:
         body = (
             "[bold white]Activación post-install[/]\n"
             "[dim]Instalaste[/] [cyan]cli-market[/][dim]. Ejecuta[/] [bold cyan]market init[/] "
-            "[dim]para API key, readiness,[/] [bold]primera búsqueda verificada[/][dim] y snippet MCP.[/]\n"
+            "[dim]para API key, readiness,[/] [bold]primera búsqueda verificada[/][dim].[/]\n"
             "[dim]O[/] [cyan]market register[/] [dim]si solo necesitas credenciales.[/]"
         )
         title = "[bold #00FF88]SIGUIENTE PASO[/]"
@@ -118,11 +118,9 @@ def _hello_pro_panel(is_en: bool, width: int, *, username: str, sub: dict) -> Pa
 
 def _hello_status_bar(is_en: bool, width: int, *, ctx: dict | None = None) -> Panel:
     label = "EN LINEA" if not is_en else "ONLINE"
-    mcp_default, _ = _mcp_profile_counts()
     line = (
         f"[dim]v{PACKAGE_VERSION}[/]  [#00FF88]|[/]  "
         f"[dim]API[/]  [bold]{_hello_api_host()}[/]  [#00FF88]|[/]  "
-        f"[dim]MCP[/]  [bold #00FF88]{mcp_default}[/] tools  [#00FF88]|[/]  "
         f"[dim]RETAILERS[/]  [bold #00FF88]{RETAILERS_VERIFIED}[/]  [#00FF88]|[/]  "
         f"[dim]STATUS[/]  [bold #00FF88]{label}[/]"
     )
@@ -145,7 +143,7 @@ def _hello_capabilities_panel(is_en: bool, width: int | None = None) -> Panel:
             f"[bold #00FF88]PLATFORMS[/]\n"
             f"  [dim]{platforms}[/]\n\n"
             f"[bold #00FF88]DATA MOAT[/]\n"
-            f"  {INDICATORS_COUNT} indicators  -  kg/L normalized\n"
+            f"  market data  -  kg/L normalized\n"
             f"  Yape/Plin + PayPal  -  MIT open source"
         )
         title = "[bold #00FF88]CAPABILITIES[/]"
@@ -157,7 +155,7 @@ def _hello_capabilities_panel(is_en: bool, width: int | None = None) -> Panel:
             f"[bold #00FF88]PLATAFORMAS[/]\n"
             f"  [dim]{platforms}[/]\n\n"
             f"[bold #00FF88]DATA MOAT[/]\n"
-            f"  {INDICATORS_COUNT} indicadores  -  normalizado kg/L\n"
+            f"  datos de mercado  -  normalizado kg/L\n"
             f"  Yape/Plin + PayPal  -  código abierto MIT"
         )
         title = "[bold #00FF88]CAPACIDADES[/]"
@@ -170,7 +168,7 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
             "[bold #00FF88]ONBOARDING[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]you are here[/]\n"
             "  [cyan]1.[/] [cyan]market demo[/]         [dim]no account · search + compare[/]\n"
-            "  [cyan]2.[/] [cyan]market init[/]         [dim]account + checkout + MCP[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]account + checkout[/]\n"
             '  [cyan]3.[/] [cyan]market search "milk" --country PE[/]\n'
             "  [cyan]4.[/] [cyan]market doctor[/]       [dim]readiness %[/]\n"
             "  [dim]     market register[/]  [dim]optional if you only need sk-...[/]\n\n"
@@ -184,7 +182,7 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
             "[bold #00FF88]INICIO RÁPIDO[/]\n"
             "  [cyan]0.[/] [cyan]market hello[/]        [dim]estás aquí[/]\n"
             "  [cyan]1.[/] [cyan]market demo[/]         [dim]sin cuenta · buscar + comparar[/]\n"
-            "  [cyan]2.[/] [cyan]market init[/]         [dim]cuenta + checkout + MCP[/]\n"
+            "  [cyan]2.[/] [cyan]market init[/]         [dim]cuenta + checkout[/]\n"
             '  [cyan]3.[/] [cyan]market search "leche" --country PE[/]\n'
             "  [cyan]4.[/] [cyan]market doctor[/]       [dim]preparacion %[/]\n"
             "  [dim]     market register[/]  [dim]opcional si solo necesitas sk-...[/]\n\n"
@@ -198,14 +196,14 @@ def _hello_quickstart_panel(is_en: bool, width: int | None = None) -> Panel:
 
 
 def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
-    mcp_default, mcp_legacy = _mcp_profile_counts()
+
     if is_en:
         body = (
             "[bold #00FF88]INTERMEDIATE[/]\n"
             '  [cyan]market basket[/] [dim]"milk:2 rice:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"sunflower oil" --country AR[/]\n'
             "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
-            f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
+            f"  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
             "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
             "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -217,7 +215,7 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             '  [cyan]market basket[/] [dim]"leche:2 arroz:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"aceite de girasol" --country AR[/]\n'
             "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
-            f"  [cyan]market tools[/]            [dim]{mcp_default} MCP · Shop/Intel/Account ({mcp_legacy} legacy)[/]\n"
+            f"  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
             "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
             "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -231,14 +229,14 @@ def _hello_insight_panel(is_en: bool, width: int) -> Panel:
         hook = "[bold white]Your agent can reason. It still needs verified shelf prices.[/]"
         gartner = (
             "[dim]Gartner (Oct 2025): by 2030, 20% of monetary transactions will be programmable "
-            "for AI agents with economic agency  -  agentic traffic becomes structural.[/]"
+            "for AI agents with economic agency  -  AI commerce traffic becomes structural.[/]"
         )
         title = "[bold #00FF88]INSIGHT[/]"
     else:
         hook = "[bold white]Su agente de IA ya puede razonar; aún requiere precios reales de góndola.[/]"
         gartner = (
             "[dim]Gartner (oct. 2025): hacia 2030, el 20% de las transacciones monetarias serán "
-            "programables para agentes de IA; el tráfico agéntico deja de ser marginal.[/]"
+            "programables para agentes de IA; el tráfico de agentes de IA deja de ser marginal.[/]"
         )
         title = "[bold #00FF88]CONTEXTO[/]"
     return Panel(
@@ -289,8 +287,6 @@ def _splash_left(is_en: bool, ctx: dict | None) -> Panel:
     tier = (ctx or {}).get("tier", "free")
     sub = (ctx or {}).get("subscription") or {}
     req_day = sub.get("req_limit_day", "1,000")
-    mcp_count = _mcp_profile_counts()[0]
-
     greeting = (
         f"Welcome back, [bold cyan]{username}[/]!"
         if is_en
@@ -308,7 +304,7 @@ def _splash_left(is_en: bool, ctx: dict | None) -> Panel:
     info_rows = [
         (("Tier" if is_en else "Tier"), f"[bold #00FF88]{tier}[/]"),
         (("Retailers" if is_en else "Retailers"), f"[bold]{RETAILERS_VERIFIED}[/] [dim]· {MS_COUNTRIES} {'countries' if is_en else 'países'}[/]"),
-        ("MCP tools", f"[bold #00FF88]{mcp_count}[/] [dim]curated[/]"),
+        ("Tools", f"[bold #00FF88]Shop · Intel · Account[/] [dim]curated[/]"),
         ("API", f"[dim]{_hello_api_host()}[/]"),
         (("Limit/day" if is_en else "Límite/día"), f"[dim]{req_day} req[/]"),
     ]
@@ -398,11 +394,10 @@ def _splash_footer(is_en: bool, ctx: dict | None) -> Panel:
 def _render_splash(is_en: bool, ctx: dict | None) -> None:
     """Two-panel welcome screen shared by cmd_hello and cmd_shell."""
     # Top badge line
-    mcp_count = _mcp_profile_counts()[0]
     console.print(
         f" [bold #00FF88]CLI Market[/]  [dim]v{PACKAGE_VERSION}[/]  "
         f"[dim]──[/]  [bold]{RETAILERS_VERIFIED}[/] [dim]retailers[/]  "
-        f"[dim]──[/]  [bold #00FF88]{mcp_count}[/] [dim]MCP tools[/]  "
+        f"[dim]──[/]  [bold #00FF88]Shop · Intel · Account[/] [dim]tools[/]  "
         f"[dim]──[/]  [dim]MIT · pip install cli-market-world[/]"
     )
     # Two panels
@@ -415,12 +410,13 @@ def _render_splash(is_en: bool, ctx: dict | None) -> None:
 def _hello_data(is_en: bool, ctx: dict | None = None) -> dict:
     """Structured data for `market hello --json` (agent / machine readable)."""
     platforms = (PLATFORM_LIST_EN if is_en else PLATFORM_LIST_ES).replace("·", " - ")
-    mcp_default, mcp_legacy = _mcp_profile_counts()
+
+    tool_count, tool_legacy = _mcp_profile_counts()
     pro_active = bool(ctx and ctx.get("valid") and ui.is_pro_tier(ctx.get("tier")))
 
     onboarding = [
         {"step": 0, "cmd": "market hello", "description": "you are here" if is_en else "estás aquí", "current": True},
-        {"step": 1, "cmd": "market init", "description": "account + first search + MCP" if is_en else "cuenta + primera búsqueda + MCP"},
+        {"step": 1, "cmd": "market init", "description": "account + first search" if is_en else "cuenta + primera búsqueda"},
         {"step": 2, "cmd": 'market search "leche" --country PE', "description": "first verified search" if is_en else "primera búsqueda verificada"},
         {"step": 3, "cmd": "market doctor", "description": "readiness %" if is_en else "preparación %"},
         {"step": 4, "cmd": "market register", "description": "optional — sk-... only" if is_en else "opcional — solo sk-...", "optional": True},
@@ -438,21 +434,21 @@ def _hello_data(is_en: bool, ctx: dict | None = None) -> dict:
         "lang": "en" if is_en else "es",
         "status": {
             "api": _hello_api_host(),
-            "mcp_tools": mcp_default,
-            "mcp_tools_legacy": mcp_legacy,
-            "mcp_profile": "default",
+            "api_tools": tool_count,
+            "api_tools_legacy": tool_legacy,
+            "tool_profile": "default",
             "retailers_verified": RETAILERS_VERIFIED,
             "countries": MS_COUNTRIES,
             "prices": PRICES_VERIFIED_LABEL,
             "refresh_hours": PRICES_REFRESH_HOURS,
-            "indicators": INDICATORS_COUNT,
+            "data_points": 40,
             "platforms": platforms,
             "online": True,
         },
         "onboarding": onboarding,
         "capabilities": {
             "coverage": f"{RETAILERS_VERIFIED} verified retailers - {MS_COUNTRIES} countries",
-            "data_moat": f"{INDICATORS_COUNT} indicators - kg/L normalized - multi-payment (Yape/Plin/PayPal) - MIT open source",
+            "data_moat": "market data - kg/L normalized - multi-payment (Yape/Plin/PayPal) - MIT open source",
         },
         "use_cases": [
             'market basket "leche:2 arroz:1" --country PE',
