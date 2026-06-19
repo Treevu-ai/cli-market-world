@@ -170,27 +170,27 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 
 ## 🏗️ Ecosystem architecture
 
-CLI Market is composed of 4 specialized repositories:
+CLI Market is composed of 4 product repos + 1 GTM repo:
 
 ```
-cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retailers, 52k+ prices
+cli-market-backend   Mirror API — paridad con prod, FastAPI server, 81 retailers, 61,000+ prices
        |
        v  raw snapshots
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
        |
        v  canonical identities
-cli-market-core      Intelligence — data, stats, billing, connectors, API tools
+cli-market-core      Intelligence SDK — MCP tools, billing, indicators (PyPI public)
        |
        v  structured intelligence
-cli-market-world     Exposure — landing, docs, deployment configs (THIS REPO)
+cli-market-world     Exposure — landing, docs, ops/CI, Railway prod + PyPI (THIS REPO)
 ```
 
 | Repo | Visibility | Role |
 |---|---|---|
-| `cli-market-backend` | Private | Scrapers + FastAPI API |
+| `cli-market-backend` | Private | Mirror API + FastAPI server |
 | `cli-market-index` | Private | Entity resolution engine |
-| `cli-market-core` | Public | Intelligence + API tools |
-| `cli-market-world` | Private | Landing + docs (this repo) |
+| `cli-market-core` | Public | Intelligence SDK + MCP tools |
+| `cli-market-world` | Public | Landing + docs + Railway prod |
 | `cli-market-content` | Private | GTM + content calendar |
 
 ---
@@ -206,13 +206,13 @@ Every price in CLI Market is traceable. The [live dashboard](https://cli-market-
 - **Trazabilidad de outliers** — group size, band (`median ± k·IQR`), acceptable bounds, scraper health state, capture timestamp
 - **Foso de datos** — `inventory_daily[]` time series + growth stats (total snapshots, daily avg, days tracked)
 
-All six capabilities are backed by the same **52,000+** shelf prices, refreshed every 4 hours by the collector daemon.
+All six capabilities are backed by the same **61,000+** shelf prices, refreshed every 4 hours by the collector daemon.
 
 ---
 
 ## 🔧 API tools (Shop · Intel · Account)
 
-`market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_barcode` `market_ticket` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
+24 curated MCP tools across Shop, Intel, and Account bundles. Full catalog at [cli-market.dev/tools](https://cli-market.dev/tools) · [mcp.json](mcp.json).
 
 ---
 
