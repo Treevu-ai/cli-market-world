@@ -101,9 +101,9 @@ const tiers: Tier[] = [
   {
     name: "Pro",
     price: "$49",
-    latamPrice: "S/189",
+    latamPrice: "S/179",
     annualPrice: "$490",
-    annualLatamPrice: "S/1,890",
+    annualLatamPrice: "S/1,790",
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [

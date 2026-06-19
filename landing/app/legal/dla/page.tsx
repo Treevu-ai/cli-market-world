@@ -157,7 +157,7 @@ export default function DataLicenseAgreement() {
               </li>
               <li>
                 <strong>Pro:</strong> 10,000 requests/day · checkout · CSV export ·{" "}
-                {paymentsLabelEn} · USD 39/mo.
+                {paymentsLabelEn} · USD 49/mo.
               </li>
               <li>
                 <strong>Enterprise / Intelligence:</strong> expanded limits, commercial endpoints,
