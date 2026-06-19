@@ -35,7 +35,7 @@ export default function Hero() {
         >
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--cm-data)] animate-pulse" aria-hidden="true" />
           <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-data)]">
-            {isES ? "Capa de comercio para agentes de IA · LATAM" : "Commerce layer for AI agents · LATAM"}
+            {isES ? "Inteligencia de Retail Programable · LATAM" : "Programmable Retail Intelligence · LATAM"}
           </span>
         </motion.div>
 
@@ -56,13 +56,13 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Obtén precios reales de góndola de {MARKET_STATS.retailersVerified} retailers en{" "}
-              {MARKET_STATS.countries} países.
+              Accede a inteligencia de precios reales en {MARKET_STATS.retailersVerified} retailers de{" "}
+              {MARKET_STATS.countries} países. Optimiza compras. Construye flujos de comercio con IA.
             </>
           ) : (
             <>
-              Get real shelf prices from {MARKET_STATS.retailersVerified} retailers across{" "}
-              {MARKET_STATS.countries} countries.
+              Access real retail intelligence across {MARKET_STATS.retailersVerified} retailers in{" "}
+              {MARKET_STATS.countries} countries. Optimize procurement. Build AI commerce.
             </>
           )}
         </motion.h1>
@@ -89,13 +89,11 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              La primera capa de inteligencia de precios para LatAm. Disponible vía API, CLI y MCP
-              — ahora visible en claude.ai, ChatGPT y Cursor.
+              Una plataforma. API + CLI. Datos normalizados por kg/L. Sin scraping.
             </>
           ) : (
             <>
-              The first shelf-price intelligence layer for LatAm. Available via API, CLI, and MCP
-              — now discoverable in claude.ai, ChatGPT, and Cursor.
+              One platform. API + CLI. Normalized per kg/L. Zero scraping.
             </>
           )}
         </motion.p>
@@ -109,8 +107,8 @@ export default function Hero() {
           {isES
             ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
             : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
-          <a href="#coverage" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
-            {isES ? "Cobertura →" : "Coverage →"}
+          <a href="#products" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
+            {isES ? "Cómo funciona →" : "How it works →"}
           </a>
         </motion.p>
 
@@ -124,10 +122,10 @@ export default function Hero() {
         </motion.div>
 
         <a
-          href="#story"
+          href="#problem"
           className="mt-5 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--cm-data)] hover:brightness-110 transition-colors"
         >
-          {isES ? "Ver historia góndola → agente ↓" : "See shelf → agent story ↓"}
+          {isES ? "Ver el problema ↓" : "See the problem ↓"}
         </a>
 
         <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
@@ -139,8 +137,8 @@ export default function Hero() {
             href={PRICING_BUILD_HASH}
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
-            eyebrow={isES ? "Para developers · Build" : "For developers · Build"}
-            title={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
+            eyebrow={isES ? "Para developers · API" : "For developers · API"}
+            title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
               <>
                 <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all leading-relaxed">
@@ -153,7 +151,7 @@ export default function Hero() {
                   </span>
                 ) : (
                   <span className="text-xs text-[var(--cm-on-mint)]/55">
-                    {isES ? "MIT · sin tarjeta" : "MIT · no card required"}
+                    {isES ? "100 llamadas · sin tarjeta" : "100 calls · no card required"}
                   </span>
                 )}
               </>
@@ -164,8 +162,8 @@ export default function Hero() {
           <HeroPathCard
             href="#intelligence"
             variant="signal"
-            eyebrow={isES ? "Para equipos comerciales · Intelligence" : "For commercial teams · Intelligence"}
-            title={isES ? "Spreads e inflación desde góndola →" : "Shelf spreads & inflation →"}
+            eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
+            title={isES ? "Compra mejor. Más rápido →" : "Buy better. Faster →"}
             body={
               <>
                 <span className="text-xs font-mono text-[var(--cm-signal)]/90 tabular-nums">
@@ -175,11 +173,11 @@ export default function Hero() {
                     : ""}
                 </span>
                 <span className="text-xs text-[var(--cm-text-secondary)]">
-                  {isES ? "Lista de espera · Q3 2026" : "Waitlist · Q3 2026"}
+                  {isES ? "Add-on desde $79/mes" : "Add-on from $79/mo"}
                 </span>
               </>
             }
-            foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}
+            foot={isES ? "Aprobaciones · ahorro · trazabilidad" : "Approvals · savings · audit trail"}
           />
 
           <HeroPathCard
@@ -206,8 +204,8 @@ export default function Hero() {
             href={PRICING_BUILD_HASH}
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
-            eyebrow={isES ? "Para developers · Build" : "For developers · Build"}
-            title={isES ? "Empezar con la API — gratis →" : "Start with the API — free →"}
+            eyebrow={isES ? "Para developers · API" : "For developers · API"}
+            title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
               <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all">
                 {MARKET_STATS.pipInstallCmd}
@@ -234,14 +232,14 @@ export default function Hero() {
               <HeroPathCard
                 href="#intelligence"
                 variant="signal"
-                eyebrow={isES ? "Para equipos comerciales · Intelligence" : "For commercial teams · Intelligence"}
-                title={isES ? "Spreads e inflación →" : "Spreads & inflation →"}
+                eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
+                title={isES ? "Compra mejor →" : "Buy better →"}
                 body={
                   <span className="text-xs text-[var(--cm-text-secondary)]">
                     {MARKET_STATS.indicatorsCount} {isES ? "datos · Q3 2026" : "data points · Q3 2026"}
                   </span>
                 }
-                foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}
+                foot={isES ? "Aprobaciones · ahorro · trazabilidad" : "Approvals · savings · audit trail"}
               />
               <HeroPathCard
                 href={RETAILERS_PAGE}

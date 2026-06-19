@@ -38,9 +38,21 @@ export const MARKET_STATS = {
   retailersPhraseEs: "81 retailers, 41 verificados activos",
   platformsPhraseEn: "4 platforms (VTEX · Shopify · Magento · WooCommerce)",
   platformsPhraseEs: "4 plataformas (VTEX · Shopify · Magento · WooCommerce)",
-  headerEn: "CLI Market \u2014 Commerce infrastructure for AI agents.\n81 retailers across 4 platforms (VTEX \u00b7 Shopify \u00b7 Magento \u00b7 WooCommerce), 41 verified live.\n8 countries. API + CLI tools. 61,000+ verified shelf prices, normalized per kg/L, refreshed every 4h.\nOne pip install. One API. Zero scraping. MIT.",
-  headerEs: "CLI Market \u2014 Infraestructura de comercio para agentes de IA.\n81 retailers en 4 plataformas (VTEX \u00b7 Shopify \u00b7 Magento \u00b7 WooCommerce), 41 verificados y activos.\n8 pa\u00edses. API + CLI tools. 61,000+ precios reales de g\u00f3ndola, normalizados por kg/L, actualizados cada 4h.\nUn pip install. Una API. Cero scraping. MIT.",
+  headerEn: "CLI Market \u2014 Programmable retail intelligence for Latin America.\n81 retailers across 4 platforms, 41 verified live. 8 countries.\n61,000+ verified shelf prices, normalized per kg/L, refreshed every 4h.\nOne platform. API + CLI. Zero scraping.",
+  headerEs: "CLI Market \u2014 Inteligencia de retail programable para Latinoamérica.\n81 retailers en 4 plataformas, 41 verificados y activos. 8 países.\n61,000+ precios reales de góndola, normalizados por kg/L, actualizados cada 4h.\nUna plataforma. API + CLI. Cero scraping.",
   shopifyBrands: ["Adidas", "Allbirds", "Alo Yoga", "Brooklinen", "Casper", "ColourPop", "Fenty Beauty", "Glossier", "Gymshark", "Kylie Cosmetics", "Magic Mind", "Nomad", "On Running", "Parachute", "Privalia BR"],
-  seoDescription: "Commerce API for AI agents. API tools, 81 retailers, 41 verified active. 8 countries. 61,000+ verified shelf prices refreshed every 4 hours. Normalized per kg/L, quality-filtered. pip install cli-market-world.",
-  serverDescription: "Commerce for AI agents. API + CLI tools. 81 retailers (41 verified), 8 countries, 4 platforms.",
+  seoDescription: "Programmable retail intelligence for Latin America. API + CLI. 81 retailers, 41 verified. 8 countries. 61,000+ shelf prices refreshed every 4h. Normalized per kg/L. pip install cli-market-world.",
+  serverDescription: "Programmable retail intelligence. API + CLI. 81 retailers (41 verified), 8 countries, 4 platforms.",
+
+  // ── Pricing tiers ──────────────────────────────────────────────────
+  pricing: {
+    sandbox: { price: 0, label: "Sandbox", reqMonth: 100, seats: 1, trial: false },
+    starter: { price: 9, label: "Starter", reqMonth: 2000, seats: 1, trialDays: 14 },
+    pro: { price: 49, label: "Pro", reqMonth: 10000, seats: 3, trial: false },
+    enterprise: { price: "Custom", label: "Enterprise", reqMonth: "Unlimited", seats: "Unlimited", trial: false },
+  },
+  addons: {
+    procure: { price: 79, label: "Procure Copilot", descEs: "Flujos de aprobación · dashboard de compras · reportes de ahorro", descEn: "Approval workflows · procurement dashboard · savings reports" },
+    intelligence: { price: 149, label: "Intelligence Feed", descEs: "Inflación por categoría · volatilidad · datos históricos", descEn: "Category inflation · volatility analytics · historical data feed" },
+  },
 } as const;

@@ -2,7 +2,6 @@ export type PricingAudience = "build" | "procure";
 
 export type PricingTab = {
   id: PricingAudience;
-  /** Product-line name on the toggle (chic, short). */
   label: string;
   hint_es: string;
   hint_en: string;
@@ -17,12 +16,12 @@ export const PRICING_TABS: PricingTab[] = [
   {
     id: "build",
     label: "Build",
-    hint_es: "API · MCP · agentes",
-    hint_en: "API · MCP · agents",
-    title_es: "Construido para escalar.",
-    title_en: "Built to scale.",
-    intro_es: "Para developers y agentes: API REST y CLI. Free · Starter $24/mes · Pro Founding $29/mes (100 plazas) · Pro $39/mes · Enterprise a medida.",
-    intro_en: "For developers and agents: REST API and CLI. Free · Starter $24/mo · Pro Founding $29/mo (100 seats) · Pro $39/mo · Enterprise custom.",
+    hint_es: "API · CLI · datos",
+    hint_en: "API · CLI · data",
+    title_es: "Inteligencia de retail programable.",
+    title_en: "Programmable retail intelligence.",
+    intro_es: "Sandbox free · Starter $9/mes (14d trial) · Pro $49/mes · Enterprise custom. API, CLI, datos normalizados, basket optimization.",
+    intro_en: "Sandbox free · Starter $9/mo (14d trial) · Pro $49/mo · Enterprise custom. API, CLI, normalized data, basket optimization.",
     hash: "#pricing",
   },
   {
@@ -32,13 +31,12 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "Buying · approvals",
     title_es: "Compras de empresa. Sin programar.",
     title_en: "Enterprise buying. No code.",
-    intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que Build, con gobernanza y trazabilidad.",
-    intro_en: "For restaurants, hotels, and procurement teams. Same data as Build, with governance and audit trail.",
+    intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que Build, con gobernanza y trazabilidad. Add-on desde +$79/mes.",
+    intro_en: "For restaurants, hotels, and procurement teams. Same data as Build, with governance and audit trail. Add-on from +$79/mo.",
     hash: "#procure",
   },
 ];
 
-/** Legacy hashes from when Listed lived under #pricing — retailer signup is on /retailers. */
 export function isLegacyListedPricingHash(hash: string): boolean {
   const h = hash.replace("#", "");
   return h === "listed" || h === "retailers";

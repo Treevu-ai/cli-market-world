@@ -38,8 +38,8 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const primaryCta = isES ? "Empezar con la API — gratis →" : "Start with the API — free →";
-  const mobileCta = isES ? "API gratis →" : "Free API →";
+  const primaryCta = isES ? "Sandbox gratis →" : "Free Sandbox →";
+  const mobileCta = isES ? "Sandbox →" : "Sandbox →";
 
   return (
     <nav className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300 ${
@@ -52,16 +52,16 @@ export default function Navbar() {
         </a>
 
         <div className="hidden lg:flex items-center gap-5">
-          {TOP_NAV.map(({ id, es, en }) => (
+          {TOP_NAV.map((item) => (
             <a
-              key={id}
-              href={`/#${id}`}
-              aria-current={activeGroup === id ? "true" : undefined}
+              key={item.id}
+              href={item.href}
+              aria-current={activeGroup === item.id ? "true" : undefined}
               className={`text-xs font-medium transition-colors whitespace-nowrap ${
-                activeGroup === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                activeGroup === item.id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
-              {isES ? es : en}
+              {isES ? item.es : item.en}
             </a>
           ))}
         </div>
@@ -108,17 +108,17 @@ export default function Navbar() {
 
       {open && (
         <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
-          {TOP_NAV.map(({ id, es, en }) => (
+          {TOP_NAV.map((item) => (
             <a
-              key={id}
-              href={`/#${id}`}
+              key={item.id}
+              href={item.href}
               onClick={close}
-              aria-current={activeGroup === id ? "true" : undefined}
+              aria-current={activeGroup === item.id ? "true" : undefined}
               className={`text-sm font-medium transition-colors ${
-                activeGroup === id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                activeGroup === item.id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
-              {isES ? es : en}
+              {isES ? item.es : item.en}
             </a>
           ))}
           <a href="/retailers" onClick={close}

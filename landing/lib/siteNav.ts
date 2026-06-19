@@ -2,58 +2,47 @@ export type NavItem = {
   id: string;
   es: string;
   en: string;
+  href: string;
 };
 
-/** Section anchors on the home page — order matches page.tsx (Navbar + SideNav + Footer). */
-export const SECTION_NAV: NavItem[] = [
-  { id: "story", es: "Historia", en: "Story" },
-  { id: "casos", es: "Casos de uso", en: "Use cases" },
-  { id: "coverage", es: "Cobertura", en: "Coverage" },
-  { id: "how", es: "Cómo funciona", en: "How it works" },
-  { id: "api", es: "API en vivo", en: "Live API" },
-  { id: "intelligence", es: "Intelligence", en: "Intelligence" },
-  { id: "in-production", es: "En producción", en: "In production" },
-  { id: "pricing", es: "Planes", en: "Pricing" },
-  { id: "faq", es: "FAQ", en: "FAQ" },
-  { id: "contact", es: "Contacto", en: "Contact" },
-];
-
-/** Side rail includes hero home dot. Build · Procure live under #pricing; retailer listing on /retailers. */
-export const SIDE_NAV: NavItem[] = [{ id: "hero", es: "Inicio", en: "Home" }, ...SECTION_NAV];
-
-/**
- * Top navbar — condensed to 5 groups so the menu doesn't sprawl across all
- * SECTION_NAV anchors. Each group anchors to its first/primary section;
- * the rest stay reachable via the in-page SideNav dots.
- */
+/** Top nav — clean, 5 items only. */
 export const TOP_NAV: NavItem[] = [
-  { id: "how", es: "Producto", en: "Product" },
-  { id: "coverage", es: "Cobertura", en: "Coverage" },
-  { id: "api", es: "API en vivo", en: "Live API" },
-  { id: "pricing", es: "Planes", en: "Pricing" },
-  { id: "faq", es: "FAQ", en: "FAQ" },
+  { id: "product", es: "Producto", en: "Product", href: "/#hero" },
+  { id: "developers", es: "Developers", en: "Developers", href: "/docs" },
+  { id: "procure", es: "Procure", en: "Procure", href: "/procure" },
+  { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
+  { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
 
-/** Maps every SECTION_NAV anchor id to the TOP_NAV group it belongs to, for active-state highlighting. */
+/** Homepage sections (SideNav dots). */
+export const SECTION_NAV: NavItem[] = [
+  { id: "hero", es: "Inicio", en: "Home", href: "/#hero" },
+  { id: "problem", es: "Problema", en: "Problem", href: "/#problem" },
+  { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
+  { id: "products", es: "Productos", en: "Products", href: "/#products" },
+  { id: "use-cases", es: "Casos de uso", en: "Use cases", href: "/#use-cases" },
+  { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
+];
+
+/** Side rail homepage dots. */
+export const SIDE_NAV: NavItem[] = SECTION_NAV;
+
+/** Maps every SECTION_NAV anchor id to the TOP_NAV group it belongs to. */
 export const TOP_NAV_GROUP: Record<string, string> = {
-  story: "how",
-  casos: "how",
-  intelligence: "how",
-  how: "how",
-  coverage: "coverage",
-  "in-production": "coverage",
-  api: "api",
+  hero: "product",
+  problem: "product",
+  solution: "product",
+  products: "product",
+  "use-cases": "product",
   pricing: "pricing",
-  faq: "faq",
-  contact: "faq",
 };
 
-/** Leading slash so pricing tabs work from any route (/docs, /stats, …). */
+/** Leading slash so tabs work from any route. */
 export const PRICING_BUILD_HASH = "/#pricing";
 export const PRICING_PROCURE_HASH = "/#procure";
-/** Retailer free listing — dedicated page, not a pricing plan. */
+/** Retailer free listing — dedicated page. */
 export const RETAILERS_PAGE = "/retailers";
-/** @deprecated Use RETAILERS_PAGE — legacy hash from Listed pricing tab */
+/** @deprecated Use RETAILERS_PAGE */
 export const PRICING_LISTED_HASH = RETAILERS_PAGE;
 /** @deprecated Use RETAILERS_PAGE */
 export const PRICING_RETAILERS_HASH = RETAILERS_PAGE;
