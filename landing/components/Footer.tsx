@@ -57,7 +57,7 @@ export default function Footer() {
             href="/tools"
             className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
           >
-            {isES ? "Referencia MCP" : "MCP reference"}
+            {isES ? "API reference" : "API reference"}
           </a>
           <a
             href="/#how"
@@ -69,7 +69,7 @@ export default function Footer() {
             href="/docs#mcp"
             className="font-mono text-sm text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-mint)] transition-colors"
           >
-            {isES ? "Integración MCP" : "MCP integration"}
+            {isES ? "API integration" : "API integration"}
           </a>
           <a
             href={MARKET_STATS.pypiUrl}

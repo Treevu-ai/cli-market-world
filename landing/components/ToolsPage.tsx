@@ -15,7 +15,7 @@ const MCP_CONFIG = {
       "args": [],
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "MCP_TOOL_PROFILE": "default"
+        "TOOL_PROFILE": "default"
       }
     }
   }
@@ -27,7 +27,7 @@ const MCP_CONFIG = {
       "args": [],
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "MCP_TOOL_PROFILE": "default"
+        "TOOL_PROFILE": "default"
       }
     }
   }
@@ -39,7 +39,7 @@ const MCP_CONFIG = {
       "command": "market-mcp",
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "MCP_TOOL_PROFILE": "default"
+        "TOOL_PROFILE": "default"
       }
     }
   }
@@ -92,11 +92,11 @@ export default function ToolsPage() {
     <>
       <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
         <div className="max-w-[720px] mx-auto">
-          <p className="section-eyebrow mb-4">MCP · {isES ? "API de compras para IA" : "AI shopping API"}</p>
+          <p className="section-eyebrow mb-4">API · {isES ? "API de compras para IA" : "AI shopping API"}</p>
           <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-white mb-4 tracking-tight">
             {isES
-              ? `${MARKET_STATS.mcpTools} herramientas MCP para agentes de comercio`
-              : `${MARKET_STATS.mcpTools} MCP tools for e-commerce agents`}
+              ? `${MARKET_STATS.mcpTools} API tools para agentes de comercio`
+              : `${MARKET_STATS.mcpTools} API tools for e-commerce agents`}
           </h1>
           <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[540px] mx-auto leading-relaxed">
             {isES
@@ -151,12 +151,12 @@ export default function ToolsPage() {
       <section className="py-16 px-[var(--cm-gutter)]">
         <div className="max-w-[720px] mx-auto text-center">
           <h2 className="section-title mb-2">
-            {isES ? "Bundles MCP (Shop · Intel · Account)" : "MCP bundles (Shop · Intel · Account)"}
+            {isES ? "Bundles (Shop · Intel · Account)" : "Bundles (Shop · Intel · Account)"}
           </h2>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6 max-w-lg mx-auto">
             {isES
-              ? `Perfil default con ${MARKET_STATS.mcpTools} herramientas. Use MCP_TOOL_PROFILE=legacy para ${MARKET_STATS.mcpToolsLegacy} tools (aliases incluidos).`
-              : `Default profile with ${MARKET_STATS.mcpTools} tools. Set MCP_TOOL_PROFILE=legacy for ${MARKET_STATS.mcpToolsLegacy} tools (includes aliases).`}
+              ? `Perfil con ${MARKET_STATS.mcpTools} herramientas. Use TOOL_PROFILE=legacy para ${MARKET_STATS.mcpToolsLegacy} tools (aliases incluidos).`
+              : `Profile with ${MARKET_STATS.mcpTools} tools. Set TOOL_PROFILE=legacy for ${MARKET_STATS.mcpToolsLegacy} tools (includes aliases).`}
           </p>
 
           <div className="flex flex-wrap gap-2 mb-6 justify-center">

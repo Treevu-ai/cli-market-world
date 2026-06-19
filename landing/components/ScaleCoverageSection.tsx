@@ -168,8 +168,8 @@ export default function ScaleCoverageSection() {
             <p className="text-3xl font-black text-white tabular-nums">{priceLong}</p>
             <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
               {isES
-                ? `precios indexados · normalizados kg/L · ${MARKET_STATS.indicatorsCount} indicadores`
-                : `indexed prices · kg/L normalized · ${MARKET_STATS.indicatorsCount} indicators`}
+                ? `precios indexados · normalizados kg/L · ${MARKET_STATS.indicatorsCount} datos de mercado`
+                : `indexed prices · kg/L normalized · ${MARKET_STATS.indicatorsCount} data points`}
             </p>
           </div>
           <div className="card-cyber p-6">

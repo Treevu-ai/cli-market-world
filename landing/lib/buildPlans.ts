@@ -1,4 +1,4 @@
-/** Build (API/MCP) tier labels — distinct from Procure Compare/Ops/Scale. */
+/** Build (API) tier labels — distinct from Procure Compare/Ops/Scale. */
 
 export type BuildPlanSlug = "starter" | "pro" | "pro_founding" | "pro_annual";
 

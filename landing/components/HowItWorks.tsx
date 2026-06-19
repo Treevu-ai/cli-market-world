@@ -32,7 +32,7 @@ const mainSteps = [
 const devSteps = [
   { cmd: "market init", label: "Init" },
   { cmd: "market discover --country PE", label: "Discover" },
-  { cmd: "market mcp-setup --ide cursor", label: "MCP setup" },
+  { cmd: "market mcp-setup --ide cursor", label: "IDE setup" },
   { cmd: "market tools", label: `${MARKET_STATS.mcpTools} tools` },
 ];
 

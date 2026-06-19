@@ -42,8 +42,8 @@ export default function ProcurePricingPanel() {
           </p>
           <p>
             {isES
-              ? "Build Pro ($39) es para quien integra la API/MCP en código. Procure Ops ($79) es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
-              : "Build Pro ($39) is for developers integrating the API/MCP. Procure Ops ($79) is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
+              ? "Build Pro ($39) es para quien integra la API en código. Procure Ops ($79) es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
+              : "Build Pro ($39) is for developers integrating the API. Procure Ops ($79) is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
           </p>
         </div>
       </div>

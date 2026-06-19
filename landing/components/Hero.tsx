@@ -158,7 +158,7 @@ export default function Hero() {
                 )}
               </>
             }
-            foot={`API · CLI · ${MARKET_STATS.mcpTools} MCP tools`}
+            foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
           />
 
           <HeroPathCard
@@ -169,7 +169,7 @@ export default function Hero() {
             body={
               <>
                 <span className="text-xs font-mono text-[var(--cm-signal)]/90 tabular-nums">
-                  {MARKET_STATS.indicatorsCount} {isES ? "indicadores" : "indicators"}
+                  {MARKET_STATS.indicatorsCount} {isES ? "datos" : "data points"}
                   {MARKET_STATS.goldenLinkagePct > 0
                     ? ` · ${MARKET_STATS.goldenLinkagePct}% ${isES ? "linkage" : "linkage"}`
                     : ""}
@@ -213,7 +213,7 @@ export default function Hero() {
                 {MARKET_STATS.pipInstallCmd}
               </code>
             }
-            foot={`API · CLI · ${MARKET_STATS.mcpTools} MCP tools`}
+            foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
           />
           <button
             type="button"
@@ -238,7 +238,7 @@ export default function Hero() {
                 title={isES ? "Spreads e inflación →" : "Spreads & inflation →"}
                 body={
                   <span className="text-xs text-[var(--cm-text-secondary)]">
-                    {MARKET_STATS.indicatorsCount} {isES ? "indicadores · Q3 2026" : "indicators · Q3 2026"}
+                    {MARKET_STATS.indicatorsCount} {isES ? "datos · Q3 2026" : "data points · Q3 2026"}
                   </span>
                 }
                 foot={isES ? "Spreads · canastas · inflación API" : "Spreads · baskets · inflation API"}

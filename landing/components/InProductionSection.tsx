@@ -75,8 +75,8 @@ export default function InProductionSection() {
   const integrations = [
     { name: "claude.ai", status: isES ? "Conector activo" : "Connector live" },
     { name: "ChatGPT", status: isES ? "GPT Actions live" : "GPT Actions live" },
-    { name: "Cursor", status: isES ? "MCP activo" : "MCP active" },
-    { name: "VS Code", status: isES ? "MCP activo" : "MCP active" },
+    { name: "Cursor", status: isES ? "API activa" : "API active" },
+    { name: "VS Code", status: isES ? "API activa" : "API active" },
     { name: "Railway", status: isES ? "API en producción" : "API in production" },
     { name: "PyPI", status: isES ? "Paquete publicado" : "Package published" },
   ];

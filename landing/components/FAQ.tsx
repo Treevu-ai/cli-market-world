@@ -16,16 +16,16 @@ function faqsFor(lang: "es" | "en", channels: string) {
         a: `Para claude.ai: ve a Configuración → Conectores → añade URL remota: https://cli-market-production.up.railway.app/mcp?token=TU_API_KEY. Para Cursor/VS Code: añade una entrada en mcp.json con command "market-mcp" y env MARKET_API_KEY=TU_KEY. Para ChatGPT: importa el spec OpenAPI desde https://cli-market-production.up.railway.app/mcp/openapi/shop.json con autenticación Bearer. Obtén tu API key gratis en cli-market.dev → Pricing → Free.`,
       },
       {
-        q: "¿Qué pueden hacer las herramientas MCP de forma autónoma?",
-        a: `Búsqueda, comparación de precios entre ${MARKET_STATS.retailersVerified} tiendas, canastas y exportación de datos: 100% autónomo. Pago: Yape/Plin requieren confirmación manual del usuario hoy (flujo de aprobación Pro). PayPal cierra automáticamente vía webhook cuando el gateway está activo. Los ${MARKET_STATS.mcpTools} herramientas incluyen market_search, market_compare, market_basket, market_intel_brief y más.`,
+        q: "¿Qué pueden hacer las herramientas API de forma autónoma?",
+        a: `Búsqueda, comparación de precios entre ${MARKET_STATS.retailersVerified} tiendas, canastas y exportación de datos: 100% autónomo. Pago: Yape/Plin requieren confirmación manual del usuario hoy (flujo de aprobación Pro). PayPal cierra automáticamente vía webhook cuando el gateway está activo. Las herramientas incluyen market_search, market_compare, market_basket, market_intel_brief y más.`,
       },
       {
         q: "¿Cómo obtengo una API key?",
-        a: `pip install cli-market-world → market login → se genera tu key automáticamente. El tier Free incluye 1.000 consultas/día sin tarjeta de crédito. Tu key también activa el endpoint MCP remoto (claude.ai, ChatGPT, Cursor) y la CLI local.`,
+        a: `pip install cli-market-world → market login → se genera tu key automáticamente. El tier Free incluye 1.000 consultas/día sin tarjeta de crédito. Tu key también activa el endpoint API remoto (claude.ai, ChatGPT, Cursor) y la CLI local.`,
       },
       {
         q: "¿Qué es CLI Market?",
-        a: `CLI Market es infraestructura de comercio para agentes de IA y equipos comerciales: ${MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados por kg/L sobre ${rp}. Build (Free/Starter/Pro) para integrar API y MCP; Procure para compras con aprobaciones. Cero scraping.`,
+        a: `CLI Market es infraestructura de comercio para agentes de IA y equipos comerciales: ${MARKET_STATS.pricesVerifiedLabel} precios de góndola normalizados por kg/L sobre ${rp}. Build (Free/Starter/Pro) para integrar la API; Procure para compras con aprobaciones. Cero scraping.`,
       },
       {
         q: "¿Con qué retailers funciona?",
@@ -41,7 +41,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
       },
       {
         q: "¿Mis agentes pueden usar esto sin intervención humana?",
-        a: `Búsqueda, comparación y canasta: sí, vía las ${MARKET_STATS.mcpTools} herramientas MCP. Pago: Yape/Plin requieren confirmación manual hoy; PayPal/Mercado Pago cierran vía webhook cuando el gateway está configurado.`,
+        a: `Búsqueda, comparación y canasta: sí, vía las herramientas API. Pago: Yape/Plin requieren confirmación manual hoy; PayPal/Mercado Pago cierran vía webhook cuando el gateway está configurado.`,
       },
       {
         q: "¿Los precios son reales?",
@@ -49,7 +49,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: `Build (API/MCP): Free 1.000 consultas/día; Starter USD 24/mes (5.000/día); Pro USD 39/mes o USD 390/año (10.000/día, alertas, full MCP + checkout); Pro Founding USD 29/mes (100 plazas). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
+        a: `Build (API): Free 1.000 consultas/día; Starter USD 24/mes (5.000/día); Pro USD 39/mes o USD 390/año (10.000/día, alertas, full API + checkout); Pro Founding USD 29/mes (100 plazas). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
       },
     ];
   }
@@ -60,16 +60,16 @@ function faqsFor(lang: "es" | "en", channels: string) {
       a: `For claude.ai: go to Settings → Connectors → add remote URL: https://cli-market-production.up.railway.app/mcp?token=YOUR_API_KEY. For Cursor/VS Code: add an entry in mcp.json with command "market-mcp" and env MARKET_API_KEY=YOUR_KEY. For ChatGPT: import the OpenAPI spec from https://cli-market-production.up.railway.app/mcp/openapi/shop.json with Bearer auth. Get your free API key at cli-market.dev → Pricing → Free.`,
     },
     {
-      q: "What can the MCP tools do autonomously?",
-      a: `Search, price comparison across ${MARKET_STATS.retailersVerified} stores, baskets, and data export: fully autonomous. Payment: Yape/Plin require manual user confirmation today (Pro approval flow). PayPal closes automatically via webhook when the gateway is active. The ${MARKET_STATS.mcpTools} tools include market_search, market_compare, market_basket, market_intel_brief, and more.`,
+      q: "What can the API tools do autonomously?",
+      a: `Search, price comparison across ${MARKET_STATS.retailersVerified} stores, baskets, and data export: fully autonomous. Payment: Yape/Plin require manual user confirmation today (Pro approval flow). PayPal closes automatically via webhook when the gateway is active. The tools include market_search, market_compare, market_basket, market_intel_brief, and more.`,
     },
     {
       q: "How do I get an API key?",
-      a: `pip install cli-market-world → market login → your key is generated automatically. The Free tier includes 1,000 requests/day with no credit card. Your key also activates the remote MCP endpoint (claude.ai, ChatGPT, Cursor) and the local CLI.`,
+      a: `pip install cli-market-world → market login → your key is generated automatically. The Free tier includes 1,000 requests/day with no credit card. Your key also activates the remote API endpoint (claude.ai, ChatGPT, Cursor) and the local CLI.`,
     },
     {
       q: "What is CLI Market?",
-      a: `CLI Market is commerce infrastructure for AI agents and commercial teams: ${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L across ${rp}. Build (Free/Starter/Pro) for API and MCP; Procure for procurement with approvals. Zero scraping.`,
+      a: `CLI Market is commerce infrastructure for AI agents and commercial teams: ${MARKET_STATS.pricesVerifiedLabel} shelf prices normalized per kg/L across ${rp}. Build (Free/Starter/Pro) for the API; Procure for procurement with approvals. Zero scraping.`,
     },
     {
       q: "Which retailers do you support?",
@@ -85,7 +85,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
     },
     {
       q: "Can my agents use this autonomously?",
-      a: `Search, compare, and basket: yes, via ${MARKET_STATS.mcpTools} MCP tools. Payment: Yape/Plin need manual confirmation today; PayPal/Mercado Pago close via webhook when the gateway is configured.`,
+      a: `Search, compare, and basket: yes, via the API tools. Payment: Yape/Plin need manual confirmation today; PayPal/Mercado Pago close via webhook when the gateway is configured.`,
     },
     {
       q: "Are the prices real?",
@@ -93,7 +93,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
     },
     {
       q: "How much does it cost?",
-      a: `Build (API/MCP): Free 1,000 requests/day; Starter USD 24/mo (5,000/day); Pro USD 39/mo or USD 390/yr (10,000/day, alerts, full MCP + checkout); Pro Founding USD 29/mo (100 seats). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
+      a: `Build (API): Free 1,000 requests/day; Starter USD 24/mo (5,000/day); Pro USD 39/mo or USD 390/yr (10,000/day, alerts, full API + checkout); Pro Founding USD 29/mo (100 seats). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
     },
   ];
 }

@@ -170,7 +170,7 @@ export default function ImpactLanding() {
             <div className="impact-stat-n" data-count={MARKET_STATS.mcpTools}>
               0
             </div>
-            <div className="impact-stat-l">{isES ? "Herramientas MCP" : "MCP tools"}</div>
+            <div className="impact-stat-l">{isES ? "API tools" : "API tools"}</div>
           </div>
           {linkageRounded != null ? (
             <div className="impact-stat impact-stat-linkage">
@@ -231,7 +231,7 @@ export default function ImpactLanding() {
               </div>
               <div>
                 <b>{MARKET_STATS.indicatorsCount}</b>
-                <span>{isES ? "indicadores intel" : "intel indicators"}</span>
+                <span>{isES ? "datos de mercado" : "market data"}</span>
               </div>
               {linkageRounded != null ? (
                 <div>
@@ -294,7 +294,7 @@ export default function ImpactLanding() {
             <ul>
               <li>1,000 {isES ? "consultas / día" : "queries / day"}</li>
               <li>
-                {MARKET_STATS.mcpTools} {isES ? "herramientas MCP" : "MCP tools"}
+                {MARKET_STATS.mcpTools} {isES ? "API tools" : "API tools"}
               </li>
               <li>{isES ? "Compare multi-retailer" : "Multi-retailer compare"}</li>
               <li>{isES ? "Historial 7 días" : "7-day history"}</li>

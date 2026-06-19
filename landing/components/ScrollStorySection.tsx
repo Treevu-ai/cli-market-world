@@ -57,8 +57,8 @@ const ACTS = [
     title_en: "Agent",
     headline_es: "Tu agente compra con contexto.",
     headline_en: "Your agent shops with context.",
-    body_es: `${MARKET_STATS.mcpTools} herramientas MCP · API REST · CLI · cero scraping.`,
-    body_en: `${MARKET_STATS.mcpTools} MCP tools · REST API · CLI · zero scraping.`,
+    body_es: `${MARKET_STATS.mcpTools} API REST · CLI · cero scraping.`,
+    body_en: `${MARKET_STATS.mcpTools} REST API · CLI · zero scraping.`,
   },
 ] as const;
 
@@ -237,7 +237,7 @@ function AgentVisual({ isES }: { isES: boolean }) {
         <span className="scroll-story-agent-arrow">→</span>
         <div className="scroll-story-agent-node scroll-story-agent-node-mcp">
           <span className="scroll-story-agent-node-k">02</span>
-          <span>MCP · {MARKET_STATS.mcpTools}</span>
+          <span>API · {MARKET_STATS.mcpTools} tools</span>
         </div>
         <span className="scroll-story-agent-arrow">→</span>
         <div className="scroll-story-agent-node scroll-story-agent-node-api">
