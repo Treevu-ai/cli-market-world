@@ -203,7 +203,7 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             '  [cyan]market basket[/] [dim]"milk:2 rice:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"sunflower oil" --country AR[/]\n'
             "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
-            f"  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
+            "  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
             "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
             "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -215,7 +215,7 @@ def _hello_intermediate_panel(is_en: bool, width: int | None = None) -> Panel:
             '  [cyan]market basket[/] [dim]"leche:2 arroz:1" --country PE[/]\n'
             '  [cyan]market compare[/] [dim]"aceite de girasol" --country AR[/]\n'
             "  [cyan]market intel inflation[/] [dim]-c PE[/]\n"
-            f"  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
+            "  [cyan]market tools[/]            [dim]API tools · Shop/Intel/Account[/]\n"
             "  [cyan]market intel indicators[/] [dim]-c PE[/]\n"
             "  [cyan]market intel enrichment[/] [dim]-c PE[/]\n"
             "  [cyan]market alerts[/] [dim]--action list[/]"
@@ -304,7 +304,7 @@ def _splash_left(is_en: bool, ctx: dict | None) -> Panel:
     info_rows = [
         (("Tier" if is_en else "Tier"), f"[bold #00FF88]{tier}[/]"),
         (("Retailers" if is_en else "Retailers"), f"[bold]{RETAILERS_VERIFIED}[/] [dim]· {MS_COUNTRIES} {'countries' if is_en else 'países'}[/]"),
-        ("Tools", f"[bold #00FF88]Shop · Intel · Account[/] [dim]curated[/]"),
+        ("Tools", "[bold #00FF88]Shop · Intel · Account[/] [dim]curated[/]"),
         ("API", f"[dim]{_hello_api_host()}[/]"),
         (("Limit/day" if is_en else "Límite/día"), f"[dim]{req_day} req[/]"),
     ]
