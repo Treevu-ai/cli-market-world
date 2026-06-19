@@ -26,7 +26,7 @@ Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Wa
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 22 herramientas MCP (46 legacy) · 63 indicadores**
+- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 24 herramientas MCP (46 legacy) · 63 indicadores**
 - 💰 **Más de 60,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
@@ -101,7 +101,7 @@ Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) a
 
 **CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
 
-- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 22 curated MCP tools (46 legacy) · 63 indicators**
+- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 24 curated MCP tools (46 legacy) · 63 indicators**
 - 💰 **60,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
@@ -185,7 +185,7 @@ cli-market-backend   Data ingestion — VTEX scrapers, FastAPI server, 68 retail
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
        |
        v  canonical identities
-cli-market-core      Intelligence — indicators, stats, billing, connectors, 22 MCP tools (default)
+cli-market-core      Intelligence — indicators, stats, billing, connectors, 24 MCP tools (default)
        |
        v  structured intelligence
 cli-market-world     Exposure — landing, docs, MCP registry, deployment configs (THIS REPO)
@@ -216,7 +216,7 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 22 MCP tools (default profile) · 63 indicators
+## 🔧 24 MCP tools (default profile) · 63 indicators
 
 `market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 
