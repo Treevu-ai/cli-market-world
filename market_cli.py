@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-market — Agentic Market CLI.
+market — Commerce CLI.
 
 Sistema operativo de compras desde la terminal.
 Busca productos reales en Wong, Metro y Plaza Vea,
@@ -33,7 +33,7 @@ from market_core import (
 )
 import market_ui as ui
 from market_stats import (
-    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, INDICATORS_COUNT, PACKAGE_VERSION,
+    COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
 )
 from market_cli_i18n import get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
 from market_cli_telemetry import _report_install_event, _report_onboarding_event
@@ -43,6 +43,11 @@ _NO_COLOR = bool(os.environ.get("NO_COLOR", ""))
 console = Console(no_color=_NO_COLOR)
 
 _ = lambda x: x
+
+# ── Canasta básica (default when `market` is run without arguments) ──────────
+
+CANASTA_BASICA = ["arroz", "leche", "aceite", "pan", "huevos", "azúcar", "pollo", "papa", "cebolla"]
+
 
 
 def _read_nag_count() -> int:
@@ -100,8 +105,8 @@ WELCOME_BANNER = """\n[#00FF88]  ╭──────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]infraestructura de comercio para humanos y agentes ia[/]
 
-     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] 36 mcp tools
-     [#00FF88]>[/] cross-border       [#00FF88]>[/] autónomo         [#00FF88]>[/] agent-ready
+     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] API + CLI
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autónomo         [#00FF88]>[/] listo para integrar
 
      [#555555]pip install cli-market-world[/]
      [#555555]cli-market.dev[/]
@@ -121,8 +126,8 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
      [#FFFFFF bold] C L I   M A R K E T[/]
      [#888888]commerce infrastructure for humans and ai agents[/]
 
-     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] 36 mcp tools
-     [#00FF88]>[/] cross-border       [#00FF88]>[/] autonomous       [#00FF88]>[/] agent-ready
+     [#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] API + CLI
+     [#00FF88]>[/] cross-border       [#00FF88]>[/] autonomous       [#00FF88]>[/] integration-ready
 
      [#555555]pip install cli-market-world[/]
      [#555555]cli-market.dev[/]
@@ -140,15 +145,14 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
 def welcome_banner():
     is_en = get_lang() == "en"
     n_countries = len(MS_COUNTRIES)
-    mcp_default, _ = _mcp_profile_counts()
     stats = (
         f"[#00FF88]>[/] {RETAILERS_VERIFIED} retailers    "
         f"[#00FF88]>[/] {n_countries} {'countries' if is_en else 'países'}    "
-        f"[#00FF88]>[/] {mcp_default} mcp tools"
+        f"[#00FF88]>[/] API + CLI"
     )
     if is_en:
         body = WELCOME_BANNER_EN.replace(
-            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] 36 mcp tools",
+            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 countries    [#00FF88]>[/] API + CLI",
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]authenticate[/]",
@@ -157,7 +161,7 @@ def welcome_banner():
         )
     else:
         body = WELCOME_BANNER.replace(
-            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] 36 mcp tools",
+            "[#00FF88]>[/] 30 retailers    [#00FF88]>[/] 8 países       [#00FF88]>[/] API + CLI",
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]autentícate[/]",
@@ -962,6 +966,116 @@ def cmd_enrich(args):
         table.add_row(str(i), p.get("name", "?")[:35], p.get("brand", "?")[:15], f"[{ns_color}]{ns}[/]", p.get("barcode", ""))
     console.print()
     console.print(table)
+
+def cmd_canasta_basica(json_mode=False, country="PE"):
+    """Canasta básica — default when `market` is run without arguments."""
+    is_en = get_lang() == "en"
+    console.print(f"\n[bold white]{'🧺 Canasta Básica' if not is_en else '🧺 Basic Basket'}[/] [dim]({country})[/]\n")
+    args = argparse.Namespace(
+        items=CANASTA_BASICA,
+        country=country,
+        json=json_mode,
+    )
+    cmd_basket(args)
+
+
+def cmd_procure(args):
+    """Complete procurement loop: search items, find best prices, compare to budget, add to cart, checkout."""
+    items = [item.strip() for item in args.items_list.split(",") if item.strip()]
+    budget = args.budget
+    country = args.country or "PE"
+    is_en = get_lang() == "en"
+    is_json = getattr(args, "json", False)
+
+    if not items:
+        console.print(f"[yellow]{'No items specified' if is_en else 'Sin productos especificados'}[/]")
+        return
+
+    console.print(f"\n[bold white]{'🔍 Procure' if not is_en else '🔍 Procure'}[/] [dim]— {len(items)} {'productos' if not is_en else 'items'}, {'presupuesto' if not is_en else 'budget'}: {budget}[/]\n")
+
+    # Step 1: Search each item individually
+    best_picks = []
+    for item in items:
+        with console.status(f"[cyan]{'Buscando' if not is_en else 'Searching'} '{item}'..."):
+            data = cli_api("POST", "/products/search", {"query": item, "limit": 5, "country": country})
+        results = data.get("results", [])
+        if results:
+            best = min(results, key=lambda p: p.get("price", float("inf")))
+            best_picks.append({
+                "name": item,
+                "product": best.get("name", item),
+                "price": best.get("price", 0),
+                "currency": best.get("currency", "PEN"),
+                "store": best.get("store_name", best.get("store", "?")),
+                "store_key": best.get("store", ""),
+                "product_id": str(best.get("id", best.get("product_id", ""))),
+            })
+        else:
+            console.print(f"  [yellow]⚠ {'Not found' if is_en else 'No encontrado'}: {item}[/]")
+
+    if not best_picks:
+        console.print(f"[yellow]{'No products found' if is_en else 'No se encontraron productos'}[/]")
+        return
+
+    # Step 2: Show results table
+    total = sum(p["price"] for p in best_picks)
+    currency = best_picks[0]["currency"]
+    within_budget = total <= budget
+
+    if is_json:
+        console.print(json.dumps({
+            "items": best_picks,
+            "total": total,
+            "currency": currency,
+            "budget": budget,
+            "within_budget": within_budget,
+        }, indent=2, ensure_ascii=False))
+        return
+
+    table = Table(title=f"[bold white]{'Procurement Results' if is_en else 'Resultados de Procure'}[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("#", style="dim", width=3, justify="right")
+    table.add_column("Producto", style="white", max_width=24)
+    table.add_column("Tienda", max_width=16)
+    table.add_column("Precio", style="yellow", justify="right")
+
+    for i, p in enumerate(best_picks, 1):
+        color = store_color(p["store_key"])
+        table.add_row(str(i), p["product"], f"[{color}]{p['store']}[/]", fmt_price(p["price"], p["currency"]))
+
+    console.print(table)
+
+    # Step 3: Summary vs budget
+    status_color = "#00FF88" if within_budget else "#FF6B6B"
+    status_icon = "✓" if within_budget else "✗"
+    console.print(f"\n  [{status_color}]{status_icon} Total: {currency} {total:.2f}[/]  [dim]|[/]  {'Presupuesto' if not is_en else 'Budget'}: {currency} {budget:.2f}")
+    if not within_budget:
+        over = total - budget
+        console.print(f"  [#FF6B6B]{'Excede por' if not is_en else 'Over by'}: {currency} {over:.2f}[/]")
+        ui.print_hints(console, ["market procure \"lista\" --budget N --country PE"])
+        return
+
+    # Step 4: Add all items to cart
+    token = get_token()
+    if not token:
+        console.print(f"\n[dim]{'Login to add to cart:' if is_en else 'Inicia sesión para agregar al carrito:'} [cyan]market login[/][/]")
+        return
+
+    with console.status(f"[cyan]{'Adding to cart...' if is_en else 'Agregando al carrito...'}"):
+        for p in best_picks:
+            try:
+                cli_api("POST", "/cart/add", {
+                    "product_id": p["product_id"],
+                    "name": p["product"],
+                    "price": p["price"],
+                    "store": p["store_key"],
+                    "quantity": 1,
+                })
+            except Exception:
+                pass
+
+    console.print(f"\n[#00FF88]✓ {'Added to cart' if is_en else 'Agregado al carrito'}[/] ({len(best_picks)} {'items' if is_en else 'productos'}, {currency} {total:.2f})")
+    ui.print_hints(console, ["market cart", "market checkout --payment paypal"])
+
 
 def cmd_basket(args):
     items = []
@@ -2753,8 +2867,8 @@ def main():
         return cmd_share(ns)
 
     parser = argparse.ArgumentParser(
-        description=f"CLI Market v{PACKAGE_VERSION} — Commerce infrastructure for AI agents. "
-                    f"{RETAILERS_VERIFIED} verified retailers, {MS_COUNTRIES} countries, {INDICATORS_COUNT} indicators.",
+        description=f"CLI Market v{PACKAGE_VERSION} — Commerce infrastructure. "
+                    f"{RETAILERS_VERIFIED} verified retailers, {MS_COUNTRIES} countries.",
         usage="market <command> [options]",
     )
     parser.add_argument("--json", action="store_true", help=t("json_help"))
@@ -2896,6 +3010,13 @@ def main():
     p_lang = sub.add_parser("lang", help=t("lang"))
     p_lang.add_argument("lang_code", nargs="?")
 
+    # procure
+    p = sub.add_parser("procure", help="Procurement loop: search, compare, cart, checkout")
+    p.add_argument("items_list", help="Comma-separated product list, e.g. 'leche, arroz, aceite'")
+    p.add_argument("--budget", "-b", type=float, required=True, help="Maximum budget in local currency")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+
+
     # basket
     p = sub.add_parser("basket", help="Comparar canasta completa entre retailers")
     p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
@@ -2951,23 +3072,23 @@ def main():
     )
     p.add_argument("--dry-run", action="store_true", help="Print config without writing file")
 
-    mcp_default, mcp_legacy = _mcp_profile_counts()
+    api_tool_count, legacy_count = _mcp_profile_counts()
     p_tools = sub.add_parser(
         "tools",
-        help=f"Catálogo MCP por bundle ({mcp_default} default / {mcp_legacy} legacy)",
+        help=f"API tools catalog ({api_tool_count} default / {legacy_count} legacy)",
     )
     p_tools.add_argument(
         "--profile",
         choices=["default", "legacy", "full"],
         default="default",
-        help="MCP tool profile (default: curated Shop/Intel/Account)",
+        help="Tool profile (default: curated Shop/Intel/Account)",
     )
     p_mcp = sub.add_parser("mcp", help=t("mcp"))
     p_mcp.add_argument(
         "--profile",
         choices=["default", "legacy", "full"],
         default="default",
-        help="MCP tool profile (default: curated Shop/Intel/Account)",
+        help="Tool profile (default: curated Shop/Intel/Account)",
     )
     sub.add_parser("hello", help=t("hello"))
     p = sub.add_parser("upgrade", help=t("upgrade"))
@@ -2999,7 +3120,7 @@ def main():
     _report_install_event(source=install_source)
     ui.maybe_version_notice(console)
     if not args.command:
-        cmd_hello(argparse.Namespace(json=getattr(args, "json", False)))
+        cmd_canasta_basica(json_mode=getattr(args, "json", False))
         return
 
     handlers = {
@@ -3022,6 +3143,7 @@ def main():
         "about": cmd_about, "whoami": cmd_whoami, "register": cmd_register, "doctor": cmd_doctor, "lang": cmd_lang,
         "hello": cmd_hello, "init": cmd_init, "shell": cmd_shell, "share": cmd_share, "upgrade": cmd_upgrade,
         "demo": cmd_demo, "tutorial": cmd_tutorial, "mcp-setup": cmd_mcp_setup,
+        "procure": cmd_procure,
     }
     cmd = args.command
     if cmd == "intel":
