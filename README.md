@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-37k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-38k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -24,15 +24,15 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 Los protocolos agénticos (ACP de OpenAI/Stripe · UCP de Google/Shopify/Visa/Walmart) ya están estandarizando cómo los agentes descubren y evalúan productos. Falabella, Ripley, Wong, Metro no van a implementar estos protocolos solos. CLI Market es el puente.
 
-**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **68 retailers (38 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **81 retailers (41 verificados activos)** en **8 países**. Un único esquema JSON compatible con cualquier protocolo agéntico.
 
-- 🌍 **68 retailers (38 verificados activos) · 8 países · 4 plataformas · 24 herramientas MCP (46 legacy) · 63 indicadores**
-- 💰 **Más de 60,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 🌍 **81 retailers (41 verificados activos) · 8 países · 4 plataformas · 24 herramientas MCP (46 legacy) · 44 indicadores**
+- 💰 **Más de 61,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
 
-- 🔎 **Busca** cualquier producto en 68 retailers (38 verificados activos) de 8 países
+- 🔎 **Busca** cualquier producto en 81 retailers (41 verificados activos) de 8 países
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
@@ -99,15 +99,15 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 Agentic protocols (ACP by OpenAI/Stripe · UCP by Google/Shopify/Visa/Walmart) are already standardizing how agents discover and evaluate products. Falabella, Ripley, Wong, Metro won't implement these protocols on their own. CLI Market is the bridge.
 
-**CLI Market fixes that.** One `pip install`. One API call across **68 retailers (38 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
+**CLI Market fixes that.** One `pip install`. One API call across **81 retailers (41 verified active)** in **8 countries**. One JSON schema compatible with any agentic protocol.
 
-- 🌍 **68 retailers (38 verified active) · 8 countries · 4 platforms · 24 curated MCP tools (46 legacy) · 63 indicators**
-- 💰 **60,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 🌍 **81 retailers (41 verified active) · 8 countries · 4 platforms · 24 curated MCP tools (46 legacy) · 44 indicators**
+- 💰 **61,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
 
-- 🔎 **Search** any product across 68 retailers (38 verified active) in 8 countries
+- 🔎 **Search** any product across 81 retailers (41 verified active) in 8 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*
@@ -216,9 +216,9 @@ All six capabilities are backed by the same **52,000+** shelf prices, refreshed 
 
 ---
 
-## 🔧 24 MCP tools (default profile) · 63 indicators
+## 🔧 24 MCP tools (default profile) · 44 indicators
 
-`market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
+`market_whoami` `market_subscription` `market_favorites` `market_price_alerts` `market_preferences` `market_barcode` `market_ticket` `market_intel_brief` `market_inflation` `market_scores` `market_stats` `market_export` `market_trending` `market_login` `market_discover` `market_search` `market_compare` `market_add` `market_cart` `market_cart_update` `market_checkout` `market_orders` `market_ask` `market_basket`
 
 ---
 
