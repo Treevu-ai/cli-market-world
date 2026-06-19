@@ -738,7 +738,7 @@ def cmd_reorder(args):
 def cmd_ask(args):
     is_en = ui.is_en()
     with console.status("[cyan]Procesando...[/]" if not is_en else "[cyan]Processing...[/]"):
-        data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+        data = cli_api("POST", "/agent/ask", {"prompt": " ".join(args.prompt) if isinstance(args.prompt, list) else args.prompt})
 
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market cart"]), console)
@@ -967,7 +967,7 @@ def cmd_basket(args):
     items = []
     for arg in args.items:
         if ":" in arg:
-            name, qty = arg.split(":", 1)
+            name, qty = arg.strip(chr(34)).split(":", 1)
             items.append({"name": name, "qty": int(qty)})
         else:
             items.append({"name": arg, "qty": 1})
@@ -2238,14 +2238,13 @@ _MCP_SETUP_UTM = "?utm_source=terminal&utm_campaign=mcp-setup"
 
 
 def _detect_ide() -> str:
-    if os.environ.get("CURSOR_TRACE_ID") or os.environ.get("CURSOR_SESSION"):
-        return "cursor"
-    if os.environ.get("WINDSURF_SESSION") or os.environ.get("CODEIUM_WINDSURF"):
-        return "windsurf"
-    if os.environ.get("TERM_PROGRAM") == "vscode":
-        return "vscode"
+    for ide, (subdir, _) in _IDE_CONFIGS.items():
+        if ide in ("claude","cursor","vscode","windsurf"): continue
+        if os.path.isdir(os.path.join(os.path.expanduser("~"), subdir)): return ide
+    if os.environ.get("CURSOR_TRACE_ID") or os.environ.get("CURSOR_SESSION"): return "cursor"
+    if os.environ.get("WINDSURF_SESSION") or os.environ.get("CODEIUM_WINDSURF"): return "windsurf"
+    if os.environ.get("TERM_PROGRAM") == "vscode": return "vscode"
     return "cursor"
-
 
 def _claude_config_path() -> str:
     if sys.platform == "win32":
@@ -2262,6 +2261,99 @@ def _claude_config_path() -> str:
     return os.path.join(os.path.expanduser("~"), ".config", "Claude", "claude_desktop_config.json")
 
 
+_IDE_CONFIGS = {
+    "cursor": (".cursor", "mcpServers"),
+    "windsurf": (".windsurf", "mcpServers"),
+    "vscode": (".vscode", "servers"),
+    "claude": (".Claude", "mcpServers"),
+    "codex": (".codex", "mcpServers"),
+    "devin": (".devin", "mcpServers"),
+    "perplexity": (".perplexity", "mcpServers"),
+    "kiro": (".kiro", "mcpServers"),
+    "kilo": (".kilo", "mcpServers"),
+    "antigravity": (".augment", "mcpServers"),
+    "opencode": (".opencode", "mcpServers"),
+    "deepseek": (".deepseek", "servers"),
+    "gptlatam": (".gptlatam", "mcpServers"),
+    "cline": (".cline", "mcpServers"),
+    "continue": (".continue", "mcpServers"),
+    "copilot": (".copilot", "mcpServers"),
+    "factory": (".factory", "mcpServers"),
+    "qoder": (".qoder", "mcpServers"),
+    "junie": (".junie", "mcpServers"),
+    "gemini": (".gemini", "mcpServers"),
+}
+
+_IDE_CONFIGS = {
+    "cursor": (".cursor", "mcpServers"),
+    "windsurf": (".windsurf", "mcpServers"),
+    "vscode": (".vscode", "servers"),
+    "claude": (".Claude", "mcpServers"),
+    "codex": (".codex", "mcpServers"),
+    "devin": (".devin", "mcpServers"),
+    "perplexity": (".perplexity", "mcpServers"),
+    "kiro": (".kiro", "mcpServers"),
+    "kilo": (".kilo", "mcpServers"),
+    "antigravity": (".augment", "mcpServers"),
+    "opencode": (".opencode", "mcpServers"),
+    "deepseek": (".deepseek", "servers"),
+    "gptlatam": (".gptlatam", "mcpServers"),
+    "cline": (".cline", "mcpServers"),
+    "continue": (".continue", "mcpServers"),
+    "copilot": (".copilot", "mcpServers"),
+    "factory": (".factory", "mcpServers"),
+    "qoder": (".qoder", "mcpServers"),
+    "junie": (".junie", "mcpServers"),
+    "gemini": (".gemini", "mcpServers"),
+    "warp": (".warp", "mcpServers"),
+    "qwen": (".qwen", "mcpServers"),
+    "antigravity-ide": (".antigravity-ide", "mcpServers"),
+    "cagent": (".cagent", "mcpServers"),
+    "grok": (".grok", "mcpServers"),
+    "granite": (".granite-code", "mcpServers"),
+    "vibe": (".vibe", "mcpServers"),
+    "pi": (".pi", "mcpServers"),
+    "vscode-insiders": (".vscode-insiders", "servers"),
+    "overture": (".overture", "mcpServers"),
+    "securecoder": (".securecoder", "mcpServers"),
+    "openclaw": (".openclaw", "mcpServers"),
+}
+
+_IDE_CONFIGS = {
+    "cursor": (".cursor", "mcpServers"),
+    "windsurf": (".windsurf", "mcpServers"),
+    "vscode": (".vscode", "servers"),
+    "claude": (".Claude", "mcpServers"),
+    "codex": (".codex", "mcpServers"),
+    "devin": (".devin", "mcpServers"),
+    "perplexity": (".perplexity", "mcpServers"),
+    "kiro": (".kiro", "mcpServers"),
+    "kilo": (".kilo", "mcpServers"),
+    "antigravity": (".augment", "mcpServers"),
+    "opencode": (".opencode", "mcpServers"),
+    "deepseek": (".deepseek", "servers"),
+    "gptlatam": (".gptlatam", "mcpServers"),
+    "cline": (".cline", "mcpServers"),
+    "continue": (".continue", "mcpServers"),
+    "copilot": (".copilot", "mcpServers"),
+    "factory": (".factory", "mcpServers"),
+    "qoder": (".qoder", "mcpServers"),
+    "junie": (".junie", "mcpServers"),
+    "gemini": (".gemini", "mcpServers"),
+    "warp": (".warp", "mcpServers"),
+    "qwen": (".qwen", "mcpServers"),
+    "antigravity-ide": (".antigravity-ide", "mcpServers"),
+    "cagent": (".cagent", "mcpServers"),
+    "grok": (".grok", "mcpServers"),
+    "granite": (".granite-code", "mcpServers"),
+    "vibe": (".vibe", "mcpServers"),
+    "pi": (".pi", "mcpServers"),
+    "vscode-insiders": (".vscode-insiders", "servers"),
+    "overture": (".overture", "mcpServers"),
+    "securecoder": (".securecoder", "mcpServers"),
+    "openclaw": (".openclaw", "mcpServers"),
+}
+
 def _looks_like_project_root(path: str) -> bool:
     markers = (".git", "pyproject.toml", "package.json", "Cargo.toml", "go.mod")
     return any(os.path.exists(os.path.join(path, name)) for name in markers)
@@ -2275,7 +2367,7 @@ def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
 
     cwd = os.path.abspath(os.getcwd())
     home = os.path.abspath(os.path.expanduser("~"))
-    subdir = { "cursor": ".cursor", "windsurf": ".windsurf", "vscode": ".vscode" }[ide]
+    subdir = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))[0]
     filename = "mcp.json"
     project_dir = os.path.join(cwd, subdir)
     if cwd != home and (_looks_like_project_root(cwd) or os.path.isdir(project_dir)):
@@ -2492,8 +2584,9 @@ def cmd_mcp_setup(args):
     api_url = os.getenv("MARKET_API_URL", API)
     cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
     server_entry = _mcp_server_entry(token=token, api_url=api_url)
+    _, json_key = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))
     cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
-        {"servers": {"cli-market": server_entry}} if ide == "vscode" else {"mcpServers": {"cli-market": server_entry}}
+        {json_key: {"cli-market": server_entry}}
     )
 
     if dry:
@@ -2738,7 +2831,7 @@ def main():
 
     # ask
     p = sub.add_parser("ask", help=t("ask"))
-    p.add_argument("prompt")
+    p.add_argument("prompt", nargs="+")
 
     # preferences
     sub.add_parser("preferences", help=t("preferences"))
@@ -2852,7 +2945,7 @@ def main():
     p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
     p.add_argument(
         "--ide",
-        choices=["cursor", "claude", "windsurf", "vscode"],
+        choices=['antigravity', 'antigravity-ide', 'cagent', 'claude', 'cline', 'codex', 'continue', 'copilot', 'cursor', 'deepseek', 'devin', 'factory', 'gemini', 'gptlatam', 'granite', 'grok', 'junie', 'kilo', 'kiro', 'openclaw', 'opencode', 'overture', 'perplexity', 'pi', 'qoder', 'qwen', 'securecoder', 'vibe', 'vscode', 'vscode-insiders', 'warp', 'windsurf'],
         default=None,
         help="IDE target (auto-detect if omitted)",
     )
