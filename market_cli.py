@@ -738,7 +738,7 @@ def cmd_reorder(args):
 def cmd_ask(args):
     is_en = ui.is_en()
     with console.status("[cyan]Procesando...[/]" if not is_en else "[cyan]Processing...[/]"):
-        data = cli_api("POST", "/agent/ask", {"prompt": args.prompt})
+        data = cli_api("POST", "/agent/ask", {"prompt": " ".join(args.prompt) if isinstance(args.prompt, list) else args.prompt})
 
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market cart"]), console)
@@ -967,7 +967,7 @@ def cmd_basket(args):
     items = []
     for arg in args.items:
         if ":" in arg:
-            name, qty = arg.split(":", 1)
+            name, qty = arg.strip(chr(34)).split(":", 1)
             items.append({"name": name, "qty": int(qty)})
         else:
             items.append({"name": arg, "qty": 1})
@@ -2738,7 +2738,7 @@ def main():
 
     # ask
     p = sub.add_parser("ask", help=t("ask"))
-    p.add_argument("prompt")
+    p.add_argument("prompt", nargs="+")
 
     # preferences
     sub.add_parser("preferences", help=t("preferences"))
