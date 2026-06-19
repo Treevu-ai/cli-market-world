@@ -49,7 +49,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: `Build (API): Free 1.000 consultas/día; Starter USD 24/mes (5.000/día); Pro USD 39/mes o USD 390/año (10.000/día, alertas, full API + checkout); Pro Founding USD 29/mes (100 plazas). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
+        a: `Build (API): Free 1.000 consultas/día; Starter USD 9/mes (2.000/mes); Pro USD 49/mes o USD 490/año (10.000/día, alertas, full API + checkout); Pro Founding USD 29/mes (100 plazas). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
       },
     ];
   }
@@ -93,7 +93,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
     },
     {
       q: "How much does it cost?",
-      a: `Build (API): Free 1,000 requests/day; Starter USD 24/mo (5,000/day); Pro USD 39/mo or USD 390/yr (10,000/day, alerts, full API + checkout); Pro Founding USD 29/mo (100 seats). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
+      a: `Build (API): Free 1,000 requests/day; Starter USD 9/mo (2,000/mo); Pro USD 49/mo or USD 490/yr (10,000/day, alerts, full API + checkout); Pro Founding USD 29/mo (100 seats). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
     },
   ];
 }

@@ -152,7 +152,7 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER</h4>
-              <p className="font-mono text-lg text-white">5,000 req/day · USD 24/mo</p>
+              <p className="font-mono text-lg text-white">2,000 req/mo · USD 9/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("3 claves API · export CSV · alertas · sin checkout retail.", "3 API keys · CSV export · alerts · no retail checkout.")}
               </p>
@@ -162,7 +162,7 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6 energy-border-active sm:col-span-2 lg:col-span-1">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO</h4>
-              <p className="font-mono text-lg text-white">10,000 req/day · USD 39/mo</p>
+              <p className="font-mono text-lg text-white">10,000 req/day · USD 49/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
                   `Checkout ${paymentsLabel} · 10 claves · Intel.`,
@@ -185,8 +185,8 @@ export default function DocsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
               { tier: "FREE", price: "$0", note: t("1k req/día · API default", "1k req/day · default API") },
-              { tier: "STARTER", price: "USD 24/mo", note: t("5k · export CSV", "5k · CSV export") },
-              { tier: "PRO", price: "USD 39/mo", note: t("10k · checkout retail", "10k · retail checkout") },
+              { tier: "STARTER", price: "USD 9/mo", note: t("2k/mes · export CSV", "2k/mo · CSV export") },
+              { tier: "PRO", price: "USD 49/mo", note: t("10k/día · checkout", "10k/day · checkout") },
               { tier: "FOUNDING", price: "USD 29/mo", note: t("100 plazas · Pro", "100 seats · Pro") },
             ].map((p) => (
               <div key={p.tier} className="card-cyber p-4 text-left">
@@ -260,8 +260,8 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              "Build (API/MCP): Free, Starter ($24/mes), Pro ($39/mes o $390/año), Pro Founding ($29/mes, 100 plazas).",
-              "Build (API/MCP): Free, Starter ($24/mo), Pro ($39/mo or $390/yr), Pro Founding ($29/mo, 100 seats).",
+              "Build (API/MCP): Free, Starter ($9/mes), Pro ($49/mes o $490/año), Pro Founding ($29/mes, 100 plazas).",
+              "Build (API/MCP): Free, Starter ($9/mo), Pro ($49/mo or $490/yr), Pro Founding ($29/mo, 100 seats).",
             )}
           </p>
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
@@ -284,8 +284,8 @@ market doctor`}</CodeBlock>
             <BillingCheckoutTrigger
               kind={{ type: "build-pro", annual: true }}
               className="rounded-full border border-[var(--cm-outline-variant)]/50 px-5 py-2.5 text-sm font-semibold text-white hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-colors"
-              label_es="Pro anual $390/año →"
-              label_en="Pro annual $390/yr →"
+              label_es="Pro anual $490/año →"
+              label_en="Pro annual $490/yr →"
             />
           </div>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
@@ -444,10 +444,10 @@ market --json doctor`}</CodeBlock>
               <strong className="text-white">Free</strong> — 1,000 {t("consultas/día", "requests/day")} · 1 {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
             </li>
             <li>
-              <strong className="text-white">Starter</strong> — 5,000 {t("consultas/día", "requests/day")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 24/mo
+              <strong className="text-white">Starter</strong> — 2,000 {t("consultas/mes", "requests/mo")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 9/mo
             </li>
             <li>
-              <strong className="text-white">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 39/mo {t("o 390/año", "or 390/yr")}
+              <strong className="text-white">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 49/mo {t("o 490/año", "or 490/yr")}
             </li>
             <li>
               <strong className="text-white">Pro Founding</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves", "keys")} · checkout · Intel MCP · USD 29/mo {t("bloqueado · 100 plazas", "locked · 100 seats")}
@@ -481,8 +481,8 @@ market --json doctor`}</CodeBlock>
             </h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 max-w-md mx-auto">
               {t(
-                "Free para lectura · Starter $24 para export · Pro $39 para checkout retail.",
-                "Free for read · Starter $24 for export · Pro $39 for retail checkout.",
+                "Free para lectura · Starter $9 para export · Pro $49 para checkout retail.",
+                "Free for read · Starter $9 for export · Pro $49 for retail checkout.",
               )}
             </p>
             <a href="/#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">

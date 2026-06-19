@@ -175,7 +175,7 @@ export default function Hero() {
                     : ""}
                 </span>
                 <span className="text-xs text-[var(--cm-text-secondary)]">
-                  {isES ? "Add-on desde $79/mes" : "Add-on from $79/mo"}
+                  {isES ? "Add-on desde $29/mes" : "Add-on from $29/mo"}
                 </span>
               </>
             }

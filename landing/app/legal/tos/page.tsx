@@ -232,7 +232,7 @@ export default function TermsOfService() {
                 Sinapsis Innovadora S.A.C. (tax ID 20613045563) invoices Build and Procure
                 subscriptions in US dollars (USD) via PayPal and in soles (PEN) via Yape, Plin, or
                 Mercado Pago card. Receipts match the payment currency. Published plans include
-                Starter USD 24/mo, Pro USD 39/mo (or annual option), Pro Founding USD 29/mo
+                Starter USD 9/mo, Pro USD 49/mo (or annual option), Pro Founding USD 29/mo
                 (limited seats), and Procure tiers as listed on the landing page.
               </li>
               <li>
