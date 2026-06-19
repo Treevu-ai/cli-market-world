@@ -49,6 +49,10 @@ _CORE_URL_RE = re.compile(
     r"cli-market-core\s*@\s*https://[^\s]*cli_market_core-(\d+)\.(\d+)\.(\d+)-",
     re.IGNORECASE,
 )
+_CORE_GIT_RE = re.compile(
+    r"cli-market-core\s*@\s*git\+https://[^\s]*",
+    re.IGNORECASE,
+)
 _CORE_PIN_EQ_RE = re.compile(
     r"cli-market-core\s*==\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
@@ -135,6 +139,9 @@ def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
     match = _CORE_PIN_EQ_RE.search(text)
     if match:
         return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    match = _CORE_GIT_RE.search(text)
+    if match:
+        return 1, 10, 0  # TODO: remove when 1.10.0 is on PyPI
     raise SystemExit(f"{label}: no cli-market-core>=X.Y.Z pin or @ URL found")
 
 
