@@ -130,8 +130,8 @@ export default function IntelligenceSection() {
               </p>
               <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                 {isES
-                  ? "Intel MCP y export ya están en planes Build: Starter ($24/mes) para export CSV/JSON; Pro ($39/mes) para checkout retail, alertas y el bundle intel completo."
-                  : "Intel MCP and export are already on Build plans: Starter ($24/mo) for CSV/JSON export; Pro ($39/mo) for retail checkout, alerts, and the full intel bundle."}
+                  ? "Intel MCP y export ya están en planes Build: Starter ($9/mes) para export CSV/JSON; Pro ($49/mes) para checkout retail, alertas y el bundle intel completo."
+                  : "Intel MCP and export are already on Build plans: Starter ($9/mo) for CSV/JSON export; Pro ($49/mo) for retail checkout, alerts, and the full intel bundle."}
               </p>
               <div className="flex flex-wrap gap-3">
                 <a href="/#pricing" className="btn-mint text-xs px-4 py-2">
