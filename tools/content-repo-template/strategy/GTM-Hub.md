@@ -52,7 +52,7 @@ Punto de entrada del vault Obsidian. Todo el paquete GTM vive en `docs/` junto a
 | Retailers | 68 en catálogo (38 verificados activos) | ✅ 68 / 38 |
 | Plataformas | 4 (VTEX · Shopify · Magento · WooCommerce) | ✅ 4 |
 | Países | 8 | ✅ 8 |
-| MCP tools | 22 curated (46 legacy) | ✅ 22 + `/tools` |
+| MCP tools | 24 curated (46 legacy) | ✅ 22 + `/tools` |
 | Precios indexados | 51,000+, refresh 4h | ✅ |
 | Pitch | Commerce infrastructure for AI agents · `pip install cli-market-world` | ✅ |
 
