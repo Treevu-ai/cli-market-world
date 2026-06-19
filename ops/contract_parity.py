@@ -87,7 +87,10 @@ def _load_app(repo_root: Path):
     os.environ.setdefault("MARKET_SKIP_LIVE", "1")
     os.environ.setdefault("DATABASE_URL", "")
     os.environ.setdefault("MARKET_DATA_DIR", str(repo_root / ".contract-parity-data"))
-    import market_server  # noqa: WPS433 — dynamic import after sys.path
+    try:
+        import market_server  # noqa: WPS433 — dynamic import after sys.path
+    except ModuleNotFoundError:
+        return None
 
     importlib.reload(market_server)
     return market_server.app
