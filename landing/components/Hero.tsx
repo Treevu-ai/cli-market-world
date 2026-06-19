@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
@@ -17,6 +17,8 @@ export default function Hero() {
   const isES = lang === "es";
   const { pypiChip } = useLiveStats();
   const [pathsOpen, setPathsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <section
@@ -144,7 +146,7 @@ export default function Hero() {
                 <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all leading-relaxed">
                   {MARKET_STATS.pipInstallCmd}
                 </code>
-                {pypiChip ? (
+                {mounted && pypiChip ? (
                   <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65 tabular-nums">
                     <span className="font-semibold text-[var(--cm-on-mint)]/80">{pypiChip}</span>{" "}
                     {isES ? "instalaciones PyPI" : "PyPI installs"}
