@@ -2238,14 +2238,13 @@ _MCP_SETUP_UTM = "?utm_source=terminal&utm_campaign=mcp-setup"
 
 
 def _detect_ide() -> str:
-    if os.environ.get("CURSOR_TRACE_ID") or os.environ.get("CURSOR_SESSION"):
-        return "cursor"
-    if os.environ.get("WINDSURF_SESSION") or os.environ.get("CODEIUM_WINDSURF"):
-        return "windsurf"
-    if os.environ.get("TERM_PROGRAM") == "vscode":
-        return "vscode"
+    for ide, (subdir, _) in _IDE_CONFIGS.items():
+        if ide in ("claude","cursor","vscode","windsurf"): continue
+        if os.path.isdir(os.path.join(os.path.expanduser("~"), subdir)): return ide
+    if os.environ.get("CURSOR_TRACE_ID") or os.environ.get("CURSOR_SESSION"): return "cursor"
+    if os.environ.get("WINDSURF_SESSION") or os.environ.get("CODEIUM_WINDSURF"): return "windsurf"
+    if os.environ.get("TERM_PROGRAM") == "vscode": return "vscode"
     return "cursor"
-
 
 def _claude_config_path() -> str:
     if sys.platform == "win32":
@@ -2262,6 +2261,29 @@ def _claude_config_path() -> str:
     return os.path.join(os.path.expanduser("~"), ".config", "Claude", "claude_desktop_config.json")
 
 
+_IDE_CONFIGS = {
+    "cursor": (".cursor", "mcpServers"),
+    "windsurf": (".windsurf", "mcpServers"),
+    "vscode": (".vscode", "servers"),
+    "claude": (".Claude", "mcpServers"),
+    "codex": (".codex", "mcpServers"),
+    "devin": (".devin", "mcpServers"),
+    "perplexity": (".perplexity", "mcpServers"),
+    "kiro": (".kiro", "mcpServers"),
+    "kilo": (".kilo", "mcpServers"),
+    "antigravity": (".augment", "mcpServers"),
+    "opencode": (".opencode", "mcpServers"),
+    "deepseek": (".deepseek", "servers"),
+    "gptlatam": (".gptlatam", "mcpServers"),
+    "cline": (".cline", "mcpServers"),
+    "continue": (".continue", "mcpServers"),
+    "copilot": (".copilot", "mcpServers"),
+    "factory": (".factory", "mcpServers"),
+    "qoder": (".qoder", "mcpServers"),
+    "junie": (".junie", "mcpServers"),
+    "gemini": (".gemini", "mcpServers"),
+}
+
 def _looks_like_project_root(path: str) -> bool:
     markers = (".git", "pyproject.toml", "package.json", "Cargo.toml", "go.mod")
     return any(os.path.exists(os.path.join(path, name)) for name in markers)
@@ -2275,7 +2297,7 @@ def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
 
     cwd = os.path.abspath(os.getcwd())
     home = os.path.abspath(os.path.expanduser("~"))
-    subdir = { "cursor": ".cursor", "windsurf": ".windsurf", "vscode": ".vscode" }[ide]
+    subdir = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))[0]
     filename = "mcp.json"
     project_dir = os.path.join(cwd, subdir)
     if cwd != home and (_looks_like_project_root(cwd) or os.path.isdir(project_dir)):
@@ -2492,8 +2514,9 @@ def cmd_mcp_setup(args):
     api_url = os.getenv("MARKET_API_URL", API)
     cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
     server_entry = _mcp_server_entry(token=token, api_url=api_url)
+    _, json_key = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))
     cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
-        {"servers": {"cli-market": server_entry}} if ide == "vscode" else {"mcpServers": {"cli-market": server_entry}}
+        {json_key: {"cli-market": server_entry}}
     )
 
     if dry:
@@ -2852,7 +2875,7 @@ def main():
     p = sub.add_parser("mcp-setup", help=t("mcp_setup"))
     p.add_argument(
         "--ide",
-        choices=["cursor", "claude", "windsurf", "vscode"],
+        choices=['antigravity', 'claude', 'cline', 'codex', 'continue', 'copilot', 'cursor', 'deepseek', 'devin', 'factory', 'gemini', 'gptlatam', 'junie', 'kilo', 'kiro', 'opencode', 'perplexity', 'qoder', 'vscode', 'windsurf'],
         default=None,
         help="IDE target (auto-detect if omitted)",
     )
