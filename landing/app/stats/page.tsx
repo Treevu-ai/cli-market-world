@@ -60,7 +60,7 @@ export default function StatsPage() {
     },
     {
       n: String(MARKET_STATS.mcpTools),
-      l: isES ? "Herramientas MCP" : "MCP tools",
+      l: isES ? "API tools" : "API tools",
     },
   ];
 
@@ -162,8 +162,8 @@ export default function StatsPage() {
         ) : (
           <p className="text-sm text-[var(--cm-on-surface-variant)]/80 border border-[var(--cm-outline-variant)]/25 rounded-lg p-4">
             {isES
-              ? "Telemetría MCP activa pero sin volumen aún — vuelve cuando haya consultas o agentes activos."
-              : "MCP telemetry is on but volume is still building — check back as queries and agents accumulate."}
+              ? "Telemetría activa pero sin volumen aún — vuelve cuando haya consultas o agentes activos."
+              : "Telemetry is on but volume is still building — check back as queries and agents accumulate."}
           </p>
         )}
 

@@ -26,25 +26,25 @@ const ogVideoWebm = `${siteUrl}/cli-market-hero.webm`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CLI Market — AI commerce API & MCP tools for agents",
+    default: "CLI Market — AI commerce API for agents",
     template: "%s | CLI Market",
   },
   description: MARKET_STATS.seoDescription,
   keywords: [
     "commerce API for AI agents",
     "AI shopping API",
-    "MCP tools for e-commerce",
+    "API tools for e-commerce",
     "price data API",
     "VTEX API integration",
-    "agentic commerce",
+    "AI commerce",
     "Latin America retail data",
   ],
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "CLI Market — AI commerce API & MCP tools for agents",
-    description: `${MARKET_STATS.retailersPhraseEn}. ${MARKET_STATS.mcpTools} MCP tools. ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours. Quality-filtered spreads and basket compare.`,
+    title: "CLI Market — AI commerce API for agents",
+    description: `${MARKET_STATS.retailersPhraseEn}. ${MARKET_STATS.mcpTools} API tools. ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours. Quality-filtered spreads and basket compare.`,
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "CLI Market — Commerce infrastructure for AI agents",
-    description: `AI commerce API + MCP tools. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
+    description: `AI commerce API. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
     images: [ogImage],
   },
 };
@@ -151,7 +151,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`dark h-full ${GeistSans.variable}`}>
       <head>
-        <link rel="alternate" type="application/json" href="/server.json" title="MCP server manifest" />
+        <link rel="alternate" type="application/json" href="/server.json" title="API server manifest" />
         <meta property="og:video" content={ogVideoMp4} />
         <meta property="og:video:secure_url" content={ogVideoMp4} />
         <meta property="og:video:type" content="video/mp4" />

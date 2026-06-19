@@ -660,8 +660,8 @@ export default function BillingCheckoutModal({
                     ? "PayPal (USD). Tras confirmar, Pro se activa en segundos."
                     : "PayPal (USD). After confirming, Pro activates in seconds."
                   : isES
-                    ? "PayPal (USD). CSV, alertas y MCP completo."
-                    : "PayPal (USD). CSV, alerts, and full MCP."}
+                    ? "PayPal (USD). CSV, alertas y API completo."
+                    : "PayPal (USD). CSV, alerts, and full API."}
               </p>
               <input
                 type="email"

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "list store AI agents",
     "VTEX API integration",
     "WooCommerce Store API",
-    "MCP tools for e-commerce",
+    "API tools for e-commerce",
     "AI commerce API",
   ],
   alternates: {

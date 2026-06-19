@@ -187,7 +187,7 @@ export default function PrivacyPolicy() {
                 necessary for rate limiting and billing.
               </li>
               <li>
-                <strong>Agent telemetry (Observatory):</strong> when you use MCP tools or
+                <strong>Agent telemetry (Observatory):</strong> when you use API tools or
                 instrumented API routes, we record agent identifiers (hash, API key, or session),
                 tool name, success or failure, country, and retailer queried. We do not store
                 full query text in this layer. Metrics are published only in aggregate form (for

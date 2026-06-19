@@ -3,7 +3,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 
 export const metadata: Metadata = {
   title: "La capa programable del retail físico de LatAm",
-  description: `${MARKET_STATS.pricesVerifiedLabel} verified shelf prices from ${MARKET_STATS.retailersVerified} retailers across ${MARKET_STATS.countries} countries. One API, one CLI, ${MARKET_STATS.mcpTools} MCP tools for AI agents.`,
+  description: `${MARKET_STATS.pricesVerifiedLabel} verified shelf prices from ${MARKET_STATS.retailersVerified} retailers across ${MARKET_STATS.countries} countries. One API, one CLI, ${MARKET_STATS.mcpTools} API tools for AI agents.`,
   alternates: { canonical: "/impact" },
   openGraph: {
     title: "CLI Market — La capa programable del retail físico de LatAm",

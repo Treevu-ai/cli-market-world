@@ -113,7 +113,7 @@ market search "leche" --country PE`}</pre>
           </a>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
           <a href="/tools" className="underline hover:text-[var(--cm-mint)]">
-            {isES ? `${MARKET_STATS.mcpTools} herramientas MCP → configs` : `${MARKET_STATS.mcpTools} MCP tools → configs`}
+            {isES ? `${MARKET_STATS.mcpTools} API tools → configs` : `${MARKET_STATS.mcpTools} API tools → configs`}
           </a>
         </div>
       </div>

@@ -45,7 +45,7 @@ const SIDEBAR = {
     { id: "basket", es: "Basket", en: "Basket" },
     { id: "intel", es: "Intelligence", en: "Intelligence" },
   ],
-  integrations: [{ id: "mcp", es: "MCP Tools", en: "MCP Tools" }],
+  integrations: [{ id: "mcp", es: "API Tools", en: "API Tools" }],
   governance: [
     { id: "limits", es: "Rate limits", en: "Rate limits" },
     { id: "errors", es: "Errores", en: "Errors" },
@@ -135,8 +135,8 @@ export default function DocsPage() {
           </h1>
           <p className="text-[var(--cm-on-surface-variant)] leading-relaxed">
             {t(
-              `CLI Market entrega precios de retail verificados vía REST, CLI y MCP. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada ${MARKET_STATS.pricesRefreshHours} h.`,
-              `CLI Market delivers verified retail prices via REST, CLI, and MCP. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
+              `CLI Market entrega precios de retail verificados vía REST y CLI. Diseñado para agentes autónomos y equipos comerciales que necesitan spreads, canasta e inflación con refresh cada ${MARKET_STATS.pricesRefreshHours} h.`,
+              `CLI Market delivers verified retail prices via REST and CLI. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
             )}
           </p>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -144,7 +144,7 @@ export default function DocsPage() {
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE</h4>
               <p className="font-mono text-lg text-white">1,000 req/day</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
-                {t("Lectura · búsqueda · MCP default.", "Read · search · default MCP profile.")}
+                {t("Lectura · búsqueda · API default.", "Read · search · default API profile.")}
               </p>
               <a href={MARKET_STATS.pypiUrl} className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block" target="_blank" rel="noopener noreferrer">
                 {MARKET_STATS.pipInstallCmd} →
@@ -165,8 +165,8 @@ export default function DocsPage() {
               <p className="font-mono text-lg text-white">10,000 req/day · USD 39/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
-                  `Checkout ${paymentsLabel} · 10 claves · Intel MCP.`,
-                  `Checkout ${paymentsLabel} · 10 keys · Intel MCP.`,
+                  `Checkout ${paymentsLabel} · 10 claves · Intel.`,
+                  `Checkout ${paymentsLabel} · 10 keys · Intel.`,
                 )}
               </p>
               <p className="text-[10px] text-[var(--cm-signal)] mt-2 font-mono">
@@ -184,7 +184,7 @@ export default function DocsPage() {
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
-              { tier: "FREE", price: "$0", note: t("1k req/día · MCP default", "1k req/day · default MCP") },
+              { tier: "FREE", price: "$0", note: t("1k req/día · API default", "1k req/day · default API") },
               { tier: "STARTER", price: "USD 24/mo", note: t("5k · export CSV", "5k · CSV export") },
               { tier: "PRO", price: "USD 39/mo", note: t("10k · checkout retail", "10k · retail checkout") },
               { tier: "FOUNDING", price: "USD 29/mo", note: t("100 plazas · Pro", "100 seats · Pro") },
@@ -220,8 +220,8 @@ market search "leche" --country PE
 market doctor`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4">
             {t(
-              "market init verifica API, crea cuenta gratuita si no hay sesión, muestra readiness % y snippet MCP.",
-              "market init checks API, creates a free account if needed, shows readiness % and MCP snippet.",
+              "market init verifica API, crea cuenta gratuita si no hay sesión, muestra readiness %.",
+              "market init checks API, creates a free account if needed, shows readiness %.",
             )}
           </p>
         </section>
