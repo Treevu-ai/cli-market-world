@@ -123,6 +123,27 @@ export default function ScaleCoverageSection() {
           </p>
         </div>
 
+        <div className="landing-content-rail mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-3">
+            {["Wong PE", "Metro PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Éxito CO", "Carulla CO", "Falabella CL", "Ripley CL", "Liverpool MX"].map((store) => (
+              <span
+                key={store}
+                className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1"
+              >
+                {store}
+              </span>
+            ))}
+            <span className="text-xs font-mono text-[var(--cm-on-surface-variant)]/40 px-2.5 py-1">
+              +{retailersVerified - 13} {isES ? "más" : "more"}
+            </span>
+          </div>
+          <p className="text-center text-xs text-[var(--cm-on-surface-variant)]/50 font-mono">
+            {isES
+              ? `VTEX · Shopify · Magento · WooCommerce · Golden Record · ${retailersVerified} activos`
+              : `VTEX · Shopify · Magento · WooCommerce · Golden Record · ${retailersVerified} active`}
+          </p>
+        </div>
+
         <div className="landing-content-rail grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
           {scaleStats.map((s, i) => (
             <Counter key={s.label} end={s.end} label={s.label} delay={i * 100} />
@@ -137,27 +158,6 @@ export default function ScaleCoverageSection() {
 
         <div className="max-w-md mx-auto mb-10 sm:mb-14">
           <LatAmCoverageMap />
-        </div>
-
-        <div className="landing-content-rail mb-10 sm:mb-12 text-left">
-          <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3 text-center">
-            {isES ? "Retailers verificados (muestra)" : "Verified retailers (sample)"}
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {["Wong PE", "Metro PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Falabella CL"].map((store) => (
-              <span
-                key={store}
-                className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1"
-              >
-                {store}
-              </span>
-            ))}
-          </div>
-          <p className="text-center text-xs text-[var(--cm-on-surface-variant)]/60 mt-3 font-mono">
-            {isES
-              ? `Golden Record: mismo producto comparable entre cadenas · ${retailersVerified} activos`
-              : `Golden Record: same product comparable across chains · ${retailersVerified} active`}
-          </p>
         </div>
 
         <div className="landing-content-rail grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">

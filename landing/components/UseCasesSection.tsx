@@ -11,22 +11,23 @@ export default function UseCasesSection() {
   const isES = lang === "es";
   const [activeId, setActiveId] = useState<UseCaseId | null>(null);
   const activeCase = USE_CASE_DEMOS.find((c) => c.id === activeId) ?? null;
+  const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "market-data"].includes(c.id));
 
   return (
     <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
-          <h2 className="section-title">{isES ? "¿Para quién es CLI Market?" : "Who is CLI Market for?"}</h2>
+          <h2 className="section-title">{isES ? "Una API. Tres superficies." : "One API. Three surfaces."}</h2>
           <p className="section-intro">
             {isES
-              ? "Builders, equipos comerciales y operadores de compras — mismos precios verificados, distintas superficies."
-              : "Builders, commercial teams, and procurement operators — same verified prices, different surfaces."}
+              ? "Developers, equipos de compras y retailers — mismos precios verificados, distintas superficies."
+              : "Developers, procurement teams, and retailers — same verified prices, different surfaces."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 landing-content-rail text-left mb-12">
-          {USE_CASE_DEMOS.map((c, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 landing-content-rail text-left mb-12">
+          {visibleCases.map((c, i) => (
             <motion.button
               key={c.id}
               type="button"

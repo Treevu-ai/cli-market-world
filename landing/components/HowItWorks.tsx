@@ -8,8 +8,8 @@ import { recordPipInstallIntent } from "@/lib/funnel";
 const mainSteps = [
   {
     cmd: MARKET_STATS.pipInstallCmd,
-    out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · cuenta free con market init`,
-    out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · free account via market init`,
+    out_es: "Acceso gratis activado · 2,000 req/día · sin tarjeta",
+    out_en: "Free access activated · 2,000 req/day · no card required",
     label: "Install",
     icon: "↓",
   },
@@ -81,8 +81,8 @@ export default function HowItWorks() {
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>
-                <p className="text-xs text-[var(--cm-on-surface-variant)] font-mono mt-1 demo-step-text">{s.cmd}</p>
-                <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1 demo-step-text">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 leading-snug">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-[11px] text-[var(--cm-on-surface-variant)]/45 font-mono mt-2 demo-step-text">{s.cmd}</p>
               </div>
             </motion.div>
           ))}
@@ -108,6 +108,20 @@ export default function HowItWorks() {
         <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mb-6 font-mono">
           {isES ? `Checkout ${paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${paymentsLabel} · requires Pro plan + email activation`}
         </p>
+
+        <div className="mt-8 flex flex-wrap justify-center items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/40 mr-1">
+            {isES ? "Compatible con" : "Works with"}
+          </span>
+          {["Claude", "Cursor", "GPT-4o", "LangChain", "Any HTTP"].map((tool) => (
+            <span
+              key={tool}
+              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/55 bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5"
+            >
+              {tool}
+            </span>
+          ))}
+        </div>
 
         <p className="mt-4">
           <a href="/docs#quickstart" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
