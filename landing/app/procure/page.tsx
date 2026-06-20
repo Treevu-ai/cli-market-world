@@ -3,7 +3,7 @@ import ProcureCopilotPage from "@/components/ProcureCopilotPage";
 
 export const metadata: Metadata = {
   title: "Procure Copilot",
-  description: "Enterprise procurement for LATAM. Request → Compare → Approve → Checkout → Savings. Add-on from $79/mo.",
+  description: "Enterprise procurement for LATAM. Request → Compare → Approve → Checkout → Savings. Compare $29 · Ops $79/mo.",
   alternates: { canonical: "/procure" },
   openGraph: {
     title: "Procure Copilot — CLI Market",

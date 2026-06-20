@@ -38,8 +38,8 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const primaryCta = isES ? "Sandbox gratis →" : "Free Sandbox →";
-  const mobileCta = isES ? "Sandbox →" : "Sandbox →";
+  const primaryCta = isES ? "Plan Free →" : "Free plan →";
+  const mobileCta = isES ? "Free →" : "Free →";
 
   return (
     <nav

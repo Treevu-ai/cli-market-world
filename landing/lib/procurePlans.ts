@@ -75,3 +75,19 @@ export const PROCURE_PLANS = [
 ] as const;
 
 export type ProcurePlanSlug = (typeof PROCURE_PLANS)[number]["slug"];
+
+export const PROCURE_ENTRY_PRICE = PROCURE_PLANS[0].price;
+export const PROCURE_RECOMMENDED_PRICE = PROCURE_PLANS.find((p) => p.highlighted)!.price;
+
+/** Hero / page copy — entry Compare tier + recommended Ops tier. */
+export function procurePriceRangeLabel(isES: boolean): string {
+  return isES
+    ? `Compare $${PROCURE_ENTRY_PRICE} · Ops $${PROCURE_RECOMMENDED_PRICE}/mes`
+    : `Compare $${PROCURE_ENTRY_PRICE} · Ops $${PROCURE_RECOMMENDED_PRICE}/mo`;
+}
+
+export function procureEntryPriceLabel(isES: boolean): string {
+  return isES
+    ? `Desde $${PROCURE_ENTRY_PRICE} (Compare)`
+    : `From $${PROCURE_ENTRY_PRICE} (Compare)`;
+}

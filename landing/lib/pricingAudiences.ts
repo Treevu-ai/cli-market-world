@@ -20,8 +20,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "Developers · API · CLI",
     title_es: "Inteligencia de retail programable.",
     title_en: "Programmable retail intelligence.",
-    intro_es: "Para developers. Sandbox gratis · Starter $9/mes · Pro $49/mes · Enterprise custom. API, CLI, datos normalizados por kg/L, basket optimization.",
-    intro_en: "For developers. Free Sandbox · Starter $9/mo · Pro $49/mo · Enterprise custom. API, CLI, normalized per kg/L data, basket optimization.",
+    intro_es: "Para developers. Free 1.000 req/día · Starter $9/mes (5k/día, 14d trial) · Pro $49/mes · Enterprise custom. API, CLI, datos normalizados por kg/L.",
+    intro_en: "For developers. Free 1,000 req/day · Starter $9/mo (5k/day, 14d trial) · Pro $49/mo · Enterprise custom. API, CLI, normalized per kg/L data.",
     hash: "#pricing",
   },
   {
