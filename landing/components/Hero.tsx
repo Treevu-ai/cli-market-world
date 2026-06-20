@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroPlayground from "@/components/HeroPlayground";
 import HeroMetrics from "@/components/HeroMetrics";
 import HeroPathCard from "@/components/HeroPathCard";
 import AmberCascades from "@/components/AmberCascades";
@@ -295,9 +294,6 @@ export default function Hero() {
           ) : null}
         </div>
 
-        <div id="hero-playground" className="hidden md:block w-full scroll-mt-24">
-          <HeroPlayground />
-        </div>
       </div>
     </section>
   );
