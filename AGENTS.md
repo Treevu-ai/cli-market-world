@@ -115,7 +115,7 @@ Estrategia canónica: `docs/pricing-strategy.md`
 
 | Capa | Producto | ICP | Precio |
 |------|----------|-----|--------|
-| Infra | CLI Market Pro | Agent builders (código) | $39/mes |
+| Infra | CLI Market Pro | Agent builders (código) | $49/mes |
 | App | Procure Copilot | Operadores de compras | $29–149/mes (API incluida en Pro+) |
 | Datos | Intelligence / Price Pulse | Analistas, fintech | $300–500/mes |
 

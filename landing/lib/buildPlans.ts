@@ -1,11 +1,11 @@
 /** Build (API) tier labels — distinct from Procure Compare/Ops/Scale. */
 
-export type BuildPlanSlug = "starter" | "pro" | "pro_founding" | "pro_annual";
+export type BuildPlanSlug = "starter" | "pro" | "pro_annual";
 
 export const BUILD_PLAN_LABELS: Record<BuildPlanSlug, { es: string; en: string }> = {
   starter: { es: "Build Starter", en: "Build Starter" },
   pro: { es: "Build Pro", en: "Build Pro" },
-  pro_founding: { es: "Build Pro Founding", en: "Build Pro Founding" },
+  
   pro_annual: { es: "Build Pro (anual)", en: "Build Pro (annual)" },
 };
 
@@ -13,7 +13,7 @@ export function normalizeBuildPlanSlug(raw: string | null | undefined): BuildPla
   if (!raw) return null;
   const slug = raw.trim().toLowerCase().replace(/-/g, "_");
   if (slug in BUILD_PLAN_LABELS) return slug as BuildPlanSlug;
-  if (slug === "founding") return "pro_founding";
+  if (slug === "founding") return null; // removed — only 3 plans
   if (slug === "annual") return "pro_annual";
   return null;
 }

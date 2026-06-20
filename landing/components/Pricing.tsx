@@ -535,25 +535,6 @@ export default function Pricing() {
 
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-14">
             {billingFootnote}{" "}
-            {isES ? (
-              <>
-                Pro Founding: código <span className="text-[var(--cm-mint)]">founding100</span> al checkout.
-                Checkout programático:{" "}
-                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
-                  /docs#billing
-                </a>
-                .
-              </>
-            ) : (
-              <>
-                Pro Founding promo: <span className="text-[var(--cm-mint)]">founding100</span> at checkout.
-                Programmatic checkout:{" "}
-                <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
-                  /docs#billing
-                </a>
-                .
-              </>
-            )}
           </p>
 
           <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />

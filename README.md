@@ -64,7 +64,7 @@ market intel brief --country PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Precio** | $0 | Starter $9/mes · Pro $49/mes · Founding $29 · Anual $490 | A medida |
+| **Precio** | $0 | Starter $9/mes · Pro $49/mes · Anual $490 | A medida |
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -136,7 +136,7 @@ market intel brief --country PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Price** | $0 | Starter $9/mo · Pro $49/mo · Founding $29 · Annual $490 | Custom |
+| **Price** | $0 | Starter $9/mo · Pro $49/mo · Annual $490 | Custom |
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |

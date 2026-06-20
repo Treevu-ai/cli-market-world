@@ -27,7 +27,7 @@ REPO_CONFIG: dict[str, dict] = {
         "hero": "gif",
         "title": "CLI MARKET",
         "subtitle": "Commerce infrastructure for AI agents",
-        "tagline": "68 retailers · 38 verified · 8 countries · 22 MCP tools · 50k+ prices",
+        "tagline": "81 retailers · 41 verified · 8 countries · 27 MCP tools · 61k+ prices",
     },
     "cli-market-core": {
         "hero": "gif",
@@ -57,7 +57,7 @@ REPO_CONFIG: dict[str, dict] = {
         "hero": "gif",
         "title": "PROCURE COPILOT",
         "subtitle": "B2B procurement for LatAm enterprises",
-        "tagline": "Powered by CLI Market API · 38 retailers · 8 countries",
+        "tagline": "Powered by CLI Market API · 41 verified retailers · 8 countries",
     },
     "sinapsis-innovadora": {
         "hero": "svg",

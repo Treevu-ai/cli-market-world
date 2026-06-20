@@ -16,7 +16,7 @@ hub: "[[GTM-Hub]]"
 ## 1. Problem Statement
 CLI Market v1.4.3 proves the thesis: AI agents need commerce infrastructure. But three gaps block growth:
 1. **Retailer onboarding is human-dependent.** Every retailer requires a founder email or LinkedIn DM.
-2. **No revenue loop.** Build Pro ($39/mo) billing live; Procure ($29–79/mo) separate. Early alpha had sandbox-only PayPal — now manual + hosted checkout.
+2. **No revenue loop.** Build Pro ($49/mo) billing live; Procure ($29–79/mo) separate. Early alpha had sandbox-only PayPal — now manual + hosted checkout.
 3. **Data moat is invisible.** 43K+ prices exist but the dashboard is internal, not a product.
 
 ## 2. Goals & Success Metrics
