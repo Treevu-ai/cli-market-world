@@ -42,13 +42,20 @@ export default function Navbar() {
   const mobileCta = isES ? "Sandbox →" : "Sandbox →";
 
   return (
-    <nav className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300 ${
-      scrolled ? "bg-[var(--cm-background)]/90 backdrop-blur-md border-b border-[var(--cm-outline-variant)]/30" : "bg-[var(--cm-background)] border-b border-transparent"
-    }`} aria-label={isES ? "Navegación principal" : "Main navigation"}>
-      <div className="landing-container-wide flex items-center justify-between h-14 md:h-16 gap-4">
+    <nav
+      className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300`}
+      style={{
+        backgroundColor: scrolled ? "rgba(10,10,10,0.95)" : "transparent",
+        backdropFilter: scrolled ? "blur(8px)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(8px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(200,170,130,0.15)" : "1px solid transparent",
+      }}
+      aria-label={isES ? "Navegación principal" : "Main navigation"}
+    >
+      <div className="landing-container-wide flex items-center justify-between h-14 md:h-20 gap-4">
         <a href="/" className="flex items-center gap-2 shrink-0" aria-label="CLI Market home">
           <Logo />
-          <span className="font-medium text-sm text-white tracking-tight">CLI Market</span>
+          <span className="font-mono text-sm text-white" style={{ letterSpacing: "-0.5px" }}>CLI Market</span>
         </a>
 
         <div className="hidden lg:flex items-center gap-5">
@@ -57,8 +64,8 @@ export default function Navbar() {
               key={item.id}
               href={item.href}
               aria-current={activeGroup === item.id ? "true" : undefined}
-              className={`text-xs font-medium transition-colors whitespace-nowrap ${
-                activeGroup === item.id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+              className={`kimi-nav-link text-xs whitespace-nowrap ${
+                activeGroup === item.id ? "text-[var(--cm-amber)]" : "text-[var(--cm-on-surface-variant)]"
               }`}
             >
               {isES ? item.es : item.en}
@@ -69,18 +76,18 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3 shrink-0">
           <a
             href="/retailers"
-            className="text-xs font-medium text-[var(--cm-mint)] hover:brightness-110 transition-colors whitespace-nowrap"
+            className="kimi-nav-link text-xs text-[var(--cm-amber)] whitespace-nowrap"
           >
             {isES ? "Para retailers" : "For retailers"}
           </a>
           <a
             href="/account"
-            className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white transition-colors"
+            className="kimi-nav-link text-xs text-[var(--cm-on-surface-variant)]"
           >
             {isES ? "Cuenta" : "Account"}
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
-            className="text-xs font-medium text-[var(--cm-on-surface-variant)] hover:text-white cursor-pointer">
+            className="kimi-nav-link text-xs text-[var(--cm-on-surface-variant)] cursor-pointer">
             {isES ? "EN" : "ES"}
           </button>
           <a
@@ -99,7 +106,8 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="landing-mobile-menu md:hidden bg-[var(--cm-surface-low)] border-t border-[var(--cm-outline-variant)]/30 landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom">
+        <div className="landing-mobile-menu md:hidden border-t landing-container-wide py-4 flex flex-col gap-2 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain safe-bottom"
+          style={{ backgroundColor: "rgba(10,10,10,0.97)", borderColor: "rgba(200,170,130,0.15)" }}>
           {TOP_NAV.map((item) => (
             <a
               key={item.id}
@@ -107,14 +115,14 @@ export default function Navbar() {
               onClick={close}
               aria-current={activeGroup === item.id ? "true" : undefined}
               className={`text-sm font-medium transition-colors ${
-                activeGroup === item.id ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                activeGroup === item.id ? "text-[var(--cm-amber)]" : "text-[var(--cm-on-surface-variant)] hover:text-white"
               }`}
             >
               {isES ? item.es : item.en}
             </a>
           ))}
           <a href="/retailers" onClick={close}
-             className="text-sm font-medium text-[var(--cm-mint)] hover:brightness-110 transition-colors">
+             className="text-sm font-medium text-[var(--cm-amber)] transition-colors">
             {isES ? "Para retailers" : "For retailers"}
           </a>
           <a href="/account" onClick={close}
