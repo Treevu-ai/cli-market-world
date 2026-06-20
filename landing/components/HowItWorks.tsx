@@ -8,8 +8,8 @@ import { recordPipInstallIntent } from "@/lib/funnel";
 const mainSteps = [
   {
     cmd: MARKET_STATS.pipInstallCmd,
-    out_es: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · cuenta free con market init`,
-    out_en: `${MARKET_STATS.pypiPackageName} ${MARKET_STATS.packageVersion} · free account via market init`,
+    out_es: "Acceso gratis activado · 2,000 req/día · sin tarjeta",
+    out_en: "Free access activated · 2,000 req/day · no card required",
     label: "Install",
     icon: "↓",
   },
@@ -81,8 +81,8 @@ export default function HowItWorks() {
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">{s.label}</p>
-                <p className="text-xs text-[var(--cm-on-surface-variant)] font-mono mt-1 demo-step-text">{s.cmd}</p>
-                <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1 demo-step-text">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 leading-snug">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-[11px] text-[var(--cm-on-surface-variant)]/45 font-mono mt-2 demo-step-text">{s.cmd}</p>
               </div>
             </motion.div>
           ))}

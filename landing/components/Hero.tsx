@@ -135,19 +135,24 @@ export default function Hero() {
             title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
               <>
-                <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all leading-relaxed">
-                  {MARKET_STATS.pipInstallCmd}
-                </code>
+                <span className="text-xs text-[var(--cm-on-mint)]/90 leading-snug">
+                  {isES
+                    ? `${MARKET_STATS.retailersVerified} retailers · precios normalizados por kg/L`
+                    : `${MARKET_STATS.retailersVerified} retailers · prices normalized per kg/L`}
+                </span>
                 {mounted && pypiChip ? (
-                  <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65 tabular-nums">
-                    <span className="font-semibold text-[var(--cm-on-mint)]/80">{pypiChip}</span>{" "}
+                  <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/60 tabular-nums">
+                    <span className="font-semibold text-[var(--cm-on-mint)]/75">{pypiChip}</span>{" "}
                     {isES ? "instalaciones PyPI" : "PyPI installs"}
                   </span>
                 ) : (
-                  <span className="text-xs text-[var(--cm-on-mint)]/55">
+                  <span className="text-[10px] text-[var(--cm-on-mint)]/55">
                     {isES ? "100 llamadas · sin tarjeta" : "100 calls · no card required"}
                   </span>
                 )}
+                <code className="font-mono text-[10px] text-[var(--cm-on-mint)]/50 break-all leading-relaxed">
+                  {MARKET_STATS.pipInstallCmd}
+                </code>
               </>
             }
             foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
@@ -201,9 +206,16 @@ export default function Hero() {
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
             title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
-              <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all">
-                {MARKET_STATS.pipInstallCmd}
-              </code>
+              <>
+                <span className="text-xs text-[var(--cm-on-mint)]/90">
+                  {isES
+                    ? `${MARKET_STATS.retailersVerified} retailers · sin tarjeta`
+                    : `${MARKET_STATS.retailersVerified} retailers · no card required`}
+                </span>
+                <code className="font-mono text-[10px] text-[var(--cm-on-mint)]/50 break-all">
+                  {MARKET_STATS.pipInstallCmd}
+                </code>
+              </>
             }
             foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
           />
