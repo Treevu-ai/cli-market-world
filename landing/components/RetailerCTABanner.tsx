@@ -1,6 +1,7 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function RetailerCTABanner() {
   const { lang } = useLang();
@@ -23,8 +24,8 @@ export default function RetailerCTABanner() {
           </p>
           <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
             {isES
-              ? "38 retailers ya son visibles para agentes en Perú y LATAM. Gratis."
-              : "38 retailers are already visible to AI agents across LATAM. Free."}
+              ? `${MARKET_STATS.retailersVerified} retailers ya son visibles para agentes en Perú y LATAM. Gratis.`
+              : `${MARKET_STATS.retailersVerified} retailers are already visible to AI agents across LATAM. Free.`}
           </p>
         </div>
         <a

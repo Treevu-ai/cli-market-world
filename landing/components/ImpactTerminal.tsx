@@ -47,7 +47,7 @@ export default function ImpactTerminal() {
       await typeCmd('market compare "aceite de girasol 900ml" --country PE');
       await sleep(350);
       el(
-        `<span class="impact-term-dim">→ ${isES ? "consultando 38 retailers verificados · normalizando /L …" : "querying 38 verified retailers · normalizing /L …"}</span>`
+        `<span class="impact-term-dim">→ ${isES ? "consultando retailers verificados · normalizando /L …" : "querying verified retailers · normalizing /L …"}</span>`
       );
       await sleep(700);
 

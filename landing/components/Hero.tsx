@@ -107,7 +107,7 @@ export default function Hero() {
           {isES
             ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
             : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
-          <a href="#products" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
+          <a href="#how-it-works" className="text-[var(--cm-data)] underline underline-offset-2 hover:brightness-110">
             {isES ? "Cómo funciona →" : "How it works →"}
           </a>
         </motion.p>
