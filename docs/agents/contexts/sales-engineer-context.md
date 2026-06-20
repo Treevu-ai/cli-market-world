@@ -111,7 +111,7 @@ Mostrar `checkoutUrl` — handoff a pago real vía CLI Market. No completar pago
 | Aprobaciones, stock, delivery, **pago integrado** | Pro $79 | Piloto 30 días + umbral custom (infra CLI Market incluida) |
 | Multi-país, integración ERP | Builder $149 | Call técnica integraciones |
 
-Pricing ecosistema: `docs/pricing-strategy.md` — no ofrecer CLI Market Pro $39 al operador de compras.
+Pricing ecosistema: `docs/pricing-strategy.md` — no ofrecer CLI Market Pro $49 al operador de compras.
 
 Ofrecer anexo Price Pulse (secciones inflación + canasta) si es agroindustrial — ver `docs/agents/price-pulse-workflow.md`.
 

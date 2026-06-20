@@ -256,8 +256,8 @@ async def telegram_webhook(request: Request):
         reply = (
             "<b>Planes CLI Market:</b>\n"
             "\u2022 Free: 1,000 req/día — pip install cli-market-world\n"
-            "\u2022 Starter: $24/mes — 5,000 req/día, export CSV, 3 alertas\n"
-            "\u2022 Pro: $39/mes — checkout, MCP completo, 10 alertas\n"
+            "\u2022 Starter: $9/mes — 5,000 req/día, export CSV, 3 alertas\n"
+            "\u2022 Pro: $49/mes — checkout, MCP completo, 10 alertas\n"
             "\u2022 Enterprise: hello@cli-market.dev\n\n"
             "Detalle: cli-market.dev/#pricing\n"
             "Docs: cli-market.dev/docs"

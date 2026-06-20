@@ -1,6 +1,6 @@
 # CLI Market — Estrategia de Producto y Plan de Actualización
 
-> **Documento de decisión consolidado** · v1.0 · Mayo 2026 · **Métricas canónicas (jun 2026):** `python3 ops/sync_market_stats.py` → `landing/lib/marketStats.ts` (38 verified · 22 MCP default · 54k+ prices · 4 platforms incl. WooCommerce). Pricing Build: Free / Starter $24 / Pro $39 / Pro Founding $29 — ver `docs/pricing-strategy.md`.
+> **Documento de decisión consolidado** · v1.0 · Mayo 2026 · **Métricas canónicas (jun 2026):** `python3 ops/sync_market_stats.py` → `landing/lib/marketStats.ts` (38 verified · 22 MCP default · 54k+ prices · 4 platforms incl. WooCommerce). Pricing Build: Free / Starter $9 / Pro $49 / Pro Founding $29 — ver `docs/pricing-strategy.md`.
 > Autor: Ricardo Cuba (Sinapsis Innovadora) · Estado: propuesta para revisión
 > Alcance: posicionamiento, modelo de negocio calibrado a Perú, decisión sobre protocolos de comercio agéntico (UCP/ACP), y MVP del Índice de Canasta.
 
