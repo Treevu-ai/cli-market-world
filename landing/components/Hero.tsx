@@ -58,13 +58,11 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Compara precios reales en {MARKET_STATS.retailersVerified} retailers de{" "}
-              {MARKET_STATS.countries} países. Ahorra en cada compra. Sin WhatsApp, sin Excel.
+              Compras inteligentes. Precios reales. Sin WhatsApp.
             </>
           ) : (
             <>
-              Compare real prices across {MARKET_STATS.retailersVerified} retailers in{" "}
-              {MARKET_STATS.countries} countries. Save on every purchase. No WhatsApp, no Excel.
+              Smart procurement. Real prices. No WhatsApp.
             </>
           )}
         </motion.h1>
