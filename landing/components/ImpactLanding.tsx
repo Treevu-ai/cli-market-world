@@ -88,7 +88,7 @@ export default function ImpactLanding() {
         </Link>
         <div className="impact-nav-r">
           <a href="#coverage">{isES ? "Cobertura" : "Coverage"}</a>
-          <a href="#intel">Intelligence</a>
+          <a href="#intelligence">Intelligence</a>
           <a href="#planes">{isES ? "Planes" : "Plans"}</a>
           <Link href={PRICING_BUILD_HASH} className="impact-nav-cta">
             {isES ? "Empezar gratis →" : "Start free →"}
@@ -135,7 +135,7 @@ export default function ImpactLanding() {
             <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-action">
               {isES ? "Empezar con la API — gratis" : "Start with the API — free"}
             </Link>
-            <a href="#intel" className="impact-btn impact-btn-ghost">
+            <a href="#intelligence" className="impact-btn impact-btn-ghost">
               {isES ? "Ver Intelligence ↓" : "See Intelligence ↓"}
             </a>
           </div>
