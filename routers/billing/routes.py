@@ -563,7 +563,7 @@ def _validate_founding_plan(username: str, promo_code: str, *, lang: str) -> Non
     if not ok:
         detail = err
         if lang == "es" and "full" in err.lower():
-            detail = "Oferta Founding agotada (100 plazas)"
+            detail = "Plan no disponible"
         raise HTTPException(status_code=400, detail=detail)
 
 

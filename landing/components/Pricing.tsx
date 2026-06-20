@@ -406,7 +406,7 @@ export default function Pricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                id={tier.name === "Pro Founding" ? "pro-checkout" : undefined}
+                id={undefined}
                 className="scroll-mt-24"
               >
                 <TierCard
