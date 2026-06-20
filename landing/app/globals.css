@@ -4,6 +4,7 @@
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, sans-serif;
   --font-display: var(--font-geist-sans), "Geist", ui-sans-serif, sans-serif;
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+  --font-garamond: var(--font-garamond), "EB Garamond", Georgia, serif;
 
   --color-cm-bg: #0a0a0b;
   --color-cm-surface: #131314;
@@ -56,6 +57,11 @@
   --cm-secondary: #c6c4df;
   --cm-secondary-container: #47475d;
   --cm-gutter: 24px;
+
+  /* Amber accent — Kimi design system */
+  --cm-amber: rgba(200, 170, 130, 1);
+  --cm-amber-dim: rgba(200, 170, 130, 0.6);
+  --cm-amber-glow: rgba(255, 220, 160, 0.6);
   --cm-content-max: 1200px;
   --cm-container-max: 1280px;
   --cm-sidenav-width: 3rem;
@@ -2842,4 +2848,59 @@ body > div[id*="paypal-cart"] {
   .impact-stat {
     padding: 28px 16px;
   }
+}
+
+/* ── Kimi / Amber design system additions ──────────────────────── */
+
+.font-garamond {
+  font-family: var(--font-garamond), "EB Garamond", Georgia, serif;
+}
+
+.hero-garamond-headline {
+  font-family: var(--font-garamond), "EB Garamond", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6.5vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.kimi-nav-link {
+  position: relative;
+  color: #dadada;
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
+  font-weight: 300;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  padding-bottom: 2px;
+  transition: color 0.3s ease;
+}
+
+.kimi-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kimi-nav-link:hover {
+  color: #ffffff;
+}
+
+.kimi-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.liquid-glass-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, EB_Garamond } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { MARKET_STATS } from "@/lib/marketStats";
@@ -16,6 +16,13 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
+});
+
+const ebGaramond = EB_Garamond({
+  variable: "--font-garamond",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
 });
 
 const siteUrl = "https://cli-market.dev";
@@ -157,7 +164,7 @@ export default function RootLayout({
         <meta property="og:video:height" content="720" />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} h-full bg-[var(--cm-background)] text-[var(--cm-on-surface)] antialiased overflow-x-hidden`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${ebGaramond.variable} h-full bg-[var(--cm-background)] text-[var(--cm-on-surface)] antialiased overflow-x-hidden`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {cfBeaconToken ? (

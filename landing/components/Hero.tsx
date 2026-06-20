@@ -7,6 +7,8 @@ import ScrambleText from "@/components/ScrambleText";
 import HeroPlayground from "@/components/HeroPlayground";
 import HeroMetrics from "@/components/HeroMetrics";
 import HeroPathCard from "@/components/HeroPathCard";
+import AmberCascades from "@/components/AmberCascades";
+import LiquidGlassButton from "@/components/LiquidGlassButton";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
@@ -23,10 +25,10 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="brand-mode-terminal hero-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden"
+      className="brand-mode-terminal landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden"
+      style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(200,170,130,0.12)" }}
     >
-      <div className="hero-terminal-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
-      <div className="hero-terminal-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
+      <AmberCascades opacity={0.85} />
 
       <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
         <motion.div
@@ -54,7 +56,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hero-terminal-headline text-balance max-w-[820px]"
+          className="hero-garamond-headline text-balance max-w-[820px]"
         >
           {isES ? (
             <>
@@ -141,7 +143,18 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.42 }}
+          className="mt-8 flex justify-center"
+        >
+          <LiquidGlassButton href="#how-it-works">
+            {isES ? "Explorar capacidades" : "Explore capabilities"}
+          </LiquidGlassButton>
+        </motion.div>
+
+        <p className="mt-8 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
