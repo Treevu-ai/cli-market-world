@@ -13,8 +13,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[var(--cm-background)] xl:pl-12">
-      <div className="grid-bg fixed inset-0 opacity-40 pointer-events-none" aria-hidden="true" />
+    <main className="relative min-h-screen bg-white xl:pl-12">
       <Navbar />
       <SideNav />
       <ErrorBoundary>
