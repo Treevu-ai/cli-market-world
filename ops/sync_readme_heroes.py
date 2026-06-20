@@ -27,7 +27,7 @@ REPO_CONFIG: dict[str, dict] = {
         "hero": "gif",
         "title": "CLI MARKET",
         "subtitle": "Commerce infrastructure for AI agents",
-        "tagline": "81 retailers · 41 verified · 8 countries · 27 MCP tools · 61k+ prices",
+        "tagline": "81 retailers · 41 verified · 8 countries · 22 MCP tools · 61k+ prices",
     },
     "cli-market-core": {
         "hero": "gif",
