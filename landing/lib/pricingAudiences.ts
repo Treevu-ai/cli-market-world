@@ -43,11 +43,11 @@ export function isLegacyListedPricingHash(hash: string): boolean {
 }
 
 export function resolvePricingAudience(): PricingAudience {
-  if (typeof window === "undefined") return "build";
+  if (typeof window === "undefined") return "procure";
   const hash = window.location.hash.replace("#", "");
   const param = new URLSearchParams(window.location.search).get("audience");
-  if (hash === "procure" || param === "procure") return "procure";
-  return "build";
+  if (hash === "build" || param === "build") return "build";
+  return "procure";
 }
 
 export function hashForAudience(audience: PricingAudience): string {

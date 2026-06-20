@@ -58,13 +58,13 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Accede a inteligencia de precios reales en {MARKET_STATS.retailersVerified} retailers de{" "}
-              {MARKET_STATS.countries} países. Optimiza compras. Construye flujos de comercio con IA.
+              Compara precios reales en {MARKET_STATS.retailersVerified} retailers de{" "}
+              {MARKET_STATS.countries} países. Ahorra en cada compra. Sin WhatsApp, sin Excel.
             </>
           ) : (
             <>
-              Access real retail intelligence across {MARKET_STATS.retailersVerified} retailers in{" "}
-              {MARKET_STATS.countries} countries. Optimize procurement. Build AI commerce.
+              Compare real prices across {MARKET_STATS.retailersVerified} retailers in{" "}
+              {MARKET_STATS.countries} countries. Save on every purchase. No WhatsApp, no Excel.
             </>
           )}
         </motion.h1>
