@@ -191,7 +191,7 @@ export default function Hero() {
           />
 
           <HeroPathCard
-            href="#intelligence"
+            href="#procure"
             variant="signal"
             eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
             title={isES ? "Compra mejor. Más rápido →" : "Buy better. Faster →"}
@@ -268,7 +268,7 @@ export default function Hero() {
           {pathsOpen ? (
             <div className="grid grid-cols-1 gap-2">
               <HeroPathCard
-                href="#intelligence"
+                href="#procure"
                 variant="signal"
                 eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
                 title={isES ? "Compra mejor →" : "Buy better →"}

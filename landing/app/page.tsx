@@ -21,11 +21,11 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <HowItWorks />
-          <CinematicVision />
           <CapabilitiesSection />
+          <CinematicVision />
           <UseCasesSection />
-          <ScaleCoverageSection />
           <Pricing />
+          <ScaleCoverageSection />
           <FAQ />
           <Footer />
         </div>
