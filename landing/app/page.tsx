@@ -20,12 +20,12 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <HowItWorks />
+          <UseCasesSection />
           <CapabilitiesSection />
           <CinematicVision />
-          <UseCasesSection />
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
-          <Pricing />
           <ScaleCoverageSection />
+          <Pricing />
           <FAQ />
           <Footer />
         </div>
