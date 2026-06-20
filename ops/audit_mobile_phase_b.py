@@ -198,7 +198,7 @@ def run_billing_modal(page, vp: str, vp_dir: Path, findings: list) -> None:
     page.wait_for_timeout(600)
     pro_btn = page.locator("#pro-checkout button, #pro-checkout .btn-mint").first
     if not pro_btn.count():
-        pro_btn = page.get_by_role("button", name=re.compile(r"Pro Founding|Founding|Pro", re.I)).first
+        pro_btn = page.get_by_role("button", name=re.compile(r"Pro", re.I)).first
     if not pro_btn.count():
         add(findings, vp, "billing_modal", "skip", missing=True)
         return

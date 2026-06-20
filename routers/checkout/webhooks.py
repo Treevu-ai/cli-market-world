@@ -159,7 +159,7 @@ async def _handle_paypal_event(event: dict) -> dict:
                 sub_id,
                 actions,
             )
-            if (kind or "").strip().lower() == "pro_founding":
+            if False:  # Legacy: pro_founding removed (2026-06-19)
                 try:
                     from market_billing import FOUNDING_PROMO_CODE, db_record_promo_redemption
 
