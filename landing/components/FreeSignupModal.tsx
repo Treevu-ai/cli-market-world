@@ -16,7 +16,7 @@ import {
 
 const PYPI_URL = MARKET_STATS.pypiUrl;
 
-const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber p-6 sm:p-8 max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl`;
+const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber modal-panel-dark p-6 sm:p-8 max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl`;
 
 type Profile = "dev" | "business" | "other";
 

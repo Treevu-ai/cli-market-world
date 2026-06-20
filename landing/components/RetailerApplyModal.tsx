@@ -12,7 +12,7 @@ import {
   LANDING_MODAL_PANEL_MD,
 } from "@/lib/modalLayout";
 
-const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber p-0 sm:max-w-[540px] overflow-hidden`;
+const MODAL_PANEL = `${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} card-cyber modal-panel-dark p-0 sm:max-w-[540px] overflow-hidden`;
 
 export default function RetailerApplyModal({
   open,
