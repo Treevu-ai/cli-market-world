@@ -24,7 +24,7 @@ function LiveMetricValue({
 }) {
   if (value) return <>{value}</>;
   if (!liveLoaded) {
-    return <span className="inline-block w-16 h-8 bg-white/10 rounded animate-pulse" aria-hidden />;
+    return <span className="inline-block w-16 h-8 bg-gray-100 rounded animate-pulse" aria-hidden />;
   }
   return null;
 }
@@ -44,7 +44,7 @@ function Counter({ end, label, delay }: { end: number; label: string; delay: num
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <motion.span ref={ref} className="text-2xl font-medium text-white tracking-tight tabular-nums">{display}</motion.span>
+      <motion.span ref={ref} className="text-2xl font-medium text-gray-900 tracking-tight tabular-nums">{display}</motion.span>
       <span className="text-xs text-[var(--cm-on-surface-variant)] font-mono uppercase tracking-widest text-center">{label}</span>
     </div>
   );
@@ -127,7 +127,7 @@ export default function ScaleCoverageSection() {
             {["Wong PE", "Metro PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Éxito CO", "Carulla CO", "Falabella CL", "Ripley CL", "Liverpool MX"].map((store) => (
               <span
                 key={store}
-                className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1"
+                className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-gray-50 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1"
               >
                 {store}
               </span>
@@ -155,14 +155,12 @@ export default function ScaleCoverageSection() {
             : `${retailersVerified} verified = active, live prices · ${retailersDefined} in catalog = integrated, some pending activation`}
         </p>
 
-
-
         <div className="landing-content-rail grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
           <div className="card-cyber p-6">
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-1">
               {isES ? "Inventario" : "Inventory"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums">{priceLong}</p>
+            <p className="text-3xl font-black text-gray-900 tabular-nums">{priceLong}</p>
             <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
               {isES
                 ? `precios indexados · normalizados kg/L · ${MARKET_STATS.indicatorsCount} datos de mercado`
@@ -173,7 +171,7 @@ export default function ScaleCoverageSection() {
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Frescura" : "Freshness"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+            <p className="text-3xl font-black text-gray-900 tabular-nums min-h-[2.25rem]">
               <LiveMetricValue value={freshnessPct} liveLoaded={liveLoaded} />
             </p>
             {freshnessSub ? (
@@ -184,7 +182,7 @@ export default function ScaleCoverageSection() {
             <p className="text-xs uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 mb-2">
               {isES ? "Cobertura" : "Coverage"}
             </p>
-            <p className="text-3xl font-black text-white tabular-nums min-h-[2.25rem]">
+            <p className="text-3xl font-black text-gray-900 tabular-nums min-h-[2.25rem]">
               <LiveMetricValue value={coveragePct} liveLoaded={liveLoaded} />
             </p>
             {coverageSub ? (
@@ -205,7 +203,7 @@ export default function ScaleCoverageSection() {
                 {technicalMetrics.map((item) => (
                   <div key={item.label} className="card-cyber p-4 border-l-2 border-[var(--cm-mint)]/40">
                     <p className="text-xs uppercase tracking-widest text-[var(--cm-mint)] mb-2">{item.label}</p>
-                    <p className="text-lg font-bold text-white tabular-nums">{item.value}</p>
+                    <p className="text-lg font-bold text-gray-900 tabular-nums">{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -223,8 +221,8 @@ export default function ScaleCoverageSection() {
                   { name: "WooCommerce", count: MARKET_STATS.platformWooCommerce, note: isES ? "FMCG organico PE (piloto)" : "organic FMCG PE (pilot)" },
                 ].map((p) => (
                   <div key={p.name} className="card-cyber p-5">
-                    <p className="text-lg font-bold text-white">{p.name}</p>
-                    <p className="text-2xl font-black text-white tabular-nums mt-1">{p.count}</p>
+                    <p className="text-lg font-bold text-gray-900">{p.name}</p>
+                    <p className="text-2xl font-black text-gray-900 tabular-nums mt-1">{p.count}</p>
                     <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2 leading-relaxed">{p.note}</p>
                   </div>
                 ))}
@@ -236,7 +234,7 @@ export default function ScaleCoverageSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {Object.entries(vtexLines).map(([line, stores]) => (
                       <div key={line} className="card-cyber p-4">
-                        <h3 className="text-xs font-bold uppercase text-white mb-2">{line}</h3>
+                        <h3 className="text-xs font-bold uppercase text-gray-900 mb-2">{line}</h3>
                         <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-1 leading-relaxed list-disc pl-4">
                           {stores.slice(0, 4).map((store) => (
                             <li key={store}>{store}</li>
@@ -258,7 +256,7 @@ export default function ScaleCoverageSection() {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {MARKET_STATS.shopifyBrands.map((brand) => (
-                        <span key={brand} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                        <span key={brand} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-gray-50 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
                           {brand}
                         </span>
                       ))}
@@ -268,7 +266,7 @@ export default function ScaleCoverageSection() {
                     <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">Magento</p>
                     <div className="flex flex-wrap gap-2">
                       {magentoStores.map((store) => (
-                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-gray-50 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
                           {store}
                         </span>
                       ))}
@@ -278,7 +276,7 @@ export default function ScaleCoverageSection() {
                     <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">WooCommerce</p>
                     <div className="flex flex-wrap gap-2">
                       {MARKET_STATS.woocommerceStores.map((store) => (
-                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
+                        <span key={store} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-gray-50 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">
                           {store}
                         </span>
                       ))}
@@ -291,7 +289,7 @@ export default function ScaleCoverageSection() {
                 <p className="font-label-caps text-[var(--cm-on-surface-variant)]/60 mb-3">{isES ? "Países" : "Countries"}</p>
                 <div className="flex flex-wrap gap-2">
                   {MARKET_STATS.countryCodes.map((c) => (
-                    <span key={c} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-white/5 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
+                    <span key={c} className="touch-compact text-xs font-mono text-[var(--cm-on-surface-variant)] bg-gray-50 border border-[var(--cm-outline-variant)]/30 rounded-full px-2.5 py-1">{c}</span>
                   ))}
                 </div>
               </div>
