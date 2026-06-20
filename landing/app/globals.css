@@ -879,6 +879,38 @@ section.landing-section-alt:not(.landing-section) {
   box-shadow: 0 0 0 1px rgba(83, 58, 253, 0.4), 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* Dark backdrop for modal overlays — overrides the Stripe light card-cyber so white text stays readable */
+.modal-panel-dark,
+.modal-panel-dark.card-cyber {
+  --cm-on-surface: #e5e2e3;
+  --cm-on-surface-variant: #b9cac2;
+  --cm-outline-variant: #3b4a44;
+  --cm-surface-low: #1c1b1c;
+  --cm-surface: #131314;
+  --cm-action: #533afd;
+  background: #0f1117;
+}
+
+.modal-panel-dark .card-cyber {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.modal-panel-dark .input-cyber {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e5e2e3;
+}
+
+.modal-panel-dark .input-cyber:focus {
+  border-color: #533afd;
+  box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.2);
+}
+
+.modal-panel-dark .input-cyber::placeholder {
+  color: rgba(185, 202, 194, 0.5);
+}
+
 .details-disclosure {
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;

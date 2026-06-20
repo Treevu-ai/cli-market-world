@@ -129,7 +129,7 @@ export default function ApiShowcase() {
               onClick={() => recordPipInstallIntent("landing_api_showcase")}
               className="inline-flex items-center rounded-full bg-[#533afd] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#4434d4] transition-colors"
             >
-              {isES ? "Empezar gratis →" : "Get started free →"}
+              {isES ? "Probar 14 días gratis →" : "Free 14-day trial →"}
             </a>
           </motion.div>
 
