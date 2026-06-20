@@ -95,7 +95,6 @@ const tiers: Tier[] = [
     ],
     cta_es: "Prueba gratis 14 días",
     cta_en: "Free 14-day trial",
-    featured: true,
     checkoutKind: { type: "build-starter" },
   },
   {
@@ -122,6 +121,7 @@ const tiers: Tier[] = [
     ],
     cta_es: "Elegir Pro",
     cta_en: "Choose Pro",
+    featured: true,
     checkoutKind: { type: "build-pro" },
   },
   {
