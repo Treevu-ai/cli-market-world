@@ -50,7 +50,6 @@ type PaymentMethod = ProCheckoutPaymentId;
 export type BillingCheckoutKind =
   | { type: "build-starter" }
   | { type: "build-pro"; annual?: boolean }
-  | { type: "build-pro-founding" }
   | { type: "procure"; plan: ProcurePlanSlug };
 
 const PRO_PAYMENT_OPTIONS: {
@@ -158,12 +157,10 @@ export default function BillingCheckoutModal({
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
-  const isPro = kind.type === "build-pro" || kind.type === "build-pro-founding";
+  const isPro = kind.type === "build-pro";
   const isStarter = kind.type === "build-starter";
-  const isFounding = kind.type === "build-pro-founding";
-  const isProStandard = kind.type === "build-pro";
-  const isPayPalOnly = isStarter || isFounding;
-  const isSingleStepBuild = isPayPalOnly || isProStandard;
+  const isPayPalOnly = isStarter;
+  const isSingleStepBuild = isPayPalOnly || isPro;
   const procureMeta =
     kind.type === "procure" ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
 
@@ -220,21 +217,17 @@ export default function BillingCheckoutModal({
     ? isES
       ? "Build · Starter · $9/mes"
       : "Build · Starter · $9/mo"
-    : isFounding
+    : kind.type === "build-pro" && kind.annual
       ? isES
-        ? "Build · Pro Founding · $29/mes"
-        : "Build · Pro Founding · $29/mo"
-      : kind.type === "build-pro" && kind.annual
+        ? "Build · Pro · $490/año"
+        : "Build · Pro · $490/yr"
+      : kind.type === "build-pro"
         ? isES
-          ? "Build · Pro · $490/año"
-          : "Build · Pro · $490/yr"
-        : isProStandard
-          ? isES
-            ? "Build · Pro · $49/mes"
-            : "Build · Pro · $49/mo"
-          : isES
-            ? `Procure · ${procureMeta?.name ?? kind.plan}`
-            : `Procure · ${procureMeta?.name ?? kind.plan}`;
+          ? "Build · Pro · $49/mes"
+          : "Build · Pro · $49/mo"
+        : isES
+          ? `Procure · ${procureMeta?.name ?? kind.plan}`
+          : `Procure · ${procureMeta?.name ?? kind.plan}`;
 
   const detectUsernameFromApiKey = async () => {
     const key = apiKey.trim();
@@ -296,7 +289,7 @@ export default function BillingCheckoutModal({
       setError(isES ? "Ingrese un email válido" : "Enter a valid email");
       return;
     }
-    if ((isPro || isFounding) && !username.trim()) {
+    if (isPro && !username.trim()) {
       setError(
         isES
           ? "Usuario CLI requerido — el de market whoami"
@@ -321,18 +314,16 @@ export default function BillingCheckoutModal({
       if (isPro || isStarter) {
         const buildPlan = isStarter
           ? "starter"
-          : isFounding
-            ? "pro_founding"
-            : kind.type === "build-pro" && kind.annual
+          : kind.type === "build-pro" && kind.annual
               ? "pro_annual"
               : "pro";
 
-        if (isStarter || isFounding || paymentMethod === "paypal") {
+        if (isStarter || paymentMethod === "paypal") {
           const { ok, data } = await postCheckout("/billing/build-checkout", {
             ...payload,
             plan: buildPlan,
             payment_method: "paypal",
-            ...(isFounding ? { promo_code: "founding100" } : {}),
+
           });
           if (ok && checkoutSucceeded(data)) {
             applyCheckoutResult(data, `landing_build_checkout_${buildPlan}`);
@@ -506,13 +497,6 @@ export default function BillingCheckoutModal({
             <h2 id="billing-checkout-title" className="text-lg font-bold text-white leading-snug">
               {title}
             </h2>
-            {isFounding && step !== "done" && (
-              <p className="text-xs text-[var(--cm-on-surface-variant)] mt-1">
-                {isES
-                  ? "10k consultas/día · 10 API keys · checkout retail · 10 alertas"
-                  : "10k req/day · 10 API keys · retail checkout · 10 alerts"}
-              </p>
-            )}
           </div>
           <button
             type="button"
@@ -527,7 +511,7 @@ export default function BillingCheckoutModal({
         <div className="px-5 py-5">
           {step === "done" ? (
             renderSuccess()
-          ) : isProStandard ? (
+          ) : isPro ? (
             <div className="form-stack">
               <div className="space-y-2">
                 <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
@@ -655,11 +639,7 @@ export default function BillingCheckoutModal({
           ) : isPayPalOnly ? (
             <div className="form-stack">
               <p className="text-sm text-[var(--cm-on-surface-variant)]">
-                {isFounding
-                  ? isES
-                    ? "PayPal (USD). Tras confirmar, Pro se activa en segundos."
-                    : "PayPal (USD). After confirming, Pro activates in seconds."
-                  : isES
+                {isES
                     ? "PayPal (USD). CSV, alertas y API completo."
                     : "PayPal (USD). CSV, alerts, and full API."}
               </p>
@@ -671,31 +651,7 @@ export default function BillingCheckoutModal({
                 placeholder={isES ? "su@email.com" : "you@email.com"}
                 className="w-full input-cyber"
               />
-              {isFounding && (
-                <>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder={isES ? "Tu nombre (opcional)" : "Your name (optional)"}
-                    className="w-full input-cyber"
-                  />
-                  <div className="space-y-1">
-                    <label htmlFor="checkout-username-founding" className="text-xs text-[var(--cm-on-surface-variant)]">
-                      {isES ? "Usuario CLI" : "CLI username"}
-                    </label>
-                    <input
-                      id="checkout-username-founding"
-                      type="text"
-                      required
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder={isES ? "market whoami" : "market whoami"}
-                      className="w-full input-cyber text-sm"
-                    />
-                  </div>
-                </>
-              )}
+
               <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
               {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
               <button
@@ -715,7 +671,7 @@ export default function BillingCheckoutModal({
             </div>
           ) : step === 1 ? (
             <div className="form-stack">
-              {isProStandard && (
+              {isPro && (
                 <div className="space-y-2">
                   <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
                     {isES ? "Método de pago" : "Payment method"}
@@ -748,7 +704,7 @@ export default function BillingCheckoutModal({
                   </div>
                 </div>
               )}
-              {!isProStandard && !isStarter && procureMeta && (
+              {!isPro && !isStarter && procureMeta && (
                 <>
                   <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                     {isES ? procureMeta.description_es : procureMeta.description_en}
@@ -761,7 +717,7 @@ export default function BillingCheckoutModal({
                 </>
               )}
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 leading-relaxed">
-                {isProStandard
+                {isPro
                   ? isES
                     ? `Facturación ${paymentsChannelsForCheckout(true)} · comprobante en la moneda del pago.`
                     : `Billing ${paymentsChannelsForCheckout(false)} · receipt in payment currency.`
@@ -785,7 +741,7 @@ export default function BillingCheckoutModal({
             </div>
           ) : (
             <div className="form-stack">
-              {(isProStandard || isFounding) && (
+              {isPro && (
                 <div className="rounded border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/50 px-3 py-3 space-y-3">
                   <button
                     type="button"
@@ -869,7 +825,7 @@ export default function BillingCheckoutModal({
                     ? isES
                       ? "Preparando…"
                       : "Preparing…"
-                    : isProStandard
+                    : isPro
                       ? isES
                         ? `Continuar — ${selectedOption ? (isES ? selectedOption.label_es : selectedOption.label_en) : "pago"}`
                         : `Continue — ${selectedOption ? selectedOption.label_en : "payment"}`
@@ -878,12 +834,12 @@ export default function BillingCheckoutModal({
                         : "Continue — PayPal"}
                 </button>
               </div>
-              {isProStandard && paymentMethod === "paypal" && selectedOption && (
+              {isPro && paymentMethod === "paypal" && selectedOption && (
                 <p className="text-[10px] text-center text-[var(--cm-on-surface-variant)]/50 font-mono">
                   {isES ? selectedOption.hint_es : selectedOption.hint_en}
                 </p>
               )}
-              {isProStandard && paymentMethod === "paypal" && (
+              {isPro && paymentMethod === "paypal" && (
                 <details className="text-xs text-[var(--cm-on-surface-variant)]/50">
                   <summary className="cursor-pointer">{isES ? "Respaldo: botón PayPal alojado" : "Fallback: PayPal hosted button"}</summary>
                   <div className="mt-2">
@@ -891,7 +847,7 @@ export default function BillingCheckoutModal({
                   </div>
                 </details>
               )}
-              {isProStandard && WALLET_MANUAL_FALLBACK && paymentMethod === "soles" && (
+              {isPro && WALLET_MANUAL_FALLBACK && paymentMethod === "soles" && (
                 <label className="flex items-start gap-2 text-xs text-[var(--cm-on-surface-variant)]/70 cursor-pointer">
                   <input
                     type="checkbox"

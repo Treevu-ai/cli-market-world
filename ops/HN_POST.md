@@ -8,7 +8,7 @@
 
 AI agents can't comparison-shop in physical retail. Every store has its own auth, search logic, and checkout flow. Agents fail before the first query.
 
-CLI Market fixes this: one `pip install`, one API across 68 retailers (38 verified) in 8 countries. 22 curated MCP tools (46 legacy). ~50,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
+CLI Market fixes this: one `pip install`, one API across 81 retailers (41 verified) in 8 countries. 22 curated MCP tools (46 legacy). ~50,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
 
 ---
 
@@ -22,7 +22,7 @@ How it works:
 
 Built in Python. MIT licensed. Open source.
 
-The hard part isn't the code — it's maintaining connectors for 68 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~51,000+ prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
+The hard part isn't the code — it's maintaining connectors for 81 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~51,000+ prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
 
 Would love feedback from anyone building AI agents or working on retail infrastructure.
 

@@ -41,13 +41,13 @@ export function prereqSteps(level: PrereqLevel, isES: boolean): string[] {
             `# Python ${PY}`,
             pip,
             "market register    # sk-... (guárdela)",
-            "market upgrade --plan starter   # o pro | pro_founding",
+            "market upgrade --plan starter   # o pro",
           ]
         : [
             `# Python ${PY}`,
             pip,
             "market register    # sk-... (save it now)",
-            "market upgrade --plan starter   # or pro | pro_founding",
+            "market upgrade --plan starter   # or pro",
           ];
     case "mcp":
       return isES

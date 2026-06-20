@@ -3094,11 +3094,11 @@ def main():
     p = sub.add_parser("upgrade", help=t("upgrade"))
     p.add_argument(
         "--plan",
-        choices=["starter", "pro", "pro_founding", "pro_annual", "founding", "annual"],
+        choices=["starter", "pro", "pro_annual", "annual"],
         default=None,
-        help="Build tier: starter ($9), pro ($49), pro_founding ($29), pro_annual ($490)",
+        help="Build tier: starter ($9), pro ($49), pro_annual ($490)",
     )
-    p.add_argument("--promo-code", dest="promo_code", help="Founding promo code (default founding100)")
+    p.add_argument("--promo-code", dest="promo_code", help="Promo code")
     p.add_argument(
         "--payment",
         choices=["paypal", "mercadopago", "yape", "plin"],

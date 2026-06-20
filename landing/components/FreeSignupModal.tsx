@@ -185,7 +185,7 @@ export default function FreeSignupModal({
             <div>
               <p className="section-eyebrow text-[var(--cm-mint)] mb-1">Build</p>
               <h3 className="text-lg font-bold text-white">
-                {isES ? "Planes Build — desde $24/mes" : "Build plans — from $24/mo"}
+                {isES ? "Planes Build — desde $9/mes" : "Build plans — from $9/mo"}
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES

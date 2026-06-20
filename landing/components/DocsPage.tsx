@@ -187,7 +187,7 @@ export default function DocsPage() {
               { tier: "FREE", price: "$0", note: t("1k req/día · API default", "1k req/day · default API") },
               { tier: "STARTER", price: "USD 9/mo", note: t("2k/mes · export CSV", "2k/mo · CSV export") },
               { tier: "PRO", price: "USD 49/mo", note: t("10k/día · checkout", "10k/day · checkout") },
-              { tier: "FOUNDING", price: "USD 29/mo", note: t("100 plazas · Pro", "100 seats · Pro") },
+
             ].map((p) => (
               <div key={p.tier} className="card-cyber p-4 text-left">
                 <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80">{p.tier}</p>

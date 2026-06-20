@@ -33,7 +33,7 @@ export default function QuickstartAPI() {
             { tier: "FREE", price: "$0", note: isES ? "1k req/día" : "1k req/day" },
             { tier: "STARTER", price: "USD 9/mo", note: isES ? "2k/mes · export CSV" : "2k/mo · CSV export" },
             { tier: "PRO", price: "USD 49/mo", note: isES ? "10k/día · checkout" : "10k/day · checkout" },
-            { tier: "FOUNDING", price: "USD 29/mo", note: isES ? "100 plazas · Pro" : "100 seats · Pro" },
+
           ].map((p) => (
             <div key={p.tier} className="card-cyber p-3 text-left">
               <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80">{p.tier}</p>

@@ -26,10 +26,6 @@ export default function BillingCheckoutTrigger({
       ? isES
         ? "Elegir Starter →"
         : "Choose Starter →"
-      : kind.type === "build-pro-founding"
-        ? isES
-          ? "Aprovechar $29 →"
-          : "Claim $29 →"
       : kind.type === "build-pro"
         ? isES
           ? "Elegir Pro →"

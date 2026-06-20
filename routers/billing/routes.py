@@ -346,8 +346,6 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
 
         if method == "paypal":
             plan = _normalize_build_plan(body.get("plan") or "pro")
-            if plan == "pro_founding":
-                _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
             try:
                 out = await _start_paypal_subscription(
                     username,
@@ -577,7 +575,7 @@ def _paypal_plan_labels(plan: str) -> tuple[str, str, float]:
     labels = {
         "starter": "Starter",
         "pro": "Pro",
-        "pro_founding": "Pro Founding",
+
         "pro_annual": "Pro Annual",
     }
     return labels.get(p, "Pro"), p, price_usd_for_plan(p)
@@ -676,13 +674,11 @@ async def _start_paypal_subscription(
 
 @router.post("/billing/paypal")
 async def billing_paypal(body: dict = Body(default={}), authorization: str | None = Header(None)):
-    """PayPal subscription — CLI path (starter | pro | pro_founding | pro_annual)."""
+    """PayPal subscription — CLI path (starter | pro | pro_annual)."""
     username = require_user(authorization)
     try:
         lang = (body.get("lang") or "en").strip().lower()[:2]
         plan = _normalize_build_plan(body.get("plan") or "pro")
-        if plan == "pro_founding":
-            _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
         email = db_get_user_email(username) or f"{username}@cli-market.dev"
         out = await _start_paypal_subscription(
             username,
@@ -858,7 +854,7 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
 
 @router.post("/billing/build-checkout")
 async def billing_build_checkout(body: dict, authorization: str | None = Header(None)):
-    """Build tier PayPal checkout from landing — starter | pro | pro_founding | pro_annual."""
+    """Build tier PayPal checkout from landing — starter | pro | pro_annual."""
     try:
         check_rate_limit("billing-build-checkout")
         email = (body.get("email") or "").strip().lower()
@@ -896,9 +892,6 @@ async def billing_build_checkout(body: dict, authorization: str | None = Header(
             body_username=(body.get("username") or ""),
             auth_username=auth_user,
         )
-
-        if plan == "pro_founding":
-            _validate_founding_plan(username, body.get("promo_code") or "", lang=lang)
 
         out = await _start_paypal_subscription(
             username,
