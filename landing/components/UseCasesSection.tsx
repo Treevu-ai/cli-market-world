@@ -14,7 +14,7 @@ export default function UseCasesSection() {
   const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "market-data"].includes(c.id));
 
   return (
-    <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
+    <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in bg-white">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
@@ -45,7 +45,7 @@ export default function UseCasesSection() {
               <span className="text-2xl" aria-hidden="true">
                 {c.icon}
               </span>
-              <h3 className="text-sm font-bold text-white">{isES ? c.title_es : c.title_en}</h3>
+              <h3 className="text-sm font-bold text-gray-900">{isES ? c.title_es : c.title_en}</h3>
               <div className="space-y-2 text-sm leading-relaxed flex-1">
                 <p className="text-[var(--cm-on-surface-variant)]/60">
                   <span className="font-mono text-[10px] uppercase tracking-wider mr-2">
