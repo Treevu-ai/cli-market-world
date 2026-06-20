@@ -1978,13 +1978,13 @@ body > div[id*="paypal-cart"] {
   .brand-ticker-name { min-width: 0; }
 }
 
-/* Display headline — large left-aligned editorial */
+/* Display headline — bold startup style */
 .hero-garamond-headline {
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 600;
   font-size: clamp(3rem, 6vw, 5.5rem);
   line-height: 1.03;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
   color: #0d253d;
   font-feature-settings: "ss01";
 }

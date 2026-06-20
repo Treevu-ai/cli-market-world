@@ -28,7 +28,7 @@ export default function Hero() {
       <div className="flex-1 flex flex-col justify-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 min-w-0 relative z-10">
 
         {/* Left-aligned text block */}
-        <div className="max-w-[760px]">
+        <div className="max-w-[860px]">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -110,9 +110,9 @@ export default function Hero() {
             <a
               href={PRICING_BUILD_HASH}
               onClick={() => recordPipInstallIntent("landing_hero")}
-              className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-normal px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
+              className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-semibold px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
             >
-              {isES ? "Ver planes →" : "See pricing →"}
+              {isES ? "Empezar →" : "Get started →"}
             </a>
             <a
               href="#how-it-works"
