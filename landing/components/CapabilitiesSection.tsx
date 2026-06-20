@@ -141,8 +141,6 @@ export default function CapabilitiesSection() {
                     color: "rgba(218, 218, 218, 0.8)",
                     margin: 0,
                     textWrap: "pretty",
-                    opacity: hoveredIndex === i ? 0.4 : 1,
-                    transition: "opacity 0.35s ease",
                   }}
                 >
                   {isES ? cap.description_es : cap.description_en}

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroPlayground from "@/components/HeroPlayground";
 import HeroMetrics from "@/components/HeroMetrics";
 import HeroPathCard from "@/components/HeroPathCard";
 import AmberCascades from "@/components/AmberCascades";
@@ -191,7 +190,7 @@ export default function Hero() {
           />
 
           <HeroPathCard
-            href="#intelligence"
+            href="#procure"
             variant="signal"
             eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
             title={isES ? "Compra mejor. Más rápido →" : "Buy better. Faster →"}
@@ -268,7 +267,7 @@ export default function Hero() {
           {pathsOpen ? (
             <div className="grid grid-cols-1 gap-2">
               <HeroPathCard
-                href="#intelligence"
+                href="#procure"
                 variant="signal"
                 eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
                 title={isES ? "Compra mejor →" : "Buy better →"}
@@ -295,9 +294,6 @@ export default function Hero() {
           ) : null}
         </div>
 
-        <div id="hero-playground" className="hidden md:block w-full scroll-mt-24">
-          <HeroPlayground />
-        </div>
       </div>
     </section>
   );
