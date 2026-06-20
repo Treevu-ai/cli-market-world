@@ -1,12 +1,8 @@
 import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
-import PriceTicker from "@/components/PriceTicker";
-import AgenticWaveBand from "@/components/AgenticWaveBand";
-import HeroPlayground from "@/components/HeroPlayground";
 import ScrollStorySection from "@/components/ScrollStorySection";
 import HowItWorks from "@/components/HowItWorks";
-import QuickstartAPI from "@/components/QuickstartAPI";
 import UseCasesSection from "@/components/UseCasesSection";
 import IntelligenceSection from "@/components/IntelligenceSection";
 
@@ -31,22 +27,12 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
-          <PriceTicker />
-          <AgenticWaveBand />
           <ScrollStorySection />
-          <section
-            id="hero-playground-mobile"
-            className="md:hidden landing-container-wide pb-12 -mt-2 scroll-mt-20 text-center"
-            aria-label="CLI Market playground"
-          >
-            <HeroPlayground />
-          </section>
           <UseCasesSection />
           <ScaleCoverageSection />
           <RetailerCTABanner />
           <CoverageToUseCasesBridge />
           <HowItWorks />
-          <QuickstartAPI />
           <IntelligenceSection />
           <InProductionSection />
           <Pricing />
