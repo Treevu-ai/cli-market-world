@@ -287,20 +287,20 @@ export default function ImpactLanding() {
         </div>
         <div className="impact-plans">
           <div className="impact-plan impact-rv">
-            <h3>Build · Free</h3>
+            <h3>Build · Starter</h3>
             <div className="impact-pr">
-              $0<small> / {isES ? "siempre" : "forever"}</small>
+              $9<small> / {isES ? "mes · 14 días gratis" : "mo · 14-day trial"}</small>
             </div>
             <ul>
-              <li>1,000 {isES ? "consultas / día" : "queries / day"}</li>
+              <li>5,000 {isES ? "consultas / día" : "requests / day"}</li>
               <li>
                 {MARKET_STATS.mcpTools} {isES ? "API tools" : "API tools"}
               </li>
-              <li>{isES ? "Compare multi-retailer" : "Multi-retailer compare"}</li>
+              <li>{isES ? "Basket · compare · export CSV" : "Basket · compare · CSV export"}</li>
               <li>{isES ? "Historial 7 días" : "7-day history"}</li>
             </ul>
             <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-ghost impact-btn-block">
-              {isES ? "Empezar gratis" : "Start free"}
+              {isES ? "Prueba 14 días gratis →" : "Free 14-day trial →"}
             </Link>
           </div>
           <div className="impact-plan impact-rv">
