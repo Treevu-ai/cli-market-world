@@ -9,7 +9,6 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 import { RETAILERS_PAGE, PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
-import { formatFreeHeroChip } from "@/lib/buildPricingTiers";
 import { procurePriceRangeLabel } from "@/lib/procurePlans";
 
 export default function Hero() {
@@ -26,111 +25,136 @@ export default function Hero() {
       className="landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden hero-stripe-mesh"
       style={{ borderBottom: "1px solid #e3e8ee" }}
     >
-      <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-4 stripe-tag-soft"
-        >
-          {isES ? "Infraestructura de comercio · LATAM" : "Commerce infrastructure · LATAM"}
-        </motion.div>
+      <div className="flex-1 flex flex-col justify-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 min-w-0 relative z-10">
 
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="hero-terminal-eyebrow mb-4 mt-2"
-        >
-          CLI MARKET
-        </motion.p>
+        {/* Left-aligned text block */}
+        <div className="max-w-[860px]">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-6 stripe-tag-soft inline-flex"
+          >
+            {isES ? "Infraestructura de comercio · LATAM" : "Commerce infrastructure · LATAM"}
+          </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hero-garamond-headline text-balance max-w-[820px]"
-        >
-          {isES ? (
-            <>Infraestructura de comercio para agentes de IA.</>
-          ) : (
-            <>Commerce infrastructure for AI agents.</>
-          )}
-        </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="hero-terminal-eyebrow mb-4"
+          >
+            CLI MARKET
+          </motion.p>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="hero-api-punch mt-5 sm:mt-6"
-        >
-          <ScrambleText
-            text={isES ? `${MARKET_STATS.retailersVerified} retailers. Una API.` : `${MARKET_STATS.retailersVerified} retailers. One API.`}
-            autoStart
-            delay={550}
-            duration={0.75}
-          />
-        </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="hero-garamond-headline"
+          >
+            {isES ? (
+              <>Infraestructura de comercio para agentes de IA.</>
+            ) : (
+              <>Commerce infrastructure for AI agents.</>
+            )}
+          </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.18, ease: "easeOut" }}
-          className="mt-5 text-base sm:text-lg max-w-[640px] leading-relaxed stripe-body"
-        >
-          {isES ? (
-            <>Tu agente busca, compara y compra en {MARKET_STATS.retailersVerified} retailers de {MARKET_STATS.countries} países. Sin scraping. Sin integraciones manuales.</>
-          ) : (
-            <>Your agent searches, compares, and buys across {MARKET_STATS.retailersVerified} retailers in {MARKET_STATS.countries} countries. Zero scraping. Zero manual integrations.</>
-          )}
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            className="hero-api-punch mt-5 sm:mt-6"
+          >
+            <ScrambleText
+              text={isES ? `${MARKET_STATS.retailersVerified} retailers. Una API.` : `${MARKET_STATS.retailersVerified} retailers. One API.`}
+              autoStart
+              delay={550}
+              duration={0.75}
+            />
+          </motion.p>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
-          className="hero-terminal-subhead mt-3 max-w-[640px] text-sm"
-        >
-          {isES
-            ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
-            : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
-          <a href="#how-it-works" className="text-indigo-600 underline underline-offset-2 hover:text-indigo-700">
-            {isES ? "Cómo funciona →" : "How it works →"}
-          </a>
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.18, ease: "easeOut" }}
+            className="mt-5 text-base sm:text-lg max-w-[580px] leading-relaxed stripe-body"
+          >
+            {isES ? (
+              <>Tu agente busca, compara y compra en {MARKET_STATS.retailersVerified} retailers de {MARKET_STATS.countries} países. Sin scraping. Sin integraciones manuales.</>
+            ) : (
+              <>Your agent searches, compares, and buys across {MARKET_STATS.retailersVerified} retailers in {MARKET_STATS.countries} countries. Zero scraping. Zero manual integrations.</>
+            )}
+          </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.22 }}
-          className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[#64748d]"
-          aria-label={isES ? "Señales de tracción" : "Traction signals"}
-        >
-          {mounted && pypiChip && (
-            <>
-              <span className="tabular-nums">
-                <span className="font-normal text-[#0d253d] tabular-data">{pypiChip}</span>{" "}
-                {isES ? "instalaciones PyPI" : "PyPI installs"}
-              </span>
-              <span className="hidden sm:inline text-[#e3e8ee]" aria-hidden="true">|</span>
-            </>
-          )}
-          <span>
-            <span className="font-normal text-[#0d253d]">&lt;&nbsp;5&nbsp;min</span>{" "}
-            {isES ? "de pip install a precios reales" : "from pip install to live prices"}
-          </span>
-          <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
-          <span>
-            <span className="font-normal text-[#0d253d]">{MARKET_STATS.countries}</span>{" "}
-            {isES ? "países LATAM" : "LATAM countries"}
-          </span>
-        </motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
+            className="hero-terminal-subhead mt-3 max-w-[580px] text-sm"
+          >
+            {isES
+              ? `Precios normalizados por kg/L · refresh cada ${MARKET_STATS.pricesRefreshHours}h.`
+              : `Prices normalized per kg/L · refresh every ${MARKET_STATS.pricesRefreshHours}h.`}{" "}
+            <a href="#how-it-works" className="text-indigo-600 underline underline-offset-2 hover:text-indigo-700">
+              {isES ? "Cómo funciona →" : "How it works →"}
+            </a>
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.42 }}
+            className="mt-8 flex flex-wrap gap-3"
+          >
+            <a
+              href={PRICING_BUILD_HASH}
+              onClick={() => recordPipInstallIntent("landing_hero")}
+              className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-semibold px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
+            >
+              {isES ? "Empezar →" : "Get started →"}
+            </a>
+            <a
+              href="#how-it-works"
+              className="inline-flex items-center rounded-full border border-[#e3e8ee] text-[#0d253d] text-base font-normal px-6 py-2.5 hover:border-[#533afd] hover:text-[#533afd] transition-colors bg-white"
+            >
+              {isES ? "Cómo funciona" : "How it works"}
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.22 }}
+            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#64748d]"
+            aria-label={isES ? "Señales de tracción" : "Traction signals"}
+          >
+            {mounted && pypiChip && (
+              <>
+                <span className="tabular-nums">
+                  <span className="font-normal text-[#0d253d] tabular-data">{pypiChip}</span>{" "}
+                  {isES ? "instalaciones PyPI" : "PyPI installs"}
+                </span>
+                <span className="hidden sm:inline text-[#e3e8ee]" aria-hidden="true">|</span>
+              </>
+            )}
+            <span>
+              <span className="font-normal text-[#0d253d]">&lt;&nbsp;5&nbsp;min</span>{" "}
+              {isES ? "de pip install a precios reales" : "from pip install to live prices"}
+            </span>
+            <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
+            <span>
+              <span className="font-normal text-[#0d253d]">{MARKET_STATS.countries}</span>{" "}
+              {isES ? "países LATAM" : "LATAM countries"}
+            </span>
+          </motion.div>
+        </div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.38 }}
-          className="mt-5 flex flex-wrap justify-center gap-1.5 landing-content-rail"
+          className="mt-6 flex flex-wrap gap-1.5"
           aria-label={isES ? "Muestra de retailers integrados" : "Sample of integrated retailers"}
         >
           {["Metro PE", "Wong PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Chedraui MX", "HEB MX", "Éxito CO", "Falabella CL", "Ripley CL"].map((r) => (
@@ -146,37 +170,17 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.42 }}
-          className="mt-8 flex justify-center gap-3"
-        >
-          <a
-            href={PRICING_BUILD_HASH}
-            className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-normal px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
-          >
-            {isES ? "Sandbox gratis →" : "Free Sandbox →"}
-          </a>
-          <a
-            href="#how-it-works"
-            className="inline-flex items-center rounded-full border border-[#e3e8ee] text-[#0d253d] text-base font-normal px-6 py-2.5 hover:border-[#533afd] hover:text-[#533afd] transition-colors bg-white"
-          >
-            {isES ? "Cómo funciona" : "How it works"}
-          </a>
-        </motion.div>
-
-        <p className="mt-8 text-[10px] font-mono uppercase tracking-widest text-[#64748d] hidden sm:block">
+        <p className="mt-10 text-[10px] font-mono uppercase tracking-widest text-[#64748d] hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
-        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full landing-content-rail items-stretch">
+        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] items-stretch">
           <HeroPathCard
             href={PRICING_BUILD_HASH}
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Plan Free →" : "Free plan →"}
+            title={isES ? "Starter $9/mes →" : "Starter $9/mo →"}
             body={
               <>
                 <span className="text-xs text-white/90 leading-snug">
@@ -191,7 +195,7 @@ export default function Hero() {
                   </span>
                 ) : (
                   <span className="text-[10px] text-white/60">
-                    {formatFreeHeroChip(isES)}
+                    {isES ? "Pro $49 · Enterprise a medida" : "Pro $49 · Enterprise custom"}
                   </span>
                 )}
                 <code className="font-mono text-[10px] text-white/50 break-all leading-relaxed">
@@ -239,19 +243,19 @@ export default function Hero() {
           />
         </div>
 
-        <div className="mt-4 w-full landing-content-rail sm:hidden grid gap-2">
+        <div className="mt-4 w-full max-w-[960px] sm:hidden grid gap-2">
           <HeroPathCard
             href={PRICING_BUILD_HASH}
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Plan Free →" : "Free plan →"}
+            title={isES ? "Starter $9/mes →" : "Starter $9/mo →"}
             body={
               <>
                 <span className="text-xs text-white/90">
                   {isES
-                    ? `${MARKET_STATS.retailersVerified} retailers · sin tarjeta`
-                    : `${MARKET_STATS.retailersVerified} retailers · no card required`}
+                    ? `${MARKET_STATS.retailersVerified} retailers · desde $9/mes`
+                    : `${MARKET_STATS.retailersVerified} retailers · from $9/mo`}
                 </span>
                 <code className="font-mono text-[10px] text-white/50 break-all">
                   {MARKET_STATS.pipInstallCmd}

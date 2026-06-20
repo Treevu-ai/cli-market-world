@@ -39,27 +39,17 @@ export default function CinematicVision() {
       eyebrow={isES ? "Infraestructura" : "Infrastructure"}
       variant="muted"
     >
-      <div className="relative">
-        <div className="landing-editorial-video-frame relative">
-          <video autoPlay muted loop playsInline>
-            <source src="/cli-market-hero.webm" type="video/webm" />
-            <source src="/cli-market-hero.mp4" type="video/mp4" />
-          </video>
-          <div className="landing-editorial-video-scrim" aria-hidden="true" />
-        </div>
-
-        <div ref={textRef} className="landing-editorial-split">
-          <h2 className="landing-editorial-split__title">
-            {isES
-              ? "Precios verificados. Sin scraping. Para agentes."
-              : "Verified prices. Zero scraping. For agents."}
-          </h2>
-          <p className="landing-editorial-split__body">
-            {isES
-              ? `CLI Market normaliza precios por kg/L en ${MARKET_STATS.retailersVerified} retailers de ${MARKET_STATS.countries} países. Cada price point pasa por validación de calidad — sin valores atípicos, sin precios stale. Tu agente recibe datos limpios, listos para comparar canastas o disparar flujos de procurement.`
-              : `CLI Market normalizes prices per kg/L across ${MARKET_STATS.retailersVerified} retailers in ${MARKET_STATS.countries} countries. Every price point passes quality validation — no outliers, no stale data. Your agent gets clean data, ready to compare baskets or trigger procurement workflows.`}
-          </p>
-        </div>
+      <div ref={textRef} className="landing-editorial-split">
+        <h2 className="landing-editorial-split__title">
+          {isES
+            ? "Precios verificados. Sin scraping. Para agentes."
+            : "Verified prices. Zero scraping. For agents."}
+        </h2>
+        <p className="landing-editorial-split__body">
+          {isES
+            ? `CLI Market normaliza precios por kg/L en ${MARKET_STATS.retailersVerified} retailers de ${MARKET_STATS.countries} países. Cada price point pasa por validación de calidad — sin valores atípicos, sin precios stale. Tu agente recibe datos limpios, listos para comparar canastas o disparar flujos de procurement.`
+            : `CLI Market normalizes prices per kg/L across ${MARKET_STATS.retailersVerified} retailers in ${MARKET_STATS.countries} countries. Every price point passes quality validation — no outliers, no stale data. Your agent gets clean data, ready to compare baskets or trigger procurement workflows.`}
+        </p>
       </div>
     </EditorialSection>
   );
