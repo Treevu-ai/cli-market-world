@@ -280,7 +280,7 @@ export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
   const billing: Billing = "monthly";
-  const [audience, setAudience] = useState<PricingAudience>("build");
+  const [audience, setAudience] = useState<PricingAudience>("procure");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [claimingFree, setClaimingFree] = useState(false);
   const paymentsLabel = usePaymentsChannels(isES);
