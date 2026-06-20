@@ -23,20 +23,17 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden bg-white"
-      style={{ borderBottom: "1px solid #f3f4f6" }}
+      className="landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden hero-stripe-mesh"
+      style={{ borderBottom: "1px solid #e3e8ee" }}
     >
       <div className="flex-1 flex flex-col justify-center items-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 text-center min-w-0 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1"
+          className="mb-4 stripe-tag-soft"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" aria-hidden="true" />
-          <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-600">
-            {isES ? "Deja de comprar por WhatsApp · LATAM" : "Stop buying on WhatsApp · LATAM"}
-          </span>
+          {isES ? "Infraestructura de comercio · LATAM" : "Commerce infrastructure · LATAM"}
         </motion.div>
 
         <motion.p
@@ -79,7 +76,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.18, ease: "easeOut" }}
-          className="mt-5 text-base sm:text-lg text-gray-600 max-w-[640px] font-medium leading-relaxed"
+          className="mt-5 text-base sm:text-lg max-w-[640px] leading-relaxed stripe-body"
         >
           {isES ? (
             <>Tu agente busca, compara y compra en {MARKET_STATS.retailersVerified} retailers de {MARKET_STATS.countries} países. Sin scraping. Sin integraciones manuales.</>
@@ -106,25 +103,25 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.22 }}
-          className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-400"
+          className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[#64748d]"
           aria-label={isES ? "Señales de tracción" : "Traction signals"}
         >
           {mounted && pypiChip && (
             <>
               <span className="tabular-nums">
-                <span className="font-semibold text-gray-700">{pypiChip}</span>{" "}
+                <span className="font-normal text-[#0d253d] tabular-data">{pypiChip}</span>{" "}
                 {isES ? "instalaciones PyPI" : "PyPI installs"}
               </span>
-              <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
+              <span className="hidden sm:inline text-[#e3e8ee]" aria-hidden="true">|</span>
             </>
           )}
           <span>
-            <span className="font-semibold text-gray-700">&lt;&nbsp;5&nbsp;min</span>{" "}
+            <span className="font-normal text-[#0d253d]">&lt;&nbsp;5&nbsp;min</span>{" "}
             {isES ? "de pip install a precios reales" : "from pip install to live prices"}
           </span>
           <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
           <span>
-            <span className="font-semibold text-gray-700">{MARKET_STATS.countries}</span>{" "}
+            <span className="font-normal text-[#0d253d]">{MARKET_STATS.countries}</span>{" "}
             {isES ? "países LATAM" : "LATAM countries"}
           </span>
         </motion.div>
@@ -139,12 +136,12 @@ export default function Hero() {
           {["Metro PE", "Wong PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Chedraui MX", "HEB MX", "Éxito CO", "Falabella CL", "Ripley CL"].map((r) => (
             <span
               key={r}
-              className="text-[11px] font-mono text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-0.5"
+              className="text-[11px] font-mono text-[#64748d] bg-[#f6f9fc] border border-[#e3e8ee] rounded-full px-2.5 py-0.5"
             >
               {r}
             </span>
           ))}
-          <span className="text-[11px] font-mono text-gray-300 px-1 py-0.5">
+          <span className="text-[11px] font-mono text-[#a8c3de] px-1 py-0.5">
             +{MARKET_STATS.retailersVerified - 10} {isES ? "más →" : "more →"}
           </span>
         </motion.div>
@@ -157,19 +154,19 @@ export default function Hero() {
         >
           <a
             href={PRICING_BUILD_HASH}
-            className="inline-flex items-center rounded-full bg-indigo-600 text-white text-sm font-semibold px-6 py-3 hover:bg-indigo-700 transition-colors shadow-sm"
+            className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-normal px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
           >
             {isES ? "Sandbox gratis →" : "Free Sandbox →"}
           </a>
           <a
             href="#how-it-works"
-            className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-sm font-semibold px-6 py-3 hover:bg-gray-200 transition-colors"
+            className="inline-flex items-center rounded-full border border-[#e3e8ee] text-[#0d253d] text-base font-normal px-6 py-2.5 hover:border-[#533afd] hover:text-[#533afd] transition-colors bg-white"
           >
             {isES ? "Cómo funciona" : "How it works"}
           </a>
         </motion.div>
 
-        <p className="mt-8 text-[10px] font-mono uppercase tracking-widest text-gray-400 hidden sm:block">
+        <p className="mt-8 text-[10px] font-mono uppercase tracking-widest text-[#64748d] hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
         </p>
 
