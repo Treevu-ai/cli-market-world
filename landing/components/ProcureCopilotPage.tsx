@@ -25,7 +25,7 @@ export default function ProcureCopilotPage() {
           <p className="section-eyebrow mb-4">
             {isES ? "Procure Copilot" : "Procure Copilot"}
           </p>
-          <h1 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-bold text-white mb-4 tracking-tight">
+          <h1 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-bold text-[var(--cm-on-surface)] mb-4 tracking-tight">
             {isES ? "Compra mejor. Más rápido. Con menos desperdicio." : "Buy better. Faster. With less waste."}
           </h1>
           <p className="text-lg text-[var(--cm-on-surface-variant)] max-w-[640px] mx-auto leading-relaxed">
@@ -56,7 +56,7 @@ export default function ProcureCopilotPage() {
                   {step.n}
                 </span>
                 <div>
-                  <h3 className="font-semibold text-white text-lg mb-1">
+                  <h3 className="font-semibold text-[var(--cm-on-surface)] text-lg mb-1">
                     {isES ? step.es : step.en}
                   </h3>
                   <p className="text-[var(--cm-on-surface-variant)] leading-relaxed">
@@ -76,7 +76,7 @@ export default function ProcureCopilotPage() {
             { es: "ROI medible", en: "Measurable ROI", descEs: "Ahorro vs. precio promedio del mercado.", descEn: "Savings vs. market average price." },
           ].map((v, i) => (
             <div key={i} className="p-6 rounded-lg border border-[var(--cm-outline-variant)]/20 text-center">
-              <h3 className="font-semibold text-white mb-2">{isES ? v.es : v.en}</h3>
+              <h3 className="font-semibold text-[var(--cm-on-surface)] mb-2">{isES ? v.es : v.en}</h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)]">{isES ? v.descEs : v.descEn}</p>
             </div>
           ))}
@@ -84,7 +84,7 @@ export default function ProcureCopilotPage() {
 
         {/* CTA */}
         <section className="text-center py-16 rounded-2xl bg-gradient-to-b from-[var(--cm-surface-low)] to-[var(--cm-background)] border border-[var(--cm-outline-variant)]/20">
-          <h2 className="font-display text-2xl font-bold text-white mb-4">
+          <h2 className="font-display text-2xl font-bold text-[var(--cm-on-surface)] mb-4">
             {isES ? "¿Listo para optimizar tus compras?" : "Ready to optimize procurement?"}
           </h2>
           <p className="text-[var(--cm-on-surface-variant)] mb-8">
