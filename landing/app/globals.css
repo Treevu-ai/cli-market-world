@@ -47,9 +47,9 @@
   --cm-surface-container: #201f20;
   --cm-surface-high: #2a2a2b;
   --cm-surface-highest: #353436;
-  --cm-mint: var(--cm-data);
-  --cm-mint-dim: #00e0b4;
-  --cm-on-mint: #002118;
+  --cm-mint: var(--cm-action);
+  --cm-mint-dim: var(--cm-action-glow);
+  --cm-on-mint: #1a1a00;
   --cm-on-surface: #e5e2e3;
   --cm-on-surface-variant: #b9cac2;
   --cm-outline-variant: #3b4a44;
