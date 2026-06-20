@@ -3,17 +3,9 @@ import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import UseCasesSection from "@/components/UseCasesSection";
-import IntelligenceSection from "@/components/IntelligenceSection";
-
-
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
-import InProductionSection from "@/components/InProductionSection";
-import RetailerCTABanner from "@/components/RetailerCTABanner";
-import CoverageToUseCasesBridge from "@/components/CoverageToUseCasesBridge";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
-import ContactSection from "@/components/ContactSection";
-import AboutSection from "@/components/AboutSection";
 import Footer from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -28,15 +20,9 @@ export default function Home() {
           <Hero />
           <UseCasesSection />
           <ScaleCoverageSection />
-          <RetailerCTABanner />
-          <CoverageToUseCasesBridge />
           <HowItWorks />
-          <IntelligenceSection />
-          <InProductionSection />
           <Pricing />
           <FAQ />
-          <ContactSection />
-          <AboutSection />
           <Footer />
         </div>
       </ErrorBoundary>
