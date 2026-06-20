@@ -283,7 +283,6 @@ export default function Pricing() {
   const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [claimingFree, setClaimingFree] = useState(false);
-  const [foundingSeats, setFoundingSeats] = useState<number | null>(null);
   const paymentsLabel = usePaymentsChannels(isES);
   const billingFootnote = usePricingBillingFootnote(isES);
 
@@ -312,16 +311,7 @@ export default function Pricing() {
 
   const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
-  useEffect(() => {
-    fetch(`${API_URL}/billing/pricing-stats`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && typeof data.founding_seats_remaining === "number") {
-          setFoundingSeats(data.founding_seats_remaining);
-        }
-      })
-      .catch(() => undefined);
-  }, []);
+
 
   useEffect(() => {
     const syncFromLocation = () => {
@@ -423,7 +413,6 @@ export default function Pricing() {
                   tier={tier}
                   isES={isES}
                   billing={billing}
-                  foundingSeats={foundingSeats}
                   paymentsLabel={paymentsLabel}
                 >
                   {tier.checkoutKind ? (

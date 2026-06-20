@@ -303,22 +303,6 @@ export default function ImpactLanding() {
               {isES ? "Empezar gratis" : "Start free"}
             </Link>
           </div>
-          <div className="impact-plan impact-plan-feat impact-rv">
-            <span className="impact-plan-tag">{isES ? "FOUNDING · 100 PLAZAS" : "FOUNDING · 100 SPOTS"}</span>
-            <h3>Build · Pro Founding</h3>
-            <div className="impact-pr">
-              <span className="impact-pr-old">$39</span>$29<small> / {isES ? "mes · bloqueado" : "mo · locked"}</small>
-            </div>
-            <ul>
-              <li>10,000 {isES ? "consultas / día" : "queries / day"}</li>
-              <li>{isES ? "Checkout retail · Yape · Plin · MP" : "Retail checkout · Yape · Plin · MP"}</li>
-              <li>10 {isES ? "claves API" : "API keys"}</li>
-              <li>{isES ? "Historial 12 meses · 10 alertas" : "12-month history · 10 alerts"}</li>
-            </ul>
-            <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-action impact-btn-block">
-              {isES ? "Aprovechar $29 →" : "Get $29 →"}
-            </Link>
-          </div>
           <div className="impact-plan impact-rv">
             <h3>Procure · Ops</h3>
             <div className="impact-pr">

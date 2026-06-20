@@ -189,8 +189,8 @@ export default function FreeSignupModal({
               </h3>
               <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2">
                 {isES
-                  ? "Starter, Pro Founding ($29) o Pro ($39). Pagos en la sección Planes."
-                  : "Starter, Pro Founding ($29), or Pro ($39). Checkout in the Plans section."}
+                  ? "Starter ($9) o Pro ($49). Pagos en la sección Planes."
+                  : "Starter ($9) or Pro ($49). Checkout in the Plans section."}
               </p>
             </div>
             <div className="code-block-cyber px-4 py-3 text-left">
