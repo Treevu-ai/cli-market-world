@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroMetrics from "@/components/HeroMetrics";
 import HeroPathCard from "@/components/HeroPathCard";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
@@ -104,12 +103,30 @@ export default function Hero() {
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-8 sm:mt-12 w-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.22 }}
+          className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-400"
+          aria-label={isES ? "Señales de tracción" : "Traction signals"}
         >
-          <HeroMetrics />
+          {mounted && pypiChip && (
+            <>
+              <span className="tabular-nums">
+                <span className="font-semibold text-gray-700">{pypiChip}</span>{" "}
+                {isES ? "instalaciones PyPI" : "PyPI installs"}
+              </span>
+              <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
+            </>
+          )}
+          <span>
+            <span className="font-semibold text-gray-700">&lt;&nbsp;5&nbsp;min</span>{" "}
+            {isES ? "de pip install a precios reales" : "from pip install to live prices"}
+          </span>
+          <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
+          <span>
+            <span className="font-semibold text-gray-700">{MARKET_STATS.countries}</span>{" "}
+            {isES ? "países LATAM" : "LATAM countries"}
+          </span>
         </motion.div>
 
         <motion.div

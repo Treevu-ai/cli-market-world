@@ -22,7 +22,7 @@ export default function Footer() {
     >
       <div className="landing-container-wide grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         <div className="sm:col-span-2 md:col-span-1">
-          <div className="font-display text-xl font-bold text-white mb-4">CLI Market</div>
+          <div className="font-display text-xl font-bold text-gray-900 mb-4">CLI Market</div>
           <p className="font-mono text-sm text-[var(--cm-on-surface-variant)] opacity-80">
             {isES
               ? "© " + year + " CLI Market. Inteligencia de retail programable para LATAM."
