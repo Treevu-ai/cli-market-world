@@ -121,12 +121,6 @@ export default function Hero() {
           <HeroMetrics />
         </motion.div>
 
-        <a
-          href="#problem"
-          className="mt-5 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--cm-data)] hover:brightness-110 transition-colors"
-        >
-          {isES ? "Ver el problema ↓" : "See the problem ↓"}
-        </a>
 
         <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
