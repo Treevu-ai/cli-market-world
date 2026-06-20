@@ -937,7 +937,7 @@ def sync_llms_txt() -> None:
             r"## Billing \(Build Pro\)\n\n- Web: POST /billing/pro-checkout.*",
             "## Billing (Build)\n\n"
             "- Free: `market register` · Starter/Pro: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)\n"
-            "- Plans: starter | pro | pro_founding | pro_annual · Pro Founding promo: founding100\n"
+            "- Plans: starter | pro | pro_annual\n"
             "- CLI: `market upgrade` → POST /billing/paypal\n"
             "- After pay: `market whoami` · `market account`",
             text,
