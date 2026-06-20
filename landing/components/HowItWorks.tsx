@@ -42,7 +42,7 @@ export default function HowItWorks() {
   const paymentsLabel = usePaymentsChannels(isES);
 
   return (
-    <section id="how" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
+    <section id="how-it-works" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4 mt-2">
