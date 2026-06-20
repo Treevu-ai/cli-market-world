@@ -82,7 +82,7 @@ export default function CapabilitiesSection() {
     <section
       id="capabilities"
       className="landing-section"
-      style={{ background: "#0a0a0a", position: "relative", zIndex: 2 }}
+      style={{ position: "relative", zIndex: 2 }}
     >
       <div className="landing-container-wide">
         <div className="mb-6">
@@ -90,7 +90,7 @@ export default function CapabilitiesSection() {
             {isES ? "Capacidades" : "Capabilities"}
           </span>
         </div>
-        <div className="mb-16 sm:mb-24 w-full h-px bg-white/10" />
+        <div className="mb-16 sm:mb-24 w-full h-px bg-gray-200" />
 
         <div className="flex flex-col" style={{ gap: "clamp(60px, 8vw, 100px)" }}>
           {CAPABILITIES.map((cap, i) => (
@@ -112,7 +112,7 @@ export default function CapabilitiesSection() {
                       fontSize: "clamp(36px, 5.4vw, 80px)",
                       lineHeight: 1.05,
                       letterSpacing: "-1.2px",
-                      color: hoveredIndex === i ? "rgba(200, 170, 130, 1)" : "#ffffff",
+                      color: hoveredIndex === i ? "#4f46e5" : "#111827",
                       margin: 0,
                       textWrap: "balance",
                       transition: "color 0.4s ease",
@@ -138,7 +138,7 @@ export default function CapabilitiesSection() {
                     fontWeight: 300,
                     fontSize: 15,
                     lineHeight: 1.8,
-                    color: "rgba(218, 218, 218, 0.8)",
+                    color: "#6b7280",
                     margin: 0,
                     textWrap: "pretty",
                   }}
@@ -162,7 +162,7 @@ export default function CapabilitiesSection() {
           ))}
         </div>
 
-        <div className="mt-16 sm:mt-24 w-full h-px bg-white/10" />
+        <div className="mt-16 sm:mt-24 w-full h-px bg-gray-200" />
       </div>
     </section>
   );

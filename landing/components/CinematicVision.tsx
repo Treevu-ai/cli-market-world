@@ -39,7 +39,7 @@ export default function CinematicVision() {
       id="cinematic"
       ref={sectionRef}
       className="landing-section"
-      style={{ background: "#0a0a0a", position: "relative", zIndex: 2 }}
+      style={{ position: "relative", zIndex: 2 }}
     >
       <div className="landing-container-wide">
         <div className="mb-6">
@@ -47,7 +47,7 @@ export default function CinematicVision() {
             {isES ? "Infraestructura" : "Infrastructure"}
           </span>
         </div>
-        <div className="mb-12 w-full h-px bg-white/10" />
+        <div className="mb-12 w-full h-px bg-gray-200" />
 
         <div className="relative">
           <div
@@ -67,7 +67,7 @@ export default function CinematicVision() {
             </video>
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "linear-gradient(to bottom, transparent 60%, #0a0a0a 100%)" }}
+              style={{ background: "linear-gradient(to bottom, transparent 60%, #f9fafb 100%)" }}
             />
           </div>
 
@@ -76,7 +76,7 @@ export default function CinematicVision() {
             className="flex flex-col md:flex-row md:items-start mt-16 sm:mt-24 gap-8 md:gap-16"
           >
             <h2
-              className="font-garamond m-0 text-white"
+              className="font-garamond m-0 text-gray-900"
               style={{
                 fontFamily: "var(--font-garamond), 'EB Garamond', Georgia, serif",
                 fontWeight: 400,
@@ -92,10 +92,10 @@ export default function CinematicVision() {
                 : "Verified prices. Zero scraping. For agents."}
             </h2>
             <p
-              className="m-0 text-[#dadada]"
+              className="m-0 text-gray-600"
               style={{
                 fontFamily: "var(--font-inter), Inter, sans-serif",
-                fontWeight: 200,
+                fontWeight: 400,
                 fontSize: 17,
                 lineHeight: 1.85,
                 flex: "1 1 50%",

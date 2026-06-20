@@ -45,7 +45,7 @@ export default function UseCasesSection() {
               <span className="text-2xl" aria-hidden="true">
                 {c.icon}
               </span>
-              <h3 className="text-sm font-bold text-white">{isES ? c.title_es : c.title_en}</h3>
+              <h3 className="text-sm font-bold text-gray-900">{isES ? c.title_es : c.title_en}</h3>
               <div className="space-y-2 text-sm leading-relaxed flex-1">
                 <p className="text-[var(--cm-on-surface-variant)]/60">
                   <span className="font-mono text-[10px] uppercase tracking-wider mr-2">

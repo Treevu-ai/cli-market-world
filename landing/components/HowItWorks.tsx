@@ -80,7 +80,7 @@ export default function HowItWorks() {
             >
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-white">{s.label}</p>
+                <p className="text-sm font-bold text-gray-900">{s.label}</p>
                 <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 leading-snug">{isES ? s.out_es : s.out_en}</p>
                 <p className="text-[11px] text-[var(--cm-on-surface-variant)]/45 font-mono mt-2 demo-step-text">{s.cmd}</p>
               </div>
@@ -93,7 +93,7 @@ export default function HowItWorks() {
           <div className="details-body pt-4 space-y-3">
             {devSteps.map((s) => (
               <div key={s.cmd} className="card-cyber px-4 py-3 flex items-center justify-between gap-4">
-                <span className="text-xs font-bold text-white">{s.label}</span>
+                <span className="text-xs font-bold text-gray-900">{s.label}</span>
                 <code className="text-xs font-mono text-[var(--cm-on-surface-variant)]">{s.cmd}</code>
               </div>
             ))}
@@ -116,7 +116,7 @@ export default function HowItWorks() {
           {["Claude", "Cursor", "GPT-4o", "LangChain", "Any HTTP"].map((tool) => (
             <span
               key={tool}
-              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/55 bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5"
+              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/55 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-0.5"
             >
               {tool}
             </span>
