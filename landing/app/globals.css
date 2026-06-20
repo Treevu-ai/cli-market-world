@@ -1050,6 +1050,21 @@ select.input-cyber option {
 .safe-left   { padding-left: env(safe-area-inset-left, 0px); }
 .safe-right  { padding-right: env(safe-area-inset-right, 0px); }
 .safe-mt { margin-top: env(safe-area-inset-top, 0px); }
+
+/* Brutalist text-outline — proposal landing aesthetic */
+.text-outline {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
+  color: transparent;
+}
+.text-outline-strong {
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.82);
+  color: transparent;
+}
+.text-outline-accent {
+  -webkit-text-stroke: 1.5px var(--cm-mint);
+  color: transparent;
+}
+
 .safe-mb { margin-bottom: env(safe-area-inset-bottom, 0px); }
 
 .code-snippet-box {
