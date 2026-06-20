@@ -14,7 +14,7 @@ export default function UseCasesSection() {
   const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "market-data"].includes(c.id));
 
   return (
-    <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in bg-white">
+    <section id="casos" className="landing-section landing-section-glow animate-fade-in bg-white">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>

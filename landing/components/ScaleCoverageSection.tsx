@@ -103,7 +103,7 @@ export default function ScaleCoverageSection() {
   ];
 
   return (
-    <section id="coverage" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
+    <section id="coverage" className="landing-section landing-section-glow animate-fade-in">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">

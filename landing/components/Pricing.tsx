@@ -7,9 +7,6 @@ import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { API_URL } from "@/lib/api";
-import { persistPlaygroundKey, scrollToPlayground } from "@/lib/playground";
-import { recordFunnelEvent } from "@/lib/funnel";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
 import {
   PRICING_TABS,
@@ -263,32 +260,8 @@ export default function Pricing() {
   const billing: Billing = "monthly";
   const [audience, setAudience] = useState<PricingAudience>("procure");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
-  const [claimingFree, setClaimingFree] = useState(false);
   const paymentsLabel = usePaymentsChannels(isES);
   const billingFootnote = usePricingBillingFootnote(isES);
-
-  const handleInstantFreeKey = async () => {
-    setClaimingFree(true);
-    try {
-      const res = await fetch(`${API_URL}/auth/register`, { method: "POST" });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && typeof data.api_key === "string") {
-        persistPlaygroundKey(data.api_key);
-        recordFunnelEvent("register", {
-          username: typeof data.username === "string" ? data.username : undefined,
-          meta: { source: "pricing_free" },
-          dedupe: false,
-        });
-        scrollToPlayground("live");
-        return;
-      }
-      setFreeModalOpen(true);
-    } catch {
-      setFreeModalOpen(true);
-    } finally {
-      setClaimingFree(false);
-    }
-  };
 
   const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
@@ -325,7 +298,7 @@ export default function Pricing() {
   };
 
   return (
-    <section id="pricing" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in scroll-mt-24">
+    <section id="pricing" className="landing-section landing-section-alt landing-section-glow animate-fade-in scroll-mt-24">
       <div className="landing-container-wide text-center">
         <p className="section-eyebrow section-eyebrow-action mb-4">
           {isES ? "Planes" : "Plans"}
@@ -377,22 +350,6 @@ export default function Pricing() {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
-          <p className="text-sm text-[var(--cm-on-surface-variant)] landing-content-narrow mx-auto mb-6 mt-2 leading-relaxed">
-            {isES ? (
-              <>
-                <span className="text-white font-semibold">Free $0</span> —{" "}
-                {formatReqLimit(BUILD_TIER_FREE.reqLimit, true)} · datos reales ·{" "}
-                <code className="font-mono text-xs text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
-              </>
-            ) : (
-              <>
-                <span className="text-white font-semibold">Free $0</span> —{" "}
-                {formatReqLimit(BUILD_TIER_FREE.reqLimit, false)} · real data ·{" "}
-                <code className="font-mono text-xs text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
-              </>
-            )}
-          </p>
-
           <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 mt-4">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
