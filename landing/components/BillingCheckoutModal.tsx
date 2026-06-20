@@ -486,7 +486,7 @@ export default function BillingCheckoutModal({
         aria-label={isES ? "Cerrar" : "Close"}
         onClick={onClose}
       />
-      <div className={`${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl border border-[var(--cm-outline-variant)]/50 bg-[var(--cm-surface-low)] shadow-xl`}>
+      <div className={`${LANDING_MODAL_PANEL} ${LANDING_MODAL_PANEL_MD} modal-panel-dark max-h-[min(88dvh,640px)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 shadow-xl`}>
         <div className="flex items-start justify-between gap-3 border-b border-[var(--cm-outline-variant)]/30 px-5 py-4">
           <div className="min-w-0">
             {!isSingleStepBuild && step !== "done" && (
