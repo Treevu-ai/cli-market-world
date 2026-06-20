@@ -37,7 +37,7 @@ export default function Hero() {
         >
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--cm-data)] animate-pulse" aria-hidden="true" />
           <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-data)]">
-            {isES ? "Dejá de comprar por WhatsApp · LATAM" : "Stop buying on WhatsApp · LATAM"}
+            {isES ? "Deja de comprar por WhatsApp · LATAM" : "Stop buying on WhatsApp · LATAM"}
           </span>
         </motion.div>
 
