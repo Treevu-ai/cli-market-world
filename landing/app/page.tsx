@@ -18,9 +18,9 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
+          <HowItWorks />
           <UseCasesSection />
           <ScaleCoverageSection />
-          <HowItWorks />
           <Pricing />
           <FAQ />
           <Footer />
