@@ -1,7 +1,6 @@
 import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
-import ScrollStorySection from "@/components/ScrollStorySection";
 import HowItWorks from "@/components/HowItWorks";
 import UseCasesSection from "@/components/UseCasesSection";
 import IntelligenceSection from "@/components/IntelligenceSection";
@@ -27,7 +26,6 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
-          <ScrollStorySection />
           <UseCasesSection />
           <ScaleCoverageSection />
           <RetailerCTABanner />
