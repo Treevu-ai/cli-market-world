@@ -58,11 +58,11 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Compras inteligentes. Precios reales. Sin WhatsApp.
+              Infraestructura de comercio para agentes de IA.
             </>
           ) : (
             <>
-              Smart procurement. Real prices. No WhatsApp.
+              Commerce infrastructure for AI agents.
             </>
           )}
         </motion.h1>
@@ -74,7 +74,7 @@ export default function Hero() {
           className="hero-api-punch mt-5 sm:mt-6"
         >
           <ScrambleText
-            text={isES ? "Una sola API" : "One API"}
+            text={isES ? `${MARKET_STATS.retailersVerified} retailers. Una API.` : `${MARKET_STATS.retailersVerified} retailers. One API.`}
             autoStart
             delay={550}
             duration={0.75}
@@ -89,11 +89,11 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Una plataforma. API + CLI. Datos normalizados por kg/L. Sin scraping.
+              Tu agente busca, compara y compra en {MARKET_STATS.retailersVerified} retailers de {MARKET_STATS.countries} países. Sin scraping. Sin integraciones manuales.
             </>
           ) : (
             <>
-              One platform. API + CLI. Normalized per kg/L. Zero scraping.
+              Your agent searches, compares, and buys across {MARKET_STATS.retailersVerified} retailers in {MARKET_STATS.countries} countries. Zero scraping. Zero manual integrations.
             </>
           )}
         </motion.p>
@@ -121,6 +121,25 @@ export default function Hero() {
           <HeroMetrics />
         </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.38 }}
+          className="mt-5 flex flex-wrap justify-center gap-1.5 landing-content-rail"
+          aria-label={isES ? "Muestra de retailers integrados" : "Sample of integrated retailers"}
+        >
+          {["Metro PE", "Wong PE", "Plaza Vea PE", "Carrefour AR", "Jumbo AR", "Chedraui MX", "HEB MX", "Éxito CO", "Falabella CL", "Ripley CL"].map((r) => (
+            <span
+              key={r}
+              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/50 bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5"
+            >
+              {r}
+            </span>
+          ))}
+          <span className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/30 px-1 py-0.5">
+            +{MARKET_STATS.retailersVerified - 10} {isES ? "más →" : "more →"}
+          </span>
+        </motion.div>
 
         <p className="mt-6 text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/60 hidden sm:block">
           {isES ? "Elige tu camino" : "Choose your path"}
@@ -135,19 +154,24 @@ export default function Hero() {
             title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
               <>
-                <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all leading-relaxed">
-                  {MARKET_STATS.pipInstallCmd}
-                </code>
+                <span className="text-xs text-[var(--cm-on-mint)]/90 leading-snug">
+                  {isES
+                    ? `${MARKET_STATS.retailersVerified} retailers · precios normalizados por kg/L`
+                    : `${MARKET_STATS.retailersVerified} retailers · prices normalized per kg/L`}
+                </span>
                 {mounted && pypiChip ? (
-                  <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/65 tabular-nums">
-                    <span className="font-semibold text-[var(--cm-on-mint)]/80">{pypiChip}</span>{" "}
+                  <span className="text-[10px] font-mono text-[var(--cm-on-mint)]/60 tabular-nums">
+                    <span className="font-semibold text-[var(--cm-on-mint)]/75">{pypiChip}</span>{" "}
                     {isES ? "instalaciones PyPI" : "PyPI installs"}
                   </span>
                 ) : (
-                  <span className="text-xs text-[var(--cm-on-mint)]/55">
+                  <span className="text-[10px] text-[var(--cm-on-mint)]/55">
                     {isES ? "100 llamadas · sin tarjeta" : "100 calls · no card required"}
                   </span>
                 )}
+                <code className="font-mono text-[10px] text-[var(--cm-on-mint)]/50 break-all leading-relaxed">
+                  {MARKET_STATS.pipInstallCmd}
+                </code>
               </>
             }
             foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
@@ -201,9 +225,16 @@ export default function Hero() {
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
             title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
             body={
-              <code className="font-mono text-xs text-[var(--cm-on-mint)]/85 break-all">
-                {MARKET_STATS.pipInstallCmd}
-              </code>
+              <>
+                <span className="text-xs text-[var(--cm-on-mint)]/90">
+                  {isES
+                    ? `${MARKET_STATS.retailersVerified} retailers · sin tarjeta`
+                    : `${MARKET_STATS.retailersVerified} retailers · no card required`}
+                </span>
+                <code className="font-mono text-[10px] text-[var(--cm-on-mint)]/50 break-all">
+                  {MARKET_STATS.pipInstallCmd}
+                </code>
+              </>
             }
             foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
           />
