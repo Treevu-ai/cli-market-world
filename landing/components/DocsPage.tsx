@@ -8,6 +8,12 @@ import { sinapsisBillingPolicy } from "@/lib/billingCopy";
 import { usePaymentsChannels } from "@/lib/useBillingCopy";
 import PrereqBlock from "@/components/PrereqBlock";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
+import {
+  BUILD_TIER_FREE,
+  BUILD_TIER_STARTER,
+  BUILD_TIER_PRO,
+  formatReqLimit,
+} from "@/lib/buildPricingTiers";
 
 type SnippetTab = "curl" | "python" | "mcp";
 type BundleKey = keyof typeof MARKET_STATS.mcpBundles;
@@ -142,7 +148,7 @@ export default function DocsPage() {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE</h4>
-              <p className="font-mono text-lg text-gray-900">1,000 req/day</p>
+              <p className="font-mono text-lg text-gray-900">{formatReqLimit(BUILD_TIER_FREE.reqLimit, isES, "short")}</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("Lectura · búsqueda · API default.", "Read · search · default API profile.")}
               </p>
@@ -152,9 +158,11 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER</h4>
-              <p className="font-mono text-lg text-gray-900">2,000 req/mo · USD 9/mo</p>
+              <p className="font-mono text-lg text-gray-900">
+                {formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short")} · USD {BUILD_TIER_STARTER.priceUsd}/mo
+              </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
-                {t("3 claves API · export CSV · alertas · sin checkout retail.", "3 API keys · CSV export · alerts · no retail checkout.")}
+                {t("1 clave API · export CSV · sin checkout retail.", "1 API key · CSV export · no retail checkout.")}
               </p>
               <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Elegir Starter →", "Choose Starter →")}
@@ -162,7 +170,9 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6 energy-border-active sm:col-span-2 lg:col-span-1">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO</h4>
-              <p className="font-mono text-lg text-gray-900">10,000 req/day · USD 49/mo</p>
+              <p className="font-mono text-lg text-gray-900">
+                {formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short")} · USD {BUILD_TIER_PRO.priceUsd}/mo
+              </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
                   `Checkout ${paymentsLabel} · 10 claves · Intel.`,
@@ -184,8 +194,16 @@ export default function DocsPage() {
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
-              { tier: "STARTER", price: "USD 9/mo", note: t("5k req/día · export CSV", "5k req/day · CSV export") },
-              { tier: "PRO", price: "USD 49/mo", note: t("10k/día · checkout", "10k/day · checkout") },
+              {
+                tier: "STARTER",
+                price: `USD ${BUILD_TIER_STARTER.priceUsd}/mo`,
+                note: `${formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short")} · export CSV`,
+              },
+              {
+                tier: "PRO",
+                price: `USD ${BUILD_TIER_PRO.priceUsd}/mo`,
+                note: `${formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short")} · checkout`,
+              },
 
             ].map((p) => (
               <div key={p.tier} className="card-cyber p-4 text-left">
@@ -440,13 +458,17 @@ market --json doctor`}</CodeBlock>
           <PrereqBlock level="cli" isES={isES} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
             <li>
-              <strong className="text-gray-900">Free</strong> — 1,000 {t("consultas/día", "requests/day")} · 1 {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
+              <strong className="text-gray-900">Free</strong> — {formatReqLimit(BUILD_TIER_FREE.reqLimit, isES)} · 1{" "}
+              {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
             </li>
             <li>
-              <strong className="text-gray-900">Starter</strong> — 2,000 {t("consultas/mes", "requests/mo")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 9/mo
+              <strong className="text-gray-900">Starter</strong> — {formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES)} ·{" "}
+              {BUILD_TIER_STARTER.apiKeys} {t("clave API", "API key")} · export CSV · USD {BUILD_TIER_STARTER.priceUsd}/mo
             </li>
             <li>
-              <strong className="text-gray-900">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 49/mo {t("o 490/año", "or 490/yr")}
+              <strong className="text-gray-900">Pro</strong> — {formatReqLimit(BUILD_TIER_PRO.reqLimit, isES)} ·{" "}
+              {BUILD_TIER_PRO.apiKeys} {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD{" "}
+              {BUILD_TIER_PRO.priceUsd}/mo {t("o 490/año", "or 490/yr")}
             </li>
 
             <li>

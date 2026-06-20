@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { EditorialSection, EditorialRule } from "@/components/EditorialSection";
 
 const CAPABILITIES = [
   {
@@ -20,7 +21,7 @@ const CAPABILITIES = [
     title_en: "Agent Tools",
     description_es: `${MARKET_STATS.mcpTools} tools MCP — search, basket, compare, stock, delivery, historial de precios. Un pip install y tu agente puede buscar, comparar y comprar sin scraping ni integraciones manuales.`,
     description_en: `${MARKET_STATS.mcpTools} MCP tools — search, basket, compare, stock, delivery, price history. One pip install and your agent can search, compare, and buy without scraping or manual integrations.`,
-    href: "#how-it-works",
+    href: "/tools",
   },
   {
     slug: "procurement",
@@ -28,7 +29,7 @@ const CAPABILITIES = [
     title_en: "Procurement",
     description_es: "Canasta multi-retailer con flujo de aprobaciones, control presupuestario y checkout. Tu equipo de compras compara en segundos y cierra con Yape o PayPal — sin WhatsApp, sin hojas de cálculo.",
     description_en: "Multi-retailer basket with approval workflows, budget control, and checkout. Your procurement team compares in seconds and closes with Yape or PayPal — no WhatsApp, no spreadsheets.",
-    href: "#procure",
+    href: "/#procure",
   },
   {
     slug: "intelligence",
@@ -36,22 +37,21 @@ const CAPABILITIES = [
     title_en: "Intelligence",
     description_es: `${MARKET_STATS.indicatorsCount} indicadores de mercado — tendencias de precios, spreads de calidad, inflación desde góndola. Para analistas, fondos y equipos que necesitan datos de retail LATAM antes que el IPC.`,
     description_en: `${MARKET_STATS.indicatorsCount} market indicators — price trends, quality spreads, shelf-price inflation. For analysts, funds, and teams that need LATAM retail data before CPI.`,
-    href: "#intelligence",
+    href: "/docs#intel",
   },
 ];
 
 export default function CapabilitiesSection() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const itemRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
-    const items = itemRefs.current.filter(Boolean) as HTMLDivElement[];
+    const items = itemRefs.current.filter(Boolean) as HTMLElement[];
     const observers: IntersectionObserver[] = [];
 
     items.forEach((item, index) => {
-      gsap.set(item, { opacity: 0, y: 60 });
+      gsap.set(item, { opacity: 0, y: 40 });
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -60,15 +60,15 @@ export default function CapabilitiesSection() {
               gsap.to(item, {
                 opacity: 1,
                 y: 0,
-                duration: 1.0,
-                delay: index * 0.12,
+                duration: 0.85,
+                delay: index * 0.1,
                 ease: "power3.out",
               });
               observer.unobserve(entry.target);
             }
           });
         },
-        { threshold: 0.15 }
+        { threshold: 0.12 },
       );
 
       observer.observe(item);
@@ -79,91 +79,35 @@ export default function CapabilitiesSection() {
   }, []);
 
   return (
-    <section
-      id="capabilities"
-      className="landing-section"
-      style={{ position: "relative", zIndex: 2 }}
-    >
-      <div className="landing-container-wide">
-        <div className="mb-6">
-          <span className="text-[11px] font-mono uppercase tracking-[3px] text-[var(--cm-on-surface-variant)]/60">
-            {isES ? "Capacidades" : "Capabilities"}
-          </span>
-        </div>
-        <div className="mb-16 sm:mb-24 w-full h-px bg-gray-200" />
-
-        <div className="flex flex-col" style={{ gap: "clamp(60px, 8vw, 100px)" }}>
-          {CAPABILITIES.map((cap, i) => (
-            <div
-              key={cap.slug}
-              ref={(el) => { itemRefs.current[i] = el; }}
-              className="flex flex-col md:flex-row md:items-start"
-              style={{ gap: "clamp(24px, 4vw, 60px)", cursor: "default" }}
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              {/* Large Garamond title — 70% width */}
-              <div style={{ flex: "0 0 65%" }}>
-                <a href={cap.href} className="block no-underline group">
-                  <h3
-                    style={{
-                      fontFamily: "var(--font-garamond), 'EB Garamond', Georgia, serif",
-                      fontWeight: 400,
-                      fontSize: "clamp(36px, 5.4vw, 80px)",
-                      lineHeight: 1.05,
-                      letterSpacing: "-1.2px",
-                      color: hoveredIndex === i ? "#4f46e5" : "#111827",
-                      margin: 0,
-                      textWrap: "balance",
-                      transition: "color 0.4s ease",
-                    }}
-                  >
-                    {isES ? cap.title_es : cap.title_en}
-                  </h3>
-                </a>
-              </div>
-
-              {/* Description — 35% width, fades on hover */}
-              <div
-                style={{
-                  flex: "1 1 35%",
-                  paddingTop: "clamp(4px, 1vw, 14px)",
-                  position: "relative",
-                  minHeight: 80,
-                }}
-              >
-                <p
-                  style={{
-                    fontFamily: "var(--font-inter), Inter, sans-serif",
-                    fontWeight: 300,
-                    fontSize: 15,
-                    lineHeight: 1.8,
-                    color: "#6b7280",
-                    margin: 0,
-                    textWrap: "pretty",
-                  }}
-                >
-                  {isES ? cap.description_es : cap.description_en}
-                </p>
-                <a
-                  href={cap.href}
-                  className="text-[11px] font-mono text-[var(--cm-amber)] mt-4 inline-block"
-                  style={{
-                    opacity: hoveredIndex === i ? 1 : 0,
-                    transform: hoveredIndex === i ? "translateY(0)" : "translateY(4px)",
-                    transition: "opacity 0.35s ease, transform 0.35s ease",
-                    pointerEvents: hoveredIndex === i ? "auto" : "none",
-                  }}
-                >
-                  {isES ? "Explorar →" : "Explore →"}
-                </a>
-              </div>
+    <EditorialSection id="capabilities" eyebrow={isES ? "Capacidades" : "Capabilities"}>
+      <div className="landing-editorial-stack">
+        {CAPABILITIES.map((cap, i) => (
+          <article
+            key={cap.slug}
+            ref={(el) => {
+              itemRefs.current[i] = el;
+            }}
+            className="landing-editorial-row"
+          >
+            <div className="landing-editorial-row__title">
+              <a href={cap.href} className="landing-editorial-capability-link">
+                <h3 className="landing-editorial-capability-title">
+                  {isES ? cap.title_es : cap.title_en}
+                </h3>
+              </a>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-16 sm:mt-24 w-full h-px bg-gray-200" />
+            <div className="landing-editorial-row__body">
+              <p className="landing-editorial-body">
+                {isES ? cap.description_es : cap.description_en}
+              </p>
+              <a href={cap.href} className="landing-editorial-cta">
+                {isES ? "Explorar →" : "Explore →"}
+              </a>
+            </div>
+          </article>
+        ))}
       </div>
-    </section>
+      <EditorialRule className="mt-16 sm:mt-20" />
+    </EditorialSection>
   );
 }

@@ -3,6 +3,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { sinapsisBillingPolicy } from "@/lib/billingCopy";
 import { usePaymentsChannels } from "@/lib/useBillingCopy";
+import { formatFaqPricingSummary, formatFreeApiKeyBlurb } from "@/lib/buildPricingTiers";
 
 function faqsFor(lang: "es" | "en", channels: string) {
   const isES = lang === "es";
@@ -21,7 +22,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
       },
       {
         q: "¿Cómo obtengo una API key?",
-        a: `pip install cli-market-world → market login → se genera tu key automáticamente. El tier Free incluye 1.000 consultas/día sin tarjeta de crédito. Tu key también activa el endpoint API remoto (claude.ai, ChatGPT, Cursor) y la CLI local.`,
+        a: formatFreeApiKeyBlurb(true),
       },
       {
         q: "¿Qué es CLI Market?",
@@ -49,7 +50,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: `Build (API): Starter USD 9/mes (5.000/día); Pro USD 49/mes o USD 490/año (10.000/día, alertas, full API + checkout). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`,
+        a: formatFaqPricingSummary(true),
       },
     ];
   }
@@ -65,7 +66,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
     },
     {
       q: "How do I get an API key?",
-      a: `pip install cli-market-world → market login → your key is generated automatically. The Free tier includes 1,000 requests/day with no credit card. Your key also activates the remote API endpoint (claude.ai, ChatGPT, Cursor) and the local CLI.`,
+      a: formatFreeApiKeyBlurb(false),
     },
     {
       q: "What is CLI Market?",
@@ -93,7 +94,7 @@ function faqsFor(lang: "es" | "en", channels: string) {
     },
     {
       q: "How much does it cost?",
-      a: `Build (API): Starter USD 9/mo (5,000/day); Pro USD 49/mo or USD 490/yr (10,000/day, alerts, full API + checkout). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`,
+      a: formatFaqPricingSummary(false),
     },
   ];
 }

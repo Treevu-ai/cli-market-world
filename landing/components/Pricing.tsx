@@ -24,6 +24,12 @@ import {
 } from "@/lib/billingCopy";
 import { usePaymentsChannels, usePricingBillingFootnote } from "@/lib/useBillingCopy";
 import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
+import {
+  BUILD_TIER_FREE,
+  BUILD_TIER_STARTER,
+  BUILD_TIER_PRO,
+  formatReqLimit,
+} from "@/lib/buildPricingTiers";
 
 type Billing = "monthly" | "annual";
 
@@ -51,69 +57,45 @@ const FEATURE_COUNT = 5;
 
 const tiers: Tier[] = [
   {
-    name: "Sandbox",
+    name: BUILD_TIER_FREE.name,
     price: "$0",
     period_es: "sin tarjeta",
     period_en: "no card",
-    f_es: [
-      "100 consultas / día",
-      "Respuestas mock · sin producción",
-      "API + CLI playground",
-      "Documentación completa",
-      "Sin fecha de expiración",
-    ],
-    f_en: [
-      "100 requests / day",
-      "Mock responses · no production",
-      "API + CLI playground",
-      "Full documentation",
-      "No expiration",
-    ],
-    cta_es: "Sandbox gratis",
-    cta_en: "Free Sandbox",
+    f_es: BUILD_TIER_FREE.features_es,
+    f_en: BUILD_TIER_FREE.features_en,
+    cta_es: "Empezar gratis",
+    cta_en: "Start free",
     href: MARKET_STATS.pypiUrl,
   },
   {
-    name: "Starter",
-    price: "$9",
-    latamPrice: "S/35",
+    name: BUILD_TIER_STARTER.name,
+    price: `$${BUILD_TIER_STARTER.priceUsd}`,
+    latamPrice: BUILD_TIER_STARTER.latamPricePen,
     period_es: "/ mes · 14 días de prueba",
     period_en: "/ mo · 14-day trial",
-    f_es: [
-      "2,000 consultas / mes",
-      "1 asiento · API key",
-      "API + CLI · datos reales",
-      "Basket básico · compare",
-      "Historial 7 días",
-    ],
-    f_en: [
-      "2,000 requests / month",
-      "1 seat · API key",
-      "API + CLI · real data",
-      "Basic basket · compare",
-      "7-day history",
-    ],
+    f_es: BUILD_TIER_STARTER.features_es,
+    f_en: BUILD_TIER_STARTER.features_en,
     cta_es: "Prueba gratis 14 días",
     cta_en: "Free 14-day trial",
     checkoutKind: { type: "build-starter" },
   },
   {
-    name: "Pro",
-    price: "$49",
-    latamPrice: "S/179",
-    annualPrice: "$490",
-    annualLatamPrice: "S/1,790",
+    name: BUILD_TIER_PRO.name,
+    price: `$${BUILD_TIER_PRO.priceUsd}`,
+    latamPrice: BUILD_TIER_PRO.latamPricePen,
+    annualPrice: `$${BUILD_TIER_PRO.annualPriceUsd}`,
+    annualLatamPrice: BUILD_TIER_PRO.annualLatamPricePen,
     period_es: "/ mes",
     period_en: "/ month",
     f_es: [
-      "10,000 consultas / día",
+      formatReqLimit(BUILD_TIER_PRO.reqLimit, true),
       "3 asientos · 10 API keys",
       `Checkout retail · ${PAYMENTS_PLACEHOLDER}`,
       "Alertas · historial 12 meses",
       "Export CSV · basket optimization",
     ],
     f_en: [
-      "10,000 requests / day",
+      formatReqLimit(BUILD_TIER_PRO.reqLimit, false),
       "3 seats · 10 API keys",
       `Retail checkout · ${PAYMENTS_PLACEHOLDER}`,
       "Alerts · 12-month history",
@@ -395,6 +377,22 @@ export default function Pricing() {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
+          <p className="text-sm text-[var(--cm-on-surface-variant)] landing-content-narrow mx-auto mb-6 mt-2 leading-relaxed">
+            {isES ? (
+              <>
+                <span className="text-white font-semibold">Free $0</span> —{" "}
+                {formatReqLimit(BUILD_TIER_FREE.reqLimit, true)} · datos reales ·{" "}
+                <code className="font-mono text-xs text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
+              </>
+            ) : (
+              <>
+                <span className="text-white font-semibold">Free $0</span> —{" "}
+                {formatReqLimit(BUILD_TIER_FREE.reqLimit, false)} · real data ·{" "}
+                <code className="font-mono text-xs text-[var(--cm-mint)]">{MARKET_STATS.pipInstallCmd}</code>
+              </>
+            )}
+          </p>
+
           <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 mt-4">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
@@ -428,8 +426,8 @@ export default function Pricing() {
             {isES ? (
               <>
                 ¿Plan intermedio?{" "}
-                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mes Starter</span> — 5.000
-                consultas/día, export CSV, sin checkout. Pro estándar{" "}
+                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mes Starter</span> —{" "}
+                {formatReqLimit(BUILD_TIER_STARTER.reqLimit, true)}, export CSV, sin checkout. Pro estándar{" "}
                 <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mes</span>{" "}
                 <BillingCheckoutTrigger
                   kind={{ type: "build-pro" }}
@@ -453,8 +451,8 @@ export default function Pricing() {
             ) : (
               <>
                 Need a mid-tier?{" "}
-                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> — 5k req/day,
-                CSV export, no checkout. Standard Pro{" "}
+                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> —{" "}
+                {formatReqLimit(BUILD_TIER_STARTER.reqLimit, false)}, CSV export, no checkout. Standard Pro{" "}
                 <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mo</span>{" "}
                 <BillingCheckoutTrigger
                   kind={{ type: "build-pro" }}

@@ -42,7 +42,7 @@ export default function HowItWorks() {
   const paymentsLabel = usePaymentsChannels(isES);
 
   return (
-    <section id="how-it-works" className="brand-mode-terminal landing-section landing-section-alt landing-section-glow animate-fade-in">
+    <section id="how-it-works" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in bg-white">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4 mt-2">
@@ -81,8 +81,8 @@ export default function HowItWorks() {
               <span className="text-lg shrink-0">{s.icon}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-gray-900">{s.label}</p>
-                <p className="text-sm text-[var(--cm-on-surface-variant)] mt-1 leading-snug">{isES ? s.out_es : s.out_en}</p>
-                <p className="text-[11px] text-[var(--cm-on-surface-variant)]/45 font-mono mt-2 demo-step-text">{s.cmd}</p>
+                <p className="text-sm text-gray-600 mt-1 leading-snug">{isES ? s.out_es : s.out_en}</p>
+                <p className="text-[11px] text-gray-400 font-mono mt-2 demo-step-text">{s.cmd}</p>
               </div>
             </motion.div>
           ))}
@@ -116,7 +116,7 @@ export default function HowItWorks() {
           {["Claude", "Cursor", "GPT-4o", "LangChain", "Any HTTP"].map((tool) => (
             <span
               key={tool}
-              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/55 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-0.5"
+              className="text-[11px] font-mono text-gray-500 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-0.5"
             >
               {tool}
             </span>

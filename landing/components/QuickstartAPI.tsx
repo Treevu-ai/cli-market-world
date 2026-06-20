@@ -4,6 +4,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import PrereqBlock from "@/components/PrereqBlock";
 import { recordPipInstallIntent } from "@/lib/funnel";
+import { BUILD_TIER_STARTER, BUILD_TIER_PRO, formatReqLimit } from "@/lib/buildPricingTiers";
 
 export default function QuickstartAPI() {
   const { lang } = useLang();
@@ -30,8 +31,16 @@ export default function QuickstartAPI() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 w-full landing-content-narrow min-w-0 text-left">
           {[
-            { tier: "STARTER", price: "USD 9/mo", note: isES ? "5k req/día · export CSV" : "5k req/day · CSV export" },
-            { tier: "PRO", price: "USD 49/mo", note: isES ? "10k/día · checkout" : "10k/day · checkout" },
+            {
+              tier: "STARTER",
+              price: `USD ${BUILD_TIER_STARTER.priceUsd}/mo`,
+              note: `${formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short")} · export CSV`,
+            },
+            {
+              tier: "PRO",
+              price: `USD ${BUILD_TIER_PRO.priceUsd}/mo`,
+              note: `${formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short")} · checkout`,
+            },
 
           ].map((p) => (
             <div key={p.tier} className="card-cyber p-3 text-left">
