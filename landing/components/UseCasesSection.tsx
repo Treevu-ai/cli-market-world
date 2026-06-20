@@ -11,6 +11,7 @@ export default function UseCasesSection() {
   const isES = lang === "es";
   const [activeId, setActiveId] = useState<UseCaseId | null>(null);
   const activeCase = USE_CASE_DEMOS.find((c) => c.id === activeId) ?? null;
+  const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "market-data"].includes(c.id));
 
   return (
     <section id="casos" className="brand-mode-terminal landing-section landing-section-glow animate-fade-in">
@@ -25,8 +26,8 @@ export default function UseCasesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 landing-content-rail text-left mb-12">
-          {USE_CASE_DEMOS.map((c, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 landing-content-rail text-left mb-12">
+          {visibleCases.map((c, i) => (
             <motion.button
               key={c.id}
               type="button"
