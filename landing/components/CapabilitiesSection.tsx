@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { EditorialSection, EditorialRule } from "@/components/EditorialSection";
 
 const CAPABILITIES = [
   {
     slug: "price-engine",
+    icon: "⚡",
     title_es: "Price Engine",
     title_en: "Price Engine",
-    description_es: `Precios normalizados por kg/L en ${MARKET_STATS.retailersVerified} retailers de ${MARKET_STATS.countries} países. Cada ciclo de ${MARKET_STATS.pricesRefreshHours}h pasa por validación de calidad: sin valores atípicos, sin datos stale. ${MARKET_STATS.pricesVerifiedLabel} price points listos para comparar.`,
-    description_en: `Prices normalized per kg/L across ${MARKET_STATS.retailersVerified} retailers in ${MARKET_STATS.countries} countries. Every ${MARKET_STATS.pricesRefreshHours}h cycle passes quality validation: no outliers, no stale data. ${MARKET_STATS.pricesVerifiedLabel} price points ready to compare.`,
+    description_es: `Precios normalizados por kg/L en ${MARKET_STATS.retailersVerified} retailers de ${MARKET_STATS.countries} países. Cada ciclo de ${MARKET_STATS.pricesRefreshHours}h pasa por validación de calidad: sin valores atípicos, sin datos stale.`,
+    description_en: `Prices normalized per kg/L across ${MARKET_STATS.retailersVerified} retailers in ${MARKET_STATS.countries} countries. Every ${MARKET_STATS.pricesRefreshHours}h cycle passes quality validation: no outliers, no stale data.`,
     href: "#how-it-works",
   },
   {
     slug: "agent-tools",
+    icon: "🤖",
     title_es: "Agent Tools",
     title_en: "Agent Tools",
     description_es: `${MARKET_STATS.mcpTools} tools MCP — search, basket, compare, stock, delivery, historial de precios. Un pip install y tu agente puede buscar, comparar y comprar sin scraping ni integraciones manuales.`,
@@ -25,18 +25,20 @@ const CAPABILITIES = [
   },
   {
     slug: "procurement",
+    icon: "🛒",
     title_es: "Procurement",
     title_en: "Procurement",
-    description_es: "Canasta multi-retailer con flujo de aprobaciones, control presupuestario y checkout. Tu equipo de compras compara en segundos y cierra con Yape o PayPal — sin WhatsApp, sin hojas de cálculo.",
-    description_en: "Multi-retailer basket with approval workflows, budget control, and checkout. Your procurement team compares in seconds and closes with Yape or PayPal — no WhatsApp, no spreadsheets.",
+    description_es: "Canasta multi-retailer con flujo de aprobaciones, control presupuestario y checkout. Tu equipo compara en segundos y cierra con Yape o PayPal — sin WhatsApp, sin hojas de cálculo.",
+    description_en: "Multi-retailer basket with approval workflows, budget control, and checkout. Your team compares in seconds and closes with Yape or PayPal — no WhatsApp, no spreadsheets.",
     href: "/#procure",
   },
   {
     slug: "intelligence",
+    icon: "📈",
     title_es: "Intelligence",
     title_en: "Intelligence",
-    description_es: `${MARKET_STATS.indicatorsCount} indicadores de mercado — tendencias de precios, spreads de calidad, inflación desde góndola. Para analistas, fondos y equipos que necesitan datos de retail LATAM antes que el IPC.`,
-    description_en: `${MARKET_STATS.indicatorsCount} market indicators — price trends, quality spreads, shelf-price inflation. For analysts, funds, and teams that need LATAM retail data before CPI.`,
+    description_es: `${MARKET_STATS.indicatorsCount} indicadores de mercado — tendencias de precios, spreads de calidad, inflación desde góndola. Para analistas y fondos que necesitan datos de retail LATAM antes que el IPC.`,
+    description_en: `${MARKET_STATS.indicatorsCount} market indicators — price trends, quality spreads, shelf-price inflation. For analysts and funds that need LATAM retail data before CPI.`,
     href: "/docs#intel",
   },
 ];
@@ -44,70 +46,45 @@ const CAPABILITIES = [
 export default function CapabilitiesSection() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const itemRefs = useRef<(HTMLElement | null)[]>([]);
-
-  useEffect(() => {
-    const items = itemRefs.current.filter(Boolean) as HTMLElement[];
-    const observers: IntersectionObserver[] = [];
-
-    items.forEach((item, index) => {
-      gsap.set(item, { opacity: 0, y: 40 });
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              gsap.to(item, {
-                opacity: 1,
-                y: 0,
-                duration: 0.85,
-                delay: index * 0.1,
-                ease: "power3.out",
-              });
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.12 },
-      );
-
-      observer.observe(item);
-      observers.push(observer);
-    });
-
-    return () => observers.forEach((o) => o.disconnect());
-  }, []);
 
   return (
-    <EditorialSection id="capabilities" eyebrow={isES ? "Capacidades" : "Capabilities"}>
-      <div className="landing-editorial-stack">
-        {CAPABILITIES.map((cap, i) => (
-          <article
-            key={cap.slug}
-            ref={(el) => {
-              itemRefs.current[i] = el;
-            }}
-            className="landing-editorial-row"
-          >
-            <div className="landing-editorial-row__title">
-              <a href={cap.href} className="landing-editorial-capability-link">
-                <h3 className="landing-editorial-capability-title">
-                  {isES ? cap.title_es : cap.title_en}
-                </h3>
-              </a>
-            </div>
-            <div className="landing-editorial-row__body">
-              <p className="landing-editorial-body">
+    <section id="capabilities" className="landing-section animate-fade-in bg-white">
+      <div className="landing-container-wide text-center">
+        <div className="landing-section-header">
+          <p className="section-eyebrow mb-4">{isES ? "Capacidades" : "Capabilities"}</p>
+          <h2 className="section-title">{isES ? "Todo lo que necesita tu agente." : "Everything your agent needs."}</h2>
+          <p className="section-intro">
+            {isES
+              ? "Una API. Cuatro superficies. Mismos precios verificados."
+              : "One API. Four surfaces. Same verified prices."}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 landing-content-rail text-left mb-10">
+          {CAPABILITIES.map((cap, i) => (
+            <motion.a
+              key={cap.slug}
+              href={cap.href}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="card-cyber card-cyber-interactive p-6 flex flex-col gap-3 text-left no-underline"
+            >
+              <span className="text-2xl" aria-hidden="true">{cap.icon}</span>
+              <h3 className="text-sm font-bold text-[#0d253d]">
+                {isES ? cap.title_es : cap.title_en}
+              </h3>
+              <p className="text-sm leading-relaxed text-[#64748d] flex-1">
                 {isES ? cap.description_es : cap.description_en}
               </p>
-              <a href={cap.href} className="landing-editorial-cta">
+              <span className="text-xs font-mono text-[#533afd]">
                 {isES ? "Explorar →" : "Explore →"}
-              </a>
-            </div>
-          </article>
-        ))}
+              </span>
+            </motion.a>
+          ))}
+        </div>
       </div>
-      <EditorialRule className="mt-16 sm:mt-20" />
-    </EditorialSection>
+    </section>
   );
 }
