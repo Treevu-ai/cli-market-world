@@ -85,8 +85,8 @@ export default function TermsOfService() {
                 Sinapsis Innovadora S.A.C. (RUC 20613045563) factura suscripciones Build y Procure
                 en dólares estadounidenses (USD) vía PayPal y en soles (PEN) vía Yape, Plin o
                 tarjeta Mercado Pago. El comprobante se emite en la moneda del pago. Planes publicados:
-                Starter USD 24/mes, Pro USD 39/mes (u opción anual), Pro Founding USD 29/mes (cupos
-                limitados) y tiers Procure según la landing.
+                Starter USD 9/mes, Pro USD 49/mes (u opción anual)
+                y tiers Procure según la landing.
               </li>
               <li>
                 La activación del tier pagado ocurre automáticamente tras la confirmación del pago.

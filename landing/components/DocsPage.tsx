@@ -170,7 +170,7 @@ export default function DocsPage() {
                 )}
               </p>
               <p className="text-[10px] text-[var(--cm-signal)] mt-2 font-mono">
-                {t("Pro Founding: USD 29/mo · 100 plazas", "Pro Founding: USD 29/mo · 100 seats")}
+                
               </p>
               <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Ver planes →", "View plans →")}
@@ -259,8 +259,8 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              "Build (API/MCP): Free, Starter ($9/mes), Pro ($49/mes o $490/año), Pro Founding ($29/mes, 100 plazas).",
-              "Build (API/MCP): Free, Starter ($9/mo), Pro ($49/mo or $490/yr), Pro Founding ($29/mo, 100 seats).",
+              "Build (API/MCP): Free, Starter ($9/mes), Pro ($49/mes o $490/año).",
+              "Build (API/MCP): Free, Starter ($9/mo), Pro ($49/mo or $490/yr).",
             )}
           </p>
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
@@ -300,8 +300,8 @@ market doctor`}</CodeBlock>
   }'`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4 mb-4">
             {t(
-              "Valores de plan: starter | pro | pro_founding | pro_annual. La respuesta incluye approve_url para redirigir al usuario. Pro Founding usa promo founding100 en PayPal.",
-              "Plan values: starter | pro | pro_founding | pro_annual. Response includes approve_url for redirect. Pro Founding uses PayPal promo founding100.",
+              "Valores de plan: starter | pro  | pro_annual. La respuesta incluye approve_url para redirigir al usuario.",
+              "Plan values: starter | pro  | pro_annual. Response includes approve_url for redirect.",
             )}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
@@ -448,9 +448,7 @@ market --json doctor`}</CodeBlock>
             <li>
               <strong className="text-white">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 49/mo {t("o 490/año", "or 490/yr")}
             </li>
-            <li>
-              <strong className="text-white">Pro Founding</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves", "keys")} · checkout · Intel MCP · USD 29/mo {t("bloqueado · 100 plazas", "locked · 100 seats")}
-            </li>
+
             <li>
               <strong className="text-white">Enterprise</strong> — {t("límites y SLAs a medida", "custom limits + SLAs")}
             </li>
