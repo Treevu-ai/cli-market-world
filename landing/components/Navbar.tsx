@@ -38,8 +38,8 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const primaryCta = isES ? "Plan Free →" : "Free plan →";
-  const mobileCta = isES ? "Free →" : "Free →";
+  const signUpCta = isES ? "Regístrate" : "Sign up";
+  const signInCta = isES ? "Iniciar sesión" : "Sign in";
 
   return (
     <nav
@@ -80,21 +80,21 @@ export default function Navbar() {
           >
             {isES ? "Para retailers" : "For retailers"}
           </a>
-          <a
-            href="/account"
-            className="kimi-nav-link text-xs text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            {isES ? "Cuenta" : "Account"}
-          </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
             className="kimi-nav-link text-xs text-gray-500 hover:text-gray-900 cursor-pointer transition-colors">
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href={PRICING_BUILD_HASH}
-            className="inline-flex items-center rounded-full bg-indigo-600 text-white text-xs font-semibold px-4 py-2 hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
+            href="/account"
+            className="kimi-nav-link text-xs text-gray-500 hover:text-gray-900 whitespace-nowrap transition-colors"
           >
-            {primaryCta}
+            {signInCta}
+          </a>
+          <a
+            href={PRICING_BUILD_HASH}
+            className="inline-flex items-center rounded-full bg-[#533afd] text-white text-xs font-semibold px-4 py-2 hover:bg-[#4434d4] transition-colors whitespace-nowrap shadow-sm"
+          >
+            {signUpCta}
           </a>
         </div>
 
@@ -126,11 +126,11 @@ export default function Navbar() {
           </a>
           <a href="/account" onClick={close}
              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-            {isES ? "Cuenta" : "Account"}
+            {signInCta}
           </a>
           <a href={PRICING_BUILD_HASH} onClick={close}
-             className="inline-flex items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-semibold px-6 py-3 mt-1 hover:bg-indigo-700 transition-colors">
-            {mobileCta}
+             className="inline-flex items-center justify-center rounded-full bg-[#533afd] text-white text-sm font-semibold px-6 py-3 mt-1 hover:bg-[#4434d4] transition-colors">
+            {signUpCta}
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
             className="text-xs font-medium text-gray-500 cursor-pointer text-left hover:text-gray-900 transition-colors">
