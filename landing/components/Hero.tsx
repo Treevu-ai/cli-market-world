@@ -4,18 +4,15 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ScrambleText from "@/components/ScrambleText";
-import HeroPathCard from "@/components/HeroPathCard";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { RETAILERS_PAGE, PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
-import { procurePriceRangeLabel } from "@/lib/procurePlans";
+import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 export default function Hero() {
   const { lang } = useLang();
   const isES = lang === "es";
   const { pypiChip } = useLiveStats();
-  const [pathsOpen, setPathsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -37,15 +34,6 @@ export default function Hero() {
           >
             {isES ? "Infraestructura de comercio · LATAM" : "Commerce infrastructure · LATAM"}
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-            className="hero-terminal-eyebrow mb-4"
-          >
-            CLI MARKET
-          </motion.p>
 
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -132,19 +120,19 @@ export default function Hero() {
             {mounted && pypiChip && (
               <>
                 <span className="tabular-nums">
-                  <span className="font-normal text-[#0d253d] tabular-data">{pypiChip}</span>{" "}
+                  <span className="font-semibold text-[#0d253d] tabular-data">{pypiChip}</span>{" "}
                   {isES ? "instalaciones PyPI" : "PyPI installs"}
                 </span>
                 <span className="hidden sm:inline text-[#e3e8ee]" aria-hidden="true">|</span>
               </>
             )}
             <span>
-              <span className="font-normal text-[#0d253d]">&lt;&nbsp;5&nbsp;min</span>{" "}
+              <span className="font-semibold text-[#0d253d]">&lt;&nbsp;5&nbsp;min</span>{" "}
               {isES ? "de pip install a precios reales" : "from pip install to live prices"}
             </span>
             <span className="hidden sm:inline text-gray-200" aria-hidden="true">|</span>
             <span>
-              <span className="font-normal text-[#0d253d]">{MARKET_STATS.countries}</span>{" "}
+              <span className="font-semibold text-[#0d253d]">{MARKET_STATS.countries}</span>{" "}
               {isES ? "países LATAM" : "LATAM countries"}
             </span>
           </motion.div>
@@ -169,140 +157,6 @@ export default function Hero() {
             +{MARKET_STATS.retailersVerified - 10} {isES ? "más →" : "more →"}
           </span>
         </motion.div>
-
-        <p className="mt-10 text-[10px] font-mono uppercase tracking-widest text-[#64748d] hidden sm:block">
-          {isES ? "Elige tu camino" : "Choose your path"}
-        </p>
-
-        <div className="mt-4 hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-[960px] items-stretch">
-          <HeroPathCard
-            href={PRICING_BUILD_HASH}
-            variant="primary"
-            onClick={() => recordPipInstallIntent("landing_hero")}
-            eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Starter $9/mes →" : "Starter $9/mo →"}
-            body={
-              <>
-                <span className="text-xs text-white/90 leading-snug">
-                  {isES
-                    ? `${MARKET_STATS.retailersVerified} retailers · precios normalizados por kg/L`
-                    : `${MARKET_STATS.retailersVerified} retailers · prices normalized per kg/L`}
-                </span>
-                {mounted && pypiChip ? (
-                  <span className="text-[10px] font-mono text-white/70 tabular-nums">
-                    <span className="font-semibold text-white/85">{pypiChip}</span>{" "}
-                    {isES ? "instalaciones PyPI" : "PyPI installs"}
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-white/60">
-                    {isES ? "Pro $49 · Enterprise a medida" : "Pro $49 · Enterprise custom"}
-                  </span>
-                )}
-                <code className="font-mono text-[10px] text-white/50 break-all leading-relaxed">
-                  {MARKET_STATS.pipInstallCmd}
-                </code>
-              </>
-            }
-            foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
-          />
-
-          <HeroPathCard
-            href={PRICING_PROCURE_HASH}
-            variant="signal"
-            eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
-            title={isES ? "Compra mejor. Más rápido →" : "Buy better. Faster →"}
-            body={
-              <>
-                <span className="text-xs font-mono text-amber-700 tabular-nums">
-                  {MARKET_STATS.retailersVerified} {isES ? "retailers · data-gate" : "retailers · data-gate"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {procurePriceRangeLabel(isES)}
-                </span>
-              </>
-            }
-            foot={isES ? "Aprobaciones · ahorro · trazabilidad" : "Approvals · savings · audit trail"}
-          />
-
-          <HeroPathCard
-            href={RETAILERS_PAGE}
-            variant="default"
-            eyebrow={isES ? "Para retailers · Partner" : "For retailers · Partner"}
-            title={isES ? "Tu góndola, visible — gratis →" : "Your shelf, visible — free →"}
-            body={
-              <>
-                <span className="text-xs font-mono text-gray-700 tabular-nums">
-                  {MARKET_STATS.retailersVerified} {isES ? "retailers verificados" : "verified retailers"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {isES ? "30 segundos · sin código" : "30 seconds · no code"}
-                </span>
-              </>
-            }
-            foot={isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn}
-          />
-        </div>
-
-        <div className="mt-4 w-full max-w-[960px] sm:hidden grid gap-2">
-          <HeroPathCard
-            href={PRICING_BUILD_HASH}
-            variant="primary"
-            onClick={() => recordPipInstallIntent("landing_hero")}
-            eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Starter $9/mes →" : "Starter $9/mo →"}
-            body={
-              <>
-                <span className="text-xs text-white/90">
-                  {isES
-                    ? `${MARKET_STATS.retailersVerified} retailers · desde $9/mes`
-                    : `${MARKET_STATS.retailersVerified} retailers · from $9/mo`}
-                </span>
-                <code className="font-mono text-[10px] text-white/50 break-all">
-                  {MARKET_STATS.pipInstallCmd}
-                </code>
-              </>
-            }
-            foot={`API · CLI · ${MARKET_STATS.mcpTools} API tools`}
-          />
-          <button
-            type="button"
-            onClick={() => setPathsOpen((v) => !v)}
-            className="w-full text-xs font-mono text-gray-400 py-2"
-            aria-expanded={pathsOpen}
-          >
-            {pathsOpen
-              ? isES ? "Ocultar otros caminos ▲" : "Hide other paths ▲"
-              : isES ? "Procure · Retailers ▼" : "Procure · Retailers ▼"}
-          </button>
-          {pathsOpen ? (
-            <div className="grid grid-cols-1 gap-2">
-              <HeroPathCard
-                href={PRICING_PROCURE_HASH}
-                variant="signal"
-                eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
-                title={isES ? "Compra mejor →" : "Buy better →"}
-                body={
-                  <span className="text-xs text-gray-500">
-                    {procurePriceRangeLabel(isES)}
-                  </span>
-                }
-                foot={isES ? "Aprobaciones · ahorro · trazabilidad" : "Approvals · savings · audit trail"}
-              />
-              <HeroPathCard
-                href={RETAILERS_PAGE}
-                variant="default"
-                eyebrow={isES ? "Para retailers · Partner" : "For retailers · Partner"}
-                title={isES ? "Tu góndola, visible →" : "Your shelf, visible →"}
-                body={
-                  <span className="text-xs text-gray-500">
-                    {isES ? "30 segundos · sin código" : "30 seconds · no code"}
-                  </span>
-                }
-                foot={isES ? MARKET_STATS.platformsPhraseEs : MARKET_STATS.platformsPhraseEn}
-              />
-            </div>
-          ) : null}
-        </div>
 
       </div>
     </section>
