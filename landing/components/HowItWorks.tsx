@@ -8,8 +8,8 @@ import { recordPipInstallIntent } from "@/lib/funnel";
 const mainSteps = [
   {
     cmd: MARKET_STATS.pipInstallCmd,
-    out_es: "Acceso gratis activado · 2,000 req/día · sin tarjeta",
-    out_en: "Free access activated · 2,000 req/day · no card required",
+    out_es: "Desde $9/mes · Starter, Pro $49, Enterprise custom",
+    out_en: "From $9/mo · Starter, Pro $49, Enterprise custom",
     label: "Install",
     icon: "↓",
   },

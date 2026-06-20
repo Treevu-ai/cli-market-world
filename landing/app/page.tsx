@@ -2,6 +2,8 @@ import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
+import CinematicVision from "@/components/CinematicVision";
+import CapabilitiesSection from "@/components/CapabilitiesSection";
 import UseCasesSection from "@/components/UseCasesSection";
 import ScaleCoverageSection from "@/components/ScaleCoverageSection";
 import Pricing from "@/components/Pricing";
@@ -19,6 +21,8 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <HowItWorks />
+          <CinematicVision />
+          <CapabilitiesSection />
           <UseCasesSection />
           <ScaleCoverageSection />
           <Pricing />

@@ -6,7 +6,6 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats, refreshLabel } from "@/hooks/useLiveStats";
 import MoatSparkline from "@/components/MoatSparkline";
-import LatAmCoverageMap from "@/components/LatAmCoverageMap";
 const vtexLines = {
   supermercados: ["Carrefour AR/BR", "Jumbo AR", "Vea AR", "Chedraui MX", "HEB MX", "Exito CO", "Carulla CO", "Olimpica CO", "Sams Club BR", "Mambo BR", "Wong PE", "Metro PE", "Plaza Vea PE"],
   farmacias: ["Drogaria Pacheco BR", "Farmatodo MX", "Cruz Verde CO/CL"],
@@ -156,9 +155,7 @@ export default function ScaleCoverageSection() {
             : `${retailersVerified} verified = active, live prices · ${retailersDefined} in catalog = integrated, some pending activation`}
         </p>
 
-        <div className="max-w-md mx-auto mb-10 sm:mb-14">
-          <LatAmCoverageMap />
-        </div>
+
 
         <div className="landing-content-rail grid grid-cols-1 md:grid-cols-3 gap-6 mb-14 text-left">
           <div className="card-cyber p-6">
