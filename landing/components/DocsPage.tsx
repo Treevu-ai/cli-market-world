@@ -127,7 +127,7 @@ export default function DocsPage() {
 
       <main className="flex-1 px-6 md:px-8 py-10 max-w-3xl border-r border-[var(--cm-outline-variant)]/10">
         <section className="mb-16 scroll-mt-24" id="introduction">
-          <h1 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] font-bold text-white mb-4 leading-tight">
+          <h1 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] font-bold text-gray-900 mb-4 leading-tight">
             {t(
               "Infraestructura para agentes de IA y equipos de pricing en LatAm",
               "Infrastructure for AI agents & pricing teams in LatAm",
@@ -142,7 +142,7 @@ export default function DocsPage() {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE</h4>
-              <p className="font-mono text-lg text-white">1,000 req/day</p>
+              <p className="font-mono text-lg text-gray-900">1,000 req/day</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("Lectura · búsqueda · API default.", "Read · search · default API profile.")}
               </p>
@@ -152,7 +152,7 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER</h4>
-              <p className="font-mono text-lg text-white">2,000 req/mo · USD 9/mo</p>
+              <p className="font-mono text-lg text-gray-900">2,000 req/mo · USD 9/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("3 claves API · export CSV · alertas · sin checkout retail.", "3 API keys · CSV export · alerts · no retail checkout.")}
               </p>
@@ -162,7 +162,7 @@ export default function DocsPage() {
             </div>
             <div className="card-cyber header-strip p-6 energy-border-active sm:col-span-2 lg:col-span-1">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO</h4>
-              <p className="font-mono text-lg text-white">10,000 req/day · USD 49/mo</p>
+              <p className="font-mono text-lg text-gray-900">10,000 req/day · USD 49/mo</p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
                   `Checkout ${paymentsLabel} · 10 claves · Intel.`,
@@ -190,7 +190,7 @@ export default function DocsPage() {
             ].map((p) => (
               <div key={p.tier} className="card-cyber p-4 text-left">
                 <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80">{p.tier}</p>
-                <p className="font-mono text-sm text-white mt-1">{p.price}</p>
+                <p className="font-mono text-sm text-gray-900 mt-1">{p.price}</p>
                 <p className="text-[10px] text-[var(--cm-on-surface-variant)]/70 mt-1">{p.note}</p>
               </div>
             ))}
@@ -282,7 +282,7 @@ market doctor`}</CodeBlock>
             <BillingCheckoutTrigger kind={{ type: "build-pro" }} className="btn-mint" />
             <BillingCheckoutTrigger
               kind={{ type: "build-pro", annual: true }}
-              className="rounded-full border border-[var(--cm-outline-variant)]/50 px-5 py-2.5 text-sm font-semibold text-white hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-colors"
+              className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
               label_es="Pro anual $490/año →"
               label_en="Pro annual $490/yr →"
             />
@@ -400,7 +400,7 @@ market --json doctor`}</CodeBlock>
                 className={`font-label-caps px-3 py-1 text-xs capitalize transition-colors ${
                   bundleTab === key
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-white"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-gray-900"
                 }`}
               >
                 {isES ? BUNDLE_LABELS[key].es : BUNDLE_LABELS[key].en}
@@ -440,17 +440,17 @@ market --json doctor`}</CodeBlock>
           <PrereqBlock level="cli" isES={isES} />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
             <li>
-              <strong className="text-white">Free</strong> — 1,000 {t("consultas/día", "requests/day")} · 1 {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
+              <strong className="text-gray-900">Free</strong> — 1,000 {t("consultas/día", "requests/day")} · 1 {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
             </li>
             <li>
-              <strong className="text-white">Starter</strong> — 2,000 {t("consultas/mes", "requests/mo")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 9/mo
+              <strong className="text-gray-900">Starter</strong> — 2,000 {t("consultas/mes", "requests/mo")} · 3 {t("claves API", "API keys")} · export CSV · 3 {t("alertas", "alerts")} · USD 9/mo
             </li>
             <li>
-              <strong className="text-white">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 49/mo {t("o 490/año", "or 490/yr")}
+              <strong className="text-gray-900">Pro</strong> — 10,000 {t("consultas/día", "requests/day")} · 10 {t("claves (lectura/escritura)", "keys (read/write)")} · checkout · Intel MCP · USD 49/mo {t("o 490/año", "or 490/yr")}
             </li>
 
             <li>
-              <strong className="text-white">Enterprise</strong> — {t("límites y SLAs a medida", "custom limits + SLAs")}
+              <strong className="text-gray-900">Enterprise</strong> — {t("límites y SLAs a medida", "custom limits + SLAs")}
             </li>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
@@ -473,7 +473,7 @@ market --json doctor`}</CodeBlock>
         </section>
         <section className="mb-16 scroll-mt-24">
           <div className="card-cyber header-strip p-8 text-center energy-border-active">
-            <h3 className="font-display text-xl font-semibold text-white mb-2">
+            <h3 className="font-display text-xl font-semibold text-gray-900 mb-2">
               {t("¿Listo para Starter o Pro?", "Ready for Starter or Pro?")}
             </h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 max-w-md mx-auto">
@@ -506,7 +506,7 @@ market --json doctor`}</CodeBlock>
                 </button>
               ))}
             </div>
-            <button type="button" onClick={copy} className="font-label-caps text-[10px] text-[var(--cm-on-surface-variant)] hover:text-white">
+            <button type="button" onClick={copy} className="font-label-caps text-[10px] text-[var(--cm-on-surface-variant)] hover:text-gray-900">
               {copied ? "OK" : "COPY"}
             </button>
           </div>
@@ -521,15 +521,15 @@ market --json doctor`}</CodeBlock>
           <div className="space-y-3 font-mono text-[11px]">
             <div className="flex justify-between text-[var(--cm-on-surface-variant)]">
               <span>API</span>
-              <span className="text-white">{API_URL.replace("https://", "")}</span>
+              <span className="text-gray-900">{API_URL.replace("https://", "")}</span>
             </div>
             <div className="flex justify-between text-[var(--cm-on-surface-variant)]">
               <span>{t("Retailers verificados", "Verified retailers")}</span>
-              <span className="text-white">{MARKET_STATS.retailersVerified}</span>
+              <span className="text-gray-900">{MARKET_STATS.retailersVerified}</span>
             </div>
             <div className="flex justify-between text-[var(--cm-on-surface-variant)]">
               <span>Refresh</span>
-              <span className="text-white">{MARKET_STATS.pricesRefreshHours}h</span>
+              <span className="text-gray-900">{MARKET_STATS.pricesRefreshHours}h</span>
             </div>
           </div>
         </div>
@@ -542,7 +542,7 @@ function SectionHead({ n, title }: { n: number; title: string }) {
   return (
     <div className="flex items-center gap-3 mb-6">
       <span className="h-8 w-8 rounded-full bg-[var(--cm-mint)]/20 flex items-center justify-center text-[var(--cm-mint)] font-mono text-sm">{n}</span>
-      <h2 className="font-display text-xl font-semibold text-white">{title}</h2>
+      <h2 className="font-display text-xl font-semibold text-gray-900">{title}</h2>
     </div>
   );
 }
