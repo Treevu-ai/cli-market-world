@@ -1991,10 +1991,10 @@ body > div[id*="paypal-cart"] {
 /* Display headline — bold startup style */
 .hero-garamond-headline {
   font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: clamp(3rem, 6vw, 5.5rem);
-  line-height: 1.03;
-  letter-spacing: -1px;
+  font-weight: 700;
+  font-size: clamp(3rem, 6.5vw, 6rem);
+  line-height: 1.01;
+  letter-spacing: -0.04em;
   color: #0d253d;
   font-feature-settings: "ss01";
 }

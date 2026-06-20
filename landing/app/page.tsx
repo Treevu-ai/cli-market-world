@@ -1,7 +1,9 @@
 import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
+import TrustBar from "@/components/TrustBar";
 import HowItWorks from "@/components/HowItWorks";
+import ApiShowcase from "@/components/ApiShowcase";
 import CinematicVision from "@/components/CinematicVision";
 import CapabilitiesSection from "@/components/CapabilitiesSection";
 import UseCasesSection from "@/components/UseCasesSection";
@@ -19,7 +21,9 @@ export default function Home() {
       <ErrorBoundary>
         <div className="relative z-10">
           <Hero />
+          <TrustBar />
           <HowItWorks />
+          <ApiShowcase />
           <UseCasesSection />
           <CapabilitiesSection />
           <CinematicVision />
