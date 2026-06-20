@@ -150,7 +150,6 @@ const tiers: Tier[] = [
   },
 ];
 
-/** Build tab: Starter → Pro → Enterprise. */
 const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
   ["Starter", "Pro", "Enterprise"].includes(t.name),
 );
@@ -211,7 +210,7 @@ function TierCard({
         )}
       </div>
 
-      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-white"}`}>
+      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-gray-900"}`}>
         {tier.name}
       </h3>
 
@@ -221,7 +220,7 @@ function TierCard({
             {tier.compareAt}
           </span>
         )}
-        <span className="text-3xl font-black tabular-nums text-white">{displayPrice}</span>
+        <span className="text-3xl font-black tabular-nums text-gray-900">{displayPrice}</span>
         {period && (
           <span className="text-sm text-[var(--cm-on-surface-variant)]">{period}</span>
         )}
@@ -239,7 +238,7 @@ function TierCard({
           ? isES
             ? "Ahorra 2 meses vs mensual"
             : "Save 2 months vs monthly"
-          : "\u00a0"}
+          : " "}
       </p>
 
       <ul className="space-y-3 mb-6 flex-1">
@@ -311,8 +310,6 @@ export default function Pricing() {
 
   const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
-
-
   useEffect(() => {
     const syncFromLocation = () => {
       const hash = window.location.hash;
@@ -371,7 +368,7 @@ export default function Pricing() {
               className={`flex-1 min-w-0 px-3 sm:px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex flex-col items-center justify-center ${
                 audience === tab.id
                   ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                  : "text-[var(--cm-on-surface-variant)] hover:text-white"
+                  : "text-[var(--cm-on-surface-variant)] hover:text-gray-900"
               }`}
             >
               <span className="whitespace-nowrap">{tab.label}</span>
@@ -495,7 +492,7 @@ export default function Pricing() {
             </p>
             <a
               href="/#contact-general"
-              className="inline-flex items-center rounded-3xl border border-[var(--cm-outline-variant)] text-white text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-mint)] transition-all"
+              className="inline-flex items-center rounded-3xl border border-gray-300 text-gray-700 text-sm font-semibold px-6 py-2.5 hover:border-indigo-400 hover:text-indigo-600 transition-all"
             >
               {isES ? "Contáctenos →" : "Contact us →"}
             </a>
