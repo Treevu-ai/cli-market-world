@@ -34,7 +34,7 @@ Onboarding en **48 h**. Propuesta personalizada según categorías y volumen.
 
 ## Qué NO es
 
-- **Build (Free · Starter $24 · Pro $39 · Pro Founding $29/mes):** API/MCP para developers que integran agentes — no es Intelligence ni Procure
+- **Build (Starter $9 · Pro $49/mes):** API/MCP para developers que integran agentes — no es Intelligence ni Procure
 - **Procure Copilot ($29–79/mes):** equipos de compras que ejecutan procurement — infra API incluida en Pro+
 - **Retailer listing:** gratis — aparecer en búsquedas de agentes (Puerta B)
 - **Checkout autónomo:** roadmap, no producto comercial este trimestre

@@ -2743,11 +2743,9 @@ def cmd_upgrade(args):
     get_token_with_prompt()
     es = get_lang() == "es"
     plan = (getattr(args, "plan", None) or "pro").strip().lower().replace("-", "_")
-    if plan in ("founding",):
-        plan = "pro_founding"
     if plan in ("annual",):
         plan = "pro_annual"
-    if plan not in ("starter", "pro", "pro_founding", "pro_annual"):
+    if plan not in ("starter", "pro", "pro_annual"):
         plan = "pro"
     payment = (getattr(args, "payment", None) or "").strip().lower()
     if not payment:
@@ -2829,8 +2827,6 @@ def cmd_upgrade(args):
 
     endpoint = "/billing/paypal"
     payload: dict = {"plan": plan}
-    if plan == "pro_founding":
-        payload["promo_code"] = (getattr(args, "promo_code", None) or "founding100").strip()
     label = f"CLI Market {plan.replace('_', ' ').title()} — {plan_label}"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
         data = cli_api("POST", endpoint, payload)
