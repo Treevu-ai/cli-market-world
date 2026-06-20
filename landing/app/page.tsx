@@ -24,6 +24,7 @@ export default function Home() {
           <CapabilitiesSection />
           <CinematicVision />
           <UseCasesSection />
+          <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <Pricing />
           <ScaleCoverageSection />
           <FAQ />
