@@ -17,11 +17,11 @@ export default function UseCasesSection() {
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
-          <h2 className="section-title">{isES ? "¿Para quién es CLI Market?" : "Who is CLI Market for?"}</h2>
+          <h2 className="section-title">{isES ? "Una API. Tres superficies." : "One API. Three surfaces."}</h2>
           <p className="section-intro">
             {isES
-              ? "Builders, equipos comerciales y operadores de compras — mismos precios verificados, distintas superficies."
-              : "Builders, commercial teams, and procurement operators — same verified prices, different surfaces."}
+              ? "Developers, equipos de compras y retailers — mismos precios verificados, distintas superficies."
+              : "Developers, procurement teams, and retailers — same verified prices, different surfaces."}
           </p>
         </div>
 

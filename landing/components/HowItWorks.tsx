@@ -109,6 +109,20 @@ export default function HowItWorks() {
           {isES ? `Checkout ${paymentsLabel} · requiere plan Pro + activación por email` : `Checkout via ${paymentsLabel} · requires Pro plan + email activation`}
         </p>
 
+        <div className="mt-8 flex flex-wrap justify-center items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)]/40 mr-1">
+            {isES ? "Compatible con" : "Works with"}
+          </span>
+          {["Claude", "Cursor", "GPT-4o", "LangChain", "Any HTTP"].map((tool) => (
+            <span
+              key={tool}
+              className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/55 bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5"
+            >
+              {tool}
+            </span>
+          ))}
+        </div>
+
         <p className="mt-4">
           <a href="/docs#quickstart" className="font-mono text-xs underline underline-offset-2 decoration-[var(--cm-mint)]/30 text-[var(--cm-mint)]/70 hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Demo completa de 8 pasos →" : "Full 8-step walkthrough →"}
