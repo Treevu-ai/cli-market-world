@@ -928,7 +928,7 @@ def sync_llms_txt() -> None:
         text = re.sub(
             r"- Pricing \(.*?\):.*",
             "- Pricing (Build, foco ICP AI Agent Builders): Free $0 (1,000 req/día), "
-            "Starter $24/mo (5,000 req/día, CSV export), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), "
+            "Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), "
             "Pro Founding $29/mo (100 plazas), Enterprise custom (SLAs, high limits)",
             text,
             count=1,

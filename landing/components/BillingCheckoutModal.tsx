@@ -218,20 +218,20 @@ export default function BillingCheckoutModal({
 
   const title = isStarter
     ? isES
-      ? "Build · Starter · $24/mes"
-      : "Build · Starter · $24/mo"
+      ? "Build · Starter · $9/mes"
+      : "Build · Starter · $9/mo"
     : isFounding
       ? isES
         ? "Build · Pro Founding · $29/mes"
         : "Build · Pro Founding · $29/mo"
       : kind.type === "build-pro" && kind.annual
         ? isES
-          ? "Build · Pro · $390/año"
-          : "Build · Pro · $390/yr"
+          ? "Build · Pro · $490/año"
+          : "Build · Pro · $490/yr"
         : isProStandard
           ? isES
-            ? "Build · Pro · $39/mes"
-            : "Build · Pro · $39/mo"
+            ? "Build · Pro · $49/mes"
+            : "Build · Pro · $49/mo"
           : isES
             ? `Procure · ${procureMeta?.name ?? kind.plan}`
             : `Procure · ${procureMeta?.name ?? kind.plan}`;

@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-38k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-39k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -64,7 +64,7 @@ market intel brief --country PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Precio** | $0 | Starter $24/mes · Pro $39/mes · Founding $29 · Anual $390 | A medida |
+| **Precio** | $0 | Starter $9/mes · Pro $49/mes · Founding $29 · Anual $490 | A medida |
 | **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 60 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -74,13 +74,13 @@ market intel brief --country PE
 | **Exportar datos** | — | CSV ilimitado + cron | Feed directo S3/webhook |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Soporte** | Comunidad | Email 4h | 24/7 + SLA escrito |
-| **Anual** | — | $390/año | — |
+| **Anual** | — | $490/año | — |
 
 #### ¿Quién compra qué? (ecosistema)
 
 | Buyer | Producto | Precio |
 |-------|----------|--------|
-| Developer / agent builder que **integra** comercio en su software | **CLI Market Pro** | $39/mes |
+| Developer / agent builder que **integra** comercio en su software | **CLI Market Pro** | $49/mes |
 | Equipo de **compras** (restaurante, hotel, agro) — sin código | **Procure Copilot** | $29–149/mes (infra CLI Market incluida en Pro+) |
 | Analista / fintech que necesita **datos**, no checkout | **Intelligence** | $300–500/mes |
 
@@ -136,7 +136,7 @@ market intel brief --country PE
 
 | Plan | Free | Pro | Enterprise |
 |------|------|-----|------------|
-| **Price** | $0 | Starter $24/mo · Pro $39/mo · Founding $29 · Annual $390 | Custom |
+| **Price** | $0 | Starter $9/mo · Pro $49/mo · Founding $29 · Annual $490 | Custom |
 | **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 60 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
@@ -146,13 +146,13 @@ market intel brief --country PE
 | **Export** | — | CSV unlimited + cron | Direct S3/webhook feed |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Support** | Community | Email 4h | 24/7 + written SLA |
-| **Annual** | — | $390/yr | — |
+| **Annual** | — | $490/yr | — |
 
 #### Who buys what (ecosystem)
 
 | Buyer | Product | Price |
 |-------|---------|-------|
-| Developer / agent builder **embedding** commerce in their software | **CLI Market Pro** | $39/mo |
+| Developer / agent builder **embedding** commerce in their software | **CLI Market Pro** | $49/mo |
 | **Procurement** team (no code) | **Procure Copilot** | $29–149/mo (CLI Market infra bundled on Pro+) |
 | Analyst / fintech needing **data**, not checkout | **Intelligence** | $300–500/mo |
 
