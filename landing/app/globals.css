@@ -12,14 +12,14 @@
   --color-cm-surface-container: #e5e7eb;
   --color-cm-surface-high: #d1d5db;
   --color-cm-surface-highest: #9ca3af;
-  --color-cm-mint: #4f46e5;
-  --color-cm-mint-dim: #6366f1;
+  --color-cm-mint: #533afd;
+  --color-cm-mint-dim: #665efd;
   --color-cm-on-mint: #ffffff;
-  --color-cm-on-surface: #111827;
-  --color-cm-on-surface-variant: #6b7280;
-  --color-cm-outline-variant: #e5e7eb;
-  --color-cm-secondary: #4f46e5;
-  --color-cm-secondary-container: #e0e7ff;
+  --color-cm-on-surface: #0d253d;
+  --color-cm-on-surface-variant: #64748d;
+  --color-cm-outline-variant: #e3e8ee;
+  --color-cm-secondary: #533afd;
+  --color-cm-secondary-container: #b9b9f9;
 }
 
 :root,
@@ -27,16 +27,25 @@
   /* Semantic brand tokens */
   --cm-void: #ffffff;
   --cm-canvas: #ffffff;
-  --cm-ink: #111827;
-  --cm-action: #4f46e5;
-  --cm-action-glow: #6366f1;
+  --cm-canvas-soft: #f6f9fc;
+  --cm-canvas-cream: #f5e9d4;
+  --cm-ink: #0d253d;
+  --cm-ink-secondary: #273951;
+  --cm-action: #533afd;
+  --cm-action-deep: #4434d4;
+  --cm-action-press: #2e2b8c;
+  --cm-action-glow: #665efd;
+  --cm-action-soft: #b9b9f9;
+  --cm-brand-dark: #1c1e54;
   --cm-data: #0ea5e9;
   --cm-signal: #f59e0b;
   --cm-surface-card: #ffffff;
-  --cm-text-secondary: #6b7280;
-  --cm-radius-lg: 24px;
-  --cm-radius-md: 12px;
-  --cm-radius-sm: 8px;
+  --cm-text-secondary: #64748d;
+  --cm-hairline: #e3e8ee;
+  --cm-hairline-input: #a8c3de;
+  --cm-radius-lg: 12px;
+  --cm-radius-md: 8px;
+  --cm-radius-sm: 6px;
   --cm-radius-pill: 9999px;
   --cm-glow-strength: 0;
 
@@ -48,31 +57,31 @@
   --cm-surface-container: #e5e7eb;
   --cm-surface-high: #d1d5db;
   --cm-surface-highest: #9ca3af;
-  --cm-mint: #4f46e5;
-  --cm-mint-dim: #6366f1;
+  --cm-mint: #533afd;
+  --cm-mint-dim: #665efd;
   --cm-on-mint: #ffffff;
-  --cm-on-surface: #111827;
-  --cm-on-surface-variant: #6b7280;
-  --cm-outline-variant: #e5e7eb;
-  --cm-secondary: #4f46e5;
-  --cm-secondary-container: #e0e7ff;
+  --cm-on-surface: #0d253d;
+  --cm-on-surface-variant: #64748d;
+  --cm-outline-variant: #e3e8ee;
+  --cm-secondary: #533afd;
+  --cm-secondary-container: #b9b9f9;
   --cm-gutter: 24px;
 
-  /* Amber accent — kept for compatibility, mapped to indigo */
-  --cm-amber: #4f46e5;
-  --cm-amber-dim: #6366f1;
-  --cm-amber-glow: rgba(79, 70, 229, 0.3);
+  /* Amber accent — kept for compatibility, mapped to Stripe indigo */
+  --cm-amber: #533afd;
+  --cm-amber-dim: #665efd;
+  --cm-amber-glow: rgba(83, 58, 253, 0.3);
   --cm-content-max: 1200px;
   --cm-container-max: 1280px;
   --cm-sidenav-width: 3rem;
 
   /* Legacy tokens mapped to light palette */
-  --wise-green: #4f46e5;
-  --wise-green-hover: #4338ca;
-  --wise-green-pale: rgba(79, 70, 229, 0.15);
-  --wise-ink: #111827;
-  --wise-body: #374151;
-  --wise-mute: #6b7280;
+  --wise-green: #533afd;
+  --wise-green-hover: #4434d4;
+  --wise-green-pale: rgba(83, 58, 253, 0.15);
+  --wise-ink: #0d253d;
+  --wise-body: #273951;
+  --wise-mute: #64748d;
   --wise-body-on-dark: #f3f4f6;
   --wise-mute-on-dark: #9ca3af;
   --wise-canvas-soft: #f9fafb;
@@ -123,13 +132,20 @@ body {
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
   background-color: #ffffff;
-  color: #111827;
+  color: #0d253d;
   font-family: var(--font-sans);
+  font-weight: 300;
+  font-feature-settings: "ss01";
+}
+
+.tabular-data {
+  font-feature-settings: "tnum";
+  letter-spacing: -0.42px;
 }
 
 ::selection {
-  background: rgba(79, 70, 229, 0.2);
-  color: #111827;
+  background: rgba(83, 58, 253, 0.15);
+  color: #0d253d;
 }
 
 section[id] {
@@ -238,20 +254,20 @@ section[id] {
 }
 
 .energy-border-active {
-  border: 1px solid rgba(79, 70, 229, 0.4);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(83, 58, 253, 0.4);
+  box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.08);
 }
 
 .cyber-glow-mint {
-  box-shadow: 0 1px 4px rgba(79, 70, 229, 0.12);
+  box-shadow: rgba(0, 55, 112, 0.08) 0 1px 3px;
 }
 
 .cyber-glow-mint:hover {
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.18);
+  box-shadow: rgba(0, 55, 112, 0.08) 0 8px 24px, rgba(0, 55, 112, 0.04) 0 2px 6px;
 }
 
 .header-strip {
-  border-top: 2px solid #e0e7ff;
+  border-top: 2px solid #b9b9f9;
 }
 
 .terminal-scroll::-webkit-scrollbar {
@@ -299,19 +315,19 @@ section[id] {
 
 .hero-terminal-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
   text-transform: uppercase;
-  color: #4f46e5;
+  color: #533afd;
 }
 
 .hero-terminal-headline {
   font-family: var(--font-display);
   font-size: clamp(2rem, 6.5vw, 4.25rem);
   line-height: 1.05;
-  font-weight: 800;
-  color: #111827;
+  font-weight: 300;
+  color: #0d253d;
   max-width: 920px;
   letter-spacing: -0.03em;
 }
@@ -808,14 +824,45 @@ section.landing-section-alt:not(.landing-section) {
 
 .card-cyber {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
+  border: 1px solid #e3e8ee;
+  border-radius: 12px;
+  box-shadow: rgba(0, 55, 112, 0.08) 0 1px 3px;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-cyber:hover {
-  border-color: rgba(79, 70, 229, 0.25);
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+  border-color: rgba(83, 58, 253, 0.25);
+  box-shadow: rgba(0, 55, 112, 0.08) 0 8px 24px, rgba(0, 55, 112, 0.04) 0 2px 6px;
+}
+
+/* Stripe featured tier — dark navy card */
+.card-stripe-dark {
+  background: #1c1e54;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: rgba(0, 55, 112, 0.08) 0 8px 24px, rgba(0, 55, 112, 0.04) 0 2px 6px;
+  color: #ffffff;
+}
+
+/* Stripe subdued indigo pill tag */
+.stripe-tag-soft {
+  display: inline-flex;
+  align-items: center;
+  background: #b9b9f9;
+  color: #4434d4;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 9999px;
+}
+
+/* Stripe cream band */
+.stripe-cream-band {
+  background: #f5e9d4;
+  border-radius: 12px;
 }
 
 .card-cyber-interactive:hover {
@@ -924,21 +971,23 @@ select.input-cyber option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #4f46e5;
+  background: #533afd;
   color: #ffffff;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.75rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  padding: 8px 16px;
   border-radius: var(--cm-radius-pill);
-  transition: box-shadow 0.2s, filter 0.2s;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .btn-mint:hover {
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.25);
-  filter: brightness(1.05);
+  background: #4434d4;
+}
+
+.btn-mint:active {
+  background: #2e2b8c;
 }
 
 .btn-mint:disabled {
@@ -1929,14 +1978,56 @@ body > div[id*="paypal-cart"] {
   .brand-ticker-name { min-width: 0; }
 }
 
-/* Garamond headline helper */
+/* Display headline — Stripe thin editorial style */
 .hero-garamond-headline {
-  font-family: var(--font-garamond), 'EB Garamond', Georgia, serif;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-weight: 300;
   font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -1.4px;
+  color: #0d253d;
+  font-feature-settings: "ss01";
+}
+
+/* ─── Stripe gradient mesh hero ─────────────────────────────────────────── */
+.hero-stripe-mesh {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 30%, rgba(245, 233, 212, 0.65) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 75% 10%, rgba(185, 185, 249, 0.5) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 35% at 90% 65%, rgba(249, 107, 238, 0.18) 0%, transparent 45%),
+    radial-gradient(ellipse 45% 40% at 5% 85%, rgba(83, 58, 253, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 50% 0%, rgba(234, 34, 97, 0.08) 0%, transparent 50%),
+    #ffffff;
+}
+
+/* Stripe display typography utilities */
+.stripe-display-xl {
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  font-weight: 300;
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #111827;
+  letter-spacing: -0.96px;
+  color: #0d253d;
+  font-feature-settings: "ss01";
+}
+
+.stripe-display-lg {
+  font-family: var(--font-sans);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.64px;
+  color: #0d253d;
+  font-feature-settings: "ss01";
+}
+
+.stripe-body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #64748d;
+  font-feature-settings: "ss01";
 }
 
 /* Editorial sections — Capabilities & Infrastructure (light, aligned with hero) */
