@@ -9,24 +9,6 @@ import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 type Tab = "python" | "curl";
 
-const PYTHON_CODE = `import cli_market
-
-# Search across ${MARKET_STATS.retailersVerified} retailers — normalized per kg/L
-results = cli_market.compare("arroz", country="PE")
-
-# Output:
-# Metro PE   → S/ 2.90 /kg  ✓ in stock
-# Plaza Vea  → S/ 3.05 /kg  ✓ in stock
-# Wong PE    → S/ 3.10 /kg  ✓ in stock
-
-# Multi-retailer basket — best total in <1s
-basket = cli_market.basket(
-    items=["arroz:1kg", "leche:1L", "aceite:1L"],
-    country="PE"
-)
-print(basket.best_store)   # → Metro PE  S/ 18.40
-print(basket.savings)      # → S/ 2.30 vs worst option`;
-
 const CURL_CODE = `# Search products
 curl -X POST https://cli-market-production.up.railway.app/products/search \\
   -H "Authorization: Bearer $CLI_MARKET_KEY" \\
@@ -40,10 +22,6 @@ curl -X POST https://cli-market-production.up.railway.app/v1/basket/compare \\
     "items": [{"name":"arroz","qty":1}],
     "stores": ["metro-pe","wong-pe","plaza-vea-pe"]
   }'`;
-
-function CodeLine({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`leading-6 ${className}`}>{children}</div>;
-}
 
 function PythonBlock() {
   const lines = [
@@ -106,14 +84,14 @@ export default function ApiShowcase() {
   const [tab, setTab] = useState<Tab>("python");
 
   return (
-    <section className="landing-section animate-fade-in bg-[#f6f9fc]" style={{ borderTop: "1px solid #e3e8ee", borderBottom: "1px solid #e3e8ee" }}>
+    <section className="landing-section animate-fade-in bg-[#f6f9fc] overflow-x-hidden" style={{ borderTop: "1px solid #e3e8ee", borderBottom: "1px solid #e3e8ee" }}>
       <div className="landing-container-wide">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
           {/* Left — text */}
           <motion.div
-            initial={{ opacity: 0, x: -16 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
@@ -157,8 +135,8 @@ export default function ApiShowcase() {
 
           {/* Right — terminal */}
           <motion.div
-            initial={{ opacity: 0, x: 16 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
@@ -187,7 +165,7 @@ export default function ApiShowcase() {
               </div>
 
               {/* Code content */}
-              <div className="p-5 overflow-x-auto min-h-[320px]">
+              <div className="p-5 overflow-x-auto min-h-[200px] sm:min-h-[320px] max-h-[380px] overflow-y-auto">
                 {tab === "python" ? <PythonBlock /> : <CurlBlock />}
               </div>
 
