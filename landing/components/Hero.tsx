@@ -9,7 +9,9 @@ import HeroPathCard from "@/components/HeroPathCard";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { RETAILERS_PAGE, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { RETAILERS_PAGE, PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
+import { formatFreeHeroChip } from "@/lib/buildPricingTiers";
+import { procurePriceRangeLabel } from "@/lib/procurePlans";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -160,7 +162,7 @@ export default function Hero() {
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
+            title={isES ? "Plan Free →" : "Free plan →"}
             body={
               <>
                 <span className="text-xs text-white/90 leading-snug">
@@ -175,7 +177,7 @@ export default function Hero() {
                   </span>
                 ) : (
                   <span className="text-[10px] text-white/60">
-                    {isES ? "100 llamadas · sin tarjeta" : "100 calls · no card required"}
+                    {formatFreeHeroChip(isES)}
                   </span>
                 )}
                 <code className="font-mono text-[10px] text-white/50 break-all leading-relaxed">
@@ -187,20 +189,17 @@ export default function Hero() {
           />
 
           <HeroPathCard
-            href="#procure"
+            href={PRICING_PROCURE_HASH}
             variant="signal"
             eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
             title={isES ? "Compra mejor. Más rápido →" : "Buy better. Faster →"}
             body={
               <>
                 <span className="text-xs font-mono text-amber-700 tabular-nums">
-                  {MARKET_STATS.indicatorsCount} {isES ? "datos" : "data points"}
-                  {MARKET_STATS.goldenLinkagePct > 0
-                    ? ` · ${MARKET_STATS.goldenLinkagePct}% ${isES ? "linkage" : "linkage"}`
-                    : ""}
+                  {MARKET_STATS.retailersVerified} {isES ? "retailers · data-gate" : "retailers · data-gate"}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {isES ? "Add-on desde $29/mes" : "Add-on from $29/mo"}
+                  {procurePriceRangeLabel(isES)}
                 </span>
               </>
             }
@@ -232,7 +231,7 @@ export default function Hero() {
             variant="primary"
             onClick={() => recordPipInstallIntent("landing_hero")}
             eyebrow={isES ? "Para developers · API" : "For developers · API"}
-            title={isES ? "Sandbox gratis →" : "Free Sandbox →"}
+            title={isES ? "Plan Free →" : "Free plan →"}
             body={
               <>
                 <span className="text-xs text-white/90">
@@ -255,18 +254,18 @@ export default function Hero() {
           >
             {pathsOpen
               ? isES ? "Ocultar otros caminos ▲" : "Hide other paths ▲"
-              : isES ? "Intelligence · Retailers ▼" : "Intelligence · Retailers ▼"}
+              : isES ? "Procure · Retailers ▼" : "Procure · Retailers ▼"}
           </button>
           {pathsOpen ? (
             <div className="grid grid-cols-1 gap-2">
               <HeroPathCard
-                href="#procure"
+                href={PRICING_PROCURE_HASH}
                 variant="signal"
                 eyebrow={isES ? "Para equipos de compras · Procure" : "For procurement teams · Procure"}
                 title={isES ? "Compra mejor →" : "Buy better →"}
                 body={
                   <span className="text-xs text-gray-500">
-                    {MARKET_STATS.indicatorsCount} {isES ? "datos · Q3 2026" : "data points · Q3 2026"}
+                    {procurePriceRangeLabel(isES)}
                   </span>
                 }
                 foot={isES ? "Aprobaciones · ahorro · trazabilidad" : "Approvals · savings · audit trail"}

@@ -3,6 +3,7 @@
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { PRICING_PROCURE_HASH } from "@/lib/siteNav";
+import { procurePriceRangeLabel } from "@/lib/procurePlans";
 
 const STEPS = [
   { n: "01", es: "Solicitud", en: "Request", descEs: "Tu equipo envía una lista de productos. Sin scraping. Sin llamadas.", descEn: "Your team submits a product list. No scraping. No calls." },
@@ -87,7 +88,9 @@ export default function ProcureCopilotPage() {
             {isES ? "¿Listo para optimizar tus compras?" : "Ready to optimize procurement?"}
           </h2>
           <p className="text-[var(--cm-on-surface-variant)] mb-8">
-            {isES ? "Add-on desde $79/mes sobre cualquier plan Build." : "Add-on from $79/mo on any Build plan."}
+            {isES
+              ? `${procurePriceRangeLabel(true)} · infra Build incluida.`
+              : `${procurePriceRangeLabel(false)} · Build infra included.`}
           </p>
           <a
             href={PRICING_PROCURE_HASH}
