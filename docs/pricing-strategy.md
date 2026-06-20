@@ -22,8 +22,7 @@ Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un
 
 | Plan | Precio | Job | Incluye | No incluye |
 |------|--------|-----|---------|------------|
-| Free | $0 | Probar API | Search, compare, 1k req/día, MCP default | Checkout, export, alertas |
-| Starter | **$9/mes** | Export y alertas sin checkout | 2k req/mes, 1 clave API, export CSV | Checkout retail |
+| Starter | **$9/mes** | Export y alertas sin checkout | 5k req/día, 1 clave API, export CSV | Checkout retail |
 | Pro | **$49/mes** | Embeber comercio en *tu* agente/producto | MCP completo, checkout, alertas, export | UI procurement, aprobaciones, auditoría D1 |
 | Enterprise | A medida | Plataformas, alto volumen | SLA, feeds, white-label | — |
 

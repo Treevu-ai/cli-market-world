@@ -184,8 +184,7 @@ export default function DocsPage() {
           <SectionHead n={1} title={t("Quickstart", "Quickstart")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {[
-              { tier: "FREE", price: "$0", note: t("1k req/día · API default", "1k req/day · default API") },
-              { tier: "STARTER", price: "USD 9/mo", note: t("2k/mes · export CSV", "2k/mo · CSV export") },
+              { tier: "STARTER", price: "USD 9/mo", note: t("5k req/día · export CSV", "5k req/day · CSV export") },
               { tier: "PRO", price: "USD 49/mo", note: t("10k/día · checkout", "10k/day · checkout") },
 
             ].map((p) => (

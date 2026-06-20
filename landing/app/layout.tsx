@@ -125,7 +125,6 @@ const jsonLd = {
         name: "SINAPSIS INNOVADORA S.A.C.",
       },
       offers: [
-        { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
         { "@type": "Offer", name: "Starter", price: "9", priceCurrency: "USD" },
         { "@type": "Offer", name: "Pro", price: "49", priceCurrency: "USD" },
         { "@type": "Offer", name: "Pro Annual", price: "490", priceCurrency: "USD" },

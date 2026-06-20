@@ -152,7 +152,7 @@ const tiers: Tier[] = [
 
 /** Build tab: Sandbox → Starter → Pro → Enterprise. Add-ons below. */
 const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
-  ["Free", "Pro Founding", "Enterprise"].includes(t.name),
+  ["Enterprise"].includes(t.name),
 );
 const STARTER_TIER = tiers.find((t) => t.name === "Starter")!;
 const PRO_TIER = tiers.find((t) => t.name === "Pro")!;
@@ -454,21 +454,6 @@ export default function Pricing() {
                 >
                   {tier.checkoutKind ? (
                     <ProSubscribeButton kind={tier.checkoutKind} />
-                  ) : tier.name === "Free" ? (
-                    <button
-                      type="button"
-                      disabled={claimingFree}
-                      onClick={() => void handleInstantFreeKey()}
-                      className="btn-mint w-full disabled:opacity-60"
-                    >
-                      {claimingFree
-                        ? isES
-                          ? "Creando key…"
-                          : "Creating key…"
-                        : isES
-                          ? tier.cta_es
-                          : tier.cta_en}
-                    </button>
                   ) : tier.href ? (
                     <a href={tier.href} className="btn-mint w-full">
                       {isES ? tier.cta_es : tier.cta_en}
