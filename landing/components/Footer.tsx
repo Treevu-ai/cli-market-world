@@ -22,7 +22,7 @@ export default function Footer() {
               ? "© " + year + " CLI Market. Inteligencia de retail programable para LATAM."
               : "© " + year + " CLI Market. Programmable retail intelligence for LATAM."}
           </p>
-          <p className="text-xs text-[#3f3f46] mt-4">
+          <p className="text-xs text-[#71717a] mt-4">
             {isES
               ? `${MARKET_STATS.retailersPhraseEs} · ${priceChip} precios · MIT`
               : `${MARKET_STATS.retailersPhraseEn} · ${priceChip} prices · MIT`}
@@ -30,7 +30,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#3f3f46] mb-3">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Producto" : "Product"}
           </span>
           <a href="/#pricing" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
@@ -45,7 +45,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#3f3f46] mb-3">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Desarrolladores" : "Developers"}
           </span>
           <a href="/docs" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
@@ -60,7 +60,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#3f3f46] mb-3">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Compañía" : "Company"}
           </span>
           <a href="/contact" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
@@ -77,7 +77,7 @@ export default function Footer() {
 
       <div className="landing-container-wide mt-10 pt-6 border-t border-[#27272A] flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#3f3f46]">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a]">
             {isES ? "Legal" : "Legal"}
           </span>
           <a href="/legal/tos" className="text-xs text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
@@ -90,7 +90,7 @@ export default function Footer() {
             {isES ? "Licencia de Datos (ALD)" : "Data License (DLA)"}
           </a>
         </div>
-        <p className="text-xs text-[#3f3f46]">
+        <p className="text-xs text-[#71717a]">
           Sinapsis Innovadora S.A.C. · RUC 20613045563 · Lima, Perú
         </p>
       </div>
