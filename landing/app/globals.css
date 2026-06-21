@@ -293,7 +293,7 @@ section[id] {
   padding-top: 5.5rem;
   padding-bottom: 5rem;
   border-top: 1px solid #27272A;
-  background-color: var(--cm-surface); /* #111113 — prevents transparent bleed to white <main> */
+  background-color: #111113;
 }
 
 .landing-section#hero {

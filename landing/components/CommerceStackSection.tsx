@@ -45,7 +45,7 @@ export default function CommerceStackSection() {
   const isES = lang === "es";
 
   return (
-    <section id="architecture" className="landing-section animate-fade-in scroll-mt-24">
+    <section id="architecture" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#111113" }}>
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "ARQUITECTURA" : "ARCHITECTURE"}</p>

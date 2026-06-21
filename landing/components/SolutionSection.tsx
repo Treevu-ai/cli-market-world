@@ -6,7 +6,7 @@ export default function SolutionSection() {
   const isES = lang === "es";
 
   return (
-    <section id="solution" className="landing-section animate-fade-in scroll-mt-24">
+    <section id="solution" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#111113" }}>
       <div className="landing-container-wide">
         <div className="landing-section-header text-center">
           <p className="section-eyebrow mb-4">{isES ? "SOLUCIÓN" : "SOLUTION"}</p>

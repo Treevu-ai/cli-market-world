@@ -45,7 +45,7 @@ export default function FAQ() {
       ];
 
   return (
-    <section id="faq" className="landing-section animate-fade-in">
+    <section id="faq" className="landing-section animate-fade-in" style={{ backgroundColor: "#111113" }}>
       <div className="landing-container-wide">
         <div className="landing-section-header text-center">
           <p className="section-eyebrow mb-4">FAQ</p>
