@@ -189,7 +189,7 @@ function TierCard({
         )}
       </div>
 
-      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-gray-900"}`}>
+      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface)]"}`}>
         {tier.name}
       </h3>
 
@@ -199,7 +199,7 @@ function TierCard({
             {tier.compareAt}
           </span>
         )}
-        <span className="text-3xl font-black tabular-nums text-gray-900">{displayPrice}</span>
+        <span className="text-3xl font-black tabular-nums text-[var(--cm-on-surface)]">{displayPrice}</span>
         {period && (
           <span className="text-sm text-[var(--cm-on-surface-variant)]">{period}</span>
         )}
@@ -323,7 +323,7 @@ export default function Pricing() {
               className={`flex-1 min-w-0 px-3 sm:px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex flex-col items-center justify-center ${
                 audience === tab.id
                   ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                  : "text-[var(--cm-on-surface-variant)] hover:text-gray-900"
+                  : "text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]"
               }`}
             >
               <span className="whitespace-nowrap">{tab.label}</span>
@@ -447,7 +447,7 @@ export default function Pricing() {
             </p>
             <a
               href="/#contact-general"
-              className="inline-flex items-center rounded-3xl border border-gray-300 text-gray-700 text-sm font-semibold px-6 py-2.5 hover:border-indigo-400 hover:text-indigo-600 transition-all"
+              className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#A1A1AA] text-sm font-semibold px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-all"
             >
               {isES ? "Contáctenos →" : "Contact us →"}
             </a>

@@ -30,16 +30,16 @@ export default function ProblemSection() {
     <section
       id="problem"
       className="landing-section animate-fade-in scroll-mt-24"
-      style={{ backgroundColor: "#0A2540" }}
+      style={{ backgroundColor: "#111113" }}
     >
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
-          <h2 className="section-title text-white">
+          <h2 className="section-title text-[#FAFAFA]">
             {isES
               ? "Los agentes de IA pueden razonar. Todavía no pueden transaccionar."
               : "AI agents can reason. They still cannot transact."}
           </h2>
-          <p className="section-intro" style={{ color: "rgba(255,255,255,0.65)" }}>
+          <p className="section-intro text-[#A1A1AA]">
             {isES
               ? "Los modelos de lenguaje pueden analizar productos, recomendar proveedores y optimizar decisiones. Pero el comercio real sigue fragmentado. Esa fragmentación crea una brecha mayor entre inteligencia y ejecución."
               : "Large language models can analyze products, recommend suppliers, and optimize decisions. But real-world commerce remains fragmented. That fragmentation creates a major gap between intelligence and execution."}
@@ -50,14 +50,10 @@ export default function ProblemSection() {
           {cards.map((card, i) => (
             <div
               key={i}
-              className="rounded-2xl p-6 text-left"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
+              className="rounded-2xl p-6 text-left bg-[#18181B] border border-[#27272A]"
             >
-              <h3 className="text-base font-semibold text-white mb-3">{card.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
+              <h3 className="text-base font-semibold text-[#FAFAFA] mb-3">{card.title}</h3>
+              <p className="text-sm leading-relaxed text-[#A1A1AA]">
                 {card.body}
               </p>
             </div>
