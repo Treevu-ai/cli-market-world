@@ -25,7 +25,7 @@ export default function SolutionSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
           <div className="card-cyber rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-white text-xs font-bold flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-[#09090B] text-xs font-bold flex items-center justify-center shrink-0">
                 1
               </span>
               <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">
@@ -53,7 +53,7 @@ export default function SolutionSection() {
 
           <div className="card-cyber rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-white text-xs font-bold flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-[#09090B] text-xs font-bold flex items-center justify-center shrink-0">
                 2
               </span>
               <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">
@@ -81,7 +81,7 @@ export default function SolutionSection() {
 
           <div className="card-cyber rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-white text-xs font-bold flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-[#09090B] text-xs font-bold flex items-center justify-center shrink-0">
                 3
               </span>
               <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">

@@ -64,7 +64,7 @@ export default function CommerceStackSection() {
             <div key={i}>
               <div className="card-cyber rounded-2xl p-6 text-left">
                 <div className="flex items-start gap-4">
-                  <span className="w-8 h-8 rounded-full bg-[var(--cm-mint)] text-white text-sm font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="w-8 h-8 rounded-full bg-[var(--cm-mint)] text-[#09090B] text-sm font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {step.num}
                   </span>
                   <div>
