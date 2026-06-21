@@ -21,7 +21,7 @@ export default function ProductArchitecturePage() {
           <p className="section-eyebrow mb-4">
             {isES ? "Arquitectura" : "Architecture"}
           </p>
-          <h1 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-bold text-white mb-4 tracking-tight">
+          <h1 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-bold text-[var(--cm-on-surface)] mb-4 tracking-tight">
             {isES ? "Cómo CLI Market convierte góndolas en inteligencia" : "How CLI Market turns shelves into intelligence"}
           </h1>
           <p className="text-lg text-[var(--cm-on-surface-variant)] max-w-[640px] mx-auto leading-relaxed">
@@ -42,7 +42,7 @@ export default function ProductArchitecturePage() {
                   {layer.n}
                 </span>
                 <div>
-                  <h3 className="font-semibold text-white text-xl mb-2">
+                  <h3 className="font-semibold text-[var(--cm-on-surface)] text-xl mb-2">
                     {isES ? layer.es : layer.en}
                   </h3>
                   <p className="text-[var(--cm-on-surface-variant)] leading-relaxed text-base">
@@ -58,7 +58,7 @@ export default function ProductArchitecturePage() {
           <p className="text-xs font-mono text-[var(--cm-mint)]/60 mb-4">
             {isES ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.platformsPhraseEs}` : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.platformsPhraseEn}`}
           </p>
-          <h2 className="font-display text-2xl font-bold text-white mb-4">
+          <h2 className="font-display text-2xl font-bold text-[var(--cm-on-surface)] mb-4">
             {isES ? "Una plataforma. Cero scraping." : "One platform. Zero scraping."}
           </h2>
           <a

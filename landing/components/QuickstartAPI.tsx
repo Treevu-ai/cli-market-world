@@ -45,7 +45,7 @@ export default function QuickstartAPI() {
           ].map((p) => (
             <div key={p.tier} className="card-cyber p-3 text-left">
               <p className="font-label-caps text-[10px] text-[var(--cm-mint)]/80">{p.tier}</p>
-              <p className="font-mono text-xs text-white mt-1">{p.price}</p>
+              <p className="font-mono text-xs text-[var(--cm-on-surface)] mt-1">{p.price}</p>
               <p className="text-[10px] text-[var(--cm-on-surface-variant)]/70 mt-1">{p.note}</p>
             </div>
           ))}
