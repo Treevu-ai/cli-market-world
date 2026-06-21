@@ -37,7 +37,7 @@ export default function ProcurePricingPanel() {
             : `${MARKET_STATS.retailersVerified} verified retailers · same API as Build · Procure dashboard included.`}
         </p>
         <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
-          <p className="font-semibold text-gray-900 mb-1">
+          <p className="font-semibold text-[var(--cm-on-surface)] mb-1">
             {isES ? "¿Build Pro o Procure Ops?" : "Build Pro or Procure Ops?"}
           </p>
           <p>
@@ -65,12 +65,12 @@ export default function ProcurePricingPanel() {
                 {isES ? "Más popular" : "Most popular"}
               </span>
             )}
-            <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+            <h3 className="text-lg font-bold text-[var(--cm-on-surface)]">{plan.name}</h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mt-2 min-h-[2.5rem]">
               {isES ? plan.description_es : plan.description_en}
             </p>
             <div className="mt-4 mb-4">
-              <span className="text-3xl font-black text-gray-900">${plan.price}</span>
+              <span className="text-3xl font-black text-[var(--cm-on-surface)]">${plan.price}</span>
               <span className="text-sm text-[var(--cm-on-surface-variant)] ml-1">
                 {isES ? "/ mes" : "/ mo"}
               </span>

@@ -24,7 +24,7 @@ export default function Hero() {
     <section
       id="hero"
       className="landing-section animate-fade-in relative min-h-0 md:min-h-[88vh] flex flex-col overflow-hidden hero-stripe-mesh"
-      style={{ borderBottom: "1px solid #e3e8ee" }}
+      style={{ borderBottom: "1px solid #27272A" }}
     >
       <div className="flex-1 flex flex-col justify-center landing-container-wide pt-14 pb-10 sm:pt-20 sm:pb-20 lg:pt-24 lg:pb-28 min-w-0 relative z-10">
 
