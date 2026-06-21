@@ -1,9 +1,7 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
-import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { RETAILERS_PAGE } from "@/lib/siteNav";
 
 export default function Footer() {
   const { lang } = useLang();
@@ -35,17 +33,14 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#a8c3de] mb-3">
             {isES ? "Producto" : "Product"}
           </span>
-          <a href="/#hero" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Home" : "Home"}
-          </a>
-          <a href="/#how-it-works" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+          <a href="/#pricing" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
             {isES ? "API Platform" : "API Platform"}
           </a>
           <a href="/procure" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
             Procure Copilot
           </a>
-          <a href="/#pricing" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Planes" : "Pricing"}
+          <a href="/#intelligence" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+            Intelligence
           </a>
         </div>
 
@@ -54,13 +49,10 @@ export default function Footer() {
             {isES ? "Desarrolladores" : "Developers"}
           </span>
           <a href="/docs" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Docs · Quickstart" : "Docs · Quickstart"}
+            Docs
           </a>
-          <a href={`${API_URL}/docs`} className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors" target="_blank" rel="noopener noreferrer">
-            OpenAPI (Swagger)
-          </a>
-          <a href="/tools" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "API tools · IDEs" : "API tools · IDEs"}
+          <a href="/#api" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+            SDK
           </a>
           <a href={MARKET_STATS.pypiUrl} className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors" target="_blank" rel="noopener noreferrer">
             PyPI
@@ -71,20 +63,14 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#a8c3de] mb-3">
             {isES ? "Compañía" : "Company"}
           </span>
-          <a href={RETAILERS_PAGE} className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Listar mi tienda (gratis)" : "List my store (free)"}
-          </a>
-          <a href="/stats" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Métricas públicas" : "Public stats"}
-          </a>
-          <a href="/impact" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            {isES ? "Impacto" : "Impact"}
-          </a>
-          <a href="/#contact" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+          <a href="/contact" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
             {isES ? "Contacto" : "Contact"}
           </a>
-          <a href="mailto:hello@cli-market.dev" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
-            hello@cli-market.dev
+          <a href="/legal/tos" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+            Legal
+          </a>
+          <a href="/#about" className="text-sm text-[#64748d] hover:text-[#533afd] transition-colors">
+            {isES ? "Acerca de" : "About"}
           </a>
         </div>
       </div>

@@ -38,7 +38,7 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const signUpCta = isES ? "Regístrate" : "Sign up";
+  const signUpCta = isES ? "Obtener API Key" : "Get API Key";
   const signInCta = isES ? "Iniciar sesión" : "Sign in";
 
   return (
@@ -71,6 +71,12 @@ export default function Navbar() {
               {isES ? item.es : item.en}
             </a>
           ))}
+          <a
+            href="/contact"
+            className="kimi-nav-link text-xs whitespace-nowrap transition-colors text-gray-500 hover:text-gray-900"
+          >
+            {isES ? "Contacto" : "Contact"}
+          </a>
         </div>
 
         <div className="hidden md:flex items-center gap-3 shrink-0">
@@ -123,6 +129,10 @@ export default function Navbar() {
           <a href="/retailers" onClick={close}
              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
             {isES ? "Para retailers" : "For retailers"}
+          </a>
+          <a href="/contact" onClick={close}
+             className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+            {isES ? "Contacto" : "Contact"}
           </a>
           <a href="/account" onClick={close}
              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
