@@ -17,7 +17,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-white xl:pl-12">
+    <main className="relative min-h-screen bg-[#09090B] xl:pl-12">
       <Navbar />
       <SideNav />
       <ErrorBoundary>

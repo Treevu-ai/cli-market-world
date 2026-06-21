@@ -93,7 +93,7 @@ export default function ToolsPage() {
       <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
         <div className="max-w-[720px] mx-auto">
           <p className="section-eyebrow mb-4">API · {isES ? "API de compras para IA" : "AI shopping API"}</p>
-          <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-gray-900 mb-4 tracking-tight">
+          <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold text-[var(--cm-on-surface)] mb-4 tracking-tight">
             {isES
               ? `${MARKET_STATS.mcpTools} API tools para agentes de comercio`
               : `${MARKET_STATS.mcpTools} API tools for e-commerce agents`}
@@ -125,13 +125,13 @@ export default function ToolsPage() {
                 className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
                   ideTab === k
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-gray-900"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA]"
                 }`}
               >
                 {k}
               </button>
             ))}
-            <button type="button" onClick={copy} className="font-label-caps px-4 py-1.5 bg-[var(--cm-surface-high)] text-gray-900 border border-[var(--cm-outline-variant)] hover:border-[var(--cm-mint)]/50">
+            <button type="button" onClick={copy} className="font-label-caps px-4 py-1.5 bg-[var(--cm-surface-high)] text-[var(--cm-on-surface)] border border-[var(--cm-outline-variant)] hover:border-[var(--cm-mint)]/50">
               {copied ? (isES ? "Copiado" : "Copied") : (isES ? "Copiar config" : "Copy config")}
             </button>
           </div>
@@ -168,7 +168,7 @@ export default function ToolsPage() {
                 className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
                   bundleTab === key
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-gray-900"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA]"
                 }`}
               >
                 {isES ? BUNDLE_LABELS[key].es : BUNDLE_LABELS[key].en}
