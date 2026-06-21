@@ -58,7 +58,7 @@ export default function FunnelMetrics() {
               className="flex items-center justify-between gap-4 text-sm border-b border-[var(--cm-outline-variant)]/20 pb-2"
             >
               <span className="text-[var(--cm-on-surface-variant)]">{label}</span>
-              <span className="font-mono text-white tabular-nums">
+              <span className="font-mono text-[var(--cm-on-surface)] tabular-nums">
                 {step.count.toLocaleString()}
                 {step.drop_off_pct != null && step.drop_off_pct > 0 ? (
                   <span className="text-[var(--cm-on-surface-variant)]/50 text-xs ml-2">
