@@ -34,7 +34,7 @@ export default function Footer() {
             {isES ? "Producto" : "Product"}
           </span>
           <a href="/#pricing" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
-            {isES ? "API Platform" : "API Platform"}
+            CLI Develop
           </a>
           <a href="/procure" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             Procure Copilot
