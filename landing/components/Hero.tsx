@@ -76,7 +76,7 @@ export default function Hero() {
               {proofChips.map((chip, i) => (
                 <span
                   key={i}
-                  className="text-xs font-mono text-[#64748d] bg-[#f6f9fc] border border-[#e3e8ee] rounded-full px-3 py-1"
+                  className="text-xs font-mono text-[#A1A1AA] bg-[#18181B] border border-[#27272A] rounded-full px-3 py-1"
                 >
                   {chip.label}
                 </span>
@@ -88,7 +88,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.22 }}
-            className="mt-4 text-sm text-[#64748d] max-w-[580px]"
+            className="mt-4 text-sm text-[#A1A1AA] max-w-[580px]"
           >
             {isES
               ? `Powered by el toolkit más completo para comercio agéntico en LATAM — API, CLI, herramientas MCP y flujos de procurement.`
@@ -104,13 +104,13 @@ export default function Hero() {
             <a
               href={PRICING_BUILD_HASH}
               onClick={() => recordPipInstallIntent("landing_hero")}
-              className="inline-flex items-center rounded-full bg-[#533afd] text-white text-base font-semibold px-6 py-2.5 hover:bg-[#4434d4] active:bg-[#2e2b8c] transition-colors"
+              className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-base font-semibold px-6 py-2.5 hover:bg-[#8fff6e] active:bg-[#5be041] transition-colors"
             >
               {isES ? "Obtener API Key →" : "Get API Key →"}
             </a>
             <a
               href="/contact"
-              className="inline-flex items-center rounded-full border border-[#e3e8ee] text-[#0d253d] text-base font-normal px-6 py-2.5 hover:border-[#533afd] hover:text-[#533afd] transition-colors bg-white"
+              className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#FAFAFA] text-base font-normal px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors bg-transparent"
             >
               {isES ? "Ver Demo →" : "Watch Demo →"}
             </a>
