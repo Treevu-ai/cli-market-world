@@ -61,7 +61,7 @@ export default function FAQ() {
               className="group border-b border-[var(--cm-outline-variant)]/30 py-1"
               {...(i === 0 ? { open: true } : {})}
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-base font-medium text-gray-900 marker:content-none [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-base font-medium text-[var(--cm-on-surface)] marker:content-none [&::-webkit-details-marker]:hidden">
                 <span className="text-left">{faq.q}</span>
                 <span
                   className="shrink-0 text-[var(--cm-mint)] text-lg leading-none transition-transform duration-200 group-open:rotate-45"

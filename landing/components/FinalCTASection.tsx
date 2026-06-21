@@ -10,7 +10,7 @@ export default function FinalCTASection() {
     <section
       id="final-cta"
       className="landing-section animate-fade-in scroll-mt-24"
-      style={{ background: "linear-gradient(135deg, #533afd 0%, #3b82f6 100%)" }}
+      style={{ background: "linear-gradient(135deg, #0d1a0a 0%, #111a0e 50%, #0a1a10 100%)", borderTop: "1px solid #27272A" }}
     >
       <div className="landing-container-wide text-center">
         <h2 className="section-title text-white">
@@ -26,13 +26,13 @@ export default function FinalCTASection() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
             href={PRICING_BUILD_HASH}
-            className="inline-flex items-center rounded-full bg-white text-[#533afd] text-base font-semibold px-8 py-3 hover:bg-gray-100 active:bg-gray-200 transition-colors shadow-sm"
+            className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-base font-semibold px-8 py-3 hover:bg-[#8fff6e] active:bg-[#5be041] transition-colors shadow-lg shadow-[#7CFF5B]/20"
           >
             {isES ? "Obtener API Key →" : "Get API Key →"}
           </a>
           <a
             href="/contact"
-            className="inline-flex items-center rounded-full border-2 border-white text-white text-base font-semibold px-8 py-3 hover:bg-white/10 transition-colors"
+            className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#FAFAFA] text-base font-semibold px-8 py-3 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors"
           >
             {isES ? "Reservar Demo →" : "Book Demo →"}
           </a>

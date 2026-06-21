@@ -5,23 +5,22 @@ export type NavItem = {
   href: string;
 };
 
-/** Top nav — clean, 5 items only. */
+/** Top nav — clean, 4 items. */
 export const TOP_NAV: NavItem[] = [
   { id: "product", es: "Producto", en: "Product", href: "/#hero" },
-  { id: "developers", es: "Developers", en: "Developers", href: "/docs" },
   { id: "procure", es: "Procure", en: "Procure", href: "/procure" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
 
-/** Homepage sections (SideNav dots). */
+/** Homepage sections (SideNav dots) — matches actual section IDs in page.tsx. */
 export const SECTION_NAV: NavItem[] = [
   { id: "hero", es: "Inicio", en: "Home", href: "/#hero" },
   { id: "problem", es: "Problema", en: "Problem", href: "/#problem" },
   { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
-  { id: "products", es: "Productos", en: "Products", href: "/#products" },
-  { id: "use-cases", es: "Casos de uso", en: "Use cases", href: "/#use-cases" },
+  { id: "architecture", es: "Stack", en: "Stack", href: "/#architecture" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
+  { id: "faq", es: "FAQ", en: "FAQ", href: "/#faq" },
 ];
 
 /** Side rail homepage dots. */
@@ -31,10 +30,14 @@ export const SIDE_NAV: NavItem[] = SECTION_NAV;
 export const TOP_NAV_GROUP: Record<string, string> = {
   hero: "product",
   problem: "product",
+  "why-now": "product",
   solution: "product",
-  products: "product",
-  "use-cases": "product",
+  architecture: "product",
+  "who-its-for": "product",
+  moat: "product",
+  metrics: "product",
   pricing: "pricing",
+  faq: "pricing",
 };
 
 /** Leading slash so tabs work from any route. */
