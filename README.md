@@ -212,7 +212,7 @@ All six capabilities are backed by the same **61,000+** shelf prices, refreshed 
 
 ## 🔧 API tools (Shop · Intel · Account)
 
-24 curated MCP tools across Shop, Intel, and Account bundles. Full catalog at [cli-market.dev/tools](https://cli-market.dev/tools) · [mcp.json](mcp.json).
+27 curated MCP tools across Shop, Intel, and Account bundles. Full catalog at [cli-market.dev/tools](https://cli-market.dev/tools) · [mcp.json](mcp.json).
 
 ---
 
