@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from market_funnel import funnel_summary
 from market_pepy import pepy_multi_summary
+
+_ADOPTION_API_BASE = os.getenv(
+    "MARKET_API_URL", "https://cli-market-production.up.railway.app"
+).rstrip("/")
 
 
 def _conv(num: int, den: int) -> float | None:
@@ -26,6 +31,54 @@ def _fmt(n: int | None) -> str:
     return f"{n:,}"
 
 
+def _fetch_funnel_remote(*, days: int = 30) -> dict[str, Any] | None:
+    """Prod funnel aggregates when CI/local has no DATABASE_URL."""
+    try:
+        import httpx
+
+        r = httpx.get(
+            f"{_ADOPTION_API_BASE}/analytics/funnel",
+            params={"days": days},
+            timeout=25,
+        )
+        if r.status_code != 200:
+            return None
+        data = r.json()
+        if not isinstance(data, dict) or not data.get("events"):
+            return None
+        steps = data.get("funnel_steps") or []
+        counts = {
+            s["step"]: int(s.get("count") or 0)
+            for s in steps
+            if isinstance(s, dict) and s.get("step")
+        }
+        events = data.get("events") or {}
+        return {
+            "window_days": int(data.get("window_days") or days),
+            "events": events,
+            "unique_users": {
+                "with_search": counts.get(
+                    "first_search", int(events.get("first_search") or 0)
+                ),
+                "with_starter_subscribe": counts.get(
+                    "starter_subscribe", int(events.get("starter_subscribe") or 0)
+                ),
+                "with_pro_request": counts.get(
+                    "request_pro", int(events.get("request_pro") or 0)
+                ),
+                "activated": counts.get(
+                    "activated", int(events.get("activated") or 0)
+                ),
+            },
+            "conversion": data.get("conversion") or {},
+            "funnel_steps": steps,
+            "ttfv_median_minutes": data.get("ttfv_median_minutes"),
+            "ttc_median_hours": data.get("ttc_median_hours"),
+        }
+    except Exception:
+        return None
+
+
 def adoption_recent_users(*, days: int = 30, limit: int = 50) -> dict[str, Any]:
     """Admin view: real users with funnel milestones (smoke filtered)."""
     from market_funnel import funnel_recent_users
@@ -42,7 +95,7 @@ def adoption_recent_users(*, days: int = 30, limit: int = 50) -> dict[str, Any]:
     }
 
 
-def adoption_summary(*, days: int = 30) -> dict[str, Any]:
+def adoption_summary(*, days: int = 30, remote: bool | None = None) -> dict[str, Any]:
     """Merge Pepy PyPI stats (multi-project: core + world combined) with funnel aggregates (no PII)."""
     days = max(1, min(days, 90))
     pypi_multi = pepy_multi_summary()
@@ -50,7 +103,21 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
     by_project = pypi_multi.get("packages", {}) or {}
     projects = pypi_multi.get("projects") or ["cli-market-core", "cli-market-world"]
 
+    if remote is None:
+        try:
+            from market_core import USE_PG
+
+            remote = not USE_PG
+        except Exception:
+            remote = True
+
     funnel = funnel_summary(days=days)
+    funnel_source = "local"
+    if remote and int(funnel["events"].get("install", 0) or 0) == 0:
+        remote_funnel = _fetch_funnel_remote(days=days)
+        if remote_funnel and int(remote_funnel["events"].get("install", 0) or 0) > 0:
+            funnel = remote_funnel
+            funnel_source = "remote"
 
     install = int(funnel["events"].get("install", 0) or 0)
     register = int(
@@ -146,6 +213,9 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
         },
     }
 
+    if funnel_source == "remote":
+        notes.append("Embudo desde API prod (entorno sin DATABASE_URL).")
+
     return {
         "window_days": days,
         "pypi": pypi_flat,
@@ -169,6 +239,7 @@ def adoption_summary(*, days: int = 30) -> dict[str, Any]:
             "pricing_health": pricing_health,
         },
         "notes": notes,
+        "funnel_source": funnel_source,
         "fetched_at": combined.get("fetched_at") or pypi_multi.get("fetched_at"),
     }
 
