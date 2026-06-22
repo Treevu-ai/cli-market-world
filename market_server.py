@@ -183,6 +183,10 @@ from routers.retailers import router as retailers_router
 from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 
+# Ported from cli-market-backend (consolidation — single source of truth)
+from routers.discovery import router as discovery_router
+from routers.mcp_http import router as mcp_http_router
+
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
 for r in (
@@ -195,11 +199,13 @@ for r in (
     dashboard_router,
     data_v1_router,
     data_export_router,
+    discovery_router,
     funnel_router,
     observatory_router,
     health_router,
     index_router,
     intel_router,
+    mcp_http_router,
     media_router,
     misc_router,
     orders_router,
