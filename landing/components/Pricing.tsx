@@ -125,7 +125,7 @@ const tiers: Tier[] = [
     cta_es: "Contactar ventas",
     cta_en: "Contact sales",
     dark: true,
-    href: "/#contact-general",
+    href: "/contact",
   },
 ];
 
@@ -446,7 +446,7 @@ export default function Pricing() {
                 : "Need custom limits, SLAs, or a data license?"}
             </p>
             <a
-              href="/#contact-general"
+              href="/contact"
               className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#A1A1AA] text-sm font-semibold px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-all"
             >
               {isES ? "Contáctenos →" : "Contact us →"}
