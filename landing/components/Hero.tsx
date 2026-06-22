@@ -14,10 +14,26 @@ export default function Hero() {
   useEffect(() => { setMounted(true); }, []);
 
   const proofChips = [
-    { label: isES ? "41 retailers verificados" : "41 verified retailers" },
-    { label: isES ? "61K+ precios normalizados" : "61K+ normalized prices" },
-    { label: isES ? "8 países LATAM" : "8 LATAM countries" },
-    { label: isES ? "Refresh cada 4h" : "4h refresh cycle" },
+    {
+      label: isES
+        ? `${MARKET_STATS.retailersVerified} retailers verificados`
+        : `${MARKET_STATS.retailersVerified} verified retailers`,
+    },
+    {
+      label: isES
+        ? `${MARKET_STATS.pricesVerifiedLabel} precios normalizados`
+        : `${MARKET_STATS.pricesVerifiedLabel} normalized prices`,
+    },
+    {
+      label: isES
+        ? `${MARKET_STATS.countries} países LATAM`
+        : `${MARKET_STATS.countries} LATAM countries`,
+    },
+    {
+      label: isES
+        ? `Refresh cada ${MARKET_STATS.pricesRefreshHours}h`
+        : `${MARKET_STATS.pricesRefreshHours}h refresh cycle`,
+    },
   ];
 
   return (
