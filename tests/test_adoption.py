@@ -99,6 +99,35 @@ def test_adoption_summary(mock_pepy_multi, mock_funnel):
     assert any("install" in n.lower() or "pepy" in n.lower() for n in data["notes"])
 
 
+@patch("market_adoption.funnel_summary")
+@patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
+def test_adoption_summary_remote_fallback(mock_pepy_multi, mock_funnel):
+    from market_adoption import adoption_summary
+
+    empty_funnel = {
+        **MOCK_FUNNEL,
+        "events": {**MOCK_FUNNEL["events"], "install": 0},
+        "funnel_steps": [
+            {"step": "install", "count": 0, "drop_off_pct": None},
+            *MOCK_FUNNEL["funnel_steps"][1:],
+        ],
+    }
+    mock_funnel.return_value = empty_funnel
+
+    remote = {
+        **empty_funnel,
+        "events": {**empty_funnel["events"], "install": 40},
+        "funnel_steps": MOCK_FUNNEL["funnel_steps"],
+    }
+
+    with patch("market_adoption._fetch_funnel_remote", return_value=remote):
+        data = adoption_summary(days=30, remote=True)
+
+    assert data["funnel"]["install"] == 40
+    assert data["funnel_source"] == "remote"
+    assert any("API prod" in n for n in data["notes"])
+
+
 @patch("market_adoption.funnel_summary", return_value=MOCK_FUNNEL)
 @patch("market_adoption.pepy_multi_summary", return_value=MOCK_PEPY_MULTI)
 def test_adoption_markdown(mock_pepy_multi, mock_funnel):
