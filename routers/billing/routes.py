@@ -49,6 +49,71 @@ _PRO_BILLING_METHODS = frozenset({"paypal", "yape", "plin", "mercadopago"})
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
+@router.get("/v1/plans")
+def list_plans(audience: str = "build"):
+    """Canonical pricing — single source of truth for all clients.
+
+    ?audience=build  → CLI Market developer plans (free/starter/pro/founding/annual)
+    ?audience=procure → Procure Copilot B2B plans (free/starter/pro/builder/enterprise)
+    """
+    from market_billing import (
+        PUBLIC_FREE_REQ_DAY,
+        PUBLIC_STARTER_REQ_DAY,
+        PUBLIC_PRO_REQ_DAY,
+        PUBLIC_STARTER_PRICE_USD,
+        PUBLIC_PRO_PRICE_USD,
+        PUBLIC_PRO_FOUNDING_PRICE_USD,
+        PUBLIC_PRO_ANNUAL_PRICE_USD,
+        FOUNDING_SEAT_LIMIT,
+    )
+    from procure_billing import PROCURE_PLANS, PROCURE_TIER_LIMITS
+
+    if audience == "procure":
+        return {
+            "audience": "procure",
+            "currency": "USD",
+            "plans": [
+                {
+                    "slug": "free",
+                    "name": "Free",
+                    "price": 0,
+                    "period": None,
+                    "limits": {"procurement_month": 5, "products_per_query": 3, "retailers_compare": 2, "checkout": False},
+                },
+                *(
+                    {
+                        "slug": slug,
+                        "name": meta["label"],
+                        "price": meta["amount"],
+                        "period": "month",
+                        "limits": {k: v for k, v in PROCURE_TIER_LIMITS.get(meta["tier"], {}).items()},
+                    }
+                    for slug, meta in PROCURE_PLANS.items()
+                ),
+                {
+                    "slug": "enterprise",
+                    "name": "Enterprise",
+                    "price": None,
+                    "period": "custom",
+                    "limits": {"procurement_month": None, "products_per_query": 100, "retailers_compare": 38, "checkout": True},
+                },
+            ],
+        }
+
+    return {
+        "audience": "build",
+        "currency": "USD",
+        "plans": [
+            {"slug": "free", "name": "Free", "price": 0, "period": None, "req_day": PUBLIC_FREE_REQ_DAY, "checkout": False},
+            {"slug": "starter", "name": "Starter", "price": PUBLIC_STARTER_PRICE_USD, "period": "month", "req_day": PUBLIC_STARTER_REQ_DAY, "checkout": False},
+            {"slug": "pro", "name": "Pro", "price": PUBLIC_PRO_PRICE_USD, "period": "month", "req_day": PUBLIC_PRO_REQ_DAY, "checkout": True},
+            {"slug": "pro_founding", "name": "Pro Founding", "price": PUBLIC_PRO_FOUNDING_PRICE_USD, "period": "month", "req_day": PUBLIC_PRO_REQ_DAY, "checkout": True, "seat_limit": FOUNDING_SEAT_LIMIT},
+            {"slug": "pro_annual", "name": "Pro Annual", "price": PUBLIC_PRO_ANNUAL_PRICE_USD, "period": "year", "req_day": PUBLIC_PRO_REQ_DAY, "checkout": True},
+            {"slug": "enterprise", "name": "Enterprise", "price": None, "period": "custom", "req_day": None, "checkout": True},
+        ],
+    }
+
+
 @router.post("/billing/request-starter")
 def request_starter_subscription(body: dict, authorization: str | None = Header(None)):
     """Request Starter — emails self-serve checkout when PayPal API is unavailable."""
