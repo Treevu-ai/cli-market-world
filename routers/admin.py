@@ -34,6 +34,7 @@ from market_core import (
 )
 from market_billing import TIERS
 from procure_billing import all_valid_tiers
+from market_audit import record_audit
 from server_deps import require_admin
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ def admin_activate_pro_request(
     from routers.payments import _activate_pro_from_request
 
     actions = _activate_pro_from_request(request_id, source="admin_api", force=force)
+    record_audit("activate_pro_request", username="admin", resource=request_id, detail={"actions": actions, "force": force})
     logger.info("audit admin_activate_pro request_id=%s actions=%s", request_id, actions)
     if not any(a.startswith("pro_activated:") for a in actions):
         raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
@@ -157,7 +159,9 @@ def admin_set_tier(
         )
     if username not in db_get_users():
         raise HTTPException(status_code=404, detail=f"user not found: {username}")
+    old_sub = db_get_subscription(username)
     db_set_subscription(username, tier)
+    record_audit("set_tier", username="admin", resource=username, detail={"old_tier": old_sub.get("tier") if old_sub else None, "new_tier": tier})
     return {"username": username, "subscription": db_get_subscription(username)}
 
 
@@ -177,6 +181,7 @@ def admin_revoke_api_key(
     result = revoke_api_key_by_value(api_key)
     if not result:
         raise HTTPException(status_code=404, detail="api key not found or already revoked")
+    record_audit("revoke_api_key", username="admin", resource=result.get("username"), detail={"key_id": result["key_id"], "prefix": api_key[:10]})
     logger.info(
         "audit admin_revoke_api_key username=%s key_id=%s prefix=%s",
         result["username"],
