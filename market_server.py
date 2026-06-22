@@ -71,6 +71,19 @@ async def lifespan(_app: FastAPI):
     Replaces the previous side-effect-at-import pattern. Idempotent.
     """
     ensure_db_initialized()
+    from market_core import USE_PG
+    from market_security import is_production_deploy
+    if is_production_deploy() and not USE_PG:
+        raise RuntimeError(
+            "Production deploy detected but running on SQLite (USE_PG=False). "
+            "This means DATABASE_URL is missing or PostgreSQL is unreachable. "
+            "Refusing to start — an empty SQLite would serve 0 data."
+        )
+    try:
+        from market_audit import ensure_audit_schema
+        ensure_audit_schema()
+    except Exception as e:
+        logger.warning("Audit schema skipped: %s", e)
     try:
         from market_funnel import ensure_funnel_schema
         ensure_funnel_schema()
