@@ -26,7 +26,9 @@ def is_production_deploy() -> bool:
 
 
 def paypal_allow_unverified_webhooks() -> bool:
-    """Allow unverified PayPal webhooks only when explicitly opted in."""
+    """Allow unverified PayPal webhooks only in non-production sandbox environments."""
+    if is_production_deploy():
+        return False
     return os.getenv("PAYPAL_ALLOW_UNVERIFIED_WEBHOOKS", "").lower() in ("1", "true", "yes")
 
 
