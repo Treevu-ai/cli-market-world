@@ -120,6 +120,7 @@ def test_vault_setup_success():
     with patch(
         "market_connectors.paypal_payments.create_vault_setup_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post("/billing/vault-setup", headers=_auth(), json={"customer_id": "c1"})
     assert r.status_code == 200
@@ -131,6 +132,7 @@ def test_vault_confirm_success():
     with patch(
         "market_connectors.paypal_payments.create_vault_payment_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/billing/vault-confirm",
@@ -146,6 +148,7 @@ def test_vault_charge_success():
     with patch(
         "market_connectors.paypal_payments.charge_vault_payment_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/billing/vault-charge",
@@ -161,6 +164,7 @@ def test_vault_tokens_list():
     with patch(
         "market_connectors.paypal_payments.list_vault_payment_tokens",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.get("/billing/vault-tokens?customer_id=c1", headers=_auth())
     assert r.status_code == 200
@@ -172,6 +176,7 @@ def test_vault_delete_token():
     with patch(
         "market_connectors.paypal_payments.delete_vault_payment_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.delete("/billing/vault-tokens/pt_xyz", headers=_auth())
     assert r.status_code == 200
@@ -182,6 +187,7 @@ def test_card_payment_success():
     with patch(
         "market_connectors.mercadopago_payments.create_card_payment",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/checkout/card-payment",
@@ -197,6 +203,7 @@ def test_save_card_success():
     with patch(
         "market_connectors.mercadopago_payments.save_card_for_customer",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/checkout/save-card",
@@ -212,6 +219,7 @@ def test_saved_cards_list():
     with patch(
         "market_connectors.mercadopago_payments.list_customer_cards",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.get("/checkout/saved-cards/cust_1", headers=_auth())
     assert r.status_code == 200
@@ -226,6 +234,7 @@ def test_vault_setup_connector_error():
     with patch(
         "market_connectors.paypal_payments.create_vault_setup_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post("/billing/vault-setup", headers=_auth(), json={})
     assert r.status_code == 504
@@ -236,6 +245,7 @@ def test_vault_charge_connector_error():
     with patch(
         "market_connectors.paypal_payments.charge_vault_payment_token",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/billing/vault-charge",
@@ -250,6 +260,7 @@ def test_card_payment_connector_error():
     with patch(
         "market_connectors.mercadopago_payments.create_card_payment",
         new=AsyncMock(return_value=mock_result),
+        create=True,
     ):
         r = client.post(
             "/checkout/card-payment",

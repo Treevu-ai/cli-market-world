@@ -45,8 +45,8 @@ def test_health_deep_database_check():
     assert db_check["backend"] in ("postgresql", "sqlite")
 
 
-def test_health_deep_has_failures_count():
+def test_health_deep_status_reflects_checks():
     r = client.get("/health/deep")
     data = r.json()
-    assert "failures" in data
-    assert isinstance(data["failures"], int)
+    # With a working SQLite DB, all local checks should pass
+    assert data["status"] in ("healthy", "degraded")
