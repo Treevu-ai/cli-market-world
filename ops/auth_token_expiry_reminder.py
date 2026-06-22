@@ -27,14 +27,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="JSON output")
     args = parser.parse_args(argv)
 
+    if not os.getenv("DATABASE_URL", "").strip():
+        msg = "DATABASE_URL not set — skipping prod reminders"
+        if args.json:
+            print(json.dumps({"skipped": True, "reason": msg}))
+        else:
+            print(msg, file=sys.stderr)
+        return 0
+
     from market_core import db_get_user_email, ensure_db_initialized
     from market_core.auth_tokens import list_sessions_expiring_within, mark_expiry_reminder_sent
     from market_connectors.email_outbound import send_session_expiry_reminder
 
     ensure_db_initialized()
-    if not os.getenv("DATABASE_URL", "").strip():
-        print("DATABASE_URL required for prod reminders", file=sys.stderr)
-        return 1
 
     pending = list_sessions_expiring_within(days=args.days)
     sent = 0
