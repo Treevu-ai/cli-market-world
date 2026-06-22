@@ -12,6 +12,7 @@ import uuid
 
 import httpx
 from fastapi import APIRouter, Body, Header, HTTPException
+from fastapi.responses import JSONResponse
 
 from market_core import (
     db_create_subscription_request,
@@ -715,7 +716,14 @@ async def billing_paypal_subscribe(body: dict, authorization: str | None = Heade
     logger.warning("DEPRECATED endpoint /billing/paypal-subscribe — use /billing/pro-checkout")
     check_rate_limit("billing-paypal-subscribe")
     delegated = {**body, "payment_method": "paypal"}
-    return await billing_pro_checkout(delegated, authorization)
+    try:
+        return await billing_pro_checkout(delegated, authorization)
+    except HTTPException as exc:
+        # Deprecated endpoint must always return ok for backwards compat (PAM: json_has [ok])
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"ok": False, "error": exc.detail, "payment_method": "paypal"},
+        )
 
 
 @router.post("/billing/starter")
