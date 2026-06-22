@@ -24,6 +24,21 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 1
+
+      - name: Resolve publish date
+        id: pubdate
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "date=${{ github.event.inputs.date }}" >> "$GITHUB_OUTPUT"
+          else
+            DATE=$(grep -oE 'publish date=[0-9]{4}-[0-9]{2}-[0-9]{2}' ops/content-publish.trigger | tail -1 | cut -d= -f2)
+            echo "date=${DATE:-$(date -u +%F)}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v6
+        with:
           repository: Treevu-ai/cli-market-content
           ref: main
           path: cli-market-content
@@ -35,7 +50,7 @@ jobs:
       - name: Mark published (skip broken Makefile)
         working-directory: cli-market-content
         env:
-          PUBLISH_DATE: ${{ github.event.inputs.date || '2026-06-12' }}
+          PUBLISH_DATE: ${{ steps.pubdate.outputs.date }}
         run: |
           set -euo pipefail
           # Never call `make publish` — content Makefile uses $(python3 --version) → breaks CI
