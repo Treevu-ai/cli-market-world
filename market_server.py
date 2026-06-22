@@ -199,6 +199,7 @@ from routers.search import router as search_router
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
 from routers.mcp_http import router as mcp_http_router
+from routers.vault import router as vault_router
 
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
@@ -228,6 +229,7 @@ for r in (
     retailer_admin_router,
     search_router,
     slack_ops_router,
+    vault_router,
 ):
     app.include_router(r)
 
