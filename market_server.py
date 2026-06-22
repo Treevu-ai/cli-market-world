@@ -141,11 +141,16 @@ app.add_middleware(
     auth_user_fn=auth_user,
     api_key_fn=db_validate_api_key,
 )
+_DEFAULT_CORS_ORIGINS = ",".join([
+    "https://cli-market.dev",
+    "https://www.cli-market.dev",
+    "https://procure-copilot.contacto-8e4.workers.dev",
+    "http://localhost:3000",
+    "http://localhost:8765",
+])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "CORS_ORIGINS", "https://cli-market.dev,http://localhost:3000"
-    ).split(","),
+    allow_origins=os.getenv("CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-ID", "X-Session-ID", "X-Country"],
