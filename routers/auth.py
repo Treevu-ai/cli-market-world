@@ -232,7 +232,7 @@ def verify_email(body: VerifyEmailRequest):
 
     # Registration verified — create user
     username = f"user-{uuid.uuid4().hex[:12]}"
-    db_save_user(username, hash_password(uuid.uuid4().hex), None, email)
+    db_save_user(username, hash_password(uuid.uuid4().hex), email=email)
     result = db_create_api_key(username, "read_write", "register")
     try:
         from market_funnel import record_funnel_event
