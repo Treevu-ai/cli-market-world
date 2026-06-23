@@ -1,7 +1,7 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schema.json",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents \u2014 27 curated MCP tools (49 legacy) to search, compare, and purchase across 41 retailers in 8 countries. 61,000+ real prices, 44 market indicators, refreshed every 4 hours. MIT.",
+  "description": "Commerce infrastructure for AI agents \u2014 32 curated MCP tools (57 legacy) to search, compare, and purchase across 41 retailers in 8 countries. 63,000+ real prices, 44 market indicators, refreshed every 4 hours. MIT.",
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
@@ -19,10 +19,13 @@
     "market_favorites",
     "market_price_alerts",
     "market_preferences",
+    "market_household_get",
+    "market_household_update",
     "market_barcode",
     "market_ticket",
     "market_intel_brief",
     "market_inflation",
+    "market_affordability",
     "market_scores",
     "market_price_risk",
     "market_inflation_report",
@@ -34,13 +37,15 @@
     "market_discover",
     "market_search",
     "market_compare",
+    "market_substitutes",
     "market_add",
     "market_cart",
     "market_cart_update",
     "market_checkout",
     "market_orders",
     "market_ask",
-    "market_basket"
+    "market_basket",
+    "market_optimize_purchase"
   ],
   "keywords": [
     "vtex",
@@ -60,15 +65,15 @@
   "default_profile": "default",
   "profiles": {
     "default": {
-      "tool_count": 27,
+      "tool_count": 32,
       "description": "Curated Shop + Intel + Account bundles"
     },
     "full": {
-      "tool_count": 46,
+      "tool_count": 54,
       "description": "Default plus advanced tools and legacy aliases"
     },
     "legacy": {
-      "tool_count": 49,
+      "tool_count": 57,
       "description": "All registered tools (backward compatible)"
     }
   },
@@ -80,13 +85,15 @@
         "market_discover",
         "market_search",
         "market_compare",
+        "market_substitutes",
         "market_add",
         "market_cart",
         "market_cart_update",
         "market_checkout",
         "market_orders",
         "market_ask",
-        "market_basket"
+        "market_basket",
+        "market_optimize_purchase"
       ],
       "canonical": [
         "market_discover"
@@ -97,6 +104,7 @@
       "tools": [
         "market_intel_brief",
         "market_inflation",
+        "market_affordability",
         "market_scores",
         "market_price_risk",
         "market_inflation_report",
@@ -116,7 +124,9 @@
         "market_subscription",
         "market_favorites",
         "market_price_alerts",
-        "market_preferences"
+        "market_preferences",
+        "market_household_get",
+        "market_household_update"
       ],
       "canonical": [
         "market_price_alerts"
@@ -129,6 +139,8 @@
     "market_favorites",
     "market_price_alerts",
     "market_preferences",
+    "market_household_get",
+    "market_household_update",
     "market_alerts",
     "market_notify",
     "market_intel_refresh",
@@ -140,12 +152,14 @@
     "market_ticket",
     "market_voice",
     "market_price_history",
+    "market_moat_confidence",
     "market_stock",
     "market_brands",
     "market_exchange",
     "market_delivery",
     "market_intel_brief",
     "market_inflation",
+    "market_affordability",
     "market_scores",
     "market_price_risk",
     "market_inflation_report",
@@ -153,6 +167,8 @@
     "market_stats",
     "market_export",
     "market_trending",
+    "market_ecosystem_radar",
+    "market_procurement_bulk",
     "market_analytics_indicators",
     "market_enrichment",
     "market_enrichment_subcategories",
@@ -161,6 +177,7 @@
     "market_discover",
     "market_search",
     "market_compare",
+    "market_substitutes",
     "market_add",
     "market_cart",
     "market_cart_update",
@@ -168,6 +185,7 @@
     "market_orders",
     "market_ask",
     "market_basket",
+    "market_optimize_purchase",
     "market_cart_remove",
     "market_countries",
     "market_lines",
