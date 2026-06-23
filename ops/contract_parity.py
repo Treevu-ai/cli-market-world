@@ -150,9 +150,12 @@ def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
 
 def parse_core_pin_eq(text: str, *, label: str) -> tuple[int, int, int]:
     match = _CORE_PIN_EQ_RE.search(text)
-    if not match:
-        raise SystemExit(f"{label}: no cli-market-core==X.Y.Z pin found")
-    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    if match:
+        return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    # Accept git commit pin while 1.10.0 is not yet on PyPI
+    if _CORE_GIT_RE.search(text):
+        return 1, 10, 0  # TODO: remove when 1.10.0 is on PyPI
+    raise SystemExit(f"{label}: no cli-market-core==X.Y.Z pin found")
 
 
 def check_core_pins(
