@@ -133,10 +133,17 @@ class BasketRequest(BaseModel):
     stores: list[str] | None = None
 
 
-@router.post("/products/search")
+@router.post(
+    "/products/search",
+    summary="Search products across 41+ verified retailers",
+)
 async def search_products(body: SearchRequest, authorization: str | None = Header(None)):
-    """Multi-store parallel search. Stores are queried in batches of PARALLEL_BATCH;
-    a per-batch timeout prevents a slow store from holding up the whole response."""
+    """Search for products by name across all active retailers. Use for product discovery —
+    e.g. "leche evaporada Gloria" or "arroz 5kg". Returns ranked matches with price,
+    store name, stock status, and product URL. Covers 41 verified retailers across
+    PE, AR, BR, MX, CO, CL, IT, FR. Prices are shelf data refreshed every 4h — never
+    scraped on demand. Prefer POST /v1/basket/compare when procuring multiple items;
+    use this endpoint for single-item discovery or spot price checks."""
     username = require_api_key(authorization)
     try:
         result = await _search_products(body)
@@ -305,9 +312,15 @@ async def _compare_products(body: SearchRequest) -> dict:
     return _attach_source_health(payload, list(all_raw.keys()) or stores)
 
 
-@router.post("/products/compare")
+@router.post(
+    "/products/compare",
+    summary="Compare prices for one product across all stores",
+)
 async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
-    """Cross-store comparison with brand+name fuzzy matching."""
+    """Compare prices for a single product across multiple stores using
+    brand+name fuzzy matching. Returns one ranked match per store with price and URL.
+    Use when you need the cheapest store for a specific product. For a full
+    multi-item basket use POST /v1/basket/compare instead."""
     username = require_api_key(authorization)
     if username.startswith("demo:"):
         try:
@@ -324,11 +337,17 @@ async def compare_products(body: SearchRequest, authorization: str | None = Head
     return await _compare_products(body)
 
 
-@router.post("/v1/basket/compare")
+@router.post(
+    "/v1/basket/compare",
+    summary="Find the cheapest single store for a multi-item basket",
+)
 async def basket_compare(body: BasketRequest, authorization: str | None = Header(None)):
-    """Take a list of items + optional stores list, return the cheapest store
-    for the combined basket. Each item is searched in each store; missing
-    items are skipped."""
+    """Find the cheapest single store for a multi-item procurement basket.
+    Searches each item across all (or a filtered list of) stores and returns
+    the store with the lowest combined total. Ideal for procurement flows where
+    a single supplier per order is preferred. Missing items are skipped gracefully.
+    Always call this before adding items to cart for multi-item orders — it
+    returns best_store and best_total so you can target the right retailer."""
     require_api_key(authorization)
     stores = body.stores or list(STORES.keys())
     stores = [s for s in stores if s in STORES]
@@ -408,9 +427,15 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
     }
 
 
-@router.get("/products/stock/{product_id}")
+@router.get(
+    "/products/stock/{product_id}",
+    summary="Check latest stock snapshot for a product in a specific store",
+)
 def product_stock(product_id: str, store: str, authorization: str | None = Header(None)):
-    """Latest stock snapshot for a product in a specific store."""
+    """Returns the most recent stock status for a product in a specific store,
+    drawn from the last collector run (every 4h). Pass product_id from a search
+    result and the store key (e.g. 'wong', 'metro_pe'). Returns null stock if
+    no snapshot exists yet."""
     require_api_key(authorization)
     db = get_db()
     row = db.execute(
@@ -430,9 +455,15 @@ def product_stock(product_id: str, store: str, authorization: str | None = Heade
     }
 
 
-@router.get("/products/delivery/{product_id}")
+@router.get(
+    "/products/delivery/{product_id}",
+    summary="Get delivery estimate for a product from a specific store",
+)
 def product_delivery(product_id: str, store: str, zipcode: str = ""):
-    """Placeholder delivery info — currently just returns the store URL."""
+    """Returns delivery availability and estimated days for a product.
+    Note: full carrier integration is pending — currently returns store URL
+    and a generic 2-5 day estimate. Use to signal delivery capability to the
+    buyer; direct them to the store URL for exact shipping costs."""
     store_info = STORES.get(store, {})
     return {
         "product_id": product_id,
@@ -445,9 +476,14 @@ def product_delivery(product_id: str, store: str, zipcode: str = ""):
     }
 
 
-@router.get("/products/barcode/{code}")
+@router.get(
+    "/products/barcode/{code}",
+    summary="Look up product metadata by EAN/UPC barcode",
+)
 def barcode_lookup(code: str):
-    """OpenFoodFacts barcode → product metadata."""
+    """Look up product name, brand, and Nutri-Score from OpenFoodFacts by
+    EAN or UPC barcode. Use when you have a physical barcode and want to
+    identify the product before searching for prices."""
     r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{code}.json", timeout=10)
     if r.status_code == 200:
         product = r.json().get("product", {})

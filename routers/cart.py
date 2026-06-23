@@ -44,8 +44,12 @@ def _cart_total(cart: list[dict]) -> float:
     return round(sum(i["price"] * i["quantity"] for i in cart), 2)
 
 
-@router.post("/cart/add")
+@router.post("/cart/add", summary="Add a product to the cart (Pro tier required)")
 def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
+    """Add a product to the cart or increment its quantity if already present.
+    Requires a logged-in Pro-tier user. Call after finding the product via
+    POST /products/search or POST /v1/basket/compare. Returns the updated cart
+    and running total. Use POST /checkout/yape or /checkout/paypal to pay."""
     username = require_user(authorization)
     store_name = STORES.get(body.store, {}).get("name", body.store)
     cart_id = db_add_to_cart(
@@ -62,8 +66,11 @@ def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
     }
 
 
-@router.get("/cart")
+@router.get("/cart", summary="View current cart contents and total")
 def view_cart(authorization: str | None = Header(None)):
+    """Returns all items in the user's cart with quantities, unit prices, and
+    the running total. Call before checkout to confirm the order. Empty cart
+    returns items: []."""
     username = require_user(authorization)
     cart = db_get_cart(username)
     return {
@@ -74,8 +81,10 @@ def view_cart(authorization: str | None = Header(None)):
     }
 
 
-@router.put("/cart/update")
+@router.put("/cart/update", summary="Update the quantity of a cart item")
 def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None)):
+    """Update the quantity of an item in the cart by product_id or cart_id.
+    Returns the updated cart. Use to correct quantities before checkout."""
     username = require_user(authorization)
     cart = db_get_cart(username)
     item = next(
@@ -89,9 +98,10 @@ def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None
     return {"message": "Carrito actualizado", "cart": cart}
 
 
-@router.delete("/cart")
+@router.delete("/cart", summary="Clear all items from the cart")
 def cart_clear(authorization: str | None = Header(None)):
-    """Remove all items from the cart in a single operation."""
+    """Remove all items from the cart in one operation. Use to reset the order
+    flow or discard an unwanted basket before starting a new search."""
     username = require_user(authorization)
     cart = db_get_cart(username)
     n = len(cart)
@@ -99,8 +109,10 @@ def cart_clear(authorization: str | None = Header(None)):
     return {"message": f"Carrito vaciado ({n} items eliminados)", "items_removed": n}
 
 
-@router.delete("/cart/{product_id}")
+@router.delete("/cart/{product_id}", summary="Remove a single item from the cart")
 def cart_remove(product_id: str, authorization: str | None = Header(None)):
+    """Remove one item from the cart by product_id or cart_id. Returns the
+    updated cart. Use to correct the basket before checkout."""
     username = require_user(authorization)
     cart = db_get_cart(username)
     item = next(
