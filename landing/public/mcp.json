@@ -96,7 +96,8 @@
         "market_optimize_purchase"
       ],
       "canonical": [
-        "market_discover"
+        "market_discover",
+        "market_optimize_purchase"
       ]
     },
     "intel": {
