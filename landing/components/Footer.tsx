@@ -36,10 +36,10 @@ export default function Footer() {
           <a href="/#pricing" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             CLI Develop
           </a>
-          <a href="/procure" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
+          <a href="https://procure-copilot.contacto-8e4.workers.dev" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors" target="_blank" rel="noopener noreferrer">
             Procure Copilot
           </a>
-          <a href="/#intelligence" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
+          <a href="/#intel" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             Intelligence
           </a>
         </div>
@@ -48,7 +48,7 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Desarrolladores" : "Developers"}
           </span>
-          <a href="/docs" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
+          <a href={MARKET_STATS.pypiUrl} className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors" target="_blank" rel="noopener noreferrer">
             Docs
           </a>
           <a href="/#api" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
@@ -63,13 +63,13 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Compañía" : "Company"}
           </span>
-          <a href="/contact" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
+          <a href="mailto:hello@cli-market.dev" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             {isES ? "Contacto" : "Contact"}
           </a>
           <a href="/legal/tos" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             Legal
           </a>
-          <a href="/#about" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
+          <a href="/#moat" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             {isES ? "Acerca de" : "About"}
           </a>
         </div>
