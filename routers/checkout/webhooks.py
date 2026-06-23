@@ -10,15 +10,13 @@ from market_core import (
     db_find_order_by_id,
     db_get_billing_pending,
     db_get_user_email,
-    db_mark_subscription_requests_activated_for_user,
     db_set_order_gateway_ref,
     db_set_subscription,
     db_update_order_status,
 )
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
-from routers.billing.activation import _activate_pro_from_request, _parse_pro_request_ref
+from routers.billing.activation import _activate_pro_from_request, _parse_pro_request_ref, activate_paypal_subscription
 from routers.billing.notifications import (
-    _append_pro_activation_email_actions,
     _notify_procure_payment,
     _slack_notify_subscription,
 )
@@ -44,12 +42,9 @@ def _parse_market_order_ref(resource: dict) -> str | None:
 
 def _tier_from_billing_kind(kind: str) -> str:
     """Map billing_pending.kind → subscriptions.tier."""
-    k = (kind or "").strip().lower()
-    if k.startswith("procure_"):
-        return k
-    if k == "starter":
-        return "starter"
-    return "pro"
+    from routers.billing.activation import tier_from_billing_kind
+
+    return tier_from_billing_kind(kind)
 
 
 async def _handle_paypal_event(event: dict) -> dict:
@@ -99,81 +94,17 @@ async def _handle_paypal_event(event: dict) -> dict:
             username = pending.get("username", "")
         if username:
             kind = (pending or {}).get("kind", "subscription")
-            tier = _tier_from_billing_kind(kind)
-            db_set_subscription(username, tier, paypal_subscription_id=sub_id)
-            if sub_id:
-                db_delete_billing_pending(sub_id)
-            marked = db_mark_subscription_requests_activated_for_user(username)
-            actions.append(f"{tier}_activated:{username}")
-            try:
-                from market_funnel import record_funnel_event
-                record_funnel_event(
-                    "activated",
-                    username=username,
-                    meta={"source": "paypal_webhook", "tier": tier},
-                    dedupe=True,
-                )
-            except Exception:
-                pass
-            if marked:
-                actions.append(f"requests_closed:{marked}")
-            email = db_get_user_email(username) or ""
             lang = (resource.get("locale") or "es")[:2].lower()
             if lang not in ("es", "en"):
                 lang = "es"
-            if tier in ("starter", "procure_starter"):
-                try:
-                    if email:
-                        from market_connectors.email_outbound import send_starter_activated_email
-
-                        mail = send_starter_activated_email(
-                            to_email=email,
-                            username=username,
-                            lang=lang,
-                            subscription_id=sub_id,
-                        )
-                        if mail.get("sent"):
-                            actions.append(f"activation_email:{email}")
-                        else:
-                            actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
-                    else:
-                        actions.append("activation_email_skipped:no_email")
-                except Exception:
-                    logger.exception("%s activation email failed for %s", tier, username)
-                    actions.append("activation_email_failed")
-            else:
-                _append_pro_activation_email_actions(
-                    actions,
+            actions.extend(
+                activate_paypal_subscription(
                     username=username,
-                    email=email,
-                    request_id="",
-                    payment_method="paypal",
+                    sub_id=sub_id,
+                    kind=kind,
                     source="paypal_webhook",
                     lang=lang,
-                    subscription_id=sub_id or "",
                 )
-            logger.info(
-                "paypal_webhook subscription_activated username=%s tier=%s subscription_id=%s actions=%s",
-                username,
-                tier,
-                sub_id,
-                actions,
-            )
-            if False:  # Legacy: pro_founding removed (2026-06-19)
-                try:
-                    from market_billing import FOUNDING_PROMO_CODE, db_record_promo_redemption
-
-                    db_record_promo_redemption(username, FOUNDING_PROMO_CODE, "pro_founding")
-                    actions.append(f"founding_redeemed:{username}")
-                except Exception:
-                    logger.exception("founding promo redemption failed for %s", username)
-            _slack_notify_subscription(
-                tier=tier,
-                username=username,
-                email=db_get_user_email(username) or "",
-                request_id=sub_id or "",
-                source="paypal_webhook",
-                payment_method="paypal",
             )
         else:
             actions.append(f"subscription_no_user:{sub_id}")

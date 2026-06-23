@@ -4,10 +4,12 @@ import os
 import re
 from market_core import (
     db_create_subscription_request,
+    db_delete_billing_pending,
     db_find_subscription_request,
     db_get_user_email,
     db_mark_subscription_request_activated,
     db_mark_subscription_request_emailed,
+    db_mark_subscription_requests_activated_for_user,
     db_recent_subscription_request,
     db_set_subscription,
 )
@@ -118,6 +120,103 @@ def _parse_pro_request_ref(external_reference: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+def tier_from_billing_kind(kind: str) -> str:
+    """Map billing_pending.kind → subscriptions.tier."""
+    k = (kind or "").strip().lower()
+    if k.startswith("procure_"):
+        return k
+    if k == "starter":
+        return "starter"
+    return "pro"
+
+
+def activate_paypal_subscription(
+    *,
+    username: str,
+    sub_id: str,
+    kind: str = "subscription",
+    source: str = "paypal_webhook",
+    lang: str = "es",
+) -> list[str]:
+    """Upgrade tier after PayPal subscription is ACTIVE (webhook or reconcile)."""
+    username = (username or "").strip()
+    if not username:
+        return [f"subscription_no_user:{sub_id}"]
+
+    tier = tier_from_billing_kind(kind)
+    db_set_subscription(username, tier, paypal_subscription_id=sub_id or "")
+    if sub_id:
+        db_delete_billing_pending(sub_id)
+    marked = db_mark_subscription_requests_activated_for_user(username)
+    actions: list[str] = [f"{tier}_activated:{username}"]
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": source, "tier": tier, "subscription_id": sub_id or None},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+    if marked:
+        actions.append(f"requests_closed:{marked}")
+
+    lang = (lang or "es").strip().lower()[:2]
+    if lang not in ("es", "en"):
+        lang = "es"
+    email = db_get_user_email(username) or ""
+    if tier in ("starter", "procure_starter"):
+        try:
+            if email:
+                from market_connectors.email_outbound import send_starter_activated_email
+
+                mail = send_starter_activated_email(
+                    to_email=email,
+                    username=username,
+                    lang=lang,
+                    subscription_id=sub_id,
+                )
+                if mail.get("sent"):
+                    actions.append(f"activation_email:{email}")
+                else:
+                    actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
+            else:
+                actions.append("activation_email_skipped:no_email")
+        except Exception:
+            logger.exception("%s activation email failed for %s", tier, username)
+            actions.append("activation_email_failed")
+    else:
+        _append_pro_activation_email_actions(
+            actions,
+            username=username,
+            email=email,
+            request_id="",
+            payment_method="paypal",
+            source=source,
+            lang=lang,
+            subscription_id=sub_id or "",
+        )
+    _slack_notify_subscription(
+        tier=tier,
+        username=username,
+        email=email,
+        request_id=sub_id or "",
+        source=source,
+        payment_method="paypal",
+    )
+    logger.info(
+        "paypal subscription activated username=%s tier=%s subscription_id=%s source=%s actions=%s",
+        username,
+        tier,
+        sub_id,
+        source,
+        actions,
+    )
+    return actions
+
+
 def _record_plan_funnel_event(
     plan: str,
     *,
@@ -133,7 +232,7 @@ def _record_plan_funnel_event(
             event,
             username=username or None,
             meta={"email": email, "source": source},
-            dedupe=False,
+            dedupe=event in ("request_pro", "starter_subscribe"),
         )
     except Exception:
         pass
