@@ -87,6 +87,16 @@ def test_verify_email_returns_api_key():
     assert data["scopes"] == "read_write"
 
 
+def test_verify_email_returns_next_steps():
+    data = _register_verified("nextsteps@example.com")
+    assert "next_steps" in data
+    steps = data["next_steps"]
+    assert len(steps) == 3
+    assert steps[0]["action"] == "first_search"
+    assert steps[1]["action"] == "mcp_setup"
+    assert steps[2]["action"] == "compare"
+
+
 def test_register_creates_unique_users():
     d1 = _register_verified("unique1@example.com")
     d2 = _register_verified("unique2@example.com")
