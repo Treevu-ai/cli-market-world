@@ -118,9 +118,9 @@ _status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/v1/missions/optim
 [ "$_status" = "401" ] || [ "$_status" = "422" ] || { echo "✗ /v1/missions/optimize-purchase → $_status (want 401/422)"; exit 1; }
 echo "  optimize-purchase: $_status (route mounted)"
 
-# affordability — accept 200 (public) or 401 (auth required on this deploy)
-_status=$(curl -s -o /dev/null -w "%{http_code}" "$API/v1/intel/affordability")
-[ "$_status" = "200" ] || [ "$_status" = "401" ] || { echo "✗ /v1/intel/affordability → $_status (want 200/401)"; exit 1; }
+# affordability — 200 (public), 401 (auth required), or 422 (missing param) all confirm route mounted
+_status=$(curl -s -o /dev/null -w "%{http_code}" "$API/v1/intel/affordability?country=PE")
+[ "$_status" = "200" ] || [ "$_status" = "401" ] || [ "$_status" = "422" ] || { echo "✗ /v1/intel/affordability → $_status (want 200/401/422)"; exit 1; }
 echo "  affordability: $_status (route mounted)"
 
 # affiliate-click requires auth (401 means route is mounted)
