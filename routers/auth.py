@@ -12,6 +12,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 
@@ -202,7 +203,7 @@ def revoke_api_key(key_id: int, authorization: str | None = Header(None)):
 
 
 @router.get("/auth/account")
-def get_account(
+async def get_account(
     authorization: str | None = Header(None),
     lang: str = "es",
 ):
@@ -210,6 +211,12 @@ def get_account(
     username = require_user(authorization)
     lang = (lang or "es").strip().lower()[:2]
     from account_service import build_account_summary
+    from routers.billing.paypal_reconcile import reconcile_paypal_subscriptions_for_user
+
+    try:
+        await reconcile_paypal_subscriptions_for_user(username, lang=lang)
+    except Exception:
+        logger.exception("paypal reconcile failed for %s", username)
 
     return build_account_summary(username, lang=lang)
 

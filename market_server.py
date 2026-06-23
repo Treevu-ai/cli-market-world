@@ -71,6 +71,19 @@ async def lifespan(_app: FastAPI):
     Replaces the previous side-effect-at-import pattern. Idempotent.
     """
     ensure_db_initialized()
+    from market_core import USE_PG
+    from market_security import is_production_deploy
+    if is_production_deploy() and not USE_PG:
+        raise RuntimeError(
+            "Production deploy detected but running on SQLite (USE_PG=False). "
+            "This means DATABASE_URL is missing or PostgreSQL is unreachable. "
+            "Refusing to start — an empty SQLite would serve 0 data."
+        )
+    try:
+        from market_audit import ensure_audit_schema
+        ensure_audit_schema()
+    except Exception as e:
+        logger.warning("Audit schema skipped: %s", e)
     try:
         from market_funnel import ensure_funnel_schema
         ensure_funnel_schema()
@@ -141,11 +154,16 @@ app.add_middleware(
     auth_user_fn=auth_user,
     api_key_fn=db_validate_api_key,
 )
+_DEFAULT_CORS_ORIGINS = ",".join([
+    "https://cli-market.dev",
+    "https://www.cli-market.dev",
+    "https://procure-copilot.contacto-8e4.workers.dev",
+    "http://localhost:3000",
+    "http://localhost:8765",
+])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "CORS_ORIGINS", "https://cli-market.dev,http://localhost:3000"
-    ).split(","),
+    allow_origins=os.getenv("CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-ID", "X-Session-ID", "X-Country"],
@@ -178,6 +196,11 @@ from routers.retailers import router as retailers_router
 from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 
+# Ported from cli-market-backend (consolidation — single source of truth)
+from routers.discovery import router as discovery_router
+from routers.mcp_http import router as mcp_http_router
+from routers.vault import router as vault_router
+
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
 for r in (
@@ -190,11 +213,13 @@ for r in (
     dashboard_router,
     data_v1_router,
     data_export_router,
+    discovery_router,
     funnel_router,
     observatory_router,
     health_router,
     index_router,
     intel_router,
+    mcp_http_router,
     media_router,
     misc_router,
     orders_router,
@@ -204,6 +229,7 @@ for r in (
     retailer_admin_router,
     search_router,
     slack_ops_router,
+    vault_router,
 ):
     app.include_router(r)
 

@@ -288,6 +288,93 @@ def list_countries():
         }
     }
 
+@router.get("/health/deep")
+def health_deep():
+    """Unified deep health check — probes Postgres, Index, Observatory, Collector in one call.
+
+    Designed for Railway healthcheck integration and ops dashboards.
+    Returns overall status (healthy/degraded/unhealthy) plus per-subsystem detail.
+    """
+    from market_core import USE_PG
+
+    checks: dict = {}
+    failures = 0
+
+    # 1. Database
+    try:
+        db = get_db()
+        row = db.execute("SELECT COUNT(*) as n FROM price_snapshots").fetchone()
+        db.close()
+        snap_count = row["n"] if row else 0
+        checks["database"] = {
+            "status": "ok",
+            "backend": "postgresql" if USE_PG else "sqlite",
+            "price_snapshots": snap_count,
+        }
+    except Exception as e:
+        checks["database"] = {"status": "error", "error": str(e)[:200]}
+        failures += 1
+
+    # 2. Collector freshness
+    try:
+        db = get_db()
+        last = db.execute(
+            "SELECT finished_at, prices_collected "
+            "FROM collector_runs ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        db.close()
+        if last and last["finished_at"]:
+            coll_status, age_h = derive_collector_status(
+                finished_at=last["finished_at"],
+                prices_collected=last["prices_collected"],
+            )
+            checks["collector"] = {
+                "status": coll_status,
+                "age_hours": round(age_h, 1) if age_h is not None else None,
+                "prices_last_run": last["prices_collected"],
+            }
+            if coll_status in ("stale", "dead"):
+                failures += 1
+        else:
+            checks["collector"] = {"status": "unknown", "message": "no runs yet"}
+    except Exception as e:
+        checks["collector"] = {"status": "error", "error": str(e)[:200]}
+        failures += 1
+
+    # 3. Index (Golden Records)
+    try:
+        from index_gate import registry_size as _registry_size
+        rsize = _registry_size()
+        checks["index"] = {"status": "ok", "registry_size": rsize}
+    except Exception as e:
+        checks["index"] = {"status": "unavailable", "error": str(e)[:200]}
+
+    # 4. Observatory (telemetry)
+    try:
+        db = get_db()
+        obs = db.execute(
+            "SELECT COUNT(*) as n FROM observatory_events"
+        ).fetchone()
+        db.close()
+        checks["observatory"] = {"status": "ok", "events": obs["n"] if obs else 0}
+    except Exception:
+        checks["observatory"] = {"status": "unavailable"}
+
+    # 5. Funnel
+    try:
+        db = get_db()
+        funnel = db.execute(
+            "SELECT COUNT(*) as n FROM funnel_events"
+        ).fetchone()
+        db.close()
+        checks["funnel"] = {"status": "ok", "events": funnel["n"] if funnel else 0}
+    except Exception:
+        checks["funnel"] = {"status": "unavailable"}
+
+    overall = "healthy" if failures == 0 else ("degraded" if failures == 1 else "unhealthy")
+    return {"status": overall, "checks": checks}
+
+
 @router.get("/health/stats")
 def health_stats():
     """Live KPIs for the landing page — lightweight, no dashboard deps."""
