@@ -1,7 +1,7 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.10.0)
+> Package: pip install cli-market-world (v1.11.0)
 > Command: market-mcp
 > API: https://cli-market-production.up.railway.app
 > Stats: 81 retailers · 41 verified · 63,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
