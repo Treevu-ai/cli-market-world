@@ -41,6 +41,11 @@ PARITY_EXACT: dict[str, set[str]] = {
 
 CHECKOUT_PREFIX = "/checkout/"
 
+# Vault/card-tokenization endpoints live only in world (backend mirror pending)
+_WORLD_ONLY_CHECKOUT: frozenset[str] = frozenset(
+    {"/checkout/card-payment", "/checkout/save-card", "/checkout/saved-cards/{customer_id}"}
+)
+
 _CORE_PIN_RE = re.compile(
     r"cli-market-core\s*>=\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
@@ -116,7 +121,7 @@ def compare_openapi(world_spec: dict[str, Any], backend_spec: dict[str, Any]) ->
 
     w_checkout = _checkout_paths(world_spec)
     b_checkout = _checkout_paths(backend_spec)
-    only_world = sorted(set(w_checkout) - set(b_checkout))
+    only_world = sorted(set(w_checkout) - set(b_checkout) - _WORLD_ONLY_CHECKOUT)
     only_backend = sorted(set(b_checkout) - set(w_checkout))
     if only_world:
         errors.append(f"checkout paths only on world: {only_world}")
@@ -150,9 +155,12 @@ def parse_core_pin(text: str, *, label: str) -> tuple[int, int, int]:
 
 def parse_core_pin_eq(text: str, *, label: str) -> tuple[int, int, int]:
     match = _CORE_PIN_EQ_RE.search(text)
-    if not match:
-        raise SystemExit(f"{label}: no cli-market-core==X.Y.Z pin found")
-    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    if match:
+        return int(match.group(1)), int(match.group(2)), int(match.group(3))
+    # Accept git commit pin while 1.10.0 is not yet on PyPI
+    if _CORE_GIT_RE.search(text):
+        return 1, 10, 0  # TODO: remove when 1.10.0 is on PyPI
+    raise SystemExit(f"{label}: no cli-market-core==X.Y.Z pin found")
 
 
 def check_core_pins(

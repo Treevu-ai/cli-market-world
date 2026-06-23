@@ -500,12 +500,23 @@ def mcp_analytics(*, days: int = 30, include_test: bool = False) -> dict[str, An
 
 
 def maybe_first_search(username: str, *, query: str = "") -> None:
-    record_funnel_event(
+    result = record_funnel_event(
         "first_search",
         username=username,
         meta={"query": query[:80]} if query else None,
         dedupe=True,
     )
+    if result.get("ok") and not result.get("deduped"):
+        try:
+            import sys as _sys
+            from pathlib import Path as _Path
+            _ops = str(_Path(__file__).resolve().parent / "ops")
+            if _ops not in _sys.path:
+                _sys.path.insert(0, _ops)
+            from billing_slack import notify_first_search
+            notify_first_search(username=username, query=query)
+        except Exception:
+            pass
 
 
 def _is_auto_activate_link(payment_link: str) -> bool:

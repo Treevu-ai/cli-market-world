@@ -1693,8 +1693,29 @@ def cmd_whoami(args):
 def cmd_register(args):
     """Create a free account via POST /auth/register and persist API key locally."""
     ref_code = getattr(args, "ref", None)
+    email = (getattr(args, "email", None) or "").strip() or None
+    if not email and not getattr(args, "json", False) and sys.stdin.isatty():
+        es = not ui.is_en()
+        prompt = (
+            "Email (opcional, para links de pago — Enter para omitir): "
+            if es
+            else "Email (optional, for payment links — press Enter to skip): "
+        )
+        try:
+            raw = input(prompt).strip()
+            if raw and "@" in raw:
+                email = raw.lower()
+        except (EOFError, KeyboardInterrupt):
+            pass
+    body: dict | None = None
+    if ref_code or email:
+        body = {}
+        if ref_code:
+            body["ref_code"] = ref_code
+        if email:
+            body["email"] = email
     with ui.run_with_status(console, "Creando cuenta..." if not ui.is_en() else "Creating account..."):
-        data = api("POST", "/auth/register", {"ref_code": ref_code} if ref_code else None)
+        data = api("POST", "/auth/register", body)
     if isinstance(data, dict) and data.get("error"):
         if getattr(args, "json", False):
             ui.json_exit(console, False, error=data["error"], next_commands=ui.error_next_commands(None, data["error"]))
@@ -2827,6 +2848,21 @@ def cmd_upgrade(args):
 
     endpoint = "/billing/paypal"
     payload: dict = {"plan": plan}
+    email_arg = (getattr(args, "email", None) or "").strip()
+    if not email_arg and not getattr(args, "json", False) and sys.stdin.isatty():
+        prompt = (
+            "Email para recibir el link de pago (Enter para omitir): "
+            if es
+            else "Email to receive the payment link (Enter to skip): "
+        )
+        try:
+            raw = input(prompt).strip()
+            if raw and "@" in raw:
+                email_arg = raw.lower()
+        except (EOFError, KeyboardInterrupt):
+            pass
+    if email_arg:
+        payload["email"] = email_arg
     label = f"CLI Market {plan.replace('_', ' ').title()} — {plan_label}"
     with ui.run_with_status(console, "Creando suscripción PayPal..." if es else "Creating PayPal subscription..."):
         data = cli_api("POST", endpoint, payload)
@@ -2985,6 +3021,11 @@ def main():
         "--ref",
         default=None,
         help="Referral code from market share (credits the referrer)",
+    )
+    p.add_argument(
+        "--email",
+        default=None,
+        help="Email for payment links and outreach (optional)",
     )
 
     # doctor

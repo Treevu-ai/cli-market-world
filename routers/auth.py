@@ -16,7 +16,7 @@ import logging
 import os
 import uuid
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Body, Header, HTTPException
 from pydantic import BaseModel
 
 from market_core import (
@@ -37,7 +37,7 @@ from server_deps import (
 )
 
 router = APIRouter(tags=["auth"])
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("market.server").getChild("auth")
 
 
 # ── Request models ────────────────────────────────────────────────────────────
@@ -56,21 +56,51 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class RegisterRequest(BaseModel):
+    ref_code: str | None = None
+    email: str | None = None
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/auth/register")
-def register():
-    """Create a new API key. Public endpoint — rate limited."""
+def register(body: RegisterRequest = Body(default=RegisterRequest())):
+    """Create a new API key. Public endpoint — rate limited.
+
+    Optional `email` stored for outreach and payment link delivery.
+    Optional `ref_code` credits the referrer on activation.
+    """
     check_rate_limit("auth")
     username = f"user-{uuid.uuid4().hex[:12]}"
-    # Random password — access is via sk- API key, not password login.
-    db_save_user(username, hash_password(uuid.uuid4().hex), None)
+    email = (body.email or "").strip().lower() or None
+    db_save_user(username, hash_password(uuid.uuid4().hex), None, email)
     result = db_create_api_key(username, "read_write", "register")
     try:
         from market_funnel import record_funnel_event
         record_funnel_event("register", username=username, dedupe=True)
     except Exception:
         pass
+    if body.ref_code:
+        try:
+            from market_billing import apply_referral_activation
+            apply_referral_activation(body.ref_code, username)
+        except Exception:
+            logger.debug("apply_referral_activation failed", exc_info=True)
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        _ops = str(_Path(__file__).resolve().parent.parent / "ops")
+        if _ops not in _sys.path:
+            _sys.path.insert(0, _ops)
+        from billing_slack import notify_new_registration
+        notify_new_registration(
+            username=username,
+            email=email or "",
+            ref_code=body.ref_code or "",
+            api_key_prefix=result.get("prefix", ""),
+        )
+    except Exception:
+        logger.debug("notify_new_registration failed", exc_info=True)
     return {
         "username": username,
         "api_key": result["key"],
