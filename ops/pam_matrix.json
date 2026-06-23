@@ -700,19 +700,21 @@
       "tier": 1,
       "phase": "user",
       "run_order": 0,
-      "name": "Register ephemeral API user",
+      "name": "Registration initiates email verification",
       "method": "POST",
       "path": "/auth/register",
+      "body": {
+        "email": "pam-{{run_id}}@pam.cli-market.dev"
+      },
       "expect": {
         "status": 200,
         "json_has": [
-          "api_key",
-          "username"
-        ]
-      },
-      "capture": {
-        "user_api_key": "api_key",
-        "username": "username"
+          "status",
+          "email_sent"
+        ],
+        "json": {
+          "status": "verification_required"
+        }
       }
     },
     {
