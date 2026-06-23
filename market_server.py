@@ -48,6 +48,7 @@ from server_deps import (  # noqa: F401
     verify_password,
     check_auth_brute_force,
     record_auth_failure,
+    require_api_key,
     require_user,
     check_rate_limit,
     DEFAULT_TOKEN,
@@ -232,6 +233,15 @@ for r in (
     vault_router,
 ):
     app.include_router(r)
+
+# Cost-of-Living OS v1 routes from cli-market-core (Waves 1–4).
+# Mounted after world routers so existing handlers win on duplicate paths;
+# adds missions (optimize-purchase), intel affordability, affiliate-click, etc.
+from market_core import api_routes as core_api_routes
+from market_core.api_routes import router as core_v1_router
+
+core_api_routes._auth_fn = require_api_key
+app.include_router(core_v1_router, prefix="/v1")
 
 
 # ── Entrypoint ───────────────────────────────────────────────────────────────
