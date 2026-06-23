@@ -37,22 +37,60 @@ def _auth_header(token: str = _ADMIN_TOKEN) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-# ── POST /auth/register ───────────────────────────────────────────────────────
+# ── POST /auth/register + /auth/verify-email ─────────────────────────────────
 
-def test_register_returns_api_key():
-    r = client.post("/auth/register")
+
+def _register_verified(email: str) -> dict:
+    """Full registration flow: register + verify OTP."""
+    from routers.auth import _hash_code
+    from market_core import get_db
+
+    r = client.post("/auth/register", json={"email": email})
     assert r.status_code == 200
     data = r.json()
+    assert data["status"] == "verification_required"
+    # Fetch the code from the DB for testing
+    db = get_db()
+    row = db.execute(
+        "SELECT code_hash FROM pending_registrations WHERE email=?", (email,)
+    ).fetchone()
+    db.close()
+    # Brute-force the 6-digit code (test only — use known hash)
+    for i in range(1000000):
+        code = f"{i:06d}"
+        if _hash_code(code) == row["code_hash"]:
+            break
+    v = client.post("/auth/verify-email", json={"email": email, "code": code})
+    assert v.status_code == 200
+    return v.json()
+
+
+def test_register_requires_email():
+    r = client.post("/auth/register", json={})
+    assert r.status_code == 422
+
+
+def test_register_sends_verification():
+    r = client.post("/auth/register", json={"email": "test-reg@example.com"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["status"] == "verification_required"
+    assert "@example.com" in data["email"]
+
+
+def test_verify_email_returns_api_key():
+    data = _register_verified("verify-test@example.com")
     assert "api_key" in data
     assert data["api_key"].startswith("sk-")
     assert "username" in data
+    assert data["verified"] is True
     assert data["scopes"] == "read_write"
 
 
 def test_register_creates_unique_users():
-    r1 = client.post("/auth/register")
-    r2 = client.post("/auth/register")
-    assert r1.json()["username"] != r2.json()["username"]
+    d1 = _register_verified("unique1@example.com")
+    d2 = _register_verified("unique2@example.com")
+    assert d1["username"] != d2["username"]
 
 
 # ── POST /auth/login ──────────────────────────────────────────────────────────
@@ -91,8 +129,8 @@ def test_whoami_with_bearer_token():
 
 
 def test_whoami_with_api_key():
-    reg = client.post("/auth/register")
-    api_key = reg.json()["api_key"]
+    data = _register_verified("whoami-key@example.com")
+    api_key = data["api_key"]
     r = client.get("/auth/whoami", headers={"Authorization": f"Bearer {api_key}"})
     assert r.status_code == 200
     assert "username" in r.json()
