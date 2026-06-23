@@ -1,4 +1,4 @@
-# CLI Market — Unified E-Commerce Infrastructure for AI Agents
+# CLI Market — Cost-of-Living OS for LatAm
 
 > URL: https://cli-market.dev
 > GitHub: https://github.com/Treevu-ai/cli-market-world
@@ -10,20 +10,31 @@
 
 ## Core Purpose
 
-Commerce infrastructure for AI agents. 81 retailers, 41 verified active across 8 countries and 6 business lines — search, compare, and export via a single API. 61,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
+Cost-of-Living OS for LatAm. One call (`market optimize` / `market_optimize_purchase`) compares your full basket across 41 verified retailers, calculates TCO, suggests substitutes, and generates action links. 81 retailers, 8 countries, 6 business lines. 63,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
 
 ## Key Numbers
 
 - 81 retailers defined (41 verified active)
 - 8 countries (AR, BR, CL, CO, FR, IT, MX, PE)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
-- 27 curated MCP tools (Shop · Intel · Account; 49 legacy)
+- 32 MCP tools (default profile: Shop · Intel · Account)
 - 44 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
+- Checkout: internal CLI Market order — not retailer-site checkout (not Wong/Rappi/ML)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- Pricing (Build, foco ICP AI Agent Builders): Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
-- Procurement operators (restaurants, hotels, agro): use Procure Copilot ($29–149/mo, CLI Market infra bundled on Pro+) — do NOT sell CLI Market Pro separately to this ICP
-- Data/analytics teams: Intelligence pilot $300–500/mo (no checkout). Strategy: docs/pricing-strategy.md
+- Pricing (AI Agent Builders): Starter $9/mo, Pro $49/mo (alerts, full MCP, checkout), Enterprise custom
+- Procurement operators (restaurants, hotels, agro): use Procure Copilot ($29–149/mo, CLI Market infra bundled on Pro+)
+- Data/analytics teams: Intelligence pilot $300–500/mo (no checkout)
+
+## Canonical entry point (Cost-of-Living OS)
+
+`market_optimize_purchase` — one-call purchase optimization: basket compare, TCO, substitutes, intel, action links. Replaces fragmented search → compare → basket flow.
+
+```bash
+market optimize "leche evaporada, arroz 5kg, aceite" --country PE
+```
+
+MCP: `market_optimize_purchase(items=[...], country="PE")`
 
 ## Checkout endpoints
 
@@ -38,19 +49,20 @@ Nuna Orgánica, Xray Chipped PE
 
 ## Why AI Agents Should Use CLI Market
 
+- **One-call optimization**: `market_optimize_purchase` replaces search → compare → basket for agents.
 - **Token Efficiency**: Minified JSON (~85% less context vs raw HTML).
-- **Predictable Tools**: 27 curated MCP tools in Shop/Intel/Account bundles.
+- **Predictable Tools**: 32 MCP tools (default) in Shop/Intel/Account bundles.
 - **Cross-Border**: Single interface for 41 verified retailers.
 - **Data Moat**: Collector every 4h. Historical snapshots, inflation, 44 indicators.
-- **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru).
+- **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru). Internal order — not retailer checkout.
 - **Open Source**: MIT. pip install cli-market-world.
 
 ## Quick start (developers)
 
 1. `pip install cli-market-world`
-2. `market register` — free API key (or `market login` if you have credentials)
-3. `market search "leche" --country PE`
-4. Intelligence: `market intel inflation -c PE` · `market intel indicators -c PE`
+2. `market init` — account + first search
+3. `market optimize "leche, arroz, aceite" --country PE` — Cost-of-Living OS one call
+4. Intelligence: `market intel brief -c PE`
 5. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`
 6. Config snippets: https://cli-market.dev/tools
 
