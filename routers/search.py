@@ -131,6 +131,15 @@ class SearchRequest(BaseModel):
 class BasketRequest(BaseModel):
     items: list[dict]
     stores: list[str] | None = None
+    # Wave 4 params — when any of these are set the handler delegates to
+    # market_core.market_basket.build_basket_compare (DB-based, fully enveloped).
+    include_tco: bool = False
+    payment_method: str = "yape"
+    include_delivery: bool = True
+    zipcode: str | None = None
+    include_action_links: bool = False
+    country: str = "PE"
+    enveloped: bool = True
 
 
 @router.post(
@@ -347,8 +356,30 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
     the store with the lowest combined total. Ideal for procurement flows where
     a single supplier per order is preferred. Missing items are skipped gracefully.
     Always call this before adding items to cart for multi-item orders — it
-    returns best_store and best_total so you can target the right retailer."""
+    returns best_store and best_total so you can target the right retailer.
+    Pass include_tco=true or include_action_links=true for Wave 4 cost analysis."""
     require_api_key(authorization)
+    # Wave 4: delegate to core's DB-based implementation for TCO / action links.
+    if body.include_tco or body.include_action_links:
+        from market_core.market_basket import build_basket_compare as _core_basket
+
+        store_filter = {s for s in body.stores if s} if body.stores else None
+        db = get_db()
+        try:
+            return _core_basket(
+                db,
+                items=body.items,
+                store_filter=store_filter,
+                enveloped=body.enveloped,
+                include_tco=body.include_tco,
+                payment_method=body.payment_method,
+                include_delivery=body.include_delivery,
+                zipcode=body.zipcode,
+                include_action_links=body.include_action_links,
+                country=body.country,
+            )
+        finally:
+            db.close()
     stores = body.stores or list(STORES.keys())
     stores = [s for s in stores if s in STORES]
     results: dict[str, dict] = {}
