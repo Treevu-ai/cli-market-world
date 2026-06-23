@@ -378,7 +378,7 @@ def funnel_summary(*, days: int = 30, exclude_noise: bool = False) -> dict[str, 
         user = row["username"]
         if user and exclude_noise and is_noise_username(user):
             continue
-        if exclude_noise and is_noise_meta(row.get("meta")):
+        if exclude_noise and is_noise_meta(row["meta"]):
             continue
         events[ev] = events.get(ev, 0) + 1
         if not user:
