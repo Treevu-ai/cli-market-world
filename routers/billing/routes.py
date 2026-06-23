@@ -1017,3 +1017,14 @@ def billing_checkout(authorization: str | None = Header(None)):
         status_code=501,
         detail="Stripe checkout is temporarily unavailable. Use PayPal at /billing/paypal for Pro.",
     )
+
+
+@router.post("/billing/reconcile")
+async def billing_reconcile(authorization: str | None = Header(None), lang: str = "en"):
+    """Poll PayPal for ACTIVE subscriptions — closes gap when webhooks are delayed."""
+    check_rate_limit("billing-reconcile")
+    username = require_user(authorization)
+    lang = (lang or "en").strip().lower()[:2]
+    from routers.billing.paypal_reconcile import reconcile_paypal_subscriptions_for_user
+
+    return await reconcile_paypal_subscriptions_for_user(username, lang=lang)
