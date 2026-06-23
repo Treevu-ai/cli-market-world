@@ -154,7 +154,7 @@ Al cerrar P0, el sistema debe responder **sin análisis manual**:
 | Eventos | `install`, `register`, `first_search`, `activated`, `mcp_setup_completed`, … |
 | Agregados públicos | `GET /analytics/funnel` |
 | Admin | `GET /dashboard/funnel` |
-| Noise filter | `is_noise_username()` — smoke, CI, `user-<hex>` |
+| Noise filter | `is_noise_username()` — smoke, CI prefixes, explicit test IDs |
 | Retención actual | `funnel_retention_summary()` — cohorte `first_search` |
 
 **Rol en Observatory:** señales de **activación y conversión** (humano/agente que completa onboarding). No sustituye telemetría por llamada.
