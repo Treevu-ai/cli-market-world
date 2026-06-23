@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "name": "CLI Market",
+  "description": "Commerce infrastructure for AI agents — search, compare, and purchase across 41 verified retailers in 8 countries. 61,000+ real shelf prices, refreshed every 4 hours. Free tier available.",
+  "url": "https://cli-market.dev",
+  "version": "1.9.41",
+  "capabilities": [
+    "product_search",
+    "price_comparison",
+    "basket_comparison",
+    "stock_check",
+    "delivery_estimates",
+    "price_history",
+    "price_alerts",
+    "market_intelligence",
+    "inflation_tracking",
+    "checkout_paypal",
+    "checkout_mercadopago",
+    "checkout_yape_plin"
+  ],
+  "coverage": {
+    "countries": ["PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR"],
+    "retailers": 41,
+    "prices": 61000,
+    "refresh_hours": 4,
+    "lines": ["supermercados", "farmacias", "electro", "moda", "hogar", "departamentales"]
+  },
+  "interfaces": {
+    "rest": {
+      "openapi": "https://cli-market-production.up.railway.app/openapi.json",
+      "base_url": "https://cli-market-production.up.railway.app",
+      "docs": "https://cli-market-production.up.railway.app/docs"
+    },
+    "mcp": {
+      "package": "cli-market-world",
+      "install": "pip install cli-market-world",
+      "command": "market-mcp",
+      "uvx": "uvx --from cli-market-world market-mcp",
+      "profile_default_tools": 27,
+      "registry": "https://cli-market.dev/mcp.json",
+      "smithery": "https://smithery.ai/server/cli-market",
+      "glama": "https://glama.ai/mcp/servers/cli-market"
+    },
+    "cli": {
+      "install": "pip install cli-market-world",
+      "quickstart": "market register && market search \"leche\" --country PE"
+    }
+  },
+  "agent_flows": {
+    "price_discovery": ["market_discover", "market_search", "market_compare"],
+    "procurement": ["market_basket", "market_add", "market_cart", "market_checkout"],
+    "intelligence": ["market_intel_brief", "market_inflation", "market_scores", "market_trending"],
+    "alerts": ["market_price_alerts", "market_price_risk"]
+  },
+  "pricing": {
+    "free": { "requests_per_day": 1000, "price_usd": 0 },
+    "starter": { "requests_per_day": 5000, "price_usd": 9, "period": "monthly" },
+    "pro": { "requests_per_day": 10000, "price_usd": 49, "period": "monthly", "checkout": true, "alerts": true }
+  },
+  "data_freshness": {
+    "prices": "4h",
+    "stock": "realtime",
+    "indicators": "24h"
+  },
+  "license": "MIT",
+  "contact": "https://cli-market.dev"
+}
