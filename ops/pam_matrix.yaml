@@ -493,20 +493,24 @@ cases:
       status: 200
       json_has: [name]
 
-  # ── USER / TIER 1 (auto-register if no MARKET_USER_TOKEN) ─────────────────
+  # ── USER / TIER 1 ─────────────────────────────────────────────────────────
+  # Registration is now a 2-step OTP flow; PAM can't retrieve the code on live
+  # prod. Set MARKET_USER_TOKEN=sk-... to enable user-phase tests. This case
+  # verifies the register endpoint accepts a valid email and initiates the flow.
   - id: user.auth_register
     tier: 1
     phase: user
     run_order: 0
-    name: Register ephemeral API user
+    name: Registration initiates email verification
     method: POST
     path: /auth/register
+    body:
+      email: "pam-{{run_id}}@pam.cli-market.dev"
     expect:
       status: 200
-      json_has: [api_key, username]
-    capture:
-      user_api_key: api_key
-      username: username
+      json_has: [status, email_sent]
+      json:
+        status: verification_required
 
   - id: user.whoami
     tier: 1

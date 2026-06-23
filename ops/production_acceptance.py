@@ -486,18 +486,22 @@ def run_case(
 
 
 def ensure_user_api_key(ctx: dict[str, Any], matrix: dict, cases: list[dict]) -> None:
-    """Bootstrap sk- key when post/user cases need it but user phase was not run."""
+    """Populate user_api_key from MARKET_USER_TOKEN when user-phase cases need it.
+
+    Registration now requires email + OTP so auto-registration against live prod
+    is not possible. Set MARKET_USER_TOKEN=sk-... before running user-phase PAM.
+    """
     if os.getenv("MARKET_USER_TOKEN") or ctx.get("user_api_key"):
+        if os.getenv("MARKET_USER_TOKEN"):
+            ctx["user_api_key"] = os.environ["MARKET_USER_TOKEN"]
         return
     needs_user = any(c.get("auth") in ("user", "api_key") for c in cases)
-    if not needs_user:
-        return
-    api_base = os.getenv("MARKET_API_URL", matrix["defaults"].get("api_base", ""))
-    url = api_base.rstrip("/") + "/auth/register"
-    status, _, _, data, _ = _http_request(url, "POST", {"Content-Type": "application/json"}, b"{}", 30.0)
-    if status == 200 and isinstance(data, dict) and data.get("api_key"):
-        ctx["user_api_key"] = data["api_key"]
-        ctx["username"] = data.get("username", "")
+    if needs_user:
+        print(
+            "  note: user-phase tests require MARKET_USER_TOKEN=sk-... "
+            "(registration is a 2-step OTP flow on prod — auto-bootstrap unavailable)",
+            file=sys.stderr,
+        )
 
 
 def should_auto_post(phases: set[str], tier: int) -> bool:
