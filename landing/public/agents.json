@@ -38,7 +38,10 @@
       "uvx": "uvx --from cli-market-world market-mcp",
       "profile_default_tools": 27,
       "registry": "https://cli-market.dev/mcp.json",
-      "smithery": "https://smithery.ai/server/cli-market",
+      "smithery": "https://smithery.ai/server/cli-market/cli-market-world",
+      "smithery_qualified_name": "cli-market/cli-market-world",
+      "smithery_remote_endpoint": "https://mcp.smithery.run/hello-hrte?mode=smart",
+      "smithery_add": "smithery mcp add cli-market/cli-market-world",
       "glama": "https://glama.ai/mcp/servers/cli-market"
     },
     "cli": {

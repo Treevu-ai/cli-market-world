@@ -54,6 +54,28 @@ Nuna Orgánica, Xray Chipped PE
 5. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`
 6. Config snippets: https://cli-market.dev/tools
 
+## MCP via Smithery (remote, no install required)
+
+Smithery qualified name: `cli-market/cli-market-world`
+Remote endpoint: `https://mcp.smithery.run/hello-hrte?mode=smart`
+
+```bash
+# Smithery CLI
+npm install -g smithery
+smithery mcp add cli-market/cli-market-world
+```
+
+Claude Desktop (HTTP MCP):
+```json
+{
+  "mcpServers": {
+    "cli-market": {
+      "url": "https://mcp.smithery.run/hello-hrte?mode=smart"
+    }
+  }
+}
+```
+
 ## Billing (Build)
 
 - Free: `market register` · Starter/Pro: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)
