@@ -27,7 +27,7 @@ export default function CinematicVision() {
           </h2>
           <p className="section-intro">
             {isES
-              ? `CLI Market normaliza precios por kg/L en ${MARKET_STATS.retailersVerified} retailers. Cada price point pasa por validación de calidad — sin valores atípicos, sin precios stale. Tu agente recibe datos limpios, listos para comparar canastas o disparar flujos de procurement.`
+              ? `CLI Market normaliza precios por kg/L en ${MARKET_STATS.retailersVerified} retailers. Cada precio pasa por validación de calidad — sin valores atípicos, sin datos desactualizados. Tu agente recibe datos limpios, listos para comparar canastas o disparar flujos de compra.`
               : `CLI Market normalizes prices per kg/L across ${MARKET_STATS.retailersVerified} retailers. Every price point passes quality validation — no outliers, no stale data. Your agent gets clean data, ready to compare baskets or trigger procurement workflows.`}
           </p>
         </div>
