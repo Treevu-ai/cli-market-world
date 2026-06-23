@@ -98,11 +98,31 @@ def test_analytics_funnel_public():
     assert "ttfv_median_minutes" in body
 
 
+def _register_with_email(email: str) -> dict:
+    """Complete the 2-step registration flow for tests."""
+    from routers.auth import _hash_code
+    from market_core import get_db
+
+    r = client.post("/auth/register", json={"email": email})
+    assert r.status_code == 200
+    db = get_db()
+    row = db.execute(
+        "SELECT code_hash FROM pending_registrations WHERE email=?", (email,)
+    ).fetchone()
+    db.close()
+    for i in range(1000000):
+        code = f"{i:06d}"
+        if _hash_code(code) == row["code_hash"]:
+            break
+    v = client.post("/auth/verify-email", json={"email": email, "code": code})
+    assert v.status_code == 200
+    return v.json()
+
+
 def test_pam_journey_synthetic():
     """PAM tier 1.5 — market init path: register → whoami → search → account."""
-    reg = client.post("/auth/register")
-    assert reg.status_code == 200
-    key = reg.json()["api_key"]
+    reg_data = _register_with_email("pam-journey@example.com")
+    key = reg_data["api_key"]
     headers = {"Authorization": f"Bearer {key}"}
 
     who = client.get("/auth/whoami", headers=headers)

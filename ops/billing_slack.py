@@ -370,14 +370,10 @@ def notify_new_registration(
 
         now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
         lines = [
-            "🆕 *[REGISTRO]* nuevo usuario",
+            "🆕 *[REGISTRO]* nuevo usuario (email verificado)",
             f"• usuario: `{username}`",
+            f"• email: {email}" if email else "• email: _(legacy — sin verificar)_",
         ]
-        if email:
-            lines.append(f"• email: {email}")
-        else:
-            lines.append("• email: ⚠️ _no proporcionado_ — consultar DB: "
-                         f"`SELECT email FROM app_users WHERE username='{username}'`")
         if ref_code:
             lines.append(f"• ref_code: `{ref_code}`")
         if api_key_prefix:
