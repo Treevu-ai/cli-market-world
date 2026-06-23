@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -51,17 +50,30 @@ _DIGEST_EVENTS = frozenset(
 )
 
 _NOISE_PREFIXES = ("smoke", "deploy-test", "shiptest", "test-", "pam-")
-_NOISE_USER_HEX = re.compile(r"^user-[0-9a-f]{8,}$", re.I)
+
+# Confirmed CI/test accounts — NOT a blanket pattern.  Public registrations
+# also produce user-<hex12> usernames; those are real users and must NOT be
+# excluded.  Add specific IDs here only after manual verification.
+_NOISE_USER_IDS: frozenset[str] = frozenset((
+    "user-87db316c7763",
+    "user-a8d64197d3a4",
+    "user-ce7da4a4e021",
+    "user-cf8b473f4e64",
+))
 
 
 def is_noise_username(username: str | None) -> bool:
-    """CI/smoke/auto-register accounts — exclude from founder adoption views."""
+    """CI/smoke/known-test accounts — exclude from founder adoption views.
+
+    NOTE: user-<hex> usernames from public /auth/register are real users.
+    Only explicitly listed test IDs are filtered, not the pattern.
+    """
     u = (username or "").strip().lower()
     if not u:
         return False
     if any(u.startswith(p) for p in _NOISE_PREFIXES):
         return True
-    return bool(_NOISE_USER_HEX.match(u))
+    return u in _NOISE_USER_IDS
 
 
 def _parse_meta(value: Any) -> dict[str, Any]:

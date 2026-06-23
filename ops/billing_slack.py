@@ -376,7 +376,8 @@ def notify_new_registration(
         if email:
             lines.append(f"• email: {email}")
         else:
-            lines.append("• email: —  _(no proporcionado)_")
+            lines.append("• email: ⚠️ _no proporcionado_ — consultar DB: "
+                         f"`SELECT email FROM app_users WHERE username='{username}'`")
         if ref_code:
             lines.append(f"• ref_code: `{ref_code}`")
         if api_key_prefix:
