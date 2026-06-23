@@ -15,7 +15,13 @@ client = TestClient(app)
 def test_is_noise_username():
     assert is_noise_username("smoke1780946263")
     assert is_noise_username("deploy-test-user")
-    assert is_noise_username("user-e1a725b9acac")
+    # Known test accounts are noise
+    assert is_noise_username("user-87db316c7763")
+    assert is_noise_username("user-a8d64197d3a4")
+    # Real public registrations (user-<hex>) are NOT noise
+    assert not is_noise_username("user-e1a725b9acac")
+    assert not is_noise_username("user-f8e0ed09eb3b")
+    assert not is_noise_username("user-4477834e4371")
     assert not is_noise_username("acubatruweb")
 
 
