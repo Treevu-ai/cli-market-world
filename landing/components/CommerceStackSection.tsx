@@ -27,7 +27,7 @@ const STEPS = [
     question_en: "Can the purchase be approved and completed?",
     question_es: "¿Puede la compra ser aprobada y completada?",
     desc_en: "Run approvals, checkout, and procurement workflows.",
-    desc_es: "Ejecuta aprobaciones, checkout y flujos de procurement.",
+    desc_es: "Ejecuta aprobaciones, checkout y flujos de compra.",
   },
   {
     num: "4",

@@ -17,7 +17,7 @@ export default function SolutionSection() {
           </h2>
           <p className="section-intro">
             {isES
-              ? "CLI Market convierte la infraestructura retail fragmentada en primitivos de comercio limpios para agentes. Busca productos, compara precios, arma canastas y ejecuta flujos de procurement a través de una sola interfaz."
+              ? "CLI Market convierte la infraestructura retail fragmentada en primitivos de comercio limpios para agentes. Busca productos, compara precios, arma canastas y ejecuta flujos de compra empresarial a través de una sola interfaz."
               : "CLI Market converts fragmented retail infrastructure into clean commerce primitives for agents. Search products, compare prices, build baskets, and execute procurement workflows through one interface."}
           </p>
         </div>
