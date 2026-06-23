@@ -13,13 +13,21 @@ ROOT = Path(__file__).resolve().parent.parent
 REQ = ROOT / "requirements-railway.txt"
 PYPI = "https://pypi.org/pypi/cli-market-core/json"
 
+_GIT_PIN_RE = re.compile(
+    r"cli-market-core\s*@\s*git\+https://[^\s]*cli-market-core@([0-9a-f]{40})",
+    re.IGNORECASE,
+)
 
-def _pinned_version() -> str:
+
+def _pinned_version() -> str | None:
+    """Return pinned version string, or None if a git commit pin is used instead."""
     text = REQ.read_text(encoding="utf-8")
     match = re.search(r"^cli-market-core==(\d+\.\d+\.\d+)\s*$", text, re.MULTILINE)
-    if not match:
-        raise SystemExit("verify_railway_core_pin: no cli-market-core== pin in requirements-railway.txt")
-    return match.group(1)
+    if match:
+        return match.group(1)
+    if _GIT_PIN_RE.search(text):
+        return None  # git pin — PyPI not yet published
+    raise SystemExit("verify_railway_core_pin: no cli-market-core== pin in requirements-railway.txt")
 
 
 def _pypi_versions() -> set[str]:
@@ -39,6 +47,10 @@ def _version_on_pypi(version: str) -> bool:
 
 def main() -> int:
     pin = _pinned_version()
+    if pin is None:
+        # TODO: remove when cli-market-core 1.10.0 is published to PyPI
+        print("SKIP: requirements-railway.txt uses git commit pin — PyPI publish pending", file=sys.stderr)
+        return 0
     if _version_on_pypi(pin):
         print(f"OK: cli-market-core=={pin} available on PyPI")
         return 0
