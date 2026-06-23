@@ -111,4 +111,26 @@ assert (k.get('total_indexed') or k.get('total_snapshots') or 0) >= 1000, k
 print('  indexed:', k.get('total_indexed', k.get('total_snapshots')))
 "
 
+echo "→ Wave 4 — Cost-of-Living OS endpoints"
+# optimize-purchase requires auth (401 means route is mounted)
+_status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/v1/missions/optimize-purchase" \
+  -H "Content-Type: application/json" -d '{}')
+[ "$_status" = "401" ] || [ "$_status" = "422" ] || { echo "✗ /v1/missions/optimize-purchase → $_status (want 401/422)"; exit 1; }
+echo "  optimize-purchase: $_status (route mounted)"
+
+# affordability is public
+_retry curl -sf "$API/v1/intel/affordability" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+m = (d.get('data') or d).get('methodology') or d.get('methodology', '')
+assert 'affordability' in str(m).lower() or d, ('unexpected response', d)
+print('  affordability methodology:', m or 'ok')
+"
+
+# affiliate-click requires auth (401 means route is mounted)
+_status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/v1/action/affiliate-click" \
+  -H "Content-Type: application/json" -d '{"store":"wong","product_id":"smoke","url":"https://example.com"}')
+[ "$_status" = "401" ] || [ "$_status" = "422" ] || { echo "✗ /v1/action/affiliate-click → $_status (want 401/422)"; exit 1; }
+echo "  affiliate-click: $_status (route mounted)"
+
 echo "✓ Smoke OK — see ops/E2E_CLIENT_JOURNEY.md for full journey"
