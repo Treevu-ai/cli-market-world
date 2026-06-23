@@ -18,11 +18,11 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 ## 🇪🇸 Español
 
-### Infraestructura de comercio para agentes de IA — el middleware LATAM que conecta con los retailers que aún no están listos.
+### Cost-of-Living OS para LatAm — optimiza tu compra en una llamada.
 
-> **Stripe convirtió los pagos en APIs. CLI Market convierte el comercio LATAM en una.**
+> **Stripe convirtió los pagos en APIs. CLI Market convierte el costo de vida en una.**
 
-Falabella, Ripley, Wong, Metro no van a exponer APIs de comercio por su cuenta. CLI Market es el puente.
+`market optimize "leche, arroz, aceite" --country PE` — una llamada compara toda la canasta entre 41 retailers, calcula TCO, sugiere sustitutos y genera links de acción. Falabella, Ripley, Wong, Metro no van a exponer APIs de comercio por su cuenta. CLI Market es el puente.
 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **81 retailers (41 verificados activos)** en **8 países**. Un único esquema JSON listo para integrar.
 
@@ -50,15 +50,18 @@ pip install cli-market-world
 market hello   # post-instalación: estadísticas + próximos pasos
 market init    # cuenta + primera búsqueda (recomendado)
 
+# Cost-of-Living OS — una llamada optimiza toda la canasta
+market optimize "leche evaporada, arroz 5kg, aceite" --country PE
+
+# Flujo granular (opcional)
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
-market ask "compra arroz al mejor precio"
 market intel brief --country PE
 ```
 
-**¿Qué hace `market checkout`?** Crea una orden en CLI Market y abre el pago (Yape/Plin manual, PayPal/MP vía gateway). **No** completa compras en Wong, Rappi ni Mercado Libre.
+**¿Qué hace `market optimize`?** Compara toda la canasta entre retailers, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada. **`market checkout`** crea una orden interna CLI Market con pago vía Yape/Plin/PayPal; **no** completa compras en Wong, Rappi ni Mercado Libre.
 
 #### 💵 Planes
 
@@ -90,11 +93,11 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 ## 🇬🇧 English
 
-### Commerce infrastructure for AI agents — the LATAM middleware connecting retailers that aren't ready yet.
+### Cost-of-Living OS for LatAm — optimize your purchase in one call.
 
-> **Stripe turned payments into APIs. CLI Market turns LATAM commerce into one.**
+> **Stripe turned payments into APIs. CLI Market turns cost of living into one.**
 
-Falabella, Ripley, Wong, Metro won't expose commerce APIs on their own. CLI Market is the bridge.
+`market optimize "milk, rice, oil" --country PE` — one call compares your full basket across 41 retailers, calculates TCO, suggests substitutes, and generates action links. Falabella, Ripley, Wong, Metro won't expose commerce APIs on their own. CLI Market is the bridge.
 
 **CLI Market fixes that.** One `pip install`. One API call across **81 retailers (41 verified active)** in **8 countries**. One JSON schema ready to integrate.
 
@@ -122,15 +125,18 @@ pip install cli-market-world
 market hello   # post-install: stats + next steps
 market init    # account + first search (recommended)
 
+# Cost-of-Living OS — one call optimizes your full basket
+market optimize "evaporated milk, 5kg rice, cooking oil" --country PE
+
+# Granular flow (optional)
 market search "leche" --country PE
 market compare "aceite de girasol 900ml" --country AR
 market basket "arroz:1 aceite:1 leche:1" --country AR
 market checkout --payment yape
-market ask "buy rice at the best price"
 market intel brief --country PE
 ```
 
-**What does `market checkout` do?** Creates a CLI Market order and opens payment (manual Yape/Plin, PayPal/MP via gateway). It does **not** complete purchases on Wong, Rappi, or Mercado Libre.
+**What does `market optimize` do?** Compares your full basket across retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call. **`market checkout`** creates an internal CLI Market order with payment via Yape/Plin/PayPal; it does **not** complete purchases on Wong, Rappi, or Mercado Libre.
 
 #### 💵 Pricing
 
@@ -173,7 +179,7 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 CLI Market is composed of 4 product repos + 1 GTM repo:
 
 ```
-cli-market-backend   Mirror API — paridad con prod, FastAPI server, 81 retailers, 61,000+ prices
+cli-market-backend   Mirror API — paridad con prod, FastAPI server, 81 retailers, 63,000+ prices
        |
        v  raw snapshots
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)
@@ -206,13 +212,15 @@ Every price in CLI Market is traceable. The [live dashboard](https://cli-market-
 - **Trazabilidad de outliers** — group size, band (`median ± k·IQR`), acceptable bounds, scraper health state, capture timestamp
 - **Foso de datos** — `inventory_daily[]` time series + growth stats (total snapshots, daily avg, days tracked)
 
-All six capabilities are backed by the same **61,000+** shelf prices, refreshed every 4 hours by the collector daemon.
+All six capabilities are backed by the same **63,000+** shelf prices, refreshed every 4 hours by the collector daemon.
 
 ---
 
 ## 🔧 API tools (Shop · Intel · Account)
 
-27 curated MCP tools across Shop, Intel, and Account bundles. Full catalog at [cli-market.dev/tools](https://cli-market.dev/tools) · [mcp.json](mcp.json).
+**32 MCP tools** (default profile) across Shop, Intel, and Account bundles. Full catalog at [cli-market.dev/tools](https://cli-market.dev/tools) · [mcp.json](mcp.json).
+
+The canonical entry point is **`market_optimize_purchase`** — one call covers basket compare, TCO, substitutes, intel, and action links. The legacy search → compare → basket flow remains available for granular use.
 
 ---
 
