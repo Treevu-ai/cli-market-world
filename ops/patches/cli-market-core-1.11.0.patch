@@ -1,0 +1,24 @@
+diff --git a/market_core/market_stats.py b/market_core/market_stats.py
+--- a/market_core/market_stats.py
++++ b/market_core/market_stats.py
+@@ -81,7 +81,7 @@ RETAILERS_VERIFIED = 41
+ COUNTRIES = 8
+ LINES = 4
+ 
+-PACKAGE_VERSION = "1.10.0"
++PACKAGE_VERSION = "1.11.0"
+ 
+ # ── Payments / billing copy ──────────────────────────────────────────────────
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "cli-market-core"
+-version = "1.10.0"
++version = "1.11.0"
+ 
+ description = "CLI Market intelligence layer — indicators, billing, MCP primitives, and retailer connectors. Dependency of cli-market-world."
+ requires-python = ">=3.10"
