@@ -39,7 +39,7 @@
       "install": "pip install cli-market-world",
       "command": "market-mcp",
       "uvx": "uvx --from cli-market-world market-mcp",
-      "profile_default_tools": 27,
+      "profile_default_tools": 32,
       "registry": "https://cli-market.dev/mcp.json",
       "smithery": "https://smithery.ai/server/cli-market/cli-market-world",
       "smithery_qualified_name": "cli-market/cli-market-world",
