@@ -98,6 +98,8 @@ jobs:
           python-version: "3.12"
 
       - name: PAM tier 1 (public, landing, user)
+        env:
+          MARKET_USER_TOKEN: ${{ secrets.MARKET_USER_TOKEN }}
         run: python ops/production_acceptance.py --phase public,landing,user --tier 1
 
       - uses: actions/checkout@v6
@@ -119,7 +121,7 @@ jobs:
           MARKET_SKIP_LIVE: "1"
         run: |
           pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@8469854"
+          pip install "cli-market-core==1.11.0"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install -e .
           pytest tests/test_funnel.py::test_pam_journey_synthetic -q
@@ -147,6 +149,7 @@ jobs:
       - name: PAM tier 2 (+ admin, post)
         env:
           MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+          MARKET_USER_TOKEN: ${{ secrets.MARKET_USER_TOKEN }}
         run: python ops/production_acceptance.py --phase public,landing,user,admin --tier 2
 
       - name: Upload report
@@ -208,8 +211,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.9.37" httpx \
-            || pip install "cli-market-core>=1.9.37" httpx
+          pip install "cli-market-core==1.11.0" httpx
           python3 -c "from market_core import market_stats"
           if [ -f "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt" ]; then
             pip install -r "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt"
@@ -250,8 +252,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.9.37" httpx \
-            || pip install "cli-market-core>=1.9.37" httpx
+          pip install "cli-market-core==1.11.0" httpx
           python3 -c "from market_core import market_stats; print('market_core OK')"
 
       - name: Product briefing + Slack bitácora
@@ -307,8 +308,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.9.37" httpx \
-            || pip install "cli-market-core>=1.9.37" httpx
+          pip install "cli-market-core==1.11.0" httpx
           python3 -c "from market_core import market_stats; print('market_core OK')"
 
       - name: Verify content checkout
@@ -436,8 +436,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.9.37" httpx \
-            || pip install "cli-market-core>=1.9.37" httpx
+          pip install "cli-market-core==1.11.0" httpx
 
       - name: CEO / Founder / PO daily metrics → #ceo-metrics
         env:
