@@ -353,6 +353,97 @@ def notify_funnel_digest(*, hours: int = 24) -> bool:
         return False
 
 
+def notify_new_registration(
+    *,
+    username: str,
+    email: str = "",
+    ref_code: str = "",
+    api_key_prefix: str = "",
+) -> bool:
+    """Send outreach-ready registration card to #funnel-cli-market with Activar Pro button."""
+    if not _funnel_slack_ready():
+        return False
+    try:
+        import datetime
+
+        from slack_notify import channel_funnel, post_blocks_via_bot, deliver_to_funnel
+
+        now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        lines = [
+            "🆕 *[REGISTRO]* nuevo usuario",
+            f"• usuario: `{username}`",
+        ]
+        if email:
+            lines.append(f"• email: {email}")
+        else:
+            lines.append("• email: —  _(no proporcionado)_")
+        if ref_code:
+            lines.append(f"• ref_code: `{ref_code}`")
+        if api_key_prefix:
+            lines.append(f"• api_key: `{api_key_prefix}…`")
+        lines.append(f"• fecha: {now}")
+        text = "\n".join(lines)
+
+        token = os.getenv("SLACK_BOT_TOKEN", "").strip()
+        if token:
+            blocks = [
+                {"type": "section", "text": {"type": "mrkdwn", "text": text}},
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "action_id": "activate_user_pro",
+                            "text": {"type": "plain_text", "text": "Activar Pro ✅"},
+                            "style": "primary",
+                            "value": username,
+                            "confirm": {
+                                "title": {"type": "plain_text", "text": "¿Confirmar pago?"},
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": f"Activa Pro para `{username}`. Solo hacerlo *después* de confirmar el pago.",
+                                },
+                                "confirm": {"type": "plain_text", "text": "Sí, activar"},
+                                "deny": {"type": "plain_text", "text": "Cancelar"},
+                            },
+                        }
+                    ],
+                },
+            ]
+            post_blocks_via_bot(token, channel_funnel(), text=text, blocks=blocks)
+        else:
+            deliver_to_funnel(text)
+        return True
+    except Exception as exc:
+        logger.warning("notify_new_registration Slack failed: %s", exc)
+        return False
+
+
+def notify_first_search(
+    *,
+    username: str,
+    query: str = "",
+) -> bool:
+    """Alert to #funnel-cli-market when a user does their first search (best outreach moment)."""
+    if not _funnel_slack_ready():
+        return False
+    try:
+        from slack_notify import deliver_to_funnel
+
+        lines = [
+            "🔍 *[PRIMERA BÚSQUEDA]* usuario activo",
+            f"• usuario: `{username}`",
+        ]
+        if query:
+            lines.append(f"• búsqueda: `{query[:80]}`")
+        lines.append("• acción: contactar ahora si tiene email registrado")
+        deliver_to_funnel("\n".join(lines))
+        return True
+    except Exception as exc:
+        logger.warning("notify_first_search Slack failed: %s", exc)
+        return False
+
+
 # Backward-compatible aliases
 def format_pro_subscription_message(**kwargs) -> str:
     kwargs.setdefault("tier", "pro")
