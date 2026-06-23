@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi.testclient import TestClient
 from market_core import ensure_db_initialized
-from market_funnel import ensure_funnel_schema, funnel_summary, record_funnel_event
+from market_funnel import ensure_funnel_schema, funnel_summary, is_noise_meta, record_funnel_event
 from market_server import app
 
 ensure_db_initialized()
@@ -90,6 +90,25 @@ def test_starter_subscribe_event():
     assert "starter_subscribe" in steps
 
 
+def test_is_noise_meta():
+    assert is_noise_meta({"source": "test"}) is True
+    assert is_noise_meta({"source": "ci"}) is True
+    assert is_noise_meta({"source": "smoke"}) is True
+    assert is_noise_meta({"source": "mcp_client"}) is False
+    assert is_noise_meta({"source": "landing"}) is False
+    assert is_noise_meta(None) is False
+    assert is_noise_meta({}) is False
+    assert is_noise_meta('{"source": "test"}') is True
+    assert is_noise_meta('{"source": "real"}') is False
+
+
+def test_funnel_summary_exclude_noise_filters_test_meta():
+    record_funnel_event("register", username="noise-meta-user", meta={"source": "test"})
+    with_noise = funnel_summary(days=30, exclude_noise=False)
+    without_noise = funnel_summary(days=30, exclude_noise=True)
+    assert with_noise["events"]["register"] >= without_noise["events"]["register"]
+
+
 def test_analytics_funnel_public():
     r = client.get("/analytics/funnel")
     assert r.status_code == 200
@@ -98,11 +117,31 @@ def test_analytics_funnel_public():
     assert "ttfv_median_minutes" in body
 
 
+def _register_with_email(email: str) -> dict:
+    """Complete the 2-step registration flow for tests."""
+    from routers.auth import _hash_code
+    from market_core import get_db
+
+    r = client.post("/auth/register", json={"email": email})
+    assert r.status_code == 200
+    db = get_db()
+    row = db.execute(
+        "SELECT code_hash FROM pending_registrations WHERE email=?", (email,)
+    ).fetchone()
+    db.close()
+    for i in range(1000000):
+        code = f"{i:06d}"
+        if _hash_code(code) == row["code_hash"]:
+            break
+    v = client.post("/auth/verify-email", json={"email": email, "code": code})
+    assert v.status_code == 200
+    return v.json()
+
+
 def test_pam_journey_synthetic():
     """PAM tier 1.5 — market init path: register → whoami → search → account."""
-    reg = client.post("/auth/register")
-    assert reg.status_code == 200
-    key = reg.json()["api_key"]
+    reg_data = _register_with_email("pam-journey@example.com")
+    key = reg_data["api_key"]
     headers = {"Authorization": f"Bearer {key}"}
 
     who = client.get("/auth/whoami", headers=headers)

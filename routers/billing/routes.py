@@ -332,6 +332,11 @@ async def _start_pro_mercadopago_checkout(
         "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
         "notify_sent": notify_mail.get("sent", False),
         "message": message,
+        "next_steps": [
+            {"step": 1, "action": "Completa el pago en Mercado Pago" if lang == "es" else "Complete Mercado Pago payment", "url": checkout_url},
+            {"step": 2, "action": "Pro se activa automáticamente" if lang == "es" else "Pro activates automatically"},
+            {"step": 3, "action": "Verifica con: market whoami" if lang == "es" else "Verify with: market whoami"},
+        ],
     }
 
 
@@ -435,6 +440,11 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                             + ("We emailed you the link. " if out.get("email_sent") else "")
                             + "Then: market whoami"
                         )
+                    out["next_steps"] = [
+                        {"step": 1, "action": "Completa el pago en PayPal" if lang == "es" else "Complete PayPal payment", "url": out.get("payment_link")},
+                        {"step": 2, "action": "Pro se activa automáticamente (webhook)" if lang == "es" else "Pro activates automatically (webhook)"},
+                        {"step": 3, "action": "Verifica con: market whoami" if lang == "es" else "Verify with: market whoami"},
+                    ]
                     return out
             except ValueError:
                 logger.info("pro-checkout paypal: not configured, using hosted-button fallback")
