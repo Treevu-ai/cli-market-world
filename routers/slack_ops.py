@@ -66,7 +66,14 @@ async def slack_interactions(request: Request):
         return {"ok": True}
 
     action = actions[0]
-    if action.get("action_id") != "activate_pro_request":
+    action_id = action.get("action_id", "")
+    user_id = (payload.get("user") or {}).get("id", "")
+
+    # ── activate_user_pro: direct username activation (post-registration) ──────
+    if action_id == "activate_user_pro":
+        return _handle_activate_user_pro(action, user_id)
+
+    if action_id != "activate_pro_request":
         return {"ok": True}
 
     request_id = (action.get("value") or "").strip().upper()
@@ -76,7 +83,6 @@ async def slack_interactions(request: Request):
             "text": f"Ref inválida: `{request_id}`",
         }
 
-    user_id = (payload.get("user") or {}).get("id", "")
     if DEFAULT_TOKEN:
         allowed = {
             u.strip()
@@ -89,7 +95,7 @@ async def slack_interactions(request: Request):
                 "text": "No autorizado para activar Pro desde Slack.",
             }
 
-    from routers.payments import _activate_pro_from_request
+    from routers.billing.activation import _activate_pro_from_request
 
     result = _activate_pro_from_request(request_id, source="slack_interaction")
     if any(a.startswith("pro_activated:") for a in result):
@@ -113,6 +119,65 @@ async def slack_interactions(request: Request):
     return {
         "response_type": "ephemeral",
         "text": f"No se pudo activar `{request_id}`: {', '.join(result)}",
+    }
+
+
+def _handle_activate_user_pro(action: dict, slack_user_id: str) -> dict:
+    """Activate Pro directly by username (triggered from registration card)."""
+    if DEFAULT_TOKEN:
+        allowed = {
+            u.strip()
+            for u in os.getenv("SLACK_ACTIVATE_PRO_USERS", "").split(",")
+            if u.strip()
+        }
+        if allowed and slack_user_id not in allowed:
+            return {
+                "response_type": "ephemeral",
+                "text": "No autorizado para activar Pro desde Slack.",
+            }
+
+    username = (action.get("value") or "").strip()
+    if not username:
+        return {"response_type": "ephemeral", "text": "username vacío en el payload."}
+
+    from market_core import db_get_subscription, db_set_subscription
+
+    sub = db_get_subscription(username) or {}
+    if (sub.get("tier") or "free").lower() == "pro":
+        return {
+            "response_type": "ephemeral",
+            "text": f"`{username}` ya tiene tier Pro.",
+        }
+
+    db_set_subscription(username, "pro")
+    logger.info("audit activate_user_pro username=%s by=%s", username, slack_user_id)
+
+    try:
+        from market_funnel import record_funnel_event
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": "slack_register_card"},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+
+    try:
+        from ops.billing_slack import notify_subscription
+        notify_subscription(
+            tier="pro",
+            status="activated",
+            username=username,
+            source="slack_register_card",
+        )
+    except Exception:
+        pass
+
+    return {
+        "response_type": "in_channel",
+        "replace_original": False,
+        "text": f"✅ Pro activado para `{username}`. Cliente: `market whoami` → tier pro",
     }
 
 
