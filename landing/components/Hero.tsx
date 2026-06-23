@@ -73,7 +73,7 @@ export default function Hero() {
           >
             {isES ? (
               <>
-                Permite que los agentes de IA busquen, comparen y ejecuten comercio real en retailers LATAM a través de una sola API. CLI Market transforma sistemas retail fragmentados en infraestructura lista para agentes — dando acceso a precios verificados, optimización de canasta, flujos de procurement y ejecución comercial sin scraping ni integraciones manuales.
+                Permite que los agentes de IA busquen, comparen y ejecuten comercio real en retailers LATAM a través de una sola API. CLI Market transforma sistemas retail fragmentados en infraestructura lista para agentes — dando acceso a precios verificados, optimización de canasta, flujos de compra empresarial y ejecución comercial sin scraping ni integraciones manuales.
               </>
             ) : (
               <>
@@ -107,7 +107,7 @@ export default function Hero() {
             className="mt-4 text-sm text-[#A1A1AA] max-w-[580px]"
           >
             {isES
-              ? `Powered by el toolkit más completo para comercio agéntico en LATAM — API, CLI, herramientas MCP y flujos de procurement.`
+              ? `La plataforma más completa para comercio agéntico en LATAM — API, CLI, herramientas MCP y flujos de compra empresarial.`
               : `Powered by the most complete toolkit for agentic commerce in LATAM — API, CLI, MCP tools, and procurement workflows.`}
           </motion.p>
 
