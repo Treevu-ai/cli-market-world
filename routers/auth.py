@@ -260,6 +260,40 @@ def verify_email(body: VerifyEmailRequest):
         )
     except Exception:
         logger.debug("notify_new_registration failed", exc_info=True)
+    # Send welcome/onboarding email
+    try:
+        from market_connectors.email_outbound import _send, _smtp_configured
+        if _smtp_configured():
+            _send(
+                email,
+                "Bienvenido a CLI Market — próximos pasos",
+                (
+                    f"Hola {username},\n\n"
+                    "Tu cuenta está verificada. Aquí tus próximos pasos:\n\n"
+                    "1. Primera búsqueda:\n"
+                    '   market search "leche" --country PE\n\n'
+                    "2. Conectar con IA (MCP):\n"
+                    "   market mcp-setup\n\n"
+                    "3. Comparar precios:\n"
+                    '   market compare "arroz" --country PE\n\n'
+                    "Docs: https://cli-market.dev/docs\n\n"
+                    "— CLI Market"
+                ),
+                (
+                    "<h2 style='color:#3afecf;'>Bienvenido a CLI Market</h2>"
+                    f"<p>Hola <b>{username}</b>, tu cuenta está verificada.</p>"
+                    "<h3>Próximos pasos:</h3>"
+                    "<ol>"
+                    '<li><b>Primera búsqueda:</b><br><code>market search "leche" --country PE</code></li>'
+                    "<li><b>Conectar con IA (MCP):</b><br><code>market mcp-setup</code></li>"
+                    '<li><b>Comparar precios:</b><br><code>market compare "arroz" --country PE</code></li>'
+                    "</ol>"
+                    '<p><a href="https://cli-market.dev/docs">Documentación completa →</a></p>'
+                ),
+            )
+    except Exception:
+        logger.debug("welcome email failed", exc_info=True)
+
     return {
         "username": username,
         "api_key": result["key"],
@@ -268,6 +302,11 @@ def verify_email(body: VerifyEmailRequest):
         "email": email,
         "verified": True,
         "message": "Email verificado. API key generada — guardala, no se vuelve a mostrar.",
+        "next_steps": [
+            {"action": "first_search", "command": 'market search "leche" --country PE', "description": "Haz tu primera búsqueda para ver precios reales"},
+            {"action": "mcp_setup", "command": "market mcp-setup", "description": "Conecta con Claude/ChatGPT via MCP"},
+            {"action": "compare", "command": 'market compare "arroz" --country PE', "description": "Compara precios entre tiendas"},
+        ],
     }
 
 @router.post("/auth/login")

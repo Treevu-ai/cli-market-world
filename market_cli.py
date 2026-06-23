@@ -1768,14 +1768,22 @@ def cmd_register(args):
         ]), console)
         return
     key = verify_data.get("api_key", "")
+    next_steps = verify_data.get("next_steps") or []
+    steps_text = ""
+    if next_steps:
+        en = ui.is_en()
+        label = "Next steps:" if en else "Próximos pasos:"
+        steps_text = f"\n[bold]{label}[/]\n"
+        for i, step in enumerate(next_steps, 1):
+            steps_text += f"  {i}. [cyan]{step.get('command', '')}[/]  {step.get('description', '')}\n"
     console.print(Panel.fit(
         f"[bold #00FF88]Email verificado — cuenta creada[/]\n\n"
         f"Usuario: [cyan]{verify_data.get('username', '?')}[/]\n"
         f"Email: [cyan]{email}[/]\n"
         f"API key: [bold white]{key}[/]\n\n"
-        "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n\n"
-        "Prueba: [cyan]market search \"leche\" --country PE[/]\n"
-        f"MCP (claude.ai): [cyan]{API}/mcp?token={key}[/]",
+        "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n"
+        f"MCP (claude.ai): [cyan]{API}/mcp?token={key}[/]"
+        + steps_text,
         title="CLI Market",
         border_style="#00FF88",
     ))

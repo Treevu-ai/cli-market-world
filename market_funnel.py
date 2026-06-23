@@ -62,6 +62,9 @@ _NOISE_USER_IDS: frozenset[str] = frozenset((
 ))
 
 
+_NOISE_META_SOURCES = frozenset(("test", "ci", "smoke", "deploy-test", "integration-test"))
+
+
 def is_noise_username(username: str | None) -> bool:
     """CI/smoke/known-test accounts — exclude from founder adoption views.
 
@@ -74,6 +77,21 @@ def is_noise_username(username: str | None) -> bool:
     if any(u.startswith(p) for p in _NOISE_PREFIXES):
         return True
     return u in _NOISE_USER_IDS
+
+
+def is_noise_meta(meta: dict[str, Any] | str | None) -> bool:
+    """Return True if event meta indicates test/CI traffic (source field)."""
+    if not meta:
+        return False
+    if isinstance(meta, str):
+        try:
+            meta = json.loads(meta)
+        except (json.JSONDecodeError, TypeError):
+            return False
+    if not isinstance(meta, dict):
+        return False
+    source = (meta.get("source") or "").strip().lower()
+    return source in _NOISE_META_SOURCES
 
 
 def _parse_meta(value: Any) -> dict[str, Any]:
@@ -229,6 +247,8 @@ def funnel_recent_events(
             meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
         except json.JSONDecodeError:
             meta = {}
+        if exclude_noise and is_noise_meta(meta):
+            continue
         out.append(
             {
                 "event": row["event"],
@@ -282,12 +302,21 @@ def funnel_recent_users(
     db.close()
 
     users: dict[str, dict[str, Any]] = {}
+    noise_users: set[str] = set()
     for row in rows:
         user = (row["username"] or "").strip()
         if not user or (exclude_noise and is_noise_username(user)):
             continue
         ev = row["event"]
         ts = row["created_at"]
+        meta_raw = row["meta"] or "{}"
+        try:
+            meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
+        except json.JSONDecodeError:
+            meta = {}
+        if exclude_noise and is_noise_meta(meta):
+            noise_users.add(user)
+            continue
         entry = users.setdefault(
             user,
             {
@@ -300,14 +329,14 @@ def funnel_recent_users(
         )
         if ev not in entry["events"]:
             entry["events"][ev] = ts
-        meta_raw = row["meta"] or "{}"
-        try:
-            meta = json.loads(meta_raw) if isinstance(meta_raw, str) else {}
-        except json.JSONDecodeError:
-            meta = {}
         src = (meta.get("source") or "").strip() if isinstance(meta, dict) else ""
         if src and src not in entry["sources"]:
             entry["sources"].append(src)
+    # Remove users whose ONLY events are noise-sourced
+    for u in noise_users:
+        if u not in users:
+            continue
+        # User had some non-noise events, keep them
 
     out: list[dict[str, Any]] = []
     for entry in users.values():
@@ -336,7 +365,7 @@ def funnel_summary(*, days: int = 30, exclude_noise: bool = False) -> dict[str, 
     since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
     db = get_db()
     rows = db.execute(
-        "SELECT event, username, created_at FROM funnel_events WHERE created_at >= ?",
+        "SELECT event, username, meta, created_at FROM funnel_events WHERE created_at >= ?",
         (since,),
     ).fetchall()
     db.close()
@@ -348,6 +377,8 @@ def funnel_summary(*, days: int = 30, exclude_noise: bool = False) -> dict[str, 
         ev = row["event"]
         user = row["username"]
         if user and exclude_noise and is_noise_username(user):
+            continue
+        if exclude_noise and is_noise_meta(row.get("meta")):
             continue
         events[ev] = events.get(ev, 0) + 1
         if not user:

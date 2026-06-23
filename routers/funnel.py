@@ -70,14 +70,14 @@ def dashboard_funnel(
     """Admin funnel dashboard: TTFV, TTC, drop-off."""
     require_admin(authorization)
     days = max(1, min(days, 90))
-    return funnel_summary(days=days)
+    return funnel_summary(days=days, exclude_noise=True)
 
 
 @router.get("/analytics/funnel")
 def analytics_funnel_public(days: int = 30):
     """Public aggregate funnel (no PII)."""
     days = max(1, min(days, 90))
-    data = funnel_summary(days=days)
+    data = funnel_summary(days=days, exclude_noise=True)
     return {
         "window_days": data["window_days"],
         "events": data["events"],
