@@ -1737,16 +1737,14 @@ def cmd_register(args):
             "[dim]Revisa tu bandeja de entrada (y spam).[/]\n"
         )
 
-    code: str = ""
-    if not getattr(args, "json", False) and sys.stdin.isatty():
+    code: str = (getattr(args, "code", None) or "").strip()
+    if not code and not getattr(args, "json", False):
         prompt_code = "Código de verificación: " if es else "Verification code: "
         try:
             code = input(prompt_code).strip()
         except (EOFError, KeyboardInterrupt):
             console.print("\n[yellow]Registro cancelado.[/]" if es else "\n[yellow]Registration cancelled.[/]")
             sys.exit(1)
-    else:
-        code = getattr(args, "code", "") or ""
 
     if not code:
         msg = "Código requerido." if es else "Verification code required."
