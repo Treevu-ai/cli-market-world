@@ -1,9 +1,9 @@
 name: CLI Market
 description: >
   Commerce infrastructure for AI agents — search, compare, and track prices
-  across 38 verified retailers in 8 countries (PE, AR, BR, MX, CO, CL, IT, FR).
-  55,000+ verified prices updated every 4 hours. Free tier available.
-  22 curated MCP tools for price search, basket comparison, alerts, and market intelligence.
+  across 41 verified retailers in 8 countries (PE, AR, BR, MX, CO, CL, IT, FR).
+  61,000+ verified prices updated every 4 hours. Free tier available.
+  27 curated MCP tools for price search, basket comparison, alerts, and market intelligence.
 homepage: https://cli-market.dev
 license: MIT
 categories:
