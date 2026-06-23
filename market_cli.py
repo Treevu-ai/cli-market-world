@@ -345,6 +345,26 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
         sys.exit(1)
     return result
 
+
+def _unwrap_v1(payload: dict) -> dict:
+    """Extract ``data`` from v1 envelope responses."""
+    if isinstance(payload, dict) and "data" in payload and "meta" in payload:
+        inner = payload.get("data")
+        return inner if isinstance(inner, dict) else {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _parse_basket_items(raw_items: list[str]) -> list[dict]:
+    items: list[dict] = []
+    for arg in raw_items:
+        token = str(arg).strip().strip('"')
+        if ":" in token:
+            name, qty = token.split(":", 1)
+            items.append({"name": name.strip(), "qty": max(1, int(qty))})
+        else:
+            items.append({"name": token, "qty": 1})
+    return items
+
 # ── Commands ─────────────────────────────────────────────────────────────────
 
 def cmd_login(args):
@@ -1078,36 +1098,156 @@ def cmd_procure(args):
 
 
 def cmd_basket(args):
-    items = []
-    for arg in args.items:
-        if ":" in arg:
-            name, qty = arg.strip(chr(34)).split(":", 1)
-            items.append({"name": name, "qty": int(qty)})
-        else:
-            items.append({"name": arg, "qty": 1})
+    items = _parse_basket_items(args.items)
+    country = getattr(args, "country", None) or "PE"
     stores = []
     if args.country:
         stores = [k for k, v in STORES.items() if v["country"] == args.country]
-    with console.status("[cyan]Comparando canasta..."):
-        data = cli_api("POST", "/v1/basket/compare", {"items": items, "stores": stores or None})
-    if getattr(args, "json", False):
-        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+    payload = {
+        "items": items,
+        "country": country,
+        "stores": stores or None,
+        "include_tco": bool(getattr(args, "tco", False)),
+        "include_delivery": not bool(getattr(args, "no_delivery", False)),
+        "include_action_links": bool(getattr(args, "action_links", False)),
+    }
+    is_en = ui.is_en()
+    with console.status(
+        "[cyan]Comparando canasta con TCO..." if payload["include_tco"] and not is_en
+        else "[cyan]Comparing basket with TCO..." if payload["include_tco"]
+        else "[cyan]Comparando canasta..." if not is_en
+        else "[cyan]Comparing basket..."
+    ):
+        raw = cli_api("POST", "/v1/basket/compare", payload)
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
         return
-    comp = data.get("comparison", {})
-    if not comp:
-        console.print("[yellow]No se encontraron productos en ninguna tienda[/]")
+    data = _unwrap_v1(raw)
+    store_rows = data.get("stores") or []
+    if not store_rows:
+        console.print(
+            "[yellow]No se encontraron productos en ninguna tienda[/]"
+            if not is_en
+            else "[yellow]No products found at any store[/]"
+        )
         return
-    table = Table(title="[bold white]Comparativa de canasta[/]", border_style=ui.TABLE_BORDER)
-    table.add_column("Tienda", style="bold")
-    table.add_column("Productos", max_width=50)
-    table.add_column("Total", style="bold yellow", justify="right")
-    for _store_key, info in sorted(comp.items(), key=lambda x: x[1]["total"]):
-        items_str = ", ".join(f"{i['qty']}x {i['name'][:15]}" for i in info["items"][:3])
-        table.add_row(info["store_name"], items_str, f"{info['currency']} {info['total']:.2f}")
+    title = "Comparativa de canasta (TCO)" if payload["include_tco"] and not is_en else (
+        "Basket comparison (TCO)" if payload["include_tco"] else (
+            "Comparativa de canasta" if not is_en else "Basket comparison"
+        )
+    )
+    table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Tienda" if not is_en else "Store", style="bold")
+    table.add_column("Items", max_width=40)
+    total_col = "TCO" if payload["include_tco"] else ("Total" if is_en else "Total")
+    table.add_column(total_col, style="bold yellow", justify="right")
+    for row in sorted(
+        store_rows,
+        key=lambda s: float(s.get("tco_total") or s.get("total") or 999999),
+    ):
+        breakdown = row.get("breakdown") or []
+        items_str = ", ".join(
+            f"{b.get('qty', 1)}x {(b.get('item') or '?')[:12]}" for b in breakdown[:3]
+        )
+        amount = float(row.get("tco_total") or row.get("total") or 0)
+        currency = row.get("currency") or "PEN"
+        table.add_row(row.get("store_name") or row.get("store", "?"), items_str, f"{currency} {amount:.2f}")
     console.print(table)
-    best = data.get("best_store")
-    if best:
-        console.print(f"\n[#00FF88]✓ Mejor opción: {comp[best]['store_name']} — {comp[best]['currency']} {comp[best]['total']:.2f}[/]")
+    leader = min(store_rows, key=lambda s: float(s.get("tco_total") or s.get("total") or 999999))
+    shelf_hint = data.get("cheapest_shelf_store")
+    tco_hint = data.get("cheapest_tco_store")
+    if shelf_hint and tco_hint and shelf_hint != tco_hint:
+        console.print(
+            f"\n[dim]{'Góndola' if not is_en else 'Shelf'}: {shelf_hint} · TCO: {tco_hint}[/]"
+        )
+    console.print(
+        f"\n[#00FF88]✓ {'Mejor opción' if not is_en else 'Best option'}: "
+        f"{leader.get('store_name')} — {leader.get('currency', 'PEN')} "
+        f"{float(leader.get('tco_total') or leader.get('total') or 0):.2f}[/]"
+    )
+    links = data.get("action_links") or []
+    if links:
+        console.print(f"\n[bold]{'Enlaces' if not is_en else 'Action links'}:[/]")
+        for link in links[:4]:
+            kind = link.get("type", "?")
+            url = link.get("url") or link.get("token") or ""
+            aff = " [affiliate]" if link.get("affiliate") else ""
+            console.print(f"  [cyan]{kind}[/]{aff} {url[:80]}")
+
+
+def cmd_optimize(args):
+    """One-call purchase optimization — basket + TCO + substitutes + intel + action links."""
+    items = _parse_basket_items(args.items)
+    if not items:
+        console.print("[yellow]Sin productos[/]" if not ui.is_en() else "[yellow]No items[/]")
+        return
+    country = getattr(args, "country", None) or "PE"
+    constraints: dict = {
+        "include_tco": not bool(getattr(args, "no_tco", False)),
+        "allow_substitutes": not bool(getattr(args, "no_substitutes", False)),
+        "include_action_links": True,
+    }
+    if getattr(args, "budget", None) is not None:
+        constraints["max_budget"] = float(args.budget)
+    if getattr(args, "payment", None):
+        constraints["payment_method"] = args.payment
+    payload = {
+        "country": country,
+        "items": items,
+        "constraints": constraints,
+        "include_intel": not bool(getattr(args, "no_intel", False)),
+    }
+    is_en = ui.is_en()
+    with console.status(
+        "[cyan]Optimizando compra..." if not is_en else "[cyan]Optimizing purchase..."
+    ):
+        raw = cli_api("POST", "/v1/missions/optimize-purchase", payload)
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+    data = _unwrap_v1(raw)
+    if data.get("status") != "ok":
+        err = data.get("error") or ("Error en misión" if not is_en else "Mission error")
+        console.print(f"[red]{err}[/]")
+        return
+    rec = data.get("recommendation") or {}
+    action = rec.get("action", "monitor")
+    action_color = {"buy_now": "#00FF88", "wait": "#FF6B35", "monitor": "yellow"}.get(action, "white")
+    currency = rec.get("currency") or "PEN"
+    console.print(
+        f"\n[bold]{'Recomendación' if not is_en else 'Recommendation'}:[/] "
+        f"[{action_color}]{action.upper()}[/]"
+    )
+    console.print(
+        f"  {'Tienda' if not is_en else 'Store'}: {rec.get('primary_store_name') or rec.get('primary_store')}"
+    )
+    console.print(
+        f"  {'Góndola' if not is_en else 'Shelf'}: {currency} {float(rec.get('shelf_total') or 0):.2f} · "
+        f"TCO: {currency} {float(rec.get('tco_total') or 0):.2f}"
+    )
+    headroom = rec.get("budget_headroom")
+    if headroom is not None:
+        console.print(f"  {'Presupuesto restante' if not is_en else 'Budget headroom'}: {currency} {headroom:.2f}")
+    rationale = rec.get("rationale_es") or rec.get("rationale")
+    if rationale:
+        console.print(f"\n[dim]{rationale}[/]")
+    links = data.get("action_links") or []
+    if links:
+        console.print(f"\n[bold]{'Siguiente paso' if not is_en else 'Next step'}:[/]")
+        for link in links[:4]:
+            kind = link.get("type", "?")
+            url = link.get("url") or ""
+            if link.get("type") == "export_list" and link.get("token"):
+                url = f"/v1/export/shopping-list/{link['token']}"
+            aff = " [affiliate]" if link.get("affiliate") else ""
+            console.print(f"  [cyan]{kind}[/]{aff} {url[:90]}")
+    ui.print_hints(
+        console,
+        [
+            f"market basket {' '.join(args.items)} --country {country} --tco",
+            "market checkout --payment yape",
+        ],
+    )
 
 def cmd_inflation(args):
     params = []
@@ -2123,7 +2263,7 @@ def cmd_shell(args):
                 _shell_mission_help(console)
             else:
                 console.print(
-                    "[bold]Búsqueda:[/]  [cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]basket item:qty ...[/]\n"
+                    "[bold]Búsqueda:[/]  [cyan]search QUERY[/]  [cyan]compare QUERY[/]  [cyan]basket item:qty ...[/]  [cyan]optimize item:qty ...[/]\n"
                     "[bold]Carrito:[/]   [cyan]add ID[/]  [cyan]cart[/]  [cyan]cart-remove ID[/]  [cyan]cart-clear[/]  [cyan]checkout[/]\n"
                     "[bold]Pedidos:[/]   [cyan]orders[/]  [cyan]reorder[/]  [cyan]ask PROMPT[/]\n"
                     "[bold]Datos:[/]     [cyan]brief[/]  [cyan]inflation[/]  [cyan]indicators[/]  [cyan]scores[/]  [cyan]enrichment[/]\n"
@@ -2188,6 +2328,12 @@ def cmd_shell(args):
             demo=False,
             ide=None,
             dry_run=False,
+            tco=False,
+            no_delivery=False,
+            action_links=False,
+            budget=None,
+            no_tco=False,
+            no_substitutes=False,
         )
         handlers = {
             "login": cmd_login,
@@ -2217,6 +2363,7 @@ def cmd_shell(args):
             "barcode": cmd_barcode,
             "enrich": cmd_enrich,
             "basket": cmd_basket,
+            "optimize": cmd_optimize,
             "indicators": cmd_indicators,
             "enrichment": cmd_enrichment,
             "scores": cmd_scores,
@@ -2289,6 +2436,31 @@ def cmd_shell(args):
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
+                elif tok == "--tco":
+                    ns.tco = True
+                elif tok == "--no-delivery":
+                    ns.no_delivery = True
+                elif tok == "--action-links":
+                    ns.action_links = True
+        elif cmd == "optimize" and rest:
+            pos = [t for t in rest if not t.startswith("-")]
+            ns.items = pos
+            for i, tok in enumerate(rest):
+                if tok in ("--country", "-c") and i + 1 < len(rest):
+                    ns.country = rest[i + 1]
+                elif tok in ("--budget", "-b") and i + 1 < len(rest):
+                    try:
+                        ns.budget = float(rest[i + 1])
+                    except ValueError:
+                        pass
+                elif tok == "--payment" and i + 1 < len(rest):
+                    ns.payment = rest[i + 1]
+                elif tok == "--no-intel":
+                    ns.no_intel = True
+                elif tok == "--no-tco":
+                    ns.no_tco = True
+                elif tok == "--no-substitutes":
+                    ns.no_substitutes = True
         elif cmd == "alerts" and rest:
             ns.action = rest[0] if rest[0] in ("list", "create") else "list"
             for i, tok in enumerate(rest):
@@ -2302,7 +2474,7 @@ def cmd_shell(args):
                 elif tok == "--email" and i + 1 < len(rest):
                     ns.email = rest[i + 1]
         elif cmd in ("discover", "inflation", "indicators", "enrichment", "scores",
-                     "brief", "intel-brief", "basket") and rest:
+                     "brief", "intel-brief", "basket", "optimize") and rest:
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
@@ -3053,11 +3225,23 @@ def main():
     p.add_argument("--budget", "-b", type=float, required=True, help="Maximum budget in local currency")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
 
+    # optimize (Cost-of-Living OS compound mission)
+    p = sub.add_parser("optimize", help=t("optimize"))
+    p.add_argument("items", nargs="+", help="Items with optional qty, e.g. leche:2 arroz:1")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--budget", "-b", type=float, default=None, help="Max budget in local currency")
+    p.add_argument("--payment", choices=["yape", "plin", "paypal", "tarjeta"], default="yape")
+    p.add_argument("--no-intel", action="store_true", help="Skip procurement/affordability intel")
+    p.add_argument("--no-tco", action="store_true", help="Shelf price only (no delivery/payment fees)")
+    p.add_argument("--no-substitutes", action="store_true", help="Do not auto-substitute products")
 
     # basket
-    p = sub.add_parser("basket", help="Comparar canasta completa entre retailers")
+    p = sub.add_parser("basket", help=t("basket"))
     p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--tco", action="store_true", help="Include delivery + payment fees in totals")
+    p.add_argument("--no-delivery", action="store_true", help="Exclude delivery fee from TCO")
+    p.add_argument("--action-links", action="store_true", help="Attach deeplink + export list")
 
     # intelligence (Price Pulse / data moat — not default commerce CLI)
     p_intel = sub.add_parser("intel", help=t("intel"))
@@ -3170,7 +3354,7 @@ def main():
         "ask": cmd_ask, "preferences": cmd_preferences,
         "countries": cmd_countries, "lines": cmd_lines, "discover": cmd_discover,
         "categories": cmd_categories, "barcode": cmd_barcode,
-        "enrich": cmd_enrich, "basket": cmd_basket,
+        "enrich": cmd_enrich, "basket": cmd_basket, "optimize": cmd_optimize,
         "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
