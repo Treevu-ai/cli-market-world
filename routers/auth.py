@@ -16,8 +16,6 @@ import logging
 import os
 import uuid
 
-import logging
-
 from fastapi import APIRouter, Body, Header, HTTPException
 from pydantic import BaseModel
 
