@@ -14,7 +14,7 @@ REQ = ROOT / "requirements-railway.txt"
 PYPI = "https://pypi.org/pypi/cli-market-core/json"
 
 _GIT_PIN_RE = re.compile(
-    r"cli-market-core\s*@\s*git\+https://[^\s]*cli-market-core@([0-9a-f]{40})",
+    r"cli-market-core\s*@\s*git\+https://[^\s]*cli-market-core(?:\.git)?@([0-9a-f]{7,40})",
     re.IGNORECASE,
 )
 
