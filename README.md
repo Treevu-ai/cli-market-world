@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-39k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-42k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -27,7 +27,7 @@ Falabella, Ripley, Wong, Metro no van a exponer APIs de comercio por su cuenta. 
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **81 retailers (41 verificados activos)** en **8 países**. Un único esquema JSON listo para integrar.
 
 - 🌍 **81 retailers (41 verificados activos) · 8 países · 4 plataformas**
-- 💰 **Más de 61,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 💰 **Más de 63,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -99,7 +99,7 @@ Falabella, Ripley, Wong, Metro won't expose commerce APIs on their own. CLI Mark
 **CLI Market fixes that.** One `pip install`. One API call across **81 retailers (41 verified active)** in **8 countries**. One JSON schema ready to integrate.
 
 - 🌍 **81 retailers (41 verified active) · 8 countries · 4 platforms**
-- 💰 **61,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 💰 **63,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?

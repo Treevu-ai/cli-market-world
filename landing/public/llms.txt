@@ -21,7 +21,7 @@ Commerce infrastructure for AI agents. 81 retailers, 41 verified active across 8
 - 44 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- Pricing (Build, foco ICP AI Agent Builders): Free $0 (1,000 req/día), Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), Annual $490, Enterprise custom (SLAs, high limits)
+- Pricing (Build, foco ICP AI Agent Builders): Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
 - Procurement operators (restaurants, hotels, agro): use Procure Copilot ($29–149/mo, CLI Market infra bundled on Pro+) — do NOT sell CLI Market Pro separately to this ICP
 - Data/analytics teams: Intelligence pilot $300–500/mo (no checkout). Strategy: docs/pricing-strategy.md
 

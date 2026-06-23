@@ -55,6 +55,8 @@ T = {
         "mcp_setup": "Configuración one-liner de MCP para Cursor/Claude/etc.",
         "mcp": "Centro MCP (solo lectura): tools + salud doctor",
         "discover": "Cobertura de retailers en una llamada: líneas, tiendas y países",
+        "basket": "Comparar canasta entre retailers (opción --tco)",
+        "optimize": "Optimizar compra en una llamada: canasta + TCO + sustitutos + intel",
     },
     "en": {
         "desc": "Agentic Market CLI — purchases from the terminal.",
@@ -102,6 +104,8 @@ T = {
         "mcp_setup": "One-liner MCP setup for Cursor/Claude/etc.",
         "mcp": "MCP center (read-only): tools + doctor health",
         "discover": "Retail coverage in one call: lines, stores, and countries",
+        "basket": "Compare basket across retailers (--tco for full cost)",
+        "optimize": "One-call purchase optimization: basket + TCO + substitutes + intel",
     },
 }
 

@@ -339,7 +339,7 @@ def test_mcp_profile_defaults_to_default(monkeypatch):
 
     monkeypatch.delenv("MCP_TOOL_PROFILE", raising=False)
     assert get_profile() == "default"
-    assert public_tool_count("default") == 27
+    assert public_tool_count("default") == 32
 
 
 def test_mcp_tool_groups_match_registry_bundles():

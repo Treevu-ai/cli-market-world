@@ -73,7 +73,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@832423bb55441c26b4c668bb1abbcf9ec8eb0152"
+          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@8469854"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
@@ -155,7 +155,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core@832423bb55441c26b4c668bb1abbcf9ec8eb0152"
+          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@8469854"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
