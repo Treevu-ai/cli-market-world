@@ -63,9 +63,12 @@ def _prepare_pending_order(
     return cart, total, created["order_id"]
 
 
-@router.post("/checkout/validate")
+@router.post("/checkout/validate", summary="Validate cart prices and data freshness before checkout")
 def checkout_validate(authorization: str | None = Header(None)):
-    """Validate cart prices and freshness without creating an order."""
+    """Verify that all cart item prices are still current and the cart is
+    non-empty — without creating an order or charging. Call before any checkout
+    endpoint to catch stale prices or empty-cart errors early. Returns ok: true
+    on success; raises 409 with details if validation fails."""
     username = require_api_key(authorization)
     require_checkout_access(username)
     cart = db_get_cart(username)
@@ -96,12 +99,20 @@ def _mercadopago_env_flags() -> dict[str, bool]:
     return {k: bool(os.getenv(k, "").strip()) for k in keys}
 
 
-@router.post("/checkout/yape")
+@router.post(
+    "/checkout/yape",
+    summary="Initiate Yape or Plin mobile wallet payment (Peru, PEN only)",
+)
 def checkout_yape(
     authorization: str | None = Header(None),
     body: dict | None = Body(None),
     idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ):
+    """Initiate a Yape or Plin mobile wallet payment for the current cart (Peru only, PEN).
+    Returns a payment phone number, QR code reference, and transfer instructions.
+    Payment confirmation is manual — the buyer transfers then you poll order status.
+    Set payment_method: "yape" (default) or "plin" in the request body.
+    Requires Pro tier. Supports Idempotency-Key header to prevent duplicate orders."""
     username = require_user(authorization)
     payload = body or {}
     method = (payload.get("payment_method") or "yape").strip().lower()
@@ -162,12 +173,19 @@ async def checkout_lemon(
         raise HTTPException(status_code=501, detail="Lemon no configurado. Set LEMON_API_KEY.")
 
 
-@router.post("/checkout/paypal")
+@router.post(
+    "/checkout/paypal",
+    summary="Create a PayPal order for the current cart (USD)",
+)
 async def checkout_paypal(
     body: dict = Body(default_factory=dict),
     authorization: str | None = Header(None),
     idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ):
+    """Create a PayPal order for the current cart. Returns approve_url — redirect
+    the buyer there to complete payment. After the buyer approves, call
+    POST /checkout/paypal/capture with the paypal_order_id to finalize and
+    mark the order as paid. Currency: USD. Requires Pro tier and PayPal credentials."""
     username = require_user(authorization)
     _, total, order_id = _prepare_pending_order(username, "paypal", idempotency_key)
     from market_connectors.paypal_payments import create_order
@@ -203,12 +221,18 @@ async def checkout_paypal(
         )
 
 
-@router.post("/checkout/paypal/capture")
+@router.post(
+    "/checkout/paypal/capture",
+    summary="Capture a PayPal payment after buyer approval",
+)
 async def checkout_paypal_capture(
     paypal_order_id: str = "",
     authorization: str | None = Header(None),
 ):
-    """Capture after buyer returns from PayPal (backup if webhook is delayed)."""
+    """Capture funds after the buyer approves a PayPal order. Call this when the
+    buyer returns from the approve_url, passing the paypal_order_id from the
+    /checkout/paypal response. Acts as a fallback if the PayPal webhook is delayed.
+    Marks the linked market order as paid on success."""
     require_user(authorization)
     if not paypal_order_id:
         raise HTTPException(status_code=400, detail="paypal_order_id required")
@@ -349,12 +373,19 @@ async def mercadopago_status(test: bool = False):
     return out
 
 
-@router.post("/checkout/mercadopago")
+@router.post(
+    "/checkout/mercadopago",
+    summary="Initiate Mercado Pago Checkout Pro (PEN)",
+)
 async def checkout_mercadopago(
     body: dict = Body(default_factory=dict),
     authorization: str | None = Header(None),
 ):
-    """Mercado Pago Checkout Pro for PEN cart total."""
+    """Initiate Mercado Pago Checkout Pro for the current cart (PEN, Peru).
+    Returns checkout_url — redirect the buyer there to complete payment.
+    Provide success_url and failure_url in the body for post-payment redirects.
+    Supports sandbox mode. Webhook at GET/POST /checkout/mercadopago-webhook
+    auto-updates order status. Requires Pro tier and Mercado Pago credentials."""
     username = require_user(authorization)
     _, total, order_id = _prepare_pending_order(username, "mercadopago")
     from market_connectors.mercadopago_payments import create_preference
