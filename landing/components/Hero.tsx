@@ -51,7 +51,7 @@ export default function Hero() {
             transition={{ duration: 0.4 }}
             className="mb-6 stripe-tag-soft inline-flex"
           >
-            {isES ? "INFRAESTRUCTURA PARA COMERCIO AGÉNTICO" : "INFRASTRUCTURE FOR AGENTIC COMMERCE"}
+            {isES ? "COST-OF-LIVING OS PARA LATAM" : "COST-OF-LIVING OS FOR LATAM"}
           </motion.div>
 
           <motion.h1
@@ -61,8 +61,8 @@ export default function Hero() {
             className="hero-garamond-headline"
           >
             {isES
-              ? "La capa de ejecución comercial para agentes de IA"
-              : "The commerce execution layer for AI agents"}
+              ? "Optimiza tu compra en una llamada — para toda LatAm"
+              : "Optimize your purchase in one call — across all of LatAm"}
           </motion.h1>
 
           <motion.p
@@ -73,11 +73,11 @@ export default function Hero() {
           >
             {isES ? (
               <>
-                Permite que los agentes de IA busquen, comparen y ejecuten comercio real en retailers LATAM a través de una sola API. CLI Market transforma sistemas retail fragmentados en infraestructura lista para agentes — dando acceso a precios verificados, optimización de canasta, flujos de compra empresarial y ejecución comercial sin scraping ni integraciones manuales.
+                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code> compara toda la canasta entre 41 retailers, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada. Checkout vía Yape, Plin o PayPal: orden interna CLI Market, no compra directa en Wong ni Rappi. 63,000+ precios verificados, actualizados cada 4h.
               </>
             ) : (
               <>
-                Enable AI agents to search, compare, and execute real-world commerce across LATAM retailers using one API. CLI Market transforms fragmented retail systems into agent-ready infrastructure — giving AI agents access to verified pricing, basket optimization, procurement workflows, and commerce execution without scraping or manual integrations.
+                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code> compares your full basket across 41 retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call. Checkout via Yape, Plin, or PayPal: internal CLI Market order, not direct checkout on Wong or Rappi. 63,000+ verified prices, refreshed every 4h.
               </>
             )}
           </motion.p>
@@ -144,21 +144,21 @@ export default function Hero() {
             style={{ background: "#0d1117", color: "#8b949e" }}
           >
             <div style={{ color: "#57c453" }}>
-              $ market basket &quot;rice:1kg milk:1L oil:1L&quot; --country PE
+              $ market optimize &quot;leche, arroz, aceite&quot; --country PE
             </div>
             <div className="mt-3" style={{ color: "#8b949e" }}>
-              {isES ? "Mejor canasta:" : "Best basket:"}
+              {isES ? "Mejor opción:" : "Best option:"}
             </div>
             <div className="mt-1 pl-2">
               <span style={{ color: "#e6edf3" }}>Metro PE</span>
               <span style={{ color: "#3fb950" }}>{"      S/ 18.40"}</span>
             </div>
             <div className="pl-2">
-              <span style={{ color: "#e6edf3" }}>{isES ? "Ahorro" : "Savings"}</span>
-              <span style={{ color: "#3fb950" }}>{"       S/ 2.30"}</span>
+              <span style={{ color: "#e6edf3" }}>{isES ? "Sustituto" : "Substitute"}</span>
+              <span style={{ color: "#3fb950" }}>{"   Tottus S/ 17.80 ↓"}</span>
             </div>
             <div className="mt-3" style={{ color: "#8b949e" }}>
-              {isES ? "Completado en 0.82s" : "Completed in 0.82s"}
+              {isES ? "TCO calculado · Link Yape generado" : "TCO calculated · Yape link ready"}
             </div>
           </div>
         </motion.div>

@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents — search, compare, and purchase across 41 verified retailers in 8 countries. 61,000+ real shelf prices, refreshed every 4 hours. Free tier available.",
+  "description": "Cost-of-Living OS for LatAm — one call (market optimize / market_optimize_purchase) compares your basket across 41 verified retailers, calculates TCO, suggests substitutes, and generates action links. 63,000+ real shelf prices, refreshed every 4 hours. Free tier available.",
   "url": "https://cli-market.dev",
-  "version": "1.9.41",
+  "version": "1.11.0",
   "capabilities": [
     "product_search",
     "price_comparison",
@@ -24,7 +24,7 @@
   "coverage": {
     "countries": ["PE", "AR", "BR", "MX", "CO", "CL", "IT", "FR"],
     "retailers": 41,
-    "prices": 61000,
+    "prices": 63000,
     "refresh_hours": 4,
     "lines": ["supermercados", "farmacias", "electro", "moda", "hogar", "departamentales"]
   },
@@ -49,7 +49,7 @@
     },
     "cli": {
       "install": "pip install cli-market-world",
-      "quickstart": "market register && market search \"leche\" --country PE"
+      "quickstart": "market register && market optimize \"leche, arroz, aceite\" --country PE"
     }
   },
   "agent_flows": {
