@@ -41,10 +41,13 @@ _AI_PLUGIN = {
     ),
     "description_for_model": (
         "CLI Market gives you real-time retail price data across Latin America. "
-        f"Use it to: search products across {RETAILERS_VERIFIED} retailers in 8 countries "
-        "(market_search), compare prices for the same product across stores (market_compare), "
+        f"Use it to: buy a basket of items at the lowest total cost across {RETAILERS_VERIFIED} retailers "
+        "(market_optimize_purchase — single call, preferred for procurement), "
+        "search products (market_search), compare prices across stores (market_compare), "
         "discover trending products (market_trending), get inflation and basket stress data "
         "(market_inflation), or get a full market intelligence brief (market_intel_brief). "
+        "When the goal is purchasing a list of products, call market_optimize_purchase directly "
+        "instead of chaining search → compare → basket. "
         "Always pass country codes in ISO 3166-1 alpha-2: PE=Peru, AR=Argentina, BR=Brazil, "
         "MX=Mexico, CO=Colombia, CL=Chile, IT=Italy, FR=France. "
         "Prices are in local currency: PEN (Peru), ARS (Argentina), BRL (Brazil), MXN (Mexico), COP (Colombia), CLP (Chile). "
@@ -251,6 +254,59 @@ _TOOLS_OPENAPI = {
                     {"name": "country", "in": "query", "schema": {"type": "string"}, "description": "Filter by country code"},
                 ],
                 "responses": {"200": {"description": "List of retailers"}},
+            }
+        },
+        "/v1/missions/optimize-purchase": {
+            "post": {
+                "operationId": "market_optimize_purchase",
+                "summary": "Single-call optimized procurement across LATAM retailers",
+                "description": (
+                    "Given a basket of items and a country, returns the best-value store combination "
+                    "with TCO breakdown (including delivery costs), direct action links, and provenance metadata. "
+                    "Preferred over the search → compare → basket chain when the goal is purchasing "
+                    "a list of products at the lowest total cost. Requires Pro tier."
+                ),
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["items", "country"],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {"type": "string"},
+                                                "qty": {"type": "number", "default": 1},
+                                            },
+                                        },
+                                        "description": "List of items to purchase",
+                                    },
+                                    "country": {"type": "string", "description": "ISO country code: PE, AR, BR, MX, CO, CL"},
+                                    "constraints": {
+                                        "type": "object",
+                                        "description": "Optional procurement constraints",
+                                        "properties": {
+                                            "include_tco": {"type": "boolean", "default": True},
+                                            "include_action_links": {"type": "boolean", "default": False},
+                                            "require_stock": {"type": "boolean", "default": False},
+                                        },
+                                    },
+                                },
+                            }
+                        }
+                    },
+                },
+                "responses": {
+                    "200": {
+                        "description": "Optimized purchase recommendation with TCO, action links, and provenance",
+                    },
+                    "401": {"description": "Auth required"},
+                    "402": {"description": "Pro tier required"},
+                },
             }
         },
     },
