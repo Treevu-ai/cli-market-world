@@ -119,8 +119,7 @@ jobs:
           MARKET_SKIP_LIVE: "1"
         run: |
           pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install "cli-market-core==1.9.37" \
-            || pip install "cli-market-core>=1.9.37"
+          pip install "cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@8469854"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install -e .
           pytest tests/test_funnel.py::test_pam_journey_synthetic -q
