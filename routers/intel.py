@@ -113,14 +113,12 @@ def _record_agent_query(username: str, db) -> int:
     return max(0, monthly_limit - used)
 
 
-@router.post("/ask")
+@router.post("/ask", summary="Ask a natural-language question over the intelligence data moat")
 def intel_ask(body: AskRequest, authorization: str | None = Header(None)):
-    """Natural-language Q&A over the data moat. Starter+ (50 queries/month) or Pro/Enterprise (unlimited).
-
-    Runs a Claude tool-use loop against the live intelligence functions
-    (inflation, indicators, prices, dispersion, staple momentum) and returns a
-    grounded answer. Returns 503 if the agent isn't configured on the server.
-    """
+    """Ask a free-form question about prices, inflation, or market conditions and get a
+    grounded, sourced answer. Runs a tool-use agent loop against live intelligence data
+    (inflation, indicators, dispersion, staple momentum). Starter tier: 50 queries/month.
+    Pro/Enterprise: unlimited. Returns 503 if the agent backend is not configured."""
     username = require_starter(authorization)
     from market_intel_agent import AgentUnavailable, ask_intel
 
@@ -143,9 +141,12 @@ def intel_ask(body: AskRequest, authorization: str | None = Header(None)):
 
 # ── Catalog ────────────────────────────────────────────────────────────────────
 
-@router.get("/indicators")
+@router.get("/indicators", summary="List all 44 intelligence indicator definitions")
 def list_indicators(authorization: str | None = Header(None)):
-    """Return the full indicator catalog (34 definitions)."""
+    """Return the full indicator catalog with key, name, source, and description for each
+    indicator. Sources include internal moat data plus OpenFoodFacts, Wikimedia,
+    IMF, Eurostat, World Bank, and BCB. Use to discover available indicator keys
+    before calling GET /v1/intel/indicators/{key} for a specific value."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -155,14 +156,16 @@ def list_indicators(authorization: str | None = Header(None)):
         db.close()
 
 
-@router.get("/indicators/{key}")
+@router.get("/indicators/{key}", summary="Get a single indicator's definition and latest value")
 def get_indicator(
     key: str,
     country: str | None = Query(None),
     line: str | None = Query(None),
     authorization: str | None = Header(None),
 ):
-    """Single indicator definition + latest values (optionally scoped)."""
+    """Return the definition and most recent computed value for one indicator key.
+    Optionally filter by country (e.g. PE, AR) and business line. Get valid keys
+    from GET /v1/intel/indicators first."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -179,7 +182,10 @@ def get_indicator(
 
 # ── Brief (PR3) ───────────────────────────────────────────────────────────────
 
-@router.get("/brief")
+@router.get(
+    "/brief",
+    summary="One-call intelligence brief: shelf signals, macro gap, scores, and confidence",
+)
 def intel_brief(
     country: str | None = Query(None),
     line: str | None = Query(None),
@@ -187,7 +193,12 @@ def intel_brief(
     include_catalog: bool = Query(False),
     authorization: str | None = Header(None),
 ):
-    """One-call intelligence narrative: shelf signals, macro gap, scores, confidence."""
+    """The canonical entry point for market intelligence. Returns a structured brief
+    combining shelf price signals, inflation delta, composite scores, moat confidence,
+    and macro context in a single call. Filter by country (PE, AR, BR, etc.) and
+    business line (supermercados, farmacias, etc.). Use this before market_inflation
+    or market_scores when you want a full picture rather than a single metric.
+    Maps to the market_intel_brief MCP tool."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -204,13 +215,16 @@ def intel_brief(
 
 # ── Scores ──────────────────────────────────────────────────────────────────────
 
-@router.get("/scores")
+@router.get("/scores", summary="Get composite market scores derived from indicators")
 def list_scores(
     country: str | None = Query(None),
     line: str | None = Query(None),
     authorization: str | None = Header(None),
 ):
-    """Composite scores derived from indicators (14 scores)."""
+    """Return composite scores (e.g. shelf_health, price_volatility, promo_intensity)
+    computed from the raw indicator set. Scores are 0–100 normalized and scoped by
+    country and business line. Use for at-a-glance market health signals without
+    reading raw indicator values. Maps to the market_scores MCP tool."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -221,14 +235,18 @@ def list_scores(
 
 # ── Inflation ───────────────────────────────────────────────────────────────────
 
-@router.get("/inflation")
+@router.get("/inflation", summary="Shelf price inflation over a rolling window by category and country")
 def get_inflation(
     country: str | None = Query(None),
     line: str | None = Query(None),
     days: int = Query(7, ge=1, le=90),
     authorization: str | None = Header(None),
 ):
-    """Price change over `days` by line + currency, from price_snapshots."""
+    """Return observed shelf price change (delta_pct) for each business line over a
+    rolling window of `days` (default 7, max 90). Filter by country and line.
+    Data comes from the price_snapshots moat — not official CPI. Use for procurement
+    cost-trend analysis, price alerts, and inflation monitoring. Maps to the
+    market_inflation MCP tool."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -319,7 +337,7 @@ def get_inflation(
 
 # ── Alerts ──────────────────────────────────────────────────────────────────────
 
-@router.get("/alerts")
+@router.get("/alerts", summary="Find products with active discounts at or above a threshold")
 def get_alerts(
     product: str = Query(..., min_length=1),
     store: str | None = Query(None),
@@ -327,11 +345,10 @@ def get_alerts(
     limit: int = Query(10, ge=1, le=50),
     authorization: str | None = Header(None),
 ):
-    """Products with active discounts >= threshold_pct on list_price.
-
-    Returns items where (list_price - price) / list_price * 100 >= threshold_pct,
-    ordered by deepest discount first. Used by the market_price_alerts MCP tool.
-    """
+    """Return products matching a name query where the current price is at least
+    threshold_pct% below the list price, ordered by deepest discount first.
+    Optionally scope to a specific store key. Use for deal hunting and price-drop
+    notifications. Maps to the market_price_alerts MCP tool."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -368,18 +385,16 @@ def get_alerts(
 
 # ── Refresh ─────────────────────────────────────────────────────────────────────
 
-@router.post("/refresh")
+@router.post("/refresh", summary="Trigger indicator recomputation from price snapshot data (Pro)")
 def refresh_indicators(
     country: str | None = Query(None),
     line: str | None = Query(None),
     authorization: str | None = Header(None),
 ):
-    """Trigger indicator recomputation from price_snapshots data.
-
-    Computes internal indicators (promo_intensity, moat_freshness, etc.) directly
-    from price_snapshots. External indicators (World Bank, IMF, etc.) require the
-    collector backend and are returned as 0 when not available.
-    """
+    """Recompute internal indicators (promo_intensity, moat_freshness, price_dispersion,
+    etc.) directly from the price_snapshots database. Requires Pro tier. External
+    indicators (World Bank, IMF, Eurostat) require the collector backend and are
+    not updated by this endpoint. Filter by country and line to scope the refresh."""
     require_pro(authorization)
     db = get_db()
     try:
@@ -423,12 +438,15 @@ def refresh_enrichment(
 
 # ── Enrichment ──────────────────────────────────────────────────────────────────
 
-@router.get("/enrichment")
+@router.get("/enrichment", summary="Get external enrichment indicators (OpenFoodFacts, World Bank, Wikimedia)")
 def get_enrichment(
     country: str | None = Query(None),
     authorization: str | None = Header(None),
 ):
-    """Enrichment indicators: OFF, Wiki, Open-Meteo, World Bank food CPI."""
+    """Return enrichment indicators sourced from external public APIs: OpenFoodFacts
+    (nutritional data), Wikimedia Pageviews (category momentum), Open-Meteo (weather
+    impact on demand), and World Bank food CPI. Filter by country. Use to enrich
+    procurement decisions with demand signals and macro context."""
     require_api_key(authorization)
     db = get_db()
     try:
@@ -444,12 +462,14 @@ def get_enrichment(
         db.close()
 
 
-@router.get("/enrichment/subcategories")
+@router.get("/enrichment/subcategories", summary="Get subcategory-level enrichment (canasta items × Wikimedia momentum)")
 def get_enrichment_subcategories(
     country: str = Query("PE"),
     authorization: str | None = Header(None),
 ):
-    """Subcategory-level enrichment (10 canasta items × Wiki momentum)."""
+    """Return enrichment indicators broken down by canasta subcategory (e.g. leche,
+    arroz, aceite) crossed with Wikimedia search momentum. Useful for identifying
+    which food categories have rising consumer interest. Defaults to Peru (PE)."""
     require_api_key(authorization)
     db = get_db()
     try:

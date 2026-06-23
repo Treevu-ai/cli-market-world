@@ -8,12 +8,15 @@
     "product_search",
     "price_comparison",
     "basket_comparison",
+    "optimize_purchase",
     "stock_check",
     "delivery_estimates",
+    "delivery_tco",
     "price_history",
     "price_alerts",
     "market_intelligence",
     "inflation_tracking",
+    "action_links",
     "checkout_paypal",
     "checkout_mercadopago",
     "checkout_yape_plin"
@@ -51,7 +54,8 @@
   },
   "agent_flows": {
     "price_discovery": ["market_discover", "market_search", "market_compare"],
-    "procurement": ["market_basket", "market_add", "market_cart", "market_checkout"],
+    "procurement": ["market_optimize_purchase", "market_add", "market_cart", "market_checkout"],
+    "procurement_notes": "Use market_optimize_purchase as the single entry point instead of search → compare → basket. Falls back to market_basket for simple comparisons.",
     "intelligence": ["market_intel_brief", "market_inflation", "market_scores", "market_trending"],
     "alerts": ["market_price_alerts", "market_price_risk"]
   },

@@ -35,6 +35,7 @@ _MCP_VERSION = "2025-03-26"
 
 _PRO_TOOLS = frozenset({
     "market_basket",
+    "market_optimize_purchase",
     "market_procurement_signal",
     "market_price_risk",
     "market_favorites",
@@ -232,6 +233,47 @@ _TOOLS = [
     },
     # ── Pro ──────────────────────────────────────────────────────────────────
     {
+        "name": "market_optimize_purchase",
+        "description": (
+            "[Pro] Single-call optimized procurement: given a basket of items and a country, "
+            "returns the best-value store combination with TCO breakdown (including delivery), "
+            "direct action links, and provenance metadata. "
+            "Use this instead of the search → compare → basket chain when the goal is "
+            'buying a list of products at the lowest total cost. '
+            "Constraints: include_tco (bool), include_action_links (bool), require_stock (bool), "
+            "max_stores (int), preferred_stores (list)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["items", "country"],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "description": "List of {name, qty} objects, e.g. [{\"name\":\"leche\",\"qty\":2}]",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "qty": {"type": "number", "default": 1},
+                        },
+                    },
+                },
+                "country": {"type": "string", "description": "ISO country code: PE, AR, BR, MX, CO, CL"},
+                "constraints": {
+                    "type": "object",
+                    "description": "Optional procurement constraints",
+                    "properties": {
+                        "include_tco": {"type": "boolean", "default": True},
+                        "include_action_links": {"type": "boolean", "default": False},
+                        "require_stock": {"type": "boolean", "default": False},
+                        "max_stores": {"type": "integer"},
+                        "preferred_stores": {"type": "array", "items": {"type": "string"}},
+                    },
+                },
+            },
+        },
+    },
+    {
         "name": "market_basket",
         "description": (
             "[Pro] Compare a basket of items across stores in a country. "
@@ -410,6 +452,8 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
         elif name == "market_whoami":
             r = await client.get(f"{_API_BASE}/auth/whoami", headers=headers)
         # ── Pro tools ─────────────────────────────────────────────────────────
+        elif name == "market_optimize_purchase":
+            r = await client.post(f"{_API_BASE}/v1/missions/optimize-purchase", json=args, headers=headers)
         elif name == "market_basket":
             r = await client.post(f"{_API_BASE}/v1/basket/compare", json=args, headers=headers)
         elif name == "market_procurement_signal":
