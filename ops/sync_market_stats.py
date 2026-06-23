@@ -97,7 +97,7 @@ def _procure_stats_path() -> Path | None:
     return None
 
 _BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
-_CANONICAL_HIGHLIGHTS = frozenset({"market_discover", "market_intel_brief", "market_price_alerts"})
+_CANONICAL_HIGHLIGHTS = frozenset({"market_optimize_purchase", "market_discover", "market_intel_brief", "market_price_alerts"})
 _PUBLIC_BUNDLES = ("shop", "intel", "account")
 
 
