@@ -39,17 +39,20 @@ For Claude Desktop, add to claude_desktop_config.json:
 }
 ```
 
-## MCP tool bundles (default profile: 22 curated tools)
+## MCP tool bundles (default profile: 27 curated tools)
 
-Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (46 tools, includes deprecated aliases).
+Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (49 tools, includes deprecated aliases).
 
 ### Shop (11 tools)
 Canonical: market_discover
 market_login, market_discover, market_search, market_compare, market_add, market_cart, market_cart_update, market_checkout, market_orders, market_ask, market_basket
 
-### Intel (6 tools)
+### Intel (9 tools)
 Canonical: market_intel_brief
-market_intel_brief, market_inflation, market_scores, market_stats, market_export, market_trending
+market_intel_brief, market_inflation, market_scores, market_price_risk, market_inflation_report, market_procurement_signal, market_stats, market_export, market_trending
+
+### Utility (2 tools)
+market_barcode, market_ticket
 
 ### Account (5 tools)
 Canonical: market_price_alerts

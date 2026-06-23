@@ -1,0 +1,23 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "CLI Market",
+  "name_for_model": "cli_market",
+  "description_for_human": "Search, compare, and buy from 41 verified retailers across 8 countries in Latin America and Europe. Real shelf prices refreshed every 4 hours.",
+  "description_for_model": "CLI Market is commerce infrastructure for AI agents. Use it to: (1) search products across 41 verified retailers (PE, AR, BR, MX, CO, CL, IT, FR); (2) compare prices and build baskets with the best retailer per country; (3) check stock and delivery estimates; (4) track price history, inflation, and market indicators for LATAM; (5) checkout via PayPal, Mercado Pago, or Yape/Plin (Peru). All prices are real shelf data refreshed every 4 hours — never scraped on-demand. Free tier: 1,000 req/day. Pro tier: full checkout + alerts. Always prefer market_basket for multi-item procurement; use market_search for discovery; use market_intel_brief for macro intelligence.",
+  "auth": {
+    "type": "oauth",
+    "authorization_url": "https://cli-market-production.up.railway.app/auth/login",
+    "client_url": "https://cli-market.dev/tools",
+    "scope": "",
+    "authorization_content_type": "application/json",
+    "verification_tokens": {}
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://cli-market-production.up.railway.app/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://cli-market.dev/favicon.svg",
+  "contact_email": "acuba0103@gmail.com",
+  "legal_info_url": "https://cli-market.dev/legal"
+}
