@@ -41,6 +41,11 @@ PARITY_EXACT: dict[str, set[str]] = {
 
 CHECKOUT_PREFIX = "/checkout/"
 
+# Vault/card-tokenization endpoints live only in world (backend mirror pending)
+_WORLD_ONLY_CHECKOUT: frozenset[str] = frozenset(
+    {"/checkout/card-payment", "/checkout/save-card", "/checkout/saved-cards/{customer_id}"}
+)
+
 _CORE_PIN_RE = re.compile(
     r"cli-market-core\s*>=\s*(\d+)\.(\d+)\.(\d+)",
     re.IGNORECASE,
@@ -116,7 +121,7 @@ def compare_openapi(world_spec: dict[str, Any], backend_spec: dict[str, Any]) ->
 
     w_checkout = _checkout_paths(world_spec)
     b_checkout = _checkout_paths(backend_spec)
-    only_world = sorted(set(w_checkout) - set(b_checkout))
+    only_world = sorted(set(w_checkout) - set(b_checkout) - _WORLD_ONLY_CHECKOUT)
     only_backend = sorted(set(b_checkout) - set(w_checkout))
     if only_world:
         errors.append(f"checkout paths only on world: {only_world}")
