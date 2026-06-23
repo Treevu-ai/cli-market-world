@@ -260,8 +260,13 @@ def list_lines():
     return {"lines": result, "total": len(result)}
 
 
-@router.get("/stores")
+@router.get("/stores", summary="List all verified retailers, filterable by country and business line")
 def list_stores(country: str | None = None, line: str | None = None):
+    """Return the catalog of 41 verified active retailers with their store key, name,
+    country, currency, business line, and base URL. Filter by country (PE, AR, BR, MX,
+    CO, CL, IT, FR) and/or line (supermercados, farmacias, electro, moda, hogar,
+    departamentales). Use store keys from this response as the stores list when calling
+    POST /v1/basket/compare to scope a basket to a specific country."""
     result = {}
     for key, s in STORES.items():
         if country and s["country"] != country.upper():
@@ -279,8 +284,11 @@ def list_stores(country: str | None = None, line: str | None = None):
     return {"stores": result, "total": len(result)}
 
 
-@router.get("/countries")
+@router.get("/countries", summary="List supported countries with their active retailer counts")
 def list_countries():
+    """Return the 8 supported countries (PE, AR, BR, MX, CO, CL, IT, FR) with their
+    names and the list of active retailer store keys for each. Use to discover which
+    countries are supported before filtering a search or basket by country."""
     return {
         "countries": {
             code: {"name": c["name"], "stores": c["stores"], "count": len(c["stores"])}

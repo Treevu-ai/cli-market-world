@@ -34,6 +34,7 @@
     "market_discover",
     "market_search",
     "market_compare",
+    "market_optimize_purchase",
     "market_add",
     "market_cart",
     "market_cart_update",
@@ -60,7 +61,7 @@
   "default_profile": "default",
   "profiles": {
     "default": {
-      "tool_count": 22,
+      "tool_count": 23,
       "description": "Curated Shop + Intel + Account bundles"
     },
     "full": {
@@ -80,6 +81,7 @@
         "market_discover",
         "market_search",
         "market_compare",
+        "market_optimize_purchase",
         "market_add",
         "market_cart",
         "market_cart_update",
@@ -89,7 +91,7 @@
         "market_basket"
       ],
       "canonical": [
-        "market_discover"
+        "market_optimize_purchase"
       ]
     },
     "intel": {
