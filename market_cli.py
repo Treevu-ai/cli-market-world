@@ -1691,15 +1691,17 @@ def cmd_whoami(args):
 
 
 def cmd_register(args):
-    """Create a free account via POST /auth/register and persist API key locally."""
+    """Create a free account via POST /auth/register + /auth/verify-email (2-step OTP)."""
     ref_code = getattr(args, "ref", None)
-    email = (getattr(args, "email", None) or "").strip() or None
+    es = not ui.is_en()
+
+    # ── Step 1: collect email (required) ──────────────────────────────────
+    email = (getattr(args, "email", None) or "").strip().lower() or None
     if not email and not getattr(args, "json", False) and sys.stdin.isatty():
-        es = not ui.is_en()
         prompt = (
-            "Email (opcional, para links de pago — Enter para omitir): "
+            "Email (requerido para verificación): "
             if es
-            else "Email (optional, for payment links — press Enter to skip): "
+            else "Email (required for verification): "
         )
         try:
             raw = input(prompt).strip()
@@ -1707,14 +1709,18 @@ def cmd_register(args):
                 email = raw.lower()
         except (EOFError, KeyboardInterrupt):
             pass
-    body: dict | None = None
-    if ref_code or email:
-        body = {}
-        if ref_code:
-            body["ref_code"] = ref_code
-        if email:
-            body["email"] = email
-    with ui.run_with_status(console, "Creando cuenta..." if not ui.is_en() else "Creating account..."):
+    if not email or "@" not in email:
+        msg = "Email es requerido para registrarse." if es else "Email is required to register."
+        if getattr(args, "json", False):
+            ui.json_exit(console, False, error=msg, next_commands=["market register --email you@example.com"])
+        console.print(f"[red]{msg}[/]")
+        sys.exit(1)
+
+    body: dict = {"email": email}
+    if ref_code:
+        body["ref_code"] = ref_code
+
+    with ui.run_with_status(console, "Enviando código..." if es else "Sending verification code..."):
         data = api("POST", "/auth/register", body)
     if isinstance(data, dict) and data.get("error"):
         if getattr(args, "json", False):
@@ -1722,15 +1728,50 @@ def cmd_register(args):
         ui.print_actionable_error(console, data["error"])
         ui.print_hints(console, ui.error_next_commands(None, data["error"]))
         sys.exit(1)
+
+    # ── Step 2: prompt for OTP code ───────────────────────────────────────
+    masked_email = data.get("email", email)
+    if not getattr(args, "json", False):
+        console.print(
+            f"\n[bold #00FF88]Código enviado a {masked_email}[/]\n"
+            "[dim]Revisa tu bandeja de entrada (y spam).[/]\n"
+        )
+
+    code: str = (getattr(args, "code", None) or "").strip()
+    if not code and not getattr(args, "json", False):
+        prompt_code = "Código de verificación: " if es else "Verification code: "
+        try:
+            code = input(prompt_code).strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[yellow]Registro cancelado.[/]" if es else "\n[yellow]Registration cancelled.[/]")
+            sys.exit(1)
+
+    if not code:
+        msg = "Código requerido." if es else "Verification code required."
+        if getattr(args, "json", False):
+            ui.json_exit(console, False, error=msg, next_commands=[])
+        console.print(f"[red]{msg}[/]")
+        sys.exit(1)
+
+    with ui.run_with_status(console, "Verificando..." if es else "Verifying..."):
+        verify_data = api("POST", "/auth/verify-email", {"email": email, "code": code})
+    if isinstance(verify_data, dict) and verify_data.get("error"):
+        if getattr(args, "json", False):
+            ui.json_exit(console, False, error=verify_data["error"], next_commands=["market register"])
+        ui.print_actionable_error(console, verify_data["error"])
+        sys.exit(1)
+
+    # ── Success ───────────────────────────────────────────────────────────
     if getattr(args, "json", False):
-        ui.emit_json(ui.json_response(True, data, next_commands=[
+        ui.emit_json(ui.json_response(True, verify_data, next_commands=[
             'market search "leche" --country PE', "market whoami", "market doctor",
         ]), console)
         return
-    key = data.get("api_key", "")
+    key = verify_data.get("api_key", "")
     console.print(Panel.fit(
-        f"[bold #00FF88]Cuenta creada[/]\n\n"
-        f"Usuario: [cyan]{data.get('username', '?')}[/]\n"
+        f"[bold #00FF88]Email verificado — cuenta creada[/]\n\n"
+        f"Usuario: [cyan]{verify_data.get('username', '?')}[/]\n"
+        f"Email: [cyan]{email}[/]\n"
         f"API key: [bold white]{key}[/]\n\n"
         "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n\n"
         "Prueba: [cyan]market search \"leche\" --country PE[/]\n"
@@ -1962,6 +2003,8 @@ def cmd_init(args):
             json=False,
             skip_search=True,
             ref=getattr(args, "ref", None),
+            email=None,
+            code=None,
         )
         cmd_register(reg_args)
         account_created = True
@@ -3025,7 +3068,12 @@ def main():
     p.add_argument(
         "--email",
         default=None,
-        help="Email for payment links and outreach (optional)",
+        help="Email for account verification (required — prompted interactively if omitted)",
+    )
+    p.add_argument(
+        "--code",
+        default=None,
+        help="Verification code (for non-interactive/scripted usage)",
     )
 
     # doctor

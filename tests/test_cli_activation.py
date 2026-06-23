@@ -62,26 +62,26 @@ def test_run_activation_search_once(monkeypatch):
 
 
 def test_register_runs_activation_search(monkeypatch):
-    monkeypatch.setattr(
-        market_cli,
-        "api",
-        lambda method, path, body=None: (
-            {"username": "user-x", "api_key": "sk-x"}
-            if path == "/auth/register"
-            else {"total": 1, "results": [{"name": "Leche", "store": "wong", "price": 1, "currency": "PEN"}]}
-        ),
-    )
+    def fake_api(method, path, body=None):
+        if path == "/auth/register":
+            return {"status": "verification_required", "email": "t***@example.com"}
+        if path == "/auth/verify-email":
+            return {"username": "user-x", "api_key": "sk-x", "verified": True}
+        return {"total": 1, "results": [{"name": "Leche", "store": "wong", "price": 1, "currency": "PEN"}]}
+
+    monkeypatch.setattr(market_cli, "api", fake_api)
     monkeypatch.setattr(market_cli, "get_token", lambda: "sk-x")
     monkeypatch.setattr(market_cli.ui, "is_en", lambda: True)
     monkeypatch.setattr(market_cli.ui, "get_default_country", lambda: "PE")
     monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    monkeypatch.setattr("builtins.input", lambda _: "123456")
     panel = MagicMock()
     panel.fit = MagicMock(return_value="panel")
     monkeypatch.setattr(market_cli, "Panel", panel)
 
     import argparse
 
-    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=False))
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=False, email="test@example.com", code=None, ref=None))
     assert market_cli._activation_search_done() is True
 
 
@@ -90,37 +90,45 @@ def test_register_passes_ref_code(monkeypatch):
 
     def fake_api(method, path, body=None):
         calls.append({"method": method, "path": path, "body": body})
-        return {"username": "user-x", "api_key": "sk-x"}
+        if path == "/auth/register":
+            return {"status": "verification_required", "email": "t***@example.com"}
+        return {"username": "user-x", "api_key": "sk-x", "verified": True}
 
     monkeypatch.setattr(market_cli, "api", fake_api)
     monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    monkeypatch.setattr("builtins.input", lambda _: "123456")
     panel = MagicMock()
     panel.fit = MagicMock(return_value="panel")
     monkeypatch.setattr(market_cli, "Panel", panel)
 
     import argparse
 
-    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref="ref-abc123"))
-    assert calls == [{"method": "POST", "path": "/auth/register", "body": {"ref_code": "ref-abc123"}}]
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref="ref-abc123", email="test@example.com", code=None))
+    assert calls[0] == {"method": "POST", "path": "/auth/register", "body": {"email": "test@example.com", "ref_code": "ref-abc123"}}
+    assert calls[1] == {"method": "POST", "path": "/auth/verify-email", "body": {"email": "test@example.com", "code": "123456"}}
 
 
-def test_register_without_ref_sends_no_body(monkeypatch):
+def test_register_without_ref_sends_email_only(monkeypatch):
     calls: list[dict] = []
 
     def fake_api(method, path, body=None):
         calls.append({"method": method, "path": path, "body": body})
-        return {"username": "user-x", "api_key": "sk-x"}
+        if path == "/auth/register":
+            return {"status": "verification_required", "email": "t***@example.com"}
+        return {"username": "user-x", "api_key": "sk-x", "verified": True}
 
     monkeypatch.setattr(market_cli, "api", fake_api)
     monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    monkeypatch.setattr("builtins.input", lambda _: "123456")
     panel = MagicMock()
     panel.fit = MagicMock(return_value="panel")
     monkeypatch.setattr(market_cli, "Panel", panel)
 
     import argparse
 
-    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref=None))
-    assert calls == [{"method": "POST", "path": "/auth/register", "body": None}]
+    market_cli.cmd_register(argparse.Namespace(json=False, skip_search=True, ref=None, email="test@example.com", code=None))
+    assert calls[0] == {"method": "POST", "path": "/auth/register", "body": {"email": "test@example.com"}}
+    assert calls[1] == {"method": "POST", "path": "/auth/verify-email", "body": {"email": "test@example.com", "code": "123456"}}
 
 
 class _FakeStatus:
