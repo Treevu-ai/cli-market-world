@@ -5,7 +5,7 @@ tags:
   - metrics
   - gate
 hub: "[[GTM-Hub]]"
-date: 2026-05-30
+date: 2026-06-23
 status: active
 ---
 
@@ -22,16 +22,16 @@ curl -sS https://cli-market-production.up.railway.app/health/db | python3 -m jso
 
 Export semanal: `python3 ops/sync_linkedin_metrics.py` → `metrics/price-pulse-YYYY-WW.md`
 
-## Snapshot verificado — 2026-05-30 ✅ GATE PASSED
+## Snapshot verificado — 2026-06-23 ✅ GATE PASSED
 
 | Métrica | Valor | OK para LI? |
 |---------|-------|-------------|
-| Precios indexados (moat) | **43,415** | ✅ |
-| Refresh 24h | **37,731** | ✅ |
-| Tiendas fresh 24h | **35** | ✅ |
-| Tiendas con datos | **35** | ✅ |
-| **coverage_7d_pct** | **97.2%** | ✅ gate semana 2 |
-| Collector last run | collector activo · 35 tiendas indexadas | ✅ |
+| Precios indexados (moat) | **62,398** | ✅ |
+| Refresh 24h | **37,433** | ✅ |
+| Tiendas fresh 24h | **37** | ✅ |
+| Tiendas con datos | **38** | ✅ |
+| **coverage_7d_pct** | **92.7%** | ✅ gate semana 2 |
+| Collector last run | collector activo · 38 tiendas indexadas | ✅ |
 | `price_snapshots_upsert_ready` | **true** | ✅ |
 | Store success % (lifetime) | 55.6% | ❌ solo ops |
 | Moat stale | **false** | ✅ |
@@ -48,11 +48,11 @@ Export semanal: `python3 ops/sync_linkedin_metrics.py` → `metrics/price-pulse-
 
 ## Gate checklist (semana 2)
 
-- [x] **Moat coverage 7d** ≥ **80%** — **97.2%**
+- [x] **Moat coverage 7d** ≥ **80%** — **92.7%**
 - [x] Upsert Postgres operativo (`price_snapshots_upsert_ready: true`)
 - [x] Refresh 24h > 0
-- [ ] Cifra `[N]` en Day 07 → usar **37,731** (24h) o **43,415** (indexado)
-- [x] Claims agregados 37K+ / 43K+ — OK
+- [ ] Cifra `[N]` en Day 07 → usar **37,433** (24h) o **62,398** (indexado)
+- [x] Claims agregados 37K+ / 62K+ — OK
 - [ ] Claims de inflación % por producto — posponer (sin serie 7–14d aún)
 - [ ] No implicar INEI/INDEC — usar "según nuestro collector"
 
