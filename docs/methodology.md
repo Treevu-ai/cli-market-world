@@ -1,176 +1,217 @@
-# CLI Market Intelligence — Metodología Defensible
+---
+title: CLI Market Intelligence — Metodología de Indicadores v2
+tags:
+  - intelligence
+  - methodology
+  - price-pulse
+status: active
+updated: 2026-06-24
+version: 2.0
+supersedes: narrativa informal "inflación de góndola" en reportes pre-v2
+---
 
-**Versión:** 2.0 · **Fecha:** 2026-06-24  
-**Fuente canónica:** `market_core/market_indicators_catalog.py` + `market_core/market_indicators.py`
+# Metodología CLI Market Intelligence v2
+
+Documento canónico de fórmulas, nomenclatura y reglas de publicación para **Price Pulse**, **Intelligence API** y copy público.
+
+**Principio rector:** CLI Market mide precios observados en retail online indexado. No produce índices oficiales de inflación ni replica el IPC/INEI, INDEC, IBGE, DANE o INEGI.
 
 ---
 
-## Principio rector
+## 1. Retail Price Velocity (RPV)
 
-Los indicadores de CLI Market miden **velocidad de precios en góndola online** — no inflación oficial. Cada métrica tiene un nombre, escala, fórmula y nota metodológica explícita para evitar comparaciones incorrectas contra indicadores oficiales (IPC, CPI, INEI, INDEC, etc.).
+| Capa | Identificador |
+|------|---------------|
+| API / DB | `shelf_price_momentum_7d` |
+| Producto / dashboard | **Retail Price Velocity (RPV)** |
+| Prensa / newsletter | Movimiento de precios en góndola |
 
----
+### Fórmula
 
-## P0 — Indicadores núcleo
+Para cada par `(línea, moneda)`:
 
-### 1. Retail Price Velocity (RPV) — `staple_price_momentum`
-
-| Campo | Valor |
-|-------|-------|
-| **Nombre display** | Retail Price Velocity (RPV) |
-| **Clave interna** | `staple_price_momentum` |
-| **Ventana** | 7 días rolling |
-| **Unidad** | % (delta porcentual) |
-
-**Qué mide:** Cambio porcentual promedio de precios de SKUs de canasta básica (arroz, leche, aceite, azúcar, harina…) en el canal online en los últimos 7 días. Solo incluye retailers con ≥3 snapshots en el período.
-
-**Fórmula:**
 ```
-RPV = mean((price_last - price_first) / price_first × 100)
-      para SKUs de canasta básica con ≥2 observaciones en la ventana
-```
-
-**Nota metodológica crítica:**
-- CLI Market RPV ≠ CPI oficial. El RPV captura velocidad de precio en canal online.
-- El IPC oficial (INEI, INDEC, DANE, INEGI, etc.) usa encuesta de hogares, canasta mensual o anual, precios en tienda física y online.
-- **No anualizar RPV** ni comparar directamente contra cifras de IPC.
-- El RPV es útil para procurement e inteligencia de mercado, no para análisis macroeconómico.
-
----
-
-### 2. Basket Stress Index (BSI) — `basket_stress_index`
-
-| Campo | Valor |
-|-------|-------|
-| **Nombre display** | Basket Stress Index (BSI) |
-| **Clave interna** | `basket_stress_index` |
-| **Ventana** | 30 días (baseline rolling) |
-| **Escala** | 0–1+ (normalizado) |
-
-**Qué mide:** Presión sobre la canasta básica. Compara el total mínimo de la canasta (10 staples en los retailers más baratos del país) contra el baseline de 30 días.
-
-**Fórmula raw:**
-```
-BSI_raw = (current_min_basket / baseline_min_basket) × 100
-          donde baseline = promedio rolling 30d
+RPV_7d = mean_over_SKUs( (avg_price_7d − avg_price_prev_7d) / avg_price_prev_7d ) × 100
 ```
 
-**Escala normalizada (0–1+):**
-| Rango | Interpretación |
-|-------|----------------|
-| < 0.15 | Estable — sin presión significativa |
-| 0.15 – 0.50 | Presión moderada — monitorear |
-| > 0.50 | Crítico — canasta básica bajo estrés severo |
+Donde:
 
-**Raw index ~100 = paridad con baseline. >105 = presión creciente.**
+- `avg_price_7d` = media aritmética simple de precios capturados en los últimos 7 días
+- `avg_price_prev_7d` = media de los 7 días inmediatamente anteriores
+- Solo entran SKUs con ≥2 observaciones en cada ventana (n reportado por línea)
 
-**Nota:** La escala normalizada y el raw index son representaciones distintas del mismo cálculo. El API de `/v1/intel/brief` expone ambas: `basket_stress_index` (raw) y `basket_stress_index_scale` (leyenda).
+### Qué NO es
 
----
+- No es inflación oficial ni sustituto del IPC
+- No incorpora ponderadores de gasto de hogares
+- No incluye canales no digitales ni servicios
 
-### 3. Shelf Signal vs Official CPI Gap — `collector_vs_official_gap`
+### Copy permitido
 
-| Campo | Valor |
-|-------|-------|
-| **Nombre display** | Shelf Signal vs Official CPI Gap |
-| **Clave interna** | `collector_vs_official_gap` |
-| **Unidad** | puntos porcentuales (pp) |
-| **Fuente externa** | Banco Mundial `FP.CPI.TOTL.ZG` (YoY anual) |
+> "Movimiento de precios observado en góndola online (RPV 7d: +X.X% en supermercados PEN)."
 
-**Qué mide:** Diferencia en pp entre la señal de precio de góndola CLI Market (rolling 30d) y el CPI oficial del Banco Mundial (YoY anual) para el mismo país.
+### Copy prohibido
 
-**Fórmula:**
-```
-gap_pp = internal_inflation_avg_30d_pct - cpi_official_yoy_annual
-```
-
-**Caveat temporal — CRÍTICO:**
-
-> La señal interna es un promedio rolling de **30 días de precios online**. El CPI oficial es **YoY anual** basado en encuesta de hogares. Son **metodológicamente distintos**: distinto canal, distinta canasta, distinta frecuencia, distinto año base.
-
-- La comparación es **direccional**, no equivalente.
-- Un gap de +5pp no significa que "la inflación real es 5pp más alta que la oficial" — puede reflejar diferencias de canal, composición de canasta o rezago temporal.
-- En el API, este indicador siempre incluye `period_caveat` en la respuesta para evitar interpretaciones incorrectas.
-- En reportes públicos, etiquetar como "señal de góndola vs referencia macro" — nunca como "inflación real vs inflación oficial".
-
-**Uso legítimo:**
-- Señal anticipatoria de presión de precios en canal moderno
-- Divergencia sectorial (supermercados vs canasta IPC)
-- Análisis de procurement para compras de corto plazo
+> "Inflación de góndola" · "Inflación del X%" *(sin calificador metodológico)*
 
 ---
 
-### 4. Coverage Table — `coverage_matrix`
+## 2. Comparación con IPC oficial
 
-| Campo | Valor |
-|-------|-------|
-| **Endpoint** | `GET /v1/coverage/matrix` |
-| **Umbral mínimo** | 60% cobertura para publicar datos del país |
+### Reglas
 
-**Qué mide:** Cobertura del collector por país y línea de producto — % de retailers activos con datos frescos en las últimas 24h.
+1. **Nunca** publicar "brecha de X pp vs IPC general" como titular.
+2. Comparación permitida solo si:
+   - Período alineado (ambos mensuales **o** ambos anuales)
+   - Benchmark = sub-índice **alimentos y bebidas**, no IPC headline
+   - Nota metodológica visible en el mismo bloque (no solo pie de página)
+3. Si no se cumplen las condiciones → omitir comparación numérica; usar texto cualitativo.
 
-**Campos en la respuesta del brief:**
-```json
-{
-  "coverage": {
-    "PE": { "pct": 87, "active_stores": 18, "total_stores": 21, "stale_stores": [] },
-    "AR": { "pct": 61, "active_stores": 13, "total_stores": 21, "stale_stores": ["wong_ar"] }
-  },
-  "coverage_threshold_pct": 60,
-  "coverage_warning": null
-}
+### Copy estándar (cuando no hay alineación)
+
+> "RPV mide alta frecuencia en retail online indexado. El IPC INEI usa metodología distinta, canasta ampliada y canales mixtos. No son directamente comparables."
+
+### Campo API legacy
+
+`collector_vs_official_gap` / `vs_official_cpi_gap_pp` — solo para uso interno o anexo metodológico con las condiciones anteriores. No en headlines públicos.
+
+---
+
+## 3. Basket Stress Index (BSI)
+
+### Fórmula
+
+```
+BSI = canasta_total_hoy / median(canasta_total, últimos 30 días)
 ```
 
-**Regla de publicación:** Si cobertura < 60% para un país, no publicar datos de ese país en reportes externos. El data-gate (`collector_stale`) bloquea el brief completo si la cobertura global está degradada.
+- `canasta_total` = suma de precios unitarios de los 10 ítems de referencia CLI Market (canasta básica), por país/moneda
+- Escala: **índice 1.0 = sin estrés** (nivel histórico mediano)
+  - `< 0.95` — aliviado
+  - `0.95 – 1.05` — estable
+  - `1.05 – 1.15` — presión moderada
+  - `> 1.15` — estrés elevado
+
+### Publicación obligatoria
+
+Cada emisión incluye: valor actual, banda interpretativa, mediana 30d de referencia, n de tiendas en la canasta.
+
+### Diferencia vs Price Dispersion
+
+| | BSI | Price Dispersion |
+|---|-----|------------------|
+| Dimensión | Temporal (mismo retailer, distintos momentos) | Cross-sectional (distintos retailers, mismo momento) |
+| Pregunta | ¿La canasta subió vs su propio histórico? | ¿Cuánto divergen precios entre cadenas hoy? |
+| Ortogonalidad | Sí — pueden moverse en direcciones opuestas | |
 
 ---
 
-## Indicadores de soporte
+## 4. Affordability Ratio
 
-### `promo_intensity`
-% de SKUs con `price < list_price` en el período. Mide agresividad promocional en góndola.
+### Variantes (v2)
 
-### `price_dispersion`
-Desviación estándar relativa de precios para el mismo producto entre retailers. Alta dispersión = oportunidad de arbitraje para procurement.
+| Variante | Fórmula | Uso |
+|----------|---------|-----|
+| **Best case** | `salario_mínimo / precio_canasta_retailer_más_barato` | Oportunidad máxima si el hogar optimiza |
+| **Promedio** *(titular)* | `salario_mínimo / precio_canasta_promedio_ponderado` | Indicador principal |
+| **Worst case** | `salario_mínimo / precio_canasta_retailer_más_caro` | Costo de no comparar |
 
-### `food_inflation_spread`
-Spread entre la señal de inflación de alimentos (línea supermercados) y la señal promedio global. Indicador sectorial — no equivale al índice de alimentos del IPC oficial.
+Ponderación promedio: por participación de tiendas con datos en el país (peso = 1/n tiendas si no hay volumen de ventas).
 
----
+### Disclaimer obligatorio
 
-## Fuentes externas
-
-| Fuente | Indicador | Latencia | Uso |
-|--------|-----------|----------|-----|
-| Banco Mundial (`FP.CPI.TOTL.ZG`) | CPI YoY anual | 1–2 años | `collector_vs_official_gap` |
-| FMI | Inflation YoY | 1 año | `macro_validation` |
-| Wikipedia Pageviews | Momentum por categoría | Diario | `demand_outlook`, `staple_demand` |
-| Open Food Facts | Match rate / NOVA score | Semanal | Product intelligence |
-| Open-Meteo | Weather alerts | Horario | `logistics_risk` |
-| CEPAL | Salario mínimo real | Anual | `labor_stress` / `wage_affordability` |
-
-**Nota sobre latencia macro:** Los datos del Banco Mundial y FMI tienen latencia de 1–2 años. Se usan como referencia histórica de dirección, no como dato en tiempo real. Siempre mostrar el año de referencia junto al valor.
+> La canasta CLI Market es un benchmark referencial de productos esenciales en canales digitales verificados. No representa el gasto mensual total de un hogar peruano, que incluye canales no digitales, servicios y mayor variedad de categorías.
 
 ---
 
-## Disclaimers estándar
+## 5. Price Dispersion
 
-### Para reportes externos (PIR, posts, decks):
-> "Los datos de CLI Market miden velocidad de precios en góndola online (canal moderno). No reemplazan indicadores oficiales de inflación (INEI, INDEC, DANE, INEGI, INE, INEC, BCCh, INE-UY)."
+### Métrica estándar: coeficiente de variación (CV)
 
-### Para el gap CPI:
-> "Comparación direccional entre señal de góndola rolling 30d y CPI oficial YoY anual. Metodologías distintas — no reportar como equivalentes."
+Para cada grupo de productos comparables (misma línea + moneda + match semántico):
 
-### Para RPV en encabezados:
-> "Retail Price Velocity (RPV): cambio de precio en góndola online en {N} días. ≠ IPC oficial."
+```
+CV = σ(precios) / μ(precios) × 100
+```
+
+- `σ` = desviación estándar muestral entre retailers
+- `μ` = media aritmética de precios observados
+- Reporte agregado = media de CV por grupo, ponderada por n de retailers
+
+### Por qué CV y no (max−min)/min
+
+- Robusto a un outlier extremo de un solo retailer
+- Comparable entre categorías con distintos niveles de precio
+- Estándar en literatura de price dispersion
+
+### Deprecado
+
+`(max − min) / min` — no usar en publicaciones v2 salvo nota de transición.
 
 ---
 
-## Historial de cambios
+## 6. Promo Intensity
 
-| Fecha | Cambio | Motivo |
-|-------|--------|--------|
-| 2026-06-24 | `staple_price_momentum` renombrado a RPV en display | Evitar confusión con CPI |
-| 2026-06-24 | BSI escala explícita 0–1+ documentada | Ambigüedad entre raw index y normalizado |
-| 2026-06-24 | `collector_vs_official_gap` añade `period_caveat` en API | Mismatch temporal 30d vs YoY |
-| 2026-06-24 | Coverage table añadida al brief | P0.4 PRD — umbral 60% |
+### Definición operacional
+
+```
+Promo Intensity = (SKUs con descuento ≥ 3%) / SKUs totales observados × 100
+```
+
+**Promoción activa** = `list_price` presente y `(list_price − price) / list_price ≥ 0.03`
+
+### Publicación
+
+Siempre citar: umbral 3%, n SKUs, ventana de captura (refresh 4–8h), retailers incluidos.
+
+### Exploración v2 (no bloqueante)
+
+- Promo por categoría (lácteos, aceites, granos)
+- Promo por retailer
+- Promo velocity (entrada/salida de promociones)
+
+---
+
+## 7. Coverage & Freshness
+
+### Tabla obligatoria en cada reporte
+
+| Retailer | País | SKUs indexados | % catálogo activo | Último snapshot | Refresh SLA |
+|----------|------|----------------|-------------------|-----------------|-------------|
+| … | … | n | % | ISO timestamp | 4h / 8h |
+
+Totales: SKUs únicos, retailers activos, cobertura agregada %, fecha de corte UTC.
+
+### Umbral de publicación
+
+| Cobertura agregada | Etiqueta | Uso público |
+|--------------------|----------|---------------|
+| ≥ 60% | Normal | Claims en GTM, prensa, LinkedIn data-gated |
+| < 60% | `[COBERTURA PARCIAL]` | Solo clientes con disclaimer; sin claims agregados |
+
+Fuente: `GET /v1/coverage/matrix` + `store_health` en `/dashboard/data`.
+
+---
+
+## 8. Google Trends
+
+### Estado actual (P2)
+
+CLI Market observa **correlación** entre volúmenes de búsqueda (`gtrends_search_momentum`) y movimientos de precio (RPV). La dirección causal y el lag óptimo están en proceso de caracterización.
+
+### Comunicación permitida
+
+> "CLI Market observa correlación entre volúmenes de búsqueda y movimientos de precio. La dirección causal y el lag óptimo están en proceso de caracterización."
+
+### Comunicación prohibida
+
+Implicar que Trends **causa** o **predice** precios sin análisis de Granger/lag documentado.
+
+---
+
+## Referencias
+
+- [DATA-MOAT-INDICATORS.md](DATA-MOAT-INDICATORS.md) — catálogo API `indicator_definitions`
+- [prd-intelligence-v2-methodology.md](prd-intelligence-v2-methodology.md) — PRD y priorización
+- [price-pulse-workflow.md](agents/price-pulse-workflow.md) — pipeline de reportes
+- [linkedin/data-gate.md](../tools/content-repo-template/linkedin/data-gate.md) — gate GTM para cifras agregadas
