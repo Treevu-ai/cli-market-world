@@ -1,6 +1,6 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
-import { PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { CTA } from "@/lib/ctaCopy";
 
 export default function FinalCTASection() {
   const { lang } = useLang();
@@ -25,16 +25,16 @@ export default function FinalCTASection() {
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
-            href={PRICING_BUILD_HASH}
+            href={CTA.getApiKey.href}
             className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-base font-semibold px-8 py-3 hover:bg-[#8fff6e] active:bg-[#5be041] transition-colors shadow-lg shadow-[#7CFF5B]/20"
           >
-            {isES ? "Obtener API Key →" : "Get API Key →"}
+            {isES ? CTA.getApiKey.es : CTA.getApiKey.en}
           </a>
           <a
-            href="/contact"
+            href={CTA.bookDemo.href}
             className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#FAFAFA] text-base font-semibold px-8 py-3 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors"
           >
-            {isES ? "Reservar Demo →" : "Book Demo →"}
+            {isES ? CTA.bookDemo.es : CTA.bookDemo.en}
           </a>
         </div>
       </div>

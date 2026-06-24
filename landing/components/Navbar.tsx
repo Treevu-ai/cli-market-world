@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { TOP_NAV, TOP_NAV_GROUP, PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { TOP_NAV, TOP_NAV_GROUP } from "@/lib/siteNav";
+import { CTA } from "@/lib/ctaCopy";
 import { useActiveSection } from "@/hooks/useActiveSection";
 
 function Logo() {
@@ -38,8 +39,8 @@ export default function Navbar() {
   }, [open]);
 
   const close = () => setOpen(false);
-  const signUpCta = isES ? "Obtener API Key" : "Get API Key";
-  const signInCta = isES ? "Iniciar sesión" : "Sign in";
+  const signUpCta = isES ? CTA.signUp.es : CTA.signUp.en;
+  const signInCta = isES ? CTA.signIn.es : CTA.signIn.en;
 
   return (
     <nav
@@ -81,23 +82,23 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-3 shrink-0">
           <a
-            href="/retailers"
+            href={CTA.forRetailers.href}
             className="kimi-nav-link text-xs text-[#7CFF5B] font-medium whitespace-nowrap hover:text-[#8fff6e] transition-colors"
           >
-            {isES ? "Para retailers" : "For retailers"}
+            {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
           </a>
           <button onClick={() => setLang(isES ? "en" : "es")}
             className="kimi-nav-link text-xs text-[#A1A1AA] hover:text-[#FAFAFA] cursor-pointer transition-colors">
             {isES ? "EN" : "ES"}
           </button>
           <a
-            href="/account"
+            href={CTA.signIn.href}
             className="kimi-nav-link text-xs text-[#A1A1AA] hover:text-[#FAFAFA] whitespace-nowrap transition-colors"
           >
             {signInCta}
           </a>
           <a
-            href={PRICING_BUILD_HASH}
+            href={CTA.signUp.href}
             className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-xs font-semibold px-4 py-2 hover:bg-[#8fff6e] transition-colors whitespace-nowrap shadow-sm"
           >
             {signUpCta}
@@ -126,19 +127,19 @@ export default function Navbar() {
               {isES ? item.es : item.en}
             </a>
           ))}
-          <a href="/retailers" onClick={close}
+          <a href={CTA.forRetailers.href} onClick={close}
              className="text-sm font-medium text-[#7CFF5B] hover:text-[#8fff6e] transition-colors">
-            {isES ? "Para retailers" : "For retailers"}
+            {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
           </a>
-          <a href="/contact" onClick={close}
+          <a href={CTA.contact.href} onClick={close}
              className="text-sm font-medium text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors">
-            {isES ? "Contacto" : "Contact"}
+            {isES ? CTA.contact.es : CTA.contact.en}
           </a>
-          <a href="/account" onClick={close}
+          <a href={CTA.signIn.href} onClick={close}
              className="text-sm font-medium text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors">
             {signInCta}
           </a>
-          <a href={PRICING_BUILD_HASH} onClick={close}
+          <a href={CTA.signUp.href} onClick={close}
              className="inline-flex items-center justify-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-sm font-semibold px-6 py-3 mt-1 hover:bg-[#8fff6e] transition-colors">
             {signUpCta}
           </a>
