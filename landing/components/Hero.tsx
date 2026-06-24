@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 import { CTA } from "@/lib/ctaCopy";
 
 export default function Hero() {
@@ -46,7 +45,7 @@ export default function Hero() {
       <div className="landing-container-wide pt-20 pb-16 sm:pt-24 sm:pb-20 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
 
-          {/* Left column — copy */}
+          {/* Left — copy */}
           <div className="flex-1 min-w-0">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -72,29 +71,11 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="mt-5 text-base sm:text-lg max-w-[540px] leading-relaxed stripe-body"
+              className="mt-5 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
             >
-              {isES ? (
-                <>
-                  <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
-                  compara toda la canasta entre 41 retailers verificados, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada.
-                  <br /><br />
-                  <span className="text-[#A1A1AA]">
-                    Pago vía Yape, Plin o PayPal a través de una orden interna CLI Market —
-                    no es checkout directo en Wong, Rappi ni Mercado Libre.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
-                  compares your full basket across 41 verified retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call.
-                  <br /><br />
-                  <span className="text-[#A1A1AA]">
-                    Payment via Yape, Plin, or PayPal through an internal CLI Market order —
-                    not direct checkout on Wong, Rappi, or Mercado Libre.
-                  </span>
-                </>
-              )}
+              {isES
+                ? "API, CLI y herramientas MCP para buscar, comparar y ejecutar compras en 41 retailers verificados de LATAM."
+                : "API, CLI, and MCP tools to search, compare, and execute purchases across 41 verified LATAM retailers."}
             </motion.p>
 
             {mounted && (
@@ -138,7 +119,7 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right column — terminal */}
+          {/* Right — terminal */}
           <motion.div
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
