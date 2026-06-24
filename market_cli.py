@@ -1273,7 +1273,7 @@ def cmd_inflation(args):
         else f"{n_products} products · {len(items)} lines"
     )
     console.print(f"\n[bold]RPV promedio (7d): [{color}]{avg:+.1f}%[/] ({meta})[/]")
-    console.print(f"[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
+    console.print("[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
     if items:
         title = "Variación por línea" if not ui.is_en() else "Change by line"
         table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
