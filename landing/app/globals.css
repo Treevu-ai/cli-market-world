@@ -102,6 +102,12 @@
   box-shadow: 0 0 0 2px rgba(124, 255, 91, 0.2);
 }
 
+/* Global focus-visible ring — WCAG 2.1 §2.4.7 */
+:focus-visible {
+  outline: 2px solid #7CFF5B;
+  outline-offset: 2px;
+}
+
 .btn-action {
   display: inline-flex;
   align-items: center;
@@ -1038,6 +1044,12 @@ select.input-cyber option {
 
 .btn-mint:disabled {
   opacity: 0.4;
+}
+
+.btn-mint:focus-visible {
+  outline: 2px solid #7CFF5B;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(124, 255, 91, 0.25);
 }
 
 .code-block-cyber {
