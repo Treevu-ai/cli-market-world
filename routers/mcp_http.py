@@ -47,6 +47,14 @@ _PRO_TOOLS = frozenset({
     "market_cart_update",
     "market_checkout",
     "market_orders",
+    "market_alert_create",
+    "market_alert_delete",
+    "market_household_update",
+    "market_ecosystem_radar",
+    "market_procurement_bulk",
+    "market_scan",
+    "market_intel_refresh",
+    "market_enrichment_refresh",
 })
 
 _UPGRADE_MSG = (
@@ -295,6 +303,10 @@ _TOOLS = [
                     },
                 },
                 "country": {"type": "string"},
+                "line": {
+                    "type": "string",
+                    "description": "Filter by store type: supermercados, farmacias, electro, hogar, departamentales, moda, automotriz",
+                },
             },
         },
     },
@@ -419,14 +431,349 @@ _TOOLS = [
             },
         },
     },
+    # ── Free (extended analytics) ─────────────────────────────────────────────
+    {
+        "name": "market_price_history",
+        "description": (
+            "Historical price snapshots from the data moat. "
+            "Filter by product_id, store, or product line. Useful for trend analysis and auditing."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {"type": "string", "description": "Product ID to filter by"},
+                "store": {"type": "string", "description": "Store key, e.g. 'wong_pe'"},
+                "line": {"type": "string", "description": "Product line: supermercados, farmacias, etc."},
+                "limit": {"type": "integer", "default": 50},
+            },
+        },
+    },
+    {
+        "name": "market_brands",
+        "description": "Top brands in the data moat by snapshot count. Filter by product line.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "line": {"type": "string"},
+                "country": {"type": "string"},
+                "limit": {"type": "integer", "default": 20},
+            },
+        },
+    },
+    {
+        "name": "market_indicators",
+        "description": (
+            "Latest enrichment indicator values: Open Food Facts, World Bank, weather, and custom signals. "
+            "Filter by country or product line."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+                "limit": {"type": "integer", "default": 50},
+            },
+        },
+    },
+    {
+        "name": "market_stock",
+        "description": "Latest stock snapshot for a product in a specific store.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["product_id", "store"],
+            "properties": {
+                "product_id": {"type": "string"},
+                "store": {"type": "string", "description": "Store key, e.g. 'wong_pe'"},
+            },
+        },
+    },
+    {
+        "name": "market_delivery",
+        "description": "Delivery availability and estimated days for a product at a given store.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["product_id", "store"],
+            "properties": {
+                "product_id": {"type": "string"},
+                "store": {"type": "string"},
+                "zipcode": {"type": "string", "description": "Optional postal code"},
+            },
+        },
+    },
+    {
+        "name": "market_dashboard",
+        "description": (
+            "Business-intelligence feed: moat health, collector status, coverage by country and line, "
+            "data gate signals (collector_stale). Use before any procurement recommendation."
+        ),
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    # ── Pro (alert management) ────────────────────────────────────────────────
+    {
+        "name": "market_alert_create",
+        "description": (
+            "[Pro] Create a price alert. Triggers when price moves above/below a threshold. "
+            "Conditions: price_increase, price_decrease, price_change, price_below, price_above."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["condition", "product_query"],
+            "properties": {
+                "condition": {
+                    "type": "string",
+                    "enum": ["price_increase", "price_decrease", "price_change", "price_below", "price_above"],
+                },
+                "product_query": {"type": "string", "description": "Product name or search query"},
+                "name": {"type": "string", "description": "Optional label for the alert"},
+                "store": {"type": "string", "description": "Limit alert to a specific store"},
+                "threshold_pct": {"type": "number", "default": 5.0, "description": "Trigger threshold in %"},
+                "notify_email": {"type": "string", "description": "Email to notify on trigger"},
+                "notify_webhook": {"type": "string", "description": "Webhook URL to POST on trigger"},
+                "cooldown_hours": {"type": "integer", "default": 24, "description": "Min hours between notifications"},
+            },
+        },
+    },
+    {
+        "name": "market_alert_delete",
+        "description": "[Pro] Delete a price alert by its ID.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["alert_id"],
+            "properties": {
+                "alert_id": {"type": "string"},
+            },
+        },
+    },
+    # ── Free (intel + shop) ───────────────────────────────────────────────────
+    {
+        "name": "market_affordability",
+        "description": (
+            "Affordability OS — canasta pressure, wage ratio, macro gap vs official CPI, regulatory headlines. "
+            "One-call cost-of-living composite for LATAM. Countries: PE, AR, MX, BR, CO, CL."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "line": {"type": "string", "default": "supermercados"},
+                "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_substitutes",
+        "description": (
+            "Product substitutes with unit-normalized savings and Nutri-Score tradeoffs. "
+            "Use when the exact SKU is unavailable or to optimize basket cost."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["query", "country"],
+            "properties": {
+                "query": {"type": "string", "description": "Product name to match"},
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "store": {"type": "string"},
+                "limit": {"type": "integer", "default": 3},
+            },
+        },
+    },
+    {
+        "name": "market_inflation_report",
+        "description": (
+            "Inflation Intelligence — where is price pressure increasing? "
+            "Returns pressure level (stable/rising/rising_fast/falling/above_official) "
+            "from internal shelf inflation and macro CPI gap."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "line": {"type": "string"},
+                "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_exchange",
+        "description": "Convert amounts between operating currencies (PEN, ARS, BRL, MXN, COP, CLP, EUR, USD).",
+        "inputSchema": {
+            "type": "object",
+            "required": ["amount", "from_currency", "to_currency"],
+            "properties": {
+                "amount": {"type": "number"},
+                "from_currency": {"type": "string", "description": "e.g. PEN, ARS, USD"},
+                "to_currency": {"type": "string", "description": "e.g. USD, EUR, MXN"},
+            },
+        },
+    },
+    {
+        "name": "market_enrich",
+        "description": "Search Open Food Facts for nutritional enrichment data (Nutri-Score, ingredients, allergens).",
+        "inputSchema": {
+            "type": "object",
+            "required": ["query"],
+            "properties": {
+                "query": {"type": "string"},
+                "limit": {"type": "integer", "default": 5},
+            },
+        },
+    },
+    {
+        "name": "market_categories",
+        "description": "Explore VTEX category tree for a retailer. Deep catalog discovery.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["store"],
+            "properties": {
+                "store": {"type": "string", "description": "Store key, e.g. 'wong_pe'"},
+            },
+        },
+    },
+    {
+        "name": "market_voice",
+        "description": "Transcribe voice audio to text. Pass a public audio file URL (.ogg, .mp3, .wav).",
+        "inputSchema": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+                "url": {"type": "string", "description": "Public audio file URL"},
+            },
+        },
+    },
+    {
+        "name": "market_ticket",
+        "description": (
+            "Scan a purchase receipt via OCR and compare prices against the data moat. "
+            "Pass a public image URL. Set submit_to_crowd=true to contribute to moat validation."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+                "url": {"type": "string", "description": "Receipt image URL (.jpg, .png)"},
+                "country": {"type": "string", "description": "PE, AR, BR, MX, CO, CL"},
+                "submit_to_crowd": {"type": "boolean", "default": False},
+                "line_items": {"type": "array", "description": "Optional parsed line items for crowd submit"},
+            },
+        },
+    },
+    {
+        "name": "market_moat_confidence",
+        "description": "Crowd-sourced moat confidence score from receipt confirmations (7-day window).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {"type": "string"},
+                "store": {"type": "string"},
+                "name": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "market_subscription",
+        "description": "Current subscription plan: tier, rate limits, and available API keys.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_preferences",
+        "description": "User preferences from purchase history: favorite stores and total spent.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "market_household_get",
+        "description": "[Starter] Household profile: monthly budget, dietary restrictions, staple list, default stores.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    # ── Pro (enterprise intel + account) ──────────────────────────────────────
+    {
+        "name": "market_ecosystem_radar",
+        "description": "[Pro] Ecosystem launches radar — curated Product Hunt cache. Retail and food-tech signal only.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "topic": {"type": "string", "default": "food"},
+                "days": {"type": "integer", "default": 7},
+                "limit": {"type": "integer", "default": 20},
+            },
+        },
+    },
+    {
+        "name": "market_household_update",
+        "description": "[Pro] Create or update household profile (budget, restrictions, staples). Pass patch=true to merge.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["payload"],
+            "properties": {
+                "payload": {
+                    "type": "object",
+                    "description": "Household schema: size, country, budget_monthly, restrictions, staple_list",
+                },
+                "patch": {"type": "boolean", "default": False},
+            },
+        },
+    },
+    {
+        "name": "market_procurement_bulk",
+        "description": "[Enterprise] B2B bulk procurement signals for SKU lists. Returns signals, substitutes, and export.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["lines"],
+            "properties": {
+                "country": {"type": "string", "default": "PE"},
+                "organization_id": {"type": "string"},
+                "lines": {
+                    "type": "array",
+                    "description": '[{"sku_query":"arroz 50kg","qty":10,"unit":"kg"}]',
+                },
+                "include_substitutes": {"type": "boolean", "default": True},
+                "output": {"type": "string", "default": "json"},
+            },
+        },
+    },
+    # ── Admin ─────────────────────────────────────────────────────────────────
+    {
+        "name": "market_scan",
+        "description": "[Admin] Scan for new VTEX stores. Admin-only.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "line": {"type": "string", "description": "Optional business line filter"},
+            },
+        },
+    },
+    {
+        "name": "market_intel_refresh",
+        "description": "[Admin] Recalculate internal indicators and fetch public APIs (FX, World Bank CPI, OFF, weather).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "market_enrichment_refresh",
+        "description": "[Admin] Refresh enrichment indicators only (OFF, Wiki, weather, food CPI).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+            },
+        },
+    },
 ]
 
 
 # ── Tool execution ────────────────────────────────────────────────────────────
 
+_SLOW_TOOLS = frozenset({"market_basket", "market_optimize_purchase", "market_cart", "market_checkout"})
+
+
 async def _call_tool(name: str, args: dict, token: str) -> dict:
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    async with httpx.AsyncClient(timeout=20.0) as client:
+    _timeout = 60.0 if name in _SLOW_TOOLS else 20.0
+    async with httpx.AsyncClient(timeout=_timeout) as client:
         # ── Free tools ────────────────────────────────────────────────────────
         if name == "market_search":
             r = await client.post(f"{_API_BASE}/products/search", json=args, headers=headers)
@@ -478,6 +825,78 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.post(f"{_API_BASE}/checkout", json=args, headers=headers)
         elif name == "market_orders":
             r = await client.get(f"{_API_BASE}/orders", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        # ── Free (extended analytics) ─────────────────────────────────────────
+        elif name == "market_price_history":
+            r = await client.get(f"{_API_BASE}/analytics/price-history", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_brands":
+            r = await client.get(f"{_API_BASE}/analytics/brands", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_indicators":
+            r = await client.get(f"{_API_BASE}/analytics/indicators", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_stock":
+            pid = args.get("product_id", "")
+            r = await client.get(f"{_API_BASE}/products/stock/{pid}", params={"store": args.get("store")}, headers=headers)
+        elif name == "market_delivery":
+            pid = args.get("product_id", "")
+            params = {k: v for k, v in args.items() if k != "product_id" and v is not None}
+            r = await client.get(f"{_API_BASE}/products/delivery/{pid}", params=params, headers=headers)
+        elif name == "market_dashboard":
+            r = await client.get(f"{_API_BASE}/dashboard/data", headers=headers)
+        # ── Pro (alert management) ────────────────────────────────────────────
+        elif name == "market_alert_create":
+            r = await client.post(f"{_API_BASE}/v1/alerts", json=args, headers=headers)
+        elif name == "market_alert_delete":
+            alert_id = args.get("alert_id", "")
+            r = await client.delete(f"{_API_BASE}/v1/alerts/{alert_id}", headers=headers)
+        # ── Free (intel + shop) ───────────────────────────────────────────────
+        elif name == "market_affordability":
+            r = await client.get(f"{_API_BASE}/v1/intel/affordability", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_substitutes":
+            r = await client.get(f"{_API_BASE}/v1/products/substitutes", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_inflation_report":
+            r = await client.get(f"{_API_BASE}/v1/intel/inflation-report", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_exchange":
+            r = await client.post(f"{_API_BASE}/v1/utils/exchange", json={"amount": args["amount"], "from": args["from_currency"], "to": args["to_currency"]}, headers=headers)
+        elif name == "market_enrich":
+            r = await client.get(f"{_API_BASE}/products/enrich", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_categories":
+            store = args.get("store", "")
+            r = await client.get(f"{_API_BASE}/categories/{store}", headers=headers)
+        elif name == "market_voice":
+            r = await client.post(f"{_API_BASE}/v1/voice/transcribe-url", json={"url": args["url"]}, headers=headers)
+        elif name == "market_ticket":
+            payload: dict = {"url": args["url"], "country": args.get("country")}
+            r = await client.post(f"{_API_BASE}/v1/ticket/scan-url", json=payload, headers=headers)
+            if r.status_code < 400 and args.get("submit_to_crowd"):
+                crowd = await client.post(
+                    f"{_API_BASE}/v1/receipts/submit",
+                    json={"url": args["url"], "country": args.get("country", "PE"), "line_items": args.get("line_items")},
+                    headers=headers,
+                )
+                base = r.json() if r.status_code < 400 else {"error": r.text[:200]}
+                return {**base, "crowd_submission": crowd.json() if crowd.status_code < 400 else {"error": crowd.text[:200]}}
+        elif name == "market_moat_confidence":
+            r = await client.get(f"{_API_BASE}/v1/moat/confidence", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_subscription":
+            r = await client.get(f"{_API_BASE}/auth/subscription", headers=headers)
+        elif name == "market_preferences":
+            r = await client.get(f"{_API_BASE}/agent/preferences", headers=headers)
+        elif name == "market_household_get":
+            r = await client.get(f"{_API_BASE}/v1/household", headers=headers)
+        # ── Pro (enterprise intel + account) ──────────────────────────────────
+        elif name == "market_ecosystem_radar":
+            r = await client.get(f"{_API_BASE}/v1/ecosystem/launches", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_household_update":
+            method = client.patch if args.get("patch") else client.put
+            r = await method(f"{_API_BASE}/v1/household", json=args["payload"], headers=headers)
+        elif name == "market_procurement_bulk":
+            r = await client.post(f"{_API_BASE}/v1/intel/procurement-bulk", json=args, headers=headers)
+        # ── Admin ─────────────────────────────────────────────────────────────
+        elif name == "market_scan":
+            r = await client.post(f"{_API_BASE}/v1/admin/scan-stores", json={"line": args.get("line")}, headers=headers)
+        elif name == "market_intel_refresh":
+            r = await client.post(f"{_API_BASE}/v1/intel/refresh", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_enrichment_refresh":
+            r = await client.post(f"{_API_BASE}/v1/intel/enrichment/refresh", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         else:
             return {"error": f"Unknown tool: {name}"}
 

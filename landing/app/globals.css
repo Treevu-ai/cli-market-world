@@ -16,7 +16,7 @@
   --color-cm-mint-dim: rgba(124,255,91,0.7);
   --color-cm-on-mint: #09090B;
   --color-cm-on-surface: #FAFAFA;
-  --color-cm-on-surface-variant: #A1A1AA;
+  --color-cm-on-surface-variant: #C4C4C7;
   --color-cm-outline-variant: #27272A;
   --color-cm-secondary: #7CFF5B;
   --color-cm-secondary-container: rgba(124,255,91,0.15);
@@ -61,7 +61,7 @@
   --cm-mint-dim: rgba(124,255,91,0.7);
   --cm-on-mint: #09090B;
   --cm-on-surface: #FAFAFA;
-  --cm-on-surface-variant: #A1A1AA;
+  --cm-on-surface-variant: #C4C4C7;
   --cm-outline-variant: #27272A;
   --cm-secondary: #7CFF5B;
   --cm-secondary-container: rgba(124,255,91,0.15);
@@ -100,6 +100,12 @@
 
 .brand-mode-operations .energy-border-active {
   box-shadow: 0 0 0 2px rgba(124, 255, 91, 0.2);
+}
+
+/* Global focus-visible ring — WCAG 2.1 §2.4.7 */
+:focus-visible {
+  outline: 2px solid #7CFF5B;
+  outline-offset: 2px;
 }
 
 .btn-action {
@@ -886,7 +892,7 @@ section.landing-section-alt:not(.landing-section) {
 .modal-panel-dark,
 .modal-panel-dark.card-cyber {
   --cm-on-surface: #FAFAFA;
-  --cm-on-surface-variant: #A1A1AA;
+  --cm-on-surface-variant: #C4C4C7;
   --cm-outline-variant: #27272A;
   --cm-surface-low: #18181B;
   --cm-surface: #111113;
@@ -1038,6 +1044,12 @@ select.input-cyber option {
 
 .btn-mint:disabled {
   opacity: 0.4;
+}
+
+.btn-mint:focus-visible {
+  outline: 2px solid #7CFF5B;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(124, 255, 91, 0.25);
 }
 
 .code-block-cyber {

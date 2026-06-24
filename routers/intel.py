@@ -31,6 +31,9 @@ from backend_interface import (
     get_latest_values,
     get_scores,
 )
+from market_intel_v2 import PROMO_DISCOUNT_THRESHOLD, _RPV_DISCLAIMER_ES, compute_affordability_v2
+from market_core.market_intel_products import compute_price_deal_alerts
+from market_core.response_envelope import build_provenance, envelope, timing
 
 logger = logging.getLogger("market.server").getChild("intel")
 router = APIRouter(prefix="/v1/intel", tags=["intelligence"])
@@ -320,16 +323,27 @@ def get_inflation(
 
         return {
             "items": items,
+            "metric_name": "Retail Price Velocity (RPV)",
+            "retail_price_velocity_pct": avg_inflation,
             "avg_inflation_pct": avg_inflation,
+            "avg_rpv_7d_pct": avg_inflation,
             "avg_inflation_note": (
                 "Promedio ponderado por n_products. Mezcla monedas: interprete por currency."
                 if mixed_currency
                 else "Promedio ponderado por n_products."
             ),
+            "period_note": (
+                f"Ventana: {days} días rolling de precios de góndola online. "
+                "No equivale a IPC oficial (encuesta de hogares, canasta mensual/anual). "
+                "CLI Market RPV ≠ CPI — distinto canal, canasta y período."
+            ),
             "days": days,
             "country": country,
             "line": line,
-            "disclaimer": "Inflación observada desde góndola online. No reemplaza IPC oficial (INEI, INDEC, etc.).",
+            "metric": "shelf_price_momentum_7d",
+            "metric_label": "Retail Price Velocity (RPV)",
+            "methodology": "docs/methodology.md#1-retail-price-velocity-rpv",
+            "disclaimer": _RPV_DISCLAIMER_ES,
         }
     finally:
         db.close()
@@ -352,33 +366,13 @@ def get_alerts(
     require_api_key(authorization)
     db = get_db()
     try:
-        params: list = [f"%{product}%", threshold_pct / 100.0]
-        store_clause = ""
-        if store:
-            store_clause = "AND store = ?"
-            params.append(store)
-        rows = db.execute(
-            f"""SELECT product_id, store, store_name, name, price, list_price, currency,
-                       url, queried_at,
-                       ROUND((list_price - price) * 100.0 / list_price, 1) AS discount_pct
-                FROM price_snapshots
-                WHERE name LIKE ?
-                  AND price > 0
-                  AND list_price > price
-                  AND (list_price - price) / list_price >= ?
-                  {store_clause}
-                ORDER BY (list_price - price) / list_price DESC
-                LIMIT ?""",
-            params + [limit],
-        ).fetchall()
-        results = [dict(r) for r in rows]
-        return {
-            "product": product,
-            "store": store,
-            "threshold_pct": threshold_pct,
-            "total": len(results),
-            "results": results,
-        }
+        return compute_price_deal_alerts(
+            db,
+            product=product,
+            store=store,
+            threshold_pct=threshold_pct,
+            limit=limit,
+        )
     finally:
         db.close()
 
@@ -531,11 +525,12 @@ def _refresh_internal_indicators(db, *, country: str | None = None, line: str | 
         store_params,
     ).fetchone()["n"]
 
-    # Promo intensity
+    # Promo intensity — umbral 3% (methodology.md §6)
     promo_count = db.execute(
         f"""SELECT COUNT(*) as n FROM price_snapshots
-            WHERE price > 0 AND list_price > price AND price < 999999 {store_filter}""",
-        store_params,
+            WHERE price > 0 AND list_price > price AND price < 999999
+              AND (list_price - price) * 1.0 / list_price >= ? {store_filter}""",
+        [PROMO_DISCOUNT_THRESHOLD, *store_params],
     ).fetchone()["n"]
 
     values_to_write: list[tuple] = []
@@ -565,6 +560,37 @@ def _refresh_internal_indicators(db, *, country: str | None = None, line: str | 
             logger.warning("_refresh_internal: %s skipped: %s", key, e)
 
     return written
+
+
+# ── Affordability v2 (overrides core route — registered before core_v1_router) ─
+
+@router.get("/affordability", summary="Affordability OS v2 — canasta promedio + best/worst")
+def intel_affordability_v2(
+    country: str = Query("PE", description="PE, AR, MX, BR, CO, CL"),
+    line: str = Query("supermercados"),
+    days: int = Query(30, ge=1, le=365),
+    enveloped: bool = Query(True),
+):
+    """Cost-of-living composite. Titular usa canasta promedio; ver docs/methodology.md §4."""
+    db = get_db()
+    try:
+        with timing() as t:
+            result = compute_affordability_v2(db, country=country, line=line, days=days)
+        confidence = "ok" if result.get("components", {}).get("canasta_average") else "low"
+        prov = build_provenance(
+            primary_source="price_snapshots",
+            methodology=result.get("methodology", "affordability_os_v2"),
+        )
+        if enveloped:
+            return envelope(
+                result,
+                confidence=confidence,
+                latency_ms=t.elapsed_ms,
+                extra_meta={"provenance": prov},
+            )
+        return result
+    finally:
+        db.close()
 
 
 # ── Price Pulse async jobs (Intelligence tier) ────────────────────────────────

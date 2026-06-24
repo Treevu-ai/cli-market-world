@@ -7,6 +7,7 @@ import WhyNowSection from "@/components/WhyNowSection";
 import SolutionSection from "@/components/SolutionSection";
 import CommerceStackSection from "@/components/CommerceStackSection";
 import WhoItsForSection from "@/components/WhoItsForSection";
+import ProcureCopilotSection from "@/components/ProcureCopilotSection";
 import MoatSection from "@/components/MoatSection";
 import MetricsSection from "@/components/MetricsSection";
 import QuickstartAPI from "@/components/QuickstartAPI";
@@ -18,7 +19,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#09090B] xl:pl-12">
+    <main id="main-content" className="relative min-h-screen bg-[#09090B] xl:pl-12">
       <Navbar />
       <SideNav />
       <ErrorBoundary>
@@ -29,10 +30,11 @@ export default function Home() {
           <WhyNowSection />
           <SolutionSection />
           <CommerceStackSection />
-          <WhoItsForSection />
           <MoatSection />
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <MetricsSection />
+          <WhoItsForSection />
+          <ProcureCopilotSection />
           <QuickstartAPI />
           <Pricing />
           <FAQ />

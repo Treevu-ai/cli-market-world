@@ -1,7 +1,7 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.10.0)
+> Package: pip install cli-market-world (v1.11.0)
 > Command: market-mcp
 > API: https://cli-market-production.up.railway.app
 > Stats: 81 retailers · 41 verified · 63,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
@@ -39,9 +39,9 @@ For Claude Desktop, add to claude_desktop_config.json:
 }
 ```
 
-## MCP tool bundles (default profile: 27 curated tools)
+## MCP tool bundles (default profile: 32 MCP tools)
 
-Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (49 tools, includes deprecated aliases).
+Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (57 tools, includes deprecated aliases).
 
 ### Shop (11 tools)
 Canonical: market_discover
@@ -61,8 +61,9 @@ market_whoami, market_subscription, market_favorites, market_price_alerts, marke
 ## Recommended flows by ICP
 
 ### Builder / AI agent
-1. `market_discover` → `market_search` → `market_compare` → `market_basket`
-2. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier)
+1. `market_optimize_purchase` — one call: basket compare, TCO, substitutes, action links (canonical entry point)
+2. Granular: `market_discover` → `market_search` → `market_compare` → `market_basket`
+3. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier, internal CLI Market order)
 
 ### Research / fintech
 1. `market_intel_brief` → `market_inflation` → `market_scores` (MCP)

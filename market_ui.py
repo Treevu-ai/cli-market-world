@@ -137,7 +137,9 @@ def json_exit(
 
 # ── Actionable errors & hints ───────────────────────────────────────────────────
 
-def error_next_commands(status: int | None, message: str) -> list[str]:
+def error_next_commands(status: int | None, message: str | list | None) -> list[str]:
+    if isinstance(message, list):
+        message = " ".join(str(m) for m in message)
     msg = (message or "").lower()
     if status == 401 or "token" in msg or "login" in msg:
         return ["market register", "market login", "market doctor"]
@@ -152,11 +154,13 @@ def error_next_commands(status: int | None, message: str) -> list[str]:
 
 def print_actionable_error(
     console: Console,
-    message: str,
+    message: str | list | None,
     *,
     status: int | None = None,
     title: str | None = None,
 ) -> None:
+    if isinstance(message, list):
+        message = " ".join(str(m) for m in message)
     en = is_en()
     cmds = error_next_commands(status, message)
     if title is None:

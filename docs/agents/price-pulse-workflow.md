@@ -66,7 +66,7 @@ python3 ops/price_pulse_agents.py --run       # todo en uno
 10 secciones en PDF de 10-15 páginas:
 
 1. Resumen Ejecutivo (Financial Analyst)
-2. Inflación Observada 7d (Financial Analyst)
+2. Retail Price Velocity 7d (Financial Analyst)
 3. Canasta Básica c/ trazabilidad IPC (Financial Analyst)
 4. Dispersión de Precios (Investment Researcher)
 5. Calidad del Dato (Bookkeeper)
