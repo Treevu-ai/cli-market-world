@@ -320,16 +320,27 @@ def get_inflation(
 
         return {
             "items": items,
-            "avg_inflation_pct": avg_inflation,
+            "metric_name": "Retail Price Velocity (RPV)",
+            "retail_price_velocity_pct": avg_inflation,
+            "avg_inflation_pct": avg_inflation,  # backward-compat alias
             "avg_inflation_note": (
                 "Promedio ponderado por n_products. Mezcla monedas: interprete por currency."
                 if mixed_currency
                 else "Promedio ponderado por n_products."
             ),
+            "period_note": (
+                f"Ventana: {days} días rolling de precios de góndola online. "
+                "No equivale a IPC oficial (encuesta de hogares, canasta mensual/anual). "
+                "CLI Market RPV ≠ CPI — distinto canal, canasta y período."
+            ),
             "days": days,
             "country": country,
             "line": line,
-            "disclaimer": "Inflación observada desde góndola online. No reemplaza IPC oficial (INEI, INDEC, etc.).",
+            "disclaimer": (
+                "Retail Price Velocity (RPV): velocidad de cambio de precios en góndola online. "
+                f"Ventana {days}d rolling. No reemplaza IPC oficial (INEI, INDEC, DANE, INEGI, etc.) "
+                "— metodologías distintas en canasta, canal y período de referencia."
+            ),
         }
     finally:
         db.close()
