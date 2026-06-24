@@ -43,7 +43,7 @@ export default function Hero() {
       style={{ borderBottom: "1px solid #27272A" }}
     >
       <div className="landing-container-wide pt-20 pb-16 sm:pt-24 sm:pb-20 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-14 xl:gap-20">
 
           {/* Left — copy */}
           <div className="flex-1 min-w-0">
@@ -121,31 +121,93 @@ export default function Hero() {
 
           {/* Right — terminal */}
           <motion.div
-            initial={{ opacity: 0, x: 16 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.32 }}
-            className="mt-10 lg:mt-0 lg:shrink-0 lg:w-[420px] xl:w-[460px]"
+            transition={{ duration: 0.7, delay: 0.32 }}
+            className="mt-12 lg:mt-0 lg:shrink-0 lg:w-[480px] xl:w-[520px]"
           >
-            <div
-              className="rounded-xl p-5 font-mono text-sm leading-relaxed"
-              style={{ background: "#0d1117", color: "#8b949e" }}
-            >
-              <div style={{ color: "#57c453" }}>
-                $ market optimize &quot;leche, arroz, aceite&quot; --country PE
+            {/* Window chrome */}
+            <div className="rounded-xl overflow-hidden border border-[#30363d]" style={{ background: "#0d1117" }}>
+              {/* Title bar */}
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]" style={{ background: "#161b22" }}>
+                <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+                <span className="ml-3 text-xs text-[#484f58] font-mono">cli-market — bash</span>
               </div>
-              <div className="mt-3" style={{ color: "#8b949e" }}>
-                {isES ? "Mejor opción:" : "Best option:"}
-              </div>
-              <div className="mt-1 pl-2">
-                <span style={{ color: "#e6edf3" }}>Metro PE</span>
-                <span style={{ color: "#3fb950" }}>{"      S/ 18.40"}</span>
-              </div>
-              <div className="pl-2">
-                <span style={{ color: "#e6edf3" }}>{isES ? "Sustituto" : "Substitute"}</span>
-                <span style={{ color: "#3fb950" }}>{"   Tottus S/ 17.80 ↓"}</span>
-              </div>
-              <div className="mt-3" style={{ color: "#8b949e" }}>
-                {isES ? "TCO calculado · Link Yape generado" : "TCO calculated · Yape link ready"}
+
+              {/* Terminal body */}
+              <div className="p-5 font-mono text-sm leading-relaxed space-y-1">
+                {/* Command */}
+                <div>
+                  <span style={{ color: "#3fb950" }}>❯</span>{" "}
+                  <span style={{ color: "#e6edf3" }}>market optimize </span>
+                  <span style={{ color: "#a5d6ff" }}>&quot;leche, arroz, aceite&quot;</span>{" "}
+                  <span style={{ color: "#ff7b72" }}>--country</span>{" "}
+                  <span style={{ color: "#ffa657" }}>PE</span>
+                </div>
+
+                {/* Scanning */}
+                <div className="pt-1" style={{ color: "#484f58" }}>
+                  {isES ? "▸ Escaneando 41 retailers..." : "▸ Scanning 41 retailers..."}
+                </div>
+
+                {/* Separator */}
+                <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
+
+                {/* Results header */}
+                <div className="pt-1 pb-0.5 flex justify-between">
+                  <span style={{ color: "#8b949e" }}>{isES ? "  Retailer" : "  Retailer"}</span>
+                  <span style={{ color: "#8b949e" }}>Total (S/)</span>
+                </div>
+
+                {/* Row 1 — winner */}
+                <div className="flex justify-between items-center rounded px-1" style={{ background: "rgba(63,185,80,0.08)" }}>
+                  <span>
+                    <span style={{ color: "#3fb950" }}>★ </span>
+                    <span style={{ color: "#e6edf3" }}>Tottus PE</span>
+                  </span>
+                  <span style={{ color: "#3fb950" }}>17.80</span>
+                </div>
+
+                {/* Row 2 */}
+                <div className="flex justify-between px-1">
+                  <span style={{ color: "#c9d1d9" }}>{"  "}Metro PE</span>
+                  <span style={{ color: "#c9d1d9" }}>18.40</span>
+                </div>
+
+                {/* Row 3 */}
+                <div className="flex justify-between px-1">
+                  <span style={{ color: "#8b949e" }}>{"  "}Plaza Vea</span>
+                  <span style={{ color: "#8b949e" }}>19.10</span>
+                </div>
+
+                {/* Row 4 */}
+                <div className="flex justify-between px-1">
+                  <span style={{ color: "#8b949e" }}>{"  "}Wong PE</span>
+                  <span style={{ color: "#8b949e" }}>19.85</span>
+                </div>
+
+                {/* Separator */}
+                <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
+
+                {/* Savings */}
+                <div className="pt-0.5 flex justify-between">
+                  <span style={{ color: "#8b949e" }}>
+                    {isES ? "  Ahorro vs. promedio" : "  Savings vs. avg"}
+                  </span>
+                  <span style={{ color: "#3fb950" }}>↓ S/ 1.18 (6.2%)</span>
+                </div>
+
+                {/* TCO + action */}
+                <div className="pt-2 flex flex-col gap-1">
+                  <span style={{ color: "#484f58" }}>
+                    {isES ? "  TCO calculado · sustitutos incluidos" : "  TCO calculated · substitutes included"}
+                  </span>
+                  <span style={{ color: "#58a6ff" }}>
+                    {isES ? "  → Link Yape generado ✓" : "  → Yape payment link ready ✓"}
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>
