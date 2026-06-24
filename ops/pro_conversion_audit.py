@@ -30,7 +30,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -259,23 +259,23 @@ def _fmt_console(report: dict) -> str:
     lines.append(f"  PRO CONVERSION AUDIT  [{ts} UTC]  (ventana: {report['window_days']}d)")
     lines.append(f"{'='*65}")
 
-    lines.append(f"\n  FUNNEL ACTUAL")
+    lines.append("\n  FUNNEL ACTUAL")
     lines.append(f"  {'Installs (30d)':<30} {fa['installs_30d']:>6}")
     lines.append(f"  {'Registrations':<30} {fa['registrations']:>6}")
     lines.append(f"  {'First search':<30} {fa['first_search']:>6}")
     lines.append(f"  {'Pro requests':<30} {fa['pro_requests']:>6}")
     lines.append(f"  {'Activated (pagaron)':<30} {fa['activated']:>6}")
     lines.append(f"  {'Unconverted Pro requests':<30} {fa['unconverted_pro_requests']:>6}  ← TARGET")
-    lines.append(f"")
+    lines.append("")
     lines.append(f"  Conversión actual:  {fa['conversion_rate_pct']}%")
     lines.append(f"  Objetivo P2:        {fa['conversion_target_pct']}%")
     lines.append(f"  Gap a cerrar:       +{fa['gap_pp']} pp en 30 días")
 
     lines.append(f"\n{'─'*65}")
-    lines.append(f"  SEGMENTACIÓN POR CAUSA")
+    lines.append("  SEGMENTACIÓN POR CAUSA")
     lines.append(f"{'─'*65}")
     if report.get("estimated_segmentation"):
-        lines.append(f"  [Nota: segmentación estimada — sin datos per-user disponibles]")
+        lines.append("  [Nota: segmentación estimada — sin datos per-user disponibles]")
 
     seg_labels = {"HOT": "🔥 HOT", "WARM": "♨️  WARM", "COLD": "🧊 COLD"}
     for seg, data in segs.items():
@@ -307,11 +307,11 @@ def _fmt_slack(report: dict) -> str:
 
     lines = [
         f"📊 *Pro Conversion Audit* [{ts} UTC]",
-        f"",
+        "",
         f"*Funnel:* {fa['installs_30d']} installs → {fa['registrations']} registros → {fa['pro_requests']} Pro requests → {fa['activated']} pagaron",
         f"*Sin convertir:* {fa['unconverted_pro_requests']} usuarios | Conversión actual: {fa['conversion_rate_pct']}% → objetivo: {fa['conversion_target_pct']}%",
-        f"",
-        f"*Segmentos:*",
+        "",
+        "*Segmentos:*",
     ]
     emoji = {"HOT": "🔥", "WARM": "♨️", "COLD": "🧊"}
     for seg, data in segs.items():
@@ -319,8 +319,8 @@ def _fmt_slack(report: dict) -> str:
 
     prospects = report.get("top_prospects", [])
     if prospects:
-        lines.append(f"")
-        lines.append(f"*Top 5 para outreach inmediato:*")
+        lines.append("")
+        lines.append("*Top 5 para outreach inmediato:*")
         for p in prospects[:5]:
             lines.append(f"  • `{p['username']}` — score {p['conversion_score']} | seg {p['segment']}")
 
