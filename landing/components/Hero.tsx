@@ -73,11 +73,23 @@ export default function Hero() {
           >
             {isES ? (
               <>
-                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code> compara toda la canasta entre 41 retailers, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada. Checkout vía Yape, Plin o PayPal: orden interna CLI Market, no compra directa en Wong ni Rappi. 63,000+ precios verificados, actualizados cada 4h.
+                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
+                compara toda la canasta entre 41 retailers verificados, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada.
+                <br /><br />
+                <span className="text-[#A1A1AA]">
+                  Pago vía Yape, Plin o PayPal a través de una orden interna CLI Market —
+                  no es checkout directo en Wong, Rappi ni Mercado Libre.
+                </span>
               </>
             ) : (
               <>
-                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code> compares your full basket across 41 retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call. Checkout via Yape, Plin, or PayPal: internal CLI Market order, not direct checkout on Wong or Rappi. 63,000+ verified prices, refreshed every 4h.
+                <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
+                compares your full basket across 41 verified retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call.
+                <br /><br />
+                <span className="text-[#A1A1AA]">
+                  Payment via Yape, Plin, or PayPal through an internal CLI Market order —
+                  not direct checkout on Wong, Rappi, or Mercado Libre.
+                </span>
               </>
             )}
           </motion.p>
