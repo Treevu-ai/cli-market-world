@@ -1,4 +1,15 @@
-"""Post messages to Slack channels (bot token or incoming webhook)."""
+"""Post messages to Slack channels (bot token or incoming webhook).
+
+5-channel architecture (as of 2026-06-24):
+  #command-control-cli-market  — CEO daily briefing: moat + post del día + KPIs
+  #publicaciones               — post listo copy/paste (all networks consolidated here)
+  #bitácora                    — ops logs: gate checks, CI, metrics updates
+  #alertas                     — gate failures, critical errors (SLACK_CHANNEL_ALERTAS; defaults to bitácora)
+  #revenue                     — subscriptions + funnel (SLACK_CHANNEL_REVENUE; defaults to funnel ID)
+
+All per-network channel functions (linkedin, twitter, devto, etc.) are deprecated aliases
+that now route to #publicaciones. Callers do not need to change.
+"""
 
 from __future__ import annotations
 
@@ -7,10 +18,14 @@ import re
 
 import httpx
 
-# CLI Market workspace — override via env if channels move
-DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"  # publicaciones — resumen diario GTM
-DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"  # bitácora producto
-# GTM — un canal Slack por red (copy listo para pegar)
+# ── Canonical channel IDs ─────────────────────────────────────────────────────
+DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"   # #publicaciones
+DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"        # #bitácora
+DEFAULT_CHANNEL_REVENUE = "C0B9G3T0T0A"         # #revenue (formerly funnel-cli-market)
+COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
+REVENUE_CHANNEL_NAME = "revenue"
+
+# ── Legacy channel IDs (kept for env-var overrides; routing consolidated above) ─
 DEFAULT_CHANNEL_LINKEDIN_PERSONAL = "C0B96T74RE3"
 DEFAULT_CHANNEL_LINKEDIN_COMPANY = "C0B9Q70C64R"
 DEFAULT_CHANNEL_TWITTER = "C0B9NBU8X7C"
@@ -22,16 +37,17 @@ DEFAULT_CHANNEL_INSTAGRAM = "C0B9S2WQ6SG"
 DEFAULT_CHANNEL_WHATSAPP = "C0B9NELR490"
 DEFAULT_CHANNEL_NEWSLETTER = "C0BAGNR374Y"
 DEFAULT_CHANNEL_OUTBOUND = "C0B9NEEB97U"
-DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"  # revisiones Cursor / Cloud Agent
-DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # #suscripciones-cli-pro
-DEFAULT_CHANNEL_FUNNEL = "C0B9G3T0T0A"  # funnel-cli-market
-DEFAULT_CHANNEL_CEO_METRICS = "C0B9W7794BD"  # ceo-metrics — reporte diario CEO/Founder
-COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
+DEFAULT_CHANNEL_REVISIONES_CURSOR = "C0B723TQS78"
+DEFAULT_CHANNEL_CLI_MARKET_PRO = "C0B90LCEK0V"  # legacy; routes to #revenue
+DEFAULT_CHANNEL_FUNNEL = "C0B9G3T0T0A"          # legacy; routes to #revenue
+DEFAULT_CHANNEL_CEO_METRICS = "C0B9W7794BD"     # legacy; routes to #command-control
 CLI_MARKET_PRO_CHANNEL_NAME = "suscripciones-cli-pro"
 FUNNEL_CHANNEL_NAME = "funnel-cli-market"
 
 MAX_SLACK_TEXT = 3900
 
+
+# ── Canonical channel resolvers ───────────────────────────────────────────────
 
 def channel_publicaciones() -> str:
     return os.getenv("SLACK_CHANNEL_PUBLICACIONES", DEFAULT_CHANNEL_PUBLICACIONES)
@@ -41,81 +57,18 @@ def channel_bitacora() -> str:
     return os.getenv("SLACK_CHANNEL_BITACORA", DEFAULT_CHANNEL_BITACORA)
 
 
+def channel_alertas() -> str:
+    """#alertas — gate failures and critical errors. Falls back to #bitácora if not configured."""
+    return os.getenv("SLACK_CHANNEL_ALERTAS", "") or channel_bitacora()
+
+
+def channel_revenue() -> str:
+    """#revenue — subscriptions and funnel events."""
+    return os.getenv("SLACK_CHANNEL_REVENUE", DEFAULT_CHANNEL_REVENUE)
+
+
 def channel_revisiones_cursor() -> str:
-    return os.getenv(
-        "SLACK_CHANNEL_REVISIONES_CURSOR", DEFAULT_CHANNEL_REVISIONES_CURSOR
-    )
-
-
-def channel_linkedin_personal() -> str:
-    return os.getenv("SLACK_CHANNEL_LINKEDIN_PERSONAL", DEFAULT_CHANNEL_LINKEDIN_PERSONAL)
-
-
-def channel_linkedin_company() -> str:
-    return os.getenv("SLACK_CHANNEL_LINKEDIN_COMPANY", DEFAULT_CHANNEL_LINKEDIN_COMPANY)
-
-
-def channel_twitter() -> str:
-    return os.getenv("SLACK_CHANNEL_TWITTER", DEFAULT_CHANNEL_TWITTER)
-
-
-def channel_devto() -> str:
-    return os.getenv("SLACK_CHANNEL_DEVTO", DEFAULT_CHANNEL_DEVTO)
-
-
-def channel_reddit() -> str:
-    return os.getenv("SLACK_CHANNEL_REDDIT", DEFAULT_CHANNEL_REDDIT)
-
-
-def channel_hn() -> str:
-    return os.getenv("SLACK_CHANNEL_HN", DEFAULT_CHANNEL_HN)
-
-
-def channel_threads() -> str:
-    return os.getenv("SLACK_CHANNEL_THREADS", DEFAULT_CHANNEL_THREADS)
-
-
-def channel_instagram() -> str:
-    return os.getenv("SLACK_CHANNEL_INSTAGRAM", DEFAULT_CHANNEL_INSTAGRAM)
-
-
-def channel_whatsapp() -> str:
-    return os.getenv("SLACK_CHANNEL_WHATSAPP", DEFAULT_CHANNEL_WHATSAPP)
-
-
-def channel_newsletter() -> str:
-    return os.getenv("SLACK_CHANNEL_NEWSLETTER", DEFAULT_CHANNEL_NEWSLETTER)
-
-
-def channel_outbound() -> str:
-    return os.getenv("SLACK_CHANNEL_OUTBOUND", DEFAULT_CHANNEL_OUTBOUND)
-
-
-def slack_channel_for_gtm_label(label: str) -> str | None:
-    """Map calendar_channels label → Slack channel ID."""
-    if label.startswith("LinkedIn Personal"):
-        return channel_linkedin_personal()
-    if label == "LinkedIn Empresa":
-        return channel_linkedin_company()
-    if label.startswith("Twitter"):
-        return channel_twitter()
-    if label == "DEV.to":
-        return channel_devto()
-    if label.startswith("Reddit"):
-        return channel_reddit()
-    if label == "Hacker News":
-        return channel_hn()
-    if label.startswith("Instagram"):
-        return channel_instagram()
-    if label.startswith("WhatsApp"):
-        return channel_whatsapp()
-    if label.startswith("Newsletter") or label.startswith("Price Pulse"):
-        return channel_newsletter()
-    if label.startswith("Outbound"):
-        return channel_outbound()
-    if label.startswith("Threads"):
-        return channel_threads()
-    return None
+    return os.getenv("SLACK_CHANNEL_REVISIONES_CURSOR", DEFAULT_CHANNEL_REVISIONES_CURSOR)
 
 
 def _resolve_channel_by_name(token: str, name: str) -> str | None:
@@ -148,41 +101,6 @@ def _resolve_channel_by_name(token: str, name: str) -> str | None:
     return None
 
 
-def channel_cli_market_pro() -> str:
-    explicit = (
-        os.getenv("SLACK_CHANNEL_CLI_MARKET_PRO", "").strip()
-        or DEFAULT_CHANNEL_CLI_MARKET_PRO
-    )
-    if explicit:
-        return explicit
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    if token:
-        resolved = _resolve_channel_by_name(token, CLI_MARKET_PRO_CHANNEL_NAME)
-        if resolved:
-            return resolved
-    raise ValueError(
-        "Subscriptions channel not configured. Set SLACK_CHANNEL_CLI_MARKET_PRO "
-        f"to the ID of #{CLI_MARKET_PRO_CHANNEL_NAME}, or grant channels:read to the bot."
-    )
-
-
-def channel_funnel() -> str:
-    explicit = (
-        os.getenv("SLACK_CHANNEL_FUNNEL", "").strip() or DEFAULT_CHANNEL_FUNNEL
-    )
-    if explicit:
-        return explicit
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    if token:
-        resolved = _resolve_channel_by_name(token, FUNNEL_CHANNEL_NAME)
-        if resolved:
-            return resolved
-    raise ValueError(
-        "Funnel channel not configured. Set SLACK_CHANNEL_FUNNEL "
-        f"to the ID of #{FUNNEL_CHANNEL_NAME}, or grant channels:read to the bot."
-    )
-
-
 def channel_command_control() -> str:
     explicit = os.getenv("SLACK_CHANNEL_COMMAND_CONTROL", "").strip()
     if explicit:
@@ -197,6 +115,74 @@ def channel_command_control() -> str:
         f"to the ID of #{COMMAND_CONTROL_CHANNEL_NAME}, or grant channels:read to the bot."
     )
 
+
+# ── Deprecated channel aliases (all route to #publicaciones) ─────────────────
+
+def channel_linkedin_personal() -> str:
+    return channel_publicaciones()
+
+
+def channel_linkedin_company() -> str:
+    return channel_publicaciones()
+
+
+def channel_twitter() -> str:
+    return channel_publicaciones()
+
+
+def channel_devto() -> str:
+    return channel_publicaciones()
+
+
+def channel_reddit() -> str:
+    return channel_publicaciones()
+
+
+def channel_hn() -> str:
+    return channel_publicaciones()
+
+
+def channel_threads() -> str:
+    return channel_publicaciones()
+
+
+def channel_instagram() -> str:
+    return channel_publicaciones()
+
+
+def channel_whatsapp() -> str:
+    return channel_publicaciones()
+
+
+def channel_newsletter() -> str:
+    return channel_publicaciones()
+
+
+def channel_outbound() -> str:
+    return channel_publicaciones()
+
+
+def channel_ceo_metrics() -> str:
+    """Deprecated — CEO metrics now delivered to #command-control."""
+    return channel_command_control()
+
+
+def channel_funnel() -> str:
+    """Deprecated — funnel events now delivered to #revenue."""
+    return channel_revenue()
+
+
+def channel_cli_market_pro() -> str:
+    """Deprecated — pro subscription events now delivered to #revenue."""
+    return channel_revenue()
+
+
+def slack_channel_for_gtm_label(label: str) -> str | None:  # noqa: ARG001
+    """All GTM network labels now route to #publicaciones."""
+    return channel_publicaciones()
+
+
+# ── Transport layer ───────────────────────────────────────────────────────────
 
 def _chunk_text(text: str, limit: int = MAX_SLACK_TEXT) -> list[str]:
     if len(text) <= limit:
@@ -274,12 +260,7 @@ def post_blocks_via_bot(token: str, channel: str, *, text: str, blocks: list) ->
     r = httpx.post(
         "https://slack.com/api/chat.postMessage",
         headers={"Authorization": f"Bearer {token}"},
-        json={
-            "channel": channel,
-            "text": text,
-            "blocks": blocks,
-            "mrkdwn": True,
-        },
+        json={"channel": channel, "text": text, "blocks": blocks, "mrkdwn": True},
         timeout=15,
     )
     r.raise_for_status()
@@ -310,78 +291,58 @@ def deliver(
     )
 
 
+# ── Canonical deliver helpers ─────────────────────────────────────────────────
+
 def deliver_to_bitacora(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_bitacora(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_BITACORA", ""),
-    )
+    deliver(text, channel=channel_bitacora(), webhook_url=os.getenv("SLACK_WEBHOOK_BITACORA", ""))
 
 
 def deliver_to_publicaciones(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_publicaciones(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_PUBLICACIONES", ""),
-    )
+    deliver(text, channel=channel_publicaciones(), webhook_url=os.getenv("SLACK_WEBHOOK_PUBLICACIONES", ""))
 
 
-def deliver_to_gtm_channel(label: str, text: str) -> str:
-    """Post to the Slack channel for a GTM calendar label. Returns channel ID used."""
-    channel_id = slack_channel_for_gtm_label(label)
-    if not channel_id:
-        deliver_to_publicaciones(text)
-        return channel_publicaciones()
-    deliver(text, channel=channel_id)
-    return channel_id
+def deliver_to_alertas(text: str) -> None:
+    """Send to #alertas (gate failures, critical errors). Falls back to #bitácora."""
+    deliver(text, channel=channel_alertas(), webhook_url=os.getenv("SLACK_WEBHOOK_ALERTAS", ""))
 
 
-def deliver_to_revisiones_cursor(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_revisiones_cursor(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_REVISIONES_CURSOR", ""),
-    )
-
-
-def deliver_to_command_control(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_command_control(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""),
-    )
-
-
-def channel_ceo_metrics() -> str:
-    return os.getenv("SLACK_CHANNEL_CEO_METRICS", DEFAULT_CHANNEL_CEO_METRICS)
-
-
-def deliver_to_ceo_metrics(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_ceo_metrics(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_CEO_METRICS", ""),
-    )
-
-
-def deliver_to_funnel(text: str) -> None:
-    deliver(
-        text,
-        channel=channel_funnel(),
-        webhook_url=os.getenv("SLACK_WEBHOOK_FUNNEL", ""),
-    )
-
-
-def deliver_to_cli_market_pro(text: str, *, blocks: list | None = None) -> None:
+def deliver_to_revenue(text: str, *, blocks: list | None = None) -> None:
+    """Send subscription and funnel events to #revenue."""
     token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    hook = os.getenv("SLACK_WEBHOOK_CLI_MARKET_PRO", "").strip()
-    channel = channel_cli_market_pro()
+    channel = channel_revenue()
     if blocks and token:
         post_blocks_via_bot(token, channel, text=text, blocks=blocks)
         return
-    deliver(
-        text,
-        channel=channel,
-        webhook_url=hook,
-        bot_token=token,
-    )
+    deliver(text, channel=channel, webhook_url=os.getenv("SLACK_WEBHOOK_REVENUE", ""))
+
+
+def deliver_to_command_control(text: str) -> None:
+    deliver(text, channel=channel_command_control(), webhook_url=os.getenv("SLACK_WEBHOOK_COMMAND_CONTROL", ""))
+
+
+def deliver_to_revisiones_cursor(text: str) -> None:
+    deliver(text, channel=channel_revisiones_cursor(), webhook_url=os.getenv("SLACK_WEBHOOK_REVISIONES_CURSOR", ""))
+
+
+def deliver_to_gtm_channel(label: str, text: str) -> str:
+    """Post GTM copy to #publicaciones (all networks consolidated). Returns channel ID."""
+    channel_id = channel_publicaciones()
+    deliver(text, channel=channel_id, webhook_url=os.getenv("SLACK_WEBHOOK_PUBLICACIONES", ""))
+    return channel_id
+
+
+# ── Deprecated deliver aliases (callers unchanged, routing consolidated) ──────
+
+def deliver_to_ceo_metrics(text: str) -> None:
+    """Deprecated — CEO metrics now go to #command-control."""
+    deliver_to_command_control(text)
+
+
+def deliver_to_funnel(text: str) -> None:
+    """Deprecated — funnel events now go to #revenue."""
+    deliver_to_revenue(text)
+
+
+def deliver_to_cli_market_pro(text: str, *, blocks: list | None = None) -> None:
+    """Deprecated — pro subscription events now go to #revenue."""
+    deliver_to_revenue(text, blocks=blocks)
