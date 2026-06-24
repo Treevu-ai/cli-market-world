@@ -10,7 +10,7 @@ Dimensiones cubiertas:
 
 Envío:
   python ops/ceo_metrics_report.py              # imprime en terminal
-  python ops/ceo_metrics_report.py --slack      # postea a #ceo-metrics (C0B9W7794BD)
+  python ops/ceo_metrics_report.py --slack      # postea a #command-control-cli-market
   python ops/ceo_metrics_report.py --dry-run    # imprime sin postear
   python ops/ceo_metrics_report.py --remote     # KPIs desde producción (requiere MARKET_API_TOKEN)
 
@@ -488,7 +488,7 @@ def build_report(*, remote: bool = False) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="CEO daily metrics report — CLI Market")
-    parser.add_argument("--slack", action="store_true", help="Postear a #ceo-metrics (C0B9W7794BD)")
+    parser.add_argument("--slack", action="store_true", help="Postear a #command-control-cli-market")
     parser.add_argument("--dry-run", action="store_true", help="Solo imprimir, no postear")
     parser.add_argument("--remote", action="store_true", help="Datos desde producción")
     args = parser.parse_args()
@@ -499,7 +499,7 @@ def main() -> int:
     if args.slack and not args.dry_run:
         from slack_notify import deliver_to_ceo_metrics
         deliver_to_ceo_metrics(text)
-        print("\n→ Enviado a #ceo-metrics (C0B9W7794BD)", file=sys.stderr)
+        print("\n→ Enviado a #command-control-cli-market", file=sys.stderr)
 
     return 0
 

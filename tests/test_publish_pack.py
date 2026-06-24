@@ -71,13 +71,15 @@ def test_moat_paste_line_format():
 
 
 def test_slack_channel_for_gtm_label_maps_calendar_names():
-    assert slack_channel_for_gtm_label("LinkedIn Personal") == "C0B96T74RE3"
-    assert slack_channel_for_gtm_label("LinkedIn Personal (AR)") == "C0B96T74RE3"
-    assert slack_channel_for_gtm_label("LinkedIn Empresa") == "C0B9Q70C64R"
-    assert slack_channel_for_gtm_label("Twitter/X W2") == "C0B9NBU8X7C"
-    assert slack_channel_for_gtm_label("Reddit (r/Python)") == "C0B9ND493GS"
-    assert slack_channel_for_gtm_label("DEV.to") == "C0B96TJC3CP"
-    assert slack_channel_for_gtm_label("Hacker News") == "C0BAGP1EHPA"
+    # All GTM labels now consolidate to #publicaciones-redes (C0B6ZJ1B9B8)
+    publicaciones = "C0B6ZJ1B9B8"
+    assert slack_channel_for_gtm_label("LinkedIn Personal") == publicaciones
+    assert slack_channel_for_gtm_label("LinkedIn Personal (AR)") == publicaciones
+    assert slack_channel_for_gtm_label("LinkedIn Empresa") == publicaciones
+    assert slack_channel_for_gtm_label("Twitter/X W2") == publicaciones
+    assert slack_channel_for_gtm_label("Reddit (r/Python)") == publicaciones
+    assert slack_channel_for_gtm_label("DEV.to") == publicaciones
+    assert slack_channel_for_gtm_label("Hacker News") == publicaciones
 
 
 def test_build_gtm_channel_deliveries_splits_per_channel():
