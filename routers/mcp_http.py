@@ -47,6 +47,8 @@ _PRO_TOOLS = frozenset({
     "market_cart_update",
     "market_checkout",
     "market_orders",
+    "market_alert_create",
+    "market_alert_delete",
 })
 
 _UPGRADE_MSG = (
@@ -423,6 +425,119 @@ _TOOLS = [
             },
         },
     },
+    # ── Free (extended analytics) ─────────────────────────────────────────────
+    {
+        "name": "market_price_history",
+        "description": (
+            "Historical price snapshots from the data moat. "
+            "Filter by product_id, store, or product line. Useful for trend analysis and auditing."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {"type": "string", "description": "Product ID to filter by"},
+                "store": {"type": "string", "description": "Store key, e.g. 'wong_pe'"},
+                "line": {"type": "string", "description": "Product line: supermercados, farmacias, etc."},
+                "limit": {"type": "integer", "default": 50},
+            },
+        },
+    },
+    {
+        "name": "market_brands",
+        "description": "Top brands in the data moat by snapshot count. Filter by product line.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "line": {"type": "string"},
+                "country": {"type": "string"},
+                "limit": {"type": "integer", "default": 20},
+            },
+        },
+    },
+    {
+        "name": "market_indicators",
+        "description": (
+            "Latest enrichment indicator values: Open Food Facts, World Bank, weather, and custom signals. "
+            "Filter by country or product line."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+                "limit": {"type": "integer", "default": 50},
+            },
+        },
+    },
+    {
+        "name": "market_stock",
+        "description": "Latest stock snapshot for a product in a specific store.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["product_id", "store"],
+            "properties": {
+                "product_id": {"type": "string"},
+                "store": {"type": "string", "description": "Store key, e.g. 'wong_pe'"},
+            },
+        },
+    },
+    {
+        "name": "market_delivery",
+        "description": "Delivery availability and estimated days for a product at a given store.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["product_id", "store"],
+            "properties": {
+                "product_id": {"type": "string"},
+                "store": {"type": "string"},
+                "zipcode": {"type": "string", "description": "Optional postal code"},
+            },
+        },
+    },
+    {
+        "name": "market_dashboard",
+        "description": (
+            "Business-intelligence feed: moat health, collector status, coverage by country and line, "
+            "data gate signals (collector_stale). Use before any procurement recommendation."
+        ),
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    # ── Pro (alert management) ────────────────────────────────────────────────
+    {
+        "name": "market_alert_create",
+        "description": (
+            "[Pro] Create a price alert. Triggers when price moves above/below a threshold. "
+            "Conditions: price_increase, price_decrease, price_change, price_below, price_above."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["condition", "product_query"],
+            "properties": {
+                "condition": {
+                    "type": "string",
+                    "enum": ["price_increase", "price_decrease", "price_change", "price_below", "price_above"],
+                },
+                "product_query": {"type": "string", "description": "Product name or search query"},
+                "name": {"type": "string", "description": "Optional label for the alert"},
+                "store": {"type": "string", "description": "Limit alert to a specific store"},
+                "threshold_pct": {"type": "number", "default": 5.0, "description": "Trigger threshold in %"},
+                "notify_email": {"type": "string", "description": "Email to notify on trigger"},
+                "notify_webhook": {"type": "string", "description": "Webhook URL to POST on trigger"},
+                "cooldown_hours": {"type": "integer", "default": 24, "description": "Min hours between notifications"},
+            },
+        },
+    },
+    {
+        "name": "market_alert_delete",
+        "description": "[Pro] Delete a price alert by its ID.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["alert_id"],
+            "properties": {
+                "alert_id": {"type": "string"},
+            },
+        },
+    },
 ]
 
 
@@ -486,6 +601,28 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.post(f"{_API_BASE}/checkout", json=args, headers=headers)
         elif name == "market_orders":
             r = await client.get(f"{_API_BASE}/orders", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        # ── Free (extended analytics) ─────────────────────────────────────────
+        elif name == "market_price_history":
+            r = await client.get(f"{_API_BASE}/analytics/price-history", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_brands":
+            r = await client.get(f"{_API_BASE}/analytics/brands", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_indicators":
+            r = await client.get(f"{_API_BASE}/analytics/indicators", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_stock":
+            pid = args.get("product_id", "")
+            r = await client.get(f"{_API_BASE}/products/stock/{pid}", params={"store": args.get("store")}, headers=headers)
+        elif name == "market_delivery":
+            pid = args.get("product_id", "")
+            params = {k: v for k, v in args.items() if k != "product_id" and v is not None}
+            r = await client.get(f"{_API_BASE}/products/delivery/{pid}", params=params, headers=headers)
+        elif name == "market_dashboard":
+            r = await client.get(f"{_API_BASE}/dashboard/data", headers=headers)
+        # ── Pro (alert management) ────────────────────────────────────────────
+        elif name == "market_alert_create":
+            r = await client.post(f"{_API_BASE}/v1/alerts", json=args, headers=headers)
+        elif name == "market_alert_delete":
+            alert_id = args.get("alert_id", "")
+            r = await client.delete(f"{_API_BASE}/v1/alerts/{alert_id}", headers=headers)
         else:
             return {"error": f"Unknown tool: {name}"}
 
