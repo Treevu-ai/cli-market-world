@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Header
 
-from market_core import get_db
+from market_core import STORES, get_db
 from backend_interface import get_indicator_catalog, get_latest_values
 from server_deps import require_api_key
 
@@ -24,11 +24,12 @@ def price_history(
     product_id: str | None = None,
     store: str | None = None,
     line: str | None = None,
+    country: str | None = None,
     limit: int = 50,
     authorization: str | None = Header(None),
 ):
-    """Return time-series price snapshots filtered by product_id, store key, and/or
-    business line. Ordered newest-first, up to limit records (default 50, max configurable).
+    """Return time-series price snapshots filtered by product_id, store key, business line,
+    and/or country. Ordered newest-first, up to limit records (default 50, max configurable).
     Use for price trend charts, volatility analysis, or verifying how long a price
     has held. product_id values come from search or compare results."""
     require_api_key(authorization)
@@ -44,6 +45,17 @@ def price_history(
     if line:
         q += " AND line = ?"
         params.append(line)
+    if country:
+        country_stores = [
+            s for s, sv in STORES.items()
+            if sv.get("country", "").upper() == country.upper()
+        ]
+        if not country_stores:
+            db.close()
+            return {"count": 0, "snapshots": [], "country": country}
+        placeholders = ",".join("?" * len(country_stores))
+        q += f" AND store IN ({placeholders})"
+        params.extend(country_stores)
     q += " ORDER BY queried_at DESC LIMIT ?"
     params.append(limit)
     rows = db.execute(q, params).fetchall()
@@ -78,31 +90,82 @@ def analytics_stats(authorization: str | None = Header(None)):
     }
 
 
-@router.get("/analytics/trending", summary="Get recently updated products from the data moat")
+@router.get("/analytics/trending", summary="Get trending products ranked by price velocity (7-day change)")
 def analytics_trending(country: str | None = None, line: str | None = None, limit: int = 10, authorization: str | None = Header(None)):
-    """Return the most recently updated products in the moat, optionally filtered by
-    business line. Note: 'trending' currently reflects recency of collector refresh,
-    not price-movement velocity — a future update will add real trend scoring.
-    Use as a discovery feed or to surface newly collected items. Maps to the
-    market_trending MCP tool."""
+    """Return the most price-volatile products in the moat over the last 7 days,
+    optionally filtered by country and business line. Each row includes change_pct
+    (positive = price rose, negative = fell) and trend ('up' | 'down' | 'stable' | 'new').
+    Products with no prior snapshot are ranked last. Maps to the market_trending MCP tool."""
     require_api_key(authorization)
     db = get_db()
-    q = (
-        "SELECT name, store_name, price, currency, line_name, queried_at "
-        "FROM price_snapshots WHERE price > 0"
-    )
+
+    # Get the latest snapshot per (product_id, store) plus the most recent
+    # snapshot from ≥7 days ago for the same pair, to compute price velocity.
+    q = """
+        SELECT
+            p.name, p.store_name,
+            p.price        AS current_price,
+            p.currency, p.line_name, p.queried_at,
+            (
+                SELECT price FROM price_snapshots
+                WHERE product_id = p.product_id
+                  AND store = p.store
+                  AND price > 0
+                  AND queried_at <= datetime('now', '-7 days')
+                ORDER BY queried_at DESC LIMIT 1
+            ) AS prev_price
+        FROM price_snapshots p
+        JOIN (
+            SELECT product_id, store, MAX(queried_at) AS latest_at
+            FROM price_snapshots
+            WHERE price > 0
+            GROUP BY product_id, store
+        ) cur
+          ON p.product_id = cur.product_id
+         AND p.store      = cur.store
+         AND p.queried_at = cur.latest_at
+        WHERE p.price > 0
+    """
     params: list = []
-    # NOTE: country filter is currently a no-op (the original code had a bug).
-    # When we wire it up properly, follow the same pattern as
-    # /v1/data/export — translate country → store list via STORES.
     if line:
-        q += " AND line = ?"
+        q += " AND p.line = ?"
         params.append(line)
-    q += " ORDER BY queried_at DESC LIMIT ?"
-    params.append(limit * 2)
+    if country:
+        country_stores = [
+            s for s, sv in STORES.items()
+            if sv.get("country", "").upper() == country.upper()
+        ]
+        if country_stores:
+            placeholders = ",".join("?" * len(country_stores))
+            q += f" AND p.store IN ({placeholders})"
+            params.extend(country_stores)
+    q += " LIMIT ?"
+    params.append(limit * 3)  # fetch extra before re-ranking by velocity
     rows = db.execute(q, params).fetchall()
     db.close()
-    return {"trending": [dict(r) for r in rows], "total": len(rows)}
+
+    results = []
+    for row in rows:
+        r = dict(row)
+        current = r.pop("current_price", 0) or 0
+        prev = r.pop("prev_price", None)
+        r["price"] = current
+        if prev and prev > 0 and current > 0:
+            change_pct = round((current - prev) / prev * 100, 1)
+            r["change_pct"] = change_pct
+            r["trend"] = "up" if change_pct > 1 else ("down" if change_pct < -1 else "stable")
+        else:
+            r["change_pct"] = None
+            r["trend"] = "new"
+        results.append(r)
+
+    # Rank by absolute price velocity; products with no baseline go last
+    results.sort(
+        key=lambda x: abs(x["change_pct"]) if x["change_pct"] is not None else -1,
+        reverse=True,
+    )
+    results = results[:limit]
+    return {"trending": results, "total": len(results)}
 
 
 @router.get("/analytics/brands", summary="Top brands in the data moat by snapshot count")
