@@ -32,6 +32,7 @@ from backend_interface import (
     get_scores,
 )
 from market_intel_v2 import PROMO_DISCOUNT_THRESHOLD, _RPV_DISCLAIMER_ES, compute_affordability_v2
+from market_core.market_intel_products import compute_price_deal_alerts
 from market_core.response_envelope import build_provenance, envelope, timing
 
 logger = logging.getLogger("market.server").getChild("intel")
@@ -365,33 +366,13 @@ def get_alerts(
     require_api_key(authorization)
     db = get_db()
     try:
-        params: list = [f"%{product}%", threshold_pct / 100.0]
-        store_clause = ""
-        if store:
-            store_clause = "AND store = ?"
-            params.append(store)
-        rows = db.execute(
-            f"""SELECT product_id, store, store_name, name, price, list_price, currency,
-                       url, queried_at,
-                       ROUND((list_price - price) * 100.0 / list_price, 1) AS discount_pct
-                FROM price_snapshots
-                WHERE name LIKE ?
-                  AND price > 0
-                  AND list_price > price
-                  AND (list_price - price) / list_price >= ?
-                  {store_clause}
-                ORDER BY (list_price - price) / list_price DESC
-                LIMIT ?""",
-            params + [limit],
-        ).fetchall()
-        results = [dict(r) for r in rows]
-        return {
-            "product": product,
-            "store": store,
-            "threshold_pct": threshold_pct,
-            "total": len(results),
-            "results": results,
-        }
+        return compute_price_deal_alerts(
+            db,
+            product=product,
+            store=store,
+            threshold_pct=threshold_pct,
+            limit=limit,
+        )
     finally:
         db.close()
 
