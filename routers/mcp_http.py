@@ -424,9 +424,13 @@ _TOOLS = [
 
 # ── Tool execution ────────────────────────────────────────────────────────────
 
+_SLOW_TOOLS = frozenset({"market_basket", "market_optimize_purchase", "market_cart", "market_checkout"})
+
+
 async def _call_tool(name: str, args: dict, token: str) -> dict:
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    async with httpx.AsyncClient(timeout=20.0) as client:
+    _timeout = 60.0 if name in _SLOW_TOOLS else 20.0
+    async with httpx.AsyncClient(timeout=_timeout) as client:
         # ── Free tools ────────────────────────────────────────────────────────
         if name == "market_search":
             r = await client.post(f"{_API_BASE}/products/search", json=args, headers=headers)
