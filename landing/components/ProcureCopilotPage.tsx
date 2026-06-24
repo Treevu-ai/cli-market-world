@@ -7,7 +7,7 @@ import { procurePriceRangeLabel } from "@/lib/procurePlans";
 
 const STEPS = [
   { n: "01", es: "Solicitud", en: "Request", descEs: "Tu equipo envía una lista de productos. Sin scraping. Sin llamadas.", descEn: "Your team submits a product list. No scraping. No calls." },
-  { n: "02", es: "Comparación", en: "Compare", descEs: "CLI Market busca en 80+ retailers y normaliza precios por kg/L.", descEn: "CLI Market searches 80+ retailers and normalizes prices per kg/L." },
+  { n: "02", es: "Comparación", en: "Compare", descEs: "CLI Market busca en 41 retailers verificados y normaliza precios por kg/L.", descEn: "CLI Market searches 41 verified retailers and normalizes prices per kg/L." },
   { n: "03", es: "Aprobación", en: "Approve", descEs: "Workflow de aprobación interno. Roles, límites, trazabilidad.", descEn: "Internal approval workflow. Roles, limits, audit trail." },
   { n: "04", es: "Checkout", en: "Checkout", descEs: "Pago integrado: Yape, Plin, PayPal. Una orden. Un comprobante.", descEn: "Built-in payment: Yape, Plin, PayPal. One order. One receipt." },
   { n: "05", es: "Ahorro", en: "Savings", descEs: "Reportes de ahorro vs. precio promedio de mercado. ROI medible.", descEn: "Savings reports vs. market average price. Measurable ROI." },

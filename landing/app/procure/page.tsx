@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/procure" },
   openGraph: {
     title: "Procure Copilot — CLI Market",
-    description: "Buy better. Faster. With less waste. Procurement workflows with real shelf prices across 80+ LATAM retailers.",
+    description: "Buy better. Faster. With less waste. Procurement workflows with real shelf prices across 41 verified LATAM retailers.",
   },
 };
 
