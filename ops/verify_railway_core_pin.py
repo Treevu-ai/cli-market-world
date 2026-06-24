@@ -48,9 +48,11 @@ def _version_on_pypi(version: str) -> bool:
 def main() -> int:
     pin = _pinned_version()
     if pin is None:
-        # TODO: remove when cli-market-core 1.10.0 is published to PyPI
-        print("SKIP: requirements-railway.txt uses git commit pin — PyPI publish pending", file=sys.stderr)
-        return 0
+        print(
+            "ERROR: requirements-railway.txt uses git commit pin — switch to cli-market-core==X.Y.Z after PyPI publish",
+            file=sys.stderr,
+        )
+        return 1
     if _version_on_pypi(pin):
         print(f"OK: cli-market-core=={pin} available on PyPI")
         return 0

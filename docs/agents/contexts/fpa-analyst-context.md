@@ -1,7 +1,7 @@
 # FP&A Analyst — Contexto CLI Market
 
 > Carga este archivo junto con `agency-agents/finance/finance-fpa-analyst.md`.
-> Tu tarea: proyectar la inflación de canasta a 30, 60 y 90 días usando la serie histórica del collector como leading indicator.
+> Tu tarea: proyectar el Retail Price Velocity (RPV) de canasta a 30, 60 y 90 días usando la serie histórica del collector como leading indicator.
 
 ## Tu rol en este reporte
 

@@ -53,7 +53,7 @@ AGENTS: list[dict[str, Any]] = [
         "role_file": str(AGENCY_AGENTS_BASE / "finance-financial-analyst.md"),
         "context_file": str(AGENTS_DIR / "financial-analyst-context.md"),
         "data_keys": ["inflation", "canasta_basica", "by_line_currency", "canasta_spreads", "top_risers", "top_fallers"],
-        "section": "§1 Resumen Ejecutivo + §2 Inflación + §3 Canasta Básica",
+        "section": "§1 Resumen Ejecutivo + §2 RPV + §3 Canasta Básica",
     },
     {
         "id": "fpa-analyst",

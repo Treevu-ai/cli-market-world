@@ -8,7 +8,7 @@ export type NavItem = {
 /** Top nav — clean, 4 items. */
 export const TOP_NAV: NavItem[] = [
   { id: "product", es: "Producto", en: "Product", href: "/#hero" },
-  { id: "procure", es: "Procure", en: "Procure", href: "/procure" },
+  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
@@ -36,6 +36,7 @@ export const TOP_NAV_GROUP: Record<string, string> = {
   "who-its-for": "product",
   moat: "product",
   metrics: "product",
+  procure: "procure",
   pricing: "pricing",
   faq: "pricing",
 };

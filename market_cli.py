@@ -1258,13 +1258,13 @@ def cmd_inflation(args):
     days = getattr(args, "days", None) or 7
     params.append(f"days={days}")
     qs = "&".join(params)
-    with console.status("[cyan]Calculando inflación..."):
+    with console.status("[cyan]Calculando RPV (Retail Price Velocity)..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(True, data, next_commands=["market intel inflation --country PE", "market intel indicators"]), console)
         return
     items = data.get("items", [])
-    avg = data.get("avg_inflation_pct", 0)
+    avg = data.get("avg_rpv_7d_pct", data.get("avg_inflation_pct", 0))
     n_products = sum(int(i.get("n_products") or 0) for i in items)
     color = "#FF6B35" if avg > 0 else "#00FF88"
     meta = (
@@ -1272,7 +1272,8 @@ def cmd_inflation(args):
         if not ui.is_en()
         else f"{n_products} products · {len(items)} lines"
     )
-    console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({meta})[/]")
+    console.print(f"\n[bold]RPV promedio (7d): [{color}]{avg:+.1f}%[/] ({meta})[/]")
+    console.print("[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
     if items:
         title = "Variación por línea" if not ui.is_en() else "Change by line"
         table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
@@ -1443,11 +1444,11 @@ def cmd_intel_brief(args):
 
     # ── Shelf signals ────────────────────────────────────────────────────────
     shelf_labels = {
-        "shelf_inflation_avg_pct": ("Inflación góndola" if not is_en else "Shelf inflation", "%"),
+        "shelf_inflation_avg_pct": ("RPV 7d (góndola)" if not is_en else "RPV 7d (shelf)", "%"),
         "staple_momentum_7d_pct": ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", "%"),
-        "promo_intensity": ("Intensidad promo" if not is_en else "Promo intensity", ""),
-        "price_dispersion": ("Dispersión de precios" if not is_en else "Price dispersion", ""),
-        "basket_stress_index": ("Índice estrés canasta" if not is_en else "Basket stress index", ""),
+        "promo_intensity": ("Intensidad promo (≥3%)" if not is_en else "Promo intensity (≥3%)", ""),
+        "price_dispersion": ("Dispersión CV" if not is_en else "Price dispersion (CV)", ""),
+        "basket_stress_index": ("Índice estrés canasta (BSI)" if not is_en else "Basket stress index (BSI)", ""),
     }
     if shelf:
         t_shelf = Table(
@@ -1469,7 +1470,7 @@ def cmd_intel_brief(args):
             if gap is not None:
                 color = "#FF6B35" if gap > 0 else "#00FF88"
                 t_shelf.add_row(
-                    "Gap vs CPI oficial" if not is_en else "Gap vs official CPI",
+                    "Gap vs CPI alimentos (anexo)" if not is_en else "Gap vs food CPI (appendix)",
                     f"[{color}]{gap:+.1f} pp[/]",
                 )
         console.print()
