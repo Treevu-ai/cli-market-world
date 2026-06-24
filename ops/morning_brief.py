@@ -179,7 +179,7 @@ def run(
     from slack_notify import deliver_to_command_control
 
     deliver_to_command_control(msg)
-    print(f"✅ Morning brief enviado a #command-control-cli-market", file=sys.stderr)
+    print("✅ Morning brief enviado a #command-control-cli-market", file=sys.stderr)
     return {"ok": True, "found": True, "posted": True}
 
 
