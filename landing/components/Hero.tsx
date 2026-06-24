@@ -71,29 +71,6 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="mt-5 text-base sm:text-lg max-w-[540px] leading-relaxed stripe-body"
-            >
-              {isES ? (
-                <>
-                  <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
-                  compara toda la canasta entre 41 retailers verificados, calcula TCO, sugiere sustitutos con ahorro y genera links de acción — una sola llamada.
-                  <br /><br />
-                  <span className="text-[#A1A1AA]">
-                    Pago vía Yape, Plin o PayPal a través de una orden interna CLI Market —
-                    no es checkout directo en Wong, Rappi ni Mercado Libre.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <code className="text-[#7CFF5B] font-mono text-sm">market optimize</code>{" "}
-                  compares your full basket across 41 verified retailers, calculates TCO, suggests substitutes with savings, and generates action links — one call.
-                  <br /><br />
-                  <span className="text-[#A1A1AA]">
-                    Payment via Yape, Plin, or PayPal through an internal CLI Market order —
-                    not direct checkout on Wong, Rappi, or Mercado Libre.
-                  </span>
-                </>
-              )}
               className="mt-5 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
             >
               {isES
@@ -142,7 +119,6 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right column — terminal */}
           {/* Right — terminal */}
           <motion.div
             initial={{ opacity: 0, x: 16 }}
