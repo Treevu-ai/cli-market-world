@@ -234,7 +234,7 @@ market whoami`}</pre>
                   : `We received your request${requestId ? ` (${requestId})` : ""}. We'll be in touch soon.`}
             </p>
             {plan !== "free" && (
-              <button onClick={onClose} className="btn-mint mt-4">
+              <button type="button" onClick={onClose} className="btn-mint mt-4">
                 {isES ? "Cerrar" : "Close"}
               </button>
             )}
@@ -255,6 +255,7 @@ market whoami`}</pre>
             <div className="space-y-3">
               {PROFILES.map((p) => (
                 <button
+                  type="button"
                   key={p.id}
                   onClick={() => {
                     setProfile(p.id);
