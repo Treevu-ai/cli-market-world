@@ -19,8 +19,8 @@ const CAPABILITIES = [
     icon: "🤖",
     title_es: "Agent Tools",
     title_en: "Agent Tools",
-    description_es: `${MARKET_STATS.mcpTools} tools MCP — search, basket, compare, stock, delivery, historial de precios. Un pip install y tu agente puede buscar, comparar y comprar sin scraping ni integraciones manuales.`,
-    description_en: `${MARKET_STATS.mcpTools} MCP tools — search, basket, compare, stock, delivery, price history. One pip install and your agent can search, compare, and buy without scraping or manual integrations.`,
+    description_es: `${MARKET_STATS.mcpTools} tools MCP (perfil default) — optimize, basket, compare, intel, alertas de precio. Una llamada a market_optimize_purchase cubre canasta, TCO y sustitutos. Sin scraping ni integraciones manuales.`,
+    description_en: `${MARKET_STATS.mcpTools} MCP tools (default profile) — optimize, basket, compare, intel, price alerts. One market_optimize_purchase call covers basket, TCO, and substitutes. No scraping or manual integrations.`,
     href: "/tools",
   },
   {
