@@ -28,10 +28,10 @@ export default function Home() {
           <WhyNowSection />
           <SolutionSection />
           <CommerceStackSection />
-          <WhoItsForSection />
           <MoatSection />
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <MetricsSection />
+          <WhoItsForSection />
           <Pricing />
           <FAQ />
           <FinalCTASection />
