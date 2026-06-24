@@ -43,10 +43,10 @@ export default function Hero() {
       style={{ borderBottom: "1px solid #27272A" }}
     >
       <div className="landing-container-wide pt-20 pb-16 sm:pt-24 sm:pb-20 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-14 xl:gap-20">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-14 xl:gap-20">
 
           {/* Left — copy */}
-          <div className="flex-1 min-w-0 lg:pt-4">
+          <div className="flex-1 min-w-0">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -124,9 +124,8 @@ export default function Hero() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
-            className="mt-12 lg:mt-0 lg:shrink-0 lg:w-[500px] xl:w-[560px]"
+            className="mt-12 lg:mt-0 lg:shrink-0 lg:w-[480px] xl:w-[520px]"
           >
-            {/* Window chrome */}
             <div className="rounded-xl overflow-hidden border border-[#30363d]" style={{ background: "#0d1117" }}>
               {/* Title bar */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]" style={{ background: "#161b22" }}>
@@ -137,158 +136,90 @@ export default function Hero() {
               </div>
 
               {/* Terminal body */}
-              <div className="p-5 font-mono text-sm leading-relaxed">
-
-                {/* ── Command 1: search ── */}
-                <div className="flex items-center gap-2">
-                  <span style={{ color: "#3fb950" }}>❯</span>
-                  <span style={{ color: "#e6edf3" }}>market search </span>
-                  <span style={{ color: "#a5d6ff" }}>&quot;aceite vegetal 1L&quot;</span>
-                  <span style={{ color: "#ff7b72" }}> --country</span>
-                  <span style={{ color: "#ffa657" }}> PE</span>
-                </div>
-                <div className="mt-1 pl-4" style={{ color: "#484f58" }}>
-                  {isES ? "↳ 12 productos encontrados · 6 retailers" : "↳ 12 products found · 6 retailers"}
-                </div>
-                <div className="mt-0.5 pl-4 space-y-0.5">
-                  <div className="flex justify-between">
-                    <span style={{ color: "#c9d1d9" }}>Primor 1L</span>
-                    <span style={{ color: "#3fb950" }}>S/ 6.90</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: "#8b949e" }}>Cil 1L</span>
-                    <span style={{ color: "#8b949e" }}>S/ 7.20</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: "#8b949e" }}>Capri 1L</span>
-                    <span style={{ color: "#8b949e" }}>S/ 7.45</span>
-                  </div>
-                </div>
-
-                {/* Spacer */}
-                <div className="mt-3" />
-
-                {/* ── Command 2: optimize ── */}
-                <div className="flex flex-wrap items-center gap-x-1">
-                  <span style={{ color: "#3fb950" }}>❯</span>
-                  <span style={{ color: "#e6edf3" }}>market optimize</span>
-                  <span style={{ color: "#a5d6ff" }}>&quot;leche, arroz, aceite&quot;</span>
-                  <span style={{ color: "#ff7b72" }}>--country</span>
-                  <span style={{ color: "#ffa657" }}>PE</span>
+              <div className="p-5 font-mono text-sm leading-relaxed space-y-1">
+                {/* Command */}
+                <div>
+                  <span style={{ color: "#3fb950" }}>❯</span>{" "}
+                  <span style={{ color: "#e6edf3" }}>market optimize </span>
+                  <span style={{ color: "#a5d6ff" }}>&quot;leche, arroz, aceite&quot;</span>{" "}
+                  <span style={{ color: "#ff7b72" }}>--country</span>{" "}
+                  <span style={{ color: "#ffa657" }}>PE</span>{" "}
                   <span style={{ color: "#ff7b72" }}>--stock</span>
                 </div>
-                <div className="mt-1" style={{ color: "#484f58" }}>
+
+                <div className="pt-0.5" style={{ color: "#484f58" }}>
                   {isES ? "▸ Escaneando 41 retailers · verificando stock..." : "▸ Scanning 41 retailers · checking stock..."}
                 </div>
 
-                {/* Separator */}
-                <div className="mt-2 mb-1" style={{ color: "#21262d" }}>{"─".repeat(46)}</div>
+                <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
 
-                {/* Header */}
-                <div className="flex justify-between text-xs mb-1">
+                {/* Column header */}
+                <div className="flex justify-between text-xs pt-0.5">
                   <span style={{ color: "#8b949e" }}>{"  "}Retailer</span>
-                  <div className="flex gap-6">
+                  <div className="flex gap-5">
                     <span style={{ color: "#8b949e" }}>Stock</span>
                     <span style={{ color: "#8b949e" }}>Total (S/)</span>
                   </div>
                 </div>
 
-                {/* Row 1 — winner */}
-                <div className="flex justify-between items-center rounded px-1 py-0.5" style={{ background: "rgba(63,185,80,0.10)" }}>
-                  <span>
-                    <span style={{ color: "#3fb950" }}>★ </span>
-                    <span style={{ color: "#e6edf3" }}>Tottus PE</span>
-                  </span>
-                  <div className="flex gap-6">
+                {/* Winner */}
+                <div className="flex justify-between items-center rounded px-1 py-0.5" style={{ background: "rgba(63,185,80,0.09)" }}>
+                  <span><span style={{ color: "#3fb950" }}>★ </span><span style={{ color: "#e6edf3" }}>Tottus PE</span></span>
+                  <div className="flex gap-5">
                     <span style={{ color: "#3fb950" }}>✓</span>
                     <span style={{ color: "#3fb950" }}>17.80</span>
                   </div>
                 </div>
 
-                {/* Row 2 */}
                 <div className="flex justify-between px-1 py-0.5">
                   <span style={{ color: "#c9d1d9" }}>{"  "}Metro PE</span>
-                  <div className="flex gap-6">
+                  <div className="flex gap-5">
                     <span style={{ color: "#3fb950" }}>✓</span>
                     <span style={{ color: "#c9d1d9" }}>18.40</span>
                   </div>
                 </div>
 
-                {/* Row 3 */}
                 <div className="flex justify-between px-1 py-0.5">
                   <span style={{ color: "#8b949e" }}>{"  "}Plaza Vea</span>
-                  <div className="flex gap-6">
+                  <div className="flex gap-5">
                     <span style={{ color: "#3fb950" }}>✓</span>
                     <span style={{ color: "#8b949e" }}>19.10</span>
                   </div>
                 </div>
 
-                {/* Row 4 */}
                 <div className="flex justify-between px-1 py-0.5">
                   <span style={{ color: "#8b949e" }}>{"  "}Wong PE</span>
-                  <div className="flex gap-6">
+                  <div className="flex gap-5">
                     <span style={{ color: "#e3b341" }}>~</span>
                     <span style={{ color: "#8b949e" }}>19.85</span>
                   </div>
                 </div>
 
-                {/* Row 5 */}
-                <div className="flex justify-between px-1 py-0.5">
-                  <span style={{ color: "#6e7681" }}>{"  "}Vivanda PE</span>
-                  <div className="flex gap-6">
-                    <span style={{ color: "#6e7681" }}>✗</span>
-                    <span style={{ color: "#6e7681" }}>20.30</span>
-                  </div>
-                </div>
-
-                {/* Row 6 */}
                 <div className="flex justify-between px-1 py-0.5">
                   <span style={{ color: "#6e7681" }}>{"  "}Rappi PE</span>
-                  <div className="flex gap-6">
+                  <div className="flex gap-5">
                     <span style={{ color: "#3fb950" }}>✓</span>
                     <span style={{ color: "#6e7681" }}>21.50</span>
                   </div>
                 </div>
 
-                {/* Separator */}
-                <div className="mt-1 mb-1" style={{ color: "#21262d" }}>{"─".repeat(46)}</div>
+                <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
 
                 {/* Savings */}
-                <div className="flex justify-between px-1">
+                <div className="flex justify-between pt-0.5">
                   <span style={{ color: "#8b949e" }}>
-                    {isES ? "  Ahorro vs. promedio" : "  Savings vs. avg"}
+                    {"  "}{isES ? "Ahorro vs. promedio" : "Savings vs. avg"}
                   </span>
                   <span style={{ color: "#3fb950" }}>↓ S/ 1.18 (6.2%)</span>
                 </div>
 
-                {/* TCO */}
-                <div className="mt-1 px-1" style={{ color: "#484f58" }}>
-                  {isES
-                    ? "  TCO calculado · sustitutos incluidos · entrega 2h"
-                    : "  TCO calculated · substitutes included · 2h delivery"}
-                </div>
-
-                {/* Spacer */}
-                <div className="mt-3" />
-
-                {/* ── Command 3: checkout ── */}
-                <div className="flex items-center gap-2">
-                  <span style={{ color: "#3fb950" }}>❯</span>
-                  <span style={{ color: "#e6edf3" }}>market checkout</span>
-                  <span style={{ color: "#ff7b72" }}>--retailer</span>
-                  <span style={{ color: "#ffa657" }}>tottus-pe</span>
-                  <span style={{ color: "#ff7b72" }}>--pay</span>
-                  <span style={{ color: "#ffa657" }}>yape</span>
-                </div>
-                <div className="mt-1 pl-4 space-y-0.5">
+                {/* Footer lines */}
+                <div className="pt-1.5 space-y-0.5">
                   <div style={{ color: "#484f58" }}>
-                    {isES ? "↳ Orden creada #ORD-2847" : "↳ Order created #ORD-2847"}
+                    {"  "}{isES ? "TCO calculado · sustitutos incluidos · entrega 2h" : "TCO calculated · substitutes included · 2h delivery"}
                   </div>
                   <div style={{ color: "#58a6ff" }}>
-                    {isES ? "↳ Link Yape generado ✓" : "↳ Yape payment link ready ✓"}
-                  </div>
-                  <div style={{ color: "#3fb950" }}>
-                    {isES ? "✓ Listo · S/ 17.80 · entrega hoy 14:00–16:00" : "✓ Done · S/ 17.80 · delivery today 14:00–16:00"}
+                    {"  "}{isES ? "→ Link Yape generado ✓" : "→ Yape payment link ready ✓"}
                   </div>
                 </div>
               </div>
