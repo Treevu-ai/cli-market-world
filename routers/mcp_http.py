@@ -295,6 +295,10 @@ _TOOLS = [
                     },
                 },
                 "country": {"type": "string"},
+                "line": {
+                    "type": "string",
+                    "description": "Filter by store type: supermercados, farmacias, electro, hogar, departamentales, moda, automotriz",
+                },
             },
         },
     },

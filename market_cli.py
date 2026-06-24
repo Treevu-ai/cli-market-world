@@ -1103,10 +1103,12 @@ def cmd_basket(args):
     stores = []
     if args.country:
         stores = [k for k, v in STORES.items() if v["country"] == args.country]
+    line = getattr(args, "line", None)
     payload = {
         "items": items,
         "country": country,
         "stores": stores or None,
+        "line": line,
         "include_tco": bool(getattr(args, "tco", False)),
         "include_delivery": not bool(getattr(args, "no_delivery", False)),
         "include_action_links": bool(getattr(args, "action_links", False)),
@@ -3296,6 +3298,7 @@ def main():
     p = sub.add_parser("basket", help=t("basket"))
     p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", "-l", choices=list(LINES.keys()), default=None, help="Filtrar por tipo de tienda (ej: supermercados, hogar)")
     p.add_argument("--tco", action="store_true", help="Include delivery + payment fees in totals")
     p.add_argument("--no-delivery", action="store_true", help="Exclude delivery fee from TCO")
     p.add_argument("--action-links", action="store_true", help="Attach deeplink + export list")
