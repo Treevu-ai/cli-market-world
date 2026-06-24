@@ -119,9 +119,9 @@ Comunicar como correlación observada hasta caracterizar lag y dirección causal
 | 4.1 Rename RPV | P0 | Bajo | Sí | ✅ Shipped |
 | 4.2 Comparación IPC | P0 | Bajo | Sí | ✅ Shipped |
 | 4.3 BSI fórmula + escala | P0 | Medio | Sí | ✅ Shipped |
-| 4.4 Affordability ratio promedio | P1 | Bajo | No | ✅ Shipped (world v2) |
-| 4.5 Price dispersion CV | P1 | Medio | No | ✅ Shipped (reports) |
-| 4.6 Promo umbral 3% | P1 | Medio | No | ✅ Shipped (world refresh) |
+| 4.4 Affordability ratio promedio | P1 | Bajo | No | 🔲 Pendiente |
+| 4.5 Price dispersion CV | P1 | Medio | No | 🔲 Pendiente |
+| 4.6 Promo umbral 3% | P1 | Medio | No | 🔲 Pendiente |
 | 4.7 Coverage table | P0 | Alto | Sí | ✅ Shipped |
 | 4.8 Trends causalidad | P2 | Alto | No | 🔲 Pendiente |
 
@@ -158,7 +158,7 @@ El reporte v2 está listo para uso institucional y prensa cuando:
 - [x] Ninguna superficie pública usa "inflación" sin calificador *(core/API/dashboard — sync world pendiente en copy legacy)*
 - [x] BSI tiene fórmula, escala y contexto histórico visible
 - [x] Coverage table incluida en cada emisión
-- [x] P1s implementados (affordability promedio, CV dispersion, promo 3%)
+- [ ] P1s implementados (affordability promedio, CV dispersion, promo 3%)
 - [ ] Revisión externa completada
 
 ---

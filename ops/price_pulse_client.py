@@ -330,8 +330,8 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         "",
         "## 6. Cobertura y Frescura",
         "",
-        f"| Retailer | País | Éxito % | Cobertura 7d | Último snapshot |",
-        f"|----------|------|---------|--------------|-----------------|",
+        "| Retailer | País | Éxito % | Cobertura 7d | Último snapshot |",
+        "|----------|------|---------|--------------|-----------------|",
     ]
     for row in cov_rows:
         succ = row.get("success_pct")
