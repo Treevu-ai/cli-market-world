@@ -296,7 +296,7 @@ def _fmt_console(report: dict) -> str:
         return "\n".join(lines)
 
     lines.append(f"\n  MOAT: {moat['total_prices']:,} precios · {moat['store_count']} stores")
-    lines.append(f"\n  RESUMEN DE VOLATILIDAD")
+    lines.append("\n  RESUMEN DE VOLATILIDAD")
     lines.append(f"  {'Productos con precio multi-retailer':<38} {a['products_with_multi_store_prices']:>5}")
     lines.append(f"  {'Spread >= 20% (candidatos a alerta)':<38} {a['products_high_spread_20pct_plus']:>5}")
     lines.append(f"  {'Productos con retailer outlier (>2σ)':<38} {a['products_with_outlier_retailers']:>5}")
