@@ -95,6 +95,7 @@ export default function ContactForm({
           onChange={(e) => setEmail(e.target.value)}
           className="input-cyber"
           placeholder="tu@email.com"
+          required
         />
       </div>
       <div>
@@ -106,13 +107,14 @@ export default function ContactForm({
           onChange={(e) => setUseCase(e.target.value)}
           rows={3}
           className="input-cyber resize-none"
+          required
           placeholder={
             placeholder ||
             (isES ? "Volumen, SLA, webhooks, integración..." : "Volume, SLA, webhooks, integration...")
           }
         />
       </div>
-      {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
+      {error && <p role="alert" className="text-sm text-[#ffb4ab]">{error}</p>}
       <button type="submit" disabled={loading} className="btn-mint w-full disabled:opacity-50">
         {loading ? (isES ? "Enviando..." : "Sending...") : (isES ? "Contactar ventas" : "Contact sales")}
       </button>

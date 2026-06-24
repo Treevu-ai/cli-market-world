@@ -36,7 +36,14 @@ from market_stats import (
     COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
 )
 from market_cli_i18n import get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
-from market_cli_telemetry import _report_install_event, _report_onboarding_event
+from market_cli_telemetry import (
+    _report_install_event,
+    _report_onboarding_event,
+    report_command_attempted,
+    report_command_result,
+    report_auth_wall_hit,
+    command_timer,
+)
 from market_cli_hello import cmd_hello, _render_splash, _mcp_profile_counts
 
 _NO_COLOR = bool(os.environ.get("NO_COLOR", ""))
@@ -334,6 +341,13 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
                 status=status,
             )
         if status == 401:
+            # P1 tracking: usuario chocó con el muro de autenticación
+            try:
+                import sys as _sys
+                _cmd = _sys.argv[1] if len(_sys.argv) > 1 else "unknown"
+                report_auth_wall_hit(_cmd)
+            except Exception:
+                pass
             ui.print_actionable_error(
                 console,
                 "Sesion expirada o token invalido." if not ui.is_en() else "Session expired or invalid token.",
@@ -1103,10 +1117,12 @@ def cmd_basket(args):
     stores = []
     if args.country:
         stores = [k for k, v in STORES.items() if v["country"] == args.country]
+    line = getattr(args, "line", None)
     payload = {
         "items": items,
         "country": country,
         "stores": stores or None,
+        "line": line,
         "include_tco": bool(getattr(args, "tco", False)),
         "include_delivery": not bool(getattr(args, "no_delivery", False)),
         "include_action_links": bool(getattr(args, "action_links", False)),
@@ -1258,13 +1274,13 @@ def cmd_inflation(args):
     days = getattr(args, "days", None) or 7
     params.append(f"days={days}")
     qs = "&".join(params)
-    with console.status("[cyan]Calculando inflación..."):
+    with console.status("[cyan]Calculando RPV (Retail Price Velocity)..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(True, data, next_commands=["market intel inflation --country PE", "market intel indicators"]), console)
         return
     items = data.get("items", [])
-    avg = data.get("avg_inflation_pct", 0)
+    avg = data.get("avg_rpv_7d_pct", data.get("avg_inflation_pct", 0))
     n_products = sum(int(i.get("n_products") or 0) for i in items)
     color = "#FF6B35" if avg > 0 else "#00FF88"
     meta = (
@@ -1272,7 +1288,8 @@ def cmd_inflation(args):
         if not ui.is_en()
         else f"{n_products} products · {len(items)} lines"
     )
-    console.print(f"\n[bold]Inflación promedio: [{color}]{avg:+.1f}%[/] ({meta})[/]")
+    console.print(f"\n[bold]RPV promedio (7d): [{color}]{avg:+.1f}%[/] ({meta})[/]")
+    console.print("[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
     if items:
         title = "Variación por línea" if not ui.is_en() else "Change by line"
         table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
@@ -1443,11 +1460,11 @@ def cmd_intel_brief(args):
 
     # ── Shelf signals ────────────────────────────────────────────────────────
     shelf_labels = {
-        "shelf_inflation_avg_pct": ("Inflación góndola" if not is_en else "Shelf inflation", "%"),
+        "shelf_inflation_avg_pct": ("RPV 7d (góndola)" if not is_en else "RPV 7d (shelf)", "%"),
         "staple_momentum_7d_pct": ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", "%"),
-        "promo_intensity": ("Intensidad promo" if not is_en else "Promo intensity", ""),
-        "price_dispersion": ("Dispersión de precios" if not is_en else "Price dispersion", ""),
-        "basket_stress_index": ("Índice estrés canasta" if not is_en else "Basket stress index", ""),
+        "promo_intensity": ("Intensidad promo (≥3%)" if not is_en else "Promo intensity (≥3%)", ""),
+        "price_dispersion": ("Dispersión CV" if not is_en else "Price dispersion (CV)", ""),
+        "basket_stress_index": ("Índice estrés canasta (BSI)" if not is_en else "Basket stress index (BSI)", ""),
     }
     if shelf:
         t_shelf = Table(
@@ -1469,7 +1486,7 @@ def cmd_intel_brief(args):
             if gap is not None:
                 color = "#FF6B35" if gap > 0 else "#00FF88"
                 t_shelf.add_row(
-                    "Gap vs CPI oficial" if not is_en else "Gap vs official CPI",
+                    "Gap vs CPI alimentos (anexo)" if not is_en else "Gap vs food CPI (appendix)",
                     f"[{color}]{gap:+.1f} pp[/]",
                 )
         console.print()
@@ -3295,6 +3312,7 @@ def main():
     p = sub.add_parser("basket", help=t("basket"))
     p.add_argument("items", nargs="+", help="Productos con cantidad, ej: leche:2 arroz:1")
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", "-l", choices=list(LINES.keys()), default=None, help="Filtrar por tipo de tienda (ej: supermercados, hogar)")
     p.add_argument("--tco", action="store_true", help="Include delivery + payment fees in totals")
     p.add_argument("--no-delivery", action="store_true", help="Exclude delivery fee from TCO")
     p.add_argument("--action-links", action="store_true", help="Attach deeplink + export list")
@@ -3427,7 +3445,18 @@ def main():
         cmd = args.intel_cmd
     handler = handlers.get(cmd)
     if handler:
-        handler(args)
+        # P1 tracking: comando intentado + resultado con timing
+        report_command_attempted(cmd)
+        _, get_elapsed = command_timer()
+        try:
+            handler(args)
+            report_command_result(cmd, success=True, elapsed_ms=get_elapsed())
+        except SystemExit as exc:
+            # sys.exit(1) desde cli_api indica error (auth, API, etc.)
+            code = exc.code if isinstance(exc.code, int) else 1
+            report_command_result(cmd, success=(code == 0), elapsed_ms=get_elapsed(),
+                                  error_type="exit" if code != 0 else None)
+            raise
 
 if __name__ == "__main__":
     main()

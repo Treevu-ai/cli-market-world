@@ -2,12 +2,12 @@
 
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { PRICING_PROCURE_HASH } from "@/lib/siteNav";
 import { procurePriceRangeLabel } from "@/lib/procurePlans";
+import { CTA } from "@/lib/ctaCopy";
 
 const STEPS = [
   { n: "01", es: "Solicitud", en: "Request", descEs: "Tu equipo envía una lista de productos. Sin scraping. Sin llamadas.", descEn: "Your team submits a product list. No scraping. No calls." },
-  { n: "02", es: "Comparación", en: "Compare", descEs: "CLI Market busca en 80+ retailers y normaliza precios por kg/L.", descEn: "CLI Market searches 80+ retailers and normalizes prices per kg/L." },
+  { n: "02", es: "Comparación", en: "Compare", descEs: "CLI Market busca en 41 retailers verificados y normaliza precios por kg/L.", descEn: "CLI Market searches 41 verified retailers and normalizes prices per kg/L." },
   { n: "03", es: "Aprobación", en: "Approve", descEs: "Workflow de aprobación interno. Roles, límites, trazabilidad.", descEn: "Internal approval workflow. Roles, limits, audit trail." },
   { n: "04", es: "Checkout", en: "Checkout", descEs: "Pago integrado: Yape, Plin, PayPal. Una orden. Un comprobante.", descEn: "Built-in payment: Yape, Plin, PayPal. One order. One receipt." },
   { n: "05", es: "Ahorro", en: "Savings", descEs: "Reportes de ahorro vs. precio promedio de mercado. ROI medible.", descEn: "Savings reports vs. market average price. Measurable ROI." },
@@ -34,10 +34,10 @@ export default function ProcureCopilotPage() {
               : `Procure Copilot turns shopping lists into optimized orders using real shelf prices from ${MARKET_STATS.retailersVerified} retailers across ${MARKET_STATS.countries} countries. With approvals, audit trail, and savings reports.`}
           </p>
           <a
-            href={PRICING_PROCURE_HASH}
+            href={CTA.viewProcurePlans.href}
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 mt-8 hover:brightness-110 transition-all"
           >
-            {isES ? "Ver planes Procure →" : "See Procure plans →"}
+            {isES ? CTA.viewProcurePlans.es : CTA.viewProcurePlans.en}
           </a>
         </section>
 
@@ -93,10 +93,10 @@ export default function ProcureCopilotPage() {
               : `${procurePriceRangeLabel(false)} · Build infra included.`}
           </p>
           <a
-            href={PRICING_PROCURE_HASH}
+            href={CTA.viewProcurePlans.href}
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 hover:brightness-110 transition-all"
           >
-            {isES ? "Ver planes →" : "See plans →"}
+            {isES ? CTA.viewProcurePlans.es : CTA.viewProcurePlans.en}
           </a>
         </section>
       </div>

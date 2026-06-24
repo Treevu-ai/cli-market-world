@@ -26,8 +26,8 @@ const STEPS = [
     title_es: "Ejecución",
     question_en: "Can the purchase be approved and completed?",
     question_es: "¿Puede la compra ser aprobada y completada?",
-    desc_en: "Run approvals, checkout, and procurement workflows.",
-    desc_es: "Ejecuta aprobaciones, checkout y flujos de compra.",
+    desc_en: "Run approval workflows and place orders via internal CLI Market checkout (Yape / Plin / PayPal). Not direct retailer-site purchase.",
+    desc_es: "Ejecuta flujos de aprobación y órdenes vía checkout interno CLI Market (Yape / Plin / PayPal). No es compra directa en el sitio del retailer.",
   },
   {
     num: "4",

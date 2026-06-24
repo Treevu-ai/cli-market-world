@@ -528,7 +528,7 @@ market --json doctor`}</CodeBlock>
                 </button>
               ))}
             </div>
-            <button type="button" onClick={copy} className="font-label-caps text-[10px] text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]">
+            <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy code"} className="font-label-caps text-[10px] text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]">
               {copied ? "OK" : "COPY"}
             </button>
           </div>

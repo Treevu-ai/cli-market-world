@@ -10,7 +10,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from company_ar_gate import resolve_company_price_marker
+from company_ar_gate import resolve_commodity_spread_markers, resolve_company_price_marker
 from content_paths import content_root, linkedin_dir, rel_to_content
 
 MAX_SLACK_CHARS = 3800
@@ -255,13 +255,15 @@ def apply_live_metrics(
     metrics: dict[str, Any],
     *,
     dashboard_data: dict[str, Any] | None = None,
+    for_date: date | None = None,
 ) -> str:
-    """Refresh moat lines in post copy with live dashboard numbers."""
+    """Refresh moat lines and resolve [ACTUALIZAR] markers with live dashboard numbers."""
     if not text.strip():
         return text
     snap = metrics["snapshots_24h"]
     total = metrics["total_indexed"]
     stores = metrics["stores_indexed"]
+    cov = int(metrics.get("coverage_7d_pct", 100))
     out = text
     out = re.sub(
         r"\*\*[\d,]+\*\*\s*precios[^\n]*refresh\s*24h[^\n]*",
@@ -273,9 +275,36 @@ def apply_live_metrics(
     out = re.sub(r"\*\*[\d,]+\*\*\s*indexados", f"**{total:,}** indexados", out)
     out = re.sub(r"\*\*[\d,]+\*\*\s*retailers[^\n]*", f"**{stores}** retailers fresh", out)
     out = re.sub(r"~\s*[\d,]+\s*precios en refresh 24h", f"~{snap:,} precios en refresh 24h", out)
-    out = re.sub(r"\*\*100%\*\*", f"**{metrics['coverage_7d_pct']:.0f}%**", out, count=1)
+    out = re.sub(r"\*\*100%\*\*", f"**{cov}%**", out, count=1)
+
+    # Coverage instruction markers (Company-Day-14 style)
+    # "100% de cobertura en los últimos 7 días.\n\n[ACTUALIZAR: ...coverage_7d_pct...]\n"
+    out = re.sub(
+        r"\d{2,3}(% de cobertura en los últimos 7 días\.)\n+\[ACTUALIZAR:[^\]]*coverage_7d_pct[^\]]*\]\n?",
+        lambda m: f"{cov}{m.group(1)}\n",
+        out,
+        flags=re.IGNORECASE,
+    )
+    # "100% de cobertura 7d en 38 tiendas activas. [ACTUALIZAR: reemplazar ...]"
+    out = re.sub(
+        r"\d{2,3}(% de cobertura 7d en )\d+( tiendas activas)\.\s*\[ACTUALIZAR:[^\]]*\]",
+        lambda m: f"{cov}{m.group(1)}{stores}{m.group(2)}.",
+        out,
+        flags=re.IGNORECASE,
+    )
+
+    # ISO week number substitution
+    if for_date is not None:
+        week = for_date.isocalendar()[1]
+        out = out.replace("Semana [ACTUALIZAR]", f"Semana W{week}")
+
     if dashboard_data:
         out = resolve_company_price_marker(out, dashboard_data)
+        out = resolve_commodity_spread_markers(out, dashboard_data)
+
+    # Strip remaining standalone [ACTUALIZAR: ...] instruction lines (after all resolutions)
+    out = re.sub(r"^\[ACTUALIZAR:[^\]]*\]\n?", "", out, flags=re.MULTILINE)
+
     return out
 
 
