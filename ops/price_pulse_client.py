@@ -25,6 +25,12 @@ from typing import Any
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from market_intel_v2 import (
+    PROMO_DISCOUNT_THRESHOLD,
+    _RPV_DISCLAIMER_ES,
+    build_coverage_table_rows,
+    coverage_partial_label,
+)
 
 DASHBOARD_URL_PRODUCTION = "https://cli-market-production.up.railway.app/dashboard/data"
 DASHBOARD_URL_LOCAL = "http://127.0.0.1:8765/dashboard/data"
@@ -130,10 +136,16 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
     coverage = k.get("coverage_7d_pct", 0)
     fresh_pct = k.get("fresh_24h_pct", 0)
     moat_age = moat.get("moat_age_hours")
+    partial = coverage_partial_label(coverage)
 
     lines += [
         "## 1. Resumen Ejecutivo",
         "",
+    ]
+    if partial:
+        lines.append(f"**{partial}** — cobertura agregada {_pct(coverage)} (<60% umbral publicación).")
+        lines.append("")
+    lines += [
         f"- **{_fmt(total)}** precios indexados en el data moat",
         f"- **{_fmt(snapshots)}** precios actualizados en las últimas 24 horas",
         f"- **{active}** tiendas con datos activos",
@@ -151,12 +163,14 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         "",
     ]
 
-    # ── Inflación observada ────────────────────────────────────────────────
+    # ── Retail Price Velocity (RPV) ─────────────────────────────────────────
     inflation = data.get("inflation", [])
     lines += [
         "---",
         "",
-        "## 2. Inflación Observada (7 días)",
+        "## 2. Retail Price Velocity (RPV — 7 días)",
+        "",
+        f"_{_RPV_DISCLAIMER_ES}_",
         "",
     ]
     if inflation and any(i.get("delta_pct", 0) != 0 for i in inflation):
@@ -175,7 +189,7 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         avg_delta = sum(deltas) / len(deltas) if deltas else 0
         lines += [
             "",
-            f"**Señal agregada:** variación promedio de **{avg_delta:+.1f}%** en {len(inflation)} líneas.",
+            f"**Señal agregada (RPV):** variación promedio de **{avg_delta:+.1f}%** en {len(inflation)} líneas.",
         ]
     else:
         lines.append("_Serie histórica insuficiente (se requieren ≥7 días de datos). El piloto incluye acumulación progresiva._")
@@ -241,15 +255,27 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         lines.append("_Sin datos de canasta para este período._")
         lines.append("")
 
-    # ── Spreads de mercado ─────────────────────────────────────────────────
+    # ── Dispersión de precios (CV) ───────────────────────────────────────────
     marketing_spreads = data.get("marketing_spreads", [])
-    if marketing_spreads:
+    indicator_values = data.get("indicator_values") or data.get("indicators_latest") or []
+    dispersion_cv = None
+    for iv in indicator_values if isinstance(indicator_values, list) else []:
+        if isinstance(iv, dict) and iv.get("key") == "price_dispersion":
+            dispersion_cv = iv.get("value")
+            break
+    if marketing_spreads or dispersion_cv is not None:
         lines += [
             "---",
             "",
-            "## 4. Dispersión de Precios (Spreads)",
+            "## 4. Dispersión de Precios",
             "",
         ]
+        if dispersion_cv is not None:
+            lines += [
+                f"- **Coeficiente de variación (CV) agregado:** **{dispersion_cv:.1f}%**",
+                "  _(Fórmula: σ/μ × 100 por grupo comparable — ver docs/methodology.md §5)_",
+                "",
+            ]
         seen: set[str] = set()
         shown = 0
         for s in marketing_spreads:
@@ -259,17 +285,23 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
                     continue
                 seen.add(label)
                 ratio = s.get("spread_ratio", 0) or 0
+                cv_item = s.get("cv_pct") or s.get("dispersion_cv")
+                cv_note = f" · CV **{cv_item:.1f}%**" if cv_item is not None else ""
                 lines.append(
                     f"- **{label}** ({s.get('line', '')}, {s.get('currency', '')}): "
-                    f"spread **{ratio:.1f}x** entre {s.get('stores', '?')} tiendas — "
-                    f"min {s.get('currency', '')} {s.get('min_price', 0):.2f} / "
-                    f"max {s.get('currency', '')} {s.get('max_price', 0):.2f} "
-                    f"(promedio: {s.get('avg_price', 0):.2f})"
+                    f"spread legacy **{ratio:.1f}x**{cv_note} — "
+                    f"{s.get('stores', '?')} tiendas "
+                    f"(min {s.get('currency', '')} {s.get('min_price', 0):.2f} / "
+                    f"max {s.get('currency', '')} {s.get('max_price', 0):.2f})"
                 )
                 shown += 1
-        if shown == 0:
-            lines.append("_Sin spreads que superen el umbral marketing (2.5x canasta, 10x farmacia)._")
-        lines.append("")
+        if shown == 0 and dispersion_cv is None:
+            lines.append("_Sin spreads marketing-ready en este corte._")
+        lines += [
+            "",
+            "_`spread_ratio` (max−min)/min es métrica legacy — no usar en publicaciones v2._",
+            "",
+        ]
 
     # ── Calidad del dato ────────────────────────────────────────────────────
     quality = data.get("quality_funnel", {})
@@ -291,18 +323,48 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         )
     lines.append("")
 
+    # ── Cobertura y frescura ─────────────────────────────────────────────────
+    cov_rows = build_coverage_table_rows(data, limit=12)
+    lines += [
+        "---",
+        "",
+        "## 6. Cobertura y Frescura",
+        "",
+        f"| Retailer | País | Éxito % | Cobertura 7d | Último snapshot |",
+        f"|----------|------|---------|--------------|-----------------|",
+    ]
+    for row in cov_rows:
+        succ = row.get("success_pct")
+        cov7 = row.get("coverage_7d_pct")
+        lines.append(
+            f"| {row.get('store', '?')} | {row.get('country', '—')} | "
+            f"{succ:.0f}% | {cov7:.0f}% | {row.get('last_snapshot', '—')} |"
+            if succ is not None and cov7 is not None
+            else f"| {row.get('store', '?')} | {row.get('country', '—')} | — | — | {row.get('last_snapshot', '—')} |"
+        )
+    lines += [
+        "",
+        f"**Cobertura agregada:** {_pct(coverage)} · **Umbral publicación:** ≥60%",
+        "",
+    ]
+
     # ── Metodología ─────────────────────────────────────────────────────────
     lines += [
         "---",
         "",
-        "## 6. Metodología",
+        "## 7. Metodología",
         "",
-        "- **Fuente**: APIs públicas de retailers VTEX/Shopify/Magento (sin scraping de páginas web).",
-        "- **Frecuencia**: Collector programado cada 8 horas.",
-        "- **Cobertura geográfica**: Perú, Colombia, Argentina, Brasil, México, Chile + Europa.",
-        "- **Normalización**: Precios por kg/L cuando la unidad es parseable (ej. 900ml → normalizado a 1L).",
-        "- **Filtros de calidad**: Descuentos >90% marcados como 'suspect'. Outliers de precio >5x la mediana del grupo excluidos de canasta.",
-        "- **Disclaimer**: Los datos provienen de góndola online en retail formal urbano. No reemplazan IPC oficial (INEI, INDEC, IBGE). Señal de alta frecuencia, no índice nacional.",
+        "- **Documento canónico:** `docs/methodology.md` (CLI Market Intelligence v2).",
+        "- **RPV:** `shelf_price_momentum_7d` — Retail Price Velocity, no inflación oficial.",
+        f"- **Promo intensity:** SKUs con descuento ≥ **{int(PROMO_DISCOUNT_THRESHOLD * 100)}%** sobre list_price.",
+        "- **Price dispersion:** coeficiente de variación (CV) entre retailers por producto comparable.",
+        "- **BSI:** canasta hoy / mediana 30d — ortogonal a dispersión cross-retailer.",
+        "- **Fuente:** APIs públicas de retailers VTEX/Shopify/Magento (sin scraping de páginas web).",
+        "- **Frecuencia:** Collector programado cada 4–8 horas.",
+        "- **Cobertura geográfica:** Perú, Colombia, Argentina, Brasil, México, Chile + Europa.",
+        "- **Normalización:** Precios por kg/L cuando la unidad es parseable.",
+        "- **Filtros de calidad:** Descuentos >90% marcados como 'suspect'. Outliers >5x mediana excluidos de canasta.",
+        f"- **Disclaimer:** {_RPV_DISCLAIMER_ES}",
         "",
         "---",
         "",

@@ -100,7 +100,9 @@ def test_inflation_returns_structure():
     data = r.json()
     assert "items" in data
     assert "avg_inflation_pct" in data
+    assert "avg_rpv_7d_pct" in data
     assert "days" in data
+    assert data.get("metric") == "shelf_price_momentum_7d"
 
 
 def test_inflation_unknown_country_returns_empty():
