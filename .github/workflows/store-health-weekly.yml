@@ -1,0 +1,50 @@
+name: Store Health Weekly
+
+on:
+  schedule:
+    # Lunes 07:00 UTC — antes del briefing (07:30) y gate check (08:00)
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      alert_only:
+        description: "Solo alertar si hay stores stale (true/false)"
+        required: false
+        default: "false"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MARKET_API_URL: https://cli-market-production.up.railway.app
+
+jobs:
+  store-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Run store health monitor
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_BITACORA_CHANNEL: ${{ secrets.SLACK_BITACORA_CHANNEL || vars.SLACK_BITACORA_CHANNEL }}
+        run: |
+          FLAGS="--slack"
+          if [ "${{ github.event.inputs.alert_only }}" = "true" ]; then
+            FLAGS="$FLAGS --alert-only"
+          fi
+          python3 ops/store_health_monitor.py $FLAGS
+        # Exit code 1 = stale stores detected — mark as warning, not failure
+        continue-on-error: true
+
+      - name: Fail workflow if stale stores detected
+        if: steps.store-health.outcome == 'failure'
+        run: |
+          echo "::warning::Store health monitor detected stale/dead stores — check Slack #bitácora for details"
