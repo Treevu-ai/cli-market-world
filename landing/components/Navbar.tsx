@@ -87,7 +87,8 @@ export default function Navbar() {
           >
             {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
           </a>
-          <button onClick={() => setLang(isES ? "en" : "es")}
+          <button type="button" onClick={() => setLang(isES ? "en" : "es")}
+            aria-label={isES ? "Switch to English" : "Cambiar a Español"}
             className="kimi-nav-link text-xs text-[#A1A1AA] hover:text-[#FAFAFA] cursor-pointer transition-colors">
             {isES ? "EN" : "ES"}
           </button>
@@ -105,7 +106,7 @@ export default function Navbar() {
           </a>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden text-[#A1A1AA] p-2" aria-expanded={open} aria-label={isES ? "Menú" : "Menu"}>
+        <button type="button" onClick={() => setOpen(!open)} className="md:hidden text-[#A1A1AA] p-3" aria-expanded={open} aria-label={isES ? "Menú" : "Menu"}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             {open ? <path d="M18 6L6 18M6 6l12 12"/> : <path d="M3 12h18M3 6h18M3 18h18"/>}
           </svg>
@@ -143,7 +144,8 @@ export default function Navbar() {
              className="inline-flex items-center justify-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-sm font-semibold px-6 py-3 mt-1 hover:bg-[#8fff6e] transition-colors">
             {signUpCta}
           </a>
-          <button onClick={() => setLang(isES ? "en" : "es")}
+          <button type="button" onClick={() => setLang(isES ? "en" : "es")}
+            aria-label={isES ? "Switch to English" : "Cambiar a Español"}
             className="text-xs font-medium text-[#A1A1AA] cursor-pointer text-left hover:text-[#FAFAFA] transition-colors">
             {isES ? "EN" : "ES"}
           </button>

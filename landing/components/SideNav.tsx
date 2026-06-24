@@ -55,7 +55,9 @@ export default function SideNav() {
           </a>
         ))}
         <button
+          type="button"
           onClick={() => setLang(isES ? "en" : "es")}
+          aria-label={isES ? "Switch to English" : "Cambiar a Español"}
           className="mt-4 text-xs font-mono text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA] transition-colors z-10"
         >
           {isES ? "EN" : "ES"}
