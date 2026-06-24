@@ -43,7 +43,7 @@ Estructura:
 2. **Proyección de canasta (escenarios)**
    - Tabla con 3 escenarios (optimista, base, pesimista) para la canasta en la tienda más barata del país principal.
    - Cada escenario a 30, 60, 90 días.
-   - Metodología: "Proyección lineal simple sobre el promedio móvil de 7 días de la inflación observada por el collector."
+   - Metodología: "Proyección lineal simple sobre el promedio móvil de 7 días del RPV (Retail Price Velocity) del collector."
    - Bandas de confianza: ±X% (más anchas si la serie es corta).
 
    ```
@@ -54,10 +54,11 @@ Estructura:
    | Pesimista | S/ XX   | S/ XX   | S/ XX   |
    ```
 
-3. **Proyección de inflación por línea**
+3. **Proyección de RPV por línea**
    - Para las 3 líneas con más datos: proyectar delta_pct a 30/60/90d.
-   - Usar el promedio de inflación de los últimos 7 días como tasa base.
+   - Usar el RPV promedio de los últimos 7 días como tasa base (campo `retail_price_velocity_pct` o `avg_inflation_pct`).
    - Escenario optimista: 50% de la tasa base. Pesimista: 150% de la tasa base.
+   - Nunca llamar "inflación" a este valor sin el calificador "de góndola online (RPV)".
 
 4. **Factores de riesgo**
    - Listar 3-5 factores que podrían desviar la proyección (estacionalidad, tipo de cambio, política monetaria, shocks de oferta).
@@ -70,5 +71,6 @@ Estructura:
 
 - Si la serie tiene <7 días, no proyectes — decí "datos insuficientes para proyección" y explicá cuándo estarán disponibles.
 - Si la serie tiene 7-30 días, proyectá solo a 30 días con la nota "preliminar — se ajustará semanalmente".
-- No uses inflación oficial (INEI, INDEC) como input de tu modelo. Solo datos del collector.
+- No uses inflación oficial (INEI, INDEC) como input de tu modelo. Solo datos RPV del collector.
+- No reportes RPV como "inflación" sin el calificador "de góndola online". Ver methodology.md §1–§2.
 - Redondeá a 2 decimales. Montos en moneda local.
