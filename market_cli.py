@@ -36,7 +36,14 @@ from market_stats import (
     COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
 )
 from market_cli_i18n import get_lang, set_lang, t, _LEGACY_INTEL_CMDS, _META_CMDS
-from market_cli_telemetry import _report_install_event, _report_onboarding_event
+from market_cli_telemetry import (
+    _report_install_event,
+    _report_onboarding_event,
+    report_command_attempted,
+    report_command_result,
+    report_auth_wall_hit,
+    command_timer,
+)
 from market_cli_hello import cmd_hello, _render_splash, _mcp_profile_counts
 
 _NO_COLOR = bool(os.environ.get("NO_COLOR", ""))
@@ -334,6 +341,13 @@ def cli_api(method: str, path: str, json_data: dict | None = None) -> dict:
                 status=status,
             )
         if status == 401:
+            # P1 tracking: usuario chocó con el muro de autenticación
+            try:
+                import sys as _sys
+                _cmd = _sys.argv[1] if len(_sys.argv) > 1 else "unknown"
+                report_auth_wall_hit(_cmd)
+            except Exception:
+                pass
             ui.print_actionable_error(
                 console,
                 "Sesion expirada o token invalido." if not ui.is_en() else "Session expired or invalid token.",
@@ -3431,7 +3445,18 @@ def main():
         cmd = args.intel_cmd
     handler = handlers.get(cmd)
     if handler:
-        handler(args)
+        # P1 tracking: comando intentado + resultado con timing
+        report_command_attempted(cmd)
+        _, get_elapsed = command_timer()
+        try:
+            handler(args)
+            report_command_result(cmd, success=True, elapsed_ms=get_elapsed())
+        except SystemExit as exc:
+            # sys.exit(1) desde cli_api indica error (auth, API, etc.)
+            code = exc.code if isinstance(exc.code, int) else 1
+            report_command_result(cmd, success=(code == 0), elapsed_ms=get_elapsed(),
+                                  error_type="exit" if code != 0 else None)
+            raise
 
 if __name__ == "__main__":
     main()
