@@ -150,3 +150,161 @@ def resolve_company_price_marker(text: str, data: dict[str, Any], *, min_items: 
             block.strip(),
         )
     return out
+
+
+# ── Commodity spread marker resolution (Company-Day-16, 20, 21, 24) ──────────
+
+
+def _get_spread_for(seed: str, currency: str, data: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the first matching spread row for seed+currency from dashboard data."""
+    for row in (data.get("canasta_spreads") or []) + (data.get("marketing_spreads") or []):
+        item = (row.get("item") or row.get("seed") or "").lower()
+        cur = (row.get("currency") or "").upper()
+        if seed.lower() in item and cur == currency.upper():
+            return row
+    return None
+
+
+def _build_aceite_spread_lines(data: dict[str, Any]) -> list[str]:
+    """Build aceite AR spread lines for Company-Day-16."""
+    row = _get_spread_for("aceite", "ARS", data)
+    if not row:
+        return []
+    avg = float(row.get("avg_price") or 0)
+    lo = float(row.get("min_price") or row.get("price_min") or 0)
+    hi = float(row.get("max_price") or row.get("price_max") or 0)
+    spread = float(row.get("spread_ratio") or (hi / lo if lo else 0))
+    basis = row.get("price_basis") or "per_L"
+    unit = _basis_unit(basis)
+    lines = []
+    if lo and hi:
+        lines.append(
+            f"Esta semana, el precio del aceite vegetal por {unit} en Argentina "
+            f"varió entre ARS {lo:,.0f} y ARS {hi:,.0f} entre las principales cadenas "
+            f"— un spread de {(hi - lo) / lo * 100:.0f}% sobre el mínimo."
+        )
+    elif avg and spread:
+        lines.append(
+            f"Esta semana, el spread de aceite vegetal en Argentina "
+            f"alcanzó {spread:.2f}x entre las principales cadenas "
+            f"(precio promedio por {unit}: ARS {avg:,.0f})."
+        )
+    return lines
+
+
+def _build_leche_pe_ar_lines(data: dict[str, Any]) -> list[str]:
+    """Build leche PE vs AR comparison lines for Company-Day-20."""
+    row_ars = _get_spread_for("leche", "ARS", data)
+    row_pen = _get_spread_for("leche", "PEN", data)
+    lines = []
+    if row_pen:
+        lo = float(row_pen.get("min_price") or row_pen.get("price_min") or 0)
+        hi = float(row_pen.get("max_price") or row_pen.get("price_max") or 0)
+        if lo and hi:
+            lines.append(
+                f"En Perú, el precio por litro de leche entera se mueve en un rango "
+                f"de S/ {lo:.2f} a S/ {hi:.2f} entre las principales cadenas."
+            )
+    if row_ars:
+        lo = float(row_ars.get("min_price") or row_ars.get("price_min") or 0)
+        hi = float(row_ars.get("max_price") or row_ars.get("price_max") or 0)
+        if lo and hi:
+            lines.append(
+                f"En Argentina, el mismo producto muestra un rango "
+                f"de ARS {lo:,.0f} a ARS {hi:,.0f} por litro."
+            )
+    return lines
+
+
+def _build_top_spreads_lines(data: dict[str, Any]) -> list[str]:
+    """Build top-3 spread products block for Company-Day-21."""
+    rows = (data.get("top_discounts") or data.get("marketing_spreads") or [])
+    if not rows:
+        return []
+    top = sorted(rows, key=lambda r: float(r.get("spread_ratio") or r.get("discount_pct") or 0), reverse=True)[:3]
+    lines = []
+    for i, row in enumerate(top, 1):
+        seed = (row.get("seed") or row.get("item") or row.get("name") or "Producto").capitalize()
+        cur = (row.get("currency") or "ARS").upper()
+        lo = float(row.get("min_price") or row.get("price_min") or 0)
+        hi = float(row.get("max_price") or row.get("price_max") or 0)
+        spread = float(row.get("spread_ratio") or (hi / lo if lo else 0))
+        country = "AR" if cur == "ARS" else ("PE" if cur == "PEN" else cur)
+        basis = _basis_unit(row.get("price_basis") or "per_kg")
+        line = f"**{i}. {seed} — {country}**"
+        lines.append(line)
+        if lo and hi:
+            lines.append(f"Rango: {cur} {lo:,.0f} – {cur} {hi:,.0f} por {basis}. Spread: {(hi - lo) / lo * 100:.0f}%.")
+        elif spread:
+            lines.append(f"Spread: {spread:.2f}x entre las principales cadenas.")
+    return lines
+
+
+# Marker patterns for the new commodity posts
+_ACEITE_SPREAD_RE = re.compile(
+    r"\[ACTUALIZAR:\s*reemplazar con spread vigente de aceite[^\]]*\]\n?",
+    re.IGNORECASE,
+)
+_ACEITE_RANGE_RE = re.compile(
+    r"\[ACTUALIZAR:\s*insertar rango de precios por litro[^\]]*\]\n?",
+    re.IGNORECASE,
+)
+_LECHE_RANGE_RE = re.compile(
+    r"\[ACTUALIZAR:\s*insertar precio por litro en PE[^\]]*\]\n?",
+    re.IGNORECASE,
+)
+_LECHE_PLACEHOLDER_PEN_RE = re.compile(r"S/\s*\[X\]\s*a\s*S/\s*\[Y\]")
+_LECHE_PLACEHOLDER_ARS_RE = re.compile(r"ARS\s*\[A\]\s*a\s*ARS\s*\[B\]")
+_TOP3_BLOCK_RE = re.compile(
+    r"\[ACTUALIZAR:\s*insertar top 3 productos[^\]]*\]\n?",
+    re.IGNORECASE,
+)
+_REPLACE_ALL_RE = re.compile(
+    r"\[ACTUALIZAR:\s*reemplazar todos los placeholders[^\]]*\]\n?",
+    re.IGNORECASE,
+)
+
+
+def resolve_commodity_spread_markers(text: str, data: dict[str, Any]) -> str:
+    """Resolve Company-Day-16/20/21 commodity spread markers using dashboard data."""
+    out = text
+
+    # Company-Day-16: aceite AR spread
+    aceite_lines = _build_aceite_spread_lines(data)
+    if aceite_lines:
+        replacement = "\n".join(aceite_lines) + "\n"
+        out = _ACEITE_SPREAD_RE.sub(replacement, out)
+        out = _ACEITE_RANGE_RE.sub("", out)
+    else:
+        out = _ACEITE_SPREAD_RE.sub("", out)
+        out = _ACEITE_RANGE_RE.sub("", out)
+
+    # Company-Day-20: leche PE vs AR
+    leche_lines = _build_leche_pe_ar_lines(data)
+    out = _LECHE_RANGE_RE.sub("", out)
+    if leche_lines:
+        row_pen = _get_spread_for("leche", "PEN", data)
+        row_ars = _get_spread_for("leche", "ARS", data)
+        if row_pen:
+            lo = float(row_pen.get("min_price") or row_pen.get("price_min") or 0)
+            hi = float(row_pen.get("max_price") or row_pen.get("price_max") or 0)
+            if lo and hi:
+                out = _LECHE_PLACEHOLDER_PEN_RE.sub(f"S/ {lo:.2f} a S/ {hi:.2f}", out)
+        if row_ars:
+            lo = float(row_ars.get("min_price") or row_ars.get("price_min") or 0)
+            hi = float(row_ars.get("max_price") or row_ars.get("price_max") or 0)
+            if lo and hi:
+                out = _LECHE_PLACEHOLDER_ARS_RE.sub(f"ARS {lo:,.0f} a ARS {hi:,.0f}", out)
+
+    # Company-Day-21: top 3 products
+    top3_lines = _build_top_spreads_lines(data)
+    if top3_lines:
+        replacement = "\n".join(top3_lines) + "\n"
+        out = _TOP3_BLOCK_RE.sub(replacement, out)
+    else:
+        out = _TOP3_BLOCK_RE.sub("", out)
+
+    # Strip "replace all placeholders" cleanup instruction markers
+    out = _REPLACE_ALL_RE.sub("", out)
+
+    return out

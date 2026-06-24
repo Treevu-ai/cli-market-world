@@ -57,6 +57,43 @@ def test_apply_live_metrics_rewrites_moat_line():
     assert "50,902" in out
 
 
+def test_apply_live_metrics_coverage_instruction_marker():
+    """Coverage instruction-style [ACTUALIZAR] markers are resolved."""
+    text = (
+        "100% de cobertura en los últimos 7 días.\n\n"
+        "[ACTUALIZAR: reemplazar 100% con valor vigente de coverage_7d_pct en price-pulse semana activa]\n\n"
+        "¿Qué significa ese número?\n\n"
+        "Esta semana: 100% de cobertura 7d en 38 tiendas activas. "
+        "[ACTUALIZAR: reemplazar 100% con coverage_7d_pct vigente y 35 con tiendas fresh vigentes]"
+    )
+    metrics = {
+        "snapshots_24h": 40126,
+        "total_indexed": 50902,
+        "stores_indexed": 41,
+        "coverage_7d_pct": 97,
+    }
+    out = apply_live_metrics(text, metrics)
+    assert "97% de cobertura en los últimos 7 días." in out
+    assert "[ACTUALIZAR" not in out
+    assert "41 tiendas activas" in out
+
+
+def test_apply_live_metrics_week_number():
+    """Semana [ACTUALIZAR] is replaced with ISO week when for_date provided."""
+    from datetime import date
+
+    text = 'Título: "Spread — Semana [ACTUALIZAR]". Pie: "Fuente: CLI Market"'
+    metrics = {
+        "snapshots_24h": 1,
+        "total_indexed": 1,
+        "stores_indexed": 1,
+        "coverage_7d_pct": 100,
+    }
+    out = apply_live_metrics(text, metrics, for_date=date(2026, 6, 24))
+    assert "Semana W26" in out
+    assert "[ACTUALIZAR]" not in out
+
+
 def test_moat_paste_line_format():
     line = moat_paste_line(
         {
