@@ -9,6 +9,7 @@ import CommerceStackSection from "@/components/CommerceStackSection";
 import WhoItsForSection from "@/components/WhoItsForSection";
 import MoatSection from "@/components/MoatSection";
 import MetricsSection from "@/components/MetricsSection";
+import QuickstartAPI from "@/components/QuickstartAPI";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import FinalCTASection from "@/components/FinalCTASection";
@@ -32,6 +33,7 @@ export default function Home() {
           <MoatSection />
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <MetricsSection />
+          <QuickstartAPI />
           <Pricing />
           <FAQ />
           <FinalCTASection />
