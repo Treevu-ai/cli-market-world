@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
-import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 import { CTA } from "@/lib/ctaCopy";
 
 export default function Hero() {
@@ -46,7 +45,7 @@ export default function Hero() {
       <div className="landing-container-wide pt-20 pb-16 sm:pt-24 sm:pb-20 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
 
-          {/* Left column — copy */}
+          {/* Left — copy */}
           <div className="flex-1 min-w-0">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -95,6 +94,11 @@ export default function Hero() {
                   </span>
                 </>
               )}
+              className="mt-5 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
+            >
+              {isES
+                ? "API, CLI y herramientas MCP para buscar, comparar y ejecutar compras en 41 retailers verificados de LATAM."
+                : "API, CLI, and MCP tools to search, compare, and execute purchases across 41 verified LATAM retailers."}
             </motion.p>
 
             {mounted && (
@@ -139,6 +143,7 @@ export default function Hero() {
           </div>
 
           {/* Right column — terminal */}
+          {/* Right — terminal */}
           <motion.div
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
