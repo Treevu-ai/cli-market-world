@@ -19,9 +19,11 @@ import re
 import httpx
 
 # ── Canonical channel IDs ─────────────────────────────────────────────────────
-DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"   # #publicaciones
-DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"        # #bitácora
-DEFAULT_CHANNEL_REVENUE = "C0B9G3T0T0A"         # #revenue (formerly funnel-cli-market)
+DEFAULT_CHANNEL_PUBLICACIONES = "C0B6ZJ1B9B8"   # #publicaciones-redes
+DEFAULT_CHANNEL_BITACORA = "C0B6V3Y9ZSP"        # #bitacora-cli-market
+DEFAULT_CHANNEL_ALERTAS = "C0B9W7794BD"         # #alerts-telemetry-observ
+DEFAULT_CHANNEL_REVENUE = "C0B9G3T0T0A"         # #revenue-funnel
+DEFAULT_CHANNEL_COMMAND_CONTROL = "C0B8U1SNM45" # #command-control-cli-market
 COMMAND_CONTROL_CHANNEL_NAME = "command-control-cli-market"
 REVENUE_CHANNEL_NAME = "revenue"
 
@@ -58,8 +60,8 @@ def channel_bitacora() -> str:
 
 
 def channel_alertas() -> str:
-    """#alertas — gate failures and critical errors. Falls back to #bitácora if not configured."""
-    return os.getenv("SLACK_CHANNEL_ALERTAS", "") or channel_bitacora()
+    """#alerts-telemetry-observ — gate failures and critical errors."""
+    return os.getenv("SLACK_CHANNEL_ALERTAS", DEFAULT_CHANNEL_ALERTAS)
 
 
 def channel_revenue() -> str:
@@ -102,18 +104,7 @@ def _resolve_channel_by_name(token: str, name: str) -> str | None:
 
 
 def channel_command_control() -> str:
-    explicit = os.getenv("SLACK_CHANNEL_COMMAND_CONTROL", "").strip()
-    if explicit:
-        return explicit
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    if token:
-        resolved = _resolve_channel_by_name(token, COMMAND_CONTROL_CHANNEL_NAME)
-        if resolved:
-            return resolved
-    raise ValueError(
-        "Command & Control channel not configured. Set SLACK_CHANNEL_COMMAND_CONTROL "
-        f"to the ID of #{COMMAND_CONTROL_CHANNEL_NAME}, or grant channels:read to the bot."
-    )
+    return os.getenv("SLACK_CHANNEL_COMMAND_CONTROL", DEFAULT_CHANNEL_COMMAND_CONTROL)
 
 
 # ── Deprecated channel aliases (all route to #publicaciones) ─────────────────
