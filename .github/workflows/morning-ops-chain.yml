@@ -379,6 +379,48 @@ jobs:
             cli-market-content/generated/daily/
             cli-market-content/metrics/price-pulse-*.md
 
+  morning-brief:
+    needs: gtm-briefing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-content
+          ref: main
+          path: cli-market-content
+          token: ${{ secrets.GH_PAT_CONTENT || secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install "cli-market-core==1.11.0" httpx
+
+      - name: Post del día → #command-control-cli-market
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_COMMAND_CONTROL: "C0B8U1SNM45"
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+          MARKET_API_URL: ${{ env.MARKET_API_URL }}
+          CLI_MARKET_CONTENT_DIR: ${{ github.workspace }}/cli-market-content
+          LINKEDIN_CAMPAIGN_START: "2026-06-01"
+          LINKEDIN_PERSONAL_DAY_OFFSET: "0"
+          LINKEDIN_COMPANY_DAY_OFFSET: "-1"
+          LINKEDIN_POST_UTC_HOUR: "13"
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ]; then
+            echo "::warning::SLACK_BOT_TOKEN not set — morning brief will print only"
+            python3 ops/morning_brief.py --remote --dry-run
+          else
+            python3 ops/morning_brief.py --slack --remote
+          fi
+
   funnel-digest:
     needs: product-briefing
     runs-on: ubuntu-latest
