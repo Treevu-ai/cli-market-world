@@ -6,6 +6,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 import { PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { CTA } from "@/lib/ctaCopy";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -130,17 +131,17 @@ export default function Hero() {
             className="mt-8 flex flex-wrap gap-3"
           >
             <a
-              href={PRICING_BUILD_HASH}
+              href={CTA.getApiKey.href}
               onClick={() => recordPipInstallIntent("landing_hero")}
               className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-base font-semibold px-6 py-2.5 hover:bg-[#8fff6e] active:bg-[#5be041] transition-colors"
             >
-              {isES ? "Obtener API Key →" : "Get API Key →"}
+              {isES ? CTA.getApiKey.es : CTA.getApiKey.en}
             </a>
             <a
-              href="/contact"
+              href={CTA.watchDemo.href}
               className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#FAFAFA] text-base font-normal px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors bg-transparent"
             >
-              {isES ? "Ver Demo →" : "Watch Demo →"}
+              {isES ? CTA.watchDemo.es : CTA.watchDemo.en}
             </a>
           </motion.div>
         </div>

@@ -2,8 +2,8 @@
 
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { PRICING_PROCURE_HASH } from "@/lib/siteNav";
 import { procurePriceRangeLabel } from "@/lib/procurePlans";
+import { CTA } from "@/lib/ctaCopy";
 
 const STEPS = [
   { n: "01", es: "Solicitud", en: "Request", descEs: "Tu equipo envía una lista de productos. Sin scraping. Sin llamadas.", descEn: "Your team submits a product list. No scraping. No calls." },
@@ -75,10 +75,10 @@ export default function ProcureCopilotSection() {
               : `${procurePriceRangeLabel(false)} · Build infra included.`}
           </p>
           <a
-            href={PRICING_PROCURE_HASH}
+            href={CTA.viewProcurePlans.href}
             className="inline-flex items-center rounded-[10px] bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 hover:brightness-110 transition-all"
           >
-            {isES ? "Ver planes Procure →" : "See Procure plans →"}
+            {isES ? CTA.viewProcurePlans.es : CTA.viewProcurePlans.en}
           </a>
         </div>
       </div>
