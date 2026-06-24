@@ -42,8 +42,8 @@ export default function Hero() {
       className="landing-section animate-fade-in relative overflow-hidden hero-stripe-mesh"
       style={{ borderBottom: "1px solid #27272A" }}
     >
-      <div className="landing-container-wide pt-20 pb-16 sm:pt-24 sm:pb-20 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-14 xl:gap-20">
+      <div className="landing-container-wide pt-16 pb-10 sm:pt-20 sm:pb-14 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
 
           {/* Left — copy */}
           <div className="flex-1 min-w-0">
@@ -51,7 +51,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-6 stripe-tag-soft inline-flex"
+              className="mb-4 stripe-tag-soft inline-flex"
             >
               {isES ? "COST-OF-LIVING OS PARA LATAM" : "COST-OF-LIVING OS FOR LATAM"}
             </motion.div>
@@ -71,7 +71,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="mt-5 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
+              className="mt-4 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
             >
               {isES
                 ? "API, CLI y herramientas MCP para buscar, comparar y ejecutar compras en 41 retailers verificados de LATAM."
@@ -83,7 +83,7 @@ export default function Hero() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.18 }}
-                className="mt-6 flex flex-wrap gap-2"
+                className="mt-4 flex flex-wrap gap-2"
                 aria-hidden="true"
               >
                 {proofChips.map((chip, i) => (
@@ -101,7 +101,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.28 }}
-              className="mt-8 flex flex-wrap gap-3"
+              className="mt-6 flex flex-wrap gap-3"
             >
               <a
                 href={CTA.getApiKey.href}
@@ -124,19 +124,19 @@ export default function Hero() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
-            className="mt-12 lg:mt-0 lg:shrink-0 lg:w-[480px] xl:w-[520px]"
+            className="mt-10 lg:mt-0 lg:shrink-0 lg:w-[440px] xl:w-[480px]"
           >
             <div className="rounded-xl overflow-hidden border border-[#30363d]" style={{ background: "#0d1117" }}>
               {/* Title bar */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]" style={{ background: "#161b22" }}>
-                <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+              <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#21262d]" style={{ background: "#161b22" }}>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
                 <span className="ml-3 text-xs text-[#484f58] font-mono">cli-market — bash</span>
               </div>
 
               {/* Terminal body */}
-              <div className="p-5 font-mono text-sm leading-relaxed space-y-1">
+              <div className="p-4 font-mono text-xs leading-normal space-y-0.5">
                 {/* Command */}
                 <div>
                   <span style={{ color: "#3fb950" }}>❯</span>{" "}
@@ -147,7 +147,7 @@ export default function Hero() {
                   <span style={{ color: "#ff7b72" }}>--stock</span>
                 </div>
 
-                <div className="pt-0.5" style={{ color: "#484f58" }}>
+                <div style={{ color: "#484f58" }}>
                   {isES ? "▸ Escaneando 41 retailers · verificando stock..." : "▸ Scanning 41 retailers · checking stock..."}
                 </div>
 
@@ -205,7 +205,6 @@ export default function Hero() {
 
                 <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
 
-                {/* Savings */}
                 <div className="flex justify-between pt-0.5">
                   <span style={{ color: "#8b949e" }}>
                     {"  "}{isES ? "Ahorro vs. promedio" : "Savings vs. avg"}
@@ -213,8 +212,7 @@ export default function Hero() {
                   <span style={{ color: "#3fb950" }}>↓ S/ 1.18 (6.2%)</span>
                 </div>
 
-                {/* Footer lines */}
-                <div className="pt-1.5 space-y-0.5">
+                <div className="pt-1 space-y-0.5">
                   <div style={{ color: "#484f58" }}>
                     {"  "}{isES ? "TCO calculado · sustitutos incluidos · entrega 2h" : "TCO calculated · substitutes included · 2h delivery"}
                   </div>
