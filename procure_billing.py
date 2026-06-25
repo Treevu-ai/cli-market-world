@@ -122,7 +122,7 @@ _PROCURE_REQUEST_PREFIXES = frozenset(
 def procure_tier_from_request_id(request_id: str) -> str | None:
     """Map PCS/PCP/PCB request prefix → subscription tier."""
     prefix = (request_id or "").split("-", 1)[0].upper()
-    for slug, meta in PROCURE_PLANS.items():
+    for _slug, meta in PROCURE_PLANS.items():
         if meta["request_prefix"] == prefix:
             return meta["tier"]
     return None
