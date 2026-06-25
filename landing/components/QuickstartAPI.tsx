@@ -58,7 +58,7 @@ export default function QuickstartAPI() {
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · onboarding</span>
             </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`${MARKET_STATS.pipInstallCmd}
+            <pre className="code-snippet text-[#e2e8f0]">{`${MARKET_STATS.pipInstallCmd}
 market init
 market search "leche" --country PE`}</pre>
           </div>
@@ -68,7 +68,7 @@ market search "leche" --country PE`}</pre>
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">POST /products/compare</span>
             </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`{
+            <pre className="code-snippet text-[#e2e8f0]">{`{
   "query": "aceite de girasol 900ml",
   "country": "AR",
   "limit": 8
@@ -80,7 +80,7 @@ market search "leche" --country PE`}</pre>
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-mint)] ml-2 uppercase break-words">200 · response (ejemplo)</span>
             </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`{
+            <pre className="code-snippet text-[#e2e8f0]">{`{
   "query": "aceite de girasol 900ml",
   "country": "AR",
   "results": [
@@ -90,7 +90,7 @@ market search "leche" --country PE`}</pre>
   "cheapest": "carrefour_ar",
   "normalized_unit": "per_l"
 }`}</pre>
-            <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-2 font-mono">
+            <p className="text-[10px] text-[#94a3b8] mt-2 font-mono">
               {isES ? "Precios ilustrativos · estructura real de la API" : "Illustrative prices · real API shape"}
             </p>
           </div>
@@ -100,7 +100,7 @@ market search "leche" --country PE`}</pre>
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" /><span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" /><span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
               <span className="text-[10px] text-[var(--cm-on-surface-variant)] ml-2 uppercase break-words">bash · canasta AR</span>
             </div>
-            <pre className="code-snippet text-[var(--cm-on-surface-variant)]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
+            <pre className="code-snippet text-[#e2e8f0]">{`market basket "arroz:1 aceite:1 leche:1 huevos:1" --country AR
 # Carrefour vs Jumbo vs Vea · total por cadena · precio normalizado`}</pre>
           </div>
         </div>
