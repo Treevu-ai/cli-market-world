@@ -278,10 +278,8 @@ export default function Pricing() {
       const hashId = hash.replace("#", "");
       if (hashId === "pro-checkout" || hashId === "pricing-build" || hashId === "pricing") {
         scrollToPricingSection(hashId === "pro-checkout" ? "pro-checkout" : undefined);
-      } else if (hashId === "procure") {
-        scrollToPricingSection("procure");
       } else if (state) {
-        scrollToPricingSection(returnAudience === "procure" ? "procure" : undefined);
+        scrollToPricingSection(undefined);
       }
     };
     syncFromLocation();
@@ -337,6 +335,12 @@ export default function Pricing() {
             </button>
           ))}
         </div>
+
+        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mb-6 max-w-lg mx-auto">
+          {isES
+            ? "Precios en USD. El equivalente en soles (PEN) es referencial para checkout local."
+            : "Prices in USD. PEN equivalent is indicative for local checkout only."}
+        </p>
 
         <div className="landing-section-header">
           <h2 className="section-title">{isES ? activeTab.title_es : activeTab.title_en}</h2>
