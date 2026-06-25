@@ -458,8 +458,11 @@ export default function BillingCheckoutModal({
           {isProcure ? (
             <>
               <p className="font-semibold text-white">{isES ? "Después del pago" : "After payment"}</p>
-              <p className="font-mono">market register → market account</p>
-              <p>{isES ? "Pega sk-… en el dashboard Procure:" : "Paste sk-… in Procure dashboard:"}</p>
+              <p>
+                {isES
+                  ? "Tras confirmar el pago, recibirás un email con enlace mágico al dashboard (API key precargada)."
+                  : "After payment confirms, you'll get an email with a magic link to the dashboard (API key preloaded)."}
+              </p>
               <a href={PROCURE_APP_URL} className="text-[var(--cm-mint)] hover:underline inline-block">
                 {isES ? "Abrir Procure →" : "Open Procure →"}
               </a>

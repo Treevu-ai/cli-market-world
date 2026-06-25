@@ -142,14 +142,9 @@ export default function PaymentReturnBanner() {
             <>
               <p>
                 {isES
-                  ? "La activación tarda unos segundos vía webhook. Luego:"
-                  : "Activation takes a few seconds via webhook. Then:"}
+                  ? "La activación tarda unos segundos vía webhook. Revisa tu email: incluye un enlace mágico al dashboard (API key precargada, 15 min)."
+                  : "Activation takes a few seconds via webhook. Check your email for a magic link to the dashboard (API key preloaded, 15 min)."}
               </p>
-              <ol className="list-decimal list-inside space-y-1 font-mono text-xs">
-                <li>{isES ? "market register  (si es cuenta nueva)" : "market register  (if new account)"}</li>
-                <li>{isES ? "market account  → copia sk-…" : "market account  → copy sk-…"}</li>
-                <li>{isES ? "Pega la API key en el dashboard Procure" : "Paste API key in Procure dashboard"}</li>
-              </ol>
               <a href={PROCURE_APP_URL} className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
                 {isES ? "Abrir dashboard Procure →" : "Open Procure dashboard →"}
               </a>
@@ -184,8 +179,11 @@ export default function PaymentReturnBanner() {
           <ol className="list-decimal list-inside space-y-1 text-xs">
             {isProcure ? (
               <>
-                <li className="font-mono">market register → market account</li>
-                <li>{isES ? "Pega sk-… en el dashboard Procure" : "Paste sk-… in Procure dashboard"}</li>
+                <li>
+                  {isES
+                    ? "Revisa tu email — enlace mágico al dashboard Procure"
+                    : "Check your email — magic link to Procure dashboard"}
+                </li>
               </>
             ) : (
               <li className="font-mono">market whoami</li>

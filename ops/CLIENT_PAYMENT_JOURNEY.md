@@ -81,14 +81,10 @@ MCP: `market-mcp` con `MCP_TOOL_PROFILE=default` — ver [cli-market.dev/docs](h
 1. [cli-market.dev/#pricing](https://cli-market.dev/#pricing) → tab **Procure** → elige plan → **Suscribir**
 2. Modal: elige **soles (Mercado Pago)** o **PayPal (USD)** · email + usuario CLI (opcional)
 3. Completa el pago en el proveedor (o transfiere Yape/Plin con ref `PCS-` / `PCP-` / `PCB-` si aplica)
-4. Crea credenciales si aún no las tienes:
+4. Revisa tu email: incluye un **enlace mágico** al dashboard Procure (API key precargada, válido 15 min, un solo uso)
+5. Si el enlace expiró: `market account` → copia `sk-…` y pégala en el [dashboard Procure](https://procure-copilot.contacto-8e4.workers.dev/dashboard)
 
-```bash
-market init        # o market register si solo necesitas credenciales
-market account     # copia sk-… (o la que recibiste en register)
-```
-
-5. Abre el [dashboard Procure](https://procure-copilot.contacto-8e4.workers.dev) y pega tu API key
+También puedes suscribir desde el Worker `/procure` → **Suscribir** (deep link al mismo checkout).
 
 No necesitas Build Pro aparte: la API va incluida en Procure Pro+.
 
@@ -161,7 +157,7 @@ Documentación: [cli-market.dev/docs](https://cli-market.dev/docs)
 Solo si eres developer *y* operador de compras. Procure Pro+ ya incluye la API.
 
 **¿Dónde pago Procure con Yape?**  
-Procure hoy solo vía PayPal en la web. Yape/Plin aplica a **Build Pro**.
+Con `PROCURE_MP_CHECKOUT=1`: soles / Mercado Pago / Yape / Plin en el modal Procure (mismo flujo que Build Pro).
 
 **¿Stripe?**  
 No disponible aún. Usa PayPal, Mercado Pago o Yape/Plin (Build).
