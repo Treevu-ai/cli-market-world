@@ -1,10 +1,14 @@
 "use client";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function SolutionSection() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const steps = [
     {
@@ -31,9 +35,14 @@ export default function SolutionSection() {
   ];
 
   return (
-    <section id="solution" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
+    <section ref={ref} id="solution" className="landing-section scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
       <div className="landing-container-wide">
-        <div className="landing-section-header text-center">
+        <motion.div
+          className="landing-section-header text-center"
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           <p className="section-eyebrow mb-4">{isES ? "CÓMO FUNCIONA" : "HOW IT WORKS"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
             {isES
@@ -45,13 +54,19 @@ export default function SolutionSection() {
               ? "CLI Market conecta datos de precios en tiempo real con los flujos de aprobación y pago de tu equipo."
               : "CLI Market connects real-time price data with your team's approval and payment workflows."}
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-          {steps.map((step) => (
-            <div key={step.n} className="card-cyber rounded-2xl p-6">
+          {steps.map((step, i) => (
+            <motion.div
+              key={step.n}
+              className="card-cyber rounded-2xl p-6"
+              initial={{ opacity: 0, y: 32 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.55, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-7 h-7 rounded-full bg-[var(--cm-mint)] text-[#f8fafc] text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "linear-gradient(180deg, #f97316 0%, #ea580c 100%)" }}>
                   {step.n}
                 </span>
                 <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">
@@ -61,7 +76,7 @@ export default function SolutionSection() {
               <p className="text-sm leading-relaxed text-[var(--cm-on-surface-variant)]">
                 {isES ? step.body_es : step.body_en}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

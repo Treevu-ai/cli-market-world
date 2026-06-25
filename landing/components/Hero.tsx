@@ -62,9 +62,11 @@ export default function Hero() {
               transition={{ duration: 0.6, ease: "easeOut" }}
               className="hero-garamond-headline"
             >
-              {isES
-                ? "Optimiza tu compra en una llamada — para toda LatAm"
-                : "Optimize your purchase in one call — across all of LatAm"}
+              {isES ? (
+                <>Optimiza tu compra en una llamada —{" "}<br className="hidden sm:block" />para toda <span className="text-gradient-orange">LatAm</span></>
+              ) : (
+                <>Optimize your purchase in one call —{" "}<br className="hidden sm:block" />across all of <span className="text-gradient-orange">LatAm</span></>
+              )}
             </motion.h1>
 
             <motion.p
@@ -106,13 +108,13 @@ export default function Hero() {
               <a
                 href={CTA.getApiKey.href}
                 onClick={() => recordPipInstallIntent("landing_hero")}
-                className="inline-flex items-center rounded-[10px] bg-[#ea580c] text-[#f8fafc] text-base font-semibold px-6 py-2.5 hover:bg-[#f97316] active:bg-[#c2410c] transition-colors"
+                className="btn-mint text-base px-6 py-2.5"
               >
                 {isES ? CTA.getApiKey.es : CTA.getApiKey.en}
               </a>
               <a
                 href={CTA.watchDemo.href}
-                className="inline-flex items-center rounded-[10px] border border-[#e2e8f0] text-[#0f172a] text-base font-normal px-6 py-2.5 hover:border-[#ea580c] hover:text-[#ea580c] transition-colors bg-transparent"
+                className="btn-outline text-base px-6 py-2.5"
               >
                 {isES ? CTA.watchDemo.es : CTA.watchDemo.en}
               </a>

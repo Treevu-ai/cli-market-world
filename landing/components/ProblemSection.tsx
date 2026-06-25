@@ -1,9 +1,13 @@
 "use client";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 
 export default function ProblemSection() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const cards = [
     {
@@ -28,12 +32,18 @@ export default function ProblemSection() {
 
   return (
     <section
+      ref={ref}
       id="problem"
-      className="landing-section animate-fade-in scroll-mt-24"
-      style={{ backgroundColor: "#ffffff" }}
+      className="landing-section scroll-mt-24"
+      style={{ backgroundColor: "#f8fafc" }}
     >
       <div className="landing-container-wide text-center">
-        <div className="landing-section-header">
+        <motion.div
+          className="landing-section-header"
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           <h2 className="section-title text-[#0f172a]">
             {isES
               ? "Comprar bien no debería costar tanto tiempo"
@@ -44,17 +54,20 @@ export default function ProblemSection() {
               ? "Los equipos de compras de LATAM comparan precios a mano, en múltiples tiendas, cada semana. Con datos que cambian cada pocas horas. Sin automatización que los ayude."
               : "LATAM procurement teams compare prices manually, across multiple stores, every week — with data that changes every few hours and no automation to help."}
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
           {cards.map((card, i) => (
-            <div
+            <motion.div
               key={i}
-              className="rounded-2xl p-6 text-left bg-[#f1f5f9] border border-[#e2e8f0]"
+              className="card-cyber rounded-2xl p-6 text-left"
+              initial={{ opacity: 0, y: 32 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.55, delay: 0.1 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
             >
               <h3 className="text-base font-semibold text-[#0f172a] mb-3">{card.title}</h3>
               <p className="text-sm leading-relaxed text-[#64748b]">{card.body}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
