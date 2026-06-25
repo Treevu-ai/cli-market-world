@@ -114,15 +114,13 @@ def procure_price_pen(plan_slug: str) -> float:
     return round(amount_usd * pen_per_usd, 2)
 
 
-_PROCURE_REQUEST_PREFIXES = frozenset(
-    meta["request_prefix"] for meta in PROCURE_PLANS.values()
-)
+_PROCURE_PREFIX_TO_TIER: dict[str, str] = {
+    meta["request_prefix"]: meta["tier"] for meta in PROCURE_PLANS.values()
+}
+_PROCURE_REQUEST_PREFIXES = frozenset(_PROCURE_PREFIX_TO_TIER)
 
 
 def procure_tier_from_request_id(request_id: str) -> str | None:
     """Map PCS/PCP/PCB request prefix → subscription tier."""
     prefix = (request_id or "").split("-", 1)[0].upper()
-    for _slug, meta in PROCURE_PLANS.items():
-        if meta["request_prefix"] == prefix:
-            return meta["tier"]
-    return None
+    return _PROCURE_PREFIX_TO_TIER.get(prefix)
