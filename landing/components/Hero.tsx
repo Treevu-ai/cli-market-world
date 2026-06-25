@@ -74,8 +74,8 @@ export default function Hero() {
               className="mt-4 text-base sm:text-lg max-w-[500px] leading-relaxed stripe-body"
             >
               {isES
-                ? "API, CLI y herramientas MCP para buscar, comparar y ejecutar compras en 41 retailers verificados de LATAM."
-                : "API, CLI, and MCP tools to search, compare, and execute purchases across 41 verified LATAM retailers."}
+                ? "Busca, compara y ejecuta compras en 40 retailers verificados de LATAM — en segundos, con aprobaciones integradas."
+                : "Search, compare, and execute purchases across 40 verified LATAM retailers — in seconds, with built-in approvals."}
             </motion.p>
 
             {mounted && (
@@ -119,12 +119,12 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right — terminal */}
+          {/* Right — terminal (desktop only) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
-            className="mt-10 lg:mt-0 lg:shrink-0 lg:w-[440px] xl:w-[480px]"
+            className="hidden lg:block mt-10 lg:mt-0 lg:shrink-0 lg:w-[440px] xl:w-[480px]"
           >
             <div className="rounded-xl overflow-hidden border border-[#30363d]" style={{ background: "#0d1117" }}>
               {/* Title bar */}
@@ -148,7 +148,7 @@ export default function Hero() {
                 </div>
 
                 <div style={{ color: "#484f58" }}>
-                  {isES ? "▸ Escaneando 41 retailers · verificando stock..." : "▸ Scanning 41 retailers · checking stock..."}
+                  {isES ? `▸ Escaneando ${MARKET_STATS.retailersVerified} retailers · verificando stock...` : `▸ Scanning ${MARKET_STATS.retailersVerified} retailers · checking stock...`}
                 </div>
 
                 <div className="pt-1" style={{ color: "#21262d" }}>{"─".repeat(44)}</div>
