@@ -60,7 +60,7 @@ export default function ProcureCopilotSection() {
   const isES = lang === "es";
 
   return (
-    <section id="procure" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#09090B" }}>
+    <section id="procure" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#f8fafc" }}>
       <div className="landing-container-wide">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">PROCURE COPILOT</p>

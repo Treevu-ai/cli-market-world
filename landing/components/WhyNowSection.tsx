@@ -27,7 +27,7 @@ export default function WhyNowSection() {
   ];
 
   return (
-    <section id="why-now" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#111113" }}>
+    <section id="why-now" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "POR QUÉ AHORA" : "WHY NOW"}</p>
