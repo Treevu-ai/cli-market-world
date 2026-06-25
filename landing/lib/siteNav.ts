@@ -19,6 +19,11 @@ export const SECTION_NAV: NavItem[] = [
   { id: "problem", es: "Problema", en: "Problem", href: "/#problem" },
   { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
   { id: "architecture", es: "Stack", en: "Stack", href: "/#architecture" },
+  { id: "moat", es: "Data moat", en: "Data moat", href: "/#moat" },
+  { id: "metrics", es: "Métricas", en: "Metrics", href: "/#metrics" },
+  { id: "who-its-for", es: "Para quién", en: "Who it's for", href: "/#who-its-for" },
+  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
+  { id: "api", es: "API", en: "API", href: "/#api" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "faq", es: "FAQ", en: "FAQ", href: "/#faq" },
 ];
@@ -37,13 +42,15 @@ export const TOP_NAV_GROUP: Record<string, string> = {
   moat: "product",
   metrics: "product",
   procure: "procure",
+  api: "product",
   pricing: "pricing",
   faq: "pricing",
 };
 
 /** Leading slash so tabs work from any route. */
 export const PRICING_BUILD_HASH = "/#pricing";
-export const PRICING_PROCURE_HASH = "/#procure";
+/** Procure pricing tab lives under #pricing (default audience). */
+export const PRICING_PROCURE_HASH = "/#pricing";
 /** Retailer free listing — dedicated page. */
 export const RETAILERS_PAGE = "/retailers";
 /** @deprecated Use RETAILERS_PAGE */
