@@ -26,10 +26,7 @@ export default function ProcurePricingPanel() {
   const benefits = isES ? BENEFITS_ES : BENEFITS_EN;
 
   return (
-    <div
-      id="procure"
-      className="brand-mode-operations scroll-mt-24 text-left"
-    >
+    <div className="brand-mode-operations scroll-mt-24 text-left">
       <div className="landing-content-narrow mb-10 space-y-4 text-center">
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
           {isES
@@ -102,8 +99,8 @@ export default function ProcurePricingPanel() {
         </a>
         <p className="text-[10px] font-mono text-[var(--cm-on-surface-variant)]/60 max-w-lg mx-auto">
           {isES
-            ? "Tras pagar: market register (si es nuevo) → pega tu API key en el dashboard Procure."
-            : "After payment: market register (if new) → paste API key in the Procure dashboard."}
+            ? "Tras pagar: crea cuenta en cli-market.dev/account → copia tu API key → pégala en el dashboard Procure."
+            : "After payment: create account at cli-market.dev/account → copy your API key → paste it in the Procure dashboard."}
         </p>
       </div>
     </div>

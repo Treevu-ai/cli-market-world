@@ -36,10 +36,10 @@ export default function Footer() {
           <a href="/#pricing" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors">
             CLI Develop
           </a>
-          <a href="https://procure-copilot.contacto-8e4.workers.dev" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors" target="_blank" rel="noopener noreferrer">
+          <a href="https://procure-copilot.contacto-8e4.workers.dev/procure" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors" target="_blank" rel="noopener noreferrer">
             Procure Copilot
           </a>
-          <a href="/#intel" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors">
+          <a href="/#intelligence" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors">
             Intelligence
           </a>
         </div>
@@ -48,7 +48,7 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a] mb-3">
             {isES ? "Desarrolladores" : "Developers"}
           </span>
-          <a href={MARKET_STATS.pypiUrl} className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors" target="_blank" rel="noopener noreferrer">
+          <a href="/docs" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors">
             Docs
           </a>
           <a href="/#api" className="text-sm text-[#64748b] hover:text-[#ea580c] transition-colors">
