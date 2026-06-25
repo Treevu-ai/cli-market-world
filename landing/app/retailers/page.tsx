@@ -25,67 +25,52 @@ export default function RetailersPage() {
   const stats = [
     { n: String(MARKET_STATS.retailersVerified), l: isES ? "Retailers activos" : "Retailers live" },
     { n: MARKET_STATS.pricesVerifiedLabel, l: isES ? "Precios indexados" : "Prices indexed" },
-    { n: String(MARKET_STATS.countries), l: isES ? "Pa\u00edses" : "Countries" },
-    { n: "30s", l: isES ? "Para integrar" : "To integrate" },
+    { n: String(MARKET_STATS.countries), l: isES ? "Países" : "Countries" },
+    { n: `${MARKET_STATS.pricesRefreshHours}h`, l: isES ? "Actualización de precios" : "Price refresh" },
   ];
 
   const benefits = [
     {
-      t: isES ? "Tr\u00e1fico desde agentes" : "Agent-driven traffic",
+      t: isES ? "Visibilidad en canales de IA" : "Visibility in AI channels",
       d: isES
-        ? "Los agentes de IA buscan y comparan de forma aut\u00f3noma. Tus productos aparecen en sus resultados \u2014 como SEO, pero para la econom\u00eda de agentes. Cada d\u00eda que no est\u00e1s, tu competidor s\u00ed."
-        : "AI agents search and compare autonomously. Your products appear in their results \u2014 just like SEO, but for the agent economy. Every day you're not here, your competitor is.",
-      i: "\ud83e\udd16",
+        ? `Los agentes de IA comparan productos automáticamente para compradores empresariales. Tus productos aparecen en sus resultados — como el SEO de la era de agentes. Cada día que no estás, tu competidor sí.`
+        : `AI agents automatically compare products for business buyers. Your products appear in their results — like SEO for the agent era. Every day you're not here, your competitor is.`,
     },
     {
-      t: isES ? "Ventaja competitiva" : "Competitive edge",
+      t: isES ? "Inteligencia competitiva en tiempo real" : "Real-time competitive intelligence",
       d: isES
-        ? `Compara tus precios contra ${MARKET_STATS.retailersVerified} retailers en tiempo real. Sigue a tus competidores, ajusta precios, y nunca pierdas una venta frente a un rival invisible.`
-        : `See how your prices compare to ${MARKET_STATS.retailersVerified} retailers in real time. Track competitors, adjust pricing, and never lose a sale to an unseen rival.`,
-      i: "\ud83d\udcca",
+        ? `Ve cómo tus precios se posicionan frente a ${MARKET_STATS.retailersVerified} retailers verificados. Detecta spread de precios, identifica oportunidades y ajusta antes de perder ventas frente a un rival que ya sí está indexado.`
+        : `See how your prices position against ${MARKET_STATS.retailersVerified} verified retailers. Detect price spreads, spot opportunities, and adjust before losing sales to an already-indexed competitor.`,
     },
     {
-      t: isES ? "Cero esfuerzo, cero costo" : "Zero effort, zero cost",
+      t: isES ? "Sin integración técnica requerida" : "No technical integration required",
       d: isES
-        ? "Genera un token de API de solo lectura. 30 segundos. Sin SDK, sin integraci\u00f3n, sin mantenimiento. Gratis para siempre. MIT."
-        : "Generate a read-only API token. 30 seconds. No SDK, no integration, no maintenance. Free forever. MIT.",
-      i: "\u26a1",
+        ? "Completa un formulario. Nuestro equipo indexa tu catálogo sin que muevas un dedo. Sin SDK, sin APIs, sin desarrolladores. Gratis para siempre."
+        : "Fill out a form. Our team indexes your catalog without you lifting a finger. No SDK, no APIs, no developers. Free forever.",
     },
   ];
 
   const steps = [
     {
       step: "01",
-      title: isES ? "Shopify: token de Storefront API" : "Shopify: Storefront API token",
+      title: isES ? "Completa el formulario" : "Fill out the form",
       desc: isES
-        ? "Configuraci\u00f3n \u2192 Apps \u2192 Gestionar apps privadas \u2192 Crear app. Alcance cat\u00e1logo de solo lectura. Sin datos de clientes. 30 segundos."
-        : "Settings \u2192 Apps \u2192 Manage private apps \u2192 Create app. Read-only catalog scope. No customer data. 30 seconds.",
-      cmd: "Admin \u2192 Settings \u2192 Apps \u2192 Manage private apps",
+        ? "Nombre de tu tienda, URL, categoría de productos y país. Menos de 2 minutos. Sin datos sensibles."
+        : "Store name, URL, product category, and country. Less than 2 minutes. No sensitive data.",
     },
     {
       step: "02",
-      title: isES ? "Magento: integraci\u00f3n REST API" : "Magento: REST API integration",
+      title: isES ? "Nuestro equipo verifica tu catálogo" : "Our team verifies your catalog",
       desc: isES
-        ? "Crea una integraci\u00f3n con cat\u00e1logo de solo lectura. Accedemos a /V1/products para indexar tu cat\u00e1logo."
-        : "Create an integration with catalog read-only. We access /V1/products to index your catalog.",
-      cmd: "System \u2192 Integrations \u2192 Add New \u2192 Catalog (read only)",
+        ? "Indexamos tus productos con precios normalizados por unidad (kg, L, unidad). Te confirmamos en 24–48 horas."
+        : "We index your products with unit-normalized prices (kg, L, unit). We confirm within 24–48 hours.",
     },
     {
       step: "03",
-      title: isES ? "VTEX: ya conectado" : "VTEX: already connected",
+      title: isES ? "Tus productos aparecen en búsquedas" : "Your products appear in searches",
       desc: isES
-        ? "Si est\u00e1s en VTEX con cat\u00e1logo p\u00fablico, probablemente ya sos indexable. Sin token necesario."
-        : "If you're on VTEX with a public catalog, you're probably already indexable. No token needed.",
-    },
-    {
-      step: "04",
-      title: isES ? "WooCommerce: Store API o REST API" : "WooCommerce: Store API or REST API",
-      desc: isES
-        ? "Muchas tiendas Woo exponen cat\u00e1logo v\u00eda Store API p\u00fablica (solo URL). Si no, crea consumer key/secret de solo lectura en REST API v3."
-        : "Many Woo shops expose catalog via public Store API (URL only). Otherwise create read-only consumer key/secret via REST API v3.",
-      cmd: isES
-        ? "WooCommerce \u2192 Ajustes \u2192 Avanzado \u2192 REST API \u2192 Add key (Read)"
-        : "WooCommerce \u2192 Settings \u2192 Advanced \u2192 REST API \u2192 Add key (Read)",
+        ? "Compradores empresariales, agentes de IA y herramientas de procurement encuentran tus productos y los comparan contra tu competencia."
+        : "Business buyers, AI agents, and procurement tools find your products and compare them against your competition.",
     },
   ];
 
@@ -103,51 +88,51 @@ export default function RetailersPage() {
             mainEntity: [
               {
                 "@type": "Question",
-                name: isES ? "\u00bfC\u00f3mo listo mi tienda en CLI Market?" : "How do I list my store on CLI Market?",
+                name: isES ? "¿Cómo listo mi tienda en CLI Market?" : "How do I list my store on CLI Market?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "Genera un token de API de solo lectura desde tu panel de Shopify, Magento, VTEX o WooCommerce. Env\u00edanoslo. Tus productos aparecen en b\u00fasquedas de agentes de IA en 30 segundos. Gratis. Para siempre."
-                    : "Generate a read-only API token from your Shopify, Magento, VTEX, or WooCommerce admin panel. Send it to us. Your products appear in AI agent searches in 30 seconds. Free. Forever.",
+                    ? "Completa el formulario con el nombre de tu tienda, URL y categoría. Nuestro equipo indexa tu catálogo sin integración técnica de tu parte. Gratis para siempre."
+                    : "Fill out the form with your store name, URL, and category. Our team indexes your catalog with no technical integration required. Free forever.",
                 },
               },
               {
                 "@type": "Question",
-                name: isES ? "\u00bfCLI Market es gratis para retailers?" : "Is CLI Market free for retailers?",
+                name: isES ? "¿CLI Market es gratis para retailers?" : "Is CLI Market free for retailers?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "S\u00ed. Completamente gratis. Licencia MIT. Sin costos ocultos, sin l\u00edmites de uso, sin tarjeta de cr\u00e9dito."
-                    : "Yes. Completely free. MIT licensed. No hidden fees, no usage limits, no credit card required.",
+                    ? "Sí. Completamente gratis. Sin costos ocultos, sin límites de uso, sin tarjeta de crédito."
+                    : "Yes. Completely free. No hidden fees, no usage limits, no credit card required.",
                 },
               },
               {
                 "@type": "Question",
-                name: isES ? "\u00bfQu\u00e9 plataformas soporta CLI Market?" : "What platforms does CLI Market support?",
+                name: isES ? "¿Necesito un equipo técnico para integrarme?" : "Do I need a technical team to integrate?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "VTEX, Shopify, Magento y WooCommerce. Nos conectamos v\u00eda APIs p\u00fablicas de cat\u00e1logo \u2014 cero desarrollo de tu lado."
-                    : "VTEX, Shopify, Magento, and WooCommerce. We connect via public catalog APIs \u2014 zero development required from your side.",
+                    ? "No. Solo completa el formulario con la URL de tu tienda. Nuestro equipo realiza la indexación. Sin APIs, sin desarrolladores, sin configuración técnica."
+                    : "No. Just fill out the form with your store URL. Our team handles the indexing. No APIs, no developers, no technical setup.",
                 },
               },
               {
                 "@type": "Question",
-                name: isES ? "\u00bfCu\u00e1ntos retailers ya est\u00e1n en CLI Market?" : "How many retailers are already on CLI Market?",
+                name: isES ? "¿Cuántos retailers ya están en CLI Market?" : "How many retailers are already on CLI Market?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? `${MARKET_STATS.retailersDefined} retailers en ${MARKET_STATS.countries} pa\u00edses (${MARKET_STATS.retailersVerified} verificados activos): ${MARKET_STATS.countryCodes.join(", ")}. ${MARKET_STATS.pricesVerifiedLabel} precios reales actualizados cada ${MARKET_STATS.pricesRefreshHours} horas.`
+                    ? `${MARKET_STATS.retailersDefined} retailers en ${MARKET_STATS.countries} países (${MARKET_STATS.retailersVerified} verificados activos): ${MARKET_STATS.countryCodes.join(", ")}. ${MARKET_STATS.pricesVerifiedLabel} precios reales actualizados cada ${MARKET_STATS.pricesRefreshHours} horas.`
                     : `${MARKET_STATS.retailersDefined} retailers across ${MARKET_STATS.countries} countries (${MARKET_STATS.retailersVerified} verified active): ${MARKET_STATS.countryCodes.join(", ")}. ${MARKET_STATS.pricesVerifiedLabel} real prices refreshed every ${MARKET_STATS.pricesRefreshHours} hours.`,
                 },
               },
               {
                 "@type": "Question",
-                name: isES ? "\u00bfQu\u00e9 es GEO y por qu\u00e9 mi tienda lo necesita?" : "What is GEO and why does my store need it?",
+                name: isES ? "¿Qué es GEO y por qué mi tienda lo necesita?" : "What is GEO and why does my store need it?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: isES
-                    ? "GEO (Generative Engine Optimization) es el equivalente de SEO para agentes de IA. Cuando asistentes como ChatGPT y Claude buscan productos, usan \u00edndices de datos estructurados como CLI Market. Si tu tienda no est\u00e1 indexada, eres invisible para el canal de compras de mayor crecimiento."
+                    ? "GEO (Generative Engine Optimization) es el equivalente de SEO para agentes de IA. Cuando asistentes como ChatGPT y Claude buscan productos, usan índices de datos estructurados como CLI Market. Si tu tienda no está indexada, eres invisible para el canal de compras de mayor crecimiento."
                     : "GEO (Generative Engine Optimization) is the equivalent of SEO for AI agents. When AI assistants like ChatGPT and Claude search for products, they use structured data indexes like CLI Market. If your store isn't indexed, you're invisible to the fastest-growing shopping channel.",
                 },
               },
@@ -157,51 +142,48 @@ export default function RetailersPage() {
       />
 
       <div className="relative z-10">
-        <section
-          className="py-24 px-[var(--cm-gutter)] text-center pt-28"
-          style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
-        >
+        <section className="py-24 px-[var(--cm-gutter)] text-center pt-28 bg-[var(--cm-surface-low)] border-b border-[var(--cm-outline-variant)]">
           <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-[#fbbf24] mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-widest text-[var(--cm-mint)] mb-4">
               {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
             </p>
-            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-white mb-3 tracking-tight">
+            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-[var(--cm-on-surface)] mb-3 tracking-tight">
               {isES ? (
                 <>
-                  Tu marca, dentro de agentes de IA.{" "}
+                  Tus productos, donde compran los negocios.{" "}
                   <ScrambleText
                     text="Gratis. Hoy."
                     autoStart
                     delay={600}
                     duration={0.6}
-                    className="text-[#ea580c]"
+                    className="text-[var(--cm-mint)]"
                   />
                 </>
               ) : (
                 <>
-                  Your brand, inside AI agents.{" "}
+                  Your products, where businesses buy.{" "}
                   <ScrambleText
                     text="Free. Today."
                     autoStart
                     delay={600}
                     duration={0.6}
-                    className="text-[#ea580c]"
+                    className="text-[var(--cm-mint)]"
                   />
                 </>
               )}
             </h1>
-            <p className="text-[11px] text-[#fbbf24] max-w-[500px] mx-auto mb-6 font-medium tracking-wide">
-              {isES ? "Gratis para siempre. Cupos limitados por pa\u00eds." : "Free forever. Limited spots per country."}
+            <p className="text-[11px] text-[var(--cm-mint)] max-w-[500px] mx-auto mb-6 font-medium tracking-wide">
+              {isES ? "Gratis para siempre. Cupos limitados por país." : "Free forever. Limited spots per country."}
             </p>
-            <p className="text-base text-[#94a3b8] max-w-[500px] mx-auto leading-relaxed">
+            <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[500px] mx-auto leading-relaxed">
               {isES
-                ? "Cuando tus productos est\u00e1n indexados en CLI Market, los agentes de IA los descubren, comparan y dirigen tr\u00e1fico de compra a tu tienda. Esto es GEO \u2014 el SEO de la era de los agentes."
-                : "When your products are indexed in CLI Market, AI agents discover, compare, and drive purchase traffic to your store. This is GEO \u2014 the SEO of the agent era."}
+                ? "Compradores empresariales y agentes de IA comparan precios en CLI Market antes de ordenar. Si tu catálogo no está indexado, sos invisible frente a quien ya sí está."
+                : "Business buyers and AI agents compare prices on CLI Market before ordering. If your catalog isn't indexed, you're invisible against competitors who already are."}
             </p>
             <button
               type="button"
               onClick={() => setApplyOpen(true)}
-              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[#b45309] text-white text-sm font-semibold hover:bg-[#92400e] transition-colors shadow-lg shadow-[#b45309]/30"
+              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg"
             >
               {isES ? "Listar mi tienda — gratis" : "List my store — free"}
             </button>
@@ -223,6 +205,9 @@ export default function RetailersPage() {
 
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
           <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)] text-center mb-2">
+              {isES ? "Por qué aparecer" : "Why get listed"}
+            </p>
             <h2 className="section-title mb-12 text-center">
               {isES ? "Lo que obtienes" : "What you get"}
             </h2>
@@ -236,8 +221,7 @@ export default function RetailersPage() {
                   transition={{ duration: 0.4, delay: i * 0.08 }}
                   className="card-cyber header-strip p-6"
                 >
-                  <div className="text-2xl mb-3">{b.i}</div>
-                  <h3 className="text-sm font-bold text-[#0f172a] mb-2">{b.t}</h3>
+                  <h3 className="text-sm font-bold text-[var(--cm-on-surface)] mb-2">{b.t}</h3>
                   <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{b.d}</p>
                 </motion.div>
               ))}
@@ -245,10 +229,13 @@ export default function RetailersPage() {
           </motion.div>
         </section>
 
-        <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20">
+        <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20 landing-section-alt">
           <motion.div {...fadeUp} className="max-w-[560px] mx-auto">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--cm-on-surface-variant)] text-center mb-2">
+              {isES ? "Proceso" : "How it works"}
+            </p>
             <h2 className="section-title mb-12 text-center">
-              {isES ? "C\u00f3mo aparecer \u2014 30 segundos" : "How to get listed \u2014 30 seconds"}
+              {isES ? "Cómo aparecer" : "How to get listed"}
             </h2>
             <div className="space-y-4">
               {steps.map((s, i) => (
@@ -262,13 +249,8 @@ export default function RetailersPage() {
                 >
                   <span className="text-[var(--cm-mint)] font-bold text-2xl shrink-0">{s.step}</span>
                   <div>
-                    <h3 className="text-sm font-bold text-[#0f172a] mb-1">{s.title}</h3>
-                    <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed mb-2">{s.desc}</p>
-                    {s.cmd ? (
-                      <code className="text-[11px] text-[var(--cm-mint)]/80 bg-[var(--cm-surface-lowest)] px-2 py-0.5 rounded font-mono">
-                        {s.cmd}
-                      </code>
-                    ) : null}
+                    <h3 className="text-sm font-bold text-[var(--cm-on-surface)] mb-1">{s.title}</h3>
+                    <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{s.desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -279,18 +261,18 @@ export default function RetailersPage() {
         <section className="py-24 px-[var(--cm-gutter)] text-center">
           <motion.div {...fadeUp} className="max-w-[520px] mx-auto">
             <h2 className="section-title mb-2">
-              {isES ? "\u00bfListo para aparecer?" : "Ready to get listed?"}
+              {isES ? "¿Listo para aparecer?" : "Ready to get listed?"}
             </h2>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-8">
               {isES
-                ? "VTEX, Shopify, Magento o WooCommerce — formulario en 30 segundos."
-                : "VTEX, Shopify, Magento, or WooCommerce — 30-second form."}
+                ? "Completa el formulario en 2 minutos. Sin tarjeta de crédito. Sin equipo técnico."
+                : "Fill out the form in 2 minutes. No credit card. No technical team."}
             </p>
             <button type="button" onClick={() => setApplyOpen(true)} className="btn-mint px-8">
               {isES ? "Abrir formulario — gratis" : "Open form — free"}
             </button>
             <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 mt-8">
-              {isES ? "\u00bfPrefieres email? " : "Prefer email? "}
+              {isES ? "¿Prefieres email? " : "Prefer email? "}
               <a href="mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing" className="text-[var(--cm-mint)] underline">
                 hello@cli-market.dev
               </a>
