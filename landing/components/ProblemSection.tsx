@@ -30,16 +30,16 @@ export default function ProblemSection() {
     <section
       id="problem"
       className="landing-section animate-fade-in scroll-mt-24"
-      style={{ backgroundColor: "#111113" }}
+      style={{ backgroundColor: "#ffffff" }}
     >
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
-          <h2 className="section-title text-[#FAFAFA]">
+          <h2 className="section-title text-[#0f172a]">
             {isES
               ? "Los agentes de IA pueden razonar. Todavía no pueden transaccionar."
               : "AI agents can reason. They still cannot transact."}
           </h2>
-          <p className="section-intro text-[#A1A1AA]">
+          <p className="section-intro text-[#64748b]">
             {isES
               ? "Los modelos de lenguaje pueden analizar productos, recomendar proveedores y optimizar decisiones. Pero el comercio real sigue fragmentado. Esa fragmentación crea una brecha mayor entre inteligencia y ejecución."
               : "Large language models can analyze products, recommend suppliers, and optimize decisions. But real-world commerce remains fragmented. That fragmentation creates a major gap between intelligence and execution."}
@@ -50,10 +50,10 @@ export default function ProblemSection() {
           {cards.map((card, i) => (
             <div
               key={i}
-              className="rounded-2xl p-6 text-left bg-[#18181B] border border-[#27272A]"
+              className="rounded-2xl p-6 text-left bg-[#f1f5f9] border border-[#e2e8f0]"
             >
-              <h3 className="text-base font-semibold text-[#FAFAFA] mb-3">{card.title}</h3>
-              <p className="text-sm leading-relaxed text-[#A1A1AA]">
+              <h3 className="text-base font-semibold text-[#0f172a] mb-3">{card.title}</h3>
+              <p className="text-sm leading-relaxed text-[#64748b]">
                 {card.body}
               </p>
             </div>

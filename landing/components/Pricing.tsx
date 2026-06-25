@@ -447,7 +447,7 @@ export default function Pricing() {
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#A1A1AA] text-sm font-semibold px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-all"
+              className="inline-flex items-center rounded-[10px] border border-[#e2e8f0] text-[#64748b] text-sm font-semibold px-6 py-2.5 hover:border-[#ea580c] hover:text-[#ea580c] transition-all"
             >
               {isES ? "Contáctenos →" : "Contact us →"}
             </a>

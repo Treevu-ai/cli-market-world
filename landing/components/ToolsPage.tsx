@@ -125,7 +125,7 @@ export default function ToolsPage() {
                 className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
                   ideTab === k
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA]"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#0f172a]"
                 }`}
               >
                 {k}
@@ -168,7 +168,7 @@ export default function ToolsPage() {
                 className={`font-label-caps px-4 py-1.5 capitalize transition-colors ${
                   bundleTab === key
                     ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)]"
-                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA]"
+                    : "glass-panel text-[var(--cm-on-surface-variant)] hover:text-[#0f172a]"
                 }`}
               >
                 {isES ? BUNDLE_LABELS[key].es : BUNDLE_LABELS[key].en}
