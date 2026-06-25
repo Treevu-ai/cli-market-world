@@ -1041,7 +1041,7 @@ select.input-cyber option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #ea580c;
+  background: #b45309;
   color: #f8fafc;
   font-family: var(--font-sans);
   font-size: 14px;
@@ -1053,12 +1053,12 @@ select.input-cyber option {
 }
 
 .btn-mint:hover {
-  background: #f97316;
-  box-shadow: 0 0 20px rgba(234, 88, 12, 0.3);
+  background: #92400e;
+  box-shadow: 0 0 20px rgba(180, 83, 9, 0.3);
 }
 
 .btn-mint:active {
-  background: #c2410c;
+  background: #78350f;
 }
 
 .btn-mint:disabled {
