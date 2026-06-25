@@ -42,6 +42,9 @@ PROCURE_MP_CHECKOUT=0          # 1 = habilita MP/Yape/Plin en procure-subscribe 
 PROCURE_PEN_PER_USD=3.75       # opcional; fallback PRO_PEN_PER_USD
 PROCURE_MP_SUCCESS_URL=https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure
 
+# Cloudflare Pages (landing) — debe coincidir con Railway PROCURE_MP_CHECKOUT
+NEXT_PUBLIC_PROCURE_MP_CHECKOUT=1
+
 # Fallback hosted button
 PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/PLB-K47XCNUKG24P
 PRO_PRICE_USD=39
