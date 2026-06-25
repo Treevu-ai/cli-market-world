@@ -23,6 +23,7 @@ from market_audit import record_audit
 from market_vault import (
     bind_vault_customer,
     bind_vault_payment_token,
+    vault_customer_bound_to_other,
     vault_customer_owned,
     vault_payment_token_owned,
 )
@@ -214,12 +215,15 @@ async def save_card(
         raise HTTPException(status_code=400, detail="card_token_id required")
     if not customer_id:
         raise HTTPException(status_code=400, detail="customer_id required")
+    if vault_customer_bound_to_other(username, customer_id):
+        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
 
     from market_connectors.mercadopago_payments import save_card_for_customer
 
     result = await save_card_for_customer(card_token_id, customer_id)
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
+    bind_vault_customer(username, customer_id)
     record_audit("save_card", username=username, detail={"customer_id": customer_id, "last_four": result.get("last_four")})
     return result
 
@@ -230,7 +234,9 @@ async def saved_cards(
     authorization: str | None = Header(None),
 ):
     """List saved cards for a MercadoPago customer."""
-    require_api_key(authorization)
+    username = require_api_key(authorization)
+    if not vault_customer_owned(username, customer_id):
+        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
     from market_connectors.mercadopago_payments import list_customer_cards
 
     result = await list_customer_cards(customer_id)
