@@ -162,7 +162,7 @@ export default function RetailersPage() {
           style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
         >
           <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-[#ea580c] mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-widest text-[#fbbf24] mb-4">
               {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
             </p>
             <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-white mb-3 tracking-tight">
@@ -201,7 +201,7 @@ export default function RetailersPage() {
             <button
               type="button"
               onClick={() => setApplyOpen(true)}
-              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[#ea580c] text-white text-sm font-semibold hover:bg-[#f97316] transition-colors shadow-lg shadow-[#ea580c]/30"
+              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[#b45309] text-white text-sm font-semibold hover:bg-[#92400e] transition-colors shadow-lg shadow-[#b45309]/30"
             >
               {isES ? "Listar mi tienda — gratis" : "List my store — free"}
             </button>
@@ -260,7 +260,7 @@ export default function RetailersPage() {
                   transition={{ duration: 0.35, delay: i * 0.06 }}
                   className="card-cyber p-5 flex gap-4"
                 >
-                  <span className="text-[var(--cm-mint)] font-bold text-lg shrink-0">{s.step}</span>
+                  <span className="text-[var(--cm-mint)] font-bold text-2xl shrink-0">{s.step}</span>
                   <div>
                     <h3 className="text-sm font-bold text-[#0f172a] mb-1">{s.title}</h3>
                     <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed mb-2">{s.desc}</p>
