@@ -1,4 +1,7 @@
-"""PayPal Vault ownership bindings — prevent cross-user token access (IDOR)."""
+"""Payment vault ownership bindings — prevent cross-user token/customer access (IDOR).
+
+Used by PayPal Vault (customer_id, payment_token_id) and MercadoPago saved cards (customer_id).
+"""
 
 from __future__ import annotations
 
@@ -103,6 +106,21 @@ def vault_customer_owned(username: str, customer_id: str) -> bool:
     row = db.execute(
         f"SELECT 1 FROM vault_bindings WHERE username = {ph} AND customer_id = {ph} LIMIT 1",
         (username, customer_id),
+    ).fetchone()
+    db.close()
+    return row is not None
+
+
+def vault_customer_bound_to_other(username: str, customer_id: str) -> bool:
+    """True if customer_id is bound to a different user."""
+    if not customer_id:
+        return False
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    row = db.execute(
+        f"SELECT 1 FROM vault_bindings WHERE customer_id = {ph} AND username != {ph} LIMIT 1",
+        (customer_id, username),
     ).fetchone()
     db.close()
     return row is not None
