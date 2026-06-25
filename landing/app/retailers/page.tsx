@@ -157,12 +157,15 @@ export default function RetailersPage() {
       />
 
       <div className="relative z-10">
-        <section className="py-24 px-[var(--cm-gutter)] text-center border-b border-[var(--cm-outline-variant)]/20 pt-28">
+        <section
+          className="py-24 px-[var(--cm-gutter)] text-center pt-28"
+          style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
+        >
           <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
-            <p className="section-eyebrow mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-widest text-[#ea580c] mb-4">
               {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
             </p>
-            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-[#0f172a] mb-3 tracking-tight">
+            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-white mb-3 tracking-tight">
               {isES ? (
                 <>
                   Tu marca, dentro de agentes de IA.{" "}
@@ -171,7 +174,7 @@ export default function RetailersPage() {
                     autoStart
                     delay={600}
                     duration={0.6}
-                    className="text-[var(--cm-mint)]"
+                    className="text-[#ea580c]"
                   />
                 </>
               ) : (
@@ -182,15 +185,15 @@ export default function RetailersPage() {
                     autoStart
                     delay={600}
                     duration={0.6}
-                    className="text-[var(--cm-mint)]"
+                    className="text-[#ea580c]"
                   />
                 </>
               )}
             </h1>
-            <p className="text-[11px] text-[#ffbd2e] max-w-[500px] mx-auto mb-6 font-medium">
+            <p className="text-[11px] text-[#fbbf24] max-w-[500px] mx-auto mb-6 font-medium tracking-wide">
               {isES ? "Gratis para siempre. Cupos limitados por pa\u00eds." : "Free forever. Limited spots per country."}
             </p>
-            <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[500px] mx-auto leading-relaxed">
+            <p className="text-base text-[#94a3b8] max-w-[500px] mx-auto leading-relaxed">
               {isES
                 ? "Cuando tus productos est\u00e1n indexados en CLI Market, los agentes de IA los descubren, comparan y dirigen tr\u00e1fico de compra a tu tienda. Esto es GEO \u2014 el SEO de la era de los agentes."
                 : "When your products are indexed in CLI Market, AI agents discover, compare, and drive purchase traffic to your store. This is GEO \u2014 the SEO of the agent era."}
@@ -198,7 +201,7 @@ export default function RetailersPage() {
             <button
               type="button"
               onClick={() => setApplyOpen(true)}
-              className="btn-mint mt-8 px-8"
+              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[#ea580c] text-white text-sm font-semibold hover:bg-[#f97316] transition-colors shadow-lg shadow-[#ea580c]/30"
             >
               {isES ? "Listar mi tienda — gratis" : "List my store — free"}
             </button>
