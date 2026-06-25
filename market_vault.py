@@ -5,7 +5,13 @@ Used by PayPal Vault (customer_id, payment_token_id) and MercadoPago saved cards
 
 from __future__ import annotations
 
+import json
+import logging
+from typing import Any
+
 from market_core import USE_PG, get_db
+
+logger = logging.getLogger("market").getChild("vault")
 
 _VAULT_DDL_PG = """
 CREATE TABLE IF NOT EXISTS vault_bindings (
@@ -124,6 +130,114 @@ def vault_customer_bound_to_other(username: str, customer_id: str) -> bool:
     ).fetchone()
     db.close()
     return row is not None
+
+
+def vault_customer_owner(customer_id: str) -> str | None:
+    """Return username that owns customer_id, or None if unbound."""
+    if not customer_id:
+        return None
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    row = db.execute(
+        f"SELECT username FROM vault_bindings WHERE customer_id = {ph} LIMIT 1",
+        (customer_id,),
+    ).fetchone()
+    db.close()
+    if not row:
+        return None
+    return row["username"] if isinstance(row, dict) else row[0]
+
+
+def vault_payment_token_owner(payment_token_id: str) -> str | None:
+    """Return username that owns payment_token_id, or None if unbound."""
+    if not payment_token_id:
+        return None
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    row = db.execute(
+        f"SELECT username FROM vault_bindings WHERE payment_token_id = {ph} LIMIT 1",
+        (payment_token_id,),
+    ).fetchone()
+    db.close()
+    if not row:
+        return None
+    return row["username"] if isinstance(row, dict) else row[0]
+
+
+def _parse_audit_detail(detail: Any) -> dict[str, Any]:
+    if detail is None:
+        return {}
+    if isinstance(detail, dict):
+        return detail
+    if isinstance(detail, str):
+        try:
+            parsed = json.loads(detail)
+            return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def backfill_vault_bindings_from_audit() -> dict[str, int]:
+    """Populate vault_bindings from historical audit_log (save_card, vault_confirm).
+
+    Idempotent — safe on every startup. First audit entry wins on customer_id conflicts.
+    """
+    from market_audit import ensure_audit_schema
+
+    ensure_audit_schema()
+    ensure_vault_schema()
+    db = get_db()
+    rows = db.execute(
+        "SELECT username, action, detail, created_at FROM audit_log "
+        "WHERE action IN ('save_card', 'vault_confirm') "
+        "ORDER BY created_at ASC"
+    ).fetchall()
+    db.close()
+
+    stats = {
+        "customers_bound": 0,
+        "tokens_bound": 0,
+        "customers_skipped": 0,
+        "tokens_skipped": 0,
+    }
+
+    for row in rows:
+        username = (row["username"] if isinstance(row, dict) else row[0] or "").strip()
+        action = row["action"] if isinstance(row, dict) else row[1]
+        detail = _parse_audit_detail(row["detail"] if isinstance(row, dict) else row[2])
+        if not username:
+            continue
+
+        customer_id = (detail.get("customer_id") or "").strip()
+        if customer_id:
+            owner = vault_customer_owner(customer_id)
+            if owner is None:
+                bind_vault_customer(username, customer_id)
+                stats["customers_bound"] += 1
+            elif owner != username:
+                stats["customers_skipped"] += 1
+
+        if action != "vault_confirm":
+            continue
+
+        payment_token_id = (
+            detail.get("payment_token_id") or detail.get("payment_token") or ""
+        ).strip()
+        if not payment_token_id:
+            continue
+        token_owner = vault_payment_token_owner(payment_token_id)
+        if token_owner is None:
+            bind_vault_payment_token(username, customer_id, payment_token_id)
+            stats["tokens_bound"] += 1
+        elif token_owner != username:
+            stats["tokens_skipped"] += 1
+
+    if any(stats.values()):
+        logger.info("vault_bindings backfill from audit: %s", stats)
+    return stats
 
 
 def vault_payment_token_owned(username: str, payment_token_id: str) -> bool:
