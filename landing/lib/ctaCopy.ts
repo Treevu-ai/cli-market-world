@@ -1,4 +1,4 @@
-import { PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
+import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 
 export type Lang = "en" | "es";
 
@@ -22,11 +22,6 @@ export const CTA = {
     en: "View plans →",
     es: "Ver planes →",
     href: PRICING_BUILD_HASH,
-  },
-  viewProcurePlans: {
-    en: "See Procure plans →",
-    es: "Ver planes Procure →",
-    href: PRICING_PROCURE_HASH,
   },
   signIn: {
     en: "Sign in",
