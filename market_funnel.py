@@ -32,6 +32,10 @@ FUNNEL_EVENTS = frozenset(
         "cli_command_attempted",
         "cli_command_result",
         "cli_auth_wall_hit",
+        # Procure checkout LATAM funnel
+        "procure_subscribe_click",
+        "procure_magic_exchange_ok",
+        "procure_magic_exchange_fail",
     }
 )
 
