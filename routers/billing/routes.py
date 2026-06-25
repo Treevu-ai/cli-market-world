@@ -39,6 +39,7 @@ from routers.billing.pro_helpers import (
     duplicate_mp_checkout_payload,
     is_mp_billing_method,
     mp_pay_note,
+    procure_mp_checkout_enabled,
     wallet_manual_fallback_enabled,
 )
 from server_deps import check_rate_limit, require_user
@@ -47,6 +48,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
 
 _PRO_BILLING_METHODS = frozenset({"paypal", "yape", "plin", "mercadopago"})
+_PROCURE_BILLING_METHODS = _PRO_BILLING_METHODS
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -513,6 +515,285 @@ def _resolve_pro_username(
     return safe or f"user-{uuid.uuid4().hex[:8]}"
 
 
+async def _start_procure_mercadopago_checkout(
+    username: str,
+    email: str,
+    *,
+    plan_slug: str,
+    lang: str,
+    funnel_source: str,
+    wallet_method: str = "",
+    display_name: str = "",
+) -> dict:
+    from market_connectors.mercadopago_payments import create_preference
+    from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
+    from procure_billing import procure_plan_config, procure_price_pen
+
+    cfg = procure_plan_config(plan_slug)
+    tier = cfg["tier"]
+    amount_usd = float(cfg["amount"])
+    label = cfg["label"]
+    prefix = cfg["request_prefix"]
+    amount_pen = procure_price_pen(plan_slug)
+    wallet = (wallet_method or "").strip().lower()
+    pay_note = mp_pay_note(wallet)
+    req = db_create_subscription_request(
+        username, email, pay_note, display_name=display_name, prefix=prefix,
+    )
+    request_id = req["id"]
+
+    mp_success = os.getenv(
+        "PROCURE_MP_SUCCESS_URL",
+        "https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure",
+    ).replace("{ref}", request_id)
+    mp_pending = os.getenv(
+        "PROCURE_MP_PENDING_URL",
+        "https://cli-market.dev/?mp=pending&audience=procure&ref={ref}#procure",
+    ).replace("{ref}", request_id)
+    mp_failure = os.getenv(
+        "PROCURE_MP_FAILURE_URL",
+        "https://cli-market.dev/?mp=failure&audience=procure&ref={ref}#procure",
+    ).replace("{ref}", request_id)
+
+    mp = await create_preference(
+        amount_pen,
+        "PEN",
+        f"CLI-Market-{request_id}",
+        title=label,
+        success_url=mp_success,
+        pending_url=mp_pending,
+        failure_url=mp_failure,
+    )
+    if not mp.get("checkout_url"):
+        raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
+
+    checkout_url = mp["checkout_url"]
+    db_update_subscription_request_payment_link(request_id, checkout_url)
+    sub_mail = send_pro_payment_email(
+        to_email=email,
+        username=username,
+        request_id=request_id,
+        lang=lang,
+    )
+    notify_mail = send_pro_request_notify(
+        subscriber_email=email,
+        username=username,
+        request_id=request_id,
+        note=(
+            f"product=procure plan={plan_slug} method=mercadopago "
+            f"amount_pen={amount_pen:.2f} url={checkout_url}"
+        ),
+    )
+    if sub_mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "procure_subscribe",
+            username=username,
+            meta={
+                "email": email,
+                "source": funnel_source,
+                "plan": plan_slug,
+                "tier": tier,
+                "payment_method": "mercadopago",
+            },
+            dedupe=False,
+        )
+    except Exception:
+        pass
+
+    _slack_notify_subscription(
+        tier=tier,
+        status="pending",
+        username=username,
+        email=email,
+        request_id=request_id,
+        source=funnel_source,
+        payment_method="mercadopago",
+        amount_pen=amount_pen,
+        amount_usd=amount_usd,
+        plan=label,
+    )
+
+    wallet_app = "Yape" if wallet == "yape" else "Plin" if wallet == "plin" else ""
+    if lang == "es":
+        if wallet_app:
+            message = (
+                f"Abre Mercado Pago y paga con {wallet_app} — S/ {amount_pen:.2f} "
+                f"(USD {amount_usd:.0f}/mes). Procure se activa en minutos. Ref: {request_id}."
+            )
+        else:
+            message = (
+                f"Complete el pago en Mercado Pago — S/ {amount_pen:.2f} "
+                f"(USD {amount_usd:.0f}/mes). Referencia: {request_id}."
+            )
+    elif wallet_app:
+        message = (
+            f"Open Mercado Pago and pay with {wallet_app} — S/ {amount_pen:.2f} "
+            f"(USD {amount_usd:.0f}/mo). Procure activates in minutes. Ref: {request_id}."
+        )
+    else:
+        message = (
+            f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
+            f"(USD {amount_usd:.0f}/mo). Reference: {request_id}."
+        )
+
+    display_method = wallet if wallet in ("yape", "plin") else "mercadopago"
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "username": username,
+        "email": email,
+        "payment_method": display_method,
+        "payment_rail": "mercadopago",
+        "payment_mode": "mercadopago_checkout",
+        "wallet_checkout": bool(wallet_app),
+        "amount_usd": amount_usd,
+        "amount_pen": amount_pen,
+        "currency": "PEN",
+        "checkout_url": checkout_url,
+        "approve_url": checkout_url,
+        "preference_id": mp.get("preference_id", ""),
+        "auto_activate": True,
+        "tier": tier,
+        "procure_plan": plan_slug,
+        "plan": label,
+        "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
+        "notify_sent": notify_mail.get("sent", False),
+        "message": message,
+        "next_steps": [
+            {
+                "step": 1,
+                "action": "Completa el pago en Mercado Pago" if lang == "es" else "Complete Mercado Pago payment",
+                "url": checkout_url,
+            },
+            {
+                "step": 2,
+                "action": "Procure se activa automáticamente" if lang == "es" else "Procure activates automatically",
+            },
+            {
+                "step": 3,
+                "action": (
+                    "Pega tu API key en el dashboard Procure"
+                    if lang == "es"
+                    else "Paste your API key in the Procure dashboard"
+                ),
+            },
+        ],
+    }
+
+
+def _start_procure_qr_checkout(
+    username: str,
+    email: str,
+    *,
+    plan_slug: str,
+    method: str,
+    lang: str,
+    funnel_source: str,
+    display_name: str = "",
+) -> dict:
+    """Yape/Plin manual transfer for Procure — ops activates after confirmation."""
+    from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
+    from procure_billing import procure_plan_config, procure_price_pen
+
+    cfg = procure_plan_config(plan_slug)
+    tier = cfg["tier"]
+    amount_usd = float(cfg["amount"])
+    label = cfg["label"]
+    prefix = cfg["request_prefix"]
+    amount_pen = procure_price_pen(plan_slug)
+    payment_label = "plin" if method == "plin" else "yape"
+    req = db_create_subscription_request(
+        username,
+        email,
+        f"{payment_label}:S/{amount_pen:.2f}",
+        display_name=display_name,
+        prefix=prefix,
+    )
+    request_id = req["id"]
+    phone = _wallet_payment_phone()
+    wallet = _wallet_manual_transfer_fields(
+        method=method,
+        amount_pen=amount_pen,
+        reference=request_id,
+        lang=lang,
+        phone=phone,
+    )
+
+    sub_mail = send_pro_payment_email(
+        to_email=email,
+        username=username,
+        request_id=request_id,
+        lang=lang,
+    )
+    notify_mail = send_pro_request_notify(
+        subscriber_email=email,
+        username=username,
+        request_id=request_id,
+        note=(
+            f"product=procure plan={plan_slug} method={payment_label} "
+            f"amount_pen={amount_pen:.2f} usd={amount_usd}"
+        ),
+    )
+    if sub_mail.get("sent"):
+        db_mark_subscription_request_emailed(req["id"])
+
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "procure_subscribe",
+            username=username,
+            meta={
+                "email": email,
+                "source": funnel_source,
+                "plan": plan_slug,
+                "tier": tier,
+                "payment_method": payment_label,
+            },
+            dedupe=False,
+        )
+    except Exception:
+        pass
+
+    _slack_notify_subscription(
+        tier=tier,
+        status="pending",
+        username=username,
+        email=email,
+        request_id=request_id,
+        source=funnel_source,
+        payment_method=payment_label,
+        amount_pen=amount_pen,
+        amount_usd=amount_usd,
+        plan=label,
+    )
+
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "username": username,
+        "email": email,
+        "amount_usd": amount_usd,
+        "amount_pen": amount_pen,
+        "currency": "PEN",
+        "qr_reference": request_id,
+        "tier": tier,
+        "procure_plan": plan_slug,
+        "plan": label,
+        "auto_activate": False,
+        "email_sent": sub_mail.get("sent", False),
+        "email_error": sub_mail.get("reason") if not sub_mail.get("sent") else None,
+        "notify_sent": notify_mail.get("sent", False),
+        **wallet,
+    }
+
+
 async def _start_procure_subscription(
     username: str,
     email: str,
@@ -829,12 +1110,31 @@ async def billing_starter(authorization: str | None = Header(None)):
 
 @router.post("/billing/procure-subscribe")
 async def billing_procure_subscribe(body: dict, authorization: str | None = Header(None)):
-    """Procure Copilot subscription from cli-market.dev/#procure — auto-activate via webhook."""
+    """Procure Copilot subscription — PayPal, Mercado Pago, Yape, or Plin."""
     try:
         check_rate_limit("billing-procure-subscribe")
         email = (body.get("email") or "").strip().lower()
         lang = (body.get("lang") or "en").strip().lower()[:2]
         plan_slug = (body.get("plan") or "pro").strip().lower()
+        method = (body.get("payment_method") or "paypal").strip().lower()
+        force = bool(body.get("resend"))
+        display_name = (body.get("display_name") or body.get("name") or "").strip()
+
+        if method not in _PROCURE_BILLING_METHODS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"payment_method must be one of: {', '.join(sorted(_PROCURE_BILLING_METHODS))}",
+            )
+
+        if method != "paypal" and not procure_mp_checkout_enabled():
+            raise HTTPException(
+                status_code=501,
+                detail=(
+                    "Procure checkout local (Mercado Pago / Yape / Plin) no está habilitado aún"
+                    if lang == "es"
+                    else "Procure local checkout (Mercado Pago / Yape / Plin) is not enabled yet"
+                ),
+            )
 
         if not email or not _EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="valid email is required")
@@ -852,29 +1152,69 @@ async def billing_procure_subscribe(body: dict, authorization: str | None = Head
             auth_username=auth_user,
         )
 
-        out = await _start_procure_subscription(
-            username,
-            email,
-            plan_slug=plan_slug,
-            lang=lang,
-            funnel_source="landing_procure_subscribe",
-        )
-        if not out.get("ok"):
-            raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+        if not force and method != "paypal":
+            recent = db_recent_subscription_request(email)
+            if recent and is_mp_billing_method(method):
+                dup = duplicate_mp_checkout_payload(recent, method=method, lang=lang)
+                if dup:
+                    from procure_billing import procure_tier_from_request_id, tier_to_procure_plan
 
-        if lang == "es":
-            out["message"] = (
-                "Confirme la suscripción Procure en PayPal. "
-                + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
-                + "Luego pegue su API key (market register → market account) en el dashboard Procure."
+                    dup["tier"] = procure_tier_from_request_id(dup.get("request_id", ""))
+                    if dup.get("tier"):
+                        dup["procure_plan"] = tier_to_procure_plan(dup["tier"])
+                    return dup
+
+        if method == "paypal":
+            out = await _start_procure_subscription(
+                username,
+                email,
+                plan_slug=plan_slug,
+                lang=lang,
+                funnel_source="landing_procure_subscribe",
             )
-        else:
-            out["message"] = (
-                "Confirm Procure subscription on PayPal. "
-                + ("We emailed you the link. " if out.get("email_sent") else "")
-                + "Then paste your API key (market register → market account) in the Procure dashboard."
+            if not out.get("ok"):
+                raise HTTPException(status_code=502, detail=out.get("error", "PayPal error"))
+
+            if lang == "es":
+                out["message"] = (
+                    "Confirme la suscripción Procure en PayPal. "
+                    + ("Le enviamos el enlace por email. " if out.get("email_sent") else "")
+                    + "Luego pegue su API key (market register → market account) en el dashboard Procure."
+                )
+            else:
+                out["message"] = (
+                    "Confirm Procure subscription on PayPal. "
+                    + ("We emailed you the link. " if out.get("email_sent") else "")
+                    + "Then paste your API key (market register → market account) in the Procure dashboard."
+                )
+            return out
+
+        manual_transfer = bool(body.get("manual_transfer")) and wallet_manual_fallback_enabled()
+
+        if method in ("yape", "plin") and manual_transfer:
+            return _start_procure_qr_checkout(
+                username,
+                email,
+                plan_slug=plan_slug,
+                method=method,
+                lang=lang,
+                funnel_source=f"landing_procure_checkout_{method}_manual",
+                display_name=display_name,
             )
-        return out
+
+        if method in ("yape", "plin", "mercadopago"):
+            wallet_method = method if method in ("yape", "plin") else ""
+            return await _start_procure_mercadopago_checkout(
+                username,
+                email,
+                plan_slug=plan_slug,
+                lang=lang,
+                funnel_source=f"landing_procure_checkout_{method}",
+                wallet_method=wallet_method,
+                display_name=display_name,
+            )
+
+        raise HTTPException(status_code=400, detail=f"unsupported payment_method: {method}")
     except HTTPException:
         raise
     except ValueError as e:

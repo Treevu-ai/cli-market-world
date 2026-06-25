@@ -11,6 +11,7 @@ export type FunnelEvent =
   | "starter_subscribe"
   | "starter_request"
   | "request_pro"
+  | "procure_subscribe"
   | "use_case_demo"
   | "activated";
 

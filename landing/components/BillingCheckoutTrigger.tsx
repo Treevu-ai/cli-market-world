@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import BillingCheckoutModal, { type BillingCheckoutKind } from "@/components/BillingCheckoutModal";
 
@@ -10,16 +10,23 @@ export default function BillingCheckoutTrigger({
   label_es,
   label_en,
   id,
+  autoOpen = false,
 }: {
   kind: BillingCheckoutKind;
   className?: string;
   label_es?: string;
   label_en?: string;
   id?: string;
+  autoOpen?: boolean;
 }) {
   const { lang } = useLang();
   const isES = lang === "es";
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!autoOpen) return;
+    setOpen(true);
+  }, [autoOpen]);
 
   const defaultLabel =
     kind.type === "build-starter"

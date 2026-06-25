@@ -73,6 +73,10 @@ class VerifyEmailRequest(BaseModel):
     code: str
 
 
+class ProcureMagicExchangeRequest(BaseModel):
+    token: str
+
+
 # ── Email verification helpers ────────────────────────────────────────────────
 
 _VERIFY_TTL = int(os.getenv("EMAIL_VERIFY_TTL_SECONDS", "600"))  # 10 min
@@ -352,6 +356,22 @@ def revoke_session(authorization: str | None = Header(None)):
 
     revoke_all_tokens(username)
     return {"ok": True, "revoked": username}
+
+
+@router.post("/auth/procure-magic-exchange")
+def procure_magic_exchange(body: ProcureMagicExchangeRequest):
+    """Exchange a one-time Procure onboarding token for API credentials."""
+    from procure_magic import exchange_procure_magic_token, procure_magic_enabled
+
+    if not procure_magic_enabled():
+        raise HTTPException(status_code=501, detail="Procure magic link not configured")
+    token = (body.token or "").strip()
+    if not token:
+        raise HTTPException(status_code=422, detail="token is required")
+    try:
+        return exchange_procure_magic_token(token)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.get("/auth/whoami")

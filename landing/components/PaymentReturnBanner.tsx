@@ -90,6 +90,11 @@ export default function PaymentReturnBanner() {
   const title = (() => {
     if (isSuccess) {
       if (isProcure) {
+        if (isMp) {
+          return isES
+            ? "Pago Mercado Pago recibido — Procure"
+            : "Mercado Pago payment received — Procure";
+        }
         return isES ? "Suscripción Procure confirmada" : "Procure subscription confirmed";
       }
       if (planLabel) {
@@ -137,14 +142,9 @@ export default function PaymentReturnBanner() {
             <>
               <p>
                 {isES
-                  ? "La activación tarda unos segundos vía webhook. Luego:"
-                  : "Activation takes a few seconds via webhook. Then:"}
+                  ? "La activación tarda unos segundos vía webhook. Revisa tu email: incluye un enlace mágico al dashboard (API key precargada, 15 min)."
+                  : "Activation takes a few seconds via webhook. Check your email for a magic link to the dashboard (API key preloaded, 15 min)."}
               </p>
-              <ol className="list-decimal list-inside space-y-1 font-mono text-xs">
-                <li>{isES ? "market register  (si es cuenta nueva)" : "market register  (if new account)"}</li>
-                <li>{isES ? "market account  → copia sk-…" : "market account  → copy sk-…"}</li>
-                <li>{isES ? "Pega la API key en el dashboard Procure" : "Paste API key in Procure dashboard"}</li>
-              </ol>
               <a href={PROCURE_APP_URL} className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
                 {isES ? "Abrir dashboard Procure →" : "Open Procure dashboard →"}
               </a>
@@ -168,21 +168,41 @@ export default function PaymentReturnBanner() {
       ) : isPending ? (
         <div className="space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
           <p>
-            {isES
-              ? "Cuando Mercado Pago confirme el pago, tu plan Build se activará automáticamente."
-              : "When Mercado Pago confirms payment, your Build plan will activate automatically."}
+            {isProcure
+              ? isES
+                ? "Cuando Mercado Pago confirme el pago, tu plan Procure se activará automáticamente."
+                : "When Mercado Pago confirms payment, your Procure plan will activate automatically."
+              : isES
+                ? "Cuando Mercado Pago confirme el pago, tu plan Build se activará automáticamente."
+                : "When Mercado Pago confirms payment, your Build plan will activate automatically."}
           </p>
           <ol className="list-decimal list-inside space-y-1 text-xs">
-            <li className="font-mono">market whoami</li>
+            {isProcure ? (
+              <>
+                <li>
+                  {isES
+                    ? "Revisa tu email — enlace mágico al dashboard Procure"
+                    : "Check your email — magic link to Procure dashboard"}
+                </li>
+              </>
+            ) : (
+              <li className="font-mono">market whoami</li>
+            )}
             <li>
               {isES
-                ? "Si sigue en free tras 30 min: hello@cli-market.dev con la referencia de arriba"
-                : "If still free after 30 min: email hello@cli-market.dev with the reference above"}
+                ? "Si no se activa tras 30 min: hello@cli-market.dev con la referencia de arriba"
+                : "If not active after 30 min: email hello@cli-market.dev with the reference above"}
             </li>
           </ol>
-          <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
-            {isES ? "Ver uso en /account →" : "View usage on /account →"}
-          </a>
+          {isProcure ? (
+            <a href={PROCURE_APP_URL} className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
+              {isES ? "Abrir dashboard Procure →" : "Open Procure dashboard →"}
+            </a>
+          ) : (
+            <a href="/account" className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
+              {isES ? "Ver uso en /account →" : "View usage on /account →"}
+            </a>
+          )}
         </div>
       ) : (
         <p className="text-sm text-[var(--cm-on-surface-variant)]">
