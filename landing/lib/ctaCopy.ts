@@ -6,12 +6,12 @@ export const CTA = {
   getApiKey: {
     en: "Get API Key →",
     es: "Obtener API Key →",
-    href: PRICING_BUILD_HASH,
+    href: "/docs#auth",
   },
   watchDemo: {
     en: "Watch Demo →",
     es: "Ver Demo →",
-    href: "/contact",
+    href: "https://procure-copilot.contacto-8e4.workers.dev/procure#demo",
   },
   bookDemo: {
     en: "Book Demo →",

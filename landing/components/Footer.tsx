@@ -36,7 +36,7 @@ export default function Footer() {
           <a href="/#pricing" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
             CLI Develop
           </a>
-          <a href="https://procure-copilot.contacto-8e4.workers.dev" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors" target="_blank" rel="noopener noreferrer">
+          <a href="https://procure-copilot.contacto-8e4.workers.dev/procure" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors" target="_blank" rel="noopener noreferrer">
             Procure Copilot
           </a>
           <a href="/#intelligence" className="text-sm text-[#A1A1AA] hover:text-[#7CFF5B] transition-colors">
