@@ -12,6 +12,11 @@ def wallet_manual_fallback_enabled() -> bool:
     return os.getenv("WALLET_MANUAL_FALLBACK", "").strip().lower() in ("1", "true", "yes")
 
 
+def procure_mp_checkout_enabled() -> bool:
+    """Feature flag — Procure Mercado Pago / wallet checkout (Sprint 1 dark launch default off)."""
+    return os.getenv("PROCURE_MP_CHECKOUT", "").strip().lower() in ("1", "true", "yes")
+
+
 def mp_pay_note(wallet_method: str = "") -> str:
     wallet = (wallet_method or "").strip().lower()
     if wallet in ("yape", "plin"):

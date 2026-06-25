@@ -20,6 +20,7 @@ const STEP_LABELS: Record<string, { es: string; en: string }> = {
   first_search: { es: "Primera búsqueda", en: "First search" },
   starter_subscribe: { es: "Checkout Starter", en: "Starter checkout" },
   request_pro: { es: "Checkout Pro", en: "Pro checkout" },
+  procure_subscribe: { es: "Checkout Procure", en: "Procure checkout" },
   activated: { es: "Activado", en: "Activated" },
 };
 

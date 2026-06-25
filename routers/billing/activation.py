@@ -16,6 +16,7 @@ from market_core import (
 from routers.billing.pro_helpers import is_manual_wallet_pro_payment_link
 from routers.billing.notifications import (
     _append_pro_activation_email_actions,
+    _append_procure_activation_email_actions,
     _pro_payment_method_from_request,
     _slack_notify_build_pro,
     _slack_notify_subscription,
@@ -30,6 +31,11 @@ STARTER_CHECKOUT_URL = os.getenv(
 _MANUAL_PRO_ACTIVATION_SOURCES = frozenset({"slack_interaction", "admin_api", "ops_manual"})
 
 _PRO_REF_RE = re.compile(r"CLI-Market-(PRO-[A-Z0-9]+)", re.I)
+_SUBSCRIPTION_REF_RE = re.compile(
+    r"CLI-Market-(?P<id>(?:PRO|PCS|PCP|PCB)-[A-Z0-9]+)",
+    re.I,
+)
+_BARE_SUBSCRIPTION_REF_RE = re.compile(r"^(PRO|PCS|PCP|PCB)-[A-Z0-9]+$", re.I)
 
 
 def _pro_price_pen() -> float:
@@ -110,14 +116,34 @@ def _wallet_manual_transfer_fields(
     }
 
 
-def _parse_pro_request_ref(external_reference: str) -> str | None:
+def _parse_subscription_request_ref(external_reference: str) -> str | None:
+    """Parse CLI-Market subscription billing refs: PRO-, PCS-, PCP-, PCB-."""
     ref = (external_reference or "").strip()
     if not ref:
         return None
+    if _BARE_SUBSCRIPTION_REF_RE.match(ref):
+        return ref.upper()
+    m = _SUBSCRIPTION_REF_RE.search(ref)
+    if m:
+        return m.group("id").upper()
+    m = _PRO_REF_RE.search(ref)
+    return m.group(1).upper() if m else None
+
+
+def _parse_pro_request_ref(external_reference: str) -> str | None:
+    rid = _parse_subscription_request_ref(external_reference)
+    if rid and rid.startswith("PRO-"):
+        return rid
+    ref = (external_reference or "").strip()
     if ref.upper().startswith("PRO-"):
         return ref.upper()
     m = _PRO_REF_RE.search(ref)
     return m.group(1).upper() if m else None
+
+
+def _is_procure_subscription_request_id(request_id: str) -> bool:
+    prefix = (request_id or "").split("-", 1)[0].upper()
+    return prefix in ("PCS", "PCP", "PCB")
 
 
 def tier_from_billing_kind(kind: str) -> str:
@@ -167,7 +193,18 @@ def activate_paypal_subscription(
     if lang not in ("es", "en"):
         lang = "es"
     email = db_get_user_email(username) or ""
-    if tier in ("starter", "procure_starter"):
+    if tier in ("procure_starter", "procure_pro", "procure_builder"):
+        _append_procure_activation_email_actions(
+            actions,
+            username=username,
+            email=email,
+            tier=tier,
+            request_id=sub_id or "",
+            payment_method="paypal",
+            source=source,
+            lang=lang,
+        )
+    elif tier in ("starter",):
         try:
             if email:
                 from market_connectors.email_outbound import send_starter_activated_email
@@ -342,6 +379,71 @@ def _activate_pro_from_request(request_id: str, *, source: str, force: bool = Fa
     _slack_notify_build_pro(
         username=username,
         email=(req.get("email") or "").strip() or db_get_user_email(username) or "",
+        request_id=request_id,
+        source=source,
+        payment_method=method,
+    )
+
+    return actions
+
+
+def _activate_procure_from_request(request_id: str, *, source: str, force: bool = False) -> list[str]:
+    """Mark Procure subscription request paid and upgrade user to procure_* tier."""
+    from procure_billing import procure_tier_from_request_id
+
+    req = db_find_subscription_request(request_id=request_id)
+    if not req:
+        return [f"request_not_found:{request_id}"]
+    if (req.get("status") or "").lower() == "activated":
+        return [f"already_activated:{request_id}"]
+
+    payment_link = (req.get("payment_link") or "").strip()
+    if source in _MANUAL_PRO_ACTIVATION_SOURCES and not force:
+        if not is_manual_wallet_pro_payment_link(payment_link):
+            return [f"payment_not_manual:{request_id}"]
+
+    username = (req.get("username") or "").strip()
+    if not username:
+        return [f"request_no_user:{request_id}"]
+
+    tier = procure_tier_from_request_id(request_id)
+    if not tier:
+        return [f"unknown_procure_request:{request_id}"]
+
+    db_set_subscription(username, tier)
+    db_mark_subscription_request_activated(request_id, username)
+    actions = [f"{tier}_activated:{username}", f"request_closed:{request_id}"]
+
+    try:
+        from market_funnel import record_funnel_event
+
+        record_funnel_event(
+            "activated",
+            username=username,
+            meta={"source": source, "request_id": request_id, "tier": tier},
+            dedupe=True,
+        )
+    except Exception:
+        pass
+
+    method = _pro_payment_method_from_request(req)
+    email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
+    lang = "es"
+    _append_procure_activation_email_actions(
+        actions,
+        username=username,
+        email=email,
+        tier=tier,
+        request_id=request_id,
+        payment_method=method,
+        source=source,
+        lang=lang,
+    )
+
+    _slack_notify_subscription(
+        tier=tier,
+        username=username,
+        email=email,
         request_id=request_id,
         source=source,
         payment_method=method,

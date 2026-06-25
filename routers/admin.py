@@ -19,6 +19,7 @@ Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicl
 from __future__ import annotations
 
 import logging
+import re
 import time
 
 import httpx
@@ -62,21 +63,27 @@ def admin_activate_pro_request(
     body: dict = Body(...),
     authorization: str | None = Header(None),
 ):
-    """Activate Pro from a pending PRO- request (manual Yape/Plin or ops)."""
+    """Activate Pro or Procure from a pending PRO-/PCS-/PCP-/PCB- request."""
     require_admin(authorization)
     request_id = (body.get("request_id") or body.get("ref") or "").strip().upper()
-    if not request_id.startswith("PRO-"):
-        raise HTTPException(status_code=400, detail="request_id must be PRO-XXXXXXXX")
+    if not re.match(r"^(PRO|PCS|PCP|PCB)-", request_id):
+        raise HTTPException(status_code=400, detail="request_id must be PRO-/PCS-/PCP-/PCB-XXXXXXXX")
     force = bool(body.get("force"))
 
-    from routers.payments import _activate_pro_from_request
+    from routers.payments import _activate_pro_from_request, _activate_procure_from_request
+    from routers.billing.activation import _is_procure_subscription_request_id
 
-    actions = _activate_pro_from_request(request_id, source="admin_api", force=force)
+    if _is_procure_subscription_request_id(request_id):
+        actions = _activate_procure_from_request(request_id, source="admin_api", force=force)
+    else:
+        actions = _activate_pro_from_request(request_id, source="admin_api", force=force)
+
     record_audit("activate_pro_request", username="admin", resource=request_id, detail={"actions": actions, "force": force})
     logger.info("audit admin_activate_pro request_id=%s actions=%s", request_id, actions)
-    if not any(a.startswith("pro_activated:") for a in actions):
+    activated = [a for a in actions if "_activated:" in a]
+    if not activated:
         raise HTTPException(status_code=404, detail={"request_id": request_id, "actions": actions})
-    username = next(a.split(":", 1)[1] for a in actions if a.startswith("pro_activated:"))
+    username = activated[0].split(":", 1)[1]
     return {"ok": True, "request_id": request_id, "username": username, "actions": actions}
 
 

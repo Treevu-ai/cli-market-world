@@ -210,6 +210,171 @@ def _append_pro_activation_email_actions(
         return {"sent": False, "reason": "exception"}
 
 
+def _procure_plan_label(tier: str, lang: str = "es") -> str:
+    from procure_billing import PROCURE_PLANS
+
+    tier = (tier or "").strip().lower()
+    for slug, cfg in PROCURE_PLANS.items():
+        if cfg.get("tier") == tier:
+            if lang == "es":
+                names = {"starter": "Compare", "pro": "Ops", "builder": "Scale"}
+                return names.get(slug, cfg.get("label", slug))
+            return cfg.get("label", slug)
+    return tier
+
+
+def _send_procure_activated_email_with_magic_link(
+    *,
+    to_email: str,
+    username: str,
+    tier: str,
+    lang: str = "es",
+    request_id: str = "",
+    payment_method: str = "paypal",
+    source: str = "",
+) -> dict:
+    from market_connectors.email_outbound import _send
+    from procure_magic import (
+        build_procure_magic_url,
+        create_procure_magic_token,
+        procure_magic_enabled,
+        provision_procure_api_key,
+    )
+
+    plan_label = _procure_plan_label(tier, lang)
+    api_key = provision_procure_api_key(username)
+    magic_url = ""
+    if procure_magic_enabled():
+        token = create_procure_magic_token(username=username, api_key=api_key, tier=tier)
+        magic_url = build_procure_magic_url(token)
+
+    ref_line = f"\nReferencia: {request_id}" if request_id else ""
+    sk_preview = api_key[:14] + "…" if len(api_key) > 14 else api_key
+
+    if lang == "es":
+        subject = f"Procure {plan_label} activo — abre tu dashboard"
+        if magic_url:
+            text = f"""Hola {username},
+
+Tu plan Procure {plan_label} quedó activo.
+
+ABRIR DASHBOARD (un solo clic, 15 min) →
+{magic_url}
+
+Tu API key queda cargada automáticamente — no necesitas pegar sk- manualmente.
+
+Respaldo manual:
+  pip install cli-market-world
+  market login --username {username}
+  market account  →  {sk_preview}
+{ref_line}
+
+— Ricardo · CLI Market
+hello@cli-market.dev
+"""
+            html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+<h2 style="color:#3afecf;">Procure {plan_label} activo</h2>
+<p>Hola <strong>{username}</strong>,</p>
+<p>Tu dashboard queda listo en un clic — la API key se carga sola.</p>
+<p><a href="{magic_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Abrir dashboard Procure →</a></p>
+<p style="font-size:12px;color:#888;">El enlace expira en 15 minutos y solo funciona una vez.</p>
+</body></html>"""
+        else:
+            text = f"""Hola {username},
+
+Tu plan Procure {plan_label} quedó activo.
+
+Siguiente paso:
+  pip install cli-market-world
+  market register  (si es cuenta nueva)
+  market account  →  copia {sk_preview}
+  Pega la API key en el dashboard Procure
+{ref_line}
+
+— Ricardo · CLI Market
+hello@cli-market.dev
+"""
+            html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+<h2 style="color:#3afecf;">Procure {plan_label} activo</h2>
+<p>Hola <strong>{username}</strong>,</p>
+<p>Ejecuta <code>market account</code> y pega tu API key en el dashboard Procure.</p>
+</body></html>"""
+    elif magic_url:
+        subject = f"Procure {plan_label} active — open your dashboard"
+        text = f"""Hi {username},
+
+Your Procure {plan_label} plan is active.
+
+OPEN DASHBOARD (one click, 15 min) →
+{magic_url}
+
+Your API key loads automatically — no manual sk- paste needed.
+
+Manual backup:
+  pip install cli-market-world
+  market login --username {username}
+  market account  →  {sk_preview}
+{ref_line}
+
+— Ricardo · CLI Market
+hello@cli-market.dev
+"""
+        html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+<h2 style="color:#3afecf;">Procure {plan_label} active</h2>
+<p>Hi <strong>{username}</strong>,</p>
+<p><a href="{magic_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Open Procure dashboard →</a></p>
+</body></html>"""
+    else:
+        subject = f"Procure {plan_label} active"
+        text = f"""Hi {username},
+
+Your Procure {plan_label} plan is active. Run market account and paste your API key in the Procure dashboard.
+{ref_line}
+"""
+        html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+<h2 style="color:#3afecf;">Procure {plan_label} active</h2>
+<p>Hi <strong>{username}</strong>,</p>
+</body></html>"""
+
+    return _send(to_email, subject, text, html)
+
+
+def _append_procure_activation_email_actions(
+    actions: list[str],
+    *,
+    username: str,
+    email: str,
+    tier: str,
+    request_id: str,
+    payment_method: str,
+    source: str,
+    lang: str = "es",
+) -> dict:
+    if not email:
+        actions.append("activation_email_skipped:no_email")
+        return {"sent": False, "reason": "no_email"}
+    try:
+        mail = _send_procure_activated_email_with_magic_link(
+            to_email=email,
+            username=username,
+            tier=tier,
+            lang=lang,
+            request_id=request_id,
+            payment_method=payment_method,
+            source=source,
+        )
+        if mail.get("sent"):
+            actions.append(f"activation_email:{email}")
+            actions.append("procure_magic_link:sent")
+        else:
+            actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
+        return mail
+    except Exception:
+        logger.exception("Procure activation email failed for %s", username)
+        actions.append("activation_email_failed")
+        return {"sent": False, "reason": "exception"}
+
+
 def resend_pro_activation_email(
     request_id: str,
     *,

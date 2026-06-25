@@ -1,10 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
-import { PROCURE_APP_URL, PROCURE_PLANS } from "@/lib/procurePlans";
+import { PROCURE_APP_URL, PROCURE_PLANS, type ProcurePlanSlug } from "@/lib/procurePlans";
 import ProcureSubscribeButton from "@/components/ProcureSubscribeButton";
+import {
+  clearProcureCheckoutQuery,
+  readProcureCheckoutDeepLink,
+} from "@/lib/procureCheckoutUrl";
 
 const BENEFITS_ES = [
   "Comparación automática en retailers verificados — sin WhatsApp ni Excel.",
@@ -24,6 +29,15 @@ export default function ProcurePricingPanel() {
   const { lang } = useLang();
   const isES = lang === "es";
   const benefits = isES ? BENEFITS_ES : BENEFITS_EN;
+  const [autoOpenPlan, setAutoOpenPlan] = useState<ProcurePlanSlug | null>(null);
+
+  useEffect(() => {
+    const link = readProcureCheckoutDeepLink();
+    if (link?.open) {
+      setAutoOpenPlan(link.plan);
+      clearProcureCheckoutQuery();
+    }
+  }, []);
 
   return (
     <div className="brand-mode-operations scroll-mt-24 text-left">
@@ -80,7 +94,7 @@ export default function ProcurePricingPanel() {
                 </li>
               ))}
             </ul>
-            <ProcureSubscribeButton plan={plan.slug} />
+            <ProcureSubscribeButton plan={plan.slug} autoOpen={autoOpenPlan === plan.slug} />
           </motion.div>
         ))}
       </div>

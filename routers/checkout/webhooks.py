@@ -15,7 +15,13 @@ from market_core import (
     db_update_order_status,
 )
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
-from routers.billing.activation import _activate_pro_from_request, _parse_pro_request_ref, activate_paypal_subscription
+from routers.billing.activation import (
+    _activate_pro_from_request,
+    _activate_procure_from_request,
+    _is_procure_subscription_request_id,
+    _parse_subscription_request_ref,
+    activate_paypal_subscription,
+)
 from routers.billing.notifications import (
     _notify_procure_payment,
     _slack_notify_subscription,
@@ -257,11 +263,16 @@ async def mercadopago_webhook(request: Request):
     order_id = parse_external_order_id(ext_ref)
     actions: list[str] = []
 
-    pro_request_id = _parse_pro_request_ref(ext_ref)
+    pro_request_id = _parse_subscription_request_ref(ext_ref)
     if status == "approved" and pro_request_id:
-        actions.extend(_activate_pro_from_request(pro_request_id, source="mercadopago_webhook"))
+        if _is_procure_subscription_request_id(pro_request_id):
+            actions.extend(
+                _activate_procure_from_request(pro_request_id, source="mercadopago_webhook")
+            )
+        else:
+            actions.extend(_activate_pro_from_request(pro_request_id, source="mercadopago_webhook"))
         logger.info(
-            "mercadopago_webhook pro_request_id=%s payment_id=%s actions=%s",
+            "mercadopago_webhook subscription_request_id=%s payment_id=%s actions=%s",
             pro_request_id,
             payment_id,
             actions,
