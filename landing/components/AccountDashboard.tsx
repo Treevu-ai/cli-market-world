@@ -151,7 +151,7 @@ export default function AccountDashboard() {
         )}
 
         <div className="card-cyber p-6 space-y-4 max-w-xl mx-auto">
-          <label className="block text-sm font-medium text-white">
+          <label className="block text-sm font-medium text-[var(--cm-on-surface)]">
             API key
           </label>
           <input
@@ -167,7 +167,7 @@ export default function AccountDashboard() {
               ? "Obténgala con market register · También: market account en terminal"
               : "Get one with market register · Or run market account in the terminal"}
           </p>
-          {error && <p className="text-sm text-[#ffb4ab]">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="button"
             onClick={load}
@@ -190,7 +190,7 @@ export default function AccountDashboard() {
               <h2 className="text-sm font-bold text-[var(--cm-mint)] uppercase tracking-wider">
                 {isES ? "Plan" : "Plan"}
               </h2>
-              <p className="text-2xl font-black text-white capitalize">{data.tier}</p>
+              <p className="text-2xl font-black text-[var(--cm-on-surface)] capitalize">{data.tier}</p>
               <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]">
                 {data.username}
               </p>
@@ -266,7 +266,7 @@ export default function AccountDashboard() {
                 <h2 className="text-sm font-bold text-[var(--cm-mint)] uppercase tracking-wider">
                   {isES ? "Siguiente paso" : "Next step"}
                 </h2>
-                <p className="text-white font-semibold">{data.upgrade.title}</p>
+                <p className="text-[var(--cm-on-surface)] font-semibold">{data.upgrade.title}</p>
                 {data.upgrade.cli && (
                   <pre className="code-snippet text-xs text-[var(--cm-mint)] bg-black/30 p-3 rounded-lg overflow-x-auto">
                     {data.upgrade.cli}
