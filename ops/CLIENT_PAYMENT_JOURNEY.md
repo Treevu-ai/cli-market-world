@@ -13,16 +13,15 @@ flowchart TB
   C -->|Integrar API/MCP en tu agente| D[Build Pro — tab Build]
   C -->|Compras de empresa con aprobaciones| E[Procure — tab Procure]
   D --> F[Modal: método de pago + email]
-  E --> G[Modal: PayPal + email]
+  E --> G[Modal: método de pago + email]
   F --> H{Pago}
+  G --> H
   H -->|PayPal o Mercado Pago| I[Confirmar en el proveedor]
-  H -->|Yape o Plin| J[Transferir desde la app con ref PRO-xxx]
-  I --> K[Pro activo en minutos]
-  J --> L[Pro activo en hasta 24 h]
-  K --> M[market whoami → usar API]
+  H -->|Yape o Plin manual| J[Transferir con ref PCS/PCP/PCB-xxx]
+  I --> K[Plan activo en minutos]
+  J --> L[Plan activo en hasta 24 h]
+  K --> M[market whoami / dashboard Procure]
   L --> M
-  G --> N[PayPal Procure]
-  N --> O[Pegar API key en dashboard Procure]
 ```
 
 ---
@@ -79,9 +78,9 @@ MCP: `market-mcp` con `MCP_TOOL_PROFILE=default` — ver [cli-market.dev/docs](h
 
 ## Paso a paso — Procure (equipos de compras)
 
-1. [cli-market.dev/#procure](https://cli-market.dev/#procure) → elige plan → **Suscribir**
-2. Modal: email + usuario CLI → **Continuar — PayPal**
-3. Aprueba la suscripción en PayPal
+1. [cli-market.dev/#pricing](https://cli-market.dev/#pricing) → tab **Procure** → elige plan → **Suscribir**
+2. Modal: elige **soles (Mercado Pago)** o **PayPal (USD)** · email + usuario CLI (opcional)
+3. Completa el pago en el proveedor (o transfiere Yape/Plin con ref `PCS-` / `PCP-` / `PCB-` si aplica)
 4. Crea credenciales si aún no las tienes:
 
 ```bash

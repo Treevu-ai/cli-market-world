@@ -18,3 +18,8 @@ export const PRO_PAYMENT_URL =
 /** Show Yape/Plin manual transfer fallback in checkout (ops-only; default off). */
 export const WALLET_MANUAL_FALLBACK =
   process.env.NEXT_PUBLIC_WALLET_MANUAL_FALLBACK === "true";
+
+/** Mirror Railway PROCURE_MP_CHECKOUT — enables Procure MP/Yape picker in landing modal. */
+export const PROCURE_MP_CHECKOUT =
+  process.env.NEXT_PUBLIC_PROCURE_MP_CHECKOUT === "true" ||
+  process.env.NEXT_PUBLIC_PROCURE_MP_CHECKOUT === "1";
