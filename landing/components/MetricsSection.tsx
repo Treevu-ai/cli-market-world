@@ -6,8 +6,9 @@ export default function MetricsSection() {
   const { lang } = useLang();
   const isES = lang === "es";
 
+  const pypiLabel = `${(MARKET_STATS.pypiDownloads / 1000).toFixed(1)}K+`;
   const usageMetrics = [
-    { value: "40.9K+", label: isES ? "instalaciones PyPI" : "PyPI installs" },
+    { value: pypiLabel, label: isES ? "instalaciones PyPI" : "PyPI installs" },
     { value: `${MARKET_STATS.mcpTools}`, label: isES ? "herramientas MCP" : "MCP tools" },
     { value: "33,728", label: isES ? "snapshots diarios" : "daily snapshots" },
   ];
