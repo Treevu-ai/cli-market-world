@@ -130,11 +130,11 @@ export default function AccountDashboard() {
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
               <li>
-                <span className="font-mono text-xs text-white/90">{MARKET_STATS.pipInstallCmd}</span>
+                <span className="font-mono text-xs text-[var(--cm-on-surface)]">{MARKET_STATS.pipInstallCmd}</span>
               </li>
               <li>
-                <span className="font-mono text-xs text-white/90">market init</span>
-                <span className="text-xs text-[var(--cm-on-surface-variant)]/70">
+                <span className="font-mono text-xs text-[var(--cm-on-surface)]">market init</span>
+                <span className="text-xs text-[var(--cm-on-surface-variant)]">
                   {isES ? " — cuenta + primera búsqueda" : " — account + first search"}
                 </span>
               </li>
@@ -162,7 +162,7 @@ export default function AccountDashboard() {
             className="input-cyber font-mono text-sm"
             autoComplete="off"
           />
-          <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
+          <p className="text-xs text-[var(--cm-on-surface-variant)]">
             {isES
               ? "Obténgala con market register · También: market account en terminal"
               : "Get one with market register · Or run market account in the terminal"}
