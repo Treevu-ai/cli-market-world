@@ -36,7 +36,7 @@ export default function MoatSection() {
   ];
 
   return (
-    <section id="moat" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#111113" }}>
+    <section id="moat" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "DEFENSIBILIDAD" : "DEFENSIBILITY"}</p>

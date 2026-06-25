@@ -40,7 +40,7 @@ export default function Hero() {
     <section
       id="hero"
       className="landing-section animate-fade-in relative overflow-hidden hero-stripe-mesh"
-      style={{ borderBottom: "1px solid #27272A" }}
+      style={{ borderBottom: "1px solid #e2e8f0" }}
     >
       <div className="landing-container-wide pt-16 pb-10 sm:pt-20 sm:pb-14 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
@@ -89,7 +89,7 @@ export default function Hero() {
                 {proofChips.map((chip, i) => (
                   <span
                     key={i}
-                    className="text-xs font-mono text-[#A1A1AA] bg-[#18181B] border border-[#27272A] rounded-full px-3 py-1"
+                    className="text-xs font-mono text-[#64748b] bg-[#f1f5f9] border border-[#e2e8f0] rounded-full px-3 py-1"
                   >
                     {chip.label}
                   </span>
@@ -106,13 +106,13 @@ export default function Hero() {
               <a
                 href={CTA.getApiKey.href}
                 onClick={() => recordPipInstallIntent("landing_hero")}
-                className="inline-flex items-center rounded-[10px] bg-[#7CFF5B] text-[#09090B] text-base font-semibold px-6 py-2.5 hover:bg-[#8fff6e] active:bg-[#5be041] transition-colors"
+                className="inline-flex items-center rounded-[10px] bg-[#ea580c] text-[#f8fafc] text-base font-semibold px-6 py-2.5 hover:bg-[#f97316] active:bg-[#c2410c] transition-colors"
               >
                 {isES ? CTA.getApiKey.es : CTA.getApiKey.en}
               </a>
               <a
                 href={CTA.watchDemo.href}
-                className="inline-flex items-center rounded-[10px] border border-[#27272A] text-[#FAFAFA] text-base font-normal px-6 py-2.5 hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors bg-transparent"
+                className="inline-flex items-center rounded-[10px] border border-[#e2e8f0] text-[#0f172a] text-base font-normal px-6 py-2.5 hover:border-[#ea580c] hover:text-[#ea580c] transition-colors bg-transparent"
               >
                 {isES ? CTA.watchDemo.es : CTA.watchDemo.en}
               </a>

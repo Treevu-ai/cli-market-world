@@ -37,12 +37,12 @@ export default function LegalPage({
   }, [isES]);
 
   return (
-    <main className="relative min-h-screen bg-[#09090B]">
+    <main className="relative min-h-screen bg-[#f8fafc]">
       <Navbar />
       <div className="relative z-10 pt-24 pb-20">
         <div className="max-w-5xl mx-auto px-6">
           <p className="section-eyebrow mb-3 text-[var(--cm-mint)]">CLI Market</p>
-          <h1 className="text-3xl font-black text-[#FAFAFA] mb-2">
+          <h1 className="text-3xl font-black text-[#0f172a] mb-2">
             {isES ? titleES : titleEN}
           </h1>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mb-10">

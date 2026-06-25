@@ -300,7 +300,7 @@ market doctor`}</CodeBlock>
             <BillingCheckoutTrigger kind={{ type: "build-pro" }} className="btn-mint" />
             <BillingCheckoutTrigger
               kind={{ type: "build-pro", annual: true }}
-              className="rounded-[10px] border border-[#27272A] px-5 py-2.5 text-sm font-semibold text-[#A1A1AA] hover:border-[#7CFF5B] hover:text-[#7CFF5B] transition-colors"
+              className="rounded-[10px] border border-[#e2e8f0] px-5 py-2.5 text-sm font-semibold text-[#64748b] hover:border-[#ea580c] hover:text-[#ea580c] transition-colors"
               label_es="Pro anual $490/año →"
               label_en="Pro annual $490/yr →"
             />

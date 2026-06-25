@@ -42,7 +42,7 @@ export default function WhoItsForSection() {
   ];
 
   return (
-    <section id="who-its-for" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#111113" }}>
+    <section id="who-its-for" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "PARA QUIÉN ES" : "WHO IT'S FOR"}</p>

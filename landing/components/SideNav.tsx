@@ -11,11 +11,11 @@ export default function SideNav() {
 
   return (
     <nav
-      className="fixed left-0 top-0 z-40 h-screen w-12 hidden xl:flex flex-col justify-center bg-[#09090B]/90 backdrop-blur-sm border-r border-[#27272A]"
+      className="fixed left-0 top-0 z-40 h-screen w-12 hidden xl:flex flex-col justify-center bg-[#f8fafc]/90 backdrop-blur-sm border-r border-[#e2e8f0]"
       aria-label={isES ? "Navegación de secciones" : "Section navigation"}
     >
       <div className="relative flex flex-col gap-4 px-3">
-        <div className="absolute left-[calc(0.75rem+2.5px)] top-4 bottom-4 w-px bg-[#27272A]" aria-hidden="true">
+        <div className="absolute left-[calc(0.75rem+2.5px)] top-4 bottom-4 w-px bg-[#e2e8f0]" aria-hidden="true">
           <div
             className="w-full bg-[var(--cm-mint)]/40 transition-all duration-300 ease-out"
             style={{
@@ -39,7 +39,7 @@ export default function SideNav() {
                   <span
                     key={i}
                     className={`block h-0.5 w-0.5 rounded-full transition-colors ${
-                      i === storyAct ? "bg-[var(--cm-mint)] scale-150" : "bg-[#3f3f46]"
+                      i === storyAct ? "bg-[var(--cm-mint)] scale-150" : "bg-[#cbd5e1]"
                     }`}
                   />
                 ))}
@@ -49,7 +49,7 @@ export default function SideNav() {
               className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
                 active === id
                   ? "bg-[var(--cm-mint)] scale-125 shadow-[0_0_6px_var(--cm-mint)]"
-                  : "bg-[#3f3f46] group-hover:bg-[#71717a]"
+                  : "bg-[#cbd5e1] group-hover:bg-[#71717a]"
               }`}
             />
           </a>
@@ -58,7 +58,7 @@ export default function SideNav() {
           type="button"
           onClick={() => setLang(isES ? "en" : "es")}
           aria-label={isES ? "Switch to English" : "Cambiar a Español"}
-          className="mt-4 text-xs font-mono text-[var(--cm-on-surface-variant)] hover:text-[#FAFAFA] transition-colors z-10"
+          className="mt-4 text-xs font-mono text-[var(--cm-on-surface-variant)] hover:text-[#0f172a] transition-colors z-10"
         >
           {isES ? "EN" : "ES"}
         </button>
