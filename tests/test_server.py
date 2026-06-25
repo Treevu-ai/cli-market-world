@@ -1081,6 +1081,110 @@ def test_mercadopago_webhook_activation_email_skipped_when_smtp_fails(monkeypatc
     assert db_get_subscription("admin")["tier"] == "pro"
 
 
+def test_procure_subscribe_mp_disabled_returns_501(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.delenv("PROCURE_MP_CHECKOUT", raising=False)
+    r = client.post(
+        "/billing/procure-subscribe",
+        json={
+            "email": "procure-mp@test.com",
+            "username": "procureuser",
+            "plan": "starter",
+            "payment_method": "mercadopago",
+            "lang": "es",
+        },
+    )
+    assert r.status_code == 501
+
+
+def test_procure_subscribe_mercadopago_returns_checkout_url(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setenv("PROCURE_MP_CHECKOUT", "1")
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+
+    async def fake_pref(total, currency, ref, **kwargs):
+        assert currency == "PEN"
+        assert ref.startswith("CLI-Market-PCS-")
+        return {
+            "checkout_url": "https://mp.test/procure-checkout",
+            "preference_id": "pref-procure",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
+    r = client.post(
+        "/billing/procure-subscribe",
+        json={
+            "email": "procure-mp-ok@test.com",
+            "username": "procuremp",
+            "plan": "starter",
+            "payment_method": "mercadopago",
+            "lang": "es",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["payment_method"] == "mercadopago"
+    assert data["checkout_url"] == "https://mp.test/procure-checkout"
+    assert data["request_id"].startswith("PCS-")
+    assert data["tier"] == "procure_starter"
+    assert data["procure_plan"] == "starter"
+    assert data["amount_usd"] == 29.0
+
+
+def test_mercadopago_webhook_activates_procure_request(monkeypatch):
+    from market_core import db_create_subscription_request, db_get_subscription
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    req = db_create_subscription_request(
+        "procureuser",
+        "procure-webhook@test.com",
+        "mercadopago:test",
+        prefix="PCP",
+    )
+    request_id = req["id"]
+    assert request_id.startswith("PCP-")
+
+    async def fake_get_payment(payment_id):
+        return {
+            "status": "approved",
+            "external_reference": f"CLI-Market-{request_id}",
+        }
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.get_payment", fake_get_payment)
+    monkeypatch.setattr("market_connectors.mercadopago_payments.webhook_secret", lambda: "")
+    monkeypatch.setattr(
+        "market_connectors.mercadopago_payments.parse_webhook_payment_id",
+        lambda **kw: ("pay-procure-1", "payment"),
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_activated_email",
+        lambda **kw: {"sent": True},
+    )
+
+    assert db_get_subscription("procureuser")["tier"] == "free"
+    r = client.post("/checkout/mercadopago-webhook?data.id=pay-procure-1")
+    assert r.status_code == 200
+    actions = r.json().get("actions", [])
+    assert any("procure_pro_activated:procureuser" in a for a in actions)
+    assert db_get_subscription("procureuser")["tier"] == "procure_pro"
+
+
+def test_parse_subscription_request_ref_procure_prefixes():
+    from routers.billing.activation import _parse_subscription_request_ref
+
+    assert _parse_subscription_request_ref("CLI-Market-PCS-ABC123") == "PCS-ABC123"
+    assert _parse_subscription_request_ref("CLI-Market-PCP-XYZ789") == "PCP-XYZ789"
+    assert _parse_subscription_request_ref("CLI-Market-PRO-OLD123") == "PRO-OLD123"
+
+
 def test_activate_pro_by_request_id(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
