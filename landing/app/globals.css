@@ -967,6 +967,23 @@ body.mobile-nav-open [data-cookie-banner="true"] {
   display: none;
 }
 
+.mask-fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+@keyframes trust-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.trust-marquee-track {
+  animation: trust-marquee 32s linear infinite;
+  will-change: transform;
+}
+.trust-marquee-track:hover {
+  animation-play-state: paused;
+}
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
