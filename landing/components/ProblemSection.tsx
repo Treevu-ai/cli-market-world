@@ -2,6 +2,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function ProblemSection() {
   const { lang } = useLang();
@@ -11,22 +12,28 @@ export default function ProblemSection() {
 
   const cards = [
     {
-      title: isES ? "Precios que no se pueden comparar" : "Prices you can't actually compare",
+      title: isES
+        ? "Los agentes IA no tienen precios reales"
+        : "AI agents don't have real prices",
       body: isES
-        ? "Cada tienda usa presentaciones, unidades y categorías distintas. Comparar S/ 4.90 de 900 g contra S/ 5.20 de 1 kg a mano es lento y propenso a errores."
-        : "Every store uses different pack sizes, units, and categories. Manually comparing S/ 4.90 for 900 g vs S/ 5.20 for 1 kg is slow and error-prone.",
+        ? "Los modelos alucinan precios, usan datos de entrenamiento de meses atrás o llaman a endpoints que no existen. Necesitan una fuente de verdad verificada y actualizada en tiempo real."
+        : "Models hallucinate prices, use training data from months ago, or call endpoints that don't exist. They need a verified, real-time source of truth.",
     },
     {
-      title: isES ? "Horas perdidas cada semana" : "Hours lost every week",
+      title: isES
+        ? `${MARKET_STATS.retailersDefined} retailers, cada uno con su propio formato`
+        : `${MARKET_STATS.retailersDefined} retailers, each with their own format`,
       body: isES
-        ? "Los equipos de compras invierten entre 4 y 8 horas semanales cotizando en múltiples tiendas, actualizando hojas de cálculo y persiguiendo aprobaciones."
-        : "Procurement teams spend 4–8 hours a week quoting across stores, updating spreadsheets, and chasing approvals.",
+        ? `${MARKET_STATS.retailersVerified} activos en ${MARKET_STATS.countries} países: SKUs distintos, unidades mezcladas, categorías incompatibles. Normalizar eso desde cero toma 18 meses — y todavía se rompe.`
+        : `${MARKET_STATS.retailersVerified} active across ${MARKET_STATS.countries} countries: different SKUs, mixed units, incompatible categories. Normalizing that from scratch takes 18 months — and still breaks.`,
     },
     {
-      title: isES ? "Sin visibilidad ni control" : "No visibility or control",
+      title: isES
+        ? "El precio solo no es suficiente contexto"
+        : "Price alone isn't enough context",
       body: isES
-        ? "Sin historial de precios, sin alertas de subida, sin trazabilidad de quién aprobó qué. Las decisiones de compra quedan opacas para la gerencia."
-        : "No price history, no spike alerts, no audit trail of who approved what. Purchasing decisions remain opaque to management.",
+        ? "S/ 5.20/kg no le dice nada a un agente. Necesita saber si es caro vs. el mes pasado, si hay stock, si hay una alternativa más barata y si el precio va a subir mañana."
+        : "S/ 5.20/kg tells an agent nothing. It needs to know if that's expensive vs. last month, whether there's stock, if there's a cheaper alternative, and if the price is about to spike.",
     },
   ];
 
@@ -46,13 +53,13 @@ export default function ProblemSection() {
         >
           <h2 className="section-title text-[#0f172a]">
             {isES
-              ? "Comprar bien no debería costar tanto tiempo"
-              : "Buying smart shouldn't cost so much time"}
+              ? "Los agentes IA necesitan datos de comercio reales"
+              : "AI agents need real commerce data"}
           </h2>
           <p className="section-intro text-[#64748b]">
             {isES
-              ? "Los equipos de compras de LATAM comparan precios a mano, en múltiples tiendas, cada semana. Con datos que cambian cada pocas horas. Sin automatización que los ayude."
-              : "LATAM procurement teams compare prices manually, across multiple stores, every week — with data that changes every few hours and no automation to help."}
+              ? `Construir sobre precios inventados o de entrenamiento no funciona. CLI Market es la capa de infraestructura que conecta a tus agentes con ${MARKET_STATS.pricesVerifiedLabel} precios verificados de góndola, normalizados y frescos.`
+              : `Building on hallucinated or stale training prices doesn't work. CLI Market is the infrastructure layer that connects your agents to ${MARKET_STATS.pricesVerifiedLabel} verified shelf prices, normalized and fresh.`}
           </p>
         </motion.div>
 
