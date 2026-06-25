@@ -132,6 +132,10 @@ const tiers: Tier[] = [
 const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
   ["Starter", "Pro", "Enterprise"].includes(t.name),
 );
+// cli-market.dev publicly shows only the developer ("build") line. The Procure
+// audience panel still renders when reached via ?audience=procure (checkout /
+// payment-return continuity) but is not offered as a browsable tab here.
+const VISIBLE_PRICING_TABS = PRICING_TABS.filter((t) => t.id === "build");
 const STARTER_TIER = tiers.find((t) => t.name === "Starter")!;
 const PRO_TIER = tiers.find((t) => t.name === "Pro")!;
 
@@ -258,7 +262,7 @@ export default function Pricing() {
   const { lang } = useLang();
   const isES = lang === "es";
   const billing: Billing = "monthly";
-  const [audience, setAudience] = useState<PricingAudience>("procure");
+  const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const paymentsLabel = usePaymentsChannels(isES);
   const billingFootnote = usePricingBillingFootnote(isES);
@@ -304,12 +308,13 @@ export default function Pricing() {
 
         <PaymentReturnBanner />
 
+        {VISIBLE_PRICING_TABS.length > 1 && (
         <div
           role="tablist"
           aria-label={isES ? "Líneas de producto" : "Product lines"}
           className="flex flex-row flex-nowrap items-stretch justify-center gap-1 rounded-full border border-[var(--cm-outline-variant)]/50 p-1 mb-6 w-full max-w-[320px] sm:max-w-[420px] mx-auto"
         >
-          {PRICING_TABS.map((tab) => (
+          {VISIBLE_PRICING_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -335,6 +340,7 @@ export default function Pricing() {
             </button>
           ))}
         </div>
+        )}
 
         <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mb-6 max-w-lg mx-auto">
           {isES
