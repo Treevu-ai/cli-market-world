@@ -1,9 +1,13 @@
 "use client";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 
 export default function WhoItsForSection() {
   const { lang } = useLang();
   const isES = lang === "es";
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const cards = [
     {
@@ -42,18 +46,29 @@ export default function WhoItsForSection() {
   ];
 
   return (
-    <section id="who-its-for" className="landing-section animate-fade-in scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
+    <section ref={ref} id="who-its-for" className="landing-section scroll-mt-24" style={{ backgroundColor: "#f8fafc" }}>
       <div className="landing-container-wide text-center">
-        <div className="landing-section-header">
+        <motion.div
+          className="landing-section-header"
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           <p className="section-eyebrow mb-4">{isES ? "PARA QUIÉN ES" : "WHO IT'S FOR"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
             {isES ? "Para equipos que ejecutan compras a escala" : "For teams that execute purchasing at scale"}
           </h2>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
           {cards.map((card, i) => (
-            <div key={i} className="card-cyber rounded-2xl p-6 text-left flex flex-col">
+            <motion.div
+              key={i}
+              className="card-cyber rounded-2xl p-6 text-left flex flex-col"
+              initial={{ opacity: 0, y: 32 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.55, delay: 0.1 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+            >
               <h3 className="text-base font-semibold text-[var(--cm-on-surface)] mb-3">
                 {isES ? card.title_es : card.title_en}
               </h3>
@@ -76,7 +91,7 @@ export default function WhoItsForSection() {
               >
                 {isES ? card.cta_es : card.cta_en}
               </a>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
