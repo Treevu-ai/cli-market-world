@@ -162,7 +162,7 @@ export default function RetailersPage() {
             <p className="section-eyebrow mb-4">
               {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
             </p>
-            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-white mb-3 tracking-tight">
+            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-[#0f172a] mb-3 tracking-tight">
               {isES ? (
                 <>
                   Tu marca, dentro de agentes de IA.{" "}
@@ -234,7 +234,7 @@ export default function RetailersPage() {
                   className="card-cyber header-strip p-6"
                 >
                   <div className="text-2xl mb-3">{b.i}</div>
-                  <h3 className="text-sm font-bold text-white mb-2">{b.t}</h3>
+                  <h3 className="text-sm font-bold text-[#0f172a] mb-2">{b.t}</h3>
                   <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">{b.d}</p>
                 </motion.div>
               ))}
@@ -259,7 +259,7 @@ export default function RetailersPage() {
                 >
                   <span className="text-[var(--cm-mint)] font-bold text-lg shrink-0">{s.step}</span>
                   <div>
-                    <h3 className="text-sm font-bold text-white mb-1">{s.title}</h3>
+                    <h3 className="text-sm font-bold text-[#0f172a] mb-1">{s.title}</h3>
                     <p className="text-xs text-[var(--cm-on-surface-variant)] leading-relaxed mb-2">{s.desc}</p>
                     {s.cmd ? (
                       <code className="text-[11px] text-[var(--cm-mint)]/80 bg-[var(--cm-surface-lowest)] px-2 py-0.5 rounded font-mono">
