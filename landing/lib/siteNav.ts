@@ -5,10 +5,9 @@ export type NavItem = {
   href: string;
 };
 
-/** Top nav — clean, 4 items. */
+/** Top nav — clean, developer-focused (cli-market.dev). Procure lives on its own site. */
 export const TOP_NAV: NavItem[] = [
   { id: "product", es: "Producto", en: "Product", href: "/#hero" },
-  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
@@ -22,7 +21,6 @@ export const SECTION_NAV: NavItem[] = [
   { id: "moat", es: "Data moat", en: "Data moat", href: "/#moat" },
   { id: "metrics", es: "Métricas", en: "Metrics", href: "/#metrics" },
   { id: "who-its-for", es: "Para quién", en: "Who it's for", href: "/#who-its-for" },
-  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
   { id: "api", es: "API", en: "API", href: "/#api" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "faq", es: "FAQ", en: "FAQ", href: "/#faq" },
@@ -41,7 +39,6 @@ export const TOP_NAV_GROUP: Record<string, string> = {
   "who-its-for": "product",
   moat: "product",
   metrics: "product",
-  procure: "procure",
   api: "product",
   pricing: "pricing",
   faq: "pricing",
