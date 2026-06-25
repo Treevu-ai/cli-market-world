@@ -15,12 +15,19 @@ from market_core import db_save_user, db_set_subscription, ensure_db_initialized
 from market_server import app, hash_password
 from market_vault import bind_vault_customer, bind_vault_payment_token
 
+import market_audit
+import market_vault
+
 ensure_db_initialized()
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 def clean_db():
+    market_vault._schema_ready = False
+    market_vault.ensure_vault_schema()
+    market_audit._schema_ready = False
+    market_audit.ensure_audit_schema()
     db = get_db()
     for t in ("audit_log", "rate_limits", "vault_bindings"):
         try:
