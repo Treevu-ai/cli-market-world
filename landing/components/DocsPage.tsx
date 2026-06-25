@@ -187,7 +187,7 @@ export default function DocsPage() {
               </a>
             </div>
           </div>
-          <PrereqBlock level="cli" isES={isES} />
+          <PrereqBlock level="cli" isES={isES} compact />
         </section>
 
         <section className="mb-16 scroll-mt-24" id="quickstart">
@@ -220,7 +220,7 @@ export default function DocsPage() {
             </a>
             {" · "}
             <a href="/#pricing" className="text-[var(--cm-mint)] underline">
-              /#pricing
+              {t("Ver planes", "View plans")}
             </a>
             .
           </p>
@@ -328,13 +328,16 @@ market upgrade --plan starter
 market upgrade --plan pro`}</CodeBlock>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Precios completos: ", "Full pricing: ")}{" "}
-            <a href="/#pricing" className="text-[var(--cm-mint)] underline">/#pricing</a>.
+            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+              {t("Ver planes", "View plans")}
+            </a>
+            .
           </p>
         </section>
 
         <section className="mb-16 scroll-mt-24" id="doctor">
           <SectionHead n={4} title={t("Doctor / readiness", "Doctor / readiness")} />
-          <PrereqBlock level="cli" isES={isES} />
+          <PrereqBlock level="cli" isES={isES} compact />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
               "Diagnóstico local: URL de API, salud, auth, tier, país por defecto y market-mcp en PATH.",
@@ -347,7 +350,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="compare">
           <SectionHead n={5} title="Compare" />
-          <PrereqBlock level="session" isES={isES} />
+          <PrereqBlock level="session" isES={isES} compact />
           <p className="text-[var(--cm-on-surface-variant)] mb-6">
             <code className="text-[var(--cm-mint)]">POST /products/compare</code>
             {t(" — fuzzy match multi-retailer.", " — multi-retailer fuzzy match.")}
@@ -369,7 +372,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="basket">
           <SectionHead n={6} title="Basket" />
-          <PrereqBlock level="session" isES={isES} />
+          <PrereqBlock level="session" isES={isES} compact />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             <code className="text-[var(--cm-mint)]">POST /v1/basket/compare</code>
             {t(" — canasta multi-ítem por cadena.", " — multi-item basket by chain.")}
@@ -379,7 +382,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="intel">
           <SectionHead n={7} title="Intelligence" />
-          <PrereqBlock level="session" isES={isES} />
+          <PrereqBlock level="session" isES={isES} compact />
           <p className="text-[var(--cm-on-surface-variant)] mb-2 text-sm">
             {t(
               "Export CSV (`market_export`) requiere Starter o superior. Checkout retail requiere Pro.",
@@ -455,7 +458,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="limits">
           <SectionHead n={9} title={t("Rate limits", "Rate limits")} />
-          <PrereqBlock level="cli" isES={isES} />
+          <PrereqBlock level="cli" isES={isES} compact />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
             <li>
               <strong className="text-[var(--cm-on-surface)]">Free</strong> — {formatReqLimit(BUILD_TIER_FREE.reqLimit, isES)} · 1{" "}
@@ -477,7 +480,10 @@ market --json doctor`}</CodeBlock>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Planes completos en ", "Full plans at ")}{" "}
-            <a href="/#pricing" className="text-[var(--cm-mint)] underline">/#pricing</a>.
+            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+              {t("Ver planes", "View plans")}
+            </a>
+            .
             {t(" Datos comerciales sujetos al ", " Commercial data subject to ")}{" "}
             <a href="/legal/dla" className="text-[var(--cm-mint)] underline">ALD/DLA</a>.
           </p>
@@ -485,7 +491,7 @@ market --json doctor`}</CodeBlock>
 
         <section className="mb-16 scroll-mt-24" id="errors">
           <SectionHead n={10} title={t("Errores", "Errors")} />
-          <PrereqBlock level="cli" isES={isES} />
+          <PrereqBlock level="cli" isES={isES} compact />
           <p className="text-[var(--cm-on-surface-variant)] text-sm">
             {t("401 token inválido · 429 rate limit · 503 collector degradado. OpenAPI completo: ", "401 invalid token · 429 rate limit · 503 collector degraded. Full OpenAPI: ")}
             <a href={`${API_URL}/docs`} className="text-[var(--cm-mint)] underline" target="_blank" rel="noopener noreferrer">

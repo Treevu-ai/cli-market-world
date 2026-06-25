@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { TOP_NAV, TOP_NAV_GROUP } from "@/lib/siteNav";
@@ -24,8 +25,14 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { lang, setLang } = useLang();
   const { active } = useActiveSection();
+  const pathname = usePathname();
   const isES = lang === "es";
-  const activeGroup = TOP_NAV_GROUP[active] ?? active;
+  const activeGroup =
+    pathname?.startsWith("/docs")
+      ? "docs"
+      : pathname === "/"
+        ? (TOP_NAV_GROUP[active] ?? active)
+        : undefined;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
