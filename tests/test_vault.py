@@ -219,6 +219,7 @@ def test_save_card_success():
 
 
 def test_saved_cards_list():
+    bind_vault_customer("vault_tester", "cust_1")
     mock_result = {"cards": [{"id": "card_99", "last_four": "1234"}]}
     with patch(
         "market_connectors.mercadopago_payments.list_customer_cards",
@@ -228,6 +229,36 @@ def test_saved_cards_list():
         r = client.get("/checkout/saved-cards/cust_1", headers=_auth())
     assert r.status_code == 200
     assert len(r.json()["cards"]) == 1
+
+
+def test_save_card_rejects_foreign_customer():
+    bind_vault_customer("other_user", "victim_cid")
+    mock_result = {"card_id": "card_99", "last_four": "1234"}
+    with patch(
+        "market_connectors.mercadopago_payments.save_card_for_customer",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ):
+        r = client.post(
+            "/checkout/save-card",
+            headers=_auth(),
+            json={"card_token_id": "ct_tok", "customer_id": "victim_cid"},
+        )
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+
+
+def test_saved_cards_rejects_foreign_customer():
+    bind_vault_customer("other_user", "victim_cid")
+    mock_result = {"cards": [{"id": "card_99", "last_four": "1234"}]}
+    with patch(
+        "market_connectors.mercadopago_payments.list_customer_cards",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ):
+        r = client.get("/checkout/saved-cards/victim_cid", headers=_auth())
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
 
 
 def test_vault_charge_rejects_foreign_token():
