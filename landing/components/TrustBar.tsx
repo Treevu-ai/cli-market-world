@@ -1,6 +1,7 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 function LogoClaude() {
   return (
@@ -96,28 +97,62 @@ export default function TrustBar() {
   const { lang } = useLang();
   const isES = lang === "es";
 
+  const stats = [
+    {
+      n: String(MARKET_STATS.retailersVerified),
+      l: isES ? "retailers verificados" : "verified retailers",
+    },
+    {
+      n: String(MARKET_STATS.countries),
+      l: isES ? "países LATAM" : "LATAM countries",
+    },
+    {
+      n: MARKET_STATS.pricesVerifiedLabel,
+      l: isES ? "precios verificados" : "verified prices",
+    },
+    {
+      n: `${MARKET_STATS.pricesRefreshHours}h`,
+      l: isES ? "ciclo de refresh" : "refresh cycle",
+    },
+  ];
+
   const items = [...TOOLS, ...TOOLS];
 
   return (
-    <div
-      className="w-full border-b border-[#e2e8f0] bg-[#ffffff] py-4 overflow-hidden"
-      aria-label={isES ? "Herramientas compatibles" : "Compatible tools"}
-    >
-      <div className="flex items-center gap-6">
-        <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8] shrink-0 pl-6 whitespace-nowrap">
-          {isES ? "Usado con" : "Used with"}
-        </span>
-        <div className="overflow-hidden flex-1 min-w-0 mask-fade-x">
-          <div className="trust-marquee-track flex items-center gap-10 w-max">
-            {items.map((tool, i) => (
-              <div
-                key={`${tool.name}-${i}`}
-                className="flex items-center gap-2 text-[#94a3b8] hover:text-[#ea580c] transition-colors cursor-default select-none shrink-0"
-              >
-                {tool.icon}
-                <span className="text-sm font-semibold whitespace-nowrap">{tool.name}</span>
-              </div>
-            ))}
+    <div className="border-b border-[#e2e8f0] bg-white">
+      {/* Stats strip — large display numbers */}
+      <div className="landing-container-wide py-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+          {stats.map((stat) => (
+            <div key={stat.l}>
+              <p className="feature-stat-n">{stat.n}</p>
+              <p className="feature-stat-l">{stat.l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Integration marquee */}
+      <div
+        className="w-full border-t border-[#f1f5f9] py-4 overflow-hidden"
+        aria-label={isES ? "Herramientas compatibles" : "Compatible tools"}
+      >
+        <div className="flex items-center gap-6">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8] shrink-0 pl-6 whitespace-nowrap">
+            {isES ? "Funciona con" : "Works with"}
+          </span>
+          <div className="overflow-hidden flex-1 min-w-0 mask-fade-x">
+            <div className="trust-marquee-track flex items-center gap-10 w-max">
+              {items.map((tool, i) => (
+                <div
+                  key={`${tool.name}-${i}`}
+                  className="flex items-center gap-2 text-[#94a3b8] hover:text-[#ea580c] transition-colors cursor-default select-none shrink-0"
+                >
+                  {tool.icon}
+                  <span className="text-sm font-semibold whitespace-nowrap">{tool.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
