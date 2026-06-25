@@ -20,6 +20,12 @@ import logging
 from fastapi import APIRouter, Body, Header, HTTPException
 
 from market_audit import record_audit
+from market_vault import (
+    bind_vault_customer,
+    bind_vault_payment_token,
+    vault_customer_owned,
+    vault_payment_token_owned,
+)
 from server_deps import require_api_key
 
 logger = logging.getLogger(__name__)
@@ -46,6 +52,9 @@ async def vault_setup(
     )
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
+    customer_id = (body.get("customer_id") or "").strip()
+    if customer_id:
+        bind_vault_customer(username, customer_id)
     record_audit("vault_setup", username=username, detail={"setup_token": result.get("setup_token_id")})
     return result
 
@@ -66,6 +75,12 @@ async def vault_confirm(
     result = await create_vault_payment_token(setup_token_id)
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
+    customer_id = (result.get("customer_id") or "").strip()
+    payment_token_id = (result.get("payment_token_id") or "").strip()
+    if payment_token_id:
+        bind_vault_payment_token(username, customer_id, payment_token_id)
+    if customer_id:
+        bind_vault_customer(username, customer_id)
     record_audit(
         "vault_confirm",
         username=username,
@@ -87,6 +102,8 @@ async def vault_charge(
         raise HTTPException(status_code=400, detail="payment_token_id required")
     if not amount or float(amount) <= 0:
         raise HTTPException(status_code=400, detail="amount must be > 0")
+    if not vault_payment_token_owned(username, payment_token_id):
+        raise HTTPException(status_code=403, detail="payment_token_id not owned by caller")
 
     from market_connectors.paypal_payments import charge_vault_payment_token
 
@@ -113,9 +130,11 @@ async def vault_tokens(
     authorization: str | None = Header(None),
 ):
     """List saved PayPal payment tokens for a customer."""
-    require_api_key(authorization)
+    username = require_api_key(authorization)
     if not customer_id:
         raise HTTPException(status_code=400, detail="customer_id query param required")
+    if not vault_customer_owned(username, customer_id):
+        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
 
     from market_connectors.paypal_payments import list_vault_payment_tokens
 
@@ -132,6 +151,8 @@ async def vault_delete_token(
 ):
     """Delete a vaulted payment token."""
     username = require_api_key(authorization)
+    if not vault_payment_token_owned(username, payment_token_id):
+        raise HTTPException(status_code=403, detail="payment_token_id not owned by caller")
     from market_connectors.paypal_payments import delete_vault_payment_token
 
     result = await delete_vault_payment_token(payment_token_id)
