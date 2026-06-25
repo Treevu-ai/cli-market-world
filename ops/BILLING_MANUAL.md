@@ -38,6 +38,9 @@ PAYPAL_SANDBOX=false   # Live en producción
 PRO_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success#pricing
 PRO_SUBSCRIBE_CANCEL_URL=https://cli-market.dev/?sub=cancelled#pricing
 PROCURE_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success&audience=procure#procure
+PROCURE_MP_CHECKOUT=0          # 1 = habilita MP/Yape/Plin en procure-subscribe (dark launch default off)
+PROCURE_PEN_PER_USD=3.75       # opcional; fallback PRO_PEN_PER_USD
+PROCURE_MP_SUCCESS_URL=https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure
 
 # Fallback hosted button
 PRO_PAYMENT_URL=https://www.paypal.com/ncp/payment/PLB-K47XCNUKG24P
@@ -120,7 +123,7 @@ GitHub Actions: workflow `ops-resend-pro-email.yml` (disparador en `ops/triggers
 |----------|-----|
 | `POST /billing/pro-checkout` | Landing modal — PayPal, MP, Yape, Plin |
 | `POST /billing/paypal` | CLI autenticado — PayPal REST |
-| `POST /billing/procure-subscribe` | Tab Procure — PayPal REST |
+| `POST /billing/procure-subscribe` | Tab Procure — PayPal REST; MP/Yape/Plin si `PROCURE_MP_CHECKOUT=1` |
 | `POST /billing/request-pro` | Legacy email + hosted button |
 
 ## Probar

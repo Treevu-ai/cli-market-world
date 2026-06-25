@@ -98,3 +98,31 @@ def procure_plan_config(plan_slug: str) -> dict[str, Any]:
     cfg = dict(PROCURE_PLANS[key])
     cfg["paypal_plan_id"] = os.getenv(cfg["paypal_env"], "")
     return cfg
+
+
+def procure_price_pen(plan_slug: str) -> float:
+    """USD Procure plan price converted to PEN for Mercado Pago / Yape / Plin."""
+    cfg = procure_plan_config(plan_slug)
+    amount_usd = float(cfg["amount"])
+    raw = os.getenv("PROCURE_PEN_PER_USD", os.getenv("PRO_PEN_PER_USD", "3.75"))
+    try:
+        pen_per_usd = float(str(raw).strip())
+    except (TypeError, ValueError):
+        pen_per_usd = 3.75
+    if pen_per_usd <= 0:
+        pen_per_usd = 3.75
+    return round(amount_usd * pen_per_usd, 2)
+
+
+_PROCURE_REQUEST_PREFIXES = frozenset(
+    meta["request_prefix"] for meta in PROCURE_PLANS.values()
+)
+
+
+def procure_tier_from_request_id(request_id: str) -> str | None:
+    """Map PCS/PCP/PCB request prefix → subscription tier."""
+    prefix = (request_id or "").split("-", 1)[0].upper()
+    for slug, meta in PROCURE_PLANS.items():
+        if meta["request_prefix"] == prefix:
+            return meta["tier"]
+    return None

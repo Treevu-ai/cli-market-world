@@ -14,7 +14,9 @@ from routers.checkout.webhooks import router as _checkout_webhooks_router
 # Re-exports: backward-compat for external importers
 from routers.billing.activation import (  # noqa: F401
     _activate_pro_from_request,
+    _activate_procure_from_request,
     _parse_pro_request_ref,
+    _parse_subscription_request_ref,
     process_pro_subscription_request,
     process_starter_subscription_request,
 )
