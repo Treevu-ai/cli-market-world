@@ -27,10 +27,10 @@ export default function SolutionSection() {
     },
     {
       n: "3",
-      title_es: "Aprueba y paga en un solo flujo",
-      title_en: "Approve and pay in one flow",
-      body_es: "La mejor canasta va directo al flujo de aprobación. El gerente aprueba, el equipo paga con Yape o PayPal. Todo trazado.",
-      body_en: "The best basket goes straight to an approval flow. Manager approves, team pays via Yape or PayPal. Fully audited.",
+      title_es: "Integra en tu agente — API, MCP o Procure",
+      title_en: "Integrate into your agent — API, MCP, or Procure",
+      body_es: "Consume vía REST, Python SDK o MCP tools. Tu agente ejecuta con datos frescos; los equipos operativos usan Procure Copilot para aprobaciones y checkout.",
+      body_en: "Consume via REST, Python SDK, or MCP tools. Your agent executes with fresh data; operational teams use Procure Copilot for approvals and checkout.",
     },
   ];
 
@@ -46,13 +46,13 @@ export default function SolutionSection() {
           <p className="section-eyebrow mb-4">{isES ? "CÓMO FUNCIONA" : "HOW IT WORKS"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
             {isES
-              ? "Del presupuesto a la orden en minutos"
-              : "From budget to order in minutes"}
+              ? "De la consulta a la ejecución en segundos"
+              : "From query to execution in seconds"}
           </h2>
           <p className="section-intro">
             {isES
-              ? "CLI Market conecta datos de precios en tiempo real con los flujos de aprobación y pago de tu equipo."
-              : "CLI Market connects real-time price data with your team's approval and payment workflows."}
+              ? "CLI Market expone toda la infraestructura retail de LatAm a tu agente — una API, herramientas MCP y SDK. Sin scraping. Sin normalización manual."
+              : "CLI Market exposes all of LatAm's retail infrastructure to your agent — one API, MCP tools, and SDK. No scraping. No manual normalization."}
           </p>
         </motion.div>
 
