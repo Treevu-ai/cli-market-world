@@ -22,8 +22,8 @@ export default function WhoItsForSection() {
       title_es: "Equipos de Procurement",
       body_en: "Reduce sourcing time and automate approvals.",
       body_es: "Reduce el tiempo de abastecimiento y automatiza las aprobaciones.",
-      features_en: ["basket optimization", "approval workflows", "checkout rails", "audit trail"],
-      features_es: ["optimización de canasta", "flujos de aprobación", "rieles de checkout", "audit trail"],
+      features_en: ["basket optimization", "approval workflows", "integrated payment", "audit trail"],
+      features_es: ["optimización de canasta", "flujos de aprobación", "pago integrado", "trazabilidad"],
       cta_en: "Explore Procure →",
       cta_es: "Explorar Procure →",
       href: "/procure",
@@ -47,7 +47,7 @@ export default function WhoItsForSection() {
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "PARA QUIÉN ES" : "WHO IT'S FOR"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
-            {isES ? "Construido para equipos de comercio agéntico" : "Built for agentic commerce teams"}
+            {isES ? "Para equipos que ejecutan compras a escala" : "For teams that execute purchasing at scale"}
           </h2>
         </div>
 

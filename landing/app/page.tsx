@@ -3,14 +3,10 @@ import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import ProblemSection from "@/components/ProblemSection";
-import WhyNowSection from "@/components/WhyNowSection";
 import SolutionSection from "@/components/SolutionSection";
-import CommerceStackSection from "@/components/CommerceStackSection";
 import WhoItsForSection from "@/components/WhoItsForSection";
 import ProcureCopilotSection from "@/components/ProcureCopilotSection";
-import MoatSection from "@/components/MoatSection";
 import MetricsSection from "@/components/MetricsSection";
-import QuickstartAPI from "@/components/QuickstartAPI";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import FinalCTASection from "@/components/FinalCTASection";
@@ -27,15 +23,11 @@ export default function Home() {
           <Hero />
           <TrustBar />
           <ProblemSection />
-          <WhyNowSection />
           <SolutionSection />
-          <CommerceStackSection />
-          <MoatSection />
-          <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
-          <MetricsSection />
           <WhoItsForSection />
           <ProcureCopilotSection />
-          <QuickstartAPI />
+          <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
+          <MetricsSection />
           <Pricing />
           <FAQ />
           <FinalCTASection />
