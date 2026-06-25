@@ -15,12 +15,19 @@ from market_core import db_save_user, db_set_subscription, ensure_db_initialized
 from market_server import app, hash_password
 from market_vault import bind_vault_customer, bind_vault_payment_token
 
+import market_audit
+import market_vault
+
 ensure_db_initialized()
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 def clean_db():
+    market_vault._schema_ready = False
+    market_vault.ensure_vault_schema()
+    market_audit._schema_ready = False
+    market_audit.ensure_audit_schema()
     db = get_db()
     for t in ("audit_log", "rate_limits", "vault_bindings"):
         try:
@@ -302,6 +309,48 @@ def test_vault_delete_rejects_foreign_token():
         r = client.delete("/billing/vault-tokens/pt_victim", headers=_auth())
     assert r.status_code == 403
     assert "not owned" in r.json()["detail"]
+
+
+def test_backfill_vault_bindings_from_save_card_audit():
+    import market_audit
+    from market_vault import backfill_vault_bindings_from_audit, vault_customer_owned
+
+    market_audit.record_audit(
+        "save_card",
+        username="vault_tester",
+        detail={"customer_id": "legacy_mp_cust", "last_four": "4242"},
+    )
+    stats = backfill_vault_bindings_from_audit()
+    assert stats["customers_bound"] >= 1
+    assert vault_customer_owned("vault_tester", "legacy_mp_cust")
+
+
+def test_backfill_vault_bindings_from_vault_confirm_audit():
+    import market_audit
+    from market_vault import backfill_vault_bindings_from_audit, vault_payment_token_owned
+
+    market_audit.record_audit(
+        "vault_confirm",
+        username="vault_tester",
+        detail={"payment_token": "pt_legacy", "customer_id": "legacy_pp_cust"},
+    )
+    stats = backfill_vault_bindings_from_audit()
+    assert stats["tokens_bound"] >= 1
+    assert vault_payment_token_owned("vault_tester", "pt_legacy")
+
+
+def test_backfill_vault_bindings_skips_customer_conflict():
+    import market_audit
+    from market_vault import backfill_vault_bindings_from_audit, bind_vault_customer
+
+    bind_vault_customer("other_user", "contested_cid")
+    market_audit.record_audit(
+        "save_card",
+        username="vault_tester",
+        detail={"customer_id": "contested_cid", "last_four": "1111"},
+    )
+    stats = backfill_vault_bindings_from_audit()
+    assert stats["customers_skipped"] >= 1
 
 
 # ── Error propagation ─────────────────────────────────────────────────────────
