@@ -28,6 +28,10 @@ FUNNEL_EVENTS = frozenset(
         "demo_first_tool_call",
         "mcp_tool_call",
         "activated",
+        # P1: granular CLI dropoff tracking (install → register)
+        "cli_command_attempted",
+        "cli_command_result",
+        "cli_auth_wall_hit",
     }
 )
 
@@ -565,6 +569,225 @@ def maybe_first_search(username: str, *, query: str = "") -> None:
 def _is_auto_activate_link(payment_link: str) -> bool:
     link = (payment_link or "").lower()
     return "billing/subscriptions" in link or "/subscriptions?" in link
+
+
+def dropoff_summary(*, days: int = 30, include_test: bool = False) -> dict[str, Any]:
+    """P1: Granular CLI dropoff analysis — install → register funnel."""
+    ensure_funnel_schema()
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    db = get_db()
+    rows = db.execute(
+        """
+        SELECT event, username, session_id, meta, created_at
+        FROM funnel_events
+        WHERE event IN ('cli_command_attempted','cli_command_result','cli_auth_wall_hit')
+          AND created_at >= ?
+        """,
+        (since,),
+    ).fetchall()
+    db.close()
+
+    attempted: dict[str, dict] = {}
+    results: list[dict] = []
+    auth_wall_hits: list[dict] = []
+    excluded = 0
+
+    for row in rows:
+        meta = _parse_meta(row["meta"])
+        user = row["username"]
+        if not include_test and (is_noise_username(user) or is_noise_meta(meta)):
+            excluded += 1
+            continue
+
+        ev = row["event"]
+        sid = row["session_id"] or ""
+        cmd = (meta.get("command") or "unknown").strip()
+
+        if ev == "cli_command_attempted":
+            attempted[sid] = {"command": cmd, "ts": row["created_at"], "username": user}
+        elif ev == "cli_command_result":
+            results.append({
+                "session_id": sid,
+                "command": cmd,
+                "success": bool(meta.get("success")),
+                "elapsed_ms": meta.get("elapsed_ms"),
+                "error_type": meta.get("error_type"),
+                "username": user,
+            })
+        elif ev == "cli_auth_wall_hit":
+            auth_wall_hits.append({"session_id": sid, "command": cmd, "username": user})
+
+    total_attempted = len(attempted)
+    total_auth_wall = len(auth_wall_hits)
+    converted_after_wall = sum(1 for h in auth_wall_hits if h.get("username"))
+
+    cmd_counts: dict[str, int] = {}
+    for v in attempted.values():
+        cmd_counts[v["command"]] = cmd_counts.get(v["command"], 0) + 1
+
+    wall_cmd_counts: dict[str, int] = {}
+    for h in auth_wall_hits:
+        wall_cmd_counts[h["command"]] = wall_cmd_counts.get(h["command"], 0) + 1
+
+    total_results = len(results)
+    success_n = sum(1 for r in results if r["success"])
+    failure_n = total_results - success_n
+    error_types: dict[str, int] = {}
+    for r in results:
+        et = r.get("error_type") or ("none" if r["success"] else "unknown")
+        error_types[et] = error_types.get(et, 0) + 1
+
+    elapsed_vals = [r["elapsed_ms"] for r in results if r.get("elapsed_ms") is not None]
+    median_elapsed = _median_minutes(elapsed_vals) if elapsed_vals else None
+
+    def _pct(n: int, d: int) -> float | None:
+        return round(n / d * 100, 1) if d > 0 else None
+
+    return {
+        "window_days": days,
+        "cli_sessions": {
+            "attempted": total_attempted,
+            "hit_auth_wall": total_auth_wall,
+            "auth_wall_pct": _pct(total_auth_wall, total_attempted),
+            "converted_after_wall": converted_after_wall,
+            "wall_conversion_pct": _pct(converted_after_wall, total_auth_wall),
+        },
+        "command_distribution": dict(sorted(cmd_counts.items(), key=lambda x: -x[1])),
+        "auth_wall_by_command": dict(sorted(wall_cmd_counts.items(), key=lambda x: -x[1])),
+        "command_results": {
+            "total": total_results,
+            "success": success_n,
+            "failure": failure_n,
+            "success_pct": _pct(success_n, total_results),
+            "median_elapsed_ms": median_elapsed,
+            "error_types": dict(sorted(error_types.items(), key=lambda x: -x[1])),
+        },
+        "excluded_test_events": excluded,
+        "includes_test_traffic": include_test,
+    }
+
+
+def render_dropoff_html(*, days: int = 30) -> str:
+    """P1: HTML dashboard for CLI install → register dropoff analysis."""
+    import html as _html
+
+    data = dropoff_summary(days=days, include_test=False)
+    s = data["cli_sessions"]
+    cmd_dist = data["command_distribution"]
+    wall_cmds = data["auth_wall_by_command"]
+    res = data["command_results"]
+
+    def _bar(count: int, total: int, color: str = "#38bdf8") -> str:
+        pct = round(count / total * 100) if total > 0 else 0
+        return (
+            f'<div style="background:#1e293b;border-radius:4px;height:8px;margin-top:4px">'
+            f'<div style="width:{pct}%;background:{color};height:8px;border-radius:4px"></div>'
+            f"</div>"
+        )
+
+    def _cmd_rows(mapping: dict[str, int]) -> str:
+        total = sum(mapping.values()) or 1
+        rows = ""
+        for cmd, n in list(mapping.items())[:10]:
+            rows += (
+                f"<tr><td>{_html.escape(cmd)}</td><td style='text-align:right'>{n}</td>"
+                f"<td style='width:120px'>{_bar(n, total)}</td></tr>"
+            )
+        return rows or "<tr><td colspan='3' style='color:#64748b'>Sin datos</td></tr>"
+
+    wall_pct = s.get("auth_wall_pct") or 0
+    wall_color = "#ef4444" if wall_pct > 50 else "#eab308" if wall_pct > 20 else "#22c55e"
+    success_pct = res.get("success_pct") or 0
+    succ_color = "#22c55e" if success_pct >= 80 else "#eab308" if success_pct >= 50 else "#ef4444"
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CLI Market · Dropoff P1</title>
+  <style>
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#0a0a0a; color:#e2e8f0; margin:0; padding:24px; }}
+    h1 {{ margin:0 0 4px; font-size:1.4rem; }}
+    .sub {{ color:#64748b; font-size:0.85rem; margin-bottom:20px; }}
+    .grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:24px; }}
+    .card {{ background:#111; border:1px solid #333; border-radius:8px; padding:16px; }}
+    .card h2 {{ margin:0 0 10px; font-size:0.9rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; }}
+    .big {{ font-size:2rem; font-weight:700; line-height:1; }}
+    .label {{ font-size:0.75rem; color:#64748b; margin-top:4px; }}
+    table {{ width:100%; border-collapse:collapse; font-size:0.85rem; }}
+    td {{ padding:6px 4px; border-bottom:1px solid #1e293b; vertical-align:middle; }}
+    tr:last-child td {{ border-bottom:none; }}
+    .section {{ background:#111; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:16px; }}
+    .section h2 {{ margin:0 0 12px; font-size:0.9rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; }}
+    .meta {{ color:#64748b; font-size:0.8rem; margin-top:20px; }}
+    a {{ color:#38bdf8; }}
+  </style>
+</head>
+<body>
+  <h1>CLI Market · Dropoff dashboard (P1)</h1>
+  <p class="sub">install → auth wall → register · ventana {days}d · {ts}</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Sesiones CLI</h2>
+      <div class="big">{s['attempted']}</div>
+      <div class="label">comandos intentados</div>
+    </div>
+    <div class="card">
+      <h2>Auth wall hit</h2>
+      <div class="big" style="color:{wall_color}">{s['hit_auth_wall']}</div>
+      <div class="label">{s.get('auth_wall_pct') or 0}% de sesiones</div>
+    </div>
+    <div class="card">
+      <h2>Convirtieron post-wall</h2>
+      <div class="big" style="color:#22c55e">{s['converted_after_wall']}</div>
+      <div class="label">{s.get('wall_conversion_pct') or 0}% de los que chocaron el muro</div>
+    </div>
+    <div class="card">
+      <h2>Éxito de comando</h2>
+      <div class="big" style="color:{succ_color}">{success_pct}%</div>
+      <div class="label">{res['success']} ok / {res['failure']} fail de {res['total']}</div>
+    </div>
+    <div class="card">
+      <h2>Latencia mediana</h2>
+      <div class="big">{res.get('median_elapsed_ms') or '—'}</div>
+      <div class="label">ms por comando</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Primer comando intentado (distribución)</h2>
+    <table>
+      <tr><td style="color:#64748b">Comando</td><td style="color:#64748b;text-align:right">N</td><td></td></tr>
+      {_cmd_rows(cmd_dist)}
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Auth wall — comandos que más lo disparan</h2>
+    <table>
+      <tr><td style="color:#64748b">Comando</td><td style="color:#64748b;text-align:right">N</td><td></td></tr>
+      {_cmd_rows(wall_cmds)}
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Tipos de error</h2>
+    <table>
+      {''.join(f"<tr><td>{_html.escape(k)}</td><td style='text-align:right'>{v}</td></tr>" for k,v in (res.get('error_types') or {{}}).items()) or "<tr><td colspan='2' style='color:#64748b'>Sin datos</td></tr>"}
+    </table>
+  </div>
+
+  <p class="meta">
+    JSON: <a href="/dashboard/dropoff?days={days}">/dashboard/dropoff</a> ·
+    Público: <a href="/analytics/dropoff">/analytics/dropoff</a> ·
+    Go-live: <a href="/dashboard/go-live/page">/dashboard/go-live/page</a>
+  </p>
+</body>
+</html>"""
 
 
 def activation_summary(*, days: int = 30) -> dict[str, Any]:
