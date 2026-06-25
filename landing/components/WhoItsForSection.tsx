@@ -22,15 +22,15 @@ export default function WhoItsForSection() {
       href: "/docs",
     },
     {
-      title_en: "Procurement Teams",
-      title_es: "Equipos de Procurement",
-      body_en: "Reduce sourcing time and automate approvals.",
-      body_es: "Reduce el tiempo de abastecimiento y automatiza las aprobaciones.",
-      features_en: ["basket optimization", "approval workflows", "integrated payment", "audit trail"],
-      features_es: ["optimización de canasta", "flujos de aprobación", "pago integrado", "trazabilidad"],
-      cta_en: "Explore Procure →",
-      cta_es: "Explorar Procure →",
-      href: "/procure",
+      title_en: "AI Builders",
+      title_es: "Builders de IA",
+      body_en: "Connect your LLM to real commerce. Shopping agents, copilots, and autonomous procurement on verified data.",
+      body_es: "Conecta tu LLM al comercio real. Agentes de compras, copilots y procurement autónomo sobre datos verificados.",
+      features_en: ["LangChain / CrewAI", "Vercel AI SDK", "MCP clients", "Any LLM framework"],
+      features_es: ["LangChain / CrewAI", "Vercel AI SDK", "Clientes MCP", "Cualquier framework LLM"],
+      cta_en: "Explore Docs →",
+      cta_es: "Explorar Docs →",
+      href: "/docs",
     },
     {
       title_en: "Analysts & Funds",
@@ -56,7 +56,7 @@ export default function WhoItsForSection() {
         >
           <p className="section-eyebrow mb-4">{isES ? "PARA QUIÉN ES" : "WHO IT'S FOR"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
-            {isES ? "Para equipos que ejecutan compras a escala" : "For teams that execute purchasing at scale"}
+            {isES ? "Para builders, analistas y agentes" : "For builders, analysts, and agents"}
           </h2>
         </motion.div>
 

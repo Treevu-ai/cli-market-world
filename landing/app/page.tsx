@@ -24,10 +24,10 @@ export default function Home() {
           <TrustBar />
           <ProblemSection />
           <SolutionSection />
-          <WhoItsForSection />
-          <ProcureCopilotSection />
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <MetricsSection />
+          <WhoItsForSection />
+          <ProcureCopilotSection />
           <Pricing />
           <FAQ />
           <FinalCTASection />
