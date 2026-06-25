@@ -9,9 +9,9 @@ export const CTA = {
     href: "/docs#auth",
   },
   watchDemo: {
-    en: "Watch Demo →",
-    es: "Ver Demo →",
-    href: "https://procure-copilot.contacto-8e4.workers.dev/procure#demo",
+    en: "Quickstart →",
+    es: "Quickstart →",
+    href: "/docs",
   },
   bookDemo: {
     en: "Book Demo →",

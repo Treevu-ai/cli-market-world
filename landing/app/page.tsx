@@ -5,7 +5,6 @@ import TrustBar from "@/components/TrustBar";
 import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
 import WhoItsForSection from "@/components/WhoItsForSection";
-import ProcureCopilotSection from "@/components/ProcureCopilotSection";
 import MetricsSection from "@/components/MetricsSection";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
@@ -27,7 +26,6 @@ export default function Home() {
           <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
           <MetricsSection />
           <WhoItsForSection />
-          <ProcureCopilotSection />
           <Pricing />
           <FAQ />
           <FinalCTASection />
