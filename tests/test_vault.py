@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from market_core import db_save_user, db_set_subscription, ensure_db_initialized, get_db
 from market_server import app, hash_password
+from market_vault import bind_vault_customer, bind_vault_payment_token
 
 ensure_db_initialized()
 client = TestClient(app)
@@ -21,7 +22,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def clean_db():
     db = get_db()
-    for t in ("audit_log", "rate_limits"):
+    for t in ("audit_log", "rate_limits", "vault_bindings"):
         try:
             db.execute(f"DELETE FROM {t}")
         except Exception:
@@ -144,6 +145,7 @@ def test_vault_confirm_success():
 
 
 def test_vault_charge_success():
+    bind_vault_payment_token("vault_tester", "c1", "pt_xyz")
     mock_result = {"ok": True, "order_id": "ORD-001", "status": "COMPLETED"}
     with patch(
         "market_connectors.paypal_payments.charge_vault_payment_token",
@@ -160,6 +162,7 @@ def test_vault_charge_success():
 
 
 def test_vault_tokens_list():
+    bind_vault_customer("vault_tester", "c1")
     mock_result = {"tokens": [{"id": "pt_1"}, {"id": "pt_2"}]}
     with patch(
         "market_connectors.paypal_payments.list_vault_payment_tokens",
@@ -172,6 +175,7 @@ def test_vault_tokens_list():
 
 
 def test_vault_delete_token():
+    bind_vault_payment_token("vault_tester", "c1", "pt_xyz")
     mock_result = {"ok": True}
     with patch(
         "market_connectors.paypal_payments.delete_vault_payment_token",
@@ -226,6 +230,49 @@ def test_saved_cards_list():
     assert len(r.json()["cards"]) == 1
 
 
+def test_vault_charge_rejects_foreign_token():
+    bind_vault_payment_token("other_user", "c2", "pt_victim")
+    mock_result = {"ok": True, "order_id": "ORD-EVIL"}
+    with patch(
+        "market_connectors.paypal_payments.charge_vault_payment_token",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ):
+        r = client.post(
+            "/billing/vault-charge",
+            headers=_auth(),
+            json={"payment_token_id": "pt_victim", "amount": 99.0},
+        )
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+
+
+def test_vault_tokens_rejects_foreign_customer():
+    bind_vault_customer("other_user", "victim_cid")
+    mock_result = {"tokens": [{"id": "pt_1"}]}
+    with patch(
+        "market_connectors.paypal_payments.list_vault_payment_tokens",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ):
+        r = client.get("/billing/vault-tokens?customer_id=victim_cid", headers=_auth())
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+
+
+def test_vault_delete_rejects_foreign_token():
+    bind_vault_payment_token("other_user", "c2", "pt_victim")
+    mock_result = {"ok": True}
+    with patch(
+        "market_connectors.paypal_payments.delete_vault_payment_token",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ):
+        r = client.delete("/billing/vault-tokens/pt_victim", headers=_auth())
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+
+
 # ── Error propagation ─────────────────────────────────────────────────────────
 
 
@@ -241,6 +288,7 @@ def test_vault_setup_connector_error():
 
 
 def test_vault_charge_connector_error():
+    bind_vault_payment_token("vault_tester", "c1", "pt_x")
     mock_result = {"ok": False, "error": "Insufficient funds", "status": 422}
     with patch(
         "market_connectors.paypal_payments.charge_vault_payment_token",
