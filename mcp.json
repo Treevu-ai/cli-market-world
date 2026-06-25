@@ -1,7 +1,7 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schema.json",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents \u2014 32 curated MCP tools (57 legacy) to search, compare, and purchase across 41 retailers in 8 countries. 63,000+ real prices, 44 market indicators, refreshed every 4 hours. MIT.",
+  "description": "Commerce infrastructure for AI agents \u2014 32 curated MCP tools (57 legacy) to search, compare, and purchase across 40 retailers in 8 countries. 63,000+ real prices, 44 market indicators, refreshed every 4 hours. MIT.",
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
