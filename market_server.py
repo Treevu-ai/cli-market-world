@@ -86,6 +86,12 @@ async def lifespan(_app: FastAPI):
     except Exception as e:
         logger.warning("Audit schema skipped: %s", e)
     try:
+        from market_vault import backfill_vault_bindings_from_audit, ensure_vault_schema
+        ensure_vault_schema()
+        backfill_vault_bindings_from_audit()
+    except Exception as e:
+        logger.warning("Vault bindings backfill skipped: %s", e)
+    try:
         from market_funnel import ensure_funnel_schema
         ensure_funnel_schema()
     except Exception as e:
