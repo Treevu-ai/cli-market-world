@@ -2,6 +2,18 @@ import type { ProcurePlanSlug } from "@/lib/procurePlans";
 
 const VALID_PLANS = new Set<ProcurePlanSlug>(["starter", "pro", "builder"]);
 
+const PROCURE_CHECKOUT_BASE = "https://cli-market.dev/";
+
+/** Worker CTA: deep link to cli-market.dev with plan preselected + modal open. */
+export function buildProcureSubscribeUrl(plan: ProcurePlanSlug): string {
+  const params = new URLSearchParams({
+    audience: "procure",
+    plan,
+    checkout: "open",
+  });
+  return `${PROCURE_CHECKOUT_BASE}?${params.toString()}#pricing`;
+}
+
 /** Deep link: ?audience=procure&plan=pro&checkout=open#pricing */
 export function readProcureCheckoutDeepLink(): {
   plan: ProcurePlanSlug;

@@ -16,6 +16,7 @@ from market_core import (
 from routers.billing.pro_helpers import is_manual_wallet_pro_payment_link
 from routers.billing.notifications import (
     _append_pro_activation_email_actions,
+    _append_procure_activation_email_actions,
     _pro_payment_method_from_request,
     _slack_notify_build_pro,
     _slack_notify_subscription,
@@ -192,7 +193,18 @@ def activate_paypal_subscription(
     if lang not in ("es", "en"):
         lang = "es"
     email = db_get_user_email(username) or ""
-    if tier in ("starter", "procure_starter"):
+    if tier in ("procure_starter", "procure_pro", "procure_builder"):
+        _append_procure_activation_email_actions(
+            actions,
+            username=username,
+            email=email,
+            tier=tier,
+            request_id=sub_id or "",
+            payment_method="paypal",
+            source=source,
+            lang=lang,
+        )
+    elif tier in ("starter",):
         try:
             if email:
                 from market_connectors.email_outbound import send_starter_activated_email
@@ -417,36 +429,16 @@ def _activate_procure_from_request(request_id: str, *, source: str, force: bool 
     method = _pro_payment_method_from_request(req)
     email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
     lang = "es"
-    if tier == "procure_starter":
-        try:
-            if email:
-                from market_connectors.email_outbound import send_starter_activated_email
-
-                mail = send_starter_activated_email(
-                    to_email=email,
-                    username=username,
-                    lang=lang,
-                    subscription_id=request_id,
-                )
-                if mail.get("sent"):
-                    actions.append(f"activation_email:{email}")
-                else:
-                    actions.append(f"activation_email_skipped:{mail.get('reason', 'err')}")
-            else:
-                actions.append("activation_email_skipped:no_email")
-        except Exception:
-            logger.exception("procure_starter activation email failed for %s", username)
-            actions.append("activation_email_failed")
-    else:
-        _append_pro_activation_email_actions(
-            actions,
-            username=username,
-            email=email,
-            request_id=request_id,
-            payment_method=method,
-            source=source,
-            display_name=(req.get("display_name") or "").strip(),
-        )
+    _append_procure_activation_email_actions(
+        actions,
+        username=username,
+        email=email,
+        tier=tier,
+        request_id=request_id,
+        payment_method=method,
+        source=source,
+        lang=lang,
+    )
 
     _slack_notify_subscription(
         tier=tier,
