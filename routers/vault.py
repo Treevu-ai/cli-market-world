@@ -100,10 +100,10 @@ async def vault_charge(
     amount = body.get("amount")
     if not payment_token_id:
         raise HTTPException(status_code=400, detail="payment_token_id required")
-    if not vault_payment_token_owned(username, payment_token_id):
-        raise HTTPException(status_code=403, detail="payment_token_id not owned by caller")
     if not amount or float(amount) <= 0:
         raise HTTPException(status_code=400, detail="amount must be > 0")
+    if not vault_payment_token_owned(username, payment_token_id):
+        raise HTTPException(status_code=403, detail="payment_token_id not owned by caller")
 
     from market_connectors.paypal_payments import charge_vault_payment_token
 
