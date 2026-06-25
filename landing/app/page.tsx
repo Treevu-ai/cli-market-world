@@ -10,6 +10,7 @@ import WhoItsForSection from "@/components/WhoItsForSection";
 import ProcureCopilotSection from "@/components/ProcureCopilotSection";
 import MoatSection from "@/components/MoatSection";
 import MetricsSection from "@/components/MetricsSection";
+import QuickstartAPI from "@/components/QuickstartAPI";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import FinalCTASection from "@/components/FinalCTASection";
@@ -34,6 +35,7 @@ export default function Home() {
           <MetricsSection />
           <WhoItsForSection />
           <ProcureCopilotSection />
+          <QuickstartAPI />
           <Pricing />
           <FAQ />
           <FinalCTASection />

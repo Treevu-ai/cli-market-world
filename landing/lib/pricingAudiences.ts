@@ -33,7 +33,7 @@ export const PRICING_TABS: PricingTab[] = [
     title_en: "Enterprise buying. No code.",
     intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que CLI Develop, con aprobaciones, checkout y trazabilidad. Compare $29/mes · Ops $79/mes · Scale $149/mes.",
     intro_en: "For restaurants, hotels, and procurement teams. Same data as CLI Develop, with approvals, checkout, and audit trail. Compare $29/mo · Ops $79/mo · Scale $149/mo.",
-    hash: "#procure",
+    hash: "#pricing",
   },
 ];
 
@@ -47,6 +47,9 @@ export function resolvePricingAudience(): PricingAudience {
   const hash = window.location.hash.replace("#", "");
   const param = new URLSearchParams(window.location.search).get("audience");
   if (hash === "build" || param === "build") return "build";
+  if (hash === "pricing" || hash === "pricing-build" || hash === "pro-checkout") {
+    return param === "build" ? "build" : "procure";
+  }
   return "procure";
 }
 
