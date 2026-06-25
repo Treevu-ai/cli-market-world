@@ -25,42 +25,41 @@ export default function MetricsSection() {
     <section
       id="metrics"
       className="landing-section animate-fade-in scroll-mt-24"
-      style={{ backgroundColor: "#ffffff" }}
     >
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">
             {isES ? "MÉTRICAS" : "METRICS"}
           </p>
-          <h2 className="section-title text-[#0f172a]">
+          <h2 className="section-title">
             {isES ? "Infraestructura real. Uso real." : "Real infrastructure. Real usage."}
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#94a3b8] mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--cm-on-surface-variant)] mb-6">
               {isES ? "Uso" : "Usage"}
             </p>
             <div className="grid grid-cols-3 gap-4">
               {usageMetrics.map((m, i) => (
                 <div key={i} className="text-center">
-                  <p className="text-3xl font-black font-mono tabular-nums text-[#ea580c]">{m.value}</p>
-                  <p className="text-xs mt-1 text-[#64748b]">{m.label}</p>
+                  <p className="text-3xl font-black font-mono tabular-nums text-[var(--cm-mint)]">{m.value}</p>
+                  <p className="text-xs mt-1 text-[var(--cm-text-secondary)]">{m.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#94a3b8] mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--cm-on-surface-variant)] mb-6">
               {isES ? "Cobertura" : "Coverage"}
             </p>
             <div className="grid grid-cols-3 gap-4">
               {coverageMetrics.map((m, i) => (
                 <div key={i} className="text-center">
-                  <p className="text-3xl font-black font-mono tabular-nums text-[#0f172a]">{m.value}</p>
-                  <p className="text-xs mt-1 text-[#64748b]">{m.label}</p>
+                  <p className="text-3xl font-black font-mono tabular-nums text-[var(--cm-on-surface)]">{m.value}</p>
+                  <p className="text-xs mt-1 text-[var(--cm-text-secondary)]">{m.label}</p>
                 </div>
               ))}
             </div>
@@ -71,7 +70,7 @@ export default function MetricsSection() {
           {platforms.map((p) => (
             <span
               key={p}
-              className="text-xs font-semibold font-mono px-3 py-1.5 rounded-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#64748b]"
+              className="text-xs font-semibold font-mono px-3 py-1.5 rounded-full bg-[var(--cm-surface-low)] border border-[var(--cm-outline-variant)] text-[var(--cm-text-secondary)]"
             >
               {p}
             </span>

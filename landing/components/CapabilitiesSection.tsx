@@ -48,7 +48,7 @@ export default function CapabilitiesSection() {
   const isES = lang === "es";
 
   return (
-    <section id="capabilities" className="landing-section animate-fade-in bg-white">
+    <section id="capabilities" className="landing-section animate-fade-in bg-[var(--cm-surface)]">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Capacidades" : "Capabilities"}</p>
@@ -72,13 +72,13 @@ export default function CapabilitiesSection() {
               className="card-cyber card-cyber-interactive p-6 flex flex-col gap-3 text-left no-underline"
             >
               <span className="text-2xl" aria-hidden="true">{cap.icon}</span>
-              <h3 className="text-sm font-bold text-[#0d253d]">
+              <h3 className="text-sm font-bold text-[var(--cm-on-surface)]">
                 {isES ? cap.title_es : cap.title_en}
               </h3>
-              <p className="text-sm leading-relaxed text-[#64748d] flex-1">
+              <p className="text-sm leading-relaxed text-[var(--cm-on-surface-variant)] flex-1">
                 {isES ? cap.description_es : cap.description_en}
               </p>
-              <span className="text-xs font-mono text-[#533afd]">
+              <span className="text-xs font-mono text-[var(--cm-mint)]">
                 {isES ? "Explorar →" : "Explore →"}
               </span>
             </motion.a>
