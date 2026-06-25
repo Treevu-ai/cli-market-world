@@ -369,8 +369,25 @@ def procure_magic_exchange(body: ProcureMagicExchangeRequest):
     if not token:
         raise HTTPException(status_code=422, detail="token is required")
     try:
-        return exchange_procure_magic_token(token)
+        result = exchange_procure_magic_token(token)
+        try:
+            from market_funnel import record_funnel_event
+            record_funnel_event(
+                "procure_magic_exchange_ok",
+                username=result.get("username"),
+                meta={"tier": result.get("tier")},
+            )
+        except Exception:
+            pass
+        return result
     except ValueError as exc:
+        try:
+            from market_funnel import record_funnel_event
+            detail = str(exc)
+            reason = "expired" if "expir" in detail else "used" if "used" in detail else "invalid"
+            record_funnel_event("procure_magic_exchange_fail", meta={"reason": reason})
+        except Exception:
+            pass
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
