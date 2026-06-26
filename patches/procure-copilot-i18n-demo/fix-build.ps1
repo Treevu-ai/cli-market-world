@@ -33,7 +33,7 @@ python patches\procure-copilot-i18n-demo\repair.py
 python patches\procure-copilot-i18n-demo\apply.py
 
 $mailtoLeft = @()
-Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
+Get-ChildItem -Path app, lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
     if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev\?') {
         $mailtoLeft += $_.FullName
     }
