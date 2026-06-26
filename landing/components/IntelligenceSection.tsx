@@ -121,7 +121,7 @@ export default function IntelligenceSection() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <a href="/contact#contact-intelligence" className="btn-mint">
+          <a href="/contact?topic=intelligence#contact-intelligence" className="btn-mint">
             {isES ? "Solicitar piloto →" : "Request pilot →"}
           </a>
           <a

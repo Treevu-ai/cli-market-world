@@ -37,7 +37,12 @@ export default function ProcureCopilotSection() {
             ))}
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href={CTA.viewProcurePlans.href} className="btn-mint">
+            <a
+              href={CTA.viewProcurePlans.href}
+              className="btn-mint"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {isES ? CTA.viewProcurePlans.es : CTA.viewProcurePlans.en}
             </a>
             <a href={CTA.bookProcureDemo.href} className="btn-outline">

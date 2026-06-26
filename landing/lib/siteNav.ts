@@ -15,7 +15,6 @@ export const TOP_NAV: NavItem[] = [
 /** Homepage sections (SideNav dots) — matches section IDs in app/page.tsx. */
 export const SECTION_NAV: NavItem[] = [
   { id: "hero", es: "Inicio", en: "Home", href: "/#hero" },
-  { id: "problem", es: "Problema", en: "Problem", href: "/#problem" },
   { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
   { id: "use-cases", es: "Casos", en: "Use cases", href: "/#use-cases" },
   { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
@@ -32,7 +31,6 @@ export const SIDE_NAV: NavItem[] = SECTION_NAV;
 /** Maps every SECTION_NAV anchor id to the TOP_NAV group it belongs to. */
 export const TOP_NAV_GROUP: Record<string, string> = {
   hero: "product",
-  problem: "product",
   solution: "product",
   "use-cases": "product",
   procure: "product",
