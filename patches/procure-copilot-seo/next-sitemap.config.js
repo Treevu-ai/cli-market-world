@@ -2,7 +2,7 @@
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_PROCURE_SITE_URL || "https://procurecopilot.com",
   generateRobotsTxt: true,
-  outDir: ".open-next/assets",
+  outDir: "public",
   changefreq: "weekly",
   priority: 0.8,
   exclude: ["/dashboard", "/dashboard/*", "/api/*"],
