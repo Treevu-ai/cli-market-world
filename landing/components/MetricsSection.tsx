@@ -56,8 +56,8 @@ const BLOCKS = (isES: boolean) => [
     id: "inteligencia",
     eyebrow: isES ? "Inteligencia Histórica" : "Historical Intelligence",
     signals: isES
-      ? ["Basket stress", "Inflation", "Volatility", "Price Risk", "Procurement", "Macro vs CPI"]
-      : ["Basket stress", "Inflation", "Volatility", "Price Risk", "Procurement", "Macro vs CPI"],
+      ? ["Inflation", "Volatility", "Price Risk", "Macro vs CPI"]
+      : ["Inflation", "Volatility", "Price Risk", "Macro vs CPI"],
     stat: {
       value: `${MARKET_STATS.indicatorsCount}`,
       label: isES ? "indicadores" : "indicators",
