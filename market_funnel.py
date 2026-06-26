@@ -72,6 +72,20 @@ _NOISE_USER_IDS: frozenset[str] = frozenset((
 
 _NOISE_META_SOURCES = frozenset(("test", "ci", "smoke", "deploy-test", "integration-test"))
 
+_NOISE_EMAIL_DOMAINS = frozenset(("pam.cli-market.dev", "example.com"))
+_NOISE_EMAIL_LOCAL_PREFIXES = ("pam+", "e2e+", "pam-", "test+")
+
+
+def is_noise_email(email: str | None) -> bool:
+    """PAM/E2E/test checkout emails — exclude from founder Slack alerts."""
+    raw = (email or "").strip().lower()
+    if not raw or "@" not in raw:
+        return False
+    local, _, domain = raw.partition("@")
+    if domain in _NOISE_EMAIL_DOMAINS:
+        return True
+    return any(local.startswith(p) for p in _NOISE_EMAIL_LOCAL_PREFIXES)
+
 
 def is_noise_username(username: str | None) -> bool:
     """CI/smoke/known-test accounts — exclude from founder adoption views.

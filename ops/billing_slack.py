@@ -364,6 +364,16 @@ def notify_new_registration(
     if not _funnel_slack_ready():
         return False
     try:
+        from market_funnel import is_noise_email, is_noise_username
+
+        if is_noise_username(username) or is_noise_email(email):
+            logger.debug(
+                "Skip registration Slack for test account %s (%s)", username, email
+            )
+            return False
+    except Exception:
+        pass
+    try:
         import datetime
 
         from slack_notify import channel_funnel, post_blocks_via_bot, deliver_to_funnel
