@@ -459,6 +459,17 @@ cases:
     expect:
       status: 200
 
+  - id: landing.case_studies
+    tier: 1
+    phase: landing
+    name: Case studies page
+    base: landing
+    method: GET
+    path: /case-studies
+    expect:
+      status: 200
+      body_contains: Casos de estudio
+
   - id: landing.llms_txt
     tier: 1
     phase: landing
