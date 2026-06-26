@@ -1,7 +1,6 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 import { CTA } from "@/lib/ctaCopy";
 
 export default function ProcureCopilotSection() {
@@ -9,16 +8,8 @@ export default function ProcureCopilotSection() {
   const isES = lang === "es";
 
   const bullets = isES
-    ? [
-        `${MARKET_STATS.retailersVerified} retailers verificados`,
-        "Aprobaciones y audit trail",
-        "Checkout: Yape, PayPal, Mercado Pago",
-      ]
-    : [
-        `${MARKET_STATS.retailersVerified} verified retailers`,
-        "Approvals and audit trail",
-        "Checkout: Yape, PayPal, Mercado Pago",
-      ];
+    ? ["Aprobaciones y audit trail", "Checkout: Yape, PayPal, Mercado Pago"]
+    : ["Approvals and audit trail", "Checkout: Yape, PayPal, Mercado Pago"];
 
   return (
     <section id="procure" className="landing-section scroll-mt-24" style={{ backgroundColor: "#f8fafc" }}>
