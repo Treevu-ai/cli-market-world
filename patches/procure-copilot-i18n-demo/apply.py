@@ -362,7 +362,7 @@ def patch_procure_i18n_inline(target: Path) -> None:
             var = const_match.group(1)
             if f"useProcureLocalized({var}" not in text:
                 text = re.sub(
-                    rf"(export default function \w+\(\)\s*\{{)",
+                    r"(export default function \w+\(\)\s*\{)",
                     rf"\1\n  const {var} = useProcureLocalized({var}Raw);",
                     text,
                     count=1,
