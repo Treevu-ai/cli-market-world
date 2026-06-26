@@ -70,7 +70,6 @@ def patch_layout(target: Path) -> None:
         text = seo_import + text
 
     if "export const metadata" not in text:
-        insert_after = seo_import
         text = text.replace(
             seo_import,
             seo_import + "export const metadata: Metadata = rootMetadata;\n\n",
