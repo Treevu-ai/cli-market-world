@@ -14,11 +14,6 @@ export const CTA = {
     es: "Quickstart →",
     href: "/docs",
   },
-  bookDemo: {
-    en: "Book Demo →",
-    es: "Reservar Demo →",
-    href: "/contact?topic=procure#contact-procure",
-  },
   bookProcureDemo: {
     en: "Book Procure Demo →",
     es: "Agendar demo Procure →",
