@@ -37,6 +37,16 @@ def test_create_and_exchange_token():
     url = build_procure_magic_url(token)
     assert "token=" in url
     assert url.startswith("https://procure.example/dashboard")
+    body = token.rsplit(".", 1)[0]
+    import base64
+    import json
+
+    pad = "=" * (-len(body) % 4)
+    decoded = json.loads(base64.urlsafe_b64decode(body + pad))
+    assert "key" not in decoded
+    assert "sub" not in decoded
+    assert "jti" in decoded
+    assert api_key not in token
 
     result = exchange_procure_magic_token(token)
     assert result["username"] == "magic-user"
