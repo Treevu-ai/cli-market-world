@@ -1,0 +1,40 @@
+# Procure Copilot — AI procurement for Latin America
+
+> URL: https://procurecopilot.com
+> Product: https://procurecopilot.com/procure
+> Dashboard: https://procurecopilot.com/dashboard
+> API (CLI Market): https://cli-market-production.up.railway.app
+> Parent brand: https://cli-market.dev
+
+## What it is
+
+Procure Copilot is an AI-native procurement platform for restaurants, hotels, and ops teams in LatAm. Turn shopping lists into optimized purchase orders using verified shelf prices (CLI Market data). Flow: run → pending approval → approve → checkout.
+
+## Pricing (USD/mo)
+
+- Compare (starter): $29 — price compare and savings, no checkout
+- Ops (pro): $79 — approvals, stock, delivery, integrated checkout
+- Scale (builder): $149 — multi-country, ERP integrations
+
+## Key capabilities
+
+- Multi-retailer basket compare (PE, AR, BR, MX, CO, CL, …)
+- Manager approval workflow with audit trail
+- Data-gate: prices refreshed every 4 hours from CLI Market collector
+- Checkout handoff via CLI Market (PayPal, Mercado Pago, Yape/Plin)
+
+## API examples (authenticated)
+
+POST https://procurecopilot.com/api/procurement/run
+POST https://procurecopilot.com/api/procurement/approve
+POST https://procurecopilot.com/api/procurement/checkout
+
+## Subscribe
+
+https://cli-market.dev/?audience=procure#pricing
+
+## Organization
+
+Name: Procure Copilot
+Website: https://procurecopilot.com
+Also: https://www.procurecopilot.com (same product; canonical URL is apex)
