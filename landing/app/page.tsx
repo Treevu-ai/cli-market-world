@@ -4,6 +4,9 @@ import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
+import UseCasesSection from "@/components/UseCasesSection";
+import ProcureCopilotSection from "@/components/ProcureCopilotSection";
+import IntelligenceSection from "@/components/IntelligenceSection";
 import WhoItsForSection from "@/components/WhoItsForSection";
 import MetricsSection from "@/components/MetricsSection";
 import Pricing from "@/components/Pricing";
@@ -23,7 +26,9 @@ export default function Home() {
           <TrustBar />
           <ProblemSection />
           <SolutionSection />
-          <div id="intelligence" className="scroll-mt-20" aria-hidden="true" />
+          <UseCasesSection />
+          <ProcureCopilotSection />
+          <IntelligenceSection />
           <MetricsSection />
           <WhoItsForSection />
           <Pricing />

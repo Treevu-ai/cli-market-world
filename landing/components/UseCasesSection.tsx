@@ -11,18 +11,18 @@ export default function UseCasesSection() {
   const isES = lang === "es";
   const [activeId, setActiveId] = useState<UseCaseId | null>(null);
   const activeCase = USE_CASE_DEMOS.find((c) => c.id === activeId) ?? null;
-  const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "market-data"].includes(c.id));
+  const visibleCases = USE_CASE_DEMOS.filter((c) => ["agents", "procure", "inflation"].includes(c.id));
 
   return (
-    <section id="casos" className="landing-section landing-section-glow animate-fade-in bg-white">
+    <section id="use-cases" className="landing-section landing-section-glow animate-fade-in bg-white">
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
-          <h2 className="section-title">{isES ? "Una API. Tres superficies." : "One API. Three surfaces."}</h2>
+          <h2 className="section-title">{isES ? "Tres puertas, mismos precios" : "Three doors, same prices"}</h2>
           <p className="section-intro">
             {isES
-              ? "Developers, equipos de compras y retailers — mismos precios verificados, distintas superficies."
-              : "Developers, procurement teams, and retailers — same verified prices, different surfaces."}
+              ? "Developers, equipos de compras y analistas — misma data verificada, distinta superficie."
+              : "Developers, procurement teams, and analysts — same verified data, different surface."}
           </p>
         </div>
 
@@ -65,9 +65,14 @@ export default function UseCasesSection() {
           ))}
         </div>
 
-        <a href="#pricing" className="btn-mint">
-          {isES ? "Ver planes →" : "View plans →"}
-        </a>
+        <div className="flex flex-wrap justify-center gap-3">
+          <a href="/#pricing" className="btn-mint">
+            {isES ? "Planes Build →" : "Build plans →"}
+          </a>
+          <a href="/#intelligence" className="btn-outline">
+            {isES ? "Intelligence →" : "Intelligence →"}
+          </a>
+        </div>
       </div>
 
       <UseCaseDemoModal open={activeId !== null} useCase={activeCase} onClose={() => setActiveId(null)} />
