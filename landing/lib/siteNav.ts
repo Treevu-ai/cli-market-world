@@ -5,23 +5,23 @@ export type NavItem = {
   href: string;
 };
 
-/** Top nav — clean, developer-focused (cli-market.dev). Procure lives on its own site. */
+/** Top nav — product hub (Build · Procure · Intelligence). */
 export const TOP_NAV: NavItem[] = [
   { id: "product", es: "Producto", en: "Product", href: "/#hero" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
 
-/** Homepage sections (SideNav dots) — matches actual section IDs in page.tsx. */
+/** Homepage sections (SideNav dots) — matches section IDs in app/page.tsx. */
 export const SECTION_NAV: NavItem[] = [
   { id: "hero", es: "Inicio", en: "Home", href: "/#hero" },
   { id: "problem", es: "Problema", en: "Problem", href: "/#problem" },
   { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
-  { id: "architecture", es: "Stack", en: "Stack", href: "/#architecture" },
-  { id: "moat", es: "Data moat", en: "Data moat", href: "/#moat" },
-  { id: "metrics", es: "Métricas", en: "Metrics", href: "/#metrics" },
+  { id: "use-cases", es: "Casos", en: "Use cases", href: "/#use-cases" },
+  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
+  { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/#intelligence" },
+  { id: "metrics", es: "Data moat", en: "Data moat", href: "/#metrics" },
   { id: "who-its-for", es: "Para quién", en: "Who it's for", href: "/#who-its-for" },
-  { id: "api", es: "API", en: "API", href: "/#api" },
   { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
   { id: "faq", es: "FAQ", en: "FAQ", href: "/#faq" },
 ];
@@ -33,13 +33,12 @@ export const SIDE_NAV: NavItem[] = SECTION_NAV;
 export const TOP_NAV_GROUP: Record<string, string> = {
   hero: "product",
   problem: "product",
-  "why-now": "product",
   solution: "product",
-  architecture: "product",
+  "use-cases": "product",
+  procure: "product",
+  intelligence: "product",
   "who-its-for": "product",
-  moat: "product",
   metrics: "product",
-  api: "product",
   pricing: "pricing",
   faq: "pricing",
 };

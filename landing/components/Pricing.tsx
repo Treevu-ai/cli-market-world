@@ -308,6 +308,23 @@ export default function Pricing() {
 
         <PaymentReturnBanner />
 
+        <div className="flex flex-wrap justify-center gap-3 mb-8 text-sm">
+          <span className="text-[var(--cm-on-surface-variant)]/70 w-full sm:w-auto">
+            {isES ? "¿No es su perfil?" : "Not your profile?"}
+          </span>
+          <a
+            href="https://procurecopilot.com/procure"
+            className="text-[var(--cm-mint)] font-semibold hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {isES ? "Procure — compras desde $29/mes →" : "Procure — procurement from $29/mo →"}
+          </a>
+          <a href="/#intelligence" className="text-[#0369a1] font-semibold hover:underline">
+            {isES ? "Intelligence — piloto desde $300/mes →" : "Intelligence — pilot from $300/mo →"}
+          </a>
+        </div>
+
         {VISIBLE_PRICING_TABS.length > 1 && (
         <div
           role="tablist"
