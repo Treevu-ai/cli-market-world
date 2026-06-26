@@ -360,7 +360,12 @@ Employees tagging the company in posts accelerates recognition.
 ## Deploy
 
 ```bash
-# procure-copilot
+# procure-copilot — apply patch from cli-market-world:
+python ../cli-market-world/patches/procure-copilot-seo/apply.py
+# or: ..\cli-market-world\patches\procure-copilot-seo\apply.ps1
+
+npm install
+npm run og:png
 npm run build
 npx wrangler deploy
 ```
