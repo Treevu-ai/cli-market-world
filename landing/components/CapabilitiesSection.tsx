@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { PROCURE_LANDING_URL } from "@/lib/procurePlans";
 
 const CAPABILITIES = [
   {
@@ -30,7 +31,7 @@ const CAPABILITIES = [
     title_en: "Procurement",
     description_es: "Canasta multi-retailer con flujo de aprobaciones, control presupuestario y checkout. Tu equipo compara en segundos y cierra con Yape o PayPal — sin WhatsApp, sin hojas de cálculo.",
     description_en: "Multi-retailer basket with approval workflows, budget control, and checkout. Your team compares in seconds and closes with Yape or PayPal — no WhatsApp, no spreadsheets.",
-    href: "/#procure",
+    href: PROCURE_LANDING_URL,
   },
   {
     slug: "intelligence",
@@ -65,6 +66,9 @@ export default function CapabilitiesSection() {
             <motion.a
               key={cap.slug}
               href={cap.href}
+              {...(cap.slug === "procurement"
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

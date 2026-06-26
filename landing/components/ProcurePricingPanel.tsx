@@ -37,7 +37,7 @@ export default function ProcurePricingPanel() {
   }, []);
 
   return (
-    <div className="brand-mode-operations scroll-mt-24 text-left">
+    <div className="scroll-mt-24 text-left">
       <div className="landing-content-narrow mb-10 space-y-4 text-center">
         <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
           <p className="font-semibold text-[var(--cm-on-surface)] mb-1">

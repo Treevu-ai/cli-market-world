@@ -1,7 +1,9 @@
-/** Procure Copilot — pricing tab at cli-market.dev/#procure (inside #pricing). */
+/** Procure Copilot — public marketing site (procurecopilot.com). */
 
 export const PROCURE_SITE_URL =
   process.env.NEXT_PUBLIC_PROCURE_SITE_URL || "https://procurecopilot.com";
+
+export const PROCURE_LANDING_URL = `${PROCURE_SITE_URL}/procure`;
 
 export const PROCURE_APP_URL =
   process.env.NEXT_PUBLIC_PROCURE_APP_URL ||
