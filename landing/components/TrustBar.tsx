@@ -98,13 +98,13 @@ export default function TrustBar() {
   const items = [...TOOLS, ...TOOLS];
 
   return (
-    <div className="border-b border-[#e2e8f0] bg-white">
+    <div className="border-b border-[var(--cm-hairline-soft)] bg-[var(--cm-surface-low)]">
       <div
         className="w-full py-4 overflow-hidden"
         aria-label={isES ? "Herramientas compatibles" : "Compatible tools"}
       >
         <div className="flex items-center gap-6">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8] shrink-0 pl-6 whitespace-nowrap">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[var(--cm-text-secondary)] shrink-0 pl-6 whitespace-nowrap">
             {isES ? "Integra con" : "Integrates with"}
           </span>
           <div className="overflow-hidden flex-1 min-w-0 mask-fade-x">
@@ -112,7 +112,7 @@ export default function TrustBar() {
               {items.map((tool, i) => (
                 <div
                   key={`${tool.name}-${i}`}
-                  className="flex items-center gap-2 text-[#94a3b8] hover:text-[#ea580c] transition-colors cursor-default select-none shrink-0"
+                  className="flex items-center gap-2 text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors cursor-default select-none shrink-0"
                 >
                   {tool.icon}
                   <span className="text-sm font-semibold whitespace-nowrap">{tool.name}</span>
