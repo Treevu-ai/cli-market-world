@@ -82,22 +82,26 @@ def patch_procure_page(target: Path) -> None:
                 text,
                 count=1,
             )
-        text = re.sub(
-            r'(<section\s+id="hero"\s+className=")([^"]*)"',
-            lambda m: (
-                f'{m.group(1)}{m.group(2)} relative overflow-hidden"'
-                if "relative" not in m.group(2)
-                else m.group(0)
-            ),
-            text,
-            count=1,
-        )
-        text = re.sub(
-            r'(<section\s+id="hero"[^>]*className="[^"]*)\s+z-10',
-            r"\1 z-10",
-            text,
-            count=1,
-        )
+        if not re.search(r'id="hero"[^>]*className="[^"]*\brelative\b', text):
+            text = re.sub(
+                r'(<section\s+id="hero"\s+className=")([^"]*)"',
+                lambda m: (
+                    f'{m.group(1)}{m.group(2)} relative overflow-hidden"'
+                    if "overflow-hidden" not in m.group(2)
+                    else f'{m.group(1)}{m.group(2)} relative"'
+                    if "relative" not in m.group(2)
+                    else m.group(0)
+                ),
+                text,
+                count=1,
+            )
+        elif "overflow-hidden" not in text.split('id="hero"', 1)[1].split(">", 1)[0]:
+            text = re.sub(
+                r'(<section\s+id="hero"\s+className=")([^"]*)"',
+                r'\1\2 overflow-hidden"',
+                text,
+                count=1,
+            )
 
     # Drop demo column blocks (desktop + mobile)
     text = re.sub(
@@ -115,6 +119,9 @@ def patch_procure_page(target: Path) -> None:
     text = re.sub(r"\s*<ProcureDemo\s*/>\s*", "\n", text)
     text = re.sub(r'import ProcureDemo from ["\']@/components/ProcureDemo["\'];\n', "", text)
     text = re.sub(r'import ProcureHeroTerminal from ["\']@/components/ProcureHeroTerminal["\'];\n', "", text)
+
+    if 'id="hero"' in text and "<ProcureHeroBackground" not in text:
+        print("  WARN: ProcureHeroBackground not in page.tsx — add manually (see TROUBLESHOOTING.md)")
 
     if text != original:
         path.write_text(text, encoding="utf-8")
