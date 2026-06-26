@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 
 from billing_slack import format_funnel_message, format_subscription_message, tier_label
+from market_funnel import is_noise_email
 
 
 def test_tier_labels():
@@ -137,3 +138,53 @@ def test_pending_pro_yape_includes_activate_button(monkeypatch):
         for el in (block.get("elements") or [])
     ]
     assert "activate_pro_request" in action_ids
+
+
+def test_is_noise_email():
+    assert is_noise_email("pam-5ab994cc@pam.cli-market.dev")
+    assert is_noise_email("pam+mp+abc123@cli-market.dev")
+    assert is_noise_email("e2e+pp+deadbeef@cli-market.dev")
+    assert is_noise_email("test+procure@example.com")
+    assert not is_noise_email("founder@outlook.com")
+    assert not is_noise_email("")
+    assert not is_noise_email("hello@cli-market.dev")
+
+
+def test_notify_new_registration_skips_pam_email(monkeypatch):
+    from billing_slack import notify_new_registration
+
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
+    posted: list[str] = []
+    monkeypatch.setattr(
+        "slack_notify.post_blocks_via_bot",
+        lambda *a, **kw: posted.append(kw.get("text", "")) or True,
+    )
+    assert (
+        notify_new_registration(
+            username="user-be06863af9ab",
+            email="pam-5ab994cc@pam.cli-market.dev",
+            api_key_prefix="sk-test",
+        )
+        is False
+    )
+    assert posted == []
+
+
+def test_notify_new_registration_real_email(monkeypatch):
+    from billing_slack import notify_new_registration
+
+    monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test")
+    posted: list[str] = []
+    monkeypatch.setattr(
+        "slack_notify.post_blocks_via_bot",
+        lambda *a, **kw: posted.append(kw.get("text", "")) or True,
+    )
+    assert (
+        notify_new_registration(
+            username="user-e1a725b9acac",
+            email="founder@outlook.com",
+            api_key_prefix="sk-real",
+        )
+        is True
+    )
+    assert posted and "founder@outlook.com" in posted[0]
