@@ -109,57 +109,45 @@ def patch_layout(target: Path) -> None:
         print("  patched app/layout.tsx (LanguageProvider)")
 
 
+def repair_procure_landing(target: Path) -> None:
+    """Fix syntax from an older broken apply.py (escaped quotes on isEN line)."""
+    path = target / "components/ProcureLanding.tsx"
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    original = text
+    text = text.replace('lang === \\"en\\";', 'lang === "en";')
+    text = text.replace('lang === \\"en\\"', 'lang === "en"')
+    if text != original:
+        path.write_text(text, encoding="utf-8")
+        print("  repaired components/ProcureLanding.tsx (escaped quotes)")
+
+
 def patch_procure_landing(target: Path) -> None:
+    """Add LangToggle only — demo CTAs are patched in lib/procure-content.ts."""
     path = target / "components/ProcureLanding.tsx"
     if not path.exists():
         print("  skip: components/ProcureLanding.tsx not found")
         return
 
+    repair_procure_landing(target)
+
     text = path.read_text(encoding="utf-8")
     original = text
 
-    text = _add_import(text, 'import { useLang } from "@/lib/LanguageContext";\n')
     text = _add_import(text, 'import LangToggle from "@/components/LangToggle";\n')
-    text = _add_import(text, 'import { getProcureCopy } from "@/lib/procureLocale";\n')
 
-    if "getProcureCopy" not in text or "const copy = getProcureCopy" not in text:
+    if "<LangToggle" not in text:
         text = re.sub(
-            r"(export default function ProcureLanding\(\)\s*\{)",
-            r"\1\n  const { lang } = useLang();\n  const copy = getProcureCopy(lang);\n  const isEN = lang === \"en\";",
+            r"(return\s*\(\s*)",
+            r'\1<LangToggle className="fixed top-4 right-4 z-50" />\n      ',
             text,
             count=1,
         )
 
-    # Hero block — wire bilingual copy + fixed CTAs
-    text = text.replace(
-        "Tus compras.",
-        '{copy.hero.title.lead}',
-    )
-    text = text.replace(
-        "Comparadas, verificadas,",
-        '{copy.hero.title.mid}',
-    )
-    text = text.replace(
-        "aprobadas.",
-        '{copy.hero.title.accent}',
-    )
-    text = text.replace('label:"Probar demo"', "label:copy.tryDemoLabel")
-    text = text.replace('label: "Probar demo"', "label: copy.tryDemoLabel")
-    text = text.replace('"Agendar demo 15 min"', "{copy.bookDemoLabel}")
-
-    # Lang toggle in header (once)
-    if "<LangToggle" not in text and 'id="hero"' in text:
-        text = text.replace(
-            '<section id="hero"',
-            '<LangToggle className="fixed top-4 right-4 z-50" />\n      <section id="hero"',
-            1,
-        )
-
     if text != original:
         path.write_text(text, encoding="utf-8")
-        print("  patched components/ProcureLanding.tsx (i18n + LangToggle)")
-    else:
-        print("  WARN: ProcureLanding.tsx — apply manual i18n (see README.md)")
+        print("  patched components/ProcureLanding.tsx (LangToggle)")
 
 
 def main() -> int:
@@ -176,6 +164,7 @@ def main() -> int:
 
     print(f"Applying Procure i18n + demo patch → {target}")
     copy_tree(patch, target)
+    repair_procure_landing(target)
     patch_procure_content(target)
     patch_layout(target)
     patch_procure_landing(target)

@@ -4,9 +4,10 @@ $RepoRoot = $PSScriptRoot
 if (-not (Test-Path "$RepoRoot\apply.py")) {
     $RepoRoot = Join-Path $env:TEMP "procure-i18n-demo-patch"
     New-Item -ItemType Directory -Force -Path $RepoRoot | Out-Null
-    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-i18n-demo"
+    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-i18n-demo-fix-7bb5/patches/procure-copilot-i18n-demo"
     @(
         "apply.py",
+        "repair.py",
         "README.md",
         "lib/procureCta.ts",
         "lib/i18n.ts",
@@ -21,4 +22,5 @@ if (-not (Test-Path "$RepoRoot\apply.py")) {
     }
 }
 $Target = Get-Location
+python (Join-Path $RepoRoot "repair.py") --target $Target
 python (Join-Path $RepoRoot "apply.py") --target $Target --patch $RepoRoot
