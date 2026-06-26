@@ -26,8 +26,11 @@ DEMO_BLOCK = re.compile(
 )
 
 # Loose patterns — procure-copilot formats JSX with spaces inside {{ }}
+CROP_WRAPPER = re.compile(
+    r'<div className="overflow-hidden"\s+style=\{\{\s*height:\s*["\']272px["\']\s*\}\}\s*>',
+)
 CROP_HEIGHT = re.compile(
-    r'className="overflow-hidden"\s+style=\{\{\s*height:\s*["\']?272px?["\']?\s*\}\}',
+    r'className="overflow-hidden"\s+style=\{\{\s*height:\s*["\']272px["\']\s*\}\}',
 )
 CROP_STYLE = re.compile(
     r'style=\{\{\s*width:\s*["\']155%["\']\s*,\s*marginLeft:\s*["\']-27\.5%["\']\s*,'
@@ -36,6 +39,7 @@ CROP_STYLE = re.compile(
 IMG_DIMS = re.compile(r'\bwidth=\{?820\}?\s+height=\{?480\}?')
 
 INLINE_REPLACEMENTS: list[tuple[re.Pattern[str], str]] = [
+    (CROP_WRAPPER, "<div>"),
     (CROP_HEIGHT, 'className="relative w-full bg-[#0a0a0a]"'),
     (
         CROP_STYLE,
@@ -66,6 +70,7 @@ def _retailers_expr(text: str) -> str:
         "MARKET_STATS.retailersVerified",
         "marketStats.retailersVerified",
         "stats.retailersVerified",
+        "g.retailersVerified",
         "n.g.retailersVerified",
     ):
         if expr in text:
@@ -119,8 +124,13 @@ def patch_file(path: Path, retailers: str) -> int:
     # Legacy exact strings (no spaces)
     for old, new in [
         ('style={{height:"272px"}}', 'className="relative w-full bg-[#0a0a0a]"'),
+        ("style={{ height: '272px' }}", ""),
         (
             'style={{width:"155%",marginLeft:"-27.5%",height:"auto",display:"block"}}',
+            'className="w-full h-auto block"',
+        ),
+        (
+            "style={{ width: '155%', marginLeft: '-27.5%', height: 'auto', display: 'block' }}",
             'className="w-full h-auto block"',
         ),
         ("width={820}", "width={920}"),
@@ -156,7 +166,12 @@ def patch_procure_repo(target: Path) -> None:
     # Also patch any file that still has the crop hack (inline helper in page.tsx)
     for f in files:
         raw = f.read_text(encoding="utf-8")
-        if "155%" in raw or "272px" in raw or 'marginLeft:"-27.5%' in raw:
+        if (
+            "155%" in raw
+            or "272px" in raw
+            or "marginLeft" in raw
+            or "margin-left" in raw
+        ):
             total += patch_file(f, retailers)
 
     if total == 0:

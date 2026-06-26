@@ -8,6 +8,8 @@ Fixes the hero demo on `/procure`:
 | Frame too narrow | `aspect-[920/520]` + `object-contain` |
 | Old CLI Market gif (820×480) | New Procure gif 920×520, orange theme |
 
+**Target file:** `components/ProcureDemo.tsx` (not `app/procure/page.tsx`).
+
 ## Apply (from procure-copilot root)
 
 ### PowerShell (no sparse checkout)
