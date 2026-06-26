@@ -44,8 +44,7 @@ export default function IntelligenceSection() {
     <section
       ref={ref}
       id="intelligence"
-      className="landing-section scroll-mt-24"
-      style={{ backgroundColor: "#ffffff" }}
+      className="landing-section landing-section-alt scroll-mt-24"
     >
       <div className="landing-container-wide">
         <motion.div
@@ -105,7 +104,7 @@ export default function IntelligenceSection() {
             {PILOT_TIERS(isES).map((tier) => (
               <div key={tier.name} className="card-cyber rounded-xl p-5 text-left border border-[#0369a1]/15">
                 <p className="text-xs font-bold uppercase tracking-widest text-[#0369a1]">{tier.name}</p>
-                <p className="mt-2 text-2xl font-semibold text-[#0f172a]">
+                <p className="mt-2 text-2xl font-semibold text-[var(--cm-on-surface)]">
                   {tier.price}
                   <span className="text-sm font-normal text-[#64748b]">/mo</span>
                 </p>

@@ -53,10 +53,10 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300`}
       style={{
-        backgroundColor: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.95)",
+        backgroundColor: scrolled ? "rgba(0,0,0,0.92)" : "rgba(0,0,0,0.85)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        borderBottom: "1px solid var(--cm-hairline)",
+        borderBottom: "1px solid var(--cm-hairline-soft)",
       }}
       aria-label={isES ? "Navegación principal" : "Main navigation"}
     >

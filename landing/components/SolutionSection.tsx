@@ -34,7 +34,7 @@ export default function SolutionSection() {
   ];
 
   return (
-    <section ref={ref} id="solution" className="landing-section scroll-mt-24" style={{ backgroundColor: "#ffffff" }}>
+    <section ref={ref} id="solution" className="landing-section landing-section-alt scroll-mt-24">
       <div className="landing-container-wide">
         <motion.div
           className="landing-section-header text-center"
