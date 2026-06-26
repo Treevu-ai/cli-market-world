@@ -18,11 +18,11 @@ export default function UseCasesSection() {
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
-          <h2 className="section-title">{isES ? "Tres puertas, mismos precios" : "Three doors, same prices"}</h2>
+          <h2 className="section-title">{isES ? "Build, Procure, Intelligence" : "Build, Procure, Intelligence"}</h2>
           <p className="section-intro">
             {isES
-              ? "Developers, equipos de compras y analistas — misma data verificada, distinta superficie."
-              : "Developers, procurement teams, and analysts — same verified data, different surface."}
+              ? "Tres superficies sobre la misma capa de precios — explora el flujo de tu rol."
+              : "Three surfaces on the same price layer — explore the flow for your role."}
           </p>
         </div>
 

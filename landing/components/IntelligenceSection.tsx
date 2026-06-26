@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 
 const PILOT_TIERS = (isES: boolean) => [
   {
@@ -71,8 +70,8 @@ export default function IntelligenceSection() {
           </h2>
           <p className="section-intro text-[var(--cm-on-surface-variant)] max-w-[640px] mx-auto">
             {isES
-              ? "Para pricing, trade marketing, fintech y consultoras. Misma data verificada que Build y Procure — sin checkout ni integración de agentes."
-              : "For pricing, trade marketing, fintech, and consultancies. Same verified data as Build and Procure — without checkout or agent integration."}
+              ? "Para pricing, trade marketing, fintech y consultoras — spreads, inflación y canasta desde góndola real."
+              : "For pricing, trade marketing, fintech, and consultancies — spreads, inflation, and basket from real shelf data."}
           </p>
         </motion.div>
 
@@ -97,11 +96,6 @@ export default function IntelligenceSection() {
                 {b}
               </li>
             ))}
-            <li className="pt-2 text-xs font-mono text-[#64748b]">
-              {isES
-                ? `${MARKET_STATS.pricesVerifiedLabel} precios · ${MARKET_STATS.retailersVerified} retailers activos · refresh ${MARKET_STATS.pricesRefreshHours}h`
-                : `${MARKET_STATS.pricesVerifiedLabel} prices · ${MARKET_STATS.retailersVerified} active retailers · ${MARKET_STATS.pricesRefreshHours}h refresh`}
-            </li>
           </motion.ul>
 
           <motion.div
