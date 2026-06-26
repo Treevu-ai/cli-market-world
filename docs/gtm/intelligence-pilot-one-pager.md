@@ -129,7 +129,7 @@ Resultado referencial: 13.000+ precios indexados · time-to-data 1 día vs 45 ·
 
 ## 10. Próximo paso
 
-1. Complete el formulario en [cli-market.dev/#contact-intelligence](https://cli-market.dev/#contact-intelligence)  
+1. Complete el formulario en [cli-market.dev/contact?topic=intelligence#contact-intelligence](https://cli-market.dev/contact?topic=intelligence#contact-intelligence)  
    **o** escriba a **hello@cli-market.dev** con asunto `Intelligence Pilot`
 2. Indique: país · categorías · equipo (pricing / trade / data) · ventana histórica deseada
 3. Propuesta de piloto en **48 h hábiles**
