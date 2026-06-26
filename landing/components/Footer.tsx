@@ -59,6 +59,9 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--cm-text-secondary)] mb-3">
             {isES ? "Compañía" : "Company"}
           </span>
+          <a href="/case-studies" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Casos de estudio" : "Case studies"}
+          </a>
           <a href="/contact" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Contacto" : "Contact"}
           </a>
