@@ -124,12 +124,7 @@ export default function IntelligenceSection() {
           <a href="/contact?topic=intelligence#contact-intelligence" className="btn-mint">
             {isES ? "Solicitar piloto →" : "Request pilot →"}
           </a>
-          <a
-            href="/intelligence-pilot-es.md"
-            className="btn-outline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="/intelligence-pilot-es" className="btn-outline">
             {isES ? "One-pager Intelligence →" : "Intelligence one-pager →"}
           </a>
         </motion.div>
