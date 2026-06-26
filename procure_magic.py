@@ -12,7 +12,7 @@ import secrets
 import time
 from typing import Any
 
-from market_core import USE_PG, db_create_api_key, db_list_api_keys, get_db
+from market_core import USE_PG, db_create_api_key, db_get_user_email, db_list_api_keys, get_db
 
 logger = logging.getLogger(__name__)
 
@@ -245,9 +245,11 @@ def exchange_procure_magic_token(token: str) -> dict[str, str]:
     if not creds["username"] or not creds["api_key"] or not creds["tier"]:
         raise ValueError("invalid token")
     _mark_jti_used(parsed["jti"], creds["username"])
+    email = (db_get_user_email(creds["username"]) or "").strip().lower()
     return {
         "ok": True,
         "username": creds["username"],
         "api_key": creds["api_key"],
         "tier": creds["tier"],
+        "email": email,
     }
