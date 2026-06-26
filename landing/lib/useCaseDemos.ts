@@ -96,7 +96,7 @@ export const USE_CASE_DEMOS: UseCaseDemo[] = [
     gif: "/use-cases/procure.gif",
     alt_es: "Demo: Procure Copilot compara y aprueba orden",
     alt_en: "Demo: Procure Copilot compares and approves order",
-    ctaHref: "/#pricing",
+    ctaHref: "https://procurecopilot.com/procure",
     cta_es: "Ver Procure →",
     cta_en: "View Procure →",
   },

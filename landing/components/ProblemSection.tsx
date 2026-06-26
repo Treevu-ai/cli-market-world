@@ -2,7 +2,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function ProblemSection() {
   const { lang } = useLang();
@@ -13,27 +12,27 @@ export default function ProblemSection() {
   const cards = [
     {
       title: isES
+        ? "Los datos oficiales llegan tarde"
+        : "Official data arrives too late",
+      body: isES
+        ? "IPC y paneles tradicionales tienen semanas de retraso. Analistas y fondos necesitan señales de góndola antes de que el mercado las descuente."
+        : "CPI and legacy panels lag by weeks. Analysts and funds need shelf signals before the market prices them in.",
+    },
+    {
+      title: isES
+        ? "Comprar en LATAM sigue siendo manual"
+        : "Buying in LATAM is still manual",
+      body: isES
+        ? "Equipos de compras comparan en WhatsApp, Excel y múltiples apps. Sin trazabilidad ni precios normalizados por unidad."
+        : "Procurement teams compare across WhatsApp, spreadsheets, and multiple apps. No audit trail or per-unit normalized prices.",
+    },
+    {
+      title: isES
         ? "Los agentes IA no tienen precios reales"
         : "AI agents don't have real prices",
       body: isES
-        ? "Los modelos alucinan precios, usan datos de entrenamiento de meses atrás o llaman a endpoints que no existen. Necesitan una fuente de verdad verificada y actualizada en tiempo real."
-        : "Models hallucinate prices, use training data from months ago, or call endpoints that don't exist. They need a verified, real-time source of truth.",
-    },
-    {
-      title: isES
-        ? `${MARKET_STATS.retailersDefined} retailers, cada uno con su propio formato`
-        : `${MARKET_STATS.retailersDefined} retailers, each with their own format`,
-      body: isES
-        ? `${MARKET_STATS.retailersVerified} activos en ${MARKET_STATS.countries} países: SKUs distintos, unidades mezcladas, categorías incompatibles. Normalizar eso desde cero toma 18 meses — y todavía se rompe.`
-        : `${MARKET_STATS.retailersVerified} active across ${MARKET_STATS.countries} countries: different SKUs, mixed units, incompatible categories. Normalizing that from scratch takes 18 months — and still breaks.`,
-    },
-    {
-      title: isES
-        ? "El precio solo no es suficiente contexto"
-        : "Price alone isn't enough context",
-      body: isES
-        ? "S/ 5.20/kg no le dice nada a un agente. Necesita saber si es caro vs. el mes pasado, si hay stock, si hay una alternativa más barata y si el precio va a subir mañana."
-        : "S/ 5.20/kg tells an agent nothing. It needs to know if that's expensive vs. last month, whether there's stock, if there's a cheaper alternative, and if the price is about to spike.",
+        ? "Los modelos alucinan precios o usan datos viejos. Developers necesitan una API verificada — no otro scraper que se rompe cada mes."
+        : "Models hallucinate prices or use stale data. Developers need a verified API — not another scraper that breaks every month.",
     },
   ];
 
@@ -53,13 +52,13 @@ export default function ProblemSection() {
         >
           <h2 className="section-title text-[#0f172a]">
             {isES
-              ? "Los agentes IA necesitan datos de comercio reales"
-              : "AI agents need real commerce data"}
+              ? "Los precios de góndola en LATAM están fragmentados"
+              : "LATAM shelf prices are fragmented"}
           </h2>
           <p className="section-intro text-[#64748b]">
             {isES
-              ? `Construir sobre precios inventados o de entrenamiento no funciona. CLI Market es la capa de infraestructura que conecta a tus agentes con ${MARKET_STATS.pricesVerifiedLabel} precios verificados de góndola, normalizados y frescos.`
-              : `Building on hallucinated or stale training prices doesn't work. CLI Market is the infrastructure layer that connects your agents to ${MARKET_STATS.pricesVerifiedLabel} verified shelf prices, normalized and fresh.`}
+              ? "CLI Market unifica esa data en una sola capa — con tres formas de consumirla según su rol."
+              : "CLI Market unifies that data in one layer — with three ways to consume it depending on your role."}
           </p>
         </motion.div>
 

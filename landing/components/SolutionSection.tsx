@@ -15,8 +15,8 @@ export default function SolutionSection() {
       n: "1",
       title_es: "Busca en todos los retailers a la vez",
       title_en: "Search every retailer at once",
-      body_es: `Escribe el producto y CLI Market consulta ${MARKET_STATS.retailersVerified} tiendas verificadas en segundos. Sin abrir pestañas ni copiar precios.`,
-      body_en: `Type the product and CLI Market queries ${MARKET_STATS.retailersVerified} verified stores in seconds. No tabs to open, no prices to copy.`,
+      body_es: `Una consulta cruza ${MARKET_STATS.retailersVerified} tiendas verificadas en segundos — para un agente, un comprador o un analista.`,
+      body_en: `One query scans ${MARKET_STATS.retailersVerified} verified stores in seconds — for an agent, a buyer, or an analyst.`,
     },
     {
       n: "2",
@@ -27,10 +27,10 @@ export default function SolutionSection() {
     },
     {
       n: "3",
-      title_es: "Integra en tu agente — API, MCP o Procure",
-      title_en: "Integrate into your agent — API, MCP, or Procure",
-      body_es: "Consume vía REST, Python SDK o MCP tools. Tu agente ejecuta con datos frescos; los equipos operativos usan Procure Copilot para aprobaciones y checkout.",
-      body_en: "Consume via REST, Python SDK, or MCP tools. Your agent executes with fresh data; operational teams use Procure Copilot for approvals and checkout.",
+      title_es: "Elige cómo consumirla",
+      title_en: "Choose how to consume it",
+      body_es: "Build: API, MCP y SDK. Procure: comparar, aprobar y pagar sin código. Intelligence: spreads, inflación y canasta para modelos y reportes.",
+      body_en: "Build: API, MCP, and SDK. Procure: compare, approve, and pay without code. Intelligence: spreads, inflation, and basket for models and reports.",
     },
   ];
 
@@ -46,13 +46,13 @@ export default function SolutionSection() {
           <p className="section-eyebrow mb-4">{isES ? "CÓMO FUNCIONA" : "HOW IT WORKS"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
             {isES
-              ? "De la consulta a la ejecución en segundos"
-              : "From query to execution in seconds"}
+              ? "Misma data. Tres puertas de entrada."
+              : "Same data. Three entry points."}
           </h2>
           <p className="section-intro">
             {isES
-              ? "CLI Market expone toda la infraestructura retail de LatAm a tu agente — una API, herramientas MCP y SDK. Sin scraping. Sin normalización manual."
-              : "CLI Market exposes all of LatAm's retail infrastructure to your agent — one API, MCP tools, and SDK. No scraping. No manual normalization."}
+              ? "Una capa de precios verificados y normalizados — consumida vía API, dashboard de compras o feeds de inteligencia."
+              : "One verified, normalized price layer — consumed via API, procurement dashboard, or intelligence feeds."}
           </p>
         </motion.div>
 
