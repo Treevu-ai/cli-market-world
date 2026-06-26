@@ -28,3 +28,13 @@
   Content-Type: text/plain; charset=utf-8
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=3600, must-revalidate
+
+/server.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600, must-revalidate
