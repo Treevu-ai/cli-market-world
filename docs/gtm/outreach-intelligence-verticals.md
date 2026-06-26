@@ -61,7 +61,7 @@ CLI Market Intelligence agrega precios reales de góndola (Wong, Metro, Plaza Ve
 Incluye: spreads, inflación por línea, canasta comparable, export CSV/JSON y onboarding en 48 h.
 
 One-pager: https://cli-market.dev/intelligence-pilot-es.md
-Solicitud de piloto: https://cli-market.dev/#contact-intelligence
+Solicitud de piloto: https://cli-market.dev/contact?topic=intelligence#contact-intelligence
 
 ¿Tiene 20 min el [día] para revisar alcance para [País]?
 
