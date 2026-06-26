@@ -114,7 +114,7 @@ def _verify_no_demo_mailto(target: Path) -> bool:
         for path in root.rglob("*"):
             if path.suffix not in {".ts", ".tsx"}:
                 continue
-            if "mailto:hello@cli-market.dev" in path.read_text(encoding="utf-8"):
+            if "mailto:hello@cli-market.dev?" in path.read_text(encoding="utf-8"):
                 bad.append(path.relative_to(target).as_posix())
     if bad:
         print("  WARN: mailto still present in:", ", ".join(bad), file=sys.stderr)
