@@ -35,7 +35,7 @@ No vi caídas, errores 5xx ni datos vacíos. El collector parece funcionando (sn
 - **Go-live / 3 KPIs + alerts** (interno): ejecuta `python market_golive.py` (o usa el /dashboard)
 - **Slack bitácora / publicaciones** (notificaciones de collector, deploys, daily): canales configurados vía `SLACK_*` envs (ver ops/daily_briefing.py)
 - **Métricas de contenido / price-pulse**: `content/metrics/price-pulse-*.md` + reportes generados en `ops/daily/` o `content/generated/daily/`
-- **Procure Copilot (landing + checkout)**: https://procure-copilot.contacto-8e4.workers.dev/procure
+- **Procure Copilot (landing + checkout)**: https://procurecopilot.com/procure
 
 ### Local / dev (para debugging)
 - Puerto principal del server: **8765** (`python market_server.py` o uvicorn)

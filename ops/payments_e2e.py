@@ -29,7 +29,7 @@ from urllib.request import Request, urlopen
 OPS = Path(__file__).resolve().parent
 ROOT = OPS.parent
 DEFAULT_API = "https://cli-market-production.up.railway.app"
-DEFAULT_PROCURE = "https://procure-copilot.contacto-8e4.workers.dev"
+DEFAULT_PROCURE = "https://procurecopilot.com"
 DEFAULT_LANDING = "https://cli-market.dev"
 BILLING_METHODS = ("paypal", "mercadopago", "yape", "plin")
 PROCURE_METHODS = BILLING_METHODS

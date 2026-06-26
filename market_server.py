@@ -164,6 +164,7 @@ app.add_middleware(
 _DEFAULT_CORS_ORIGINS = ",".join([
     "https://cli-market.dev",
     "https://www.cli-market.dev",
+    "https://procurecopilot.com",
     "https://procure-copilot.contacto-8e4.workers.dev",
     "http://localhost:3000",
     "http://localhost:8765",
