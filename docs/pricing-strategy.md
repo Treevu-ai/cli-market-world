@@ -98,7 +98,7 @@ Monitorear mensualmente:
 
 ## Superficie comercial unificada (Fase A)
 
-- **Pricing Procure:** `https://cli-market.dev/#procure` — misma landing que Build e Intelligence.
+- **Pricing Procure:** `https://procurecopilot.com/procure` — sitio hermano (checkout en Procure o deep link `cli-market.dev/?audience=procure#pricing`).
 - **App Procure:** Worker en `/dashboard` — sin landing de marketing propia (`/procure` redirige a `#procure`).
 - **Checkout Procure:** `POST /billing/procure-subscribe` en Railway; activación vía webhook PayPal (`procure_starter` / `procure_pro` / `procure_builder`).
 

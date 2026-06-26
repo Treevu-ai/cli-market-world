@@ -15,7 +15,7 @@ flowchart LR
 
 ### 1. Descubrimiento
 - Landing Build: [cli-market.dev/#pricing](https://cli-market.dev/#pricing)
-- Landing Procure: [cli-market.dev/#procure](https://cli-market.dev/#procure)
+- Landing Procure: [procurecopilot.com/procure](https://procurecopilot.com/procure)
 - O CLI: `python -m pip install cli-market-world && market hello`
 
 ### 2. Cuenta free (recomendado antes de pagar)
