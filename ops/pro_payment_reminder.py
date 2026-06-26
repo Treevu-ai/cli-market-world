@@ -20,13 +20,28 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("MARKET_DATA_DIR", "/tmp/market-data")
 
-from market_core import get_db  # noqa: E402
+from market_core import ensure_db_initialized, get_db  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
 
+def _production_db_ready() -> bool:
+    """Reminders require production Postgres — not empty SQLite in CI."""
+    if not (os.getenv("DATABASE_URL") or "").strip():
+        logger.warning("DATABASE_URL not set — skipping Pro payment reminders")
+        return False
+    try:
+        ensure_db_initialized()
+        return True
+    except Exception:
+        logger.exception("Failed to initialize database schema")
+        return False
+
+
 def find_pending_pro_requests(*, hours_min: int = 24, hours_max: int = 72) -> list[dict]:
     """Find subscription requests that are pending and within the reminder window."""
+    if not _production_db_ready():
+        return []
     db = get_db()
     now = datetime.now(timezone.utc)
     window_start = (now - timedelta(hours=hours_max)).strftime("%Y-%m-%d %H:%M:%S")
@@ -128,6 +143,10 @@ def main() -> int:
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+
+    if not (os.getenv("DATABASE_URL") or "").strip():
+        print("Skip: DATABASE_URL not configured (production Postgres required).")
+        return 0
 
     pending = find_pending_pro_requests(hours_min=args.hours_min, hours_max=args.hours_max)
     logger.info("Found %d pending Pro requests in %d-%dh window", len(pending), args.hours_min, args.hours_max)

@@ -30,6 +30,8 @@ jobs:
 
       - name: Build static export
         working-directory: landing
+        env:
+          NEXT_PUBLIC_PROCURE_MP_CHECKOUT: "1"
         run: |
           npm ci
           npm run build

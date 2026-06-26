@@ -52,6 +52,7 @@ def test_create_and_exchange_token():
     assert result["username"] == "magic-user"
     assert result["api_key"] == api_key
     assert result["tier"] == "procure_pro"
+    assert "email" in result
 
     with pytest.raises(ValueError, match="already used"):
         exchange_procure_magic_token(token)
