@@ -15,7 +15,10 @@ export default function FinalCTASection() {
       ref={ref}
       id="final-cta"
       className="landing-section scroll-mt-24"
-      style={{ background: "linear-gradient(160deg, #fff7f0 0%, #fff5ed 50%, #fef3ea 100%)", borderTop: "1px solid rgba(234,88,12,0.12)" }}
+      style={{
+        background: "linear-gradient(160deg, rgba(234,88,12,0.12) 0%, var(--cm-surface-low) 50%, var(--cm-background) 100%)",
+        borderTop: "1px solid rgba(234,88,12,0.2)",
+      }}
     >
       <div className="landing-container-wide text-center">
         <motion.div
