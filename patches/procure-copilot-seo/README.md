@@ -1,13 +1,19 @@
 # Apply Procure SEO patch
 
-From **procure-copilot** repo root:
+From **procure-copilot** repo root.
+
+### One-liner (sparse checkout / no local patch folder)
 
 ```powershell
-# Windows
-..\cli-market-world\patches\procure-copilot-seo\apply.ps1
+cd ~\procure-copilot
+irm https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-seo/install-seo.ps1 -OutFile install-seo.ps1
+.\install-seo.ps1
+```
 
-# Or Python directly
-python ..\cli-market-world\patches\procure-copilot-seo\apply.py
+### With cli-market-world patch folder
+
+```powershell
+python ~\cli-market-world\patches\procure-copilot-seo\apply.py --target $PWD --patch ~\cli-market-world\patches\procure-copilot-seo
 ```
 
 ## What it does
@@ -53,11 +59,20 @@ Remove any hardcoded `procure-copilot.contacto-8e4.workers.dev` URLs.
 NEXT_PUBLIC_PROCURE_SITE_URL=https://procurecopilot.com
 ```
 
-## Deploy
+## Deploy (OpenNext — files must land in `.open-next/assets`)
 
-```bash
+```powershell
 npm install
-npm run og:png
 npm run build
+npx opennextjs-cloudflare build
+node scripts/copy-public-assets.mjs
 npx wrangler deploy
+```
+
+Verify **before** deploy:
+
+```powershell
+Test-Path public\og.png
+Test-Path public\llms.txt
+Test-Path .open-next\assets\og.png
 ```
