@@ -158,9 +158,10 @@ section[id] {
   scroll-margin-top: 80px;
 }
 
-/* One horizontal rail — aligned with navbar / footer */
+/* One horizontal rail — aligned with navbar / footer (proc-container-wide alias for sister site) */
 .landing-container,
-.landing-container-wide {
+.landing-container-wide,
+.proc-container-wide {
   width: 100%;
   max-width: var(--cm-container-max);
   margin-left: auto;
