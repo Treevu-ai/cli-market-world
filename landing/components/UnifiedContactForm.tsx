@@ -1,17 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const TOPICS_ES = [
   { value: "enterprise", label: "Enterprise / Volumen personalizado" },
+  { value: "procure",    label: "Procure Copilot — demo o piloto" },
   { value: "press",      label: "Prensa / Alianza" },
   { value: "general",    label: "Consulta general" },
   { value: "retailer",   label: "Listar mi tienda (gratis)" },
 ];
 const TOPICS_EN = [
   { value: "enterprise", label: "Enterprise / Custom volume" },
+  { value: "procure",    label: "Procure Copilot — demo or pilot" },
   { value: "press",      label: "Press / Partnership" },
   { value: "general",    label: "General inquiry" },
   { value: "retailer",   label: "List my store (free)" },
@@ -19,11 +21,13 @@ const TOPICS_EN = [
 
 const MSG_PLACEHOLDERS_ES: Record<string, string> = {
   enterprise: "País, categorías, volumen estimado, SLA esperado…",
+  procure:    "Empresa, sector (restaurante/hotel/etc.), volumen de compras mensual, país…",
   press:      "Medio, tema de la nota, fecha de publicación…",
   general:    "¿En qué podemos ayudarte?",
 };
 const MSG_PLACEHOLDERS_EN: Record<string, string> = {
   enterprise: "Country, categories, estimated volume, expected SLA…",
+  procure:    "Company, sector (restaurant/hotel/etc.), monthly procurement volume, country…",
   press:      "Publication, story topic, publish date…",
   general:    "How can we help?",
 };
@@ -43,6 +47,20 @@ export default function UnifiedContactForm() {
 
   const topics = isES ? TOPICS_ES : TOPICS_EN;
   const [topic, setTopic] = useState("enterprise");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("topic");
+    const hash = window.location.hash.replace("#", "");
+    const fromHash =
+      hash === "contact-procure" ? "procure" : hash === "contact-intelligence" ? "enterprise" : null;
+    const next = fromQuery || fromHash;
+    const allowed = new Set(["enterprise", "procure", "press", "general", "retailer"]);
+    if (next && allowed.has(next)) {
+      setTopic(next);
+    }
+  }, []);
 
   // General contact fields
   const [email, setEmail]     = useState("");
