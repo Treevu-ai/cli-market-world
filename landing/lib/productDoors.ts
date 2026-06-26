@@ -68,6 +68,6 @@ export const PRODUCT_DOORS: ProductDoor[] = [
     price_en: "Pilot from $300/mo",
     cta_es: "Solicitar piloto →",
     cta_en: "Request pilot →",
-    href: "/contact#contact-intelligence",
+    href: "/contact?topic=intelligence#contact-intelligence",
   },
 ];

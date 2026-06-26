@@ -7,6 +7,7 @@ import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
 import {
   PRICING_TABS,
@@ -313,7 +314,7 @@ export default function Pricing() {
             {isES ? "¿No es su perfil?" : "Not your profile?"}
           </span>
           <a
-            href="https://procurecopilot.com/procure"
+            href={`${PROCURE_SITE_URL}/procure`}
             className="text-[var(--cm-mint)] font-semibold hover:underline"
             target="_blank"
             rel="noopener noreferrer"

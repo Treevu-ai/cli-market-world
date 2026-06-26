@@ -1,4 +1,5 @@
 import { MARKET_STATS } from "@/lib/marketStats";
+import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 
 export type UseCaseId = "agents" | "market-data" | "basket" | "inflation" | "procure";
 
@@ -48,7 +49,7 @@ export const USE_CASE_DEMOS: UseCaseDemo[] = [
     gif: "/use-cases/market-data.gif",
     alt_es: "Demo: discover, stats y scores de cobertura de mercado",
     alt_en: "Demo: discover, stats, and market coverage scores",
-    ctaHref: "/#coverage",
+    ctaHref: "/impact#coverage",
     cta_es: "Ver cobertura →",
     cta_en: "View coverage →",
   },
@@ -64,7 +65,7 @@ export const USE_CASE_DEMOS: UseCaseDemo[] = [
     gif: "/use-cases/basket.gif",
     alt_es: "Demo: canasta multi-retailer con mejor total Metro",
     alt_en: "Demo: multi-retailer basket with best Metro total",
-    ctaHref: "/#api",
+    ctaHref: "/docs#quickstart",
     cta_es: "Ver API →",
     cta_en: "View API →",
   },
@@ -96,7 +97,7 @@ export const USE_CASE_DEMOS: UseCaseDemo[] = [
     gif: "/use-cases/procure.gif",
     alt_es: "Demo: Procure Copilot compara y aprueba orden",
     alt_en: "Demo: Procure Copilot compares and approves order",
-    ctaHref: "https://procurecopilot.com/procure",
+    ctaHref: `${PROCURE_SITE_URL}/procure`,
     cta_es: "Ver Procure →",
     cta_en: "View Procure →",
   },

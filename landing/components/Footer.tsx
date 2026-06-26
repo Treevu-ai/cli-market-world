@@ -59,7 +59,7 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--cm-text-secondary)] mb-3">
             {isES ? "Compañía" : "Company"}
           </span>
-          <a href="mailto:hello@cli-market.dev" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/contact" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Contacto" : "Contact"}
           </a>
           <a href="/legal/tos" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
