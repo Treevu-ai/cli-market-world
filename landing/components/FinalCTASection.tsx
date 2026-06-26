@@ -34,9 +34,12 @@ export default function FinalCTASection() {
               : "Choose how you want to use the prices."}
           </p>
 
-          <div className="mt-8">
-            <a href={CTA.bookDemo.href} className="btn-outline text-base px-8 py-3">
-              {isES ? CTA.bookDemo.es : CTA.bookDemo.en}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <a href={CTA.getApiKey.href} className="btn-mint text-base px-8 py-3">
+              {isES ? CTA.getApiKey.es : CTA.getApiKey.en}
+            </a>
+            <a href={CTA.contact.href} className="btn-outline text-base px-8 py-3">
+              {isES ? CTA.contact.es : CTA.contact.en}
             </a>
           </div>
         </motion.div>
