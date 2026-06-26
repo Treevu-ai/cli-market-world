@@ -42,7 +42,7 @@ export default function WhoItsForSection() {
   ];
 
   return (
-    <section ref={ref} id="who-its-for" className="landing-section scroll-mt-24" style={{ backgroundColor: "#f8fafc" }}>
+    <section ref={ref} id="who-its-for" className="landing-section landing-section-alt scroll-mt-24">
       <div className="landing-container-wide text-center">
         <motion.div
           className="landing-section-header"
