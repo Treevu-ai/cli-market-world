@@ -5,7 +5,7 @@ Apply in **`procure-copilot`** when `cli-market-world` Sprint 3 is deployed.
 **Prereqs (Railway / API):**
 
 - `PROCURE_MAGIC_SECRET` — 32+ byte secret (must match API)
-- `PROCURE_APP_URL` — e.g. `https://procure-copilot.contacto-8e4.workers.dev/dashboard`
+- `PROCURE_APP_URL` — e.g. `https://procurecopilot.com/dashboard`
 
 **API contract:**
 
@@ -116,7 +116,7 @@ Ensure dashboard API calls read `sessionStorage.getItem("cli_market_api_key")` (
 NEXT_PUBLIC_CLI_MARKET_API=https://cli-market-production.up.railway.app
 ```
 
-CORS: `procure-copilot.contacto-8e4.workers.dev` is already in API `CORS_ORIGINS`.
+CORS: `procurecopilot.com` (and legacy `procure-copilot.contacto-8e4.workers.dev`) are in API `CORS_ORIGINS`.
 
 ---
 
