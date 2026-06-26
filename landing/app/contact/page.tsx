@@ -21,26 +21,12 @@ export default function ContactPage() {
               <h1 className="section-title">{isES ? "Hablemos" : "Let's talk"}</h1>
               <p className="section-intro">
                 {isES
-                  ? "Enterprise, retailers, prensa o consulta general — un solo formulario."
-                  : "Enterprise, retailers, press, or general inquiry — one form."}
+                  ? "Intelligence, Procure, enterprise, retailers o consulta general — un solo formulario."
+                  : "Intelligence, Procure, enterprise, retailers, or general inquiry — one form."}
               </p>
             </div>
             <div id="contact-general" className="scroll-mt-24">
-              <div id="contact-procure" className="scroll-mt-24" />
               <UnifiedContactForm />
-            </div>
-            <div id="contact-intelligence" className="scroll-mt-24 mt-12 text-center">
-              <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
-                {isES
-                  ? "¿Piloto Intelligence ($300–500/mes) para pricing, fintech o consultoras?"
-                  : "Intelligence pilot ($300–500/mo) for pricing, fintech, or consultancies?"}
-              </p>
-              <a
-                href="/contact?topic=enterprise#contact-intelligence"
-                className="inline-block border border-[#0369a1]/40 text-[#0369a1] font-semibold text-sm px-6 py-2 rounded-full hover:bg-[#0369a1]/10 transition-colors"
-              >
-                {isES ? "Solicitar piloto Intelligence →" : "Request Intelligence pilot →"}
-              </a>
             </div>
             <div className="scroll-mt-24 mt-12 text-center">
               <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
