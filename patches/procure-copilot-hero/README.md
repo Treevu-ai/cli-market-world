@@ -43,4 +43,12 @@ node scripts/copy-public-assets.mjs
 npx wrangler deploy
 ```
 
-Verify: open https://procurecopilot.com/procure — full terminal visible, no horizontal line artifact.
+## Verify
+
+```powershell
+# HTML must NOT contain 155% or 272px after deploy
+(Invoke-WebRequest https://procurecopilot.com/procure).Content -match '155%|272px'
+# Should be False
+```
+
+Open https://procurecopilot.com/procure — one terminal frame (inside GIF only), full width in sidebar.
