@@ -62,48 +62,55 @@ def _add_import(text: str, imp_line: str) -> str:
     return imp_line + text
 
 
-def patch_procure_page(target: Path) -> None:
-    path = target / "app/procure/page.tsx"
-    if not path.exists():
-        print("  skip: app/procure/page.tsx not found")
-        return
+HERO_SECTION = re.compile(r'<section\s+id="hero"\s+className="([^"]*)"', re.DOTALL)
 
-    text = path.read_text(encoding="utf-8")
-    original = text
+
+def _hero_section_classes(cls: str) -> str:
+    if "relative" not in cls:
+        cls = f"{cls} relative"
+    if "overflow-hidden" not in cls:
+        cls = f"{cls} overflow-hidden"
+    return cls
+
+
+def _mount_hero_background(text: str) -> str:
+    if 'id="hero"' not in text:
+        return text
 
     bg_import = 'import ProcureHeroBackground from "@/components/ProcureHeroBackground";\n'
     text = _add_import(text, bg_import)
 
-    if "ProcureHeroBackground" in text and 'id="hero"' in text:
-        if "<ProcureHeroBackground" not in text:
-            text = re.sub(
-                r'(<section\s+id="hero"[^>]*>)',
-                r"<ProcureHeroBackground />\n      \1",
-                text,
-                count=1,
-            )
-        if not re.search(r'id="hero"[^>]*className="[^"]*\brelative\b', text):
-            text = re.sub(
-                r'(<section\s+id="hero"\s+className=")([^"]*)"',
-                lambda m: (
-                    f'{m.group(1)}{m.group(2)} relative overflow-hidden"'
-                    if "overflow-hidden" not in m.group(2)
-                    else f'{m.group(1)}{m.group(2)} relative"'
-                    if "relative" not in m.group(2)
-                    else m.group(0)
-                ),
-                text,
-                count=1,
-            )
-        elif "overflow-hidden" not in text.split('id="hero"', 1)[1].split(">", 1)[0]:
-            text = re.sub(
-                r'(<section\s+id="hero"\s+className=")([^"]*)"',
-                r'\1\2 overflow-hidden"',
-                text,
-                count=1,
-            )
+    if "<ProcureHeroBackground" not in text:
+        text = re.sub(
+            r'(<section\s+id="hero"[^>]*>)',
+            r"\1\n      <ProcureHeroBackground />",
+            text,
+            count=1,
+        )
 
-    # Drop demo column blocks (desktop + mobile)
+    def _fix_hero_classes(m: re.Match[str]) -> str:
+        return f'<section id="hero" className="{_hero_section_classes(m.group(1))}"'
+
+    text = HERO_SECTION.sub(_fix_hero_classes, text, count=1)
+
+    def _fix_inner_z(m: re.Match[str]) -> str:
+        cls = m.group(2)
+        if "relative" not in cls:
+            cls = f"{cls} relative"
+        if "z-10" not in cls:
+            cls = f"{cls} z-10"
+        return f"{m.group(1)}{cls}{m.group(3)}"
+
+    text = re.sub(
+        r'(<ProcureHeroBackground\s*/>\s*<div\s+className=")([^"]*)(")',
+        _fix_inner_z,
+        text,
+        count=1,
+    )
+    return text
+
+
+def _strip_demo_ui(text: str) -> str:
     text = re.sub(
         r'<motion\.div[^>]*\bid="demo"[^>]*>[\s\S]*?</motion\.div>\s*',
         "",
@@ -119,13 +126,35 @@ def patch_procure_page(target: Path) -> None:
     text = re.sub(r"\s*<ProcureDemo\s*/>\s*", "\n", text)
     text = re.sub(r'import ProcureDemo from ["\']@/components/ProcureDemo["\'];\n', "", text)
     text = re.sub(r'import ProcureHeroTerminal from ["\']@/components/ProcureHeroTerminal["\'];\n', "", text)
+    return text
+
+
+def patch_hero_file(target: Path, rel: str, *, strip_demo: bool = False) -> None:
+    path = target / rel
+    if not path.exists():
+        print(f"  skip: {rel} not found")
+        return
+
+    text = path.read_text(encoding="utf-8")
+    original = text
+    text = _mount_hero_background(text)
+    if strip_demo:
+        text = _strip_demo_ui(text)
 
     if 'id="hero"' in text and "<ProcureHeroBackground" not in text:
-        print("  WARN: ProcureHeroBackground not in page.tsx — add manually (see TROUBLESHOOTING.md)")
+        print(f"  WARN: ProcureHeroBackground not mounted in {rel} — see TROUBLESHOOTING.md")
 
     if text != original:
         path.write_text(text, encoding="utf-8")
-        print("  patched app/procure/page.tsx")
+        print(f"  patched {rel}")
+
+
+def patch_procure_page(target: Path) -> None:
+    patch_hero_file(target, "app/procure/page.tsx", strip_demo=True)
+
+
+def patch_procure_landing(target: Path) -> None:
+    patch_hero_file(target, "components/ProcureLanding.tsx")
 
 
 def patch_content_lib(target: Path) -> None:
@@ -174,6 +203,7 @@ def main() -> int:
     print(f"Applying hero background patch → {target}")
     copy_tree(patch, target)
     remove_artifacts(target)
+    patch_procure_landing(target)
     patch_procure_page(target)
     patch_content_lib(target)
     scrub_demo_gif_refs(target)

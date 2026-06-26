@@ -6,20 +6,26 @@
 - `ProcureHeroBackground` → **not in HTML/JS** (component never mounted)
 - Result: solid `--cm-background` black only
 
-## Required: `app/procure/page.tsx`
+## Required: `components/ProcureLanding.tsx` (primary)
 
-Inside `#hero`, **first child** must be:
+The live hero is in **ProcureLanding**, not `app/procure/page.tsx`. Inside `#hero`:
 
 ```tsx
 import ProcureHeroBackground from "@/components/ProcureHeroBackground";
 
 <section id="hero" className="landing-section relative z-10 animate-fade-in overflow-hidden">
   <ProcureHeroBackground />
-  {/* rest of hero */}
+  <div className="proc-container-wide ... relative z-10">
+    {/* hero copy */}
+  </div>
 </section>
 ```
 
-`relative` + `overflow-hidden` on the section are required.
+`relative` + `overflow-hidden` on the section; `relative z-10` on the inner container.
+
+## Also check: `app/procure/page.tsx`
+
+If your layout still renders hero here, apply the same pattern. `apply.py` patches both files when present.
 
 ## Deploy
 
