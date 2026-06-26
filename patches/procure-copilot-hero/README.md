@@ -14,25 +14,28 @@ Replaces the hero terminal GIF with a **supermarket aisle background image**. Re
 
 ```powershell
 cd ~\procure-copilot
-$base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-hero-gif-7bb5/patches/procure-copilot-hero"
+$base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-hero"
 Invoke-WebRequest "$base/install-hero.ps1" -OutFile install-hero.ps1
 .\install-hero.ps1
 ```
 
-## Manual edits if apply cannot patch `page.tsx`
+## Manual edits if apply cannot patch automatically
 
 1. Copy `public/hero-supermarket.webp` and `components/ProcureHeroBackground.tsx`
-2. In `app/procure/page.tsx`, inside `#hero` section (first child):
+2. In **`components/ProcureLanding.tsx`** (primary — hero lives here), inside `#hero`:
 
 ```tsx
 import ProcureHeroBackground from "@/components/ProcureHeroBackground";
 
-<section id="hero" className="... relative overflow-hidden">
+<section id="hero" className="landing-section relative z-10 animate-fade-in overflow-hidden">
   <ProcureHeroBackground />
-  ...
-  {/* remove <ProcureDemo /> columns */}
+  <div className="proc-container-wide ... relative z-10">
+    ...
+  </div>
 </section>
 ```
+
+3. If hero also exists in `app/procure/page.tsx`, apply the same pattern and remove `<ProcureDemo />` columns there.
 
 3. Replace `components/ProcureDemo.tsx` with the stub from this patch (returns `null`)
 4. Delete `public/demo.gif` and `components/ProcureHeroTerminal.tsx` if present
@@ -57,4 +60,7 @@ git push origin main
 
 (Invoke-WebRequest https://procurecopilot.com/hero-supermarket.webp).StatusCode
 # 200
+
+(Invoke-WebRequest https://procurecopilot.com/procure).Content -match 'hero-supermarket'
+# True — background component mounted in HTML
 ```
