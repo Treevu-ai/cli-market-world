@@ -135,7 +135,7 @@ export default function ImpactLanding() {
             <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-action">
               {isES ? "Empezar con la API — gratis" : "Start with the API — free"}
             </Link>
-            <a href="#intelligence" className="impact-btn impact-btn-ghost">
+            <a href="#intel" className="impact-btn impact-btn-ghost">
               {isES ? "Ver Intelligence ↓" : "See Intelligence ↓"}
             </a>
           </div>
