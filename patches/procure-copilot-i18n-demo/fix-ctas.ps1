@@ -24,7 +24,7 @@ python patches\procure-copilot-i18n-demo\apply.py
 
 $hits = @()
 Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
-    if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev') {
+    if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev\?') {
         $hits += $_.FullName
     }
 }
@@ -32,15 +32,19 @@ if ($hits.Count -gt 0) {
     Write-Host "    PowerShell fallback on remaining files..." -ForegroundColor Yellow
     foreach ($f in $hits) {
         $raw = Get-Content $f -Raw
-        $fixed = $raw -replace 'mailto:hello@cli-market\.dev(\?[^"''\s>]*)?', $Contact
+        $fixed = $raw -replace 'mailto:hello@cli-market\.dev\?[^"''\s>]*', $Contact
         if ($fixed -ne $raw) { Set-Content $f $fixed; Write-Host "    fixed $f" -ForegroundColor Green }
     }
 }
 
-$still = Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue |
-    Select-String -Pattern 'mailto:hello@cli-market' -ErrorAction SilentlyContinue
-if ($still) {
-    Write-Error "mailto still in source — paste output: $($still | Out-String)"
+$still = @()
+Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
+    if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev\?') {
+        $still += $_.FullName
+    }
+}
+if ($still.Count -gt 0) {
+    Write-Error "Demo mailto still in: $($still -join ', ')"
 }
 
 Write-Host "`n==> 3/5 Build" -ForegroundColor Cyan
