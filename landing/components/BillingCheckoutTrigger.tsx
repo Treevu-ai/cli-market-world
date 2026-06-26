@@ -38,7 +38,7 @@ export default function BillingCheckoutTrigger({
           ? "Elegir Pro →"
           : "Choose Pro →"
         : isES
-          ? "Suscribir →"
+          ? "Suscribirse →"
           : "Subscribe →";
 
   const label = isES ? label_es ?? defaultLabel : label_en ?? defaultLabel;

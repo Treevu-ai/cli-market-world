@@ -17,7 +17,7 @@ export default function ProcureSubscribeButton({
       kind={{ type: "procure", plan }}
       className={className}
       autoOpen={autoOpen}
-      label_es="Suscribir →"
+      label_es="Suscribirse →"
       label_en="Subscribe →"
     />
   );
