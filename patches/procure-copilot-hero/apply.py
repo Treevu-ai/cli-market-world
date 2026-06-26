@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Apply Procure hero terminal patch into procure-copilot checkout.
-
-Fixes:
-- demo.gif 920×520 (Procure flow, orange theme) replaces old 820×480 CLI Market gif
-- Removes width:155% / margin-left:-27.5% crop hack
-- Uses aspect-[920/520] + object-contain so full terminal is visible
+"""Apply Procure hero redesign: remove demo.gif, add supermarket aisle background.
 
 Usage (from procure-copilot repo root):
-  python3 ../cli-market-world/patches/procure-copilot-hero/apply.py
+  python patches/procure-copilot-hero/apply.py
+
+Or download install-hero.ps1 from GitHub and run it.
 """
 
 from __future__ import annotations
@@ -18,111 +15,141 @@ import shutil
 import sys
 from pathlib import Path
 
-DEMO_BLOCK = re.compile(
-    r'<div className="mt-10 w-full max-w-\[820px\] mx-auto text-left">[\s\S]*?'
-    r'retailers verificados\s*</p>\s*</div>',
-    re.MULTILINE,
-)
-
-INLINE_FIXES: list[tuple[str, str]] = [
-    ('max-w-[820px]', 'max-w-[920px]'),
-    ('width={820}', 'width={920}'),
-    ('height={480}', 'height={520}'),
-    (
-        'style={{height:"272px"}}',
-        'className="relative w-full aspect-[920/520] bg-[#0a0a0a]"',
-    ),
-    (
-        'style={{height:272}}',
-        'className="relative w-full aspect-[920/520] bg-[#0a0a0a]"',
-    ),
-    (
-        'style={{width:"155%",marginLeft:"-27.5%",height:"auto",display:"block"}}',
-        'className="w-full h-full object-contain object-top block"',
-    ),
-    (
-        "style={{width:'155%',marginLeft:'-27.5%',height:'auto',display:'block'}}",
-        'className="w-full h-full object-contain object-top block"',
-    ),
-    ('className="overflow-hidden" style={{height:"272px"}}', 'className="relative w-full aspect-[920/520] bg-[#0a0a0a]"'),
+COPY_FILES = [
+    "components/ProcureHeroBackground.tsx",
+    "components/ProcureDemo.tsx",
+    "public/hero-supermarket.webp",
 ]
+
+REMOVE_PATHS = [
+    "public/demo.gif",
+    "components/ProcureHeroTerminal.tsx",
+]
+
+DEMO_GIF_REF = re.compile(r'["\']/demo\.gif["\']')
+PRELOAD_DEMO = re.compile(r'<link rel="preload" as="image" href="/demo\.gif"\s*/>\s*')
 
 
 def copy_tree(patch: Path, target: Path) -> None:
-    for rel in [
-        "components/ProcureHeroTerminal.tsx",
-        "public/demo.gif",
-    ]:
+    for rel in COPY_FILES:
         src = patch / rel
         dst = target / rel
         if not src.exists():
-            print(f"  warn: missing patch file {rel}")
+            print(f"  warn: missing {rel}")
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
         print(f"  copied {rel}")
 
 
-def _retailers_expr(text: str) -> str:
-    if "MARKET_STATS.retailersVerified" in text:
-        return "MARKET_STATS.retailersVerified"
-    if "marketStats.retailersVerified" in text:
-        return "marketStats.retailersVerified"
-    if "RETAILERS_VERIFIED" in text:
-        return "RETAILERS_VERIFIED"
-    return "40"
+def remove_artifacts(target: Path) -> None:
+    for rel in REMOVE_PATHS:
+        path = target / rel
+        if path.exists():
+            path.unlink()
+            print(f"  removed {rel}")
+
+
+def _add_import(text: str, imp_line: str) -> str:
+    if imp_line.strip() in text:
+        return text
+    if text.startswith('"use client"') or text.startswith("'use client'"):
+        end = text.find("\n") + 1
+        return text[:end] + "\n" + imp_line + text[end:]
+    if text.startswith("import "):
+        first = text.find("\n", text.find("import "))
+        return text[: first + 1] + imp_line + text[first + 1 :]
+    return imp_line + text
 
 
 def patch_procure_page(target: Path) -> None:
     path = target / "app/procure/page.tsx"
     if not path.exists():
-        # Fallback: any file referencing demo.gif
-        candidates = list(target.glob("app/**/*.tsx")) + list(target.glob("components/**/*.tsx"))
-        for c in candidates:
-            if "demo.gif" in c.read_text(encoding="utf-8"):
-                path = c
-                break
-        else:
-            print("  skip: no file with demo.gif found")
-            return
-
-    text = path.read_text(encoding="utf-8")
-    if "ProcureHeroTerminal" in text and "155%" not in text and "272px" not in text:
-        print(f"  {path.relative_to(target)} already patched")
+        print("  skip: app/procure/page.tsx not found")
         return
 
-    retailers = _retailers_expr(text)
-    component_usage = f"<ProcureHeroTerminal retailersVerified={{{retailers}}} />"
+    text = path.read_text(encoding="utf-8")
+    original = text
 
-    if "ProcureHeroTerminal" not in text:
-        if 'from "@/components/ProcureHeroTerminal"' not in text:
-            if text.startswith("import "):
-                first = text.find("\n", text.find("import "))
-                text = (
-                    text[: first + 1]
-                    + 'import ProcureHeroTerminal from "@/components/ProcureHeroTerminal";\n'
-                    + text[first + 1 :]
-                )
-            else:
-                text = (
-                    'import ProcureHeroTerminal from "@/components/ProcureHeroTerminal";\n'
-                    + text
-                )
+    bg_import = 'import ProcureHeroBackground from "@/components/ProcureHeroBackground";\n'
+    text = _add_import(text, bg_import)
 
-    replaced = 0
-    text, n = DEMO_BLOCK.subn(component_usage, text)
-    replaced += n
+    if "ProcureHeroBackground" in text and 'id="hero"' in text:
+        if "<ProcureHeroBackground" not in text:
+            text = re.sub(
+                r'(<section\s+id="hero"[^>]*>)',
+                r"<ProcureHeroBackground />\n      \1",
+                text,
+                count=1,
+            )
+        text = re.sub(
+            r'(<section\s+id="hero"\s+className=")([^"]*)"',
+            lambda m: (
+                f'{m.group(1)}{m.group(2)} relative overflow-hidden"'
+                if "relative" not in m.group(2)
+                else m.group(0)
+            ),
+            text,
+            count=1,
+        )
+        text = re.sub(
+            r'(<section\s+id="hero"[^>]*className="[^"]*)\s+z-10',
+            r"\1 z-10",
+            text,
+            count=1,
+        )
 
-    for old, new in INLINE_FIXES:
-        if old in text:
-            text = text.replace(old, new)
-            replaced += 1
+    # Drop demo column blocks (desktop + mobile)
+    text = re.sub(
+        r'<motion\.div[^>]*\bid="demo"[^>]*>[\s\S]*?</motion\.div>\s*',
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r'<motion\.div[^>]*className="[^"]*lg:hidden[^"]*mt-10[^"]*"[^>]*>[\s\S]*?</motion\.div>\s*',
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s*<ProcureDemo\s*/>\s*", "\n", text)
+    text = re.sub(r'import ProcureDemo from ["\']@/components/ProcureDemo["\'];\n', "", text)
+    text = re.sub(r'import ProcureHeroTerminal from ["\']@/components/ProcureHeroTerminal["\'];\n', "", text)
 
-    if replaced == 0 and "ProcureHeroTerminal" not in text:
-        print(f"  warn: could not auto-patch {path.name} — apply INLINE_FIXES manually")
+    if text != original:
+        path.write_text(text, encoding="utf-8")
+        print("  patched app/procure/page.tsx")
 
-    path.write_text(text, encoding="utf-8")
-    print(f"  patched {path.relative_to(target)} ({replaced} replacements)")
+
+def patch_content_lib(target: Path) -> None:
+    path = target / "lib/procure-content.ts"
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    new = DEMO_GIF_REF.sub('"/og.png"', text)
+    if new != text:
+        path.write_text(new, encoding="utf-8")
+        print("  patched lib/procure-content.ts (og image)")
+
+
+def scrub_demo_gif_refs(target: Path) -> None:
+    roots = [target / "app", target / "components", target / "lib"]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for path in root.rglob("*"):
+            if path.suffix not in {".tsx", ".ts", ".jsx", ".js", ".md"}:
+                continue
+            if path.name == "ProcureDemo.tsx":
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "/demo.gif" not in text:
+                continue
+            new = DEMO_GIF_REF.sub('"/og.png"', text)
+            new = PRELOAD_DEMO.sub("", new)
+            if new != text:
+                path.write_text(new, encoding="utf-8")
+                print(f"  scrubbed demo.gif in {path.relative_to(target)}")
 
 
 def main() -> int:
@@ -137,15 +164,17 @@ def main() -> int:
         print(f"error: not a Node project: {target}", file=sys.stderr)
         return 1
 
-    print(f"Applying hero patch → {target}")
+    print(f"Applying hero background patch → {target}")
     copy_tree(patch, target)
+    remove_artifacts(target)
     patch_procure_page(target)
+    patch_content_lib(target)
+    scrub_demo_gif_refs(target)
     print("\nDone. Next:")
-    print("  cd", target)
     print("  npm run build")
     print("  npx opennextjs-cloudflare build")
     print("  node scripts/copy-public-assets.mjs")
-    print("  npx wrangler deploy")
+    print("  git add -A && git commit && git push origin main")
     return 0
 
 

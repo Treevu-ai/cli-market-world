@@ -1,46 +1,60 @@
-# Procure Copilot — Hero terminal GIF patch
+# Procure Copilot — Hero background patch
 
-Fixes the hero demo on `/procure`:
+Replaces the hero terminal GIF with a **supermarket aisle background image**. Removes `demo.gif` and related components.
 
-| Issue | Fix |
-|-------|-----|
-| Line across GIF / cropped terminal | Remove `width:155%` + `margin-left:-27.5%` hack |
-| Frame too narrow | `aspect-[920/520]` + `object-contain` |
-| Old CLI Market gif (820×480) | New Procure gif 920×520, orange theme |
+## What changes
 
-## Apply (from procure-copilot root)
+| Before | After |
+|--------|-------|
+| `demo.gif` in hero | Removed |
+| `ProcureDemo` terminal | Returns `null` (no UI) |
+| Plain hero | `hero-supermarket.webp` full-bleed background + gradient overlay |
 
-### PowerShell (no sparse checkout)
+## Apply (PowerShell, from `~\procure-copilot`)
 
 ```powershell
 cd ~\procure-copilot
-irm https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-hero/install-hero.ps1 -OutFile install-hero.ps1
+$base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-hero-gif-7bb5/patches/procure-copilot-hero"
+Invoke-WebRequest "$base/install-hero.ps1" -OutFile install-hero.ps1
 .\install-hero.ps1
 ```
 
-### Local clone
+## Manual edits if apply cannot patch `page.tsx`
 
-```powershell
-cd ~\procure-copilot
-python ~\cli-market-world\patches\procure-copilot-hero\apply.py --target $PWD --patch ~\cli-market-world\patches\procure-copilot-hero
+1. Copy `public/hero-supermarket.webp` and `components/ProcureHeroBackground.tsx`
+2. In `app/procure/page.tsx`, inside `#hero` section (first child):
+
+```tsx
+import ProcureHeroBackground from "@/components/ProcureHeroBackground";
+
+<section id="hero" className="... relative overflow-hidden">
+  <ProcureHeroBackground />
+  ...
+  {/* remove <ProcureDemo /> columns */}
+</section>
 ```
 
-## Regenerate demo.gif (from cli-market-world)
-
-```bash
-cd cli-market-world/ops
-python3 generate_procure_demo_gif.py
-```
-
-Copies to `patches/procure-copilot-hero/public/demo.gif`.
+3. Replace `components/ProcureDemo.tsx` with the stub from this patch (returns `null`)
+4. Delete `public/demo.gif` and `components/ProcureHeroTerminal.tsx` if present
 
 ## Deploy
 
 ```powershell
+Remove-Item -Recurse -Force .next, .open-next -ErrorAction SilentlyContinue
 npm run build
 npx opennextjs-cloudflare build
 node scripts/copy-public-assets.mjs
-npx wrangler deploy
+git add -A
+git commit -m "Hero: supermarket background, remove demo gif"
+git push origin main
 ```
 
-Verify: open https://procurecopilot.com/procure — full terminal visible, no horizontal line artifact.
+## Verify
+
+```powershell
+(Invoke-WebRequest https://procurecopilot.com/procure).Content -match 'demo\.gif|155%|272px'
+# False
+
+(Invoke-WebRequest https://procurecopilot.com/hero-supermarket.webp).StatusCode
+# 200
+```
