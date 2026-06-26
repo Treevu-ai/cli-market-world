@@ -19,6 +19,23 @@ Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/
 
 El error `worker.js was not found` **no es el problema real** — aparece porque el build nunca terminó. El crash `UV_HANDLE_CLOSING` en Windows es ruido de Wrangler después del error.
 
+### Si el verify devuelve `False` pero el deploy terminó OK
+
+El deploy anterior **sí llegó** (toggle ES/EN, Probar demo), pero **Agendar demo** sigue en `mailto:` si el parche no tocó `lib/procure-content.ts`. Un solo script lo arregla, build y deploy:
+
+```powershell
+cd ~\procure-copilot
+Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-i18n-demo-fix-7bb5/patches/procure-copilot-i18n-demo/fix-ctas.ps1" -OutFile fix-ctas.ps1
+.\fix-ctas.ps1
+```
+
+Debe terminar con **SUCCESS**. Luego:
+
+```powershell
+(Invoke-WebRequest https://procurecopilot.com/procure).Content -match 'cli-market.dev/contact\?topic=procure'
+# True
+```
+
 ---
 
 Fixes on **procurecopilot.com**:

@@ -14,7 +14,15 @@ if (-not (Test-Path "package.json")) {
 Write-Host "==> procure-copilot deploy preflight" -ForegroundColor Cyan
 Write-Host "    cwd: $(Get-Location)"
 
-Write-Host "`n==> 0/6 Repair ProcureLanding if a previous patch broke quotes" -ForegroundColor Cyan
+Write-Host "`n==> 0/6 Apply CTA patch (mailto → contact form)" -ForegroundColor Cyan
+$apply = "patches\procure-copilot-i18n-demo\apply.py"
+if (Test-Path $apply) {
+    python $apply
+} else {
+    Write-Warning "apply.py not found — run fix-ctas.ps1 first"
+}
+
+Write-Host "`n==> 0b/6 Repair ProcureLanding if a previous patch broke quotes" -ForegroundColor Cyan
 $repair = "patches\procure-copilot-i18n-demo\repair.py"
 if (Test-Path $repair) {
     python $repair
