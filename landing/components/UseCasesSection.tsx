@@ -64,15 +64,6 @@ export default function UseCasesSection() {
             </motion.button>
           ))}
         </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="/#pricing" className="btn-mint">
-            {isES ? "Planes Build →" : "Build plans →"}
-          </a>
-          <a href="/#intelligence" className="btn-outline">
-            {isES ? "Intelligence →" : "Intelligence →"}
-          </a>
-        </div>
       </div>
 
       <UseCaseDemoModal open={activeId !== null} useCase={activeCase} onClose={() => setActiveId(null)} />

@@ -37,13 +37,6 @@ export default function ProductDoorCard({ door, isES, onClick }: ProductDoorCard
         {isES ? door.title_es : door.title_en}
       </h3>
       <p className="mt-3 text-sm text-[#64748b] leading-relaxed flex-1">
-        <span className="block text-[#94a3b8] text-xs mb-1">{isES ? "Dolor" : "Pain"}</span>
-        {isES ? door.pain_es : door.pain_en}
-      </p>
-      <p className="mt-3 text-sm text-[#334155] leading-relaxed">
-        <span className="block text-[#ea580c]/80 text-xs mb-1 font-mono uppercase tracking-wide">
-          {isES ? "Resultado" : "Outcome"}
-        </span>
         {isES ? door.outcome_es : door.outcome_en}
       </p>
       <div className="mt-5 pt-4 border-t border-[#e2e8f0] flex items-center justify-between gap-3">
