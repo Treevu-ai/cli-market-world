@@ -37,7 +37,8 @@ if ($hits.Count -gt 0) {
     }
 }
 
-$still = Select-String -Path lib\*,components\* -Pattern 'mailto:hello@cli-market' -Recurse -ErrorAction SilentlyContinue
+$still = Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue |
+    Select-String -Pattern 'mailto:hello@cli-market' -ErrorAction SilentlyContinue
 if ($still) {
     Write-Error "mailto still in source — paste output: $($still | Out-String)"
 }
