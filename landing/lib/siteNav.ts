@@ -1,3 +1,5 @@
+import { PROCURE_LANDING_URL } from "./procurePlans";
+
 export type NavItem = {
   id: string;
   es: string;
@@ -43,8 +45,8 @@ export const TOP_NAV_GROUP: Record<string, string> = {
 
 /** Leading slash so tabs work from any route. */
 export const PRICING_BUILD_HASH = "/#pricing";
-/** Procure pricing tab lives under #pricing (default audience). */
-export const PRICING_PROCURE_HASH = "/#pricing";
+/** Procure marketing + pricing on sister site. */
+export const PRICING_PROCURE_HASH = PROCURE_LANDING_URL;
 /** Retailer free listing — dedicated page. */
 export const RETAILERS_PAGE = "/retailers";
 /** @deprecated Use RETAILERS_PAGE */
