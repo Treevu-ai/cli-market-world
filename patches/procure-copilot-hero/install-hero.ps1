@@ -6,7 +6,7 @@ $RepoRoot = $PSScriptRoot
 if (-not (Test-Path "$RepoRoot\apply.py")) {
     $RepoRoot = Join-Path $env:TEMP "procure-hero-patch"
     New-Item -ItemType Directory -Force -Path $RepoRoot | Out-Null
-    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-hero-supermarket-7bb5/patches/procure-copilot-hero"
+    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-hero"
     Write-Host "Downloading patch from GitHub..."
     @(
         "apply.py",
