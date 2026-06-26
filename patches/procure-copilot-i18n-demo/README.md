@@ -1,5 +1,26 @@
 # Procure Copilot — English + working demo CTAs
 
+## Si el build falló con `Unterminated string` en ProcureLanding.tsx
+
+Un parche anterior escribió comillas mal (`lang === \"en\"`). **Un solo comando** lo arregla y verifica el build:
+
+```powershell
+cd ~\procure-copilot
+Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-i18n-demo-fix-7bb5/patches/procure-copilot-i18n-demo/fix-build.ps1" -OutFile fix-build.ps1
+.\fix-build.ps1
+```
+
+Cuando diga **Build OK**, despliega:
+
+```powershell
+Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-i18n-demo-fix-7bb5/patches/procure-copilot-i18n-demo/deploy.ps1" -OutFile deploy.ps1
+.\deploy.ps1
+```
+
+El error `worker.js was not found` **no es el problema real** — aparece porque el build nunca terminó. El crash `UV_HANDLE_CLOSING` en Windows es ruido de Wrangler después del error.
+
+---
+
 Fixes on **procurecopilot.com**:
 
 1. **No English** — adds `LanguageProvider`, `LangToggle` (ES/EN), bilingual hero + final CTA via `lib/procureLocale.ts`
