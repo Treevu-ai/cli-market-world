@@ -10,7 +10,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-DEFAULT_PROCURE_URL = "https://procure-copilot.contacto-8e4.workers.dev"
+DEFAULT_PROCURE_URL = "https://procurecopilot.com"
 
 
 def procure_daily_configured() -> bool:

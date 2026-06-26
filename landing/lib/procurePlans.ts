@@ -1,8 +1,11 @@
 /** Procure Copilot — pricing tab at cli-market.dev/#procure (inside #pricing). */
 
+export const PROCURE_SITE_URL =
+  process.env.NEXT_PUBLIC_PROCURE_SITE_URL || "https://procurecopilot.com";
+
 export const PROCURE_APP_URL =
   process.env.NEXT_PUBLIC_PROCURE_APP_URL ||
-  "https://procure-copilot.contacto-8e4.workers.dev/dashboard";
+  `${PROCURE_SITE_URL}/dashboard`;
 
 /** Display names avoid collision with Build tiers (Starter / Pro). Slugs unchanged for API. */
 export const PROCURE_PLANS = [

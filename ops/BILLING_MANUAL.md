@@ -42,7 +42,7 @@ PROCURE_MP_CHECKOUT=0          # 1 = habilita MP/Yape/Plin en procure-subscribe 
 PROCURE_PEN_PER_USD=3.75       # opcional; fallback PRO_PEN_PER_USD
 PROCURE_MP_SUCCESS_URL=https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure
 PROCURE_MAGIC_SECRET=...          # 32+ bytes — magic link onboarding (Sprint 3)
-PROCURE_APP_URL=https://procure-copilot.contacto-8e4.workers.dev/dashboard
+PROCURE_APP_URL=https://procurecopilot.com/dashboard
 PROCURE_MAGIC_TTL_SECONDS=900     # opcional; default 15 min
 
 # Cloudflare Pages (landing) — debe coincidir con Railway PROCURE_MP_CHECKOUT

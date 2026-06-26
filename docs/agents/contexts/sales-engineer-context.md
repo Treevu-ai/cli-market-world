@@ -20,7 +20,7 @@ cd ../procure-copilot && npm run smoke
 ```
 
 **URLs:**
-- Landing + UI: https://procure-copilot.contacto-8e4.workers.dev
+- Landing + UI: https://procurecopilot.com
 - Demo GIF (si falla red en vivo): `/demo.gif`
 - API docs CLI Market: https://cli-market-production.up.railway.app/docs
 
@@ -53,7 +53,7 @@ Destacar: precios normalizados por kg/L, no catálogo PDF.
 ### Min 5–9: API run + aprobación (técnico / CFO)
 
 ```bash
-curl -s -X POST https://procure-copilot.contacto-8e4.workers.dev/api/procurement/run \
+curl -s -X POST https://procurecopilot.com/api/procurement/run \
   -H "Content-Type: application/json" \
   -H "x-plan: pro" \
   -H "x-user-id: demo-[empresa]" \
@@ -80,7 +80,7 @@ Mostrar en respuesta:
 Aprobar (human step):
 
 ```bash
-curl -s -X POST https://procure-copilot.contacto-8e4.workers.dev/api/procurement/approve \
+curl -s -X POST https://procurecopilot.com/api/procurement/approve \
   -H "Content-Type: application/json" \
   -d '{
     "approvalId": "[id del run]",
@@ -96,7 +96,7 @@ Narrativa: "El empleado no puede comprar solo — el gerente aprueba con trazabi
 Solo si `checkout_ready`:
 
 ```bash
-curl -s -X POST https://procure-copilot.contacto-8e4.workers.dev/api/procurement/checkout \
+curl -s -X POST https://procurecopilot.com/api/procurement/checkout \
   -H "Content-Type: application/json" \
   -d '{"procurementId": "[id]", "payment": "yape"}'
 ```
