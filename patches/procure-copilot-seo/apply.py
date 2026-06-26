@@ -28,6 +28,7 @@ def copy_tree(patch: Path, target: Path) -> None:
         "public/og.svg",
         "public/og.png",
         "scripts/rasterize_og.mjs",
+        "scripts/copy-public-assets.mjs",
         "next-sitemap.config.js",
     ]:
         src = patch / rel
