@@ -10,13 +10,13 @@ export default function ProcureHeroBackground() {
         alt=""
         width={1920}
         height={1080}
-        className="absolute inset-0 h-full w-full object-cover object-center scale-105 saturate-110"
+        className="absolute inset-0 h-full w-full object-cover object-[center_40%] scale-105 saturate-125 brightness-95"
         loading="eager"
         decoding="async"
       />
-      {/* Left: readable copy. Right: aisle visible. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[var(--cm-background)]/92 via-[var(--cm-background)]/55 to-[var(--cm-background)]/10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/75 via-transparent to-[var(--cm-background)]/25" />
+      {/* Text column (left): dark. Right side: aisle visible. */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--cm-background)] via-[var(--cm-background)]/70 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/60 via-transparent to-[var(--cm-background)]/20" />
     </div>
   );
 }
