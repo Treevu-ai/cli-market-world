@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
-import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
 import UseCasesSection from "@/components/UseCasesSection";
 import ProcureCopilotSection from "@/components/ProcureCopilotSection";
@@ -24,7 +23,6 @@ export default function Home() {
         <div className="relative z-10">
           <Hero />
           <TrustBar />
-          <ProblemSection />
           <SolutionSection />
           <UseCasesSection />
           <ProcureCopilotSection />

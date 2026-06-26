@@ -1,7 +1,6 @@
 "use client";
 
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 
 function LogoClaude() {
   return (
@@ -96,66 +95,12 @@ const TOOLS = [
 export default function TrustBar() {
   const { lang } = useLang();
   const isES = lang === "es";
-
-  const stats = [
-    {
-      n: String(MARKET_STATS.retailersVerified),
-      l: isES ? "retailers verificados" : "verified retailers",
-    },
-    {
-      n: String(MARKET_STATS.countries),
-      l: isES ? "países LATAM" : "LATAM countries",
-    },
-    {
-      n: MARKET_STATS.pricesVerifiedLabel,
-      l: isES ? "precios verificados" : "verified prices",
-    },
-    {
-      n: `${MARKET_STATS.pricesRefreshHours}h`,
-      l: isES ? "ciclo de refresh" : "refresh cycle",
-    },
-  ];
-
   const items = [...TOOLS, ...TOOLS];
 
   return (
     <div className="border-b border-[#e2e8f0] bg-white">
-      {/* Stats strip — large display numbers */}
-      <div className="landing-container-wide py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-          {stats.map((stat) => (
-            <div key={stat.l}>
-              <p className="feature-stat-n">{stat.n}</p>
-              <p className="feature-stat-l">{stat.l}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Audience + integration strip */}
-      <div className="w-full border-t border-[#f1f5f9] py-4">
-        <div className="landing-container-wide flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8]">
-            {isES ? "Para" : "For"}
-          </span>
-          {(
-            isES
-              ? ["Developers", "Equipos de compras", "Analistas y fondos", "Startups"]
-              : ["Developers", "Procurement teams", "Analysts & funds", "Startups"]
-          ).map((label) => (
-            <span
-              key={label}
-              className="text-xs font-semibold text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-full px-3 py-1"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Integration marquee */}
       <div
-        className="w-full border-t border-[#f1f5f9] py-4 overflow-hidden"
+        className="w-full py-4 overflow-hidden"
         aria-label={isES ? "Herramientas compatibles" : "Compatible tools"}
       >
         <div className="flex items-center gap-6">

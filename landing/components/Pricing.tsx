@@ -409,24 +409,7 @@ export default function Pricing() {
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-4">
             {isES ? (
               <>
-                ¿Plan intermedio?{" "}
-                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mes Starter</span> —{" "}
-                {formatReqLimit(BUILD_TIER_STARTER.reqLimit, true)}, export CSV, sin checkout. Pro estándar{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mes</span>{" "}
-                <BillingCheckoutTrigger
-                  kind={{ type: "build-pro" }}
-                  className="inline-flex align-middle ml-1 mr-0.5 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
-                  label_es="Elegir Pro →"
-                  label_en="Choose Pro →"
-                />{" "}
-                o <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/año</span>{" "}
-                <BillingCheckoutTrigger
-                  kind={{ type: "build-pro", annual: true }}
-                  className="inline-flex align-middle ml-1 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
-                  label_es="Pro anual →"
-                  label_en="Pro annual →"
-                />
-                . Detalle en{" "}
+                Starter, Pro y Enterprise — límites y facturación en{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -434,24 +417,7 @@ export default function Pricing() {
               </>
             ) : (
               <>
-                Need a mid-tier?{" "}
-                <span className="text-[var(--cm-mint)]">{STARTER_TIER.price}/mo Starter</span> —{" "}
-                {formatReqLimit(BUILD_TIER_STARTER.reqLimit, false)}, CSV export, no checkout. Standard Pro{" "}
-                <span className="text-[var(--cm-mint)]">{PRO_TIER.price}/mo</span>{" "}
-                <BillingCheckoutTrigger
-                  kind={{ type: "build-pro" }}
-                  className="inline-flex align-middle ml-1 mr-0.5 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
-                  label_es="Elegir Pro →"
-                  label_en="Choose Pro →"
-                />{" "}
-                or <span className="text-[var(--cm-mint)]">{PRO_TIER.annualPrice}/yr</span>{" "}
-                <BillingCheckoutTrigger
-                  kind={{ type: "build-pro", annual: true }}
-                  className="inline-flex align-middle ml-1 rounded-full border border-[var(--cm-mint)]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--cm-mint)] hover:bg-[var(--cm-mint)]/10 transition-colors"
-                  label_es="Pro anual →"
-                  label_en="Pro annual →"
-                />
-                . Details in{" "}
+                Starter, Pro, and Enterprise — limits and billing in{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>

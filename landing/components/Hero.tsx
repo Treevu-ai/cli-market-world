@@ -85,8 +85,8 @@ export default function Hero() {
           className="mt-4 text-base sm:text-lg max-w-[640px] leading-relaxed stripe-body"
         >
           {isES
-            ? `${MARKET_STATS.retailersVerified} retailers, ${MARKET_STATS.pricesVerifiedLabel} precios normalizados y refresh cada ${MARKET_STATS.pricesRefreshHours}h. Tres productos sobre la misma data — elige tu puerta.`
-            : `${MARKET_STATS.retailersVerified} retailers, ${MARKET_STATS.pricesVerifiedLabel} normalized prices, ${MARKET_STATS.pricesRefreshHours}h refresh. Three products on the same data — pick your door.`}
+            ? "Tres productos sobre la misma data verificada — elige tu puerta."
+            : "Three products on one verified data layer — pick your door."}
         </motion.p>
 
         {mounted && (

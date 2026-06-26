@@ -23,8 +23,8 @@ export type ProductDoor = {
 export const PRODUCT_DOORS: ProductDoor[] = [
   {
     id: "build",
-    eyebrow_es: "CLI Develop",
-    eyebrow_en: "CLI Develop",
+    eyebrow_es: "CLI Build",
+    eyebrow_en: "CLI Build",
     title_es: "Integra en tu agente",
     title_en: "Integrate into your agent",
     pain_es: "Scraping frágil y precios que alucinan.",
