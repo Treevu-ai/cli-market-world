@@ -25,41 +25,59 @@ from market_core import ensure_db_initialized, get_db  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
-def _production_db_ready() -> bool:
-    """Reminders require production Postgres — not empty SQLite in CI."""
-    if not (os.getenv("DATABASE_URL") or "").strip():
+def _postgres_ready() -> bool:
+    """Reminders require a live production Postgres connection."""
+    db_url = (os.getenv("DATABASE_URL") or "").strip()
+    if not db_url:
         logger.warning("DATABASE_URL not set — skipping Pro payment reminders")
         return False
+
     try:
         ensure_db_initialized()
-        return True
     except Exception:
-        logger.exception("Failed to initialize database schema")
+        logger.exception("Database initialization failed")
         return False
+
+    from market_core import market_core as mc
+
+    if not mc.USE_PG:
+        logger.error(
+            "DATABASE_URL is set but PostgreSQL is unavailable (SQLite fallback only) — "
+            "skipping reminders; fix DATABASE_URL / network access to Railway Postgres"
+        )
+        return False
+    return True
 
 
 def find_pending_pro_requests(*, hours_min: int = 24, hours_max: int = 72) -> list[dict]:
     """Find subscription requests that are pending and within the reminder window."""
-    if not _production_db_ready():
+    if not _postgres_ready():
         return []
-    db = get_db()
+
     now = datetime.now(timezone.utc)
     window_start = (now - timedelta(hours=hours_max)).strftime("%Y-%m-%d %H:%M:%S")
     window_end = (now - timedelta(hours=hours_min)).strftime("%Y-%m-%d %H:%M:%S")
 
-    rows = db.execute(
-        """
-        SELECT id, username, email, payment_link, created_at
-        FROM subscription_requests
-        WHERE status = 'pending'
-          AND id LIKE 'PRO-%'
-          AND created_at >= ?
-          AND created_at <= ?
-        ORDER BY created_at ASC
-        """,
-        (window_start, window_end),
-    ).fetchall()
-    db.close()
+    db = get_db()
+    try:
+        rows = db.execute(
+            """
+            SELECT id, username, email, payment_link, created_at
+            FROM subscription_requests
+            WHERE status = 'pending'
+              AND id LIKE 'PRO-%'
+              AND created_at >= ?
+              AND created_at <= ?
+            ORDER BY created_at ASC
+            """,
+            (window_start, window_end),
+        ).fetchall()
+    except Exception as exc:
+        logger.error("Failed to query subscription_requests: %s", exc)
+        return []
+    finally:
+        db.close()
+
     return [dict(r) for r in rows]
 
 
@@ -146,6 +164,10 @@ def main() -> int:
 
     if not (os.getenv("DATABASE_URL") or "").strip():
         print("Skip: DATABASE_URL not configured (production Postgres required).")
+        return 0
+
+    if not _postgres_ready():
+        print("Skip: production PostgreSQL unavailable.")
         return 0
 
     pending = find_pending_pro_requests(hours_min=args.hours_min, hours_max=args.hours_max)
