@@ -76,3 +76,37 @@ def test_validate_public_http_url_accepts_https():
     from market_security import validate_public_http_url
 
     assert validate_public_http_url("https://example.com/image.png").startswith("https://")
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/v1/intel/affordability",
+        "/v1/intel/procurement-signal",
+        "/v1/intel/inflation-report",
+        "/v1/intel/regulatory",
+        "/v1/moat/confidence",
+    ],
+)
+def test_intel_routes_require_api_key(path):
+    r = client.get(path, params={"country": "PE"} if "regulatory" in path or "affordability" in path else None)
+    assert r.status_code == 401
+
+
+def test_procure_magic_token_does_not_embed_api_key(monkeypatch):
+    import base64
+    import json
+
+    from market_core import db_save_user, ensure_db_initialized
+    from procure_magic import create_procure_magic_token, provision_procure_api_key
+
+    monkeypatch.setenv("PROCURE_MAGIC_SECRET", "test-secret-security-regression")
+    ensure_db_initialized()
+    db_save_user("sec-magic", "hash", "sess")
+    api_key = provision_procure_api_key("sec-magic")
+    token = create_procure_magic_token(username="sec-magic", api_key=api_key, tier="procure_pro")
+    body = token.rsplit(".", 1)[0]
+    pad = "=" * (-len(body) % 4)
+    decoded = json.loads(base64.urlsafe_b64decode(body + pad))
+    assert "key" not in decoded
+    assert api_key not in token
