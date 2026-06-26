@@ -41,14 +41,40 @@ export default function ProcureLanding() {
 
 Replace every `mailto:` demo href with `procureBookDemoHref()` and `/dashboard` demo links with `procureTryDemoHref()`.
 
-## Deploy
+## Deploy (Windows — orden obligatorio)
+
+**Error `worker.js was not found`** = saltaste el paso 3 o `npm run build` falló antes.
 
 ```powershell
-npm run build
-npx opennextjs-cloudflare build
+cd ~\procure-copilot
+
+# Opción A — script con preflight
+Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-i18n-demo/deploy.ps1" -OutFile deploy.ps1
+.\deploy.ps1
+
+# Opción B — manual
+Remove-Item -Recurse -Force .next, .open-next -ErrorAction SilentlyContinue
+npm run build                                    # debe terminar sin error
+npx opennextjs-cloudflare build                  # crea .open-next\worker.js
+Test-Path .open-next\worker.js                   # True — si False, NO deploy
 node scripts/copy-public-assets.mjs
 npx opennextjs-cloudflare deploy
 ```
+
+No ejecutes `npx opennextjs-cloudflare deploy` solo — sin `opennext build` no existe `worker.js`.
+
+El crash `Assertion failed UV_HANDLE_CLOSING` en Windows es un bug de Node/Wrangler **después** del error real; ignóralo una vez que `worker.js` exista.
+
+### Si `npm run build` falla
+
+Suele ser un error de TypeScript tras el patch i18n. Revisa:
+
+```powershell
+npm run build 2>&1 | Select-String -Pattern 'error TS|Error:'
+```
+
+Si `ProcureLanding.tsx` quedó a medias, aplica de nuevo `.\install-i18n-demo.ps1` o revierte ese archivo y aplica solo los cambios de `lib/procure-content.ts` (CTAs sin mailto).
+
 
 ## Verify
 
