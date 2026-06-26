@@ -105,7 +105,7 @@ Pricing canónico: `docs/pricing-strategy.md`.
 | **cli-market.dev** | Web | Terminal (Procure = Operations block) | Stripe-like: hero métricas → prueba → pricing |
 | **LinkedIn / X** | 1:1 | Terminal | Headline → **métrica gigante** → visual red → insight |
 | **PyPI / README** | Markdown | Terminal | Negro en badges opcionales; sin imágenes stock |
-| **Outbound Procure** | Email / deck | Operations | Beneficio operativo, un CTA a `#procure` |
+| **Outbound Procure** | Email / deck | Operations | Beneficio operativo, un CTA a procurecopilot.com/procure |
 | **Docs / Legal** | Lectura larga | Neutral | Sin glow; `--cm-canvas` + texto `--cm-on-surface-variant` |
 
 ---

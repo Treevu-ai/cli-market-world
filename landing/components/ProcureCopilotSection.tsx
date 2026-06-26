@@ -12,7 +12,7 @@ export default function ProcureCopilotSection() {
     : ["Approvals and audit trail", "Checkout: Yape, PayPal, Mercado Pago"];
 
   return (
-    <section id="procure" className="landing-section scroll-mt-24" style={{ backgroundColor: "#f8fafc" }}>
+    <section id="procure" className="landing-section brand-mode-operations scroll-mt-24">
       <div className="landing-container-wide">
         <div className="max-w-[640px] mx-auto text-center">
           <p className="section-eyebrow mb-4">PROCURE COPILOT</p>

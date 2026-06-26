@@ -314,9 +314,14 @@ export default function ImpactLanding() {
               <li>{isES ? "Aprobaciones + audit trail" : "Approvals + audit trail"}</li>
               <li>{isES ? "API Build Pro incluida" : "Build Pro API included"}</li>
             </ul>
-            <Link href={PRICING_PROCURE_HASH} className="impact-btn impact-btn-ghost impact-btn-block">
+            <a
+              href={PRICING_PROCURE_HASH}
+              className="impact-btn impact-btn-ghost impact-btn-block"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {isES ? "Suscribir →" : "Subscribe →"}
-            </Link>
+            </a>
           </div>
         </div>
       </section>

@@ -450,7 +450,7 @@ export default function Pricing() {
 
         <div
           id="pricing-panel-procure"
-          className={audience !== "procure" ? "hidden" : undefined}
+          className={audience !== "procure" ? "hidden" : "brand-mode-operations rounded-2xl border border-[var(--cm-outline-variant)] p-6 sm:p-8 -mx-2 sm:mx-0"}
           aria-hidden={audience !== "procure"}
           role="tabpanel"
           aria-labelledby="pricing-tab-procure"

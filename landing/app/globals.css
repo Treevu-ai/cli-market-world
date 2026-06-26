@@ -96,6 +96,42 @@
 .brand-mode-operations {
   --cm-glow-strength: 0;
   --cm-action: var(--cm-data);
+  --cm-canvas: #000000;
+  --cm-background: #000000;
+  --cm-surface: #15181e;
+  --cm-surface-low: #15181e;
+  --cm-surface-high: #1f232b;
+  --cm-surface-card: #15181e;
+  --cm-on-surface: #ffffff;
+  --cm-on-surface-variant: #b2b6bd;
+  --cm-text-secondary: #656a76;
+  --cm-outline-variant: #3b3d45;
+  --cm-hairline: #252830;
+  --cm-ink: #ffffff;
+  color: var(--cm-on-surface);
+  background-color: var(--cm-canvas);
+  border-top-color: var(--cm-hairline);
+}
+
+.brand-mode-operations .section-title {
+  color: #ffffff;
+}
+
+.brand-mode-operations .section-intro,
+.brand-mode-operations .section-eyebrow {
+  color: var(--cm-on-surface-variant);
+}
+
+.brand-mode-operations .btn-outline {
+  background: var(--cm-surface-high);
+  color: #ffffff;
+  border: 1.5px solid rgba(178, 182, 189, 0.25);
+}
+
+.brand-mode-operations .btn-outline:hover {
+  background: var(--cm-surface-card);
+  border-color: rgba(234, 88, 12, 0.4);
+  color: #ffffff;
 }
 
 .brand-mode-operations .energy-border-active {
