@@ -49,8 +49,8 @@ export default function ProcureCopilotSection() {
             <a href={CTA.viewProcurePlans.href} className="btn-mint">
               {isES ? CTA.viewProcurePlans.es : CTA.viewProcurePlans.en}
             </a>
-            <a href={CTA.bookDemo.href} className="btn-outline">
-              {isES ? CTA.bookDemo.es : CTA.bookDemo.en}
+            <a href={CTA.bookProcureDemo.href} className="btn-outline">
+              {isES ? CTA.bookProcureDemo.es : CTA.bookProcureDemo.en}
             </a>
           </div>
         </div>

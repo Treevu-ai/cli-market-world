@@ -16,7 +16,12 @@ export const CTA = {
   bookDemo: {
     en: "Book Demo →",
     es: "Reservar Demo →",
-    href: "/contact",
+    href: "/contact?topic=procure#contact-procure",
+  },
+  bookProcureDemo: {
+    en: "Book Procure Demo →",
+    es: "Agendar demo Procure →",
+    href: "/contact?topic=procure#contact-procure",
   },
   viewPlans: {
     en: "View plans →",
