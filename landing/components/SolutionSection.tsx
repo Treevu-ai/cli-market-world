@@ -2,7 +2,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 
 export default function SolutionSection() {
   const { lang } = useLang();
@@ -15,8 +14,8 @@ export default function SolutionSection() {
       n: "1",
       title_es: "Busca en todos los retailers a la vez",
       title_en: "Search every retailer at once",
-      body_es: `Una consulta cruza ${MARKET_STATS.retailersVerified} tiendas verificadas en segundos — para un agente, un comprador o un analista.`,
-      body_en: `One query scans ${MARKET_STATS.retailersVerified} verified stores in seconds — for an agent, a buyer, or an analyst.`,
+      body_es: "Una consulta cruza tiendas verificadas en segundos — para un agente, un comprador o un analista.",
+      body_en: "One query scans verified stores in seconds — for an agent, a buyer, or an analyst.",
     },
     {
       n: "2",
@@ -45,9 +44,7 @@ export default function SolutionSection() {
         >
           <p className="section-eyebrow mb-4">{isES ? "CÓMO FUNCIONA" : "HOW IT WORKS"}</p>
           <h2 className="section-title text-[var(--cm-on-surface)]">
-            {isES
-              ? "Misma data. Tres puertas de entrada."
-              : "Same data. Three entry points."}
+            {isES ? "De la góndola a tu producto" : "From shelf to your product"}
           </h2>
           <p className="section-intro">
             {isES

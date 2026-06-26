@@ -1,13 +1,11 @@
 "use client";
 import { useLang } from "@/lib/LanguageContext";
-import { useLiveStats } from "@/hooks/useLiveStats";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 
 export default function Footer() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const { priceChip } = useLiveStats();
   const year = new Date().getFullYear();
 
   return (
@@ -25,8 +23,8 @@ export default function Footer() {
           </p>
           <p className="text-xs text-[var(--cm-text-secondary)] mt-4">
             {isES
-              ? `${MARKET_STATS.retailersPhraseEs} · ${priceChip} precios · MIT`
-              : `${MARKET_STATS.retailersPhraseEn} · ${priceChip} prices · MIT`}
+              ? `${MARKET_STATS.retailersPhraseEs} · ${MARKET_STATS.pricesVerifiedLabel} precios · MIT`
+              : `${MARKET_STATS.retailersPhraseEn} · ${MARKET_STATS.pricesVerifiedLabel} prices · MIT`}
           </p>
         </div>
 
@@ -35,7 +33,7 @@ export default function Footer() {
             {isES ? "Producto" : "Product"}
           </span>
           <a href="/#pricing" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
-            CLI Develop
+            CLI Build
           </a>
           <a href={`${PROCURE_SITE_URL}/procure`} className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors" target="_blank" rel="noopener noreferrer">
             Procure Copilot

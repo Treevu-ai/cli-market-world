@@ -15,9 +15,9 @@ export type PricingTab = {
 export const PRICING_TABS: PricingTab[] = [
   {
     id: "build",
-    label: "CLI Develop",
-    hint_es: "Developers · API · CLI",
-    hint_en: "Developers · API · CLI",
+    label: "CLI Build",
+    hint_es: "Build · API · CLI",
+    hint_en: "Build · API · CLI",
     title_es: "Inteligencia de retail programable.",
     title_en: "Programmable retail intelligence.",
     intro_es: "Para developers. Free 1.000 req/día · Starter $9/mes (5k/día, 14d trial) · Pro $49/mes · Enterprise custom. API, CLI, datos normalizados por kg/L.",
@@ -31,8 +31,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "Procurement teams",
     title_es: "Compras de empresa. Sin programar.",
     title_en: "Enterprise buying. No code.",
-    intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que CLI Develop, con aprobaciones, checkout y trazabilidad. Compare $29/mes · Ops $79/mes · Scale $149/mes.",
-    intro_en: "For restaurants, hotels, and procurement teams. Same data as CLI Develop, with approvals, checkout, and audit trail. Compare $29/mo · Ops $79/mo · Scale $149/mo.",
+    intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que CLI Build, con aprobaciones, checkout y trazabilidad. Compare $29/mes · Ops $79/mes · Scale $149/mes.",
+    intro_en: "For restaurants, hotels, and procurement teams. Same data as CLI Build, with approvals, checkout, and audit trail. Compare $29/mo · Ops $79/mo · Scale $149/mo.",
     hash: "#pricing",
   },
 ];
