@@ -23,7 +23,7 @@ Write-Host "`n==> 2/5 Patch CTAs (remove all mailto:hello@cli-market.dev)" -Fore
 python patches\procure-copilot-i18n-demo\apply.py
 
 $hits = @()
-Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
+Get-ChildItem -Path app, lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
     if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev\?') {
         $hits += $_.FullName
     }
@@ -38,7 +38,7 @@ if ($hits.Count -gt 0) {
 }
 
 $still = @()
-Get-ChildItem -Path lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
+Get-ChildItem -Path app, lib, components -Recurse -Include *.ts,*.tsx -ErrorAction SilentlyContinue | ForEach-Object {
     if ((Get-Content $_.FullName -Raw) -match 'mailto:hello@cli-market\.dev\?') {
         $still += $_.FullName
     }

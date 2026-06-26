@@ -34,13 +34,22 @@ MAILTO_INLINE = re.compile(
     r"function\s+l\s*\(\s*e\s*\)\s*\{[^}]+\}",
     re.MULTILINE,
 )
+# Source pattern: const n = "hello@cli-market.dev"; function d(e) { return `mailto:${n}?subject=...`; }
+MAILTO_VAR_FN = re.compile(
+    r"(?:const|let|var)\s+(?P<var>\w+)\s*=\s*[\"']hello@cli-market\.dev[\"']\s*;?\s*"
+    r"function\s+(?P<fn>\w+)\s*\(\s*(?P<arg>\w+)\s*\)\s*\{[^{}]*`mailto:\$\{(?P=var)\}\?subject=\$\{encodeURIComponent\((?P=arg)\)\}`[^{}]*\}",
+    re.MULTILINE | re.DOTALL,
+)
+MAILTO_TEMPLATE = re.compile(
+    r"`mailto:\$\{\w+\}\?subject=\$\{encodeURIComponent\(\w+\)\}`",
+)
 MAILTO_URL = re.compile(
-    r'mailto:hello@cli-market\.dev(?:\?[^"\'`\s\)>]*)?',
+    r'mailto:hello@cli-market\.dev\?[^"\'`\s\)>]*',
     re.IGNORECASE,
 )
 CONTACT_PROCURE = "https://cli-market.dev/contact?topic=procure#contact-procure"
 
-CTA_GLOB_DIRS = ("lib", "components")
+CTA_GLOB_DIRS = ("app", "lib", "components")
 
 
 def _patch_mailto_text(text: str, *, add_cta_import: bool = True) -> str:
@@ -49,6 +58,16 @@ def _patch_mailto_text(text: str, *, add_cta_import: bool = True) -> str:
             'import { procureBookDemoHref, procureTryDemoHref, procureSalesHref } from "@/lib/procureCta";\n'
         )
         text = _add_import(text, cta_import)
+
+    m = MAILTO_VAR_FN.search(text)
+    if m:
+        fn = m.group("fn")
+        text = MAILTO_VAR_FN.sub(
+            "function mailtoHref(_subject: string) { return procureBookDemoHref(); }",
+            text,
+            count=1,
+        )
+        text = re.sub(rf"\b{re.escape(fn)}\s*\([^)]*\)", "procureBookDemoHref()", text)
 
     text = MAILTO_FN.sub(
         "function mailtoHref(_subject: string) { return procureBookDemoHref(); }",
@@ -59,9 +78,11 @@ def _patch_mailto_text(text: str, *, add_cta_import: bool = True) -> str:
         text,
     )
     text = MAILTO_INLINE.sub("", text)
+    text = MAILTO_TEMPLATE.sub("procureBookDemoHref()", text)
     text = MAILTO_URL.sub(CONTACT_PROCURE, text)
     text = re.sub(r"\bmailtoHref\s*\([^)]*\)", "procureBookDemoHref()", text)
     text = re.sub(r'\bl\s*\(\s*"[^"]+"\s*\)', "procureBookDemoHref()", text)
+    text = re.sub(r'\bd\s*\(\s*"[^"]+"\s*\)', "procureBookDemoHref()", text)
     text = re.sub(
         r'`mailto:hello@cli-market\.dev\?subject=\$\{encodeURIComponent\([^)]+\)\}`',
         "procureBookDemoHref()",
@@ -70,6 +91,12 @@ def _patch_mailto_text(text: str, *, add_cta_import: bool = True) -> str:
     )
 
     for old, new in [
+        ('l("Demo Procure Copilot 15 min")', "procureBookDemoHref()"),
+        ('l("Piloto Procure Copilot")', "procureBookDemoHref()"),
+        ('l("Enterprise Procure Copilot")', 'procureSalesHref("Enterprise Procure Copilot")'),
+        ('d("Demo Procure Copilot 15 min")', "procureBookDemoHref()"),
+        ('d("Piloto Procure Copilot")', "procureBookDemoHref()"),
+        ('d("Enterprise Procure Copilot")', 'procureSalesHref("Enterprise Procure Copilot")'),
         ('href:"/dashboard"', "href:procureTryDemoHref()"),
         ('href: "/dashboard"', "href: procureTryDemoHref()"),
         ('ctaHref:"/dashboard"', "ctaHref:procureTryDemoHref()"),
@@ -119,7 +146,7 @@ def _verify_no_demo_mailto(target: Path) -> bool:
     if bad:
         print("  WARN: mailto still present in:", ", ".join(bad), file=sys.stderr)
         return False
-    print("  OK: no mailto:hello@cli-market.dev in lib/ or components/")
+    print("  OK: no demo mailto (?subject=) in lib/ or components/")
     return True
 
 
