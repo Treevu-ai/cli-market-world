@@ -16,6 +16,6 @@
 
 **Problema:** Los restaurantes comparan precios manualmente entre 3-5 proveedores. 4-6 horas/semana por local. Quieren un agente IA que automatice.
 
-**Solución:** API keys scope read. 22 herramientas MCP (Shop/Intel/Account). El agente busca insumos en 38 retailers verificados, compara precios cross-border, genera reporte semanal con `market_intel_brief`.
+**Solución:** API keys scope read. 22 herramientas MCP (Shop/Intel/Account). El agente busca insumos en 40 retailers verificados, compara precios cross-border, genera reporte semanal con `market_intel_brief`.
 
-**Resultado:** 4-6h/semana ahorradas. Precios de 38 retailers verificados en 8 países. Alertas de cambio >5%. **Procure Compare $29/mes** (comparación) o **Procure Ops $79/mes** (aprobaciones + checkout; infra Build Pro incluida). 3 onboarded en mes 1.
+**Resultado:** 4-6h/semana ahorradas. Precios de 40 retailers verificados en 8 países. Alertas de cambio >5%. **Procure Compare $29/mes** (comparación) o **Procure Ops $79/mes** (aprobaciones + checkout; infra Build Pro incluida). 3 onboarded en mes 1.
