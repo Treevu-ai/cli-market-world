@@ -1,17 +1,18 @@
-# Self-contained Procure hero GIF installer (no sparse-checkout needed)
-# Usage: cd ~\procure-copilot; irm .../install-hero.ps1 | iex
+# Procure hero — supermarket background (no demo.gif)
+# Usage: cd ~\procure-copilot; .\install-hero.ps1
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = $PSScriptRoot
 if (-not (Test-Path "$RepoRoot\apply.py")) {
     $RepoRoot = Join-Path $env:TEMP "procure-hero-patch"
     New-Item -ItemType Directory -Force -Path $RepoRoot | Out-Null
-    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-hero"
+    $base = "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/procure-hero-supermarket-7bb5/patches/procure-copilot-hero"
     Write-Host "Downloading patch from GitHub..."
     @(
         "apply.py",
-        "components/ProcureHeroTerminal.tsx",
-        "public/demo.gif"
+        "components/ProcureHeroBackground.tsx",
+        "components/ProcureDemo.tsx",
+        "public/hero-supermarket.webp"
     ) | ForEach-Object {
         $dest = Join-Path $RepoRoot $_
         $dir = Split-Path $dest -Parent
@@ -34,4 +35,6 @@ Write-Host "Next:"
 Write-Host "  npm run build"
 Write-Host "  npx opennextjs-cloudflare build"
 Write-Host "  node scripts/copy-public-assets.mjs"
-Write-Host "  npx wrangler deploy"
+Write-Host "  git add -A"
+Write-Host "  git commit -m 'Hero: supermarket background, remove demo gif'"
+Write-Host "  git push origin main"
