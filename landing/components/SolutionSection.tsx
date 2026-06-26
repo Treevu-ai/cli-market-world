@@ -28,8 +28,8 @@ export default function SolutionSection() {
       n: "3",
       title_es: "Elige cómo consumirla",
       title_en: "Choose how to consume it",
-      body_es: "Build: API, MCP y SDK. Procure: comparar, aprobar y pagar sin código. Intelligence: spreads, inflación y canasta para modelos y reportes.",
-      body_en: "Build: API, MCP, and SDK. Procure: compare, approve, and pay without code. Intelligence: spreads, inflation, and basket for models and reports.",
+      body_es: "Build: API y MCP. Procure: comparar y aprobar sin código. Intelligence: spreads e inflación.",
+      body_en: "Build: API and MCP. Procure: compare and approve without code. Intelligence: spreads and inflation.",
     },
   ];
 

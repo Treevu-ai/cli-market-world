@@ -30,16 +30,14 @@ export default function IntelligenceSection() {
 
   const bullets = isES
     ? [
-        "Spreads entre retailers (mismo producto comparable)",
-        "Inflación por línea y país (7 / 30 / 90 días)",
-        "Canasta básica con reglas de comparabilidad explícitas",
-        "Capa clean / flagged / citable — sin outliers sin filtrar",
+        "Spreads entre retailers",
+        "Inflación por categoría (7 / 30 / 90 días)",
+        "Canasta básica con reglas de comparabilidad",
       ]
     : [
-        "Cross-retailer spreads (comparable products)",
-        "Category inflation by country (7 / 30 / 90 days)",
-        "Basic basket with explicit comparability rules",
-        "Clean / flagged / citable layer — no unfiltered outliers",
+        "Cross-retailer spreads",
+        "Category inflation (7 / 30 / 90 days)",
+        "Basic basket with comparability rules",
       ];
 
   return (

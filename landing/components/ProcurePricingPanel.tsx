@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
 import { PROCURE_APP_URL, PROCURE_PLANS, type ProcurePlanSlug } from "@/lib/procurePlans";
 import ProcureSubscribeButton from "@/components/ProcureSubscribeButton";
 import {
@@ -12,17 +11,15 @@ import {
 } from "@/lib/procureCheckoutUrl";
 
 const BENEFITS_ES = [
-  "Comparación automática en retailers verificados — sin WhatsApp ni Excel.",
-  "Data-gate: no recomienda compra si los precios están desactualizados.",
-  "Compare compara; Ops añade aprobaciones gerente y checkout.",
-  "Infraestructura CLI Market incluida — una sola factura.",
+  "Comparación automática — sin WhatsApp ni Excel.",
+  "Data-gate: no recomienda si los precios están desactualizados.",
+  "Compare compara; Ops añade aprobaciones y checkout.",
 ];
 
 const BENEFITS_EN = [
-  "Automatic comparison across verified retailers — no WhatsApp or Excel.",
+  "Automatic comparison — no WhatsApp or Excel.",
   "Data-gate blocks recommendations when prices are stale.",
-  "Compare compares; Ops adds manager approvals and checkout.",
-  "CLI Market infrastructure included — one invoice.",
+  "Compare compares; Ops adds approvals and checkout.",
 ];
 
 export default function ProcurePricingPanel() {
@@ -42,11 +39,6 @@ export default function ProcurePricingPanel() {
   return (
     <div className="brand-mode-operations scroll-mt-24 text-left">
       <div className="landing-content-narrow mb-10 space-y-4 text-center">
-        <p className="text-sm text-[var(--cm-on-surface-variant)]">
-          {isES
-            ? `${MARKET_STATS.retailersVerified} retailers verificados · misma API que Build · dashboard Procure incluido.`
-            : `${MARKET_STATS.retailersVerified} verified retailers · same API as Build · Procure dashboard included.`}
-        </p>
         <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
           <p className="font-semibold text-[var(--cm-on-surface)] mb-1">
             {isES ? "¿Build Pro o Procure Ops?" : "Build Pro or Procure Ops?"}
@@ -99,7 +91,7 @@ export default function ProcurePricingPanel() {
         ))}
       </div>
 
-      <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {benefits.map((b) => (
           <p key={b} className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
             {b}

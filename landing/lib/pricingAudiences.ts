@@ -31,8 +31,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "Procurement teams",
     title_es: "Compras de empresa. Sin programar.",
     title_en: "Enterprise buying. No code.",
-    intro_es: "Para restaurantes, hoteles y equipos de compras. Misma data que CLI Build, con aprobaciones, checkout y trazabilidad. Compare $29/mes · Ops $79/mes · Scale $149/mes.",
-    intro_en: "For restaurants, hotels, and procurement teams. Same data as CLI Build, with approvals, checkout, and audit trail. Compare $29/mo · Ops $79/mo · Scale $149/mo.",
+    intro_es: "Misma data que CLI Build, interfaz para compras. Compare $29/mes · Ops $79/mes · Scale $149/mes.",
+    intro_en: "Same data as CLI Build, interface for procurement. Compare $29/mo · Ops $79/mo · Scale $149/mo.",
     hash: "#pricing",
   },
 ];

@@ -10,37 +10,29 @@ export default function FAQ() {
     ? [
         {
           q: "¿Los precios son reales?",
-          a: "Sí. Todos los precios provienen de retailers verificados y pasan por pipelines de validación.",
+          a: "Sí. Provienen de retailers verificados y pasan por pipelines de validación.",
         },
         {
-          q: "¿Con qué frecuencia se actualizan los datos?",
+          q: "¿Con qué frecuencia se actualizan?",
           a: `Cada ${MARKET_STATS.pricesRefreshHours} horas en retailers activos.`,
         },
         {
-          q: "¿Pueden los agentes comprar de forma autónoma?",
-          a: "Sí, dependiendo de los permisos de workflow y aprobaciones configuradas.",
-        },
-        {
-          q: "¿Qué retailers están soportados?",
-          a: `${MARKET_STATS.retailersVerified} retailers verificados en ${MARKET_STATS.countries} países LATAM.`,
+          q: "¿Cómo empiezo?",
+          a: "pip install cli-market-world, API key en el dashboard y MCP en tu IDE. Sin contrato ni demo obligatoria.",
         },
       ]
     : [
         {
           q: "Are the prices real?",
-          a: "Yes. All prices come from verified retailers and pass validation pipelines.",
+          a: "Yes. They come from verified retailers and pass validation pipelines.",
         },
         {
           q: "How often is data refreshed?",
           a: `Every ${MARKET_STATS.pricesRefreshHours} hours across active retailers.`,
         },
         {
-          q: "Can agents buy autonomously?",
-          a: "Yes, depending on configured workflow permissions and approvals.",
-        },
-        {
-          q: "Which retailers are supported?",
-          a: `${MARKET_STATS.retailersVerified} verified retailers across ${MARKET_STATS.countries} LATAM countries.`,
+          q: "How do I get started?",
+          a: "pip install cli-market-world, API key in the dashboard, and MCP in your IDE. No contract or mandatory demo.",
         },
       ];
 

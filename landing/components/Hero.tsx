@@ -20,23 +20,16 @@ export default function Hero() {
   const proofChips = [
     {
       label: isES
-        ? `${MARKET_STATS.retailersVerified} retailers verificados`
-        : `${MARKET_STATS.retailersVerified} verified retailers`,
+        ? `${MARKET_STATS.pricesVerifiedLabel} precios verificados`
+        : `${MARKET_STATS.pricesVerifiedLabel} verified prices`,
     },
     {
       label: isES
-        ? `${MARKET_STATS.pricesVerifiedLabel} precios normalizados`
-        : `${MARKET_STATS.pricesVerifiedLabel} normalized prices`,
+        ? `${MARKET_STATS.retailersVerified} retailers`
+        : `${MARKET_STATS.retailersVerified} retailers`,
     },
     {
-      label: isES
-        ? `${MARKET_STATS.countries} países LATAM`
-        : `${MARKET_STATS.countries} LATAM countries`,
-    },
-    {
-      label: isES
-        ? `Refresh cada ${MARKET_STATS.pricesRefreshHours}h`
-        : `${MARKET_STATS.pricesRefreshHours}h refresh cycle`,
+      label: isES ? "MCP · Cursor · Claude · VS Code" : "MCP · Cursor · Claude · VS Code",
     },
   ];
 
