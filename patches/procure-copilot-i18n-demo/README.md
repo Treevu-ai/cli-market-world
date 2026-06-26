@@ -117,10 +117,21 @@ Si `ProcureLanding.tsx` quedó a medias, aplica de nuevo `.\install-i18n-demo.ps
 ## Verify
 
 ```powershell
+# Demo CTAs (static HTML)
 (Invoke-WebRequest https://procurecopilot.com/procure).Content -match 'cli-market.dev/contact\?topic=procure'
-# True — Agendar demo uses contact form, not mailto
 
-(Invoke-WebRequest https://procurecopilot.com/procure).Content -match 'LangToggle|/dashboard\?welcome=1'
+# EN toggle — open site, click EN; hero must read "Your purchases."
+# Or after fix-i18n.ps1 deploy, check JS bundle includes useProcureContent
 ```
 
-Toggle **EN** in the header — hero title should read "Your purchases."
+### EN toggle still Spanish?
+
+The toggle only worked visually — copy was still hardcoded in `lib/procure-content.ts`. Run:
+
+```powershell
+cd ~\procure-copilot
+Invoke-WebRequest "https://raw.githubusercontent.com/Treevu-ai/cli-market-world/cursor/landing-hero-procure-i18n-7bb5/patches/procure-copilot-i18n-demo/fix-i18n.ps1" -OutFile fix-i18n.ps1
+.\fix-i18n.ps1
+```
+
+Then open procurecopilot.com/procure → **EN** → hero should say **Your purchases.**
