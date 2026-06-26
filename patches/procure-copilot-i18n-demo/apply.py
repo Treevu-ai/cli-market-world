@@ -22,7 +22,11 @@ COPY_FILES = [
 ]
 
 MAILTO_FN = re.compile(
-    r"function\s+mailtoHref\s*\([^)]*\)\s*\{[^}]*\}",
+    r"function\s+mailtoHref\s*\([^)]*\)\s*\{[\s\S]*?\n\}",
+    re.MULTILINE,
+)
+MAILTO_ARROW = re.compile(
+    r"(?:const|let|var)\s+mailtoHref\s*=\s*\([^)]*\)\s*=>[^;]+;",
     re.MULTILINE,
 )
 MAILTO_INLINE = re.compile(
@@ -30,6 +34,93 @@ MAILTO_INLINE = re.compile(
     r"function\s+l\s*\(\s*e\s*\)\s*\{[^}]+\}",
     re.MULTILINE,
 )
+MAILTO_URL = re.compile(
+    r'mailto:hello@cli-market\.dev(?:\?[^"\'`\s\)>]*)?',
+    re.IGNORECASE,
+)
+CONTACT_PROCURE = "https://cli-market.dev/contact?topic=procure#contact-procure"
+
+CTA_GLOB_DIRS = ("lib", "components")
+
+
+def _patch_mailto_text(text: str, *, add_cta_import: bool = True) -> str:
+    if add_cta_import:
+        cta_import = (
+            'import { procureBookDemoHref, procureTryDemoHref, procureSalesHref } from "@/lib/procureCta";\n'
+        )
+        text = _add_import(text, cta_import)
+
+    text = MAILTO_FN.sub(
+        "function mailtoHref(_subject: string) { return procureBookDemoHref(); }",
+        text,
+    )
+    text = MAILTO_ARROW.sub(
+        "const mailtoHref = (_subject: string) => procureBookDemoHref();",
+        text,
+    )
+    text = MAILTO_INLINE.sub("", text)
+    text = MAILTO_URL.sub(CONTACT_PROCURE, text)
+    text = re.sub(r"\bmailtoHref\s*\([^)]*\)", "procureBookDemoHref()", text)
+    text = re.sub(r'\bl\s*\(\s*"[^"]+"\s*\)', "procureBookDemoHref()", text)
+    text = re.sub(
+        r'`mailto:hello@cli-market\.dev\?subject=\$\{encodeURIComponent\([^)]+\)\}`',
+        "procureBookDemoHref()",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    for old, new in [
+        ('href:"/dashboard"', "href:procureTryDemoHref()"),
+        ('href: "/dashboard"', "href: procureTryDemoHref()"),
+        ('ctaHref:"/dashboard"', "ctaHref:procureTryDemoHref()"),
+        ('ctaHref: "/dashboard"', "ctaHref: procureTryDemoHref()"),
+        ('href:"/dashboard?welcome=1"', "href:procureTryDemoHref()"),
+        ('href: "/dashboard?welcome=1"', "href: procureTryDemoHref()"),
+    ]:
+        text = text.replace(old, new)
+
+    return text
+
+
+def _patch_cta_files(target: Path) -> list[str]:
+    changed: list[str] = []
+    for dirname in CTA_GLOB_DIRS:
+        root = target / dirname
+        if not root.exists():
+            continue
+        for path in sorted(root.rglob("*")):
+            if path.suffix not in {".ts", ".tsx"}:
+                continue
+            if path.name == "procureCta.ts":
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "hello@cli-market.dev" not in text and "/dashboard" not in text:
+                continue
+            patched = _patch_mailto_text(text)
+            if patched != text:
+                path.write_text(patched, encoding="utf-8")
+                rel = path.relative_to(target).as_posix()
+                changed.append(rel)
+                print(f"  patched {rel} (demo CTAs)")
+    return changed
+
+
+def _verify_no_demo_mailto(target: Path) -> bool:
+    bad: list[str] = []
+    for dirname in CTA_GLOB_DIRS:
+        root = target / dirname
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if path.suffix not in {".ts", ".tsx"}:
+                continue
+            if "mailto:hello@cli-market.dev" in path.read_text(encoding="utf-8"):
+                bad.append(path.relative_to(target).as_posix())
+    if bad:
+        print("  WARN: mailto still present in:", ", ".join(bad), file=sys.stderr)
+        return False
+    print("  OK: no mailto:hello@cli-market.dev in lib/ or components/")
+    return True
 
 
 def copy_tree(patch: Path, target: Path) -> None:
@@ -60,33 +151,9 @@ def patch_procure_content(target: Path) -> None:
         return
 
     text = path.read_text(encoding="utf-8")
-    original = text
-
-    cta_import = (
-        'import { procureBookDemoHref, procureTryDemoHref, procureSalesHref } from "@/lib/procureCta";\n'
-    )
-    text = _add_import(text, cta_import)
-
-    text = MAILTO_FN.sub(
-        "function mailtoHref(_subject: string) { return procureBookDemoHref(); }",
-        text,
-    )
-    text = MAILTO_INLINE.sub("", text)
-
-    for old, new in [
-        ('l("Demo Procure Copilot 15 min")', "procureBookDemoHref()"),
-        ('l("Piloto Procure Copilot")', "procureBookDemoHref()"),
-        ('l("Enterprise Procure Copilot")', 'procureSalesHref("Enterprise Procure Copilot")'),
-        ('href:"/dashboard"', "href:procureTryDemoHref()"),
-        ('href: "/dashboard"', "href: procureTryDemoHref()"),
-        ('ctaHref:"/dashboard"', "ctaHref:procureTryDemoHref()"),
-        ('ctaHref: "/dashboard"', "ctaHref: procureTryDemoHref()"),
-        ("mailto:hello@cli-market.dev?subject=Demo%20Procure%20Copilot%2015%20min", "https://cli-market.dev/contact?topic=procure#contact-procure"),
-    ]:
-        text = text.replace(old, new)
-
-    if text != original:
-        path.write_text(text, encoding="utf-8")
+    patched = _patch_mailto_text(text)
+    if patched != text:
+        path.write_text(patched, encoding="utf-8")
         print("  patched lib/procure-content.ts (demo CTAs)")
 
 
@@ -166,8 +233,10 @@ def main() -> int:
     copy_tree(patch, target)
     repair_procure_landing(target)
     patch_procure_content(target)
+    _patch_cta_files(target)
     patch_layout(target)
     patch_procure_landing(target)
+    _verify_no_demo_mailto(target)
     print("\nDone. Next:")
     print("  npm run build")
     print("  npx opennextjs-cloudflare build")

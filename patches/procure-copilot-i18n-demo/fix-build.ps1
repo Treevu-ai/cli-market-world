@@ -32,6 +32,12 @@ if (Test-Path $landing) {
 python patches\procure-copilot-i18n-demo\repair.py
 python patches\procure-copilot-i18n-demo\apply.py
 
+$mailtoLeft = Select-String -Path lib\*,components\* -Pattern 'mailto:hello@cli-market' -Recurse -ErrorAction SilentlyContinue
+if ($mailtoLeft) {
+    Write-Host "    WARN: mailto still in source — run fix-ctas.ps1 after build OK" -ForegroundColor Yellow
+    $mailtoLeft | ForEach-Object { Write-Host "      $($_.Path):$($_.LineNumber)" }
+}
+
 Write-Host "`n==> 3/4 npm run build (must pass before deploy)" -ForegroundColor Cyan
 npm run build
 if ($LASTEXITCODE -ne 0) {
