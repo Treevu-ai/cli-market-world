@@ -10,7 +10,7 @@ export default function HeroBackground() {
         alt=""
         width={1920}
         height={1080}
-        className="absolute inset-0 h-full w-full object-cover object-center scale-105 saturate-110"
+        className="absolute inset-0 h-full w-full object-cover object-[50%_38%] scale-105 saturate-110"
         loading="eager"
         decoding="async"
       />
