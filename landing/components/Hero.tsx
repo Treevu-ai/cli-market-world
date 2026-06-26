@@ -41,8 +41,8 @@ export default function Hero() {
       style={{ borderBottom: "1px solid var(--cm-hairline-soft)" }}
     >
       <HeroBackground />
-      <div className="landing-container-wide pt-10 pb-6 sm:pt-14 sm:pb-10 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12 xl:gap-16">
+      <div className="landing-container-wide hero-inner pt-4 pb-8 sm:pt-6 sm:pb-10 lg:py-0 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12 xl:gap-16">
           <div className="flex-1 min-w-0">
             <motion.span
               initial={{ opacity: 0, y: 12 }}
