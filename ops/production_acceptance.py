@@ -208,6 +208,10 @@ def check_expect(
         if latency_ms > max_val:
             errors.append(f"latency {latency_ms:.0f}ms > {max_val:.0f}ms")
 
+    # JSON assertions only apply to 2xx — allowed 4xx/5xx in status_in may omit a body.
+    if status < 200 or status >= 300:
+        return errors
+
     if isinstance(data, list):
         min_count = expect.get("json_min_count")
         if min_count is not None and len(data) < int(min_count):
