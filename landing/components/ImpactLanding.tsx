@@ -320,7 +320,7 @@ export default function ImpactLanding() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {isES ? "Suscribir →" : "Subscribe →"}
+              {isES ? "Suscribirse →" : "Subscribe →"}
             </a>
           </div>
         </div>
