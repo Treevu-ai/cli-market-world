@@ -27,8 +27,10 @@ import tomllib
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.requests import Request
 
 from market_core import (
     COUNTRIES,
@@ -176,6 +178,26 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-ID", "X-Session-ID", "X-Country"],
 )
+
+# Core intel routes (cli-market-core <1.11.4) omit Depends(_v1_auth). Gate here until pin bumps.
+_CORE_INTEL_AUTH_PATHS = frozenset({
+    "/v1/intel/price-risk",
+    "/v1/intel/inflation-report",
+    "/v1/intel/procurement-signal",
+    "/v1/intel/regulatory",
+    "/v1/moat/confidence",
+})
+
+
+@app.middleware("http")
+async def core_intel_api_key_gate(request: Request, call_next):
+    path = request.url.path.rstrip("/") or "/"
+    if path in _CORE_INTEL_AUTH_PATHS:
+        try:
+            require_api_key(request.headers.get("authorization"))
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return await call_next(request)
 
 
 # ── Routers ──────────────────────────────────────────────────────────────────

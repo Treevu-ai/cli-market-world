@@ -570,8 +570,10 @@ def intel_affordability_v2(
     line: str = Query("supermercados"),
     days: int = Query(30, ge=1, le=365),
     enveloped: bool = Query(True),
+    authorization: str | None = Header(None),
 ):
     """Cost-of-living composite. Titular usa canasta promedio; ver docs/methodology.md §4."""
+    require_api_key(authorization)
     db = get_db()
     try:
         with timing() as t:
