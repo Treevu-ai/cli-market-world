@@ -82,7 +82,7 @@ MCP: `market-mcp` con `MCP_TOOL_PROFILE=default` — ver [cli-market.dev/docs](h
 2. Modal: elige **soles (Mercado Pago)** o **PayPal (USD)** · email + usuario CLI (opcional)
 3. Completa el pago en el proveedor (o transfiere Yape/Plin con ref `PCS-` / `PCP-` / `PCB-` si aplica)
 4. Revisa tu email: incluye un **enlace mágico** al dashboard Procure (API key precargada, válido 15 min, un solo uso)
-5. Si el enlace expiró: `market account` → copia `sk-…` y pégala en el [dashboard Procure](https://procure-copilot.contacto-8e4.workers.dev/dashboard)
+5. Si el enlace expiró: `market account` → copia `sk-…` y pégala en el [dashboard Procure](https://procurecopilot.com/dashboard)
 
 También puedes suscribir desde el Worker `/procure` → **Suscribir** (deep link al mismo checkout).
 
