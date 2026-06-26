@@ -132,6 +132,27 @@ export default function TrustBar() {
         </div>
       </div>
 
+      {/* Audience + integration strip */}
+      <div className="w-full border-t border-[#f1f5f9] py-4">
+        <div className="landing-container-wide flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8]">
+            {isES ? "Para" : "For"}
+          </span>
+          {(
+            isES
+              ? ["Developers", "Equipos de compras", "Analistas y fondos", "Startups"]
+              : ["Developers", "Procurement teams", "Analysts & funds", "Startups"]
+          ).map((label) => (
+            <span
+              key={label}
+              className="text-xs font-semibold text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-full px-3 py-1"
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Integration marquee */}
       <div
         className="w-full border-t border-[#f1f5f9] py-4 overflow-hidden"
@@ -139,7 +160,7 @@ export default function TrustBar() {
       >
         <div className="flex items-center gap-6">
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#94a3b8] shrink-0 pl-6 whitespace-nowrap">
-            {isES ? "Funciona con" : "Works with"}
+            {isES ? "Integra con" : "Integrates with"}
           </span>
           <div className="overflow-hidden flex-1 min-w-0 mask-fade-x">
             <div className="trust-marquee-track flex items-center gap-10 w-max">

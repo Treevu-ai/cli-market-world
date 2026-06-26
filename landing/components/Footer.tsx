@@ -52,9 +52,6 @@ export default function Footer() {
           <a href="/docs" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             Docs
           </a>
-          <a href="/#api" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
-            SDK
-          </a>
           <a href={MARKET_STATS.pypiUrl} className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors" target="_blank" rel="noopener noreferrer">
             PyPI
           </a>
@@ -70,7 +67,7 @@ export default function Footer() {
           <a href="/legal/tos" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             Legal
           </a>
-          <a href="/#moat" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/#metrics" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             {isES ? "Acerca de" : "About"}
           </a>
         </div>
