@@ -22,7 +22,7 @@ export const PROCURE_ES_TO_EN: Record<string, string> = {
   "Más popular": "Most popular",
   "Contactar ventas": "Contact sales",
   "Solicitar piloto": "Request pilot",
-  "Suscribir →": "Subscribe →",
+  "Suscribirse →": "Subscribe →",
 
   // Section headings
   "Procurement operativo.": "Operational procurement.",
