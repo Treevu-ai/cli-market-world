@@ -41,7 +41,7 @@ Onboarding en **48 h**. Propuesta personalizada según categorías y volumen.
 
 ## Siguiente paso
 
-→ [Solicitar piloto](https://cli-market.dev/contact?topic=intelligence#contact-intelligence)  
+→ [Solicitar piloto](https://cli-market.dev/contact?topic=intelligence#contact-intelligence) · [One-pager web](https://cli-market.dev/intelligence-pilot-es)  
 → hello@cli-market.dev · asunto **Intelligence Pilot**
 
 Indique país, categorías y equipo. Respondemos en 48 h.
