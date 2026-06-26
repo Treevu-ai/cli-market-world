@@ -83,7 +83,7 @@ export default function Hero() {
               className="mt-4 text-base sm:text-lg max-w-[500px] leading-relaxed text-[var(--cm-on-surface-variant)]"
             >
               {isES
-                ? "Tres productos sobre la misma data verificada — elige tu puerta."
+                ? "Tres puertas sobre la misma data verificada — elige la tuya."
                 : "Three products on one verified data layer — pick your door."}
             </motion.p>
 
