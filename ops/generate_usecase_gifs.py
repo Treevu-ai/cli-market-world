@@ -104,20 +104,19 @@ def _scripts() -> dict[str, tuple[str, list[ScriptLine]]]:
             ],
         ),
         "procure": (
-            "CLI Market — Compras de empresa",
+            "PROCURE-COPILOT · DEMO",
             [
-                ("dim", "Procure Copilot: comparar y aprobar sin Excel", 8),
+                ("dim", 'OPS: "Canasta horeca PE — arroz, aceite, leche."', 8),
                 ("dim", "", 2),
-                ("prompt", f"pip install {pkg}", 6),
-                ("prompt", "market init", 5),
-                ("prompt", 'procure compare "papel higiénico" --country PE', 8),
-                ("out", "3 cotizaciones · mejor: S/18.90 / pack x12", 8),
+                ("prompt", "procure run --country PE", 6),
+                ("out", f"✓ 3 ítems · {rv} retailers · data-gate OK", 8),
+                ("prompt", 'procure compare "arroz aceite leche"', 8),
+                ("out", "Metro S/124.10 ← mejor · ahorro 6.2%", 10),
                 ("prompt", "procure approve ORD-PE-0042", 6),
-                ("out", "✓ Aprobado · notificado a compras@empresa.com", 8),
-                ("head", "────────────────────────────", 2),
-                ("out", "Sin WhatsApp · sin hoja de cálculo", 6),
-                ("out", f"Datos: {rv} retailers · {prices} precios", 8),
-                ("dim", "cli-market.dev/#pricing · tab Procure", 18),
+                ("out", "✓ pending → approved · gerente@empresa", 8),
+                ("prompt", "procure checkout --payment yape", 6),
+                ("out", "✓ checkout_ready · handoff CLI Market", 8),
+                ("dim", f"procurecopilot.com · {rv} retailers · {prices}", 18),
             ],
         ),
     }
@@ -127,7 +126,8 @@ def main() -> int:
     scripts = _scripts()
     for slug, (title, script) in scripts.items():
         out = OUT_DIR / f"{slug}.gif"
-        frames = build_frames(script, title=title)
+        theme = "procure" if slug == "procure" else "cli"
+        frames = build_frames(script, title=title, theme=theme)
         write_gif(frames, out)
         print(f"Wrote {out} ({len(frames)} frames)")
     return 0

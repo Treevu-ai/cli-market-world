@@ -29,6 +29,19 @@ CURSOR_BLINK = 6
 
 ScriptLine = tuple[str, str, int]
 
+THEMES = {
+    "cli": {
+        "accent": (60, 255, 208),
+        "border": (60, 255, 208),
+        "inner": (30, 90, 75),
+    },
+    "procure": {
+        "accent": (255, 120, 50),
+        "border": (255, 120, 50),
+        "inner": (90, 45, 20),
+    },
+}
+
 
 def font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     candidates = [
@@ -43,26 +56,42 @@ def font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def _fit_line(draw: ImageDraw.ImageDraw, text: str, fnt: ImageFont.ImageFont, max_width: float) -> str:
+    if draw.textlength(text, font=fnt) <= max_width:
+        return text
+    trimmed = text
+    while len(trimmed) > 1 and draw.textlength(trimmed + "…", font=fnt) > max_width:
+        trimmed = trimmed[:-1]
+    return trimmed + "…"
+
+
 def draw_frame(
     visible: list[tuple[str, str]],
     cursor_on: bool,
     tick: int,
     *,
     title: str,
+    theme: str = "cli",
 ) -> Image.Image:
+    colors = THEMES.get(theme, THEMES["cli"])
+    accent = colors["accent"]
+    border = colors["border"]
+    inner = colors["inner"]
+
     img = Image.new("RGB", (WIDTH, HEIGHT), BG)
     draw = ImageDraw.Draw(img)
     fnt = font()
+    max_text_w = WIDTH - (PAD * 2) - 32
 
-    draw.rounded_rectangle((12, 12, WIDTH - 12, HEIGHT - 12), radius=14, outline=BORDER, width=2)
-    draw.rounded_rectangle((14, 14, WIDTH - 14, HEIGHT - 14), radius=12, outline=(30, 90, 75), width=1)
+    draw.rounded_rectangle((12, 12, WIDTH - 12, HEIGHT - 12), radius=14, outline=border, width=2)
+    draw.rounded_rectangle((14, 14, WIDTH - 14, HEIGHT - 14), radius=12, outline=inner, width=1)
 
     draw.rounded_rectangle((PAD, PAD, WIDTH - PAD, PAD + TITLE_H), radius=10, fill=TITLE_BG)
     draw.rectangle((PAD + 8, PAD + TITLE_H - 2, WIDTH - PAD - 8, PAD + TITLE_H), fill=TITLE_BG)
     for i, color in enumerate((DOT_RED, DOT_YELLOW, DOT_GREEN)):
         x = PAD + 16 + i * 18
         draw.ellipse((x, PAD + 16, x + 10, PAD + 26), fill=color)
-    draw.text((PAD + 72, PAD + 12), title[:52], font=fnt, fill=MINT)
+    draw.text((PAD + 72, PAD + 12), _fit_line(draw, title[:52], fnt, max_text_w - 56), font=fnt, fill=accent)
 
     y = PAD + TITLE_H + 18
     x0 = PAD + 16
@@ -71,11 +100,12 @@ def draw_frame(
     for kind, text in visible:
         if y > max_y:
             break
+        text = _fit_line(draw, text, fnt, max_text_w)
         if kind == "prompt":
-            draw.text((x0, y), "$ ", font=fnt, fill=MINT)
-            draw.text((x0 + draw.textlength("$ ", font=fnt), y), text, font=fnt, fill=MINT)
+            draw.text((x0, y), "$ ", font=fnt, fill=accent)
+            draw.text((x0 + draw.textlength("$ ", font=fnt), y), text, font=fnt, fill=accent)
         elif kind == "head":
-            draw.text((x0, y), text, font=fnt, fill=MINT)
+            draw.text((x0, y), text, font=fnt, fill=accent)
         elif kind == "dim":
             draw.text((x0, y), text, font=fnt, fill=DIM)
         else:
@@ -89,12 +119,17 @@ def draw_frame(
         elif visible and visible[-1][0] in ("out", "head", "dim"):
             cx = x0 + 8 + draw.textlength(visible[-1][1], font=fnt)
         if tick % CURSOR_BLINK < CURSOR_BLINK // 2:
-            draw.rectangle((cx, y - 2, cx + 9, y + FONT_SIZE), fill=MINT)
+            draw.rectangle((cx, y - 2, cx + 9, y + FONT_SIZE), fill=accent)
 
     return img
 
 
-def build_frames(script: list[ScriptLine], *, title: str) -> list[Image.Image]:
+def build_frames(
+    script: list[ScriptLine],
+    *,
+    title: str,
+    theme: str = "cli",
+) -> list[Image.Image]:
     frames: list[Image.Image] = []
     visible: list[tuple[str, str]] = []
     tick = 0
@@ -108,19 +143,21 @@ def build_frames(script: list[ScriptLine], *, title: str) -> list[Image.Image]:
                 else:
                     visible.append(partial)
                 for _ in range(2):
-                    frames.append(draw_frame(visible, cursor_on=True, tick=tick, title=title))
+                    frames.append(
+                        draw_frame(visible, cursor_on=True, tick=tick, title=title, theme=theme)
+                    )
                     tick += 1
             for _ in range(hold):
-                frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title))
+                frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title, theme=theme))
                 tick += 1
         else:
             visible.append((kind, text))
             for _ in range(hold):
-                frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title))
+                frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title, theme=theme))
                 tick += 1
 
     for _ in range(14):
-        frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title))
+        frames.append(draw_frame(visible, cursor_on=False, tick=tick, title=title, theme=theme))
         tick += 1
     return frames
 
