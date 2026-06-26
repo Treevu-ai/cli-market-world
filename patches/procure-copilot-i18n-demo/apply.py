@@ -18,6 +18,8 @@ COPY_FILES = [
     "lib/i18n.ts",
     "lib/LanguageContext.tsx",
     "lib/procureLocale.ts",
+    "lib/procureEnStrings.ts",
+    "lib/procureI18n.ts",
     "components/LangToggle.tsx",
 ]
 
@@ -218,7 +220,7 @@ def repair_procure_landing(target: Path) -> None:
 
 
 def patch_procure_landing(target: Path) -> None:
-    """Add LangToggle only — demo CTAs are patched in lib/procure-content.ts."""
+    """Add LangToggle + wire EN copy via useProcureContent."""
     path = target / "components/ProcureLanding.tsx"
     if not path.exists():
         print("  skip: components/ProcureLanding.tsx not found")
@@ -244,6 +246,135 @@ def patch_procure_landing(target: Path) -> None:
         print("  patched components/ProcureLanding.tsx (LangToggle)")
 
 
+def _procure_content_exports(target: Path) -> list[str]:
+    path = target / "lib/procure-content.ts"
+    if not path.exists():
+        return []
+    return re.findall(r"^export const (\w+)", path.read_text(encoding="utf-8"), re.MULTILINE)
+
+
+def generate_use_procure_content(target: Path) -> None:
+    exports = _procure_content_exports(target)
+    if not exports:
+        print("  skip: no export const in lib/procure-content.ts")
+        return
+
+    path = target / "lib/useProcureContent.ts"
+    if path.exists() and "useProcureContent" in path.read_text(encoding="utf-8"):
+        print("  skip: lib/useProcureContent.ts already present")
+        return
+
+    imports = ", ".join(exports)
+    pack = ", ".join(exports)
+    body = f'''\"use client\";
+
+import {{ useMemo }} from "react";
+import {{ useLang }} from "@/lib/LanguageContext";
+import {{ localizeProcureData }} from "@/lib/procureI18n";
+import {{ {imports} }} from "@/lib/procure-content";
+
+const RAW = {{ {pack} }} as const;
+
+export function useProcureContent() {{
+  const {{ lang }} = useLang();
+  return useMemo(() => localizeProcureData(RAW, lang), [lang]);
+}}
+'''
+    path.write_text(body, encoding="utf-8")
+    print("  wrote lib/useProcureContent.ts (i18n hook)")
+
+
+def patch_procure_i18n_imports(target: Path) -> None:
+    exports = _procure_content_exports(target)
+    if not exports:
+        return
+
+    candidates = [
+        target / "components/ProcureLanding.tsx",
+        target / "app/procure/page.tsx",
+    ]
+    import_re = re.compile(
+        r'import\s+\{([^}]+)\}\s+from\s+["\']@/lib/procure-content["\'];?\n'
+    )
+
+    for path in candidates:
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not import_re.search(text):
+            continue
+        original = text
+
+        text = import_re.sub(
+            'import { useProcureContent } from "@/lib/useProcureContent";\n',
+            text,
+            count=1,
+        )
+
+        if "useProcureContent()" not in text:
+            text = re.sub(
+                r"(export default function \w+\(\)\s*\{)",
+                r"\1\n  const procureContent = useProcureContent();",
+                text,
+                count=1,
+            )
+
+        for name in sorted(exports, key=len, reverse=True):
+            text = re.sub(rf"(?<!\.)\b{re.escape(name)}\b", f"procureContent.{name}", text)
+
+        text = text.replace("procureContent.procureContent.", "procureContent.")
+        if text != original:
+            path.write_text(text, encoding="utf-8")
+            rel = path.relative_to(target).as_posix()
+            print(f"  patched {rel} (useProcureContent i18n)")
+
+
+def patch_procure_i18n_inline(target: Path) -> None:
+    """Fallback when content lives inline (no procure-content import)."""
+    for rel in ("components/ProcureLanding.tsx", "app/procure/page.tsx"):
+        path = target / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "Tus compras" not in text or "useProcureLocalized" in text:
+            continue
+        if "from \"@/lib/procure-content\"" in text or "from '@/lib/procure-content'" in text:
+            continue
+
+        original = text
+        text = _add_import(text, 'import { useLang } from "@/lib/LanguageContext";\n')
+        text = _add_import(text, 'import { getProcureCopy } from "@/lib/procureLocale";\n')
+        text = _add_import(text, 'import { useProcureLocalized } from "@/lib/procureI18n";\n')
+
+        text = re.sub(
+            r"(export default function \w+\(\)\s*\{)",
+            r"\1\n  const { lang } = useLang();\n  const copy = getProcureCopy(lang);",
+            text,
+            count=1,
+        )
+        text = re.sub(
+            r'title:\s*\{\s*lead:\s*"Tus compras\."\s*,\s*mid:\s*"Comparadas, verificadas,"\s*,\s*accent:\s*"aprobadas\."\s*\}',
+            "title: copy.hero.title",
+            text,
+        )
+        const_match = re.search(r"^const\s+(\w+)\s*=\s*\{", text, re.MULTILINE)
+        if const_match:
+            var = const_match.group(1)
+            if f"useProcureLocalized({var}" not in text:
+                text = re.sub(
+                    rf"(export default function \w+\(\)\s*\{{)",
+                    rf"\1\n  const {var} = useProcureLocalized({var}Raw);",
+                    text,
+                    count=1,
+                )
+                text = text.replace(f"const {var} =", f"const {var}Raw =", 1)
+
+        if text != original:
+            path.write_text(text, encoding="utf-8")
+            print(f"  patched {rel} (inline i18n)")
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -263,6 +394,9 @@ def main() -> int:
     _patch_cta_files(target)
     patch_layout(target)
     patch_procure_landing(target)
+    generate_use_procure_content(target)
+    patch_procure_i18n_imports(target)
+    patch_procure_i18n_inline(target)
     _verify_no_demo_mailto(target)
     print("\nDone. Next:")
     print("  npm run build")

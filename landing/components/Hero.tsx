@@ -7,6 +7,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 import { PRODUCT_DOORS } from "@/lib/productDoors";
 import ProductDoorCard from "@/components/ProductDoorCard";
+import HeroBackground from "@/components/HeroBackground";
 
 export default function Hero() {
   const { lang } = useLang();
@@ -45,6 +46,7 @@ export default function Hero() {
       className="landing-section animate-fade-in relative overflow-hidden hero-stripe-mesh"
       style={{ borderBottom: "1px solid #e2e8f0" }}
     >
+      <HeroBackground />
       <div className="landing-container-wide pt-16 pb-12 sm:pt-20 sm:pb-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -63,14 +65,14 @@ export default function Hero() {
         >
           {isES ? (
             <>
-              Una fuente de precios verificados — para quien{" "}
-              <span className="text-gradient-orange">construye</span>, compra o{" "}
-              <span className="text-gradient-orange">analiza</span>
+              Precios verificados para{" "}
+              <span className="text-gradient-orange">construir</span>, comprar y{" "}
+              <span className="text-gradient-orange">analizar</span>
             </>
           ) : (
             <>
-              One verified price layer — whether you{" "}
-              <span className="text-gradient-orange">build</span>, buy, or{" "}
+              Verified prices to{" "}
+              <span className="text-gradient-orange">build</span>, buy, and{" "}
               <span className="text-gradient-orange">analyze</span>
             </>
           )}

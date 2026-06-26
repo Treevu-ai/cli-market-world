@@ -13,6 +13,8 @@ if (-not (Test-Path "$RepoRoot\apply.py")) {
         "lib/i18n.ts",
         "lib/LanguageContext.tsx",
         "lib/procureLocale.ts",
+        "lib/procureEnStrings.ts",
+        "lib/procureI18n.ts",
         "components/LangToggle.tsx"
     ) | ForEach-Object {
         $dest = Join-Path $RepoRoot $_
