@@ -67,7 +67,9 @@ export default function SpokeStepsSection({
               <div className="flex items-center gap-3 mb-4">
                 <span
                   className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
-                  style={{ background: "linear-gradient(180deg, #f97316 0%, #ea580c 100%)" }}
+                  style={{
+                    background: "linear-gradient(180deg, var(--cm-mint-dim) 0%, var(--cm-mint) 100%)",
+                  }}
                 >
                   {step.n}
                 </span>

@@ -13,6 +13,7 @@ Canonical hub: `/` · Config: `landing/lib/spokeConfig.ts` · PRD: `docs/prd-lan
 | `SpokeStepsSection` | `components/spoke/SpokeStepsSection.tsx` | Pasos con círculos naranja (parametrizable) |
 | `RetailersStatsStrip` | `components/retailers/RetailersStatsStrip.tsx` | Stats compactos retailers |
 | `RetailersBenefitsSection` | `components/retailers/RetailersBenefitsSection.tsx` | Grid beneficios retailers |
+| `IntelligenceFAQ` | `components/IntelligenceFAQ.tsx` | FAQ compacto analista |
 | `SPOKE_CONFIG` | `lib/spokeConfig.ts` | Copy + brandMode por ICP |
 | `SPOKE_FINAL_CTA` | `lib/spokeConfig.ts` | Copy CTA final por ICP |
 
@@ -47,9 +48,12 @@ Retailers modal CTA: `<SpokeHero icp="retailers" onPrimaryClick={() => setOpen(t
 | intelligence | `/intelligence` | terminal | false |
 | retailers | `/retailers` | operations | true |
 
-## Phase D (retailers — shipped)
+## Phase E (QA — shipped)
 
-- `SpokeStepsSection`, `RetailersStatsStrip`, `RetailersBenefitsSection`
-- JSON-LD en `app/retailers/layout.tsx` via `RetailersJsonLd`
-- `retailers/page.tsx` composición (~35 LOC)
-- `ActiveBrandTicker` sin `ScrambleText`
+Report: `landing/QA-SPOKE-E.md` · Screenshots: `landing/qa-screenshots/`
+
+```bash
+npm run build && npx serve out -l 3456
+npm run qa:spoke -- --live http://127.0.0.1:3456
+npm run qa:spoke:screenshots -- http://127.0.0.1:3456
+```
