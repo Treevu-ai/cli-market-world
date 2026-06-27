@@ -9,6 +9,7 @@ Endpoints:
   GET  /v1/intel/enrichment                 Enrichment indicators (OFF, Wiki, etc.)
   GET  /v1/intel/enrichment/subcategories   Subcategory-level enrichment
   GET  /v1/intel/brief                      One-call intelligence narrative (PR3)
+  GET  /v1/intel/andean-panel               CAF Andean panel PE/BO/EC (P2)
   POST /v1/intel/refresh                    Trigger indicator recomputation
   POST /v1/intel/enrichment/refresh         Trigger enrichment-only refresh
 """
@@ -32,7 +33,7 @@ from backend_interface import (
     get_scores,
 )
 from market_intel_v2 import PROMO_DISCOUNT_THRESHOLD, _RPV_DISCLAIMER_ES, compute_affordability_v2
-from market_core.market_intel_products import compute_price_deal_alerts
+from market_core.market_intel_products import build_andean_panel, compute_price_deal_alerts
 from market_core.response_envelope import build_provenance, envelope, timing
 
 logger = logging.getLogger("market.server").getChild("intel")
@@ -212,6 +213,40 @@ def intel_brief(
             days=days,
             include_catalog=include_catalog,
         )
+    finally:
+        db.close()
+
+
+@router.get(
+    "/andean-panel",
+    summary="CAF Andean food-affordability panel (PE retail+macro, BO/EC macro-only)",
+)
+def intel_andean_panel(
+    line: str = Query("supermercados"),
+    days: int = Query(30, ge=1, le=365),
+    enveloped: bool = Query(True),
+    authorization: str | None = Header(None),
+):
+    """Cross-country Andean panel for CAF-style food affordability comparisons."""
+    require_api_key(authorization)
+    db = get_db()
+    try:
+        with timing() as t:
+            result = build_andean_panel(db, line=line, days=days)
+        retail_count = int(result.get("retail_coverage_countries") or 0)
+        confidence = "ok" if retail_count >= 1 else "low"
+        prov = build_provenance(
+            primary_source="price_snapshots",
+            methodology=result.get("methodology", "andean_panel_v1"),
+        )
+        if enveloped:
+            return envelope(
+                result,
+                confidence=confidence,
+                latency_ms=t.elapsed_ms,
+                extra_meta={"provenance": prov},
+            )
+        return result
     finally:
         db.close()
 
@@ -578,7 +613,10 @@ def intel_affordability_v2(
     try:
         with timing() as t:
             result = compute_affordability_v2(db, country=country, line=line, days=days)
-        confidence = "ok" if result.get("components", {}).get("canasta_average") else "low"
+        components = result.get("components") or {}
+        confidence = components.get("canasta_band_confidence") or (
+            "ok" if components.get("canasta_average") else "low"
+        )
         prov = build_provenance(
             primary_source="price_snapshots",
             methodology=result.get("methodology", "affordability_os_v2"),
