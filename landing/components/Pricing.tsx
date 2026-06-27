@@ -448,7 +448,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
             </p>
             <a
               href="/contact?topic=enterprise#contact-form"
-              className="inline-flex items-center rounded-[10px] border border-[#e2e8f0] text-[#64748b] text-sm font-semibold px-6 py-2.5 hover:border-[#ea580c] hover:text-[#ea580c] transition-all"
+              className="inline-flex items-center rounded-[10px] border border-[var(--cm-outline-variant)] text-[var(--cm-on-surface-variant)] text-sm font-semibold px-6 py-2.5 hover:border-[var(--cm-action)] hover:text-[var(--cm-action)] transition-all"
             >
               {isES ? "Contáctenos →" : "Contact us →"}
             </a>

@@ -7,6 +7,9 @@
     "build": "next build && next-sitemap && node scripts/append-seo-headers.mjs",
     "start": "next start",
     "lint": "tsc --noEmit",
+    "qa:spoke": "node scripts/spoke-qa.mjs",
+    "qa:spoke:live": "node scripts/spoke-qa.mjs --live",
+    "qa:spoke:screenshots": "node scripts/spoke-screenshots.mjs",
     "deploy": "npm run build && npx wrangler pages deploy out --project-name=cli-market-world --branch=main",
     "og:png": "node scripts/rasterize_og.mjs public/og.svg public/og.png && node scripts/rasterize_og.mjs public/og-preview.svg public/og-preview.png"
   },
@@ -28,6 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "next-sitemap": "^4.2.3",
+    "playwright": "^1.61.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5"
   }
