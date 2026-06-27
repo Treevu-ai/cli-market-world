@@ -87,6 +87,14 @@ export const metadata: Metadata = {
     description: `AI commerce API. ${MARKET_STATS.retailersPhraseEn}. One pip install. Zero scraping.`,
     images: [ogImage],
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/favicon.svg",
+  },
 };
 
 import { LanguageProvider } from "@/lib/LanguageContext";
