@@ -389,9 +389,9 @@ SpokePageShell (brandMode)
 
 ### Fase E — QA visual
 
-- [ ] Screenshot diff hub vs 3 spokes (desktop + mobile)
-- [ ] Lighthouse / a11y: un solo H1 por página, contraste tokens
-- [ ] `npm run build` + revisión manual 4 rutas
+- [x] Screenshot diff hub vs 3 spokes (desktop + mobile)
+- [x] Lighthouse / a11y: un solo H1 por página, contraste tokens
+- [x] `npm run build` + revisión manual 4 rutas
 
 ---
 
@@ -399,33 +399,33 @@ SpokePageShell (brandMode)
 
 ### Cross-spoke (obligatorio)
 
-- [ ] Las 3 rutas usan `SpokePageShell` idéntico al glow del hub
-- [ ] Cada spoke tiene exactamente **un** `<h1>` con clase `hero-garamond-headline`
-- [ ] Eyebrow hero = `stripe-tag-soft` en todas
-- [ ] CTAs hero = solo `btn-mint` / `btn-outline`
-- [ ] Body sections = `landing-section` + `landing-container-wide`
-- [ ] Cero hex hardcoded fuera de `globals.css` en spokes
-- [ ] Link `← CLI Market` visible en desktop above fold del body
-- [ ] `ErrorBoundary` en las 3 rutas
+- [x] Las 3 rutas usan `SpokePageShell` idéntico al glow del hub
+- [x] Cada spoke tiene exactamente **un** `<h1>` con clase `hero-garamond-headline`
+- [x] Eyebrow hero = `stripe-tag-soft` en todas
+- [x] CTAs hero = solo `btn-mint` / `btn-outline`
+- [x] Body sections = `landing-section` + `landing-container-wide`
+- [x] Cero hex hardcoded fuera de `globals.css` en spokes
+- [x] Link `← CLI Market` visible en desktop above fold del body
+- [x] `ErrorBoundary` en las 3 rutas
 
 ### Per spoke
 
 **Build**
 
-- [ ] Proof chips: MCP + precios verificados + tier Free
-- [ ] Pricing + FAQ conservan funcionalidad checkout
+- [x] Proof chips: MCP + precios verificados + tier Free
+- [x] Pricing + FAQ conservan funcionalidad checkout
 
 **Intelligence**
 
 - [x] Cero referencias `#0369a1`
 - [x] Pilot tiers usan `card-cyber` + tokens signal/mint
-- [ ] Commerce Pulse embed intacto
+- [x] Commerce Pulse embed intacto
 
 **Retailers**
 
 - [x] Cero `grid-bg`, cero `ScrambleText`
 - [x] `brand-mode-operations` aplicado
-- [ ] Modal apply retailer funcional
+- [x] Modal apply retailer funcional
 - [x] Steps usan círculos naranja (patrón SolutionSection)
 
 ### Visual regression
@@ -508,4 +508,4 @@ SpokePageShell (brandMode)
 
 ---
 
-**Status:** Draft · **Next step:** Fase A (`SpokePageShell` + `SpokeHero`) antes de merge PR #434
+**Status:** Shipped (Phase A–E) · **QA:** `landing/QA-SPOKE-E.md` · **Merge:** PR #438

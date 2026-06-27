@@ -1,0 +1,70 @@
+{
+  "capturedAt": "2026-06-27T22:06:06.019Z",
+  "baseUrl": "http://127.0.0.1:3456",
+  "results": [
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "file": "hub-desktop.png",
+      "h1Count": 1,
+      "hubLinkVisible": "n/a",
+      "url": "http://127.0.0.1:3456/"
+    },
+    {
+      "route": "/build",
+      "viewport": "desktop",
+      "file": "build-desktop.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/build"
+    },
+    {
+      "route": "/intelligence",
+      "viewport": "desktop",
+      "file": "intelligence-desktop.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/intelligence"
+    },
+    {
+      "route": "/retailers",
+      "viewport": "desktop",
+      "file": "retailers-desktop.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/retailers"
+    },
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "file": "hub-mobile.png",
+      "h1Count": 1,
+      "hubLinkVisible": "n/a",
+      "url": "http://127.0.0.1:3456/"
+    },
+    {
+      "route": "/build",
+      "viewport": "mobile",
+      "file": "build-mobile.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/build"
+    },
+    {
+      "route": "/intelligence",
+      "viewport": "mobile",
+      "file": "intelligence-mobile.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/intelligence"
+    },
+    {
+      "route": "/retailers",
+      "viewport": "mobile",
+      "file": "retailers-mobile.png",
+      "h1Count": 1,
+      "hubLinkVisible": true,
+      "url": "http://127.0.0.1:3456/retailers"
+    }
+  ]
+}
