@@ -46,6 +46,10 @@ def auth_user(token: str) -> str:
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
         return "admin"
     if token.startswith("sk-"):
+        from market_core.platform_admin import is_platform_admin_api_key
+
+        if is_platform_admin_api_key(token):
+            return "admin"
         key_data = db_validate_api_key(token)
         if key_data:
             return key_data["username"]
@@ -193,10 +197,13 @@ def require_api_key(authorization: str | None) -> str:
 def require_starter(authorization: str | None) -> str:
     """Require Starter tier or higher."""
     from market_billing import db_get_subscription, price_label_for_plan
+    from market_core.platform_admin import is_platform_admin
 
     username = require_api_key(authorization)
+    if is_platform_admin(username):
+        return username
     sub = db_get_subscription(username)
-    if sub.get("tier", "free") not in ("starter", "pro", "enterprise"):
+    if sub.get("tier", "free") not in ("starter", "pro", "pro_founding", "pro_annual", "enterprise", "builder"):
         raise HTTPException(
             status_code=403,
             detail=(
@@ -210,10 +217,13 @@ def require_starter(authorization: str | None) -> str:
 def require_pro(authorization: str | None) -> str:
     """Require Pro (or higher) tier for premium data endpoints."""
     from market_billing import db_get_subscription, price_label_for_plan
+    from market_core.platform_admin import is_platform_admin
 
     username = require_api_key(authorization)
+    if is_platform_admin(username):
+        return username
     sub = db_get_subscription(username)
-    if sub.get("tier", "free") not in ("pro", "enterprise"):
+    if sub.get("tier", "free") not in ("pro", "pro_founding", "pro_annual", "enterprise", "builder"):
         raise HTTPException(
             status_code=403,
             detail=(
@@ -227,8 +237,11 @@ def require_pro(authorization: str | None) -> str:
 def require_export(authorization: str | None) -> str:
     """Require Starter+ with export enabled (CSV/JSON data moat pulls)."""
     from market_billing import TIERS, db_get_subscription, price_label_for_plan
+    from market_core.platform_admin import is_platform_admin
 
     username = require_api_key(authorization)
+    if is_platform_admin(username):
+        return username
     sub = db_get_subscription(username)
     tier = sub.get("tier", "free")
     if not TIERS.get(tier, TIERS["free"]).get("export"):
