@@ -62,7 +62,7 @@ export default function ProductArchitecturePage() {
             {isES ? "Una plataforma. Cero scraping." : "One platform. Zero scraping."}
           </h2>
           <a
-            href="/#pricing"
+            href="/build#pricing"
             className="inline-flex items-center rounded-3xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-6 py-3 hover:brightness-110 transition-all"
           >
             {isES ? "Ver planes →" : "See plans →"}

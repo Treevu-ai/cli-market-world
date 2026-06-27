@@ -167,7 +167,7 @@ export const CASE_STUDIES_CTA = {
     en: "See Procure plans",
   },
   build: {
-    href: "/#pricing",
+    href: "/build#pricing",
     es: "Ver planes Build",
     en: "See Build plans",
   },

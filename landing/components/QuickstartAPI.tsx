@@ -112,7 +112,7 @@ market search "leche" --country PE`}</pre>
             {isES ? "Docs · quickstart →" : "Docs · quickstart →"}
           </a>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
-          <a href="/#pricing" className="underline hover:text-[var(--cm-mint)]">
+          <a href="/build#pricing" className="underline hover:text-[var(--cm-mint)]">
             {isES ? "Planes Build →" : "Build plans →"}
           </a>
           <span className="text-[var(--cm-mint)]/30 hidden sm:inline">·</span>
