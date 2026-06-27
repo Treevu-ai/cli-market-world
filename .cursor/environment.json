@@ -1,0 +1,3 @@
+{
+  "install": "pip install -q -U cli-market-world && python3 -m market_cli mcp-setup --ide cursor --profile legacy || true"
+}
