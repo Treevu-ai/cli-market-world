@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cli-market": {
+      "command": "market-mcp",
+      "args": [],
+      "env": {
+        "MARKET_API_URL": "https://cli-market-production.up.railway.app",
+        "MCP_TOOL_PROFILE": "default"
+      }
+    }
+  }
+}

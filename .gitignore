@@ -17,7 +17,7 @@ docs/awesome-claude-code/
 .obsidian/workspace-mobile.json
 .obsidian/hotkeys.json
 .cursor/*
-.vscode/*
+!.cursor/mcp.json
 !.vscode/mcp.json
 !.cursor/rules/
 !.cursor/rules/**

@@ -80,6 +80,22 @@ def test_mcp_setup_dry_run_vscode(monkeypatch, capsys):
     assert "market-mcp" in out
 
 
+def test_write_mcp_config_creates_cursor_file(tmp_path, monkeypatch):
+    cfg_dir = tmp_path / ".cursor"
+    cfg_path = cfg_dir / "mcp.json"
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-write-test")
+    monkeypatch.setattr(
+        market_cli,
+        "_mcp_config_location",
+        lambda ide: (str(cfg_dir), str(cfg_path), True),
+    )
+    result = market_cli._write_mcp_config("cursor")
+    assert cfg_path.is_file()
+    saved = json.loads(cfg_path.read_text(encoding="utf-8"))
+    assert saved["mcpServers"]["cli-market"]["command"] == "market-mcp"
+    assert result["cfg_path"] == str(cfg_path)
+
+
 def test_mcp_setup_dry_run(monkeypatch, capsys):
     monkeypatch.setattr(market_cli, "get_token", lambda: "sk-dry-run-token")
     monkeypatch.setattr(market_cli, "_mcp_config_location", lambda ide: ("/tmp/.cursor", "/tmp/.cursor/mcp.json", True))
