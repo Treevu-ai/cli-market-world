@@ -359,11 +359,11 @@ SpokePageShell (brandMode)
 
 ### Fase A — Primitives (bloqueante merge)
 
-- [ ] `SpokePageShell` + `SpokeHero` + `SpokeHubLink`
-- [ ] `landing/lib/spokeConfig.ts` con configs build / intelligence / retailers
-- [ ] Documentar en Storybook o `landing/DESIGN-SPOKE.md` (tabla primitives)
+- [x] `SpokePageShell` + `SpokeHero` + `SpokeHubLink`
+- [x] `landing/lib/spokeConfig.ts` con configs build / intelligence / retailers
+- [x] Documentar en `landing/DESIGN-SPOKE.md`
 
-**Gate:** 3 spokes usan `SpokePageShell` + `SpokeHero`.
+**Gate:** 3 spokes usan `SpokePageShell` + `SpokeHero`. ✅ 2026-06-27
 
 ### Fase B — Build homologation
 

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
-import BuildSpokeHeader from "@/components/BuildSpokeHeader";
+import SpokePageShell from "@/components/spoke/SpokePageShell";
+import SpokeHero from "@/components/spoke/SpokeHero";
+import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import FinalCTASection from "@/components/FinalCTASection";
 import Footer from "@/components/Footer";
-import LegacyHashRedirect from "@/components/LegacyHashRedirect";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
 export const metadata: Metadata = {
   title: "Build — API & MCP for developers",
@@ -16,19 +16,16 @@ export const metadata: Metadata = {
 };
 
 export default function BuildPage() {
+  const { brandMode } = SPOKE_CONFIG.build;
+
   return (
-    <main id="main-content" className="relative min-h-screen bg-[var(--cm-background)]">
-      <LegacyHashRedirect />
-      <Navbar />
-      <ErrorBoundary>
-        <div className="relative z-10">
-          <BuildSpokeHeader />
-          <Pricing />
-          <FAQ />
-          <FinalCTASection />
-          <Footer />
-        </div>
-      </ErrorBoundary>
-    </main>
+    <SpokePageShell brandMode={brandMode} legacyHashRedirect>
+      <SpokeHero icp="build" />
+      <SpokeHubLink />
+      <Pricing />
+      <FAQ />
+      <FinalCTASection />
+      <Footer />
+    </SpokePageShell>
   );
 }
