@@ -18,8 +18,6 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import httpx
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -56,7 +54,11 @@ def _notify_callback(callback_url: str, job: dict) -> None:
     if not url:
         return
     try:
-        httpx.post(url, json=job, timeout=15)
+        from market_security import safe_post_json
+
+        safe_post_json(url, job, timeout=15)
+    except ValueError as exc:
+        print(f"  ⚠️  callback blocked (SSRF): {exc}", file=sys.stderr)
     except Exception as exc:
         print(f"  ⚠️  callback failed: {exc}", file=sys.stderr)
 

@@ -966,6 +966,9 @@ async def main():
                     print(f"    (see full logs for the {errs} error(s); top ones in collector_runs.errors)")
                 # Evaluate price alerts after every collection cycle
                 try:
+                    from market_security import patch_alert_webhook_dispatch
+
+                    patch_alert_webhook_dispatch()
                     from market_alerts import evaluate_alerts
                     fired = evaluate_alerts()
                     if fired:

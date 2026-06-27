@@ -24,6 +24,7 @@ from pydantic import BaseModel, field_validator
 
 from market_core import STORES, get_db, price_to_usd
 from market_billing import db_get_subscription
+from market_security import validate_public_http_url
 from server_deps import require_api_key, require_pro, require_starter
 from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
@@ -663,11 +664,18 @@ def submit_price_pulse(
     username = require_pro(authorization)
     from market_core.intel_jobs import db_create_intel_job
 
+    callback_url = (body.callback_url or "").strip()
+    if callback_url:
+        try:
+            callback_url = validate_public_http_url(callback_url)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     job = db_create_intel_job(
         username,
         job_type="price_pulse",
         country=body.country,
-        callback_url=(body.callback_url or "").strip(),
+        callback_url=callback_url,
     )
     return {"ok": True, **job}
 
