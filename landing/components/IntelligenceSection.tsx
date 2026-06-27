@@ -23,7 +23,7 @@ const PILOT_TIERS = (isES: boolean) => [
   },
 ];
 
-export default function IntelligenceSection() {
+export default function IntelligenceSection({ omitHeader = false }: { omitHeader?: boolean }) {
   const { lang } = useLang();
   const isES = lang === "es";
   const ref = useRef(null);
@@ -46,10 +46,11 @@ export default function IntelligenceSection() {
   return (
     <section
       ref={ref}
-      id="intelligence"
-      className="landing-section landing-section-alt scroll-mt-24"
+      id="intelligence-body"
+      className={`landing-section landing-section-alt scroll-mt-24${omitHeader ? " !pt-12" : ""}`}
     >
       <div className="landing-container-wide">
+        {!omitHeader ? (
         <motion.div
           className="landing-section-header text-center"
           initial={{ opacity: 0, y: 24 }}
@@ -74,6 +75,7 @@ export default function IntelligenceSection() {
               : "For pricing, trade marketing, fintech, and consultancies — spreads, inflation, and basket from real shelf data."}
           </p>
         </motion.div>
+        ) : null}
 
         <CommercePulseEmbed country="PE" lang={isES ? "es" : "en"} />
 

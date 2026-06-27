@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Navbar from "@/components/Navbar";
+import SpokePageShell from "@/components/spoke/SpokePageShell";
+import SpokeHero from "@/components/spoke/SpokeHero";
+import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import Footer from "@/components/Footer";
 import ActiveBrandTicker from "@/components/ActiveBrandTicker";
 import RetailerApplyModal from "@/components/RetailerApplyModal";
-import ScrambleText from "@/components/ScrambleText";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
+import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -75,10 +77,7 @@ export default function RetailersPage() {
   ];
 
   return (
-    <main className="relative min-h-screen bg-[var(--cm-background)]">
-      <div className="grid-bg fixed inset-0 opacity-40 pointer-events-none" aria-hidden="true" />
-      <Navbar />
-
+    <SpokePageShell brandMode={SPOKE_CONFIG.retailers.brandMode}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -141,56 +140,10 @@ export default function RetailersPage() {
         }}
       />
 
-      <div className="relative z-10">
-        <section className="py-24 px-[var(--cm-gutter)] text-center pt-28 bg-[var(--cm-surface-low)] border-b border-[var(--cm-outline-variant)]">
-          <motion.div {...fadeUp} className="max-w-[720px] mx-auto">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-[var(--cm-mint)] mb-4">
-              {isES ? "CLI Market para Retailers" : "CLI Market for Retailers"}
-            </p>
-            <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-tight font-bold text-[var(--cm-on-surface)] mb-3 tracking-tight">
-              {isES ? (
-                <>
-                  Tus productos, donde compran los negocios.{" "}
-                  <ScrambleText
-                    text="Gratis. Hoy."
-                    autoStart
-                    delay={600}
-                    duration={0.6}
-                    className="text-[var(--cm-mint)]"
-                  />
-                </>
-              ) : (
-                <>
-                  Your products, where businesses buy.{" "}
-                  <ScrambleText
-                    text="Free. Today."
-                    autoStart
-                    delay={600}
-                    duration={0.6}
-                    className="text-[var(--cm-mint)]"
-                  />
-                </>
-              )}
-            </h1>
-            <p className="text-[11px] text-[var(--cm-mint)] max-w-[500px] mx-auto mb-6 font-medium tracking-wide">
-              {isES ? "Gratis para siempre. Cupos limitados por país." : "Free forever. Limited spots per country."}
-            </p>
-            <p className="text-base text-[var(--cm-on-surface-variant)] max-w-[500px] mx-auto leading-relaxed">
-              {isES
-                ? "Compradores empresariales y agentes de IA comparan precios en CLI Market antes de ordenar. Si tu catálogo no está indexado, sos invisible frente a quien ya sí está."
-                : "Business buyers and AI agents compare prices on CLI Market before ordering. If your catalog isn't indexed, you're invisible against competitors who already are."}
-            </p>
-            <button
-              type="button"
-              onClick={() => setApplyOpen(true)}
-              className="inline-flex items-center justify-center mt-8 px-8 py-3 rounded-[10px] bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg"
-            >
-              {isES ? "Listar mi tienda — gratis" : "List my store — free"}
-            </button>
-          </motion.div>
-        </section>
+      <SpokeHero icp="retailers" onPrimaryClick={() => setApplyOpen(true)} />
+      <SpokeHubLink />
 
-        <ActiveBrandTicker />
+      <ActiveBrandTicker />
 
         <section className="py-16 px-[var(--cm-gutter)] border-b border-[var(--cm-outline-variant)]/20 landing-section-alt">
           <motion.div {...fadeUp} className="max-w-[720px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -258,7 +211,7 @@ export default function RetailersPage() {
           </motion.div>
         </section>
 
-        <section className="py-24 px-[var(--cm-gutter)] text-center">
+        <section id="retailer-apply" className="landing-section text-center scroll-mt-24">
           <motion.div {...fadeUp} className="max-w-[520px] mx-auto">
             <h2 className="section-title mb-2">
               {isES ? "¿Listo para aparecer?" : "Ready to get listed?"}
@@ -282,8 +235,7 @@ export default function RetailersPage() {
 
         <RetailerApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
 
-        <Footer />
-      </div>
-    </main>
+      <Footer />
+    </SpokePageShell>
   );
 }
