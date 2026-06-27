@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from market_core import STORES
-from market_core.market_basket import build_canasta_snapshot
-from market_core.market_intel_products import compute_affordability
+from market_core.market_intel_products import (
+    compute_affordability,
+    _canasta_totals_by_store as core_canasta_totals_by_store,
+)
 
 PROMO_DISCOUNT_THRESHOLD = 0.03  # 3% — docs/methodology.md §6
 
@@ -33,30 +34,9 @@ _CURRENCY_BY_COUNTRY: dict[str, str] = {
     "BR": "BRL",
     "CO": "COP",
     "CL": "CLP",
+    "BO": "BOB",
+    "EC": "USD",
 }
-
-
-def _canasta_totals_by_store(db, country: str) -> dict[str, Any]:
-    """Min / promedio / max canasta totals across retailers (same moment)."""
-    cc = country.strip().upper()
-    stores = [k for k, v in STORES.items() if v.get("country") == cc and not v.get("disabled")]
-    if not stores:
-        return {"stores": 0, "method": "no_stores"}
-
-    snap = build_canasta_snapshot(db, min_items=3, store_filter=set(stores))
-    rows = snap.get("stores") or []
-    totals = [float(r["total"]) for r in rows if r.get("total") and float(r["total"]) > 0]
-    if not totals:
-        return {"stores": 0, "method": "snapshot_empty"}
-
-    return {
-        "best": round(min(totals), 2),
-        "average": round(sum(totals) / len(totals), 2),
-        "worst": round(max(totals), 2),
-        "stores": len(totals),
-        "method": "canasta_snapshot",
-        "currency": _CURRENCY_BY_COUNTRY.get(cc, rows[0].get("currency", "")),
-    }
 
 
 def _affordability_headline_v2(
@@ -65,6 +45,7 @@ def _affordability_headline_v2(
     currency: str,
     canasta_avg: float | None,
     canastas_per_wage_avg: float | None,
+    wage_band: dict[str, float | None] | None,
     rpv_pct: float | None,
 ) -> str:
     """Titular sin brecha IPC (PRD 4.2). Usa canasta promedio (PRD 4.4)."""
@@ -73,6 +54,10 @@ def _affordability_headline_v2(
         parts.append(f"Canasta promedio observada ~{canasta_avg:.0f} {currency} en {cc}")
     if canastas_per_wage_avg is not None:
         parts.append(f"equivale a {canastas_per_wage_avg:.1f} canastas por salario mínimo (promedio)")
+    if wage_band and wage_band.get("low") is not None and wage_band.get("high") is not None:
+        parts.append(
+            f"banda {wage_band['low']:.1f}–{wage_band['high']:.1f} canastas/SM (BM-style)"
+        )
     if rpv_pct is not None:
         parts.append(f"RPV 7d {rpv_pct:+.1f}%")
     return (
@@ -89,47 +74,34 @@ def compute_affordability_v2(
     line: str | None = None,
     days: int = 30,
 ) -> dict[str, Any]:
-    """Affordability OS v2 — titular con canasta promedio; best/worst en components."""
+    """Affordability OS v2 — titular con canasta promedio; best/worst + bandas en components."""
     base = compute_affordability(db, country=country, line=line, days=days)
     cc = base.get("country") or "PE"
     components = dict(base.get("components") or {})
-    totals = _canasta_totals_by_store(db, cc)
-    currency = totals.get("currency") or components.get("canasta_currency") or _CURRENCY_BY_COUNTRY.get(cc, "")
 
-    canasta_avg = totals.get("average")
-    canasta_best = totals.get("best")
-    canasta_worst = totals.get("worst")
-    min_wage = components.get("minimum_wage_local")
+    # Core may already populate bands; refresh totals if missing (older core pin).
+    if not components.get("canasta_average"):
+        totals = core_canasta_totals_by_store(db, cc)
+        components.update(
+            {
+                "canasta_average": totals.get("average"),
+                "canasta_best": totals.get("best"),
+                "canasta_worst": totals.get("worst"),
+                "canasta_stores_compared": totals.get("stores") or components.get("canasta_stores_compared"),
+                "canasta_method": totals.get("method") or components.get("canasta_method"),
+                "canasta_currency": totals.get("currency") or components.get("canasta_currency"),
+            }
+        )
 
-    canastas_per_wage_avg = None
-    canastas_per_wage_best = None
-    canastas_per_wage_worst = None
-    if min_wage and min_wage > 0:
-        if canasta_avg:
-            canastas_per_wage_avg = round(min_wage / canasta_avg, 2)
-        if canasta_best:
-            canastas_per_wage_best = round(min_wage / canasta_best, 2)
-        if canasta_worst:
-            canastas_per_wage_worst = round(min_wage / canasta_worst, 2)
+    currency = components.get("canasta_currency") or _CURRENCY_BY_COUNTRY.get(cc, "")
+    canasta_avg = components.get("canasta_average")
+    wage_band = components.get("canastas_per_minimum_wage_band") or {}
+    canastas_per_wage_avg = wage_band.get("point") or components.get("canastas_per_minimum_wage_average")
 
-    components.update(
-        {
-            "canasta_average": canasta_avg,
-            "canasta_best": canasta_best,
-            "canasta_worst": canasta_worst,
-            "canasta_stores_compared": totals.get("stores") or components.get("canasta_stores_compared"),
-            "canasta_method": totals.get("method") or components.get("canasta_method"),
-            "canasta_currency": currency,
-            "canastas_per_minimum_wage_average": canastas_per_wage_avg,
-            "canastas_per_minimum_wage_best": canastas_per_wage_best,
-            "canastas_per_minimum_wage_worst": canastas_per_wage_worst,
-            # Titular principal = promedio; min queda como contexto best-case
-            "canastas_per_minimum_wage": canastas_per_wage_avg,
-        }
-    )
-    # Legacy field retained for backward compat
-    if canasta_best is not None:
-        components["canasta_min"] = canasta_best
+    if canastas_per_wage_avg is not None:
+        components["canastas_per_minimum_wage"] = canastas_per_wage_avg
+    if components.get("canasta_best") is not None:
+        components["canasta_min"] = components["canasta_best"]
 
     rpv = components.get("internal_inflation_pct") or components.get("staple_momentum_7d_pct")
     base["headline_es"] = _affordability_headline_v2(
@@ -137,6 +109,7 @@ def compute_affordability_v2(
         currency=currency,
         canasta_avg=canasta_avg,
         canastas_per_wage_avg=canastas_per_wage_avg,
+        wage_band=wage_band,
         rpv_pct=float(rpv) if rpv is not None else None,
     )
     base["components"] = components
