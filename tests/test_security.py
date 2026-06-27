@@ -6,7 +6,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from market_server import app
+from market_core import db_create_api_key, db_save_user
+from market_server import app, hash_password
 
 client = TestClient(app)
 
@@ -76,6 +77,84 @@ def test_validate_public_http_url_accepts_https():
     from market_security import validate_public_http_url
 
     assert validate_public_http_url("https://example.com/image.png").startswith("https://")
+
+
+def test_validate_public_http_url_rejects_credentials():
+    from market_security import validate_public_http_url
+
+    with pytest.raises(ValueError, match="credentials"):
+        validate_public_http_url("https://user:pass@example.com/hook")
+
+
+def test_alert_webhook_blocks_loopback():
+    db_save_user("ent-ssrf", hash_password("market"), "ent@test.com")
+    from market_billing import db_set_subscription
+
+    db_set_subscription("ent-ssrf", "enterprise")
+    key = db_create_api_key("ent-ssrf", "read", "alert-ssrf")["key"]
+    r = client.post(
+        "/v1/alerts",
+        headers={"Authorization": f"Bearer {key}"},
+        json={
+            "condition": "price_jump",
+            "product_query": "arroz",
+            "notify_webhook": "https://127.0.0.1/hook",
+        },
+    )
+    assert r.status_code == 400
+    assert "non-public" in r.json()["detail"].lower() or "not allowed" in r.json()["detail"].lower()
+
+
+def test_alert_webhook_blocks_metadata_host():
+    db_save_user("ent-ssrf2", hash_password("market"), "ent2@test.com")
+    from market_billing import db_set_subscription
+
+    db_set_subscription("ent-ssrf2", "enterprise")
+    key = db_create_api_key("ent-ssrf2", "read", "alert-ssrf2")["key"]
+    r = client.post(
+        "/v1/alerts",
+        headers={"Authorization": f"Bearer {key}"},
+        json={
+            "condition": "price_jump",
+            "product_query": "arroz",
+            "notify_webhook": "https://169.254.169.254/latest/meta-data/",
+        },
+    )
+    assert r.status_code == 400
+
+
+def test_price_pulse_callback_blocks_loopback():
+    db_save_user("pp-ssrf", hash_password("market"), "pp@test.com")
+    from market_billing import db_set_subscription
+
+    db_set_subscription("pp-ssrf", "pro")
+    key = db_create_api_key("pp-ssrf", "read", "pp-ssrf")["key"]
+    r = client.post(
+        "/v1/intel/price-pulse",
+        headers={"Authorization": f"Bearer {key}"},
+        json={"country": "PE", "callback_url": "https://127.0.0.1/callback"},
+    )
+    assert r.status_code == 400
+
+
+def test_patch_alert_webhook_dispatch_blocks_private_url(monkeypatch):
+    from market_security import patch_alert_webhook_dispatch
+
+    patch_alert_webhook_dispatch()
+    import market_core.market_alerts as ma
+
+    ok = ma._send_webhook(
+        {"id": "ALT-TEST", "name": "t", "condition": "price_jump", "product_query": "x", "notify_webhook": "https://127.0.0.1/hook"},
+        {
+            "product_id": "p1",
+            "product_name": "Arroz",
+            "store": "wong",
+            "price_now": 5.0,
+            "price_before": 4.0,
+            "delta_pct": 25.0,
+        },
+    )
+    assert ok is False
 
 
 @pytest.mark.parametrize(
