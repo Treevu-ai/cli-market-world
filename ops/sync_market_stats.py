@@ -34,12 +34,30 @@ _bootstrap_core_path()
 from market_core import market_stats as s
 from market_core.market_mcp_registry import (
     TOOLS,
+    _DEFAULT_HIDDEN,
     get_tool_meta,
     list_tools,
     public_tool_count,
     tool_in_profile,
 )
 from market_core.mcp_registry_export import write_registry_csv
+
+
+def _require_current_core_registry() -> None:
+    """Block sync when sibling core is stale (would rewrite mcpTools as 32)."""
+    if "market_preferences" not in _DEFAULT_HIDDEN:
+        print("ERROR: sibling cli-market-core is outdated for MCP registry.", file=sys.stderr)
+        print(f"  Path: {CORE_ROOT}", file=sys.stderr)
+        print("  market_preferences is still in the default profile → sync would emit mcpTools: 32.", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("Fix (PowerShell):", file=sys.stderr)
+        print("  cd ..\\cli-market-core", file=sys.stderr)
+        print("  git checkout main && git pull origin main", file=sys.stderr)
+        print("  py -3 -m pip install -e .", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("To restore committed stats without syncing:", file=sys.stderr)
+        print("  git checkout origin/main -- landing/lib/marketStats.ts", file=sys.stderr)
+        sys.exit(1)
 
 
 def _log_registry_source() -> None:
@@ -1057,6 +1075,7 @@ def sync_glama_json() -> None:
 
 
 def main() -> None:
+    _require_current_core_registry()
     _log_registry_source()
     write_market_stats_ts()
     write_procure_market_stats_ts()
