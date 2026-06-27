@@ -15,6 +15,7 @@ related:
   - docs/pricing-strategy.md
   - docs/gtm/README.md
   - docs/BRAND.md
+  - docs/prd-landing-spoke-design-system.md
   - landing/lib/productDoors.ts
 ---
 
@@ -462,6 +463,14 @@ icp_outbound_procure: { source: "hub" | "nav" | "footer" }
 - Pricing strategy: `docs/pricing-strategy.md`
 - Brand tokens: `docs/BRAND.md`
 
+## Appendix C — Design parity (bloquea merge)
+
+PR #434 implementó rutas spoke pero **no paridad visual**. Gaps y plan de homologación:
+
+→ **`docs/prd-landing-spoke-design-system.md`**
+
+Criterios mínimos pre-merge: Fase A (`SpokePageShell` + `SpokeHero`) + Fase B (Build).
+
 ---
 
-**Status:** Draft · **Next step:** Aprobación → Fase 1 en branch `cursor/landing-icp-hub-*`
+**Status:** In Development — Fase 1+2 shipped · **Merge bloqueado** hasta spoke design Fase A+B · Ver PRD design system
