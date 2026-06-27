@@ -2,23 +2,21 @@
 
 ## Error `private_registry_config_not_found` / `npm.pkg.github.com`
 
-Org-level npm config may point `@Treevu-ai` scopes at GitHub Packages. Dependabot needs matching registry auth in `.github/dependabot.yml`.
+Org-level npm may point scopes at GitHub Packages. This repo overrides to **public npm only**:
 
-This repo uses:
+- `landing/.npmrc` — `registry=https://registry.npmjs.org/`
+- `.github/dependabot.yml` — `npmjs` registry with `replaces-base: true`
 
-- `landing/.npmrc` — public npm for install/build
-- `.github/dependabot.yml` — `npmjs` + `github-npm` registries
-- Dependabot secret **`GH_PAT`** — same PAT as Actions `GH_PAT` (`read:packages` minimum)
+No Dependabot secrets required for landing updates.
 
-## One-time / after PAT rotation
+## If you add private `@Treevu-ai/*` npm deps later
 
-1. Ensure **Actions** secret `GH_PAT` exists (already used by CI checkout).
-2. Run workflow **Sync Dependabot secrets** (Actions → Sync Dependabot secrets → Run workflow).
-3. Re-run failed Dependabot job or wait for next weekly schedule.
+1. Grant repo read access on the package (Manage Actions access).
+2. Add Dependabot secret `GH_PAT` (PAT with `read:packages` + repo admin for secrets API).
+3. Restore `github-npm` registry block in `.github/dependabot.yml`.
 
-## Verify locally
+## Verify
 
 ```bash
 cd landing && npm audit && npm run build
-npm run qa:spoke
 ```
