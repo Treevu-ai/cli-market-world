@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
+import SpokePageShell from "@/components/spoke/SpokePageShell";
+import SpokeHero from "@/components/spoke/SpokeHero";
+import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import IntelligenceSection from "@/components/IntelligenceSection";
 import Footer from "@/components/Footer";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
 export const metadata: Metadata = {
   title: "Intelligence — Retail signals before CPI",
@@ -12,15 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default function IntelligencePage() {
+  const { brandMode } = SPOKE_CONFIG.intelligence;
+
   return (
-    <main id="main-content" className="relative min-h-screen bg-[var(--cm-background)]">
-      <Navbar />
-      <ErrorBoundary>
-        <div className="relative z-10 pt-16">
-          <IntelligenceSection />
-          <Footer />
-        </div>
-      </ErrorBoundary>
-    </main>
+    <SpokePageShell brandMode={brandMode}>
+      <SpokeHero icp="intelligence" />
+      <SpokeHubLink />
+      <IntelligenceSection omitHeader />
+      <Footer />
+    </SpokePageShell>
   );
 }
