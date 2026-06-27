@@ -5,13 +5,17 @@ Read-only gate invoked before creating pending orders. Does not touch collector.
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from category_confidence import classify_category_confidence
 from market_core import db_get_subscription, user_can_checkout
 from price_snapshots_schema import ensure_canonical_product_id_column, price_snapshots_has_canonical_id
+
+logger = logging.getLogger("market.server").getChild("pre_checkout_validate")
 
 
 def _env_int(name: str, default: int) -> int:
@@ -44,6 +48,8 @@ def _env_bool(name: str, default: bool = False) -> bool:
 MAX_SNAPSHOT_AGE_SEC = lambda: _env_int("CHECKOUT_MAX_SNAPSHOT_AGE_SEC", 900)
 MAX_PRICE_DRIFT_PCT = lambda: _env_float("CHECKOUT_MAX_PRICE_DRIFT_PCT", 3.0)
 REQUIRE_INDEX_LINK = lambda: _env_bool("CHECKOUT_REQUIRE_INDEX_LINK", False)
+REQUIRE_STOCK = lambda: _env_bool("CHECKOUT_REQUIRE_STOCK", True)
+BLOCK_TIER_C = lambda: _env_bool("CHECKOUT_BLOCK_TIER_C", True)
 
 
 def _snapshot_age_sec(queried_at: Any) -> int | None:
@@ -63,7 +69,7 @@ def _latest_snapshot(product_id: str, store: str) -> dict | None:
     try:
         ensure_canonical_product_id_column(db)
         has_canonical = price_snapshots_has_canonical_id(db)
-        cols = "price, queried_at"
+        cols = "price, queried_at, stock, name"
         if has_canonical:
             cols += ", canonical_product_id"
         row = db.execute(
@@ -102,7 +108,7 @@ def _resolve_prod_id(item: dict, snapshot: dict | None) -> str | None:
         if resolved.get("resolved") and resolved.get("product"):
             return resolved["product"].get("id")
     except Exception:
-        pass
+        logger.debug("index_resolve failed for item=%s", item.get("name", ""), exc_info=True)
     return None
 
 
@@ -175,19 +181,43 @@ def pre_checkout_validate(
             error="empty_cart",
         )
 
+    # Reject non-positive quantities before any price calculation.
+    # quantity=0 with `or 1` would silently charge for 1 item;
+    # negative quantities would produce negative totals bypassing budget gates.
+    invalid_qty = [
+        i.get("product_id", "?")
+        for i in cart
+        if int(i.get("quantity", 0) or 0) <= 0
+    ]
+    if invalid_qty:
+        trace.append({"step": "cart", "status": "fail", "invalid_qty": invalid_qty})
+        return ValidateResult(
+            ok=False,
+            cart_total=0.0,
+            validated_total=0.0,
+            currency=currency,
+            trace=trace,
+            error="invalid_quantity",
+            action="fix_cart",
+        )
+
     trace.append({"step": "cart", "status": "ok", "items": len(cart)})
 
     max_age = MAX_SNAPSHOT_AGE_SEC()
     max_drift = MAX_PRICE_DRIFT_PCT()
     require_index = REQUIRE_INDEX_LINK()
+    require_stock = REQUIRE_STOCK()
+    block_tier_c = BLOCK_TIER_C()
 
     stale_count = 0
     drift_count = 0
     missing_count = 0
+    stock_fail_count = 0
+    tier_c_count = 0
     linked = 0
     index_skipped = 0
 
-    cart_total = round(sum(float(i.get("price", 0) or 0) * int(i.get("quantity", 1) or 1) for i in cart), 2)
+    cart_total = round(sum(float(i.get("price", 0) or 0) * int(i.get("quantity", 1)) for i in cart), 2)
     validated_total = 0.0
     all_ok = True
 
@@ -195,16 +225,31 @@ def pre_checkout_validate(
         product_id = item.get("product_id", "")
         store = item.get("store", "")
         cart_price = float(item.get("price", 0) or 0)
-        qty = int(item.get("quantity", 1) or 1)
+        qty = int(item.get("quantity", 1))
         snapshot = _latest_snapshot(product_id, store) if product_id and store else None
 
+        item_name = item.get("name", "") or (snapshot or {}).get("name", "")
         row: dict[str, Any] = {
             "product_id": product_id,
-            "name": item.get("name", ""),
+            "name": item_name,
             "store": store,
             "cart_price": cart_price,
             "quantity": qty,
         }
+
+        confidence = classify_category_confidence(name=item_name)
+        row["confidence_tier"] = confidence["tier"]
+        row["confidence_label"] = confidence["label"]
+        if block_tier_c and not confidence["checkout_allowed"]:
+            tier_c_count += 1
+            all_ok = False
+            row.update(
+                status="tier_c_blocked",
+                message="Checkout no disponible para categorías de alto riesgo (electro/tecnología)",
+            )
+            item_results.append(row)
+            validated_total += cart_price * qty
+            continue
 
         if not snapshot:
             missing_count += 1
@@ -263,6 +308,32 @@ def pre_checkout_validate(
             validated_total += snapshot_price * qty
             continue
 
+        if require_stock:
+            stock_raw = snapshot.get("stock")
+            if stock_raw is None:
+                stock_fail_count += 1
+                all_ok = False
+                row.update(
+                    status="stock_unknown",
+                    message="Sin dato de stock reciente — confirmar con el retailer",
+                )
+                item_results.append(row)
+                validated_total += snapshot_price * qty
+                continue
+            stock_qty = int(stock_raw)
+            if stock_qty < qty:
+                stock_fail_count += 1
+                all_ok = False
+                row.update(
+                    status="out_of_stock",
+                    stock=stock_qty,
+                    message=f"Stock insuficiente ({stock_qty} disponible, {qty} solicitado)",
+                )
+                item_results.append(row)
+                validated_total += snapshot_price * qty
+                continue
+            row["stock"] = stock_qty
+
         row["status"] = "ok"
         item_results.append(row)
         validated_total += snapshot_price * qty
@@ -288,8 +359,33 @@ def pre_checkout_validate(
             "skipped": index_skipped,
         }
     )
+    trace.append(
+        {
+            "step": "stock_recheck",
+            "status": "ok" if stock_fail_count == 0 else "fail",
+            "failed": stock_fail_count,
+            "required": require_stock,
+        }
+    )
+    trace.append(
+        {
+            "step": "category_confidence",
+            "status": "ok" if tier_c_count == 0 else "fail",
+            "tier_c_blocked": tier_c_count,
+            "block_tier_c": block_tier_c,
+        }
+    )
 
     if not all_ok:
+        if tier_c_count:
+            error = "category_tier_blocked"
+            action = "compare_only"
+        elif stock_fail_count:
+            error = "stock_unavailable"
+            action = "refresh_stock"
+        else:
+            error = "price_stale_or_drift"
+            action = "refresh_cart"
         _record_validate_event(username, ok=False, stale=stale_count, drift=drift_count, missing=missing_count)
         return ValidateResult(
             ok=False,
@@ -299,8 +395,8 @@ def pre_checkout_validate(
             trace=trace,
             items=item_results,
             warnings=warnings,
-            error="price_stale_or_drift",
-            action="refresh_cart",
+            error=error,
+            action=action,
         )
 
     _record_validate_event(username, ok=True, stale=0, drift=0, missing=0)
@@ -333,4 +429,4 @@ def _record_validate_event(
             dedupe=False,
         )
     except Exception:
-        pass
+        logger.debug("record_funnel_event(checkout_validate) failed", exc_info=True)
