@@ -10,6 +10,7 @@ Canonical hub: `/` · Config: `landing/lib/spokeConfig.ts` · PRD: `docs/prd-lan
 | `SpokeHero` | `components/spoke/SpokeHero.tsx` | Hero unificado (garamond, chips, CTAs) |
 | `SpokeHubLink` | `components/spoke/SpokeHubLink.tsx` | ← CLI Market |
 | `SpokeFinalCTA` | `components/spoke/SpokeFinalCTA.tsx` | CTA final parametrizado por ICP |
+| `IntelligenceFAQ` | `components/IntelligenceFAQ.tsx` | FAQ compacto analista (spoke Intelligence) |
 | `SPOKE_CONFIG` | `lib/spokeConfig.ts` | Copy + brandMode por ICP |
 | `SPOKE_FINAL_CTA` | `lib/spokeConfig.ts` | Copy CTA final por ICP |
 
@@ -44,8 +45,7 @@ Retailers modal CTA: `<SpokeHero icp="retailers" onPrimaryClick={() => setOpen(t
 | intelligence | `/intelligence` | terminal | false |
 | retailers | `/retailers` | operations | true |
 
-## Pending (Phase C–D)
+## Pending (Phase D)
 
 - `SpokeSection`, `SpokeStepsSection`
 - Retailers body sections → `landing-container-wide`
-- Intelligence retokenize `#0369a1` → `--cm-signal` (Pricing link fixed in Phase B)
