@@ -10,7 +10,9 @@ Canonical hub: `/` · Config: `landing/lib/spokeConfig.ts` · PRD: `docs/prd-lan
 | `SpokeHero` | `components/spoke/SpokeHero.tsx` | Hero unificado (garamond, chips, CTAs) |
 | `SpokeHubLink` | `components/spoke/SpokeHubLink.tsx` | ← CLI Market |
 | `SpokeFinalCTA` | `components/spoke/SpokeFinalCTA.tsx` | CTA final parametrizado por ICP |
-| `IntelligenceFAQ` | `components/IntelligenceFAQ.tsx` | FAQ compacto analista (spoke Intelligence) |
+| `SpokeStepsSection` | `components/spoke/SpokeStepsSection.tsx` | Pasos con círculos naranja (parametrizable) |
+| `RetailersStatsStrip` | `components/retailers/RetailersStatsStrip.tsx` | Stats compactos retailers |
+| `RetailersBenefitsSection` | `components/retailers/RetailersBenefitsSection.tsx` | Grid beneficios retailers |
 | `SPOKE_CONFIG` | `lib/spokeConfig.ts` | Copy + brandMode por ICP |
 | `SPOKE_FINAL_CTA` | `lib/spokeConfig.ts` | Copy CTA final por ICP |
 
@@ -45,7 +47,9 @@ Retailers modal CTA: `<SpokeHero icp="retailers" onPrimaryClick={() => setOpen(t
 | intelligence | `/intelligence` | terminal | false |
 | retailers | `/retailers` | operations | true |
 
-## Pending (Phase D)
+## Phase D (retailers — shipped)
 
-- `SpokeSection`, `SpokeStepsSection`
-- Retailers body sections → `landing-container-wide`
+- `SpokeStepsSection`, `RetailersStatsStrip`, `RetailersBenefitsSection`
+- JSON-LD en `app/retailers/layout.tsx` via `RetailersJsonLd`
+- `retailers/page.tsx` composición (~35 LOC)
+- `ActiveBrandTicker` sin `ScrambleText`

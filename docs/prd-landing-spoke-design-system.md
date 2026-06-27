@@ -381,11 +381,11 @@ SpokePageShell (brandMode)
 
 ### Fase D — Retailers refactor
 
-- [ ] Eliminar `grid-bg`, `ScrambleText`, gutter-only sections
-- [ ] Aplicar `brand-mode-operations` en shell
-- [ ] Unificar steps → `SpokeStepsSection`
-- [ ] Mover JSON-LD a `retailers/layout.tsx`
-- [ ] Reducir `page.tsx` a composición (<80 LOC)
+- [x] Eliminar `grid-bg`, `ScrambleText`, gutter-only sections
+- [x] Aplicar `brand-mode-operations` en shell
+- [x] Unificar steps → `SpokeStepsSection`
+- [x] Mover JSON-LD a `retailers/layout.tsx`
+- [x] Reducir `page.tsx` a composición (<80 LOC)
 
 ### Fase E — QA visual
 
@@ -423,10 +423,10 @@ SpokePageShell (brandMode)
 
 **Retailers**
 
-- [ ] Cero `grid-bg`, cero `ScrambleText`
-- [ ] `brand-mode-operations` aplicado
+- [x] Cero `grid-bg`, cero `ScrambleText`
+- [x] `brand-mode-operations` aplicado
 - [ ] Modal apply retailer funcional
-- [ ] Steps usan círculos naranja (patrón SolutionSection)
+- [x] Steps usan círculos naranja (patrón SolutionSection)
 
 ### Visual regression
 

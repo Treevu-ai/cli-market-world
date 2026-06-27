@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MARKET_STATS } from "@/lib/marketStats";
+import RetailersJsonLd from "./RetailersJsonLd";
 
 export const metadata: Metadata = {
   title: "List Your Store — Free GEO for AI Agents (VTEX, Shopify, Magento, WooCommerce)",
@@ -30,5 +31,10 @@ export default function RetailersLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <RetailersJsonLd />
+      {children}
+    </>
+  );
 }
