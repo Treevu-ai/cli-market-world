@@ -17,7 +17,7 @@ AI agents can't shop in physical retail. They need structured product data — p
 | Metric | Value |
 |---|---|
 | Retailers live | 40 verified active (80 in catalog) |
-| Prices indexed | 63,000+ |
+| Prices indexed | 64,000+ |
 | Products tracked | 8,000+ |
 | Countries | 8 (PE, AR, BR, MX, CO, CL, US, +) |
 | MCP tools | 24 default / 45 full (search, compare, basket, checkout, inflation, enrichment…) |

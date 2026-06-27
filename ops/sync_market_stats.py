@@ -23,6 +23,7 @@ from market_core.market_mcp_registry import (
     public_tool_count,
     tool_in_profile,
 )
+from market_core.mcp_registry_export import write_registry_csv
 
 # Ensure env (including PEPY_API_KEY) is loaded for pepy fetches inside the script
 try:
@@ -864,14 +865,29 @@ def sync_og_png() -> None:
         print(f"Synced {png_path}")
 
 
+def _default_utility_tools(profile: str = "default") -> list[str]:
+    """Advanced-bundle tools visible in the default profile (e.g. barcode, ticket)."""
+    names: list[str] = []
+    for tool in TOOLS:
+        name = tool["name"]
+        meta = get_tool_meta(name)
+        if meta and meta["bundle"] == "advanced" and tool_in_profile(name, profile):
+            names.append(name)
+    return sorted(names)
+
+
 def _llms_bundle_section() -> str:
     counts = _mcp_counts()
     bundle_manifest = _mcp_bundle_manifest("default")
+    utility = _default_utility_tools("default")
     lines = [
         f"## MCP tool bundles (default profile: {counts['default']} curated tools)",
         "",
         "Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` "
         f"({counts['legacy']} tools, includes deprecated aliases).",
+        "",
+        "Canonical registry CSV: `/mcp-tools-registry.csv` "
+        "(columns: tool, estado_codigo, bundle, reemplazo_codigo, alternativa_docs).",
         "",
     ]
     for key in _PUBLIC_BUNDLES:
@@ -882,21 +898,27 @@ def _llms_bundle_section() -> str:
             lines.append(f"Canonical: {', '.join(canonical)}")
         lines.append(", ".join(names))
         lines.append("")
+    if utility:
+        lines.append(f"### Utility ({len(utility)} tools)")
+        lines.append(", ".join(utility))
+        lines.append("")
     lines.extend(
         [
             "## Recommended flows by ICP",
             "",
             "### Builder / AI agent",
-            "1. `market_discover` → `market_search` → `market_compare` → `market_basket`",
-            "2. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier)",
+            "1. `market_optimize_purchase` — one call: basket compare, TCO, substitutes, action links",
+            "2. Granular: `market_discover` → `market_search` → `market_compare` → `market_basket`",
+            "3. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier)",
             "",
             "### Research / fintech",
             "1. `market_intel_brief` → `market_inflation` → `market_scores`",
             "2. `market_export` for CSV/JSON pulls; `market_trending` for category momentum",
             "",
             "### Authenticated user",
-            "1. `market_whoami` → `market_preferences` → `market_price_alerts`",
+            "1. `market_whoami` → `market_household_get` → `market_price_alerts`",
             "2. `market_favorites` + `market_subscription` for account management",
+            "3. Legacy `market_preferences` → use `market_household_get` instead",
             "",
         ]
     )
@@ -968,7 +990,7 @@ def sync_llms_txt() -> None:
             count=1,
         )
         text = re.sub(
-            r"## \d+ MCP tools\n\n.*?(?=\n## Countries:)",
+            r"## MCP tool bundles \(default profile:.*?(?=\n## Countries:)",
             _llms_bundle_section() + "\n",
             text,
             count=1,
@@ -976,6 +998,17 @@ def sync_llms_txt() -> None:
         )
         full_path.write_text(text, encoding="utf-8")
         print(f"Synced {full_path}")
+
+
+def write_mcp_registry_csv() -> None:
+    """Emit canonical MCP registry CSV for /tools and agent onboarding."""
+    out_core = CORE_ROOT / "ops" / "mcp-tools-registry.csv"
+    if CORE_ROOT.is_dir():
+        write_registry_csv(out_core)
+        print(f"Wrote {out_core}")
+    path = ROOT / "landing" / "public" / "mcp-tools-registry.csv"
+    write_registry_csv(path)
+    print(f"Wrote {path}")
 
 
 def sync_glama_json() -> None:
@@ -1010,6 +1043,7 @@ def main() -> None:
     sync_og_preview_svg()
     sync_og_png()
     sync_llms_txt()
+    write_mcp_registry_csv()
     sync_marketing_copy()
     sync_content_repo_copy()
     sync_root_svgs()

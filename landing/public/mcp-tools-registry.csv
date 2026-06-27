@@ -1,0 +1,58 @@
+tool,estado_codigo,bundle,reemplazo_codigo,alternativa_docs,default_visible
+market_alerts,legacy-alias,account,market_price_alerts,,false
+market_favorites,recommended,account,,,true
+market_household_get,recommended,account,,,true
+market_household_update,recommended,account,,,true
+market_notify,legacy-alias,account,market_price_alerts,,false
+market_preferences,legacy-alias,account,market_household_get,,false
+market_price_alerts,recommended,account,,,true
+market_subscription,recommended,account,,,true
+market_whoami,recommended,account,,,true
+market_enrichment_refresh,recommended,admin,,Admin/cron enrichment — use market_intel_brief,false
+market_intel_refresh,recommended,admin,,Admin/cron refresh — use market_intel_brief for agent reads,false
+market_scan,recommended,admin,,Admin-only VTEX discovery — use market_discover for retail coverage,false
+market_barcode,recommended,advanced,,,true
+market_brands,recommended,advanced,,Advanced brand frequency — use market_scores for composite signals,false
+market_categories,recommended,advanced,,Advanced VTEX tree — prefer market_discover + market_search,false
+market_delivery,recommended,advanced,,Advanced delivery quote — use market_basket/checkout with include_tco,false
+market_enrich,recommended,advanced,,Advanced Open Food Facts lookup — optional enrichment,false
+market_exchange,recommended,advanced,,Advanced FX conversion — market_intel_brief includes macro context,false
+market_moat_confidence,recommended,advanced,,Advanced receipt confidence — use market_price_risk for volatility,false
+market_price_history,recommended,advanced,,Advanced SKU history — use market_trending or market_inflation,false
+market_stock,recommended,advanced,,Advanced per-SKU stock — use market_search or market_optimize_purchase,false
+market_ticket,recommended,advanced,,,true
+market_voice,recommended,advanced,,Advanced audio transcription — use market_ask for text NL shopping,false
+market_affordability,recommended,intel,,,true
+market_analytics_indicators,legacy-alias,intel,market_intel_brief,,false
+market_ecosystem_radar,recommended,intel,,"Intel/Pro ecosystem radar — signal only, not shelf prices",false
+market_enrichment,legacy-alias,intel,market_intel_brief,,false
+market_enrichment_subcategories,legacy-alias,intel,market_intel_brief,,false
+market_export,recommended,intel,,,true
+market_indicators,legacy-alias,intel,market_intel_brief,,false
+market_inflation,recommended,intel,,,true
+market_inflation_report,recommended,intel,,,true
+market_intel_brief,recommended,intel,,,true
+market_price_risk,recommended,intel,,,true
+market_procurement_bulk,recommended,intel,,Intel/Enterprise bulk signals — prefer market_optimize_purchase or Procure API,false
+market_procurement_signal,recommended,intel,,,true
+market_scores,recommended,intel,,,true
+market_stats,recommended,intel,,,true
+market_trending,recommended,intel,,,true
+market_add,recommended,shop,,,true
+market_ask,recommended,shop,,,true
+market_basket,recommended,shop,,,true
+market_cart,recommended,shop,,,true
+market_cart_remove,legacy-alias,shop,market_cart_update,,false
+market_cart_update,recommended,shop,,,true
+market_checkout,recommended,shop,,,true
+market_compare,recommended,shop,,,true
+market_countries,legacy-alias,shop,market_discover,,false
+market_discover,recommended,shop,,,true
+market_lines,legacy-alias,shop,market_discover,,false
+market_login,recommended,shop,,,true
+market_optimize_purchase,recommended,shop,,,true
+market_orders,recommended,shop,,,true
+market_reorder,legacy-alias,shop,market_orders,,false
+market_search,recommended,shop,,,true
+market_stores,legacy-alias,shop,market_discover,,false
+market_substitutes,recommended,shop,,,true
