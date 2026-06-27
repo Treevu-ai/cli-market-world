@@ -15,7 +15,7 @@ const MCP_CONFIG = {
       "args": [],
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "TOOL_PROFILE": "default"
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -27,7 +27,7 @@ const MCP_CONFIG = {
       "args": [],
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "TOOL_PROFILE": "default"
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -37,9 +37,10 @@ const MCP_CONFIG = {
     "cli-market": {
       "type": "stdio",
       "command": "market-mcp",
+      "args": [],
       "env": {
         "MARKET_API_URL": "${MCP_API_URL}",
-        "TOOL_PROFILE": "default"
+        "MCP_TOOL_PROFILE": "default"
       }
     }
   }
@@ -145,6 +146,13 @@ export default function ToolsPage() {
             {" "}· Docs:{" "}
             <a href="/llms.txt" className="text-[var(--cm-mint)] underline">llms.txt</a>
           </p>
+          {ideTab === "vscode" && (
+            <p className="text-xs text-[var(--cm-on-surface-variant)]/80 mt-3 text-center max-w-lg mx-auto leading-relaxed">
+              {isES
+                ? "VS Code usa transporte stdio local (market-mcp). No uses la URL remota /mcp — ese endpoint es Streamable HTTP para Claude.ai y clientes compatibles."
+                : "VS Code uses local stdio transport (market-mcp). Do not use the remote /mcp URL — that endpoint is Streamable HTTP for Claude.ai and compatible clients."}
+            </p>
+          )}
         </div>
       </section>
 
@@ -155,8 +163,8 @@ export default function ToolsPage() {
           </h2>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mb-6 max-w-lg mx-auto">
             {isES
-              ? `Perfil con ${MARKET_STATS.mcpTools} herramientas. Use TOOL_PROFILE=legacy para ${MARKET_STATS.mcpToolsLegacy} tools (aliases incluidos).`
-              : `Profile with ${MARKET_STATS.mcpTools} tools. Set TOOL_PROFILE=legacy for ${MARKET_STATS.mcpToolsLegacy} tools (includes aliases).`}
+              ? `Perfil con ${MARKET_STATS.mcpTools} herramientas. Use MCP_TOOL_PROFILE=legacy para ${MARKET_STATS.mcpToolsLegacy} tools (aliases incluidos).`
+              : `Profile with ${MARKET_STATS.mcpTools} tools. Set MCP_TOOL_PROFILE=legacy for ${MARKET_STATS.mcpToolsLegacy} tools (includes aliases).`}
           </p>
 
           <div className="flex flex-wrap gap-2 mb-6 justify-center">

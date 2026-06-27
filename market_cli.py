@@ -2230,6 +2230,11 @@ def cmd_init(args):
         }
         # Include a copy of the final mcp for convenience
         data["mcp"] = ui.get_mcp_config()
+        try:
+            mcp_written = _write_mcp_config(_detect_ide())
+            data["mcp_config_path"] = mcp_written["cfg_path"]
+        except Exception:
+            data["mcp_config_path"] = None
         ui.emit_json(
             ui.json_response(
                 doctor_ok and api_ok,
@@ -2241,7 +2246,16 @@ def cmd_init(args):
         return
 
     # Human path only (JSON path returned earlier)
-    ui.mcp_snippet_panel(console)
+    try:
+        mcp_written = _write_mcp_config(_detect_ide())
+        scope = "proyecto" if mcp_written["project_level"] else "global"
+        restart_hint = "restart Cursor/VS Code" if en else "reinicia Cursor/VS Code"
+        console.print(
+            f"[{ui.MINT}]OK[/] MCP ({scope}): [cyan]{mcp_written['cfg_path']}[/] "
+            f"[dim]— {restart_hint}[/]"
+        )
+    except Exception:
+        ui.mcp_snippet_panel(console)
     ui.print_hints(console, [
         'market compare "leche" --country PE',
         "market shell",
@@ -2752,7 +2766,12 @@ def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
     return global_dir, os.path.join(global_dir, filename), False
 
 
-def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
+def _mcp_config_key(ide: str) -> str:
+    """JSON root key for MCP servers — VS Code uses ``servers``, most IDEs ``mcpServers``."""
+    return _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))[1]
+
+
+def _mcp_server_entry(*, token: str | None, api_url: str, ide: str = "cursor") -> dict:
     from market_agent_id import get_agent_id
 
     env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": "default"}
@@ -2761,11 +2780,15 @@ def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
         env["MARKET_AGENT_ID"] = agent_id
     if token:
         env["MARKET_API_TOKEN"] = token
-    return {"command": "market-mcp", "args": [], "env": env}
+    entry: dict = {"command": "market-mcp", "args": [], "env": env}
+    # VS Code / VS Code Insiders / Deepseek: .vscode/mcp.json requires type=stdio (not HTTP /mcp URL).
+    if _mcp_config_key(ide) == "servers":
+        return {"type": "stdio", **entry}
+    return entry
 
 
 def _merge_mcp_config(cfg_path: str, ide: str, server_entry: dict) -> dict:
-    servers_key = "servers" if ide == "vscode" else "mcpServers"
+    servers_key = _mcp_config_key(ide)
     existing: dict = {}
     if os.path.isfile(cfg_path):
         with open(cfg_path, encoding="utf-8") as f:
@@ -2951,28 +2974,51 @@ def cmd_tutorial(args):
     )
 
 
+def _write_mcp_config(ide: str | None = None) -> dict:
+    """Persist MCP server config for an IDE. Auto-detects IDE when omitted."""
+    ide = ide or _detect_ide()
+    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
+    api_url = os.getenv("MARKET_API_URL", API)
+    cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
+    server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide)
+    json_key = _mcp_config_key(ide)
+    cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
+        {json_key: {"cli-market": server_entry}}
+    )
+    os.makedirs(cfg_dir, exist_ok=True)
+    with open(cfg_path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+    return {
+        "ide": ide,
+        "cfg_dir": cfg_dir,
+        "cfg_path": cfg_path,
+        "project_level": project_level,
+        "config": cfg,
+    }
+
+
 def cmd_mcp_setup(args):
     """One-liner MCP config for IDEs (P0)."""
     ide = getattr(args, "ide", None) or _detect_ide()
     dry = getattr(args, "dry_run", False)
-    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
-    api_url = os.getenv("MARKET_API_URL", API)
-    cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
-    server_entry = _mcp_server_entry(token=token, api_url=api_url)
-    _, json_key = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))
-    cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
-        {json_key: {"cli-market": server_entry}}
-    )
-
     if dry:
+        token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
+        api_url = os.getenv("MARKET_API_URL", API)
+        cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
+        server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide)
+        json_key = _mcp_config_key(ide)
+        cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
+            {json_key: {"cli-market": server_entry}}
+        )
         console.print(f"[dim]Dry-run for {ide}:[/]")
         console.print(json.dumps(cfg, indent=2))
         return
 
-    os.makedirs(cfg_dir, exist_ok=True)
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        json.dump(cfg, f, indent=2)
-
+    result = _write_mcp_config(ide)
+    cfg_dir = result["cfg_dir"]
+    cfg_path = result["cfg_path"]
+    project_level = result["project_level"]
+    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
     ping_ok, ping_detail = _ping_api()
     tool_count, _ = _mcp_profile_counts()
     scope = "proyecto" if project_level else "global"
