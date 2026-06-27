@@ -4,7 +4,7 @@ import SpokeHero from "@/components/spoke/SpokeHero";
 import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
-import FinalCTASection from "@/components/FinalCTASection";
+import SpokeFinalCTA from "@/components/spoke/SpokeFinalCTA";
 import Footer from "@/components/Footer";
 import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
@@ -22,9 +22,9 @@ export default function BuildPage() {
     <SpokePageShell brandMode={brandMode} legacyHashRedirect>
       <SpokeHero icp="build" />
       <SpokeHubLink />
-      <Pricing />
+      <Pricing spoke="build" />
       <FAQ />
-      <FinalCTASection />
+      <SpokeFinalCTA icp="build" />
       <Footer />
     </SpokePageShell>
   );

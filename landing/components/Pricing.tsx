@@ -28,6 +28,7 @@ import {
   BUILD_TIER_PRO,
   formatReqLimit,
 } from "@/lib/buildPricingTiers";
+import type { SpokeIcp } from "@/lib/spokeConfig";
 
 type Billing = "monthly" | "annual";
 
@@ -259,9 +260,10 @@ function scrollToPricingSection(focusId?: string) {
   });
 }
 
-export default function Pricing() {
+export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
   const { lang } = useLang();
   const isES = lang === "es";
+  const isSpoke = spoke != null;
   const billing: Billing = "monthly";
   const [audience, setAudience] = useState<PricingAudience>("build");
   const [freeModalOpen, setFreeModalOpen] = useState(false);
@@ -301,9 +303,14 @@ export default function Pricing() {
   };
 
   return (
-    <section id="pricing" className="landing-section landing-section-alt landing-section-glow animate-fade-in scroll-mt-24">
+    <section
+      id="pricing"
+      className={`landing-section landing-section-alt animate-fade-in scroll-mt-24${
+        isSpoke ? "" : " landing-section-glow"
+      }`}
+    >
       <div className="landing-container-wide text-center">
-        <p className="section-eyebrow section-eyebrow-action mb-4">
+        <p className={`section-eyebrow mb-4${isSpoke ? "" : " section-eyebrow-action"}`}>
           {isES ? "Planes" : "Plans"}
         </p>
 
@@ -321,7 +328,7 @@ export default function Pricing() {
           >
             {isES ? "Procure — compras desde $29/mes →" : "Procure — procurement from $29/mo →"}
           </a>
-          <a href="/intelligence" className="text-[#0369a1] font-semibold hover:underline">
+          <a href="/intelligence" className="text-[var(--cm-signal)] font-semibold hover:underline">
             {isES ? "Intelligence — piloto desde $300/mes →" : "Intelligence — pilot from $300/mo →"}
           </a>
         </div>

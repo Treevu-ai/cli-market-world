@@ -35,6 +35,89 @@ export type SpokeConfig = {
   hero: SpokeHeroConfig;
 };
 
+export type SpokeFinalCtaConfig = {
+  id: string;
+  eyebrow_es: string;
+  eyebrow_en: string;
+  titleBefore_es: string;
+  titleAccent_es: string;
+  titleAfter_es: string;
+  titleBefore_en: string;
+  titleAccent_en: string;
+  titleAfter_en: string;
+  body_es: string;
+  body_en: string;
+  primaryCta: SpokeCta;
+  secondaryCta?: SpokeCta;
+};
+
+export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
+  build: {
+    id: "build-final",
+    eyebrow_es: "LISTO",
+    eyebrow_en: "READY",
+    titleBefore_es: "Conecta tu agente en ",
+    titleAccent_es: "minutos",
+    titleAfter_es: "",
+    titleBefore_en: "Connect your agent in ",
+    titleAccent_en: "minutes",
+    titleAfter_en: "",
+    body_es: "Instala el SDK, genera tu API key y corre el benchmark en tu terminal.",
+    body_en: "Install the SDK, generate your API key, and run the benchmark in your terminal.",
+    primaryCta: {
+      es: "Empezar — CLI Market Pro",
+      en: "Get started — CLI Market Pro",
+      href: CTA.getApiKey.href,
+    },
+    secondaryCta: {
+      es: "Ver planes →",
+      en: "View plans →",
+      href: "#pricing",
+    },
+  },
+  intelligence: {
+    id: "intelligence-final",
+    eyebrow_es: "PILOTO",
+    eyebrow_en: "PILOT",
+    titleBefore_es: "Señales de retail ",
+    titleAccent_es: "listas para tu equipo",
+    titleAfter_es: "",
+    titleBefore_en: "Retail signals ",
+    titleAccent_en: "ready for your team",
+    titleAfter_en: "",
+    body_es: "Agenda una demo y recibe un one-pager con metodología y tiers de piloto.",
+    body_en: "Book a demo and receive a one-pager with methodology and pilot tiers.",
+    primaryCta: {
+      es: "Solicitar piloto →",
+      en: "Request pilot →",
+      href: "/contact?topic=intelligence#contact-intelligence",
+    },
+    secondaryCta: {
+      es: "One-pager Intelligence →",
+      en: "Intelligence one-pager →",
+      href: "/intelligence-pilot-es",
+    },
+  },
+  retailers: {
+    id: "retailers-final",
+    eyebrow_es: "GRATIS",
+    eyebrow_en: "FREE",
+    titleBefore_es: "Indexa tu catálogo ",
+    titleAccent_es: "hoy",
+    titleAfter_es: "",
+    titleBefore_en: "List your catalog ",
+    titleAccent_en: "today",
+    titleAfter_en: "",
+    body_es: "Sin SDK ni integración técnica — solo tu catálogo donde compran los negocios.",
+    body_en: "No SDK or technical integration — just your catalog where businesses buy.",
+    primaryCta: {
+      es: "Listar mi tienda — gratis",
+      en: "List my store — free",
+      href: "#retailer-apply",
+    },
+  },
+};
+
 export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
   build: {
     id: "build",
