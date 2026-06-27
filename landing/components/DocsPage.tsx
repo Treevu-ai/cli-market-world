@@ -412,6 +412,12 @@ market --json doctor`}</CodeBlock>
             {" · "}
             <a href="/mcp.json" className="text-[var(--cm-mint)] underline">mcp.json</a>.
           </p>
+          <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4">
+            {t(
+              "VS Code: usa stdio local en .vscode/mcp.json (clave servers, type stdio). Ejecuta market mcp-setup --ide vscode. No uses la URL remota /mcp.",
+              "VS Code: use local stdio in .vscode/mcp.json (servers key, type stdio). Run market mcp-setup --ide vscode. Do not use the remote /mcp URL.",
+            )}
+          </p>
           <div className="flex flex-wrap gap-2 mb-4">
             {(Object.keys(BUNDLE_LABELS) as BundleKey[]).map((key) => (
               <button

@@ -40,6 +40,46 @@ def test_merge_mcp_config_preserves_existing_servers(tmp_path):
     assert merged["mcpServers"]["cli-market"]["env"]["MARKET_API_TOKEN"] == "sk-test"
 
 
+def test_mcp_server_entry_vscode_stdio():
+    entry = market_cli._mcp_server_entry(
+        token="sk-test",
+        api_url="https://api.example",
+        ide="vscode",
+    )
+    assert entry["type"] == "stdio"
+    assert entry["command"] == "market-mcp"
+    assert entry["env"]["MCP_TOOL_PROFILE"] == "default"
+    assert entry["env"]["MARKET_API_TOKEN"] == "sk-test"
+
+
+def test_merge_mcp_config_vscode_servers_key(tmp_path):
+    cfg_path = tmp_path / "mcp.json"
+    cfg_path.write_text(
+        json.dumps({"servers": {"other": {"type": "stdio", "command": "echo"}}}),
+        encoding="utf-8",
+    )
+    entry = market_cli._mcp_server_entry(token="sk-test", api_url="https://api.example", ide="vscode")
+    merged = market_cli._merge_mcp_config(str(cfg_path), "vscode", entry)
+    assert "other" in merged["servers"]
+    assert merged["servers"]["cli-market"]["type"] == "stdio"
+    assert merged["servers"]["cli-market"]["command"] == "market-mcp"
+
+
+def test_mcp_setup_dry_run_vscode(monkeypatch, capsys):
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-dry-run-token")
+    monkeypatch.setattr(
+        market_cli,
+        "_mcp_config_location",
+        lambda ide: ("/tmp/.vscode", "/tmp/.vscode/mcp.json", True),
+    )
+    market_cli.cmd_mcp_setup(argparse_ns(ide="vscode", dry_run=True))
+    out = capsys.readouterr().out
+    assert "Dry-run" in out
+    assert '"servers"' in out
+    assert '"type": "stdio"' in out
+    assert "market-mcp" in out
+
+
 def test_mcp_setup_dry_run(monkeypatch, capsys):
     monkeypatch.setattr(market_cli, "get_token", lambda: "sk-dry-run-token")
     monkeypatch.setattr(market_cli, "_mcp_config_location", lambda ide: ("/tmp/.cursor", "/tmp/.cursor/mcp.json", True))

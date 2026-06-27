@@ -1,6 +1,7 @@
 {
-  "mcpServers": {
+  "servers": {
     "cli-market": {
+      "type": "stdio",
       "command": "market-mcp",
       "args": [],
       "env": {

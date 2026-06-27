@@ -2752,7 +2752,12 @@ def _mcp_config_location(ide: str) -> tuple[str, str, bool]:
     return global_dir, os.path.join(global_dir, filename), False
 
 
-def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
+def _mcp_config_key(ide: str) -> str:
+    """JSON root key for MCP servers — VS Code uses ``servers``, most IDEs ``mcpServers``."""
+    return _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))[1]
+
+
+def _mcp_server_entry(*, token: str | None, api_url: str, ide: str = "cursor") -> dict:
     from market_agent_id import get_agent_id
 
     env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": "default"}
@@ -2761,11 +2766,15 @@ def _mcp_server_entry(*, token: str | None, api_url: str) -> dict:
         env["MARKET_AGENT_ID"] = agent_id
     if token:
         env["MARKET_API_TOKEN"] = token
-    return {"command": "market-mcp", "args": [], "env": env}
+    entry: dict = {"command": "market-mcp", "args": [], "env": env}
+    # VS Code / VS Code Insiders / Deepseek: .vscode/mcp.json requires type=stdio (not HTTP /mcp URL).
+    if _mcp_config_key(ide) == "servers":
+        return {"type": "stdio", **entry}
+    return entry
 
 
 def _merge_mcp_config(cfg_path: str, ide: str, server_entry: dict) -> dict:
-    servers_key = "servers" if ide == "vscode" else "mcpServers"
+    servers_key = _mcp_config_key(ide)
     existing: dict = {}
     if os.path.isfile(cfg_path):
         with open(cfg_path, encoding="utf-8") as f:
@@ -2958,8 +2967,8 @@ def cmd_mcp_setup(args):
     token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
     api_url = os.getenv("MARKET_API_URL", API)
     cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
-    server_entry = _mcp_server_entry(token=token, api_url=api_url)
-    _, json_key = _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))
+    server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide)
+    json_key = _mcp_config_key(ide)
     cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
         {json_key: {"cli-market": server_entry}}
     )
