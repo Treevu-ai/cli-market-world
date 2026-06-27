@@ -5,7 +5,8 @@
       "args": [],
       "env": {
         "MARKET_API_URL": "https://cli-market-production.up.railway.app",
-        "MCP_TOOL_PROFILE": "default"
+        "MCP_TOOL_PROFILE": "legacy",
+        "MARKET_AGENT_ID": "cli_bd247da63a73478b8a62"
       }
     }
   }

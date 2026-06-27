@@ -2231,8 +2231,10 @@ def cmd_init(args):
         # Include a copy of the final mcp for convenience
         data["mcp"] = ui.get_mcp_config()
         try:
-            mcp_written = _write_mcp_config(_detect_ide())
+            mcp_written = _write_mcp_config(_detect_ide(), profile=os.getenv("MCP_TOOL_PROFILE"))
             data["mcp_config_path"] = mcp_written["cfg_path"]
+            data["mcp_profile"] = mcp_written["profile"]
+            data["mcp_tool_count"] = mcp_written["tool_count"]
         except Exception:
             data["mcp_config_path"] = None
         ui.emit_json(
@@ -2247,12 +2249,12 @@ def cmd_init(args):
 
     # Human path only (JSON path returned earlier)
     try:
-        mcp_written = _write_mcp_config(_detect_ide())
+        mcp_written = _write_mcp_config(_detect_ide(), profile=os.getenv("MCP_TOOL_PROFILE"))
         scope = "proyecto" if mcp_written["project_level"] else "global"
         restart_hint = "restart Cursor/VS Code" if en else "reinicia Cursor/VS Code"
         console.print(
-            f"[{ui.MINT}]OK[/] MCP ({scope}): [cyan]{mcp_written['cfg_path']}[/] "
-            f"[dim]— {restart_hint}[/]"
+            f"[{ui.MINT}]OK[/] MCP ({scope}, {mcp_written['profile']}={mcp_written['tool_count']} tools): "
+            f"[cyan]{mcp_written['cfg_path']}[/] [dim]— {restart_hint}[/]"
         )
     except Exception:
         ui.mcp_snippet_panel(console)
@@ -2771,10 +2773,40 @@ def _mcp_config_key(ide: str) -> str:
     return _IDE_CONFIGS.get(ide, (".cursor", "mcpServers"))[1]
 
 
-def _mcp_server_entry(*, token: str | None, api_url: str, ide: str = "cursor") -> dict:
+def _resolve_mcp_token() -> str | None:
+    """Real API token from session or env — never returns placeholder/demo."""
+    candidates = [
+        get_token(),
+        os.getenv("MARKET_API_TOKEN"),
+        os.getenv("CLI_MARKET_API_KEY"),
+    ]
+    for raw in candidates:
+        token = (raw or "").strip()
+        if not token or token == "sk-CLI-MARKET-PLACEHOLDER":
+            continue
+        if token.startswith("demo-"):
+            continue
+        return token
+    return None
+
+
+def _normalize_mcp_profile(profile: str | None) -> str:
+    from market_core.market_mcp_registry import PROFILES
+
+    raw = (profile or os.getenv("MCP_TOOL_PROFILE") or "default").strip().lower()
+    return raw if raw in PROFILES else "default"
+
+
+def _mcp_server_entry(
+    *,
+    token: str | None,
+    api_url: str,
+    ide: str = "cursor",
+    profile: str = "default",
+) -> dict:
     from market_agent_id import get_agent_id
 
-    env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": "default"}
+    env = {"MARKET_API_URL": api_url, "MCP_TOOL_PROFILE": _normalize_mcp_profile(profile)}
     agent_id = get_agent_id()
     if agent_id:
         env["MARKET_AGENT_ID"] = agent_id
@@ -2974,13 +3006,14 @@ def cmd_tutorial(args):
     )
 
 
-def _write_mcp_config(ide: str | None = None) -> dict:
+def _write_mcp_config(ide: str | None = None, profile: str | None = None) -> dict:
     """Persist MCP server config for an IDE. Auto-detects IDE when omitted."""
     ide = ide or _detect_ide()
-    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
+    prof = _normalize_mcp_profile(profile)
+    token = _resolve_mcp_token()
     api_url = os.getenv("MARKET_API_URL", API)
     cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
-    server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide)
+    server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide, profile=prof)
     json_key = _mcp_config_key(ide)
     cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
         {json_key: {"cli-market": server_entry}}
@@ -2988,47 +3021,56 @@ def _write_mcp_config(ide: str | None = None) -> dict:
     os.makedirs(cfg_dir, exist_ok=True)
     with open(cfg_path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
+    from market_core.market_mcp_registry import public_tool_count
+
     return {
         "ide": ide,
+        "profile": prof,
+        "tool_count": public_tool_count(prof),
         "cfg_dir": cfg_dir,
         "cfg_path": cfg_path,
         "project_level": project_level,
         "config": cfg,
+        "token_set": bool(token),
     }
 
 
 def cmd_mcp_setup(args):
     """One-liner MCP config for IDEs (P0)."""
     ide = getattr(args, "ide", None) or _detect_ide()
+    profile = getattr(args, "profile", None)
     dry = getattr(args, "dry_run", False)
+    prof = _normalize_mcp_profile(profile)
+    token = _resolve_mcp_token()
     if dry:
-        token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
         api_url = os.getenv("MARKET_API_URL", API)
         cfg_dir, cfg_path, project_level = _mcp_config_location(ide)
-        server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide)
+        server_entry = _mcp_server_entry(token=token, api_url=api_url, ide=ide, profile=prof)
         json_key = _mcp_config_key(ide)
         cfg = _merge_mcp_config(cfg_path, ide, server_entry) if os.path.isfile(cfg_path) else (
             {json_key: {"cli-market": server_entry}}
         )
-        console.print(f"[dim]Dry-run for {ide}:[/]")
+        console.print(f"[dim]Dry-run for {ide} (profile={prof}):[/]")
         console.print(json.dumps(cfg, indent=2))
         return
 
-    result = _write_mcp_config(ide)
+    result = _write_mcp_config(ide, profile=prof)
     cfg_dir = result["cfg_dir"]
     cfg_path = result["cfg_path"]
     project_level = result["project_level"]
-    token = get_token() or "sk-CLI-MARKET-PLACEHOLDER"
+    tool_count = result["tool_count"]
     ping_ok, ping_detail = _ping_api()
-    tool_count, _ = _mcp_profile_counts()
     scope = "proyecto" if project_level else "global"
     tools_url = f"https://cli-market.dev/tools{_MCP_SETUP_UTM}"
-    token_preview = f"{token[:10]}..." if len(token) > 10 else token
+    token_preview = (
+        f"{token[:10]}..." if token and len(token) > 10 else ("(session/env)" if token else "(missing — run market login)")
+    )
     lines = [
         f"[bold]MCP Setup — {ide}[/]",
         "",
         f"✓ Directorio detectado ({scope}): {cfg_dir}",
         f"✓ Configuración escrita en: {cfg_path}",
+        f"✓ Perfil: {prof} ({tool_count} tools)",
         f"✓ Token: {token_preview}",
         f"{'✓' if ping_ok else '⚠'} Ping a API: {ping_detail}",
         "",
@@ -3037,10 +3079,21 @@ def cmd_mcp_setup(args):
         'Reiniciá el IDE y preguntale a tu agente: "Busca arroz en Perú"',
         f"[dim]{tools_url}[/]",
     ]
+    if not token:
+        lines.insert(
+            7,
+            "[yellow]⚠[/] Sin token: export MARKET_API_TOKEN=sk-... o `market login` y vuelve a ejecutar mcp-setup",
+        )
     console.print(Panel.fit("\n".join(lines), border_style="#00FF88"))
     _report_onboarding_event(
         "mcp_setup_completed",
-        meta={"ide": ide, "project_level": project_level, "ping_ok": ping_ok},
+        meta={
+            "ide": ide,
+            "profile": prof,
+            "project_level": project_level,
+            "ping_ok": ping_ok,
+            "token_set": bool(token),
+        },
         dedupe=True,
     )
 
@@ -3412,6 +3465,12 @@ def main():
         help="IDE target (auto-detect if omitted)",
     )
     p.add_argument("--dry-run", action="store_true", help="Print config without writing file")
+    p.add_argument(
+        "--profile",
+        choices=["default", "legacy", "full", "admin"],
+        default=None,
+        help="MCP tool profile (legacy/admin = 57 tools, default = 32 curated)",
+    )
 
     api_tool_count, legacy_count = _mcp_profile_counts()
     p_tools = sub.add_parser(

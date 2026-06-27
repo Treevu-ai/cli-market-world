@@ -33,7 +33,7 @@ def test_merge_mcp_config_preserves_existing_servers(tmp_path):
         json.dumps({"mcpServers": {"other": {"command": "echo"}}}),
         encoding="utf-8",
     )
-    entry = market_cli._mcp_server_entry(token="sk-test", api_url="https://api.example")
+    entry = market_cli._mcp_server_entry(token="sk-test", api_url="https://api.example", ide="cursor", profile="legacy")
     merged = market_cli._merge_mcp_config(str(cfg_path), "cursor", entry)
     assert "other" in merged["mcpServers"]
     assert merged["mcpServers"]["cli-market"]["command"] == "market-mcp"
@@ -58,7 +58,7 @@ def test_merge_mcp_config_vscode_servers_key(tmp_path):
         json.dumps({"servers": {"other": {"type": "stdio", "command": "echo"}}}),
         encoding="utf-8",
     )
-    entry = market_cli._mcp_server_entry(token="sk-test", api_url="https://api.example", ide="vscode")
+    entry = market_cli._mcp_server_entry(token="sk-test", api_url="https://api.example", ide="vscode", profile="legacy")
     merged = market_cli._merge_mcp_config(str(cfg_path), "vscode", entry)
     assert "other" in merged["servers"]
     assert merged["servers"]["cli-market"]["type"] == "stdio"
@@ -78,6 +78,28 @@ def test_mcp_setup_dry_run_vscode(monkeypatch, capsys):
     assert '"servers"' in out
     assert '"type": "stdio"' in out
     assert "market-mcp" in out
+
+
+def test_resolve_mcp_token_skips_placeholder_and_demo(monkeypatch):
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-CLI-MARKET-PLACEHOLDER")
+    monkeypatch.setenv("MARKET_API_TOKEN", "demo-abc")
+    monkeypatch.setenv("CLI_MARKET_API_KEY", "sk-real-admin-token")
+    assert market_cli._resolve_mcp_token() == "sk-real-admin-token"
+
+
+def test_write_mcp_config_legacy_profile(tmp_path, monkeypatch):
+    cfg_dir = tmp_path / ".cursor"
+    cfg_path = cfg_dir / "mcp.json"
+    monkeypatch.setattr(market_cli, "get_token", lambda: "sk-write-test")
+    monkeypatch.setattr(
+        market_cli,
+        "_mcp_config_location",
+        lambda ide: (str(cfg_dir), str(cfg_path), True),
+    )
+    result = market_cli._write_mcp_config("cursor", profile="legacy")
+    saved = json.loads(cfg_path.read_text(encoding="utf-8"))
+    assert saved["mcpServers"]["cli-market"]["env"]["MCP_TOOL_PROFILE"] == "legacy"
+    assert result["tool_count"] == 57
 
 
 def test_write_mcp_config_creates_cursor_file(tmp_path, monkeypatch):
@@ -129,4 +151,6 @@ def test_mcp_setup_writes_and_reports(monkeypatch, tmp_path):
 def argparse_ns(**kwargs):
     import argparse
 
-    return argparse.Namespace(**kwargs)
+    defaults = {"ide": "cursor", "dry_run": False, "profile": None}
+    defaults.update(kwargs)
+    return argparse.Namespace(**defaults)
