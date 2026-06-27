@@ -13,6 +13,7 @@ export type FunnelEvent =
   | "request_pro"
   | "procure_subscribe"
   | "use_case_demo"
+  | "icp_door_click"
   | "activated";
 
 function newSessionId(): string {
@@ -90,6 +91,16 @@ export function scrollToPricing(): void {
 export function recordUseCaseDemoOpen(useCaseId: string): void {
   recordFunnelEvent("use_case_demo", {
     meta: { use_case_id: useCaseId, source: "landing_casos" },
+    dedupe: false,
+  });
+}
+
+export type IcpDoorId = "build" | "procure" | "intelligence" | "retailers";
+
+/** Hub router: user selected an ICP door on the landing home. */
+export function recordIcpDoorClick(door: IcpDoorId, source = "hub"): void {
+  recordFunnelEvent("icp_door_click", {
+    meta: { door, source },
     dedupe: false,
   });
 }

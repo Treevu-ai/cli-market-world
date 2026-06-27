@@ -5,46 +5,42 @@ export type NavItem = {
   es: string;
   en: string;
   href: string;
+  external?: boolean;
 };
 
-/** Top nav — product hub (Build · Procure · Intelligence). */
+/** Top nav — ICP hub (Build · Procure · Intelligence · Docs). */
 export const TOP_NAV: NavItem[] = [
-  { id: "product", es: "Producto", en: "Product", href: "/#hero" },
-  { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
+  { id: "build", es: "Build", en: "Build", href: "/build" },
+  { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
+  { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
   { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
 ];
 
-/** Homepage sections (SideNav dots) — matches section IDs in app/page.tsx. */
-export const SECTION_NAV: NavItem[] = [
+/** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */
+export const HUB_SECTION_NAV: NavItem[] = [
   { id: "hero", es: "Inicio", en: "Home", href: "/#hero" },
   { id: "solution", es: "Solución", en: "Solution", href: "/#solution" },
-  { id: "use-cases", es: "Casos", en: "Use cases", href: "/#use-cases" },
-  { id: "procure", es: "Procure", en: "Procure", href: "/#procure" },
-  { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/#intelligence" },
   { id: "metrics", es: "Data moat", en: "Data moat", href: "/#metrics" },
-  { id: "who-its-for", es: "Para quién", en: "Who it's for", href: "/#who-its-for" },
-  { id: "pricing", es: "Planes", en: "Pricing", href: "/#pricing" },
-  { id: "faq", es: "FAQ", en: "FAQ", href: "/#faq" },
 ];
 
-/** Side rail homepage dots. */
-export const SIDE_NAV: NavItem[] = SECTION_NAV;
+/** @deprecated Hub no longer uses side rail — use HUB_SECTION_NAV if needed. */
+export const SECTION_NAV: NavItem[] = HUB_SECTION_NAV;
 
-/** Maps every SECTION_NAV anchor id to the TOP_NAV group it belongs to. */
+/** @deprecated Hub no longer renders SideNav. */
+export const SIDE_NAV: NavItem[] = HUB_SECTION_NAV;
+
+/** Maps section anchor ids to TOP_NAV group (homepage scroll spy). */
 export const TOP_NAV_GROUP: Record<string, string> = {
-  hero: "product",
-  solution: "product",
-  "use-cases": "product",
-  procure: "product",
-  intelligence: "product",
-  "who-its-for": "product",
-  metrics: "product",
-  pricing: "pricing",
-  faq: "pricing",
+  hero: "build",
+  solution: "build",
+  metrics: "build",
 };
 
-/** Leading slash so tabs work from any route. */
-export const PRICING_BUILD_HASH = "/#pricing";
+export const BUILD_PAGE = "/build";
+export const INTELLIGENCE_PAGE = "/intelligence";
+
+/** Build pricing anchor on dedicated spoke. */
+export const PRICING_BUILD_HASH = `${BUILD_PAGE}#pricing`;
 /** Procure marketing + pricing on sister site. */
 export const PRICING_PROCURE_HASH = PROCURE_LANDING_URL;
 /** Retailer free listing — dedicated page. */

@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s | CLI Market",
   },
   description:
-    "Precios de góndola verificados en LATAM para developers (API/MCP), equipos de compras (Procure) y analistas (Intelligence). Build, compra o analiza sobre la misma data.",
+    "Precios de góndola verificados en LATAM. Elige Build (API/MCP), Procure (compras) o Intelligence (señales) sobre la misma data.",
   keywords: [
     "retail price intelligence LATAM",
     "commerce API for AI agents",
