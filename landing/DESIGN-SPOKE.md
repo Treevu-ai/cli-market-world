@@ -9,7 +9,9 @@ Canonical hub: `/` · Config: `landing/lib/spokeConfig.ts` · PRD: `docs/prd-lan
 | `SpokePageShell` | `components/spoke/SpokePageShell.tsx` | Glow + Navbar + ErrorBoundary |
 | `SpokeHero` | `components/spoke/SpokeHero.tsx` | Hero unificado (garamond, chips, CTAs) |
 | `SpokeHubLink` | `components/spoke/SpokeHubLink.tsx` | ← CLI Market |
+| `SpokeFinalCTA` | `components/spoke/SpokeFinalCTA.tsx` | CTA final parametrizado por ICP |
 | `SPOKE_CONFIG` | `lib/spokeConfig.ts` | Copy + brandMode por ICP |
+| `SPOKE_FINAL_CTA` | `lib/spokeConfig.ts` | Copy CTA final por ICP |
 
 ## Usage
 
@@ -24,7 +26,9 @@ export default function BuildPage() {
     <SpokePageShell brandMode={SPOKE_CONFIG.build.brandMode} legacyHashRedirect>
       <SpokeHero icp="build" />
       <SpokeHubLink />
-      {/* body sections */}
+      <Pricing spoke="build" />
+      <FAQ />
+      <SpokeFinalCTA icp="build" />
     </SpokePageShell>
   );
 }
@@ -40,8 +44,8 @@ Retailers modal CTA: `<SpokeHero icp="retailers" onPrimaryClick={() => setOpen(t
 | intelligence | `/intelligence` | terminal | false |
 | retailers | `/retailers` | operations | true |
 
-## Pending (Phase B–D)
+## Pending (Phase C–D)
 
-- `SpokeSection`, `SpokeStepsSection`, `SpokeFinalCTA`
+- `SpokeSection`, `SpokeStepsSection`
 - Retailers body sections → `landing-container-wide`
-- Intelligence retokenize `#0369a1` → `--cm-signal`
+- Intelligence retokenize `#0369a1` → `--cm-signal` (Pricing link fixed in Phase B)

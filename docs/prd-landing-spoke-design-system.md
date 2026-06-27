@@ -367,10 +367,10 @@ SpokePageShell (brandMode)
 
 ### Fase B — Build homologation
 
-- [ ] Reemplazar `BuildSpokeHeader` por `SpokeHero`
-- [ ] Añadir glow shell a `/build`
-- [ ] Ajustar `Pricing` section header a patrón `section-eyebrow` consistente
-- [ ] `SpokeFinalCTA` icp=build
+- [x] Reemplazar `BuildSpokeHeader` por `SpokeHero`
+- [x] Añadir glow shell a `/build`
+- [x] Ajustar `Pricing` section header a patrón `section-eyebrow` consistente
+- [x] `SpokeFinalCTA` icp=build
 
 ### Fase C — Intelligence homologation + retokenize
 
