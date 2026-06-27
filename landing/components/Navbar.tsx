@@ -2,10 +2,8 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
-import { MARKET_STATS } from "@/lib/marketStats";
-import { TOP_NAV, TOP_NAV_GROUP } from "@/lib/siteNav";
+import { TOP_NAV } from "@/lib/siteNav";
 import { CTA } from "@/lib/ctaCopy";
-import { useActiveSection } from "@/hooks/useActiveSection";
 
 function Logo() {
   return (
@@ -24,15 +22,18 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { lang, setLang } = useLang();
-  const { active } = useActiveSection();
   const pathname = usePathname();
   const isES = lang === "es";
   const activeGroup =
     pathname?.startsWith("/docs")
       ? "docs"
-      : pathname === "/"
-        ? (TOP_NAV_GROUP[active] ?? active)
-        : undefined;
+      : pathname?.startsWith("/build")
+        ? "build"
+        : pathname?.startsWith("/intelligence")
+          ? "intelligence"
+          : pathname === "/"
+            ? undefined
+            : undefined;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -72,6 +73,7 @@ export default function Navbar() {
               key={item.id}
               href={item.href}
               aria-current={activeGroup === item.id ? "true" : undefined}
+              {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className={`kimi-nav-link text-xs whitespace-nowrap transition-colors ${
                 activeGroup === item.id ? "text-[var(--cm-mint)] font-semibold" : "text-[var(--cm-text-secondary)] hover:text-[var(--cm-on-surface)]"
               }`}
@@ -128,6 +130,7 @@ export default function Navbar() {
               href={item.href}
               onClick={close}
               aria-current={activeGroup === item.id ? "true" : undefined}
+              {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className={`text-sm font-medium transition-colors ${
                 activeGroup === item.id ? "text-[var(--cm-mint)]" : "text-[var(--cm-text-secondary)] hover:text-[var(--cm-on-surface)]"
               }`}

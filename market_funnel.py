@@ -24,6 +24,7 @@ FUNNEL_EVENTS = frozenset(
         "mcp_setup_completed",
         "mcp_connect",
         "use_case_demo",
+        "icp_door_click",
         "demo_session_created",
         "demo_first_tool_call",
         "mcp_tool_call",

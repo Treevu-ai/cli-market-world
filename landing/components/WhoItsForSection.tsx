@@ -37,7 +37,7 @@ export default function WhoItsForSection() {
       body_en: "Structured data, indices, and reports for decisions.",
       cta_es: "Explorar Intelligence →",
       cta_en: "Explore Intelligence →",
-      href: "/#intelligence",
+      href: "/intelligence",
     },
   ];
 

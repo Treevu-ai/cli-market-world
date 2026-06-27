@@ -286,7 +286,7 @@ export default function AccountDashboard() {
                   </a>
                 ) : null}
                 <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
-                  <a href="/#pricing" className="text-xs text-[var(--cm-mint)] hover:underline">
+                  <a href="/build#pricing" className="text-xs text-[var(--cm-mint)] hover:underline">
                     {isES ? "Comparar planes Build →" : "Compare Build plans →"}
                   </a>
                   <a href="/docs#billing" className="text-xs text-[var(--cm-mint)] hover:underline">

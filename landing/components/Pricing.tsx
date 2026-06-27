@@ -321,7 +321,7 @@ export default function Pricing() {
           >
             {isES ? "Procure — compras desde $29/mes →" : "Procure — procurement from $29/mo →"}
           </a>
-          <a href="/#intelligence" className="text-[#0369a1] font-semibold hover:underline">
+          <a href="/intelligence" className="text-[#0369a1] font-semibold hover:underline">
             {isES ? "Intelligence — piloto desde $300/mes →" : "Intelligence — pilot from $300/mo →"}
           </a>
         </div>

@@ -37,7 +37,7 @@ export const CTA = {
   signUp: {
     en: "Get API Key",
     es: "Obtener API Key",
-    href: PRICING_BUILD_HASH,
+    href: "/build",
   },
   forRetailers: {
     en: "For retailers",

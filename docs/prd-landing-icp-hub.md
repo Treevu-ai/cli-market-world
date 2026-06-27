@@ -6,7 +6,7 @@ tags:
   - landing
   - gtm
   - icp
-status: Draft — listo para implementación
+status: In Development — Fase 1+2 shipped 2026-06-27
 owner: Ricardo Cuba
 updated: 2026-06-27
 repos: cli-market-world (landing/)
