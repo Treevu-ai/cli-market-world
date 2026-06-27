@@ -35,7 +35,7 @@ export const PRODUCT_DOORS: ProductDoor[] = [
     price_en: "Free · Starter $9 · Pro $49/mo",
     cta_es: "Obtener API Key →",
     cta_en: "Get API Key →",
-    href: "/docs#auth",
+    href: "/build#pricing",
   },
   {
     id: "procure",
@@ -68,6 +68,6 @@ export const PRODUCT_DOORS: ProductDoor[] = [
     price_en: "Pilot from $300/mo",
     cta_es: "Solicitar piloto →",
     cta_en: "Request pilot →",
-    href: "/contact?topic=intelligence#contact-intelligence",
+    href: "/intelligence",
   },
 ];

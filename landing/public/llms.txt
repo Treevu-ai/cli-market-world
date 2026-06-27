@@ -1,6 +1,11 @@
 # CLI Market — Cost-of-Living OS for LatAm
 
 > URL: https://cli-market.dev
+> Hub (pick your ICP): https://cli-market.dev/
+> Build (developers): https://cli-market.dev/build
+> Intelligence (analysts): https://cli-market.dev/intelligence
+> Retailers (supply-side listing): https://cli-market.dev/retailers
+> Procure (procurement): https://procurecopilot.com/procure
 > GitHub: https://github.com/Treevu-ai/cli-market-world
 > API: https://cli-market-production.up.railway.app
 > Docs: https://cli-market.dev/docs

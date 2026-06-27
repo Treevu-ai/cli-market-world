@@ -32,13 +32,13 @@ export default function Footer() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--cm-text-secondary)] mb-3">
             {isES ? "Producto" : "Product"}
           </span>
-          <a href="/#pricing" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/build" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             CLI Build
           </a>
           <a href={`${PROCURE_SITE_URL}/procure`} className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors" target="_blank" rel="noopener noreferrer">
             Procure Copilot
           </a>
-          <a href="/#intelligence" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+          <a href="/intelligence" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             Intelligence
           </a>
         </div>

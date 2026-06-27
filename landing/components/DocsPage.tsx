@@ -164,7 +164,7 @@ export default function DocsPage() {
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t("1 clave API · export CSV · sin checkout retail.", "1 API key · CSV export · no retail checkout.")}
               </p>
-              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+              <a href="/build#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Elegir Starter →", "Choose Starter →")}
               </a>
             </div>
@@ -182,7 +182,7 @@ export default function DocsPage() {
               <p className="text-[10px] text-[var(--cm-signal)] mt-2 font-mono">
                 
               </p>
-              <a href="/#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
+              <a href="/build#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Ver planes →", "View plans →")}
               </a>
             </div>
@@ -219,7 +219,7 @@ export default function DocsPage() {
               Billing
             </a>
             {" · "}
-            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+            <a href="/build#pricing" className="text-[var(--cm-mint)] underline">
               {t("Ver planes", "View plans")}
             </a>
             .
@@ -313,8 +313,8 @@ market doctor`}</CodeBlock>
   -d '{
     "plan": "starter",
     "email": "dev@example.com",
-    "return_url": "https://cli-market.dev/#pricing",
-    "cancel_url": "https://cli-market.dev/#pricing"
+    "return_url": "https://cli-market.dev/build#pricing",
+    "cancel_url": "https://cli-market.dev/build#pricing"
   }'`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4 mb-4">
             {t(
@@ -328,7 +328,7 @@ market upgrade --plan starter
 market upgrade --plan pro`}</CodeBlock>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Precios completos: ", "Full pricing: ")}{" "}
-            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+            <a href="/build#pricing" className="text-[var(--cm-mint)] underline">
               {t("Ver planes", "View plans")}
             </a>
             .
@@ -486,7 +486,7 @@ market --json doctor`}</CodeBlock>
           </ul>
           <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-4">
             {t("Planes completos en ", "Full plans at ")}{" "}
-            <a href="/#pricing" className="text-[var(--cm-mint)] underline">
+            <a href="/build#pricing" className="text-[var(--cm-mint)] underline">
               {t("Ver planes", "View plans")}
             </a>
             .
@@ -516,7 +516,7 @@ market --json doctor`}</CodeBlock>
                 "Free for read · Starter $9 for export · Pro $49 for retail checkout.",
               )}
             </p>
-            <a href="/#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">
+            <a href="/build#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">
               {t("Ver planes Build →", "View Build plans →")}
             </a>
           </div>
