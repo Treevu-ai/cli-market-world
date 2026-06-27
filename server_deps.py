@@ -46,6 +46,10 @@ def auth_user(token: str) -> str:
     if DEFAULT_TOKEN and token == DEFAULT_TOKEN:
         return "admin"
     if token.startswith("sk-"):
+        from market_core.platform_admin import is_platform_admin_api_key
+
+        if is_platform_admin_api_key(token):
+            return "admin"
         key_data = db_validate_api_key(token)
         if key_data:
             return key_data["username"]
