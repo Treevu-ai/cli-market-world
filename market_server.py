@@ -109,6 +109,12 @@ async def lifespan(_app: FastAPI):
         logger.warning("JSON migration skipped: %s", e)
     for warning in production_payment_config_warnings():
         logger.warning("Payment security: %s", warning)
+    try:
+        from market_security import patch_alert_webhook_dispatch
+
+        patch_alert_webhook_dispatch()
+    except Exception as e:
+        logger.warning("Alert webhook SSRF patch skipped: %s", e)
     # Watchdog: alert ops if we started on a SQLite fallback or with a stale/
     # empty moat (non-fatal, cooldown-gated).
     try:

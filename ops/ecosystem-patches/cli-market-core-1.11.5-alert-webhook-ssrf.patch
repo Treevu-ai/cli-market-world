@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Sat, 27 Jun 2026 12:30:00 +0000
+Subject: [PATCH] fix(security): SSRF-safe alert webhook dispatch
+
+Validate notify_webhook with resolve-then-reject-private checks before
+httpx.post; disable redirects on outbound webhook calls.
+---
+ market_core/market_alerts.py | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/market_core/market_alerts.py b/market_core/market_alerts.py
+index 1111111..2222222 100644
+--- a/market_core/market_alerts.py
++++ b/market_core/market_alerts.py
+@@ -380,6 +380,7 @@ def _send_webhook(alert: dict, t: dict) -> bool:
+     if not url:
+         return False
+     try:
++        from market_security import validate_public_http_url
+         payload = {
+             "alert_id": alert["id"],
+             "alert_name": alert["name"],
+@@ -393,7 +394,14 @@ def _send_webhook(alert: dict, t: dict) -> bool:
+             "delta_pct": t["delta_pct"],
+             "fired_at": datetime.now(timezone.utc).isoformat(),
+         }
+-        r = httpx.post(url, json=payload, timeout=5.0)
++        safe_url = validate_public_http_url(url)
++        r = httpx.post(safe_url, json=payload, timeout=5.0, follow_redirects=False)
+         return r.status_code < 300
++    except ValueError as e:
++        logger.warning("Alert %s webhook blocked (SSRF): %s", alert["id"], e)
++        return False
+     except Exception as e:
+         logger.warning("Alert %s webhook failed: %s", alert["id"], e)
+         return False
