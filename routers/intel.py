@@ -32,8 +32,13 @@ from backend_interface import (
     get_latest_values,
     get_scores,
 )
-from market_intel_v2 import PROMO_DISCOUNT_THRESHOLD, _RPV_DISCLAIMER_ES, compute_affordability_v2
-from market_core.market_intel_products import build_andean_panel, compute_price_deal_alerts
+from market_intel_v2 import (
+    PROMO_DISCOUNT_THRESHOLD,
+    _RPV_DISCLAIMER_ES,
+    build_andean_panel,
+    compute_affordability_v2,
+)
+from market_core.market_intel_products import compute_price_deal_alerts
 from market_core.response_envelope import build_provenance, envelope, timing
 
 logger = logging.getLogger("market.server").getChild("intel")
