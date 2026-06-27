@@ -54,5 +54,8 @@ if (-not (Test-Path -LiteralPath $coreRoot)) {
 
 $py = Get-PythonInvocation
 Write-Host ("Using: {0}" -f ($py -join " "))
+Write-Host "Diagnosing market_core source..."
+& @py (Join-Path $Root "ops/diagnose_sync_source.py")
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & @py (Join-Path $Root "ops/sync_market_stats.py") @ScriptArgs
 exit $LASTEXITCODE
