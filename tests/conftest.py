@@ -12,6 +12,10 @@ _TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
 os.environ["MARKET_DATA_DIR"] = _TEST_DATA_DIR
 os.environ["DATABASE_URL"] = ""
 os.environ.setdefault("MARKET_LEGACY_CHECKOUT", "1")
+# Tests use username ``admin`` with tier fixtures — do not enable prod ops bypass.
+os.environ.pop("MARKET_API_TOKEN", None)
+os.environ.pop("MARKET_ADMIN_USERS", None)
+os.environ.pop("MARKET_ADMIN_API_KEYS", None)
 
 
 def run_activate_pro_cli(*argv: str) -> tuple[int, str, str]:
