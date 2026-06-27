@@ -1,6 +1,6 @@
 {
   "license": "MIT",
-  "description": "Commerce infrastructure for AI agents \u2014 32 curated MCP tools (57 legacy) to search, compare, and purchase across 40 verified retailers in 8 countries. 63,000+ real shelf prices refreshed every 4 hours. Free tier available.",
+  "description": "Commerce infrastructure for AI agents \u2014 31 curated MCP tools (57 legacy) to search, compare, and purchase across 40 verified retailers in 8 countries. 64,000+ real shelf prices refreshed every 4 hours. Free tier available.",
   "categories": [
     "ecommerce",
     "retail",
@@ -13,7 +13,6 @@
     "market_subscription",
     "market_favorites",
     "market_price_alerts",
-    "market_preferences",
     "market_household_get",
     "market_household_update",
     "market_barcode",
