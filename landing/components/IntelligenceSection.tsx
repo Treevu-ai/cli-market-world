@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
+import CommercePulseEmbed from "@/components/CommercePulseEmbed";
 
 const PILOT_TIERS = (isES: boolean) => [
   {
@@ -33,11 +34,13 @@ export default function IntelligenceSection() {
         "Spreads entre retailers",
         "Inflación por categoría (7 / 30 / 90 días)",
         "Canasta básica con reglas de comparabilidad",
+        "Agentic Commerce Pulse semanal publicable",
       ]
     : [
         "Cross-retailer spreads",
         "Category inflation (7 / 30 / 90 days)",
         "Basic basket with comparability rules",
+        "Publishable weekly Agentic Commerce Pulse",
       ];
 
   return (
@@ -71,6 +74,8 @@ export default function IntelligenceSection() {
               : "For pricing, trade marketing, fintech, and consultancies — spreads, inflation, and basket from real shelf data."}
           </p>
         </motion.div>
+
+        <CommercePulseEmbed country="PE" lang={isES ? "es" : "en"} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10 items-start">
           <motion.ul
