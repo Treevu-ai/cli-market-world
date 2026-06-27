@@ -1,5 +1,5 @@
 # Platform admin (1.11.4) — git pin until PyPI publish; then ==1.11.4
-cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@1fb5cec3e28c1628875def7b761c46b2af7f6d54
+cli-market-core @ git+https://github.com/Treevu-ai/cli-market-core.git@77dc2c8dfa9de35f441df3920401067d869409ca
 
 # Semantic moat — Golden Record persistence (SQLite dev / Postgres prod).
 cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@9d050131e9e5b16381581d1916e386f34d319ca6
