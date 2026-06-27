@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
-import ScrambleText from "@/components/ScrambleText";
 import { ACTIVE_BRAND_NAMES } from "@/lib/activeBrands";
 import { MARKET_STATS } from "@/lib/marketStats";
 
@@ -65,7 +64,7 @@ export default function ActiveBrandTicker() {
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="inline-block"
               >
-                <ScrambleText text={current} autoStart delay={80} duration={0.45} />
+                {current}
               </motion.span>
             </AnimatePresence>
           )}
