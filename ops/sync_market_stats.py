@@ -10,10 +10,26 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CORE_ROOT = ROOT.parent / "cli-market-core"
-for p in (ROOT, CORE_ROOT):
-    if str(p) not in sys.path:
-        sys.path.insert(0, str(p))
+CORE_ROOT = Path(os.environ.get("CLI_MARKET_CORE_ROOT", ROOT.parent / "cli-market-core")).resolve()
+
+
+def _bootstrap_core_path() -> None:
+    """Load market_core from sibling cli-market-core, not pip site-packages."""
+    registry = CORE_ROOT / "market_core" / "market_mcp_registry.py"
+    if not registry.is_file():
+        print(f"ERROR: sibling cli-market-core not found at {CORE_ROOT}", file=sys.stderr)
+        print("Clone cli-market-core next to cli-market-world, or set CLI_MARKET_CORE_ROOT.", file=sys.stderr)
+        sys.exit(1)
+    core_str = str(CORE_ROOT)
+    while core_str in sys.path:
+        sys.path.remove(core_str)
+    sys.path.insert(0, core_str)
+    root_str = str(ROOT)
+    if root_str not in sys.path:
+        sys.path.insert(1, root_str)
+
+
+_bootstrap_core_path()
 
 from market_core import market_stats as s
 from market_core.market_mcp_registry import (
@@ -24,6 +40,15 @@ from market_core.market_mcp_registry import (
     tool_in_profile,
 )
 from market_core.mcp_registry_export import write_registry_csv
+
+
+def _log_registry_source() -> None:
+    import market_core.market_mcp_registry as reg
+
+    default = public_tool_count("default")
+    prefs = "market_preferences" in {t["name"] for t in list_tools("default")}
+    print(f"Registry: {reg.__file__} · default={default} · preferences_in_default={prefs}")
+
 
 # Ensure env (including PEPY_API_KEY) is loaded for pepy fetches inside the script
 try:
@@ -1032,6 +1057,7 @@ def sync_glama_json() -> None:
 
 
 def main() -> None:
+    _log_registry_source()
     write_market_stats_ts()
     write_procure_market_stats_ts()
     sync_readme()
