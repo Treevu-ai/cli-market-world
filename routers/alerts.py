@@ -25,6 +25,7 @@ from market_alerts import (
 )
 from market_billing import db_get_subscription, TIERS
 from market_core import get_db
+from market_security import validate_public_http_url
 from server_deps import require_pro
 
 router = APIRouter(prefix="/v1/alerts", tags=["alerts"])
@@ -111,6 +112,10 @@ def create_alert(body: CreateAlertRequest, authorization: str | None = Header(No
                 status_code=403,
                 detail="Webhook notifications require Enterprise plan.",
             )
+        try:
+            webhook = validate_public_http_url(webhook)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     if not email and not webhook:
         raise HTTPException(
