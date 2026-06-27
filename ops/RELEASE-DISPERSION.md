@@ -18,6 +18,9 @@ cd cli-market-world
 # 1. Stats → landing, README, OG, MCP manifests, content templates  ← CI lo hace
 python ops/sync_market_stats.py
 
+# Windows (PowerShell): .\ops\sync_market_stats.ps1  — or: py -3 ops/sync_market_stats.py
+# Requires sibling ../cli-market-core. Disable Store aliases for python.exe/python3.exe if needed.
+
 # 2. GIFs terminalizer (si cambió versión visible o métricas en hero)  ← manual
 python ops/generate_demo_gif.py
 python ops/generate_usecase_gifs.py
