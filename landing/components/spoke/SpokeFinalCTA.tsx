@@ -7,9 +7,11 @@ import { SPOKE_FINAL_CTA, type SpokeIcp } from "@/lib/spokeConfig";
 
 type SpokeFinalCTAProps = {
   icp: SpokeIcp;
+  /** Override primary CTA click (e.g. open modal on retailers). */
+  onPrimaryClick?: () => void;
 };
 
-export default function SpokeFinalCTA({ icp }: SpokeFinalCTAProps) {
+export default function SpokeFinalCTA({ icp, onPrimaryClick }: SpokeFinalCTAProps) {
   const { lang } = useLang();
   const isES = lang === "es";
   const config = SPOKE_FINAL_CTA[icp];
@@ -58,9 +60,15 @@ export default function SpokeFinalCTA({ icp }: SpokeFinalCTAProps) {
           <p className="section-intro">{isES ? config.body_es : config.body_en}</p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href={config.primaryCta.href} className="btn-mint text-base px-8 py-3">
-              {primaryLabel}
-            </a>
+            {onPrimaryClick ? (
+              <button type="button" onClick={onPrimaryClick} className="btn-mint text-base px-8 py-3">
+                {primaryLabel}
+              </button>
+            ) : (
+              <a href={config.primaryCta.href} className="btn-mint text-base px-8 py-3">
+                {primaryLabel}
+              </a>
+            )}
             {secondary && secondaryLabel ? (
               <a href={secondary.href} className="btn-outline text-base px-8 py-3">
                 {secondaryLabel}
