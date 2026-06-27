@@ -1,10 +1,10 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.11.0)
+> Package: pip install cli-market-world (v1.11.4)
 > Command: market-mcp
 > API: https://cli-market-production.up.railway.app
-> Stats: 80 retailers · 40 verified · 63,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
+> Stats: 80 retailers · 40 verified · 64,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
 > Payments: PayPal · Mercado Pago · Yape/Plin transfer (Peru, manual)
 > FMCG pilot: Nuna Orgánica PE (406 SKUs, WooCommerce Store API)
 
@@ -39,40 +39,43 @@ For Claude Desktop, add to claude_desktop_config.json:
 }
 ```
 
-## MCP tool bundles (default profile: 32 MCP tools)
+## MCP tool bundles (default profile: 31 curated tools)
 
 Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (57 tools, includes deprecated aliases).
 
-### Shop (11 tools)
-Canonical: market_discover
-market_login, market_discover, market_search, market_compare, market_add, market_cart, market_cart_update, market_checkout, market_orders, market_ask, market_basket
+Canonical registry CSV: `/mcp-tools-registry.csv` (columns: tool, estado_codigo, bundle, reemplazo_codigo, alternativa_docs).
 
-### Intel (9 tools)
+### Shop (13 tools)
+Canonical: market_discover, market_optimize_purchase
+market_login, market_discover, market_search, market_compare, market_substitutes, market_add, market_cart, market_cart_update, market_checkout, market_orders, market_ask, market_basket, market_optimize_purchase
+
+### Intel (10 tools)
 Canonical: market_intel_brief
-market_intel_brief, market_inflation, market_scores, market_price_risk, market_inflation_report, market_procurement_signal, market_stats, market_export, market_trending
+market_intel_brief, market_inflation, market_affordability, market_scores, market_price_risk, market_inflation_report, market_procurement_signal, market_stats, market_export, market_trending
+
+### Account (6 tools)
+Canonical: market_price_alerts
+market_whoami, market_subscription, market_favorites, market_price_alerts, market_household_get, market_household_update
 
 ### Utility (2 tools)
 market_barcode, market_ticket
 
-### Account (5 tools)
-Canonical: market_price_alerts
-market_whoami, market_subscription, market_favorites, market_price_alerts, market_preferences
-
 ## Recommended flows by ICP
 
 ### Builder / AI agent
-1. `market_optimize_purchase` — one call: basket compare, TCO, substitutes, action links (canonical entry point)
+1. `market_optimize_purchase` — one call: basket compare, TCO, substitutes, action links
 2. Granular: `market_discover` → `market_search` → `market_compare` → `market_basket`
-3. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier, internal CLI Market order)
+3. `market_login` → `market_add` → `market_cart` → `market_checkout` (Pro tier)
 
 ### Research / fintech
-1. `market_intel_brief` → `market_inflation` → `market_scores` (MCP)
-2. CLI: `market intel inflation -c PE` · `market intel indicators -c PE` · `market intel scores -c PE`
-3. `market_export` for CSV/JSON pulls; `market_trending` for category momentum
+1. `market_intel_brief` → `market_inflation` → `market_scores`
+2. `market_export` for CSV/JSON pulls; `market_trending` for category momentum
 
 ### Authenticated user
-1. `market_whoami` → `market_preferences` → `market_price_alerts`
+1. `market_whoami` → `market_household_get` → `market_price_alerts`
 2. `market_favorites` + `market_subscription` for account management
+3. Legacy `market_preferences` → use `market_household_get` instead
+
 
 ## Countries: PE AR BR MX CO CL IT FR
 ## Lines: supermercados farmacias electro moda hogar departamentales
