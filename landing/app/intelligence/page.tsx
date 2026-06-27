@@ -3,6 +3,8 @@ import SpokePageShell from "@/components/spoke/SpokePageShell";
 import SpokeHero from "@/components/spoke/SpokeHero";
 import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import IntelligenceSection from "@/components/IntelligenceSection";
+import IntelligenceFAQ from "@/components/IntelligenceFAQ";
+import SpokeFinalCTA from "@/components/spoke/SpokeFinalCTA";
 import Footer from "@/components/Footer";
 import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
@@ -20,7 +22,9 @@ export default function IntelligencePage() {
     <SpokePageShell brandMode={brandMode}>
       <SpokeHero icp="intelligence" />
       <SpokeHubLink />
-      <IntelligenceSection omitHeader />
+      <IntelligenceSection />
+      <IntelligenceFAQ />
+      <SpokeFinalCTA icp="intelligence" />
       <Footer />
     </SpokePageShell>
   );
