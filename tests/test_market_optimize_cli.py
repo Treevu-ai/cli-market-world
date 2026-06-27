@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from market_cli import _parse_basket_items, _unwrap_v1
+from market_cli import _parse_basket_items, _unwrap_v1, _normalize_basket_store_rows, _country_supermarket_stores
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -25,6 +25,31 @@ def test_parse_basket_items():
         {"name": "arroz", "qty": 1},
         {"name": "aceite", "qty": 3},
     ]
+
+
+def test_normalize_basket_store_rows_legacy_comparison():
+    data = {
+        "source": "live",
+        "comparison": {
+            "metro": {
+                "store_name": "Metro",
+                "currency": "PEN",
+                "total": 5.8,
+                "items": [{"name": "Leche Gloria", "qty": 1, "price": 2.9}],
+            }
+        },
+    }
+    rows = _normalize_basket_store_rows(data)
+    assert len(rows) == 1
+    assert rows[0]["store_name"] == "Metro"
+    assert rows[0]["total"] == 5.8
+
+
+def test_country_supermarket_stores_pe():
+    stores = _country_supermarket_stores("PE")
+    assert "wong" in stores
+    assert "metro" in stores
+    assert "ripley_pe" not in stores
 
 
 def test_market_server_mounts_core_v1_router():
