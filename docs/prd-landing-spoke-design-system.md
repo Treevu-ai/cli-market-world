@@ -374,10 +374,10 @@ SpokePageShell (brandMode)
 
 ### Fase C — Intelligence homologation + retokenize
 
-- [ ] Split `IntelligenceSection` → hero + body sections
-- [ ] Eliminar todos los `#0369a1` / `#64748b`
-- [ ] Añadir FAQ compacto analista
-- [ ] `SpokeFinalCTA` icp=intelligence
+- [x] Split `IntelligenceSection` → hero + body sections
+- [x] Eliminar todos los `#0369a1` / `#64748b`
+- [x] Añadir FAQ compacto analista
+- [x] `SpokeFinalCTA` icp=intelligence
 
 ### Fase D — Retailers refactor
 
@@ -417,8 +417,8 @@ SpokePageShell (brandMode)
 
 **Intelligence**
 
-- [ ] Cero referencias `#0369a1`
-- [ ] Pilot tiers usan `card-cyber` + tokens signal/mint
+- [x] Cero referencias `#0369a1`
+- [x] Pilot tiers usan `card-cyber` + tokens signal/mint
 - [ ] Commerce Pulse embed intacto
 
 **Retailers**
