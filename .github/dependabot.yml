@@ -1,0 +1,60 @@
+# Dependabot — CLI Market (cli-market-world)
+# landing/.npmrc → public npm; GH Packages auth via Dependabot secret GH_PAT
+# (synced from Actions secret by .github/workflows/sync-dependabot-secrets.yml)
+
+version: 2
+
+registries:
+  npmjs:
+    type: npm-registry
+    url: https://registry.npmjs.org
+    replaces-base: true
+
+  github-npm:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    username: x-access-token
+    password: GH_PAT
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: deps
+      include: scope
+
+  - package-ecosystem: npm
+    directory: /landing
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - landing
+    commit-message:
+      prefix: deps
+      include: scope
+    registries:
+      - npmjs
+      - github-npm
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - ci-cd

@@ -34,7 +34,6 @@
     "next-sitemap": "^4.2.3",
     "playwright": "^1.61.1",
     "tailwindcss": "^4.0.0",
-    "to-ico": "^1.1.5",
     "typescript": "^5"
   }
 }
