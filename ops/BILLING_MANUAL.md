@@ -37,10 +37,13 @@ PAYPAL_SANDBOX=false   # Live en producción
 # Return URLs post-PayPal (opcional)
 PRO_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success#pricing
 PRO_SUBSCRIBE_CANCEL_URL=https://cli-market.dev/?sub=cancelled#pricing
-PROCURE_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success&audience=procure#procure
+PROCURE_SUBSCRIBE_RETURN_URL=https://procurecopilot.com/procure/subscribe?sub=success&audience=procure
+PROCURE_SUBSCRIBE_CANCEL_URL=https://procurecopilot.com/procure/subscribe?sub=cancelled&audience=procure
 PROCURE_MP_CHECKOUT=0          # 1 = habilita MP/Yape/Plin en procure-subscribe (dark launch default off)
 PROCURE_PEN_PER_USD=3.75       # opcional; fallback PRO_PEN_PER_USD
-PROCURE_MP_SUCCESS_URL=https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure
+PROCURE_MP_SUCCESS_URL=https://procurecopilot.com/procure/subscribe?mp=success&audience=procure&ref={ref}
+PROCURE_MP_PENDING_URL=https://procurecopilot.com/procure/subscribe?mp=pending&audience=procure&ref={ref}
+PROCURE_MP_FAILURE_URL=https://procurecopilot.com/procure/subscribe?mp=failure&audience=procure&ref={ref}
 PROCURE_MAGIC_SECRET=...          # 32+ bytes — magic link onboarding (Sprint 3)
 PROCURE_APP_URL=https://procurecopilot.com/dashboard
 PROCURE_MAGIC_TTL_SECONDS=900     # opcional; default 15 min
