@@ -31,7 +31,7 @@ POST https://procurecopilot.com/api/procurement/checkout
 
 ## Subscribe
 
-https://procurecopilot.com/subscribe
+https://procurecopilot.com/procure/subscribe
 
 ## Organization
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procure Copilot — host SaaS subscribe checkout on /subscribe (Phase 2).
+"""Procure Copilot — host SaaS subscribe checkout on /procure/subscribe (Phase 2).
 
 Copies billing UI from cli-market-world/landing and patches CTAs to on-site URLs.
 
@@ -42,7 +42,7 @@ COPY_FROM_LANDING = [
 COPY_FROM_PATCH = [
     "lib/procureCheckoutUrl.ts",
     "lib/procureCta.ts",
-    "app/subscribe/page.tsx",
+    "app/procure/subscribe/page.tsx",
 ]
 
 CLI_MARKET_SUBSCRIBE_RE = re.compile(
@@ -93,16 +93,16 @@ def patch_subscribe_hrefs(target: Path) -> list[str]:
 
         def repl(m: re.Match) -> str:
             plan = m.group("plan") or m.group("plan2")
-            return f"/subscribe?plan={plan}&checkout=open"
+            return f"/procure/subscribe?plan={plan}&checkout=open"
 
         patched = CLI_MARKET_SUBSCRIBE_RE.sub(repl, text)
         patched = patched.replace(
             "https://cli-market.dev/?audience=procure#pricing",
-            "/subscribe",
+            "/procure/subscribe",
         )
         patched = patched.replace(
             "https://cli-market.dev/build?audience=procure#pricing",
-            "/subscribe",
+            "/procure/subscribe",
         )
         if patched != text:
             path.write_text(patched, encoding="utf-8")
@@ -121,7 +121,7 @@ def patch_payment_return_banner(target: Path) -> None:
     replacement = (
         'const audience =\n'
         '    params.get("audience") === "procure" ||\n'
-        '    (typeof window !== "undefined" && window.location.pathname.startsWith("/subscribe"))\n'
+        '    (typeof window !== "undefined" && window.location.pathname.startsWith("/procure/subscribe"))\n'
         '      ? "procure"\n'
         '      : "build";'
     )
@@ -133,7 +133,7 @@ def patch_payment_return_banner(target: Path) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Apply Procure /subscribe checkout patch")
+    parser = argparse.ArgumentParser(description="Apply Procure /procure/subscribe checkout patch")
     parser.add_argument("--target", type=Path, default=Path.cwd(), help="procure-copilot root")
     parser.add_argument("--patch", type=Path, default=Path(__file__).resolve().parent)
     parser.add_argument("--world", type=Path, default=None, help="cli-market-world root")

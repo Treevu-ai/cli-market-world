@@ -4,9 +4,9 @@ import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 const VALID_PLANS = new Set<ProcurePlanSlug>(["starter", "pro", "builder"]);
 
 /** Procure SaaS checkout lives on the sister site (Phase 2). */
-const PROCURE_SUBSCRIBE_PATH = "/subscribe";
+const PROCURE_SUBSCRIBE_PATH = "/procure/subscribe";
 
-/** CTA: procurecopilot.com/subscribe with plan preselected + modal open. */
+/** CTA: procurecopilot.com/procure/subscribe with plan preselected + modal open. */
 export function buildProcureSubscribeUrl(plan: ProcurePlanSlug): string {
   const params = new URLSearchParams({
     plan,
@@ -48,7 +48,7 @@ export function clearProcureCheckoutQuery(): void {
   window.history.replaceState(null, "", url.pathname + url.search + url.hash);
 }
 
-/** Redirect legacy cli-market.dev/?audience=procure links to procurecopilot.com/subscribe. */
+/** Redirect legacy cli-market.dev/?audience=procure links to procurecopilot.com/procure/subscribe. */
 export function redirectLegacyProcureCheckout(): boolean {
   if (typeof window === "undefined") return false;
   const link = readProcureCheckoutDeepLink();

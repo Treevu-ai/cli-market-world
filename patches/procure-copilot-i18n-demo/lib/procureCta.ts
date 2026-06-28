@@ -6,7 +6,7 @@ export const CLI_MARKET_CONTACT_PROCURE =
 export const PROCURE_DASHBOARD = "/dashboard";
 
 export function buildProcureSubscribeHref(plan: "starter" | "pro" | "builder"): string {
-  return `/subscribe?plan=${plan}&checkout=open`;
+  return `/procure/subscribe?plan=${plan}&checkout=open`;
 }
 
 export const PROCURE_STARTER_CHECKOUT = buildProcureSubscribeHref("starter");
