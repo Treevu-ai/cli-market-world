@@ -265,7 +265,9 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
   const isES = lang === "es";
   const isSpoke = spoke != null;
   const billing: Billing = "monthly";
-  const [audience, setAudience] = useState<PricingAudience>("build");
+  const [audience, setAudience] = useState<PricingAudience>(() =>
+    typeof window !== "undefined" ? resolvePricingAudience() : "build",
+  );
   const [freeModalOpen, setFreeModalOpen] = useState(false);
   const paymentsLabel = usePaymentsChannels(isES);
   const billingFootnote = usePricingBillingFootnote(isES);
