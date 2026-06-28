@@ -5,7 +5,7 @@ const VALID_PLANS = new Set<ProcurePlanSlug>(["starter", "pro", "builder"]);
 /** On-site subscribe route — no audience=procure query needed. */
 export function buildProcureSubscribeUrl(plan: ProcurePlanSlug): string {
   const params = new URLSearchParams({ plan, checkout: "open" });
-  return `/subscribe?${params.toString()}`;
+  return `/procure/subscribe?${params.toString()}`;
 }
 
 export function readProcureCheckoutDeepLink(): {

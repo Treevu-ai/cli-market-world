@@ -43,7 +43,7 @@ export function isLegacyListedPricingHash(hash: string): boolean {
 }
 
 export function resolvePricingAudience(): PricingAudience {
-  // Procure checkout lives on procurecopilot.com/subscribe (Phase 2). Legacy
+  // Procure checkout lives on procurecopilot.com/procure/subscribe (Phase 2). Legacy
   // ?audience=procure on /build redirects to the sister site.
   if (typeof window === "undefined") return "build";
   const param = new URLSearchParams(window.location.search).get("audience");
