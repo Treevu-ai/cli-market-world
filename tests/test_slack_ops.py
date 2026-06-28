@@ -129,3 +129,10 @@ def test_slack_valid_pro_ref_not_found_returns_ephemeral(monkeypatch):
     data = _post_slack(body, monkeypatch)
     # PRO-NOTFOUND does not exist in DB → activation fails → ephemeral response
     assert data.get("response_type") == "ephemeral"
+
+
+def test_slack_valid_procure_ref_not_found_returns_ephemeral(monkeypatch):
+    monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
+    body = _slack_body(value="PCP-NOTFOUND")
+    data = _post_slack(body, monkeypatch)
+    assert data.get("response_type") == "ephemeral"
