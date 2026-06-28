@@ -77,7 +77,16 @@ async def slack_interactions(request: Request):
         return {"ok": True}
 
     request_id = (action.get("value") or "").strip().upper()
-    if not request_id.startswith("PRO-"):
+    from routers.billing.activation import (
+        _activate_procure_from_request,
+        _activate_pro_from_request,
+        _is_procure_subscription_request_id,
+    )
+
+    if not (
+        request_id.startswith("PRO-")
+        or _is_procure_subscription_request_id(request_id)
+    ):
         return {
             "response_type": "ephemeral",
             "text": f"Ref inválida: `{request_id}`",
@@ -92,20 +101,39 @@ async def slack_interactions(request: Request):
         if allowed and user_id not in allowed:
             return {
                 "response_type": "ephemeral",
-                "text": "No autorizado para activar Pro desde Slack.",
+                "text": "No autorizado para activar suscripciones desde Slack.",
             }
 
-    from routers.billing.activation import _activate_pro_from_request
-
-    result = _activate_pro_from_request(request_id, source="slack_interaction")
-    if any(a.startswith("pro_activated:") for a in result):
-        username = next(a.split(":", 1)[1] for a in result if a.startswith("pro_activated:"))
-        logger.info("audit slack_activate_pro request_id=%s user=%s by=%s", request_id, username, user_id)
-        return {
-            "response_type": "in_channel",
-            "replace_original": False,
-            "text": f"✅ Pro activado para `{username}` (ref `{request_id}`). Cliente: `market whoami`",
-        }
+    if _is_procure_subscription_request_id(request_id):
+        result = _activate_procure_from_request(request_id, source="slack_interaction")
+        activated = [a for a in result if "_activated:" in a]
+        if activated:
+            tier, username = activated[0].split("_activated:", 1)
+            logger.info(
+                "audit slack_activate_procure request_id=%s user=%s tier=%s by=%s",
+                request_id,
+                username,
+                tier,
+                user_id,
+            )
+            return {
+                "response_type": "in_channel",
+                "replace_original": False,
+                "text": (
+                    f"✅ Procure activado (`{tier}`) para `{username}` "
+                    f"(ref `{request_id}`). Cliente: magic link en email → dashboard Procure"
+                ),
+            }
+    else:
+        result = _activate_pro_from_request(request_id, source="slack_interaction")
+        if any(a.startswith("pro_activated:") for a in result):
+            username = next(a.split(":", 1)[1] for a in result if a.startswith("pro_activated:"))
+            logger.info("audit slack_activate_pro request_id=%s user=%s by=%s", request_id, username, user_id)
+            return {
+                "response_type": "in_channel",
+                "replace_original": False,
+                "text": f"✅ Pro activado para `{username}` (ref `{request_id}`). Cliente: `market whoami`",
+            }
 
     if any(a.startswith("payment_not_manual:") for a in result):
         return {
