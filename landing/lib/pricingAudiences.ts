@@ -43,10 +43,8 @@ export function isLegacyListedPricingHash(hash: string): boolean {
 }
 
 export function resolvePricingAudience(): PricingAudience {
-  // Default audience on cli-market.dev is "build" (developers). The "procure"
-  // audience stays reachable only via an explicit ?audience=procure deep link so
-  // Procure Copilot's checkout/return flow keeps working until it moves to its
-  // own domain (Phase 2). It is no longer surfaced as a public pricing tab.
+  // Procure checkout lives on procurecopilot.com/subscribe (Phase 2). Legacy
+  // ?audience=procure on /build redirects to the sister site.
   if (typeof window === "undefined") return "build";
   const param = new URLSearchParams(window.location.search).get("audience");
   return param === "procure" ? "procure" : "build";
