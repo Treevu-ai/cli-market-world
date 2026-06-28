@@ -3,9 +3,9 @@
 export const CLI_MARKET_CONTACT_PROCURE =
   "https://cli-market.dev/contact?topic=procure#contact-procure";
 
-/** Self-serve trial checkout on cli-market.dev */
+/** Self-serve trial checkout on cli-market.dev/build (preserves Procure query params). */
 export const PROCURE_STARTER_CHECKOUT =
-  "https://cli-market.dev/?audience=procure&plan=starter&checkout=open#pricing";
+  "https://cli-market.dev/build?audience=procure&plan=starter&checkout=open#pricing";
 
 /** In-app dashboard (API key / magic link). */
 export const PROCURE_DASHBOARD = "/dashboard";

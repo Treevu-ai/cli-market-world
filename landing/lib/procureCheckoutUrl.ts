@@ -1,17 +1,27 @@
 import type { ProcurePlanSlug } from "@/lib/procurePlans";
+import { BUILD_PAGE } from "@/lib/siteNav";
 
 const VALID_PLANS = new Set<ProcurePlanSlug>(["starter", "pro", "builder"]);
 
-const PROCURE_CHECKOUT_BASE = "https://cli-market.dev/";
+/** Build spoke hosts pricing; avoids home /#pricing legacy redirect stripping query params. */
+const PROCURE_CHECKOUT_PATH = BUILD_PAGE;
 
-/** Worker CTA: deep link to cli-market.dev with plan preselected + modal open. */
+/** Worker CTA: deep link to cli-market.dev/build with plan preselected + modal open. */
 export function buildProcureSubscribeUrl(plan: ProcurePlanSlug): string {
   const params = new URLSearchParams({
     audience: "procure",
     plan,
     checkout: "open",
   });
-  return `${PROCURE_CHECKOUT_BASE}?${params.toString()}#pricing`;
+  return `${PROCURE_CHECKOUT_PATH}?${params.toString()}#pricing`;
+}
+
+/** Absolute URL for external sites (procurecopilot.com CTAs). */
+export function buildProcureSubscribeAbsoluteUrl(
+  plan: ProcurePlanSlug,
+  origin = "https://cli-market.dev",
+): string {
+  return `${origin.replace(/\/$/, "")}${buildProcureSubscribeUrl(plan)}`;
 }
 
 /** Deep link: ?audience=procure&plan=pro&checkout=open#pricing */
