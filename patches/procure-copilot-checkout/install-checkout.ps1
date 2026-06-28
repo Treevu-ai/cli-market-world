@@ -1,7 +1,12 @@
 # Self-contained Procure checkout installer (sparse-checkout / wrong branch safe)
-# Usage from procure-copilot root:
-#   irm https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-checkout/install-checkout.ps1 -OutFile install-checkout.ps1
+# Repo is PRIVATE — do not use raw.githubusercontent.com (404).
+#
+# From procure-copilot root:
+#   gh auth login
+#   gh api repos/Treevu-ai/cli-market-world/contents/patches/procure-copilot-checkout/install-checkout.ps1 -q .content | ForEach-Object { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_ -replace "`n","")) } | Set-Content install-checkout.ps1
 #   .\install-checkout.ps1
+#
+# Or skip download — run the sparse-clone block in README.md "Private repo".
 
 $ErrorActionPreference = "Stop"
 
