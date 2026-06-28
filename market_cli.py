@@ -373,11 +373,52 @@ def _parse_basket_items(raw_items: list[str]) -> list[dict]:
     for arg in raw_items:
         token = str(arg).strip().strip('"')
         if ":" in token:
-            name, qty = token.split(":", 1)
-            items.append({"name": name.strip(), "qty": max(1, int(qty))})
+            name, qty = token.rsplit(":", 1)
+            try:
+                qty_int = max(1, int(qty.strip()))
+            except ValueError:
+                items.append({"name": token, "qty": 1})
+                continue
+            items.append({"name": name.strip(), "qty": qty_int})
         else:
             items.append({"name": token, "qty": 1})
     return items
+
+
+def _country_supermarket_stores(country: str) -> list[str]:
+    """Supermarket retailers for a country — avoids hogar/departamentales breaking live basket."""
+    cc = (country or "").strip().upper()
+    return [k for k, v in STORES.items() if v.get("country") == cc and v.get("line") == "supermercados"]
+
+
+def _normalize_basket_store_rows(data: dict) -> list[dict]:
+    """Wave 4 returns ``stores``; legacy live API returns ``comparison`` keyed by store."""
+    rows = data.get("stores") or []
+    if rows:
+        return rows
+    comparison = data.get("comparison") or {}
+    if not comparison:
+        return []
+    normalized: list[dict] = []
+    for store_key, row in comparison.items():
+        if not isinstance(row, dict):
+            continue
+        items = row.get("items") or []
+        breakdown = [
+            {"item": i.get("name"), "qty": i.get("qty", 1), "price": i.get("price")}
+            for i in items
+        ]
+        normalized.append(
+            {
+                "store": store_key,
+                "store_name": row.get("store_name") or store_key,
+                "total": row.get("total"),
+                "tco_total": row.get("tco_total") or row.get("total"),
+                "currency": row.get("currency") or "PEN",
+                "breakdown": breakdown,
+            }
+        )
+    return normalized
 
 # ── Commands ─────────────────────────────────────────────────────────────────
 
@@ -1114,9 +1155,7 @@ def cmd_procure(args):
 def cmd_basket(args):
     items = _parse_basket_items(args.items)
     country = getattr(args, "country", None) or "PE"
-    stores = []
-    if args.country:
-        stores = [k for k, v in STORES.items() if v["country"] == args.country]
+    stores = _country_supermarket_stores(country) if country else []
     line = getattr(args, "line", None)
     payload = {
         "items": items,
@@ -1139,7 +1178,7 @@ def cmd_basket(args):
         console.print(json.dumps(raw, indent=2, ensure_ascii=False))
         return
     data = _unwrap_v1(raw)
-    store_rows = data.get("stores") or []
+    store_rows = _normalize_basket_store_rows(data)
     if not store_rows:
         console.print(
             "[yellow]No se encontraron productos en ninguna tienda[/]"
@@ -1207,6 +1246,14 @@ def cmd_optimize(args):
         constraints["max_budget"] = float(args.budget)
     if getattr(args, "payment", None):
         constraints["payment_method"] = args.payment
+    if country and not constraints.get("preferred_stores"):
+        local_stores = _country_supermarket_stores(country)
+        if local_stores:
+            constraints["preferred_stores"] = local_stores
+    os.environ.setdefault(
+        "MARKET_API_TIMEOUT",
+        os.environ.get("MARKET_MISSION_TIMEOUT", "180"),
+    )
     payload = {
         "country": country,
         "items": items,
