@@ -2,34 +2,29 @@
 
 Host SaaS subscription checkout on **procurecopilot.com/procure/subscribe** instead of cli-market.dev.
 
-## 1. Get the patch (PR #446 — not on `main` yet)
+## Quick install (sparse checkout / wrong branch — recommended on Windows)
 
-```powershell
-cd ~\cli-market-world
-git fetch origin
-git checkout cursor/procure-checkout-on-site-e2d0
-```
-
-Or merge PR #446 and `git pull origin main`.
-
-## 2. Apply (from procure-copilot repo)
+From **procure-copilot** root — does **not** need your local `cli-market-world` clone:
 
 ```powershell
 cd ~\procure-copilot
+irm https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-checkout/install-checkout.ps1 -OutFile install-checkout.ps1
+.\install-checkout.ps1
+```
+
+Uses a temp sparse clone of `main` (only `landing/` + this patch).
+
+## Manual apply (full cli-market-world clone on `main`)
+
+```powershell
+cd ~\cli-market-world
+git checkout main
+git pull origin main
+git sparse-checkout add patches/procure-copilot-checkout landing/components landing/lib landing/hooks
+
+cd ~\procure-copilot
 python ..\cli-market-world\patches\procure-copilot-checkout\apply.py
 ```
-
-```bash
-# sibling layout
-python ../cli-market-world/patches/procure-copilot-checkout/apply.py
-
-# explicit paths
-python /path/to/cli-market-world/patches/procure-copilot-checkout/apply.py \
-  --target . \
-  --world /path/to/cli-market-world
-```
-
-Replaces the simple PayPal-only `/procure/subscribe` page with the full billing modal (PayPal + Mercado Pago · Yape · Plin).
 
 ## 3. Cloudflare build env
 
