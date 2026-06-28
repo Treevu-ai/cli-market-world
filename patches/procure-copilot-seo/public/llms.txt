@@ -31,7 +31,7 @@ POST https://procurecopilot.com/api/procurement/checkout
 
 ## Subscribe
 
-https://cli-market.dev/?audience=procure#pricing
+https://procurecopilot.com/procure/subscribe
 
 ## Organization
 

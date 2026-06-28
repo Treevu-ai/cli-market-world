@@ -544,15 +544,15 @@ async def _start_procure_mercadopago_checkout(
 
     mp_success = os.getenv(
         "PROCURE_MP_SUCCESS_URL",
-        "https://cli-market.dev/?mp=success&audience=procure&ref={ref}#procure",
+        "https://procurecopilot.com/procure/subscribe?mp=success&audience=procure&ref={ref}",
     ).replace("{ref}", request_id)
     mp_pending = os.getenv(
         "PROCURE_MP_PENDING_URL",
-        "https://cli-market.dev/?mp=pending&audience=procure&ref={ref}#procure",
+        "https://procurecopilot.com/procure/subscribe?mp=pending&audience=procure&ref={ref}",
     ).replace("{ref}", request_id)
     mp_failure = os.getenv(
         "PROCURE_MP_FAILURE_URL",
-        "https://cli-market.dev/?mp=failure&audience=procure&ref={ref}#procure",
+        "https://procurecopilot.com/procure/subscribe?mp=failure&audience=procure&ref={ref}",
     ).replace("{ref}", request_id)
 
     mp = await create_preference(
@@ -814,11 +814,11 @@ async def _start_procure_subscription(
     prefix = cfg["request_prefix"]
     return_url = os.getenv(
         "PROCURE_SUBSCRIBE_RETURN_URL",
-        "https://cli-market.dev/?sub=success&audience=procure#procure",
+        "https://procurecopilot.com/procure/subscribe?sub=success&audience=procure",
     )
     cancel_url = os.getenv(
         "PROCURE_SUBSCRIBE_CANCEL_URL",
-        "https://cli-market.dev/?sub=cancelled&audience=procure#procure",
+        "https://procurecopilot.com/procure/subscribe?sub=cancelled&audience=procure",
     )
 
     token = await _get_access_token()

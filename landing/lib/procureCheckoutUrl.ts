@@ -1,30 +1,28 @@
 import type { ProcurePlanSlug } from "@/lib/procurePlans";
-import { BUILD_PAGE } from "@/lib/siteNav";
+import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 
 const VALID_PLANS = new Set<ProcurePlanSlug>(["starter", "pro", "builder"]);
 
-/** Build spoke hosts pricing; avoids home /#pricing legacy redirect stripping query params. */
-const PROCURE_CHECKOUT_PATH = BUILD_PAGE;
+/** Procure SaaS checkout lives on the sister site (Phase 2). */
+const PROCURE_SUBSCRIBE_PATH = "/procure/subscribe";
 
-/** Worker CTA: deep link to cli-market.dev/build with plan preselected + modal open. */
+/** CTA: procurecopilot.com/procure/subscribe with plan preselected + modal open. */
 export function buildProcureSubscribeUrl(plan: ProcurePlanSlug): string {
   const params = new URLSearchParams({
-    audience: "procure",
     plan,
     checkout: "open",
   });
-  return `${PROCURE_CHECKOUT_PATH}?${params.toString()}#pricing`;
+  return `${PROCURE_SUBSCRIBE_PATH}?${params.toString()}`;
 }
 
-/** Absolute URL for external sites (procurecopilot.com CTAs). */
 export function buildProcureSubscribeAbsoluteUrl(
   plan: ProcurePlanSlug,
-  origin = "https://cli-market.dev",
+  origin: string = PROCURE_SITE_URL,
 ): string {
   return `${origin.replace(/\/$/, "")}${buildProcureSubscribeUrl(plan)}`;
 }
 
-/** Deep link: ?audience=procure&plan=pro&checkout=open#pricing */
+/** Legacy deep link on cli-market.dev — used only to redirect to procurecopilot.com. */
 export function readProcureCheckoutDeepLink(): {
   plan: ProcurePlanSlug;
   open: boolean;
@@ -46,5 +44,18 @@ export function clearProcureCheckoutQuery(): void {
   const url = new URL(window.location.href);
   url.searchParams.delete("checkout");
   url.searchParams.delete("plan");
+  url.searchParams.delete("audience");
   window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+}
+
+/** Redirect legacy cli-market.dev/?audience=procure links to procurecopilot.com/procure/subscribe. */
+export function redirectLegacyProcureCheckout(): boolean {
+  if (typeof window === "undefined") return false;
+  const link = readProcureCheckoutDeepLink();
+  if (!link) return false;
+  const target = buildProcureSubscribeAbsoluteUrl(link.plan);
+  const url = new URL(target);
+  if (link.open) url.searchParams.set("checkout", "open");
+  window.location.replace(url.toString());
+  return true;
 }

@@ -8,6 +8,7 @@ import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { PROCURE_SITE_URL } from "@/lib/procurePlans";
+import { redirectLegacyProcureCheckout } from "@/lib/procureCheckoutUrl";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
 import {
   PRICING_TABS,
@@ -275,6 +276,8 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
   const activeTab = PRICING_TABS.find((t) => t.id === audience)!;
 
   useEffect(() => {
+    if (redirectLegacyProcureCheckout()) return;
+
     const syncFromLocation = () => {
       const hash = window.location.hash;
       if (isLegacyListedPricingHash(hash)) {
