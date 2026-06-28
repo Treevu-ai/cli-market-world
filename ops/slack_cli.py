@@ -14,6 +14,7 @@ Usage:
   python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX [--bitacora]
   # posts to #cli-market-pro by default
   python3 ops/slack_cli.py activate-pro --email cliente@example.com
+  python3 ops/slack_cli.py activate-procure PCP-XXXXXXXX [--bitacora]
   python3 ops/slack_cli.py verify [--send-test]
 """
 
@@ -174,6 +175,47 @@ def cmd_activate_pro(
     return 0
 
 
+def cmd_activate_procure(
+    request_id: str | None,
+    *,
+    display_name: str | None = None,
+    bitacora: bool,
+    dry_run: bool,
+) -> int:
+    """Activate Procure after manual Yape/Plin payment (wraps ops/activate_procure.py)."""
+    ref = (request_id or "").strip().upper()
+    if not ref:
+        print("Error: provide PCS-/PCP-/PCB-XXXXXXXX", file=sys.stderr)
+        return 1
+
+    args = [sys.executable, str(ROOT / "ops" / "activate_procure.py"), ref]
+    if display_name:
+        args.extend(["--display-name", display_name])
+
+    if dry_run:
+        print("dry-run:", " ".join(args))
+        return 0
+
+    proc = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
+    if proc.stdout:
+        print(proc.stdout, end="")
+    if proc.stderr:
+        print(proc.stderr, file=sys.stderr, end="")
+    if proc.returncode != 0:
+        return proc.returncode
+
+    if bitacora:
+        summary = (proc.stdout or "").strip() or f"Procure activated ({ref})"
+        deliver_to_bitacora(
+            "✅ *Procure activado* (Yape/Plin manual)\n"
+            f"• ref: `{ref}`\n"
+            f"• {summary}\n"
+            "• Cliente: magic link en email → dashboard Procure"
+        )
+        print(f"OK → bitácora ({channel_bitacora()})")
+    return 0
+
+
 def cmd_funnel_digest(*, slack: bool, hours: int) -> int:
     args = [sys.executable, str(ROOT / "ops" / "funnel_digest_daily.py"), "--hours", str(hours)]
     if slack:
@@ -241,6 +283,21 @@ def main() -> int:
     p_ap.add_argument("--bitacora", action="store_true", help="Post confirmation to bitácora Slack")
     p_ap.add_argument("--dry-run", action="store_true", help="Print activate_pro command only")
 
+    p_apc = sub.add_parser(
+        "activate-procure",
+        help="Activate Procure after Yape/Plin payment (ops/activate_procure.py)",
+    )
+    p_apc.add_argument(
+        "target",
+        nargs="?",
+        metavar="PCP-XXXXXXXX",
+        help="Payment ref from Yape/Plin message (PCS-/PCP-/PCB-)",
+    )
+    p_apc.add_argument("--request-id", dest="request_id", help="PCS-/PCP-/PCB-XXXXXXXX")
+    p_apc.add_argument("--display-name", dest="display_name", help="Friendly name for welcome email")
+    p_apc.add_argument("--bitacora", action="store_true", help="Post confirmation to bitácora Slack")
+    p_apc.add_argument("--dry-run", action="store_true", help="Print activate_procure command only")
+
     p_fd = sub.add_parser(
         "funnel-digest",
         help="Adoption digest → #funnel-cli-market (default: no realtime funnel spam)",
@@ -292,6 +349,15 @@ def main() -> int:
             username,
             request_id,
             email,
+            display_name=display_name,
+            bitacora=args.bitacora,
+            dry_run=args.dry_run,
+        )
+    if args.command == "activate-procure":
+        request_id = (args.request_id or args.target or "").strip().upper() or None
+        display_name = (args.display_name or "").strip() or None
+        return cmd_activate_procure(
+            request_id,
             display_name=display_name,
             bitacora=args.bitacora,
             dry_run=args.dry_run,

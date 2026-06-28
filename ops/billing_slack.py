@@ -106,9 +106,14 @@ def format_subscription_message(
             lines.append(f"• monto: S/ {amount_pen:.2f}")
         if amount_usd is not None:
             lines.append(f"• plan: ${amount_usd:.0f}/mes")
-        if (tier or "").strip().lower() == "pro":
+        tier_key = (tier or "").strip().lower()
+        if tier_key == "pro":
             lines.append(
                 f"• activar tras confirmar: `python ops/slack_cli.py activate-pro {ref}`"
+            )
+        elif tier_key.startswith("procure_"):
+            lines.append(
+                f"• activar tras confirmar: `python ops/slack_cli.py activate-procure {ref}`"
             )
         lines.append(
             f"• cliente: `market whoami` cada hora · email hello@cli-market.dev con ref `{ref}`"
