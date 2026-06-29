@@ -6,9 +6,10 @@ tags:
   - landing
   - design-system
   - icp
-status: P0 URGENTE — bloquea merge PR #434 · pendiente implementación
+status: Closed — Shipped v1.0 · PR #434 mergeado 2026-06-27
 owner: Ricardo Cuba
 updated: 2026-06-29
+closed: 2026-06-27
 repos: cli-market-world (landing/)
 parent: docs/prd-landing-icp-hub.md
 related:
@@ -527,3 +528,19 @@ SpokePageShell (brandMode)
 - `SpokeHero` — `HeroBackground` + Garamond headline + eyebrow + chips
 
 **Owner:** Eng + Design · **Deadline:** antes de merge PR #434
+
+---
+
+## Cierre v1.0 — 2026-06-29
+
+**Estado real:** Implementado y mergeado en PR #434 (2026-06-27).
+
+**Entregado:**
+- `SpokePageShell`, `SpokeHero`, `SpokeHubLink`, `SpokeStepsSection`, `SpokeFinalCTA` — todos en `landing/components/spoke/`
+- `spokeConfig.ts` con configuración por ICP (brandMode, hero, CTAs)
+- `/build`, `/intelligence`, `/retailers` usan los componentes canónicos
+- `HeroBackground` + Garamond en todos los spokes vía `SpokeHero`
+- `pt-16`/`pt-24` hacks eliminados → `SpokePageShell` maneja padding
+- Paleta unificada vía `brandMode: "terminal" | "operations"`
+
+**Bloqueante original resuelto:** PR #434 mergeado el 2026-06-27.
