@@ -50,12 +50,12 @@ export default function BudgetSummaryWidget({ apiKey, refreshKey }: Props) {
 
   if (!data) return null;
 
-  const spentPct = data.budget_monthly > 0
-    ? Math.min((data.budget_spent_mtd / data.budget_monthly) * 100, 100)
-    : 0;
+  const monthly = data.budget_monthly ?? 0;
+  const spent = data.budget_spent_mtd ?? 0;
+  const spentPct = monthly > 0 ? Math.min((spent / monthly) * 100, 100) : 0;
   const action = ACTION_LABEL[data.suggested_action] ?? ACTION_LABEL.monitor;
-  const fmt = (n: number) =>
-    n.toLocaleString("es-PE", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const fmt = (n: number | null | undefined) =>
+    (n ?? 0).toLocaleString("es-PE", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
   return (
     <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] p-5 space-y-4">
@@ -67,8 +67,8 @@ export default function BudgetSummaryWidget({ apiKey, refreshKey }: Props) {
       {/* Progress bar */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-sm font-mono">
-          <span className="text-[var(--cm-on-surface)]">{data.currency} {fmt(data.budget_spent_mtd)}</span>
-          <span className="text-[var(--cm-on-surface-variant)]">/ {data.currency} {fmt(data.budget_monthly)}</span>
+          <span className="text-[var(--cm-on-surface)]">{data.currency} {fmt(spent)}</span>
+          <span className="text-[var(--cm-on-surface-variant)]">/ {data.currency} {fmt(monthly)}</span>
         </div>
         <div className="h-2 rounded-full bg-[var(--cm-surface-low)] overflow-hidden">
           <div
@@ -94,7 +94,7 @@ export default function BudgetSummaryWidget({ apiKey, refreshKey }: Props) {
 
       <div className="pt-1 border-t border-[var(--cm-outline-variant)]">
         <p className="text-xs font-mono text-[var(--cm-mint)] tabular-nums">
-          {data.currency} {fmt(data.budget_remaining)} disponibles
+          {data.currency} {fmt(data.budget_remaining ?? 0)} disponibles
         </p>
       </div>
     </div>
