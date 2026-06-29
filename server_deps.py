@@ -13,6 +13,7 @@ Contents:
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import time
 
@@ -24,6 +25,8 @@ from market_core import (
     db_validate_api_key,
 )
 from market_billing import db_get_subscription
+
+logger = logging.getLogger("market.server_deps")
 
 
 # ── Auth tokens ───────────────────────────────────────────────────────────────
@@ -133,10 +136,18 @@ def check_rate_limit(ip: str) -> None:
 # ── Auth header helper ───────────────────────────────────────────────────────
 
 def require_user(authorization: str | None) -> str:
-    """Common pattern: Authorization header → username. Raises 401 if absent."""
+    """Common pattern: Authorization header → username. Raises 401 if absent.
+
+    Also applies per-user rate limiting so account-management endpoints
+    (e.g. /auth/keys, /auth/revoke) can't be hammered by an authenticated
+    user rotating IPs to bypass the IP-only limit.
+    """
     if not authorization:
+        logger.warning("auth.require_user: missing token")
         raise HTTPException(status_code=401, detail="Sin token")
-    return auth_user(authorization.replace("Bearer ", ""))
+    username = auth_user(authorization.replace("Bearer ", ""))
+    check_user_rate_limit(username)
+    return username
 
 
 def require_admin(authorization: str | None) -> str:
@@ -152,6 +163,51 @@ def require_admin(authorization: str | None) -> str:
     if token != DEFAULT_TOKEN:
         raise HTTPException(status_code=401, detail="Admin token invalid")
     return "admin"
+
+
+# ── Per-user rate limiting ────────────────────────────────────────────────────
+
+TIER_LIMITS: dict[str, tuple[int, int]] = {
+    "free":       (1_000,   60),
+    "starter":    (5_000,  120),
+    "pro":       (10_000,  300),
+    "enterprise": (-1,      -1),   # -1 = unlimited
+}
+
+
+def _get_user_tier_limits(username: str) -> tuple[int, int]:
+    """Return (daily_max, per_min_max) from the user's subscription row.
+
+    Delegates to market_billing.db_get_subscription so an expired temporary
+    """
+    sub = db_get_subscription(username)
+    tier = (sub.get("tier") or "free").lower()
+    defaults = TIER_LIMITS.get(tier, TIER_LIMITS["free"])
+    daily = int(sub.get("req_limit_day") or defaults[0])
+    per_min = int(sub.get("req_limit_min") or defaults[1])
+    return daily, per_min
+
+
+def check_user_rate_limit(username: str) -> None:
+    """Apply per-user rate limiting based on subscription tier. Admin bypasses."""
+    from market_core.platform_admin import is_platform_admin
+
+    if is_platform_admin(username):
+        return
+    daily_max, min_max = _get_user_tier_limits(username)
+    if daily_max <= 0 or min_max <= 0:
+        return  # enterprise / unlimited tier
+    try:
+        check_rate_limit_sqlite(
+            f"u:{username}",
+            window_secs=RATE_LIMIT_WINDOW,
+            max_req=min_max,
+            daily_max=daily_max,
+        )
+    except Exception as exc:
+        if getattr(exc, "status_code", 0) == 429:
+            logger.warning("rate_limit.user user=%s", username)
+        raise
 
 
 def require_api_key(authorization: str | None) -> str:
