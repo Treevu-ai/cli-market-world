@@ -9,6 +9,7 @@ import ReceiptScanner from "@/components/ReceiptScanner";
 import BasketOptimizer from "@/components/BasketOptimizer";
 import EcosystemRadarWidget from "@/components/EcosystemRadarWidget";
 import InflationPulseWidget from "@/components/InflationPulseWidget";
+import PriceAlertsWidget from "@/components/PriceAlertsWidget";
 import { API_URL } from "@/lib/api";
 
 type Tab = "canasta" | "radar" | "perfil" | "tickets";
@@ -129,6 +130,9 @@ export default function HouseholdDashboard() {
                     <EcosystemRadarWidget country={profileCountry} />
                     <div className="border-t border-[var(--cm-outline-variant)] pt-6">
                       <InflationPulseWidget country={profileCountry} apiKey={confirmedKey} />
+                    </div>
+                    <div className="border-t border-[var(--cm-outline-variant)] pt-6">
+                      <PriceAlertsWidget apiKey={confirmedKey} country={profileCountry} />
                     </div>
                   </div>
                 ) : tab === "perfil" ? (
