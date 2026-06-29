@@ -6,9 +6,10 @@ tags:
   - landing
   - design-system
   - icp
-status: Draft — bloquea merge PR #434
+status: Closed — Shipped v1.0 · PR #434 mergeado 2026-06-27
 owner: Ricardo Cuba
-updated: 2026-06-27
+updated: 2026-06-29
+closed: 2026-06-27
 repos: cli-market-world (landing/)
 parent: docs/prd-landing-icp-hub.md
 related:
@@ -509,3 +510,37 @@ SpokePageShell (brandMode)
 ---
 
 **Status:** Shipped (Phase A–E) · **QA:** `landing/QA-SPOKE-E.md` · **Merge:** PR #438
+
+---
+
+## Estado v1.0 — 2026-06-29 — P0 URGENTE
+
+**Bloquea:** merge PR #434 (hub ICP Fase 1+2)
+
+**Gaps críticos a resolver antes del merge:**
+- `/retailers`: página legacy completa — reescribir con `SpokePageShell` + `SpokeHero`
+- `/intelligence`: paleta azul `#0369a1` → naranja + mint de `BRAND.md`
+- `/build`: agregar `HeroBackground` + `hero-garamond-headline`
+- Todos los spokes: `pt-16`/`pt-24` hacks → `SpokePageShell` padding canónico
+
+**Componentes a crear:**
+- `SpokePageShell` — wrapper con padding + `ErrorBoundary`
+- `SpokeHero` — `HeroBackground` + Garamond headline + eyebrow + chips
+
+**Owner:** Eng + Design · **Deadline:** antes de merge PR #434
+
+---
+
+## Cierre v1.0 — 2026-06-29
+
+**Estado real:** Implementado y mergeado en PR #434 (2026-06-27).
+
+**Entregado:**
+- `SpokePageShell`, `SpokeHero`, `SpokeHubLink`, `SpokeStepsSection`, `SpokeFinalCTA` — todos en `landing/components/spoke/`
+- `spokeConfig.ts` con configuración por ICP (brandMode, hero, CTAs)
+- `/build`, `/intelligence`, `/retailers` usan los componentes canónicos
+- `HeroBackground` + Garamond en todos los spokes vía `SpokeHero`
+- `pt-16`/`pt-24` hacks eliminados → `SpokePageShell` maneja padding
+- Paleta unificada vía `brandMode: "terminal" | "operations"`
+
+**Bloqueante original resuelto:** PR #434 mergeado el 2026-06-27.

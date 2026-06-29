@@ -49,3 +49,6 @@ docs/financial-services/
 
 # Build artifacts
 .wheel-check/
+
+# Cloned dependency repos (local dev only)
+.deps/
