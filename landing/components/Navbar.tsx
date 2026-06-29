@@ -81,18 +81,6 @@ export default function Navbar() {
               {isES ? item.es : item.en}
             </a>
           ))}
-          <a
-            href="/contact"
-            className="kimi-nav-link text-xs whitespace-nowrap transition-colors text-[var(--cm-text-secondary)] hover:text-[var(--cm-on-surface)]"
-          >
-            {isES ? "Contacto" : "Contact"}
-          </a>
-          <a
-            href={CTA.forRetailers.href}
-            className="kimi-nav-link text-xs text-[var(--cm-mint)] font-medium whitespace-nowrap hover:opacity-80 transition-opacity"
-          >
-            {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
-          </a>
         </div>
 
         <div className="hidden md:flex items-center gap-3 shrink-0">
@@ -138,10 +126,6 @@ export default function Navbar() {
               {isES ? item.es : item.en}
             </a>
           ))}
-          <a href={CTA.forRetailers.href} onClick={close}
-             className="text-sm font-medium text-[var(--cm-mint)] hover:opacity-80 transition-opacity">
-            {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
-          </a>
           <a href={CTA.contact.href} onClick={close}
              className="text-sm font-medium text-[var(--cm-text-secondary)] hover:text-[var(--cm-on-surface)] transition-colors">
             {isES ? CTA.contact.es : CTA.contact.en}
