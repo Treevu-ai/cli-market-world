@@ -8,12 +8,12 @@ export type NavItem = {
   external?: boolean;
 };
 
-/** Top nav — ICP hub (Build · Procure · Intelligence · Docs). */
+/** Top nav — ICP hub (Build · Procure · Intelligence · Retailers). */
 export const TOP_NAV: NavItem[] = [
   { id: "build", es: "Build", en: "Build", href: "/build" },
   { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
   { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
-  { id: "docs", es: "Docs", en: "Docs", href: "/docs" },
+  { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
 ];
 
 /** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */
