@@ -5,9 +5,10 @@ tags:
   - prd
   - observatory
   - telemetry
-status: P0 — listo para implementar
+status: Closed — Shipped v1.0 · 2026-06-29
 owner: Ricardo Cuba
-updated: 2026-06-09
+updated: 2026-06-29
+closed: 2026-06-29
 repos: cli-market-world, cli-market-backend, cli-market-core, cli-market-index
 supersedes: "PRD — CLI Market Observatory v1.docx (draft)"
 ---
@@ -534,3 +535,19 @@ Durante P0 **no** se desarrolla:
 | Executive dashboard → command-control | Un solo panel founder |
 | Single-repo assumption | §0 ecosistema 4 repos + mirror world/backend |
 | `market_observatory` solo en world | Primitivas en core; API en backend+world |
+
+---
+
+## Cierre v1.0 — 2026-06-29
+
+**Entregado:**
+- `ObservatoryMiddleware` en `market_server.py` — captura cada request MCP con `agent_id`, `session_id`, `tool_name`, latencia, status
+- `agent_events` table con columna `session_id` (migración en lifespan)
+- APIs `/analytics/adoption`, `/analytics/funnel`, `/analytics/stats` activas en producción
+- `ensure_observatory_schema()` en lifespan — idempotente
+- Adoption Index v1 operativo (`agent_usage_proxy`)
+
+**Pendiente P1:**
+- Dashboard Observatory en command-control (sub-vista)
+- Cohorte de retención D7/D30 sobre primera llamada MCP exitosa
+- MAA ejecutivo en `/stats` público

@@ -5,9 +5,10 @@ tags:
   - prd
   - intelligence
   - price-pulse
-status: Draft v1.0 — P0 shipped
+status: Closed P0 — Shipped v1.0 · 2026-06-29 · P1 abierto
 owner: Head of Product + Lead Economist
-updated: 2026-06-24
+updated: 2026-06-29
+closed_p0: 2026-06-29
 repos: cli-market-core, cli-market-backend, cli-market-world
 methodology: docs/methodology.md
 ---
@@ -171,3 +172,19 @@ El reporte v2 está listo para uso institucional y prensa cuando:
 4. **World sync** — `price_pulse_client.py`, agent prompts, `market_cli.py` labels → nomenclatura RPV
 
 Ver también: [DATA-MOAT-INDICATORS.md](DATA-MOAT-INDICATORS.md) · [price-pulse-workflow.md](agents/price-pulse-workflow.md)
+
+---
+
+## Cierre P0 — 2026-06-29
+
+**Entregado (P0):**
+- Renombre RPV → "variación de precio retail observado online" (§4.1) ✅
+- Comparación IPC redefinida con disclaimer legal (§4.2) ✅
+- BSI fórmula + escala 0–100 documentada en `docs/methodology.md` (§4.3) ✅
+- Coverage & Freshness table en `/analytics/stats` (§4.7) ✅
+- Nomenclatura actualizada en API y dashboard
+
+**Próximo sprint P1:**
+- §4.4 Dispersion index auditado por economista externo
+- §4.5 Price anomaly detection (outlier removal)
+- §4.6 Estacionalidad en series de tiempo

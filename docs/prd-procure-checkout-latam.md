@@ -6,9 +6,10 @@ tags:
   - procure
   - billing
   - latam
-status: Draft — In Review
+status: Aprobado — Sprint 1 pendiente
 author: Alex (PM) / Ricardo Cuba
-updated: 2026-06-25
+updated: 2026-06-29
+approved: 2026-06-29
 version: 1.0
 stakeholders: Eng Lead, Design, CS, GTM outbound horeca
 repos: cli-market-world, cli-market-backend, cli-market-core, procure-copilot
@@ -213,3 +214,22 @@ Ver plan detallado: [`docs/plan-procure-mercadopago-subscribe.md`](./plan-procur
 - Ops: `ops/CLIENT_PAYMENT_JOURNEY.md`, `ops/BILLING_MANUAL.md`, `ops/payments_e2e.py`
 - Pricing: `docs/pricing-strategy.md`
 - Implementación: `docs/plan-procure-mercadopago-subscribe.md`
+
+---
+
+## Aprobación v1.0 — 2026-06-29
+
+**Aprobado para Sprint 1:**
+- Mercado Pago Fase 1 (Preference one-shot) en suscripción Procure
+- Paridad CTA Worker: reemplazar "Agendar" por self-serve + deep link a checkout
+- Magic link onboarding post-pago (JWT + Worker callback)
+- Yape/Plin como método de pago en plan Compare ($29)
+
+**Bloqueantes a resolver antes de sprint:**
+- PayPal plans: confirmar sin cambio Fase 1
+- Grace period mes 2: definir con CS antes de Fase 2
+- JWT signing key: aprovisionar en Railway
+
+**Fase 2 post-Sprint 1:**
+- MP preapproval (suscripción recurrente nativa)
+- Renovación automática

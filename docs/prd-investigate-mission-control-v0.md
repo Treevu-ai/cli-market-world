@@ -6,9 +6,10 @@ tags:
   - cli
   - agentos
   - intelligence
-status: Draft — listo para review
+status: Aprobado P1 — Sprint pendiente
 owner: Ricardo Cuba
-updated: 2026-06-13
+updated: 2026-06-29
+approved: 2026-06-29
 duration: 2 semanas (10 días hábiles)
 repos: cli-market-core, cli-market-world
 depends_on:
@@ -251,3 +252,21 @@ Recommendations v0 = **template rules** on spread/inflation thresholds — no LL
 ## 10. Press release (one paragraph)
 
 CLI Market OS v0 convierte la terminal en un centro de mando para agentes comerciales LATAM: un solo comando `investigate` entrega comparación multi-retailer, spreads y señales de inflación sobre más de 54 mil precios verificados, mientras Mission Control muestra frescura de datos y salud MCP al abrir la sesión — la misma infraestructura que los developers ya usan vía API y MCP, ahora orchestrada para inteligencia de mercado en segundos.
+
+---
+
+## Aprobación P1 — 2026-06-29
+
+**Aprobado para próximo sprint (2 semanas):**
+- `market investigate <query>` — misión estructurada con insights ≥3 en <90s
+- Mission Control TUI v0 — shell interactivo sobre primitivas existentes
+- Depende de: Observatory P0 ✅ Shipped, T-173 core 1.9.35 ✅
+
+**Precondiciones verificadas:**
+- `market search`, `market compare`, `market intel *` disponibles
+- Observatory MAA activo en producción
+- `market shell` existente como base para Mission Control
+
+**Targets sprint:**
+- Time-to-insight: <90s en demo path
+- Mission adoption: ≥15% Pro/Starter con ≥1 investigate/semana (baseline a medir en sprint)
