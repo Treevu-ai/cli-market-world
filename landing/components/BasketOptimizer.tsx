@@ -15,12 +15,20 @@ type Recommendation = {
   items?: { name: string; store: string; price: number; currency: string; unit_price?: number; unit?: string }[];
 };
 
-type ProductLink = { name: string; url: string; store?: string };
+type ProductLink = { requested: string; resolved_name?: string; url: string; store?: string };
+
+type ActionLink = {
+  type: "retailer_deeplink" | "export_list" | string;
+  url: string;
+  store?: string;
+  label?: string;
+  token?: string;
+};
 
 type ResultData = {
   status?: string;
   recommendation?: Recommendation;
-  action_links?: { label: string; url: string }[];
+  action_links?: ActionLink[];
   product_links?: ProductLink[];
   substitutes?: { original: string; substitute: string; reason: string }[];
 };
@@ -175,7 +183,7 @@ export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE"
             <div className="divide-y divide-[var(--cm-outline-variant)]">
               {rec.items!.map((it, i) => {
                 const productLink = result?.product_links?.find(
-                  (pl) => pl.name.toLowerCase() === it.name.toLowerCase()
+                  (pl) => pl.requested?.toLowerCase() === it.name.toLowerCase()
                 );
                 return (
                   <div key={i} className="px-4 py-2.5 flex items-center gap-3">
@@ -225,36 +233,45 @@ export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE"
           )}
 
           {/* Action links — primary CTA + secondary */}
-          {(result?.action_links ?? []).length > 0 && (
-            <div className="p-4 space-y-3">
-              {/* Primary checkout CTA */}
-              <a
-                href={result!.action_links![0].url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] font-semibold font-mono text-sm hover:opacity-90 transition-opacity"
-              >
-                <span>Ir al carrito — {rec.primary_store_name ?? rec.primary_store}</span>
-                <span className="text-base leading-none">→</span>
-              </a>
-              {/* Secondary links */}
-              {result!.action_links!.slice(1).length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {result!.action_links!.slice(1).map((lk, i) => (
-                    <a
-                      key={i}
-                      href={lk.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--cm-outline-variant)] text-xs font-mono text-[var(--cm-on-surface-variant)] hover:border-[var(--cm-mint)] hover:text-[var(--cm-on-surface)] transition-colors"
-                    >
-                      {lk.label} ↗
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {(result?.action_links ?? []).length > 0 && (() => {
+            const resolveUrl = (url: string) =>
+              url.startsWith("/") ? `${API_URL}${url}` : url;
+            const primaryLink = result!.action_links!.find((lk) => lk.type === "retailer_deeplink")
+              ?? result!.action_links![0];
+            const secondaryLinks = result!.action_links!.filter((lk) => lk !== primaryLink);
+            return (
+              <div className="p-4 space-y-3">
+                <a
+                  href={resolveUrl(primaryLink.url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[var(--cm-mint)] text-[var(--cm-on-mint)] font-semibold font-mono text-sm hover:opacity-90 transition-opacity"
+                >
+                  <span>Ir al carrito — {rec.primary_store_name ?? rec.primary_store}</span>
+                  <span className="text-base leading-none">→</span>
+                </a>
+                {secondaryLinks.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {secondaryLinks.map((lk, i) => {
+                      const secLabel = lk.label
+                        ?? (lk.type === "export_list" ? "Exportar lista" : lk.store ?? lk.type);
+                      return (
+                        <a
+                          key={i}
+                          href={resolveUrl(lk.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--cm-outline-variant)] text-xs font-mono text-[var(--cm-on-surface-variant)] hover:border-[var(--cm-mint)] hover:text-[var(--cm-on-surface)] transition-colors"
+                        >
+                          {secLabel} ↗
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
