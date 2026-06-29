@@ -1,20 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HouseholdSetupForm from "@/components/HouseholdSetupForm";
 import BudgetSummaryWidget from "@/components/BudgetSummaryWidget";
 import ReceiptScanner from "@/components/ReceiptScanner";
 import BasketOptimizer from "@/components/BasketOptimizer";
+import EcosystemRadarWidget from "@/components/EcosystemRadarWidget";
+import InflationPulseWidget from "@/components/InflationPulseWidget";
+import { API_URL } from "@/lib/api";
 
-type Tab = "canasta" | "perfil" | "tickets";
+type Tab = "canasta" | "radar" | "perfil" | "tickets";
 
 export default function HouseholdDashboard() {
   const [apiKey, setApiKey] = useState("");
   const [confirmedKey, setConfirmedKey] = useState("");
   const [tab, setTab] = useState<Tab>("canasta");
   const [budgetRefresh, setBudgetRefresh] = useState(0);
+  const [profileCountry, setProfileCountry] = useState("PE");
 
   const isAuth = !!confirmedKey;
 
@@ -22,6 +26,27 @@ export default function HouseholdDashboard() {
     if (apiKey.trim().startsWith("sk-") || apiKey.trim().startsWith("demo-")) {
       setConfirmedKey(apiKey.trim());
     }
+  };
+
+  // Load country from household profile on auth
+  useEffect(() => {
+    if (!confirmedKey) return;
+    fetch(`${API_URL}/v1/household`, {
+      headers: { Authorization: `Bearer ${confirmedKey}` },
+    })
+      .then((r) => r.json())
+      .then((b) => {
+        const country = (b?.data ?? b)?.country;
+        if (country) setProfileCountry(country);
+      })
+      .catch(() => {});
+  }, [confirmedKey, budgetRefresh]);
+
+  const TAB_LABELS: Record<Tab, string> = {
+    canasta: "Canasta",
+    radar: "Radar",
+    perfil: "Perfil",
+    tickets: "Mis tickets",
   };
 
   return (
@@ -37,7 +62,7 @@ export default function HouseholdDashboard() {
               Perfil de hogar y tickets
             </h1>
             <p className="mt-2 text-sm text-[var(--cm-on-surface-variant)]">
-              Tu presupuesto, restricciones y tickets de compra — en un solo lugar.
+              Tu presupuesto, canasta, radar de retailers y tickets — en un solo lugar.
             </p>
           </div>
 
@@ -79,7 +104,7 @@ export default function HouseholdDashboard() {
 
               {/* Tabs */}
               <div className="flex gap-1 p-1 rounded-xl bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)]">
-                {(["canasta", "perfil", "tickets"] as Tab[]).map((t) => (
+                {(["canasta", "radar", "perfil", "tickets"] as Tab[]).map((t) => (
                   <button
                     key={t}
                     type="button"
@@ -90,7 +115,7 @@ export default function HouseholdDashboard() {
                         : "text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]"
                     }`}
                   >
-                    {t === "canasta" ? "Canasta" : t === "perfil" ? "Perfil" : "Mis tickets"}
+                    {TAB_LABELS[t]}
                   </button>
                 ))}
               </div>
@@ -98,11 +123,21 @@ export default function HouseholdDashboard() {
               {/* Tab content */}
               <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] p-6">
                 {tab === "canasta" ? (
-                  <BasketOptimizer apiKey={confirmedKey} country="PE" />
+                  <BasketOptimizer apiKey={confirmedKey} country={profileCountry} />
+                ) : tab === "radar" ? (
+                  <div className="space-y-8">
+                    <EcosystemRadarWidget country={profileCountry} />
+                    <div className="border-t border-[var(--cm-outline-variant)] pt-6">
+                      <InflationPulseWidget country={profileCountry} apiKey={confirmedKey} />
+                    </div>
+                  </div>
                 ) : tab === "perfil" ? (
                   <HouseholdSetupForm
                     apiKey={confirmedKey}
-                    onSaved={() => setBudgetRefresh((n) => n + 1)}
+                    onSaved={(country) => {
+                      setProfileCountry(country);
+                      setBudgetRefresh((n) => n + 1);
+                    }}
                   />
                 ) : (
                   <ReceiptScanner apiKey={confirmedKey} />

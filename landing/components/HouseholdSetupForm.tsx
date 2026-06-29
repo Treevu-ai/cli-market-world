@@ -47,7 +47,7 @@ const GOALS_LABELS: Record<string, string> = {
   comprar_local: "Comprar local",
 };
 
-type Props = { apiKey: string; onSaved?: () => void };
+type Props = { apiKey: string; onSaved?: (country: string) => void };
 
 export default function HouseholdSetupForm({ apiKey, onSaved }: Props) {
   const [profile, setProfile] = useState<HouseholdProfile>(DEFAULT);
@@ -116,7 +116,7 @@ export default function HouseholdSetupForm({ apiKey, onSaved }: Props) {
         throw new Error(b.detail ?? `HTTP ${r.status}`);
       }
       setStatus("saved");
-      onSaved?.();
+      onSaved?.(profile.country);
       setTimeout(() => setStatus("idle"), 2500);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");

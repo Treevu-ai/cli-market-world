@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_URL } from "@/lib/api";
 
 type Item = { name: string; qty: number };
@@ -29,6 +29,8 @@ const COUNTRIES = ["PE", "MX", "CO", "AR", "CL", "BO", "EC", "UY"];
 export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE" }: Props) {
   const [items, setItems] = useState<Item[]>([{ name: "", qty: 1 }]);
   const [country, setCountry] = useState(defaultCountry);
+
+  useEffect(() => { setCountry(defaultCountry); }, [defaultCountry]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResultData | null>(null);
   const [error, setError] = useState("");
