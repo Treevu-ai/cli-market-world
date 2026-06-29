@@ -1,7 +1,7 @@
 import { MARKET_STATS } from "@/lib/marketStats";
 import { CTA } from "@/lib/ctaCopy";
 
-export type SpokeIcp = "build" | "intelligence" | "retailers";
+export type SpokeIcp = "build" | "intelligence" | "retailers" | "cost-of-living";
 
 export type SpokeBrandMode = "terminal" | "operations";
 
@@ -52,6 +52,29 @@ export type SpokeFinalCtaConfig = {
 };
 
 export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
+  "cost-of-living": {
+    id: "cost-of-living-final",
+    eyebrow_es: "GRATIS",
+    eyebrow_en: "FREE",
+    titleBefore_es: "Empieza a optimizar ",
+    titleAccent_es: "tu canasta",
+    titleAfter_es: " hoy",
+    titleBefore_en: "Start optimizing ",
+    titleAccent_en: "your basket",
+    titleAfter_en: " today",
+    body_es: "Crea tu cuenta gratis — score de asequibilidad, sustitutos y canasta optimizada sin tarjeta.",
+    body_en: "Create your free account — affordability score, substitutes, and optimized basket with no credit card.",
+    primaryCta: {
+      es: "Crear cuenta gratis →",
+      en: "Create free account →",
+      href: CTA.getApiKey.href,
+    },
+    secondaryCta: {
+      es: "Ver planes →",
+      en: "View plans →",
+      href: "#cost-of-living-pricing",
+    },
+  },
   build: {
     id: "build-final",
     eyebrow_es: "LISTO",
@@ -124,6 +147,40 @@ export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
 };
 
 export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
+  "cost-of-living": {
+    id: "cost-of-living",
+    brandMode: "terminal",
+    heroBackgroundDense: false,
+    hero: {
+      eyebrow_es: "COST OF LIVING OS",
+      eyebrow_en: "COST OF LIVING OS",
+      titleBefore_es: "¿Cuánto cuesta ",
+      titleAccent_es: "vivir en LATAM",
+      titleAfter_es: "?",
+      titleBefore_en: "What does it cost to ",
+      titleAccent_en: "live in LATAM",
+      titleAfter_en: "?",
+      subhead_es:
+        "Score de asequibilidad, canasta optimizada con TCO real y sustitutos inteligentes — desde precios verificados de góndola.",
+      subhead_en:
+        "Affordability score, optimized basket with real TCO, and smart substitutes — from verified shelf prices.",
+      chips: [
+        { label_es: "Affordability score en vivo", label_en: "Live affordability score" },
+        { label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`, label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices` },
+        { label_es: "Free · Starter $9 · Pro $49/mes", label_en: "Free · Starter $9 · Pro $49/mo" },
+      ],
+      primaryCta: {
+        es: "Ver mi canasta →",
+        en: "Optimize my basket →",
+        href: CTA.getApiKey.href,
+      },
+      secondaryCta: {
+        es: "market optimize leche:2 arroz:1kg",
+        en: "market optimize milk:2 rice:1kg",
+        href: "#cli-demo",
+      },
+    },
+  },
   build: {
     id: "build",
     brandMode: "terminal",

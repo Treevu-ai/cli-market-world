@@ -6,9 +6,10 @@ tags:
   - procure
   - billing
   - latam
-status: Draft — In Review
+status: Aprobado — Sprint 1 desbloqueado · decisiones cerradas 2026-06-29
 author: Alex (PM) / Ricardo Cuba
-updated: 2026-06-25
+updated: 2026-06-29
+approved: 2026-06-29
 version: 1.0
 stakeholders: Eng Lead, Design, CS, GTM outbound horeca
 repos: cli-market-world, cli-market-backend, cli-market-core, procure-copilot
@@ -187,9 +188,9 @@ Ver plan detallado: [`docs/plan-procure-mercadopago-subscribe.md`](./plan-procur
 
 **Open questions** (resolver antes de dev):
 
-- [ ] ¿Mismo tipo de cambio `PRO_PEN_PER_USD` para Procure o tabla por tier? — **Owner: CFO** — **Deadline: antes de sprint**
-- [ ] ¿Yape manual en Procure desde día 1 o solo MP hosted? — **Recomendación: MP día 1, manual igual que Build** — **Owner: PM**
-- [ ] ¿Grace period si no renueva mes 2? — **Owner: PM/CS** — **Deadline: antes de Fase 2**
+- [x] ¿Mismo tipo de cambio `PRO_PEN_PER_USD` para Procure o tabla por tier? → **`PRO_PEN_PER_USD` compartido** (2026-06-29)
+- [x] ¿Yape manual en Procure desde día 1 o solo MP hosted? → **Solo MP hosted Fase 1** (2026-06-29)
+- [x] ¿Grace period si no renueva mes 2? → **7 días** con emails D-3/D-0/D+3/D+7 (2026-06-29)
 
 ---
 
@@ -213,3 +214,32 @@ Ver plan detallado: [`docs/plan-procure-mercadopago-subscribe.md`](./plan-procur
 - Ops: `ops/CLIENT_PAYMENT_JOURNEY.md`, `ops/BILLING_MANUAL.md`, `ops/payments_e2e.py`
 - Pricing: `docs/pricing-strategy.md`
 - Implementación: `docs/plan-procure-mercadopago-subscribe.md`
+
+---
+
+## Aprobación v1.0 — 2026-06-29
+
+**Aprobado para Sprint 1:**
+- Mercado Pago Fase 1 (Preference one-shot) en suscripción Procure
+- Paridad CTA Worker: reemplazar "Agendar" por self-serve + deep link a checkout
+- Magic link onboarding post-pago (JWT + Worker callback)
+- Yape/Plin como método de pago en plan Compare ($29)
+
+**Decisiones cerradas 2026-06-29:**
+
+| # | Decisión | Elegida | Detalle |
+|---|----------|---------|---------|
+| 1 | FX PEN | **A — Mismo `PRO_PEN_PER_USD`** | Un solo env var compartido con Build Pro |
+| 2 | Yape/Plin manual | **A — Solo MP hosted día 1** | Manual diferido a Fase 2 si hay demanda |
+| 3 | Grace period | **A — 7 días** | Emails D-3, D-0, D+3, D+7 → downgrade |
+| 4 | Return URL post-pago | **B — Landing bienvenida** | `procurecopilot.com/welcome?plan=X` (dominio propio, no Worker) |
+| 5 | CTA Worker/landing | **B — Dos botones** | "Suscribir ahora" (primario) + "Agendar demo" (secundario) en todos los planes |
+
+**Nota dominio:** ya no se usa `procure-copilot.workers.dev` — dominio propio es `procurecopilot.com`.
+
+**Bloqueantes resueltos — sprint puede arrancar.**
+
+**Fase 2 post-Sprint 1:**
+- MP preapproval (suscripción recurrente nativa)
+- Renovación automática + emails D-3/D-0/grace
+- Yape/Plin manual si hay demanda post-Fase 1

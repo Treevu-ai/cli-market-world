@@ -6,9 +6,10 @@ tags:
   - landing
   - gtm
   - icp
-status: In Development — Fase 1+2 shipped 2026-06-27
+status: Fase 1+2 Closed — Fase 3 pendiente
 owner: Ricardo Cuba
-updated: 2026-06-27
+updated: 2026-06-29
+closed_fase1_2: 2026-06-27
 repos: cli-market-world (landing/)
 supersedes: diagnóstico conversación 2026-06-27 · fragmentos de docs/ops/phase4-i18n-landing.md
 related:
@@ -474,3 +475,21 @@ Criterios mínimos pre-merge: Fase A (`SpokePageShell` + `SpokeHero`) + Fase B (
 ---
 
 **Status:** In Development — Fase 1+2 shipped · **Merge bloqueado** hasta spoke design Fase A+B · Ver PRD design system
+
+---
+
+## Cierre Fase 1+2 — 2026-06-29
+
+**Entregado:**
+- Hub router `/` con selector de ICP (Build / Procure / Intelligence / Retailers)
+- Spokes: `/build`, `/intelligence`, `/retailers` como rutas dedicadas
+- Hero Garamond/Geist + `HeroBackground` en hub
+- Proof chips compartidos (métricas, trust)
+- CTAs por ICP en lugar de CTA global Get API Key
+- SideNav simplificado
+
+**Fase 3 pendiente:**
+- Polish visual completo + GTM sync
+- A/B test conversión hub vs monolítico
+- Spoke Design System (ver `prd-landing-spoke-design-system.md` — P0 urgente)
+- Open Questions §12 resueltas: spoke Build, sunset Procure panel, SideNav global
