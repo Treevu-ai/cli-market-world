@@ -87,15 +87,15 @@ export default function Navbar() {
           >
             {isES ? "Contacto" : "Contact"}
           </a>
-        </div>
-
-        <div className="hidden md:flex items-center gap-3 shrink-0">
           <a
             href={CTA.forRetailers.href}
             className="kimi-nav-link text-xs text-[var(--cm-mint)] font-medium whitespace-nowrap hover:opacity-80 transition-opacity"
           >
             {isES ? CTA.forRetailers.es : CTA.forRetailers.en}
           </a>
+        </div>
+
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           <button type="button" onClick={() => setLang(isES ? "en" : "es")}
             aria-label={isES ? "Switch to English" : "Cambiar a Español"}
             className="kimi-nav-link text-xs text-[var(--cm-text-secondary)] hover:text-[var(--cm-on-surface)] cursor-pointer transition-colors">
