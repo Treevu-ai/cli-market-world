@@ -6,13 +6,14 @@ import Footer from "@/components/Footer";
 import HouseholdSetupForm from "@/components/HouseholdSetupForm";
 import BudgetSummaryWidget from "@/components/BudgetSummaryWidget";
 import ReceiptScanner from "@/components/ReceiptScanner";
+import BasketOptimizer from "@/components/BasketOptimizer";
 
-type Tab = "perfil" | "tickets";
+type Tab = "canasta" | "perfil" | "tickets";
 
 export default function HouseholdDashboard() {
   const [apiKey, setApiKey] = useState("");
   const [confirmedKey, setConfirmedKey] = useState("");
-  const [tab, setTab] = useState<Tab>("perfil");
+  const [tab, setTab] = useState<Tab>("canasta");
   const [budgetRefresh, setBudgetRefresh] = useState(0);
 
   const isAuth = !!confirmedKey;
@@ -78,25 +79,27 @@ export default function HouseholdDashboard() {
 
               {/* Tabs */}
               <div className="flex gap-1 p-1 rounded-xl bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)]">
-                {(["perfil", "tickets"] as Tab[]).map((t) => (
+                {(["canasta", "perfil", "tickets"] as Tab[]).map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setTab(t)}
-                    className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold transition-colors capitalize ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-mono font-semibold transition-colors ${
                       tab === t
                         ? "bg-[var(--cm-surface-low)] text-[var(--cm-on-surface)] shadow-sm"
                         : "text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]"
                     }`}
                   >
-                    {t === "perfil" ? "Perfil" : "Mis tickets"}
+                    {t === "canasta" ? "Canasta" : t === "perfil" ? "Perfil" : "Mis tickets"}
                   </button>
                 ))}
               </div>
 
               {/* Tab content */}
               <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] p-6">
-                {tab === "perfil" ? (
+                {tab === "canasta" ? (
+                  <BasketOptimizer apiKey={confirmedKey} country="PE" />
+                ) : tab === "perfil" ? (
                   <HouseholdSetupForm
                     apiKey={confirmedKey}
                     onSaved={() => setBudgetRefresh((n) => n + 1)}
