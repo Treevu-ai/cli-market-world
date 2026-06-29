@@ -41,6 +41,12 @@ export default function Footer() {
           <a href="/intelligence" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
             Intelligence
           </a>
+          <a href="/cost-of-living" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+            Cost of Living OS
+          </a>
+          <a href="/dashboard/household" className="text-sm text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors">
+            {isES ? "Mi hogar" : "My household"}
+          </a>
         </div>
 
         <div className="flex flex-col gap-3">

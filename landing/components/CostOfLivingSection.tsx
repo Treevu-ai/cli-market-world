@@ -113,6 +113,22 @@ export default function CostOfLivingSection() {
               ? `Actualizado cada 4h · fuente: ${" "}góndola verificada CLI Market`
               : `Refreshed every 4h · source: CLI Market verified shelf`}
           </p>
+
+          {/* Dashboard CTA */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href="/dashboard/household"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold px-5 py-2.5 hover:opacity-90 transition-opacity"
+            >
+              {isES ? "Configurar mi hogar →" : "Set up my household →"}
+            </a>
+            <a
+              href="/dashboard/household#tickets"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--cm-outline-variant)] text-sm font-mono text-[var(--cm-on-surface-variant)] px-5 py-2.5 hover:border-[var(--cm-mint)] hover:text-[var(--cm-on-surface)] transition-colors"
+            >
+              {isES ? "Subir ticket de compra" : "Upload receipt"}
+            </a>
+          </div>
         </div>
       </section>
 

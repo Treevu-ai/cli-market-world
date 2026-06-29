@@ -8,11 +8,12 @@ export type NavItem = {
   external?: boolean;
 };
 
-/** Top nav — ICP hub (Build · Procure · Intelligence · Retailers). */
+/** Top nav — ICP hub (Build · Procure · Intelligence · Cost of Living · Retailers). */
 export const TOP_NAV: NavItem[] = [
   { id: "build", es: "Build", en: "Build", href: "/build" },
   { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
   { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
+  { id: "cost-of-living", es: "Cost of Living", en: "Cost of Living", href: "/cost-of-living" },
   { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
 ];
 
