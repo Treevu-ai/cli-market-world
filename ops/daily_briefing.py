@@ -497,6 +497,29 @@ def _slack_configured() -> bool:
     )
 
 
+def _read_revenue_from_gtm_hub() -> dict:
+    """Lee tabla Revenue de cli-market-content/strategy/GTM-Hub.md."""
+    try:
+        gtm = content_root() / "strategy" / "GTM-Hub.md"
+        if not gtm.exists():
+            return {}
+        text = gtm.read_text(encoding="utf-8")
+        result = {}
+        for line in text.splitlines():
+            if "**MRR total**" in line:
+                parts = [p.strip() for p in line.split("|")]
+                result["mrr"] = parts[2] if len(parts) > 2 else None
+            elif "**ARR implícito**" in line:
+                parts = [p.strip() for p in line.split("|")]
+                result["arr"] = parts[2] if len(parts) > 2 else None
+            elif "Clientes activos (pagos)" in line:
+                parts = [p.strip() for p in line.split("|")]
+                result["clientes"] = parts[2] if len(parts) > 2 else None
+        return result
+    except Exception:
+        return {}
+
+
 def build_slack_product_message(
     ds: str,
     data: dict,
@@ -524,6 +547,18 @@ def build_slack_product_message(
         monday.tldr(data),
         "",
     ]
+
+    revenue = _read_revenue_from_gtm_hub()
+    if revenue:
+        mrr = revenue.get("mrr") or "[ACTUALIZAR]"
+        arr = revenue.get("arr") or "[ACTUALIZAR]"
+        clientes = revenue.get("clientes") or "[ACTUALIZAR]"
+        needs_update = "[ACTUALIZAR]" in f"{mrr}{arr}{clientes}"
+        rev_icon = "⚠️" if needs_update else "💰"
+        lines.append(f"{rev_icon} *Revenue* — MRR: *{mrr}* · ARR: *{arr}* · Clientes pagos: *{clientes}*")
+        if needs_update:
+            lines.append("_→ Actualizar en `strategy/GTM-Hub.md` › Revenue — tabla viva_")
+        lines.append("")
 
     try:
         from market_adoption import adoption_slack_lines
