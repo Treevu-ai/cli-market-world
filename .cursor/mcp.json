@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "cli-market": {
-      "url": "https://cli-market-production.up.railway.app/mcp?token=${env:MARKET_API_TOKEN}"
+      "url": "https://cli-market-api.fly.dev/mcp?token=${env:MARKET_API_TOKEN}"
     }
   }
 }
