@@ -545,7 +545,12 @@ def cmd_compare(args):
             if sk not in seen:
                 all_stores.append(sk)
                 seen.add(sk)
-    display_stores = all_stores[:6]
+    # Always include stores that are "best" for any product so the Mejor column
+    # is never pointing at a store with no visible price column.
+    best_stores = {item.get("best_store") for item in comp if item.get("best_store")}
+    priority = [s for s in all_stores if s in best_stores]
+    rest = [s for s in all_stores if s not in best_stores]
+    display_stores = (priority + rest)[:max(6, len(priority))]
     table = Table(title=f'[bold white]Comparativa: "{args.query}"[/]', border_style=ui.TABLE_BORDER)
     table.add_column("#", style="dim", width=3, justify="right")
     table.add_column("Producto", style="white", max_width=30, no_wrap=False)
