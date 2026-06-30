@@ -996,6 +996,67 @@ def cmd_discover(args):
     console.print("\n[dim]market search --country PE · market compare --line super[/]")
 
 
+def cmd_stores(args):
+    """List retailers from GET /stores (filterable by country and line)."""
+    country = (getattr(args, "country", None) or "").upper() or None
+    line = getattr(args, "line", None) or None
+    qs_parts: list[str] = []
+    if country:
+        qs_parts.append(f"country={country}")
+    if line:
+        qs_parts.append(f"line={line}")
+    path = "/stores" + ("?" + "&".join(qs_parts) if qs_parts else "")
+    data = cli_api("GET", path)
+    stores = data.get("stores", {})
+    total = int(data.get("total", len(stores)))
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(
+            ui.json_response(
+                True,
+                {"stores": stores, "total": total, "country": country, "line": line},
+                next_commands=["market stores --country PE", "market search --country PE"],
+            ),
+            console,
+        )
+        return
+
+    title = "[bold #3cffd0]Retailers"
+    if country:
+        country_name = COUNTRIES.get(country, {}).get("name", country)
+        title += f" — {country_name}"
+    if line:
+        line_name = LINES.get(line, {}).get("name", line)
+        title += f" · {line_name}"
+    table = Table(title=title + "[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("ID", style="dim")
+    table.add_column("Nombre" if not ui.is_en() else "Name", style="bold")
+    table.add_column("País" if not ui.is_en() else "Country")
+    table.add_column("Línea" if not ui.is_en() else "Line")
+    table.add_column("Moneda" if not ui.is_en() else "Currency", justify="center")
+
+    for store_id, info in sorted(
+        stores.items(),
+        key=lambda item: (item[1].get("country", ""), item[1].get("name", "")),
+    ):
+        line_name = info.get("line_name") or LINES.get(info.get("line", ""), {}).get("name", info.get("line", ""))
+        table.add_row(
+            store_id,
+            info.get("name", store_id),
+            info.get("country", ""),
+            line_name or "",
+            info.get("currency", ""),
+        )
+    console.print()
+    console.print(table)
+    hint = (
+        f"\n[dim]{total} retailers · market search --country PE \"leche\"[/]"
+        if not ui.is_en()
+        else f'\n[dim]{total} retailers · market search --country PE "milk"[/]'
+    )
+    console.print(hint)
+
+
 def cmd_categories(args):
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
         data = cli_api("GET", f"/categories/{args.store}")
@@ -3334,6 +3395,11 @@ def main():
     # lines
     sub.add_parser("lines", help=t("lines"))
 
+    # stores
+    p = sub.add_parser("stores", help=t("stores"))
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
     # discover (combined: lines + countries — mirrors market_discover MCP tool)
     p = sub.add_parser("discover", help=t("discover"))
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
@@ -3519,7 +3585,7 @@ def main():
         "cart-clear": cmd_cart_clear, "clear-cart": cmd_cart_clear, "checkout": cmd_checkout,
         "orders": cmd_orders, "reorder": cmd_reorder,
         "ask": cmd_ask, "preferences": cmd_preferences,
-        "countries": cmd_countries, "lines": cmd_lines, "discover": cmd_discover,
+        "countries": cmd_countries, "lines": cmd_lines, "stores": cmd_stores, "discover": cmd_discover,
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket, "optimize": cmd_optimize,
         "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
