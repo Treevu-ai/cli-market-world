@@ -2,7 +2,7 @@
 
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "https://cli-market-production.up.railway.app";
+  "https://cli-market-api.fly.dev";
 
 export const PAYPAL_CLIENT_ID =
   process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
