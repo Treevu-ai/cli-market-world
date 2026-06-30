@@ -7,10 +7,10 @@
 > Retailers (supply-side listing): https://cli-market.dev/retailers
 > Procure (procurement): https://procurecopilot.com/procure
 > GitHub: https://github.com/Treevu-ai/cli-market-world
-> API: https://cli-market-production.up.railway.app
+> API: https://cli-market-api.fly.dev
 > Docs: https://cli-market.dev/docs
-> OpenAPI: https://cli-market-production.up.railway.app/docs
-> Dashboard: https://cli-market-production.up.railway.app/dashboard
+> OpenAPI: https://cli-market-api.fly.dev/docs
+> Dashboard: https://cli-market-api.fly.dev/dashboard
 > PyPI: https://pypi.org/project/cli-market-world/
 
 ## Core Purpose
@@ -68,7 +68,7 @@ Nuna Orgánica, Xray Chipped PE
 2. `market init` — account + first search
 3. `market optimize "leche, arroz, aceite" --country PE` — Cost-of-Living OS one call
 4. Intelligence: `market intel brief -c PE`
-5. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-production.up.railway.app`
+5. MCP: command `market-mcp` with `MARKET_API_URL=https://cli-market-api.fly.dev`
 6. Config snippets: https://cli-market.dev/tools
 
 ## MCP via Smithery (remote, no install required)
