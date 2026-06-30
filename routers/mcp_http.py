@@ -7,7 +7,7 @@ Endpoint:
   POST /mcp   JSON-RPC 2.0 — handles initialize, tools/list, tools/call
 
 Usage in claude.ai (Add MCP server):
-  URL: https://cli-market-production.up.railway.app/mcp?token=<your-market-api-token>
+  URL: https://cli-market-api.fly.dev/mcp?token=<your-market-api-token>
   (claude.ai connectors don't support Bearer auth — use the token query param instead)
 
 Tool tiers:
@@ -30,7 +30,7 @@ from server_deps import require_api_key
 
 router = APIRouter(tags=["mcp-http"])
 
-_API_BASE = "https://cli-market-production.up.railway.app"
+_API_BASE = "https://cli-market-api.fly.dev"
 _MCP_VERSION = "2025-03-26"
 
 _PRO_TOOLS = frozenset({
