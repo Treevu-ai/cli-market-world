@@ -12,6 +12,8 @@ type Recommendation = {
   shelf_total?: number;
   tco_total?: number;
   currency?: string;
+  items_requested?: number;
+  items_matched?: number;
   items?: { name: string; store: string; price: number; currency: string; unit_price?: number; unit?: string }[];
 };
 
@@ -173,6 +175,11 @@ export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE"
                 )}
               </div>
             </div>
+            {rec.items_matched != null && rec.items_requested != null && rec.items_matched < rec.items_requested && (
+              <p className="text-xs font-mono text-amber-400">
+                ⚠ Precios encontrados para {rec.items_matched} de {rec.items_requested} productos — total parcial
+              </p>
+            )}
             {rec.action && (
               <p className="text-xs font-mono text-[var(--cm-on-surface-variant)]/70">{rec.action}</p>
             )}
