@@ -1141,11 +1141,22 @@ def cmd_stores(args):
 def cmd_categories(args):
     with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
         data = cli_api("GET", f"/categories/{args.store}")
+    # /categories/{store} now returns {"store", "categories", "disclaimer"}
+    # instead of a bare list (cli-market-backend#127/#135) — support both
+    # shapes so this doesn't break against an older pinned backend.
+    if isinstance(data, dict) and "categories" in data:
+        cats = data.get("categories") or []
+        disclaimer = data.get("disclaimer")
+    else:
+        cats = data if isinstance(data, list) else []
+        disclaimer = None
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, {"store": args.store, "categories": data if isinstance(data, list) else []}, next_commands=["market categories --store " + args.store]), console)
+        ui.emit_json(ui.json_response(True, {"store": args.store, "categories": cats, "disclaimer": disclaimer}, next_commands=["market categories --store " + args.store]), console)
         return
-    if isinstance(data, list):
-        _print_cat_tree(data, indent=0)
+    if cats:
+        _print_cat_tree(cats, indent=0)
+        if disclaimer:
+            console.print(f"\n[dim]{disclaimer}[/]")
     else:
         console.print(f"[yellow]Sin categorías para {args.store}[/]")
 
