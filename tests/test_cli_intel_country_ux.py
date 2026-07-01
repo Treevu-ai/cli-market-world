@@ -59,6 +59,21 @@ def test_cmd_inflation_exits_2_on_no_coverage(monkeypatch):
     assert exc.value.code == 2
 
 
+def test_cmd_inflation_json_envelope_carries_status_2_on_no_coverage(monkeypatch):
+    monkeypatch.setattr(market_cli, "cli_api", lambda *a, **k: {"items": []})
+    emitted: list = []
+    monkeypatch.setattr(market_cli.ui, "emit_json", lambda payload, console: emitted.append(payload))
+    monkeypatch.setattr(market_cli.ui, "is_json_mode", lambda: False)
+
+    args = argparse.Namespace(country="UY", line=None, days=7, json=True)
+    with pytest.raises(SystemExit) as exc:
+        market_cli.cmd_inflation(args)
+    assert exc.value.code == 2
+    assert len(emitted) == 1
+    assert emitted[0]["ok"] is True
+    assert emitted[0]["status"] == 2
+
+
 def test_cmd_inflation_no_exit_when_items_present(monkeypatch):
     monkeypatch.setattr(
         market_cli,
