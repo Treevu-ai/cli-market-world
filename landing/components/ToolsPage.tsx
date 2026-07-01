@@ -5,7 +5,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import PrereqBlock from "@/components/PrereqBlock";
 import { recordPipInstallIntent } from "@/lib/funnel";
 
-const MCP_API_URL = "https://cli-market-production.up.railway.app";
+const MCP_API_URL = "https://cli-market-api.fly.dev";
 
 const MCP_CONFIG = {
   cursor: `{

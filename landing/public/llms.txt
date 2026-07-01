@@ -15,15 +15,15 @@
 
 ## Core Purpose
 
-Cost-of-Living OS for LatAm. One call (`market optimize` / `market_optimize_purchase`) compares your full basket across 41 verified retailers, calculates TCO, suggests substitutes, and generates action links. 81 retailers, 8 countries, 6 business lines. 63,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
+Cost-of-Living OS for LatAm. One call (`market optimize` / `market_optimize_purchase`) compares your full basket across 40 verified retailers, calculates TCO, suggests substitutes, and generates action links. 80 retailers, 8 countries, 6 business lines. 65,000+ real shelf prices refreshed every 4 hours. Zero scraping. Multi-platform: VTEX · Shopify · Magento · WooCommerce.
 
 ## Key Numbers
 
-- 81 retailers defined (41 verified active)
+- 80 retailers defined (40 verified active)
 - 8 countries (AR, BR, CL, CO, FR, IT, MX, PE)
 - 6 business lines (supermercados, farmacias, electro, moda, hogar, departamentales)
-- 32 curated MCP tools (Shop · Intel · Account; 57 legacy)
-- 44 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
+- 31 curated MCP tools (Shop · Intel · Account; 57 legacy)
+- 46 intel indicators (shelf moat + public API enrichment; CLI: market intel indicators)
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 - Checkout: internal CLI Market order — not retailer-site checkout (not Wong/Rappi/ML)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
@@ -56,9 +56,9 @@ Nuna Orgánica, Xray Chipped PE
 
 - **One-call optimization**: `market_optimize_purchase` replaces search → compare → basket for agents.
 - **Token Efficiency**: Minified JSON (~85% less context vs raw HTML).
-- **Predictable Tools**: 32 MCP tools (default) in Shop/Intel/Account bundles.
-- **Cross-Border**: Single interface for 41 verified retailers.
-- **Data Moat**: Collector every 4h. Historical snapshots, inflation, 44 indicators.
+- **Predictable Tools**: 31 MCP tools (default) in Shop/Intel/Account bundles.
+- **Cross-Border**: Single interface for 40 verified retailers.
+- **Data Moat**: Collector every 4h. Historical snapshots, inflation, 46 indicators.
 - **Multi-Payment**: PayPal · Mercado Pago · Yape/Plin transfer (Peru). Internal order — not retailer checkout.
 - **Open Source**: MIT. pip install cli-market-world.
 
