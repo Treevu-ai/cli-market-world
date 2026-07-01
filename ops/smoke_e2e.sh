@@ -82,7 +82,7 @@ assert status == 200, (status, data)
 assert data.get("ok"), data
 
 url = data.get("checkout_url") or data.get("payment_link") or data.get("approve_url")
-assert url and str(url).startswith("http"), data
+assert url and str(url).startswith(("http://", "https://", "yape://", "plin://")), data
 
 rid = data.get("request_id") or ""
 assert str(rid).startswith("PRO-"), data
