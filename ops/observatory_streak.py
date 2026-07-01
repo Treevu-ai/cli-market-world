@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT))
 
 API_BASE = os.getenv(
     "MARKET_API_URL",
-    "https://cli-market-production.up.railway.app",
+    "https://cli-market-api.fly.dev",
 ).rstrip("/")
 
 

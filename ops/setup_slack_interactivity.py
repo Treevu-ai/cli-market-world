@@ -3,7 +3,7 @@
 
 1. api.slack.com/apps → tu app → Basic Information → Signing Secret
 2. Interactivity & Shortcuts → ON → Request URL:
-   https://cli-market-production.up.railway.app/slack/interactions
+   https://cli-market-api.fly.dev/slack/interactions
 3. railway variables set SLACK_SIGNING_SECRET=<secret>
 
 Usage (PowerShell: usar comillas, sin <>):
@@ -29,7 +29,7 @@ load_repo_env()
 
 API_BASE = os.getenv(
     "MARKET_API_URL",
-    "https://cli-market-production.up.railway.app",
+    "https://cli-market-api.fly.dev",
 ).rstrip("/")
 INTERACTIONS_URL = f"{API_BASE}/slack/interactions"
 

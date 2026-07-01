@@ -50,7 +50,7 @@ try:
 except ImportError:
     _HAS_HTTPX = False
 
-API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
 ADOPTION_URL = f"{API_BASE}/analytics/adoption"
 FUNNEL_URL = f"{API_BASE}/analytics/funnel"
 

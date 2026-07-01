@@ -405,7 +405,7 @@ No es un side project manual. Es infraestructura.
 El moat no es el código — es la **frecuencia y confiabilidad** del dato.
 
 ¿Automatizas data pipelines en tu producto?""",
-        "comment": "Dashboard 👇\n\nhttps://cli-market-production.up.railway.app/dashboard",
+        "comment": "Dashboard 👇\n\nhttps://cli-market-api.fly.dev/dashboard",
         "tags": "#buildinpublic #data #postgresql #railway #AI",
     },
     20: {
@@ -470,7 +470,7 @@ Dashboard en vivo muestra health por store — sin maquillaje.
 Lección: **agent commerce necesita observabilidad por retailer**, no un boolean "integrado".
 
 ¿Has tenido APIs de terceros que rompen producción un domingo?""",
-        "comment": "Store health 👇\n\nhttps://cli-market-production.up.railway.app/dashboard",
+        "comment": "Store health 👇\n\nhttps://cli-market-api.fly.dev/dashboard",
         "tags": "#buildinpublic #VTEX #ecommerce #failures #AI",
     },
     22: {
@@ -680,7 +680,7 @@ Estamos en día 30 del launch público.
 El hard part empieza ahora: escala + confiabilidad.
 
 ¿Qué construirías encima de esta API?""",
-        "comment": "API docs 👇\n\nhttps://cli-market-production.up.railway.app/docs",
+        "comment": "API docs 👇\n\nhttps://cli-market-api.fly.dev/docs",
         "tags": "#AI #infrastructure #ecommerce #scale #agents",
     },
     28: {

@@ -45,11 +45,11 @@ from market_golive import (  # noqa: E402
 
 DASHBOARD_URL = os.getenv(
     "DASHBOARD_DATA_URL",
-    "https://cli-market-production.up.railway.app/dashboard/data",
+    "https://cli-market-api.fly.dev/dashboard/data",
 )
 API_BASE = os.getenv(
     "MARKET_API_URL",
-    DASHBOARD_URL.rsplit("/dashboard/data", 1)[0] or "https://cli-market-production.up.railway.app",
+    DASHBOARD_URL.rsplit("/dashboard/data", 1)[0] or "https://cli-market-api.fly.dev",
 )
 
 

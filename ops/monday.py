@@ -10,7 +10,7 @@ Usage:
   python3 ops/monday.py --slack <URL>    # override Slack webhook
 
 Env vars:
-  DASHBOARD_DATA_URL   default: https://cli-market-production.up.railway.app/dashboard/data
+  DASHBOARD_DATA_URL   default: https://cli-market-api.fly.dev/dashboard/data
   SLACK_WEBHOOK_URL    optional
 """
 
@@ -35,7 +35,7 @@ from content_paths import content_root, metrics_dir  # noqa: E402
 
 DASHBOARD_URL = os.getenv(
     "DASHBOARD_DATA_URL",
-    "https://cli-market-production.up.railway.app/dashboard/data",
+    "https://cli-market-api.fly.dev/dashboard/data",
 )
 
 OUTREACH_ES = """Asunto: {store_name} — reactivar tienda en CLI Market

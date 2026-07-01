@@ -10,7 +10,7 @@ Usage:
   python3 ops/price_pulse_client.py --json         # output raw JSON (for further processing)
 
 Env vars:
-  DASHBOARD_DATA_URL   default: https://cli-market-production.up.railway.app/dashboard/data
+  DASHBOARD_DATA_URL   default: https://cli-market-api.fly.dev/dashboard/data
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from market_intel_v2 import (
     coverage_partial_label,
 )
 
-DASHBOARD_URL_PRODUCTION = "https://cli-market-production.up.railway.app/dashboard/data"
+DASHBOARD_URL_PRODUCTION = "https://cli-market-api.fly.dev/dashboard/data"
 DASHBOARD_URL_LOCAL = "http://127.0.0.1:8765/dashboard/data"
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "generated" / "reports"
@@ -369,7 +369,7 @@ def build_client_report(data: dict, *, country: str | None = None) -> str:
         "---",
         "",
         f"*Generado el {ds} · CLI Market Intelligence · hello@cli-market.dev*",
-        "*Dashboard público: https://cli-market-production.up.railway.app/dashboard*",
+        "*Dashboard público: https://cli-market-api.fly.dev/dashboard*",
         "",
     ]
 

@@ -60,7 +60,7 @@ except Exception:
 
 API_BASE = os.getenv(
     "MARKET_API_URL",
-    "https://cli-market-production.up.railway.app",
+    "https://cli-market-api.fly.dev",
 )
 DASHBOARD_URL = os.getenv("DASHBOARD_DATA_URL", f"{API_BASE}/dashboard/data")
 COLLECTOR_HEALTH_URL = f"{API_BASE}/health/collector"
