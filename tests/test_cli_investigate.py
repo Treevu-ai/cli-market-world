@@ -51,6 +51,24 @@ def test_investigate_requires_query(monkeypatch):
     assert exc.value.code == 1
 
 
+def test_investigate_requires_query_hint_uses_requested_country(monkeypatch):
+    """Regression for cli-market-world#466 (S5): the missing-query hint
+    hardcoded --country PE regardless of the country the user requested."""
+    emitted: list[dict] = []
+    monkeypatch.setattr(
+        market_cli.ui,
+        "emit_json",
+        lambda payload, console=None: emitted.append(payload),
+    )
+    with pytest.raises(SystemExit) as exc:
+        market_cli.cmd_investigate(argparse.Namespace(
+            query="", country="AR", line=None, no_intel=False, days=30, json=True,
+        ))
+    assert exc.value.code == 1
+    assert all("PE" not in c for c in emitted[0]["next_commands"])
+    assert any("AR" in c for c in emitted[0]["next_commands"])
+
+
 def test_investigate_json_envelope(monkeypatch):
     monkeypatch.setattr(market_cli, "_dispatch_investigate", lambda *a, **k: SAMPLE_REPORT)
     emitted: list[dict] = []
