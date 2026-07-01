@@ -1,4 +1,0 @@
-[console_scripts]
-market = market_cli:main
-market-mcp = market_mcp:main
-market-server = market_server:main
