@@ -1,10 +1,10 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.11.4)
+> Package: pip install cli-market-world (v1.11.5)
 > Command: market-mcp
-> API: https://cli-market-production.up.railway.app
-> Stats: 80 retailers · 40 verified · 64,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
+> API: https://cli-market-api.fly.dev
+> Stats: 80 retailers · 40 verified · 65,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
 > Payments: PayPal · Mercado Pago · Yape/Plin transfer (Peru, manual)
 > FMCG pilot: Nuna Orgánica PE (406 SKUs, WooCommerce Store API)
 
@@ -31,7 +31,7 @@ For Claude Desktop, add to claude_desktop_config.json:
     "cli-market": {
       "command": "market-mcp",
       "env": {
-        "MARKET_API_URL": "https://cli-market-production.up.railway.app",
+        "MARKET_API_URL": "https://cli-market-api.fly.dev",
         "MCP_TOOL_PROFILE": "default"
       }
     }

@@ -6,12 +6,12 @@
     "url": "https://github.com/Treevu-ai/cli-market-world",
     "source": "github"
   },
-  "version": "1.11.4",
+  "version": "1.11.5",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "cli-market-world",
-      "version": "1.11.4",
+      "version": "1.11.5",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"
@@ -20,7 +20,7 @@
         {
           "name": "MARKET_API_URL",
           "description": "CLI Market API base URL",
-          "default": "https://cli-market-production.up.railway.app"
+          "default": "https://cli-market-api.fly.dev"
         },
         {
           "name": "MCP_TOOL_PROFILE",

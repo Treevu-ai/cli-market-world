@@ -10,13 +10,13 @@ import { PRICING_BUILD_HASH } from "@/lib/siteNav";
 type Tab = "python" | "curl";
 
 const CURL_CODE = `# Search products
-curl -X POST https://cli-market-production.up.railway.app/products/search \\
+curl -X POST https://cli-market-api.fly.dev/products/search \\
   -H "Authorization: Bearer $CLI_MARKET_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "arroz", "limit": 10}'
 
 # Compare basket across retailers
-curl -X POST https://cli-market-production.up.railway.app/v1/basket/compare \\
+curl -X POST https://cli-market-api.fly.dev/v1/basket/compare \\
   -H "Authorization: Bearer $CLI_MARKET_KEY" \\
   -d '{
     "items": [{"name":"arroz","qty":1}],
