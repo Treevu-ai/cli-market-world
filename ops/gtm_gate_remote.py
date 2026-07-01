@@ -56,7 +56,7 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    base = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+    base = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
     try:
         payload = evaluate_gate(fetch_dashboard(base))
     except urllib.error.URLError as exc:

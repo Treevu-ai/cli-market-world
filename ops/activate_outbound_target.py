@@ -47,7 +47,7 @@ def main() -> int:
     parser.add_argument("--notes", default="", help="Optional notes")
     parser.add_argument(
         "--api-url",
-        default=os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app"),
+        default=os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev"),
     )
     parser.add_argument("--api-token", default=os.getenv("MARKET_API_TOKEN", ""))
     args = parser.parse_args()

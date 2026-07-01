@@ -3,7 +3,7 @@
 
 Usage:
     python3 ops/benchmark_api.py
-    python3 ops/benchmark_api.py --base https://cli-market-production.up.railway.app --runs 20
+    python3 ops/benchmark_api.py --base https://cli-market-api.fly.dev --runs 20
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import json
 def validate_url(url: str) -> bool:
     """Validate URL to prevent SSRF attacks. Only allow https:// URLs with valid hostnames."""
     allowed_hosts = [
-        "cli-market-production.up.railway.app",
+        "cli-market-api.fly.dev",
         "localhost",
         "127.0.0.1",
     ]
@@ -93,7 +93,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="CLI Market API benchmark")
     parser.add_argument(
         "--base",
-        default="https://cli-market-production.up.railway.app",
+        default="https://cli-market-api.fly.dev",
         help="API base URL",
     )
     parser.add_argument("--runs", type=int, default=10, help="Search iterations")
@@ -103,7 +103,7 @@ def main() -> None:
     # Validate URL to prevent SSRF
     if not validate_url(args.base):
         print(f"ERROR: Invalid or unauthorized URL: {args.base}")
-        print("Allowed URLs: https://cli-market-production.up.railway.app, localhost, 127.0.0.1")
+        print("Allowed URLs: https://cli-market-api.fly.dev, localhost, 127.0.0.1")
         raise SystemExit(1)
 
     print(f"Benchmark: {args.base}")

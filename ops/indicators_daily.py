@@ -7,7 +7,7 @@ Usage:
   python ops/indicators_daily.py --json
 
 Env:
-  MARKET_API_URL     — default https://cli-market-production.up.railway.app
+  MARKET_API_URL     — default https://cli-market-api.fly.dev
   MARKET_API_TOKEN   — admin bearer (required)
 """
 
@@ -29,7 +29,7 @@ from load_env import load_repo_env
 
 load_repo_env()
 
-BASE = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app").rstrip("/")
+BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
 
 
 def main() -> int:

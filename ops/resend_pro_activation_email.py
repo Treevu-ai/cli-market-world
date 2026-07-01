@@ -10,7 +10,7 @@ import sys
 import urllib.error
 import urllib.request
 
-DEFAULT_API = "https://cli-market-production.up.railway.app"
+DEFAULT_API = "https://cli-market-api.fly.dev"
 
 
 def main() -> int:
