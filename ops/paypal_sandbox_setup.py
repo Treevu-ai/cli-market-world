@@ -9,7 +9,7 @@ Usage (from repo root, with sandbox credentials in env):
 
   python3 ops/paypal_sandbox_setup.py check
   python3 ops/paypal_sandbox_setup.py create-plan
-  python3 ops/paypal_sandbox_setup.py register-webhook https://cli-market-production.up.railway.app/checkout/paypal-webhook
+  python3 ops/paypal_sandbox_setup.py register-webhook https://cli-market-api.fly.dev/checkout/paypal-webhook
   python3 ops/paypal_sandbox_setup.py list-webhooks
   python3 ops/paypal_sandbox_setup.py test-upgrade admin
 

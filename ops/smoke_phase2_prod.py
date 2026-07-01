@@ -28,7 +28,7 @@ PHASE2_KEYS = [
     "commodity_transmission_lag",
 ]
 
-BASE = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app").rstrip("/")
+BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
 
 
 def _token() -> str:

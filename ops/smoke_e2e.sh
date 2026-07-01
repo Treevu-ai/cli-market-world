@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Quick smoke test before first client — run from repo root.
 set -euo pipefail
-API="${MARKET_API_URL:-https://cli-market-production.up.railway.app}"
+API="${MARKET_API_URL:-https://cli-market-api.fly.dev}"
 
 _retry() {
   local n=1 max=3 delay=5

@@ -14,7 +14,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  DASHBOARD_DATA_URL: https://cli-market-production.up.railway.app/dashboard/data
+  DASHBOARD_DATA_URL: https://cli-market-api.fly.dev/dashboard/data
 
 permissions:
   contents: write

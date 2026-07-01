@@ -40,7 +40,7 @@ from load_env import load_repo_env  # noqa: E402
 load_repo_env()
 
 DIVIDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-_API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+_API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
 
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
