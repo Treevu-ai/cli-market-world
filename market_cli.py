@@ -70,14 +70,48 @@ def _write_nag_count(n: int) -> None:
     except Exception:
         pass
 
+_INTEL_SUBCMDS_WITH_COUNTRY = {"brief", "inflation", "scores", "enrichment", "indicators"}
+
+
+def _rewrite_positional_country(argv: list[str]) -> list[str]:
+    """Accept `market intel brief uy` as shorthand for `--country UY`.
+
+    Only rewrites a single bare positional token that (a) immediately follows
+    an intel subcommand accepting --country, (b) isn't already flagged with
+    -c/--country, and (c) matches a known country code case-insensitively.
+    """
+    try:
+        from market_core.market_geo_currency import COUNTRIES
+    except Exception:
+        return argv
+
+    idx = None
+    if len(argv) >= 3 and argv[1] == "intel" and argv[2] in _INTEL_SUBCMDS_WITH_COUNTRY:
+        idx = 3
+    elif len(argv) >= 2 and argv[1] in _INTEL_SUBCMDS_WITH_COUNTRY:
+        idx = 2
+    if idx is None or len(argv) <= idx:
+        return argv
+
+    rest = argv[idx:]
+    if any(a in ("-c", "--country") for a in rest):
+        return argv
+    candidate = rest[0]
+    if candidate.startswith("-"):
+        return argv
+    if candidate.upper() not in COUNTRIES:
+        return argv
+    return [*argv[:idx], "--country", candidate.upper(), *rest[1:]]
+
+
 def _normalize_market_argv(argv: list[str]) -> list[str]:
     """Map legacy top-level commands without cluttering --help."""
     if len(argv) < 2:
         return argv
     cmd = argv[1]
     if cmd in _LEGACY_INTEL_CMDS:
-        return [argv[0], "intel", cmd, *argv[2:]]
-    return argv
+        argv = [argv[0], "intel", cmd, *argv[2:]]
+    return _rewrite_positional_country(argv)
 
 
 def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
@@ -1389,12 +1423,15 @@ def cmd_inflation(args):
     qs = "&".join(params)
     with console.status("[cyan]Calculando RPV (Retail Price Velocity)..."):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
-    if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, data, next_commands=["market intel inflation --country PE", "market intel indicators"]), console)
-        return
     items = data.get("items", [])
-    avg = data.get("avg_rpv_7d_pct", data.get("avg_inflation_pct", 0))
     n_products = sum(int(i.get("n_products") or 0) for i in items)
+    no_coverage = not items and n_products == 0
+    if getattr(args, "json", False) or ui.is_json_mode():
+        ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel inflation --country {args.country or 'PE'}", "market intel indicators"]), console)
+        if no_coverage:
+            sys.exit(2)
+        return
+    avg = data.get("avg_rpv_7d_pct", data.get("avg_inflation_pct", 0))
     color = "#FF6B35" if avg > 0 else "#00FF88"
     meta = (
         f"{n_products} productos · {len(items)} líneas"
@@ -1403,6 +1440,15 @@ def cmd_inflation(args):
     )
     console.print(f"\n[bold]RPV promedio (7d): [{color}]{avg:+.1f}%[/] ({meta})[/]")
     console.print("[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
+    if no_coverage:
+        cc_label = args.country or ("LATAM" if not ui.is_en() else "LATAM")
+        warn = (
+            f"[yellow]Sin cobertura activa para {cc_label} en esta ventana — 0 tiendas con datos.[/]"
+            if not ui.is_en()
+            else f"[yellow]No active coverage for {cc_label} in this window — 0 stores with data.[/]"
+        )
+        console.print(warn)
+        sys.exit(2)
     if items:
         title = "Variación por línea" if not ui.is_en() else "Change by line"
         table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
@@ -1432,7 +1478,7 @@ def cmd_indicators(args):
         with console.status("[cyan]Refrescando indicadores..."):
             data = cli_api("POST", f"/v1/intel/refresh?{qs}" if qs else "/v1/intel/refresh")
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.emit_json(ui.json_response(True, data, next_commands=["market intel indicators -c PE"]), console)
+            ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel indicators -c {args.country or 'PE'}"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Indicadores actualizados — "
@@ -1448,9 +1494,9 @@ def cmd_indicators(args):
     if getattr(args, "json", False) or ui.is_json_mode():
         if args.country:
             latest = cli_api("GET", f"/v1/intel/scores?country={args.country}")
-            ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=["market intel indicators -c PE", "market intel scores -c PE"]), console)
+            ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=[f"market intel indicators -c {args.country}", f"market intel scores -c {args.country}"]), console)
         else:
-            ui.emit_json(ui.json_response(True, catalog, next_commands=["market intel indicators -c PE"]), console)
+            ui.emit_json(ui.json_response(True, catalog, next_commands=["market intel indicators -c PE"]), console)  # no country given — PE default is fine here
         return
 
     cc = args.country or ui.get_default_country()
@@ -1479,13 +1525,13 @@ def cmd_indicators(args):
             console.print()
             console.print(panel)
         elif not ui.is_en():
-            console.print("[yellow]Sin scores aún. Corré: market intel indicators -c PE[/]")
+            console.print(f"[yellow]Sin scores aún. Corré: market intel indicators -c {args.country}[/]")
         else:
-            console.print("[yellow]No scores yet. Run: market intel indicators -c PE[/]")
+            console.print(f"[yellow]No scores yet. Run: market intel indicators -c {args.country}[/]")
 
     ui.print_intel_footer(
         console,
-        ["market intel indicators -c PE", "market intel scores -c PE", "market intel enrichment -c PE"],
+        [f"market intel indicators -c {args.country or 'PE'}", f"market intel scores -c {args.country or 'PE'}", f"market intel enrichment -c {args.country or 'PE'}"],
     )
 
 
@@ -1503,10 +1549,11 @@ def cmd_scores(args):
         return
     scores = data.get("scores", {})
     if not scores:
+        _sc_cc = args.country or "PE"
         msg = (
-            "Sin scores aún. Corré: market intel indicators -c PE"
+            f"Sin scores aún. Corré: market intel indicators -c {_sc_cc}"
             if not ui.is_en()
-            else "No scores yet. Run: market intel indicators -c PE"
+            else f"No scores yet. Run: market intel indicators -c {_sc_cc}"
         )
         console.print(f"[yellow]{msg}[/]")
         return
@@ -1522,7 +1569,7 @@ def cmd_scores(args):
     disclaimer = data.get("disclaimer", "")
     if disclaimer:
         console.print(f"[dim]{disclaimer}[/]")
-    ui.print_intel_footer(console, ["market intel indicators -c PE", "market intel enrichment -c PE"])
+    ui.print_intel_footer(console, [f"market intel indicators -c {country}", f"market intel enrichment -c {country}"])
 
 
 def cmd_intel_brief(args):
@@ -1549,8 +1596,8 @@ def cmd_intel_brief(args):
     if getattr(args, "json", False) or ui.is_json_mode():
         ui.emit_json(ui.json_response(True, data, next_commands=[
             f"market intel brief --country {cc or 'PE'}",
-            "market intel inflation --country PE",
-            "market intel scores --country PE",
+            f"market intel inflation --country {cc or 'PE'}",
+            f"market intel scores --country {cc or 'PE'}",
         ]), console)
         return
 
@@ -1640,8 +1687,8 @@ def cmd_intel_brief(args):
 
     ui.print_intel_footer(console, [
         f"market intel brief --country {cc or 'PE'} --days 14",
-        "market intel inflation --country PE",
-        "market intel scores --country PE",
+        f"market intel inflation --country {cc or 'PE'}",
+        f"market intel scores --country {cc or 'PE'}",
     ])
 
 
@@ -1651,7 +1698,7 @@ def cmd_enrichment(args):
         with console.status(f"[cyan]Refrescando enriquecimiento — {cc}..."):
             refresh_data = cli_api("POST", f"/v1/intel/enrichment/refresh?country={cc}")
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.emit_json(ui.json_response(True, refresh_data, next_commands=["market intel enrichment -c PE"]), console)
+            ui.emit_json(ui.json_response(True, refresh_data, next_commands=[f"market intel enrichment -c {cc}"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Enriquecimiento actualizado — "
@@ -1662,17 +1709,19 @@ def cmd_enrichment(args):
         data = cli_api("GET", f"/v1/intel/enrichment?country={cc}")
     items = data.get("indicators", [])
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, data, next_commands=["market intel enrichment -c PE"]), console)
+        ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel enrichment -c {cc}"]), console)
+        if not items:
+            sys.exit(2)
         return
 
     if not items:
         msg = (
-            "Sin datos aún. Corré: market intel enrichment -c PE"
+            f"Sin datos aún para {cc}. Corré: market intel enrichment -c {cc}"
             if not ui.is_en()
-            else "No data yet. Run: market intel enrichment -c PE"
+            else f"No data yet for {cc}. Run: market intel enrichment -c {cc}"
         )
         console.print(f"[yellow]{msg}[/]")
-        return
+        sys.exit(2)
 
     ui.print_section_header(
         console,
@@ -1719,7 +1768,7 @@ def cmd_enrichment(args):
         console.print(f"\n[dim]{label}: {sources}[/]")
     ui.print_intel_footer(
         console,
-        ["market intel enrichment -c PE", "market intel scores -c PE", "market intel indicators -c PE"],
+        [f"market intel enrichment -c {cc}", f"market intel scores -c {cc}", f"market intel indicators -c {cc}"],
     )
 
 
