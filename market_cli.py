@@ -415,9 +415,22 @@ def _parse_basket_items(raw_items: list[str]) -> list[dict]:
 
 
 def _country_supermarket_stores(country: str) -> list[str]:
-    """Supermarket retailers for a country — avoids hogar/departamentales breaking live basket."""
+    """Supermarket retailers for a country — avoids hogar/departamentales breaking live basket.
+
+    Excludes permanently-disabled connectors (same rule as COUNTRIES in
+    market_geo_currency.py) — a disabled store (e.g. exito, WAF-blocked)
+    can still have stale price_snapshots rows from before it was disabled,
+    so leaving it in preferred_stores let optimize/basket serve frozen,
+    unmaintained catalog data as if it were live (cli-market-backend#127
+    optimize O1/O2 investigation).
+    """
     cc = (country or "").strip().upper()
-    return [k for k, v in STORES.items() if v.get("country") == cc and v.get("line") == "supermercados"]
+    return [
+        k for k, v in STORES.items()
+        if v.get("country") == cc
+        and v.get("line") == "supermercados"
+        and (not v.get("disabled") or v.get("enable_with_credentials"))
+    ]
 
 
 def _normalize_basket_store_rows(data: dict) -> list[dict]:
@@ -878,8 +891,12 @@ def cmd_ask(args):
     console.print(f"[dim]→ {action}" + (f": \"{query}\"" if query else "") + "[/]")
 
     if action == "search" and query:
+        search_params = {"query": query, "limit": 5}
+        country_hint = data.get("country")
+        if country_hint:
+            search_params["country"] = country_hint
         with console.status(f"[cyan]Buscando '{query}'...[/]"):
-            results = cli_api("POST", "/products/search", {"query": query, "limit": 5})
+            results = cli_api("POST", "/products/search", search_params)
         products = results.get("results", [])
         if not products:
             console.print(f"[yellow]Sin resultados para '{query}'[/]")
@@ -1395,6 +1412,21 @@ def cmd_optimize(args):
         f"  {'Góndola' if not is_en else 'Shelf'}: {currency} {float(rec.get('shelf_total') or 0):.2f} · "
         f"TCO: {currency} {float(rec.get('tco_total') or 0):.2f}"
     )
+    items_requested = rec.get("items_requested")
+    items_matched = rec.get("items_matched")
+    if items_requested is not None and items_matched is not None and items_matched < items_requested:
+        # The shelf/TCO total above is a SUM over only the matched items — an
+        # implausibly low total (e.g. ARS 615 for a 4-item basket) is usually
+        # this, not a pricing bug: 1-2 items silently failed to match at the
+        # winning store and were dropped from the total instead of excluding
+        # that store from consideration (cli-market-backend#127 optimize O1).
+        console.print(
+            f"  [yellow]⚠ Solo {items_matched}/{items_requested} items encontrados en esta tienda "
+            f"— el total no representa la canasta completa.[/]"
+            if not is_en else
+            f"  [yellow]⚠ Only {items_matched}/{items_requested} items matched at this store "
+            f"— the total does not reflect the full basket.[/]"
+        )
     headroom = rec.get("budget_headroom")
     if headroom is not None:
         console.print(f"  {'Presupuesto restante' if not is_en else 'Budget headroom'}: {currency} {headroom:.2f}")

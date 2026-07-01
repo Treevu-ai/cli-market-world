@@ -149,6 +149,12 @@ def error_next_commands(status: int | None, message: str | list | None) -> list[
         return ["market search PRODUCTO --country PE", "market cart", "market checkout"]
     if status == 403 or "pro" in msg or "tier" in msg:
         return ["market whoami", "market upgrade --email you@example.com"]
+    if "not found" in msg or "no encontrado" in msg or "invalid barcode" in msg or "barcode inválido" in msg:
+        # "not found" used to fall through to the generic doctor/hello hint,
+        # which is irrelevant for a missing/invalid product lookup (O6,
+        # cli-market-backend#127) — point at the two commands that actually
+        # help: search by name, or query OFF directly by barcode.
+        return ["market search PRODUCTO --country PE", "market enrich PRODUCTO"]
     return ["market doctor", "market hello"]
 
 
