@@ -31,6 +31,7 @@ from market_core import (
     STORES, LINES, COUNTRIES, SESSION_FILE, get_token, get_session_username, api, API,
     fmt_price, store_color, save_last_search, load_last_search,
 )
+from market_core.market_food_match import matches_food_basket_query
 import market_ui as ui
 from market_stats import (
     COUNTRIES as MS_COUNTRIES, RETAILERS_VERIFIED, PACKAGE_VERSION,
@@ -107,6 +108,23 @@ def _normalize_market_argv(argv: list[str]) -> list[str]:
     if cmd in _LEGACY_INTEL_CMDS:
         argv = [argv[0], "intel", cmd, *argv[2:]]
     return _rewrite_positional_country(argv)
+
+
+def _strip_json_flag(argv: list[str]) -> tuple[list[str], bool]:
+    """Pull --json out of argv regardless of position and report whether it
+    was present.
+
+    --json is documented as a global flag, but argparse only recognizes an
+    optional registered on the top-level parser when it appears BEFORE the
+    subcommand token — placed after subcommand-specific args (e.g. "market
+    search leche --country AR --json", the natural place an agent would put
+    it) it hits "unrecognized arguments: --json" since individual
+    subparsers never redeclared it (cli-market-backend#127 --json
+    global-flag finding, S9).
+    """
+    if "--json" not in argv[1:]:
+        return argv, False
+    return [argv[0]] + [a for a in argv[1:] if a != "--json"], True
 
 
 def _attach_intel_parsers(parent, helps: dict[str, str]) -> None:
@@ -1198,8 +1216,17 @@ def cmd_procure(args):
         with console.status(f"[cyan]{'Buscando' if not is_en else 'Searching'} '{item}'..."):
             data = cli_api("POST", "/products/search", {"query": item, "limit": 5, "country": country})
         results = data.get("results", [])
-        if results:
-            best = min(results, key=lambda p: p.get("price", float("inf")))
+        # /products/search does plain keyword matching with no category
+        # guard — "arroz" (rice) matched a "Cuchara Para Arroz" (rice
+        # spoon utensil) and the cheapest-wins ranking below picked it as
+        # the "best" result (S8, cli-market-backend#127). Filter through
+        # the same staple/exclusion matcher already used by basket compare
+        # before ranking by price, so a real food match wins when one
+        # exists in the result set.
+        food_results = [r for r in results if matches_food_basket_query(item, r)]
+        candidates = food_results or results
+        if candidates:
+            best = min(candidates, key=lambda p: p.get("price", float("inf")))
             best_picks.append({
                 "name": item,
                 "product": best.get("name", item),
@@ -1208,6 +1235,7 @@ def cmd_procure(args):
                 "store": best.get("store_name", best.get("store", "?")),
                 "store_key": best.get("store", ""),
                 "product_id": str(best.get("id", best.get("product_id", ""))),
+                "uncertain_match": not food_results,
             })
         else:
             console.print(f"  [yellow]⚠ {'Not found' if is_en else 'No encontrado'}: {item}[/]")
@@ -1239,9 +1267,18 @@ def cmd_procure(args):
 
     for i, p in enumerate(best_picks, 1):
         color = store_color(p["store_key"])
-        table.add_row(str(i), p["product"], f"[{color}]{p['store']}[/]", fmt_price(p["price"], p["currency"]))
+        product_label = p["product"]
+        if p.get("uncertain_match"):
+            product_label += " [yellow]⚠[/]"
+        table.add_row(str(i), product_label, f"[{color}]{p['store']}[/]", fmt_price(p["price"], p["currency"]))
 
     console.print(table)
+    if any(p.get("uncertain_match") for p in best_picks):
+        console.print(
+            "[yellow]⚠ Uno o más productos no coincidieron con un match confiable de categoría — revisá antes de confirmar.[/]"
+            if not is_en else
+            "[yellow]⚠ One or more products didn't match a confident category — review before confirming.[/]"
+        )
 
     # Step 3: Summary vs budget
     status_color = "#00FF88" if within_budget else "#FF6B6B"
@@ -1257,6 +1294,25 @@ def cmd_procure(args):
     token = get_token()
     if not token:
         console.print(f"\n[dim]{'Login to add to cart:' if is_en else 'Inicia sesión para agregar al carrito:'} [cyan]market login[/][/]")
+        return
+
+    # procure used to go straight from search results to cart/add with no
+    # review step — a wrong match (e.g. a kitchen utensil for "arroz") was
+    # already in the cart before the user could reject it (S22,
+    # cli-market-backend#127). Require explicit confirmation, same pattern
+    # already used by `market ask`'s search->cart flow.
+    confirm_msg = (
+        f"Add {len(best_picks)} items ({currency} {total:.2f}) to cart? [y/N] "
+        if is_en
+        else f"¿Agregar {len(best_picks)} productos ({currency} {total:.2f}) al carrito? [s/N] "
+    )
+    try:
+        resp = input(confirm_msg).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        console.print("\n[dim]Cancelado[/]" if not is_en else "\n[dim]Cancelled[/]")
+        return
+    if resp not in ("s", "y"):
+        console.print("[dim]Cancelado[/]" if not is_en else "[dim]Cancelled[/]")
         return
 
     with console.status(f"[cyan]{'Adding to cart...' if is_en else 'Agregando al carrito...'}"):
@@ -3384,6 +3440,9 @@ def main():
     if sys.platform == "win32":
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.argv = _normalize_market_argv(sys.argv)
+    sys.argv, _json_flag_present = _strip_json_flag(sys.argv)
+    if _json_flag_present:
+        ui.set_json_mode(True)
     if len(sys.argv) > 1 and sys.argv[1] in _META_CMDS:
         ns = argparse.Namespace(json="--json" in sys.argv)
         if sys.argv[1] == "about":
@@ -3667,7 +3726,15 @@ def main():
     p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
 
     args = parser.parse_args()
-    ui.set_json_mode(getattr(args, "json", False))
+    if ui.is_json_mode():
+        # --json was stripped from argv above (present but in a position
+        # argparse's top-level parser doesn't recognize) — force it onto the
+        # namespace too, since ~half of the command handlers check
+        # getattr(args, "json", False) directly without the ui.is_json_mode()
+        # fallback.
+        args.json = True
+    else:
+        ui.set_json_mode(getattr(args, "json", False))
     install_source = "hello" if not getattr(args, "command", None) or args.command == "hello" else "cli"
     _report_install_event(source=install_source)
     ui.maybe_version_notice(console)
