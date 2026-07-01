@@ -203,7 +203,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import httpx
-          r = httpx.get("https://cli-market-production.up.railway.app/dashboard/data", timeout=45)
+          r = httpx.get("https://cli-market-api.fly.dev/dashboard/data", timeout=45)
           r.raise_for_status()
           data = r.json()
           k = data.get("kpis", {})
