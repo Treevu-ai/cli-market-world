@@ -588,23 +588,31 @@ def cmd_compare(args):
         store_name = STORES.get(sk, {}).get("name", sk)
         table.add_column(store_name, justify="right", width=11)
     table.add_column("Mejor", justify="center", width=10)
-    def _pcell(sk: str, prices: dict) -> str:
+    def _pcell(sk: str, prices: dict, prices_per_unit: dict) -> str:
         if sk in prices:
             currency = STORES.get(sk, {}).get("currency", "PEN")
-            return f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
+            cell = f"[{store_color(sk)}]{fmt_price(prices[sk], currency)}[/]"
+            ppu = prices_per_unit.get(sk)
+            if ppu:
+                cell += f"\n[dim]{fmt_price(ppu['price_per'], currency)}/{ppu['basis']}[/]"
+            return cell
         return "[dim]—[/]"
 
+    has_any_unit_price = any(item.get("prices_per_unit") for item in comp)
     for i, item in enumerate(comp, 1):
         prices = item.get("prices", {})
+        prices_per_unit = item.get("prices_per_unit", {})
         best = item.get("best_store", "")
         best_color = store_color(best) if best else "dim"
         row = [str(i), item.get("name", ""), item.get("brand", "")]
         for sk in display_stores:
-            row.append(_pcell(sk, prices))
+            row.append(_pcell(sk, prices, prices_per_unit))
         row.append(f"[bold {best_color}]{STORES.get(best, {}).get('name', best)}[/]" if best else "—")
         table.add_row(*row)
     console.print()
     console.print(table)
+    if has_any_unit_price:
+        console.print("[dim]Precio/unidad (kg o L) bajo el precio de lista cuando el tamaño del paquete se pudo determinar.[/]")
 
 def _missions_enabled() -> bool:
     return os.environ.get("MARKET_MISSIONS", "1").strip().lower() not in ("0", "false", "no")
