@@ -34,7 +34,7 @@ PROMPTS_OUT = Path(__file__).resolve().parent / "generated" / "prompts"
 OUTPUTS_DIR = Path(__file__).resolve().parent / "generated" / "outputs"
 REPORTS_DIR = Path(__file__).resolve().parent / "generated" / "reports"
 
-DASHBOARD_URL_PRODUCTION = "https://cli-market-production.up.railway.app/dashboard/data"
+DASHBOARD_URL_PRODUCTION = "https://cli-market-api.fly.dev/dashboard/data"
 DASHBOARD_URL_LOCAL = "http://127.0.0.1:8765/dashboard/data"
 
 # Agent definitions (from agency-agents repo)
@@ -312,7 +312,7 @@ def report_status() -> None:
 def submit_job(*, country: str = "PE", callback_url: str = "", local: bool = False) -> dict:
     """Enqueue Price Pulse via POST /v1/intel/price-pulse (Pro tier)."""
     base = os.getenv("MARKET_API_URL", "").rstrip("/") or (
-        "http://127.0.0.1:8765" if local else "https://cli-market-production.up.railway.app"
+        "http://127.0.0.1:8765" if local else "https://cli-market-api.fly.dev"
     )
     token = os.getenv("MARKET_API_TOKEN") or os.getenv("CLI_MARKET_TOKEN", "")
     if not token:

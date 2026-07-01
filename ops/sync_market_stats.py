@@ -83,7 +83,7 @@ def _fetch_pypi_from_prod_api() -> int:
     base = (
         os.getenv("DASHBOARD_DATA_URL")
         or os.getenv("CLI_MARKET_API_URL")
-        or "https://cli-market-production.up.railway.app"
+        or "https://cli-market-api.fly.dev"
     ).rstrip("/")
     url = f"{base}/analytics/pypi"
     try:
@@ -511,7 +511,7 @@ export const CLI_MARKET_STATS = {{
   mcpTools: {counts["default"]},
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},
-  apiBaseUrl: "https://cli-market-production.up.railway.app",
+  apiBaseUrl: "https://cli-market-api.fly.dev",
   retailersPhraseEs: "{s.RETAILERS_PHRASE_ES}",
   retailersPhraseEn: "{s.RETAILERS_PHRASE_EN}",
   heroBadgeEs: {json.dumps(hero)},
@@ -776,7 +776,7 @@ def sync_mcp_json() -> None:
     data["tools"] = default_tools
     data["tools_legacy"] = legacy_tools
     data["env"] = {
-        "MARKET_API_URL": "https://cli-market-production.up.railway.app",
+        "MARKET_API_URL": "https://cli-market-api.fly.dev",
         "MCP_TOOL_PROFILE": "default",
     }
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

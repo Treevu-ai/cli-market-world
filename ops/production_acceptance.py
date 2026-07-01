@@ -54,7 +54,7 @@ def _load_admin_token() -> str:
     return ""
 
 ALLOWED_API_HOSTS = (
-    "cli-market-production.up.railway.app",
+    "cli-market-api.fly.dev",
     "localhost",
     "127.0.0.1",
 )

@@ -7,7 +7,7 @@ import sys
 
 import httpx
 
-API = os.environ.get("MARKET_API_URL", "https://cli-market-production.up.railway.app").rstrip("/")
+API = os.environ.get("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
 MIN_SNAPSHOTS = int(os.environ.get("DOCTOR_MIN_SNAPSHOTS", "1000"))
 MIN_LINKAGE_PCT = float(os.environ.get("DOCTOR_MIN_LINKAGE_PCT", "50"))
 MAX_DEAD_SOURCES = int(os.environ.get("DOCTOR_MAX_DEAD_SOURCES", "0"))

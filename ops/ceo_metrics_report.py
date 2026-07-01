@@ -42,7 +42,7 @@ load_repo_env()
 
 API_BASE = os.getenv(
     "MARKET_API_URL",
-    "https://cli-market-production.up.railway.app",
+    "https://cli-market-api.fly.dev",
 )
 MARKET_TOKEN = os.getenv("MARKET_API_TOKEN", "")
 PYPI_PACKAGE = "cli-market-world"

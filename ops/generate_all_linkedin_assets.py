@@ -42,7 +42,7 @@ from linkedin_asset_lib import (
     render_terminal,
 )
 
-COMPARE_URL = "https://cli-market-production.up.railway.app/products/compare"
+COMPARE_URL = "https://cli-market-api.fly.dev/products/compare"
 
 
 class RegexTimeoutError(Exception):

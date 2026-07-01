@@ -45,7 +45,7 @@ except ImportError:
     _HAS_HTTPX = False
     import urllib.request as _urllib
 
-API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-production.up.railway.app")
+API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
 SOURCES_HEALTH_URL = f"{API_BASE}/v1/sources/health"
 DASHBOARD_URL = f"{API_BASE}/dashboard/data"
 

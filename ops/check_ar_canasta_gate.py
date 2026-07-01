@@ -19,7 +19,7 @@ import urllib.request
 
 from company_ar_gate import is_ar_store
 
-DEFAULT_URL = "https://cli-market-production.up.railway.app/dashboard/data"
+DEFAULT_URL = "https://cli-market-api.fly.dev/dashboard/data"
 TRIO = ("Carrefour", "Jumbo", "Vea")
 
 
