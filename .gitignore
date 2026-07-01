@@ -52,3 +52,4 @@ docs/financial-services/
 
 # Cloned dependency repos (local dev only)
 .deps/
+*.egg-info/
