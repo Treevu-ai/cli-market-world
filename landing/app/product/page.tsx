@@ -3,7 +3,7 @@ import ProductArchitecturePage from "@/components/ProductArchitecturePage";
 
 export const metadata: Metadata = {
   title: "Product",
-  description: "CLI Market architecture: data ingestion, normalization, intelligence, and commerce workflows across 81 LATAM retailers (41 verified).",
+  description: "CLI Market architecture: data ingestion, normalization, intelligence, and commerce workflows across 80 LATAM retailers (40 verified).",
   alternates: { canonical: "/product" },
   openGraph: {
     title: "Product Architecture — CLI Market",

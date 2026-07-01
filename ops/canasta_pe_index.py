@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_URL = os.getenv(
     "DASHBOARD_DATA_URL",
-    "https://cli-market-production.up.railway.app/dashboard/data",
+    "https://cli-market-api.fly.dev/dashboard/data",
 )
 OUT_PATH = ROOT / "landing/public/indice-canasta-pe.md"
 
@@ -49,7 +49,7 @@ def render_markdown(data: dict, *, generated_at: str) -> str:
     lines = [
         "# Índice Canasta Perú",
         "",
-        f"**Actualizado:** {generated_at} (UTC) · Fuente: [CLI Market dashboard](https://cli-market-production.up.railway.app/dashboard/data)",
+        f"**Actualizado:** {generated_at} (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)",
         "",
         "Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa. "
         "Señal pública del data moat — ver [`docs/gtm/pitch-agentic-protocols.md`](../docs/gtm/pitch-agentic-protocols.md).",

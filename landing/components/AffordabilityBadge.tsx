@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL || "https://cli-market-production.up.railway.app"
+  process.env.NEXT_PUBLIC_API_URL || "https://cli-market-api.fly.dev"
 ).replace(/\/$/, "");
 
 type Band = "comfortable" | "moderate" | "strained" | "critical";

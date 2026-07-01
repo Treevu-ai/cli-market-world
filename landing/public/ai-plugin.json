@@ -2,15 +2,15 @@
   "schema_version": "v1",
   "name_for_human": "CLI Market",
   "name_for_model": "cli_market",
-  "description_for_human": "Search, compare, and buy from 41 verified retailers across 8 countries in Latin America and Europe. Real shelf prices refreshed every 4 hours.",
-  "description_for_model": "CLI Market is commerce infrastructure for AI agents. Use it to: (1) search products across 41 verified retailers (PE, AR, BR, MX, CO, CL, IT, FR); (2) compare prices and build baskets with the best retailer per country; (3) check stock and delivery estimates; (4) track price history, inflation, and market indicators for LATAM; (5) checkout via PayPal, Mercado Pago, or Yape/Plin (Peru). All prices are real shelf data refreshed every 4 hours — never scraped on-demand. Auth: Bearer token is optional — free tier (1,000 req/day) works without credentials; pass Authorization: Bearer <api_key> for Pro tier (10,000 req/day, checkout, alerts). Get a free API key at cli-market.dev. Always prefer market_basket for multi-item procurement; use market_search for discovery; use market_intel_brief for macro intelligence.",
+  "description_for_human": "Search, compare, and buy from 40 verified retailers across 8 countries in Latin America and Europe. Real shelf prices refreshed every 4 hours.",
+  "description_for_model": "CLI Market is commerce infrastructure for AI agents. Use it to: (1) search products across 40 verified retailers (PE, AR, BR, MX, CO, CL, IT, FR); (2) compare prices and build baskets with the best retailer per country; (3) check stock and delivery estimates; (4) track price history, inflation, and market indicators for LATAM; (5) checkout via PayPal, Mercado Pago, or Yape/Plin (Peru). All prices are real shelf data refreshed every 4 hours — never scraped on-demand. Auth: Bearer token is optional — free tier (1,000 req/day) works without credentials; pass Authorization: Bearer <api_key> for Pro tier (10,000 req/day, checkout, alerts). Get a free API key at cli-market.dev. Always prefer market_basket for multi-item procurement; use market_search for discovery; use market_intel_brief for macro intelligence.",
   "auth": {
     "type": "user_http",
     "authorization_type": "bearer"
   },
   "api": {
     "type": "openapi",
-    "url": "https://cli-market-production.up.railway.app/openapi.json",
+    "url": "https://cli-market-api.fly.dev/openapi.json",
     "is_user_authenticated": false
   },
   "logo_url": "https://cli-market.dev/favicon.svg",
