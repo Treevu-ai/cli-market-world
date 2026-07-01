@@ -80,11 +80,6 @@ def _rewrite_positional_country(argv: list[str]) -> list[str]:
     an intel subcommand accepting --country, (b) isn't already flagged with
     -c/--country, and (c) matches a known country code case-insensitively.
     """
-    try:
-        from market_core.market_geo_currency import COUNTRIES
-    except Exception:
-        return argv
-
     idx = None
     if len(argv) >= 3 and argv[1] == "intel" and argv[2] in _INTEL_SUBCMDS_WITH_COUNTRY:
         idx = 3
@@ -1425,9 +1420,13 @@ def cmd_inflation(args):
         data = cli_api("GET", f"/v1/intel/inflation?{qs}" if qs else "/v1/intel/inflation")
     items = data.get("items", [])
     n_products = sum(int(i.get("n_products") or 0) for i in items)
-    no_coverage = not items and n_products == 0
+    no_coverage = n_products == 0
     if getattr(args, "json", False) or ui.is_json_mode():
-        ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel inflation --country {args.country or 'PE'}", "market intel indicators"]), console)
+        ui.emit_json(ui.json_response(
+            True, data,
+            next_commands=[f"market intel inflation --country {args.country or 'PE'}", "market intel indicators"],
+            status=2 if no_coverage else None,
+        ), console)
         if no_coverage:
             sys.exit(2)
         return
@@ -1441,7 +1440,7 @@ def cmd_inflation(args):
     console.print(f"\n[bold]RPV promedio (7d): [{color}]{avg:+.1f}%[/] ({meta})[/]")
     console.print("[dim]Retail Price Velocity — no es inflación oficial IPC.[/]")
     if no_coverage:
-        cc_label = args.country or ("LATAM" if not ui.is_en() else "LATAM")
+        cc_label = args.country or "LATAM"
         warn = (
             f"[yellow]Sin cobertura activa para {cc_label} en esta ventana — 0 tiendas con datos.[/]"
             if not ui.is_en()
@@ -1478,7 +1477,7 @@ def cmd_indicators(args):
         with console.status("[cyan]Refrescando indicadores..."):
             data = cli_api("POST", f"/v1/intel/refresh?{qs}" if qs else "/v1/intel/refresh")
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel indicators -c {args.country or 'PE'}"]), console)
+            ui.emit_json(ui.json_response(True, data, next_commands=[f"market intel indicators -c {args.country or ui.get_default_country()}"]), console)
             return
         console.print(
             f"[#3cffd0]✓ Indicadores actualizados — "
@@ -1496,7 +1495,7 @@ def cmd_indicators(args):
             latest = cli_api("GET", f"/v1/intel/scores?country={args.country}")
             ui.emit_json(ui.json_response(True, {"catalog": catalog, "scores": latest}, next_commands=[f"market intel indicators -c {args.country}", f"market intel scores -c {args.country}"]), console)
         else:
-            ui.emit_json(ui.json_response(True, catalog, next_commands=["market intel indicators -c PE"]), console)  # no country given — PE default is fine here
+            ui.emit_json(ui.json_response(True, catalog, next_commands=[f"market intel indicators -c {ui.get_default_country()}"]), console)
         return
 
     cc = args.country or ui.get_default_country()
@@ -1531,7 +1530,7 @@ def cmd_indicators(args):
 
     ui.print_intel_footer(
         console,
-        [f"market intel indicators -c {args.country or 'PE'}", f"market intel scores -c {args.country or 'PE'}", f"market intel enrichment -c {args.country or 'PE'}"],
+        [f"market intel indicators -c {cc}", f"market intel scores -c {cc}", f"market intel enrichment -c {cc}"],
     )
 
 
@@ -1569,7 +1568,8 @@ def cmd_scores(args):
     disclaimer = data.get("disclaimer", "")
     if disclaimer:
         console.print(f"[dim]{disclaimer}[/]")
-    ui.print_intel_footer(console, [f"market intel indicators -c {country}", f"market intel enrichment -c {country}"])
+    _footer_cc = args.country or ui.get_default_country()
+    ui.print_intel_footer(console, [f"market intel indicators -c {_footer_cc}", f"market intel enrichment -c {_footer_cc}"])
 
 
 def cmd_intel_brief(args):
