@@ -134,6 +134,10 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Dispersion for version: ${VERSION}"
 
+      - name: Clone cli-market-core sibling
+        run: |
+          git clone --depth 1 https://github.com/Treevu-ai/cli-market-core.git ../cli-market-core
+
       - name: Install cli-market-world (published version)
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
