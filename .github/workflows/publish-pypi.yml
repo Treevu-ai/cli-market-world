@@ -24,7 +24,6 @@ jobs:
     if: github.event_name == 'push' || inputs.mcp_registry_only != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: pypi
     steps:
       - uses: actions/checkout@v6
 
