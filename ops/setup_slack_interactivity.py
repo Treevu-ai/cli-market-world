@@ -4,12 +4,12 @@
 1. api.slack.com/apps → tu app → Basic Information → Signing Secret
 2. Interactivity & Shortcuts → ON → Request URL:
    https://cli-market-api.fly.dev/slack/interactions
-3. railway variables set SLACK_SIGNING_SECRET=<secret>
+3. Set SLACK_SIGNING_SECRET=<secret> on the API's hosting platform (Fly.io: `fly secrets set`)
 
 Usage (PowerShell: usar comillas, sin <>):
   python ops/setup_slack_interactivity.py
-  python ops/setup_slack_interactivity.py --signing-secret "abc123..." 
-  python ops/setup_slack_interactivity.py --signing-secret "abc123..." --railway
+  python ops/setup_slack_interactivity.py --signing-secret "abc123..."
+  python ops/setup_slack_interactivity.py --signing-secret "abc123..." --railway  # legacy: sets it on Railway instead
 """
 
 from __future__ import annotations
