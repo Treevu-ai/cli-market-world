@@ -631,16 +631,17 @@ def _dispatch_investigate(
 
 def cmd_investigate(args):
     en = ui.is_en()
+    cc = getattr(args, "country", None) or ui.get_default_country()
     if not _missions_enabled():
         msg = "Investigate missions are disabled (MARKET_MISSIONS=0)." if en else "Misiones investigate deshabilitadas (MARKET_MISSIONS=0)."
         if getattr(args, "json", False) or ui.is_json_mode():
-            ui.json_exit(console, False, error=msg, next_commands=["market search \"leche\" --country PE"])
+            ui.json_exit(console, False, error=msg, next_commands=[f'market search "leche" --country {cc}'])
         console.print(f"[yellow]{msg}[/]")
         sys.exit(1)
 
     query = (args.query or "").strip()
     if not query:
-        hint = 'market investigate "arroz" --country PE'
+        hint = f'market investigate "arroz" --country {cc}'
         if getattr(args, "json", False) or ui.is_json_mode():
             ui.json_exit(console, False, error="query required", next_commands=[hint])
         console.print(f"[yellow]{'Query required' if en else 'Query requerido'}[/]")
@@ -1027,7 +1028,8 @@ def cmd_discover(args):
         table_l.add_row(f"{info['emoji']} {info['name']}", stores_str, str(info["total_stores"]))
     console.print()
     console.print(table_l)
-    console.print("\n[dim]market search --country PE · market compare --line super[/]")
+    discover_cc = country_filter or ui.get_default_country()
+    console.print(f"\n[dim]market search --country {discover_cc} · market compare --line super[/]")
 
 
 def cmd_stores(args):
@@ -1045,11 +1047,12 @@ def cmd_stores(args):
     total = int(data.get("total", len(stores)))
 
     if getattr(args, "json", False) or ui.is_json_mode():
+        cc = country or ui.get_default_country()
         ui.emit_json(
             ui.json_response(
                 True,
                 {"stores": stores, "total": total, "country": country, "line": line},
-                next_commands=["market stores --country PE", "market search --country PE"],
+                next_commands=[f"market stores --country {cc}", f"market search --country {cc}"],
             ),
             console,
         )
@@ -1083,10 +1086,11 @@ def cmd_stores(args):
         )
     console.print()
     console.print(table)
+    hint_cc = country or ui.get_default_country()
     hint = (
-        f"\n[dim]{total} retailers · market search --country PE \"leche\"[/]"
+        f"\n[dim]{total} retailers · market search --country {hint_cc} \"leche\"[/]"
         if not ui.is_en()
-        else f'\n[dim]{total} retailers · market search --country PE "milk"[/]'
+        else f'\n[dim]{total} retailers · market search --country {hint_cc} "milk"[/]'
     )
     console.print(hint)
 
