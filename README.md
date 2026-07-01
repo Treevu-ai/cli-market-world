@@ -41,7 +41,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 - 🏗️ **Construye** — foso de datos con spreads filtrados por calidad, matching de canasta y dashboard en vivo
 - 🔗 **API-first** — schema JSON normalizado, listo para integrar; el retailer LATAM no expone APIs por su cuenta
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-api.fly.dev/docs) · [Dashboard](https://cli-market-api.fly.dev/dashboard)
 
 #### 🚀 Inicio rápido
 
@@ -116,7 +116,7 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 - 🏗️ **Build** — data moat with quality-filtered spreads, basket matching, and live dashboard
 - 🔗 **API-first** — normalized JSON schema, ready to integrate; LATAM retailers don't expose APIs themselves
 
-🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+🌐 [cli-market.dev](https://cli-market.dev) · 📚 [Docs](https://cli-market.dev/docs) · 🔧 [Tools](https://cli-market.dev/tools) · 📊 [Stats](https://cli-market.dev/stats) · [API](https://cli-market-api.fly.dev/docs) · [Dashboard](https://cli-market-api.fly.dev/dashboard)
 
 #### 🚀 Quick start
 
@@ -203,7 +203,7 @@ cli-market-world     Exposure — landing, docs, ops/CI, Railway prod + PyPI (TH
 
 ## 📊 Dashboard auditability
 
-Every price in CLI Market is traceable. The [live dashboard](https://cli-market-production.up.railway.app/dashboard) exposes:
+Every price in CLI Market is traceable. The [live dashboard](https://cli-market-api.fly.dev/dashboard) exposes:
 
 - **Cobertura 7 días** — `coverage_7d_pct` per retailer: what % of each store's catalog refreshed in the last week
 - **Normalización por kg/L** — unit price visible next to shelf price (e.g. `PEN 4.20/kg`), with counter of non-parseable names
