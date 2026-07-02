@@ -255,6 +255,42 @@ def test_save_card_rejects_foreign_customer():
     assert "not owned" in r.json()["detail"]
 
 
+def test_vault_setup_rejects_foreign_customer():
+    bind_vault_customer("other_user", "victim_cid")
+    mock_result = {"setup_token_id": "st_abc", "approve_url": "https://paypal.com/vault/st_abc"}
+    with patch(
+        "market_connectors.paypal_payments.create_vault_setup_token",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ) as mock_setup:
+        r = client.post(
+            "/billing/vault-setup",
+            headers=_auth(),
+            json={"customer_id": "victim_cid"},
+        )
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+    mock_setup.assert_not_called()
+
+
+def test_vault_confirm_rejects_foreign_customer():
+    bind_vault_customer("other_user", "victim_cid")
+    mock_result = {"payment_token_id": "pt_xyz", "customer_id": "victim_cid"}
+    with patch(
+        "market_connectors.paypal_payments.create_vault_payment_token",
+        new=AsyncMock(return_value=mock_result),
+        create=True,
+    ) as mock_confirm:
+        r = client.post(
+            "/billing/vault-confirm",
+            headers=_auth(),
+            json={"setup_token_id": "st_abc"},
+        )
+    assert r.status_code == 403
+    assert "not owned" in r.json()["detail"]
+    mock_confirm.assert_called_once()
+
+
 def test_saved_cards_rejects_foreign_customer():
     bind_vault_customer("other_user", "victim_cid")
     mock_result = {"cards": [{"id": "card_99", "last_four": "1234"}]}
