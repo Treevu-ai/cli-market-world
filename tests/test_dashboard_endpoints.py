@@ -63,6 +63,32 @@ def test_dashboard_data_cache_hit_is_fast(monkeypatch):
     assert isinstance(r2.json(), dict)
 
 
+def test_dashboard_data_slim_returns_gate_fields_only():
+    """Regression for world#365: the full payload can exceed MCP client token
+    limits (2.5M chars observed live) — ?slim=true must return only the
+    handful of data-gate fields agents actually need."""
+    full = client.get("/dashboard/data").json()
+    slim = client.get("/dashboard/data?slim=true").json()
+    assert isinstance(slim, dict)
+    if "error" in full:
+        return  # graceful-degradation path — nothing to compare
+    assert set(slim.keys()) <= {
+        "generated_at", "collector_stale", "coverage_7d_pct", "fresh_24h_pct",
+        "stores_fresh_24h", "stores_active_7d", "moat_age_hours", "publishable", "gate",
+    }
+    assert "kpis" not in slim
+    assert "by_country" not in slim
+    assert slim["collector_stale"] == full["moat_summary"]["collector_stale"]
+    assert slim["gate"] in ("open", "closed")
+
+
+def test_dashboard_data_slim_is_much_smaller_than_full():
+    import json
+    full_len = len(json.dumps(client.get("/dashboard/data").json()))
+    slim_len = len(json.dumps(client.get("/dashboard/data?slim=true").json()))
+    assert slim_len < full_len or full_len < 2000  # skip trivially-small fixtures
+
+
 # ── GET /dashboard/usage ──────────────────────────────────────────────────────
 
 def test_dashboard_usage_requires_auth():
