@@ -820,8 +820,9 @@ def cmd_cart_clear(args):
     if resp not in ("s", "y"):
         console.print("[dim]Cancelado[/]")
         return
-    result = cli_api("DELETE", "/cart")
-    console.print(f"[#3cffd0]✓ {result.get('message', 'Carrito vaciado')}[/]")
+    for item in cart:
+        cli_api("DELETE", f"/cart/{item['cart_id']}")
+    console.print("[#3cffd0]✓ Carrito vaciado[/]" if not is_en else "[#3cffd0]✓ Cart cleared[/]")
 
 def cmd_checkout(args):
     tier = ui.fetch_tier()
@@ -2705,7 +2706,6 @@ def cmd_shell(args):
             condition="price_drop",
             plan=None,
             promo_code=None,
-            manual_transfer=False,
             demo=False,
             ide=None,
             dry_run=False,
@@ -3357,7 +3357,6 @@ def cmd_upgrade(args):
     if not payment:
         payment = "mercadopago" if es else "paypal"
     manual = getattr(args, "resend", False) and getattr(args, "email", None) and plan == "pro"
-    manual_wallet = bool(getattr(args, "manual_transfer", False))
 
     from market_billing import price_label_for_plan
     plan_label = price_label_for_plan(plan)
@@ -3385,7 +3384,6 @@ def cmd_upgrade(args):
         payload = {
             "payment_method": payment,
             "lang": get_lang(),
-            "manual_transfer": manual_wallet,
         }
         email = (getattr(args, "email", None) or "").strip()
         if email:
@@ -3403,31 +3401,18 @@ def cmd_upgrade(args):
         if getattr(args, "json", False):
             ui.emit_json(ui.json_response(True, data, next_commands=["market whoami"]), console)
             return
-        if data.get("payment_mode") == "manual_transfer":
-            console.print(Panel.fit(
-                f"[bold #00FF88]Pro — transferencia manual[/]\n\n{data.get('message', '')}",
-                title="Upgrade",
-                border_style="#00FF88",
-            ))
-            for step in data.get("manual_steps") or []:
-                console.print(f"[dim]• {step}[/]")
-            if data.get("payment_phone"):
-                console.print(f"[cyan]Número:[/] {data['payment_phone']}")
-            if data.get("request_id"):
-                console.print(f"[cyan]Ref:[/] {data['request_id']}")
-        else:
-            console.print(Panel.fit(
-                f"[bold #00FF88]Pro — Mercado Pago[/]\n\n"
-                f"{data.get('message', '')}\n\n"
-                f"[cyan underline]{url}[/]\n\n"
-                + (f"[dim]Paga con {payment.upper()} en Mercado Pago. Pro se activa en minutos. Luego: market whoami[/]"
-                   if es and payment in ("yape", "plin")
-                   else "[dim]Activates in minutes via webhook. Then: market whoami[/]"
-                   if not es
-                   else "[dim]Pro se activa en minutos (webhook). Luego: market whoami[/]"),
-                title="Upgrade",
-                border_style="#00FF88",
-            ))
+        console.print(Panel.fit(
+            f"[bold #00FF88]Pro — Mercado Pago[/]\n\n"
+            f"{data.get('message', '')}\n\n"
+            f"[cyan underline]{url}[/]\n\n"
+            + (f"[dim]Paga con {payment.upper()} en Mercado Pago. Pro se activa en minutos. Luego: market whoami[/]"
+               if es and payment in ("yape", "plin")
+               else "[dim]Activates in minutes via webhook. Then: market whoami[/]"
+               if not es
+               else "[dim]Pro se activa en minutos (webhook). Luego: market whoami[/]"),
+            title="Upgrade",
+            border_style="#00FF88",
+        ))
         ui.print_hints(console, ["market whoami", "market doctor"])
         return
 
@@ -3754,12 +3739,6 @@ def main():
         help="Payment method (default: Mercado Pago in es, PayPal in en)",
     )
     p.add_argument("--email", help="Email for checkout receipt (optional if registered)")
-    p.add_argument(
-        "--manual-transfer",
-        action="store_true",
-        dest="manual_transfer",
-        help="Yape/Plin only: manual transfer fallback (≤24h ops activation)",
-    )
     p.add_argument("--resend", action="store_true", help="Resend payment link email (manual Pro fallback)")
 
     args = parser.parse_args()
