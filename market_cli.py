@@ -1775,6 +1775,8 @@ def cmd_intel_brief(args):
         for name, sc in list(scores.items())[:8]:
             val = sc.get("score")
             label = sc.get("label", "")
+            if sc.get("confidence") == "low":
+                label = f"[dim]⚠ {label}[/]"
             if val is not None:
                 color = "#FF6B35" if float(val) > 60 else "#00FF88"
                 t_scores.add_row(name.replace("_", " "), f"[{color}]{val:.0f}[/]", label)
