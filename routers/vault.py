@@ -44,16 +44,19 @@ async def vault_setup(
 ):
     """Create a PayPal Vault setup token — buyer approves to save payment method."""
     username = require_api_key(authorization)
+    customer_id = (body.get("customer_id") or "").strip()
+    if customer_id and vault_customer_bound_to_other(username, customer_id):
+        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
+
     from market_connectors.paypal_payments import create_vault_setup_token
 
     result = await create_vault_setup_token(
-        customer_id=body.get("customer_id", ""),
+        customer_id=customer_id,
         return_url=body.get("return_url", "https://cli-market.dev?vault=success"),
         cancel_url=body.get("cancel_url", "https://cli-market.dev?vault=cancelled"),
     )
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
-    customer_id = (body.get("customer_id") or "").strip()
     if customer_id:
         bind_vault_customer(username, customer_id)
     record_audit("vault_setup", username=username, detail={"setup_token": result.get("setup_token_id")})
@@ -77,6 +80,8 @@ async def vault_confirm(
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
     customer_id = (result.get("customer_id") or "").strip()
+    if customer_id and vault_customer_bound_to_other(username, customer_id):
+        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
     payment_token_id = (result.get("payment_token_id") or "").strip()
     if payment_token_id:
         bind_vault_payment_token(username, customer_id, payment_token_id)
