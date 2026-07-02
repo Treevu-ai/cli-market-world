@@ -503,10 +503,17 @@ _TOOLS = [
     {
         "name": "market_dashboard",
         "description": (
-            "Business-intelligence feed: moat health, collector status, coverage by country and line, "
-            "data gate signals (collector_stale). Use before any procurement recommendation."
+            "Data-gate check: collector_stale, coverage_pct, publishable. Use before any procurement "
+            "recommendation. Returns the compact gate payload by default (~1KB) — pass full=true only "
+            "if you need the complete BI dashboard (moat health, coverage by country/line); that "
+            "payload can exceed MCP client token limits."
         ),
-        "inputSchema": {"type": "object", "properties": {}},
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "full": {"type": "boolean", "default": False, "description": "Return the full dashboard payload instead of the compact gate view"},
+            },
+        },
     },
     # ── Pro (alert management) ────────────────────────────────────────────────
     {
@@ -840,7 +847,8 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             params = {k: v for k, v in args.items() if k != "product_id" and v is not None}
             r = await client.get(f"{_API_BASE}/products/delivery/{pid}", params=params, headers=headers)
         elif name == "market_dashboard":
-            r = await client.get(f"{_API_BASE}/dashboard/data", headers=headers)
+            slim_params = {} if args.get("full") else {"slim": "true"}
+            r = await client.get(f"{_API_BASE}/dashboard/data", params=slim_params, headers=headers)
         # ── Pro (alert management) ────────────────────────────────────────────
         elif name == "market_alert_create":
             r = await client.post(f"{_API_BASE}/v1/alerts", json=args, headers=headers)
