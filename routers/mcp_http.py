@@ -977,7 +977,7 @@ async def mcp_http(
     """HTTP MCP endpoint — JSON-RPC 2.0 over POST (Streamable HTTP, MCP 2025-03-26).
 
     Add to Claude / Cursor / VS Code / Kiro / Codex / Gemini:
-      URL: https://cli-market-production.up.railway.app/mcp?token=<your-api-token>
+      URL: https://cli-market-api.fly.dev/mcp?token=<your-api-token>
     """
     effective_auth = authorization or (f"Bearer {token}" if token else None)
     raw_token = effective_auth.replace("Bearer ", "").strip() if effective_auth else None

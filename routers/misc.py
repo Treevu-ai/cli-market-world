@@ -241,7 +241,7 @@ async def telegram_webhook(request: Request):
             f"\u2022 {len(COUNTRIES)} países\n"
             f"\u2022 {public_tool_count('default')} MCP tools "
             f"(default; {public_tool_count('legacy')} legacy)\n"
-            "\u2022 API: cli-market-production.up.railway.app\n"
+            "\u2022 API: cli-market-api.fly.dev\n"
             "\u2022 Pro: cli-market.dev/#pricing"
         )
     elif text.startswith("/coverage") or text in ("coverage", "cobertura"):
@@ -265,7 +265,7 @@ async def telegram_webhook(request: Request):
     elif text in ("/docs", "docs", "api"):
         reply = (
             "<b>Documentación:</b>\n"
-            "\u2022 Swagger: cli-market-production.up.railway.app/docs\n"
+            "\u2022 Swagger: cli-market-api.fly.dev/docs\n"
             "\u2022 llms.txt: cli-market.dev/llms.txt\n"
             "\u2022 Docs: cli-market.dev/docs"
         )
