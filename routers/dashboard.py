@@ -13,7 +13,7 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 
 from market_core import STORES, canonical_line_name, get_default_stores, get_db, price_to_usd
 from market_basket import build_canasta_basica
@@ -193,11 +193,35 @@ def dashboard():
     return HTMLResponse(html)
 
 
+def _slim_dashboard_data(data: dict) -> dict:
+    """Gate-only view: ~1KB instead of the multi-MB full payload — the full
+    response exceeds MCP client token limits (world#365), breaking agents
+    that call market_dashboard to check collector_stale before recommending
+    a purchase."""
+    moat = data.get("moat_summary", {})
+    return {
+        "generated_at": data.get("generated_at"),
+        "collector_stale": moat.get("collector_stale"),
+        "coverage_7d_pct": moat.get("coverage_7d_pct"),
+        "fresh_24h_pct": moat.get("fresh_24h_pct"),
+        "stores_fresh_24h": moat.get("stores_fresh_24h"),
+        "stores_active_7d": moat.get("stores_active_7d"),
+        "moat_age_hours": moat.get("moat_age_hours"),
+        "publishable": bool(moat.get("marketing_gate_pass")),
+        "gate": "closed" if moat.get("collector_stale") else "open",
+    }
+
+
 @router.get("/dashboard/data")
-def dashboard_data():
-    """Business-intelligence feed for the Data Moat dashboard."""
+def dashboard_data(slim: bool = Query(False, description="Return only the data-gate fields (~1KB) instead of the full payload")):
+    """Business-intelligence feed for the Data Moat dashboard.
+
+    ?slim=true returns only collector_stale/coverage/publishable — use this
+    from MCP or any token-constrained client instead of the full payload.
+    """
     try:
-        return _cached_dashboard_data()
+        data = _cached_dashboard_data()
+        return _slim_dashboard_data(data) if slim else data
     except Exception:
         # Log full error server-side, return generic message to client
         import logging
