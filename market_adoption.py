@@ -9,7 +9,7 @@ from market_funnel import funnel_summary
 from market_pepy import pepy_multi_summary
 
 _ADOPTION_API_BASE = os.getenv(
-    "MARKET_API_URL", "https://cli-market-production.up.railway.app"
+    "MARKET_API_URL", "https://cli-market-api.fly.dev"
 ).rstrip("/")
 
 
