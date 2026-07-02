@@ -82,15 +82,18 @@ Donde:
 ### Fórmula
 
 ```
-BSI = canasta_total_hoy / median(canasta_total, últimos 30 días)
+BSI = (canasta_total_hoy / canasta_total_referencia_30d) × 100
 ```
 
-- `canasta_total` = suma de precios unitarios de los 10 ítems de referencia CLI Market (canasta básica), por país/moneda
-- Escala: **índice 1.0 = sin estrés** (nivel histórico mediano)
-  - `< 0.95` — aliviado
-  - `0.95 – 1.05` — estable
-  - `1.05 – 1.15` — presión moderada
-  - `> 1.15` — estrés elevado
+- `canasta_total_hoy` = suma del precio mínimo observado por ítem de canasta (10 ítems de referencia CLI Market), por país
+- `canasta_total_referencia_30d` = suma del precio mínimo por producto observado en los últimos 30 días (si no hay historial de 30d suficiente, se usa el propio total de hoy como referencia — el BSI resultante es 100 en ese caso, no un valor no-definido)
+- Escala: **100 = mismo nivel que la referencia de 30 días** (sin estrés)
+  - `< 95` — aliviado
+  - `95 – 105` — estable
+  - `105 – 115` — presión moderada
+  - `> 115` — estrés elevado
+
+> **Nota de sincronización (2026-07):** esta sección documentaba previamente una escala ratio (`1.0 = sin estrés`, banda `0.95–1.15`), pero el código (`market_indicators.py::compute_basket_stress`) siempre calculó y expuso el índice en escala ×100. Esa discrepancia entre documentación y código causó al menos una interpretación errónea externa de un BSI=123.36 como "overflow numérico" cuando en realidad es un valor válido y "elevado" en la escala real. Ver `prd-market-intel-data-integrity.md §4.2` y el fix de escala previo referenciado en el código como `cli-market-backend#127`.
 
 ### Publicación obligatoria
 
@@ -190,6 +193,10 @@ Totales: SKUs únicos, retailers activos, cobertura agregada %, fecha de corte U
 | < 60% | `[COBERTURA PARCIAL]` | Solo clientes con disclaimer; sin claims agregados |
 
 Fuente: `GET /v1/coverage/matrix` + `store_health` en `/dashboard/data`.
+
+### Por qué el número de scores compuestos varía por país
+
+`market intel brief` / `/v1/intel/brief` no aplica un schema fijo de scores por país — cada score compuesto (`market_indicators.py::_scores_from_latest`) solo se agrega al response cuando su indicador de entrada tiene un valor disponible para ese país. Varios de esos indicadores dependen de fuentes de enrichment que hoy solo están backfillleadas para un subconjunto de países (ej. `bcrp_*` — Banco Central de Reserva del Perú, `off_*` — Open Food Facts, `wiki_*` — Wikipedia demand momentum, `weather_logistics_stress`). Un país con pocos o ningún enrichment poblado (ej. US, UY) muestra naturalmente menos scores que uno con cobertura completa (ej. AR, CO) — no es un schema reducido intencional, es consecuencia directa de qué pipelines de enrichment han corrido para ese país. Ver `prd-market-intel-data-integrity.md §4.5`.
 
 ---
 
