@@ -2263,8 +2263,16 @@ def _collect_doctor_checks() -> tuple[list[tuple[str, str, str]], bool]:
     try:
         resp = httpx.get(f"{API}/health/db", timeout=10)
         if resp.status_code == 200:
-            snaps = resp.json().get("snapshots", "?")
-            checks.append(("API health", f"200 OK - {snaps:,} snapshots", "ok"))
+            body = resp.json()
+            if body.get("backend") == "error":
+                # /health/db returns HTTP 200 even when the DB connection
+                # itself failed — the real diagnosis is in "detail".
+                checks.append(("API health", body.get("detail", "unknown error")[:80], "fail"))
+                ok = False
+            else:
+                snaps = body.get("snapshots", "?")
+                snaps_display = f"{snaps:,}" if isinstance(snaps, int) else str(snaps)
+                checks.append(("API health", f"200 OK - {snaps_display} snapshots", "ok"))
         else:
             checks.append(("API health", f"HTTP {resp.status_code}", "fail"))
             ok = False
@@ -2316,16 +2324,21 @@ def _collect_doctor_checks() -> tuple[list[tuple[str, str, str]], bool]:
         stats = httpx.get(f"{API}/health/stats", timeout=15)
         if stats.status_code == 200:
             body = stats.json()
-            linkage = body.get("golden_linkage_pct", body.get("linkage_pct"))
-            if linkage is not None:
-                pct = float(linkage)
-                checks.append((
-                    "Golden linkage",
-                    f"{pct:.1f}%",
-                    "ok" if pct >= 50 else "warn",
-                ))
+            if body.get("error"):
+                # /health/stats also returns HTTP 200 on a backend failure
+                # (DB down, stats build raised) — don't read that as "no data".
+                checks.append(("Golden linkage", str(body["error"])[:60], "warn"))
             else:
-                checks.append(("Golden linkage", "no data", "warn"))
+                linkage = body.get("golden_linkage_pct", body.get("linkage_pct"))
+                if linkage is not None:
+                    pct = float(linkage)
+                    checks.append((
+                        "Golden linkage",
+                        f"{pct:.1f}%",
+                        "ok" if pct >= 50 else "warn",
+                    ))
+                else:
+                    checks.append(("Golden linkage", "no data", "warn"))
         else:
             checks.append(("Golden linkage", f"HTTP {stats.status_code}", "warn"))
     except Exception as exc:
@@ -2442,7 +2455,13 @@ def cmd_init(args):
         with ui.run_with_status(console, steps[0] + "..."):
             import httpx
             try:
-                httpx.get(f"{API}/health/db", timeout=10).raise_for_status()
+                resp = httpx.get(f"{API}/health/db", timeout=10)
+                resp.raise_for_status()
+                body = resp.json()
+                # /health/db returns HTTP 200 even when the DB connection
+                # itself failed — a 2xx status alone doesn't mean "healthy".
+                if body.get("backend") == "error":
+                    raise RuntimeError(body.get("detail", "DB connection failed"))
                 console.print(f"[{ui.MINT}]OK[/] API")
                 api_ok = True
             except Exception as exc:
@@ -2451,7 +2470,11 @@ def cmd_init(args):
     else:
         import httpx
         try:
-            httpx.get(f"{API}/health/db", timeout=10).raise_for_status()
+            resp = httpx.get(f"{API}/health/db", timeout=10)
+            resp.raise_for_status()
+            body = resp.json()
+            if body.get("backend") == "error":
+                raise RuntimeError(body.get("detail", "DB connection failed"))
             api_ok = True
         except Exception as exc:
             ui.json_exit(console, False, error=str(exc), status=500)
