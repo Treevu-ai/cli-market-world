@@ -1,0 +1,14 @@
+{
+  "ucp": {
+    "version": "2026-04-08",
+    "agent": {
+      "name": "CLI Market",
+      "description": "Cross-retailer price comparison and procurement agent for LatAm. Reads merchant catalogs to power price search, basket comparison, and inflation signals. Does not initiate checkout or payment without explicit human approval.",
+      "url": "https://cli-market.dev",
+      "contact": "hello@cli-market.dev"
+    },
+    "capabilities": {
+      "catalog.search": {}
+    }
+  }
+}
