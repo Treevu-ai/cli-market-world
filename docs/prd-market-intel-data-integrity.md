@@ -147,11 +147,11 @@ Esto reproduce, en la capa de scores compuestos, el mismo problema que el PRD an
 
 | Requerimiento | Prioridad | Esfuerzo | Bloquea publicación/demo | Estado |
 |---------------|-----------|----------|---------------------------|--------|
-| 4.1 País sin cobertura → flag explícito | P0 | Medio (+ spike) | Sí | 🔲 Pendiente |
-| 4.2 Sincronizar escala BSI en methodology.md | P0 | Bajo | Sí | 🔲 Pendiente |
-| 4.3 CV exige ≥2 tiendas distintas | P0 | Medio | Sí | 🔲 Pendiente |
-| 4.4 Confidence por score compuesto | P1 | Medio | No | 🔲 Pendiente |
-| 4.5 Documentar schema reducido US/UY | P2 | Bajo | No | 🔲 Pendiente |
+| 4.1 País sin cobertura → flag explícito | P0 | Medio (+ spike) | Sí | ✅ Shipped ([cli-market-core#137](https://github.com/Treevu-ai/cli-market-core/pull/137)) |
+| 4.2 Sincronizar escala BSI en methodology.md | P0 | Bajo | Sí | ✅ Shipped ([cli-market-world#484](https://github.com/Treevu-ai/cli-market-world/pull/484)) |
+| 4.3 CV exige ≥2 tiendas distintas | P0 | Medio | Sí | ✅ Shipped ([cli-market-core#137](https://github.com/Treevu-ai/cli-market-core/pull/137)) |
+| 4.4 Confidence por score compuesto | P1 | Medio | No | ✅ Shipped ([cli-market-core#137](https://github.com/Treevu-ai/cli-market-core/pull/137), [cli-market-world#484](https://github.com/Treevu-ai/cli-market-world/pull/484)) |
+| 4.5 Documentar schema reducido US/UY | P2 | Bajo | No | ✅ Shipped ([cli-market-world#484](https://github.com/Treevu-ai/cli-market-world/pull/484)) |
 
 ---
 
@@ -159,13 +159,13 @@ Esto reproduce, en la capa de scores compuestos, el mismo problema que el PRD an
 
 | Entregable | Responsable | Repo | Estado |
 |------------|-------------|------|--------|
-| Spike: trazar origen de scores idénticos ES/CH/EC/BO | Engineering | cli-market-core | 🔲 |
-| Fix: `stores_active` no cae a catálogo global | Engineering | cli-market-core | 🔲 |
-| Fix: `data_available: false` en brief sin cobertura | Engineering | cli-market-backend, cli-market-world | 🔲 |
-| Fix: CV exige n_stores distintas ≥2 | Engineering | cli-market-core | 🔲 |
-| Update: `methodology.md §3` escala BSI sincronizada | Lead Economist | cli-market-world | 🔲 |
-| Fix: `confidence` por score compuesto + render CLI | Engineering | cli-market-core, cli-market-world | 🔲 |
-| Doc: schema de scores por país | Product | cli-market-world | 🔲 |
+| Spike: trazar origen de scores idénticos ES/CH/EC/BO | Engineering | cli-market-core | ✅ Resuelto — el mecanismo es `get_latest_values()` sirviendo filas de scope global (`country=''`) cuando no hay filas propias del país; confirmado con `compute_basket_stress`/`compute_price_dispersion` retornando `None` correctamente para países sin tiendas |
+| Fix: `stores_active` no cae a catálogo global | Engineering | cli-market-core | ✅ |
+| Fix: `data_available: false` en brief sin cobertura | Engineering | cli-market-core | ✅ (implementado en `cli-market-core`, no en backend/world — `build_intel_brief` vive ahí) |
+| Fix: CV exige n_stores distintas ≥2 | Engineering | cli-market-core | ✅ |
+| Update: `methodology.md §3` escala BSI sincronizada | Lead Economist | cli-market-world | ✅ |
+| Fix: `confidence` por score compuesto + render CLI | Engineering | cli-market-core, cli-market-world | ✅ |
+| Doc: schema de scores por país | Product | cli-market-world | ✅ |
 
 ---
 
