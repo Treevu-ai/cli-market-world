@@ -2163,11 +2163,20 @@ def cmd_register(args):
 
     # ── Step 2: prompt for OTP code ───────────────────────────────────────
     masked_email = data.get("email", email)
+    email_sent = data.get("email_sent", True)  # legacy backends may omit this field
     if not getattr(args, "json", False):
-        console.print(
-            f"\n[bold #00FF88]Código enviado a {masked_email}[/]\n"
-            "[dim]Revisa tu bandeja de entrada (y spam).[/]\n"
-        )
+        if email_sent:
+            console.print(
+                f"\n[bold #00FF88]Código enviado a {masked_email}[/]\n"
+                "[dim]Revisa tu bandeja de entrada (y spam).[/]\n"
+            )
+        else:
+            console.print(
+                f"\n[bold #FF6B35]No se pudo enviar el correo a {masked_email}.[/]\n"
+                "[dim]El servidor generó el código pero el envío de email falló "
+                "(SMTP no configurado o error del proveedor) — no va a llegar ningún correo. "
+                "Contacta a soporte o reintenta más tarde.[/]\n"
+            )
 
     code: str = (getattr(args, "code", None) or "").strip()
     if not code and not getattr(args, "json", False):
