@@ -320,7 +320,7 @@ async def paypal_status(test: bool = False):
         "plan_id_configured": bool(os.getenv("PAYPAL_PLAN_ID", "")),
         "starter_plan_id_configured": bool(os.getenv("PAYPAL_STARTER_PLAN_ID", "")),
         "api_url": "https://api-m.sandbox.paypal.com" if sandbox else "https://api-m.paypal.com",
-        "webhook_url": "https://cli-market-production.up.railway.app/checkout/paypal-webhook",
+        "webhook_url": "https://cli-market-api.fly.dev/checkout/paypal-webhook",
         "setup_script": "python3 ops/paypal_sandbox_setup.py check",
         "endpoints": [
             "/checkout/paypal",
