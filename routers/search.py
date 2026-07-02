@@ -382,13 +382,25 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
             db.close()
     stores = body.stores or list(STORES.keys())
     stores = [s for s in stores if s in STORES]
+    # Fetch every item across every store in parallel instead of the old
+    # sequential `for store: for item: await fetch_store(...)` — that was
+    # O(stores * items) fully-serialized awaits (world#363: a 3-item PE
+    # basket across ~15 stores timed out at 60s). One _parallel_fetch_stores
+    # call per item already batches+parallelizes across stores internally;
+    # gathering across items too means total latency is bounded by the
+    # slowest single item-fetch round, not the sum of all of them.
+    item_fetches = await asyncio.gather(
+        *(_parallel_fetch_stores(stores, item["name"], 1, PAGE_SIZE) for item in body.items)
+    )
+    item_raw_by_store: list[dict[str, list]] = [raw for raw, _errors in item_fetches]
+
     results: dict[str, dict] = {}
     for store in stores:
         t = 0.0
         found: list[dict] = []
-        for item in body.items:
+        for item, raw_by_store in zip(body.items, item_raw_by_store):
             try:
-                raw = await fetch_store(store, item["name"])
+                raw = raw_by_store.get(store)
                 if not raw:
                     continue
                 # Convert and filter: only keep products where every query word
