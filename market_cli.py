@@ -897,14 +897,29 @@ def cmd_ask(args):
         ui.emit_json(ui.json_response(True, {"result": data}, next_commands=["market ask", "market cart"]), console)
         return
 
-    action = data.get("action", "search")
-    query = data.get("query", "")
-    qty = data.get("quantity", 1)
     error = data.get("error") or data.get("detail")
-
     if error:
         console.print(f"[red]{error}[/]")
         return
+
+    if "answer" in data:
+        # LLM-powered agent (Claude Haiku with tool use) — server already
+        # called search_products/compare_basket internally and wrote the
+        # final natural-language answer; there's no action/query to drive
+        # a follow-up CLI call for.
+        for tool in data.get("tools_used", []):
+            console.print(f"[dim]→ {tool}[/]")
+        answer = (data.get("answer") or "").strip()
+        if answer:
+            console.print()
+            console.print(Panel(answer, border_style=ui.TABLE_BORDER, padding=(1, 2)))
+        else:
+            console.print("[yellow]Sin respuesta del agente[/]" if not is_en else "[yellow]No answer from agent[/]")
+        return
+
+    action = data.get("action", "search")
+    query = data.get("query", "")
+    qty = data.get("quantity", 1)
 
     console.print(f"[dim]→ {action}" + (f": \"{query}\"" if query else "") + "[/]")
 
