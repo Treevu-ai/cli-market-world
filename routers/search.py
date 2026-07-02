@@ -398,7 +398,7 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
     for store in stores:
         t = 0.0
         found: list[dict] = []
-        for item, raw_by_store in zip(body.items, item_raw_by_store):
+        for item, raw_by_store in zip(body.items, item_raw_by_store, strict=True):
             try:
                 raw = raw_by_store.get(store)
                 if not raw:
