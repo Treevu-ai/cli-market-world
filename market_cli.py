@@ -20,6 +20,7 @@ import argparse
 import html
 import json
 import os
+import re
 import sys
 
 from rich.console import Console
@@ -402,7 +403,11 @@ def _format_basket_item_label(breakdown_item: dict) -> str:
     """
     name = breakdown_item.get("resolved_name") or breakdown_item.get("item") or "?"
     brand = (breakdown_item.get("brand") or "").strip()
-    label = f"{brand} — {name}" if brand and brand != "—" and brand.lower() not in name.lower() else name
+    # Word-boundary match, not a raw substring check — a brand like "San"
+    # must not be treated as already-present just because it's a substring
+    # of an unrelated word like "Sancocho" (CodeRabbit review on world#497).
+    brand_in_name = bool(brand) and re.search(rf"\b{re.escape(brand.lower())}\b", name.lower())
+    label = f"{brand} — {name}" if brand and brand != "—" and not brand_in_name else name
     return f"{breakdown_item.get('qty', 1)}x {label}"
 
 

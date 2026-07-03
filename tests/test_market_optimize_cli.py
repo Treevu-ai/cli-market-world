@@ -84,6 +84,14 @@ def test_format_basket_item_label_brand_already_in_name_not_duplicated():
     assert label == "1x Leche Gloria 1L"
 
 
+def test_format_basket_item_label_substring_brand_not_falsely_matched():
+    """Regression (CodeRabbit review on world#497): a raw substring check
+    would wrongly treat brand "San" as already present in "Sancocho..." and
+    drop it from the label, even though they're unrelated words."""
+    label = _format_basket_item_label({"item": "Sancochado de Res 500g", "brand": "San", "qty": 1})
+    assert label == "1x San — Sancochado de Res 500g"
+
+
 def test_format_basket_item_label_uses_resolved_name_over_raw_query():
     label = _format_basket_item_label({"item": "papel higienico", "resolved_name": "Papel Higiénico Elite", "brand": None, "qty": 3})
     assert label == "3x Papel Higiénico Elite"
