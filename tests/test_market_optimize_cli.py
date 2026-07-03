@@ -13,6 +13,7 @@ from market_cli import (
     _normalize_basket_store_rows,
     _country_supermarket_stores,
     _format_basket_item_label,
+    _format_basket_alternates,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -91,6 +92,27 @@ def test_format_basket_item_label_uses_resolved_name_over_raw_query():
 def test_format_basket_item_label_missing_name_falls_back_to_placeholder():
     label = _format_basket_item_label({"qty": 1})
     assert label == "1x ?"
+
+
+def test_format_basket_alternates_empty_when_no_alternates():
+    assert _format_basket_alternates({"item": "leche", "alternates": []}, "PEN") == ""
+    assert _format_basket_alternates({"item": "leche"}, "PEN") == ""
+
+
+def test_format_basket_alternates_lists_brand_and_price():
+    item = {
+        "item": "leche",
+        "alternates": [
+            {"brand": "Gloria", "name": "Leche Gloria 1L", "price": 4.5},
+            {"brand": "Ideal", "name": "Leche Ideal 400g", "price": 5.2},
+        ],
+    }
+    assert _format_basket_alternates(item, "PEN") == "Gloria (PEN 4.50), Ideal (PEN 5.20)"
+
+
+def test_format_basket_alternates_falls_back_to_name_without_brand():
+    item = {"item": "leche", "alternates": [{"brand": "—", "name": "Leche Sin Marca 1L", "price": 3.5}]}
+    assert _format_basket_alternates(item, "PEN") == "Leche Sin Marca 1L (PEN 3.50)"
 
 
 def test_country_supermarket_stores_pe():

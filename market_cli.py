@@ -406,6 +406,22 @@ def _format_basket_item_label(breakdown_item: dict) -> str:
     return f"{breakdown_item.get('qty', 1)}x {label}"
 
 
+def _format_basket_alternates(breakdown_item: dict, currency: str) -> str:
+    """Build the "other brands seen: X (PEN 3.90), Y (PEN 5.20)" hint for one
+    breakdown item. Returns "" when there's nothing to show — the item had
+    only one matching candidate at that store."""
+    alternates = breakdown_item.get("alternates") or []
+    if not alternates:
+        return ""
+    parts = []
+    for alt in alternates:
+        brand = (alt.get("brand") or "").strip()
+        label = brand if brand and brand != "—" else (alt.get("name") or "?")
+        price = alt.get("price")
+        parts.append(f"{label} ({currency} {price:.2f})" if price is not None else label)
+    return ", ".join(parts)
+
+
 def _normalize_basket_store_rows(data: dict) -> list[dict]:
     """Wave 4 returns ``stores``; legacy live API returns ``comparison`` keyed by store."""
     rows = data.get("stores") or []
@@ -425,6 +441,7 @@ def _normalize_basket_store_rows(data: dict) -> list[dict]:
                 "brand": i.get("brand"),
                 "qty": i.get("qty", 1),
                 "price": i.get("price"),
+                "alternates": i.get("alternates") or [],
             }
             for i in items
         ]
@@ -1272,9 +1289,12 @@ def cmd_basket(args):
             "Comparativa de canasta" if not is_en else "Basket comparison"
         )
     )
+    show_alternates = bool(getattr(args, "show_alternates", False))
     table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
     table.add_column("Tienda" if not is_en else "Store", style="bold")
     table.add_column("Items", max_width=56)
+    if show_alternates:
+        table.add_column("Otras marcas" if not is_en else "Other brands", max_width=48, style="dim")
     total_col = "TCO" if payload["include_tco"] else ("Total" if is_en else "Total")
     table.add_column(total_col, style="bold yellow", justify="right")
     for row in sorted(
@@ -1282,10 +1302,17 @@ def cmd_basket(args):
         key=lambda s: float(s.get("tco_total") or s.get("total") or 999999),
     ):
         breakdown = row.get("breakdown") or []
+        currency = row.get("currency") or "PEN"
         items_str = ", ".join(_format_basket_item_label(b) for b in breakdown[:4])
         amount = float(row.get("tco_total") or row.get("total") or 0)
-        currency = row.get("currency") or "PEN"
-        table.add_row(row.get("store_name") or row.get("store", "?"), items_str, f"{currency} {amount:.2f}")
+        row_cells = [row.get("store_name") or row.get("store", "?"), items_str]
+        if show_alternates:
+            alt_str = "; ".join(
+                filter(None, (_format_basket_alternates(b, currency) for b in breakdown[:4]))
+            )
+            row_cells.append(alt_str or "—")
+        row_cells.append(f"{currency} {amount:.2f}")
+        table.add_row(*row_cells)
     console.print(table)
     leader = min(store_rows, key=lambda s: float(s.get("tco_total") or s.get("total") or 999999))
     shelf_hint = data.get("cheapest_shelf_store")
@@ -3493,6 +3520,10 @@ def main():
     p.add_argument("--tco", action="store_true", help="Include delivery + payment fees in totals")
     p.add_argument("--no-delivery", action="store_true", help="Exclude delivery fee from TCO")
     p.add_argument("--action-links", action="store_true", help="Attach deeplink + export list")
+    p.add_argument(
+        "--show-alternates", action="store_true",
+        help="Show other brands/models matched per item, not just the cheapest",
+    )
 
     # intelligence (Price Pulse / data moat — not default commerce CLI)
     p_intel = sub.add_parser("intel", help=t("intel"))
