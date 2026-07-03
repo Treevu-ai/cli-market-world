@@ -137,7 +137,11 @@ jobs:
 
       - name: Clone cli-market-core sibling
         run: |
-          git clone --depth 1 https://github.com/Treevu-ai/cli-market-core.git ../cli-market-core
+          if [ -z "${GH_PAT}" ]; then
+            echo "::error::GH_PAT secret is required to clone the private cli-market-core repo (needed by ops/sync_market_stats.py)."
+            exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git" ../cli-market-core
 
       - name: Install cli-market-world (published version)
         run: |
