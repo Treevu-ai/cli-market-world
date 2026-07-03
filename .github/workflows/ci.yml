@@ -182,7 +182,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     timeout-minutes: 8
-    
+    env:
+      MARKET_API_URL: https://cli-market-production.up.railway.app
+
     steps:
       - uses: actions/checkout@v6
 
@@ -202,8 +204,9 @@ jobs:
       - name: Collector health gate
         run: |
           python3 - <<'PY'
-          import httpx
-          r = httpx.get("https://cli-market-api.fly.dev/dashboard/data", timeout=45)
+          import httpx, os
+          api = os.environ.get("MARKET_API_URL", "https://cli-market-production.up.railway.app").rstrip("/")
+          r = httpx.get(f"{api}/dashboard/data", timeout=45)
           r.raise_for_status()
           data = r.json()
           k = data.get("kpis", {})
