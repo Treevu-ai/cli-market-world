@@ -7,7 +7,13 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from market_cli import _parse_basket_items, _unwrap_v1, _normalize_basket_store_rows, _country_supermarket_stores
+from market_cli import (
+    _parse_basket_items,
+    _unwrap_v1,
+    _normalize_basket_store_rows,
+    _country_supermarket_stores,
+    _format_basket_item_label,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -35,7 +41,7 @@ def test_normalize_basket_store_rows_legacy_comparison():
                 "store_name": "Metro",
                 "currency": "PEN",
                 "total": 5.8,
-                "items": [{"name": "Leche Gloria", "qty": 1, "price": 2.9}],
+                "items": [{"name": "Leche Gloria", "brand": "Gloria", "qty": 1, "price": 2.9}],
             }
         },
     }
@@ -43,6 +49,48 @@ def test_normalize_basket_store_rows_legacy_comparison():
     assert len(rows) == 1
     assert rows[0]["store_name"] == "Metro"
     assert rows[0]["total"] == 5.8
+    assert rows[0]["breakdown"][0]["brand"] == "Gloria"
+
+
+def test_normalize_basket_store_rows_legacy_comparison_brand_missing():
+    data = {
+        "comparison": {
+            "wong": {
+                "store_name": "Wong",
+                "currency": "PEN",
+                "total": 3.0,
+                "items": [{"name": "Leche Evaporada", "qty": 1, "price": 3.0}],
+            }
+        },
+    }
+    rows = _normalize_basket_store_rows(data)
+    assert rows[0]["breakdown"][0]["brand"] is None
+
+
+def test_format_basket_item_label_with_brand():
+    label = _format_basket_item_label({"item": "leche", "resolved_name": "Leche Entera 1L", "brand": "Gloria", "qty": 2})
+    assert label == "2x Gloria — Leche Entera 1L"
+
+
+def test_format_basket_item_label_placeholder_brand_omitted():
+    label = _format_basket_item_label({"item": "Papel Higiénico Jumbo", "brand": "—", "qty": 1})
+    assert label == "1x Papel Higiénico Jumbo"
+    assert "—" not in label.replace("Papel Higiénico Jumbo", "")
+
+
+def test_format_basket_item_label_brand_already_in_name_not_duplicated():
+    label = _format_basket_item_label({"item": "Leche Gloria 1L", "brand": "Gloria", "qty": 1})
+    assert label == "1x Leche Gloria 1L"
+
+
+def test_format_basket_item_label_uses_resolved_name_over_raw_query():
+    label = _format_basket_item_label({"item": "papel higienico", "resolved_name": "Papel Higiénico Elite", "brand": None, "qty": 3})
+    assert label == "3x Papel Higiénico Elite"
+
+
+def test_format_basket_item_label_missing_name_falls_back_to_placeholder():
+    label = _format_basket_item_label({"qty": 1})
+    assert label == "1x ?"
 
 
 def test_country_supermarket_stores_pe():

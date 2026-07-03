@@ -391,6 +391,21 @@ def _country_supermarket_stores(country: str) -> list[str]:
     return [k for k, v in STORES.items() if v.get("country") == cc and v.get("line") == "supermercados"]
 
 
+def _format_basket_item_label(breakdown_item: dict) -> str:
+    """Build the "qty x Brand — Name" label for one basket breakdown item.
+
+    TCO path's "item" is the raw search query, not the matched product —
+    "resolved_name" carries the real product name there. Live path's "item"
+    already is the product name. Brand is omitted when absent, when it's the
+    VTEX/Magento "—" placeholder for unknown brand, or when it's already
+    part of the product name (avoids "Gloria — Leche Gloria 1L").
+    """
+    name = breakdown_item.get("resolved_name") or breakdown_item.get("item") or "?"
+    brand = (breakdown_item.get("brand") or "").strip()
+    label = f"{brand} — {name}" if brand and brand != "—" and brand.lower() not in name.lower() else name
+    return f"{breakdown_item.get('qty', 1)}x {label}"
+
+
 def _normalize_basket_store_rows(data: dict) -> list[dict]:
     """Wave 4 returns ``stores``; legacy live API returns ``comparison`` keyed by store."""
     rows = data.get("stores") or []
@@ -405,7 +420,12 @@ def _normalize_basket_store_rows(data: dict) -> list[dict]:
             continue
         items = row.get("items") or []
         breakdown = [
-            {"item": i.get("name"), "qty": i.get("qty", 1), "price": i.get("price")}
+            {
+                "item": i.get("name"),
+                "brand": i.get("brand"),
+                "qty": i.get("qty", 1),
+                "price": i.get("price"),
+            }
             for i in items
         ]
         normalized.append(
@@ -1254,7 +1274,7 @@ def cmd_basket(args):
     )
     table = Table(title=f"[bold white]{title}[/]", border_style=ui.TABLE_BORDER)
     table.add_column("Tienda" if not is_en else "Store", style="bold")
-    table.add_column("Items", max_width=40)
+    table.add_column("Items", max_width=56)
     total_col = "TCO" if payload["include_tco"] else ("Total" if is_en else "Total")
     table.add_column(total_col, style="bold yellow", justify="right")
     for row in sorted(
@@ -1262,9 +1282,7 @@ def cmd_basket(args):
         key=lambda s: float(s.get("tco_total") or s.get("total") or 999999),
     ):
         breakdown = row.get("breakdown") or []
-        items_str = ", ".join(
-            f"{b.get('qty', 1)}x {(b.get('item') or '?')[:12]}" for b in breakdown[:3]
-        )
+        items_str = ", ".join(_format_basket_item_label(b) for b in breakdown[:4])
         amount = float(row.get("tco_total") or row.get("total") or 0)
         currency = row.get("currency") or "PEN"
         table.add_row(row.get("store_name") or row.get("store", "?"), items_str, f"{currency} {amount:.2f}")
