@@ -61,7 +61,7 @@ r = requests.get(
 - 51,000+ verified prices, refreshed every 4 hours
 - Normalized by kg/L — compare 900ml vs 1L vs 6x625ml directly
 - P25/P50/P75 percentiles — median, not mean, for outlier-resistant analysis
-- 8 currencies, 8 countries, 80 retailers
+- 9 currencies, 9 countries, 82 retailers
 - CSV export up to 10K rows (Starter), unlimited (Pro+)
 
 **Use cases.** Inflation tracking. Market basket cost analysis. Retailer price positioning. Brand penetration studies.
@@ -86,7 +86,7 @@ Once onboarded, your products enter the Semantic Refinery:
 
 Email: hello@cli-market.dev
 
-**Already active.** 36 verified retailers across 8 countries — Tottus, Plaza Vea, Wong, Metro, Carrefour, Jumbo, Vea, and more.
+**Already active.** 36 verified retailers across 9 countries — Tottus, Plaza Vea, Wong, Metro, Carrefour, Jumbo, Vea, and more.
 
 ---
 
