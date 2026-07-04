@@ -4,7 +4,7 @@
 > Package: pip install cli-market-world (v1.11.5)
 > Command: market-mcp
 > API: https://cli-market-api.fly.dev
-> Stats: 80 retailers · 40 verified · 65,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
+> Stats: 82 retailers · 37 verified · 68,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
 > Payments: PayPal · Mercado Pago · Yape/Plin transfer (Peru, manual)
 > FMCG pilot: Nuna Orgánica PE (406 SKUs, WooCommerce Store API)
 
