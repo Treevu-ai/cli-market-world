@@ -2388,6 +2388,240 @@ def cmd_price_alerts(args):
     console.print(table)
 
 
+def cmd_inflation_report(args):
+    """Inflation Intelligence — where is price pressure increasing?"""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    days = getattr(args, "days", None) or 30
+    qs = f"country={cc}&line={line}&days={days}"
+
+    with console.status(f"[cyan]{'Assessing inflation pressure' if is_en else 'Evaluando presión inflacionaria'}..."):
+        raw = cli_api("GET", f"/v1/intel/inflation-report?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    pressure = data.get("pressure") or "—"
+    signals = data.get("signals") or {}
+
+    pressure_color = {
+        "stable": "#3cffd0", "falling": "#3cffd0",
+        "rising": "yellow", "rising_fast": "red", "above_official": "red",
+    }.get(str(pressure).lower(), "white")
+    console.print()
+    console.print(Panel.fit(
+        f"[bold {pressure_color}]{pressure.upper() if isinstance(pressure, str) else pressure}[/]",
+        title="[bold white]Inflation Report[/]",
+        border_style=pressure_color,
+    ))
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("Señal" if not is_en else "Signal")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    signal_labels = [
+        ("internal_inflation_pct", "Inflación interna" if not is_en else "Internal inflation", "%"),
+        ("staple_momentum_pct", "Momentum básicos" if not is_en else "Staple momentum", "%"),
+        ("vs_official_cpi_gap_pp", "Brecha vs IPC oficial" if not is_en else "Gap vs official CPI", " pp"),
+        ("official_food_cpi_yoy_pct", "IPC alimentos oficial" if not is_en else "Official food CPI YoY", "%"),
+    ]
+    for key, label, suffix in signal_labels:
+        value = signals.get(key)
+        table.add_row(label, f"{value}{suffix}" if value is not None else "—")
+    console.print(table)
+
+
+def cmd_procurement_signal(args):
+    """Procurement Intelligence — when should I buy?"""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    qs = f"country={cc}&line={line}"
+
+    with console.status(f"[cyan]{'Checking procurement signal' if is_en else 'Consultando señal de compra'}..."):
+        raw = cli_api("GET", f"/v1/intel/procurement-signal?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    signal = data.get("signal") or "—"
+    reason = data.get("signal_reason") or ""
+
+    signal_color = {"buy_now": "#3cffd0", "monitor": "yellow", "wait": "red"}.get(str(signal).lower(), "white")
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{reason}[/]",
+        title=f"[bold {signal_color}]{signal.upper() if isinstance(signal, str) else signal}[/]",
+        border_style=signal_color,
+    ))
+
+
+def cmd_moat_confidence(args):
+    """Crowd-sourced moat confidence from receipt confirmations (7d window)."""
+    is_en = ui.is_en()
+    product_id = getattr(args, "product_id", None) or ""
+    store = getattr(args, "store", None) or ""
+    name = getattr(args, "name", None) or ""
+    qs = f"product_id={product_id}&store={store}&name={quote(name)}"
+
+    with console.status(f"[cyan]{'Checking moat confidence' if is_en else 'Consultando confianza del moat'}..."):
+        raw = cli_api("GET", f"/v1/moat/confidence?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    tier = data.get("confidence_tier") or "—"
+    tier_color = {"verified": "#3cffd0", "unverified": "yellow"}.get(str(tier).lower(), "white")
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("Campo" if not is_en else "Field")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    table.add_row("Tier" if not is_en else "Tier", f"[{tier_color}]{tier}[/]")
+    table.add_row(
+        "Confirmaciones (7d)" if not is_en else "Confirmations (7d)",
+        str(data.get("crowd_confirmations_7d", "—")),
+    )
+    table.add_row(
+        "Conflictos (7d)" if not is_en else "Conflicts (7d)",
+        str(data.get("crowd_conflicts_7d", "—")),
+    )
+    table.add_row("Umbral verificado" if not is_en else "Verified threshold", str(data.get("verified_threshold", "—")))
+    console.print(table)
+
+
+def cmd_export(args):
+    """Export data moat as CSV or JSON (starter tier or above)."""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    fmt = getattr(args, "format", None) or "json"
+    limit = getattr(args, "limit", None) or 100
+    payload = {"country": cc or None, "line": line or None, "format": fmt, "limit": limit}
+
+    with console.status(f"[cyan]{'Exporting data' if is_en else 'Exportando datos'}..."):
+        data = cli_api("POST", "/v1/data/export", payload)
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    if isinstance(data, dict) and data.get("error"):
+        console.print(f"[red]{data['error']}[/]")
+        return
+
+    payload_data = data.get("data")
+    is_csv_string = isinstance(payload_data, str)
+    rows = payload_data if isinstance(payload_data, list) else []
+    total = data.get("total", len(rows))
+    out_path = getattr(args, "output", None)
+    if out_path:
+        if fmt == "csv" and not is_csv_string:
+            # The API contract for format=csv is that data.data is the raw CSV
+            # text — if that ever changes (stale endpoint, partial response),
+            # writing the JSON envelope into a .csv file would silently violate
+            # the --format the user asked for. Fail loudly instead.
+            console.print(
+                f"[red]{'--format csv requested but the API returned JSON, not CSV text — refusing to write a mislabeled file.' if is_en else 'Se pidió --format csv pero la API devolvió JSON, no texto CSV — no se escribe un archivo mal etiquetado.'}[/]"
+            )
+            return
+        with open(out_path, "w", encoding="utf-8") as f:
+            if is_csv_string:
+                f.write(payload_data)
+            else:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        console.print(f"[#3cffd0]✓ {'Exported' if is_en else 'Exportado'} {total} {'rows' if is_en else 'filas'} → {out_path}[/]")
+        return
+
+    console.print(f"[bold white]{total}[/] {'rows' if is_en else 'filas'} ({fmt})")
+    console.print(json.dumps(data, indent=2, ensure_ascii=False)[:2000])
+
+
+def cmd_procurement_bulk(args):
+    """B2B bulk procurement signals for a SKU list (enterprise procurement plane)."""
+    is_en = ui.is_en()
+    raw_items = getattr(args, "items", None) or []
+    lines: list[dict] = []
+    for token in raw_items:
+        # rsplit from the right (not split from the left) so a sku_query that
+        # itself contains ":" (e.g. "arroz:premium:10:kg") still parses qty/unit
+        # from the last two segments instead of mangling all three fields.
+        parts = str(token).rsplit(":", 2)
+        sku_query = parts[0]
+        qty: float | int = 1
+        unit = "unit"
+        qty_str = parts[1] if len(parts) >= 2 else ""
+        if qty_str:
+            try:
+                qty = float(qty_str)
+                if qty.is_integer():
+                    qty = int(qty)
+            except ValueError:
+                console.print(
+                    f"[yellow]{'Could not parse quantity' if is_en else 'No se pudo interpretar la cantidad'} "
+                    f"'{qty_str}' {'in' if is_en else 'en'} '{token}' — {'using 1' if is_en else 'usando 1'}[/]"
+                )
+        if len(parts) == 3 and parts[2]:
+            unit = parts[2]
+        lines.append({"sku_query": sku_query, "qty": qty, "unit": unit})
+
+    if not lines:
+        console.print(
+            "[yellow]Sin items — usa 'sku:qty:unit', ej: 'arroz:10:kg'[/]" if not is_en
+            else "[yellow]No items — use 'sku:qty:unit', e.g. 'arroz:10:kg'[/]"
+        )
+        return
+
+    payload = {
+        "country": getattr(args, "country", None) or "PE",
+        "organization_id": getattr(args, "organization_id", None),
+        "lines": lines,
+        "include_substitutes": not bool(getattr(args, "no_substitutes", False)),
+        "output": getattr(args, "output_format", None) or "json",
+    }
+
+    with console.status(f"[cyan]{'Computing bulk procurement signals' if is_en else 'Calculando señales de compra masiva'}..."):
+        raw = cli_api("POST", "/v1/intel/procurement-bulk", payload)
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    items = data.get("lines") or []
+    if not items:
+        console.print("[yellow]Sin resultados[/]" if not is_en else "[yellow]No results[/]")
+        return
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("SKU")
+    table.add_column("Señal" if not is_en else "Signal")
+    table.add_column("Mejor match" if not is_en else "Best match", max_width=30)
+    table.add_column("Precio" if not is_en else "Price", justify="right")
+    for item in items:
+        signal = item.get("signal") or "—"
+        color = {"buy_now": "#3cffd0", "monitor": "yellow", "wait": "red"}.get(str(signal).lower(), "white")
+        best = item.get("best_match") or {}
+        table.add_row(
+            item.get("sku_query") or "?",
+            f"[{color}]{signal}[/]",
+            best.get("name") or "—",
+            f"{best.get('currency', '')} {best.get('price', '—')}" if best else "—",
+        )
+    console.print(table)
+    summary = data.get("summary") or {}
+    if summary:
+        console.print(
+            f"\n[dim]buy_now: {summary.get('buy_now', 0)} · monitor: {summary.get('monitor', 0)} · "
+            f"wait: {summary.get('wait', 0)}[/]"
+        )
+
+
 def cmd_intel_brief(args):
     """Executive intel brief: headline + shelf signals + scores in one call."""
     is_en = ui.is_en()
@@ -3478,6 +3712,11 @@ def cmd_shell(args):
             "stock": cmd_stock,
             "ecosystem-radar": cmd_ecosystem_radar,
             "price-alerts": cmd_price_alerts,
+            "inflation-report": cmd_inflation_report,
+            "procurement-signal": cmd_procurement_signal,
+            "moat-confidence": cmd_moat_confidence,
+            "export": cmd_export,
+            "procurement-bulk": cmd_procurement_bulk,
             "tools": cmd_tools,
             "alerts": cmd_alerts,
             "lang": cmd_lang,
@@ -4511,6 +4750,42 @@ def main():
     p.add_argument("--threshold-pct", dest="threshold_pct", type=float, default=5.0)
     p.add_argument("--limit", type=int, default=10)
 
+    # inflation-report
+    p = sub.add_parser("inflation-report", help="Inflation Intelligence — ¿dónde está subiendo la presión de precios?")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=30)
+
+    # procurement-signal
+    p = sub.add_parser("procurement-signal", help="Procurement Intelligence — ¿cuándo debería comprar?")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+
+    # moat-confidence
+    p = sub.add_parser("moat-confidence", help="Confianza del data moat según confirmaciones de la comunidad (7d)")
+    p.add_argument("--product-id", dest="product_id", default=None)
+    p.add_argument("--store", default=None)
+    p.add_argument("--name", default=None)
+
+    # export
+    p = sub.add_parser("export", help="Exportar el data moat como CSV o JSON (tier starter o superior)")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--format", choices=["json", "csv"], default="json")
+    p.add_argument("--limit", type=int, default=100)
+    p.add_argument("--output", "-o", default=None, help="Ruta de archivo para guardar el resultado")
+
+    # procurement-bulk
+    p = sub.add_parser(
+        "procurement-bulk",
+        help="Señales de compra masiva B2B para una lista de SKUs",
+    )
+    p.add_argument("items", nargs="+", help="Items como sku:qty:unit, ej: 'arroz:10:kg'")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--organization-id", dest="organization_id", default=None)
+    p.add_argument("--no-substitutes", dest="no_substitutes", action="store_true")
+    p.add_argument("--output-format", dest="output_format", choices=["json", "csv"], default="json")
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -4611,6 +4886,8 @@ def main():
         "subscription": cmd_subscription, "household": cmd_household, "ticket": cmd_ticket,
         "brands": cmd_brands, "delivery": cmd_delivery, "exchange": cmd_exchange, "stock": cmd_stock,
         "ecosystem-radar": cmd_ecosystem_radar, "price-alerts": cmd_price_alerts,
+        "inflation-report": cmd_inflation_report, "procurement-signal": cmd_procurement_signal,
+        "moat-confidence": cmd_moat_confidence, "export": cmd_export, "procurement-bulk": cmd_procurement_bulk,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
