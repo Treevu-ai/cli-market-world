@@ -2073,6 +2073,131 @@ def cmd_favorites(args):
     console.print(table)
 
 
+def cmd_subscription(args):
+    """Current subscription plan: tier, rate limits, available API keys."""
+    is_en = ui.is_en()
+    with console.status(f"[cyan]{'Fetching subscription' if is_en else 'Consultando suscripción'}..."):
+        data = cli_api("GET", "/auth/subscription")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    sub = data.get("subscription") or {}
+    table = Table(
+        title="[bold white]Suscripción[/]" if not is_en else "[bold white]Subscription[/]",
+        border_style=ui.TABLE_BORDER,
+    )
+    table.add_column("Campo" if not is_en else "Field")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    rows = [
+        ("Usuario" if not is_en else "Username", data.get("username")),
+        ("Tier", sub.get("tier")),
+        ("Límite/día" if not is_en else "Limit/day", sub.get("req_limit_day")),
+        ("Límite/min" if not is_en else "Limit/min", sub.get("req_limit_min")),
+        ("Alertas" if not is_en else "Alerts", sub.get("alerts")),
+        ("Export", "sí" if sub.get("export") else "no" if not is_en else ("yes" if sub.get("export") else "no")),
+        ("Historial (días)" if not is_en else "History (days)", sub.get("history_days")),
+        ("Expira" if not is_en else "Expires", sub.get("expires_at") or "—"),
+        ("API keys", data.get("api_keys")),
+    ]
+    for label, value in rows:
+        table.add_row(label, str(value) if value is not None else "—")
+    console.print(table)
+
+
+def cmd_household(args):
+    """View or update the household profile: budget, restrictions, staple list, default stores."""
+    is_en = ui.is_en()
+    action = getattr(args, "action", None) or "get"
+
+    if action == "get":
+        with console.status(f"[cyan]{'Fetching household profile' if is_en else 'Consultando perfil del hogar'}..."):
+            raw = cli_api("GET", "/v1/household")
+        if getattr(args, "json", False) or ui.is_json_mode():
+            console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+            return
+        data = _unwrap_v1(raw)
+        table = Table(
+            title="[bold white]Perfil del hogar[/]" if not is_en else "[bold white]Household profile[/]",
+            border_style=ui.TABLE_BORDER,
+        )
+        table.add_column("Campo" if not is_en else "Field")
+        table.add_column("Valor" if not is_en else "Value")
+        rows = [
+            ("Tamaño" if not is_en else "Size", data.get("size")),
+            ("País" if not is_en else "Country", data.get("country")),
+            ("Moneda" if not is_en else "Currency", data.get("currency")),
+            ("Presupuesto mensual" if not is_en else "Monthly budget", data.get("budget_monthly")),
+            ("Línea por defecto" if not is_en else "Default line", data.get("default_line")),
+            ("Tiendas por defecto" if not is_en else "Default stores", ", ".join(data.get("default_stores") or []) or "—"),
+            ("Básicos" if not is_en else "Staples", ", ".join(data.get("staple_list") or []) or "—"),
+        ]
+        for label, value in rows:
+            table.add_row(label, str(value) if value not in (None, "") else "—")
+        console.print(table)
+        return
+
+    # action == "update": build a payload from only the flags the user actually
+    # passed — restrictions/staple_list/goals aren't exposed as flags here (they're
+    # nested objects), so this covers the common scalar fields only. Power users
+    # needing the full Household schema v1 should hit /v1/household directly.
+    payload: dict = {}
+    if getattr(args, "size", None) is not None:
+        payload["size"] = args.size
+    if getattr(args, "country", None):
+        payload["country"] = args.country
+    if getattr(args, "budget", None) is not None:
+        payload["budget_monthly"] = args.budget
+    if getattr(args, "default_line", None):
+        payload["default_line"] = args.default_line
+    if not payload:
+        console.print(
+            "[yellow]Nada que actualizar — pasa al menos --size, --country, --budget o --default-line[/]"
+            if not is_en else
+            "[yellow]Nothing to update — pass at least --size, --country, --budget, or --default-line[/]"
+        )
+        return
+
+    patch = bool(getattr(args, "patch", False))
+    method = "PATCH" if patch else "PUT"
+    with console.status(f"[cyan]{'Updating household profile' if is_en else 'Actualizando perfil del hogar'}..."):
+        data = cli_api(method, "/v1/household", payload)
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+    console.print(f"[#3cffd0]✓ {'Perfil actualizado' if not is_en else 'Profile updated'}[/]")
+
+
+def cmd_ticket(args):
+    """Scan a purchase receipt (OCR) and compare prices against the data moat."""
+    is_en = ui.is_en()
+    url = getattr(args, "url", "") or ""
+    payload = {"url": url, "country": getattr(args, "country", None)}
+
+    with console.status(f"[cyan]{'Scanning receipt' if is_en else 'Escaneando ticket'}..."):
+        data = cli_api("POST", "/v1/ticket/scan-url", payload)
+
+    if getattr(args, "submit_to_crowd", False) and not (isinstance(data, dict) and data.get("error")):
+        with console.status(f"[cyan]{'Submitting to crowd validation' if is_en else 'Enviando a validación colaborativa'}..."):
+            crowd = cli_api("POST", "/v1/receipts/submit", {
+                "url": url,
+                "country": getattr(args, "country", None) or "PE",
+            })
+        if isinstance(data, dict):
+            data = {**data, "crowd_submission": crowd}
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    if isinstance(data, dict) and data.get("error"):
+        console.print(f"[red]{data['error']}[/]")
+        return
+    console.print(json.dumps(data, indent=2, ensure_ascii=False))
+
+
 def cmd_intel_brief(args):
     """Executive intel brief: headline + shelf signals + scores in one call."""
     is_en = ui.is_en()
@@ -3154,6 +3279,9 @@ def cmd_shell(args):
             "substitutes": cmd_substitutes,
             "price-history": cmd_price_history,
             "favorites": cmd_favorites,
+            "subscription": cmd_subscription,
+            "household": cmd_household,
+            "ticket": cmd_ticket,
             "tools": cmd_tools,
             "alerts": cmd_alerts,
             "lang": cmd_lang,
@@ -4130,6 +4258,24 @@ def main():
     p.add_argument("--name", default=None)
     p.add_argument("--store", default=None)
 
+    # subscription
+    p = sub.add_parser("subscription", help="Plan de suscripción: tier, límites, API keys")
+
+    # household
+    p = sub.add_parser("household", help="Perfil del hogar: presupuesto, restricciones, básicos, tiendas por defecto")
+    p.add_argument("action", nargs="?", default="get", choices=["get", "update"])
+    p.add_argument("--size", type=int, default=None, help="Tamaño del hogar (# personas)")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--budget", type=float, default=None, help="Presupuesto mensual")
+    p.add_argument("--default-line", dest="default_line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--patch", action="store_true", help="Fusionar con el perfil existente en vez de reemplazar")
+
+    # ticket
+    p = sub.add_parser("ticket", help="Escanear un ticket de compra (OCR) y comparar precios contra el data moat")
+    p.add_argument("url", help="URL pública de la imagen del ticket (.jpg, .png)")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--submit-to-crowd", dest="submit_to_crowd", action="store_true")
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -4227,6 +4373,7 @@ def main():
         "affordability": cmd_affordability,
         "stats": cmd_stats, "trending": cmd_trending, "price-risk": cmd_price_risk,
         "substitutes": cmd_substitutes, "price-history": cmd_price_history, "favorites": cmd_favorites,
+        "subscription": cmd_subscription, "household": cmd_household, "ticket": cmd_ticket,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
