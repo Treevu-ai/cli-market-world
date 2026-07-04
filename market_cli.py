@@ -2198,6 +2198,196 @@ def cmd_ticket(args):
     console.print(json.dumps(data, indent=2, ensure_ascii=False))
 
 
+def cmd_brands(args):
+    """Most frequent brands in the data moat. Filter by line or country."""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    limit = getattr(args, "limit", None) or 20
+    qs = f"line={line}&country={cc}&limit={limit}"
+
+    with console.status(f"[cyan]{'Fetching brands' if is_en else 'Consultando marcas'}..."):
+        data = cli_api("GET", f"/analytics/brands?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    brands = data.get("brands") or []
+    if not brands:
+        console.print("[yellow]Sin datos de marcas[/]" if not is_en else "[yellow]No brand data[/]")
+        return
+
+    table = Table(title="[bold white]Marcas[/]" if not is_en else "[bold white]Brands[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Marca" if not is_en else "Brand")
+    table.add_column("Productos" if not is_en else "Products", justify="right")
+    for b in brands:
+        table.add_row(b.get("brand") or "?", str(b.get("count", "—")))
+    console.print(table)
+
+
+def cmd_delivery(args):
+    """Referential delivery options for a product at a specific store."""
+    is_en = ui.is_en()
+    product_id = getattr(args, "product_id", "") or ""
+    store = getattr(args, "store", "") or ""
+    zipcode = getattr(args, "zipcode", None) or ""
+    qs = f"store={store}&zipcode={zipcode}"
+
+    with console.status(f"[cyan]{'Fetching delivery options' if is_en else 'Consultando opciones de envío'}..."):
+        data = cli_api("GET", f"/products/delivery/{product_id}?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("Campo" if not is_en else "Field")
+    table.add_column("Valor" if not is_en else "Value")
+    rows = [
+        ("Tienda" if not is_en else "Store", data.get("store_name") or data.get("store")),
+        ("Disponible" if not is_en else "Available", "sí" if data.get("delivery_available") else "no"),
+        ("Días estimados" if not is_en else "Estimated days", data.get("estimated_days")),
+        ("Costo" if not is_en else "Fee", data.get("fee")),
+    ]
+    for label, value in rows:
+        table.add_row(label, str(value) if value is not None else "—")
+    console.print(table)
+    message = data.get("message")
+    if message:
+        console.print(f"\n[dim]{message}[/]")
+
+
+def cmd_exchange(args):
+    """Convert amounts between operating currencies."""
+    is_en = ui.is_en()
+    amount = getattr(args, "amount", 0.0)
+    from_currency = (getattr(args, "from_currency", "") or "").upper()
+    to_currency = (getattr(args, "to_currency", "") or "").upper()
+    payload = {"amount": amount, "from": from_currency, "to": to_currency}
+
+    with console.status(f"[cyan]{'Converting' if is_en else 'Convirtiendo'}..."):
+        data = cli_api("POST", "/v1/utils/exchange", payload)
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    converted = data.get("converted")
+    rate = data.get("rate")
+    if converted is None:
+        console.print(f"[red]{data.get('error') or 'No se pudo convertir'}[/]")
+        return
+    console.print(
+        f"[bold white]{amount} {from_currency}[/] → "
+        f"[bold #3cffd0]{converted} {to_currency}[/] "
+        f"[dim](rate: {rate})[/]"
+    )
+
+
+def cmd_stock(args):
+    """Check product stock availability at a specific store."""
+    is_en = ui.is_en()
+    product_id = getattr(args, "product_id", "") or ""
+    store = getattr(args, "store", "") or ""
+
+    with console.status(f"[cyan]{'Checking stock' if is_en else 'Consultando stock'}..."):
+        data = cli_api("GET", f"/products/stock/{product_id}?store={store}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    stock = data.get("stock")
+    name = data.get("name") or product_id
+    store_name = data.get("store_name") or store
+    if stock is None:
+        console.print(f"[yellow]{data.get('message') or ('Sin datos de stock' if not is_en else 'No stock data')}[/]")
+        return
+    console.print(f"[bold white]{name}[/] — {store_name}: [bold #3cffd0]{stock}[/] {'unidades' if not is_en else 'units'}")
+
+
+def cmd_ecosystem_radar(args):
+    """Ecosystem launches radar — curated + Product Hunt cache. Signal only, not price data."""
+    is_en = ui.is_en()
+    topic = getattr(args, "topic", None) or "food"
+    days = getattr(args, "days", None) or 7
+    limit = getattr(args, "limit", None) or 20
+    qs = f"topic={topic}&days={days}&limit={limit}"
+
+    with console.status(f"[cyan]{'Fetching ecosystem radar' if is_en else 'Consultando radar de ecosistema'}..."):
+        raw = cli_api("GET", f"/v1/ecosystem/launches?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    launches = data.get("launches") or []
+    if not launches:
+        console.print("[yellow]Sin lanzamientos recientes[/]" if not is_en else "[yellow]No recent launches[/]")
+        return
+
+    table = Table(title="[bold white]Ecosystem Radar[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Nombre" if not is_en else "Name")
+    table.add_column("Descripción" if not is_en else "Tagline", max_width=40)
+    table.add_column("URL")
+    for launch in launches:
+        table.add_row(
+            launch.get("name") or "?",
+            launch.get("tagline") or "—",
+            launch.get("url") or "—",
+        )
+    console.print(table)
+    disclaimer = data.get("disclaimer")
+    if disclaimer:
+        console.print(f"\n[dim]{disclaimer}[/]")
+
+
+def cmd_price_alerts(args):
+    """Query price-drop alerts above a threshold for a product (read-only —
+    not the same as `market alerts`, which manages persistent subscriptions)."""
+    is_en = ui.is_en()
+    product = getattr(args, "product", "") or ""
+    store = getattr(args, "store", None) or ""
+    threshold = getattr(args, "threshold_pct", None) or 5.0
+    limit = getattr(args, "limit", None) or 10
+    qs = f"product={quote(product)}&store={store}&threshold_pct={threshold}&limit={limit}"
+
+    with console.status(f"[cyan]{'Checking price drops' if is_en else 'Consultando caídas de precio'} — {product}..."):
+        data = cli_api("GET", f"/v1/intel/alerts?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    alerts = data.get("alerts") or []
+    if not alerts:
+        console.print(f"[yellow]{data.get('message') or ('Sin caídas de precio' if not is_en else 'No price drops')}[/]")
+        return
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("Producto" if not is_en else "Product", max_width=40)
+    table.add_column("Tienda" if not is_en else "Store")
+    table.add_column("Antes" if not is_en else "Before", justify="right")
+    table.add_column("Ahora" if not is_en else "Now", justify="right")
+    table.add_column("Cambio" if not is_en else "Change", justify="right")
+    for a in alerts:
+        currency = a.get("currency") or ""
+        delta = a.get("delta_pct")
+        direction = a.get("direction")
+        arrow = "▲" if direction == "up" else "▼" if direction == "down" else ""
+        color = "red" if direction == "up" else "#3cffd0" if direction == "down" else "white"
+        table.add_row(
+            a.get("product") or "?",
+            a.get("store_name") or a.get("store") or "?",
+            f"{currency} {a.get('first_price', '—')}",
+            f"{currency} {a.get('last_price', '—')}",
+            f"[{color}]{arrow} {delta}%[/]" if delta is not None else "—",
+        )
+    console.print(table)
+
+
 def cmd_intel_brief(args):
     """Executive intel brief: headline + shelf signals + scores in one call."""
     is_en = ui.is_en()
@@ -3282,6 +3472,12 @@ def cmd_shell(args):
             "subscription": cmd_subscription,
             "household": cmd_household,
             "ticket": cmd_ticket,
+            "brands": cmd_brands,
+            "delivery": cmd_delivery,
+            "exchange": cmd_exchange,
+            "stock": cmd_stock,
+            "ecosystem-radar": cmd_ecosystem_radar,
+            "price-alerts": cmd_price_alerts,
             "tools": cmd_tools,
             "alerts": cmd_alerts,
             "lang": cmd_lang,
@@ -4276,6 +4472,45 @@ def main():
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--submit-to-crowd", dest="submit_to_crowd", action="store_true")
 
+    # brands
+    p = sub.add_parser("brands", help="Marcas más frecuentes en el data moat")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--limit", type=int, default=20)
+
+    # delivery
+    p = sub.add_parser("delivery", help="Opciones de envío referenciales para un producto")
+    p.add_argument("--product-id", dest="product_id", required=True)
+    p.add_argument("--store", required=True)
+    p.add_argument("--zipcode", default=None)
+
+    # exchange
+    p = sub.add_parser("exchange", help="Convertir montos entre monedas operativas (PEN, ARS, BRL, MXN, COP, CLP, EUR)")
+    p.add_argument("amount", type=float)
+    p.add_argument("from_currency", metavar="from", help="Moneda origen, ej: PEN")
+    p.add_argument("to_currency", metavar="to", help="Moneda destino, ej: USD")
+
+    # stock
+    p = sub.add_parser("stock", help="Consultar disponibilidad de stock de un producto en una tienda")
+    p.add_argument("--product-id", dest="product_id", required=True)
+    p.add_argument("--store", required=True)
+
+    # ecosystem-radar
+    p = sub.add_parser("ecosystem-radar", help="Radar de lanzamientos del ecosistema (curado + Product Hunt)")
+    p.add_argument("--topic", default="food")
+    p.add_argument("--days", type=int, default=7)
+    p.add_argument("--limit", type=int, default=20)
+
+    # price-alerts
+    p = sub.add_parser(
+        "price-alerts",
+        help="Consultar caídas de precio sobre un umbral (solo lectura — distinto de 'alerts', que gestiona suscripciones)",
+    )
+    p.add_argument("product", help="Producto a monitorear")
+    p.add_argument("--store", default=None)
+    p.add_argument("--threshold-pct", dest="threshold_pct", type=float, default=5.0)
+    p.add_argument("--limit", type=int, default=10)
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -4374,6 +4609,8 @@ def main():
         "stats": cmd_stats, "trending": cmd_trending, "price-risk": cmd_price_risk,
         "substitutes": cmd_substitutes, "price-history": cmd_price_history, "favorites": cmd_favorites,
         "subscription": cmd_subscription, "household": cmd_household, "ticket": cmd_ticket,
+        "brands": cmd_brands, "delivery": cmd_delivery, "exchange": cmd_exchange, "stock": cmd_stock,
+        "ecosystem-radar": cmd_ecosystem_radar, "price-alerts": cmd_price_alerts,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
