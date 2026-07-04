@@ -1749,6 +1749,75 @@ def cmd_scores(args):
     ui.print_intel_footer(console, [f"market intel indicators -c {_footer_cc}", f"market intel enrichment -c {_footer_cc}"])
 
 
+def cmd_affordability(args):
+    """Affordability OS — cost-of-living composite from shelf + macro signals."""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or "PE"
+    line = getattr(args, "line", None) or "supermercados"
+    days = getattr(args, "days", None) or 30
+    qs = f"country={cc}&line={line}&days={days}"
+
+    with console.status(
+        f"[cyan]{'Computing affordability' if is_en else 'Calculando accesibilidad'} — {cc}..."
+    ):
+        raw = cli_api("GET", f"/v1/intel/affordability?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    components = data.get("components") or {}
+    signals = data.get("signals") or {}
+    score = data.get("affordability_score")
+    band = data.get("affordability_band_es") or data.get("affordability_band") or "—"
+    # Backend only produces Spanish headline/disclaimer today — no English
+    # variant exists server-side to fall back to (unlike other intel
+    # endpoints), so English mode still shows the Spanish text rather than
+    # inventing a translation.
+    headline = data.get("headline_es") or data.get("headline") or ""
+    disclaimer = data.get("disclaimer_es") or data.get("disclaimer") or ""
+    quality = data.get("score_data_quality")
+    currency = components.get("canasta_currency") or "PEN"
+
+    def _fmt(value, suffix: str = "", prefix: str = "") -> str:
+        return f"{prefix}{value}{suffix}" if value is not None else "—"
+
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{headline}[/]",
+        title=f"[bold #3cffd0]Affordability OS — {cc}[/]",
+        subtitle=f"[dim]{days}d · score {_fmt(score)} ({band})[/]",
+        border_style="#3cffd0",
+    ))
+
+    table = Table(
+        title="[bold white]Componentes[/]" if not is_en else "[bold white]Components[/]",
+        border_style=ui.TABLE_BORDER,
+    )
+    table.add_column("Indicador" if not is_en else "Indicator")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    rows = [
+        ("Canasta mínima" if not is_en else "Minimum basket", _fmt(components.get("canasta_min"), prefix=f"{currency} ")),
+        ("Canasta promedio" if not is_en else "Average basket", _fmt(components.get("canasta_average"), prefix=f"{currency} ")),
+        ("Canasta más cara" if not is_en else "Worst-case basket", _fmt(components.get("canasta_worst"), prefix=f"{currency} ")),
+        ("Canastas por sueldo mínimo" if not is_en else "Baskets per minimum wage", _fmt(components.get("canastas_per_minimum_wage"))),
+        ("Sueldo mínimo local" if not is_en else "Local minimum wage", _fmt(components.get("minimum_wage_local"), prefix=f"{currency} ")),
+        ("Brecha vs IPC oficial" if not is_en else "Gap vs official CPI", _fmt(components.get("vs_official_cpi_gap_pp"), suffix=" pp")),
+        ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", _fmt(components.get("staple_momentum_7d_pct"), suffix="%")),
+        ("Dispersión de precios" if not is_en else "Price dispersion", _fmt(signals.get("price_dispersion_pct"), suffix="%")),
+        ("Intensidad de promociones" if not is_en else "Promo intensity", _fmt(signals.get("promo_intensity_pct"), suffix="%")),
+    ]
+    for label, value in rows:
+        table.add_row(label, value)
+    console.print(table)
+
+    if quality:
+        console.print(f"\n[dim]{'Calidad del dato' if not is_en else 'Data quality'}: {quality}[/]")
+    if disclaimer:
+        console.print(f"[dim]{disclaimer}[/]")
+
+
 def cmd_intel_brief(args):
     """Executive intel brief: headline + shelf signals + scores in one call."""
     is_en = ui.is_en()
@@ -2823,6 +2892,7 @@ def cmd_shell(args):
             "scores": cmd_scores,
             "brief": cmd_intel_brief,
             "intel-brief": cmd_intel_brief,
+            "affordability": cmd_affordability,
             "tools": cmd_tools,
             "alerts": cmd_alerts,
             "lang": cmd_lang,
@@ -2928,7 +2998,7 @@ def cmd_shell(args):
                 elif tok == "--email" and i + 1 < len(rest):
                     ns.email = rest[i + 1]
         elif cmd in ("discover", "inflation", "indicators", "enrichment", "scores",
-                     "brief", "intel-brief", "basket", "optimize") and rest:
+                     "brief", "intel-brief", "affordability", "basket", "optimize") and rest:
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
@@ -3753,6 +3823,15 @@ def main():
     p.add_argument("--days", type=int, default=7)
     p.add_argument("--catalog", action="store_true")
 
+    # affordability
+    p = sub.add_parser(
+        "affordability",
+        help="Affordability OS — costo de vida (score + canasta + brecha CPI)",
+    )
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=30)
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -3847,6 +3926,7 @@ def main():
         "categories": cmd_categories, "barcode": cmd_barcode,
         "enrich": cmd_enrich, "basket": cmd_basket, "optimize": cmd_optimize,
         "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
+        "affordability": cmd_affordability,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
