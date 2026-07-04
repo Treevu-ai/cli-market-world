@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+from urllib.parse import quote
 
 from rich.console import Console
 from rich.panel import Panel
@@ -1818,6 +1819,260 @@ def cmd_affordability(args):
         console.print(f"[dim]{disclaimer}[/]")
 
 
+def cmd_stats(args):
+    """Data moat health: total prices, active stores, tracked products, last refresh."""
+    is_en = ui.is_en()
+    with console.status(f"[cyan]{'Fetching stats' if is_en else 'Consultando estadísticas'}..."):
+        data = cli_api("GET", "/analytics/stats")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    table = Table(title="[bold white]Data Moat Stats[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Indicador" if not is_en else "Indicator")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    labels = [
+        ("total_price_snapshots", "Precios registrados" if not is_en else "Price snapshots"),
+        ("total_search_queries", "Búsquedas registradas" if not is_en else "Search queries"),
+        ("unique_stores_tracked", "Tiendas activas" if not is_en else "Active stores"),
+        ("unique_products_tracked", "Productos únicos" if not is_en else "Unique products"),
+        ("latest_snapshot_at", "Última actualización" if not is_en else "Last refresh"),
+    ]
+    for key, label in labels:
+        value = data.get(key)
+        table.add_row(label, str(value) if value is not None else "—")
+    console.print(table)
+
+
+def cmd_trending(args):
+    """Products with the largest recent price movement / most-queried right now."""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    limit = getattr(args, "limit", None) or 10
+    qs = f"country={cc}&line={line}&limit={limit}"
+
+    with console.status(f"[cyan]{'Fetching trending products' if is_en else 'Consultando tendencias'}..."):
+        data = cli_api("GET", f"/analytics/trending?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    items = data.get("trending") or []
+    if not items:
+        console.print("[yellow]Sin datos de tendencias[/]" if not is_en else "[yellow]No trending data[/]")
+        return
+
+    table = Table(title="[bold white]Trending[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Producto" if not is_en else "Product", max_width=40)
+    table.add_column("Tienda" if not is_en else "Store")
+    table.add_column("Precio" if not is_en else "Price", justify="right")
+    table.add_column("Actualizado" if not is_en else "Updated")
+    for item in items:
+        price = item.get("price")
+        currency = item.get("currency") or ""
+        table.add_row(
+            item.get("name") or "?",
+            item.get("store_name") or item.get("store") or "?",
+            f"{currency} {price}" if price is not None else "—",
+            (item.get("queried_at") or "")[:16].replace("T", " "),
+        )
+    console.print(table)
+
+
+def cmd_price_risk(args):
+    """Price Risk Intelligence — which categories are becoming volatile?"""
+    is_en = ui.is_en()
+    cc = getattr(args, "country", None) or ""
+    line = getattr(args, "line", None) or ""
+    days = getattr(args, "days", None) or 7
+    qs = f"country={cc}&line={line}&days={days}"
+
+    with console.status(f"[cyan]{'Assessing price risk' if is_en else 'Evaluando riesgo de precios'}..."):
+        raw = cli_api("GET", f"/v1/intel/price-risk?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    level = data.get("risk_level") or "—"
+    reason = data.get("risk_reason") or ""
+    signals = data.get("signals") or {}
+
+    level_color = {"low": "#3cffd0", "moderate": "yellow", "high": "red"}.get(str(level).lower(), "white")
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{reason}[/]",
+        title=f"[bold {level_color}]Price Risk — {level.upper() if isinstance(level, str) else level}[/]",
+        border_style=level_color,
+    ))
+
+    table = Table(border_style=ui.TABLE_BORDER)
+    table.add_column("Señal" if not is_en else "Signal")
+    table.add_column("Valor" if not is_en else "Value", justify="right")
+    signal_labels = [
+        ("price_dispersion_pct", "Dispersión de precios" if not is_en else "Price dispersion", "%"),
+        ("promo_intensity_pct", "Intensidad de promociones" if not is_en else "Promo intensity", "%"),
+        ("basket_stress_index", "Índice de estrés de canasta" if not is_en else "Basket stress index", ""),
+        ("staple_momentum_7d_pct", "Momentum básicos 7d" if not is_en else "Staple momentum 7d", "%"),
+    ]
+    for key, label, suffix in signal_labels:
+        value = signals.get(key)
+        table.add_row(label, f"{value}{suffix}" if value is not None else "—")
+    console.print(table)
+
+
+def cmd_substitutes(args):
+    """Product substitutes with unit-normalized savings and Nutri-Score tradeoffs."""
+    is_en = ui.is_en()
+    query = getattr(args, "query", "") or ""
+    cc = getattr(args, "country", None) or "PE"
+    store = getattr(args, "store", None) or ""
+    limit = getattr(args, "limit", None) or 3
+    # quote() the free-text query — unlike country/store/limit (enum-like or
+    # numeric), this is arbitrary user input and could contain "&", "#", "%",
+    # which would otherwise corrupt the query string.
+    qs = f"query={quote(query)}&country={cc}&store={store}&limit={limit}"
+
+    with console.status(f"[cyan]{'Finding substitutes' if is_en else 'Buscando sustitutos'} — {query}..."):
+        raw = cli_api("GET", f"/v1/products/substitutes?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(raw, indent=2, ensure_ascii=False))
+        return
+
+    data = _unwrap_v1(raw)
+    original = data.get("original") or {}
+    subs = data.get("substitutes") or []
+
+    if not original:
+        console.print(
+            f"[yellow]No se encontró el producto original para '{query}'[/]" if not is_en
+            else f"[yellow]Could not find the original product for '{query}'[/]"
+        )
+        return
+
+    console.print()
+    console.print(Panel.fit(
+        f"[bold white]{original.get('name', '?')}[/] — {original.get('store', '?')} — "
+        f"[bold yellow]{original.get('price', '?')}[/]",
+        title="[bold #3cffd0]Producto original[/]" if not is_en else "[bold #3cffd0]Original product[/]",
+        border_style="#3cffd0",
+    ))
+
+    if not subs:
+        console.print("[yellow]Sin sustitutos encontrados[/]" if not is_en else "[yellow]No substitutes found[/]")
+        return
+
+    table = Table(
+        title="[bold white]Sustitutos[/]" if not is_en else "[bold white]Substitutes[/]",
+        border_style=ui.TABLE_BORDER,
+    )
+    table.add_column("Producto" if not is_en else "Product", max_width=40)
+    table.add_column("Tienda" if not is_en else "Store")
+    table.add_column("Precio" if not is_en else "Price", justify="right")
+    table.add_column("Precio/unidad" if not is_en else "Price/unit", justify="right")
+    for s in subs:
+        ppu = s.get("price_per_unit") or {}
+        ppu_str = f"{ppu.get('price_per')}/{ppu.get('basis')}" if ppu.get("price_per") is not None else "—"
+        table.add_row(
+            s.get("name") or "?",
+            s.get("store") or "?",
+            str(s.get("price", "—")),
+            ppu_str,
+        )
+    console.print(table)
+
+
+def cmd_price_history(args):
+    """Price history for a product in the data moat."""
+    is_en = ui.is_en()
+    product_id = getattr(args, "product_id", "") or ""
+    store = getattr(args, "store", None) or ""
+    line = getattr(args, "line", None) or ""
+    limit = getattr(args, "limit", None) or 50
+    qs = f"product_id={product_id}&store={store}&line={line}&limit={limit}"
+
+    with console.status(f"[cyan]{'Fetching price history' if is_en else 'Consultando historial de precios'}..."):
+        data = cli_api("GET", f"/analytics/price-history?{qs}")
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    snapshots = data.get("snapshots") or []
+    if not snapshots:
+        console.print(
+            "[yellow]Sin historial para ese producto/tienda[/]" if not is_en
+            else "[yellow]No history for that product/store[/]"
+        )
+        return
+
+    table = Table(
+        title="[bold white]Historial de precios[/]" if not is_en else "[bold white]Price History[/]",
+        border_style=ui.TABLE_BORDER,
+    )
+    table.add_column("Fecha" if not is_en else "Date")
+    table.add_column("Precio" if not is_en else "Price", justify="right")
+    table.add_column("Precio lista" if not is_en else "List price", justify="right")
+    table.add_column("Desc." if not is_en else "Disc.", justify="right")
+    for snap in snapshots:
+        currency = snap.get("currency") or ""
+        price = snap.get("price")
+        list_price = snap.get("list_price")
+        discount = snap.get("discount")
+        table.add_row(
+            (snap.get("queried_at") or "")[:16].replace("T", " "),
+            f"{currency} {price}" if price is not None else "—",
+            f"{currency} {list_price}" if list_price is not None else "—",
+            f"{discount}%" if discount is not None else "—",
+        )
+    console.print(table)
+    name = snapshots[0].get("name")
+    if name:
+        console.print(f"\n[dim]{name}[/]")
+
+
+def cmd_favorites(args):
+    """Manage favorite products: list, add, or remove."""
+    is_en = ui.is_en()
+    action = getattr(args, "action", None) or "list"
+    payload = {
+        "action": action,
+        "product_id": getattr(args, "product_id", None) or "",
+        "name": getattr(args, "name", None) or "",
+        "store": getattr(args, "store", None) or "",
+    }
+
+    with console.status(f"[cyan]{'Updating favorites' if is_en else 'Actualizando favoritos'}..."):
+        data = cli_api("POST", "/favorites", payload)
+
+    if getattr(args, "json", False) or ui.is_json_mode():
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    favorites = data.get("favorites") or []
+    if action != "list":
+        console.print(
+            f"[#3cffd0]✓ {'Favoritos actualizados' if not is_en else 'Favorites updated'}[/] "
+            f"({len(favorites)} {'items' if is_en else 'items'})"
+        )
+    if not favorites:
+        console.print("[yellow]Sin favoritos[/]" if not is_en else "[yellow]No favorites[/]")
+        return
+
+    table = Table(title="[bold white]Favoritos[/]" if not is_en else "[bold white]Favorites[/]", border_style=ui.TABLE_BORDER)
+    table.add_column("Producto" if not is_en else "Product", max_width=40)
+    table.add_column("Tienda" if not is_en else "Store")
+    table.add_column("ID")
+    for f in favorites:
+        table.add_row(f.get("name") or "?", f.get("store") or "?", str(f.get("product_id") or "—"))
+    console.print(table)
+
+
 def cmd_intel_brief(args):
     """Executive intel brief: headline + shelf signals + scores in one call."""
     is_en = ui.is_en()
@@ -2893,6 +3148,12 @@ def cmd_shell(args):
             "brief": cmd_intel_brief,
             "intel-brief": cmd_intel_brief,
             "affordability": cmd_affordability,
+            "stats": cmd_stats,
+            "trending": cmd_trending,
+            "price-risk": cmd_price_risk,
+            "substitutes": cmd_substitutes,
+            "price-history": cmd_price_history,
+            "favorites": cmd_favorites,
             "tools": cmd_tools,
             "alerts": cmd_alerts,
             "lang": cmd_lang,
@@ -2998,7 +3259,8 @@ def cmd_shell(args):
                 elif tok == "--email" and i + 1 < len(rest):
                     ns.email = rest[i + 1]
         elif cmd in ("discover", "inflation", "indicators", "enrichment", "scores",
-                     "brief", "intel-brief", "affordability", "basket", "optimize") and rest:
+                     "brief", "intel-brief", "affordability", "trending", "price-risk",
+                     "basket", "optimize") and rest:
             for i, tok in enumerate(rest):
                 if tok in ("--country", "-c") and i + 1 < len(rest):
                     ns.country = rest[i + 1]
@@ -3832,6 +4094,42 @@ def main():
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--days", type=int, default=30)
 
+    # stats
+    p = sub.add_parser("stats", help="Data moat health: precios, tiendas, productos, última actualización")
+
+    # trending
+    p = sub.add_parser("trending", help="Productos con mayor movimiento de precio reciente")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--limit", type=int, default=10)
+
+    # price-risk
+    p = sub.add_parser("price-risk", help="Price Risk Intelligence — ¿qué categorías se están volviendo volátiles?")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--days", type=int, default=7)
+
+    # substitutes
+    p = sub.add_parser("substitutes", help="Sustitutos de un producto con ahorro normalizado por unidad")
+    p.add_argument("query", help="Nombre del producto a buscar sustitutos")
+    p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default="PE")
+    p.add_argument("--store", default=None)
+    p.add_argument("--limit", type=int, default=3)
+
+    # price-history
+    p = sub.add_parser("price-history", help="Historial de precios de un producto en el data moat")
+    p.add_argument("--product-id", dest="product_id", required=True)
+    p.add_argument("--store", default=None)
+    p.add_argument("--line", choices=list(LINES.keys()), default=None)
+    p.add_argument("--limit", type=int, default=50)
+
+    # favorites
+    p = sub.add_parser("favorites", help="Gestionar productos favoritos: list, add, remove")
+    p.add_argument("action", nargs="?", default="list", choices=["list", "add", "remove"])
+    p.add_argument("--product-id", dest="product_id", default=None)
+    p.add_argument("--name", default=None)
+    p.add_argument("--store", default=None)
+
     # alerts
     p = sub.add_parser("alerts", help="Gestionar alertas de precios")
     p.add_argument("action", nargs="?", default="list", choices=["list", "create"])
@@ -3927,6 +4225,8 @@ def main():
         "enrich": cmd_enrich, "basket": cmd_basket, "optimize": cmd_optimize,
         "brief": cmd_intel_brief, "intel-brief": cmd_intel_brief,
         "affordability": cmd_affordability,
+        "stats": cmd_stats, "trending": cmd_trending, "price-risk": cmd_price_risk,
+        "substitutes": cmd_substitutes, "price-history": cmd_price_history, "favorites": cmd_favorites,
         "inflation": cmd_inflation, "indicators": cmd_indicators, "enrichment": cmd_enrichment, "scores": cmd_scores,
         "tools": cmd_tools,
         "mcp": cmd_mcp,
