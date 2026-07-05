@@ -79,8 +79,8 @@ MOCK_DASHBOARD = {
 }
 
 
-@patch("market_golive.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_golive.adoption_summary", return_value=MOCK_ADOPTION)
+@patch("market_core.market_golive.funnel_summary", return_value=MOCK_FUNNEL)
+@patch("market_core.market_golive.adoption_summary", return_value=MOCK_ADOPTION)
 def test_go_live_summary_alerts(mock_adoption, mock_funnel):
     from market_golive import go_live_summary
 
@@ -95,8 +95,8 @@ def test_go_live_summary_alerts(mock_adoption, mock_funnel):
     assert "collector_stale" in codes
 
 
-@patch("market_golive.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_golive.adoption_summary", return_value=MOCK_ADOPTION)
+@patch("market_core.market_golive.funnel_summary", return_value=MOCK_FUNNEL)
+@patch("market_core.market_golive.adoption_summary", return_value=MOCK_ADOPTION)
 def test_go_live_markdown(mock_adoption, mock_funnel):
     from market_golive import go_live_markdown
 
@@ -108,8 +108,8 @@ def test_go_live_markdown(mock_adoption, mock_funnel):
     assert "Alertas" in md
 
 
-@patch("market_golive.funnel_summary", return_value=MOCK_FUNNEL)
-@patch("market_golive.adoption_summary", return_value=MOCK_ADOPTION)
+@patch("market_core.market_golive.funnel_summary", return_value=MOCK_FUNNEL)
+@patch("market_core.market_golive.adoption_summary", return_value=MOCK_ADOPTION)
 def test_go_live_slack_lines(mock_adoption, mock_funnel):
     from market_golive import go_live_slack_lines
 
@@ -140,9 +140,9 @@ def test_dashboard_go_live_endpoint(mock_summary, monkeypatch):
     assert r.json()["overall_status"] == "healthy"
 
 
-@patch("market_golive.activation_summary", return_value=MOCK_ACTIVATION)
-@patch("market_golive.funnel_summary")
-@patch("market_golive.adoption_summary")
+@patch("market_core.market_golive.activation_summary", return_value=MOCK_ACTIVATION)
+@patch("market_core.market_golive.funnel_summary")
+@patch("market_core.market_golive.adoption_summary")
 def test_healthy_go_live(mock_adoption, mock_funnel, mock_activation):
     from market_golive import go_live_summary
 
@@ -182,8 +182,8 @@ def test_healthy_go_live(mock_adoption, mock_funnel, mock_activation):
     assert data["kpis"]["pricing"]["decision"]["action"] == "keep_39"
 
 
-@patch("market_golive.funnel_summary")
-@patch("market_golive.adoption_summary")
+@patch("market_core.market_golive.funnel_summary")
+@patch("market_core.market_golive.adoption_summary")
 def test_spike_markdown_includes_pricing_health(mock_adoption, mock_funnel):
     from market_golive import go_live_spike_markdown
 
