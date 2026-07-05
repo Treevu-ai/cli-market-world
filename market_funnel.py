@@ -1,4 +1,15 @@
-"""Onboarding funnel events — P3 instrumentation."""
+"""Onboarding funnel events — P3 instrumentation.
+
+Intentionally NOT a shim to cli-market-core. This module's noise-filtering
+(is_noise_username / is_noise_email / is_noise_meta, curated test-ID
+allowlist) and funnel_summary/activation_summary defaults are genuinely
+different from — not merely older than — cli-market-core's
+market_funnel.py (used by cli-market-backend's shim). Unifying the two
+would silently change which traffic counts as "real" in one of the two
+live /dashboard/go-live deployments. See market_core.market_funnel's
+module docstring for the full rationale. market_golive.py here IS shimmed
+to core; its bare `from market_funnel import ...` resolves to this file.
+"""
 
 from __future__ import annotations
 
