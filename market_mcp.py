@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
+
+# Force UTF-8 for stdio on Windows so MCP JSON-RPC does not crash on Unicode
+# characters (e.g. →, ·) when the console code page is cp1252.
+if sys.platform == "win32":
+    import io
+
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", line_buffering=True)
 
 from market_agent_id import get_agent_id, patch_core_api_agent_header
 
