@@ -5,7 +5,7 @@ tags:
   - prd
   - brand-intelligence
   - trade-marketing
-status: Draft v1.0 — pendiente validación con primer piloto
+status: v1.0 — decisiones de piloto tomadas 2026-07-06; backend/frontend construidos; falta onboardear primera agencia piloto
 owner: Ricardo Cuba
 created: 2026-07-07
 repos: cli-market-world, cli-market-core, cli-market-backend
@@ -292,11 +292,11 @@ ORDER BY brand, name, store, queried_at DESC
 ```
 
 **Entregables Sprint 1:**
-- [ ] `routers/brand_intel.py` con endpoint `/v1/brand-monitor`
-- [ ] Lógica de normalización: agrupar variantes del mismo producto (400ml vs 410ml vs "grande")
-- [ ] Cálculo de `dispersion_score` (CV de precio cross-tienda por SKU)
-- [ ] Cálculo de `promo_events` (activaciones detectadas en el período)
-- [ ] Tests unitarios básicos
+- [x] `routers/brand_intel.py` con endpoint `/v1/brand-monitor`
+- [x] Lógica de normalización: agrupar variantes del mismo producto (400ml vs 410ml vs "grande")
+- [x] Cálculo de `dispersion_score` (CV de precio cross-tienda por SKU)
+- [x] Cálculo de `promo_events` (activaciones detectadas en el período)
+- [ ] Tests unitarios básicos — pendiente, no existe `tests/test_brand_intel.py`
 
 ### Sprint 2 — Backend: alertas y PVP sugerido
 
@@ -316,10 +316,10 @@ CREATE TABLE brand_intel_config (
 ```
 
 **Entregables Sprint 2:**
-- [ ] `POST /v1/brand-monitor/config` — onboarding: declara marca, competidores, PVPs
-- [ ] `GET /v1/brand-monitor/alerts` — desvíos activos vs PVP sugerido
-- [ ] Lógica de alerta: `precio > PVP × 1.05` o `precio < PVP × 0.85`
-- [ ] Email de alerta automático cuando se detecta desvío significativo (>10%)
+- [x] `POST /v1/brand-monitor/config` — onboarding: declara marca, competidores, PVPs
+- [x] `GET /v1/brand-monitor/alerts` — desvíos activos vs PVP sugerido
+- [x] Lógica de alerta: `precio > PVP × 1.05` o `precio < PVP × 0.85`
+- [ ] Email de alerta automático cuando se detecta desvío significativo (>10%) — pendiente, `brand_alerts()` solo responde on-demand vía GET
 
 ### Sprint 3 — Frontend: Brand Monitor Dashboard
 
@@ -346,16 +346,19 @@ CREATE TABLE brand_intel_config (
 
 **Auth:** misma API key del plan Pro. El slug de marca se registra en `brand_intel_config`.
 
+**Estado:** construido — `BrandMonitorDashboard`, `BrandCompetitorTable`, `BrandPromoTimeline`,
+`BrandSkuTable` y ruta `/brand/[slug]` ya existen en `landing/`, con un `/brand/demo` de referencia.
+
 ### Sprint 4 — PDF mensual + piloto
 
 **Objetivo:** primer cliente piloto recibe su primer reporte.
 
 **Entregables Sprint 4:**
-- [ ] Generador PDF `ops/brand_report.py` — extiende `price_pulse_agents.py`
-- [ ] Template de 8 páginas (reutiliza base de proposals/hotel-paraiso/generate_pdf.py)
-- [ ] Onboarding manual del primer cliente (30 días gratis)
-- [ ] Documento metodológico público de 1 página (para que el analista lo cite)
-- [ ] NDA template con cláusula de no-cross-sharing
+- [x] Generador PDF `ops/brand_report.py` — extiende `price_pulse_agents.py`
+- [x] Template de 8 páginas — primer reporte ya generado: `ops/generated/reports/brand-report-gloria-2026-07.pdf`
+- [ ] Onboarding manual del primer cliente (30 días gratis) — pendiente: aún no hay primer cliente piloto
+- [ ] Documento metodológico público de 1 página (para que el analista lo cite) — pendiente; `docs/methodology.md` cubre Price Pulse en general pero no está publicado ni es específico a dispersion_score/PVP
+- [ ] NDA template con cláusula de no-cross-sharing — pendiente
 
 ---
 
@@ -396,12 +399,16 @@ CREATE TABLE brand_intel_config (
 
 ---
 
-## 10. Decisiones pendientes (antes de empezar Sprint 1)
+## 10. Decisiones — tomadas 2026-07-06
 
-| Decisión | Opciones | Recomendación |
+| Decisión | Opciones | Resuelto |
 |----------|---------|---------------|
-| ¿Nuevo dominio o subdominio? | `brand.cli-market.dev` vs `climarket.dev/brand` | Subdominio — menor fricción técnica, misma identidad |
-| ¿Precio piloto? | $0 / $99 / $199 por 30 días | $0 — elimina fricción para el primer caso; convierte por valor demostrado |
-| ¿Primer cliente: agencia o marca directa? | Agencia (3-5 marcas de golpe) vs marca directa (ciclo más corto) | Agencia primero — mayor leverage por contrato |
-| ¿Normalización de SKU competidor? | Automática (semántica) vs manual (el cliente declara) | Automática con revisión manual en onboarding |
-| ¿Acceso API para competidores en la misma agencia? | Compartido con NDA vs silos separados | Silos separados por brand_slug + api_key |
+| ¿Nuevo dominio o subdominio? | `brand.cli-market.dev` vs `climarket.dev/brand` | **Subdominio** `brand.cli-market.dev` — menor fricción técnica, misma identidad |
+| ¿Precio piloto? | $0 / $99 / $199 por 30 días | **$0** — elimina fricción para el primer caso; convierte por valor demostrado |
+| ¿Primer cliente: agencia o marca directa? | Agencia (3-5 marcas de golpe) vs marca directa (ciclo más corto) | **Agencia** primero — mayor leverage por contrato |
+| ¿Normalización de SKU competidor? | Automática (semántica) vs manual (el cliente declara) | **Automática** con revisión manual en onboarding |
+| ¿Acceso API para competidores en la misma agencia? | Compartido con NDA vs silos separados | **Silos separados** por brand_slug + api_key |
+
+Con esto resuelto, lo que falta para arrancar el piloto real es puramente ejecución (ver
+checklist de Sprint 4 arriba): setup del subdominio, NDA template, documento metodológico
+público, y conseguir/onboardear la primera agencia piloto.
