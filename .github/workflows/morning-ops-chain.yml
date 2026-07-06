@@ -90,6 +90,8 @@ jobs:
     needs: observatory-snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    # Technical health check only — must never block business reporting below.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
@@ -161,7 +163,9 @@ jobs:
           if-no-files-found: ignore
 
   command-control:
-    needs: pam-tier2
+    # Business reporting depends on data-refresh, never on PAM (pam-tier1/tier2
+    # are a technical health side-branch — see note above).
+    needs: observatory-snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
