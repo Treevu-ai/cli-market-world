@@ -9,7 +9,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 # 🛒 CLI Market
 
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-53k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-58k-00d75f?logo=pypi)](https://pepy.tech/projects/cli-market-world)
 [![PyPI](https://img.shields.io/pypi/v/cli-market-world.svg)](https://pypi.org/project/cli-market-world/)
 
 **🌐 [Español](#-español) · [English](#-english)**
@@ -27,7 +27,7 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 **CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **82 retailers (37 verificados activos)** en **9 países**. Un único esquema JSON listo para integrar.
 
 - 🌍 **82 retailers (37 verificados activos) · 9 países · 4 plataformas**
-- 💰 **Más de 68,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 💰 **Más de 70,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
@@ -102,7 +102,7 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 **CLI Market fixes that.** One `pip install`. One API call across **82 retailers (37 verified active)** in **9 countries**. One JSON schema ready to integrate.
 
 - 🌍 **82 retailers (37 verified active) · 9 countries · 4 platforms**
-- 💰 **68,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 💰 **70,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
