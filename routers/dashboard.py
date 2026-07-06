@@ -8,6 +8,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
@@ -41,6 +42,70 @@ _DASHBOARD_CACHE_TTL = 120  # seconds
 _dashboard_cache_lock = threading.Lock()
 
 
+_DASHBOARD_CACHE_KEY = "dashboard_data"
+_dashboard_cache_table_ready = False
+
+
+def _json_default(obj):
+    from decimal import Decimal
+    if isinstance(obj, Decimal):
+        return float(obj)
+    return str(obj)
+
+
+def _ensure_dashboard_cache_table(db) -> None:
+    global _dashboard_cache_table_ready
+    if _dashboard_cache_table_ready:
+        return
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dashboard_cache_kv (
+            cache_key TEXT PRIMARY KEY,
+            payload TEXT NOT NULL,
+            computed_at DOUBLE PRECISION NOT NULL
+        )
+        """
+    )
+    db.commit()
+    _dashboard_cache_table_ready = True
+
+
+def _load_shared_dashboard_cache() -> dict | None:
+    """Cross-machine cache: 4 machines behind Fly's proxy each had their own
+    in-memory cache, so round-robin routing meant a cache hit on one machine
+    rarely helped the others — most requests paid the full ~15-query cost.
+    Backing the cache with Postgres shares it across all machines."""
+    try:
+        db = get_db()
+        _ensure_dashboard_cache_table(db)
+        row = db.execute(
+            "SELECT payload, computed_at FROM dashboard_cache_kv WHERE cache_key = ?",
+            (_DASHBOARD_CACHE_KEY,),
+        ).fetchone()
+        db.close()
+        if not row or (time.time() - float(row["computed_at"])) >= _DASHBOARD_CACHE_TTL:
+            return None
+        return json.loads(row["payload"])
+    except Exception:
+        return None
+
+
+def _save_shared_dashboard_cache(data: dict) -> None:
+    try:
+        db = get_db()
+        _ensure_dashboard_cache_table(db)
+        payload = json.dumps(data, default=_json_default)
+        db.execute("DELETE FROM dashboard_cache_kv WHERE cache_key = ?", (_DASHBOARD_CACHE_KEY,))
+        db.execute(
+            "INSERT INTO dashboard_cache_kv (cache_key, payload, computed_at) VALUES (?, ?, ?)",
+            (_DASHBOARD_CACHE_KEY, payload, time.time()),
+        )
+        db.commit()
+        db.close()
+    except Exception:
+        pass
+
+
 def _cached_dashboard_data() -> dict:
     global _dashboard_data_cache, _dashboard_data_cache_at
     # Self-heal: if we fell back to SQLite but Postgres is reachable again,
@@ -54,9 +119,17 @@ def _cached_dashboard_data() -> dict:
     with _dashboard_cache_lock:
         if _dashboard_data_cache is not None and (now - _dashboard_data_cache_at) < _DASHBOARD_CACHE_TTL:
             return _dashboard_data_cache
+
+        shared = _load_shared_dashboard_cache()
+        if shared is not None:
+            _dashboard_data_cache = shared
+            _dashboard_data_cache_at = now
+            return shared
+
         data = _dashboard_data()
         _dashboard_data_cache = data
         _dashboard_data_cache_at = now
+        _save_shared_dashboard_cache(data)
     return data
 
 
