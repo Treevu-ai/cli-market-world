@@ -21,7 +21,7 @@ Developer / agent builder
     └── instala cli-market-core (transitivo)
     └── expone: market, market-server, market-mcp
 
-Railway (cli-market-backend + collector)
+Fly.io (cli-market-backend + collector)
   requirements.txt → cli-market-core>=X.Y.Z
     └── sin CLI ni landing; solo market_core
 
@@ -45,7 +45,7 @@ Tras split PyPI, **core y world comparten número de release** (ej. 1.9.28) pero
 
 1. **cli-market-core** — commit → tag `vX.Y.Z` → PyPI (workflow `publish-pypi.yml`)
 2. Esperar ~2 min → `pip index versions cli-market-core`
-3. **cli-market-backend** — pin `>=X.Y.Z`, CACHE_BUST Docker, push Railway
+3. **cli-market-backend** — pin `>=X.Y.Z`, CACHE_BUST Docker, `fly deploy`
 4. **cli-market-world** — pin core, bump version, tag → PyPI
 5. **Dispersión** — ver `ops/RELEASE-DISPERSION.md`
 
@@ -69,7 +69,7 @@ Tras split PyPI, **core y world comparten número de release** (ej. 1.9.28) pero
 | Cambiar CTA global a `pip install cli-market-core` | Mantener `cli-market-world` en web/redes |
 | Editar `marketStats.ts` a mano | `python ops/sync_market_stats.py` |
 | Push backend antes de PyPI core | Verificar `pip index versions` primero |
-| Mezclar versión world en pin de Railway | Backend pin solo `cli-market-core` |
+| Mezclar versión world en pin de Fly.io | Backend pin solo `cli-market-core` |
 
 ## Referencias
 

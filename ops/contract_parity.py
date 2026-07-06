@@ -165,23 +165,23 @@ def parse_core_pin_eq(text: str, *, label: str) -> tuple[int, int, int]:
 
 def check_core_pins(
     world_pyproject: Path | None = None,
-    world_railway_req: Path | None = None,
+    world_requirements: Path | None = None,
     backend_requirements: Path | None = None,
 ) -> list[str]:
     world_pyproject = world_pyproject or ROOT / "pyproject.toml"
-    world_railway_req = world_railway_req or ROOT / "requirements-railway.txt"
+    world_requirements = world_requirements or ROOT / "requirements.txt"
     backend_requirements = backend_requirements or ROOT.parent / "cli-market-backend" / "requirements.txt"
     errors: list[str] = []
 
-    if world_railway_req.is_file():
+    if world_requirements.is_file():
         w_pin = parse_core_pin_eq(
-            world_railway_req.read_text(encoding="utf-8"),
-            label="world requirements-railway.txt",
+            world_requirements.read_text(encoding="utf-8"),
+            label="world requirements.txt",
         )
     elif world_pyproject.is_file():
         w_pin = parse_core_pin(world_pyproject.read_text(encoding="utf-8"), label="world pyproject.toml")
     else:
-        return [f"world core pin missing: {world_railway_req} or {world_pyproject}"]
+        return [f"world core pin missing: {world_requirements} or {world_pyproject}"]
 
     if not backend_requirements.is_file():
         return [f"backend requirements missing: {backend_requirements}"]
@@ -219,19 +219,19 @@ def parse_index_pin(text: str, *, label: str) -> str:
 
 
 def check_index_pins(
-    world_railway_req: Path | None = None,
+    world_requirements: Path | None = None,
     backend_private_req: Path | None = None,
 ) -> list[str]:
-    world_railway_req = world_railway_req or ROOT / "requirements-railway.txt"
+    world_requirements = world_requirements or ROOT / "requirements.txt"
     backend_private_req = backend_private_req or ROOT.parent / "cli-market-backend" / "requirements-private.txt"
     errors: list[str] = []
 
-    if not world_railway_req.is_file():
-        return [f"world requirements-railway missing: {world_railway_req}"]
+    if not world_requirements.is_file():
+        return [f"world requirements missing: {world_requirements}"]
     if not backend_private_req.is_file():
         return [f"backend requirements-private missing: {backend_private_req}"]
 
-    w_pin = parse_index_pin(world_railway_req.read_text(encoding="utf-8"), label="world requirements-railway.txt")
+    w_pin = parse_index_pin(world_requirements.read_text(encoding="utf-8"), label="world requirements.txt")
     b_pin = parse_index_pin(backend_private_req.read_text(encoding="utf-8"), label="backend requirements-private.txt")
 
     if w_pin != b_pin:

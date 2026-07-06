@@ -13,7 +13,7 @@ Endpoints:
   POST /admin/cron/adoption-index  Persist Adoption Index snapshot (nightly cron)
   POST /admin/cron/indicators-refresh  Refresh moat indicators (internal + macro + Phase 2)
 
-Protected with MARKET_API_TOKEN (Bearer). Set on Railway before exposing publicly.
+Protected with MARKET_API_TOKEN (Bearer). Set on Fly.io before exposing publicly.
 """
 
 from __future__ import annotations

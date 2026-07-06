@@ -53,7 +53,7 @@ tags:
 | 16 | [[Day-16]] | 30 APIs sincronizadas | `ready` |
 | 17 | [[Day-17]] | Python httpx asyncio | `ready` |
 | 18 | [[Day-18]] | 36 MCP MIT | `ready` |
-| 19 | [[Day-19]] | Collector Railway | `ready` |
+| 19 | [[Day-19]] | Collector Fly.io | `ready` |
 | 20 | [[Day-20]] | Roadmap self-serve | `ready` |
 | 21 | [[Day-21]] | VTEX inestables | `ready` |
 

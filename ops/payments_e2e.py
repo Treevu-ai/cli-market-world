@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E2E payment rails — CLI Market (billing + retail/logistics) and Procure Copilot.
 
-Runs against deployed Railway (or MARKET_API_URL) and Procure Worker. Does not
+Runs against deployed Fly.io (or MARKET_API_URL) and Procure Worker. Does not
 complete real payments; validates endpoints, tier gates, and checkout payload shape
 for PayPal, Mercado Pago, Yape and Plin.
 
@@ -622,7 +622,7 @@ def run_retail_logistics_channels(base: str, rep: Report, admin: str) -> None:
 
 
 def run_procure_billing(base: str, rep: Report, run_id: str) -> None:
-    """Procure subscription rail on Railway (landing #procure tab)."""
+    """Procure subscription rail on Fly.io (landing #procure tab)."""
     if not _endpoint_available(base, "/billing/procure-subscribe"):
         rep.add("billing", "procure-subscribe", "SKIP", "endpoint not deployed")
         return

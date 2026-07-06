@@ -9,11 +9,11 @@ Instrucciones para agentes (Cursor, Cloud Agent, CI). Este archivo es la entrada
 | `cli-market-index` | Golden Records, entity resolution | `../cli-market-index` | Pin git en backend `requirements-private.txt` |
 | `cli-market-core` | Intelligence SDK — MCP, billing, indicators | `../cli-market-core` | PyPI `cli-market-core` |
 | `cli-market-backend` | Mirror API — paridad con prod; pin `cli-market-core` | `../cli-market-backend` | Sin deploy directo (sync manual / auto-PR) |
-| `cli-market-world` | **Railway prod** + PyPI `cli-market-world`, landing, ops/CI | `.` | Railway + PyPI + Cloudflare landing |
+| `cli-market-world` | **Fly.io prod** (`cli-market-api.fly.dev`) + PyPI `cli-market-world`, landing, ops/CI | `.` | Fly.io + PyPI + Cloudflare landing |
 
 **Orden de release** (cualquier feature cross-repo): **core → backend → world → index** (index solo si aplica). Checklists: `ops/PRICING-CHANGE-CHECKLIST.md`, `ops/OBSERVATORY-CHANGE-CHECKLIST.md`, `ops/RELEASE-DISPERSION.md`.
 
-**PyPI (dos paquetes, una marca):** CTA GTM = `pip install cli-market-world` (incluye `cli-market-core`). Railway pin = solo `cli-market-core`. Doc canónica: `docs/PYPI-PACKAGE-MODEL.md`.
+**PyPI (dos paquetes, una marca):** CTA GTM = `pip install cli-market-world` (incluye `cli-market-core`). Pin de prod (Fly.io) = solo `cli-market-core`. Doc canónica: `docs/PYPI-PACKAGE-MODEL.md`.
 
 | Repo auxiliar | Propósito | Path local |
 |---------------|-----------|------------|
@@ -128,7 +128,7 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 | Capa | Repo |
 |------|------|
 | Primitivas (`market_observatory`, identity, DDL) | `cli-market-core` → PyPI |
-| Middleware + routers prod | `cli-market-backend` → Railway |
+| Middleware + routers prod | `cli-market-backend` → Fly.io |
 | Mirror API + ops + landing `/stats` | `cli-market-world` |
 | Golden Records | `cli-market-index` — sin cambios P0 |
 
@@ -148,15 +148,20 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 - Data-gate: verificar antes de publicar posts data-gated. `make gate` en content repo.
 - Imágenes: regenerar con `python3 ops/generate_all_linkedin_assets.py --patch`
 
-## Cursor Cloud — Railway deploy
+## Deploy prod — Fly.io
 
-Prod API (`cli-market-production.up.railway.app`) **no** se actualiza solo con push a `main`. Requiere:
+Prod API (`cli-market-api.fly.dev`) se despliega **desde este repo** (`cli-market-world`), no
+automáticamente con push a `main` — no hay `fly.toml` commiteado aquí todavía ni workflow de
+CI para esto (el `deploy-railway.yml` que existía se borró al retirar Railway; falta su
+reemplazo Fly si se quiere volver a automatizar). Hoy es manual:
 
-1. **Secret `RAILWAY_TOKEN`** (project token, más fácil) o **`RAILWAY_API_TOKEN`** (account token)
-2. En **GitHub Actions secrets** y/o **Cursor Cloud secrets**
-3. Disparar: `python3 ops/railway_deploy.py --target both` o workflow **Deploy Railway**
+1. `fly deploy --app cli-market-api --dockerfile Dockerfile` (o con un `fly.toml` local no
+   commiteado — confirmar con quien lo corre)
+2. Secrets ya deben estar seteados con `fly secrets set` (no se pueden leer de vuelta vía CLI)
 
-Runbook: `ops/RAILWAY_DEPLOY.md`
+`cli-market-backend` tiene su propio `fly.toml`/`fly.collector.toml` (mismo nombre de app,
+`cli-market-api`) — verificar si sigue en uso o es un remanente de un plan de migración que
+terminó ejecutándose desde world en su lugar.
 
 ## MCP server de CLI Market en agentes (Devin / Cursor / Claude)
 

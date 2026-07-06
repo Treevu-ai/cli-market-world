@@ -8,7 +8,7 @@
 ### 1. Database (`database`)
 | Variable | Required | Where | Notes |
 |---|---|---|---|
-| `DATABASE_URL` | prod | world, core | PostgreSQL connection string. Railway auto-injects. |
+| `DATABASE_URL` | prod | world, core | PostgreSQL connection string. Fly auto-injects via `fly postgres attach`. |
 | `INDEX_DATABASE_URL` | optional | world | Separate Postgres for index. Falls back to `DATABASE_URL`. |
 | `PG_SSL_MODE` | optional | core | Default `prefer`. Override for stricter SSL. |
 
@@ -55,16 +55,12 @@
 | `MARKET_ADMIN_PASSWORD` | prod | world | Admin panel password |
 | `MARKET_USER_TOKEN` | optional | world | User-level token override |
 
-### 6. Railway Infrastructure (`infra-railway`)
+### 6. Fly.io Infrastructure (`infra-fly`)
 | Variable | Required | Where | Notes |
 |---|---|---|---|
-| `RAILWAY_ENVIRONMENT` | auto | world | Injected by Railway (`production`/`staging`) |
-| `RAILWAY_API_TOKEN` | ops | world | For Railway API calls (redeploy, etc.) |
-| `RAILWAY_PROJECT_ID` | ops | world | Project identifier |
-| `RAILWAY_ENVIRONMENT_ID` | ops | world | Environment identifier |
-| `RAILWAY_API_SERVICE_ID` | ops | world | API service identifier |
-| `RAILWAY_PROJECT_TOKEN` | ops | world | Alternative project-level token |
-| `PORT` | auto | world | Injected by Railway |
+| `FLY_APP_NAME` | auto | world | Injected by every Fly Machine |
+| `FLY_API_TOKEN` | ops | world | For `flyctl`/Fly API calls (redeploy, etc.) |
+| `PORT` | auto | world | Injected by Fly (`fly.toml` `internal_port`) |
 
 ### 7. Slack (`notifications-slack`)
 | Variable | Required | Where | Notes |
@@ -128,7 +124,7 @@
 
 ## Total: ~120 unique variables
 
-### Recommended Railway Variable Groups
+### Recommended Fly.io Secret Groups
 ```
 database          → DATABASE_URL, INDEX_DATABASE_URL, PG_SSL_MODE
 payments-paypal   → PAYPAL_* (8 vars)

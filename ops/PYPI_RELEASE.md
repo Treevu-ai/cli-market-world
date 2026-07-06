@@ -7,7 +7,7 @@
 
 | Package | Repo | Quién instala | Install |
 |---------|------|---------------|---------|
-| `cli-market-core` | `cli-market-core` | Backend Railway, SDK-only | `pip install cli-market-core` |
+| `cli-market-core` | `cli-market-core` | Backend Fly.io, SDK-only | `pip install cli-market-core` |
 | `cli-market-world` | `cli-market-world` | Developers, GTM CTA | `pip install cli-market-world` |
 
 `cli-market-world` depende de `cli-market-core` en PyPI. **CTA público siempre world.**

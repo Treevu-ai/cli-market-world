@@ -4,7 +4,7 @@ Secrets required for scheduled workflows. Configure in **Settings → Secrets an
 
 | Secret | Workflows | Scope / notes |
 |--------|-----------|----------------|
-| `MARKET_API_TOKEN` | **morning-ops-chain**, observatory, adoption-index, indicators, command-control, funnel-digest, PAM | Admin bearer token (same as Railway `MARKET_API_TOKEN`) |
+| `MARKET_API_TOKEN` | **morning-ops-chain**, observatory, adoption-index, indicators, command-control, funnel-digest, PAM | Admin bearer token (same as Fly.io `MARKET_API_TOKEN`) |
 | `GH_PAT` | CI checkout (index, core, backend), contract parity, sync-core-git, morning-ops-chain (GTM steps), daily-briefing, gtm-preflight | **Read** on: world, core, index, backend, content · **Write** on: core (git backport PR) |
 | `GH_PAT_CONTENT` | morning-ops-chain, daily-briefing, gtm-preflight, verify-content-pat | **Read and write** on `cli-market-content` — commits de `generated/daily/` |
 | `GH_PAT_BACKEND_WRITE` | sync-backend-core-pin, **sync-backend-observatory-mirror** | **Read and write** on `cli-market-backend` only — auto-PR pin core + mirror Observatory |

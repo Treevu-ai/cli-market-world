@@ -67,7 +67,7 @@ export default function PrivacyPolicy() {
 
             <h2>3. Almacenamiento y Seguridad</h2>
             <p>
-              Los datos se almacenan en Railway (infraestructura en la nube). Usamos TLS en
+              Los datos se almacenan en Fly.io (infraestructura en la nube). Usamos TLS en
               tránsito y bases de datos con control de acceso en reposo. Las claves API se
               hashean antes del almacenamiento. Conservamos los datos de contacto y cuenta
               mientras tu cuenta esté activa, más 30 días tras la baja para permitir la
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
             <h2>4. Servicios de Terceros</h2>
             <ul>
               <li>
-                <strong>Railway:</strong> infraestructura de alojamiento y base de datos.
+                <strong>Fly.io:</strong> infraestructura de alojamiento y base de datos.
               </li>
               <li>
                 <strong>PayPal:</strong> procesamiento de pagos. La{" "}
@@ -220,7 +220,7 @@ export default function PrivacyPolicy() {
 
             <h2>3. Data Storage and Security</h2>
             <p>
-              Data is stored on Railway (cloud infrastructure). We use TLS in transit and
+              Data is stored on Fly.io (cloud infrastructure). We use TLS in transit and
               access-controlled databases at rest. API keys are hashed before storage. We retain
               contact and account data for as long as your account is active, plus 30 days after
               termination to allow data export.
@@ -229,7 +229,7 @@ export default function PrivacyPolicy() {
             <h2>4. Third-Party Services</h2>
             <ul>
               <li>
-                <strong>Railway:</strong> hosting and database infrastructure.
+                <strong>Fly.io:</strong> hosting and database infrastructure.
               </li>
               <li>
                 <strong>PayPal:</strong> payment processing. PayPal's{" "}

@@ -15,13 +15,13 @@ ARG GH_PAT
 
 # The data-moat modules + market_connectors/ now come from cli-market-core
 # (public repo — no auth needed). Only the collector entrypoint stays in-tree.
-COPY requirements-railway.txt .
+COPY requirements.txt .
 RUN set -eux; \
     TOKEN="${GITHUB_TOKEN:-${GH_PAT:-}}"; \
     if [ -n "${TOKEN}" ]; then \
       git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"; \
     fi; \
-    pip install --no-cache-dir -r requirements-railway.txt && \
+    pip install --no-cache-dir -r requirements.txt && \
     playwright install chromium; \
     rm -f /root/.gitconfig
 

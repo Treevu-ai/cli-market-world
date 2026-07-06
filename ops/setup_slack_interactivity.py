@@ -9,7 +9,7 @@
 Usage (PowerShell: usar comillas, sin <>):
   python ops/setup_slack_interactivity.py
   python ops/setup_slack_interactivity.py --signing-secret "abc123..."
-  python ops/setup_slack_interactivity.py --signing-secret "abc123..." --railway  # legacy: sets it on Railway instead
+  python ops/setup_slack_interactivity.py --signing-secret "abc123..." --fly  # sets it on Fly.io directly
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ INTERACTIONS_URL = f"{API_BASE}/slack/interactions"
 def main() -> int:
     p = argparse.ArgumentParser(description="Configure Slack interactivity for Pro activation")
     p.add_argument("--signing-secret", help="Slack app Signing Secret (from api.slack.com)")
-    p.add_argument("--railway", action="store_true", help="Set SLACK_SIGNING_SECRET on Railway")
+    p.add_argument("--fly", action="store_true", help="Set SLACK_SIGNING_SECRET on Fly.io")
     p.add_argument("--verify", action="store_true", help="Probe interactions endpoint")
     args = p.parse_args()
 
@@ -47,20 +47,19 @@ def main() -> int:
     secret = (args.signing_secret or os.getenv("SLACK_SIGNING_SECRET", "")).strip()
     if secret:
         print("SLACK_SIGNING_SECRET: configurado localmente")
-        if args.railway:
-            railway = "railway.cmd" if sys.platform == "win32" else "railway"
+        if args.fly:
             proc = subprocess.run(
-                [railway, "variables", "set", f"SLACK_SIGNING_SECRET={secret}"],
+                ["fly", "secrets", "set", f"SLACK_SIGNING_SECRET={secret}", "--app", "cli-market-api"],
                 cwd=str(ROOT),
             )
             if proc.returncode != 0:
                 return proc.returncode
-            print("✓ Railway SLACK_SIGNING_SECRET actualizado")
+            print("✓ Fly.io SLACK_SIGNING_SECRET actualizado")
     else:
         print(
             "SLACK_SIGNING_SECRET: pendiente\n"
             "  api.slack.com/apps → Basic Information → App Credentials → Signing Secret\n"
-            '  python ops/setup_slack_interactivity.py --signing-secret "TU_SECRET" --railway'
+            '  python ops/setup_slack_interactivity.py --signing-secret "TU_SECRET" --fly'
         )
 
     if args.verify or secret:

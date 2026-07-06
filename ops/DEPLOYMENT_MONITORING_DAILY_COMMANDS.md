@@ -9,7 +9,7 @@
 Todo lo crítico está arriba y respondiendo correctamente:
 
 - Landing (Cloudflare Pages): 200 OK
-- API principal (Railway): 200 OK
+- API principal (Fly.io): 200 OK
 - Health checks: sanos
 - Dashboard: cargando
 - PyPI: accesible (versión actual 1.9.5)
@@ -21,14 +21,14 @@ No vi caídas, errores 5xx ni datos vacíos. El collector parece funcionando (sn
 
 ### Producción (monitorea estos diariamente + alerts)
 - **Landing principal**: https://cli-market.dev (página completa, hero, pricing, docs teaser)
-- **Dashboard / funnel / adopción / KPIs**: https://cli-market-production.up.railway.app/dashboard
+- **Dashboard / funnel / adopción / KPIs**: https://cli-market-api.fly.dev/dashboard
 - **API raíz + health**:
-  - https://cli-market-production.up.railway.app
-  - https://cli-market-production.up.railway.app/health → `{"status": "healthy"}`
-  - https://cli-market-production.up.railway.app/health/db → (detalle: backend postgresql, snapshots, tablas, pg_error)
+  - https://cli-market-api.fly.dev
+  - https://cli-market-api.fly.dev/health → `{"status": "healthy"}`
+  - https://cli-market-api.fly.dev/health/db → (detalle: backend postgresql, snapshots, tablas, pg_error)
 - **Docs + Tools (MCP catalog)**: https://cli-market.dev/docs y https://cli-market.dev/tools
 - **PyPI (versión, descargas, descripción)**: https://pypi.org/project/cli-market-world/
-- **Railway (servicios)**: Dashboard de Railway → servicio `cli-market-production` (API) + servicio collector separado (usa `railway.collector.toml`)
+- **Fly.io (servicios)**: Dashboard de Fly.io → app `cli-market-api` + app collector separada (usa `fly.collector.toml`, en `cli-market-backend`)
 - **Cloudflare Pages (landing)**: Dashboard Cloudflare → proyecto `cli-market-world`
 - **GitHub (deploys, CI, issues)**: https://github.com/Treevu-ai/cli-market-world (y el repo de content)
 - **MCP / agent entrypoints**: `market-mcp` (instalado vía pip), configurado vía `mcp.json`, smithery.yaml, glama.json
@@ -43,7 +43,7 @@ No vi caídas, errores 5xx ni datos vacíos. El collector parece funcionando (sn
 - Health local: `http://127.0.0.1:8765/health` y `/health/db`
 
 ### Otros que vale tener en bookmarks/alerts
-- Railway logs + metrics del servicio API y collector
+- Fly.io logs + metrics del servicio API y collector
 - Cloudflare Pages deploys + analytics del proyecto landing
 - PyPI stats (descargas semanales)
 - GitHub Actions (smoke tests, releases)
@@ -59,7 +59,7 @@ Basado en `content/Makefile`, `ops/daily_briefing.py`, `AGENTS.md`, `market_goli
    Dashboard inmediato: qué toca publicar hoy en todos los canales (LinkedIn personal/empresa, HN, Reddit, DEV, etc.).
 
 3. **make gate** (local) + **make gate-remote** (vs API live)  
-   Verifica data-gate (cobertura ≥80%). Crítico antes de posts data-gated. El remote usa la Railway real.
+   Verifica data-gate (cobertura ≥80%). Crítico antes de posts data-gated. El remote usa la Fly.io real.
 
 4. **make content** (o `python scripts/content.py`)  
    Copia lista para pegar en todos los canales activos del día.
@@ -77,11 +77,11 @@ Basado en `content/Makefile`, `ops/daily_briefing.py`, `AGENTS.md`, `market_goli
    python ops/payments_e2e.py
    ```
    Env opcional:
-   - `MARKET_API_URL` — API Railway (default prod)
+   - `MARKET_API_URL` — API Fly.io (default prod)
    - `MARKET_API_TOKEN` — admin; gates free→403 y billing legacy
    - `MARKET_PRO_API_KEY` — `sk-…` Pro para checkout retail (si falta, intenta `../Projects/procure-copilot/.env.local` → `CLI_MARKET_API_KEY`)
    - `PROCURE_PUBLIC_URL` — Worker Procure (default prod)  
-   **Exit 0** = PASS en retail + procure. SKIP esperado si `/billing/pro-checkout` o `/v1/admin/set-tier` no están desplegados en Railway.  
+   **Exit 0** = PASS en retail + procure. SKIP esperado si `/billing/pro-checkout` o `/v1/admin/set-tier` no están desplegados en Fly.io.  
    Solo Procure (mismo cuatro canales):
    ```bash
    cd ../Projects/procure-copilot
@@ -113,7 +113,7 @@ Basado en `content/Makefile`, `ops/daily_briefing.py`, `AGENTS.md`, `market_goli
 
 Estás operando un sistema multi-repo (content para GTM + world para producto/landing/CLI/server). El foco es **agent-native commerce infra** (pip + MCP + 43 tools + data moat real). Hay dos flujos paralelos que mantener vivos:
 - **GTM/content** (calendario, posts, gates de datos, monetización semana 2, spikes).
-- **Producto/ops** (collector, API Railway, landing Cloudflare, KPIs go-live, daily briefings, deploys manuales).
+- **Producto/ops** (collector, API Fly.io, landing Cloudflare, KPIs go-live, daily briefings, deploys manuales).
 
 Todo debe ser monitoreable por founder (tú) con un set pequeño de enlaces + comandos diarios que cierren el loop de "data moat fresco + contenido publicable + revenue gates + alerts".
 

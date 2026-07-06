@@ -81,7 +81,7 @@ No credentials needed. VTEX exposes a public catalog API. If your store is on VT
 **Email:** hello@cli-market.dev  
 **Website:** https://cli-market.dev  
 **Docs:** https://cli-market.dev/docs
-**Dashboard:** https://cli-market-production.up.railway.app/dashboard
+**Dashboard:** https://cli-market-api.fly.dev/dashboard
 
 ---
 

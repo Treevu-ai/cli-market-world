@@ -478,7 +478,7 @@ def build_report(*, remote: bool = False) -> str:
         f"\n{'─'*42}\n"
         f"_Generado: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} · "
         f"Fuente: {'prod API + PyPI' if remote else 'PyPI only (sin MARKET_API_TOKEN)'}_\n"
-        f"_Para datos prod: exportar MARKET_API_TOKEN en Railway → cron diario 13:30 UTC_"
+        f"_Para datos prod: exportar MARKET_API_TOKEN (fly secrets set) → cron diario 13:30 UTC_"
     )
 
     return "\n".join(lines)

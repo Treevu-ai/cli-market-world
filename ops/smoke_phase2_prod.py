@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -32,18 +30,8 @@ BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
 
 
 def _token() -> str:
-    tok = (os.getenv("MARKET_API_TOKEN") or "").strip()
-    if tok:
-        return tok
-    backend = ROOT.parent / "cli-market-backend"
-    if backend.is_dir():
-        out = subprocess.check_output(
-            ["railway", "variables", "--json"],
-            cwd=str(backend),
-            text=True,
-        )
-        return (json.loads(out).get("MARKET_API_TOKEN") or "").strip()
-    return ""
+    # Fly.io secrets can't be read back via CLI (unlike Railway) — export it directly.
+    return (os.getenv("MARKET_API_TOKEN") or "").strip()
 
 
 def main() -> int:

@@ -77,7 +77,7 @@ flowchart LR
 
 | Comando | Rol |
 |---------|-----|
-| `python collect_prices.py --daemon` | Corrida cada 4h (Railway) |
+| `python collect_prices.py --daemon` | Corrida cada 4h (Fly.io) |
 | `python3 ops/store_probe.py` | Pre-enable / post-cambio catálogo |
 | `python3 ops/monday.py` | Price Pulse semanal → `docs/metrics/` |
 | `curl …/dashboard/data` | Fuente única para gates |

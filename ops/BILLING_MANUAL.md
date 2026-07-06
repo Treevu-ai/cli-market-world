@@ -25,7 +25,7 @@ market upgrade    # POST /billing/paypal — PayPal REST, mismo webhook
 2. O Yape/Plin → QR + ref `PRO-xxx` → ops activa manualmente
 3. `python3 ops/activate_pro.py USERNAME --request-id PRO-XXXXXXXX`
 
-## Variables Railway
+## Variables Fly.io
 
 ```bash
 # PayPal REST (primario)
@@ -48,7 +48,7 @@ PROCURE_MAGIC_SECRET=...          # 32+ bytes — magic link onboarding (Sprint 
 PROCURE_APP_URL=https://procurecopilot.com/dashboard
 PROCURE_MAGIC_TTL_SECONDS=900     # opcional; default 15 min
 
-# Cloudflare Pages (landing) — debe coincidir con Railway PROCURE_MP_CHECKOUT
+# Cloudflare Pages (landing) — debe coincidir con Fly.io PROCURE_MP_CHECKOUT
 NEXT_PUBLIC_PROCURE_MP_CHECKOUT=1
 
 # Fallback hosted button
@@ -99,7 +99,7 @@ pago-real+mp+8a3ea8af@cli-market.dev # Pago real MP — ref PRO-D2CF329D
 
 No hay BCC al cliente. Tras enviar el email al cliente con éxito, el backend manda un borrador separado `[Pro activado — borrador]` a `BILLING_NOTIFY_EMAIL` (`hello@cli-market.dev`). Si SMTP falla al cliente, **no** se envía el borrador ops.
 
-Tokens en logs Railway / webhook `actions`:
+Tokens en logs Fly.io / webhook `actions`:
 
 - `activation_email:…` — enviado al cliente
 - `activation_email_skipped:…` — omitido (SMTP deshabilitado o duplicado reciente)
@@ -118,7 +118,7 @@ python3 ops/resend_pro_activation_email.py PRO-D2CF329D
 python3 ops/resend_pro_activation_email.py PRO-D2CF329D --email otro@ejemplo.com
 
 # API directa
-curl -X POST https://cli-market-production.up.railway.app/admin/resend-pro-activation-email \
+curl -X POST https://cli-market-api.fly.dev/admin/resend-pro-activation-email \
   -H "Authorization: Bearer $MARKET_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"request_id":"PRO-D2CF329D"}'
@@ -138,7 +138,7 @@ GitHub Actions: workflow `ops-resend-pro-email.yml` (disparador en `ops/triggers
 ## Probar
 
 ```bash
-curl -X POST https://cli-market-production.up.railway.app/billing/pro-checkout \
+curl -X POST https://cli-market-api.fly.dev/billing/pro-checkout \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","lang":"es","payment_method":"paypal","username":"miuser"}'
 ```

@@ -22,7 +22,7 @@ cd ../procure-copilot && npm run smoke
 **URLs:**
 - Landing + UI: https://procurecopilot.com
 - Demo GIF (si falla red en vivo): `/demo.gif`
-- API docs CLI Market: https://cli-market-production.up.railway.app/docs
+- API docs CLI Market: https://cli-market-api.fly.dev/docs
 
 **Claims permitidos** (fuente `lib/market-stats.ts`):
 - 68 catálogo · 38 verificados · 8 países · 22 MCP tools
