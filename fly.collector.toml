@@ -1,0 +1,32 @@
+# Fly.io config — CLI Market Collector (background daemon)
+# Deploy (build secret required — never pass the PAT as --build-arg,
+# it gets persisted in plaintext in `fly config show`):
+#   fly deploy --app cli-market-collector --config fly.collector.toml --build-secret github_token=$GITHUB_TOKEN
+
+app = "cli-market-collector"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile.collector"
+
+[env]
+  PYTHONUNBUFFERED = "1"
+  COLLECT_PARALLEL = "6"
+  COLLECT_DELAY = "0.75"
+  COLLECT_MAX_QUERIES_PER_LINE = "12"
+  COLLECT_INTERVAL_HOURS = "4"
+
+# No HTTP service — solo proceso daemon
+[processes]
+  collector = "python collect_prices.py --daemon"
+
+[[vm]]
+  size = "shared-cpu-2x"   # Playwright necesita más CPU
+  memory = "1024mb"
+  processes = ["collector"]
+
+# Sin health checks HTTP — el collector no expone puerto
+# Fly reinicia automáticamente si el proceso muere
+[[restart]]
+  policy = "always"
+  max_retries = 5
