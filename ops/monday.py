@@ -109,8 +109,8 @@ def tldr(data: dict) -> str:
     runs = k.get("total_runs", 0)
 
     inflation = data.get("inflation", [])
-    rising = [i for i in inflation if i.get("delta_pct", 0) > 0]
-    falling = [i for i in inflation if i.get("delta_pct", 0) < 0]
+    rising = [i for i in inflation if (i.get("delta_pct") or 0) > 0]
+    falling = [i for i in inflation if (i.get("delta_pct") or 0) < 0]
     movers_up = len(data.get("top_risers", []))
     movers_down = len(data.get("top_fallers", []))
     critical_count = sum(
