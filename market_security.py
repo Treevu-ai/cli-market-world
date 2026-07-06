@@ -15,9 +15,9 @@ logger = logging.getLogger("market.security")
 
 
 def is_production_deploy() -> bool:
-    """True when running in production (Railway or PAYPAL_SANDBOX != 'true')."""
-    # Explicit Railway env
-    if os.getenv("RAILWAY_ENVIRONMENT", "").lower() == "production":
+    """True when running in production (Fly.io or PAYPAL_SANDBOX != 'true')."""
+    # Explicit Fly.io env (set automatically on every Fly Machine)
+    if os.getenv("FLY_APP_NAME", ""):
         return True
     # Tests and local dev signal non-production via PAYPAL_SANDBOX=true
     sandbox = os.getenv("PAYPAL_SANDBOX", "").lower()
@@ -27,9 +27,7 @@ def is_production_deploy() -> bool:
         return True
     # Fallback: treat as production if connected to a remote Postgres
     db = os.getenv("DATABASE_URL", "")
-    return "railway.internal" in db or (
-        "postgres" in db and "localhost" not in db and "127.0.0.1" not in db
-    )
+    return "postgres" in db and "localhost" not in db and "127.0.0.1" not in db
 
 
 def paypal_allow_unverified_webhooks() -> bool:

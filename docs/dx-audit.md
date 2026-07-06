@@ -45,7 +45,7 @@ status: shipped
 | 2 | `market_add` requires 4 fields from search result | Agent drops fields | Description lists exact field mapping |
 | 3 | No GitHub issue template for agent integration | Feedback lost | Add `.github/ISSUE_TEMPLATE/agent-integration.md` |
 | 4 | Error messages from API not surfaced in MCP | Dead ends | MCP returns JSON error with `hint` field |
-| 5 | Quickstart assumes Railway API URL | Local dev confusion | `market hello` prints active API base |
+| 5 | Quickstart assumes Fly.io API URL | Local dev confusion | `market hello` prints active API base |
 
 ## MCP tool description improvements (shipped 2026-05-28)
 

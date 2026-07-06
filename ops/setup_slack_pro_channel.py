@@ -6,7 +6,7 @@ The bot needs chat:write and must be /invite'd to the channel.
 Usage:
   python ops/setup_slack_pro_channel.py --channel-id C0B90LCEK0V
   python ops/setup_slack_pro_channel.py --test
-  railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V
+  fly secrets set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V --app cli-market-api
 """
 
 from __future__ import annotations
@@ -35,8 +35,8 @@ def main() -> int:
         if not cid.startswith("C"):
             print("✗ Channel ID must start with C", file=sys.stderr)
             return 1
-        print("Set on Railway:")
-        print(f"  railway variables set SLACK_CHANNEL_CLI_MARKET_PRO={cid}")
+        print("Set on Fly.io:")
+        print(f"  fly secrets set SLACK_CHANNEL_CLI_MARKET_PRO={cid} --app cli-market-api")
         print("Set locally in .env:")
         print(f"  SLACK_CHANNEL_CLI_MARKET_PRO={cid}")
         os.environ["SLACK_CHANNEL_CLI_MARKET_PRO"] = cid
@@ -62,7 +62,7 @@ def main() -> int:
         "Canal: #suscripciones-cli-pro (C0B90LCEK0V)\n"
         "1. /invite @cli_market_dev_bot en el canal\n"
         "2. python ops/setup_slack_pro_channel.py --channel-id C0B90LCEK0V --test\n"
-        "3. railway variables set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V"
+        "3. fly secrets set SLACK_CHANNEL_CLI_MARKET_PRO=C0B90LCEK0V --app cli-market-api"
     )
     return 0
 

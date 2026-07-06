@@ -2,8 +2,8 @@
 """Cancel PayPal subscriptions stuck in APPROVAL_PENDING (smoke tests).
 
 Usage:
-  railway run python ops/paypal_cleanup_pending.py
-  railway run python ops/paypal_cleanup_pending.py I-ABC I-DEF
+  fly ssh console -a cli-market-api -C "python ops/paypal_cleanup_pending.py"
+  fly ssh console -a cli-market-api -C "python ops/paypal_cleanup_pending.py I-ABC I-DEF"
 """
 
 from __future__ import annotations

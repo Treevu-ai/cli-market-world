@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rotate CLI Market secrets after repo privatization.
 
-Auto-rotates (Railway + GitHub where applicable):
+Auto-rotates (Fly.io + GitHub where applicable):
   - MARKET_API_TOKEN
   - CHECKOUT_WEBHOOK_SECRET
 
@@ -26,6 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REPO = "Treevu-ai/cli-market-world"
+FLY_APP = "cli-market-api"
 LOCAL_FILE = Path(__file__).resolve().parent / ".rotation-local.txt"
 
 
@@ -72,8 +73,8 @@ def main() -> int:
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     actions = [
-        ("railway", ["railway", "variables", "--set", f"MARKET_API_TOKEN={market}"]),
-        ("railway", ["railway", "variables", "--set", f"CHECKOUT_WEBHOOK_SECRET={checkout}"]),
+        ("fly", ["fly", "secrets", "set", f"MARKET_API_TOKEN={market}", "--app", FLY_APP]),
+        ("fly", ["fly", "secrets", "set", f"CHECKOUT_WEBHOOK_SECRET={checkout}", "--app", FLY_APP]),
         ("gh-secret", ["gh", "secret", "set", "MARKET_API_TOKEN", "-R", REPO]),
     ]
 
@@ -115,7 +116,7 @@ def main() -> int:
             print(f"  - {err}")
         return 1
 
-    print("Rotation applied. Railway restarts on variable change.")
+    print("Rotation applied. Fly.io redeploys the machine on secret change.")
     return 0
 
 

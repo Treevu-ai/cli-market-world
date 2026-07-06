@@ -21,7 +21,7 @@ flowchart LR
 ### 2. Cuenta free (recomendado antes de pagar)
 ```bash
 python -m pip install cli-market-world
-export MARKET_API_URL=https://cli-market-production.up.railway.app
+export MARKET_API_URL=https://cli-market-api.fly.dev
 market login          # elige username — úsalo en el paso 2 del modal
 market search "leche" --country PE
 market whoami         # tier: free
@@ -67,7 +67,7 @@ market checkout --payment yape   # ya no 403
 
 ## Pre-flight (antes del primer cliente)
 
-### Railway (API)
+### Fly.io (API)
 - [ ] `SMTP_*` configurado — ver `.env.example`
 - [ ] PayPal REST (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, plan IDs)
 - [ ] `PRO_SUBSCRIBE_RETURN_URL=https://cli-market.dev/?sub=success#pricing` (opcional)
@@ -77,16 +77,16 @@ market checkout --payment yape   # ya no 403
 Ver también: [`docs/ops/database-migration.md`](../docs/ops/database-migration.md)
 
 ### Cloudflare Pages (landing)
-- [ ] `NEXT_PUBLIC_API_URL` apunta a Railway
+- [ ] `NEXT_PUBLIC_API_URL` apunta a Fly.io
 - [ ] Deploy landing tras cambios (`npx wrangler pages deploy`)
 
 ### Smoke test (5 min)
 ```bash
 # API
-curl -s https://cli-market-production.up.railway.app/ | jq .status
+curl -s https://cli-market-api.fly.dev/ | jq .status
 
 # Pro checkout (forma de respuesta — no completes pago Live)
-curl -s -X POST https://cli-market-production.up.railway.app/billing/pro-checkout \
+curl -s -X POST https://cli-market-api.fly.dev/billing/pro-checkout \
   -H "Content-Type: application/json" \
   -d '{"email":"smoke@test.com","lang":"es","payment_method":"paypal"}' | jq .
 
@@ -102,7 +102,7 @@ market login && market whoami
 
 | Síntoma | Causa | Fix |
 |---------|-------|-----|
-| "Revisa email" pero no llega | SMTP no configurado | Railway env SMTP_*; el modal muestra enlace "Ir al pago" |
+| "Revisa email" pero no llega | SMTP no configurado | Fly.io env SMTP_*; el modal muestra enlace "Ir al pago" |
 | Pro no activa tras PayPal | Username incorrecto | Cliente debe indicar `market whoami` en paso 2 del modal |
 | Link duplicado | Mismo email reciente | Botón "Reenviar enlace" en modal o `resend: true` en API |
 | `checkout` 403 | Sigue en free / webhook pendiente | Esperar ~30 s; `market whoami`; ops si Yape/Plin |

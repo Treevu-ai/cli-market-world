@@ -160,7 +160,7 @@ Registrar semanalmente en [[metrics/README]].
 
 ## Enlaces rápidos
 
-- API: `https://cli-market-production.up.railway.app/docs`
+- API: `https://cli-market-api.fly.dev/docs`
 - llms.txt: `https://cli-market.dev/llms.txt`
 - Telegram: [@climarketbot](https://t.me/climarketbot)
 
@@ -184,7 +184,7 @@ Guía paso a paso: [[../ops/PAYPAL_SANDBOX|PAYPAL_SANDBOX.md]]
 export PAYPAL_CLIENT_ID=... PAYPAL_CLIENT_SECRET=... PAYPAL_SANDBOX=true
 python3 ops/paypal_sandbox_setup.py check
 python3 ops/paypal_sandbox_setup.py create-plan
-python3 ops/paypal_sandbox_setup.py register-webhook https://cli-market-production.up.railway.app/checkout/paypal-webhook
+python3 ops/paypal_sandbox_setup.py register-webhook https://cli-market-api.fly.dev/checkout/paypal-webhook
 ```
 
 ### PayPal live (Railway env vars)
@@ -199,7 +199,7 @@ CHECKOUT_WEBHOOK_SECRET=...    # optional; secures POST /checkout/webhook manual
 YAPE_PLIN_NUMBER=...           # optional; real Yape QR payload
 ```
 
-Webhook URL: `https://cli-market-production.up.railway.app/checkout/paypal-webhook`
+Webhook URL: `https://cli-market-api.fly.dev/checkout/paypal-webhook`
 
 Events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, `BILLING.SUBSCRIPTION.ACTIVATED`, `BILLING.SUBSCRIPTION.CANCELLED`
 

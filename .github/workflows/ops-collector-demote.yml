@@ -1,7 +1,7 @@
-# One-shot ops: deploy collector + demote erroneous Pro tier + revoke leaked key.
+# One-shot ops: demote erroneous Pro tier + revoke leaked key.
 # Trigger: push to ops/triggers/collector-demote.trigger
 
-name: Ops Collector Deploy and Demote
+name: Ops Demote and Revoke
 
 on:
   push:
@@ -24,39 +24,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-collector:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_API_SERVICE_ID: ${{ vars.RAILWAY_API_SERVICE_ID }}
-      RAILWAY_COLLECTOR_SERVICE_ID: ${{ vars.RAILWAY_COLLECTOR_SERVICE_ID }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Validate Railway credentials
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: |
-          if [ -z "${RAILWAY_API_TOKEN}" ] && [ -z "${RAILWAY_TOKEN}" ]; then
-            echo "::error::Missing RAILWAY_TOKEN / RAILWAY_API_TOKEN"
-            exit 1
-          fi
-
-      - name: Deploy collector
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: python3 ops/railway_deploy.py --target collector
-
   incident-response:
     runs-on: ubuntu-latest
     timeout-minutes: 15

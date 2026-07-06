@@ -57,7 +57,7 @@ index: "[[linkedin/00-Index]]"
 | 16 | "El mayor desafío técnico no fue el código. Fue mantener 30 APIs externas sincronizadas." | Vulnerability |
 | 17 | "¿Por qué Python? Porque `httpx` + `asyncio` + `FastAPI` es imbatible para fan-out a 30 APIs." | Tech deep |
 | 18 | "22 herramientas MCP. Todas documentadas. Open source. MIT." | Social proof |
-| 19 | "El collector corre cada 8 horas. PostgreSQL. Railway. Cero intervención humana." | Autonomy |
+| 19 | "El collector corre cada 8 horas. PostgreSQL. Fly.io. Cero intervención humana." | Autonomy |
 | 20 | "¿Qué sigue? Self-serve onboarding para retailers. PayPal live. Reportes semanales de inflación." | Roadmap |
 | 21 | "Mi error más grande: asumir que las APIs VTEX eran estables. Spoiler: no lo son." | Honest mistake |
 

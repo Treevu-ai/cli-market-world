@@ -94,7 +94,7 @@ def _mercadopago_env_flags() -> dict[str, bool]:
         "MERCADOPAGO_WEBHOOK_TOKEN",
         "MERCADOPAGO_SECRET_SIGNATURE",
         "MP_WEBHOOK_SECRET",
-        "RAILWAY_PUBLIC_DOMAIN",
+        "FLY_APP_NAME",
     )
     return {k: bool(os.getenv(k, "").strip()) for k in keys}
 

@@ -4,16 +4,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-
-API_SERVICE_ID_DEFAULT = "6e74bc38-bbf2-4815-bac4-38092067d3b1"
 
 from market_core import (  # noqa: E402
     db_find_subscription_request,
@@ -22,32 +18,6 @@ from market_core import (  # noqa: E402
     ensure_db_initialized,
     get_db,
 )
-
-
-def _load_railway_database_url() -> str:
-    railway = "railway.cmd" if sys.platform == "win32" else "railway"
-    token = (os.getenv("RAILWAY_TOKEN") or os.getenv("RAILWAY_PROJECT_TOKEN") or "").strip()
-    if not token:
-        return ""
-    env = os.environ.copy()
-    env.pop("RAILWAY_API_TOKEN", None)
-    env["RAILWAY_TOKEN"] = token
-    service_id = (
-        os.getenv("RAILWAY_API_SERVICE_ID", API_SERVICE_ID_DEFAULT).strip()
-        or API_SERVICE_ID_DEFAULT
-    )
-    proc = subprocess.run(
-        [railway, "variables", "--json", "--service", service_id],
-        capture_output=True,
-        text=True,
-        cwd=str(ROOT),
-        env=env,
-        timeout=90,
-    )
-    if proc.returncode != 0:
-        raise RuntimeError(proc.stderr or proc.stdout or "railway variables failed")
-    vars_map = json.loads(proc.stdout)
-    return (vars_map.get("DATABASE_PUBLIC_URL") or vars_map.get("DATABASE_URL") or "").strip()
 
 
 def main() -> int:
@@ -68,12 +38,8 @@ def main() -> int:
         return 1
 
     if not os.getenv("DATABASE_URL"):
-        db_url = _load_railway_database_url()
-        if db_url:
-            os.environ["DATABASE_URL"] = db_url
-        else:
-            print("DATABASE_URL not set and Railway token unavailable", file=sys.stderr)
-            return 1
+        print("DATABASE_URL not set (Fly secrets can't be read back via CLI — export it directly)", file=sys.stderr)
+        return 1
 
     ensure_db_initialized()
     req = db_find_subscription_request(request_id=request_id)

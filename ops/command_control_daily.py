@@ -114,7 +114,7 @@ FOUNDER_COMMANDS: list[dict[str, Any]] = [
         "items": [
             ("16", ".\\ops\\deploy_landing.ps1", "Landing Cloudflare (si UI)"),
             ("17", "Ver ops/PYPI_RELEASE.md", "Release CLI PyPI"),
-            ("18", "railway up", "API Railway tras cambios backend"),
+            ("18", "fly deploy --app cli-market-api", "API Fly.io tras cambios backend"),
         ],
     },
 ]
@@ -765,7 +765,7 @@ def _observatory_section(
         return [
             "*🔭 Observatory (MAA)*",
             "",
-            "_Telemetría MCP desactivada o sin datos — `OBSERVATORY_TELEMETRY=1` en Railway._",
+            "_Telemetría MCP desactivada o sin datos — `OBSERVATORY_TELEMETRY=1` en Fly.io._",
             "",
         ]
 
@@ -993,7 +993,7 @@ def _priority_actions(
     if pam["fail"] > 0:
         actions.append((1, f"🔴 PAM con {pam['fail']} FAIL → `python ops/production_acceptance.py --tier 2` y revisar ops/reports/"))
     if m["collector_stale"]:
-        actions.append((1, "🔴 Collector stale → revisar servicio collector en Railway + `python collect_prices.py --status`"))
+        actions.append((1, "🔴 Collector stale → revisar servicio collector en Fly.io + `python collect_prices.py --status`"))
     if m["coverage_7d_pct"] < COVERAGE_7D_TARGET:
         actions.append((2, f"🟡 Coverage {m['coverage_7d_pct']:.0f}% < {COVERAGE_7D_TARGET:.0f}% → `make gate-remote` y tiendas con <30% éxito"))
     if m["store_success_pct"] < STORE_SUCCESS_WARN and not any("Tiendas sanas" in a[1] for a in actions):

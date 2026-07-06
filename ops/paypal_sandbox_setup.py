@@ -53,7 +53,7 @@ async def cmd_create_plan(amount: float, currency: str) -> int:
             print(json.dumps(result, indent=2), file=sys.stderr)
             return 1
         print(json.dumps(result, indent=2))
-        print("\nAdd to Railway (sandbox):")
+        print("\nAdd to Fly.io (sandbox — fly secrets set):")
         print(f"  PAYPAL_PLAN_ID={result['plan_id']}")
         return 0
     except Exception as e:
@@ -70,7 +70,7 @@ async def cmd_register_webhook(url: str) -> int:
             print(json.dumps(result, indent=2), file=sys.stderr)
             return 1
         print(json.dumps(result, indent=2))
-        print("\nAdd to Railway (sandbox):")
+        print("\nAdd to Fly.io (sandbox — fly secrets set):")
         print(f"  PAYPAL_WEBHOOK_ID={result['webhook_id']}")
         print("  PAYPAL_SANDBOX=true")
         return 0

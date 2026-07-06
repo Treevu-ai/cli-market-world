@@ -9,7 +9,7 @@ product: CLI Market
 updated: "2026-06-12"
 
 defaults:
-  api_base: https://cli-market-production.up.railway.app
+  api_base: https://cli-market-api.fly.dev
   landing_base: https://cli-market.dev
   timeout_s: 30
 

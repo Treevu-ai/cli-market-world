@@ -45,7 +45,7 @@ import requests
 
 # Inflation index for cooking oil in Argentina, last 30 days
 r = requests.get(
-    "https://cli-market-production.up.railway.app/v1/prices",
+    "https://cli-market-api.fly.dev/v1/prices",
     params={"category": "aceites", "country": "AR", "days": 30},
     headers={"Authorization": "Bearer YOUR_API_KEY"}
 )
@@ -104,4 +104,4 @@ Email: hello@cli-market.dev
 
 ---
 
-[Get started](https://cli-market.dev) · [API docs](https://cli-market-production.up.railway.app/docs) · [Dashboard](https://cli-market-production.up.railway.app/dashboard)
+[Get started](https://cli-market.dev) · [API docs](https://cli-market-api.fly.dev/docs) · [Dashboard](https://cli-market-api.fly.dev/dashboard)

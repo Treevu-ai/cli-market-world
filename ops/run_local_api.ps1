@@ -1,13 +1,12 @@
-# Start CLI Market API locally with .env loaded (Railway secrets).
+# Start CLI Market API locally with .env loaded.
 #
 #   .\ops\run_local_api.ps1
-#   .\ops\run_local_api.ps1 -Pull          # refresh .env from Railway first
 #   .\ops\run_local_api.ps1 -Port 8765
 #
-# Requires: Python + .env (run: python ops/pull_railway_env.py)
+# Requires: Python + .env (copy from .env.example — Fly.io secrets can't be
+# read back via CLI, so there's no automated "pull from prod" here).
 
 param(
-    [switch]$Pull,
     [int]$Port = 8765
 )
 
@@ -34,20 +33,12 @@ function Import-DotEnv {
     }
 }
 
-if ($Pull) {
-    Write-Host "Pulling variables from Railway..."
-    python ops/pull_railway_env.py
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-}
-
 $envFile = Join-Path $Root ".env"
 if (-not (Test-Path -LiteralPath $envFile)) {
     Write-Host ""
-    Write-Host "No .env found. Run one of:" -ForegroundColor Yellow
-    Write-Host "  python ops/pull_railway_env.py"
-    Write-Host "  .\ops\run_local_api.ps1 -Pull"
+    Write-Host "No .env found. Copy .env.example to .env and fill in your values." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Starting with SQLite fallback (no Railway Postgres)." -ForegroundColor Yellow
+    Write-Host "Starting with SQLite fallback (no Postgres)." -ForegroundColor Yellow
 } else {
     Import-DotEnv -Path $envFile
     if ($env:DATABASE_URL) {

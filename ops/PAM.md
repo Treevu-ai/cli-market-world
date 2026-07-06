@@ -78,7 +78,7 @@ python ops/production_acceptance.py --phase public,landing,user,admin --tier 3 -
 
 | Variable | Uso |
 |----------|-----|
-| `MARKET_API_URL` | Default: prod Railway |
+| `MARKET_API_URL` | Default: prod Fly.io |
 | `MARKET_API_TOKEN` | Admin Bearer (local: `$env:…`; GH: Secret o Variable de repo) |
 | `MARKET_USER_TOKEN` | Opcional `sk-…`; si falta, usa `/auth/register` |
 | `PAM_LANDING_URL` | Default: `https://cli-market.dev` |

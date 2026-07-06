@@ -6,8 +6,8 @@
 
 | Secreto | Dónde actualizado |
 |---------|-------------------|
-| `MARKET_API_TOKEN` | Railway production + GitHub Secret + `ops/.rotation-local.txt` |
-| `CHECKOUT_WEBHOOK_SECRET` | Railway production + `ops/.rotation-local.txt` |
+| `MARKET_API_TOKEN` | Fly.io production + GitHub Secret + `ops/.rotation-local.txt` |
+| `CHECKOUT_WEBHOOK_SECRET` | Fly.io production + `ops/.rotation-local.txt` |
 | `GH_PAT` | GitHub Secret (CI checkout de repos privados) |
 
 ## ⏳ Rotar manualmente (consolas externas)
@@ -18,7 +18,7 @@
 3. Crear key nueva (máx. 3 activas)
 4. Actualizar:
    ```bash
-   railway variables --set "PEPY_API_KEY=nueva_key"
+   fly secrets set PEPY_API_KEY=nueva_key --app cli-market-api
    gh secret set PEPY_API_KEY -R Treevu-ai/cli-market-world
    ```
 
@@ -40,13 +40,13 @@
    ```
 4. Push a `main` con cambios en `landing/` dispara el workflow **Deploy Landing (Cloudflare Pages)** (build + `wrangler pages deploy`). Manual: `.\ops\deploy_landing.ps1`.
 
-### 4. PayPal (Railway)
+### 4. PayPal (Fly.io)
 - https://developer.paypal.com/dashboard/applications
 - Rotar **Client Secret** en la app Live
-- Actualizar en Railway: `PAYPAL_CLIENT_SECRET`
+- Actualizar en Fly.io: `fly secrets set PAYPAL_CLIENT_SECRET=... --app cli-market-api`
 - Verificar webhook en `PAYPAL_WEBHOOK_ID` sigue activo
 
-### 5. Mercado Pago (Railway)
+### 5. Mercado Pago (Fly.io)
 - https://www.mercadopago.com.pe/developers/panel/app
 - Rotar credenciales de producción
 - Actualizar: `MERCADOPAGO_ACCES_TOKEN_PRODUCTION`, `MERCADO_PAGO_CLIENT_SECRET_PRODUCTION`
@@ -55,16 +55,16 @@
 ### 6. SMTP Gmail (`SMTP_PASSWORD`)
 - https://myaccount.google.com/apppasswords
 - Revocar app password antigua → crear nueva
-- `railway variables --set "SMTP_PASSWORD=nueva"`
+- `fly secrets set SMTP_PASSWORD=nueva --app cli-market-api`
 
 ### 7. Anthropic (`ANTHROPIC_API_KEY`)
 - https://console.anthropic.com/settings/keys
-- Revocar → crear nueva → Railway
+- Revocar → crear nueva → `fly secrets set ANTHROPIC_API_KEY=... --app cli-market-api`
 
 ### 8. PostgreSQL (`DATABASE_URL`)
-- Railway dashboard → servicio Postgres → **Reset password**
-- Railway actualiza `DATABASE_URL` automáticamente si está linked
-- Verificar API: `curl https://cli-market-production.up.railway.app/health/db`
+- `fly postgres users` / `fly ssh console -a cli-market-db` → cambiar password del usuario `postgres`
+- Actualizar `DATABASE_URL` con `fly secrets set` en cada app adjunta (no se propaga solo)
+- Verificar API: `curl https://cli-market-api.fly.dev/health/db`
 
 ## Verificación post-rotación
 

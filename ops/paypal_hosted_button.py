@@ -129,8 +129,8 @@ async def cmd_create(amount: str) -> int:
                     "id": data.get("id"),
                     "payment_link": payment_link,
                     "amount_usd": amount,
-                    "railway": (
-                        f"railway variables --set PRO_PAYMENT_URL={payment_link}"
+                    "fly": (
+                        f"fly secrets set PRO_PAYMENT_URL={payment_link} --app cli-market-api"
                         if payment_link
                         else None
                     ),

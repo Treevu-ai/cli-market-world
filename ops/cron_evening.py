@@ -2,7 +2,7 @@
 """Manual funnel digest — same payload as morning-ops-chain (08:00 PET).
 
 Primary schedule: `.github/workflows/morning-ops-chain.yml` step `funnel-digest`.
-Ad-hoc / Railway fallback only.
+Ad-hoc / Fly.io fallback only.
 
 Usage:
   python ops/cron_evening.py

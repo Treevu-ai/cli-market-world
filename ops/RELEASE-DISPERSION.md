@@ -63,4 +63,4 @@ git push origin main
 
 ## Timing (lección 1.9.27)
 
-Railway build puede fallar si backend push corre **antes** de que PyPI propague `cli-market-core`. Esperar 2–3 min o verificar con `pip index versions` antes de push backend.
+El deploy de Fly.io puede fallar si backend push corre **antes** de que PyPI propague `cli-market-core`. Esperar 2–3 min o verificar con `pip index versions` antes de push backend.

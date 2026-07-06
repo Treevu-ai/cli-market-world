@@ -50,7 +50,7 @@ def main() -> int:
         print(
             "DATABASE_URL is set but PostgreSQL is unavailable.\n"
             "  pip install psycopg2-binary\n"
-            "  export DATABASE_URL='postgresql://...'  # Railway → Postgres → Connect\n"
+            "  export DATABASE_URL='postgresql://...'  # fly postgres connect -a cli-market-db\n"
             "Or pass --allow-sqlite to backfill local market.db only.",
             file=sys.stderr,
         )

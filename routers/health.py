@@ -300,7 +300,7 @@ def list_countries():
 def health_deep():
     """Unified deep health check — probes Postgres, Index, Observatory, Collector in one call.
 
-    Designed for Railway healthcheck integration and ops dashboards.
+    Designed for Fly.io healthcheck integration and ops dashboards.
     Returns overall status (healthy/degraded/unhealthy) plus per-subsystem detail.
     """
     from market_core import USE_PG

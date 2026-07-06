@@ -89,7 +89,7 @@ Pero sí tenemos algo que casi nadie tiene para agentes de IA: **8,000+ precios 
 
 Nuestro collector:
 
-→ Corre automático en Railway + PostgreSQL
+→ Corre automático en Fly.io + PostgreSQL
 → Cero intervención humana
 → APIs reales (VTEX + Magento), cero scraping
 → Snapshots históricos para ver variación
@@ -376,17 +376,17 @@ Copia la config en Cursor/Claude: **cli-market.dev/tools**
         "tags": "#MCP #opensource #AI #ecommerce #agents",
     },
     19: {
-        "title": "Collector PostgreSQL Railway",
+        "title": "Collector PostgreSQL Fly.io",
         "pillar": "build-in-public",
         "lang": "es",
         "hooks": [
-            "El collector corre cada 8 horas. PostgreSQL. Railway. Cero intervención humana.",
+            "El collector corre cada 8 horas. PostgreSQL. Fly.io. Cero intervención humana.",
             "Build in public: cómo automatizamos 8,000+ precios sin tocar un botón.",
             "Cron + asyncio + Postgres = data moat que crece solo.",
         ],
         "post": """El collector de CLI Market corre cada 8 horas.
 
-PostgreSQL en Railway.
+PostgreSQL en Fly.io.
 
 Cero intervención humana.
 
@@ -406,7 +406,7 @@ El moat no es el código — es la **frecuencia y confiabilidad** del dato.
 
 ¿Automatizas data pipelines en tu producto?""",
         "comment": "Dashboard 👇\n\nhttps://cli-market-api.fly.dev/dashboard",
-        "tags": "#buildinpublic #data #postgresql #railway #AI",
+        "tags": "#buildinpublic #data #postgresql #flyio #AI",
     },
     20: {
         "title": "Roadmap self-serve PayPal",

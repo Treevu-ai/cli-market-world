@@ -13,7 +13,7 @@ Usage:
   python3 ops/paypal_live_e2e.py --status
 
 Env:
-  MARKET_API_URL — default production Railway API
+  MARKET_API_URL — default production Fly.io API
 
 Pass evidence (after successful --verify): ops/.paypal-e2e-pass.json (gitignored).
 """
@@ -150,7 +150,7 @@ def assert_free_before_checkout(
     if free_export == 200 and force_export_gate:
         print(
             "::warning::export returned 200 on free tier — prod export gate misconfigured; "
-            "redeploy Railway API (Deploy Railway workflow, target api)",
+            "redeploy Fly.io API (fly deploy --app cli-market-api)",
             file=sys.stderr,
         )
         return tier, free_export
@@ -158,7 +158,7 @@ def assert_free_before_checkout(
     raise SystemExit(
         f"FAIL: export on free tier expected 403, got {free_export}\n"
         "Prod export gate not enforcing (subscription tier is free but export is open).\n"
-        "Fix: GitHub → Actions → Deploy Railway → target api\n"
+        "Fix: fly deploy --app cli-market-api --config fly.toml\n"
         "PayPal webhook test only (not a full §5 pass): add --force-export-gate"
     )
 

@@ -4,12 +4,12 @@
 1. Slack → Create channel `funnel-cli-market` (public)
 2. /invite @CLI Market (or your bot name)
 3. Copy channel ID from channel details
-4. python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --railway
+4. python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --fly
 5. python ops/slack_cli.py funnel-digest
 
 Usage:
   python ops/setup_slack_funnel.py
-  python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --railway
+  python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --fly
   python ops/setup_slack_funnel.py --verify --send-test
 """
 
@@ -37,7 +37,7 @@ def main() -> int:
         default=os.getenv("SLACK_CHANNEL_FUNNEL", "C0B9G3T0T0A"),
         help="Slack channel ID for #funnel-cli-market",
     )
-    p.add_argument("--railway", action="store_true", help="Set SLACK_CHANNEL_FUNNEL on Railway")
+    p.add_argument("--fly", action="store_true", help="Set SLACK_CHANNEL_FUNNEL on Fly.io")
     p.add_argument("--verify", action="store_true", help="Check bot can resolve channel")
     p.add_argument("--send-test", action="store_true", help="Post test digest")
     args = p.parse_args()
@@ -51,21 +51,20 @@ def main() -> int:
     if channel_id:
         os.environ["SLACK_CHANNEL_FUNNEL"] = channel_id
         print(f"SLACK_CHANNEL_FUNNEL: {channel_id}")
-        if args.railway:
-            railway = "railway.cmd" if sys.platform == "win32" else "railway"
+        if args.fly:
             proc = subprocess.run(
-                [railway, "variables", "set", f"SLACK_CHANNEL_FUNNEL={channel_id}"],
+                ["fly", "secrets", "set", f"SLACK_CHANNEL_FUNNEL={channel_id}", "--app", "cli-market-api"],
                 cwd=str(ROOT),
             )
             if proc.returncode != 0:
                 return proc.returncode
-            print("✓ Railway SLACK_CHANNEL_FUNNEL actualizado")
+            print("✓ Fly.io SLACK_CHANNEL_FUNNEL actualizado")
     else:
         print(
             "SLACK_CHANNEL_FUNNEL: pendiente\n"
             "  1. Crear #funnel-cli-market en Slack\n"
             "  2. /invite al bot\n"
-            "  3. python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --railway"
+            "  3. python ops/setup_slack_funnel.py --channel-id C0XXXXXXXX --fly"
         )
 
     if args.verify or args.send_test:

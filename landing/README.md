@@ -33,7 +33,7 @@ CI: push to `main` with changes under `landing/` runs `.github/workflows/deploy-
 
 | Variable | Purpose |
 |----------|---------|
-| `NEXT_PUBLIC_API_URL` | Railway API base |
+| `NEXT_PUBLIC_API_URL` | Fly.io API base |
 | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | PayPal Hosted Buttons SDK |
 | `NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID` | Button `B6YVFTG4MA73J` |
 | `NEXT_PUBLIC_PRO_PAYMENT_URL` | Fallback payment link |

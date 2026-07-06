@@ -147,7 +147,7 @@ Orden release: **world → backend** (igual que Observatory T-178).
 1. Merge PRs N-1a→c en `cli-market-world`
 2. Copiar árbol `routers/payments.py`, `routers/billing/`, `routers/checkout/` al backend
 3. Verificar `contract_parity` checkout + billing paths
-4. Railway deploy backend
+4. Fly.io deploy backend
 
 Si `GH_PAT_BACKEND_WRITE` tiene Workflows scope: workflow futuro `sync-backend-payments-mirror.yml` (opcional — no bloquea N-1).
 

@@ -30,7 +30,7 @@ python3 ops/benchmark_api.py --base http://localhost:8000 --runs 20  # local
 ## Regression tests
 
 ```bash
-# Live API (Railway)
+# Live API (Fly.io)
 python3 -m pytest tests/test_api_perf.py -v -m integration
 
 # CI — skip live latency

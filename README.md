@@ -188,7 +188,7 @@ cli-market-index     Semantic Refinery — entity resolution, Golden Records (pr
 cli-market-core      Intelligence SDK — MCP tools, billing, indicators (PyPI public)
        |
        v  structured intelligence
-cli-market-world     Exposure — landing, docs, ops/CI, Railway prod + PyPI (THIS REPO)
+cli-market-world     Exposure — landing, docs, ops/CI, Fly.io prod + PyPI (THIS REPO)
 ```
 
 | Repo | Visibility | Role |
@@ -196,7 +196,7 @@ cli-market-world     Exposure — landing, docs, ops/CI, Railway prod + PyPI (TH
 | `cli-market-backend` | Private | Mirror API + FastAPI server |
 | `cli-market-index` | Private | Entity resolution engine |
 | `cli-market-core` | Public | Intelligence SDK + MCP tools |
-| `cli-market-world` | Public | Landing + docs + Railway prod |
+| `cli-market-world` | Public | Landing + docs + Fly.io prod |
 | `cli-market-content` | Private | GTM + content calendar |
 
 ---
