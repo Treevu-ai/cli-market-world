@@ -16,10 +16,10 @@ import json
 import math
 
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Header, Query
 
-from market_core import STORES
-from server_deps import get_db_dep, require_api_key
+from market_core import STORES, get_db
+from server_deps import require_api_key
 
 router = APIRouter(tags=["brand-intelligence"])
 
@@ -70,7 +70,6 @@ def brand_monitor(
     line: str | None = Query(None, description="Business line filter (e.g. 'supermercados')"),
     days: int = Query(30, ge=1, le=90, description="History window in days"),
     authorization: str | None = Header(None),
-    db = Depends(get_db_dep),
 ):
     """Return the latest price snapshot for every SKU of *brand* across all
     stores in *country*, plus SKUs of each declared *competitor* brand.
@@ -84,6 +83,7 @@ def brand_monitor(
     Promo events (discount > 0) are flagged inline with ``promo_active: true``.
     """
     require_api_key(authorization)
+    db = get_db()
 
     all_brands = [brand]
     if competitors:
@@ -225,7 +225,6 @@ def brand_promo_history(
     line: str | None = Query(None),
     days: int = Query(30, ge=1, le=90),
     authorization: str | None = Header(None),
-    db = Depends(get_db_dep),
 ):
     """Return all price_history rows where discount > 0 for the given brands
     within the window, ordered by most recent first.
@@ -234,6 +233,7 @@ def brand_promo_history(
     estimated duration (first → last observation with discount in the window).
     """
     require_api_key(authorization)
+    db = get_db()
 
     all_brands = [brand]
     if competitors:
@@ -300,7 +300,6 @@ class BrandConfigPayload(BaseModel):
 def brand_config_upsert(
     payload: BrandConfigPayload,
     authorization: str | None = Header(None),
-    db = Depends(get_db_dep),
 ):
     """Create or update the brand configuration for the authenticated API key.
 
@@ -311,6 +310,7 @@ def brand_config_upsert(
     Calling this endpoint again with the same brand_slug overwrites the config.
     """
     api_key = require_api_key(authorization)
+    db = get_db()
     slug = _normalize_brand(payload.brand_slug)
 
     # Ensure table exists (idempotent DDL)
@@ -355,7 +355,6 @@ def brand_alerts(
     brand: str = Query(..., description="Brand slug (must match registered config)"),
     country: str = Query("PE"),
     authorization: str | None = Header(None),
-    db = Depends(get_db_dep),
 ):
     """Return only SKUs with active PVP deviations (above or far below the
     suggested retail price registered via POST /v1/brand-monitor/config).
@@ -364,6 +363,7 @@ def brand_alerts(
     Returns an empty list if no config has been registered.
     """
     api_key = require_api_key(authorization)
+    db = get_db()
 
     # Load config
     try:
