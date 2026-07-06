@@ -158,6 +158,41 @@ Prod API (`cli-market-production.up.railway.app`) **no** se actualiza solo con p
 
 Runbook: `ops/RAILWAY_DEPLOY.md`
 
+## MCP server de CLI Market en agentes (Devin / Cursor / Claude)
+
+El MCP server (`market-mcp`) expone las tools de CLI Market a agentes locales. La API de producción vive en `https://cli-market-api.fly.dev`.
+
+### Workaround conocido: encoding en Windows
+
+Si `mcp_list_tools` o tools como `market_search`/`market_discover` devuelven `Failed to connect to MCP server 'cli-market'`, el problema puede ser un `UnicodeEncodeError` en el stdio del servidor cuando la consola de Windows usa `cp1252` en lugar de UTF-8.
+
+**Fix local:** agregar `PYTHONIOENCODING=utf-8` al env del servidor MCP:
+
+```json
+{
+  "mcpServers": {
+    "cli-market": {
+      "command": "market-mcp",
+      "args": [],
+      "env": {
+        "MARKET_API_URL": "https://cli-market-api.fly.dev",
+        "MARKET_API_TOKEN": "${MARKET_API_TOKEN}",
+        "MCP_TOOL_PROFILE": "default",
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}
+```
+
+Ubicación típica en Devin for Terminal: `~/.claude/settings.json`.
+
+También se commiteó un fix defensivo en `market_mcp.py` del repo para forzar UTF-8 en `stdout`/`stderr` en Windows.
+
+### Troubleshooting adicional
+
+Ver `docs/TROUBLESHOOTING-MCP.md` para casos de timeouts de API, `market_optimize_purchase` que no resuelve items, y retailers catalogados sin datos.
+
 ## Cuándo usar cada agente
 
 | Necesidad | Agente | Contexto |
