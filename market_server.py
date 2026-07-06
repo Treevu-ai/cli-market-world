@@ -236,6 +236,7 @@ from routers.search import router as search_router
 from routers.discovery import router as discovery_router
 from routers.mcp_http import router as mcp_http_router
 from routers.vault import router as vault_router
+from routers.brand_intel import router as brand_intel_router
 
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
@@ -245,6 +246,7 @@ for r in (
     alerts_router,
     analytics_router,
     auth_router,
+    brand_intel_router,
     cart_router,
     dashboard_router,
     data_v1_router,
