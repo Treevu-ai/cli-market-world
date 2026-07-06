@@ -1,0 +1,29 @@
+name: Deploy Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.py"
+      - "requirements.txt"
+      - "Dockerfile"
+      - "fly.toml"
+      - ".github/workflows/deploy-fly.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency: deploy-fly-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy cli-market-api
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          flyctl deploy --app cli-market-api --config fly.toml --build-secret github_token="$GITHUB_TOKEN" --remote-only

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM python:3.12-slim
 WORKDIR /app
 
@@ -10,14 +11,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 libpango-1.0-0 libcairo2 libasound2 && \
     rm -rf /var/lib/apt/lists/*
 
-ARG GITHUB_TOKEN
-ARG GH_PAT
-
 # The data-moat modules + market_connectors/ now come from cli-market-core
 # (public repo — no auth needed). Only the collector entrypoint stays in-tree.
+# Fly.io: pass via `fly deploy --build-secret github_token=$GITHUB_TOKEN` — never as --build-arg
+# (build args get persisted in plaintext in `fly config show`; secret mounts don't).
 COPY requirements.txt .
-RUN set -eux; \
-    TOKEN="${GITHUB_TOKEN:-${GH_PAT:-}}"; \
+RUN --mount=type=secret,id=github_token set -eux; \
+    TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)"; \
     if [ -n "${TOKEN}" ]; then \
       git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"; \
     fi; \
