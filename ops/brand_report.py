@@ -29,6 +29,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+# Load project .env (overrides any stale system env vars like a Windsurf/Cursor token)
+_env_file = Path(__file__).resolve().parent.parent / ".env"
+if _env_file.exists():
+    for _line in _env_file.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _, _v = _line.partition("=")
+            os.environ[_k.strip()] = _v.strip().strip('"').strip("'")
+
 import httpx
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
@@ -146,8 +155,12 @@ def desvio_badge(precio: float, pvp: float | None) -> tuple[str, Any]:
 
 
 # ── Data layer ────────────────────────────────────────────────────────────────
-API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
-API_KEY  = os.getenv("MARKET_API_TOKEN", "")
+# Read lazily (after .env is loaded) via helper
+def _api_base() -> str:
+    return os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev").rstrip("/")
+
+def _api_key() -> str:
+    return os.getenv("MARKET_API_TOKEN", "")
 
 PE_STORES = ["wong", "metro", "plazavea", "mimercado_delivery"]
 STORE_LABELS = {
@@ -163,8 +176,9 @@ def fetch_brand_data(brand: str, country: str = "PE", days: int = 30,
     params: dict[str, Any] = {"brand": brand, "country": country, "days": days}
     if competitors:
         params["competitors"] = ",".join(competitors)
-    headers = {"X-API-Key": API_KEY} if API_KEY else {}
-    url = f"{API_BASE}/v1/brand-monitor"
+    key = _api_key()
+    headers = {"Authorization": f"Bearer {key}"} if key else {}
+    url = f"{_api_base()}/v1/brand-monitor"
     r = httpx.get(url, params=params, headers=headers, timeout=30)
     if r.status_code >= 400:
         raise RuntimeError(f"brand-monitor API error {r.status_code}: {r.text[:300]}")
@@ -173,8 +187,9 @@ def fetch_brand_data(brand: str, country: str = "PE", days: int = 30,
 
 def fetch_dashboard(country: str = "PE") -> dict:
     """Consulta /dashboard/data para contexto macro."""
-    headers = {"X-API-Key": API_KEY} if API_KEY else {}
-    url = f"{API_BASE}/dashboard/data"
+    key = _api_key()
+    headers = {"Authorization": f"Bearer {key}"} if key else {}
+    url = f"{_api_base()}/dashboard/data"
     try:
         r = httpx.get(url, params={"country": country}, headers=headers, timeout=20)
         if r.status_code < 400:
