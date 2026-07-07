@@ -71,11 +71,11 @@ export const CASE_STUDIES: CaseStudy[] = [
       "Cada local comparaba precios manualmente entre 3–5 proveedores. 4–6 horas/semana en WhatsApp y Excel. Querían un agente que cotice y deje trazabilidad.",
     problem_en:
       "Each location compared prices manually across 3–5 suppliers. 4–6 hours/week on WhatsApp and Excel. They wanted an agent that quotes with audit trail.",
-    solution_es: `Procure Compare + API Build: búsqueda en ${retailersVerified} retailers verificados, ${countries} países, alertas >5% y flujo run → approve con data-gate.`,
-    solution_en: `Procure Compare + Build API: search across ${retailersVerified} verified retailers, ${countries} countries, >5% alerts, and run → approve flow with data-gate.`,
+    solution_es: `Procure Starter + API Build: búsqueda en ${retailersVerified} retailers verificados, ${countries} países, alertas >5% y flujo run → approve con data-gate.`,
+    solution_en: `Procure Starter + Build API: search across ${retailersVerified} verified retailers, ${countries} countries, >5% alerts, and run → approve flow with data-gate.`,
     metrics: [
       { value: "4–6 h", label_es: "semana recuperadas por local", label_en: "hours/week saved per site" },
-      { value: "$29", label_es: "Compare desde /mes", label_en: "Compare from /mo" },
+      { value: "$29", label_es: "Procure Starter /mes", label_en: "Procure Starter /mo" },
       { value: "3", label_es: "onboarded en mes 1", label_en: "onboarded in month 1" },
     ],
   },
@@ -127,12 +127,12 @@ export const CASE_STUDIES: CaseStudy[] = [
       "Gerencia necesitaba aprobar compras >S/ 2,000 con evidencia de precio y stock. El equipo operaba con cotizaciones por chat sin auditoría central.",
     problem_en:
       "Management needed to approve purchases above S/ 2,000 with price and stock evidence. Ops ran on chat quotes with no central audit trail.",
-    solution_es: `Procure Ops ($79/mes): flujo run → pending_approval → checkout, verificación de stock y delivery, infra Build Pro incluida.`,
-    solution_en: `Procure Ops ($79/mo): run → pending_approval → checkout flow, stock and delivery checks, Build Pro infra included.`,
+    solution_es: `Procure Pro ($79/mes): flujo run → pending_approval → checkout, verificación de stock y delivery, infra Build Pro incluida.`,
+    solution_en: `Procure Pro ($79/mo): run → pending_approval → checkout flow, stock and delivery checks, Build Pro infra included.`,
     metrics: [
       { value: "run → approve", label_es: "trazabilidad por compra", label_en: "traceability per purchase" },
-      { value: "$79", label_es: "Ops /mes", label_en: "Ops /mo" },
-      { value: "3", label_es: "países en plan Pro", label_en: "countries on Pro plan" },
+      { value: "$79", label_es: "Procure Pro /mes", label_en: "Procure Pro /mo" },
+      { value: "3", label_es: "países en plan Procure Pro", label_en: "countries on Procure Pro plan" },
     ],
   },
   {

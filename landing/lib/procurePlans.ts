@@ -9,11 +9,17 @@ export const PROCURE_APP_URL =
   process.env.NEXT_PUBLIC_PROCURE_APP_URL ||
   `${PROCURE_SITE_URL}/dashboard`;
 
-/** Display names avoid collision with Build tiers (Starter / Pro). Slugs unchanged for API. */
+/**
+ * Real plan names, matching procurecopilot.com/procure#pricing exactly (no
+ * invented aliases — a "Compare"/"Ops"/"Scale" naming used to live here but
+ * didn't exist anywhere else, confusing anyone who clicked through). Where
+ * Build and Procure tiers appear on the same page, disambiguate with the
+ * product name ("Build Pro" vs "Procure Pro"), not with a fake plan name.
+ */
 export const PROCURE_PLANS = [
   {
     slug: "starter" as const,
-    name: "Compare",
+    name: "Starter",
     price: 29,
     description_es: "Comparar precios y calcular ahorro — sin checkout.",
     description_en: "Compare prices and savings — no checkout.",
@@ -35,7 +41,7 @@ export const PROCURE_PLANS = [
   },
   {
     slug: "pro" as const,
-    name: "Ops",
+    name: "Pro",
     price: 79,
     description_es: "Aprobaciones, stock, delivery y pago integrado.",
     description_en: "Approvals, stock, delivery, and integrated checkout.",
@@ -57,7 +63,7 @@ export const PROCURE_PLANS = [
   },
   {
     slug: "builder" as const,
-    name: "Scale",
+    name: "Builder",
     price: 149,
     description_es: "Multi-país y alto volumen.",
     description_en: "Multi-country and high volume.",
@@ -84,15 +90,15 @@ export type ProcurePlanSlug = (typeof PROCURE_PLANS)[number]["slug"];
 export const PROCURE_ENTRY_PRICE = PROCURE_PLANS[0].price;
 export const PROCURE_RECOMMENDED_PRICE = PROCURE_PLANS.find((p) => p.highlighted)!.price;
 
-/** Hero / page copy — entry Compare tier + recommended Ops tier. */
+/** Hero / page copy — entry Starter tier + recommended Pro tier. */
 export function procurePriceRangeLabel(isES: boolean): string {
   return isES
-    ? `Compare $${PROCURE_ENTRY_PRICE} · Ops $${PROCURE_RECOMMENDED_PRICE}/mes`
-    : `Compare $${PROCURE_ENTRY_PRICE} · Ops $${PROCURE_RECOMMENDED_PRICE}/mo`;
+    ? `Procure Starter $${PROCURE_ENTRY_PRICE} · Procure Pro $${PROCURE_RECOMMENDED_PRICE}/mes`
+    : `Procure Starter $${PROCURE_ENTRY_PRICE} · Procure Pro $${PROCURE_RECOMMENDED_PRICE}/mo`;
 }
 
 export function procureEntryPriceLabel(isES: boolean): string {
   return isES
-    ? `Desde $${PROCURE_ENTRY_PRICE} (Compare)`
-    : `From $${PROCURE_ENTRY_PRICE} (Compare)`;
+    ? `Desde $${PROCURE_ENTRY_PRICE} (Procure Starter)`
+    : `From $${PROCURE_ENTRY_PRICE} (Procure Starter)`;
 }

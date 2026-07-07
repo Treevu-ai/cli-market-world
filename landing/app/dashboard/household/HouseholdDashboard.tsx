@@ -92,9 +92,9 @@ export default function HouseholdDashboard() {
                 </button>
               </div>
               <p className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/50">
-                ¿No tenés key?{" "}
+                ¿No tienes key?{" "}
                 <a href="/docs#api-key" className="text-[var(--cm-mint)] hover:underline">
-                  Creá tu cuenta gratis →
+                  Crea tu cuenta gratis →
                 </a>
               </p>
             </div>
