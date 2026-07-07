@@ -5,7 +5,7 @@ tags:
   - prd
   - brand-intelligence
   - trade-marketing
-status: v1.0 — backend/frontend/tests/email-alert/NDA/metodología construidos; falta subdominio + onboardear primera agencia piloto
+status: v1.0 — backend/frontend/tests/email-alert/NDA/metodología construidos, path /brand/[slug] confirmado; falta onboardear primera agencia piloto
 owner: Ricardo Cuba
 created: 2026-07-07
 repos: cli-market-world, cli-market-core, cli-market-backend
@@ -403,12 +403,12 @@ CREATE TABLE brand_intel_config (
 
 | Decisión | Opciones | Resuelto |
 |----------|---------|---------------|
-| ¿Nuevo dominio o subdominio? | `brand.cli-market.dev` vs `climarket.dev/brand` | **Subdominio** `brand.cli-market.dev` — menor fricción técnica, misma identidad |
+| ¿Nuevo dominio o subdominio? | `brand.cli-market.dev` vs `cli-market.dev/brand` | **Path** `cli-market.dev/brand/[slug]` — revertido 2026-07-06: el código ya estaba construido así (`landing/app/brand`), y el sitio es un export estático (`output: "export"`), por lo que un subdominio real exigiría hosting/DNS/certificado propios sin ningún beneficio a cambio. Se mantiene el path existente, cero migración. |
 | ¿Precio piloto? | $0 / $99 / $199 por 30 días | **$0** — elimina fricción para el primer caso; convierte por valor demostrado |
 | ¿Primer cliente: agencia o marca directa? | Agencia (3-5 marcas de golpe) vs marca directa (ciclo más corto) | **Agencia** primero — mayor leverage por contrato |
 | ¿Normalización de SKU competidor? | Automática (semántica) vs manual (el cliente declara) | **Automática** con revisión manual en onboarding |
 | ¿Acceso API para competidores en la misma agencia? | Compartido con NDA vs silos separados | **Silos separados** por brand_slug + api_key |
 
 Con esto resuelto, y con tests/email/NDA/metodología ya construidos (ver checklist de Sprint 4
-arriba), lo único que falta para arrancar el piloto real es: setup del subdominio y
-conseguir/onboardear la primera agencia piloto.
+arriba), y sin trabajo de dominio pendiente (ya vive en `/brand/[slug]`), lo único que falta
+para arrancar el piloto real es conseguir/onboardear la primera agencia piloto.
