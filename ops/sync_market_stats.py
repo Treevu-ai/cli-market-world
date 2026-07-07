@@ -127,18 +127,23 @@ s.PEPY_BADGE_URL = f"https://img.shields.io/badge/PyPI%20downloads-{badge_k}k-00
 s.PEPY_PROJECT_URL = "https://pepy.tech/projects/cli-market-world"  # primary promoted project (world)
 
 OUT_TS = ROOT / "landing" / "lib" / "marketStats.ts"
-def _procure_stats_path() -> Path | None:
+def _procure_copilot_lib_path(filename: str) -> Path | None:
+    """Resolve a lib/<filename> path in the sibling procure-copilot checkout."""
     candidates = [
-        ROOT.parent / "procure-copilot" / "lib" / "market-stats.ts",
-        ROOT.parent / "Projects" / "procure-copilot" / "lib" / "market-stats.ts",
+        ROOT.parent / "procure-copilot" / "lib" / filename,
+        ROOT.parent / "Projects" / "procure-copilot" / "lib" / filename,
     ]
     env = os.environ.get("PROCURE_COPILOT_ROOT")
     if env:
-        candidates.insert(0, Path(env) / "lib" / "market-stats.ts")
+        candidates.insert(0, Path(env) / "lib" / filename)
     for path in candidates:
         if path.parent.exists():
             return path
     return None
+
+
+def _procure_stats_path() -> Path | None:
+    return _procure_copilot_lib_path("market-stats.ts")
 
 _BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
 _CANONICAL_HIGHLIGHTS = frozenset({"market_optimize_purchase", "market_discover", "market_intel_brief", "market_price_alerts"})
@@ -523,6 +528,171 @@ export const CLI_MARKET_STATS = {{
         return
     out.write_text(ts, encoding="utf-8")
     print(f"Wrote {out}")
+
+
+# Canonical Procure plan copy — single source for both cli-market-world's
+# landing/lib/procurePlans.ts and procure-copilot's lib/procurePlans.ts.
+# Real plan names only (Starter/Pro/Builder, matching the live /procure
+# pricing page) — no invented aliases. A "Compare"/"Ops"/"Scale" naming used
+# to live in both files independently and drifted: procurecopilot.com's own
+# checkout page showed different plan names than its own pricing page. Edit
+# prices/features here, then run this script to regenerate both repos.
+PROCURE_PLANS_DATA = [
+    {
+        "slug": "starter",
+        "name": "Starter",
+        "price": 29,
+        "description_es": "Comparar precios y calcular ahorro — sin checkout.",
+        "description_en": "Compare prices and savings — no checkout.",
+        "features_es": [
+            "20 procurement / mes",
+            "Hasta 3 retailers por consulta",
+            "Comparación multi-retailer · data-gate",
+            "Dashboard Procure incluido",
+            "API Build incluida (tier Starter)",
+        ],
+        "features_en": [
+            "20 procurements / mo",
+            "Up to 3 retailers per query",
+            "Multi-retailer compare · data-gate",
+            "Procure dashboard included",
+            "Build API included (Starter tier)",
+        ],
+        "highlighted": False,
+    },
+    {
+        "slug": "pro",
+        "name": "Pro",
+        "price": 79,
+        "description_es": "Aprobaciones, stock, delivery y pago integrado.",
+        "description_en": "Approvals, stock, delivery, and integrated checkout.",
+        "features_es": [
+            "200 procurement / mes",
+            "Flujo run → approve → checkout",
+            "Aprobaciones gerente · audit trail",
+            "PayPal (USD) · Mercado Pago (soles)",
+            "API Build Pro incluida",
+        ],
+        "features_en": [
+            "200 procurements / mo",
+            "run → approve → checkout flow",
+            "Manager approvals · audit trail",
+            "PayPal (USD) · Mercado Pago (soles)",
+            "Build Pro API included",
+        ],
+        "highlighted": True,
+    },
+    {
+        "slug": "builder",
+        "name": "Builder",
+        "price": 149,
+        "description_es": "Multi-país y alto volumen.",
+        "description_en": "Multi-country and high volume.",
+        "features_es": [
+            "1,000 procurement / mes",
+            "Multi-país · integraciones custom",
+            "SLA 99.5%",
+            "Soporte prioritario",
+            "API Build Pro incluida",
+        ],
+        "features_en": [
+            "1,000 procurements / mo",
+            "Multi-country · custom integrations",
+            "99.5% SLA",
+            "Priority support",
+            "Build Pro API included",
+        ],
+        "highlighted": False,
+    },
+]
+
+
+def _ts_string_array(items: list[str], indent: str) -> str:
+    lines = [f"{indent}  {json.dumps(item, ensure_ascii=False)}," for item in items]
+    return "[\n" + "\n".join(lines) + f"\n{indent}]"
+
+
+def _procure_plans_ts_body() -> str:
+    entries = []
+    for plan in PROCURE_PLANS_DATA:
+        entries.append(
+            "  {\n"
+            f'    slug: "{plan["slug"]}" as const,\n'
+            f'    name: "{plan["name"]}",\n'
+            f'    price: {plan["price"]},\n'
+            f'    description_es: {json.dumps(plan["description_es"], ensure_ascii=False)},\n'
+            f'    description_en: {json.dumps(plan["description_en"], ensure_ascii=False)},\n'
+            f'    features_es: {_ts_string_array(plan["features_es"], "    ")},\n'
+            f'    features_en: {_ts_string_array(plan["features_en"], "    ")},\n'
+            f'    highlighted: {"true" if plan["highlighted"] else "false"},\n'
+            "  },"
+        )
+    entries_block = "\n".join(entries)
+    return f"""/**
+ * Real plan names, matching the live /procure pricing page exactly — no
+ * invented aliases. A "Compare"/"Ops"/"Scale" naming used to live in this
+ * file independently in both repos and drifted: procurecopilot.com's own
+ * checkout page ended up showing different plan names than its own pricing
+ * page. Where Build and Procure tiers appear on the same page, disambiguate
+ * with the product name ("Build Pro" vs "Procure Pro"), not a fake plan name.
+ * Edit ops/sync_market_stats.py:PROCURE_PLANS_DATA, then re-run the sync —
+ * do not edit this file directly, it will be overwritten.
+ */
+export const PROCURE_PLANS = [
+{entries_block}
+] as const;
+
+export type ProcurePlanSlug = (typeof PROCURE_PLANS)[number]["slug"];
+
+export const PROCURE_ENTRY_PRICE = PROCURE_PLANS[0].price;
+export const PROCURE_RECOMMENDED_PRICE = PROCURE_PLANS.find((p) => p.highlighted)!.price;
+
+/** Hero / page copy — entry Starter tier + recommended Pro tier. */
+export function procurePriceRangeLabel(isES: boolean): string {{
+  return isES
+    ? `Procure Starter $${{PROCURE_ENTRY_PRICE}} · Procure Pro $${{PROCURE_RECOMMENDED_PRICE}}/mes`
+    : `Procure Starter $${{PROCURE_ENTRY_PRICE}} · Procure Pro $${{PROCURE_RECOMMENDED_PRICE}}/mo`;
+}}
+
+export function procureEntryPriceLabel(isES: boolean): string {{
+  return isES
+    ? `Desde $${{PROCURE_ENTRY_PRICE}} (Procure Starter)`
+    : `From $${{PROCURE_ENTRY_PRICE}} (Procure Starter)`;
+}}
+"""
+
+
+def _procure_plans_ts(site_url_export: str) -> str:
+    header = "// AUTO-GENERATED — do not edit. Run: python3 ops/sync_market_stats.py\n\n"
+    return header + site_url_export + "\n" + _procure_plans_ts_body()
+
+
+_CLI_MARKET_WORLD_PROCURE_SITE_EXPORT = """export const PROCURE_SITE_URL =
+  process.env.NEXT_PUBLIC_PROCURE_SITE_URL || "https://procurecopilot.com";
+
+export const PROCURE_LANDING_URL = `${PROCURE_SITE_URL}/procure`;
+
+export const PROCURE_APP_URL =
+  process.env.NEXT_PUBLIC_PROCURE_APP_URL ||
+  `${PROCURE_SITE_URL}/dashboard`;
+"""
+
+
+def write_procure_plans_ts() -> None:
+    """Emit landing/lib/procurePlans.ts (cli-market-world) and
+    procure-copilot/lib/procurePlans.ts from the same PROCURE_PLANS_DATA."""
+    ts = _procure_plans_ts(_CLI_MARKET_WORLD_PROCURE_SITE_EXPORT)
+
+    out = ROOT / "landing" / "lib" / "procurePlans.ts"
+    out.write_text(ts, encoding="utf-8")
+    print(f"Wrote {out}")
+
+    procure_out = _procure_copilot_lib_path("procurePlans.ts")
+    if not procure_out:
+        print("SKIP procure-copilot plans (procure-copilot not found beside cli-market-world)", file=sys.stderr)
+        return
+    procure_out.write_text(ts, encoding="utf-8")
+    print(f"Wrote {procure_out}")
 
 
 def sync_readme() -> None:
@@ -1079,6 +1249,7 @@ def main() -> None:
     _log_registry_source()
     write_market_stats_ts()
     write_procure_market_stats_ts()
+    write_procure_plans_ts()
     sync_readme()
     sync_pyproject()
     sync_server_json()
