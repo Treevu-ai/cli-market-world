@@ -234,6 +234,7 @@ from routers.search import router as search_router
 
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
+from routers.intelligence_web import router as intelligence_web_router
 from routers.mcp_http import router as mcp_http_router
 from routers.vault import router as vault_router
 from routers.brand_intel import router as brand_intel_router
@@ -257,6 +258,7 @@ for r in (
     health_router,
     index_router,
     intel_router,
+    intelligence_web_router,
     mcp_http_router,
     media_router,
     misc_router,
