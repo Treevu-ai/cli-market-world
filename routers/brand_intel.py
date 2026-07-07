@@ -19,6 +19,7 @@ import math
 from fastapi import APIRouter, Header, Query
 
 from market_core import STORES, get_db
+from price_snapshots_schema import price_snapshots_has_canonical_id
 from server_deps import require_api_key
 
 router = APIRouter(tags=["brand-intelligence"])
@@ -60,6 +61,26 @@ def _normalize_brand(raw: str) -> str:
     return raw.strip().lower()
 
 
+def _canonical_brand_map(all_brands: list[str]) -> dict[str, str]:
+    """Map normalized brand -> the exact casing the caller declared.
+
+    price_snapshots.brand keeps whatever casing each retailer's page used
+    ("Laive", "LAIVE", ...), which is fine for matching (always done via
+    _normalize_brand) but breaks grouping/display — the same brand shows up
+    as N distinct rows in the UI's competitor table. Canonicalizing to the
+    caller's own spelling (from ?brand=/?competitors=) is more correct than
+    guessing via .title(), since it's a decision the user already made.
+
+    ``all_brands`` is ``[brand, *competitors]`` and never deduplicated before
+    this is built — if the same brand is (accidentally) declared twice with
+    different casing (e.g. brand=GLORIA and competitors=Gloria,Laive), later
+    entries would win in a naive dict comprehension. Iterating in reverse
+    makes the *first* declared spelling win instead, so ``brand`` (always
+    first in the list) takes priority over anything in ``competitors``.
+    """
+    return {_normalize_brand(b): b for b in reversed(all_brands)}
+
+
 # ── GET /v1/brand-monitor ─────────────────────────────────────────────────────
 
 @router.get("/v1/brand-monitor", summary="Cross-store SKU snapshot for a brand + declared competitors")
@@ -96,7 +117,20 @@ def brand_monitor(
     placeholders_stores = ",".join("?" * len(store_keys))
     placeholders_brands = ",".join("?" * len(all_brands))
 
-    # Latest snapshot per (product_id, store) within the window
+    # Retailers sometimes carry two catalog SKUs (product_id) for what the
+    # Golden Record entity-resolution layer already knows is the same product
+    # (e.g. an old + a re-listed SKU at different prices) — collapsing on
+    # COALESCE(canonical_product_id, product_id) instead of raw product_id
+    # merges those into one row per (canonical product, store), keeping only
+    # the most recent snapshot. Falls back to raw product_id grouping if the
+    # column isn't present (fresh/test DBs before migration).
+    canon_key = (
+        "COALESCE(canonical_product_id, product_id)"
+        if price_snapshots_has_canonical_id(db)
+        else "product_id"
+    )
+
+    # Latest snapshot per (canonical product, store) within the window
     q = f"""
         SELECT
             p.product_id,
@@ -111,18 +145,19 @@ def brand_monitor(
             p.line,
             p.line_name,
             p.url,
-            p.queried_at
+            p.queried_at,
+            {canon_key} AS canon_key
         FROM price_snapshots p
         JOIN (
-            SELECT product_id, store, MAX(queried_at) AS latest_at
+            SELECT {canon_key} AS canon_key, store, MAX(queried_at) AS latest_at
             FROM price_snapshots
             WHERE price > 0
               AND store IN ({placeholders_stores})
               AND LOWER(brand) IN ({placeholders_brands})
               AND queried_at >= datetime('now', '-{days} days')
-            GROUP BY product_id, store
+            GROUP BY canon_key, store
         ) cur
-          ON p.product_id = cur.product_id
+          ON {canon_key} = cur.canon_key
          AND p.store      = cur.store
          AND p.queried_at = cur.latest_at
         WHERE p.price > 0
@@ -138,11 +173,13 @@ def brand_monitor(
     rows = db.execute(q, params).fetchall()
     skus = [dict(r) for r in rows]
 
-    # ── compute per-product_id dispersion score ───────────────────────────────
+    # ── compute per-canonical-product dispersion score ────────────────────────
+    # Keyed by canon_key (not raw product_id) so two retailer SKUs already
+    # known to be the same Golden Record product count as one series.
     from collections import defaultdict
     prices_by_pid: dict[str, list[float]] = defaultdict(list)
     for sku in skus:
-        prices_by_pid[sku["product_id"]].append(sku["price"])
+        prices_by_pid[sku["canon_key"]].append(sku["price"])
 
     dispersion: dict[str, float | None] = {
         pid: _cv(prices) for pid, prices in prices_by_pid.items()
@@ -162,12 +199,18 @@ def brand_monitor(
 
     # ── annotate each sku row ─────────────────────────────────────────────────
     my_brand_norm = _normalize_brand(brand)
+    canonical_brand = _canonical_brand_map(all_brands)
     my_skus: list[dict] = []
     competitor_skus: list[dict] = []
 
     for sku in skus:
+        # Homologate to the brand name as declared (?brand=/?competitors=), not
+        # whatever casing this particular retailer scrape happened to use —
+        # otherwise "Laive" and "LAIVE" show up as two different competitors.
+        sku["brand"] = canonical_brand.get(_normalize_brand(sku["brand"]), sku["brand"])
         sku["promo_active"] = bool(sku.get("discount") and sku["discount"] > 0)
-        sku["dispersion_score"] = dispersion.get(sku["product_id"])
+        sku["dispersion_score"] = dispersion.get(sku["canon_key"])
+        del sku["canon_key"]  # internal grouping key, not part of the public response shape
 
         pvp = pvp_map.get(sku["product_id"])
         if pvp and pvp > 0 and sku["price"] > 0:
@@ -274,8 +317,11 @@ def brand_promo_history(
     if not events:
         events = _query_table("price_snapshots")
 
-    # Annotate discount depth
+    # Annotate discount depth + homologate brand casing (see brand_monitor's
+    # canonical_brand comment — same scraped-casing-drift issue applies here).
+    canonical_brand = _canonical_brand_map(all_brands)
     for e in events:
+        e["brand"] = canonical_brand.get(_normalize_brand(e["brand"]), e["brand"])
         if e.get("list_price") and e["list_price"] > 0 and e.get("price"):
             e["discount_depth_pct"] = round(
                 (e["list_price"] - e["price"]) / e["list_price"] * 100, 1

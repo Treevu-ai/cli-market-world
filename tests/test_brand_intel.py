@@ -30,14 +30,27 @@ def _seed_snapshot(
     price: float,
     list_price: float | None = None,
     discount: float | None = None,
+    canonical_product_id: str | None = None,
+    queried_at: str | None = None,
 ):
     db = get_db()
+    if canonical_product_id is not None:
+        try:
+            db.execute("ALTER TABLE price_snapshots ADD COLUMN canonical_product_id TEXT")
+            db.commit()
+        except Exception:
+            pass  # already added by a previous test in this session
+    queried_at_sql = "?" if queried_at else "datetime('now')"
+    extra_cols = ", canonical_product_id" if canonical_product_id is not None else ""
+    extra_placeholders = ", ?" if canonical_product_id is not None else ""
     db.execute(
-        """INSERT OR IGNORE INTO price_snapshots
+        f"""INSERT OR IGNORE INTO price_snapshots
            (product_id, store, store_name, name, brand, price, list_price, discount,
-            currency, line, line_name, queried_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PEN', 'supermercados', 'Supermercados', datetime('now'))""",
-        [product_id, store, store_name, name, brand, price, list_price, discount],
+            currency, line, line_name, queried_at{extra_cols})
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PEN', 'supermercados', 'Supermercados', {queried_at_sql}{extra_placeholders})""",
+        [product_id, store, store_name, name, brand, price, list_price, discount]
+        + ([queried_at] if queried_at else [])
+        + ([canonical_product_id] if canonical_product_id is not None else []),
     )
     db.commit()
     db.close()
@@ -85,6 +98,55 @@ def test_brand_monitor_returns_my_skus_and_competitors_with_dispersion_score():
     assert all(row["dispersion_score"] is not None for row in gloria_rows)
     assert data["summary"]["brand"] == "Gloria"
     assert data["summary"]["my_skus_count"] == 2
+
+
+def test_brand_monitor_homologates_brand_casing_across_retailers():
+    # Same competitor scraped with three different casings across stores —
+    # regression test for the bug where "Laive"/"LAIVE"/"laive" counted as
+    # three separate competitors instead of being merged into one.
+    _seed_snapshot("bi-casing-mine", "wong", "Wong", "SKU Mine", "CasingBrand", 4.0)
+    _seed_snapshot("bi-casing-comp-1", "wong", "Wong", "SKU Comp 1", "CompBrand", 3.0)
+    _seed_snapshot("bi-casing-comp-2", "metro", "Metro", "SKU Comp 2", "COMPBRAND", 3.2)
+    _seed_snapshot("bi-casing-comp-3", "plazavea", "Plaza Vea", "SKU Comp 3", "compbrand", 3.1)
+
+    r = client.get(
+        "/v1/brand-monitor?brand=CasingBrand&competitors=CompBrand&country=PE",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+
+    comp_brand_names = {s["brand"] for s in data["competitor_skus"]}
+    assert comp_brand_names == {"CompBrand"}
+    assert data["summary"]["competitors_found"] == ["CompBrand"]
+
+
+def test_brand_monitor_collapses_duplicate_retailer_skus_via_canonical_product_id():
+    # Regression test: a retailer sometimes carries two catalog SKUs
+    # (product_id) for what the Golden Record layer already knows is the same
+    # product (e.g. an old + a re-listed SKU at a different price) — real
+    # example: Metro had product_id "359806" and "42081" both named
+    # "Mantequilla con Sal Gloria 180g". Both share canonical_product_id and
+    # should collapse to one row, keeping the most recent snapshot.
+    _seed_snapshot(
+        "canon-old-sku", "wong", "Wong", "Mantequilla Canon Test", "CanonBrand",
+        price=11.90, canonical_product_id="canon-golden-1",
+        queried_at="2026-07-01 10:00:00",
+    )
+    _seed_snapshot(
+        "canon-new-sku", "wong", "Wong", "Mantequilla Canon Test", "CanonBrand",
+        price=10.50, canonical_product_id="canon-golden-1",
+        queried_at="2026-07-05 10:00:00",
+    )
+
+    r = client.get("/v1/brand-monitor?brand=CanonBrand&country=PE", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+
+    matching = [s for s in data["my_skus"] if s["name"] == "Mantequilla Canon Test"]
+    assert len(matching) == 1
+    assert matching[0]["product_id"] == "canon-new-sku"
+    assert matching[0]["price"] == 10.50
 
 
 # ── GET /v1/brand-monitor/promos ──────────────────────────────────────────────
