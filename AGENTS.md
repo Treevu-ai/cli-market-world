@@ -128,12 +128,13 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 | Capa | Repo |
 |------|------|
 | Primitivas (`market_observatory`, identity, DDL) | `cli-market-core` → PyPI |
-| Middleware + routers prod | `cli-market-backend` → Fly.io |
-| Mirror API + ops + landing `/stats` | `cli-market-world` |
+| Middleware + routers prod | `cli-market-world` → Fly.io |
+| Mirror sin deploy (paridad vía `sync-backend-observatory-mirror.yml`) | `cli-market-backend` |
+| Ops + landing `/stats` | `cli-market-world` |
 | Golden Records | `cli-market-index` — sin cambios P0 |
 
 - North Star: **MAA** (Monthly Active Agents)
-- Prod telemetría: solo cuenta en **backend** desplegado; world mantiene mirror paridad
+- Prod telemetría: cuenta en **world** desplegado (Fly.io); backend recibe mirror de paridad, sin deploy propio
 - Jobs (world): `ops/adoption_index.py`, `ops/observatory_daily.py`, `ops/indicators_daily.py`, `ops/canasta_pe_index.py`, workflows `observatory-nightly.yml`, `indicators-nightly.yml`, `canasta-pe-weekly.yml` (lunes 08:00 PET)
 
 ## Identidad visual
@@ -150,18 +151,22 @@ PRD: `docs/prd-observatory-p0.md` · Checklist 4 repos: `ops/OBSERVATORY-CHANGE-
 
 ## Deploy prod — Fly.io
 
-Prod API (`cli-market-api.fly.dev`) se despliega **desde este repo** (`cli-market-world`), no
-automáticamente con push a `main` — no hay `fly.toml` commiteado aquí todavía ni workflow de
-CI para esto (el `deploy-railway.yml` que existía se borró al retirar Railway; falta su
-reemplazo Fly si se quiere volver a automatizar). Hoy es manual:
+Prod API (`cli-market-api.fly.dev`) se despliega **desde este repo** (`cli-market-world`),
+**automáticamente** vía `.github/workflows/deploy-fly.yml`: cualquier push a `main` que toque
+`**.py`, `requirements.txt`, `Dockerfile` o `fly.toml` dispara `flyctl deploy --app
+cli-market-api --config fly.toml`. `fly.toml`/`fly.collector.toml` están commiteados en este
+repo (commit `f76dca8`, 2026-07-06).
 
-1. `fly deploy --app cli-market-api --dockerfile Dockerfile` (o con un `fly.toml` local no
-   commiteado — confirmar con quien lo corre)
-2. Secrets ya deben estar seteados con `fly secrets set` (no se pueden leer de vuelta vía CLI)
+- Secrets ya deben estar seteados con `fly secrets set` (no se pueden leer de vuelta vía CLI).
+- Deploy manual (solo si hace falta forzar fuera del flujo de CI):
+  `fly deploy --app cli-market-api --dockerfile Dockerfile`.
 
-`cli-market-backend` tiene su propio `fly.toml`/`fly.collector.toml` (mismo nombre de app,
-`cli-market-api`) — verificar si sigue en uso o es un remanente de un plan de migración que
-terminó ejecutándose desde world en su lugar.
+`cli-market-backend` **ya no tiene** `fly.toml`/`fly.collector.toml` (se borraron en su commit
+`57b01ef`, *"world owns the deploy"*) — antes ambos repos apuntaban a la misma app
+`cli-market-api`, con riesgo de que un deploy accidental desde backend sobrescribiera prod con
+el código equivocado. Hoy `cli-market-backend` no despliega nada: solo recibe sync
+unidireccional de `world` (paridad de CI vía `sync-backend-ci.yml`, rutas de Observatory vía
+`sync-backend-observatory-mirror.yml`). Ver tabla de repos arriba.
 
 ## MCP server de CLI Market en agentes (Devin / Cursor / Claude)
 
