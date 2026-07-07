@@ -336,7 +336,11 @@ def collector_trigger(authorization: str | None = Header(None)):
 def _dashboard_data():
     db = get_db()
     now = datetime.now(timezone.utc)
-    cutoff_24h_sql = "NOW() - INTERVAL '24 hours'"
+    # SQLite-canonical form — _DB.execute() auto-translates to
+    # "NOW() - INTERVAL '24 hours'" when running against Postgres (see
+    # market_db.py's execute()). Writing the Postgres form directly here
+    # broke every SQLite (local/test) run with a syntax error.
+    cutoff_24h_sql = "datetime('now', '-24 hours')"
 
     # ── KPIs: moat size vs 24h refresh (distinct metrics) ─────────────────────
     total_indexed = db.execute(
