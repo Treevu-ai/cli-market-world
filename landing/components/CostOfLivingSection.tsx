@@ -53,14 +53,14 @@ const FEATURES_EN = [
 
 const TIERS_ES = [
   { name: "Free", price: "Gratis", features: ["Affordability score", "Sustitutos (1/consulta)", "Canasta básica"] },
-  { name: "Starter $9", price: "$9/mes", features: ["Todo Free", "Sustitutos ilimitados", "TCO + delivery"], highlight: false },
-  { name: "Pro $49", price: "$49/mes", features: ["Todo Starter", "optimize purchase", "Contexto regulatorio", "Export CSV"], highlight: true },
+  { name: "Starter", price: "$9/mes", features: ["Todo Free", "Sustitutos ilimitados", "TCO + delivery"], highlight: false },
+  { name: "Pro", price: "$49/mes", features: ["Todo Starter", "optimize purchase", "Contexto regulatorio", "Export CSV"], highlight: true },
 ];
 
 const TIERS_EN = [
   { name: "Free", price: "Free", features: ["Affordability score", "Substitutes (1/query)", "Basic basket"] },
-  { name: "Starter $9", price: "$9/mo", features: ["All Free", "Unlimited substitutes", "TCO + delivery"], highlight: false },
-  { name: "Pro $49", price: "$49/mo", features: ["All Starter", "optimize purchase", "Regulatory context", "CSV export"], highlight: true },
+  { name: "Starter", price: "$9/mo", features: ["All Free", "Unlimited substitutes", "TCO + delivery"], highlight: false },
+  { name: "Pro", price: "$49/mo", features: ["All Starter", "optimize purchase", "Regulatory context", "CSV export"], highlight: true },
 ];
 
 export default function CostOfLivingSection() {
