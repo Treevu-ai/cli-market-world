@@ -350,21 +350,13 @@ def brand_config_upsert(
 
 # ── GET /v1/brand-monitor/alerts ──────────────────────────────────────────────
 
-@router.get("/v1/brand-monitor/alerts", summary="Active PVP deviations for registered brand SKUs")
-def brand_alerts(
-    brand: str = Query(..., description="Brand slug (must match registered config)"),
-    country: str = Query("PE"),
-    authorization: str | None = Header(None),
-):
-    """Return only SKUs with active PVP deviations (above or far below the
-    suggested retail price registered via POST /v1/brand-monitor/config).
+def compute_brand_alerts(db, api_key: str, brand: str, country: str = "PE") -> dict:
+    """Active PVP deviations for a brand's registered SKUs.
 
-    Requires a prior call to POST /v1/brand-monitor/config with sku_pvps.
-    Returns an empty list if no config has been registered.
+    Pure function (no auth, no FastAPI dependency) so it can be called both
+    from the HTTP endpoint below and from ops/brand_alert_email.py without
+    duplicating the SQL/threshold logic.
     """
-    api_key = require_api_key(authorization)
-    db = get_db()
-
     # Load config
     try:
         config_row = db.execute(
@@ -423,3 +415,20 @@ def brand_alerts(
 
     alerts.sort(key=lambda x: abs(x["pvp_deviation_pct"]), reverse=True)
     return {"alerts": alerts, "count": len(alerts)}
+
+
+@router.get("/v1/brand-monitor/alerts", summary="Active PVP deviations for registered brand SKUs")
+def brand_alerts(
+    brand: str = Query(..., description="Brand slug (must match registered config)"),
+    country: str = Query("PE"),
+    authorization: str | None = Header(None),
+):
+    """Return only SKUs with active PVP deviations (above or far below the
+    suggested retail price registered via POST /v1/brand-monitor/config).
+
+    Requires a prior call to POST /v1/brand-monitor/config with sku_pvps.
+    Returns an empty list if no config has been registered.
+    """
+    api_key = require_api_key(authorization)
+    db = get_db()
+    return compute_brand_alerts(db, api_key, brand, country)
