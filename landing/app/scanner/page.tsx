@@ -214,10 +214,10 @@ export default function ScannerPage() {
             {/* CTA */}
             <div className="rounded-2xl border border-[var(--cm-mint)]/20 bg-[var(--cm-mint)]/5 p-5 text-center">
               <p className="text-sm text-white font-semibold mb-1">
-                ¿Querés comparar precios programáticamente?
+                ¿Quieres comparar precios programáticamente?
               </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)] mb-4">
-                Accedé a {MARKET_STATS.mcpTools} herramientas MCP y {MARKET_STATS.pricesVerifiedLabel} precios verificados vía API.
+                Accede a {MARKET_STATS.mcpTools} herramientas MCP y {MARKET_STATS.pricesVerifiedLabel} precios verificados vía API.
               </p>
               <a
                 href={MARKET_STATS.pypiUrl}

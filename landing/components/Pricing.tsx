@@ -133,7 +133,7 @@ const tiers: Tier[] = [
 ];
 
 const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
-  ["Starter", "Pro", "Enterprise"].includes(t.name),
+  ["Free", "Starter", "Pro", "Enterprise"].includes(t.name),
 );
 // cli-market.dev publicly shows only the developer ("build") line. The Procure
 // audience panel still renders when reached via ?audience=procure (checkout /
@@ -390,7 +390,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
-          <div className="landing-content-rail grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 mt-4">
+          <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6 mt-4">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
                 key={tier.name}
@@ -422,7 +422,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-4">
             {isES ? (
               <>
-                Starter, Pro y Enterprise — límites y facturación en{" "}
+                Free, Starter, Pro y Enterprise — límites y facturación en{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -430,7 +430,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
               </>
             ) : (
               <>
-                Starter, Pro, and Enterprise — limits and billing in{" "}
+                Free, Starter, Pro, and Enterprise — limits and billing in{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>

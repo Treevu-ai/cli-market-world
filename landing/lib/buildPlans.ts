@@ -1,4 +1,4 @@
-/** Build (API) tier labels — distinct from Procure Compare/Ops/Scale. */
+/** Build (API) tier labels — when shown alongside Procure's own Starter/Pro/Builder, prefix with "Build" to disambiguate (e.g. "Build Pro" vs "Procure Pro"). */
 
 export type BuildPlanSlug = "starter" | "pro" | "pro_annual";
 

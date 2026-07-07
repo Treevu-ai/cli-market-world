@@ -13,13 +13,13 @@ import {
 const BENEFITS_ES = [
   "Comparación automática — sin WhatsApp ni Excel.",
   "Data-gate: no recomienda si los precios están desactualizados.",
-  "Compare compara; Ops añade aprobaciones y checkout.",
+  "Starter compara; Pro añade aprobaciones y checkout.",
 ];
 
 const BENEFITS_EN = [
   "Automatic comparison — no WhatsApp or Excel.",
   "Data-gate blocks recommendations when prices are stale.",
-  "Compare compares; Ops adds approvals and checkout.",
+  "Starter compares; Pro adds approvals and checkout.",
 ];
 
 export default function ProcurePricingPanel() {
@@ -41,12 +41,12 @@ export default function ProcurePricingPanel() {
       <div className="landing-content-narrow mb-10 space-y-4 text-center">
         <div className="rounded-xl border border-[var(--cm-outline-variant)]/35 bg-[var(--cm-surface-low)]/40 px-4 py-3 text-left text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
           <p className="font-semibold text-[var(--cm-on-surface)] mb-1">
-            {isES ? "¿Build Pro o Procure Ops?" : "Build Pro or Procure Ops?"}
+            {isES ? "¿Build Pro o Procure Pro?" : "Build Pro or Procure Pro?"}
           </p>
           <p>
             {isES
-              ? "Build Pro ($49) es para quien integra la API en código. Procure Ops ($79) es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
-              : "Build Pro ($49) is for developers integrating the API. Procure Ops ($79) is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
+              ? "Build Pro ($49) es para quien integra la API en código. Procure Pro ($79) es para equipos de compras (aprobaciones, checkout retail) — incluye la API; no pagues los dos salvo que quieras ambos dashboards."
+              : "Build Pro ($49) is for developers integrating the API. Procure Pro ($79) is for procurement teams (approvals, retail checkout) — API included; only pay both if you need both dashboards."}
           </p>
         </div>
       </div>
