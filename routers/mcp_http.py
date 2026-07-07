@@ -291,7 +291,10 @@ _TOOLS = [
         "name": "market_basket",
         "description": (
             "[Pro] Compare a basket of items across stores in a country. "
-            "Returns total cost per store, cheapest combination, savings vs most expensive."
+            "Returns total cost per store, cheapest combination, savings vs most expensive. "
+            "Uses the cached price-snapshot DB by default (fast, refreshed every ~4h) — "
+            "pass include_tco=false explicitly if you need a live per-item retailer scrape "
+            "instead (much slower, 20-90s+, but current-moment prices)."
         ),
         "inputSchema": {
             "type": "object",
@@ -299,12 +302,12 @@ _TOOLS = [
             "properties": {
                 "items": {
                     "type": "array",
-                    "description": "List of {name, quantity} objects",
+                    "description": "List of {name, qty} objects",
                     "items": {
                         "type": "object",
                         "properties": {
                             "name": {"type": "string"},
-                            "quantity": {"type": "number", "default": 1},
+                            "qty": {"type": "number", "default": 1},
                         },
                     },
                 },
@@ -815,7 +818,14 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
         elif name == "market_optimize_purchase":
             r = await client.post(f"{_API_BASE}/v1/missions/optimize-purchase", json=args, headers=headers)
         elif name == "market_basket":
-            r = await client.post(f"{_API_BASE}/v1/basket/compare", json=args, headers=headers)
+            # Default to the DB-backed path (fast, ~ms) instead of the live
+            # per-item retailer scrape (with Playwright fallback) that
+            # /v1/basket/compare does when include_tco/include_action_links
+            # are both absent — that path routinely took 20-90s+ and could
+            # OOM the shared-cpu-1x machine. Callers that explicitly want
+            # live-scraped freshness can still pass include_tco=false.
+            basket_args = {"include_tco": True, **args}
+            r = await client.post(f"{_API_BASE}/v1/basket/compare", json=basket_args, headers=headers)
         elif name == "market_procurement_signal":
             r = await client.get(f"{_API_BASE}/v1/intel/basket-stress", params={"country": args.get("country")}, headers=headers)
         elif name == "market_price_risk":
