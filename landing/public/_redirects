@@ -1,2 +1,11 @@
 /intelligence-pilot-es.md /intelligence-pilot-es 302
 /case-studies.md /case-studies 302
+
+# Brand Monitor is a client-rendered dashboard (output: "export" only
+# pre-renders /brand/demo — see generateStaticParams in
+# landing/app/brand/[slug]/page.tsx). Any /brand/<slug> — including real
+# customer slugs, not just the demo — needs to serve that same shell;
+# useParams() reads the real slug from the browser URL after hydration, so
+# this rewrite (200, not a redirect) is safe for arbitrary slugs.
+/brand /brand/demo 200
+/brand/* /brand/demo 200
