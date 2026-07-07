@@ -1,0 +1,134 @@
+name: Sync canasta taxonomy to cli-market-index
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - market_core/market_spread.py
+      - ops/sync_market_stats.py
+      - ops/index-canasta.trigger
+
+permissions:
+  contents: read
+
+jobs:
+  sync-index-canasta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          ref: main
+          path: ../cli-market-core
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: main
+          path: cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate canasta_data.py
+        env:
+          CLI_MARKET_CORE_ROOT: ${{ github.workspace }}/../cli-market-core
+          CLI_MARKET_INDEX_ROOT: ${{ github.workspace }}/cli-market-index
+        run: |
+          python3 -c "
+          import sys; sys.path.insert(0, 'ops')
+          import sync_market_stats as sync
+          sync.write_canasta_taxonomy_data()
+          "
+
+      - name: Save patch artifact (always)
+        if: always()
+        run: |
+          mkdir -p /tmp/index-canasta
+          git -C cli-market-index diff > /tmp/index-canasta/index-canasta.patch || true
+          if [ ! -s /tmp/index-canasta/index-canasta.patch ]; then
+            echo "No diff — cli-market-index canasta_data.py already matches core" \
+              > /tmp/index-canasta/index-canasta.patch
+          fi
+
+      - name: Upload canasta sync patch
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: index-canasta-sync
+          path: /tmp/index-canasta/
+          retention-days: 14
+
+      - name: Check index write token
+        id: write_token
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_INDEX_WRITE }}
+        run: |
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_INDEX_WRITE not set — will skip auto-PR (download artifact instead)"
+            exit 0
+          fi
+          if gh api repos/Treevu-ai/cli-market-index --jq '.permissions.push' 2>/dev/null | grep -q true; then
+            echo "has_write=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_write=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GH_PAT_INDEX_WRITE cannot push to cli-market-index"
+          fi
+
+      - name: Open PR on cli-market-index
+        if: steps.write_token.outputs.has_write == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_INDEX_WRITE }}
+        working-directory: cli-market-index
+        run: |
+          set -euo pipefail
+          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+          export GH_TOKEN
+          BRANCH="chore/canasta-sync-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "cli-market-index canasta_data.py already matches core"
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git add src/taxonomy/canasta_data.py
+          git commit -m "chore(canasta): sync staple taxonomy from cli-market-core"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --repo Treevu-ai/cli-market-index \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(canasta): sync staple taxonomy from cli-market-core" \
+            --body "Automated from cli-market-world sync-index-canasta. Regenerates src/taxonomy/canasta_data.py from cli-market-core's canonical market_spread.py — keeps CANASTA_ITEMS/_CANASTA_PATTERNS/_CANASTA_EXCLUDE from drifting across repos."
+
+      - name: Detect index diff
+        id: diff
+        run: |
+          if git -C cli-market-index diff --quiet; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Manual apply instructions
+        if: steps.write_token.outputs.has_write != 'true' && steps.diff.outputs.has_diff == 'true'
+        run: |
+          echo "## Canasta taxonomy sync — manual apply required" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download artifact **index-canasta-sync** or run locally:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`bash" >> "$GITHUB_STEP_SUMMARY"
+          echo "python3 ops/sync_market_stats.py  # from cli-market-world, with cli-market-core and cli-market-index as siblings" >> "$GITHUB_STEP_SUMMARY"
+          echo "cd ../cli-market-index && git checkout -b chore/canasta-sync && git commit -am 'chore(canasta): sync from core'" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::Set GH_PAT_INDEX_WRITE (fine-grained PAT with Contents: Read and write, Pull requests: Read and write on cli-market-index) or apply patch from artifact index-canasta-sync"
