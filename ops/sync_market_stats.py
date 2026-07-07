@@ -145,6 +145,78 @@ def _procure_copilot_lib_path(filename: str) -> Path | None:
 def _procure_stats_path() -> Path | None:
     return _procure_copilot_lib_path("market-stats.ts")
 
+
+def _cli_market_index_path(relative: str) -> Path | None:
+    """Resolve a path in the sibling cli-market-index checkout."""
+    candidates = [
+        ROOT.parent / "cli-market-index" / relative,
+        ROOT.parent / "Projects" / "cli-market-index" / relative,
+    ]
+    env = os.environ.get("CLI_MARKET_INDEX_ROOT")
+    if env:
+        candidates.insert(0, Path(env) / relative)
+    for path in candidates:
+        if path.parent.exists():
+            return path
+    return None
+
+
+def _py_str_tuple(items: tuple[str, ...], indent: str = "    ") -> str:
+    lines = "\n".join(f'{indent}"{item}",' for item in items)
+    return f"(\n{lines}\n)"
+
+
+def _py_pattern_dict(patterns: dict[str, "re.Pattern[str]"], indent: str = "    ") -> str:
+    lines = "\n".join(f'{indent}"{key}": r"{pat.pattern}",' for key, pat in patterns.items())
+    return f"{{\n{lines}\n}}"
+
+
+def _py_exclude_dict(exclude: dict[str, frozenset[str]], indent: str = "    ") -> str:
+    parts = []
+    for key, values in exclude.items():
+        if len(values) <= 4:
+            body = ", ".join(f'"{v}"' for v in sorted(values))
+            parts.append(f'{indent}"{key}": frozenset({{{body}}}),')
+        else:
+            inner = "\n".join(f'{indent}    "{v}",' for v in sorted(values))
+            parts.append(f'{indent}"{key}": frozenset({{\n{inner}\n{indent}}}),')
+    return "{\n" + "\n".join(parts) + "\n}"
+
+
+def _canasta_taxonomy_data_py() -> str:
+    from market_core.market_spread import CANASTA_ITEMS, _CANASTA_EXCLUDE, _CANASTA_ITEM_PATTERNS
+
+    return f'''"""AUTO-GENERATED — do not edit. Source of truth: cli-market-core
+market_core/market_spread.py (CANASTA_ITEMS, _CANASTA_ITEM_PATTERNS,
+_CANASTA_EXCLUDE). Run: python3 ops/sync_market_stats.py from cli-market-world.
+"""
+
+from __future__ import annotations
+
+import re
+
+CANASTA_ITEMS: tuple[str, ...] = {_py_str_tuple(tuple(CANASTA_ITEMS))}
+
+_CANASTA_PATTERNS: dict[str, re.Pattern[str]] = {{
+    item: re.compile(pat, re.I)
+    for item, pat in {_py_pattern_dict(_CANASTA_ITEM_PATTERNS)}.items()
+}}
+
+_CANASTA_EXCLUDE: dict[str, frozenset[str]] = {_py_exclude_dict(_CANASTA_EXCLUDE)}
+'''
+
+
+def write_canasta_taxonomy_data() -> None:
+    """Emit cli-market-index/src/taxonomy/canasta_data.py from cli-market-core's
+    canonical CANASTA_ITEMS/_CANASTA_ITEM_PATTERNS/_CANASTA_EXCLUDE, so the two
+    repos' canasta-staple matching never drifts again (world#T-azucar-verduras)."""
+    out = _cli_market_index_path("src/taxonomy/canasta_data.py")
+    if not out:
+        print("SKIP cli-market-index canasta_data.py (repo not found beside cli-market-world)", file=sys.stderr)
+        return
+    out.write_text(_canasta_taxonomy_data_py(), encoding="utf-8")
+    print(f"Wrote {out}")
+
 _BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
 _CANONICAL_HIGHLIGHTS = frozenset({"market_optimize_purchase", "market_discover", "market_intel_brief", "market_price_alerts"})
 _PUBLIC_BUNDLES = ("shop", "intel", "account")
@@ -1250,6 +1322,7 @@ def main() -> None:
     write_market_stats_ts()
     write_procure_market_stats_ts()
     write_procure_plans_ts()
+    write_canasta_taxonomy_data()
     sync_readme()
     sync_pyproject()
     sync_server_json()
