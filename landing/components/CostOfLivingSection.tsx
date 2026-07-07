@@ -51,23 +51,10 @@ const FEATURES_EN = [
   },
 ];
 
-const TIERS_ES = [
-  { name: "Free", price: "Gratis", features: ["Affordability score", "Sustitutos (1/consulta)", "Canasta básica"] },
-  { name: "Starter", price: "$9/mes", features: ["Todo Free", "Sustitutos ilimitados", "TCO + delivery"], highlight: false },
-  { name: "Pro", price: "$49/mes", features: ["Todo Starter", "optimize purchase", "Contexto regulatorio", "Export CSV"], highlight: true },
-];
-
-const TIERS_EN = [
-  { name: "Free", price: "Free", features: ["Affordability score", "Substitutes (1/query)", "Basic basket"] },
-  { name: "Starter", price: "$9/mo", features: ["All Free", "Unlimited substitutes", "TCO + delivery"], highlight: false },
-  { name: "Pro", price: "$49/mo", features: ["All Starter", "optimize purchase", "Regulatory context", "CSV export"], highlight: true },
-];
-
 export default function CostOfLivingSection() {
   const { lang } = useLang();
   const isES = lang === "es";
   const features = isES ? FEATURES_ES : FEATURES_EN;
-  const tiers = isES ? TIERS_ES : TIERS_EN;
   const featRef = useRef(null);
   const inView = useInView(featRef, { once: true, margin: "-60px" });
 
@@ -211,32 +198,18 @@ export default function CostOfLivingSection() {
           <p className="section-eyebrow mb-4 text-center">
             {isES ? "PLANES" : "PLANS"}
           </p>
-          <h2 className="section-title text-center mb-10">
-            {isES ? "Incluido en tu plan CLI Market" : "Included in your CLI Market plan"}
+          <h2 className="section-title text-center mb-6">
+            {isES ? "Incluido en tu plan CLI Build" : "Included in your CLI Build plan"}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
-            {tiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={`card-cyber rounded-xl p-5 ${tier.highlight ? "energy-border-active" : ""}`}
-              >
-                {tier.highlight && (
-                  <span className="inline-block mb-3 text-xs font-semibold bg-[var(--cm-mint)] text-[var(--cm-on-mint)] px-3 py-0.5 rounded-full">
-                    {isES ? "Más popular" : "Most popular"}
-                  </span>
-                )}
-                <p className="text-base font-bold text-[var(--cm-on-surface)]">{tier.name}</p>
-                <p className="text-2xl font-black text-[var(--cm-on-surface)] mt-1 mb-4">{tier.price}</p>
-                <ul className="space-y-2">
-                  {tier.features.map((f) => (
-                    <li key={f} className="flex gap-2 text-xs text-[var(--cm-on-surface-variant)]">
-                      <span className="text-[var(--cm-mint)] shrink-0">✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <p className="text-center text-sm text-[var(--cm-on-surface-variant)] max-w-lg mx-auto mb-8">
+            {isES
+              ? "Affordability score, sustitutos y canasta optimizada vienen con tu plan CLI Build — Free, Starter o Pro."
+              : "Affordability score, substitutes, and basket optimization come with your CLI Build plan — Free, Starter, or Pro."}
+          </p>
+          <div className="text-center">
+            <a href="/build#pricing" className="btn-mint inline-block">
+              {isES ? "Ver planes CLI Build →" : "See CLI Build plans →"}
+            </a>
           </div>
         </div>
       </section>

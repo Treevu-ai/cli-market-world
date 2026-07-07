@@ -8,7 +8,13 @@ export type NavItem = {
   external?: boolean;
 };
 
-/** Top nav — ICP hub (Build · Procure · Intelligence · Cost of Living · Retailers · Mi hogar · Brand Monitor). */
+/**
+ * Top nav — ICP hub (Build · Procure · Intelligence · Cost of Living ·
+ * Retailers · Mi hogar). Brand Monitor (/brand/demo) is intentionally not
+ * listed here — it has no case study or public pricing yet, so it stayed
+ * live-but-unlisted to avoid nav noise; it's still reachable by direct link.
+ * Revisit once it has its own positioning.
+ */
 export const TOP_NAV: NavItem[] = [
   { id: "build", es: "Build", en: "Build", href: "/build" },
   { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
@@ -16,7 +22,6 @@ export const TOP_NAV: NavItem[] = [
   { id: "cost-of-living", es: "Cost of Living", en: "Cost of Living", href: "/cost-of-living" },
   { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
   { id: "household", es: "Mi hogar", en: "My household", href: "/dashboard/household" },
-  { id: "brand-intel", es: "Brand Monitor", en: "Brand Monitor", href: "/brand/demo" },
 ];
 
 /** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */
