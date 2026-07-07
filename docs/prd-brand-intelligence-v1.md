@@ -5,7 +5,7 @@ tags:
   - prd
   - brand-intelligence
   - trade-marketing
-status: v1.0 — decisiones de piloto tomadas 2026-07-06; backend/frontend construidos; falta onboardear primera agencia piloto
+status: v1.0 — backend/frontend/tests/email-alert/NDA/metodología construidos; falta subdominio + onboardear primera agencia piloto
 owner: Ricardo Cuba
 created: 2026-07-07
 repos: cli-market-world, cli-market-core, cli-market-backend
@@ -296,7 +296,7 @@ ORDER BY brand, name, store, queried_at DESC
 - [x] Lógica de normalización: agrupar variantes del mismo producto (400ml vs 410ml vs "grande")
 - [x] Cálculo de `dispersion_score` (CV de precio cross-tienda por SKU)
 - [x] Cálculo de `promo_events` (activaciones detectadas en el período)
-- [ ] Tests unitarios básicos — pendiente, no existe `tests/test_brand_intel.py`
+- [x] Tests unitarios básicos — `tests/test_brand_intel.py` (12 tests, los 4 endpoints)
 
 ### Sprint 2 — Backend: alertas y PVP sugerido
 
@@ -319,7 +319,7 @@ CREATE TABLE brand_intel_config (
 - [x] `POST /v1/brand-monitor/config` — onboarding: declara marca, competidores, PVPs
 - [x] `GET /v1/brand-monitor/alerts` — desvíos activos vs PVP sugerido
 - [x] Lógica de alerta: `precio > PVP × 1.05` o `precio < PVP × 0.85`
-- [ ] Email de alerta automático cuando se detecta desvío significativo (>10%) — pendiente, `brand_alerts()` solo responde on-demand vía GET
+- [x] Email de alerta automático cuando se detecta desvío significativo (>10%) — `ops/brand_alert_email.py` + `.github/workflows/brand-alert-email.yml` (cron diario 08:00 PET)
 
 ### Sprint 3 — Frontend: Brand Monitor Dashboard
 
@@ -357,8 +357,8 @@ CREATE TABLE brand_intel_config (
 - [x] Generador PDF `ops/brand_report.py` — extiende `price_pulse_agents.py`
 - [x] Template de 8 páginas — primer reporte ya generado: `ops/generated/reports/brand-report-gloria-2026-07.pdf`
 - [ ] Onboarding manual del primer cliente (30 días gratis) — pendiente: aún no hay primer cliente piloto
-- [ ] Documento metodológico público de 1 página (para que el analista lo cite) — pendiente; `docs/methodology.md` cubre Price Pulse en general pero no está publicado ni es específico a dispersion_score/PVP
-- [ ] NDA template con cláusula de no-cross-sharing — pendiente
+- [x] Documento metodológico público de 1 página — `docs/methodology-brand-intelligence.md`
+- [x] NDA template con cláusula de no-cross-sharing — `docs/legal/nda-brand-intelligence-template.md` (borrador, requiere revisión legal antes de usar)
 
 ---
 
@@ -409,6 +409,6 @@ CREATE TABLE brand_intel_config (
 | ¿Normalización de SKU competidor? | Automática (semántica) vs manual (el cliente declara) | **Automática** con revisión manual en onboarding |
 | ¿Acceso API para competidores en la misma agencia? | Compartido con NDA vs silos separados | **Silos separados** por brand_slug + api_key |
 
-Con esto resuelto, lo que falta para arrancar el piloto real es puramente ejecución (ver
-checklist de Sprint 4 arriba): setup del subdominio, NDA template, documento metodológico
-público, y conseguir/onboardear la primera agencia piloto.
+Con esto resuelto, y con tests/email/NDA/metodología ya construidos (ver checklist de Sprint 4
+arriba), lo único que falta para arrancar el piloto real es: setup del subdominio y
+conseguir/onboardear la primera agencia piloto.
