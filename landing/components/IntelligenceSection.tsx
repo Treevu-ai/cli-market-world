@@ -69,6 +69,11 @@ export default function IntelligenceSection() {
                 </>
               )}
             </h2>
+            <p className="mt-4 text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto">
+              {isES
+                ? "Lo que ves arriba en el pulso semanal es la punta del iceberg: así se ve el acceso completo — spreads en vivo, alertas de inflación por categoría, y un pilot con SLA para tu equipo."
+                : "What you see above in the weekly pulse is the tip of the iceberg: here's what full access looks like — live spreads, category inflation alerts, and an SLA-backed pilot for your team."}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
