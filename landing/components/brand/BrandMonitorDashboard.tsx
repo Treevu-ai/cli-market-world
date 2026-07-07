@@ -91,6 +91,7 @@ export default function BrandMonitorDashboard() {
   const [promoLoading, setPromoLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [configMode, setConfigMode] = useState(false);
+  const [search, setSearch] = useState("");
 
   // On mount: read API key + brand from localStorage / URL hash
   useEffect(() => {
@@ -166,6 +167,20 @@ export default function BrandMonitorDashboard() {
   };
 
   const hasPvp = Boolean(data?.my_skus.some((s) => s.pvp_suggested !== null));
+
+  const searchNorm = search.trim().toLowerCase();
+  const matchesSearch = (s: SkuRow) => s.name.toLowerCase().includes(searchNorm);
+  const filteredMySkus = data && searchNorm ? data.my_skus.filter(matchesSearch) : data?.my_skus ?? [];
+  const filteredCompetitorSkus =
+    data && searchNorm ? data.competitor_skus.filter(matchesSearch) : data?.competitor_skus ?? [];
+
+  // Competidores tab keeps the "TÚ" benchmark row unfiltered even when the
+  // search only matches a competitor product — otherwise a search for e.g.
+  // "Laive" would drop the user's own brand row with no explanation.
+  const noMySkuMatch = tab === "my-skus" && Boolean(searchNorm) && filteredMySkus.length === 0 && data && data.my_skus.length > 0;
+  const noCompetitorMatch =
+    tab === "competitors" && Boolean(searchNorm) && filteredCompetitorSkus.length === 0 && data && data.competitor_skus.length > 0;
+  const showNoMatchState = Boolean(noMySkuMatch || noCompetitorMatch);
 
   // ── CONFIG SCREEN ────────────────────────────────────────────────────────
 
@@ -359,16 +374,46 @@ export default function BrandMonitorDashboard() {
               ))}
             </div>
 
-            <div className="border border-white/10 rounded-xl p-4 bg-[var(--cm-surface-card)]">
-              {tab === "my-skus" && (
-                <BrandSkuTable skus={data.my_skus} hasPvp={hasPvp} />
-              )}
-              {tab === "competitors" && (
-                <BrandCompetitorTable
-                  myBrand={brand}
-                  mySkus={data.my_skus}
-                  competitorSkus={data.competitor_skus}
+            {(tab === "my-skus" || tab === "competitors") && (
+              <div className="mb-3 relative w-full sm:w-72">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar producto por nombre…"
+                  aria-label="Buscar producto por nombre"
+                  className="w-full bg-[var(--cm-surface-container)] border border-white/10 rounded px-3 py-2 text-sm text-[var(--cm-ink)] focus:outline-none focus:border-[var(--cm-data)]/50 transition-colors"
                 />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    aria-label="Limpiar búsqueda"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--cm-text-secondary)] hover:text-[var(--cm-ink)] text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="border border-white/10 rounded-xl p-4 bg-[var(--cm-surface-card)]">
+              {showNoMatchState ? (
+                <p className="text-[var(--cm-text-secondary)] text-sm py-8 text-center">
+                  Ningún producto coincide con &ldquo;{search}&rdquo;.
+                </p>
+              ) : (
+                <>
+                  {tab === "my-skus" && (
+                    <BrandSkuTable skus={filteredMySkus} hasPvp={hasPvp} />
+                  )}
+                  {tab === "competitors" && (
+                    <BrandCompetitorTable
+                      myBrand={brand}
+                      mySkus={data.my_skus}
+                      competitorSkus={filteredCompetitorSkus}
+                    />
+                  )}
+                </>
               )}
               {tab === "promos" && (
                 promoLoading ? (
