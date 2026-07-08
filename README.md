@@ -67,9 +67,9 @@ market intel brief --country PE
 
 | Plan | Starter | Pro | Enterprise |
 |------|---------|-----|------------|
-| **Precio** | $9/mes | $49/mes · Anual $490 | A medida |
-| **Solicitudes/día** | 1,000 | 10,000 | Ilimitadas (negociado) |
-| **Solicitudes/min** | 60 | 300 | Ilimitadas |
+| **Precio** | $9/mes (prueba gratis 7 días) | $49/mes · Anual $490 | A medida |
+| **Solicitudes/día** | 5,000 | 10,000 | Ilimitadas (negociado) |
+| **Solicitudes/min** | 120 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
 | **Intel** | — | Ilimitado | Ilimitado + white-label |
 | **Alertas de precio** | — | ✅ Hasta 10 (email) | Ilimitadas (email + webhook) |
@@ -142,9 +142,9 @@ market intel brief --country PE
 
 | Plan | Starter | Pro | Enterprise |
 |------|---------|-----|------------|
-| **Price** | $9/mo | $49/mo · Annual $490 | Custom |
-| **Requests/day** | 1,000 | 10,000 | Unlimited (negotiated) |
-| **Requests/min** | 60 | 300 | Unlimited |
+| **Price** | $9/mo (7-day free trial) | $49/mo · Annual $490 | Custom |
+| **Requests/day** | 5,000 | 10,000 | Unlimited (negotiated) |
+| **Requests/min** | 120 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
 | **Intel** | — | Unlimited | Unlimited + white-label |
 | **Price alerts** | — | ✅ Up to 10 (email) | Unlimited (email + webhook) |

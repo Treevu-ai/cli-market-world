@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
-import FreeSignupModal from "@/components/FreeSignupModal";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
-import { MARKET_STATS } from "@/lib/marketStats";
 import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 import { redirectLegacyProcureCheckout } from "@/lib/procureCheckoutUrl";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
@@ -24,9 +22,9 @@ import {
 import { usePaymentsChannels, usePricingBillingFootnote } from "@/lib/useBillingCopy";
 import PaymentReturnBanner, { readPaymentReturnState } from "@/components/PaymentReturnBanner";
 import {
-  BUILD_TIER_FREE,
   BUILD_TIER_STARTER,
   BUILD_TIER_PRO,
+  TRIAL_DAYS,
   formatReqLimit,
 } from "@/lib/buildPricingTiers";
 import type { SpokeIcp } from "@/lib/spokeConfig";
@@ -57,26 +55,15 @@ const FEATURE_COUNT = 5;
 
 const tiers: Tier[] = [
   {
-    name: BUILD_TIER_FREE.name,
-    price: "$0",
-    period_es: "sin tarjeta",
-    period_en: "no card",
-    f_es: BUILD_TIER_FREE.features_es,
-    f_en: BUILD_TIER_FREE.features_en,
-    cta_es: "Empezar gratis",
-    cta_en: "Start free",
-    href: MARKET_STATS.pypiUrl,
-  },
-  {
     name: BUILD_TIER_STARTER.name,
     price: `$${BUILD_TIER_STARTER.priceUsd}`,
     latamPrice: BUILD_TIER_STARTER.latamPricePen,
-    period_es: "/ mes · 14 días de prueba",
-    period_en: "/ mo · 14-day trial",
+    period_es: `/ mes · ${TRIAL_DAYS} días de prueba`,
+    period_en: `/ mo · ${TRIAL_DAYS}-day trial`,
     f_es: BUILD_TIER_STARTER.features_es,
     f_en: BUILD_TIER_STARTER.features_en,
-    cta_es: "Prueba gratis 14 días",
-    cta_en: "Free 14-day trial",
+    cta_es: `Prueba gratis ${TRIAL_DAYS} días`,
+    cta_en: `Free ${TRIAL_DAYS}-day trial`,
     checkoutKind: { type: "build-starter" },
   },
   {
@@ -133,7 +120,7 @@ const tiers: Tier[] = [
 ];
 
 const BUILD_VISIBLE_TIERS = tiers.filter((t) =>
-  ["Free", "Starter", "Pro", "Enterprise"].includes(t.name),
+  ["Starter", "Pro", "Enterprise"].includes(t.name),
 );
 // cli-market.dev publicly shows only the developer ("build") line. The Procure
 // audience panel still renders when reached via ?audience=procure (checkout /
@@ -269,7 +256,6 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
   const [audience, setAudience] = useState<PricingAudience>(() =>
     typeof window !== "undefined" ? resolvePricingAudience() : "build",
   );
-  const [freeModalOpen, setFreeModalOpen] = useState(false);
   const paymentsLabel = usePaymentsChannels(isES);
   const billingFootnote = usePricingBillingFootnote(isES);
 
@@ -422,7 +408,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-4">
             {isES ? (
               <>
-                Free, Starter, Pro y Enterprise — límites y facturación en{" "}
+                Starter, Pro y Enterprise — límites y facturación en{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -430,7 +416,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
               </>
             ) : (
               <>
-                Free, Starter, Pro, and Enterprise — limits and billing in{" "}
+                Starter, Pro, and Enterprise — limits and billing in{" "}
                 <a href="/docs#billing" className="text-[var(--cm-mint)] underline hover:no-underline">
                   /docs#billing
                 </a>
@@ -442,8 +428,6 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           <p className="text-xs text-[var(--cm-on-surface-variant)]/60 landing-content-narrow leading-relaxed mb-14">
             {billingFootnote}{" "}
           </p>
-
-          <FreeSignupModal open={freeModalOpen} onClose={() => setFreeModalOpen(false)} />
 
           <div className="border-t border-[var(--cm-outline-variant)]/30 pt-12 text-center">
             <p className="text-base text-[var(--cm-on-surface-variant)] mb-4">

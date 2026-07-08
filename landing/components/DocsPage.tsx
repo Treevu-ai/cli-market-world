@@ -9,9 +9,9 @@ import { usePaymentsChannels } from "@/lib/useBillingCopy";
 import PrereqBlock from "@/components/PrereqBlock";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import {
-  BUILD_TIER_FREE,
   BUILD_TIER_STARTER,
   BUILD_TIER_PRO,
+  TRIAL_DAYS,
   formatReqLimit,
 } from "@/lib/buildPricingTiers";
 
@@ -145,30 +145,23 @@ export default function DocsPage() {
               `CLI Market delivers verified retail prices via REST and CLI. Built for autonomous agents and commercial teams that need spreads, basket, and inflation with ${MARKET_STATS.pricesRefreshHours} h refresh.`,
             )}
           </p>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="card-cyber header-strip p-6">
-              <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">FREE</h4>
-              <p className="font-mono text-lg text-[var(--cm-on-surface)]">{formatReqLimit(BUILD_TIER_FREE.reqLimit, isES, "short")}</p>
-              <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
-                {t("Lectura · búsqueda · API default.", "Read · search · default API profile.")}
-              </p>
-              <a href={MARKET_STATS.pypiUrl} className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block" target="_blank" rel="noopener noreferrer">
-                {MARKET_STATS.pipInstallCmd} →
-              </a>
-            </div>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="card-cyber header-strip p-6">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">STARTER</h4>
               <p className="font-mono text-lg text-[var(--cm-on-surface)]">
                 {formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short")} · USD {BUILD_TIER_STARTER.priceUsd}/mo
               </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
-                {t("1 clave API · export CSV · sin checkout retail.", "1 API key · CSV export · no retail checkout.")}
+                {t(
+                  `${TRIAL_DAYS} días de prueba gratis · 1 clave API · export CSV · sin checkout retail.`,
+                  `${TRIAL_DAYS}-day free trial · 1 API key · CSV export · no retail checkout.`,
+                )}
               </p>
               <a href="/build#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
                 {t("Elegir Starter →", "Choose Starter →")}
               </a>
             </div>
-            <div className="card-cyber header-strip p-6 energy-border-active sm:col-span-2 lg:col-span-1">
+            <div className="card-cyber header-strip p-6 energy-border-active">
               <h4 className="font-label-caps text-[var(--cm-mint)] mb-2">PRO</h4>
               <p className="font-mono text-lg text-[var(--cm-on-surface)]">
                 {formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short")} · USD {BUILD_TIER_PRO.priceUsd}/mo
@@ -237,8 +230,8 @@ market search "leche" --country PE
 market doctor`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4">
             {t(
-              "market init verifica API, crea cuenta gratuita si no hay sesión, muestra readiness %.",
-              "market init checks API, creates a free account if needed, shows readiness %.",
+              `market init verifica API, crea cuenta con prueba Starter de ${TRIAL_DAYS} días si no hay sesión, muestra readiness %.`,
+              `market init checks API, creates a ${TRIAL_DAYS}-day Starter trial account if needed, shows readiness %.`,
             )}
           </p>
         </section>
@@ -248,8 +241,8 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              "Cuenta gratuita vía CLI o HTTP. La API key (sk-...) se muestra una sola vez.",
-              "Free account via CLI or HTTP. The API key (sk-...) is shown once.",
+              `Cuenta con prueba Starter de ${TRIAL_DAYS} días vía CLI o HTTP. La API key (sk-...) se muestra una sola vez.`,
+              `${TRIAL_DAYS}-day Starter trial account via CLI or HTTP. The API key (sk-...) is shown once.`,
             )}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
@@ -277,8 +270,8 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              "Build (API/MCP): Free, Starter ($9/mes), Pro ($49/mes o $490/año).",
-              "Build (API/MCP): Free, Starter ($9/mo), Pro ($49/mo or $490/yr).",
+              `Build (API/MCP): Starter ($9/mes, ${TRIAL_DAYS} días gratis), Pro ($49/mes o $490/año).`,
+              `Build (API/MCP): Starter ($9/mo, ${TRIAL_DAYS}-day free trial), Pro ($49/mo or $490/yr).`,
             )}
           </p>
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
@@ -467,12 +460,9 @@ market --json doctor`}</CodeBlock>
           <PrereqBlock level="cli" isES={isES} compact />
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
             <li>
-              <strong className="text-[var(--cm-on-surface)]">Free</strong> — {formatReqLimit(BUILD_TIER_FREE.reqLimit, isES)} · 1{" "}
-              {t("clave API (lectura)", "API key (read)")} · {MARKET_STATS.mcpTools} MCP · {t("historial 7 días", "7-day history")}
-            </li>
-            <li>
               <strong className="text-[var(--cm-on-surface)]">Starter</strong> — {formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES)} ·{" "}
-              {BUILD_TIER_STARTER.apiKeys} {t("clave API", "API key")} · export CSV · USD {BUILD_TIER_STARTER.priceUsd}/mo
+              {BUILD_TIER_STARTER.apiKeys} {t("clave API", "API key")} · export CSV · USD {BUILD_TIER_STARTER.priceUsd}/mo ·{" "}
+              {t(`prueba gratis ${TRIAL_DAYS} días`, `${TRIAL_DAYS}-day free trial`)}
             </li>
             <li>
               <strong className="text-[var(--cm-on-surface)]">Pro</strong> — {formatReqLimit(BUILD_TIER_PRO.reqLimit, isES)} ·{" "}
@@ -512,8 +502,8 @@ market --json doctor`}</CodeBlock>
             </h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 max-w-md mx-auto">
               {t(
-                "Free para lectura · Starter $9 para export · Pro $49 para checkout retail.",
-                "Free for read · Starter $9 for export · Pro $49 for retail checkout.",
+                "Starter $9 para export · Pro $49 para checkout retail.",
+                "Starter $9 for export · Pro $49 for retail checkout.",
               )}
             </p>
             <a href="/build#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">

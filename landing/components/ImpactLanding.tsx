@@ -9,6 +9,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
+import { TRIAL_DAYS } from "@/lib/buildPricingTiers";
 
 const COVERAGE_ROWS = [
   { cc: "PE", stores: "Wong · Metro · Plaza Vea", noteEs: "supermercados · piloto FMCG orgánico", noteEn: "supermarkets · organic FMCG pilot" },
@@ -91,7 +92,7 @@ export default function ImpactLanding() {
           <a href="#intel">Intelligence</a>
           <a href="#planes">{isES ? "Planes" : "Plans"}</a>
           <Link href={PRICING_BUILD_HASH} className="impact-nav-cta">
-            {isES ? "Empezar gratis →" : "Start free →"}
+            {isES ? "Probar gratis →" : "Try it free →"}
           </Link>
         </div>
       </nav>
@@ -133,7 +134,7 @@ export default function ImpactLanding() {
           </p>
           <div className="impact-hero-ctas">
             <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-action">
-              {isES ? "Empezar con la API — gratis" : "Start with the API — free"}
+              {isES ? "Empezar con la API — prueba gratis" : "Start with the API — free trial"}
             </Link>
             <a href="#intel" className="impact-btn impact-btn-ghost">
               {isES ? "Ver Intelligence ↓" : "See Intelligence ↓"}
@@ -289,7 +290,7 @@ export default function ImpactLanding() {
           <div className="impact-plan impact-rv">
             <h3>Build · Starter</h3>
             <div className="impact-pr">
-              $9<small> / {isES ? "mes · 14 días gratis" : "mo · 14-day trial"}</small>
+              $9<small> / {isES ? `mes · ${TRIAL_DAYS} días gratis` : `mo · ${TRIAL_DAYS}-day trial`}</small>
             </div>
             <ul>
               <li>5,000 {isES ? "consultas / día" : "requests / day"}</li>
@@ -300,7 +301,7 @@ export default function ImpactLanding() {
               <li>{isES ? "Historial 7 días" : "7-day history"}</li>
             </ul>
             <Link href={PRICING_BUILD_HASH} className="impact-btn impact-btn-ghost impact-btn-block">
-              {isES ? "Prueba 14 días gratis →" : "Free 14-day trial →"}
+              {isES ? `Prueba ${TRIAL_DAYS} días gratis →` : `Free ${TRIAL_DAYS}-day trial →`}
             </Link>
           </div>
           <div className="impact-plan impact-rv">
