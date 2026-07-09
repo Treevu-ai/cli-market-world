@@ -235,6 +235,24 @@ def test_activation_blitz_june_10_channels(monkeypatch):
 
         pytest.skip("cli-market-content checkout required for activation schedule")
     monkeypatch.setenv("CLI_MARKET_CONTENT_DIR", str(content_dir))
+
+    import publish_pack as pp
+
+    cal = pp._load_calendar_channels_module()
+    # This exercises calendar_channels.py's Activation Blitz *routing* rules
+    # (ACTIVATION_DAYS -> which file/channel goes out on which campaign day),
+    # not the content team's real-world posting progress. The real Day-11.md
+    # etc. carry publish-tracking frontmatter that flips to "already
+    # published" once the content team actually posts it (see cli-market-
+    # content commit "mark published 2026-06-11") — at that point
+    # _is_already_published() correctly starts filtering it out for real
+    # publish_pack usage, but that's exactly what makes this specific
+    # historical-date routing assertion go stale over time through no fault
+    # of either repo. Force the gate open so the test keeps checking what it
+    # was written to check.
+    monkeypatch.setattr(cal, "_is_already_published", lambda fm: False)
+    monkeypatch.setattr(pp, "_load_calendar_channels_module", lambda: cal)
+
     items = channels_for_date(date(2026, 6, 10), 10)
     labels = [label for label, _ in items]
     paths = [path.name for _, path in items]
