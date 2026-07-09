@@ -122,8 +122,10 @@ def test_investigate_disabled_by_env(monkeypatch):
 
 
 def test_print_investigate_report_smoke():
+    import os
+
     from market_ui import print_investigate_report
     from rich.console import Console
 
-    console = Console(file=open("/dev/null", "w", encoding="utf-8"), force_terminal=True, width=100)
+    console = Console(file=open(os.devnull, "w", encoding="utf-8"), force_terminal=True, width=100)
     print_investigate_report(console, SAMPLE_REPORT)

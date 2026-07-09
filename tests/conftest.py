@@ -23,10 +23,43 @@ _TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
 os.environ["MARKET_DATA_DIR"] = _TEST_DATA_DIR
 os.environ["DATABASE_URL"] = ""
 os.environ.setdefault("MARKET_LEGACY_CHECKOUT", "1")
+os.environ.setdefault("PAYPAL_SANDBOX", "true")
 # Tests use username ``admin`` with tier fixtures — do not enable prod ops bypass.
-os.environ.pop("MARKET_API_TOKEN", None)
-os.environ.pop("MARKET_ADMIN_USERS", None)
-os.environ.pop("MARKET_ADMIN_API_KEYS", None)
+# Empty string, not pop(): a *missing* key is exactly what load_repo_env()
+# (patched to a no-op below, but kept here as defense in depth) treats as
+# "not yet set" and would happily fill in from the repo .env's real secrets.
+os.environ["MARKET_API_TOKEN"] = ""
+os.environ["MARKET_ADMIN_USERS"] = ""
+os.environ["MARKET_ADMIN_API_KEYS"] = ""
+# CLI_MARKET_API_KEY is the *other* key market_core.get_token() checks (after
+# MARKET_API_TOKEN) before falling back to the local session file. Unlike the
+# .env-sourced leaks above, this one isn't test- or repo-related at all: it's
+# a real, persisted Windows user-level env var (a developer's actual `market`
+# CLI login key) present in every fresh shell on a machine where `market
+# login` was ever run — nothing in this repo sets it. Any test asserting on
+# get_token()/session-based auth (test_cli_session.py) would silently pick up
+# a real personal API key instead of its own test fixture value.
+os.environ["CLI_MARKET_API_KEY"] = ""
+
+# Several ops/*.py scripts (e.g. activate_pro.py, imported by
+# run_activate_pro_cli() below and by test_pro_display_name.py/test_server.py)
+# call load_env.load_repo_env() at *module import time*, which reads the repo's
+# real .env (production DATABASE_URL, PAYPAL_SANDBOX=false, a real
+# MARKET_API_TOKEN, ...) and does `os.environ[key] = value` for any key not
+# already present — a plain assignment with no teardown, unlike
+# monkeypatch.setenv. The first test that imports one of those ops modules
+# permanently pollutes the shared process environment for the rest of the
+# pytest session: is_production_deploy() starts returning True (real secrets
+# leak into TestClient/lifespan startup checks), cascading into
+# "Production deploy detected but running on SQLite" RuntimeErrors and
+# downstream tempfile/fixture teardown failures for every test that runs
+# afterward — reproducible only via the full suite, never in isolation, which
+# is what made this hard to spot. Neutralize the loader itself instead of
+# chasing every individual key it might inject.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ops"))
+import load_env as _load_env  # noqa: E402
+
+_load_env.load_repo_env = lambda: None
 
 # Many test modules share one "admin" identity against this one session-wide
 # DB (see module docstring above) — dozens of requests across the whole

@@ -9,7 +9,20 @@ import time
 
 # Force UTF-8 for stdio on Windows so MCP JSON-RPC does not crash on Unicode
 # characters (e.g. →, ·) when the console code page is cp1252.
-if sys.platform == "win32":
+#
+# Skipped under pytest (PYTEST_CURRENT_TEST is set for the lifetime of a test
+# run): this reassignment is permanent and process-wide — module imports are
+# cached, so it only ever runs once per process. If the first import happens
+# while pytest's own per-test capture plugin has sys.stdout/stderr swapped to
+# a per-test buffer, this wraps *that* buffer and never lets go. When pytest
+# closes the buffer at the end of that one test, every subsequent test's
+# stdout/stderr access (capsys, TestClient, logging, ...) fails with
+# "ValueError: I/O operation on closed file" for the rest of the session —
+# reproducible only via the full suite (whichever test first imports
+# market_mcp, e.g. test_regression.py::test_market_mcp_imports), never in
+# isolation. Real `market-mcp` CLI/MCP server usage never sets this env var,
+# so production behavior is unchanged.
+if sys.platform == "win32" and "PYTEST_CURRENT_TEST" not in os.environ:
     import io
 
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)

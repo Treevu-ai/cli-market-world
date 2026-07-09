@@ -12,25 +12,36 @@ from market_server import app
 
 client = TestClient(app)
 
+# Dates relative to today (not hardcoded literals): pepy_summary() filters
+# downloads against date.today() at call time, so fixed past dates silently
+# fall outside the 7d/30d windows once enough real time passes — the 30d sum
+# goes to 0, and ci_share_pct_30d's `raw_30d <= 0: return None` guard kicks
+# in, breaking `assert data["ci_share_pct_30d"] is not None` with no code
+# change on either side. Offsets mirror the original literals' spread (a
+# day 8 days back, then three within the last 3 days).
+def _d(days_ago: int) -> str:
+    return (date.today() - timedelta(days=days_ago)).isoformat()
+
+
 MOCK_PEPY = {
     "id": "cli-market-world",
     "total_downloads": 11155,
     "versions": ["1.9.4", "1.6.0"],
     "downloads": {
-        "2026-06-01": {"1.9.4": 100, "1.6.0": 50},
-        "2026-06-06": {"1.9.4": 200},
-        "2026-06-07": {"1.9.4": 40},
-        "2026-06-08": {"1.9.4": 60},
+        _d(8): {"1.9.4": 100, "1.6.0": 50},
+        _d(3): {"1.9.4": 200},
+        _d(2): {"1.9.4": 40},
+        _d(1): {"1.9.4": 60},
     },
     "metadata": {"latest_version": "1.9.4"},
 }
 
 MOCK_PRO = {
     "downloads": {
-        "2026-06-01": {"1.9.4": 90, "1.6.0": 45},
-        "2026-06-06": {"1.9.4": 180},
-        "2026-06-07": {"1.9.4": 35},
-        "2026-06-08": {"1.9.4": 55},
+        _d(8): {"1.9.4": 90, "1.6.0": 45},
+        _d(3): {"1.9.4": 180},
+        _d(2): {"1.9.4": 35},
+        _d(1): {"1.9.4": 55},
     }
 }
 
