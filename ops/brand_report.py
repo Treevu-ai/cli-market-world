@@ -22,7 +22,6 @@ Uso:
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -40,7 +39,7 @@ if _env_file.exists():
 
 import httpx
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -738,7 +737,7 @@ def page_macro(brand: str, data: dict, month_label: str) -> list:
             f"Validar si {brand} está bajando al ritmo del mercado o quedando rezagado (caro)."
         )
     else:
-        insights.append(f"Mercado estable en precio. Sin señal de guerra de precios en la categoría.")
+        insights.append("Mercado estable en precio. Sin señal de guerra de precios en la categoría.")
 
     if promo > 20:
         insights.append(
@@ -761,9 +760,7 @@ def page_macro(brand: str, data: dict, month_label: str) -> list:
 def page_recomendaciones(brand: str, data: dict) -> list:
     """Página 8 — Recomendaciones de acción."""
     my_skus      = data.get("my_skus", [])
-    comp_skus    = data.get("competitor_skus", [])
     promo_events = data.get("promo_events", [])
-    macro        = data.get("macro", {})
     cv_brand     = data.get("dispersion_score", 0.0)
 
     content: list = [section_header("08", "Recomendaciones de Acción")]
@@ -953,7 +950,7 @@ def main() -> None:
 
     competitors = [c.strip() for c in args.competitors.split(",")] if args.competitors else None
 
-    print(f"\nCLI Market Brand Intelligence Report")
+    print("\nCLI Market Brand Intelligence Report")
     print(f"  Marca:   {args.brand}")
     print(f"  País:    {args.country}")
     print(f"  Período: {args.month or 'mes actual'}")

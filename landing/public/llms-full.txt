@@ -81,5 +81,5 @@ market_barcode, market_ticket
 ## Lines: supermercados farmacias electro moda hogar departamentales
 ## Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 ## Indicators: 34 catalogued (internal moat + OFF/Wikimedia/IMF/Eurostat/BCB/World Bank)
-## Build pricing: Free $0 · Starter $24/mo · Pro $39/mo · Pro Founding $29/mo (100 seats) · Enterprise custom
+## Build pricing: Starter $9/mo (7-day free trial) · Pro $49/mo · Pro Founding $29/mo (100 seats) · Enterprise custom
 ## License: MIT · pip install cli-market-world · cli-market.dev
