@@ -307,28 +307,17 @@ async def _search_products_live(body: SearchRequest):
     return _attach_source_health(response, stores)
 
 
-async def _compare_products(body: SearchRequest) -> dict:
-    """Cross-store comparison with brand+name fuzzy matching (no auth)."""
-    stores = _resolve_search_stores(body)
-    all_raw, errors = await _parallel_fetch_stores(stores, body.query, body.page, body.limit)
+def _match_key(p: dict) -> str:
+    name = re.sub(r"[^a-záéíóúñ0-9]", "", p["name"].lower())
+    return f"{p.get('brand', '').lower()}|{name}"
 
-    all_products = {}
-    for s, raw in all_raw.items():
-        all_products[s] = []
-        for p in raw:
-            try:
-                all_products[s].append(product_from_json(p, s))
-            except Exception:
-                pass
 
-    def match_key(p: dict) -> str:
-        name = re.sub(r"[^a-záéíóúñ0-9]", "", p["name"].lower())
-        return f"{p['brand'].lower()}|{name}"
-
+def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> list[dict]:
+    """Cross-store brand+name fuzzy matching, shared by the DB and live compare paths."""
     key_index: dict[str, dict] = {}
     for store, prods in all_products.items():
         for p in prods:
-            k = match_key(p)
+            k = _match_key(p)
             key_index.setdefault(k, {})[store] = p
 
     FUZZY_THRESHOLD = 0.70
@@ -347,7 +336,7 @@ async def _compare_products(body: SearchRequest) -> dict:
                     if kb in matched_b:
                         continue
                     score = difflib.SequenceMatcher(
-                        None, match_key(prod_a), match_key(key_index[kb][sb])
+                        None, _match_key(prod_a), _match_key(key_index[kb][sb])
                     ).ratio()
                     if score > best_score:
                         best_score = score
@@ -366,14 +355,83 @@ async def _compare_products(body: SearchRequest) -> dict:
                 comparison.append(
                     {
                         "name": rep["name"],
-                        "brand": rep["brand"],
+                        "brand": rep.get("brand", ""),
                         "prices": prices,
                         "best_store": best,
                         "best_price": prices[best],
                     }
                 )
-
     comparison.sort(key=lambda x: x["best_price"])
+    return comparison
+
+
+async def _compare_products(body: SearchRequest) -> dict:
+    if body.live:
+        return await _compare_products_live(body)
+    return _compare_products_db(body)
+
+
+def _compare_products_db(body: SearchRequest) -> dict:
+    """DB-backed compare: reads collector-refreshed price_snapshots instead
+    of live-scraping every store per request — same rationale and pattern
+    as _search_products_db."""
+    from market_core.market_db import name_like_clause
+
+    stores = _resolve_search_stores(body)
+    q_tokens = _query_tokens(body.query)
+    payload: dict = {"query": body.query, "comparison": [], "stores_compared": 0}
+    if body.country:
+        payload["country"] = body.country.strip().upper()
+    if not stores or not q_tokens:
+        return payload
+
+    like = name_like_clause()
+    like_clause = " OR ".join(like for _ in q_tokens)
+    store_placeholders = ",".join("?" for _ in stores)
+    candidate_cap = min(500, body.limit * 20)
+
+    db = get_db()
+    try:
+        rows = db.execute(
+            f"""
+            SELECT product_id, name, brand, price, store
+            FROM price_snapshots
+            WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
+            ORDER BY price ASC
+            LIMIT ?
+            """,
+            (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
+        ).fetchall()
+    finally:
+        db.close()
+
+    all_products: dict[str, list[dict]] = {}
+    for r in rows:
+        row = dict(r)
+        if not _is_relevant(row.get("name", ""), q_tokens):
+            continue
+        all_products.setdefault(row["store"], []).append(row)
+
+    payload["comparison"] = _fuzzy_compare(all_products, stores)
+    payload["stores_compared"] = len(all_products)
+    return _attach_source_health(payload, list(all_products.keys()) or stores)
+
+
+async def _compare_products_live(body: SearchRequest) -> dict:
+    """Live per-store scrape (unchanged behavior). Opt in via live=true."""
+    stores = _resolve_search_stores(body)
+    all_raw, errors = await _parallel_fetch_stores(stores, body.query, body.page, body.limit)
+
+    all_products = {}
+    for s, raw in all_raw.items():
+        all_products[s] = []
+        for p in raw:
+            try:
+                all_products[s].append(product_from_json(p, s))
+            except Exception:
+                pass
+
+    comparison = _fuzzy_compare(all_products, stores)
     payload: dict = {"query": body.query, "comparison": comparison, "stores_compared": len(all_raw)}
     if body.country:
         payload["country"] = body.country.strip().upper()
@@ -390,6 +448,8 @@ async def _compare_products(body: SearchRequest) -> dict:
 async def compare_products(body: SearchRequest, authorization: str | None = Header(None)):
     """Compare prices for a single product across multiple stores using
     brand+name fuzzy matching. Returns one ranked match per store with price and URL.
+    Prices are shelf data refreshed every 4h — never scraped on demand (pass
+    live=true to force a per-store scrape instead; slower and best-effort).
     Use when you need the cheapest store for a specific product. For a full
     multi-item basket use POST /v1/basket/compare instead."""
     username = require_api_key(authorization)
