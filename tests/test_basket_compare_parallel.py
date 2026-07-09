@@ -51,6 +51,7 @@ def test_basket_compare_fetches_items_concurrently_not_sequentially(two_test_sto
     body = search_mod.BasketRequest(
         items=[{"name": "leche gloria"}, {"name": "arroz costeño"}],
         stores=["store_a", "store_b"],
+        live=True,  # exercise the live per-item scrape path (default is now DB-backed)
     )
 
     async def _run():
