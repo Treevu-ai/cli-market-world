@@ -58,9 +58,11 @@ def test_search_with_store_filter():
 
 
 def test_search_errors_in_partial_response():
+    # live=true exercises the per-store scrape path (_parallel_fetch_stores);
+    # the default path now reads price_snapshots and has no per-store errors.
     errors = [{"store": "somestore", "error": "timeout"}]
     with patch("routers.search._parallel_fetch_stores", new=AsyncMock(return_value=({}, errors))):
-        r = client.post("/products/search", json={"query": "aceite"}, headers=_AUTH)
+        r = client.post("/products/search", json={"query": "aceite", "live": True}, headers=_AUTH)
     assert r.status_code == 200
     data = r.json()
     assert data.get("partial") is True

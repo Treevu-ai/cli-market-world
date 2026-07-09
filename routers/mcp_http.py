@@ -783,7 +783,15 @@ _TOOLS = [
 
 # ── Tool execution ────────────────────────────────────────────────────────────
 
-_SLOW_TOOLS = frozenset({"market_basket", "market_optimize_purchase", "market_cart", "market_checkout"})
+_SLOW_TOOLS = frozenset({
+    "market_basket", "market_optimize_purchase", "market_cart", "market_checkout",
+    # market_search/market_compare default to the fast DB-backed path (see
+    # routers/search.py) but callers can pass live=true for a per-store
+    # scrape, and /products/compare always scrapes live — give both the same
+    # 60s headroom as the other DB-fallback tools instead of a 20s timeout
+    # that was shorter than typical live-scrape latency (18-34s observed).
+    "market_search", "market_compare",
+})
 
 
 async def _call_tool(name: str, args: dict, token: str) -> dict:
