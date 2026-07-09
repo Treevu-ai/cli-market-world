@@ -94,7 +94,7 @@ export default function HouseholdDashboard() {
               <p className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/50">
                 ¿No tienes key?{" "}
                 <a href="/docs#api-key" className="text-[var(--cm-mint)] hover:underline">
-                  Crea tu cuenta gratis →
+                  Prueba gratis 7 días →
                 </a>
               </p>
             </div>
