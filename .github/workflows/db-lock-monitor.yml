@@ -1,0 +1,54 @@
+name: DB Lock & Collector Freshness Monitor
+
+on:
+  schedule:
+    # Every 15 min — catches stuck idle-in-transaction sessions (like the
+    # 2026-07-09 backfill incident) fast, before they block the collector
+    # for an entire 4h cycle.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      max_idle_minutes:
+        description: "Alert if a session is idle-in-transaction longer than N minutes"
+        required: false
+        default: "5"
+      max_stale_hours:
+        description: "Alert if the collector hasn't run in N hours"
+        required: false
+        default: "6"
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -q httpx psycopg2-binary
+
+      - name: Run DB lock / collector freshness check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PG_SSL_MODE: ${{ secrets.PG_SSL_MODE || 'prefer' }}
+          MARKET_API_URL: https://cli-market-api.fly.dev
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ALERTAS: ${{ secrets.SLACK_CHANNEL_ALERTAS || vars.SLACK_CHANNEL_ALERTAS }}
+        run: |
+          python3 ops/db_lock_monitor.py --slack \
+            --max-idle-minutes "${{ github.event.inputs.max_idle_minutes || '5' }}" \
+            --max-stale-hours "${{ github.event.inputs.max_stale_hours || '6' }}"
+        # Exit code 1 = problem detected — mark as warning (Slack alert already
+        # sent above), not a hard CI failure.
+        continue-on-error: true
+        id: monitor
+
+      - name: Surface warning in Actions UI
+        if: steps.monitor.outcome == 'failure'
+        run: |
+          echo "::warning::DB lock or collector staleness detected — check Slack #alertas for details"
