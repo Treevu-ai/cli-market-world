@@ -95,7 +95,7 @@ Claude Desktop (HTTP MCP):
 
 ## Billing (Build)
 
-- Free: `market register` · Starter/Pro: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)
+- `market register` starts a 7-day free trial of Starter · Starter/Pro checkout: POST /billing/pro-checkout (PayPal · Mercado Pago · Yape/Plin)
 - Plans: starter | pro | pro_founding | pro_annual · Pro Founding promo: founding100
 - CLI: `market upgrade` → POST /billing/paypal
 - After pay: `market whoami` · `market account`

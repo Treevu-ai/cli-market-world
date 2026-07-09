@@ -6,6 +6,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { recordPipInstallIntent } from "@/lib/funnel";
 import { PRICING_BUILD_HASH } from "@/lib/siteNav";
+import { TRIAL_DAYS } from "@/lib/buildPricingTiers";
 
 type Tab = "python" | "curl";
 
@@ -129,7 +130,7 @@ export default function ApiShowcase() {
               onClick={() => recordPipInstallIntent("landing_api_showcase")}
               className="inline-flex items-center rounded-full bg-[#533afd] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#4434d4] transition-colors"
             >
-              {isES ? "Probar 14 días gratis →" : "Free 14-day trial →"}
+              {isES ? `Probar ${TRIAL_DAYS} días gratis →` : `Free ${TRIAL_DAYS}-day trial →`}
             </a>
           </motion.div>
 

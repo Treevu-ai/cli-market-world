@@ -567,10 +567,10 @@ def _dashboard_data():
 
     seen_lines: dict[str, dict] = {}
     for r in cheapest_by_line:
-        line_id = r.get("line") or ""
+        item = dict(r)
+        line_id = item.get("line") or ""
         if not line_id:
             continue
-        item = dict(r)
         item["line_name"] = canonical_line_name(line_id)
         item["avg_price_usd"] = price_to_usd(float(item.get("avg_price") or 0), item.get("currency") or "")
         usd = item["avg_price_usd"] or float("inf")

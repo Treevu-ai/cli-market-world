@@ -203,8 +203,8 @@ export default function CostOfLivingSection() {
           </h2>
           <p className="text-center text-sm text-[var(--cm-on-surface-variant)] max-w-lg mx-auto mb-8">
             {isES
-              ? "Affordability score, sustitutos y canasta optimizada vienen con tu plan CLI Build — Free, Starter o Pro."
-              : "Affordability score, substitutes, and basket optimization come with your CLI Build plan — Free, Starter, or Pro."}
+              ? "Affordability score, sustitutos y canasta optimizada vienen con tu plan CLI Build — Starter o Pro."
+              : "Affordability score, substitutes, and basket optimization come with your CLI Build plan — Starter or Pro."}
           </p>
           <div className="text-center">
             <a href="/build#pricing" className="btn-mint inline-block">

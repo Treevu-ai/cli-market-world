@@ -34,6 +34,7 @@ from market_core import (
     db_save_user,
     get_db,
 )
+from market_billing import TRIAL_DAYS, db_set_subscription
 from server_deps import (
     check_auth_brute_force,
     check_rate_limit,
@@ -237,6 +238,13 @@ def verify_email(body: VerifyEmailRequest):
     # Registration verified — create user
     username = f"user-{uuid.uuid4().hex[:12]}"
     db_save_user(username, hash_password(uuid.uuid4().hex), email=email)
+    # No free plan — registration starts a time-limited Starter trial. It
+    # expires back down to the "free" tier's (minimal) limits automatically
+    # via db_get_subscription's existing expiry check (market_billing.py) —
+    # no separate downgrade cron needed. Without this call, a user here got
+    # NO subscription row at all and silently fell back to TIERS["free"]
+    # (now the post-trial floor, 15 req/day) with no trial whatsoever.
+    db_set_subscription(username, "starter", expires_days=TRIAL_DAYS)
     result = db_create_api_key(username, "read_write", "register")
     try:
         from market_funnel import record_funnel_event

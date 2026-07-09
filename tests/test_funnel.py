@@ -146,7 +146,7 @@ def test_pam_journey_synthetic():
 
     who = client.get("/auth/whoami", headers=headers)
     assert who.status_code == 200
-    assert who.json().get("tier") == "free"
+    assert who.json().get("tier") == "starter"
 
     search = client.post(
         "/products/search",
@@ -158,6 +158,6 @@ def test_pam_journey_synthetic():
     acct = client.get("/auth/account?lang=en", headers=headers)
     assert acct.status_code == 200
     body = acct.json()
-    assert body["tier"] == "free"
+    assert body["tier"] == "starter"
     assert "usage" in body
     assert body["upgrade"]["next_tier"] == "pro"
