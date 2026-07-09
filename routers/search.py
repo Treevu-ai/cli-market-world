@@ -144,6 +144,11 @@ class BasketRequest(BaseModel):
     include_action_links: bool = False
     country: str = "PE"
     enveloped: bool = True
+    # Default reads price_snapshots via the DB-backed matcher (fast, <=4h
+    # old) regardless of include_tco/include_action_links. Set true to force
+    # the old live per-store-per-item scrape (source: "live" in the
+    # response) — O(stores*items) fan-out, can take 15-30s+ under load.
+    live: bool = False
 
 
 @router.post(
@@ -481,8 +486,11 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
     returns best_store and best_total so you can target the right retailer.
     Pass include_tco=true or include_action_links=true for Wave 4 cost analysis."""
     require_api_key(authorization)
-    # Wave 4: delegate to core's DB-based implementation for TCO / action links.
-    if body.include_tco or body.include_action_links:
+    # DB-backed path is the default (fast, reads collector-refreshed
+    # price_snapshots) — matches the fix already forced for the market_basket
+    # MCP tool (mcp_http.py always passed include_tco=True to reach this
+    # branch). live=true opts into the old per-item live scrape below.
+    if not body.live:
         from market_core.market_basket import build_basket_compare as _core_basket
 
         store_filter = {s for s in body.stores if s} if body.stores else None
