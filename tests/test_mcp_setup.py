@@ -1,6 +1,7 @@
 """P0 market mcp-setup command."""
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -11,7 +12,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import market_cli
 
 
-def test_detect_ide_cursor(monkeypatch):
+def test_detect_ide_cursor(monkeypatch, tmp_path):
+    # _detect_ide() first checks os.path.isdir(~/<ide-subdir>) for every IDE
+    # in _IDE_CONFIGS before ever looking at env vars — on a developer machine
+    # that has real ~/.codex, ~/.cursor, etc. from actually using those tools,
+    # that filesystem check wins and the CURSOR_TRACE_ID env var below is
+    # never reached. Point "~" at an empty tmp_path so only the env-var path
+    # this test is actually exercising can match.
+    monkeypatch.setattr(os.path, "expanduser", lambda p: str(tmp_path) if p == "~" else p)
     monkeypatch.delenv("WINDSURF_SESSION", raising=False)
     monkeypatch.setenv("CURSOR_TRACE_ID", "trace-1")
     assert market_cli._detect_ide() == "cursor"

@@ -42,6 +42,6 @@ def test_upgrade_payload_has_no_manual_transfer_key(monkeypatch):
 
 def test_no_manual_transfer_references_remain():
     import pathlib
-    source = pathlib.Path(market_cli.__file__).read_text()
+    source = pathlib.Path(market_cli.__file__).read_text(encoding="utf-8")
     for needle in ("manual_transfer", "manual-transfer", "manual_steps", "payment_mode", "payment_phone"):
         assert needle not in source, f"dead manual-transfer reference still present: {needle!r}"
