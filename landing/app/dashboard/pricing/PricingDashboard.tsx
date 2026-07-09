@@ -76,6 +76,17 @@ function fmtPrice(v: number | undefined, currency: string) {
   return `${currency} ${v.toFixed(2)}`;
 }
 
+type ScoreEntry = { score: number; label: string; confidence?: string };
+type ScoresResponse = { scores: Record<string, ScoreEntry> };
+type InflationResponse = {
+  avg_rpv_7d_pct: number;
+  metric_label: string;
+  period_note: string;
+};
+type ProcurementResponse = {
+  data: { signal: "buy_now" | "wait" | "monitor" | string; signal_reason: string };
+};
+
 function Chip({
   active,
   onClick,
@@ -118,20 +129,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </label>
       {children}
-    </div>
-  );
-}
-
-function ComingSoonPanel({ title, meta, note }: { title: string; meta: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--cm-outline-variant)]">
-        <h3 className="text-sm font-bold text-[var(--cm-on-surface)]">{title}</h3>
-        <span className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/60">{meta}</span>
-      </div>
-      <div className="p-5 text-sm text-[var(--cm-on-surface-variant)]">
-        {note}
-      </div>
     </div>
   );
 }
@@ -292,6 +289,73 @@ export default function PricingDashboard() {
     .filter((s) => s.promo_active && (s.discount ?? 0) >= alertThreshold)
     .sort((a, b) => (b.discount ?? 0) - (a.discount ?? 0))
     .slice(0, 8);
+
+  // ── Panorama: real composite scores + inflation + procurement signal ────
+  const [scores, setScores] = useState<Record<string, ScoreEntry> | null>(null);
+  const [inflation, setInflation] = useState<InflationResponse | null>(null);
+  const [procurement, setProcurement] = useState<ProcurementResponse["data"] | null>(null);
+  const [panoramaLoading, setPanoramaLoading] = useState(false);
+
+  useEffect(() => {
+    if (!confirmedKey) return;
+    setPanoramaLoading(true);
+    const headers = { Authorization: `Bearer ${confirmedKey}` };
+    Promise.all([
+      fetch(`${API_URL}/v1/intel/scores?country=${country}&line=${line}`, { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: ScoresResponse | null) => setScores(d?.scores ?? null))
+        .catch(() => setScores(null)),
+      fetch(`${API_URL}/v1/intel/inflation?country=${country}&line=${line}`, { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: InflationResponse | null) => setInflation(d))
+        .catch(() => setInflation(null)),
+      fetch(`${API_URL}/v1/intel/procurement-signal?country=${country}`, { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: ProcurementResponse | null) => setProcurement(d?.data ?? null))
+        .catch(() => setProcurement(null)),
+    ]).finally(() => setPanoramaLoading(false));
+  }, [confirmedKey, country, line]);
+
+  const SIGNAL_LABEL: Record<string, string> = { buy_now: "Buy now", wait: "Wait", monitor: "Monitor" };
+
+  // ── Fase 5: export current scope as CSV via POST /v1/data/export ────────
+  const [exportState, setExportState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const handleExport = useCallback(() => {
+    if (!confirmedKey) return;
+    setExportState("loading");
+    setExportError(null);
+    fetch(`${API_URL}/v1/data/export`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${confirmedKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ country, line, format: "csv", limit: 500 }),
+    })
+      .then(async (r) => {
+        const body = await r.json();
+        if (!r.ok) {
+          throw new Error(body?.detail || `HTTP ${r.status}`);
+        }
+        return body as { format: string; data: string; total: number };
+      })
+      .then((body) => {
+        const blob = new Blob([body.data], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `cli-market-${country}-${line}-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setExportState("done");
+        setTimeout(() => setExportState("idle"), 2500);
+      })
+      .catch((err) => {
+        setExportError(err instanceof Error ? err.message : "No se pudo exportar");
+        setExportState("error");
+      });
+  }, [confirmedKey, country, line]);
 
   return (
     <>
@@ -470,22 +534,102 @@ export default function PricingDashboard() {
 
               {/* ── Main ───────────────────────────────────────── */}
               <div className="min-w-0">
-                <div className="rounded-lg border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-low)] px-3.5 py-2.5 text-xs font-mono text-[var(--cm-on-surface-variant)] mb-6">
-                  Mostrando{" "}
-                  <b className="text-[var(--cm-on-surface)]">
-                    {selectedBrands.length ? selectedBrands.join(", ") : "todas las marcas"}
-                  </b>{" "}
-                  · {lineLabel} · <b className="text-[var(--cm-on-surface)]">{country}</b> ·{" "}
-                  {selectedStores.length ? `${selectedStores.length} tienda(s)` : "sin tiendas"} · últimos{" "}
-                  <b className="text-[var(--cm-on-surface)]">{windowDays} días</b>
+                <div className="flex items-start justify-between gap-3 mb-6">
+                  <div className="flex-1 rounded-lg border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-low)] px-3.5 py-2.5 text-xs font-mono text-[var(--cm-on-surface-variant)]">
+                    Mostrando{" "}
+                    <b className="text-[var(--cm-on-surface)]">
+                      {selectedBrands.length ? selectedBrands.join(", ") : "todas las marcas"}
+                    </b>{" "}
+                    · {lineLabel} · <b className="text-[var(--cm-on-surface)]">{country}</b> ·{" "}
+                    {selectedStores.length ? `${selectedStores.length} tienda(s)` : "sin tiendas"} · últimos{" "}
+                    <b className="text-[var(--cm-on-surface)]">{windowDays} días</b>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-none">
+                    <button
+                      type="button"
+                      onClick={handleExport}
+                      disabled={exportState === "loading"}
+                      className="text-xs font-mono font-semibold px-3.5 py-2.5 rounded-lg border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-low)] text-[var(--cm-on-surface)] hover:border-[var(--cm-mint)] disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {exportState === "loading" ? "Exportando…" : exportState === "done" ? "Exportado ✓" : "Exportar scope (CSV)"}
+                    </button>
+                    {exportState === "error" && exportError && (
+                      <span className="text-[11px] text-right text-[var(--cm-mint)] max-w-[220px]">{exportError}</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-6">
-                  <ComingSoonPanel
-                    title="Panorama"
-                    meta="market_intel_brief · market_scores"
-                    note="Fase 2: scores compuestos, presión inflacionaria y señal de procurement para el scope seleccionado."
-                  />
+                  {/* ── Panorama (real: /v1/intel/scores · /v1/intel/inflation · /v1/intel/procurement-signal) ── */}
+                  <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--cm-outline-variant)]">
+                      <h3 className="text-sm font-bold text-[var(--cm-on-surface)]">Panorama</h3>
+                      <span className="text-[11px] font-mono text-[var(--cm-on-surface-variant)]/60">
+                        {panoramaLoading ? "cargando…" : "scores compuestos"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[var(--cm-outline-variant)]">
+                      <div className="bg-[var(--cm-surface-high)] p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/60 font-bold">
+                          Agresividad de retail
+                        </div>
+                        <div className="text-2xl font-mono font-bold text-[var(--cm-on-surface)] mt-1.5">
+                          {scores?.retail_aggression ? scores.retail_aggression.score.toFixed(0) : "—"}
+                          <span className="text-xs text-[var(--cm-on-surface-variant)]/50">/100</span>
+                        </div>
+                        <div className="text-[11px] text-[var(--cm-on-surface-variant)] mt-1">
+                          {scores?.retail_aggression?.label ?? "sin datos"}
+                        </div>
+                      </div>
+                      <div className="bg-[var(--cm-surface-high)] p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/60 font-bold">
+                          Inflación de góndola (RPV)
+                        </div>
+                        <div
+                          className={`text-2xl font-mono font-bold mt-1.5 ${
+                            inflation && inflation.avg_rpv_7d_pct > 0 ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface)]"
+                          }`}
+                        >
+                          {inflation ? `${inflation.avg_rpv_7d_pct > 0 ? "↑" : "↓"} ${Math.abs(inflation.avg_rpv_7d_pct).toFixed(1)}%` : "—"}
+                        </div>
+                        <div className="text-[11px] text-[var(--cm-on-surface-variant)] mt-1">7d rolling · no es IPC oficial</div>
+                      </div>
+                      <div className="bg-[var(--cm-surface-high)] p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/60 font-bold">
+                          Señal de procurement
+                        </div>
+                        <div className="mt-1.5">
+                          {procurement ? (
+                            <span
+                              className={`inline-block text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${
+                                procurement.signal === "buy_now"
+                                  ? "bg-[var(--cm-mint)]/15 text-[var(--cm-mint)]"
+                                  : "bg-[var(--cm-surface-low)] text-[var(--cm-on-surface-variant)]"
+                              }`}
+                            >
+                              {SIGNAL_LABEL[procurement.signal] ?? procurement.signal}
+                            </span>
+                          ) : (
+                            <span className="text-2xl font-mono text-[var(--cm-on-surface-variant)]/40">—</span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-[var(--cm-on-surface-variant)] mt-1 line-clamp-2">
+                          {procurement?.signal_reason ?? "sin datos"}
+                        </div>
+                      </div>
+                      <div className="bg-[var(--cm-surface-high)] p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-wide text-[var(--cm-on-surface-variant)]/60 font-bold">
+                          Basket stress
+                        </div>
+                        <div className="text-2xl font-mono font-bold text-[var(--cm-on-surface)] mt-1.5">
+                          {scores?.basket_stress ? scores.basket_stress.score.toFixed(1) : "—"}
+                        </div>
+                        <div className="text-[11px] text-[var(--cm-on-surface-variant)] mt-1">
+                          {scores?.basket_stress?.label ?? "sin datos"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* ── Comparador de precios (real: /v1/brand-monitor) ──── */}
                   <div className="rounded-xl border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] overflow-hidden">

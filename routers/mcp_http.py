@@ -835,7 +835,10 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             basket_args = {"include_tco": True, **args}
             r = await client.post(f"{_API_BASE}/v1/basket/compare", json=basket_args, headers=headers)
         elif name == "market_procurement_signal":
-            r = await client.get(f"{_API_BASE}/v1/intel/basket-stress", params={"country": args.get("country")}, headers=headers)
+            # /v1/intel/basket-stress was never a real route (verified 404 in
+            # prod) — the actual endpoint is procurement-signal. This tool
+            # has had no test coverage, so the mismatch shipped silently.
+            r = await client.get(f"{_API_BASE}/v1/intel/procurement-signal", params={"country": args.get("country")}, headers=headers)
         elif name == "market_price_risk":
             r = await client.get(f"{_API_BASE}/v1/intel/alerts", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_favorites":
