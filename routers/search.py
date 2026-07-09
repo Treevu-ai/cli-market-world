@@ -118,6 +118,10 @@ class SearchRequest(BaseModel):
     country: str | None = None
     page: int = 1
     limit: int = PAGE_SIZE
+    # Default reads collector-refreshed price_snapshots (fast, <=4h old).
+    # Set true to force a live per-store scrape (slow: 15-30s+, can fail
+    # under load) when freshness matters more than latency.
+    live: bool = False
 
     @field_validator("query")
     @classmethod
@@ -151,7 +155,8 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
     e.g. "leche evaporada Gloria" or "arroz 5kg". Returns ranked matches with price,
     store name, stock status, and product URL. Covers 41 verified retailers across
     PE, AR, BR, MX, CO, CL, IT, FR. Prices are shelf data refreshed every 4h — never
-    scraped on demand. Prefer POST /v1/basket/compare when procuring multiple items;
+    scraped on demand (pass live=true to force a per-store scrape instead; slower
+    and best-effort). Prefer POST /v1/basket/compare when procuring multiple items;
     use this endpoint for single-item discovery or spot price checks."""
     username = require_api_key(authorization)
     try:
@@ -219,6 +224,63 @@ async def _parallel_fetch_stores(
 
 
 async def _search_products(body: SearchRequest):
+    if body.live:
+        return await _search_products_live(body)
+    return _search_products_db(body)
+
+
+def _search_products_db(body: SearchRequest) -> dict:
+    """DB-backed search: reads collector-refreshed price_snapshots (<=4h old)
+    instead of live-scraping every store per request. A live per-store fan-out
+    (still available via live=true) routinely took 15-30s+ against 38 stores
+    and could OOM the shared-cpu-1x API machine — the same class of problem
+    already fixed for market_basket by defaulting it to the DB path.
+    """
+    from market_core.market_db import name_like_clause
+
+    stores = _resolve_search_stores(body)
+    q_tokens = _query_tokens(body.query)
+    if not stores or not q_tokens:
+        save_search_query(body.query, body.line, body.store, 0)
+        return {"query": body.query, "results": [], "total": 0}
+
+    like = name_like_clause()
+    like_clause = " OR ".join(like for _ in q_tokens)
+    store_placeholders = ",".join("?" for _ in stores)
+    candidate_cap = min(500, body.limit * 20)
+
+    db = get_db()
+    try:
+        rows = db.execute(
+            f"""
+            SELECT product_id, name, brand, price, list_price, discount, store,
+                   store_name, currency, line, line_name, category, stock, url, confidence
+            FROM price_snapshots
+            WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
+            ORDER BY price ASC
+            LIMIT ?
+            """,
+            (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
+        ).fetchall()
+    finally:
+        db.close()
+
+    results: list[dict] = []
+    for r in rows:
+        row = dict(r)
+        if not _is_relevant(row.get("name", ""), q_tokens):
+            continue
+        row["id"] = row.pop("product_id")
+        results.append(row)
+
+    results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
+    save_search_query(body.query, body.line, body.store, len(results))
+
+    response: dict = {"query": body.query, "results": results, "total": len(results)}
+    return _attach_source_health(response, stores)
+
+
+async def _search_products_live(body: SearchRequest):
     stores = _resolve_search_stores(body)
     all_raw, errors = await _parallel_fetch_stores(stores, body.query, body.page, body.limit)
 
