@@ -3,9 +3,20 @@
 from __future__ import annotations
 
 import os
+import sys
 import tempfile
+from pathlib import Path
 
 import pytest
+
+# pytest_configure fires before pytest inserts rootdir onto sys.path (that
+# happens during collection), so a plain `import server_deps` here is only
+# reliable when pytest is invoked from a cwd that happens to already have
+# the repo root on sys.path (true locally, not guaranteed in CI). Add it
+# explicitly so the import below is robust regardless of invocation cwd.
+_REPO_ROOT = str(Path(__file__).resolve().parent.parent)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 # Must run before test modules import market_core (conftest loads first).
 _TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
