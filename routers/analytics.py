@@ -180,6 +180,19 @@ def analytics_brands(line: str | None = None, country: str | None = None, limit:
     if line:
         q += " AND line = ?"
         params.append(line)
+    if country:
+        # price_snapshots has no country column — derive it from store via STORES,
+        # same pattern as brand_intel._pe_stores_for_country. Previously the
+        # `country` param was accepted but silently ignored, so results were
+        # global-scope regardless of the filter — dominated by data-quality
+        # placeholder brand values ("Não Informado", "Genérico") and other
+        # countries' brands crowding out the ones a caller actually asked for.
+        store_keys = [s for s, sv in STORES.items() if sv.get("country", "").upper() == country.upper()]
+        if not store_keys:
+            db.close()
+            return {"brands": [], "total": 0}
+        q += f" AND store IN ({','.join('?' * len(store_keys))})"
+        params.extend(store_keys)
     q += " GROUP BY brand ORDER BY count DESC LIMIT ?"
     params.append(limit)
     rows = db.execute(q, params).fetchall()

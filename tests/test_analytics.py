@@ -142,6 +142,30 @@ def test_brands_with_line_filter():
     assert r.status_code == 200
 
 
+def test_brands_with_country_filter_excludes_other_countries():
+    # wong=PE, carrefour=AR. Previously `country` was accepted but never
+    # applied to the query, so both would appear regardless of the filter.
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('brand-filter-pe', 'wong', 'Wong', 'Producto PE', 'MarcaSoloPE', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('brand-filter-ar', 'carrefour', 'Carrefour AR', 'Producto AR', 'MarcaSoloAR', 5.0, 'ARS', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?country=PE&limit=50", headers=_AUTH)
+    assert r.status_code == 200
+    brands = {b["brand"] for b in r.json()["brands"]}
+    assert "MarcaSoloPE" in brands
+    assert "MarcaSoloAR" not in brands
+
+
 # ── GET /analytics/indicators ─────────────────────────────────────────────────
 
 def test_indicators_requires_auth():
