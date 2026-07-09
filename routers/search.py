@@ -314,7 +314,11 @@ async def _search_products_live(body: SearchRequest):
 
 def _match_key(p: dict) -> str:
     name = re.sub(r"[^a-záéíóúñ0-9]", "", p["name"].lower())
-    return f"{p.get('brand', '').lower()}|{name}"
+    # `p.get('brand', '')` only falls back to '' when the key is *absent* —
+    # rows with an explicit brand=NULL (a real, valid price_snapshots state,
+    # not just a test fixture gap) still pass None through and crash .lower().
+    brand = p.get("brand") or ""
+    return f"{brand.lower()}|{name}"
 
 
 def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> list[dict]:

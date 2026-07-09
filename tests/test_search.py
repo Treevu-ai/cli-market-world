@@ -36,8 +36,13 @@ def test_search_empty_query_returns_422():
 
 
 def test_search_returns_query_and_results_keys():
+    # live=true exercises the mocked per-store scrape path — the default
+    # path reads price_snapshots directly and ignores this mock, so
+    # asserting total==0 against it is only meaningful for the live path
+    # (and otherwise flakes on real "leche"-matching rows other tests seed
+    # into the shared DB).
     with patch("routers.search._parallel_fetch_stores", new=AsyncMock(return_value=({}, []))):
-        r = client.post("/products/search", json={"query": "leche"}, headers=_AUTH)
+        r = client.post("/products/search", json={"query": "leche", "live": True}, headers=_AUTH)
     assert r.status_code == 200
     data = r.json()
     assert "query" in data
