@@ -30,6 +30,9 @@ jobs:
       - name: Verify public copy (no stale 27-MCP / 61k references)
         run: python3 ops/verify_public_copy.py
 
+      - name: Verify cli-market-index pin consistency
+        run: pip install pyyaml && python3 ops/check_index_pin.py
+
   test:
     runs-on: ubuntu-latest
     needs: lint
