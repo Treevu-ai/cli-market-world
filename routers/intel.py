@@ -12,6 +12,8 @@ Endpoints:
   GET  /v1/intel/andean-panel               CAF Andean panel PE/BO/EC (P2)
   POST /v1/intel/refresh                    Trigger indicator recomputation
   POST /v1/intel/enrichment/refresh         Trigger enrichment-only refresh
+  GET  /v1/intel/macro                      Tipo de cambio + IPC Lima (BCRP, oficial)
+  POST /v1/intel/macro/refresh              Fetch latest BCRP tipo de cambio + IPC
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from market_core import STORES, get_db, price_to_usd
 from market_billing import db_get_subscription
 from market_security import validate_public_http_url
 from server_deps import require_api_key, require_pro, require_starter
+from index_gate import gov_collect_bcrp, gov_macro_snapshot
 from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
     build_intel_brief,
@@ -469,6 +472,34 @@ def refresh_enrichment(
         }
     finally:
         db.close()
+
+
+# ── Macro (Gov Connectors — BCRP) ────────────────────────────────────────────
+# specs/gov-connectors-prd.md — Golden Records sourced from Banco Central de
+# Reserva del Perú instead of retail scraping. Separate concept from RPV
+# above: BCRP's IPC is an official household consumption basket; RPV is
+# online shelf-price momentum. They deliberately measure different things.
+
+@router.get("/macro", summary="Tipo de cambio USD/PEN e IPC Lima Metropolitana (BCRP, oficial)")
+def get_macro(authorization: str | None = Header(None)):
+    """Latest official tipo de cambio (venta/compra) and IPC Lima Metropolitana
+    from BCRP — Peru's central bank. Use to contextualize PEN-denominated
+    prices, or as an official CPI reference point alongside the shelf-price
+    RPV signal from /v1/intel/inflation (CLI Market RPV ≠ CPI — see that
+    endpoint's disclaimer). Raw gov data — Free tier, per
+    specs/gov-connectors-prd.md DD-3 (derived indicators like RCLI are Pro)."""
+    require_api_key(authorization)
+    return gov_macro_snapshot()
+
+
+@router.post("/macro/refresh", summary="Fetch latest tipo de cambio + IPC from BCRP's series API")
+async def refresh_macro(authorization: str | None = Header(None)):
+    """Fetch tipo de cambio and IPC Lima from BCRP's documented series API and
+    persist as gov-sourced Golden Records. Unlike the retail collector cycle,
+    BCRP has no anti-bot protection and returns a handful of values — safe to
+    call on-demand rather than only on a schedule."""
+    require_api_key(authorization)
+    return await gov_collect_bcrp()
 
 
 # ── Enrichment ──────────────────────────────────────────────────────────────────

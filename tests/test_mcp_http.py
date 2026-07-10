@@ -50,3 +50,21 @@ def test_market_procurement_signal_hits_procurement_signal_route():
     called_url = mock_get.call_args.args[0]
     assert called_url == "https://cli-market-api.fly.dev/v1/intel/procurement-signal"
     assert "basket-stress" not in called_url
+
+
+def test_market_macro_hits_intel_macro_route():
+    fake_resp = MagicMock()
+    fake_resp.status_code = 200
+    fake_resp.json.return_value = {
+        "tipo_cambio": {"venta": {"price": 3.412}, "compra": {"price": 3.405}},
+        "ipc_lima": {"price": 120.292167},
+        "source": "bcrp_pe",
+    }
+
+    mock_get = AsyncMock(return_value=fake_resp)
+    with patch("httpx.AsyncClient.get", mock_get):
+        r = client.post("/mcp", json=_rpc_call("market_macro"), headers=_AUTH)
+
+    assert r.status_code == 200
+    called_url = mock_get.call_args.args[0]
+    assert called_url == "https://cli-market-api.fly.dev/v1/intel/macro"

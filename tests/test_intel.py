@@ -230,3 +230,59 @@ def test_enrichment_refresh_with_pro_returns_ok(pro_user):
     data = r.json()
     assert data["ok"] is True
     assert "enrichment_written" in data
+
+
+# ── GET /v1/intel/macro ───────────────────────────────────────────────────────
+
+def test_macro_requires_auth():
+    r = client.get("/v1/intel/macro")
+    assert r.status_code == 401
+
+
+def test_macro_returns_bcrp_snapshot(monkeypatch):
+    fake_snapshot = {
+        "tipo_cambio": {
+            "venta": {"price": 3.412, "observation_date": "2026-07-08"},
+            "compra": {"price": 3.405, "observation_date": "2026-07-08"},
+        },
+        "ipc_lima": {"price": 120.292167, "observation_date": "2026-06-01"},
+        "source": "bcrp_pe",
+    }
+    monkeypatch.setattr("routers.intel.gov_macro_snapshot", lambda: fake_snapshot)
+    r = client.get("/v1/intel/macro", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["source"] == "bcrp_pe"
+    assert data["tipo_cambio"]["venta"]["price"] == 3.412
+    assert data["ipc_lima"]["price"] == 120.292167
+
+
+def test_macro_degrades_gracefully_when_no_data_yet(monkeypatch):
+    monkeypatch.setattr(
+        "routers.intel.gov_macro_snapshot",
+        lambda: {"tipo_cambio": None, "ipc_lima": None, "source": "bcrp_pe"},
+    )
+    r = client.get("/v1/intel/macro", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["tipo_cambio"] is None
+    assert data["ipc_lima"] is None
+
+
+# ── POST /v1/intel/macro/refresh ─────────────────────────────────────────────
+
+def test_macro_refresh_requires_auth():
+    r = client.post("/v1/intel/macro/refresh")
+    assert r.status_code == 401
+
+
+def test_macro_refresh_calls_gov_collect_bcrp(monkeypatch):
+    async def fake_collect():
+        return {"collected": 3, "resolved": 3, "registry_size": 3}
+
+    monkeypatch.setattr("routers.intel.gov_collect_bcrp", fake_collect)
+    r = client.post("/v1/intel/macro/refresh", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["collected"] == 3
+    assert data["resolved"] == 3
