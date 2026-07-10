@@ -9,28 +9,35 @@ export type NavItem = {
 };
 
 /**
- * Top nav — ICP hub (Build · Procure · Intelligence · Retailers · Mi hogar).
+ * Top nav — ICP hub (Build · Procure · Intelligence · Retailers).
  *
  * Brand Monitor (/brand/demo) is intentionally not listed here — it has no
  * case study or public pricing yet, so it stayed live-but-unlisted to avoid
  * nav noise; it's still reachable by direct link. Revisit once it has its
  * own positioning.
  *
- * Cost of Living (/cost-of-living) was removed from top nav 2026-07-10 —
- * same treatment as Brand Monitor. It doesn't map to any of the 6 GTM
- * audiences (Devs/Agent builders, Abastecimiento, Comercial/Ventas,
- * Pricing/Revenue, Growth marketing, Retailers — ver cli-market-content
- * strategy/audience-segmentation-plan.md) and was competing for attention
- * as a "peer product" next to Build/Procure/Intelligence when it's really a
- * consumer-facing demo of the same underlying API. Page + route + footer
- * link kept intact — not deleted, just demoted out of primary nav.
+ * Cost of Living (/cost-of-living) and Mi hogar / household
+ * (/dashboard/household) were removed from top nav 2026-07-10 — same
+ * treatment as Brand Monitor. Neither maps to any of the 6 GTM audiences
+ * (Devs/Agent builders, Abastecimiento, Comercial/Ventas, Pricing/Revenue,
+ * Growth marketing, Retailers — ver cli-market-content
+ * strategy/audience-segmentation-plan.md); both are consumer-facing demos
+ * of the same underlying API that were competing for attention as "peer
+ * products" next to Build/Procure/Intelligence. Pages + routes + footer
+ * links kept intact — not deleted, just demoted out of primary nav.
+ *
+ * TODO (visibilidad de audiencias): hoy el nav solo distingue 2 de las 6
+ * audiencias como destino propio (Build=Devs, Procure=Abastecimiento) --
+ * Intelligence mezcla Comercial/Ventas y Pricing/Revenue en una sola
+ * pagina sin diferenciarlas, y Revenue strategy / Growth marketing no
+ * tienen ninguna presencia en el sitio. Ver conversacion 2026-07-10 en
+ * cli-market-content para el plan de visibilizarlas.
  */
 export const TOP_NAV: NavItem[] = [
   { id: "build", es: "Build", en: "Build", href: "/build" },
   { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
   { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
   { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
-  { id: "household", es: "Mi hogar", en: "My household", href: "/dashboard/household" },
 ];
 
 /** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */
