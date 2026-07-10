@@ -5,6 +5,30 @@ import { motion, useInView } from "framer-motion";
 import { useLang } from "@/lib/LanguageContext";
 import CommercePulseEmbed from "@/components/CommercePulseEmbed";
 
+const AUDIENCE_LENSES = (isES: boolean) => [
+  {
+    id: "comercial",
+    label: isES ? "Comercial / Ventas" : "Sales / Commercial",
+    copy: isES
+      ? "Sepa si su precio está sobre o bajo el mercado antes de negociar — benchmarking competitivo por categoría."
+      : "Know if your price is above or below market before you negotiate — competitive benchmarking by category.",
+  },
+  {
+    id: "pricing-revenue",
+    label: isES ? "Pricing / Revenue" : "Pricing / Revenue",
+    copy: isES
+      ? "Spreads e inflación por categoría, listos para su modelo de forecast — señal de mercado antes que el IPC oficial."
+      : "Category spreads and inflation, ready for your forecast model — market signal ahead of official CPI.",
+  },
+  {
+    id: "growth",
+    label: isES ? "Growth / Prensa" : "Growth / Press",
+    copy: isES
+      ? "Datos verificados y citables para su próxima campaña o nota de prensa, con atribución — sin costo de research propio."
+      : "Verified, citable data for your next campaign or press piece, with attribution — no research cost of your own.",
+  },
+];
+
 const PILOT_TIERS = (isES: boolean) => [
   {
     name: "Pilot S",
@@ -74,6 +98,22 @@ export default function IntelligenceSection() {
                 ? "Lo que ves arriba en el pulso semanal es la punta del iceberg: así se ve el acceso completo — spreads en vivo, alertas de inflación por categoría, y un pilot con SLA para tu equipo."
                 : "What you see above in the weekly pulse is the tip of the iceberg: here's what full access looks like — live spreads, category inflation alerts, and an SLA-backed pilot for your team."}
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {AUDIENCE_LENSES(isES).map((lens) => (
+              <div
+                key={lens.id}
+                className="card-cyber rounded-xl p-5 text-left border border-[var(--cm-outline-variant)]/25"
+              >
+                <p className="text-xs font-bold uppercase tracking-widest text-[var(--cm-mint)]">
+                  {lens.label}
+                </p>
+                <p className="mt-2 text-xs text-[var(--cm-on-surface-variant)] leading-relaxed">
+                  {lens.copy}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
