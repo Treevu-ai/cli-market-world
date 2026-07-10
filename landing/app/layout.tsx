@@ -33,11 +33,11 @@ const ogVideoWebm = `${siteUrl}/cli-market-hero.webm`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CLI Market — Inteligencia de precios retail en LATAM",
+    default: "CLI Market — Infraestructura de comercio para agentes de IA",
     template: "%s | CLI Market",
   },
   description:
-    "Precios de góndola verificados en LATAM. Elige Build (API/MCP), Procure (compras) o Intelligence (señales) sobre la misma data.",
+    "Precios de góndola verificados en LATAM, con interfaz de agente: CLI, API y MCP. Elige Build (API/MCP), Procure (compras) o Intelligence (señales) sobre la misma data.",
   keywords: [
     "retail price intelligence LATAM",
     "commerce API for AI agents",
@@ -51,8 +51,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "CLI Market — Inteligencia de precios retail en LATAM",
-    description: `${MARKET_STATS.retailersPhraseEn}. Build (API/MCP), Procure (compras), Intelligence (señales). ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours.`,
+    title: "CLI Market — Infraestructura de comercio para agentes de IA",
+    description: `${MARKET_STATS.retailersPhraseEn}. CLI, API y MCP sobre una capa de datos verificada — Build (API/MCP), Procure (compras), Intelligence (señales). ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours.`,
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",
