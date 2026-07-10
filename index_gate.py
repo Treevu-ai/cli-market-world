@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from connectors.gov.adapters.bcrp import BCRPConnector
 from persistence.factory import create_store
 from services.index_service import IndexService
 
@@ -209,6 +210,56 @@ def infer_category(name: str) -> Optional[str]:
         return infer_canasta_item(name)
     except Exception:
         return None
+
+
+async def gov_collect_bcrp() -> Dict[str, Any]:
+    """Fetch + resolve BCRP macro series (tipo de cambio USD/PEN, IPC Lima)
+    into gov-sourced Golden Records. Safe to call on demand — unlike the
+    retail collector cycle, BCRP has no anti-bot protection and returns a
+    handful of rows, not thousands (specs/gov-connectors-prd.md Fase 1)."""
+    svc = _get_service()
+    connector = BCRPConnector()
+    try:
+        snapshots = await connector.collect()
+    except Exception as exc:
+        logger.warning("gov_collect_bcrp: fetch failed: %s", exc)
+        return {"collected": 0, "resolved": 0, "error": str(exc)}
+
+    resolved = 0
+    for snapshot in snapshots:
+        try:
+            result = svc.resolve_snapshot(snapshot.to_index_snapshot())
+            if result.product:
+                resolved += 1
+        except Exception as exc:
+            logger.debug("gov_collect_bcrp: resolve failed for %s: %s", snapshot.commodity_slug, exc)
+
+    logger.info("Gov collect (BCRP): %d fetched, %d resolved", len(snapshots), resolved)
+    return {"collected": len(snapshots), "resolved": resolved, "registry_size": svc.size}
+
+
+def gov_macro_snapshot() -> Dict[str, Any]:
+    """Latest tipo de cambio (venta/compra) + IPC Lima from gov-sourced
+    Golden Records. Never raises — callers get an empty-shaped response on
+    failure instead of a 500."""
+    try:
+        svc = _get_service()
+        tc_rows = svc.list_gov_observations(commodity_slug="tipo_cambio_usd_pen", limit=2)
+        ipc_rows = svc.list_gov_observations(commodity_slug="ipc_lima", limit=1)
+    except Exception as exc:
+        logger.warning("gov_macro_snapshot failed: %s", exc)
+        return {"tipo_cambio": None, "ipc_lima": None, "source": "bcrp_pe", "error": str(exc)}
+
+    by_price_type = {row["price_type"]: row for row in tc_rows}
+    return {
+        "tipo_cambio": (
+            {"venta": by_price_type.get("venta"), "compra": by_price_type.get("compra")}
+            if by_price_type
+            else None
+        ),
+        "ipc_lima": ipc_rows[0] if ipc_rows else None,
+        "source": "bcrp_pe",
+    }
 
 
 def _row_to_snapshot(row: Any) -> tuple[str, str, Dict[str, Any]]:

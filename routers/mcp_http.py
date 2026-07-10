@@ -219,6 +219,20 @@ _TOOLS = [
         },
     },
     {
+        "name": "market_macro",
+        "description": (
+            "Official tipo de cambio USD/PEN (compra/venta) and IPC Lima Metropolitana "
+            "from BCRP (Peru's central bank). PE only, for now. Distinct from "
+            "market_inflation, which is CLI Market's own shelf-price signal (RPV), "
+            "not an official CPI index — use market_macro when you need the "
+            "government's own inflation/exchange-rate numbers instead."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+    {
         "name": "market_intel_brief",
         "description": (
             "Aggregated market intelligence brief: composite scores, basket stress, "
@@ -816,6 +830,8 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.get(f"{_API_BASE}/v1/intel/inflation", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_scores":
             r = await client.get(f"{_API_BASE}/v1/intel/scores", params={"country": args.get("country")}, headers=headers)
+        elif name == "market_macro":
+            r = await client.get(f"{_API_BASE}/v1/intel/macro", headers=headers)
         elif name == "market_intel_brief":
             r = await client.get(f"{_API_BASE}/v1/intel/brief", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_stats":
