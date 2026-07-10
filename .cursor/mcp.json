@@ -1,7 +1,14 @@
 {
   "mcpServers": {
     "cli-market": {
-      "url": "https://cli-market-api.fly.dev/mcp?token=${env:MARKET_API_TOKEN}"
+      "command": "market-mcp",
+      "args": [],
+      "env": {
+        "MARKET_API_URL": "https://cli-market-api.fly.dev",
+        "MCP_TOOL_PROFILE": "default",
+        "MARKET_AGENT_ID": "cli_7a87d3b3297442c2988c",
+        "MARKET_API_TOKEN": "${env:MARKET_API_TOKEN}"
+      }
     }
   }
 }
