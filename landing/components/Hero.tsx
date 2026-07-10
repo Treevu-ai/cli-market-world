@@ -56,7 +56,7 @@ export default function Hero() {
             transition={{ duration: 0.4 }}
             className="inline-flex mb-4 stripe-tag-soft"
           >
-            {isES ? "INTELIGENCIA DE PRECIOS RETAIL EN LATAM" : "LATAM RETAIL PRICE INTELLIGENCE"}
+            {isES ? "INFRAESTRUCTURA DE COMERCIO PARA AGENTES DE IA" : "COMMERCE INFRASTRUCTURE FOR AI AGENTS"}
           </motion.span>
 
           <motion.h1
@@ -68,12 +68,12 @@ export default function Hero() {
             {isES ? (
               <>
                 <span className="text-[var(--cm-on-surface)]">Precios verificados. </span>
-                <span className="text-gradient-orange">Elige cómo los usas.</span>
+                <span className="text-gradient-orange">Hechos para que los use un agente.</span>
               </>
             ) : (
               <>
                 <span className="text-[var(--cm-on-surface)]">Verified prices. </span>
-                <span className="text-gradient-orange">Choose how you use them.</span>
+                <span className="text-gradient-orange">Built for an agent to use.</span>
               </>
             )}
           </motion.h1>
@@ -85,8 +85,8 @@ export default function Hero() {
             className="mt-4 text-base sm:text-lg max-w-[540px] mx-auto leading-relaxed text-[var(--cm-on-surface-variant)]"
           >
             {isES
-              ? "Una capa de data verificada — tres productos para construir, comprar o analizar."
-              : "One verified data layer — three products to build, buy, or analyze."}
+              ? "CLI, API y MCP sobre una sola capa de datos verificada. Elige cómo construyes, compras o analizas."
+              : "CLI, API, and MCP over one verified data layer. Choose how you build, buy, or analyze."}
           </motion.p>
 
           {mounted && (
