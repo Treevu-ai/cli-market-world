@@ -16,16 +16,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Fly.io: pass via `fly deploy --build-secret github_token=$GITHUB_TOKEN` — never as --build-arg
 # (build args get persisted in plaintext in `fly config show`; secret mounts don't).
 COPY requirements.txt .
+# NOTE: previously chained as `pip install ... && playwright ...; rm -f ...` --
+# under `set -e`, a failing command that is NOT the last element of an
+# `&&`/`||` list does not abort the script (POSIX AAND-OR-list exception).
+# That silently shipped an image with zero dependencies installed once
+# (2026-07-10 cli-market-collector outage, caused by an invalid build
+# secret failing the git clone for cli-market-index, which failed the
+# whole pip install -- but the build still reported success). Each
+# command now runs as its own statement so a failure here actually fails
+# the build.
 RUN --mount=type=secret,id=github_token set -eux; \
     TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)"; \
     if [ -n "${TOKEN}" ]; then \
       git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"; \
     fi; \
-    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt; \
     playwright install chromium; \
     rm -f /root/.gitconfig
 
-COPY collect_prices.py ./
+COPY collect_prices.py collector_schema.py price_snapshots_schema.py stock_history_schema.py ./
 
 ENV PYTHONUNBUFFERED=1
 CMD ["python", "collect_prices.py", "--daemon"]
