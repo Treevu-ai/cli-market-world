@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { API_URL } from "@/lib/api";
 
 type Item = { name: string; qty: number };
@@ -37,9 +37,16 @@ type ResultData = {
 
 type Props = { apiKey: string; country?: string };
 
+/** Imperative handle so a parent (e.g. Explorer's search results) can add an
+ *  item without BasketOptimizer needing to lift its items state up. */
+export type BasketOptimizerHandle = { addItem: (name: string, qty?: number) => void };
+
 const COUNTRIES = ["PE", "MX", "CO", "AR", "CL", "BO", "EC", "UY"];
 
-export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE" }: Props) {
+const BasketOptimizer = forwardRef<BasketOptimizerHandle, Props>(function BasketOptimizer(
+  { apiKey, country: defaultCountry = "PE" },
+  ref
+) {
   const [items, setItems] = useState<Item[]>([{ name: "", qty: 1 }]);
   const [country, setCountry] = useState(defaultCountry);
 
@@ -55,6 +62,15 @@ export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE"
 
   const removeItem = (i: number) =>
     setItems((prev) => prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev);
+
+  useImperativeHandle(ref, () => ({
+    addItem: (name: string, qty = 1) => {
+      setItems((prev) => {
+        const meaningful = prev.filter((it) => it.name.trim());
+        return [...meaningful, { name, qty }];
+      });
+    },
+  }));
 
   const run = async () => {
     const validItems = items.filter((it) => it.name.trim());
@@ -283,4 +299,6 @@ export default function BasketOptimizer({ apiKey, country: defaultCountry = "PE"
       )}
     </div>
   );
-}
+});
+
+export default BasketOptimizer;
