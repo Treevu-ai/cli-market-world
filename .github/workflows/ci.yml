@@ -79,7 +79,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.35"  # keep in sync with requirements.txt
+          pip install "cli-market-core==1.11.36"  # keep in sync with requirements.txt
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
@@ -161,7 +161,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.35"  # keep in sync with requirements.txt
+          pip install "cli-market-core==1.11.36"  # keep in sync with requirements.txt
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
