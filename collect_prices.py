@@ -41,7 +41,21 @@ REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.75"))
 QUERY_TIMEOUT = 15.0
 DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
 MAX_QUERIES_PER_LINE = int(os.getenv("COLLECT_MAX_QUERIES_PER_LINE", "12"))
+CORE_QUERIES_PER_LINE = int(os.getenv("COLLECT_CORE_QUERIES", "3"))
 COLLECTOR_ADVISORY_LOCK = int(os.getenv("COLLECTOR_ADVISORY_LOCK", "84957231"))
+# Circuit breaker: trip after CB_FAIL_THRESHOLD consecutive query failures;
+# stay open for CB_COOLDOWN seconds (default 5 min — outlasts the current cycle).
+# Set low so one broken store doesn't burn MAX_QUERIES * QUERY_TIMEOUT seconds.
+CB_FAIL_THRESHOLD = int(os.getenv("CB_FAIL_THRESHOLD", "3"))
+CB_COOLDOWN = int(os.getenv("CB_COOLDOWN", "300"))
+# Skip stores that have failed consecutively for this many full collector cycles
+# (read from store_health table at the start of each cycle).
+CB_PERSIST_SKIP = int(os.getenv("CB_PERSIST_SKIP", "10"))
+INDEX_COLLECT_ENABLED = os.getenv("INDEX_COLLECT_ENABLED", "1").strip().lower() not in (
+    "0",
+    "false",
+    "no",
+)
 
 LINE_MAX_PRICE = {
     "supermercados": 10_000,
@@ -50,6 +64,7 @@ LINE_MAX_PRICE = {
     "moda": 5_000,
     "hogar": 20_000,
     "departamentales": 10_000,
+    "automotriz": 50_000,
 }
 
 # Nominal caps differ by currency (ARS/CLP/COP use much larger face values).
@@ -111,6 +126,43 @@ STORE_QUERY_OVERRIDES: dict[str, list[tuple[str, str]]] = {
         ("torradeira", "electro"), ("aspirador", "electro"), ("geladeira", "electro"),
         ("microondas", "electro"), ("panela", "electro"), ("mixer", "electro"),
         ("sanduicheira", "electro"), ("chaleira", "electro"), ("fogão", "electro"),
+    ],
+    # PE hogar/departamentales/automotriz stores don't match the generic SEED_QUERIES
+    # (supermercados-heavy). Fixed per-store queries keep them contributing every cycle.
+    "promart": [
+        ("taladro", "hogar"), ("pintura", "hogar"), ("manguera", "hogar"),
+        ("cemento", "hogar"), ("foco", "hogar"), ("cerradura", "hogar"),
+        ("llave", "hogar"), ("perno", "hogar"), ("cinta", "hogar"),
+        ("brocha", "hogar"), ("escalera", "hogar"), ("tuberia", "hogar"),
+    ],
+    "sodimac_pe": [
+        ("taladro", "hogar"), ("pintura", "hogar"), ("martillo", "hogar"),
+        ("tornillo", "hogar"), ("cerradura", "hogar"), ("tubo", "hogar"),
+        ("llave", "hogar"), ("cable", "hogar"), ("cinta", "hogar"),
+        ("foco", "hogar"), ("brocha", "hogar"), ("malla", "hogar"),
+    ],
+    "ripley_pe": [
+        ("televisor", "departamentales"), ("zapatillas", "departamentales"),
+        ("perfume", "departamentales"), ("mochila", "departamentales"),
+        ("polo", "departamentales"), ("audifono", "departamentales"),
+        ("reloj", "departamentales"), ("cartera", "departamentales"),
+        ("ropa", "departamentales"), ("jeans", "departamentales"),
+        ("celular", "departamentales"), ("tablet", "departamentales"),
+    ],
+    "falabella_pe": [
+        ("televisor", "departamentales"), ("laptop", "departamentales"),
+        ("zapatillas", "departamentales"), ("polo", "departamentales"),
+        ("perfume", "departamentales"), ("audifono", "departamentales"),
+        ("reloj", "departamentales"), ("cartera", "departamentales"),
+        ("ropa", "departamentales"), ("jeans", "departamentales"),
+        ("celular", "departamentales"), ("tablet", "departamentales"),
+    ],
+    # xray_pe removed 2026-06-24: 64 consecutive DNS failures, unrecoverable
+    "lasirena_es": [
+        ("salmón", "supermercados"), ("merluza", "supermercados"), ("pollo", "supermercados"),
+        ("congelados", "supermercados"), ("pescado", "supermercados"), ("gambas", "supermercados"),
+        ("croquetas", "supermercados"), ("verduras", "supermercados"), ("pizza", "supermercados"),
+        ("leche", "supermercados"), ("arroz", "supermercados"), ("aceite", "supermercados"),
     ],
 }
 
@@ -252,6 +304,14 @@ SEED_QUERIES = [
     ("mueble","departamentales"),("colchon","departamentales"),
     ("electrodomestico","departamentales"),("bicicleta","departamentales"),
     ("notebook","departamentales"),("auriculares","departamentales"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 🚗 Automotriz (WooCommerce: Xray Chipped PE)
+    # ═══════════════════════════════════════════════════════════════════════════
+    ("ecu","automotriz"),("chip","automotriz"),("reprogramacion","automotriz"),
+    ("diagnostico","automotriz"),("remap","automotriz"),("stage","automotriz"),
+    ("performance","automotriz"),("tuning","automotriz"),("obd","automotriz"),
+    ("centralita","automotriz"),("mapa","automotriz"),("potencia","automotriz"),
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -364,6 +424,7 @@ def get_feedback_queries(db) -> list[tuple[str, str]]:
                 LIMIT ?
             """, (line, since, FEEDBACK_MIN_COUNT, per_line + 2)).fetchall()
         except Exception:
+            logger.debug("feedback query failed for line=%s", line, exc_info=True)
             continue
         for r in rows:
             name = str(r["name"]).strip().lower()
@@ -381,21 +442,54 @@ def get_feedback_queries(db) -> list[tuple[str, str]]:
     return feedback[:FEEDBACK_LIMIT]
 
 
+def _core_queries_by_line() -> dict[str, list[tuple[str, str]]]:
+    """First N seed terms per line — always queried every cycle (stable yield)."""
+    by_line: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    if CORE_QUERIES_PER_LINE <= 0:
+        return {}
+    for q, line in SEED_QUERIES:
+        ln = line or "supermercados"
+        if len(by_line[ln]) < CORE_QUERIES_PER_LINE:
+            by_line[ln].append((q, line))
+    return dict(by_line)
+
+
 def cap_queries_for_cycle(queries: list[tuple[str, str]], cycle: int = 0) -> list[tuple[str, str]]:
-    """Rotate a bounded query set per line so each cycle stays fast and pool-friendly."""
+    """Core terms per line + rotating window so each cycle stays fast and pool-friendly."""
     if MAX_QUERIES_PER_LINE <= 0:
         return queries
     by_line: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for q, line in queries:
         by_line[line or "supermercados"].append((q, line))
+    cores = _core_queries_by_line()
     capped: list[tuple[str, str]] = []
-    for _line, items in by_line.items():
+    seen: set[tuple[str, str]] = set()
+    for line, items in by_line.items():
         if not items:
             continue
-        start = (cycle * MAX_QUERIES_PER_LINE) % len(items)
-        for i in range(min(MAX_QUERIES_PER_LINE, len(items))):
-            capped.append(items[(start + i) % len(items)])
+        for entry in cores.get(line, []):
+            if entry not in seen:
+                seen.add(entry)
+                capped.append(entry)
+        rotate_budget = max(0, MAX_QUERIES_PER_LINE - len(cores.get(line, [])))
+        if rotate_budget <= 0:
+            continue
+        start = (cycle * rotate_budget) % len(items)
+        for i in range(min(rotate_budget, len(items))):
+            entry = items[(start + i) % len(items)]
+            if entry not in seen:
+                seen.add(entry)
+                capped.append(entry)
     return capped
+
+
+def _store_health_ok(*, collected: int, query_ok: int, query_empty: int, query_fail: int) -> bool:
+    """Technical health: penalize only hard fetch failures, not rotation misses."""
+    if collected > 0 or query_ok > 0:
+        return True
+    if query_empty > 0 and query_fail == 0:
+        return True
+    return False
 
 
 def build_query_list(db=None, cycle: int = 0) -> list[tuple[str, str]]:
@@ -466,6 +560,24 @@ if USE_PG:
         # Single source of truth: market_core.init_db() owns the DDL.
         # We call it synchronously here — it's idempotent and only runs once.
         ensure_db_initialized()
+        try:
+            from price_snapshots_schema import ensure_canonical_product_id_column
+
+            ensure_canonical_product_id_column()
+        except Exception as e:
+            logger.warning("canonical_product_id migration skipped: %s", e)
+        try:
+            from collector_schema import ensure_collector_runs_columns
+
+            ensure_collector_runs_columns()
+        except Exception as e:
+            logger.warning("collector_runs migration skipped: %s", e)
+        try:
+            from stock_history_schema import ensure_stock_history_table
+
+            ensure_stock_history_table()
+        except Exception as e:
+            logger.warning("stock_history migration skipped: %s", e)
 
     async def pg_insert(conn, prod):
         from price_confidence import compute_snapshot_confidence
@@ -493,6 +605,12 @@ if USE_PG:
         """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],discount,
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"], confidence)
 
+        stock = prod.get("stock")
+        await conn.execute(
+            "INSERT INTO stock_history (product_id, store, in_stock) VALUES ($1, $2, $3)",
+            prod["product_id"], prod["store"], 1 if (stock and stock > 0) else 0,
+        )
+
     async def pg_health(conn, store, ok):
         if ok:
             await conn.execute(
@@ -514,18 +632,43 @@ if USE_PG:
     async def pg_run_start(conn, n):
         return (await conn.fetchrow("INSERT INTO collector_runs (stores_attempted) VALUES ($1) RETURNING id", n))["id"]
 
-    async def pg_run_end(conn, rid, ok, total, errs):
-        await conn.execute("UPDATE collector_runs SET finished_at=NOW(), stores_succeeded=$1, prices_collected=$2, errors=$3 WHERE id=$4", ok, total, errs, rid)
+    async def pg_run_end(conn, rid, responded, total, errs, yielded=0):
+        await conn.execute(
+            "UPDATE collector_runs SET finished_at=NOW(), stores_succeeded=$1, "
+            "prices_collected=$2, errors=$3, stores_with_yield=$4 WHERE id=$5",
+            responded, total, errs, yielded, rid,
+        )
 
 def get_db_unified():
     """Return a unified DB handle (_DB) — works with both PG and SQLite."""
     ensure_db_initialized()
+    try:
+        from price_snapshots_schema import ensure_canonical_product_id_column
+
+        ensure_canonical_product_id_column()
+    except Exception as e:
+        logger.warning("canonical_product_id migration skipped: %s", e)
+    try:
+        from collector_schema import ensure_collector_runs_columns
+
+        ensure_collector_runs_columns()
+    except Exception as e:
+        logger.warning("collector_runs migration skipped: %s", e)
+    try:
+        from stock_history_schema import ensure_stock_history_table
+
+        ensure_stock_history_table()
+    except Exception as e:
+        logger.warning("stock_history migration skipped: %s", e)
     return get_db()
 
 def sq_insert(db, prod):
     from market_core import save_price_snapshot
+    from stock_history_schema import append_stock_history
 
     save_price_snapshot(prod, db=db)
+    stock = prod.get("stock")
+    append_stock_history(db, prod["product_id"], prod["store"], bool(stock and stock > 0))
 
 def sq_health(db, store, ok):
     if ok:
@@ -546,7 +689,12 @@ def sq_health(db, store, ok):
         )
 
 def sq_run_start(db, n): return db.execute("INSERT INTO collector_runs (started_at,stores_attempted) VALUES (datetime('now'),?)",(n,)).lastrowid
-def sq_run_end(db, rid, ok, total, errs): db.execute("UPDATE collector_runs SET finished_at=datetime('now'), stores_succeeded=?, prices_collected=?, errors=? WHERE id=?",(ok,total,errs,rid))
+def sq_run_end(db, rid, responded, total, errs, yielded=0):
+    db.execute(
+        "UPDATE collector_runs SET finished_at=datetime('now'), stores_succeeded=?, "
+        "prices_collected=?, errors=?, stores_with_yield=? WHERE id=?",
+        (responded, total, errs, yielded, rid),
+    )
 
 # ── Price normalization ─────────────────────────────────────────────────────
 
@@ -575,7 +723,7 @@ class CB:
     def win(s,k): s.f[k]=0
     def lose(s,k):
         s.f[k]+=1
-        if s.f[k]>=50: s.o[k]=time.time()+60
+        if s.f[k]>=CB_FAIL_THRESHOLD: s.o[k]=time.time()+CB_COOLDOWN
     def reset(s): s.f.clear(); s.o.clear()
 cb=CB()
 
@@ -588,15 +736,16 @@ CATALOG_INTERVAL_MINS = int(os.getenv("COLLECT_CATALOG_INTERVAL", "60"))
 _last_catalog_pull: float = 0.0
 
 async def collect_full_catalog_pg(pool, store: str) -> int:
-    from market_connectors.vtex import VtexConnector
+    from market_connectors import get_connector
     from store_credentials import resolve_store_config
 
     cfg = resolve_store_config(store)
-    if cfg.get("platform") != "vtex":
+    platform = cfg.get("platform", "vtex")
+    if platform not in ("vtex", "woocommerce"):
         return 0
-    vtex = VtexConnector()
+    connector = get_connector(platform)
     try:
-        all_raw = await vtex.fetch_all_products(cfg, max_pages=20)
+        all_raw = await connector.fetch_all_products(cfg, max_pages=20)
     except Exception as e:
         logger.warning("full catalog %s: %s", store, str(e)[:80])
         return 0
@@ -605,7 +754,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
     line_name = LINES.get(line, {}).get("name", "")
     async with pool.acquire() as conn:
         for p in all_raw:
-            prod = vtex.normalize(p, store, cfg)
+            prod = connector.normalize(p, store, cfg)
             prod["line"] = line
             prod["line_name"] = line_name
             if prod.get("price", 0) <= 0:
@@ -642,31 +791,68 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             await asyncio.sleep(0.05)
     return collected
 
-async def run_full_catalog_pg(pool, stores: list[str]) -> int:
+async def run_full_catalog_pg(pool, stores: list[str], *, force: bool = False) -> int:
     global _last_catalog_pull
     from store_credentials import resolve_store_config
 
     now = time.monotonic()
-    if now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
+    if not force and now - _last_catalog_pull < CATALOG_INTERVAL_MINS * 60:
         return 0
     _last_catalog_pull = now
     total = 0
     for store in stores:
-        if resolve_store_config(store).get("platform") != "vtex":
+        if resolve_store_config(store).get("platform") not in ("vtex", "woocommerce"):
             continue
         n = await collect_full_catalog_pg(pool, store)
         print(f"    📦 {store}: {n:,} products (full catalog)")
         total += n
     return total
 
+
+
+async def force_catalog_stores(stores: list[str]) -> dict:
+    """Bypass catalog interval and upsert full catalog for given stores."""
+    if not USE_PG:
+        raise RuntimeError("force_catalog_stores requires PostgreSQL (DATABASE_URL)")
+    pool = await get_pool()
+    await init_schema()
+    total = 0
+    per_store: dict[str, int] = {}
+    for store in stores:
+        n = await collect_full_catalog_pg(pool, store)
+        per_store[store] = n
+        total += n
+        print(f"    📦 {store}: {n:,} products (forced catalog)")
+    return {"stores": per_store, "prices_collected": total}
+
 # ── Collector core ──────────────────────────────────────────────────────────
+
+async def _pg_consecutive_failures(pool, store: str) -> int:
+    """Read persistent consecutive_failures from store_health (0 if not found)."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT consecutive_failures FROM store_health WHERE store=$1", store
+            )
+            return int(row["consecutive_failures"] or 0) if row else 0
+    except Exception:
+        return 0
+
 
 async def collect_one_pg(pool, store, queries):
     if not cb.ok(store):
         logger.warning("circuit open — skipping %s", store)
         return 0
+    consec = await _pg_consecutive_failures(pool, store)
+    if consec >= CB_PERSIST_SKIP:
+        logger.warning("persistent failures — skipping %s (%d consecutive cycles failed)", store, consec)
+        return 0
     queries = queries_for_store(store, queries)
     line = _store_line(store)
+    queries_for_line = sum(1 for _q, lf in queries if not lf or lf == line)
+    if queries_for_line == 0:
+        logger.info("store %s: no seed queries for line=%s — skipping", store, line)
+        return 0
     collected = 0
     query_ok = 0
     query_fail = 0
@@ -730,11 +916,6 @@ async def collect_one_pg(pool, store, queries):
                             err = str(retry_exc)
                     logger.warning("collect %s/%s: %s", store, q, err[:120])
                     cb.lose(store)
-        had_real_error = query_fail > 0
-        # Health decision: only penalize consecutive_failures on *real* errors (timeouts, 5xx, exceptions, 429 after retry).
-        # Pure empties (store doesn't carry the rotated query terms this cycle) are normal due to query rotation
-        # and should not increment streaks or poison success_pct for partial-catalog stores.
-        health_ok = (collected > 0 or query_ok > 0) and not had_real_error
         if pending:
             async with pool.acquire() as conn:
                 for prod in pending:
@@ -744,13 +925,22 @@ async def collect_one_pg(pool, store, queries):
                     except Exception as exc:
                         insert_errors.append(str(exc)[:120])
                         logger.warning("insert %s: %s", store, str(exc)[:120])
+                health_ok = _store_health_ok(
+                    collected=collected,
+                    query_ok=query_ok,
+                    query_empty=query_empty,
+                    query_fail=query_fail,
+                )
                 await pg_health(conn, store, health_ok)
-        elif query_ok > 0 or (query_empty > 0 and not had_real_error):
-            async with pool.acquire() as conn:
-                await pg_health(conn, store, True)
         else:
+            health_ok = _store_health_ok(
+                collected=collected,
+                query_ok=query_ok,
+                query_empty=query_empty,
+                query_fail=query_fail,
+            )
             async with pool.acquire() as conn:
-                await pg_health(conn, store, False)
+                await pg_health(conn, store, health_ok)
     except Exception as exc:
         logger.warning("collect_one_pg %s failed: %s", store, str(exc)[:160])
         cb.lose(store)
@@ -766,27 +956,50 @@ async def collect_one_pg(pool, store, queries):
         logger.warning("store %s: %d insert errors (first: %s)", store, len(insert_errors), insert_errors[0])
     return collected
 
+def _sq_consecutive_failures(db, store: str) -> int:
+    """Read persistent consecutive_failures from store_health (0 if not found)."""
+    try:
+        row = db.execute(
+            "SELECT consecutive_failures FROM store_health WHERE store=?", (store,)
+        ).fetchone()
+        return int(row["consecutive_failures"] or 0) if row else 0
+    except Exception:
+        return 0
+
+
 async def collect_one_sqlite(db, store, queries):
     """Collect for one store, reusing a single SQLite connection across
     all inserts (orders of magnitude cheaper than open-per-row, and avoids
     `database is locked` storms under PARALLEL workers)."""
+    if not cb.ok(store):
+        logger.warning("circuit open — skipping %s", store)
+        return 0
+    consec = _sq_consecutive_failures(db, store)
+    if consec >= CB_PERSIST_SKIP:
+        logger.warning("persistent failures — skipping %s (%d consecutive cycles failed)", store, consec)
+        return 0
     queries = queries_for_store(store, queries)
-    line = STORES[store].get("line",""); collected=0; attempted=0; query_ok=0; query_empty=0
+    line = STORES[store].get("line", "")
+    collected = 0
+    attempted = 0
+    query_ok = 0
+    query_fail = 0
+    query_empty = 0
     for q, lf in queries:
-        if lf and line!=lf: continue
+        if lf and line != lf:
+            continue
         attempted += 1
         try:
             raw = await _fetch_store(store, q, page=1, limit=10)
             if not raw:
-                # Do not treat empty as hard failure (rotation / partial catalog).
-                # Only lose on real exceptions below.
                 query_empty += 1
                 continue
+            cb.win(store)
             query_ok += 1
             for p in raw:
                 prod = _pfj(p, store)
                 prod["line"] = line
-                prod["line_name"] = LINES.get(line,{}).get("name","")
+                prod["line_name"] = LINES.get(line, {}).get("name", "")
                 if prod.get("price", 0) and prod["price"] > 0:
                     if prod["price"] > max_allowed_price(store, prod.get("line", "")):
                         continue
@@ -794,10 +1007,20 @@ async def collect_one_sqlite(db, store, queries):
                     collected += 1
             await asyncio.sleep(REQUEST_DELAY)
         except Exception as _e:
+            query_fail += 1
             logger.warning("collect %s/%s: %s", store, q, str(_e)[:200])
             cb.lose(store)
     if attempted > 0:
-        sq_health(db, store, collected > 0 or query_ok > 0)
+        sq_health(
+            db,
+            store,
+            _store_health_ok(
+                collected=collected,
+                query_ok=query_ok,
+                query_empty=query_empty,
+                query_fail=query_fail,
+            ),
+        )
     if attempted > 0 and collected == 0:
         logger.warning("store %s: tried %d queries, 0 results (line=%s)", store, attempted, line)
     elif collected > 0:
@@ -808,8 +1031,8 @@ async def run_collection(stores, queries):
     sl = list(stores)
     batch_size = max(1, min(PARALLEL, len(sl)))
     total = 0
-    yielded = 0          # stores that produced >=1 price this cycle
-    responded = 0        # stores that completed queries without hard exception (even if 0 prices due to rotation/empty)
+    yielded = 0
+    responded = 0
     errs: list[str] = []
     if USE_PG:
         pool = await get_pool()
@@ -821,22 +1044,19 @@ async def run_collection(stores, queries):
             tasks = [collect_one_pg(pool, s, queries) for s in batch]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             for store, r in zip(batch, results, strict=True):
-                responded += 1
                 if isinstance(r, Exception):
                     errs.append(f"{store}: {r}")
                     logger.warning("store %s exception: %s", store, str(r)[:160])
-                    responded -= 1  # hard failure, do not count as clean respond
-                elif r > 0:
-                    total += r
-                    yielded += 1
-                elif r == 0:
-                    errs.append(f"{store}: 0 prices")
-                    # responded cleanly but no yield this rotation (very common with MAX_QUERIES_PER_LINE cap + rotation)
+                else:
+                    responded += 1
+                    if r > 0:
+                        total += r
+                        yielded += 1
         async with pool.acquire() as c:
-            await pg_run_end(c, rid, yielded, total, json.dumps(errs[:100]))
+            await pg_run_end(c, rid, responded, total, json.dumps(errs[:100]), yielded)
         if total == 0 and len(sl) > 0:
             logger.warning(
-                "collection cycle saved 0 prices for %d stores (%d query errors logged)",
+                "collection cycle saved 0 prices for %d stores (%d hard errors)",
                 len(sl), len(errs),
             )
     else:
@@ -846,21 +1066,21 @@ async def run_collection(stores, queries):
         for i in range(0, len(sl), batch_size):
             batch = sl[i:i + batch_size]
             for store in batch:
-                responded += 1
                 try:
                     r = await collect_one_sqlite(db, store, queries)
+                    responded += 1
                     if r > 0:
                         total += r
                         yielded += 1
                 except Exception as exc:
                     errs.append(f"{store}: {exc}")
-                    responded -= 1
-        sq_run_end(db, rid, yielded, total, json.dumps(errs[:100]))
+        sq_run_end(db, rid, responded, total, json.dumps(errs[:100]), yielded)
         db.commit()
     return {
         "stores_attempted": len(sl),
-        "stores_succeeded": yielded,   # legacy name kept for compatibility (now = yielded prices)
+        "stores_succeeded": responded,
         "stores_responded": responded,
+        "stores_with_yield": yielded,
         "prices_collected": total,
         "errors": len(errs),
     }
@@ -879,6 +1099,30 @@ def do_status():
     top = db.execute("SELECT store_name, COUNT(*) n FROM price_snapshots GROUP BY store_name ORDER BY n DESC LIMIT 5").fetchall()
     if top: print("  Top:"); [print(f"    {r['store_name'][:25]:<25} {r['n']:>6}") for r in top]
     db.close()
+
+def _run_index_cycle(prices_collected: int) -> None:
+    """Feed recent price_snapshots into the semantic index after a collection run."""
+    if not INDEX_COLLECT_ENABLED or prices_collected <= 0:
+        return
+    try:
+        from index_gate import certify_round
+
+        stats = certify_round(prices_collected)
+        resolved = stats.get("resolved", 0)
+        registry = stats.get("registry_size", 0)
+        linked = stats.get("linked", 0)
+        if resolved:
+            print(
+                f"  🧠 Index: {resolved} snapshots resolved, {linked} linked → "
+                f"{registry:,} Golden Records "
+                f"({stats.get('exact', 0)} exact, {stats.get('auto', 0)} new)"
+            )
+        else:
+            logger.info("Index cycle: 0 snapshots resolved (registry=%d)", registry)
+    except Exception as exc:
+        print(f"  ⚠ Index cycle skipped: {exc}")
+        logger.warning("Index cycle failed: %s", exc)
+
 
 def do_report():
     """Print latest prices by line — works with both PG and SQLite via unified DB."""
@@ -908,6 +1152,8 @@ async def main():
     ap.add_argument("--status", action="store_true"); ap.add_argument("--report", action="store_true")
     ap.add_argument("--stores", type=int, default=0); ap.add_argument("--queries", type=int, default=0)
     ap.add_argument("--parallel", type=int, default=50)
+    ap.add_argument("--catalog-store", action="append", default=[], metavar="STORE",
+                    help="Force full catalog pull for store(s); bypasses 60-min interval")
     args = ap.parse_args()
     global PARALLEL; PARALLEL = args.parallel
     ensure_db_initialized()
@@ -916,6 +1162,16 @@ async def main():
     # could silently flip to SQLite if Postgres had a transient init error.
     if args.status: do_status(); return
     if args.report: do_report(); return
+    if args.catalog_store:
+        if not USE_PG:
+            print("✗ --catalog-store requires PostgreSQL (DATABASE_URL)")
+            return
+        r = await force_catalog_stores(args.catalog_store)
+        print(f"  ✓ Forced catalog: {r['prices_collected']:,} prices across {len(r['stores'])} store(s)")
+        for sk, n in r["stores"].items():
+            print(f"    {sk}: {n:,}")
+        do_status()
+        return
     stores = get_default_stores()
     stores = stores[:args.stores] if args.stores else stores
     label = "PostgreSQL" if USE_PG else "SQLite"
@@ -930,7 +1186,18 @@ async def main():
             try:
                 cb.reset()
                 if USE_PG:
-                    pool = await get_pool()
+                    for _pg_attempt in range(1, 6):
+                        try:
+                            pool = await get_pool()
+                            break
+                        except Exception as _pg_err:
+                            global _pg_pool
+                            _pg_pool = None
+                            if _pg_attempt == 5:
+                                raise
+                            wait = _pg_attempt * 10
+                            print(f"  ⚠ PG connect attempt {_pg_attempt}/5 failed: {_pg_err} — retry in {wait}s")
+                            await asyncio.sleep(wait)
                     lock_ok = await pg_try_daemon_lock(pool)
                     if not lock_ok:
                         print(f"⏭ Another collector holds the lock — skipping cycle {cycle}")
@@ -944,31 +1211,20 @@ async def main():
                 if args.queries:
                     queries = queries[:args.queries]
                 print(f"\n─── {datetime.now(timezone.utc).isoformat()} [cycle {cycle}] ───")
-                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (capped rotation) | parallel={PARALLEL}")
+                print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (capped rotation)")
                 t0 = time.monotonic()
                 r = await run_collection(stores, queries)
                 responded = r.get("stores_responded", r.get("stores_succeeded", 0))
-                attempted = r.get("stores_attempted", len(stores))
-                yielded = r.get("stores_succeeded", 0)
-                prices = r.get("prices_collected", 0)
-                errs = r.get("errors", 0)
-                dur = time.monotonic() - t0
-                y_pct = (yielded / attempted * 100) if attempted else 0.0
-                r_pct = (responded / attempted * 100) if attempted else 0.0
-
+                yielded = r.get("stores_with_yield", 0)
+                attempted = r["stores_attempted"]
                 print(
-                    f"  ✓ {prices:,} prices in {dur:.1f}s  |  "
-                    f"yield {yielded}/{attempted} ({y_pct:.0f}%)  |  "
-                    f"responded cleanly {responded}/{attempted} ({r_pct:.0f}%)  |  "
-                    f"errors={errs}"
+                    f"  ✓ {r['prices_collected']:,} prices | "
+                    f"yield {yielded}/{attempted} | "
+                    f"responded {responded}/{attempted} | "
+                    f"{time.monotonic()-t0:.1f}s | {r['errors']} errors"
                 )
-                if errs:
-                    print(f"    (see full logs for the {errs} error(s); top ones in collector_runs.errors)")
                 # Evaluate price alerts after every collection cycle
                 try:
-                    from market_security import patch_alert_webhook_dispatch
-
-                    patch_alert_webhook_dispatch()
                     from market_alerts import evaluate_alerts
                     fired = evaluate_alerts()
                     if fired:
@@ -1030,7 +1286,12 @@ async def main():
         if args.queries: queries = queries[:args.queries]
         print(f"🔍 {label} | {len(stores)} stores × {len(queries)} queries (seed+feedback)")
         t0=time.monotonic(); r=await run_collection(stores, queries)
-        print(f"  ✓ {r['prices_collected']:,} prices | {r['stores_succeeded']}/{r['stores_attempted']} stores | {time.monotonic()-t0:.1f}s | {r['errors']} errors")
+        responded = r.get("stores_responded", r.get("stores_succeeded", 0))
+        yielded = r.get("stores_with_yield", 0)
+        print(
+            f"  ✓ {r['prices_collected']:,} prices | yield {yielded}/{r['stores_attempted']} | "
+            f"responded {responded}/{r['stores_attempted']} | {time.monotonic()-t0:.1f}s | {r['errors']} errors"
+        )
         do_status()
 
 if __name__ == "__main__":
