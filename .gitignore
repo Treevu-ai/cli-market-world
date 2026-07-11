@@ -21,6 +21,7 @@ docs/awesome-claude-code/
 !.vscode/mcp.json
 !.cursor/rules/
 !.cursor/rules/**
+.codex/
 .env
 .env.local
 ops/.rotation-local.txt
