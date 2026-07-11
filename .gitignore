@@ -53,3 +53,8 @@ docs/financial-services/
 # Cloned dependency repos (local dev only)
 .deps/
 *.egg-info/
+
+# Never commit credential dumps left in repo root — store these outside git.
+credenciales*
+*credenciales*.txt
+credentials-local/
