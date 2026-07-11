@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/LanguageContext";
 import { API_URL } from "@/lib/api";
 import { MARKET_STATS } from "@/lib/marketStats";
+import { AuthProvider, useApiKey } from "@/lib/useApiKey";
+import ApiKeyGate from "@/components/dashboard/ApiKeyGate";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 
@@ -74,24 +76,31 @@ function UsageBar({
   );
 }
 
+/** /account lives outside app/dashboard/*, so it doesn't get that layout's
+ *  AuthProvider — this component supplies its own, making it self-sufficient
+ *  wherever it's mounted. */
 export default function AccountDashboard() {
+  return (
+    <AuthProvider>
+      <AccountDashboardInner />
+    </AuthProvider>
+  );
+}
+
+function AccountDashboardInner() {
   const { lang } = useLang();
   const isES = lang === "es";
-  const [apiKey, setApiKey] = useState("");
+  const { apiKey } = useApiKey();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [data, setData] = useState<AccountData | null>(null);
 
-  const load = async () => {
+  const load = async (key: string) => {
     setError("");
-    if (!apiKey.trim().startsWith("sk-")) {
-      setError(isES ? "Ingrese su API key (sk-...)" : "Enter your API key (sk-...)");
-      return;
-    }
     setLoading(true);
     try {
       const r = await fetch(`${API_URL}/auth/account?lang=${isES ? "es" : "en"}`, {
-        headers: { Authorization: `Bearer ${apiKey.trim()}` },
+        headers: { Authorization: `Bearer ${key}` },
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -108,6 +117,13 @@ export default function AccountDashboard() {
     }
   };
 
+  // Persisted key (via ApiKeyGate/useApiKey) loads the account automatically
+  // -- no separate manual "view account" click needed once entered.
+  useEffect(() => {
+    if (apiKey) load(apiKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiKey]);
+
   return (
     <section className="landing-section animate-fade-in">
       <div className="landing-container-narrow">
@@ -119,11 +135,11 @@ export default function AccountDashboard() {
         </h1>
         <p className="text-sm text-[var(--cm-on-surface-variant)] text-center max-w-lg mx-auto mb-8">
           {isES
-            ? "Consulte tier, límites y consumo. La API key no se guarda en el navegador."
-            : "View tier, limits, and consumption. Your API key is not stored in the browser."}
+            ? "Consulte tier, límites y consumo. La API key se guarda solo en este navegador."
+            : "View tier, limits, and consumption. Your API key is stored only in this browser."}
         </p>
 
-        {!data && (
+        {!apiKey && (
           <div className="card-cyber p-5 max-w-xl mx-auto mb-6 space-y-3 border border-[var(--cm-outline-variant)]/30">
             <h2 className="text-sm font-bold text-[var(--cm-mint)] uppercase tracking-wider">
               {isES ? "Primeros pasos" : "Getting started"}
@@ -150,39 +166,16 @@ export default function AccountDashboard() {
           </div>
         )}
 
-        <div className="card-cyber p-6 space-y-4 max-w-xl mx-auto">
-          <label className="block text-sm font-medium text-[var(--cm-on-surface)]">
-            API key
-          </label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-..."
-            className="input-cyber font-mono text-sm"
-            autoComplete="off"
-          />
-          <p className="text-xs text-[var(--cm-on-surface-variant)]">
-            {isES
-              ? "Obténgala con market register · También: market account en terminal"
-              : "Get one with market register · Or run market account in the terminal"}
-          </p>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="button"
-            onClick={load}
-            disabled={loading}
-            className="btn-mint w-full disabled:opacity-50"
-          >
-            {loading
-              ? isES
-                ? "Cargando..."
-                : "Loading..."
-              : isES
-                ? "Ver mi cuenta →"
-                : "View my account →"}
-          </button>
-        </div>
+        {!apiKey ? (
+          <ApiKeyGate />
+        ) : (
+          loading && (
+            <p className="text-sm text-[var(--cm-on-surface-variant)] text-center">
+              {isES ? "Cargando..." : "Loading..."}
+            </p>
+          )
+        )}
+        {error && <p className="text-sm text-red-600 text-center mt-2">{error}</p>}
 
         {data && (
           <div className="mt-10 grid gap-4 md:grid-cols-2 max-w-3xl mx-auto">
