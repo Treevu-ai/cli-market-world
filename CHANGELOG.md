@@ -2,6 +2,63 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-12] — Market Console v1, growth-pulse agents, opt-in budget gate
+
+### cli-market-world (landing) — Market Console v1
+- **Added:** Explorer (`/dashboard/explorer`) and Developer (`/dashboard/developer`)
+  consoles — session persisted via `localStorage` (no new login flow), reusing
+  `BasketOptimizer` instead of rebuilding it. Deployed and verified live.
+- **Fixed:** `DashboardNav`'s "Salir" button was unclickable — each dashboard page's own
+  fixed `Navbar` rendered on top of it (`app/dashboard/layout.tsx`).
+- **Fixed:** `BasketOptimizer`'s own country selector was silently overwritten whenever
+  an unrelated parent control changed country (Explorer's search chips, saving the
+  household profile) — found via a `click-path-audit` pass over the Console.
+
+### cli-market-world (ops) — agent pipelines
+- **Fixed:** `ops/price_pulse_agents.py`'s external `agency-agents` dependency
+  (`~/Proyectos/agency-agents`) was missing locally — cloned
+  [`msitarzewski/agency-agents`](https://github.com/msitarzewski/agency-agents);
+  `--prepare` now runs end-to-end again.
+- **Added:** `ops/growth_pulse_agents.py` — wires the 6 previously-unused design/
+  marketing/sales agency-agents personas (brand-guardian, ui-designer, ux-architect,
+  ux-researcher, content-creator, sales-engineer) to real signals (live site copy,
+  PyPI/GitHub, `/health/stats`) instead of leaving them as dead context files.
+- **Added:** `docs/agents/growth-pulse-workflow.md`, `ops/python-mcp-patterns.md`
+  (Python translation of the `mcp-server-patterns` skill against the real
+  `market_mcp.py` JSON-RPC loop), `ops/x402-payment-adr.md` (x402 payment research —
+  no payment code touched; includes a real read-only simulation against production
+  Procure Copilot data: 91/92 historical procurements were Tier A, 63/92 under a $20
+  cap — $20 cap adopted).
+
+### Cross-tool MCP config
+- **Fixed:** `${MARKET_API_TOKEN}` placeholder (never expanded — TOML/JSON configs don't
+  interpolate env vars) was silently sent as the literal token, causing 401s, in Codex,
+  Cursor, Claude Code, Gemini CLI, Kiro, Kilo Code, Kilo, Devin, and Cline. Replaced with
+  the real key/token in all 9 configs.
+
+### cli-market-core v1.11.41 (PyPI)
+- **Added:** `budgets` table (PG+SQLite) + `check_budget()` / `db_get_budget()` /
+  `db_set_budget()` in `market_billing.py` — opt-in per-user spend cap for checkout, no
+  row means no limit. Reuses `app_orders` for live spend totals instead of a new ledger
+  table; counts `pending`+`paid` so several pending orders can't collectively exceed the
+  cap before any settle.
+- **Added:** `market_connectors/CONNECTOR_PATTERN.md` — documents the real connector
+  interface/auth/error-handling/test conventions for the next platform integration.
+
+### cli-market-backend
+- **Added:** Budget gate wired into `_prepare_pending_order()` (shared by all 4 payment
+  gateways), right after `pre_checkout_validate` and before order creation — same 409
+  shape convention. Idempotent retries skip the check (already-counted spend). New
+  `GET`/`POST /checkout/budget` endpoints.
+- **Changed:** Pin `cli-market-core==1.11.41`; deployed to `cli-market-api` (Fly).
+
+### Also this session (outside the 3 core repos)
+- `~/Proyectos/cli-market-langchain-agent` — example LangGraph ReAct agent using
+  `langchain-mcp-adapters` against the real `market-mcp` server (31 tools), verified
+  live with real search/compare queries.
+
+---
+
 ## [2026-06-18] — CLI fixes: --version, i18n, Win UTF-8, onboarding, demo nag
 
 ### cli-market-world v1.9.42
