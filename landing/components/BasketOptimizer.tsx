@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { API_URL } from "@/lib/api";
 
 type Item = { name: string; qty: number };
@@ -49,8 +49,20 @@ const BasketOptimizer = forwardRef<BasketOptimizerHandle, Props>(function Basket
 ) {
   const [items, setItems] = useState<Item[]>([{ name: "", qty: 1 }]);
   const [country, setCountry] = useState(defaultCountry);
+  const countryTouchedRef = useRef(false);
 
-  useEffect(() => { setCountry(defaultCountry); }, [defaultCountry]);
+  // Only follow the parent's country while the user hasn't picked one
+  // manually here — otherwise an unrelated change upstream (e.g. Explorer's
+  // search-country chips, or saving the household profile) would silently
+  // overwrite the user's own selection in this basket.
+  useEffect(() => {
+    if (!countryTouchedRef.current) setCountry(defaultCountry);
+  }, [defaultCountry]);
+
+  const handleCountryChange = (value: string) => {
+    countryTouchedRef.current = true;
+    setCountry(value);
+  };
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResultData | null>(null);
   const [error, setError] = useState("");
@@ -108,7 +120,7 @@ const BasketOptimizer = forwardRef<BasketOptimizerHandle, Props>(function Basket
         <label className="text-xs font-mono text-[var(--cm-on-surface-variant)] shrink-0">País</label>
         <select
           value={country}
-          onChange={(e) => setCountry(e.target.value)}
+          onChange={(e) => handleCountryChange(e.target.value)}
           className="bg-[var(--cm-surface-low)] border border-[var(--cm-outline-variant)] rounded-lg px-3 py-1.5 text-sm font-mono text-[var(--cm-on-surface)] focus:outline-none focus:border-[var(--cm-mint)]"
         >
           {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
