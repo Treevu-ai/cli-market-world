@@ -76,6 +76,36 @@ python3 ops/price_pulse_agents.py --run       # todo en uno
 9. Transfer Pricing Brief (Tax Strategist)
 10. Disclaimer y fuentes
 
+## Estado actual (verificado 2026-07-12)
+
+**El flujo es semi-manual, no un pipeline autónomo.** `--prepare` solo genera los 5
+archivos de prompt; un humano tiene que pegar cada uno en una herramienta LLM (Claude,
+ChatGPT, Claude Code, etc.), guardar la respuesta en
+`ops/generated/outputs/output-<agent>.md`, y recién ahí `--assemble` arma el reporte
+final. No hay ninguna llamada automática a un LLM dentro de `price_pulse_agents.py`.
+
+El repo externo `agency-agents` (fuente de los 5 `role_file` de finanzas) **no estaba
+clonado en esta máquina** — el script apunta a `~/Proyectos/agency-agents/finance/*.md`
+de forma hardcodeada (`AGENCY_AGENTS_BASE`), y esa ruta no existía. Se clonó
+[`msitarzewski/agency-agents`](https://github.com/msitarzewski/agency-agents) ahí el
+2026-07-12 para restaurar el flujo — confirmado que los 5 archivos coinciden exacto con
+lo que el script espera. Antes de esto, `--prepare` fallaba con `FileNotFoundError`, y
+solo funcionaba con prompts generados previamente (probablemente en otra máquina donde sí
+estaba clonado).
+
+Ese mismo repo `agency-agents` trae **11 personas en total** (`docs/agents/contexts/`
+tiene un contexto CLI-Market por cada una), pero **solo las 5 de finanzas** listadas
+arriba están conectadas a este script. Las otras 6 —`brand-guardian`, `content-creator`,
+`sales-engineer`, `ui-designer`, `ux-architect`, `ux-researcher`— ya están conectadas a
+un pipeline propio, ver [growth-pulse-workflow.md](growth-pulse-workflow.md)
+(`ops/growth_pulse_agents.py`), separado de este porque no comparten fuente de datos ni
+producen secciones de un mismo reporte.
+
+Separado de todo esto: `submit_job()` (el `--submit` / `POST /v1/intel/price-pulse`)
+NO usa agency-agents — dispara un job server-side que corre sobre
+`market_core/market_intel_agent.py` (un único agente conversacional Claude tool-use),
+no sobre las 5 personas de finanzas.
+
 ## Tiers
 
 | Tier | Secciones | Agentes | Precio |
