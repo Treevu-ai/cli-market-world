@@ -2,7 +2,89 @@
 
 All notable changes to the CLI Market ecosystem.
 
-## [2026-07-12] — Market Console v1, growth-pulse agents, opt-in budget gate
+## [2026-07-13] — Light landing palette, cross-repo MCP tool bugs, canonicalization root cause + data backfill
+
+### cli-market-world (landing) — Fase 1 + Fase 2 craft pass
+- **Changed:** Full palette swap from black/orange to light piedra-salvia theme
+  across `globals.css` tokens, `.brand-mode-operations`, and hardcoded hex in 6
+  components — validated against an Artifact prototype before touching the
+  real site.
+- **Fixed:** `Navbar.tsx` had an inline `rgba(0,0,0,...)` background bypassing
+  the token system entirely, staying black after the swap.
+- **Fixed:** `HeroBackground.tsx` gradient wash and image saturation tuned down
+  — the retail-aisle photo read too heavy/dark against the new light canvas.
+- **Fixed:** Hydration mismatch in `usePricingBillingFootnote` — the initial
+  `useState` used the geo-aware footnote (reads `Intl` timezone, unavailable
+  during SSR) instead of a static default, causing server/client HTML to
+  differ on `/build`'s pricing section.
+- **Changed:** Pill buttons (`--cm-radius-pill: 10px → 999px`), larger card
+  radius (`--cm-radius-lg: 16px → 20px`), bigger hero typography
+  (`.hero-garamond-headline` clamp ceiling 4rem → 5.5rem), and a solid-color
+  featured pricing tier — one token/component change fans out to 23+ buttons
+  and 30+ cards without touching each call site.
+- **Changed:** Hero content (home + all spoke pages) left-aligned — centered
+  hero copy is out of style for SaaS marketing pages.
+- **Fixed:** Hero pricing chips advertised a nonexistent "Free" tier —
+  `Pricing.tsx`'s real tiers are Starter/Pro/Enterprise. Caught during a live
+  MCP tool test.
+
+### cli-market-core (PyPI `1.11.42`)
+- **Fixed:** `resolve_canonical_id`'s taxonomy-registry fallback used a raw
+  bidirectional substring match with no word boundaries, returning the first
+  hit in arbitrary dict order — a short/generic registry name could match
+  inside an unrelated product name. Replaced with `\b`-bounded regex,
+  preferring the longest (most specific) match.
+
+### cli-market-backend (deployed to `cli-market-api`, Fly)
+- **Fixed:** `market_discover` was wired to `/analytics/trending` (a
+  `market_trending` copy-paste) — now composes `/lines` + `/stores` +
+  `/countries` in parallel, matching cli-market-core's own reference
+  implementation.
+- **Fixed:** `market_price_history` was entirely absent from `/mcp`'s tool
+  dispatch, falling through to `"Unknown tool"` despite its REST endpoint
+  (`/analytics/price-history`) already existing.
+- **Fixed:** `market_price_risk` was wired to `/v1/intel/alerts`
+  (`market_price_alerts`' endpoint, which requires a `product` param
+  `market_price_risk`'s own schema doesn't have) — every call 422'd. Retargeted
+  to `/v1/intel/price-risk`.
+- **Added:** `market_informal_signal`, `market_promo_detector`,
+  `market_retailer_scorecard` — registered as MCP tools in cli-market-core but
+  never implemented on this backend's REST layer. cli-market-core already
+  ships the `compute_*` business logic; wired directly rather than mounting
+  core's whole optional router (would collide with paths this backend already
+  implements independently).
+- **Fixed:** `Dockerfile`'s GitHub PAT build-arg was echoed verbatim into
+  BuildKit's own progress log for any `ARG`-interpolated `RUN` command,
+  regardless of shell flags — migrated to `RUN --mount=type=secret`, which
+  BuildKit never logs or persists into an image layer. Two PATs and one OAuth
+  token were exposed and rotated during this investigation.
+- **Changed:** Pinned `cli-market-core==1.11.42`, `cli-market-index@7bc582d`.
+
+### cli-market-index
+- **Fixed (root cause):** `Resolver._fuzzy_search` matched candidate products
+  on brand + package size alone, with no category check — a brand selling
+  unrelated product lines in an identical container size (e.g. BELL'S: 3L
+  cooking oil and 3L soda) collided into one Golden Record. This was the
+  actual mechanism behind the cross-category substitute bugs surfaced via live
+  agent testing of `market_optimize_purchase` and `market_substitutes`; the
+  cli-market-core `resolve_canonical_id` fix above only hardened its own
+  fallback and never touched how this index assigns `canonical_product_id` in
+  the first place. Added `category_hint` as a required match dimension.
+
+### Data backfill (production `price_snapshots`)
+- **Fixed:** 6,314 rows had `canonical_product_id` corrected after the
+  `_fuzzy_search` fix landed. Scope was arrived at through two discarded
+  broader attempts (a brand-blind recompute, then an unscoped per-row
+  recompute) that would have introduced *new* miscategorizations for
+  personal-care products (`infer_category`'s keyword fallback misreads scent/
+  flavor words like "leche" in shampoo names) — the executed backfill only
+  touched `canonical_product_id` values current shared by 2+ products that
+  compute distinct categories today (direct evidence of a real collision),
+  and explicitly excluded any row naming a personal-care product. ~5,000
+  singleton mismatches and 475 personal-care rows were left untouched,
+  documented as a separate follow-up (`infer_category`'s keyword fallback
+  needs its own fix, not a data patch).
+
 
 ### cli-market-world (landing) — Market Console v1
 - **Added:** Explorer (`/dashboard/explorer`) and Developer (`/dashboard/developer`)
