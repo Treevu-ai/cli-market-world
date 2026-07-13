@@ -167,7 +167,7 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
       chips: [
         { label_es: "Affordability score en vivo", label_en: "Live affordability score" },
         { label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`, label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices` },
-        { label_es: "Free · Starter $9 · Pro $49/mes", label_en: "Free · Starter $9 · Pro $49/mo" },
+        { label_es: "Starter $9 · Pro $49/mes", label_en: "Starter $9 · Pro $49/mo" },
       ],
       primaryCta: {
         es: "Ver mi canasta →",
@@ -207,7 +207,7 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
           label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`,
           label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices`,
         },
-        { label_es: "Free · Starter $9 · Pro $49/mes", label_en: "Free · Starter $9 · Pro $49/mo" },
+        { label_es: "Starter $9 · Pro $49/mes", label_en: "Starter $9 · Pro $49/mo" },
       ],
       primaryCta: {
         es: CTA.getApiKey.es,
