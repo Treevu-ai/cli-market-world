@@ -6,6 +6,7 @@ import {
   paymentsChannelsForCheckout,
   paymentsChannelsShort,
   pricingBillingFootnote,
+  pricingBillingFootnoteDefault,
 } from "@/lib/billingCopy";
 
 /** Hydration-safe label for pricing cards (updates after mount in Peru). */
@@ -19,7 +20,7 @@ export function usePaymentsChannels(isES: boolean): string {
 
 /** Footnote with Peru/international order after client geo detection. */
 export function usePricingBillingFootnote(isES: boolean): string {
-  const [footnote, setFootnote] = useState(() => pricingBillingFootnote(isES));
+  const [footnote, setFootnote] = useState(() => pricingBillingFootnoteDefault(isES));
   useEffect(() => {
     setFootnote(pricingBillingFootnote(isES));
   }, [isES]);
