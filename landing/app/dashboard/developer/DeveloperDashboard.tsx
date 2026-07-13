@@ -149,7 +149,7 @@ export default function DeveloperDashboard() {
                 <p className="text-xs font-mono text-[var(--cm-mint)]">
                   Guardala ahora — no se vuelve a mostrar completa.
                 </p>
-                <pre className="text-xs font-mono text-[var(--cm-on-surface)] bg-black/30 p-2 rounded-lg overflow-x-auto">
+                <pre className="text-xs font-mono text-[var(--cm-on-surface)] bg-[var(--cm-surface-high)] p-2 rounded-lg overflow-x-auto">
                   {justCreated.key}
                 </pre>
               </div>
@@ -206,7 +206,7 @@ export default function DeveloperDashboard() {
               ))}
             </div>
             <div className="relative">
-              <pre className="text-xs font-mono text-[var(--cm-on-surface)] bg-black/30 border border-[var(--cm-outline-variant)] p-4 rounded-xl overflow-x-auto">
+              <pre className="text-xs font-mono text-[var(--cm-on-surface)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] p-4 rounded-xl overflow-x-auto">
                 {snippet}
               </pre>
               <button

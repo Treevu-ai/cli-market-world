@@ -1,11 +1,11 @@
 /** Retail aisle + data overlay — hero background (decorative only). */
 export default function HeroBackground({ dense = false }: { dense?: boolean }) {
   const overlayHorizontal = dense
-    ? "absolute inset-0 bg-gradient-to-r from-[var(--cm-background)]/96 via-[var(--cm-background)]/70 to-[var(--cm-background)]/10"
-    : "absolute inset-0 bg-gradient-to-r from-[var(--cm-background)]/92 via-[var(--cm-background)]/55 to-[var(--cm-background)]/10";
+    ? "absolute inset-0 bg-gradient-to-r from-[var(--cm-background)]/97 via-[var(--cm-background)]/82 to-[var(--cm-background)]/45"
+    : "absolute inset-0 bg-gradient-to-r from-[var(--cm-background)]/94 via-[var(--cm-background)]/70 to-[var(--cm-background)]/40";
   const overlayVertical = dense
-    ? "absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/85 via-transparent to-[var(--cm-background)]/25"
-    : "absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/75 via-transparent to-[var(--cm-background)]/25";
+    ? "absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/90 via-[var(--cm-background)]/35 to-[var(--cm-background)]/45"
+    : "absolute inset-0 bg-gradient-to-t from-[var(--cm-background)]/85 via-[var(--cm-background)]/30 to-[var(--cm-background)]/40";
 
   return (
     <div
@@ -17,7 +17,7 @@ export default function HeroBackground({ dense = false }: { dense?: boolean }) {
         alt=""
         width={1920}
         height={1080}
-        className="absolute inset-0 h-full w-full object-cover object-[50%_38%] scale-105 saturate-110"
+        className="absolute inset-0 h-full w-full object-cover object-[50%_38%] scale-105 saturate-75 brightness-110"
         loading="eager"
         decoding="async"
       />

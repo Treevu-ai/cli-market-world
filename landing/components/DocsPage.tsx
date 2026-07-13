@@ -293,7 +293,7 @@ market doctor`}</CodeBlock>
             <BillingCheckoutTrigger kind={{ type: "build-pro" }} className="btn-mint" />
             <BillingCheckoutTrigger
               kind={{ type: "build-pro", annual: true }}
-              className="rounded-[10px] border border-[#e2e8f0] px-5 py-2.5 text-sm font-semibold text-[#64748b] hover:border-[#ea580c] hover:text-[#ea580c] transition-colors"
+              className="rounded-[10px] border border-[#e2e8f0] px-5 py-2.5 text-sm font-semibold text-[#64748b] hover:border-[#3E6B4C] hover:text-[#3E6B4C] transition-colors"
               label_es="Pro anual $490/año →"
               label_en="Pro annual $490/yr →"
             />
@@ -534,7 +534,7 @@ market --json doctor`}</CodeBlock>
               {copied ? "OK" : "COPY"}
             </button>
           </div>
-          <pre className="p-5 font-mono text-[11px] text-[var(--cm-mint)]/90 bg-black/40 overflow-x-auto whitespace-pre-wrap">{SNIPPETS[tab]}</pre>
+          <pre className="p-5 font-mono text-[11px] text-[var(--cm-mint)]/90 bg-[var(--cm-surface-high)] overflow-x-auto whitespace-pre-wrap">{SNIPPETS[tab]}</pre>
         </div>
 
         <div className="mt-8 glass-panel p-5 rounded-xl border border-[var(--cm-mint)]/10">
