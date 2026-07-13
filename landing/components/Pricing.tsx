@@ -158,18 +158,22 @@ function TierCard({
     .slice(0, FEATURE_COUNT)
     .map((line) => formatPaymentsFeature(line, paymentsLabel));
 
+  const onFeatured = (base: string, muted?: string) =>
+    tier.featured ? `text-[var(--cm-on-mint)]${muted ? `/${muted}` : ""}` : base;
+
   return (
     <div
-      className={`h-full min-h-[24rem] rounded-2xl p-5 sm:p-6 text-left flex flex-col ${
-        tier.dark || tier.featured ? "energy-border-active card-cyber" : "card-cyber"
+      className={`relative h-full min-h-[24rem] rounded-2xl p-5 sm:p-6 text-left flex flex-col ${
+        tier.dark ? "energy-border-active card-cyber" : "card-cyber"
       }`}
+      style={tier.featured ? { background: "var(--cm-mint)", borderColor: "var(--cm-mint)" } : undefined}
     >
+      {tier.featured && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--cm-ink)] text-[var(--cm-background)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap shadow-sm">
+          {isES ? "Recomendado" : "Recommended"}
+        </span>
+      )}
       <div className="min-h-[1.75rem] mb-3 flex items-center justify-center">
-        {tier.featured && (
-          <span className="bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
-            {isES ? "Recomendado" : "Recommended"}
-          </span>
-        )}
         {tier.limited && (
           <span className="bg-[var(--cm-action)]/15 text-[var(--cm-action)] border border-[var(--cm-action)]/30 text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
             {foundingSeats != null
@@ -183,30 +187,38 @@ function TierCard({
         )}
       </div>
 
-      <h3 className={`text-lg font-bold ${tier.dark ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface)]"}`}>
+      <h3
+        className={`text-lg font-bold ${
+          tier.featured
+            ? "text-[var(--cm-on-mint)]"
+            : tier.dark
+              ? "text-[var(--cm-mint)]"
+              : "text-[var(--cm-on-surface)]"
+        }`}
+      >
         {tier.name}
       </h3>
 
       <div className="mt-3 mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0">
         {tier.compareAt && (
-          <span className="text-lg text-[var(--cm-on-surface-variant)]/50 line-through tabular-nums">
+          <span className={`text-lg line-through tabular-nums ${onFeatured("text-[var(--cm-on-surface-variant)]/50", "50")}`}>
             {tier.compareAt}
           </span>
         )}
-        <span className="text-3xl font-black tabular-nums text-[var(--cm-on-surface)]">{displayPrice}</span>
+        <span className={`text-3xl font-black tabular-nums ${onFeatured("text-[var(--cm-on-surface)]")}`}>{displayPrice}</span>
         {period && (
-          <span className="text-sm text-[var(--cm-on-surface-variant)]">{period}</span>
+          <span className={`text-sm ${onFeatured("text-[var(--cm-on-surface-variant)]", "85")}`}>{period}</span>
         )}
       </div>
 
       {displayLatam && displayLatam !== "S/0" && (
-        <p className="text-xs text-[var(--cm-on-surface-variant)]/60 mb-1 font-mono tabular-nums">
+        <p className={`text-xs mb-1 font-mono tabular-nums ${onFeatured("text-[var(--cm-on-surface-variant)]/60", "70")}`}>
           {displayLatam}
           {period ? ` ${period}` : ""}
         </p>
       )}
 
-      <p className="text-xs text-[var(--cm-mint)] mb-4 min-h-[1.25rem] font-mono">
+      <p className={`text-xs mb-4 min-h-[1.25rem] font-mono ${tier.featured ? "text-[var(--cm-on-mint)]" : "text-[var(--cm-mint)]"}`}>
         {isAnnual && tier.annualPrice
           ? isES
             ? "Ahorra 2 meses vs mensual"
@@ -218,13 +230,13 @@ function TierCard({
         {features.map((f, i) => (
           <li
             key={i}
-            className="flex items-start gap-2.5 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed"
+            className={`flex items-start gap-2.5 text-sm leading-relaxed ${onFeatured("text-[var(--cm-on-surface-variant)]", "90")}`}
           >
             <svg
               className="w-4 h-4 mt-0.5 shrink-0"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="var(--cm-mint)"
+              stroke={tier.featured ? "var(--cm-on-mint)" : "var(--cm-mint)"}
               strokeWidth="2.5"
             >
               <path d="M20 6L9 17l-5-5" />
