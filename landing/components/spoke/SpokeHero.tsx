@@ -42,7 +42,7 @@ export default function SpokeHero({ icp, onPrimaryClick }: SpokeHeroProps) {
     >
       <HeroBackground dense={config.heroBackgroundDense} />
       <div className="landing-container-wide hero-inner pt-4 pb-8 sm:pt-6 sm:pb-10 lg:py-8 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl text-left">
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ export default function SpokeHero({ icp, onPrimaryClick }: SpokeHeroProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="mt-4 text-base sm:text-lg max-w-[540px] mx-auto leading-relaxed text-[var(--cm-on-surface-variant)]"
+            className="mt-4 text-base sm:text-lg max-w-[540px] leading-relaxed text-[var(--cm-on-surface-variant)]"
           >
             {isES ? hero.subhead_es : hero.subhead_en}
           </motion.p>
@@ -85,7 +85,7 @@ export default function SpokeHero({ icp, onPrimaryClick }: SpokeHeroProps) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.16 }}
-              className="mt-4 flex flex-wrap justify-center gap-2"
+              className="mt-4 flex flex-wrap justify-start gap-2"
             >
               {hero.chips.map((chip) => (
                 <span
@@ -102,7 +102,7 @@ export default function SpokeHero({ icp, onPrimaryClick }: SpokeHeroProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.22 }}
-            className="flex flex-wrap justify-center gap-3 mt-6"
+            className="flex flex-wrap justify-start gap-3 mt-6"
           >
             {onPrimaryClick ? (
               <button type="button" className={primaryClass} onClick={onPrimaryClick}>

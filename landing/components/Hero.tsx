@@ -49,7 +49,7 @@ export default function Hero() {
     >
       <HeroBackground />
       <div className="landing-container-wide hero-inner pt-4 pb-10 sm:pt-6 sm:pb-12 lg:py-8 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl text-left">
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="mt-4 text-base sm:text-lg max-w-[540px] mx-auto leading-relaxed text-[var(--cm-on-surface-variant)]"
+            className="mt-4 text-base sm:text-lg max-w-[540px] leading-relaxed text-[var(--cm-on-surface-variant)]"
           >
             {isES
               ? "CLI, API y MCP sobre una sola capa de datos verificada. Elige cómo construyes, compras o analizas."
@@ -94,7 +94,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.16 }}
-              className="mt-4 flex flex-wrap justify-center gap-2"
+              className="mt-4 flex flex-wrap justify-start gap-2"
             >
               {proofChips.map((chip, i) => (
                 <span
@@ -112,7 +112,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.22, ease: "easeOut" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10 max-w-5xl"
         >
           {PRODUCT_DOORS.map((door) => (
             <ProductDoorCard
@@ -128,7 +128,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8 text-center text-sm text-[var(--cm-on-surface-variant)]"
+          className="mt-8 text-left text-sm text-[var(--cm-on-surface-variant)]"
         >
           {isES ? "¿Vendes en retail? " : "Sell retail? "}
           <a
