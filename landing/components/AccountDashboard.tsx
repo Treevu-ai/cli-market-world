@@ -261,7 +261,7 @@ function AccountDashboardInner() {
                 </h2>
                 <p className="text-[var(--cm-on-surface)] font-semibold">{data.upgrade.title}</p>
                 {data.upgrade.cli && (
-                  <pre className="code-snippet text-xs text-[var(--cm-mint)] bg-black/30 p-3 rounded-lg overflow-x-auto">
+                  <pre className="code-snippet text-xs text-[var(--cm-mint)] bg-[var(--cm-surface-high)] p-3 rounded-lg overflow-x-auto">
                     {data.upgrade.cli}
                   </pre>
                 )}

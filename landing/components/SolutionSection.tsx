@@ -63,7 +63,7 @@ export default function SolutionSection() {
               transition={{ duration: 0.55, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "linear-gradient(180deg, #f97316 0%, #ea580c 100%)" }}>
+                <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "linear-gradient(180deg, #4F8161 0%, #3E6B4C 100%)" }}>
                   {step.n}
                 </span>
                 <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">

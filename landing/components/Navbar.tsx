@@ -54,7 +54,7 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 w-full ${open ? "z-[110]" : "z-50"} transition-all duration-300`}
       style={{
-        backgroundColor: scrolled ? "rgba(0,0,0,0.92)" : "rgba(0,0,0,0.85)",
+        backgroundColor: scrolled ? "rgba(237,239,232,0.92)" : "rgba(237,239,232,0.85)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         borderBottom: "1px solid var(--cm-hairline-soft)",
