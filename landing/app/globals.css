@@ -69,10 +69,10 @@
   --cm-outline-variant: #C9C3AE;
 
   /* Radius & layout */
-  --cm-radius-lg: 16px;
+  --cm-radius-lg: 20px;
   --cm-radius-md: 10px;
   --cm-radius-sm: 8px;
-  --cm-radius-pill: 10px;
+  --cm-radius-pill: 999px;
   --cm-glow-strength: 0;
   --cm-gutter: 24px;
   --cm-content-max: 1200px;
@@ -2191,15 +2191,15 @@ body > div[id*="paypal-cart"] {
 .hero-garamond-headline {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(2.2rem, 5.5vw, 4rem);
-  line-height: 1.06;
+  font-size: clamp(2.2rem, 6.5vw, 5.5rem);
+  line-height: 1.0;
   letter-spacing: -0.04em;
   color: var(--cm-on-surface);
 }
 
 @media (min-width: 768px) {
   .hero-garamond-headline {
-    line-height: 1.06;
+    line-height: 1.0;
     letter-spacing: -0.04em;
   }
 }
