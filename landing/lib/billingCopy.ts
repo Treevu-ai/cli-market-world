@@ -44,14 +44,19 @@ export function sinapsisBillingPolicy(isES: boolean): string {
     : `${SINAPSIS_BILLING.entity} (tax ID ${SINAPSIS_BILLING.taxId}) invoices Build and Procure subscriptions in US dollars (USD) via PayPal and in soles (PEN) via Yape, Plin, or card through Mercado Pago. Receipts match the payment currency.`;
 }
 
-/** One-line footnote under pricing cards. */
+/** Static international-order footnote — safe default for SSR / first client render. */
+export function pricingBillingFootnoteDefault(isES: boolean): string {
+  return isES
+    ? `${SINAPSIS_BILLING.entity} · RUC ${SINAPSIS_BILLING.taxId} · USD (PayPal) o soles (Yape · Plin · Mercado Pago).`
+    : `${SINAPSIS_BILLING.entity} · tax ID ${SINAPSIS_BILLING.taxId} · USD (PayPal) or soles (Yape · Plin · Mercado Pago).`;
+}
+
+/** One-line footnote under pricing cards — Peru order after client geo detection. */
 export function pricingBillingFootnote(isES: boolean): string {
   if (isPeruCheckoutAudience()) {
     return isES
       ? `${SINAPSIS_BILLING.entity} · RUC ${SINAPSIS_BILLING.taxId} · soles (Yape · Plin · Mercado Pago) o USD (PayPal).`
       : `${SINAPSIS_BILLING.entity} · tax ID ${SINAPSIS_BILLING.taxId} · soles (Yape · Plin · Mercado Pago) or USD (PayPal).`;
   }
-  return isES
-    ? `${SINAPSIS_BILLING.entity} · RUC ${SINAPSIS_BILLING.taxId} · USD (PayPal) o soles (Yape · Plin · Mercado Pago).`
-    : `${SINAPSIS_BILLING.entity} · tax ID ${SINAPSIS_BILLING.taxId} · USD (PayPal) or soles (Yape · Plin · Mercado Pago).`;
+  return pricingBillingFootnoteDefault(isES);
 }
