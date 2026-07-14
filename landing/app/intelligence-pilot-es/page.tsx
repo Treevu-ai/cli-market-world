@@ -29,7 +29,7 @@ function PilotTable({ isES }: { isES: boolean }) {
             {headers.map((h) => (
               <th
                 key={h || "row"}
-                className="border border-[#e2e8f0] bg-[#f1f5f9] px-3 py-2 text-left font-semibold text-[#0f172a]"
+                className="border border-[var(--cm-outline-variant)] bg-[var(--cm-surface-high)] px-3 py-2 text-left font-semibold text-[var(--cm-on-surface)]"
               >
                 {h}
               </th>
@@ -42,9 +42,9 @@ function PilotTable({ isES }: { isES: boolean }) {
               {row.map((cell, i) => (
                 <td
                   key={`${row[0]}-${i}`}
-                  className="border border-[#e2e8f0] px-3 py-2 text-[#64748b] align-top"
+                  className="border border-[var(--cm-outline-variant)] px-3 py-2 text-[var(--cm-on-surface-variant)] align-top"
                 >
-                  {i === 0 ? <strong className="text-[#0f172a]">{cell}</strong> : cell}
+                  {i === 0 ? <strong className="text-[var(--cm-on-surface)]">{cell}</strong> : cell}
                 </td>
               ))}
             </tr>
@@ -63,13 +63,13 @@ export default function IntelligencePilotOnePagerPage() {
     <LegalPage
       titleES="CLI Market Intelligence — Piloto"
       titleEN="CLI Market Intelligence — Pilot"
-      updatedES="26 de junio de 2026"
-      updatedEN="June 26, 2026"
+      updatedES="14 de julio de 2026"
+      updatedEN="July 14, 2026"
     >
       {(isES) =>
         isES ? (
           <>
-            <p className="text-base text-[#0f172a] font-medium">
+            <p className="text-base text-[var(--cm-on-surface)] font-medium">
               Precios de góndola en LATAM · calidad verificable · piloto desde USD 300/mes
             </p>
             <hr />
@@ -92,7 +92,7 @@ export default function IntelligencePilotOnePagerPage() {
               </li>
               <li>{statsLineEs}</li>
               <li>
-                Piloto FMCG WooCommerce: <strong>Nuna Orgánica</strong> (406 SKUs orgánicos PE, Store API)
+                Piloto FMCG WooCommerce: <strong>Nuna Orgánica</strong> (620+ SKUs orgánicos PE, Store API)
               </li>
             </ul>
 
@@ -138,7 +138,7 @@ export default function IntelligencePilotOnePagerPage() {
           </>
         ) : (
           <>
-            <p className="text-base text-[#0f172a] font-medium">
+            <p className="text-base text-[var(--cm-on-surface)] font-medium">
               LATAM shelf prices · verifiable quality · pilot from USD 300/mo
             </p>
             <hr />
@@ -160,7 +160,7 @@ export default function IntelligencePilotOnePagerPage() {
               </li>
               <li>{statsLine}</li>
               <li>
-                FMCG WooCommerce pilot: <strong>Nuna Orgánica</strong> (406 organic SKUs PE, Store API)
+                FMCG WooCommerce pilot: <strong>Nuna Orgánica</strong> (620+ organic SKUs PE, Store API)
               </li>
             </ul>
 
