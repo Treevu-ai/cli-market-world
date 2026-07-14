@@ -2,6 +2,100 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-14] — Market Console live bug sweep, brand-monitor endpoint, subcategory-scoped scores + cross-brand substitutes
+
+### cli-market-world (Market Console — `/dashboard/pricing`, `/dashboard/household`)
+- **Fixed:** `/v1/brand-monitor` fetch never checked `response.ok` — a 404
+  body (`{"detail":"Not Found"}`, the endpoint didn't exist yet) got stored
+  as monitor state anyway, and rendering then spread
+  `[...monitor.my_skus, ...monitor.competitor_skus]` on a body with neither
+  field, throwing mid-render. This was the "page froze / reload or back"
+  bug reported live — it fired automatically within ~1s of a brand
+  auto-selecting.
+- **Fixed:** `/analytics/brands` fetch also skipped the `response.ok` check
+  — an expired/invalid key returned 401, silently read as "0 brands,"
+  rendering as "Sin marcas para este scope" with no indication it was an
+  auth failure, not an empty result. Matches the "dashboard doesn't offer
+  brand/SKU selection" report exactly.
+- **Fixed:** `InflationResponse` type declared `avg_rpv_7d_pct`, but the
+  real `/v1/intel/inflation` response field is `avg_inflation_pct` — the
+  "Inflación de góndola" card always showed `NaN%`. Also added `days=7` to
+  the fetch so the "7d rolling" label matches what's actually requested
+  (was defaulting to the endpoint's 30d).
+- **Fixed:** the household and pricing dashboards' API-key gate used
+  `type="password"`, which some browser/password-manager autofill paths
+  set directly via the DOM without dispatching the input event React
+  listens to — the field visibly showed the pasted key, but React's state
+  (and the "Entrar" button's disabled check) never updated. Switched to
+  `type="text"` with `autoComplete="off"` and per-vendor ignore attributes
+  (1Password/LastPass/Bitwarden), keeping the value visually masked via
+  `-webkit-text-security` instead of relying on the input type.
+
+### cli-market-backend (deployed to `cli-market-api`, Fly)
+- **Added:** `GET /v1/brand-monitor` — was referenced by the frontend but
+  never implemented anywhere in the backend (confirmed via live curl: 404).
+  Returns cross-store SKU snapshots for a brand + competitors, read
+  directly from `price_snapshots`. `product_id` in each row is
+  `COALESCE(canonical_product_id, product_id)` so the comparator table can
+  actually align the same product across stores; `promo_active`/`discount`
+  read straight off existing columns rather than reimplementing
+  `/v1/intel/promo-detector`'s per-product authenticity check.
+- **Fixed:** `/analytics/brands` accepted a `country` query param and
+  never applied it to the query — brand rankings silently mixed every
+  country together. Found while reusing this endpoint's query shape for
+  brand-monitor's competitor auto-selection.
+- **Added:** `dispersion_score` (per-canonical-product cross-store price
+  variance) now excludes any canonical group whose internal price spread
+  exceeds 3x max/min — confirmed live against production gasificadas data
+  that ~14% of canonical links were bundle listings whose price tracks
+  promo state, not real retailer pricing (`Gaseosa Inca Kola 1.5L Pack de
+  2 unid` ranged S/6.9–54.9 under one canonical id). Reporting a
+  dispersion number off one of these would present a scrape/linking
+  artifact as a genuine pricing signal.
+
+### cli-market-core — subcategory-scoped scores + brand-agnostic substitutes (built as `1.11.43`, **not yet published to PyPI** — pending manual `twine upload`; backend pin stays on `1.11.42` until then)
+- **Added:** optional `subcategory` param threading through
+  `compute_price_dispersion` → `_compute_snapshot_kpis` →
+  `refresh_internal_indicators` → `compute_composite_scores`/`get_scores`,
+  so callers can ask "how aggressive is pricing in *gasificadas*
+  specifically" instead of only the whole-line blend. Reuses
+  `market_spread.infer_subcategory` rather than reimplementing bucketing.
+  `get_latest_values` now isolates on the full `scope` string
+  (`"PE:supermercados:gasificadas"` vs `"PE:supermercados"`) instead of
+  just the `country`/`line` columns they share — otherwise a
+  subcategory-scoped row would silently leak into line-level queries.
+- **Added:** same >3x-internal-spread exclusion as the backend fix above,
+  applied inside `compute_price_dispersion` so the composite score itself
+  isn't pulled around by the same bundle-listing artifacts.
+- **Added:** `category_equivalent_products()` in `golden_taxonomy.py` —
+  `find_substitutes()` could only ever return same-brand, cross-store
+  matches (`canonical_product_id` bakes brand into the id by construction,
+  so exact-id equality can never surface a different brand). The new path
+  groups by subcategory + comparable pack size (qty tolerance mirrors
+  cli-market-index's resolver `_qty_close` default of 0.15) and extends a
+  thin same-product pool with cross-brand candidates, each entry tagged
+  `substitution_type` (`same_product_cross_store` /
+  `cross_brand_category_match` / `fuzzy_name_match`) so callers can tell a
+  verified same-SKU link from a genuinely different product.
+- **Fixed:** pre-existing version-marker drift — `pyproject.toml` said
+  `1.11.42` while `market_stats.py`'s `PACKAGE_VERSION` said `1.11.33`.
+  Both now consistently `1.11.43`.
+- Full suite: 564 passed, 3 skipped, 3 pre-existing failures confirmed
+  identical on `main` before this change (clock/timezone drift in a
+  rate-limit test, a stale delivery-quote assertion, a flaky live-network
+  test) — not caused by this session's work.
+
+### Investigation — pricing report validation (no code, live production queries)
+- Reviewed an internal "Poder de Precio e Innovación — Bebidas Gasificadas
+  (PE)" report against live data. The flagship Big Cola 46% cross-retailer
+  gap (S/1.30 Plaza Vea vs S/1.90 Metro) verified as a real, same-moment,
+  canonically-linked comparison — but not representative of the category
+  (the same brand's 355ml can showed ~3% spread across the same stores).
+  The report's 14-SKU category map covered roughly 14/44 (~32%) of
+  distinct canonical gasificadas products actually in production — likely
+  a first-page sample, not a census. This surfaced the >3x-spread bundle
+  artifact documented above as a side effect.
+
 ## [2026-07-13] — Light landing palette, cross-repo MCP tool bugs, canonicalization root cause + data backfill
 
 ### cli-market-world (landing) — Fase 1 + Fase 2 craft pass
