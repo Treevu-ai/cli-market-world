@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, type CSSProperties } from "react";
+import { useState, useEffect, useCallback, useRef, type CSSProperties } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { API_URL } from "@/lib/api";
@@ -136,11 +136,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default function PricingDashboard() {
   const [apiKey, setApiKey] = useState("");
   const [confirmedKey, setConfirmedKey] = useState("");
+  const apiKeyInputRef = useRef<HTMLInputElement>(null);
   const isAuth = !!confirmedKey;
 
   const handleAuth = () => {
-    if (apiKey.trim().startsWith("sk-") || apiKey.trim().startsWith("demo-")) {
-      setConfirmedKey(apiKey.trim());
+    // Read the live DOM value, not just React state — some autofill paths
+    // set .value directly without dispatching an input event, leaving
+    // apiKey state stale even though the field visibly shows the key.
+    const raw = apiKeyInputRef.current?.value ?? apiKey;
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("sk-") || trimmed.startsWith("demo-")) {
+      setConfirmedKey(trimmed);
+    } else if (trimmed !== apiKey.trim()) {
+      setApiKey(raw);
     }
   };
 
@@ -395,6 +403,7 @@ export default function PricingDashboard() {
               </p>
               <div className="flex gap-2">
                 <input
+                  ref={apiKeyInputRef}
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -405,6 +414,9 @@ export default function PricingDashboard() {
                   data-bwignore
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
+                  onBlur={(e) => {
+                    if (e.currentTarget.value !== apiKey) setApiKey(e.currentTarget.value);
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleAuth()}
                   placeholder="sk-..."
                   style={{ WebkitTextSecurity: "disc", textSecurity: "disc" } as CSSProperties}
@@ -413,8 +425,8 @@ export default function PricingDashboard() {
                 <button
                   type="button"
                   onClick={handleAuth}
-                  disabled={!apiKey.trim().startsWith("sk-") && !apiKey.trim().startsWith("demo-")}
-                  className="px-4 py-2 rounded-lg bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold font-mono hover:opacity-90 disabled:opacity-40 transition-opacity"
+                  aria-disabled={!apiKey.trim().startsWith("sk-") && !apiKey.trim().startsWith("demo-")}
+                  className="px-4 py-2 rounded-lg bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold font-mono hover:opacity-90 aria-disabled:opacity-40 transition-opacity"
                 >
                   Entrar
                 </button>
