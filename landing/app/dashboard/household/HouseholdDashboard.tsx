@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type CSSProperties } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HouseholdSetupForm from "@/components/HouseholdSetupForm";
@@ -20,12 +20,22 @@ export default function HouseholdDashboard() {
   const [tab, setTab] = useState<Tab>("canasta");
   const [budgetRefresh, setBudgetRefresh] = useState(0);
   const [profileCountry, setProfileCountry] = useState("PE");
+  const apiKeyInputRef = useRef<HTMLInputElement>(null);
 
   const isAuth = !!confirmedKey;
 
   const handleAuth = () => {
-    if (apiKey.trim().startsWith("sk-") || apiKey.trim().startsWith("demo-")) {
-      setConfirmedKey(apiKey.trim());
+    // Read the live DOM value, not just React state — some autofill paths
+    // set .value directly without dispatching an input event, leaving
+    // apiKey state stale even though the field visibly shows the key.
+    const raw = apiKeyInputRef.current?.value ?? apiKey;
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("sk-") || trimmed.startsWith("demo-")) {
+      setConfirmedKey(trimmed);
+    } else if (trimmed !== apiKey.trim()) {
+      // Self-heal: state was out of sync with the DOM — resync so the
+      // button's enabled state (and a retry click) reflect reality.
+      setApiKey(raw);
     }
   };
 
@@ -75,6 +85,7 @@ export default function HouseholdDashboard() {
               </p>
               <div className="flex gap-2">
                 <input
+                  ref={apiKeyInputRef}
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -85,6 +96,9 @@ export default function HouseholdDashboard() {
                   data-bwignore
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
+                  onBlur={(e) => {
+                    if (e.currentTarget.value !== apiKey) setApiKey(e.currentTarget.value);
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleAuth()}
                   placeholder="sk-..."
                   style={{ WebkitTextSecurity: "disc", textSecurity: "disc" } as CSSProperties}
@@ -93,8 +107,8 @@ export default function HouseholdDashboard() {
                 <button
                   type="button"
                   onClick={handleAuth}
-                  disabled={!apiKey.trim().startsWith("sk-") && !apiKey.trim().startsWith("demo-")}
-                  className="px-4 py-2 rounded-lg bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold font-mono hover:opacity-90 disabled:opacity-40 transition-opacity"
+                  aria-disabled={!apiKey.trim().startsWith("sk-") && !apiKey.trim().startsWith("demo-")}
+                  className="px-4 py-2 rounded-lg bg-[var(--cm-mint)] text-[var(--cm-on-mint)] text-sm font-semibold font-mono hover:opacity-90 aria-disabled:opacity-40 transition-opacity"
                 >
                   Entrar
                 </button>
