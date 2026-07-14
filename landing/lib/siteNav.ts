@@ -34,10 +34,11 @@ export type NavItem = {
  * cli-market-content para el plan de visibilizarlas.
  */
 export const TOP_NAV: NavItem[] = [
+  { id: "home", es: "Home", en: "Home", href: "/" },
   { id: "build", es: "Build", en: "Build", href: "/build" },
-  { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
   { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
   { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
+  { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
 ];
 
 /** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */
