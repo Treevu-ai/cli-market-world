@@ -30,6 +30,19 @@ All notable changes to the CLI Market ecosystem.
   `type="text"` with `autoComplete="off"` and per-vendor ignore attributes
   (1Password/LastPass/Bitwarden), keeping the value visually masked via
   `-webkit-text-security` instead of relying on the input type.
+- **Fixed (residual gap, found via live adversarial testing):** the fix
+  above stopped most autofill desyncs, but a targeted browser test —
+  setting the input's `.value` via the raw DOM setter with zero events
+  dispatched, simulating an autofill that ignores every opt-out attribute
+  — still left `apiKey` React state stale, and the button's native
+  `disabled` attribute silently swallowed the click entirely (no error,
+  no feedback, same symptom as the original report). `handleAuth` now
+  reads the live DOM value through a `ref` as the source of truth instead
+  of trusting `apiKey` state alone; the button switched from `disabled` to
+  `aria-disabled` (styling only) so a click always gets a chance to
+  self-heal, and `onBlur` resyncs state as soon as focus leaves the field.
+  Re-ran the exact same adversarial test against production after
+  deploying — the click now succeeds and the dashboard renders.
 
 ### cli-market-backend (deployed to `cli-market-api`, Fly)
 - **Added:** `GET /v1/brand-monitor` — was referenced by the frontend but
