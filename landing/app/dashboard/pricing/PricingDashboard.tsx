@@ -156,6 +156,7 @@ export default function PricingDashboard() {
   const [brands, setBrands] = useState<BrandCount[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(false);
+  const [brandsError, setBrandsError] = useState<string | null>(null);
 
   // ── Lever state ──────────────────────────────────────────
   const [position, setPosition] = useState("median");
@@ -185,18 +186,26 @@ export default function PricingDashboard() {
   useEffect(() => {
     if (!confirmedKey) return;
     setBrandsLoading(true);
+    setBrandsError(null);
     fetch(`${API_URL}/analytics/brands?line=${line}&country=${country}&limit=12`, {
       headers: { Authorization: `Bearer ${confirmedKey}` },
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const d = await r.json().catch(() => null);
+        if (!r.ok) {
+          throw new Error(d?.detail || `HTTP ${r.status}`);
+        }
+        return d;
+      })
       .then((d) => {
         const list: BrandCount[] = Array.isArray(d?.brands) ? d.brands : [];
         setBrands(list);
         setSelectedBrands(list.slice(0, 2).map((b) => b.brand));
       })
-      .catch(() => {
+      .catch((err) => {
         setBrands([]);
         setSelectedBrands([]);
+        setBrandsError(err instanceof Error ? err.message : "No se pudo cargar marcas");
       })
       .finally(() => setBrandsLoading(false));
   }, [confirmedKey, country, line]);
@@ -240,20 +249,25 @@ export default function PricingDashboard() {
     fetch(`${API_URL}/v1/brand-monitor?${params.toString()}`, {
       headers: { Authorization: `Bearer ${confirmedKey}` },
     })
-      .then((r) => r.json())
-      .then((d: BrandMonitorResponse) => {
-        if (d?.error) {
-          setMonitorError(d.error);
-          setMonitor(null);
-        } else {
-          setMonitor(d);
+      .then(async (r) => {
+        const d = await r.json().catch(() => null);
+        if (!r.ok || !d || !Array.isArray(d.my_skus) || !Array.isArray(d.competitor_skus)) {
+          throw new Error(d?.error || d?.detail || `HTTP ${r.status}`);
         }
+        return d as BrandMonitorResponse;
       })
-      .catch(() => setMonitorError("No se pudo cargar brand-monitor"))
+      .then((d) => setMonitor(d))
+      .catch((err) => {
+        setMonitorError(err instanceof Error ? err.message : "No se pudo cargar brand-monitor");
+        setMonitor(null);
+      })
       .finally(() => setMonitorLoading(false));
   }, [confirmedKey, country, line, windowDays, selectedBrands]);
 
-  const allSkus: SkuRow[] = monitor ? [...monitor.my_skus, ...monitor.competitor_skus] : [];
+  const allSkus: SkuRow[] =
+    monitor && Array.isArray(monitor.my_skus) && Array.isArray(monitor.competitor_skus)
+      ? [...monitor.my_skus, ...monitor.competitor_skus]
+      : [];
 
   // Pivot per-store rows into product × store, filtered to selected stores
   // and to the confidence-adjacent freshness bar this dashboard exposes as a
@@ -425,7 +439,12 @@ export default function PricingDashboard() {
                     label={`Marca(s) ${brandsLoading ? "· cargando…" : `· ${selectedBrands.length} seleccionada${selectedBrands.length === 1 ? "" : "s"}`}`}
                   >
                     <div className="flex flex-wrap gap-1.5">
-                      {brands.length === 0 && !brandsLoading && (
+                      {brandsError && !brandsLoading && (
+                        <span className="text-xs font-mono text-red-500">
+                          No se pudieron cargar las marcas: {brandsError}
+                        </span>
+                      )}
+                      {!brandsError && brands.length === 0 && !brandsLoading && (
                         <span className="text-xs font-mono text-[var(--cm-on-surface-variant)]/50">
                           Sin marcas para este scope
                         </span>
