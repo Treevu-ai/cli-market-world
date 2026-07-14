@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { API_URL } from "@/lib/api";
@@ -79,9 +79,9 @@ function fmtPrice(v: number | undefined, currency: string) {
 type ScoreEntry = { score: number; label: string; confidence?: string };
 type ScoresResponse = { scores: Record<string, ScoreEntry> };
 type InflationResponse = {
-  avg_rpv_7d_pct: number;
-  metric_label: string;
-  period_note: string;
+  avg_inflation_pct: number;
+  products_tracked: number;
+  disclaimer: string;
 };
 type ProcurementResponse = {
   data: { signal: "buy_now" | "wait" | "monitor" | string; signal_reason: string };
@@ -319,7 +319,7 @@ export default function PricingDashboard() {
         .then((r) => (r.ok ? r.json() : null))
         .then((d: ScoresResponse | null) => setScores(d?.scores ?? null))
         .catch(() => setScores(null)),
-      fetch(`${API_URL}/v1/intel/inflation?country=${country}&line=${line}`, { headers })
+      fetch(`${API_URL}/v1/intel/inflation?country=${country}&line=${line}&days=7`, { headers })
         .then((r) => (r.ok ? r.json() : null))
         .then((d: InflationResponse | null) => setInflation(d))
         .catch(() => setInflation(null)),
@@ -395,11 +395,19 @@ export default function PricingDashboard() {
               </p>
               <div className="flex gap-2">
                 <input
-                  type="password"
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-bwignore
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAuth()}
                   placeholder="sk-..."
+                  style={{ WebkitTextSecurity: "disc", textSecurity: "disc" } as CSSProperties}
                   className="flex-1 bg-[var(--cm-surface-low)] border border-[var(--cm-outline-variant)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--cm-on-surface)] placeholder:text-[var(--cm-on-surface-variant)]/40 focus:outline-none focus:border-[var(--cm-mint)]"
                 />
                 <button
@@ -606,10 +614,14 @@ export default function PricingDashboard() {
                         </div>
                         <div
                           className={`text-2xl font-mono font-bold mt-1.5 ${
-                            inflation && inflation.avg_rpv_7d_pct > 0 ? "text-[var(--cm-mint)]" : "text-[var(--cm-on-surface)]"
+                            inflation && inflation.products_tracked > 0 && inflation.avg_inflation_pct > 0
+                              ? "text-[var(--cm-mint)]"
+                              : "text-[var(--cm-on-surface)]"
                           }`}
                         >
-                          {inflation ? `${inflation.avg_rpv_7d_pct > 0 ? "↑" : "↓"} ${Math.abs(inflation.avg_rpv_7d_pct).toFixed(1)}%` : "—"}
+                          {inflation && inflation.products_tracked > 0
+                            ? `${inflation.avg_inflation_pct > 0 ? "↑" : "↓"} ${Math.abs(inflation.avg_inflation_pct).toFixed(1)}%`
+                            : "—"}
                         </div>
                         <div className="text-[11px] text-[var(--cm-on-surface-variant)] mt-1">7d rolling · no es IPC oficial</div>
                       </div>

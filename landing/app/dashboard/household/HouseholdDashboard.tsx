@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HouseholdSetupForm from "@/components/HouseholdSetupForm";
@@ -75,11 +75,19 @@ export default function HouseholdDashboard() {
               </p>
               <div className="flex gap-2">
                 <input
-                  type="password"
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-bwignore
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAuth()}
                   placeholder="sk-..."
+                  style={{ WebkitTextSecurity: "disc", textSecurity: "disc" } as CSSProperties}
                   className="flex-1 bg-[var(--cm-surface-low)] border border-[var(--cm-outline-variant)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--cm-on-surface)] placeholder:text-[var(--cm-on-surface-variant)]/40 focus:outline-none focus:border-[var(--cm-mint)]"
                 />
                 <button
