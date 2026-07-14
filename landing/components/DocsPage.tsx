@@ -384,8 +384,8 @@ market --json doctor`}</CodeBlock>
           </p>
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t("Endpoints comerciales: ", "Commercial endpoints: ")}
-            <code className="text-[var(--cm-mint)]">/v1/prices</code>,{" "}
-            <code className="text-[var(--cm-mint)]">/v1/dispersion</code>,{" "}
+            <code className="text-[var(--cm-mint)]">/v1/intel/brief</code>,{" "}
+            <code className="text-[var(--cm-mint)]">/v1/intel/scores</code>,{" "}
             <code className="text-[var(--cm-mint)]">/v1/intel/inflation</code>.
           </p>
           <a href="/intelligence-pilot-es" className="text-[var(--cm-mint)] underline text-sm">
