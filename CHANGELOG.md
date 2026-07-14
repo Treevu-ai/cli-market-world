@@ -53,7 +53,7 @@ All notable changes to the CLI Market ecosystem.
   dispersion number off one of these would present a scrape/linking
   artifact as a genuine pricing signal.
 
-### cli-market-core — subcategory-scoped scores + brand-agnostic substitutes (built as `1.11.43`, **not yet published to PyPI** — pending manual `twine upload`; backend pin stays on `1.11.42` until then)
+### cli-market-core (PyPI `1.11.43`) — subcategory-scoped scores + brand-agnostic substitutes
 - **Added:** optional `subcategory` param threading through
   `compute_price_dispersion` → `_compute_snapshot_kpis` →
   `refresh_internal_indicators` → `compute_composite_scores`/`get_scores`,
@@ -84,6 +84,16 @@ All notable changes to the CLI Market ecosystem.
   identical on `main` before this change (clock/timezone drift in a
   rate-limit test, a stale delivery-quote assertion, a flaky live-network
   test) — not caused by this session's work.
+- Published to PyPI and backend pin bumped (`cli-market-core==1.11.43`);
+  `/v1/intel/scores` and `/analytics/indicators` gained an optional
+  `subcategory` param passthrough. Live-verified on production: PE
+  supermercados line-level `retail_aggression` is 86.8 (promo_intensity
+  43.4%), `subcategory=bebidas` alone comes back 100 (promo_intensity
+  52.5%) — confirms gasificadas genuinely runs hotter on promos than the
+  line-wide blend, not just a hunch. Cross-brand substitutes verified too:
+  querying "big cola" now returns Pepsi/Kola Real/Guaraná/Oro tagged
+  `cross_brand_category_match` alongside the real Metro same-product match
+  tagged `same_product_cross_store` — previously impossible.
 
 ### Investigation — pricing report validation (no code, live production queries)
 - Reviewed an internal "Poder de Precio e Innovación — Bebidas Gasificadas
