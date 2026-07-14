@@ -3,34 +3,81 @@
 import { motion } from "framer-motion";
 import AcademyRegisterForm from "@/components/AcademyRegisterForm";
 
-const VALUE_CARDS = [
+const AUDIENCE = [
+  {
+    title: "Pricing / trade marketing",
+    body: "Necesitas saber cómo se ve tu marca frente a la competencia, retailer por retailer — no solo el precio que te reporta el proveedor.",
+  },
+  {
+    title: "Category / compras",
+    body: "Decides dónde y cuándo comprar la canasta recurrente del negocio — retail, F&B, hotelería, oficinas.",
+  },
+  {
+    title: "Growth / marketing",
+    body: "Quieres detectar vacíos de mercado y promociones infladas de la competencia antes que reaccionar tarde.",
+  },
+];
+
+const LIVE_FLOWS = [
   {
     idx: "01",
-    title: "Pricing en tiempo real",
-    body: "Si fijas precio copiando a tu competencia, ya perdiste. Compara contra 37+ retailers en 9 países y decide con evidencia, no con copy-paste.",
+    title: "Pricing",
+    prompt: "“Tengo un serum facial a S/45, ¿cómo está posicionado frente al mercado en Lima?”",
+    tools: "market_search → market_compare → market_price_history",
+    payoff: "Banda de precio competitiva y si conviene subir o bajar.",
   },
   {
     idx: "02",
-    title: "Oportunidades de crecimiento",
-    body: 'Mientras tú "sientes" que hay un vacío en el mercado, alguien más ya lo está midiendo. Detéctalo antes de que lo ocupen.',
+    title: "Growth",
+    prompt: "“¿Qué categoría tiene un vacío entre S/40 y S/90 que nadie cubre bien?”",
+    tools: "market_trending → market_scores → market_intel_brief",
+    payoff: "Oportunidad de producto o categoría con evidencia, no intuición.",
   },
   {
     idx: "03",
-    title: "Inteligencia competitiva y de marketing",
-    body: "Ese descuento de tu competencia probablemente es falso. Deja de reaccionar a promociones infladas — detéctalas.",
+    title: "Marketing / competencia",
+    prompt: "“Mi competencia bajó su precio, ¿es un descuento real o inflado?”",
+    tools: "market_promo_detector → market_retailer_scorecard",
+    payoff: "Cómo responder en comunicación o pricing, con evidencia.",
   },
   {
     idx: "04",
-    title: "Compras y proveedores optimizados",
-    body: "Comprar por costumbre te está costando margen. Señales claras de cuándo comprar y con quién — no por default.",
+    title: "Compras / timing",
+    prompt: "“Necesito comprar insumos este mes, ¿compro ahora o espero?”",
+    tools: "market_procurement_signal → market_price_risk → market_optimize_purchase",
+    payoff: "Decisión de timing y ahorro cuantificado.",
   },
+];
+
+const HONESTY = [
+  { label: "Sí hace", val: "Mide retail formal online — VTEX, Shopify, Magento, WooCommerce — refrescado cada 4 horas." },
+  { label: "No hace", val: "No reemplaza el IPC oficial ni cubre ferias o mercados informales — y lo decimos en cada respuesta." },
 ];
 
 const LOGISTICS = [
   { label: "Fecha", val: "Jueves 16 de mayo", sub: "confirmar año" },
   { label: "Hora", val: "7:00 PM", sub: "Hora Perú (GMT-5)" },
-  { label: "Duración", val: "2 horas", sub: "sesión única" },
-  { label: "Modalidad", val: "100% online", sub: "en vivo vía Zoom" },
+  { label: "Duración", val: "2 horas", sub: "sesión única, en vivo" },
+  { label: "Cupo", val: "20 personas", sub: "grupo reducido, con tu caso" },
+];
+
+const FAQS = [
+  {
+    q: "¿Y si no puedo asistir en vivo?",
+    a: "Queda grabado. Te llega el link de la grabación aunque no puedas conectarte a las 7:00 PM.",
+  },
+  {
+    q: "¿Por qué solo 20 cupos?",
+    a: "Porque en varios bloques trabajamos con tu propio precio o tu propia categoría, no un ejemplo genérico — un grupo grande no permite eso.",
+  },
+  {
+    q: "¿Qué pasa después del mes de CLI Market PRO?",
+    a: "Nada automático: no se renueva solo ni hay compromiso posterior. Si quieres seguir usándolo, la decisión es tuya.",
+  },
+  {
+    q: "¿Necesito saber programar o usar IA?",
+    a: "No. La sesión se dicta en lenguaje de negocio — el foco es la decisión que tomas con el dato, no la herramienta.",
+  },
 ];
 
 export default function AcademyPage() {
@@ -71,7 +118,7 @@ export default function AcademyPage() {
             >
               Mientras tú decides por intuición, alguien más ya está comparando tu precio, vigilando tu categoría
               y comprando mejor que tú. Este taller te da las mismas herramientas — pricing, growth, marketing y
-              compras — en una sola sesión.
+              compras — en una sola sesión, con tu propio caso corriendo en vivo.
             </motion.p>
 
             <motion.div
@@ -82,6 +129,12 @@ export default function AcademyPage() {
             >
               <span className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-full px-3 py-1">
                 ● LIVE · VÍA ZOOM
+              </span>
+              <span className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-full px-3 py-1">
+                37+ RETAILERS · 9 PAÍSES · CADA 4H
+              </span>
+              <span className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-full px-3 py-1">
+                SOLO 20 CUPOS
               </span>
             </motion.div>
 
@@ -99,15 +152,42 @@ export default function AcademyPage() {
         </div>
       </section>
 
-      {/* Value cards */}
+      {/* Audience qualification */}
       <section className="landing-section" style={{ borderBottom: "1px solid var(--cm-hairline-soft)" }}>
         <div className="landing-container-wide py-12 sm:py-16">
+          <span className="stripe-tag-soft inline-flex mb-4">Es para ti si...</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {AUDIENCE.map((item) => (
+              <div key={item.title} className="card-cyber p-6">
+                <h3 className="text-base font-semibold text-[var(--cm-on-surface)] mb-2">{item.title}</h3>
+                <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live agenda — real flows from the runsheet */}
+      <section className="landing-section" style={{ borderBottom: "1px solid var(--cm-hairline-soft)" }}>
+        <div className="landing-container-wide py-12 sm:py-16">
+          <span className="stripe-tag-soft inline-flex mb-4">Lo que corre en vivo</span>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[var(--cm-on-surface)] mb-2">
+            4 flujos reales, no funciones sueltas
+          </h2>
+          <p className="text-sm text-[var(--cm-on-surface-variant)] max-w-2xl mb-8 leading-relaxed">
+            Cada bloque parte de una pregunta de negocio, muestra qué herramienta llama el agente y en qué orden,
+            y termina en una decisión accionable — con tu propio precio o categoría cuando aplica.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {VALUE_CARDS.map((card) => (
-              <div key={card.idx} className="card-cyber p-6">
-                <div className="text-xs font-mono text-[var(--cm-mint)] mb-2">{card.idx}</div>
-                <h3 className="text-base font-semibold text-[var(--cm-on-surface)] mb-2">{card.title}</h3>
-                <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{card.body}</p>
+            {LIVE_FLOWS.map((flow) => (
+              <div key={flow.idx} className="card-cyber p-6">
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-xs font-mono text-[var(--cm-mint)]">{flow.idx}</span>
+                  <h3 className="text-base font-semibold text-[var(--cm-on-surface)]">{flow.title}</h3>
+                </div>
+                <p className="text-sm text-[var(--cm-on-surface)] italic leading-relaxed mb-3">{flow.prompt}</p>
+                <p className="text-xs font-mono text-[var(--cm-on-surface-variant)] mb-3 break-words">{flow.tools}</p>
+                <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{flow.payoff}</p>
               </div>
             ))}
           </div>
@@ -128,6 +208,26 @@ export default function AcademyPage() {
               Especialista en inteligencia de mercados aplicada a pricing, growth, marketing y compras — para
               quienes ya no quieren decidir a ciegas.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Honesty / differentiation */}
+      <section className="landing-section" style={{ borderBottom: "1px solid var(--cm-hairline-soft)" }}>
+        <div className="landing-container-wide py-12 sm:py-16">
+          <span className="stripe-tag-soft inline-flex mb-4">Sin humo</span>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[var(--cm-on-surface)] mb-6">
+            Qué sí hace, qué no hace — te lo decimos antes de que preguntes
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {HONESTY.map((item) => (
+              <div key={item.label} className="card-cyber p-6">
+                <div className="text-xs font-mono uppercase tracking-wide text-[var(--cm-mint)] mb-2">
+                  {item.label}
+                </div>
+                <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{item.val}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -162,10 +262,43 @@ export default function AcademyPage() {
               <div className="text-base font-semibold text-[var(--cm-on-surface)] mb-2">
                 1 mes de uso de CLI Market PRO
               </div>
+              <p className="text-xs text-[var(--cm-on-surface-variant)] mb-2 leading-relaxed">
+                Sin renovación automática ni compromiso posterior — si sigues, es tu decisión.
+              </p>
               <span className="text-xs font-mono text-[var(--cm-mint)] border border-[var(--cm-mint)]/30 rounded-full px-3 py-1 inline-block">
                 ◆ PRO ACCESS
               </span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="landing-section" style={{ borderBottom: "1px solid var(--cm-hairline-soft)" }}>
+        <div className="landing-container-wide py-12 sm:py-16">
+          <div className="text-center mb-8">
+            <span className="stripe-tag-soft inline-flex mb-3">FAQ</span>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-[var(--cm-on-surface)]">Preguntas frecuentes</h2>
+          </div>
+          <div className="max-w-2xl mx-auto space-y-0">
+            {FAQS.map((faq, i) => (
+              <details
+                key={faq.q}
+                className="group border-b border-[var(--cm-outline-variant)]/30 py-1"
+                {...(i === 0 ? { open: true } : {})}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-base font-medium text-[var(--cm-on-surface)] marker:content-none [&::-webkit-details-marker]:hidden">
+                  <span className="text-left">{faq.q}</span>
+                  <span
+                    className="shrink-0 text-[var(--cm-mint)] text-lg leading-none transition-transform duration-200 group-open:rotate-45"
+                    aria-hidden
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="pb-5 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">{faq.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
