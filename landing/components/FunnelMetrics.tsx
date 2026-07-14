@@ -89,7 +89,7 @@ export default function FunnelMetrics() {
             {conv.search_to_pro != null && (
               <p>
                 {isES ? "Conversión búsqueda → Pro:" : "Search → Pro conversion:"}{" "}
-                <span className="font-mono text-white/80">
+                <span className="font-mono text-[var(--cm-on-surface)]">
                   {(Number(conv.search_to_pro) * 100).toFixed(1)}%
                 </span>
               </p>
