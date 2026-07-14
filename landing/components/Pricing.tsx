@@ -163,7 +163,7 @@ function TierCard({
 
   return (
     <div
-      className={`relative h-full min-h-[24rem] rounded-2xl p-5 sm:p-6 text-center flex flex-col items-center ${
+      className={`relative h-full min-h-[24rem] rounded-2xl p-5 sm:p-6 text-left flex flex-col ${
         tier.dark ? "energy-border-active card-cyber" : "card-cyber"
       }`}
       style={tier.featured ? { background: "var(--cm-mint)", borderColor: "var(--cm-mint)" } : undefined}
@@ -199,7 +199,7 @@ function TierCard({
         {tier.name}
       </h3>
 
-      <div className="mt-3 mb-1 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0">
+      <div className="mt-3 mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0">
         {tier.compareAt && (
           <span className={`text-lg line-through tabular-nums ${onFeatured("text-[var(--cm-on-surface-variant)]/50", "50")}`}>
             {tier.compareAt}
@@ -226,11 +226,11 @@ function TierCard({
           : " "}
       </p>
 
-      <ul className="space-y-3 mb-6 flex-1 w-full max-w-[22rem]">
+      <ul className="space-y-3 mb-6 flex-1">
         {features.map((f, i) => (
           <li
             key={i}
-            className={`flex items-start justify-center gap-2.5 text-sm leading-relaxed text-left ${onFeatured("text-[var(--cm-on-surface-variant)]", "90")}`}
+            className={`flex items-start gap-2.5 text-sm leading-relaxed ${onFeatured("text-[var(--cm-on-surface-variant)]", "90")}`}
           >
             <svg
               className="w-4 h-4 mt-0.5 shrink-0"
@@ -246,7 +246,7 @@ function TierCard({
         ))}
       </ul>
 
-      <div className="mt-auto w-full">{children}</div>
+      <div className="mt-auto">{children}</div>
     </div>
   );
 }
@@ -388,7 +388,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           role="tabpanel"
           aria-labelledby="pricing-tab-build"
         >
-          <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6 mt-4">
+          <div className="landing-content-rail grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 mt-4 max-w-4xl mx-auto">
             {BUILD_VISIBLE_TIERS.map((tier, i) => (
               <motion.div
                 key={tier.name}
