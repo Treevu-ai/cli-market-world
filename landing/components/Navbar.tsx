@@ -31,9 +31,11 @@ export default function Navbar() {
         ? "build"
         : pathname?.startsWith("/intelligence")
           ? "intelligence"
-          : pathname === "/"
-            ? undefined
-            : undefined;
+          : pathname?.startsWith("/retailers")
+            ? "retailers"
+            : pathname === "/"
+              ? "home"
+              : undefined;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

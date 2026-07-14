@@ -241,22 +241,32 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              `Cuenta con prueba Starter de ${TRIAL_DAYS} días vía CLI o HTTP. La API key (sk-...) se muestra una sola vez.`,
-              `${TRIAL_DAYS}-day Starter trial account via CLI or HTTP. The API key (sk-...) is shown once.`,
+              `Cuenta con prueba Starter de ${TRIAL_DAYS} días vía CLI o HTTP. Registro en 2 pasos: email + código de verificación (OTP). La API key (sk-...) se muestra una sola vez, al final del paso 2.`,
+              `${TRIAL_DAYS}-day Starter trial account via CLI or HTTP. Two-step signup: email + verification code (OTP). The API key (sk-...) is shown once, at the end of step 2.`,
             )}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
-          <CodeBlock>{`market register
+          <CodeBlock>{`market register --email you@example.com
+# → Código enviado a you@example.com
+Código de verificación: 123456
+# ✓ Email verificado — cuenta creada
 # Usuario: user-abc123...
 # API key: sk-...   ← guárdela ahora`}</CodeBlock>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mt-8 mb-3">HTTP</h3>
-          <CodeBlock>{`curl -X POST ${API_URL}/auth/register \\
-  -H "Content-Type: application/json"`}</CodeBlock>
+          <CodeBlock>{`# 1. Solicitar código
+curl -X POST ${API_URL}/auth/register \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"you@example.com"}'
+
+# 2. Verificar código y crear la cuenta
+curl -X POST ${API_URL}/auth/verify-email \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"you@example.com","code":"123456"}'`}</CodeBlock>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mt-8 mb-3">{t("RESPONSE", "RESPONSE")}</h3>
           <CodeBlock>{`{
   "username": "user-abc123...",
   "api_key": "sk-...",
-  "message": "Account created"
+  "next_steps": [...]
 }`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4 mb-4">
             {t("Si ya tiene credenciales: ", "If you already have credentials: ")}
