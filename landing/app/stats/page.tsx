@@ -6,6 +6,7 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
 import { useObservatoryStats, type ObservatoryRank } from "@/hooks/useObservatoryStats";
 import FunnelMetrics from "@/components/FunnelMetrics";
+import DataMoatHealth from "@/components/DataMoatHealth";
 
 function RankList({
   title,
@@ -114,6 +115,13 @@ export default function StatsPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mb-12" aria-labelledby="moat-heading">
+          <h2 id="moat-heading" className="text-lg font-semibold text-[var(--cm-on-surface)] mb-4">
+            {isES ? "Salud del data moat" : "Data moat health"}
+          </h2>
+          <DataMoatHealth />
         </section>
 
         {loading ? (

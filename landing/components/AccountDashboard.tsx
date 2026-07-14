@@ -8,6 +8,7 @@ import { AuthProvider, useApiKey } from "@/lib/useApiKey";
 import ApiKeyGate from "@/components/dashboard/ApiKeyGate";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
+import DataMoatHealth from "@/components/DataMoatHealth";
 
 type AccountData = {
   username: string;
@@ -138,6 +139,13 @@ function AccountDashboardInner() {
             ? "Consulte tier, límites y consumo. La API key se guarda solo en este navegador."
             : "View tier, limits, and consumption. Your API key is stored only in this browser."}
         </p>
+
+        <div className="max-w-xl mx-auto mb-6">
+          <h2 className="text-xs font-bold text-[var(--cm-mint)] uppercase tracking-wider mb-3">
+            {isES ? "Salud del data moat" : "Data moat health"}
+          </h2>
+          <DataMoatHealth />
+        </div>
 
         {!apiKey && (
           <div className="card-cyber p-5 max-w-xl mx-auto mb-6 space-y-3 border border-[var(--cm-outline-variant)]/30">
