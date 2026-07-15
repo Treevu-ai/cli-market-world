@@ -20,6 +20,8 @@ Tool tiers:
 
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
@@ -822,7 +824,24 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
         elif name == "market_trending":
             r = await client.get(f"{_API_BASE}/analytics/trending", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_discover":
-            r = await client.get(f"{_API_BASE}/analytics/trending", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+            # Was wired to /analytics/trending (same URL as market_trending) —
+            # copy-paste bug, never composed lines+stores+countries like the
+            # stdio implementation does. Compose it the same way here.
+            store_params = {}
+            if args.get("country"):
+                store_params["country"] = args["country"]
+            if args.get("line"):
+                store_params["line"] = args["line"]
+            lines_r, stores_r, countries_r = await asyncio.gather(
+                client.get(f"{_API_BASE}/lines", headers=headers),
+                client.get(f"{_API_BASE}/stores", params=store_params, headers=headers),
+                client.get(f"{_API_BASE}/countries", headers=headers),
+            )
+            return {
+                "lines": lines_r.json() if lines_r.status_code < 400 else {"error": lines_r.text[:200]},
+                "stores": stores_r.json() if stores_r.status_code < 400 else {"error": stores_r.text[:200]},
+                "countries": countries_r.json() if countries_r.status_code < 400 else {"error": countries_r.text[:200]},
+            }
         elif name == "market_barcode":
             code = args.get("code", "")
             r = await client.get(f"{_API_BASE}/products/barcode/{code}", headers=headers)
@@ -856,11 +875,22 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             # has had no test coverage, so the mismatch shipped silently.
             r = await client.get(f"{_API_BASE}/v1/intel/procurement-signal", params={"country": args.get("country")}, headers=headers)
         elif name == "market_price_risk":
-            r = await client.get(f"{_API_BASE}/v1/intel/alerts", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+            # Was wired to /v1/intel/alerts (the discount-finder endpoint,
+            # actually used by market_price_alerts) instead of the dedicated
+            # price-risk endpoint — likely copy-pasted from a neighboring line.
+            r = await client.get(f"{_API_BASE}/v1/intel/price-risk", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_favorites":
             r = await client.post(f"{_API_BASE}/favorites", json=args, headers=headers)
         elif name == "market_price_alerts":
-            r = await client.get(f"{_API_BASE}/v1/alerts", headers=headers)
+            # Was hitting /v1/alerts (the user's saved-alert subscriptions,
+            # no query params forwarded) instead of /v1/intel/alerts (the
+            # actual product/threshold discount query) — always returned an
+            # empty list regardless of what was asked.
+            r = await client.get(
+                f"{_API_BASE}/v1/intel/alerts",
+                params={k: v for k, v in args.items() if v is not None},
+                headers=headers,
+            )
         elif name == "market_export":
             r = await client.post(f"{_API_BASE}/v1/data/export", json=args, headers=headers)
         elif name == "market_ask":
