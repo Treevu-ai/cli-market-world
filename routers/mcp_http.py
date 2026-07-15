@@ -170,12 +170,12 @@ _TOOLS = [
     },
     {
         "name": "market_discover",
-        "description": "Discover featured and recommended products for a country.",
+        "description": "Retail coverage in one call: business lines, retailers, and countries. Optionally filter stores by country/line.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "country": {"type": "string"},
-                "limit": {"type": "integer", "default": 10},
+                "country": {"type": "string", "description": "Optional country filter for stores"},
+                "line": {"type": "string", "description": "Optional business line filter for stores"},
             },
         },
     },
@@ -347,15 +347,60 @@ _TOOLS = [
     },
     {
         "name": "market_price_risk",
-        "description": "[Pro] Price alerts: products with delta above threshold in the last 30 days.",
+        "description": "[Pro] Price Risk Intelligence — which categories are becoming volatile? Returns risk level (low/moderate/high) with supporting signals.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "line": {"type": "string", "description": "supermercados, farmacias, electro"},
+                "days": {"type": "integer", "default": 7},
+            },
+        },
+    },
+    {
+        "name": "market_informal_signal",
+        "description": (
+            "Coverage-honesty flag for informal retail channels. Reports how confident our formal-channel "
+            "(VTEX/Shopify/Magento/WooCommerce) coverage is for a country/line — does NOT estimate "
+            "informal-economy share (ferias, mercados de abastos, venta ambulante are not observed)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["country"],
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+                "line": {"type": "string", "default": "supermercados"},
+            },
+        },
+    },
+    {
+        "name": "market_promo_detector",
+        "description": (
+            "Promo authenticity — flags discounts staged by inflating list_price shortly before "
+            "advertising a markdown against it (common LatAm retail pattern)."
+        ),
         "inputSchema": {
             "type": "object",
             "required": ["product"],
             "properties": {
                 "product": {"type": "string"},
                 "store": {"type": "string"},
-                "threshold_pct": {"type": "number", "default": 5.0},
-                "limit": {"type": "integer", "default": 10},
+                "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_retailer_scorecard",
+        "description": (
+            "Retailer scorecard — coverage/freshness, catalog quality, and price volatility for one "
+            "store in a single call. Does NOT include cross-store price competitiveness or stock availability."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["store"],
+            "properties": {
+                "store": {"type": "string", "description": "Store key from market_discover"},
+                "days": {"type": "integer", "default": 30},
             },
         },
     },
@@ -375,8 +420,17 @@ _TOOLS = [
     },
     {
         "name": "market_price_alerts",
-        "description": "[Pro] List active price alerts for the user.",
-        "inputSchema": {"type": "object", "properties": {}},
+        "description": "[Pro] Price alerts: query drops or configure threshold notifications for a product.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["product"],
+            "properties": {
+                "product": {"type": "string", "description": "Product to monitor"},
+                "store": {"type": "string"},
+                "threshold_pct": {"type": "number", "default": 5.0},
+                "limit": {"type": "integer", "default": 10},
+            },
+        },
     },
     {
         "name": "market_export",
@@ -879,6 +933,12 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             # actually used by market_price_alerts) instead of the dedicated
             # price-risk endpoint — likely copy-pasted from a neighboring line.
             r = await client.get(f"{_API_BASE}/v1/intel/price-risk", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_informal_signal":
+            r = await client.get(f"{_API_BASE}/v1/intel/informal-signal", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_promo_detector":
+            r = await client.get(f"{_API_BASE}/v1/intel/promo-detector", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_retailer_scorecard":
+            r = await client.get(f"{_API_BASE}/v1/intel/retailer-scorecard", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_favorites":
             r = await client.post(f"{_API_BASE}/favorites", json=args, headers=headers)
         elif name == "market_price_alerts":
