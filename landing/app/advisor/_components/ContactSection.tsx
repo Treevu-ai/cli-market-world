@@ -10,16 +10,16 @@ export default function ContactSection() {
   const isES = lang === "es";
   const [interestType, setInterestType] = useState<"A" | "B" | "C">("A");
 
-  const [category, setCategory] = useState("Champú Natural / Cuidado Orgánico");
-  const [country, setCountry] = useState("Perú (PE)");
+  const [category, setCategory] = useState(isES ? "Champú Natural / Cuidado Orgánico" : "Natural Shampoo / Organic Care");
+  const [country, setCountry] = useState(isES ? "Perú (PE)" : "Peru (PE)");
   const [references, setReferences] = useState("EcoSavia, Capilar Mass, Organix Pure");
 
   const [sessionDate, setSessionDate] = useState("2026-07-20");
-  const [clientProfile, setClientProfile] = useState("Marca emprendedora de cosmética capilar peruana");
+  const [clientProfile, setClientProfile] = useState(isES ? "Marca emprendedora de cosmética capilar peruana" : "Peruvian hair-care startup brand");
 
-  const [moatCountry, setMoatCountry] = useState("Colombia (CO)");
-  const [moatLine, setMoatLine] = useState("Línea Higiene / Cuidado de Hogar");
-  const [cadence, setCadence] = useState("Semanal (Radar de Góndola)");
+  const [moatCountry, setMoatCountry] = useState(isES ? "Colombia (CO)" : "Colombia (CO)");
+  const [moatLine, setMoatLine] = useState(isES ? "Línea Higiene / Cuidado de Hogar" : "Personal Care / Household line");
+  const [cadence, setCadence] = useState(isES ? "Semanal (Radar de Góndola)" : "Weekly (Shelf Radar)");
 
   const [copiedText, setCopiedText] = useState(false);
 
@@ -42,6 +42,32 @@ export default function ContactSection() {
   };
 
   const generateMessageText = () => {
+    if (!isES) {
+      let msg = "Hi CLI Market team,\n\n";
+      if (interestType === "A") {
+        msg += "I'm interested in scheduling a **Pack A Demo (Client Brief)** for one of my active clients.\n\n";
+        msg += "**Request details:**\n";
+        msg += `* **Category:** ${category}\n`;
+        msg += `* **Country:** ${country}\n`;
+        msg += `* **Anchor products / references:** ${references}\n\n`;
+        msg += "Please confirm you have active collector coverage to run the comparison and share the shelf-evidence markdown.";
+      } else if (interestType === "B") {
+        msg += "I'm interested in scheduling a **live Assisted Advisory Session (Pack B)**.\n\n";
+        msg += "**Session details:**\n";
+        msg += `* **Suggested date:** ${sessionDate}\n`;
+        msg += `* **End-client profile (no confidential data):** ${clientProfile}\n\n`;
+        msg += "I'd like to walk through the CLI Market console live to resolve pricing and channel questions during our advisory meeting.";
+      } else {
+        msg += "I'd like information on the **Monthly Intelligence Retainer (Pack C)** for ongoing research.\n\n";
+        msg += "**Suggested pilot subscription details:**\n";
+        msg += `* **Country of interest:** ${moatCountry}\n`;
+        msg += `* **Retail line or channel:** ${moatLine}\n`;
+        msg += `* **Executive report cadence:** ${cadence}\n\n`;
+        msg += "I'd like to start the 30-day pilot to automate the signal radar and data series feeding our dashboard.";
+      }
+      return msg;
+    }
+
     let msg = "Hola equipo de CLI Market,\n\n";
     if (interestType === "A") {
       msg += "Estoy interesado en coordinar un **Demo de Pack A (Brief de Cliente)** para uno de mis clientes activos.\n\n";
@@ -71,7 +97,8 @@ export default function ContactSection() {
     if (!isMessageEdited) {
       setUserMessage(generateMessageText());
     }
-  }, [interestType, category, country, references, sessionDate, clientProfile, moatCountry, moatLine, cadence, isMessageEdited]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interestType, category, country, references, sessionDate, clientProfile, moatCountry, moatLine, cadence, isMessageEdited, isES]);
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(userMessage);
@@ -82,7 +109,9 @@ export default function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userName.trim() || !userEmail.trim() || !companyName.trim() || !userMessage.trim()) {
-      alert("Por favor, completa todos los campos del formulario (Nombre, Correo, Empresa y Mensaje).");
+      alert(isES
+        ? "Por favor, completa todos los campos del formulario (Nombre, Correo, Empresa y Mensaje)."
+        : "Please fill in all form fields (Name, Email, Company, and Message).");
       return;
     }
 
@@ -126,27 +155,33 @@ export default function ContactSection() {
   return (
     <section id="contact-form" className="mb-16 scroll-mt-24">
       <div className="text-center mb-10">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50 border border-emerald-100 text-emerald-800 uppercase tracking-widest mb-3">
-          ACCESO Y DEMO EXCLUSIVA
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[var(--cm-action-soft)] border border-[var(--cm-mint)]/20 text-[var(--cm-action-deep)] uppercase tracking-widest mb-3">
+          {isES ? "Acceso y demo" : "Access and demo"}
         </span>
-        <h2 className="text-3xl font-display font-bold text-slate-900 tracking-tight mb-2">
-          Aplica al Ecosistema Exclusivo de Asesores
+        <h2 className="text-3xl font-display font-bold text-[var(--cm-on-surface)] tracking-tight mb-2">
+          {isES ? "Súmate al ecosistema de asesores" : "Join the advisor ecosystem"}
         </h2>
-        <p className="text-slate-600 max-w-2xl mx-auto">
-          Garantizamos canal cerrado: no competimos contigo ni vendemos de forma directa a las marcas que asesoras.
+        <p className="text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto">
+          {isES
+            ? "Canal cerrado: no competimos contigo ni vendemos de forma directa a las marcas que asesoras."
+            : "Closed channel: we don't compete with you or sell directly to the brands you advise."}
         </p>
       </div>
 
       <div className="grid lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-            <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-700 uppercase block mb-1">Oferta Exclusiva</span>
-            <h3 className="text-xl font-display font-bold text-slate-900 mb-4">
-              Oferta de Entrada (Esta Semana)
+          <div className="bg-[var(--cm-surface)] rounded-2xl border border-[var(--cm-outline-variant)] p-6 shadow-xs">
+            <span className="text-[10px] font-mono font-bold tracking-widest text-[var(--cm-mint)] uppercase block mb-1">
+              {isES ? "Oferta de entrada" : "Starter offer"}
+            </span>
+            <h3 className="text-xl font-display font-bold text-[var(--cm-on-surface)] mb-4">
+              {isES ? "Oferta de entrada (esta semana)" : "Starter offer (this week)"}
             </h3>
 
-            <p className="text-xs text-slate-500 mb-4">
-              Sigue esta ruta ágil de 3 pasos para probar la plataforma sin compromisos financieros:
+            <p className="text-xs text-[var(--cm-text-secondary)] mb-4">
+              {isES
+                ? "Sigue esta ruta de 3 pasos para probar la plataforma sin compromiso:"
+                : "Follow this 3-step path to try the platform with no commitment:"}
             </p>
 
             <div className="space-y-3.5">
@@ -154,24 +189,36 @@ export default function ContactSection() {
                 <button
                   key={id}
                   onClick={() => toggleCheck(id)}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-left"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--cm-surface-high)] border border-transparent hover:border-[var(--cm-hairline-soft)] transition-all text-left"
                 >
                   {checkedItems[id] ? (
-                    <CheckSquare className="w-5 h-5 text-slate-900 shrink-0 mt-0.5" />
+                    <CheckSquare className="w-5 h-5 text-[var(--cm-on-surface)] shrink-0 mt-0.5" />
                   ) : (
-                    <Square className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />
+                    <Square className="w-5 h-5 text-[var(--cm-outline-variant)] shrink-0 mt-0.5" />
                   )}
                   <div>
-                    <span className="text-xs font-mono font-bold text-slate-400 block uppercase">Paso {id}</span>
-                    <span className="text-sm font-semibold text-slate-900">
-                      {id === 1 ? "Elegir 1 caso del asesor" : id === 2 ? "Correr Pack A gratis" : "Coordinar Pack B o Pack C"}
+                    <span className="text-xs font-mono font-bold text-[var(--cm-text-secondary)] block uppercase">
+                      {isES ? `Paso ${id}` : `Step ${id}`}
                     </span>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <span className="text-sm font-semibold text-[var(--cm-on-surface)]">
                       {id === 1
-                        ? "Identifica una categoría real y un país clave de un cliente actual."
+                        ? isES ? "Elegir 1 caso del asesor" : "Pick 1 advisor case"
                         : id === 2
-                          ? "Te regalamos un piloto corto de Brief para que sientas el impacto de los hechos."
-                          : "Si hay fit con el cliente final, avanzas a la consultoría recurrente."}
+                          ? isES ? "Correr Pack A gratis" : "Run Pack A for free"
+                          : isES ? "Coordinar Pack B o Pack C" : "Schedule Pack B or Pack C"}
+                    </span>
+                    <p className="text-xs text-[var(--cm-text-secondary)] mt-0.5">
+                      {id === 1
+                        ? isES
+                          ? "Identifica una categoría real y un país clave de un cliente actual."
+                          : "Identify a real category and a key country from a current client."
+                        : id === 2
+                          ? isES
+                            ? "Te regalamos un piloto corto de Brief para que sientas el impacto de los hechos."
+                            : "We give you a short Brief pilot so you can feel the impact of the data firsthand."
+                          : isES
+                            ? "Si hay fit con el cliente final, avanzas a la consultoría recurrente."
+                            : "If it fits the end client, you move into a recurring engagement."}
                     </p>
                   </div>
                 </button>
@@ -179,46 +226,67 @@ export default function ContactSection() {
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-            <h4 className="text-sm font-mono uppercase tracking-wider text-slate-400 mb-3 block">
-              Sectores Prioritarios (Ciclo 1)
+          <div className="bg-[var(--cm-surface-high)] rounded-2xl border border-[var(--cm-outline-variant)] p-6">
+            <h4 className="text-sm font-mono uppercase tracking-wider text-[var(--cm-text-secondary)] mb-3 block">
+              {isES ? "Sectores prioritarios (ciclo 1)" : "Priority sectors (cycle 1)"}
             </h4>
-            <div className="space-y-2.5 text-xs text-slate-600">
-              {[
-                "Asesores de Inteligencia de Mercados y análisis",
-                "Asesores de Marketing y Estrategia (Pricing / Lanzamiento)",
-                "Asesores Empresariales / Incubadoras (UX Simple & 4P)",
-              ].map((label) => (
-                <div key={label} className="p-2.5 rounded bg-white border border-slate-200/60 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
-                  <span dangerouslySetInnerHTML={{ __html: label.replace(/(Inteligencia de Mercados|Marketing y Estrategia|Empresariales \/ Incubadoras)/, "<strong>$1</strong>") }} />
+            <div className="space-y-2.5 text-xs text-[var(--cm-on-surface-variant)]">
+              {(isES
+                ? [
+                    { label: "Asesores de", strong: "Inteligencia de Mercados", rest: "y análisis" },
+                    { label: "Asesores de", strong: "Marketing y Estrategia", rest: "(pricing / lanzamiento)" },
+                    { label: "Asesores", strong: "Empresariales / Incubadoras", rest: "(UX simple y 4P)" },
+                  ]
+                : [
+                    { label: "", strong: "Market intelligence", rest: "advisors and analysts" },
+                    { label: "", strong: "Marketing and strategy", rest: "advisors (pricing / launch)" },
+                    { label: "", strong: "Business / incubator", rest: "advisors (simple UX & 4Ps)" },
+                  ]
+              ).map((item) => (
+                <div key={item.strong} className="p-2.5 rounded bg-[var(--cm-surface)] border border-[var(--cm-hairline-soft)] flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--cm-on-surface)]" />
+                  <span>
+                    {item.label ? `${item.label} ` : ""}
+                    <strong>{item.strong}</strong> {item.rest}
+                  </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100/60 rounded-lg text-[10px] text-emerald-950 flex items-start gap-1.5">
-              <BadgeAlert className="w-3.5 h-3.5 text-emerald-800 shrink-0 mt-0.5" />
-              <span><em>Minimarkets o tienditas:</em> Se sugiere abordar de forma indirecta como caso a través de distribuidores o retailers aliados, no como usuario directo de la CLI.</span>
+            <div className="mt-4 p-3 bg-[var(--cm-action-soft)] border border-[var(--cm-mint)]/15 rounded-lg text-[10px] text-[var(--cm-action-deep)] flex items-start gap-1.5">
+              <BadgeAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>
+                <em>{isES ? "Minimarkets o tienditas:" : "Corner stores / minimarkets:"}</em>{" "}
+                {isES
+                  ? "se sugiere abordarlos de forma indirecta como caso vía distribuidores o retailers aliados, no como usuario directo de la CLI."
+                  : "best approached indirectly as a case via distributors or partner retailers, not as a direct CLI user."}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="lg:col-span-7">
           {isSubmitted ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs text-center flex flex-col items-center justify-center min-h-[500px]">
-              <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-6 border border-emerald-100">
+            <div className="bg-[var(--cm-surface)] rounded-2xl border border-[var(--cm-outline-variant)] p-8 shadow-xs text-center flex flex-col items-center justify-center min-h-[500px]">
+              <div className="w-16 h-16 bg-[var(--cm-action-soft)] text-[var(--cm-mint)] rounded-full flex items-center justify-center mb-6 border border-[var(--cm-mint)]/20">
                 <Check className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">¡Formulario Enviado!</h3>
-              <p className="text-slate-600 text-sm max-w-md mb-6 leading-relaxed">
-                Hemos recibido tu mensaje en <strong className="text-emerald-700 font-semibold">hello@cli-market.dev</strong>. Te responderemos a la brevedad.
+              <h3 className="text-2xl font-bold text-[var(--cm-on-surface)] mb-3">
+                {isES ? "¡Formulario enviado!" : "Form sent!"}
+              </h3>
+              <p className="text-[var(--cm-on-surface-variant)] text-sm max-w-md mb-6 leading-relaxed">
+                {isES ? "Recibimos tu mensaje en " : "We received your message at "}
+                <strong className="text-[var(--cm-mint)] font-semibold">hello@cli-market.dev</strong>.{" "}
+                {isES ? "Te responderemos a la brevedad." : "We'll reply shortly."}
               </p>
 
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 text-left w-full max-w-md mb-6">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Resumen del contacto</p>
-                <div className="text-xs space-y-1.5 text-slate-700">
-                  <p><strong>Nombre:</strong> {userName}</p>
-                  <p><strong>Correo electrónico:</strong> {userEmail}</p>
-                  <p><strong>Nombre de la empresa:</strong> {companyName}</p>
+              <div className="bg-[var(--cm-surface-high)] rounded-xl p-4 border border-[var(--cm-outline-variant)] text-left w-full max-w-md mb-6">
+                <p className="text-[10px] font-bold text-[var(--cm-text-secondary)] uppercase tracking-widest mb-2">
+                  {isES ? "Resumen del contacto" : "Contact summary"}
+                </p>
+                <div className="text-xs space-y-1.5 text-[var(--cm-on-surface-variant)]">
+                  <p><strong>{isES ? "Nombre:" : "Name:"}</strong> {userName}</p>
+                  <p><strong>{isES ? "Correo electrónico:" : "Email:"}</strong> {userEmail}</p>
+                  <p><strong>{isES ? "Empresa:" : "Company:"}</strong> {companyName}</p>
                 </div>
               </div>
 
@@ -235,9 +303,9 @@ export default function ContactSection() {
                     );
                     window.location.href = `mailto:hello@cli-market.dev?subject=${subject}&body=${body}`;
                   }}
-                  className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-emerald-100 cursor-pointer text-center"
+                  className="flex-1 py-2.5 bg-[var(--cm-mint)] hover:bg-[var(--cm-action-deep)] text-[var(--cm-on-mint)] text-xs font-bold rounded-lg transition-all shadow-md cursor-pointer text-center"
                 >
-                  Reabrir Correo
+                  {isES ? "Reabrir correo" : "Reopen email"}
                 </button>
                 <button
                   type="button"
@@ -248,63 +316,73 @@ export default function ContactSection() {
                     setCompanyName("");
                     setIsMessageEdited(false);
                   }}
-                  className="flex-1 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition-all cursor-pointer text-center"
+                  className="flex-1 py-2.5 bg-[var(--cm-surface)] hover:bg-[var(--cm-surface-high)] text-[var(--cm-on-surface-variant)] border border-[var(--cm-outline-variant)] text-xs font-bold rounded-lg transition-all cursor-pointer text-center"
                 >
-                  Enviar Otro Mensaje
+                  {isES ? "Enviar otro mensaje" : "Send another message"}
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-                <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg">
+            <form onSubmit={handleSubmit} className="bg-[var(--cm-surface)] rounded-2xl border border-[var(--cm-outline-variant)] p-6 sm:p-8 shadow-xs">
+              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-[var(--cm-hairline-soft)]">
+                <div className="p-2 bg-[var(--cm-action-soft)] text-[var(--cm-mint)] rounded-lg">
                   <Send className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-display font-bold text-slate-900">
-                    Formulario de Contacto Directo
+                  <h3 className="text-xl font-display font-bold text-[var(--cm-on-surface)]">
+                    {isES ? "Formulario de contacto directo" : "Direct contact form"}
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Ingresa tus datos y personaliza el mensaje de interés para hello@cli-market.dev
+                  <p className="text-xs text-[var(--cm-text-secondary)]">
+                    {isES
+                      ? "Ingresa tus datos y personaliza el mensaje para hello@cli-market.dev"
+                      : "Enter your details and customize the message to hello@cli-market.dev"}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4 mb-6 pb-6 border-b border-slate-100">
-                <p className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">1. Tus Datos de Contacto</p>
+              <div className="space-y-4 mb-6 pb-6 border-b border-[var(--cm-hairline-soft)]">
+                <p className="text-[10px] font-mono font-bold tracking-widest text-[var(--cm-text-secondary)] uppercase">
+                  {isES ? "1. Tus datos de contacto" : "1. Your contact details"}
+                </p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre <span className="text-red-500">*</span></label>
+                    <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                      {isES ? "Nombre" : "Name"} <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       required
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                      placeholder="Ej. Sofía Rodríguez"
+                      className="w-full text-sm bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                      placeholder={isES ? "Ej. Sofía Rodríguez" : "e.g. Sofia Rodriguez"}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Correo Electrónico <span className="text-red-500">*</span></label>
+                    <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                      {isES ? "Correo electrónico" : "Email"} <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="email"
                       required
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
-                      className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
+                      className="w-full text-sm bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
                       placeholder="sofia@empresa.com"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre de la Empresa o Consultora <span className="text-red-500">*</span></label>
+                  <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                    {isES ? "Nombre de la empresa o consultora" : "Company or consultancy name"} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                    placeholder="Ej. Consultora LATAM Retail o Independiente"
+                    className="w-full text-sm bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                    placeholder={isES ? "Ej. Consultora LATAM Retail o Independiente" : "e.g. LATAM Retail Consulting, or Independent"}
                   />
                 </div>
                 <div className="flex items-start gap-2.5 pt-1.5">
@@ -312,21 +390,37 @@ export default function ContactSection() {
                     type="checkbox"
                     required
                     defaultChecked
-                    className="mt-1 w-4 h-4 accent-emerald-700 rounded text-emerald-700 border-slate-300 focus:ring-emerald-500 cursor-pointer shrink-0"
+                    className="mt-1 w-4 h-4 accent-[var(--cm-mint)] rounded border-[var(--cm-outline-variant)] focus:ring-[var(--cm-mint)] cursor-pointer shrink-0"
                   />
-                  <span className="text-[11px] text-slate-500 leading-normal">
-                    Declaro que soy consultor independiente, mentor de negocios o firma de asesoría corporativa. Entiendo que <strong className="text-slate-800">CLI Market es un ecosistema tecnológico de canal cerrado</strong> y no otorga licencias directas a marcas de retail para blindar el mercado y evitar la desintermediación de los asesores. <span className="text-red-500">*</span>
+                  <span className="text-[11px] text-[var(--cm-text-secondary)] leading-normal">
+                    {isES ? (
+                      <>
+                        Declaro que soy consultor independiente, mentor de negocios o firma de asesoría corporativa.
+                        Entiendo que <strong className="text-[var(--cm-on-surface-variant)]">CLI Market es un canal cerrado</strong> y no otorga licencias directas a marcas de retail, para no competir con los asesores.{" "}
+                        <span className="text-red-500">*</span>
+                      </>
+                    ) : (
+                      <>
+                        I confirm I&apos;m an independent consultant, business mentor, or corporate advisory firm.
+                        I understand <strong className="text-[var(--cm-on-surface-variant)]">CLI Market is a closed channel</strong> and does not license directly to retail brands, so it doesn&apos;t compete with advisors.{" "}
+                        <span className="text-red-500">*</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">2. Configurar Propuesta de Caso (Opcional)</p>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full font-sans">Pre-llena el mensaje</span>
+                  <p className="text-[10px] font-mono font-bold tracking-widest text-[var(--cm-text-secondary)] uppercase">
+                    {isES ? "2. Configurar propuesta de caso (opcional)" : "2. Configure a case proposal (optional)"}
+                  </p>
+                  <span className="text-[10px] bg-[var(--cm-action-soft)] text-[var(--cm-action-deep)] font-bold px-2 py-0.5 rounded-full font-sans">
+                    {isES ? "Pre-llena el mensaje" : "Pre-fills the message"}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
+                <div className="grid grid-cols-3 gap-2.5 bg-[var(--cm-surface-high)] p-1 rounded-xl border border-[var(--cm-outline-variant)]/60">
                   {(["A", "B", "C"] as const).map((t) => (
                     <button
                       key={t}
@@ -334,48 +428,54 @@ export default function ContactSection() {
                       onClick={() => setInterestType(t)}
                       className={`py-2 px-2 rounded-lg text-xs font-bold text-center transition-all cursor-pointer ${
                         interestType === t
-                          ? "bg-emerald-700 text-white shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
+                          ? "bg-[var(--cm-mint)] text-[var(--cm-on-mint)] shadow-sm"
+                          : "text-[var(--cm-on-surface-variant)] hover:text-[var(--cm-on-surface)]"
                       }`}
                     >
-                      Pack {t} {t === "A" ? "(Brief)" : t === "B" ? "(Sesión)" : "(Retainer)"}
+                      {isES ? "Pack" : "Pack"} {t} {t === "A" ? (isES ? "(Brief)" : "(Brief)") : t === "B" ? (isES ? "(Sesión)" : "(Session)") : (isES ? "(Retainer)" : "(Retainer)")}
                     </button>
                   ))}
                 </div>
 
-                <div className="space-y-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                <div className="space-y-4 bg-[var(--cm-surface-high)]/50 p-4 rounded-xl border border-[var(--cm-hairline-soft)]">
                   {interestType === "A" && (
                     <>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold text-slate-600 mb-1">Categoría real del cliente</label>
+                          <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                            {isES ? "Categoría real del cliente" : "Client's real category"}
+                          </label>
                           <input
                             type="text"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                            placeholder="Ej. Champú Natural"
+                            className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                            placeholder={isES ? "Ej. Champú Natural" : "e.g. Natural Shampoo"}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-slate-600 mb-1">País de análisis</label>
+                          <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                            {isES ? "País de análisis" : "Country of analysis"}
+                          </label>
                           <input
                             type="text"
                             value={country}
                             onChange={(e) => setCountry(e.target.value)}
-                            className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                            placeholder="Ej. Perú (PE)"
+                            className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                            placeholder={isES ? "Ej. Perú (PE)" : "e.g. Peru (PE)"}
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">3-5 Marcas o referencias ancla sugeridas</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "3–5 marcas o referencias ancla sugeridas" : "3–5 suggested anchor brands or references"}
+                        </label>
                         <input
                           type="text"
                           value={references}
                           onChange={(e) => setReferences(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                          placeholder="Ej. Marca Premium, Marca Mass"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                          placeholder={isES ? "Ej. Marca Premium, Marca Mass" : "e.g. Premium Brand, Mass Brand"}
                         />
                       </div>
                     </>
@@ -384,22 +484,26 @@ export default function ContactSection() {
                   {interestType === "B" && (
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Fecha sugerida para la sesión</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "Fecha sugerida para la sesión" : "Suggested session date"}
+                        </label>
                         <input
                           type="date"
                           value={sessionDate}
                           onChange={(e) => setSessionDate(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Perfil general del cliente final</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "Perfil general del cliente final" : "End client's general profile"}
+                        </label>
                         <input
                           type="text"
                           value={clientProfile}
                           onChange={(e) => setClientProfile(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                          placeholder="Ej. Distribuidor de lácteos en Lima"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                          placeholder={isES ? "Ej. Distribuidor de lácteos en Lima" : "e.g. Dairy distributor in Lima"}
                         />
                       </div>
                     </div>
@@ -408,34 +512,44 @@ export default function ContactSection() {
                   {interestType === "C" && (
                     <div className="grid sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">País del Moat</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "País del moat" : "Moat country"}
+                        </label>
                         <input
                           type="text"
                           value={moatCountry}
                           onChange={(e) => setMoatCountry(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                          placeholder="Ej. México"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                          placeholder={isES ? "Ej. México" : "e.g. Mexico"}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Línea de retail</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "Línea de retail" : "Retail line"}
+                        </label>
                         <input
                           type="text"
                           value={moatLine}
                           onChange={(e) => setMoatLine(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
-                          placeholder="Ej. Supermercados"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
+                          placeholder={isES ? "Ej. Supermercados" : "e.g. Supermarkets"}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Cadencia de alertas</label>
+                        <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)] mb-1">
+                          {isES ? "Cadencia de alertas" : "Alert cadence"}
+                        </label>
                         <select
                           value={cadence}
                           onChange={(e) => setCadence(e.target.value)}
-                          className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
+                          className="w-full text-xs bg-[var(--cm-surface)] border border-[var(--cm-outline-variant)] rounded-lg p-2 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] transition-colors"
                         >
-                          <option value="Semanal (Radar de Góndola)">Semanal (Radar)</option>
-                          <option value="Mensual (Brief Ejecutivo)">Mensual (Brief)</option>
+                          <option value={isES ? "Semanal (Radar de Góndola)" : "Weekly (Shelf Radar)"}>
+                            {isES ? "Semanal (Radar)" : "Weekly (Radar)"}
+                          </option>
+                          <option value={isES ? "Mensual (Brief Ejecutivo)" : "Monthly (Executive Brief)"}>
+                            {isES ? "Mensual (Brief)" : "Monthly (Brief)"}
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -445,21 +559,23 @@ export default function ContactSection() {
 
               <div className="space-y-2 mb-6">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-semibold text-slate-600">3. Área de Mensaje / Propuesta <span className="text-red-500">*</span></label>
+                  <label className="block text-xs font-semibold text-[var(--cm-on-surface-variant)]">
+                    {isES ? "3. Área de mensaje / propuesta" : "3. Message / proposal area"} <span className="text-red-500">*</span>
+                  </label>
                   <button
                     type="button"
                     onClick={handleCopyMessage}
-                    className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-emerald-700 transition-colors cursor-pointer"
+                    className="flex items-center gap-1 text-[10px] text-[var(--cm-text-secondary)] hover:text-[var(--cm-mint)] transition-colors cursor-pointer"
                   >
                     {copiedText ? (
                       <>
-                        <Check className="w-3 h-3 text-emerald-500" />
-                        <span className="text-emerald-600 font-bold">¡Copiado!</span>
+                        <Check className="w-3 h-3 text-[var(--cm-mint)]" />
+                        <span className="text-[var(--cm-mint)] font-bold">{isES ? "¡Copiado!" : "Copied!"}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3 h-3" />
-                        <span>Copiar texto</span>
+                        <span>{isES ? "Copiar texto" : "Copy text"}</span>
                       </>
                     )}
                   </button>
@@ -473,8 +589,8 @@ export default function ContactSection() {
                     setUserMessage(e.target.value);
                     setIsMessageEdited(true);
                   }}
-                  className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700 font-sans leading-relaxed transition-colors resize-y min-h-[120px]"
-                  placeholder="Escribe tu mensaje aquí..."
+                  className="w-full text-sm bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-lg p-3 outline-none focus:ring-1 focus:ring-[var(--cm-mint)] focus:border-[var(--cm-mint)] font-sans leading-relaxed transition-colors resize-y min-h-[120px]"
+                  placeholder={isES ? "Escribe tu mensaje aquí..." : "Write your message here..."}
                 />
               </div>
 
@@ -482,14 +598,14 @@ export default function ContactSection() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white font-bold rounded-lg text-sm transition-all shadow-md shadow-emerald-100 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--cm-mint)] hover:bg-[var(--cm-action-deep)] disabled:opacity-60 text-[var(--cm-on-mint)] font-bold rounded-lg text-sm transition-all shadow-md cursor-pointer"
                 >
-                  <span>{loading ? "Enviando..." : "Enviar Formulario"}</span>
+                  <span>{loading ? (isES ? "Enviando..." : "Sending...") : (isES ? "Enviar formulario" : "Send form")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-                <div className="text-center sm:text-left text-xs text-slate-500 font-sans">
-                  El formulario enviará los datos directamente a{" "}
-                  <a href="mailto:hello@cli-market.dev" className="text-emerald-700 hover:underline font-bold">
+                <div className="text-center sm:text-left text-xs text-[var(--cm-text-secondary)] font-sans">
+                  {isES ? "El formulario enviará los datos directamente a " : "The form will send your details directly to "}
+                  <a href="mailto:hello@cli-market.dev" className="text-[var(--cm-mint)] hover:underline font-bold">
                     hello@cli-market.dev
                   </a>
                 </div>
