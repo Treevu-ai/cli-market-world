@@ -8,7 +8,6 @@ import SpokeStepsSection from "@/components/spoke/SpokeStepsSection";
 import SpokeFinalCTA from "@/components/spoke/SpokeFinalCTA";
 import RetailersStatsStrip from "@/components/retailers/RetailersStatsStrip";
 import RetailersBenefitsSection from "@/components/retailers/RetailersBenefitsSection";
-import RetailersPricingSection from "@/components/retailers/RetailersPricingSection";
 import ActiveBrandTicker from "@/components/ActiveBrandTicker";
 import RetailerApplyModal from "@/components/RetailerApplyModal";
 import Footer from "@/components/Footer";
@@ -26,7 +25,6 @@ export default function RetailersPage() {
       <ActiveBrandTicker />
       <RetailersStatsStrip />
       <RetailersBenefitsSection />
-      <RetailersPricingSection onApply={openApply} />
       <SpokeStepsSection {...RETAILERS_STEPS_SECTION} altBackground />
       <SpokeFinalCTA icp="retailers" onPrimaryClick={openApply} />
       <RetailerApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
