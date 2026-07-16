@@ -1116,8 +1116,8 @@ def extract_fact_index(tool_results: list[dict[str, Any]] | dict[str, Any]) -> d
             number_values.add(m)
             number_values.add(m.replace(",", "."))
     for row in product_rows:
-        for field in ("name", "price", "total"):
-            val = row.get(field)
+        for row_key in ("name", "price", "total"):
+            val = row.get(row_key)
             if val is None:
                 continue
             if isinstance(val, (int, float)):
