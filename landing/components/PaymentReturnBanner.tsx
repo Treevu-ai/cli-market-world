@@ -11,7 +11,7 @@ export type PaymentReturnProvider = "paypal" | "mercadopago" | null;
 
 export function readPaymentReturnState(): {
   state: PaymentReturnState;
-  audience: "build" | "procure";
+  audience: "build" | "procure" | "retailer";
   provider: PaymentReturnProvider;
   ref: string | null;
   buildPlan: BuildPlanSlug | null;
@@ -23,7 +23,9 @@ export function readPaymentReturnState(): {
   const sub = params.get("sub");
   const payment = params.get("payment");
   const mp = params.get("mp");
-  const audience = params.get("audience") === "procure" ? "procure" : "build";
+  const audienceParam = params.get("audience");
+  const audience =
+    audienceParam === "procure" ? "procure" : audienceParam === "retailer" ? "retailer" : "build";
   const ref = params.get("ref");
   const buildPlan = normalizeBuildPlanSlug(params.get("plan"));
 
@@ -61,7 +63,7 @@ export default function PaymentReturnBanner() {
   const isES = lang === "es";
   const [visible, setVisible] = useState(false);
   const [state, setState] = useState<PaymentReturnState>(null);
-  const [audience, setAudience] = useState<"build" | "procure">("build");
+  const [audience, setAudience] = useState<"build" | "procure" | "retailer">("build");
   const [provider, setProvider] = useState<PaymentReturnProvider>(null);
   const [ref, setRef] = useState<string | null>(null);
   const [buildPlan, setBuildPlan] = useState<BuildPlanSlug | null>(null);
@@ -81,6 +83,7 @@ export default function PaymentReturnBanner() {
   if (!visible || !state) return null;
 
   const isProcure = audience === "procure";
+  const isRetailer = audience === "retailer";
   const isSuccess = state === "success";
   const isPending = state === "pending";
   const isMp = provider === "mercadopago";
@@ -89,6 +92,9 @@ export default function PaymentReturnBanner() {
 
   const title = (() => {
     if (isSuccess) {
+      if (isRetailer) {
+        return isES ? "Pago recibido — Plan Growth" : "Payment received — Growth plan";
+      }
       if (isProcure) {
         if (isMp) {
           return isES
@@ -109,6 +115,9 @@ export default function PaymentReturnBanner() {
     }
     if (isPending) {
       return isES ? "Pago Mercado Pago pendiente de confirmación" : "Mercado Pago payment pending confirmation";
+    }
+    if (isRetailer) {
+      return isES ? "Pago cancelado — Plan Growth" : "Payment cancelled — Growth plan";
     }
     return isMp
       ? isES
@@ -138,7 +147,13 @@ export default function PaymentReturnBanner() {
       )}
       {isSuccess ? (
         <div className="space-y-2 text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
-          {isProcure ? (
+          {isRetailer ? (
+            <p>
+              {isES
+                ? "Nuestro equipo confirma el pago y activa tu plan Growth (prioridad de indexación, dashboard de precios, badge verificado) en menos de 24h."
+                : "Our team confirms payment and activates your Growth plan (priority indexing, price dashboard, verified badge) within 24h."}
+            </p>
+          ) : isProcure ? (
             <>
               <p>
                 {isES
@@ -168,23 +183,31 @@ export default function PaymentReturnBanner() {
       ) : isPending ? (
         <div className="space-y-2 text-sm text-[var(--cm-on-surface-variant)]">
           <p>
-            {isProcure
+            {isRetailer
               ? isES
-                ? "Cuando Mercado Pago confirme el pago, tu plan Procure se activará automáticamente."
-                : "When Mercado Pago confirms payment, your Procure plan will activate automatically."
-              : isES
-                ? "Cuando Mercado Pago confirme el pago, tu plan Build se activará automáticamente."
-                : "When Mercado Pago confirms payment, your Build plan will activate automatically."}
+                ? "Cuando Mercado Pago confirme el pago, nuestro equipo activa tu plan Growth (no automático)."
+                : "When Mercado Pago confirms payment, our team activates your Growth plan (not automatic)."
+              : isProcure
+                ? isES
+                  ? "Cuando Mercado Pago confirme el pago, tu plan Procure se activará automáticamente."
+                  : "When Mercado Pago confirms payment, your Procure plan will activate automatically."
+                : isES
+                  ? "Cuando Mercado Pago confirme el pago, tu plan Build se activará automáticamente."
+                  : "When Mercado Pago confirms payment, your Build plan will activate automatically."}
           </p>
           <ol className="list-decimal list-inside space-y-1 text-xs">
-            {isProcure ? (
-              <>
-                <li>
-                  {isES
-                    ? "Revisa tu email — enlace mágico al dashboard Procure"
-                    : "Check your email — magic link to Procure dashboard"}
-                </li>
-              </>
+            {isRetailer ? (
+              <li>
+                {isES
+                  ? "Te contactamos por email cuando el plan Growth esté activo (hasta 24h)"
+                  : "We'll email you once the Growth plan is active (up to 24h)"}
+              </li>
+            ) : isProcure ? (
+              <li>
+                {isES
+                  ? "Revisa tu email — enlace mágico al dashboard Procure"
+                  : "Check your email — magic link to Procure dashboard"}
+              </li>
             ) : (
               <li className="font-mono">market whoami</li>
             )}
@@ -194,7 +217,7 @@ export default function PaymentReturnBanner() {
                 : "If not active after 30 min: email hello@cli-market.dev with the reference above"}
             </li>
           </ol>
-          {isProcure ? (
+          {isRetailer ? null : isProcure ? (
             <a href={PROCURE_APP_URL} className="inline-block text-[var(--cm-mint)] text-xs hover:underline">
               {isES ? "Abrir dashboard Procure →" : "Open Procure dashboard →"}
             </a>

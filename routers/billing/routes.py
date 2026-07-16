@@ -24,8 +24,10 @@ from market_core import (
     db_update_subscription_request_payment_link,
 )
 from routers.billing.activation import (
+    RETAILER_GROWTH_PRICE_USD,
     _pro_price_pen,
     _record_plan_funnel_event,
+    _retailer_growth_price_pen,
     _wallet_manual_transfer_fields,
     _wallet_payment_phone,
     process_pro_subscription_request,
@@ -340,6 +342,107 @@ async def _start_pro_mercadopago_checkout(
             {"step": 3, "action": "Verifica con: market whoami" if lang == "es" else "Verify with: market whoami"},
         ],
     }
+
+
+async def _start_retailer_growth_mercadopago_checkout(
+    email: str,
+    store_name: str,
+    *,
+    lang: str,
+) -> dict:
+    """Retailer Growth ($9/mo) checkout via Mercado Pago.
+
+    Unlike Pro, retailers have no CLI username/account — the subscription
+    request is tracked purely by email/store_name, and activation is manual
+    (team flips the listing to Growth on payment confirmation) rather than
+    an automatic db_set_subscription upgrade. See
+    _activate_retailer_growth_from_request in routers/billing/activation.py.
+    """
+    from market_connectors.mercadopago_payments import create_preference
+
+    amount_pen = _retailer_growth_price_pen()
+    req = db_create_subscription_request(
+        store_name or email, email, "", prefix="RGW", display_name=store_name
+    )
+    request_id = req["id"]
+
+    mp_return = f"https://cli-market.dev/retailers?mp=success&audience=retailer&ref={request_id}"
+    mp = await create_preference(
+        amount_pen,
+        "PEN",
+        f"CLI-Market-{request_id}",
+        title="CLI Market Retailer Growth",
+        success_url=mp_return,
+        pending_url=f"https://cli-market.dev/retailers?mp=pending&audience=retailer&ref={request_id}",
+        failure_url=f"https://cli-market.dev/retailers?mp=failure&audience=retailer&ref={request_id}",
+    )
+    if not mp.get("checkout_url"):
+        raise HTTPException(status_code=502, detail=mp.get("error", "Mercado Pago error"))
+
+    checkout_url = mp["checkout_url"]
+    db_update_subscription_request_payment_link(request_id, checkout_url)
+
+    _slack_notify_subscription(
+        tier="retailer_growth",
+        status="pending",
+        username=store_name or email,
+        email=email,
+        request_id=request_id,
+        source="landing_retailer_growth",
+        amount_pen=amount_pen,
+        amount_usd=float(RETAILER_GROWTH_PRICE_USD),
+    )
+
+    if lang == "es":
+        message = (
+            f"Completa el pago en Mercado Pago — S/ {amount_pen:.2f} "
+            f"(USD {RETAILER_GROWTH_PRICE_USD}/mes). Referencia: {request_id}. "
+            "Activamos tu plan Growth apenas confirmamos el pago."
+        )
+    else:
+        message = (
+            f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
+            f"(USD {RETAILER_GROWTH_PRICE_USD}/mo). Reference: {request_id}. "
+            "We activate your Growth plan as soon as payment is confirmed."
+        )
+
+    return {
+        "ok": True,
+        "request_id": request_id,
+        "email": email,
+        "store_name": store_name,
+        "payment_rail": "mercadopago",
+        "payment_mode": "mercadopago_checkout",
+        "amount_usd": float(RETAILER_GROWTH_PRICE_USD),
+        "amount_pen": amount_pen,
+        "currency": "PEN",
+        "checkout_url": checkout_url,
+        "approve_url": checkout_url,
+        "preference_id": mp.get("preference_id", ""),
+        "message": message,
+    }
+
+
+@router.post("/billing/retailer-growth-checkout")
+async def billing_retailer_growth_checkout(body: dict):
+    """Retailer Growth ($9/mo) checkout — no CLI login required, unlike /billing/pro-checkout."""
+    try:
+        check_rate_limit("billing-retailer-growth-checkout")
+        email = (body.get("email") or "").strip().lower()
+        store_name = (body.get("store_name") or "").strip()
+        lang = (body.get("lang") or "en").strip().lower()[:2]
+
+        if not email or not _EMAIL_RE.match(email):
+            raise HTTPException(status_code=400, detail="valid email is required")
+        if not store_name:
+            raise HTTPException(status_code=400, detail="store_name is required")
+
+        return await _start_retailer_growth_mercadopago_checkout(email, store_name, lang=lang)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("billing_retailer_growth_checkout failed")
+        raise HTTPException(status_code=503, detail=f"billing unavailable: {e}") from e
 
 
 @router.post("/billing/pro-checkout")

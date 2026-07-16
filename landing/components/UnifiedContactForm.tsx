@@ -11,6 +11,7 @@ const TOPICS_ES = [
   { value: "press", label: "Prensa / alianza" },
   { value: "general", label: "Consulta general" },
   { value: "retailer", label: "Listar mi tienda (gratis)" },
+  { value: "retailer-custom", label: "Retailer — plan Custom (multi-tienda / API)" },
 ];
 const TOPICS_EN = [
   { value: "intelligence", label: "Advisors — data pilot ($300–500/mo)" },
@@ -19,6 +20,7 @@ const TOPICS_EN = [
   { value: "press", label: "Press / partnership" },
   { value: "general", label: "General inquiry" },
   { value: "retailer", label: "List my store (free)" },
+  { value: "retailer-custom", label: "Retailer — Custom plan (multi-store / API)" },
 ];
 
 const MSG_PLACEHOLDERS_ES: Record<string, string> = {
@@ -27,6 +29,7 @@ const MSG_PLACEHOLDERS_ES: Record<string, string> = {
   procure: "Empresa, sector (restaurante/hotel/etc.), volumen de compras mensual, país…",
   press: "Medio, tema de la nota, fecha de publicación…",
   general: "¿En qué podemos ayudarte?",
+  "retailer-custom": "Cuéntanos sobre tu operación — catálogos, volumen, integraciones que ya usas…",
 };
 const MSG_PLACEHOLDERS_EN: Record<string, string> = {
   intelligence: "Country, categories, estimated volume, expected SLA…",
@@ -34,6 +37,7 @@ const MSG_PLACEHOLDERS_EN: Record<string, string> = {
   procure: "Company, sector (restaurant/hotel/etc.), monthly procurement volume, country…",
   press: "Publication, story topic, publish date…",
   general: "How can we help?",
+  "retailer-custom": "Tell us about your operation — catalogs, volume, integrations you already use…",
 };
 
 const PLATFORMS = [
@@ -44,8 +48,17 @@ const PLATFORMS = [
   { value: "other", label: "Other" },
 ];
 const COUNTRIES = ["PE", "AR", "BR", "MX", "CO", "CL", "US", "IT", "FR"];
+const STORE_COUNT_OPTIONS = ["2–5", "6–20", "21–50", "50+"];
 
-const ALLOWED_TOPICS = new Set(["intelligence", "enterprise", "procure", "press", "general", "retailer"]);
+const ALLOWED_TOPICS = new Set([
+  "intelligence",
+  "enterprise",
+  "procure",
+  "press",
+  "general",
+  "retailer",
+  "retailer-custom",
+]);
 
 function resolveTopicFromLocation(): string | null {
   if (typeof window === "undefined") return null;
@@ -113,12 +126,18 @@ export default function UnifiedContactForm() {
   const [apiToken, setApiToken] = useState("");
   const [appId, setAppId] = useState("");
 
+  // Retailer Custom fields
+  const [customStoreCount, setCustomStoreCount] = useState(STORE_COUNT_OPTIONS[0]);
+  const [customPlatform, setCustomPlatform] = useState("vtex");
+  const [customNeedsSla, setCustomNeedsSla] = useState(false);
+
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [legal, setLegal] = useState(false);
 
   const isRetailer = topic === "retailer";
+  const isRetailerCustom = topic === "retailer-custom";
 
   const submitContact = async () => {
     if (!email.includes("@")) {
@@ -129,10 +148,18 @@ export default function UnifiedContactForm() {
       setError(isES ? "Escribe al menos 10 caracteres" : "Write at least 10 characters");
       return false;
     }
+    let useCase = message;
+    if (isRetailerCustom) {
+      const platformLabel = PLATFORMS.find((p) => p.value === customPlatform)?.label || customPlatform;
+      const summary = isES
+        ? `Tiendas/marcas: ${customStoreCount}\nPlataforma: ${platformLabel}\nNecesita SLA dedicado: ${customNeedsSla ? "Sí" : "No"}\n\n`
+        : `Stores/brands: ${customStoreCount}\nPlatform: ${platformLabel}\nNeeds dedicated SLA: ${customNeedsSla ? "Yes" : "No"}\n\n`;
+      useCase = summary + message;
+    }
     const res = await fetch(`${API_URL}/v1/contact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: topic, email, use_case: message, lang: isES ? "es" : "en" }),
+      body: JSON.stringify({ plan: topic, email, use_case: useCase, lang: isES ? "es" : "en" }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.detail || "error");
@@ -347,6 +374,50 @@ export default function UnifiedContactForm() {
               </p>
             </div>
           </>
+        )}
+
+        {isRetailerCustom && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">
+                {isES ? "Tiendas o marcas" : "Stores or brands"}
+              </label>
+              <select
+                value={customStoreCount}
+                onChange={(e) => setCustomStoreCount(e.target.value)}
+                className="input-cyber"
+              >
+                {STORE_COUNT_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--cm-on-surface-variant)] mb-1">Platform</label>
+              <select
+                value={customPlatform}
+                onChange={(e) => setCustomPlatform(e.target.value)}
+                className="input-cyber"
+              >
+                {PLATFORMS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <label className="col-span-2 flex items-center gap-2 text-xs text-[var(--cm-on-surface-variant)]">
+              <input
+                type="checkbox"
+                checked={customNeedsSla}
+                onChange={(e) => setCustomNeedsSla(e.target.checked)}
+                className="accent-[var(--cm-mint)]"
+              />
+              {isES ? "Necesito SLA / soporte dedicado" : "I need a dedicated SLA / support"}
+            </label>
+          </div>
         )}
 
         {!isRetailer && (

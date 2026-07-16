@@ -3,6 +3,7 @@
 from procure_billing import procure_price_pen, procure_tier_from_request_id
 from routers.billing.activation import (
     _is_procure_subscription_request_id,
+    _is_retailer_growth_subscription_request_id,
     _parse_pro_request_ref,
     _parse_subscription_request_ref,
 )
@@ -32,6 +33,19 @@ def test_parse_subscription_request_ref():
 def test_is_procure_subscription_request_id():
     assert _is_procure_subscription_request_id("PCS-ABC") is True
     assert _is_procure_subscription_request_id("PRO-ABC") is False
+
+
+def test_retailer_growth_ref_does_not_leak_into_pro_activation():
+    """Regression guard: an RGW- ref must never be treated as Pro or Procure.
+
+    Before this, the webhook dispatch fell back to _activate_pro_from_request
+    for any unrecognized prefix — an RGW payment would have incorrectly
+    granted the payer a Pro (Build) subscription.
+    """
+    assert _parse_subscription_request_ref("CLI-Market-RGW-ABC123") == "RGW-ABC123"
+    assert _is_retailer_growth_subscription_request_id("RGW-ABC123") is True
+    assert _is_procure_subscription_request_id("RGW-ABC123") is False
+    assert _is_retailer_growth_subscription_request_id("PRO-ABC123") is False
 
 
 def test_procure_mp_checkout_flag(monkeypatch):
