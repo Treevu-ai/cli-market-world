@@ -6,10 +6,13 @@ cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@7
 
 # Runtime dep the web tier imports directly (also pulled in transitively by the
 # core, kept explicit so the server's Playwright fallback always resolves).
-playwright>=1.45.0
+# Exact-pinned (not >=) so a compromised future release isn't auto-installed
+# on the next build — bump deliberately, same as cli-market-core/index above.
+playwright==1.60.0
 
 # collect_prices.py imports httpx directly. Also pulled in transitively by
 # cli-market-core, but a Docker build hit ModuleNotFoundError with only the
 # transitive resolution (2026-07-10 cli-market-collector outage) -- kept
-# explicit so this doesn't depend on resolver behavior again.
-httpx>=0.27
+# explicit so this doesn't depend on resolver behavior again. Exact-pinned
+# for the same supply-chain reason as playwright above.
+httpx==0.28.1

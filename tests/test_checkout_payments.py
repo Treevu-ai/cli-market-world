@@ -117,3 +117,127 @@ def test_paypal_webhook_duplicate_ignored():
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r2.json().get("duplicate") is True
+
+
+# ── Open redirect fix: checkout return/cancel/success/failure URLs ─────────────
+
+
+def test_validate_cli_market_redirect_url_allows_own_domain():
+    from market_security import validate_cli_market_redirect_url
+
+    url = "https://cli-market.dev/account?order=success"
+    assert validate_cli_market_redirect_url(url, "https://cli-market.dev?fallback") == url
+
+
+def test_validate_cli_market_redirect_url_allows_subdomain():
+    from market_security import validate_cli_market_redirect_url
+
+    url = "https://app.procurecopilot.com/dashboard"
+    assert validate_cli_market_redirect_url(url, "https://cli-market.dev?fallback") == url
+
+
+def test_validate_cli_market_redirect_url_blocks_foreign_domain():
+    from market_security import validate_cli_market_redirect_url
+
+    default = "https://cli-market.dev?order=success"
+    assert validate_cli_market_redirect_url("https://evil.example/phish", default) == default
+
+
+def test_validate_cli_market_redirect_url_blocks_lookalike_domain():
+    from market_security import validate_cli_market_redirect_url
+
+    default = "https://cli-market.dev?order=success"
+    # "cli-market.dev.evil.example" is NOT a subdomain of cli-market.dev
+    assert validate_cli_market_redirect_url("https://cli-market.dev.evil.example", default) == default
+
+
+def test_validate_cli_market_redirect_url_blocks_non_https():
+    from market_security import validate_cli_market_redirect_url
+
+    default = "https://cli-market.dev?order=success"
+    assert validate_cli_market_redirect_url("http://cli-market.dev", default) == default
+
+
+def test_checkout_paypal_ignores_foreign_return_url():
+    _add_cart()
+    mock_result = {"order_id": "PP-1", "approve_url": "https://paypal.com/approve/1"}
+    captured = {}
+
+    async def _capture_create_order(*args, **kwargs):
+        captured.update(kwargs)
+        return mock_result
+
+    with patch("market_connectors.paypal_payments.create_order", new=_capture_create_order, create=True):
+        r = client.post(
+            "/checkout/paypal",
+            headers=_auth(),
+            json={"return_url": "https://evil.example/phish", "cancel_url": "https://evil.example/cancel"},
+        )
+    assert r.status_code == 200
+    assert captured["return_url"] == "https://cli-market.dev?order=success"
+    assert captured["cancel_url"] == "https://cli-market.dev?order=cancelled"
+
+
+def test_checkout_mercadopago_ignores_foreign_success_url():
+    _add_cart()
+    mock_result = {"checkout_url": "https://mercadopago.com/checkout/1", "preference_id": "pref1"}
+    captured = {}
+
+    async def _capture_create_preference(*args, **kwargs):
+        captured.update(kwargs)
+        return mock_result
+
+    with patch(
+        "market_connectors.mercadopago_payments.create_preference",
+        new=_capture_create_preference,
+        create=True,
+    ):
+        r = client.post(
+            "/checkout/mercadopago",
+            headers=_auth(),
+            json={"success_url": "https://evil.example/phish"},
+        )
+    assert r.status_code == 200
+    assert captured["success_url"] == "https://cli-market.dev?mp=success"
+
+
+# ── Mercado Pago webhook: production secret enforcement + dedup ────────────────
+
+
+def test_mercadopago_webhook_requires_secret_in_production():
+    with (
+        patch("routers.checkout.webhooks.is_production_deploy", return_value=True),
+        patch("market_connectors.mercadopago_payments.webhook_secret", return_value=""),
+    ):
+        r = client.post("/checkout/mercadopago-webhook?id=pay_123")
+    assert r.status_code == 503
+
+
+def test_mercadopago_webhook_allows_missing_secret_outside_production():
+    with (
+        patch("routers.checkout.webhooks.is_production_deploy", return_value=False),
+        patch("market_connectors.mercadopago_payments.webhook_secret", return_value=""),
+        patch(
+            "market_connectors.mercadopago_payments.get_payment",
+            new=AsyncMock(return_value={"error": "not_found"}),
+        ),
+    ):
+        r = client.post("/checkout/mercadopago-webhook?id=pay_123")
+    assert r.status_code == 200
+
+
+def test_mercadopago_webhook_dedups_same_payment_id():
+    pay_result = {"status": "approved", "external_reference": "CLI-Market-ORD-MPDUP"}
+    with (
+        patch("routers.checkout.webhooks.is_production_deploy", return_value=False),
+        patch("market_connectors.mercadopago_payments.webhook_secret", return_value=""),
+        patch(
+            "market_connectors.mercadopago_payments.get_payment",
+            new=AsyncMock(return_value=pay_result),
+        ),
+    ):
+        r1 = client.post("/checkout/mercadopago-webhook?id=pay_dup_1")
+        r2 = client.post("/checkout/mercadopago-webhook?id=pay_dup_1")
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json().get("duplicate") is True

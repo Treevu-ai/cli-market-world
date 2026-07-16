@@ -20,12 +20,16 @@ import logging
 from fastapi import APIRouter, Body, Header, HTTPException
 
 from market_audit import record_audit
+from market_core import db_get_user_email
 from market_vault import (
     bind_vault_customer,
     bind_vault_payment_token,
+    bind_vault_setup_token,
+    mark_vault_setup_token_consumed,
     vault_customer_bound_to_other,
     vault_customer_owned,
     vault_payment_token_owned,
+    vault_setup_token_owner,
 )
 from server_deps import require_api_key
 
@@ -45,7 +49,10 @@ async def vault_setup(
     """Create a PayPal Vault setup token — buyer approves to save payment method."""
     username = require_api_key(authorization)
     customer_id = (body.get("customer_id") or "").strip()
-    if customer_id and vault_customer_bound_to_other(username, customer_id):
+    # Only allow attaching to a customer_id the caller has already proven
+    # ownership of (via a prior, provider-confirmed vault-confirm) — a
+    # client-supplied customer_id is not itself proof of ownership.
+    if customer_id and not vault_customer_owned(username, customer_id):
         raise HTTPException(status_code=403, detail="customer_id not owned by caller")
 
     from market_connectors.paypal_payments import create_vault_setup_token
@@ -57,8 +64,9 @@ async def vault_setup(
     )
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
-    if customer_id:
-        bind_vault_customer(username, customer_id)
+    setup_token_id = (result.get("setup_token_id") or "").strip()
+    if setup_token_id:
+        bind_vault_setup_token(username, setup_token_id)
     record_audit("vault_setup", username=username, detail={"setup_token": result.get("setup_token_id")})
     return result
 
@@ -73,6 +81,15 @@ async def vault_confirm(
     setup_token_id = (body.get("setup_token_id") or "").strip()
     if not setup_token_id:
         raise HTTPException(status_code=400, detail="setup_token_id required")
+
+    # Only the caller who created this setup token (via vault-setup) may
+    # confirm it — otherwise a shared/leaked approve_url lets an attacker
+    # bind a victim's approved payment method to the attacker's own account.
+    owner = vault_setup_token_owner(setup_token_id)
+    if owner is None or owner != username:
+        raise HTTPException(status_code=403, detail="setup_token_id not owned by caller")
+    if not mark_vault_setup_token_consumed(setup_token_id):
+        raise HTTPException(status_code=403, detail="setup_token_id already used")
 
     from market_connectors.paypal_payments import create_vault_payment_token
 
@@ -215,15 +232,30 @@ async def save_card(
     """Save a card to MercadoPago customer for future one-click payments."""
     username = require_api_key(authorization)
     card_token_id = (body.get("card_token_id") or body.get("token") or "").strip()
-    customer_id = (body.get("customer_id") or "").strip()
+    requested_customer_id = (body.get("customer_id") or "").strip()
     if not card_token_id:
         raise HTTPException(status_code=400, detail="card_token_id required")
-    if not customer_id:
-        raise HTTPException(status_code=400, detail="customer_id required")
-    if vault_customer_bound_to_other(username, customer_id):
-        raise HTTPException(status_code=403, detail="customer_id not owned by caller")
 
-    from market_connectors.mercadopago_payments import save_card_for_customer
+    from market_connectors.mercadopago_payments import create_customer, save_card_for_customer
+
+    # A client-supplied customer_id is never proof of ownership — Mercado
+    # Pago has no endpoint here to verify it against the caller. Only reuse
+    # a customer_id the caller already owns from a prior save; otherwise
+    # mint a fresh, provider-verified one server-side and ignore whatever
+    # the client sent (closes first-claim-wins IDOR on unowned/leaked IDs).
+    if requested_customer_id and vault_customer_owned(username, requested_customer_id):
+        customer_id = requested_customer_id
+    else:
+        if requested_customer_id and vault_customer_bound_to_other(username, requested_customer_id):
+            raise HTTPException(status_code=403, detail="customer_id not owned by caller")
+        email = db_get_user_email(username) or ""
+        if not email:
+            raise HTTPException(status_code=400, detail="account has no email on file for Mercado Pago vault setup")
+        created = await create_customer(email)
+        if "error" in created or not created.get("customer_id"):
+            raise HTTPException(status_code=502, detail=created.get("error", "Mercado Pago customer creation failed"))
+        customer_id = created["customer_id"]
+        bind_vault_customer(username, customer_id)
 
     result = await save_card_for_customer(card_token_id, customer_id)
     if "error" in result:
