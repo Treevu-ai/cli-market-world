@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/case-studies" },
   openGraph: {
     title: "Case Studies — CLI Market",
-    description: "How teams use Build, Procure, and Intelligence on verified LATAM shelf prices.",
+    description: "How teams use Build, Procure, and Advisors on verified LATAM shelf prices.",
     url: "https://cli-market.dev/case-studies",
     type: "website",
     images: [{ url: ogImage, width: 1200, height: 630, alt: "CLI Market case studies" }],

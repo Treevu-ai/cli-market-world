@@ -399,7 +399,7 @@ market --json doctor`}</CodeBlock>
             <code className="text-[var(--cm-mint)]">/v1/intel/inflation</code>.
           </p>
           <a href="/intelligence-pilot-es" className="text-[var(--cm-mint)] underline text-sm">
-            {t("One-pager piloto Intelligence →", "Intelligence pilot one-pager →")}
+            {t("One-pager piloto Advisors →", "Advisors pilot one-pager →")}
           </a>
         </section>
 

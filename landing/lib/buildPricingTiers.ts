@@ -124,9 +124,9 @@ export function formatFaqPricingSummary(isES: boolean): string {
   const starter = formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short");
   const pro = formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short");
   if (isES) {
-    return `Build (API): Starter USD 9/mes (${starter}, export CSV, prueba gratis de ${TRIAL_DAYS} días); Pro USD 49/mes o USD 490/año (${pro}, alertas, API completa + checkout). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Intelligence: lista de espera. Listado retailer: gratis.`;
+    return `Build (API): Starter USD 9/mes (${starter}, export CSV, prueba gratis de ${TRIAL_DAYS} días); Pro USD 49/mes o USD 490/año (${pro}, alertas, API completa + checkout). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Advisors: lista de espera. Listado retailer: gratis.`;
   }
-  return `Build (API): Starter USD 9/mo (${starter}, CSV export, ${TRIAL_DAYS}-day free trial); Pro USD 49/mo or USD 490/yr (${pro}, alerts, full API + checkout). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Intelligence: waitlist. Retailer listing: free forever.`;
+  return `Build (API): Starter USD 9/mo (${starter}, CSV export, ${TRIAL_DAYS}-day free trial); Pro USD 49/mo or USD 490/yr (${pro}, alerts, full API + checkout). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Advisors: waitlist. Retailer listing: free forever.`;
 }
 
 export function formatTrialApiKeyBlurb(isES: boolean): string {

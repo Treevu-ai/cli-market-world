@@ -6,7 +6,7 @@ const billingEn = `${sinapsisBillingPolicy(false)} Channels: ${paymentsChannelsS
 export const FAQ_SCHEMA_ES = [
   {
     q: "¿Qué es CLI Market?",
-    a: "Infraestructura de precios retail: CLI Build (MCP y API), Procure Copilot (compras) e Intelligence (datos y reportes).",
+    a: "Infraestructura de precios retail: CLI Build (MCP y API), Procure Copilot (compras) y Advisors (datos y reportes).",
   },
   {
     q: "¿Cómo empiezo?",
@@ -18,14 +18,14 @@ export const FAQ_SCHEMA_ES = [
   },
   {
     q: "¿Cuánto cuesta?",
-    a: "CLI Build desde $49/mes. Procure Copilot desde $29/mes. Intelligence desde $300/mes. Cancela cuando quieras.",
+    a: "CLI Build desde $49/mes. Procure Copilot desde $29/mes. Advisors desde $300/mes. Cancela cuando quieras.",
   },
 ];
 
 export const FAQ_SCHEMA_EN = [
   {
     q: "What is CLI Market?",
-    a: "Retail price infrastructure: CLI Build (MCP and API), Procure Copilot (procurement), and Intelligence (data and reports).",
+    a: "Retail price infrastructure: CLI Build (MCP and API), Procure Copilot (procurement), and Advisors (data and reports).",
   },
   {
     q: "How do I get started?",
@@ -37,7 +37,7 @@ export const FAQ_SCHEMA_EN = [
   },
   {
     q: "How much does it cost?",
-    a: "CLI Build from $49/mo. Procure Copilot from $29/mo. Intelligence from $300/mo. Cancel anytime.",
+    a: "CLI Build from $49/mo. Procure Copilot from $29/mo. Advisors from $300/mo. Cancel anytime.",
   },
 ];
 

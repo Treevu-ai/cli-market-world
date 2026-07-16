@@ -1,4 +1,4 @@
-import { BUILD_PAGE, INTELLIGENCE_PAGE } from "@/lib/siteNav";
+import { ADVISOR_PAGE, BUILD_PAGE } from "@/lib/siteNav";
 import { PROCURE_LANDING_URL } from "@/lib/procurePlans";
 
 /** Legacy homepage hash anchors → spoke paths (Phase 1 hub split). */
@@ -6,7 +6,7 @@ export const LEGACY_HASH_TARGETS: Record<string, string> = {
   pricing: `${BUILD_PAGE}#pricing`,
   "pro-checkout": `${BUILD_PAGE}#pro-checkout`,
   "pricing-build": `${BUILD_PAGE}#pricing`,
-  intelligence: INTELLIGENCE_PAGE,
+  intelligence: ADVISOR_PAGE,
   procure: PROCURE_LANDING_URL,
   "who-its-for": "/",
   faq: `${BUILD_PAGE}#faq`,
