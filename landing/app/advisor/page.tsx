@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import HeroSection from "@/app/advisor/_components/HeroSection";
+import SpokePageShell from "@/components/spoke/SpokePageShell";
+import SpokeHero from "@/components/spoke/SpokeHero";
+import SpokeHubLink from "@/components/spoke/SpokeHubLink";
+import AdvisorStatsStrip from "@/components/advisor/AdvisorStatsStrip";
 import AdvisorHubSection from "@/app/advisor/_components/AdvisorHubSection";
 import ExamplesSection from "@/app/advisor/_components/ExamplesSection";
 import ContactSection from "@/app/advisor/_components/ContactSection";
+import Footer from "@/components/Footer";
+import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 
 export const metadata: Metadata = {
   title: "Asesores — CLI Market",
@@ -14,16 +17,17 @@ export const metadata: Metadata = {
 };
 
 export default function AdvisorPage() {
+  const { brandMode } = SPOKE_CONFIG.advisor;
+
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <Navbar />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
-        <HeroSection />
-        <AdvisorHubSection />
-        <ExamplesSection />
-        <ContactSection />
-      </div>
+    <SpokePageShell brandMode={brandMode}>
+      <SpokeHero icp="advisor" />
+      <SpokeHubLink />
+      <AdvisorStatsStrip />
+      <AdvisorHubSection />
+      <ExamplesSection />
+      <ContactSection />
       <Footer />
-    </main>
+    </SpokePageShell>
   );
 }

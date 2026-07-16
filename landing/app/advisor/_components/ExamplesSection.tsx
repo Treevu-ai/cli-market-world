@@ -33,22 +33,23 @@ export default function ExamplesSection() {
   const script = activeExample === "A" ? (isES ? scriptA_es : scriptA_en) : isES ? scriptB_es : scriptB_en;
 
   return (
-    <section id="ejemplos-casos" className="mb-16 scroll-mt-24">
-      <div className="text-center mb-10">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[var(--cm-action-soft)] border border-[var(--cm-mint)]/20 text-[var(--cm-action-deep)] uppercase tracking-widest mb-3">
+    <section id="ejemplos-casos" className="landing-section scroll-mt-24">
+      <div className="landing-container-wide">
+      <div className="landing-section-header text-center">
+        <p className="section-eyebrow mb-4">
           {isES ? "Casos de aplicación práctica" : "Applied use cases"}
-        </span>
-        <h2 className="text-3xl font-display font-bold text-[var(--cm-on-surface)] tracking-tight mb-2">
+        </p>
+        <h2 className="section-title">
           {isES ? "Ejemplos con negocios reales" : "Examples with real businesses"}
         </h2>
-        <p className="text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto">
+        <p className="section-intro">
           {isES
             ? "Cómo asesores combinan su criterio estratégico con evidencia empírica de CLI Market para entregar valor concreto."
             : "How advisors combine strategic judgment with CLI Market's empirical evidence to deliver concrete value."}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-8 bg-[var(--cm-surface-high)] p-1.5 rounded-2xl border border-[var(--cm-outline-variant)]">
+      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mt-10 mb-8 bg-[var(--cm-surface-high)] p-1.5 rounded-2xl border border-[var(--cm-outline-variant)]">
         <button
           onClick={() => { setActiveExample("A"); setCopiedScript(false); }}
           className={`py-3 px-4 rounded-xl font-medium text-sm sm:text-base transition-all flex items-center justify-center gap-2 ${
@@ -336,6 +337,7 @@ export default function ExamplesSection() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

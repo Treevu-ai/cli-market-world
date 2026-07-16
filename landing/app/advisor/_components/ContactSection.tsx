@@ -153,22 +153,23 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact-form" className="mb-16 scroll-mt-24">
-      <div className="text-center mb-10">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[var(--cm-action-soft)] border border-[var(--cm-mint)]/20 text-[var(--cm-action-deep)] uppercase tracking-widest mb-3">
+    <section id="contact-form" className="landing-section scroll-mt-24">
+      <div className="landing-container-wide">
+      <div className="landing-section-header text-center">
+        <p className="section-eyebrow mb-4">
           {isES ? "Acceso y demo" : "Access and demo"}
-        </span>
-        <h2 className="text-3xl font-display font-bold text-[var(--cm-on-surface)] tracking-tight mb-2">
+        </p>
+        <h2 className="section-title">
           {isES ? "Súmate al ecosistema de asesores" : "Join the advisor ecosystem"}
         </h2>
-        <p className="text-[var(--cm-on-surface-variant)] max-w-2xl mx-auto">
+        <p className="section-intro">
           {isES
             ? "Canal cerrado: no competimos contigo ni vendemos de forma directa a las marcas que asesoras."
             : "Closed channel: we don't compete with you or sell directly to the brands you advise."}
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8 items-start">
+      <div className="grid lg:grid-cols-12 gap-8 items-start mt-10">
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-[var(--cm-surface)] rounded-2xl border border-[var(--cm-outline-variant)] p-6 shadow-xs">
             <span className="text-[10px] font-mono font-bold tracking-widest text-[var(--cm-mint)] uppercase block mb-1">
@@ -598,7 +599,7 @@ export default function ContactSection() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--cm-mint)] hover:bg-[var(--cm-action-deep)] disabled:opacity-60 text-[var(--cm-on-mint)] font-bold rounded-lg text-sm transition-all shadow-md cursor-pointer"
+                  className="btn-mint w-full sm:w-auto gap-2"
                 >
                   <span>{loading ? (isES ? "Enviando..." : "Sending...") : (isES ? "Enviar formulario" : "Send form")}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -613,6 +614,7 @@ export default function ContactSection() {
             </form>
           )}
         </div>
+      </div>
       </div>
     </section>
   );

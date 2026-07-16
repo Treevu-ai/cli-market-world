@@ -1,6 +1,11 @@
 /intelligence-pilot-es.md /intelligence-pilot-es 302
 /case-studies.md /case-studies 302
 
+# /intelligence is an orphaned page (superseded by /advisor, no longer
+# linked from nav/productDoors.ts) — consolidate traffic and indexing.
+/intelligence /advisor 301
+/intelligence/* /advisor 301
+
 # Brand Monitor is a client-rendered dashboard (output: "export" only
 # pre-renders /brand/demo — see generateStaticParams in
 # landing/app/brand/[slug]/page.tsx). Any /brand/<slug> — including real

@@ -1,7 +1,7 @@
 import { MARKET_STATS } from "@/lib/marketStats";
 import { CTA } from "@/lib/ctaCopy";
 
-export type SpokeIcp = "build" | "intelligence" | "retailers" | "cost-of-living";
+export type SpokeIcp = "build" | "intelligence" | "retailers" | "cost-of-living" | "advisor";
 
 export type SpokeBrandMode = "terminal" | "operations";
 
@@ -144,6 +144,29 @@ export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
       href: "mailto:hello@cli-market.dev?subject=CLI%20Market%20Retailer%20Listing",
     },
   },
+  advisor: {
+    id: "advisor-join",
+    eyebrow_es: "ACCESO Y DEMO",
+    eyebrow_en: "ACCESS AND DEMO",
+    titleBefore_es: "Súmate al ",
+    titleAccent_es: "ecosistema de asesores",
+    titleAfter_es: "",
+    titleBefore_en: "Join the ",
+    titleAccent_en: "advisor ecosystem",
+    titleAfter_en: "",
+    body_es: "Canal cerrado: no competimos contigo ni vendemos de forma directa a las marcas que asesoras.",
+    body_en: "Closed channel: we don't compete with you or sell directly to the brands you advise.",
+    primaryCta: {
+      es: "Ir al formulario de contacto",
+      en: "Go to the contact form",
+      href: "#contact-form",
+    },
+    secondaryCta: {
+      es: "Ver casos de aplicación",
+      en: "See applied use cases",
+      href: "#ejemplos-casos",
+    },
+  },
 };
 
 export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
@@ -284,6 +307,43 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
         es: "Listar mi tienda — gratis",
         en: "List my store — free",
         href: "#retailer-apply",
+      },
+    },
+  },
+  advisor: {
+    id: "advisor",
+    brandMode: "terminal",
+    heroBackgroundDense: false,
+    hero: {
+      eyebrow_es: "CLI MARKET FOR ADVISORS",
+      eyebrow_en: "CLI MARKET FOR ADVISORS",
+      titleBefore_es: "Respalda tu consultoría de retail con ",
+      titleAccent_es: "hechos de góndola verificables",
+      titleAfter_es: "",
+      titleBefore_en: "Back your retail consulting with ",
+      titleAccent_en: "verifiable shelf data",
+      titleAfter_en: "",
+      subhead_es:
+        "Como asesor de negocio o consultor estratégico de marcas de retail, tus recomendaciones valen por su precisión. Conéctate a la góndola digital de LATAM en tiempo real y entrega a tus clientes datos de anaquel verificables en vez de auditorías manuales.",
+      subhead_en:
+        "As a business advisor or brand strategy consultant in retail, your recommendations are worth what they can prove. Connect to LATAM's digital shelf in real time and hand clients verifiable shelf data instead of manual audits.",
+      chips: [
+        { label_es: "Para consultores y asesores de negocio", label_en: "For business consultants and advisors" },
+        { label_es: "Evidencia citable", label_en: "Citable evidence" },
+        {
+          label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`,
+          label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices`,
+        },
+      ],
+      primaryCta: {
+        es: "Probar el radar de mercado",
+        en: "Try the market radar",
+        href: "#advisor-hub",
+      },
+      secondaryCta: {
+        es: "Ver casos de aplicación",
+        en: "See applied use cases",
+        href: "#ejemplos-casos",
       },
     },
   },
