@@ -256,6 +256,16 @@ async def mercadopago_webhook(request: Request):
     if not payment_id:
         return {"received": True, "action": "no_payment_id", "type": ntype}
 
+    # A real payment notification is about to be processed — require signature
+    # verification in production instead of silently accepting an unsigned
+    # payload when MERCADOPAGO_WEBHOOK_SECRET simply isn't configured.
+    if not secret and is_production_deploy():
+        raise HTTPException(status_code=503, detail="Mercado Pago webhook secret required in production")
+
+    if not db_claim_webhook_event(f"mp:{payment_id}", "mercadopago"):
+        logger.info("Mercado Pago webhook duplicate ignored: %s", payment_id)
+        return {"received": True, "duplicate": True, "actions": []}
+
     pay = await get_payment(payment_id)
     if pay.get("error"):
         return {"received": True, "payment_id": payment_id, "error": pay.get("error")}

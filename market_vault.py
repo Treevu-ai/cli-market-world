@@ -33,6 +33,24 @@ CREATE TABLE IF NOT EXISTS vault_bindings (
 );
 """
 
+_SETUP_TOKENS_DDL_PG = """
+CREATE TABLE IF NOT EXISTS vault_setup_tokens (
+    setup_token_id   TEXT PRIMARY KEY,
+    username         TEXT NOT NULL,
+    consumed_at      TIMESTAMPTZ,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+"""
+
+_SETUP_TOKENS_DDL_SQLITE = """
+CREATE TABLE IF NOT EXISTS vault_setup_tokens (
+    setup_token_id   TEXT PRIMARY KEY,
+    username         TEXT NOT NULL,
+    consumed_at      TEXT,
+    created_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+"""
+
 _schema_ready = False
 
 
@@ -42,6 +60,7 @@ def ensure_vault_schema() -> None:
         return
     db = get_db()
     db.execute(_VAULT_DDL_PG if USE_PG else _VAULT_DDL_SQLITE)
+    db.execute(_SETUP_TOKENS_DDL_PG if USE_PG else _SETUP_TOKENS_DDL_SQLITE)
     for idx in (
         "CREATE INDEX IF NOT EXISTS idx_vault_bindings_user ON vault_bindings(username)",
         "CREATE INDEX IF NOT EXISTS idx_vault_bindings_customer ON vault_bindings(customer_id)",
@@ -50,6 +69,68 @@ def ensure_vault_schema() -> None:
     db.commit()
     db.close()
     _schema_ready = True
+
+
+def bind_vault_setup_token(username: str, setup_token_id: str) -> None:
+    """Record that setup_token_id was created by username (vault-setup).
+
+    Only vault-confirm calls from this same username may later exchange it.
+    """
+    if not setup_token_id:
+        return
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    db.execute(
+        f"INSERT INTO vault_setup_tokens (setup_token_id, username) VALUES ({ph}, {ph}) "
+        f"ON CONFLICT (setup_token_id) DO NOTHING"
+        if USE_PG
+        else f"INSERT OR IGNORE INTO vault_setup_tokens (setup_token_id, username) VALUES ({ph}, {ph})",
+        (setup_token_id, username),
+    )
+    db.commit()
+    db.close()
+
+
+def vault_setup_token_owner(setup_token_id: str) -> str | None:
+    """Return the username that created setup_token_id, or None if unknown.
+
+    Does not filter on consumption state — callers that care about single-use
+    enforcement should use mark_vault_setup_token_consumed() separately, so
+    "not my token" and "already used" can be reported distinctly.
+    """
+    if not setup_token_id:
+        return None
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    row = db.execute(
+        f"SELECT username FROM vault_setup_tokens WHERE setup_token_id = {ph} LIMIT 1",
+        (setup_token_id,),
+    ).fetchone()
+    db.close()
+    if not row:
+        return None
+    return row["username"] if isinstance(row, dict) else row[0]
+
+
+def mark_vault_setup_token_consumed(setup_token_id: str) -> bool:
+    """Mark setup_token_id as consumed (single-use). Returns False if already consumed/missing."""
+    if not setup_token_id:
+        return False
+    ensure_vault_schema()
+    db = get_db()
+    ph = "%s" if USE_PG else "?"
+    now_expr = "NOW()" if USE_PG else "datetime('now')"
+    cur = db.execute(
+        f"UPDATE vault_setup_tokens SET consumed_at = {now_expr} "
+        f"WHERE setup_token_id = {ph} AND consumed_at IS NULL",
+        (setup_token_id,),
+    )
+    updated = cur.rowcount > 0
+    db.commit()
+    db.close()
+    return updated
 
 
 def bind_vault_customer(username: str, customer_id: str) -> None:

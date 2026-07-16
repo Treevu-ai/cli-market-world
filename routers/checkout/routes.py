@@ -13,6 +13,7 @@ from market_core import (
     db_update_order_status,
 )
 from market_core.market_billing import check_budget, db_set_budget
+from market_security import validate_cli_market_redirect_url
 from pre_checkout_validate import pre_checkout_validate
 from server_deps import require_api_key, require_checkout_access, require_user
 from routers.billing.activation import _wallet_manual_transfer_fields, _wallet_payment_phone
@@ -219,8 +220,12 @@ async def checkout_paypal(
     _, total, order_id = _prepare_pending_order(username, "paypal", idempotency_key)
     from market_connectors.paypal_payments import create_order
 
-    return_url = (body.get("return_url") or "").strip() or "https://cli-market.dev?order=success"
-    cancel_url = (body.get("cancel_url") or "").strip() or "https://cli-market.dev?order=cancelled"
+    return_url = validate_cli_market_redirect_url(
+        body.get("return_url"), "https://cli-market.dev?order=success"
+    )
+    cancel_url = validate_cli_market_redirect_url(
+        body.get("cancel_url"), "https://cli-market.dev?order=cancelled"
+    )
 
     try:
         pp = await create_order(
@@ -419,15 +424,13 @@ async def checkout_mercadopago(
     _, total, order_id = _prepare_pending_order(username, "mercadopago")
     from market_connectors.mercadopago_payments import create_preference
 
-    success_url = (
-        (body.get("success_url") or body.get("return_url") or "").strip()
-        or "https://cli-market.dev?mp=success"
+    success_url = validate_cli_market_redirect_url(
+        body.get("success_url") or body.get("return_url"), "https://cli-market.dev?mp=success"
     )
-    failure_url = (
-        (body.get("failure_url") or body.get("cancel_url") or "").strip()
-        or "https://cli-market.dev?mp=failure"
+    failure_url = validate_cli_market_redirect_url(
+        body.get("failure_url") or body.get("cancel_url"), "https://cli-market.dev?mp=failure"
     )
-    pending_url = (body.get("pending_url") or "").strip() or success_url
+    pending_url = validate_cli_market_redirect_url(body.get("pending_url"), success_url)
 
     try:
         mp = await create_preference(

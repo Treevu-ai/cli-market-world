@@ -47,6 +47,13 @@ def production_payment_config_warnings() -> list[str]:
             warnings.append(f"{var} is not set — PayPal payments will not work")
     if not os.getenv("CHECKOUT_WEBHOOK_SECRET"):
         warnings.append("CHECKOUT_WEBHOOK_SECRET is not set — checkout webhooks unprotected")
+    try:
+        from market_connectors.mercadopago_payments import webhook_secret as _mp_webhook_secret
+
+        if not _mp_webhook_secret():
+            warnings.append("MERCADOPAGO_WEBHOOK_SECRET is not set — Mercado Pago webhooks unprotected")
+    except ImportError:
+        pass
     return warnings
 
 
@@ -120,6 +127,39 @@ def validate_public_http_url(url: str) -> str:
         raise ValueError(f"URL contains invalid characters: {url!r}")
 
     return url
+
+
+_REDIRECT_HOST_ALLOWLIST = (
+    "cli-market.dev",
+    "www.cli-market.dev",
+    "procurecopilot.com",
+    "www.procurecopilot.com",
+)
+
+
+def validate_cli_market_redirect_url(url: str, default: str) -> str:
+    """Return url if its host is a CLI Market-owned domain, else default.
+
+    Used for checkout return/cancel/success/failure redirects, which are
+    otherwise attacker-controllable open redirects: a caller could point a
+    post-payment redirect at their own domain and phish the buyer right
+    after a real, trusted payment completes.
+    """
+    url = (url or "").strip()
+    if not url:
+        return default
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return default
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme != "https" or not host:
+        return default
+    if host in _REDIRECT_HOST_ALLOWLIST or any(
+        host.endswith("." + allowed) for allowed in _REDIRECT_HOST_ALLOWLIST
+    ):
+        return url
+    return default
 
 
 def safe_post_json(url: str, payload: dict, *, timeout: float = 15.0) -> httpx.Response:
