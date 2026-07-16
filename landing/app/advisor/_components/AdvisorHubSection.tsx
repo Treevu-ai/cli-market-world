@@ -84,63 +84,52 @@ export default function AdvisorHubSection() {
   };
 
   return (
-    <section id="advisor-hub" className="mb-16 scroll-mt-20">
-      <div className="bg-[var(--cm-ink)] rounded-3xl p-8 sm:p-12 text-[var(--cm-surface)] mb-10 shadow-lg border border-[var(--cm-outline-variant)] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-30 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--cm-mint)]/10 rounded-full blur-3xl pointer-events-none" />
+    <section id="advisor-hub" className="landing-section scroll-mt-20">
+      <div className="landing-container-wide">
+      <div className="landing-section-header text-center">
+        <p className="section-eyebrow mb-4 inline-flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5" /> {isES ? "RADAR DE GÓNDOLA · DATOS EN VIVO" : "SHELF RADAR · LIVE DATA"}
+        </p>
+        <h2 className="section-title">
+          {isES ? "Consola de radar en vivo" : "Live radar console"}
+        </h2>
+        <p className="section-intro">
+          {isES ? (
+            <>
+              Conéctate a los datos verificados de <strong className="text-[var(--cm-on-surface)] font-medium">cli-market.dev/advisor</strong> para construir recomendaciones con respaldo empírico. Detecta inflación de estantería, dispersión de precios y anomalías con evidencia trazable.
+            </>
+          ) : (
+            <>
+              Connect to the verified data behind <strong className="text-[var(--cm-on-surface)] font-medium">cli-market.dev/advisor</strong> to back your recommendations with evidence. Track shelf inflation, price dispersion, and anomalies with traceable data.
+            </>
+          )}
+        </p>
+      </div>
 
-        <div className="max-w-3xl relative z-10">
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[var(--cm-mint)]/20 border border-[var(--cm-mint)]/35 text-[var(--cm-mint)] uppercase tracking-widest">
-              {isES ? "RADAR DE GÓNDOLA · DATOS EN VIVO" : "SHELF RADAR · LIVE DATA"}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--cm-mint)]/15 border border-[var(--cm-mint)]/30 text-[var(--cm-mint)]">
-              <Zap className="w-3.5 h-3.5" /> {isES ? "Conectado a cli-market-api" : "Connected to cli-market-api"}
-            </span>
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
-            CLI Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--cm-mint)] to-[var(--cm-mint-dim)]">for Advisors</span>
-          </h2>
-
-          <p className="text-base sm:text-lg text-[var(--cm-surface)]/75 font-light mb-8 leading-relaxed">
-            {isES ? (
-              <>
-                Conéctate a los datos verificados de <strong className="text-[var(--cm-surface)] font-medium">cli-market.dev/advisor</strong> para construir recomendaciones con respaldo empírico. Detecta inflación de estantería, dispersión de precios y anomalías con evidencia trazable.
-              </>
-            ) : (
-              <>
-                Connect to the verified data behind <strong className="text-[var(--cm-surface)] font-medium">cli-market.dev/advisor</strong> to back your recommendations with evidence. Track shelf inflation, price dispersion, and anomalies with traceable data.
-              </>
-            )}
+      <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-10 mb-10">
+        <div className="card-cyber rounded-xl p-4 text-center">
+          <p className="text-xs text-[var(--cm-text-secondary)] uppercase font-mono tracking-wider">
+            {isES ? "Ahorro y Eficiencia" : "Savings & Efficiency"}
           </p>
-
-          <div className="grid sm:grid-cols-3 gap-6 pt-6 border-t border-[var(--cm-surface)]/10">
-            <div>
-              <p className="text-xs text-[var(--cm-surface)]/50 uppercase font-mono tracking-wider">
-                {isES ? "Ahorro y Eficiencia" : "Savings & Efficiency"}
-              </p>
-              <p className="text-sm font-semibold text-[var(--cm-mint)] mt-1">
-                {isES ? "Automatización de auditorías" : "Automated audits"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-[var(--cm-surface)]/50 uppercase font-mono tracking-wider">
-                {isES ? "Visibilidad Comercial" : "Commercial Visibility"}
-              </p>
-              <p className="text-sm font-semibold text-[var(--cm-mint)] mt-1">
-                {isES ? "Señales antes del IPC" : "Signals ahead of CPI"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-[var(--cm-surface)]/50 uppercase font-mono tracking-wider">
-                {isES ? "Nuevas Líneas de Ingreso" : "New Revenue Lines"}
-              </p>
-              <p className="text-sm font-semibold text-[var(--cm-mint)] mt-1">
-                {isES ? "Retainers de datos" : "Data retainers"}
-              </p>
-            </div>
-          </div>
+          <p className="text-sm font-semibold text-[var(--cm-action-deep)] mt-1">
+            {isES ? "Automatización de auditorías" : "Automated audits"}
+          </p>
+        </div>
+        <div className="card-cyber rounded-xl p-4 text-center">
+          <p className="text-xs text-[var(--cm-text-secondary)] uppercase font-mono tracking-wider">
+            {isES ? "Visibilidad Comercial" : "Commercial Visibility"}
+          </p>
+          <p className="text-sm font-semibold text-[var(--cm-action-deep)] mt-1">
+            {isES ? "Señales antes del IPC" : "Signals ahead of CPI"}
+          </p>
+        </div>
+        <div className="card-cyber rounded-xl p-4 text-center">
+          <p className="text-xs text-[var(--cm-text-secondary)] uppercase font-mono tracking-wider">
+            {isES ? "Nuevas Líneas de Ingreso" : "New Revenue Lines"}
+          </p>
+          <p className="text-sm font-semibold text-[var(--cm-action-deep)] mt-1">
+            {isES ? "Retainers de datos" : "Data retainers"}
+          </p>
         </div>
       </div>
 
@@ -506,10 +495,7 @@ export default function AdvisorHubSection() {
               )}
             </div>
 
-            <a
-              href="#contact-form"
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--cm-mint)] hover:bg-[var(--cm-action-deep)] text-[var(--cm-on-mint)] font-bold rounded-xl text-xs transition-all shadow-md cursor-pointer"
-            >
+            <a href="#contact-form" className="btn-mint w-full gap-2">
               <span>{isES ? "Quiero licenciar CLI Intelligence" : "I want to license CLI Intelligence"}</span>
               <ArrowRight className="w-4 h-4" />
             </a>
@@ -651,6 +637,7 @@ export default function AdvisorHubSection() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
