@@ -205,7 +205,7 @@ export default function ContactSection() {
                       {id === 1
                         ? isES ? "Elegir 1 caso del asesor" : "Pick 1 advisor case"
                         : id === 2
-                          ? isES ? "Correr Pack A gratis" : "Run Pack A for free"
+                          ? isES ? "Pedir un Pack A (Brief)" : "Request a Pack A (Brief)"
                           : isES ? "Coordinar Pack B o Pack C" : "Schedule Pack B or Pack C"}
                     </span>
                     <p className="text-xs text-[var(--cm-text-secondary)] mt-0.5">
@@ -215,8 +215,8 @@ export default function ContactSection() {
                           : "Identify a real category and a key country from a current client."
                         : id === 2
                           ? isES
-                            ? "Te regalamos un piloto corto de Brief para que sientas el impacto de los hechos."
-                            : "We give you a short Brief pilot so you can feel the impact of the data firsthand."
+                            ? "Un piloto corto para que sientas el impacto de los hechos antes de comprometerte a más."
+                            : "A short pilot so you can feel the impact of the data before committing to more."
                           : isES
                             ? "Si hay fit con el cliente final, avanzas a la consultoría recurrente."
                             : "If it fits the end client, you move into a recurring engagement."}

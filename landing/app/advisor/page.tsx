@@ -5,6 +5,7 @@ import SpokeHubLink from "@/components/spoke/SpokeHubLink";
 import AdvisorStatsStrip from "@/components/advisor/AdvisorStatsStrip";
 import AdvisorHubSection from "@/app/advisor/_components/AdvisorHubSection";
 import ExamplesSection from "@/app/advisor/_components/ExamplesSection";
+import AdvisorPricingSection from "@/app/advisor/_components/AdvisorPricingSection";
 import ContactSection from "@/app/advisor/_components/ContactSection";
 import Footer from "@/components/Footer";
 import { SPOKE_CONFIG } from "@/lib/spokeConfig";
@@ -26,6 +27,7 @@ export default function AdvisorPage() {
       <AdvisorStatsStrip />
       <AdvisorHubSection />
       <ExamplesSection />
+      <AdvisorPricingSection />
       <ContactSection />
       <Footer />
     </SpokePageShell>
