@@ -35,10 +35,10 @@ export type NavItem = {
  */
 export const TOP_NAV: NavItem[] = [
   { id: "home", es: "Home", en: "Home", href: "/" },
-  { id: "build", es: "Build", en: "Build", href: "/build" },
-  { id: "advisor", es: "Asesores", en: "Advisors", href: "/advisor" },
-  { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
-  { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
+  { id: "build", es: "Builder", en: "Builder", href: "/build" },
+  { id: "advisor", es: "Advisor", en: "Advisor", href: "/advisor" },
+  { id: "retailers", es: "Retailer", en: "Retailer", href: "/retailers" },
+  { id: "procure", es: "Procurer", en: "Procurer", href: PROCURE_LANDING_URL, external: true },
 ];
 
 /** Homepage hub sections (SideNav removed on hub — kept for hash / active-section compat). */

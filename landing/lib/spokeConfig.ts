@@ -317,18 +317,18 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
     hero: {
       eyebrow_es: "CLI MARKET FOR ADVISORS",
       eyebrow_en: "CLI MARKET FOR ADVISORS",
-      titleBefore_es: "Respalda tu consultoría de retail con ",
-      titleAccent_es: "hechos de góndola verificables",
+      titleBefore_es: "Evidencia de góndola para ",
+      titleAccent_es: "tu consultoría",
       titleAfter_es: "",
-      titleBefore_en: "Back your retail consulting with ",
-      titleAccent_en: "verifiable shelf data",
+      titleBefore_en: "Shelf evidence for ",
+      titleAccent_en: "your consulting",
       titleAfter_en: "",
       subhead_es:
-        "Como asesor de negocio o consultor estratégico de marcas de retail, tus recomendaciones valen por su precisión. Conéctate a la góndola digital de LATAM en tiempo real y entrega a tus clientes datos de anaquel verificables en vez de auditorías manuales.",
+        "Conéctate a la góndola digital de LATAM y entrega a tus clientes datos verificables en vez de auditorías manuales.",
       subhead_en:
-        "As a business advisor or brand strategy consultant in retail, your recommendations are worth what they can prove. Connect to LATAM's digital shelf in real time and hand clients verifiable shelf data instead of manual audits.",
+        "Connect to LATAM's digital shelf and hand clients verifiable data instead of manual audits.",
       chips: [
-        { label_es: "Para consultores y asesores de negocio", label_en: "For business consultants and advisors" },
+        { label_es: "Consultores y asesores", label_en: "Consultants & advisors" },
         { label_es: "Evidencia citable", label_en: "Citable evidence" },
         {
           label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`,
