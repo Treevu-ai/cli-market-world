@@ -95,7 +95,7 @@ export function recordUseCaseDemoOpen(useCaseId: string): void {
   });
 }
 
-export type IcpDoorId = "build" | "procure" | "intelligence" | "retailers";
+export type IcpDoorId = "build" | "procure" | "advisor" | "retailers";
 
 /** Hub router: user selected an ICP door on the landing home. */
 export function recordIcpDoorClick(door: IcpDoorId, source = "hub"): void {

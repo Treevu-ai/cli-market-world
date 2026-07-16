@@ -35,9 +35,9 @@ export default function WhoItsForSection() {
       title_en: "Analysts & fintech",
       body_es: "Datos estructurados, índices y reportes para decisiones.",
       body_en: "Structured data, indices, and reports for decisions.",
-      cta_es: "Explorar Intelligence →",
-      cta_en: "Explore Intelligence →",
-      href: "/intelligence",
+      cta_es: "Explorar Asesores →",
+      cta_en: "Explore Advisors →",
+      href: "/advisor",
     },
   ];
 
