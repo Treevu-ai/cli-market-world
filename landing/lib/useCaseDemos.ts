@@ -81,9 +81,9 @@ export const USE_CASE_DEMOS: UseCaseDemo[] = [
     gif: "/use-cases/inflation.gif",
     alt_es: "Demo: inflación desde góndola e intel brief",
     alt_en: "Demo: shelf inflation and intel brief",
-    ctaHref: "/intelligence",
-    cta_es: "Ver Intelligence →",
-    cta_en: "View Intelligence →",
+    ctaHref: "/advisor",
+    cta_es: "Ver Asesores →",
+    cta_en: "View Advisors →",
   },
   {
     id: "procure",

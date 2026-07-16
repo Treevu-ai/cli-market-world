@@ -154,7 +154,7 @@ export default function CaseStudiesPage() {
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <a href="/contact?topic=intelligence#contact-intelligence" className="btn-mint">
-                  {isES ? "Intelligence" : "Intelligence"}
+                  {isES ? "Asesores" : "Advisors"}
                 </a>
                 <a href="/contact?topic=procure#contact-procure" className="btn-outline">
                   {isES ? "Procure" : "Procure"}

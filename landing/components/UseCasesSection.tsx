@@ -18,7 +18,7 @@ export default function UseCasesSection() {
       <div className="landing-container-wide text-center">
         <div className="landing-section-header">
           <p className="section-eyebrow mb-4">{isES ? "Casos de uso" : "Use cases"}</p>
-          <h2 className="section-title">{isES ? "Build, Procure, Intelligence" : "Build, Procure, Intelligence"}</h2>
+          <h2 className="section-title">{isES ? "Build, Procure, Advisors" : "Build, Procure, Advisors"}</h2>
           <p className="section-intro">
             {isES
               ? "Tres superficies sobre la misma capa de precios — explora el flujo de tu rol."

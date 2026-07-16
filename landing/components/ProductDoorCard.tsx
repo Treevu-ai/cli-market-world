@@ -10,13 +10,13 @@ type ProductDoorCardProps = {
 const accentClass: Record<ProductDoor["id"], string> = {
   build: "border-[var(--cm-mint)]/25 hover:border-[var(--cm-mint)]/45",
   procure: "border-[var(--cm-outline-variant)] hover:border-[var(--cm-on-surface-variant)]/40",
-  intelligence: "border-[#38bdf8]/20 hover:border-[#38bdf8]/40",
+  advisor: "border-[#38bdf8]/20 hover:border-[#38bdf8]/40",
 };
 
 const eyebrowClass: Record<ProductDoor["id"], string> = {
   build: "text-[var(--cm-mint)]",
   procure: "text-[var(--cm-on-surface-variant)]",
-  intelligence: "text-[#38bdf8]",
+  advisor: "text-[#38bdf8]",
 };
 
 export default function ProductDoorCard({ door, isES, compact, onClick }: ProductDoorCardProps) {

@@ -29,8 +29,8 @@ export default function Navbar() {
       ? "docs"
       : pathname?.startsWith("/build")
         ? "build"
-        : pathname?.startsWith("/intelligence")
-          ? "intelligence"
+        : pathname?.startsWith("/advisor")
+          ? "advisor"
           : pathname?.startsWith("/retailers")
             ? "retailers"
             : pathname === "/"

@@ -21,8 +21,8 @@ export default function ContactPage() {
               <h1 className="section-title">{isES ? "Hablemos" : "Let's talk"}</h1>
               <p className="section-intro">
                 {isES
-                  ? "Intelligence, Procure, enterprise, retailers o consulta general — un solo formulario."
-                  : "Intelligence, Procure, enterprise, retailers, or general inquiry — one form."}
+                  ? "Advisors, Procure, enterprise, retailers o consulta general — un solo formulario."
+                  : "Advisors, Procure, enterprise, retailers, or general inquiry — one form."}
               </p>
             </div>
             <div id="contact-general" className="scroll-mt-24">

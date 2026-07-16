@@ -9,7 +9,7 @@ export type NavItem = {
 };
 
 /**
- * Top nav — ICP hub (Build · Procure · Intelligence · Retailers).
+ * Top nav — ICP hub (Build · Advisors · Retailers · Procure).
  *
  * Brand Monitor (/brand/demo) is intentionally not listed here — it has no
  * case study or public pricing yet, so it stayed live-but-unlisted to avoid
@@ -36,7 +36,7 @@ export type NavItem = {
 export const TOP_NAV: NavItem[] = [
   { id: "home", es: "Home", en: "Home", href: "/" },
   { id: "build", es: "Build", en: "Build", href: "/build" },
-  { id: "intelligence", es: "Intelligence", en: "Intelligence", href: "/intelligence" },
+  { id: "advisor", es: "Asesores", en: "Advisors", href: "/advisor" },
   { id: "retailers", es: "Retailers", en: "Retailers", href: "/retailers" },
   { id: "procure", es: "Procure", en: "Procure", href: PROCURE_LANDING_URL, external: true },
 ];
@@ -63,6 +63,7 @@ export const TOP_NAV_GROUP: Record<string, string> = {
 
 export const BUILD_PAGE = "/build";
 export const INTELLIGENCE_PAGE = "/intelligence";
+export const ADVISOR_PAGE = "/advisor";
 
 /** Build pricing anchor on dedicated spoke. */
 export const PRICING_BUILD_HASH = `${BUILD_PAGE}#pricing`;

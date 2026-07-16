@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s | CLI Market",
   },
   description:
-    "Precios de góndola verificados en LATAM, con interfaz de agente: CLI, API y MCP. Elige Build (API/MCP), Procure (compras) o Intelligence (señales) sobre la misma data.",
+    "Precios de góndola verificados en LATAM, con interfaz de agente: CLI, API y MCP. Elige Build (API/MCP), Procure (compras) o Advisors (señales) sobre la misma data.",
   keywords: [
     "retail price intelligence LATAM",
     "commerce API for AI agents",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "CLI Market — Infraestructura de comercio para agentes de IA",
-    description: `${MARKET_STATS.retailersPhraseEn}. CLI, API y MCP sobre una capa de datos verificada — Build (API/MCP), Procure (compras), Intelligence (señales). ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours.`,
+    description: `${MARKET_STATS.retailersPhraseEn}. CLI, API y MCP sobre una capa de datos verificada — Build (API/MCP), Procure (compras), Advisors (señales). ${MARKET_STATS.pricesVerifiedLabel} verified prices every ${MARKET_STATS.pricesRefreshHours} hours.`,
     url: siteUrl,
     siteName: "CLI Market",
     type: "website",

@@ -1,6 +1,6 @@
 import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 
-export type ProductDoorId = "build" | "procure" | "intelligence";
+export type ProductDoorId = "build" | "procure" | "advisor";
 
 export type ProductDoor = {
   id: ProductDoorId;
@@ -55,9 +55,9 @@ export const PRODUCT_DOORS: ProductDoor[] = [
     external: true,
   },
   {
-    id: "intelligence",
-    eyebrow_es: "Intelligence",
-    eyebrow_en: "Intelligence",
+    id: "advisor",
+    eyebrow_es: "Asesores",
+    eyebrow_en: "Advisors",
     title_es: "Señales antes del IPC",
     title_en: "Signals before CPI",
     pain_es: "Paneles caros y datos oficiales con semanas de retraso.",
@@ -68,6 +68,6 @@ export const PRODUCT_DOORS: ProductDoor[] = [
     price_en: "Pilot from $300/mo",
     cta_es: "Solicitar piloto →",
     cta_en: "Request pilot →",
-    href: "/intelligence",
+    href: "/advisor",
   },
 ];

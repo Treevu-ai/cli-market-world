@@ -331,8 +331,8 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
           >
             {isES ? "Procure — compras desde $29/mes →" : "Procure — procurement from $29/mo →"}
           </a>
-          <a href="/intelligence" className="text-[var(--cm-signal)] font-semibold hover:underline">
-            {isES ? "Intelligence — piloto desde $300/mes →" : "Intelligence — pilot from $300/mo →"}
+          <a href="/advisor" className="text-[var(--cm-signal)] font-semibold hover:underline">
+            {isES ? "Asesores — piloto desde $300/mes →" : "Advisors — pilot from $300/mo →"}
           </a>
         </div>
 

@@ -57,7 +57,7 @@ export default function DataLicenseAgreement() {
 
             <h2>4. Tiers y límites</h2>
             <p>
-              Los límites de consulta, exportación y endpoints comerciales (Intelligence) dependen
+              Los límites de consulta, exportación y endpoints comerciales (Advisors) dependen
               del plan publicado en{" "}
               <a href="https://cli-market.dev/#pricing">cli-market.dev/#pricing</a>:
             </p>
@@ -71,7 +71,7 @@ export default function DataLicenseAgreement() {
                 {paymentsLabelEs} · USD 49/mes.
               </li>
               <li>
-                <strong>Enterprise / Intelligence:</strong> límites ampliados, endpoints comerciales
+                <strong>Enterprise / Advisors:</strong> límites ampliados, endpoints comerciales
                 y licencia de datos bajo contrato.
               </li>
             </ul>
@@ -149,7 +149,7 @@ export default function DataLicenseAgreement() {
 
             <h2>4. Tiers and limits</h2>
             <p>
-              Query, export, and commercial endpoint (Intelligence) limits depend on the plan
+              Query, export, and commercial endpoint (Advisors) limits depend on the plan
               published at{" "}
               <a href="https://cli-market.dev/#pricing">cli-market.dev/#pricing</a>:
             </p>
@@ -163,7 +163,7 @@ export default function DataLicenseAgreement() {
                 {paymentsLabelEn} · USD 49/mo.
               </li>
               <li>
-                <strong>Enterprise / Intelligence:</strong> expanded limits, commercial endpoints,
+                <strong>Enterprise / Advisors:</strong> expanded limits, commercial endpoints,
                 and data license under contract.
               </li>
             </ul>

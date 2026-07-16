@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/api";
 import LegalConsentCheckbox from "@/components/LegalConsentCheckbox";
 
 const TOPICS_ES = [
-  { value: "intelligence", label: "Intelligence — piloto de datos ($300–500/mes)" },
+  { value: "intelligence", label: "Advisors — piloto de datos ($300–500/mes)" },
   { value: "enterprise", label: "Enterprise / volumen API a medida" },
   { value: "procure", label: "Procure Copilot — demo o piloto" },
   { value: "press", label: "Prensa / alianza" },
@@ -13,7 +13,7 @@ const TOPICS_ES = [
   { value: "retailer", label: "Listar mi tienda (gratis)" },
 ];
 const TOPICS_EN = [
-  { value: "intelligence", label: "Intelligence — data pilot ($300–500/mo)" },
+  { value: "intelligence", label: "Advisors — data pilot ($300–500/mo)" },
   { value: "enterprise", label: "Enterprise / custom API volume" },
   { value: "procure", label: "Procure Copilot — demo or pilot" },
   { value: "press", label: "Press / partnership" },
@@ -227,8 +227,8 @@ export default function UnifiedContactForm() {
           <h3 className="text-lg font-semibold text-white">
             {topic === "intelligence"
               ? isES
-                ? "Solicitar piloto Intelligence"
-                : "Request Intelligence pilot"
+                ? "Solicitar piloto Advisors"
+                : "Request Advisors pilot"
               : topic === "procure"
                 ? isES
                   ? "Demo Procure Copilot"

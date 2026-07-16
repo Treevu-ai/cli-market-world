@@ -116,8 +116,8 @@ export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
       href: "/contact?topic=intelligence#contact-intelligence",
     },
     secondaryCta: {
-      es: "One-pager Intelligence →",
-      en: "Intelligence one-pager →",
+      es: "One-pager Advisors →",
+      en: "Advisors one-pager →",
       href: "/intelligence-pilot-es",
     },
   },
@@ -249,8 +249,8 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
         href: "/contact?topic=intelligence#contact-intelligence",
       },
       secondaryCta: {
-        es: "One-pager Intelligence →",
-        en: "Intelligence one-pager →",
+        es: "One-pager Advisors →",
+        en: "Advisors one-pager →",
         href: "/intelligence-pilot-es",
       },
     },

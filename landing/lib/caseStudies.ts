@@ -31,8 +31,8 @@ export const CASE_STUDY_PRODUCT_LABELS: Record<
   build: { es: "Build", en: "Build", className: "text-[var(--cm-mint)] border-[var(--cm-mint)]/30 bg-[var(--cm-mint)]/10" },
   procure: { es: "Procure", en: "Procure", className: "text-[var(--cm-brand-accent)] border-[var(--cm-brand-accent)]/30 bg-[var(--cm-action-soft)]" },
   intelligence: {
-    es: "Intelligence",
-    en: "Intelligence",
+    es: "Asesores",
+    en: "Advisors",
     className: "text-[#38bdf8] border-[#38bdf8]/30 bg-[#38bdf8]/10",
   },
   retailers: {
@@ -53,8 +53,8 @@ export const CASE_STUDIES: CaseStudy[] = [
       "Necesitaban canasta básica en tiempo útil para ajustar modelos de riesgo. INEI llega con ~45 días de retraso. Paneles legacy son caros y no cubren ciudades secundarias.",
     problem_en:
       "They needed timely basic-basket data to tune risk models. Official CPI arrives ~45 days late. Legacy panels are expensive and miss secondary cities.",
-    solution_es: `Piloto Intelligence: precios históricos de supermercados en Perú y Colombia, refresh cada ${pricesRefreshHours} h. Export JSON/CSV con series de 30–90 días y capa clean / flagged / citable.`,
-    solution_en: `Intelligence pilot: supermarket price history in Peru and Colombia, refreshed every ${pricesRefreshHours}h. JSON/CSV export with 30–90 day series and clean / flagged / citable quality layer.`,
+    solution_es: `Piloto Advisors: precios históricos de supermercados en Perú y Colombia, refresh cada ${pricesRefreshHours} h. Export JSON/CSV con series de 30–90 días y capa clean / flagged / citable.`,
+    solution_en: `Advisors pilot: supermarket price history in Peru and Colombia, refreshed every ${pricesRefreshHours}h. JSON/CSV export with 30–90 day series and clean / flagged / citable quality layer.`,
     metrics: [
       { value: pricesVerifiedLabel, label_es: "precios indexados", label_en: "prices indexed" },
       { value: "1 día", label_es: "time-to-data vs 45 d INEI", label_en: "time-to-data vs 45 d official CPI" },
@@ -90,9 +90,9 @@ export const CASE_STUDIES: CaseStudy[] = [
     problem_en:
       "Price spreads per SKU across chains were tracked with ad hoc scraping and shared sheets. No kg/L normalization or documented quality rules.",
     solution_es:
-      "Intelligence Pilot M: spreads min–max por seed comparable, inflación por línea, export semanal + API de lectura. Revisión quincenal de cobertura durante el piloto.",
+      "Advisors Pilot M: spreads min–max por seed comparable, inflación por línea, export semanal + API de lectura. Revisión quincenal de cobertura durante el piloto.",
     solution_en:
-      "Intelligence Pilot M: min–max spreads per comparable seed, line inflation, weekly export + read API. Biweekly coverage review during the pilot.",
+      "Advisors Pilot M: min–max spreads per comparable seed, line inflation, weekly export + read API. Biweekly coverage review during the pilot.",
     metrics: [
       { value: `${countries}`, label_es: "países en alcance piloto", label_en: "countries in pilot scope" },
       { value: "60 d", label_es: "histórico en tier M", label_en: "history on tier M" },
@@ -158,8 +158,8 @@ export const CASE_STUDIES: CaseStudy[] = [
 export const CASE_STUDIES_CTA = {
   intelligence: {
     href: "/contact?topic=intelligence#contact-intelligence",
-    es: "Solicitar piloto Intelligence",
-    en: "Request Intelligence pilot",
+    es: "Solicitar piloto Advisors",
+    en: "Request Advisors pilot",
   },
   procure: {
     href: `${PROCURE_SITE_URL}/procure#pricing`,
