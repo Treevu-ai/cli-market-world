@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from dataclasses import asdict
 from fastapi import APIRouter, Body, Header, HTTPException
 from market_core import (
     db_clear_cart,
@@ -11,6 +12,7 @@ from market_core import (
     db_set_order_gateway_ref,
     db_update_order_status,
 )
+from market_core.market_billing import check_budget, db_set_budget
 from pre_checkout_validate import pre_checkout_validate
 from server_deps import require_api_key, require_checkout_access, require_user
 from routers.billing.activation import _wallet_manual_transfer_fields, _wallet_payment_phone
@@ -78,6 +80,33 @@ def checkout_validate(authorization: str | None = Header(None)):
     if not result.ok:
         raise HTTPException(status_code=409, detail=result.to_dict())
     return result.to_dict()
+
+
+@router.get("/checkout/budget")
+def get_checkout_budget(
+    period: str = "monthly",
+    authorization: str | None = Header(None),
+):
+    """Dry-run: the caller's own cap/spent/remaining for a period, or
+    ok=true with no cap if they've never set one (opt-in feature)."""
+    username = require_api_key(authorization)
+    result = check_budget(username, 0.0, period)
+    return asdict(result)
+
+
+@router.post("/checkout/budget")
+def set_checkout_budget(
+    period: str = Body(...),
+    amount: float = Body(...),
+    currency: str = Body("PEN"),
+    authorization: str | None = Header(None),
+):
+    """Create or update the caller's own spend cap for a period."""
+    username = require_api_key(authorization)
+    try:
+        return db_set_budget(username, period, amount, currency)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 
 def _mercadopago_env_flags() -> dict[str, bool]:
