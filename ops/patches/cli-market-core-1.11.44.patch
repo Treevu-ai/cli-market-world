@@ -1,0 +1,331 @@
+diff --git a/market_connectors/email_outbound.py b/market_connectors/email_outbound.py
+index 2083fbe..53e73d9 100644
+--- a/market_connectors/email_outbound.py
++++ b/market_connectors/email_outbound.py
+@@ -7,6 +7,7 @@ import os
+ import smtplib
+ from email.mime.multipart import MIMEMultipart
+ from email.mime.text import MIMEText
++from html import escape as _esc
+ 
+ from market_core.market_billing import TRIAL_DAYS
+ 
+@@ -36,8 +37,9 @@ def send_pro_payment_email(
+ ) -> dict:
+     """Email subscriber with Pro plan details and payment link."""
+     payment_url = PRO_PAYMENT_URL
+-    user_line_es = f"Usuario: <strong>{username}</strong>" if username else "Usuario: el que usaste en <code>market login</code>"
+-    user_line_en = f"Username: <strong>{username}</strong>" if username else "Username: the one you used in <code>market login</code>"
++    username_html = _esc(username)
++    user_line_es = f"Usuario: <strong>{username_html}</strong>" if username else "Usuario: el que usaste en <code>market login</code>"
++    user_line_en = f"Username: <strong>{username_html}</strong>" if username else "Username: the one you used in <code>market login</code>"
+     user_plain_es = f"Usuario: {username}" if username else "Usuario: el que usaste en `market login`"
+     user_plain_en = f"Username: {username}" if username else "Username: the one from `market login`"
+ 
+@@ -81,7 +83,7 @@ hello@cli-market.dev
+         <p style="margin:0 0 4px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET PRO</p>
+         <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Tu acceso Pro está casi listo</h1>
+         <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">
+-          Hola{f' <strong style="color:#fff">{username}</strong>' if username else ''},<br><br>
++          Hola{f' <strong style="color:#fff">{username_html}</strong>' if username else ''},<br><br>
+           Recibimos tu solicitud. Un paso más y tendrás acceso completo a CLI Market Pro.
+         </p>
+         <table width="100%" cellpadding="0" cellspacing="0" style="background:#1c1b1c;border:1px solid #3b4a44;border-radius:8px;margin-bottom:24px;">
+@@ -159,7 +161,7 @@ hello@cli-market.dev
+         <p style="margin:0 0 4px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET PRO</p>
+         <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">Your Pro access is one step away</h1>
+         <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">
+-          Hi{f' <strong style="color:#fff">{username}</strong>' if username else ''},<br><br>
++          Hi{f' <strong style="color:#fff">{username_html}</strong>' if username else ''},<br><br>
+           We received your request. One more step and you'll have full access to CLI Market Pro.
+         </p>
+         <table width="100%" cellpadding="0" cellspacing="0" style="background:#1c1b1c;border:1px solid #3b4a44;border-radius:8px;margin-bottom:24px;">
+@@ -262,7 +264,7 @@ hello@cli-market.dev
+         html_title = "Tu API key Pro está lista" if is_pro else "Su plan Starter está activo"
+         html_badge = "CLI MARKET PRO" if is_pro else "CLI MARKET STARTER"
+         html_intro = (
+-            f"Hola <strong style=\"color:#fff\">{username}</strong>,<br><br>"
++            f"Hola <strong style=\"color:#fff\">{_esc(username)}</strong>,<br><br>"
+             f"{'Tu cuenta Pro está activa.' if is_pro else 'Su plan Starter está activo.'} "
+             f"Aquí está tu API key — <strong style=\"color:#fff\">muéstrala solo ahora</strong>."
+         )
+@@ -315,7 +317,7 @@ hello@cli-market.dev
+         html_title = "Your Pro API key is ready" if is_pro else "Your Starter plan is active"
+         html_badge = "CLI MARKET PRO" if is_pro else "CLI MARKET STARTER"
+         html_intro = (
+-            f"Hi <strong style=\"color:#fff\">{username}</strong>,<br><br>"
++            f"Hi <strong style=\"color:#fff\">{_esc(username)}</strong>,<br><br>"
+             f"{'Your Pro account is active.' if is_pro else 'Your Starter plan is active.'} "
+             f"Here's your API key — <strong style=\"color:#fff\">this is the only time it'll be shown</strong>."
+         )
+@@ -400,7 +402,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Confirme Pro en PayPal</h2>
+-<p>Hola <strong>{username}</strong>,</p>
++<p>Hola <strong>{_esc(username)}</strong>,</p>
+ <p>Pro ({PRO_PRICE_LABEL}) se activa <strong>automáticamente</strong> tras confirmar en PayPal — sin espera manual.</p>
+ <p><a href="{approve_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Confirmar en PayPal →</a></p>
+ <p style="font-size:13px;color:#b9cac2;">Luego: <code>market whoami</code> · <code>market doctor</code></p>
+@@ -427,7 +429,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Confirm Pro on PayPal</h2>
+-<p>Hi <strong>{username}</strong>,</p>
++<p>Hi <strong>{_esc(username)}</strong>,</p>
+ <p>Pro ({PRO_PRICE_LABEL}) activates <strong>automatically</strong> after PayPal confirmation — no manual wait.</p>
+ <p><a href="{approve_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Confirm on PayPal →</a></p>
+ <p style="font-size:13px;color:#b9cac2;">Then: <code>market whoami</code> · <code>market doctor</code></p>
+@@ -525,8 +527,8 @@ MCP · https://cli-market.dev/tools{ref_es}
+             ("Contraseña", password or "—"),
+         )
+         access_html = "".join(
+-            f"<tr><td style='padding:6px 0;color:#889992;font-size:12px;width:38%;'>{label}</td>"
+-            f"<td style='padding:6px 0;color:#fff;font-family:monospace;font-size:13px;'>{val}</td></tr>"
++            f"<tr><td style='padding:6px 0;color:#889992;font-size:12px;width:38%;'>{_esc(label)}</td>"
++            f"<td style='padding:6px 0;color:#fff;font-family:monospace;font-size:13px;'>{_esc(str(val))}</td></tr>"
+             for label, val in access_rows
+         )
+         html = f"""<!DOCTYPE html>
+@@ -537,15 +539,15 @@ MCP · https://cli-market.dev/tools{ref_es}
+ <table width="560" cellpadding="0" cellspacing="0" style="background:#131314;border:1px solid #3b4a44;border-radius:12px;max-width:560px;">
+ <tr><td style="padding:28px 32px;">
+ <p style="margin:0 0 6px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET PRO</p>
+-<h1 style="margin:0 0 12px;font-size:22px;color:#fff;">Hola {dn}</h1>
++<h1 style="margin:0 0 12px;font-size:22px;color:#fff;">Hola {_esc(dn)}</h1>
+ <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">{pay} Build Pro ya está activo. Conéctate en dos pasos — si ya tienes <code style="color:#3afecf;">market</code>, no reinstales.</p>
+ <p style="margin:0 0 8px;font-size:11px;color:#3afecf;font-family:monospace;letter-spacing:0.08em;text-transform:uppercase;">Tu acceso</p>
+ <table width="100%" style="background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;margin-bottom:16px;">
+ <tr><td style="padding:14px 16px;"><table width="100%" cellpadding="0" cellspacing="0">{access_html}</table></td></tr></table>
+ <p style="margin:0 0 8px;font-size:11px;color:#889992;">Usuario CLI + contraseña para el login · email de facturación</p>
+-<pre style="margin:0 0 16px;padding:14px 16px;background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;color:#3afecf;line-height:1.6;white-space:pre-wrap;user-select:all;">{login}
++<pre style="margin:0 0 16px;padding:14px 16px;background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;color:#3afecf;line-height:1.6;white-space:pre-wrap;user-select:all;">{_esc(login)}
+ market</pre>
+-<p style="margin:0 0 8px;font-size:12px;color:#889992;">Barra esperada: tier pro · user {user}</p>
++<p style="margin:0 0 8px;font-size:12px;color:#889992;">Barra esperada: tier pro · user {_esc(user)}</p>
+ <p style="margin:0 0 16px;font-size:12px;color:#889992;">¿Sin CLI aún? Una vez: <code style="color:#3afecf;">pip install cli-market-world</code></p>
+ <p style="margin:0;font-size:12px;color:#b9cac2;"><a href="https://cli-market.dev/docs#quickstart" style="color:#3afecf;">Docs</a> · <a href="https://cli-market.dev/tools" style="color:#3afecf;">MCP</a></p>
+ </td></tr>
+@@ -598,8 +600,8 @@ Something off? Reply to this email — we will help today.
+             ("Password", password or "—"),
+         )
+         access_html = "".join(
+-            f"<tr><td style='padding:6px 0;color:#889992;font-size:12px;width:38%;'>{label}</td>"
+-            f"<td style='padding:6px 0;color:#fff;font-family:monospace;font-size:13px;'>{val}</td></tr>"
++            f"<tr><td style='padding:6px 0;color:#889992;font-size:12px;width:38%;'>{_esc(label)}</td>"
++            f"<td style='padding:6px 0;color:#fff;font-family:monospace;font-size:13px;'>{_esc(str(val))}</td></tr>"
+             for label, val in access_rows
+         )
+         html = f"""<!DOCTYPE html>
+@@ -610,14 +612,14 @@ Something off? Reply to this email — we will help today.
+ <table width="560" cellpadding="0" cellspacing="0" style="background:#131314;border:1px solid #3b4a44;border-radius:12px;max-width:560px;">
+ <tr><td style="padding:28px 32px;">
+ <p style="margin:0 0 6px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET PRO</p>
+-<h1 style="margin:0 0 12px;font-size:22px;color:#fff;">Hi {dn}</h1>
++<h1 style="margin:0 0 12px;font-size:22px;color:#fff;">Hi {_esc(dn)}</h1>
+ <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">{pay} Build Pro is active. Connect in two steps — if you already have <code style="color:#3afecf;">market</code>, skip reinstall.</p>
+ <p style="margin:0 0 8px;font-size:11px;color:#3afecf;font-family:monospace;letter-spacing:0.08em;text-transform:uppercase;">Your access</p>
+ <table width="100%" style="background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;margin-bottom:16px;">
+ <tr><td style="padding:14px 16px;"><table width="100%" cellpadding="0" cellspacing="0">{access_html}</table></td></tr></table>
+-<pre style="margin:0 0 16px;padding:14px 16px;background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;color:#3afecf;line-height:1.6;white-space:pre-wrap;user-select:all;">{login}
++<pre style="margin:0 0 16px;padding:14px 16px;background:#0a0a0b;border:1px solid #3b4a44;border-radius:8px;font-family:ui-monospace,monospace;font-size:12px;color:#3afecf;line-height:1.6;white-space:pre-wrap;user-select:all;">{_esc(login)}
+ market</pre>
+-<p style="margin:0 0 8px;font-size:12px;color:#889992;">Expected bar: tier pro · user {user}</p>
++<p style="margin:0 0 8px;font-size:12px;color:#889992;">Expected bar: tier pro · user {_esc(user)}</p>
+ <p style="margin:0 0 16px;font-size:12px;color:#889992;">No CLI yet? Once: <code style="color:#3afecf;">pip install cli-market-world</code></p>
+ </td></tr>
+ <tr><td style="padding:16px 32px;border-top:1px solid #3b4a44;">
+@@ -737,7 +739,7 @@ def send_pro_activated_notify(
+         f"{draft['text']}\n"
+     )
+     html = (
+-        f"<pre style='font-family:monospace;font-size:13px;white-space:pre-wrap;'>{text}</pre>"
++        f"<pre style='font-family:monospace;font-size:13px;white-space:pre-wrap;'>{_esc(text)}</pre>"
+     )
+     msg = _send(NOTIFY_EMAIL, ops_subject, text, html)
+     if msg.get("sent"):
+@@ -828,7 +830,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Confirme Starter en PayPal</h2>
+-<p>Hola <strong>{username}</strong>,</p>
++<p>Hola <strong>{_esc(username)}</strong>,</p>
+ <p>Starter ({STARTER_PRICE_LABEL}) se activa <strong>automáticamente</strong> tras confirmar en PayPal.</p>
+ <p><a href="{approve_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Confirmar en PayPal →</a></p>
+ </body></html>"""
+@@ -852,7 +854,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Confirm Starter on PayPal</h2>
+-<p>Hi <strong>{username}</strong>,</p>
++<p>Hi <strong>{_esc(username)}</strong>,</p>
+ <p>Starter ({STARTER_PRICE_LABEL}) activates <strong>automatically</strong> after PayPal confirmation.</p>
+ <p><a href="{approve_url}" style="color:#002118;background:#3afecf;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;">Confirm on PayPal →</a></p>
+ </body></html>"""
+@@ -908,7 +910,7 @@ hello@cli-market.dev
+ <p style="margin:0 0 4px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET STARTER</p>
+ <h1 style="margin:0 0 16px;font-size:22px;color:#fff;">Su plan Starter está activo</h1>
+ <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">
+-Hola <strong style="color:#fff">{username}</strong>,<br><br>
++Hola <strong style="color:#fff">{_esc(username)}</strong>,<br><br>
+ Confirmamos la activación automática tras su pago en PayPal. Ya puede usar alertas y exportación CSV.
+ </p>
+ <table width="100%" style="background:#0a0a0b;border:1px solid #3b4a44;border-radius:6px;margin-bottom:20px;">
+@@ -962,7 +964,7 @@ hello@cli-market.dev
+ <p style="margin:0 0 4px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">CLI MARKET STARTER</p>
+ <h1 style="margin:0 0 16px;font-size:22px;color:#fff;">Your Starter plan is active</h1>
+ <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">
+-Hi <strong style="color:#fff">{username}</strong>,<br><br>
++Hi <strong style="color:#fff">{_esc(username)}</strong>,<br><br>
+ We confirmed automatic activation after your PayPal payment. Alerts and CSV export are available now.
+ </p>
+ <table width="100%" style="background:#0a0a0b;border:1px solid #3b4a44;border-radius:6px;margin-bottom:20px;">
+@@ -1016,7 +1018,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Solicitud Starter recibida</h2>
+-<p>Hola {greet},</p>
++<p>Hola {_esc(greet)},</p>
+ <p>Referencia: <code style="color:#3afecf;">{request_id}</code></p>
+ <p>Activación manual en <strong>≤24h hábiles</strong>. No hay checkout instantáneo en este plan.</p>
+ <p>Mientras tanto: <code>market register</code> → <code>market whoami</code></p>
+@@ -1047,7 +1049,7 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Starter request received</h2>
+-<p>Hi {greet},</p>
++<p>Hi {_esc(greet)},</p>
+ <p>Reference: <code style="color:#3afecf;">{request_id}</code></p>
+ <p>Manual activation within <strong>24 business hours</strong>. No instant checkout on this plan.</p>
+ <p>Meanwhile: <code>market register</code> → <code>market whoami</code></p>
+@@ -1079,7 +1081,7 @@ def send_starter_request_notify(
+     text += (
+         f"\nActivate manually (ops/activate_starter.py or dashboard) within 24h.\n"
+     )
+-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
++    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
+ 
+ 
+ def send_pro_request_notify(
+@@ -1104,7 +1106,7 @@ def send_pro_request_notify(
+         f"\nAfter payment confirmed, run:\n"
+         f"  python3 ops/activate_pro.py {username}\n"
+     )
+-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
++    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
+ 
+ 
+ def send_contact_notify(
+@@ -1128,7 +1130,7 @@ def send_contact_notify(
+         text += f"Company: {company}\n"
+     if use_case.strip():
+         text += f"\nMessage:\n{use_case.strip()}\n"
+-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
++    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
+ 
+ 
+ def send_session_expiry_reminder(
+@@ -1155,7 +1157,7 @@ Si no renovás, las llamadas API devolverán 401 hasta que vuelvas a iniciar ses
+ — CLI Market
+ hello@cli-market.dev
+ """
+-        html = f"""<pre style="font-family:monospace;font-size:13px;">{text}</pre>"""
++        html = f"""<pre style="font-family:monospace;font-size:13px;">{_esc(text)}</pre>"""
+     else:
+         subject = "Your CLI Market session expires soon"
+         text = f"""Hi {username},
+@@ -1169,7 +1171,7 @@ Refresh without changing your password:
+ — CLI Market
+ hello@cli-market.dev
+ """
+-        html = f"""<pre style="font-family:monospace;font-size:13px;">{text}</pre>"""
++        html = f"""<pre style="font-family:monospace;font-size:13px;">{_esc(text)}</pre>"""
+     return _send(to_email, subject, text, html)
+ 
+ 
+@@ -1217,9 +1219,9 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Solicitud retailer recibida</h2>
+-<p>Hola {greet},</p>
++<p>Hola {_esc(greet)},</p>
+ <p>Referencia: <code style="color:#3afecf;">{application_id}</code></p>
+-<p><strong>{store_name}</strong> · {platform_label} · {country.upper()}</p>
++<p><strong>{_esc(store_name)}</strong> · {_esc(platform_label)} · {_esc(country.upper())}</p>
+ <p>Validamos catálogo de solo lectura y respondemos en <strong>≤24h hábiles</strong>. Gratis para siempre.</p>
+ </body></html>"""
+     else:
+@@ -1247,9 +1249,9 @@ hello@cli-market.dev
+ """
+         html = f"""<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0a0a0b;color:#e5e2e3;padding:24px;">
+ <h2 style="color:#3afecf;">Retailer listing request received</h2>
+-<p>Hi {greet},</p>
++<p>Hi {_esc(greet)},</p>
+ <p>Reference: <code style="color:#3afecf;">{application_id}</code></p>
+-<p><strong>{store_name}</strong> · {platform_label} · {country.upper()}</p>
++<p><strong>{_esc(store_name)}</strong> · {_esc(platform_label)} · {_esc(country.upper())}</p>
+ <p>We validate read-only catalog access and reply within <strong>24 business hours</strong>. Free forever.</p>
+ </body></html>"""
+     return _send(to_email, subject, text, html)
+@@ -1282,7 +1284,7 @@ def send_retailer_application_notify(
+         text += f"Website: {website.strip()}\n"
+     text += f"API token provided: {'yes' if has_token else 'no'}\n"
+     text += "\nReview: python3 ops/approve_retailer.py ok <id> | no <id>\n"
+-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
++    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
+ 
+ 
+ def send_procure_renewal_reminder_email(
+@@ -1322,7 +1324,7 @@ def send_procure_renewal_reminder_email(
+         f"https://procurecopilot.com"
+     )
+     html = (
+-        f"<p>Hola {username},</p>"
++        f"<p>Hola {_esc(username)},</p>"
+         f"<p><strong>{urgency}</strong></p>"
+         f"<p><a href='{renewal_url}' style='font-size:15px;font-weight:bold'>Renovar Procure {plan_label} &rarr;</a></p>"
+         f"<p style='color:#666;font-size:12px'>Si no renuevas antes del {grace_ends_on}, tu cuenta pasará al plan gratuito.</p>"
+@@ -1350,7 +1352,7 @@ def send_procure_downgrade_email(
+         f"https://procurecopilot.com"
+     )
+     html = (
+-        f"<p>Hola {username},</p>"
++        f"<p>Hola {_esc(username)},</p>"
+         f"<p>Tu plan Procure <strong>{plan_label}</strong> venció y tu cuenta fue degradada al plan gratuito.</p>"
+         f"<p><a href='{renewal_url}'>Reactivar plan &rarr;</a></p>"
+     )
+@@ -1377,7 +1379,7 @@ def send_procure_magic_link_email(
+         f"— Equipo Procure Copilot"
+     )
+     html = (
+-        f"<p>Hola {username},</p>"
++        f"<p>Hola {_esc(username)},</p>"
+         f"<p>Tu plan Procure <strong>{plan_label}</strong> está activo.</p>"
+         f"<p><a href='{magic_url}' style='font-size:16px;font-weight:bold'>Entrar a Procure &rarr;</a></p>"
+         f"<p style='color:#666;font-size:12px'>Este enlace expira en 15 minutos y es de un solo uso.</p>"
+diff --git a/market_core/market_stats.py b/market_core/market_stats.py
+index 6715ac1..cd47eaa 100644
+--- a/market_core/market_stats.py
++++ b/market_core/market_stats.py
+@@ -82,7 +82,7 @@ def _live_golden_linkage_pct(fallback: float = 0.0) -> float:
+ 
+ GOLDEN_LINKAGE_PCT = _live_golden_linkage_pct()
+ PYPI_PACKAGE_NAME = "cli-market-world"
+-PACKAGE_VERSION = "1.11.43"
++PACKAGE_VERSION = "1.11.44"
+ LICENSE = "MIT"
+ PYPI_URL = f"https://pypi.org/project/{PYPI_PACKAGE_NAME}/"
+ PEPY_PROJECT_URL = f"https://pepy.tech/projects/{PYPI_PACKAGE_NAME}"
+diff --git a/pyproject.toml b/pyproject.toml
+index 6208d3c..20c63f4 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "cli-market-core"
+-version = "1.11.43"
++version = "1.11.44"
+ 
+ description = "Cost-of-Living OS for LatAm — intelligence layer for CLI Market. market_optimize_purchase: one-call basket compare, TCO, substitutes, action links. 35 MCP tools (default profile). Dependency of cli-market-world."
+ requires-python = ">=3.10"
