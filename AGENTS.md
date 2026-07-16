@@ -55,6 +55,23 @@ python3 ops/price_pulse_agents.py --run
 
 Output: PDF de 10 secciones, 3 tiers comerciales ($300-500/mes).
 
+## Market Orchestrator
+
+Router por request (distinto de Price Pulse, que es un plan congelado semanal): entiende el pedido en lenguaje natural, clasifica intent, arma un plan de tools + sub-agentes, ejecuta contra la API real, enriquece con LLM y sintetiza una respuesta con grounding (FactIndex) contra los datos reales.
+
+- Contrato: `docs/agents/orchestrator-contract.md` (v0.2.0, roster v2 — 6 agentes)
+- System prompt: `docs/agents/contexts/orchestrator-context.md`
+- Runtime: `ops/market_orchestrator.py` (v0.2.1)
+
+```bash
+python ops/market_orchestrator.py --plan "optimiza leche, arroz PE budget 200"
+python ops/market_orchestrator.py --run --mode fast --synthesize "inflación supermercados PE"
+```
+
+Auth: `CLI_MARKET_API_KEY` / `MARKET_API_KEY`, o `~/.market/session.json`. LLM: `ORCHESTRATOR_LLM_PROVIDER` (openai default) + `OPENAI_API_KEY`. Artefactos en `ops/generated/orchestrator/`.
+
+**Roster activo (6 de 14 agentes v1, consolidado 2026-07-16):** `pricing-analyst`, `supply-chain`, `operations`, `reality-checker` (siempre presente — backstop anti-alucinación), `analytics-reporter`, `hospitality` (condicional, segment=hotelero). El resto del roster v1 se cortó por redundante con SYNTHESIZE, genérico sin grounding real, o incompatible con el contrato de datos de este pipeline — detalle en `docs/agents/orchestrator-contract.md` §4.3.
+
 ## Slack
 
 Canales (un propósito por canal):
