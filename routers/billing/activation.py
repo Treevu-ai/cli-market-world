@@ -32,10 +32,12 @@ _MANUAL_PRO_ACTIVATION_SOURCES = frozenset({"slack_interaction", "admin_api", "o
 
 _PRO_REF_RE = re.compile(r"CLI-Market-(PRO-[A-Z0-9]+)", re.I)
 _SUBSCRIPTION_REF_RE = re.compile(
-    r"CLI-Market-(?P<id>(?:PRO|PCS|PCP|PCB)-[A-Z0-9]+)",
+    r"CLI-Market-(?P<id>(?:PRO|PCS|PCP|PCB|RGW)-[A-Z0-9]+)",
     re.I,
 )
-_BARE_SUBSCRIPTION_REF_RE = re.compile(r"^(PRO|PCS|PCP|PCB)-[A-Z0-9]+$", re.I)
+_BARE_SUBSCRIPTION_REF_RE = re.compile(r"^(PRO|PCS|PCP|PCB|RGW)-[A-Z0-9]+$", re.I)
+
+RETAILER_GROWTH_PRICE_USD = 9
 
 
 def _pro_price_pen() -> float:
@@ -51,6 +53,18 @@ def _pro_price_pen() -> float:
     if pen_per_usd <= 0:
         pen_per_usd = 3.7
     return round(float(PRO_PRICE_USD) * pen_per_usd, 2)
+
+
+def _retailer_growth_price_pen() -> float:
+    """USD Retailer Growth price ($9) converted to PEN — reuses the Pro FX rate env var."""
+    raw = os.getenv("PRO_PEN_PER_USD", "3.75")
+    try:
+        pen_per_usd = float(str(raw).strip())
+    except (TypeError, ValueError):
+        pen_per_usd = 3.7
+    if pen_per_usd <= 0:
+        pen_per_usd = 3.7
+    return round(float(RETAILER_GROWTH_PRICE_USD) * pen_per_usd, 2)
 
 
 def _wallet_payment_phone() -> str:
@@ -144,6 +158,44 @@ def _parse_pro_request_ref(external_reference: str) -> str | None:
 def _is_procure_subscription_request_id(request_id: str) -> bool:
     prefix = (request_id or "").split("-", 1)[0].upper()
     return prefix in ("PCS", "PCP", "PCB")
+
+
+def _is_retailer_growth_subscription_request_id(request_id: str) -> bool:
+    prefix = (request_id or "").split("-", 1)[0].upper()
+    return prefix == "RGW"
+
+
+def _activate_retailer_growth_from_request(request_id: str, *, source: str, force: bool = False) -> list[str]:
+    """Mark a Retailer Growth ($9/mo) subscription request paid.
+
+    Deliberately does NOT call db_set_subscription(...) — retailers have no
+    CLI user/plan concept today. The team activates the Growth tier for the
+    retailer's listing manually (same manual-verification pattern already
+    used for the free listing flow), triggered by the Slack notification
+    below rather than an automatic DB upgrade.
+    """
+    req = db_find_subscription_request(request_id=request_id)
+    if not req:
+        return [f"request_not_found:{request_id}"]
+    if (req.get("status") or "").lower() == "activated" and not force:
+        return [f"already_activated:{request_id}"]
+
+    username = (req.get("username") or "").strip()
+    db_mark_subscription_request_activated(request_id, username)
+    actions = [f"retailer_growth_paid:{request_id}"]
+
+    email = (req.get("email") or "").strip()
+    _slack_notify_subscription(
+        tier="retailer_growth",
+        status="activated",
+        username=username,
+        email=email,
+        request_id=request_id,
+        source=source,
+        amount_usd=float(RETAILER_GROWTH_PRICE_USD),
+    )
+
+    return actions
 
 
 def tier_from_billing_kind(kind: str) -> str:

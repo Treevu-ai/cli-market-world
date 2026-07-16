@@ -18,7 +18,9 @@ from market_security import is_production_deploy, paypal_allow_unverified_webhoo
 from routers.billing.activation import (
     _activate_pro_from_request,
     _activate_procure_from_request,
+    _activate_retailer_growth_from_request,
     _is_procure_subscription_request_id,
+    _is_retailer_growth_subscription_request_id,
     _parse_subscription_request_ref,
     activate_paypal_subscription,
 )
@@ -268,6 +270,10 @@ async def mercadopago_webhook(request: Request):
         if _is_procure_subscription_request_id(pro_request_id):
             actions.extend(
                 _activate_procure_from_request(pro_request_id, source="mercadopago_webhook")
+            )
+        elif _is_retailer_growth_subscription_request_id(pro_request_id):
+            actions.extend(
+                _activate_retailer_growth_from_request(pro_request_id, source="mercadopago_webhook")
             )
         else:
             actions.extend(_activate_pro_from_request(pro_request_id, source="mercadopago_webhook"))
