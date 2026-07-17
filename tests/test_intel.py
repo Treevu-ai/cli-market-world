@@ -18,7 +18,14 @@ _AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
 
 @pytest.fixture(autouse=True)
 def patch_token(monkeypatch):
+    """All /v1/intel/* read endpoints require Pro (routers/intel.py). Default the
+    admin token to Pro tier so existing tests keep exercising response shape;
+    tier-gating itself is covered separately by test_intel_read_endpoint_requires_pro."""
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
+    db_save_user("admin", hash_password("market"), _ADMIN_TOKEN)
+    db_set_subscription("admin", "pro")
+    yield
+    db_set_subscription("admin", "free")
 
 
 @pytest.fixture()
@@ -29,6 +36,19 @@ def pro_user(monkeypatch):
     db_set_subscription("admin", "pro")
     yield
     db_set_subscription("admin", "free")
+
+
+# ── Tier gating ──────────────────────────────────────────────────────────────
+
+def test_intel_read_endpoint_requires_pro():
+    """Intel tools are Pro-only (Starter gets shop tools; Pro adds intel + checkout)."""
+    db_set_subscription("admin", "starter")
+    try:
+        r = client.get("/v1/intel/scores", headers=_AUTH)
+        assert r.status_code == 403
+        assert "Pro" in r.json()["detail"]
+    finally:
+        db_set_subscription("admin", "pro")
 
 
 # ── GET /v1/intel/indicators ──────────────────────────────────────────────────

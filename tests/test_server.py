@@ -824,8 +824,9 @@ def test_intel_inflation_with_snapshot_rows():
     db.close()
 
     db_save_user("admin", hash_password("market"), "test@test.com")
-    from market_core import db_create_api_key
+    from market_core import db_create_api_key, db_set_subscription
 
+    db_set_subscription("admin", "pro")
     key = db_create_api_key("admin", "read", "t")["key"]
     r = client.get(
         "/v1/intel/inflation?country=PE&line=supermercados",
@@ -840,8 +841,9 @@ def test_intel_inflation_with_snapshot_rows():
 def test_intel_inflation_country_filter_sql():
     """Regression: country filter must stay in WHERE, not after GROUP BY."""
     db_save_user("admin", hash_password("market"), "test@test.com")
-    from market_core import db_create_api_key
+    from market_core import db_create_api_key, db_set_subscription
 
+    db_set_subscription("admin", "pro")
     key = db_create_api_key("admin", "read", "t")["key"]
     r = client.get(
         "/v1/intel/inflation?country=PE",
@@ -1370,6 +1372,9 @@ def test_intel_brief_requires_auth():
 
 
 def test_intel_brief_returns_narrative():
+    from market_core import db_set_subscription
+
+    db_set_subscription("admin", "pro")
     r = client.get(
         "/v1/intel/brief?country=PE&days=7",
         headers={"Authorization": "Bearer test-token-123"},
@@ -1385,6 +1390,9 @@ def test_intel_brief_returns_narrative():
 
 
 def test_intel_scores_available():
+    from market_core import db_set_subscription
+
+    db_set_subscription("admin", "pro")
     r = client.get(
         "/v1/intel/scores?country=PE",
         headers={"Authorization": "Bearer test-token-123"},
@@ -1513,6 +1521,45 @@ def test_admin_set_tier_sets_pro(monkeypatch):
     assert r.status_code == 200
     assert r.json()["subscription"]["tier"] == "pro"
     assert db_get_subscription("admin")["tier"] == "pro"
+
+
+def test_admin_set_tier_notifies_slack_on_paid_upgrade(monkeypatch):
+    import server_deps
+    import routers.admin as admin_router
+
+    calls = []
+    monkeypatch.setattr(
+        admin_router,
+        "_slack_notify_subscription",
+        lambda **kwargs: calls.append(kwargs),
+    )
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post("/v1/admin/set-tier", headers=h, json={"username": "admin", "tier": "pro"})
+    assert r.status_code == 200
+    assert len(calls) == 1
+    assert calls[0]["tier"] == "pro"
+    assert calls[0]["status"] == "activated"
+    assert calls[0]["source"] == "admin_set_tier"
+
+
+def test_admin_set_tier_no_slack_when_tier_unchanged(monkeypatch):
+    import server_deps
+    import routers.admin as admin_router
+    from market_core import db_set_subscription
+
+    calls = []
+    monkeypatch.setattr(
+        admin_router,
+        "_slack_notify_subscription",
+        lambda **kwargs: calls.append(kwargs),
+    )
+    db_set_subscription("admin", "pro")
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", "ops-secret-token")
+    h = {"Authorization": "Bearer ops-secret-token"}
+    r = client.post("/v1/admin/set-tier", headers=h, json={"username": "admin", "tier": "pro"})
+    assert r.status_code == 200
+    assert calls == []
 
 
 def test_admin_set_tier_rejects_bad_tier(monkeypatch):
