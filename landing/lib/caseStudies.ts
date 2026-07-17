@@ -114,7 +114,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     metrics: [
       { value: String(mcpTools), label_es: "API tools MCP", label_en: "MCP API tools" },
       { value: `${pricesRefreshHours}h`, label_es: "refresh del moat", label_en: "moat refresh" },
-      { value: "$49", label_es: "Build Pro /mes", label_en: "Build Pro /mo" },
+      { value: "$39", label_es: "Build Pro /mes", label_en: "Build Pro /mo" },
     ],
   },
   {

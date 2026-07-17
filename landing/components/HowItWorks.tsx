@@ -8,8 +8,8 @@ import { recordPipInstallIntent } from "@/lib/funnel";
 const mainSteps = [
   {
     cmd: MARKET_STATS.pipInstallCmd,
-    out_es: "Starter $9/mes · Pro $49/mes · Enterprise a medida",
-    out_en: "Starter $9/mo · Pro $49/mo · Enterprise custom",
+    out_es: "Starter $9/mes · Pro $39/mes · Enterprise a medida",
+    out_en: "Starter $9/mo · Pro $39/mo · Enterprise custom",
     label: "Install",
     icon: "↓",
   },

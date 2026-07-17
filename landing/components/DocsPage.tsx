@@ -280,8 +280,8 @@ curl -X POST ${API_URL}/auth/verify-email \\
           <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              `Build (API/MCP): Starter ($9/mes, ${TRIAL_DAYS} días gratis), Pro ($49/mes o $490/año).`,
-              `Build (API/MCP): Starter ($9/mo, ${TRIAL_DAYS}-day free trial), Pro ($49/mo or $490/yr).`,
+              `Build (API/MCP): Starter ($9/mes, ${TRIAL_DAYS} días gratis), Pro ($39/mes o $390/año).`,
+              `Build (API/MCP): Starter ($9/mo, ${TRIAL_DAYS}-day free trial), Pro ($39/mo or $390/yr).`,
             )}
           </p>
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
@@ -512,8 +512,8 @@ market --json doctor`}</CodeBlock>
             </h3>
             <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 max-w-md mx-auto">
               {t(
-                "Starter $9 para export · Pro $49 para checkout retail.",
-                "Starter $9 for export · Pro $49 for retail checkout.",
+                "Starter $9 para export · Pro $39 para checkout retail.",
+                "Starter $9 for export · Pro $39 for retail checkout.",
               )}
             </p>
             <a href="/build#pricing" className="btn-action inline-flex px-6 py-3 text-sm font-bold">

@@ -190,7 +190,7 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
       chips: [
         { label_es: "Affordability score en vivo", label_en: "Live affordability score" },
         { label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`, label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices` },
-        { label_es: "Starter $9 · Pro $49/mes", label_en: "Starter $9 · Pro $49/mo" },
+        { label_es: "Starter $9 · Pro $39/mes", label_en: "Starter $9 · Pro $39/mo" },
       ],
       primaryCta: {
         es: "Ver mi canasta →",
@@ -230,7 +230,7 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
           label_es: `${MARKET_STATS.pricesVerifiedLabel} precios verificados`,
           label_en: `${MARKET_STATS.pricesVerifiedLabel} verified prices`,
         },
-        { label_es: "Starter $9 · Pro $49/mes", label_en: "Starter $9 · Pro $49/mo" },
+        { label_es: "Starter $9 · Pro $39/mes", label_en: "Starter $9 · Pro $39/mo" },
       ],
       primaryCta: {
         es: CTA.getApiKey.es,
@@ -317,10 +317,10 @@ export const SPOKE_CONFIG: Record<SpokeIcp, SpokeConfig> = {
     hero: {
       eyebrow_es: "CLI MARKET FOR ADVISORS",
       eyebrow_en: "CLI MARKET FOR ADVISORS",
-      titleBefore_es: "Respalda tu consultoría de retail con ",
+      titleBefore_es: "Consultoría respaldada por ",
       titleAccent_es: "hechos de góndola verificables",
       titleAfter_es: "",
-      titleBefore_en: "Back your retail consulting with ",
+      titleBefore_en: "Consulting backed by ",
       titleAccent_en: "verifiable shelf data",
       titleAfter_en: "",
       subhead_es:

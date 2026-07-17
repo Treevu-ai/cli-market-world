@@ -110,7 +110,7 @@ export default function IntelligencePilotOnePagerPage() {
             <h2>Qué NO es</h2>
             <ul>
               <li>
-                <strong>Build (Starter $9 · Pro $49/mes):</strong> API/MCP para developers — no es Intelligence ni
+                <strong>Build (Starter $9 · Pro $39/mes):</strong> API/MCP para developers — no es Intelligence ni
                 Procure
               </li>
               <li>
@@ -179,7 +179,7 @@ export default function IntelligencePilotOnePagerPage() {
             <h2>What it is not</h2>
             <ul>
               <li>
-                <strong>Build (Starter $9 · Pro $49/mo):</strong> API/MCP for developers — not Intelligence or Procure
+                <strong>Build (Starter $9 · Pro $39/mo):</strong> API/MCP for developers — not Intelligence or Procure
               </li>
               <li>
                 <strong>Procure Copilot ($29–79/mo):</strong> procurement teams — Build API included on Pro+

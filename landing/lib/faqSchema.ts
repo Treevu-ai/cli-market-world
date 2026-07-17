@@ -18,7 +18,7 @@ export const FAQ_SCHEMA_ES = [
   },
   {
     q: "¿Cuánto cuesta?",
-    a: "CLI Build desde $49/mes. Procure Copilot desde $29/mes. Advisors desde $300/mes. Cancela cuando quieras.",
+    a: "CLI Build desde $9/mes. Procure Copilot desde $29/mes. Advisors desde $300/mes. Cancela cuando quieras.",
   },
 ];
 
@@ -37,7 +37,7 @@ export const FAQ_SCHEMA_EN = [
   },
   {
     q: "How much does it cost?",
-    a: "CLI Build from $49/mo. Procure Copilot from $29/mo. Advisors from $300/mo. Cancel anytime.",
+    a: "CLI Build from $9/mo. Procure Copilot from $29/mo. Advisors from $300/mo. Cancel anytime.",
   },
 ];
 
