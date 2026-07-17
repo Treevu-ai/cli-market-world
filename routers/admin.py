@@ -28,6 +28,7 @@ from fastapi import APIRouter, Body, Header, HTTPException
 from market_core import (
     STORES,
     db_get_subscription,
+    db_get_user_email,
     db_get_users,
     db_set_subscription,
     fetch_store,
@@ -36,6 +37,7 @@ from market_core import (
 from market_billing import TIERS
 from procure_billing import all_valid_tiers
 from market_audit import record_audit
+from routers.billing.notifications import _slack_notify_subscription
 from server_deps import require_admin
 
 logger = logging.getLogger(__name__)
@@ -167,8 +169,23 @@ def admin_set_tier(
     if username not in db_get_users():
         raise HTTPException(status_code=404, detail=f"user not found: {username}")
     old_sub = db_get_subscription(username)
+    old_tier = old_sub.get("tier") if old_sub else None
     db_set_subscription(username, tier)
-    record_audit("set_tier", username="admin", resource=username, detail={"old_tier": old_sub.get("tier") if old_sub else None, "new_tier": tier})
+    record_audit("set_tier", username="admin", resource=username, detail={"old_tier": old_tier, "new_tier": tier})
+
+    if tier != old_tier:
+        email = db_get_user_email(username) or ""
+        if tier == "free" and old_tier:
+            _slack_notify_subscription(
+                tier=old_tier, status="cancelled", username=username, email=email,
+                source="admin_set_tier",
+            )
+        elif tier != "free":
+            _slack_notify_subscription(
+                tier=tier, status="activated", username=username, email=email,
+                source="admin_set_tier",
+            )
+
     return {"username": username, "subscription": db_get_subscription(username)}
 
 

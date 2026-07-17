@@ -1,11 +1,11 @@
 """Price alert CRUD endpoints.
 
 Endpoints:
-  POST   /v1/alerts           Create a new alert (Pro+)
-  GET    /v1/alerts           List user's alerts (Pro+)
-  DELETE /v1/alerts/{id}      Delete an alert (Pro+)
-  PATCH  /v1/alerts/{id}      Enable/disable an alert (Pro+)
-  GET    /v1/alerts/{id}/events  Recent events for an alert (Pro+)
+  POST   /v1/alerts           Create a new alert (Starter+)
+  GET    /v1/alerts           List user's alerts (Starter+)
+  DELETE /v1/alerts/{id}      Delete an alert (Starter+)
+  PATCH  /v1/alerts/{id}      Enable/disable an alert (Starter+)
+  GET    /v1/alerts/{id}/events  Recent events for an alert (Starter+)
 
 Conditions: price_jump | price_drop | price_min_30d | dispersion_anomaly
 """
@@ -26,7 +26,7 @@ from market_alerts import (
 from market_billing import db_get_subscription, TIERS
 from market_core import get_db
 from market_security import validate_public_http_url
-from server_deps import require_pro
+from server_deps import require_starter
 
 router = APIRouter(prefix="/v1/alerts", tags=["alerts"])
 
@@ -97,8 +97,8 @@ def _check_alert_quota(username: str) -> None:
 
 @router.post("")
 def create_alert(body: CreateAlertRequest, authorization: str | None = Header(None)):
-    """Create a price alert. Pro: up to 10 alerts. Enterprise: unlimited."""
-    username = require_pro(authorization)
+    """Create a price alert. Starter: up to 3. Pro: up to 10. Enterprise: unlimited."""
+    username = require_starter(authorization)
     _check_alert_quota(username)
 
     email = body.notify_email.strip()
@@ -140,7 +140,7 @@ def create_alert(body: CreateAlertRequest, authorization: str | None = Header(No
 @router.get("")
 def list_alerts(authorization: str | None = Header(None)):
     """List all alerts for the authenticated user."""
-    username = require_pro(authorization)
+    username = require_starter(authorization)
     alerts = db_list_alerts(username)
     sub = db_get_subscription(username)
     tier = sub.get("tier", "free")
@@ -155,7 +155,7 @@ def list_alerts(authorization: str | None = Header(None)):
 @router.delete("/{alert_id}")
 def delete_alert(alert_id: str, authorization: str | None = Header(None)):
     """Delete an alert permanently."""
-    username = require_pro(authorization)
+    username = require_starter(authorization)
     ok = db_delete_alert(username, alert_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Alert not found.")
@@ -169,7 +169,7 @@ def toggle_alert(
     authorization: str | None = Header(None),
 ):
     """Enable or disable an alert without deleting it."""
-    username = require_pro(authorization)
+    username = require_starter(authorization)
     alert = db_get_alert(alert_id)
     if not alert or alert["username"] != username:
         raise HTTPException(status_code=404, detail="Alert not found.")
@@ -184,7 +184,7 @@ def get_alert_events(
     authorization: str | None = Header(None),
 ):
     """Recent firing events for a specific alert."""
-    username = require_pro(authorization)
+    username = require_starter(authorization)
     alert = db_get_alert(alert_id)
     if not alert or alert["username"] != username:
         raise HTTPException(status_code=404, detail="Alert not found.")

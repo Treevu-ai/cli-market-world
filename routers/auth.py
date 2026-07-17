@@ -34,7 +34,12 @@ from market_core import (
     db_save_user,
     get_db,
 )
-from market_billing import TRIAL_DAYS, db_set_subscription
+from market_billing import db_set_subscription
+
+# cli-market-core's TRIAL_DAYS is hardcoded to 7 with no env override, and
+# lives in a vendored package outside this repo — override it here instead
+# of waiting on an upstream release.
+TRIAL_DAYS = int(os.getenv("TRIAL_DAYS_OVERRIDE", "14"))
 from server_deps import (
     check_auth_brute_force,
     check_rate_limit,

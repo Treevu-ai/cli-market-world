@@ -27,7 +27,7 @@ from pydantic import BaseModel, field_validator
 from market_core import STORES, get_db, price_to_usd
 from market_billing import db_get_subscription
 from market_security import validate_public_http_url
-from server_deps import require_api_key, require_pro, require_starter
+from server_deps import require_pro, require_starter
 from index_gate import gov_collect_bcrp, gov_macro_snapshot
 from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
@@ -160,7 +160,7 @@ def list_indicators(authorization: str | None = Header(None)):
     indicator. Sources include internal moat data plus OpenFoodFacts, Wikimedia,
     IMF, Eurostat, World Bank, and BCB. Use to discover available indicator keys
     before calling GET /v1/intel/indicators/{key} for a specific value."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         catalog = _catalog(db)
@@ -179,7 +179,7 @@ def get_indicator(
     """Return the definition and most recent computed value for one indicator key.
     Optionally filter by country (e.g. PE, AR) and business line. Get valid keys
     from GET /v1/intel/indicators first."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         catalog = _catalog(db)
@@ -212,7 +212,7 @@ def intel_brief(
     business line (supermercados, farmacias, etc.). Use this before market_inflation
     or market_scores when you want a full picture rather than a single metric.
     Maps to the market_intel_brief MCP tool."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return build_intel_brief(
@@ -237,7 +237,7 @@ def intel_andean_panel(
     authorization: str | None = Header(None),
 ):
     """Cross-country Andean panel for CAF-style food affordability comparisons."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         with timing() as t:
@@ -272,7 +272,7 @@ def list_scores(
     computed from the raw indicator set. Scores are 0–100 normalized and scoped by
     country and business line. Use for at-a-glance market health signals without
     reading raw indicator values. Maps to the market_scores MCP tool."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return get_scores(db, country=country, line=line)
@@ -294,7 +294,7 @@ def get_inflation(
     Data comes from the price_snapshots moat — not official CPI. Use for procurement
     cost-trend analysis, price alerts, and inflation monitoring. Maps to the
     market_inflation MCP tool."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         now = datetime.now(timezone.utc)
@@ -407,7 +407,7 @@ def get_alerts(
     threshold_pct% below the list price, ordered by deepest discount first.
     Optionally scope to a specific store key. Use for deal hunting and price-drop
     notifications. Maps to the market_price_alerts MCP tool."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return compute_price_deal_alerts(
@@ -488,7 +488,7 @@ def get_macro(authorization: str | None = Header(None)):
     RPV signal from /v1/intel/inflation (CLI Market RPV ≠ CPI — see that
     endpoint's disclaimer). Raw gov data — Free tier, per
     specs/gov-connectors-prd.md DD-3 (derived indicators like RCLI are Pro)."""
-    require_api_key(authorization)
+    require_pro(authorization)
     return gov_macro_snapshot()
 
 
@@ -498,7 +498,7 @@ async def refresh_macro(authorization: str | None = Header(None)):
     persist as gov-sourced Golden Records. Unlike the retail collector cycle,
     BCRP has no anti-bot protection and returns a handful of values — safe to
     call on-demand rather than only on a schedule."""
-    require_api_key(authorization)
+    require_pro(authorization)
     return await gov_collect_bcrp()
 
 
@@ -513,7 +513,7 @@ def get_enrichment(
     (nutritional data), Wikimedia Pageviews (category momentum), Open-Meteo (weather
     impact on demand), and World Bank food CPI. Filter by country. Use to enrich
     procurement decisions with demand signals and macro context."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         values = get_latest_values(db, country=country, limit=100)
@@ -536,7 +536,7 @@ def get_enrichment_subcategories(
     """Return enrichment indicators broken down by canasta subcategory (e.g. leche,
     arroz, aceite) crossed with Wikimedia search momentum. Useful for identifying
     which food categories have rising consumer interest. Defaults to Peru (PE)."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         values = get_latest_values(db, country=country, limit=200)
@@ -645,7 +645,7 @@ def intel_affordability_v2(
     authorization: str | None = Header(None),
 ):
     """Cost-of-living composite. Titular usa canasta promedio; ver docs/methodology.md §4."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         with timing() as t:
