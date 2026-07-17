@@ -221,12 +221,12 @@ export default function BillingCheckoutModal({
       : "Build · Starter · $9/mo"
     : kind.type === "build-pro" && kind.annual
       ? isES
-        ? "Build · Pro · $490/año"
-        : "Build · Pro · $490/yr"
+        ? "Build · Pro · $390/año"
+        : "Build · Pro · $390/yr"
       : kind.type === "build-pro"
         ? isES
-          ? "Build · Pro · $49/mes"
-          : "Build · Pro · $49/mo"
+          ? "Build · Pro · $39/mes"
+          : "Build · Pro · $39/mo"
         : isProcure
           ? isES
             ? `Procure · ${procureMeta?.name ?? kind.plan} · $${procureMeta?.price ?? ""}/mes`

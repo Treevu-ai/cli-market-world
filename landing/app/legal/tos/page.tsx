@@ -85,7 +85,7 @@ export default function TermsOfService() {
                 Sinapsis Innovadora S.A.C. (RUC 20613045563) factura suscripciones Build y Procure
                 en dólares estadounidenses (USD) vía PayPal y en soles (PEN) vía Yape, Plin o
                 tarjeta Mercado Pago. El comprobante se emite en la moneda del pago. Planes publicados:
-                Starter USD 9/mes, Pro USD 49/mes (u opción anual)
+                Starter USD 9/mes, Pro USD 39/mes (u opción anual)
                 y tiers Procure según la landing.
               </li>
               <li>
@@ -232,7 +232,7 @@ export default function TermsOfService() {
                 Sinapsis Innovadora S.A.C. (tax ID 20613045563) invoices Build and Procure
                 subscriptions in US dollars (USD) via PayPal and in soles (PEN) via Yape, Plin, or
                 Mercado Pago card. Receipts match the payment currency. Published plans include
-                Starter USD 9/mo, Pro USD 49/mo (or annual option),
+                Starter USD 9/mo, Pro USD 39/mo (or annual option),
                 and Procure tiers as listed on the landing page.
               </li>
               <li>

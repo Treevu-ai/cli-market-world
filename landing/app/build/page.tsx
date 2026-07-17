@@ -11,7 +11,7 @@ import { SPOKE_CONFIG } from "@/lib/spokeConfig";
 export const metadata: Metadata = {
   title: "Build — API & MCP for developers",
   description:
-    "CLI Market Build: API, MCP, and CLI for AI agents. Starter $9/mo (7-day free trial), Pro $49/mo. Normalized LATAM retail prices.",
+    "CLI Market Build: API, MCP, and CLI for AI agents. Starter $9/mo (7-day free trial), Pro $39/mo. Normalized LATAM retail prices.",
   alternates: { canonical: "/build" },
 };
 

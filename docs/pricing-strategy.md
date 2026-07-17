@@ -1,14 +1,24 @@
 # Estrategia de pricing — ecosistema CLI Market
 
-**Última actualización:** 2026-06-08
+**Última actualización:** 2026-07-16
 
 Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un precio. No compiten en el mismo presupuesto.
+
+## Promesas de marca (GTM CLI Market–first)
+
+| Capa | Una línea |
+|------|-----------|
+| **CLI Market (hub)** | Datos y tools de góndola formal LATAM para agentes y equipos que deciden con precio real — API, CLI y MCP. |
+| **Procure (spoke)** | La app de compras que corre encima de CLI Market, para operadores que no escriben código. |
+
+**Puente:** «Procure es cómo un operador de compras usa CLI Market sin programar.»  
+Canónico GTM: `cli-market-content/strategy/gtm-cli-market-first.md`.
 
 ## Regla de oro
 
 | Si el buyer… | Vende | No vender |
 |--------------|-------|-----------|
-| Construye agentes o productos con API/MCP | **CLI Market Build** (Free / Starter $9 / Pro $49) | Procure |
+| Construye agentes o productos con API/MCP | **CLI Market Build** (Free / Starter $9 / Pro $39) | Procure |
 | Opera compras (gerente, comprador, CFO) | **Procure Copilot** ($29–149/mes) | CLI Market Pro por separado |
 | Analiza inflación, spreads, canasta (sin ejecutar compra) | **Intelligence** ($300–500/mes) | Procure Starter ni CLI Market Pro |
 
@@ -22,11 +32,13 @@ Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un
 
 | Plan | Precio | Job | Incluye | No incluye |
 |------|--------|-----|---------|------------|
-| Starter | **$9/mes** | Export y alertas sin checkout | 5k req/día, 1 clave API, export CSV | Checkout retail |
-| Pro | **$49/mes** | Embeber comercio en *tu* agente/producto | MCP completo, checkout, alertas, export | UI procurement, aprobaciones, auditoría D1 |
+| Starter | **$9/mes** | Comprar, comparar y armar canasta — sin inteligencia de mercado | 5k req/día, 1 clave API, tools de **shop** (search/compare/basket/optimize), export CSV, alertas (hasta 3) | Tools de **intel**, checkout retail |
+| Pro | **$39/mes** | Todo incluido: comercio + inteligencia de mercado en *tu* agente/producto | MCP completo (shop + intel), checkout, alertas (hasta 10), export | UI procurement, aprobaciones, auditoría D1 |
 | Enterprise | A medida | Plataformas, alto volumen | SLA, feeds, white-label | — |
 
 **Checkout Pro** = para quien integra `market_checkout` en software propio, no para equipos de compras que deberían usar Procure.
+
+**Segmentación por categoría de tools (no solo por cuota):** Starter accede a las ~14 tools de `shop` (búsqueda, comparación, basket, optimize_purchase) más alertas básicas; las ~14 tools de `intel` (market_intel_brief, market_scores, market_inflation, market_affordability, etc.) están detrás de `require_pro` en `routers/intel.py`. Con solo 4 usuarios Pro activos a 2026-07-16, se decidió simplificar a un único salto de precio ($39 todo incluido) en vez de fragmentar en más tiers.
 
 ---
 
@@ -43,7 +55,7 @@ Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un
 
 **Anti-canibalización técnica:** checkout bloqueado en API y UI para Starter/Free. Solo Pro+ ejecuta pago.
 
-**Anti-canibalización comercial:** copy explícito “infra CLI Market incluida” — no sumar $49 + $79.
+**Anti-canibalización comercial:** copy explícito "infra CLI Market incluida" — no sumar $39 + $79.
 
 ---
 
@@ -65,7 +77,7 @@ No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upse
 
 ```
 ¿Escribe código o configura MCP?
-  Sí → CLI Market Build (Free · Starter $9 · Pro $49)
+  Sí → CLI Market Build (Free · Starter $9 · Pro $39)
   No → ¿Ejecuta compras con aprobación gerente?
          Sí → Procure Pro $79+
          No → ¿Solo quiere comparar precios sin pagar?
@@ -80,7 +92,7 @@ No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upse
 
 | Canal | Producto | CTA | Evitar |
 |-------|----------|-----|--------|
-| PyPI, HN, DEV, MCP | CLI Market | `pip install` · Pro $49 | Procure, restaurantes |
+| PyPI, HN, DEV, MCP | CLI Market | `pip install` · Pro $39 | Procure, restaurantes |
 | LinkedIn empresa, outbound compras | Procure | Demo · Starter $29 / Pro $79 | `pip install` en mismo post |
 | Fintech, consultoras | Intelligence | Piloto $300 | Checkout, dashboard |
 
