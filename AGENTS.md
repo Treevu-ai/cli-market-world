@@ -78,10 +78,11 @@ Canales (un propósito por canal):
 
 | Canal | Env | Qué va |
 |-------|-----|--------|
-| **command-control** | `SLACK_CHANNEL_COMMAND_CONTROL` | Panel founder 1×/día (KPIs + checklist) |
+| **command-control** | `SLACK_CHANNEL_COMMAND_CONTROL` | Panel founder 1×/día — **salud hub CLI Market** (KPIs + checklist); no outbound hotel |
 | **suscripciones-cli-pro** | `SLACK_CHANNEL_CLI_MARKET_PRO` | Solo `[REVENUE]`: pending / activated / cancelled |
 | **funnel-cli-market** | `SLACK_CHANNEL_FUNNEL` | `[FUNNEL DIGEST]` adopción (registro, checkout) |
-| **publicaciones** | `SLACK_CHANNEL_PUBLICACIONES` | Índice diario GTM (gate + checklist) |
+| **publicaciones** | `SLACK_CHANNEL_PUBLICACIONES` | Índice diario GTM por **serie del día** + mix 40/25/25/10 (gate + checklist) |
+| **outbound** | `SLACK_CHANNEL_OUTBOUND` | Solo Procure / compras — sin pip/MCP |
 | **linkedin-personal** | `SLACK_CHANNEL_LINKEDIN_PERSONAL` | Copy LI founder |
 | **linkedin-empresa** | `SLACK_CHANNEL_LINKEDIN_COMPANY` | Copy LI página |
 | **twitter-x** | `SLACK_CHANNEL_TWITTER` | Tweets / threads |
@@ -128,7 +129,7 @@ Runbook founder: `ops/COMMAND_CONTROL.md` · `ops/DEPLOYMENT_MONITORING_DAILY_CO
 
 ## Pricing (ecosistema — sin canibalización)
 
-Estrategia canónica: `docs/pricing-strategy.md`
+Estrategia canónica: `docs/pricing-strategy.md` · GTM CLI Market–first: `../cli-market-content/strategy/gtm-cli-market-first.md`
 
 | Capa | Producto | ICP | Precio |
 |------|----------|-----|--------|
@@ -136,7 +137,9 @@ Estrategia canónica: `docs/pricing-strategy.md`
 | App | Procure Copilot | Operadores de compras | $29–149/mes (API incluida en Pro+) |
 | Datos | Intelligence / Price Pulse | Analistas, fintech | $300–500/mes |
 
-**GTM:** no mezclar `pip install` con Procure en el mismo post. Outbound compras → solo Procure.
+**Promesas:** CLI Market = datos/tools góndola LATAM (API/CLI/MCP). Procure = app de compras encima de CLI Market (sin código).  
+**GTM:** hub = CLI Market; spoke = Procure. No mezclar `pip install` con Procure en el mismo post. Outbound compras → solo Procure.  
+**Mix content:** 40% tools/MCP · 25% data · 25% Procure · 10% retailers (`cli-market-content/strategy/content-strategy.md`).
 
 ## Observatory (P0 — MCP Telemetry)
 

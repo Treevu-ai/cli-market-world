@@ -2,6 +2,49 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-17] — Price alert security hardening (cli-market-core 1.11.45)
+
+### cli-market-core (shared package, PyPI)
+- **Security fix:** `notify_email` on price alerts (`POST /v1/alerts`, both
+  cli-market-backend and cli-market-world) is now locked to the caller's
+  own OTP-verified `app_users.email` — previously any Pro+ user could set
+  an arbitrary third-party address and use price alerts as an SMTP relay
+  (harassment/phishing risk against the address, reputational risk to CLI
+  Market's sending domain). Fixed in both repos' `routers/alerts.py`.
+- **Security fix:** `notify_webhook` is now actually gated to Enterprise
+  tier (was documented but unenforced in cli-market-backend) and validated
+  against SSRF (`market_security.validate_public_http_url`) both at alert
+  creation and again at send time in `market_alerts._send_webhook` —
+  closes a DNS-rebinding gap where a domain validated at creation could be
+  re-pointed to a private/metadata IP before the webhook fires (alerts can
+  fire up to `cooldown_hours=720` / 30 days later, repeatedly). Also
+  disables redirect-following on the outbound webhook POST.
+
+### cli-market-backend
+- `GET /analytics/stats` now returns `unique_brands_on_shelf` (distinct
+  brands with a priced snapshot in the last `STATS_BRAND_FRESHNESS_DAYS`,
+  default 30d) and `brands_on_shelf_window_days`.
+- `POST /products/search` results now include a `confidence` field
+  (`"ok"` / `"suspect"`) — reuses the discount-scrape-error check
+  `save_price_snapshot` already ran, previously only visible in the
+  internal ops dashboard.
+- README retailer/country counts corrected (had drifted from 81/41/8 to
+  the current 82/37/9) and pointed at `GET /analytics/stats` as the live
+  source instead of hand-maintained numbers.
+
+## [2026-07-17] — cli-market-core 1.11.46: 5 new intel MCP tools
+
+### cli-market-core (shared package, PyPI)
+- **New MCP tools:** `market_basket_stress`, `market_commerce_pulse`,
+  `market_price_forecast`, `market_arbitrage`, `market_ecosystem_traction`
+  — these HTTP endpoints (`/v1/intel/basket-stress`, `/pulse`, `/forecast`,
+  `/arbitrage`, `/analytics/observatory`) existed but had no MCP tool
+  mapping, so an agent using the MCP interface (Claude, ChatGPT, etc.)
+  couldn't reach them. Default profile grows from 35 to 40 curated tools.
+  `market_ecosystem_traction` in particular surfaces the public,
+  no-PII adoption telemetry (`/analytics/observatory`) partner/press
+  conversations want as a proof-of-traction signal.
+
 ## [2026-07-14] — Market Console live bug sweep, brand-monitor endpoint, subcategory-scoped scores + cross-brand substitutes
 
 ### cli-market-world (Market Console — `/dashboard/pricing`, `/dashboard/household`)
