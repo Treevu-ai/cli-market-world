@@ -2,6 +2,62 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-18] — Official government data: BCRP trade balance, SISAP, WTO (cli-market-index, cli-market-core 1.11.47/48)
+
+New capability: CLI Market's own indicators (Macro Gap, Affordability Score,
+etc.) were entirely shelf-price-derived — no independent, official-source
+validation. This ships the first three government/international data
+connectors feeding a new `gov_price_observations` table in the semantic
+index, read via `GET /v1/intel/gov-observations` (source-agnostic) and the
+`market_gov_observations` MCP tool.
+
+### cli-market-index (semantic index)
+- **BCRP connector** (`bcrp_pe`) — USD/PEN exchange rate (venta/compra) +
+  Lima IPC, daily. Extended same-day with Peru's monthly total merchandise
+  **exports/imports/trade balance** (FOB, national totals) — the PRD's
+  original department-level series turned out discontinued (last update
+  Dec.2022/2023), so the connector uses BCRP's actively-maintained national
+  series instead.
+- **SISAP connector** (`sisap_pe`) — MIDAGRI canasta básica retail prices
+  (arroz, aceite, azúcar, huevos, leche) across Lima + Piura, Lambayeque, La
+  Libertad, Cajamarca. Required real reverse-engineering: the PRD's
+  documented URL no longer resolves (ministry migrated `minagri.gob.pe` →
+  `midagri.gob.pe`), that domain's TLS cert expired 2021-12-14 (plain HTTP
+  only), and there's no JSON API — the actual GET parameters for its
+  2010-era jQuery form were recovered by driving the real form in a browser
+  and reading the resulting network request, not by reading the client JS.
+  **Cron paused**: `sistemas.midagri.gob.pe` silently drops TCP connections
+  from cloud/datacenter IP ranges (confirmed via raw socket connect from a
+  Fly machine) — the connector is correct and tested against real data from
+  a residential IP, but the daily unattended job can't reach it. Manual
+  runs of `POST /admin/cron/gov-sisap` from a non-datacenter network still
+  work.
+- **WTO connector** (`wto_pe`) — Peru total merchandise exports/imports,
+  monthly, via the WTO Timeseries API (free developer-portal key). Kept
+  deliberately separate from BCRP's own export/import figures (commodity
+  slugs namespaced `*_wto_pe`) since the two use different classifications
+  and are expected to diverge somewhat — cross-validation signal, not a
+  duplicate.
+- Evaluated and passed on: SUNAT Aduanas (static annual yearbooks from a
+  mid-2000s CMS, less fresh than BCRP's monthly series), UN Comtrade (needs
+  a registered API key — user has one, not yet wired), Global Trade Alert.
+
+### cli-market-core (MCP)
+- `index_resolve` / `index_lookup` / `index_stats` — the semantic index's
+  HTTP endpoints (`/resolve`, `/index/lookup/{id}`, `/index/stats`) had no
+  MCP tool mapping despite cli-market-index's own README claiming they did.
+- `market_gov_observations` — read path for all gov connectors above.
+- Default MCP profile: 40 → 44 tools.
+
+### Ops
+- Rotated: production Postgres password, `MARKET_API_TOKEN` (admin + GitHub
+  Actions secret), and two workshop participants' API keys — all had been
+  sitting in plaintext in local, never-committed ops notes. Redacted those
+  files in place; nothing was ever pushed to git.
+- `index_gate.enrich_list` now batches through `IndexService.enrich_batch`
+  instead of one DB round trip per item (perf fix, was silently degraded to
+  the slow path because the local `cli-market-index` install was stale).
+
 ## [2026-07-17] — Price alert security hardening (cli-market-core 1.11.45)
 
 ### cli-market-core (shared package, PyPI)
