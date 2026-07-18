@@ -468,6 +468,30 @@ jobs:
             echo "::warning::index backfill returned HTTP $CODE (non-fatal)"
           fi
 
+  gov-bcrp-refresh:
+    needs: indicators-refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - name: Refresh BCRP exchange rate + IPC via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MARKET_API_TOKEN:-}" ]; then
+            echo "::warning::MARKET_API_TOKEN not set — skipping BCRP gov refresh"
+            exit 0
+          fi
+          CODE=$(curl -sS -o /tmp/gov-bcrp.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/gov-bcrp" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/gov-bcrp.json
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::gov-bcrp refresh returned HTTP $CODE (non-fatal)"
+          fi
+
   ceo-metrics:
     needs: product-briefing
     runs-on: ubuntu-latest
