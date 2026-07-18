@@ -55,7 +55,7 @@ Nadie puede replicar esto en 6 meses.
 - Normalización por kg/L para comparaciones justas entre cadenas
 - Historial de hasta **12 meses** (Pro) / completo (Enterprise)
 - Filtro de outliers y descuentos sospechosos documentado en dashboard
-- **38 retailers verificados activos · 8 países · schema único**
+- **38 retailers verificados activos · 9 países · schema único**
 
 ## Pitch ventas / inversión (una línea)
 

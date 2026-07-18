@@ -41,7 +41,7 @@ Acceso free tier. Token listo para API y MCP.
 **Slide 3 — Busca y compara**
 `market search "arroz" --country PE`
 `market compare "aceite de oliva"`
-30 retailers. 8 países. JSON plano. Precios reales cada 8h.
+30 retailers. 9 países. JSON plano. Precios reales cada 8h.
 
 **Slide 4 — Checkout**
 `market checkout --payment yape`
@@ -62,7 +62,7 @@ Guarda el carousel si estás construyendo agentes con capacidad de compra real.
 |-------|--------|------|
 | 1 | Instala | `pip install cli-market-world` · CLI + API + MCP |
 | 2 | Autentica | `market login` · Free tier |
-| 3 | Busca | `market search` / `market compare` · 30 retailers · 8 países |
+| 3 | Busca | `market search` / `market compare` · 30 retailers · 9 países |
 | 4 | Compra | `market checkout` · PayPal · Yape/Plin QR |
 
 ## Primer comentario

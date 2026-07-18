@@ -1,10 +1,10 @@
 # CLI Market — Full LLM Context
 
 > MCP Server: io.github.Treevu-ai/cli-market-world
-> Package: pip install cli-market-world (v1.11.5)
+> Package: pip install cli-market-world (v1.11.44)
 > Command: market-mcp
 > API: https://cli-market-api.fly.dev
-> Stats: 82 retailers · 37 verified · 70,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
+> Stats: 82 retailers · 37 verified · 76,000+ prices · 4 platforms (VTEX, Shopify, Magento, WooCommerce)
 > Payments: PayPal · Mercado Pago · Yape/Plin transfer (Peru, manual)
 > FMCG pilot: Nuna Orgánica PE (406 SKUs, WooCommerce Store API)
 
@@ -39,9 +39,9 @@ For Claude Desktop, add to claude_desktop_config.json:
 }
 ```
 
-## MCP tool bundles (default profile: 31 curated tools)
+## MCP tool bundles (default profile: 44 curated tools)
 
-Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (57 tools, includes deprecated aliases).
+Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (69 tools, includes deprecated aliases).
 
 Canonical registry CSV: `/mcp-tools-registry.csv` (columns: tool, estado_codigo, bundle, reemplazo_codigo, alternativa_docs).
 
@@ -49,9 +49,9 @@ Canonical registry CSV: `/mcp-tools-registry.csv` (columns: tool, estado_codigo,
 Canonical: market_discover, market_optimize_purchase
 market_login, market_discover, market_search, market_compare, market_substitutes, market_add, market_cart, market_cart_update, market_checkout, market_orders, market_ask, market_basket, market_optimize_purchase
 
-### Intel (10 tools)
+### Intel (23 tools)
 Canonical: market_intel_brief
-market_intel_brief, market_inflation, market_affordability, market_scores, market_price_risk, market_inflation_report, market_procurement_signal, market_stats, market_export, market_trending
+market_intel_brief, market_inflation, market_affordability, market_scores, market_price_risk, market_inflation_report, market_procurement_signal, market_stats, market_price_history, market_export, market_trending, market_informal_signal, market_promo_detector, market_retailer_scorecard, market_basket_stress, market_commerce_pulse, market_price_forecast, market_arbitrage, market_ecosystem_traction, index_resolve, index_lookup, index_stats, market_gov_observations
 
 ### Account (6 tools)
 Canonical: market_price_alerts
