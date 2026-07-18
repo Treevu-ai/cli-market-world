@@ -33,7 +33,7 @@ Con CLI Market un agente puede armar una canasta (arroz, leche, aceite, pan) y c
 No es estimación. Son precios de góndola de retailers reales.
 
 → Herramienta MCP: `market_basket`
-→ 60 retailers (30 verificados) en 8 países
+→ 60 retailers (30 verificados) en 9 países
 → Refresh cada 8 horas
 
 Los comparadores de precio para humanos existen hace años.

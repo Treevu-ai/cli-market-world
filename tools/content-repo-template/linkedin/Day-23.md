@@ -30,7 +30,7 @@ CLI Market unifica APIs de retail en una capa agent-ready:
 
 → Search, compare, cart, checkout
 → 22 herramientas MCP curadas (46 legacy)
-→ 8 países LATAM + EU
+→ 9 países LATAM + EU
 
 **62,398** indexados · 37,434 en refresh 24h · 38 tiendas verificadas
 

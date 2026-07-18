@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Treevu-ai/cli-market-world",
-  "description": "Commerce for AI agents. 31 MCP tools. 82 retailers (37 verified), 9 countries, 4 platforms.",
+  "description": "Commerce for AI agents. 44 MCP tools. 82 retailers (37 verified), 9 countries, 4 platforms.",
   "repository": {
     "url": "https://github.com/Treevu-ai/cli-market-world",
     "source": "github"
   },
-  "version": "1.11.5",
+  "version": "1.11.44",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "cli-market-world",
-      "version": "1.11.5",
+      "version": "1.11.44",
       "transport": {
         "type": "stdio",
         "command": "market-mcp"
