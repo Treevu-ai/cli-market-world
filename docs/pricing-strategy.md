@@ -1,26 +1,27 @@
 # Estrategia de pricing — ecosistema CLI Market
 
-**Última actualización:** 2026-07-16
+**Última actualización:** 2026-07-18
 
-Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un precio. No compiten en el mismo presupuesto.
+Tres capas complementarias. Cada capa tiene un comprador, un job-to-be-done y un precio. No compiten en el mismo presupuesto. En una economía de baja digitalización, CLI Market no se vende como una app de ahorro (B2C), sino como **infraestructura de arbitraje y formalización (B2B/Agents)**.
 
 ## Promesas de marca (GTM CLI Market–first)
 
-| Capa | Una línea |
-|------|-----------|
-| **CLI Market (hub)** | Datos y tools de góndola formal LATAM para agentes y equipos que deciden con precio real — API, CLI y MCP. |
-| **Procure (spoke)** | La app de compras que corre encima de CLI Market, para operadores que no escriben código. |
+| Capa | Una línea | Positioning (Anti-B2C) |
+|------|-----------|-------------------------|
+| **CLI Market (hub)** | Datos y tools de góndola formal LATAM para agentes y equipos. | **Infrastructure.** El usuario final es un agente de IA o un builder. |
+| **Procure (spoke)** | La app de compras que corre encima de CLI Market. | **Operations.** Para humanos que gestionan abastecimiento. |
+| **Intelligence** | El "Bloomberg" de la góndola LATAM. | **Data.** Para profesionales de Revenue, Growth y Comercio Exterior. |
 
 **Puente:** «Procure es cómo un operador de compras usa CLI Market sin programar.»  
 Canónico GTM: `cli-market-content/strategy/gtm-cli-market-first.md`.
 
 ## Regla de oro
 
-| Si el buyer… | Vende | No vender |
-|--------------|-------|-----------|
-| Construye agentes o productos con API/MCP | **CLI Market Build** (Free / Starter $9 / Pro $39) | Procure |
-| Opera compras (gerente, comprador, CFO) | **Procure Copilot** ($29–149/mes) | CLI Market Pro por separado |
-| Analiza inflación, spreads, canasta (sin ejecutar compra) | **Intelligence** ($300–500/mes) | Procure Starter ni CLI Market Pro |
+| Si el buyer… | Vende | Por qué |
+|--------------|-------|---------|
+| Construye agentes o productos con API/MCP | **CLI Market Build** (Pro $39) | El valor está en la integración, no en el ahorro personal. |
+| Opera compras (gerente, comprador, CFO) | **Procure Copilot** ($29–149/mes) | Necesita gobernanza y UI, no una terminal. |
+| Analiza inflación, spreads, export/import | **Intelligence** ($300–500/mes) | Compra "visibilidad" y "Golden Records" sobre el caos del mercado. |
 
 **Procure incluye infraestructura CLI Market** — el operador de compras no necesita suscripción API adicional.
 
@@ -28,23 +29,22 @@ Canónico GTM: `cli-market-content/strategy/gtm-cli-market-first.md`.
 
 ## Capa 1 — CLI Market (infraestructura)
 
-**ICP:** AI Agent Builders, developers, integradores.
+**ICP:** AI Agent Builders, developers, integradores de última milla.
 
-| Plan | Precio | Job | Incluye | No incluye |
-|------|--------|-----|---------|------------|
-| Starter | **$9/mes** | Comprar, comparar y armar canasta — sin inteligencia de mercado | 5k req/día, 1 clave API, tools de **shop** (search/compare/basket/optimize), export CSV, alertas (hasta 3) | Tools de **intel**, checkout retail |
-| Pro | **$39/mes** | Todo incluido: comercio + inteligencia de mercado en *tu* agente/producto | MCP completo (shop + intel), checkout, alertas (hasta 10), export | UI procurement, aprobaciones, auditoría D1 |
-| Enterprise | A medida | Plataformas, alto volumen | SLA, feeds, white-label | — |
+| Plan | Precio | Job | Realidad en Economía Informal |
+|------|--------|-----|------------------------------|
+| Free | **$0** | Experimentación | Para devs validando que la data existe. |
+| Starter | **$9/mes** | Micro-agentes | *Deprecated* o solo para tareas de discovery puntual. |
+| Pro | **$39/mes** | Agente de Producción | El estándar para integrar checkout y arbitrage real. |
+| Enterprise | A medida | Plataformas | Feeds masivos para retail-tech. |
 
-**Checkout Pro** = para quien integra `market_checkout` en software propio, no para equipos de compras que deberían usar Procure.
-
-**Segmentación por categoría de tools (no solo por cuota):** Starter accede a las ~14 tools de `shop` (búsqueda, comparación, basket, optimize_purchase) más alertas básicas; las ~14 tools de `intel` (market_intel_brief, market_scores, market_inflation, market_affordability, etc.) están detrás de `require_pro` en `routers/intel.py`. Con solo 4 usuarios Pro activos a 2026-07-16, se decidió simplificar a un único salto de precio ($39 todo incluido) en vez de fragmentar en más tiers.
+**Nota sobre el B2C:** En una economía informal, el costo de oportunidad de usar una CLI es infinito para un consumidor. CLI Market Pro solo tiene sentido para quien **vende una solución** encima (ej. un bot de WhatsApp para bodegas).
 
 ---
 
 ## Capa 2 — Procure Copilot (aplicación)
 
-**ICP:** Restaurantes, hoteles, agro, constructoras — equipos que compran, no que programan.
+**ICP:** Restaurantes, hoteles, agro, constructoras — equipos que compran, no que programan. Es el puente de formalización para negocios que operan en la informalidad.
 
 | Plan | Precio | Job | Incluye | No incluye |
 |------|--------|-----|---------|------------|
@@ -53,23 +53,24 @@ Canónico GTM: `cli-market-content/strategy/gtm-cli-market-first.md`.
 | Builder | **$149/mes** | Multi-país, alto volumen | 1k procurement/mes, integraciones | — |
 | Enterprise | A medida | Corporativo LATAM | Ilimitado, SLA 99.9% | — |
 
-**Anti-canibalización técnica:** checkout bloqueado en API y UI para Starter/Free. Solo Pro+ ejecuta pago.
-
-**Anti-canibalización comercial:** copy explícito "infra CLI Market incluida" — no sumar $39 + $79.
-
 ---
 
 ## Capa 3 — Intelligence / Price Pulse (datos)
 
-**ICP:** Pricing, trade marketing, fintech, consultoras.
+**ICP:** Estrategas de Revenue, Growth, Innovación, Marketing, Exportadores e Importadores.
 
-| Tier | Precio | Entrega |
-|------|--------|---------|
-| Pilot S | $300/mes | Export semanal, 1 país |
-| Pilot M | $400/mes | API + export, 1–2 países |
-| Pilot L | $500/mes | Multi-país, SLA 48h |
+| Tier | Precio | Job-to-be-Done |
+|------|--------|----------------|
+| Pilot S | $300/mes | **Visibilidad.** Entender el mercado real fuera de los reportes oficiales. |
+| Pilot M | $400/mes | **Estrategia.** Benchmarking dinámico para pricing y lanzamientos. |
+| Pilot L | $500/mes | **Operación Global.** Arbitraje de precios transfronterizo (import/export). |
 
-No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upsell natural: Intelligence → Procure cuando el cliente quiera *actuar* sobre los datos.
+**Activos Críticos:**
+- **Golden Records:** +70,000 entidades normalizadas (Entity Resolution propia).
+- **Cobertura:** 82 retailers en 9 países (37 verificados activos).
+- **Update:** Refresco cada 4 horas desde la góndola digital.
+
+**Valor para Exportadores:** Saber el precio real de góndola de su competencia en Lima, Buenos Aires o Madrid cada 4 horas, mapeando SKUs específicos mediante Golden Records para comparativas exactas de competitividad en destino.
 
 ---
 
@@ -77,12 +78,12 @@ No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upse
 
 ```
 ¿Escribe código o configura MCP?
-  Sí → CLI Market Build (Free · Starter $9 · Pro $39)
+  Sí → CLI Market Build (Free · Pro $39)
   No → ¿Ejecuta compras con aprobación gerente?
          Sí → Procure Pro $79+
          No → ¿Solo quiere comparar precios sin pagar?
                 Sí → Procure Starter $29
-                No → ¿Solo quiere datos para modelos/reportes?
+                No → ¿Solo quiere datos para modelos/reportes/export?
                        Sí → Intelligence $300+
 ```
 
@@ -92,31 +93,14 @@ No compite con Procure (ejecución) ni con CLI Market Pro (API self-serve). Upse
 
 | Canal | Producto | CTA | Evitar |
 |-------|----------|-----|--------|
-| PyPI, HN, DEV, MCP | CLI Market | `pip install` · Pro $39 | Procure, restaurantes |
+| PyPI, HN, DEV, MCP | CLI Market | `pip install` · Pro $39 | Procure, "ahorro personal" |
 | LinkedIn empresa, outbound compras | Procure | Demo · Starter $29 / Pro $79 | `pip install` en mismo post |
-| Fintech, consultoras | Intelligence | Piloto $300 | Checkout, dashboard |
+| Comercio Exterior, Fintech | Intelligence | Piloto $300 | Checkout, dashboard operativo |
 
 ---
-
-## Métricas de canibalización
-
-Monitorear mensualmente:
-
-1. **Pro CLI Market con checkout** sin `procurementId` / webhook Procure (builders legítimos vs operadores mal segmentados).
-2. **Leads Procure** que preguntan por API key separada (fricción de messaging).
-3. **Starter Procure → Pro** upgrade rate (debe ser el funnel principal en horeca).
-
----
-
-## Superficie comercial unificada (Fase A)
-
-- **Pricing Procure:** `https://procurecopilot.com/procure` — sitio hermano (checkout en Procure o deep link `cli-market.dev/?audience=procure#pricing`).
-- **App Procure:** Worker en `/dashboard` — sin landing de marketing propia (`/procure` redirige a `#procure`).
-- **Checkout Procure:** `POST /billing/procure-subscribe` en Railway; activación vía webhook PayPal (`procure_starter` / `procure_pro` / `procure_builder`).
 
 ## Referencias
 
-- Planes Procure (código): `../procure-copilot/lib/plans.ts`, `landing/lib/procurePlans.ts`
-- Planes CLI Market: `README.md`, `landing/public/llms.txt`
+- Planes Procure (código): `../procure-copilot/lib/plans.ts`
+- Planes CLI Market: `README.md`
 - Intelligence: `landing/public/intelligence-pilot-es.md`
-- Demo SE: `docs/agents/contexts/sales-engineer-context.md`
