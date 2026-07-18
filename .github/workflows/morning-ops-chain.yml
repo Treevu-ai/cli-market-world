@@ -499,6 +499,15 @@ jobs:
     # observed) — longer timeout than gov-bcrp-refresh's single fast call.
     timeout-minutes: 5
     continue-on-error: true
+    # PAUSED (2026-07-18): sistemas.midagri.gob.pe silently drops TCP
+    # connections from cloud/datacenter IP ranges (confirmed via raw socket
+    # connect from a Fly machine — SYN never ACKed, not a slow response) —
+    # this job would just fail every day with zero data. The connector
+    # itself is correct and tested (verified against real production data
+    # from a residential IP); POST /admin/cron/gov-sisap still works for a
+    # manual run from a non-datacenter network. Re-enable (delete this `if`)
+    # once there's a working egress path (e.g. a residential proxy).
+    if: false
     steps:
       - name: Refresh SISAP canasta básica prices via production API
         env:
