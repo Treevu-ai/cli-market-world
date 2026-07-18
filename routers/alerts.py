@@ -24,7 +24,7 @@ from market_alerts import (
     db_toggle_alert,
 )
 from market_billing import db_get_subscription, TIERS
-from market_core import get_db
+from market_core import db_get_users, get_db
 from market_security import validate_public_http_url
 from server_deps import require_starter
 
@@ -95,13 +95,35 @@ def _check_alert_quota(username: str) -> None:
         )
 
 
+def _verified_notify_email(username: str, requested: str) -> str:
+    """Restrict notify_email to the caller's own verified account email.
+
+    A client-supplied notify_email would otherwise let any Starter+ user
+    turn price alerts into an SMTP relay against arbitrary third-party
+    inboxes (harassment/phishing risk, reputational damage to CLI Market's
+    sender). Reads app_users.email (set once, OTP-verified, at registration
+    in auth.py verify_email) via db_get_users — not any billing-intent table
+    a low-friction endpoint could poison with an unverified address.
+    """
+    if not requested:
+        return ""
+    user = db_get_users().get(username) or {}
+    account_email = (user.get("email") or "").strip().lower()
+    if not account_email or requested.lower() != account_email:
+        raise HTTPException(
+            status_code=403,
+            detail="notify_email must match your account's verified email",
+        )
+    return account_email
+
+
 @router.post("")
 def create_alert(body: CreateAlertRequest, authorization: str | None = Header(None)):
     """Create a price alert. Starter: up to 3. Pro: up to 10. Enterprise: unlimited."""
     username = require_starter(authorization)
     _check_alert_quota(username)
 
-    email = body.notify_email.strip()
+    email = _verified_notify_email(username, body.notify_email.strip())
     webhook = body.notify_webhook.strip()
 
     # Enterprise-only: webhook channel

@@ -4,6 +4,28 @@ Canal Slack: **#command-control-cli-market**
 
 Panel diario para el founder: checklist de comandos + KPIs con tendencia visual (sparklines).
 
+## GTM CLI Market–first — qué va en este canal (2026-07-16)
+
+**Este canal = salud del hub CLI Market**, no war room de Procure/hoteles.
+
+| Va en command-control | No va aquí |
+|----------------------|------------|
+| Moat, coverage, index linkage, go-live, PAM | Copy de secuencia outbound hotel |
+| Adoption / first search / MAA proxies | “Cerrar 2 Procure Pro” como único KPI |
+| Checklist deploy y ops API | Target lists Trujillo / WhatsApp first-touch |
+| Tendencias de KPIs producto | Briefing de copy GTM (eso es `#publicaciones`) |
+
+| Ritual | Canal | Propósito |
+|--------|--------|-----------|
+| **Command-control** | este | Salud hub CLI Market |
+| **Publicaciones** | `#publicaciones` + GTM `SLACK_CHANNEL_*` | Serie del día (mix 40/25/25/10) |
+| **Outbound Procure** | `#outbound` | Solo compras / Secuencia B |
+| **Funnel** | `#funnel-cli-market` | Registro / checkout API |
+| **Revenue Pro API** | `#suscripciones-cli-pro` | Pro/cancelaciones API (no confundir con solo Procure) |
+| **Bitácora** | `#bitácora` | Deploys / incidentes |
+
+Canónico content: `cli-market-content/strategy/gtm-cli-market-first.md`.
+
 ## Publicar panel
 
 ```bash
@@ -45,13 +67,14 @@ Campos trackeados para sparklines:
 - `golive.overall`, `pam.pass/fail/skip`
 - `adoption_index.score`, `adoption_index.grade`, `adoption_index.first_search`
 
-## Diferencia con bitácora
+## Diferencia con bitácora / GTM / outbound
 
 | Canal | Propósito |
 |-------|-----------|
-| **bitácora** | Narrativa producto (daily_briefing) |
-| **GTM por red** | Copy del día → `SLACK_CHANNEL_LINKEDIN_*`, `TWITTER`, `DEVTO`, etc. (08:00 PET, Actions) |
-| **command-control** | Checklist founder + métricas ops + tendencias |
+| **command-control** | Checklist founder + métricas ops + tendencias (**hub CLI Market**) |
+| **bitácora** | Narrativa producto (deploys, go-live) |
+| **GTM / publicaciones** | Copy del día por serie (tools / data / agents) → `SLACK_CHANNEL_*` (08:00 PET) |
+| **outbound** | Solo Procure / compras — no mezclar con tools MCP |
 
 ## Comandos del checklist (resumen)
 

@@ -179,7 +179,7 @@ Procurement teams do **not** need a separate CLI Market Pro subscription. See [p
 CLI Market is composed of 4 product repos + 1 GTM repo:
 
 ```
-cli-market-backend   Mirror API — paridad con prod, FastAPI server, 81 retailers, 63,000+ prices
+cli-market-backend   Mirror API — paridad con prod, FastAPI server, 82 retailers (live: GET /analytics/stats)
        |
        v  raw snapshots
 cli-market-index     Semantic Refinery — entity resolution, Golden Records (prod_ IDs)

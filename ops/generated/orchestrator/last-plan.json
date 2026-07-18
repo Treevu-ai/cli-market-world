@@ -1,0 +1,159 @@
+{
+  "plan_id": "plan_1b5700fed9",
+  "intent": {
+    "intent_id": "intent_195170c1fe",
+    "primary": "basket_optimize",
+    "secondary": [],
+    "language": "es",
+    "locale_hint": "PE",
+    "entities": {
+      "country": "PE",
+      "line": "supermercados",
+      "store": null,
+      "items": [
+        {
+          "name": "leche",
+          "qty": 1
+        },
+        {
+          "name": "arroz",
+          "qty": 1
+        },
+        {
+          "name": "aceite",
+          "qty": 1
+        }
+      ],
+      "product_query": null,
+      "product_id": null,
+      "barcode": null,
+      "ticket_url": null,
+      "budget": 800.0,
+      "payment_method": null,
+      "segment": "hotelero",
+      "use_case": null,
+      "days": 30,
+      "constraints": {
+        "preferred_stores": [],
+        "allow_substitutes": true,
+        "include_tco": true,
+        "max_stores": 2
+      },
+      "confirm": false
+    },
+    "user_tier_hint": "unknown",
+    "risk_flags": [],
+    "confidence": 0.88,
+    "raw_request": "optimiza leche, arroz, aceite PE hotelero budget 800"
+  },
+  "mode": "standard",
+  "tools": [
+    {
+      "tool": "market_optimize_purchase",
+      "args": {
+        "country": "PE",
+        "items": [
+          {
+            "name": "leche",
+            "qty": 1
+          },
+          {
+            "name": "arroz",
+            "qty": 1
+          },
+          {
+            "name": "aceite",
+            "qty": 1
+          }
+        ],
+        "constraints": {
+          "preferred_stores": [],
+          "allow_substitutes": true,
+          "include_tco": true,
+          "max_stores": 2,
+          "max_budget": 800.0
+        },
+        "include_intel": true,
+        "context": {
+          "segment": "hotelero",
+          "use_case": null
+        }
+      },
+      "required": true,
+      "on_error": "abort",
+      "fallback_tool": null,
+      "why": "TCO + substitutes + intel en un call"
+    }
+  ],
+  "agents": [
+    {
+      "id": "pricing-analyst",
+      "role_path": "specialized/specialized-pricing-analyst.md",
+      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\pricing-analyst-context.md",
+      "depends_on_tools": [
+        "market_optimize_purchase"
+      ],
+      "input_slice": [],
+      "output_section": "ranking_and_unit_value",
+      "parallel_group": 1
+    },
+    {
+      "id": "operations",
+      "role_path": "specialized/operations-manager.md",
+      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\operations-context.md",
+      "depends_on_tools": [
+        "market_optimize_purchase"
+      ],
+      "input_slice": [],
+      "output_section": "execution_plan",
+      "parallel_group": 1
+    },
+    {
+      "id": "hospitality",
+      "role_path": "specialized/hospitality-guest-services.md",
+      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\hospitality-context.md",
+      "depends_on_tools": [
+        "market_optimize_purchase"
+      ],
+      "input_slice": [],
+      "output_section": "segment_fit",
+      "parallel_group": 1
+    },
+    {
+      "id": "reality-checker",
+      "role_path": "testing/testing-reality-checker.md",
+      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\reality-checker-context.md",
+      "depends_on_tools": [
+        "market_optimize_purchase"
+      ],
+      "input_slice": [],
+      "output_section": "caveats",
+      "parallel_group": 2
+    }
+  ],
+  "response_spec": {
+    "format": "markdown",
+    "sections": [
+      "summary",
+      "facts",
+      "enrichment",
+      "recommendation",
+      "caveats",
+      "next_actions"
+    ],
+    "max_bullets_summary": 5,
+    "language": "es",
+    "audience": "procurement"
+  },
+  "guards": {
+    "max_tools": 4,
+    "max_agents": 4,
+    "forbid_checkout_without_confirm": true,
+    "require_country": true
+  },
+  "meta": {
+    "created_at": "2026-07-16T02:10:45.211338+00:00",
+    "orchestrator_version": "0.2.1",
+    "contract": "docs\\agents\\orchestrator-contract.md"
+  }
+}
