@@ -492,6 +492,32 @@ jobs:
             echo "::warning::gov-bcrp refresh returned HTTP $CODE (non-fatal)"
           fi
 
+  gov-sisap-refresh:
+    needs: indicators-refresh
+    runs-on: ubuntu-latest
+    # 5 sequential requests against a slow 2010-era PHP server (~3-5s each
+    # observed) — longer timeout than gov-bcrp-refresh's single fast call.
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: Refresh SISAP canasta básica prices via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MARKET_API_TOKEN:-}" ]; then
+            echo "::warning::MARKET_API_TOKEN not set — skipping SISAP gov refresh"
+            exit 0
+          fi
+          CODE=$(curl -sS -o /tmp/gov-sisap.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/gov-sisap" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/gov-sisap.json
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::gov-sisap refresh returned HTTP $CODE (non-fatal)"
+          fi
+
   ceo-metrics:
     needs: product-briefing
     runs-on: ubuntu-latest
