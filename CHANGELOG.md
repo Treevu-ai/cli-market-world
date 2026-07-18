@@ -2,6 +2,27 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-18] — UN Comtrade connector: third independent trade-data source (cli-market-index)
+
+Fourth gov connector overall, third independent export/import figure
+alongside BCRP's balance-of-payments series and WTO's SITC3 monthly series.
+Same shape, same `gov_price_observations` table, same read path — no new
+plumbing needed on the backend side, just another source key.
+
+- **UN Comtrade connector** (`comtrade_pe`) — Peru total merchandise
+  exports/imports (HS classification, national totals), via the UN Comtrade
+  Data API (free API-portal key, `subscription-key` query param — unlike
+  WTO's header-based auth). Verified live: Peru reports to UN Comtrade
+  **annually only** (a monthly query returns `count: 0` for every period
+  tried), so the connector queries a rolling 6-year window and resolves to
+  whichever year is newest (2024 at ship time); each period also fans out
+  into several `motCode` (mode-of-transport) rows server-side, and the
+  parser keeps only the `motCode == 0` ("all modes") aggregate row.
+  Commodity slugs namespaced `*_comtrade_pe`.
+- `POST /admin/cron/gov-comtrade` (backend) + `gov-comtrade-refresh` cron job
+  (morning-ops-chain), same non-fatal-on-failure pattern as the other three.
+- Verified live in production 2026-07-18: `{"ok":true,"source":"comtrade_pe","fetched":2,"resolved":2,"errors":0}`.
+
 ## [2026-07-18] — Official government data: BCRP trade balance, SISAP, WTO (cli-market-index, cli-market-core 1.11.47/48)
 
 New capability: CLI Market's own indicators (Macro Gap, Affordability Score,
@@ -39,8 +60,8 @@ index, read via `GET /v1/intel/gov-observations` (source-agnostic) and the
   and are expected to diverge somewhat — cross-validation signal, not a
   duplicate.
 - Evaluated and passed on: SUNAT Aduanas (static annual yearbooks from a
-  mid-2000s CMS, less fresh than BCRP's monthly series), UN Comtrade (needs
-  a registered API key — user has one, not yet wired), Global Trade Alert.
+  mid-2000s CMS, less fresh than BCRP's monthly series), Global Trade Alert.
+  UN Comtrade was wired the same day — see the entry above.
 
 ### cli-market-core (MCP)
 - `index_resolve` / `index_lookup` / `index_stats` — the semantic index's
