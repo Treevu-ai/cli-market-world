@@ -32,6 +32,7 @@ def _bootstrap_core_path() -> None:
 _bootstrap_core_path()
 
 from market_core import market_stats as s
+from market_core.market_billing import PUBLIC_PRO_PRICE_USD, PUBLIC_STARTER_PRICE_USD
 from market_core.market_mcp_registry import (
     TOOLS,
     _DEFAULT_HIDDEN,
@@ -1235,7 +1236,8 @@ def sync_llms_txt() -> None:
         text = re.sub(
             r"- Pricing \(.*?\):.*",
             "- Pricing (Build, foco ICP AI Agent Builders): "
-            "Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), "
+            f"Starter ${PUBLIC_STARTER_PRICE_USD:.0f}/mo (5,000 req/día, CSV export), "
+            f"Pro ${PUBLIC_PRO_PRICE_USD:.0f}/mo (10,000 req/día, alerts, full MCP, checkout), "
             "Enterprise custom (SLAs, high limits)",
             text,
             count=1,

@@ -27,6 +27,7 @@ from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
 
 from market_funnel import record_funnel_event
+from market_billing import PUBLIC_PRO_PRICE_USD, PUBLIC_STARTER_PRICE_USD
 from market_stats import (
     COUNTRIES,
     COUNTRY_CODES,
@@ -66,8 +67,8 @@ _PRO_TOOLS = frozenset({
 })
 
 _UPGRADE_MSG = (
-    "This tool requires CLI Market Pro ($49/mo). "
-    "Start with Starter ($9/mo) for search and compare, or upgrade to Pro "
+    f"This tool requires CLI Market Pro (${PUBLIC_PRO_PRICE_USD:.0f}/mo). "
+    f"Start with Starter (${PUBLIC_STARTER_PRICE_USD:.0f}/mo) for search and compare, or upgrade to Pro "
     "to unlock basket, cart, checkout, orders, alerts, export, and AI ask. "
     "Plans at https://cli-market.dev."
 )

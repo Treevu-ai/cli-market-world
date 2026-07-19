@@ -4839,7 +4839,7 @@ def main():
         "--plan",
         choices=["starter", "pro", "pro_annual", "annual"],
         default=None,
-        help="Build tier: starter ($9), pro ($49), pro_annual ($490)",
+        help="Build tier: starter ($9), pro ($39), pro_annual ($490)",
     )
     p.add_argument("--promo-code", dest="promo_code", help="Promo code")
     p.add_argument(

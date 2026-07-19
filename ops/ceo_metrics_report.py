@@ -36,6 +36,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from market_billing import PUBLIC_PRO_PRICE_USD
+
 from load_env import load_repo_env  # noqa: E402
 
 load_repo_env()
@@ -396,7 +398,8 @@ def build_report(*, remote: bool = False) -> str:
     lines.append(_row(
         "Revenue", "Pro activados 30d",
         "Cuentas que pasaron a tier 'pro' en los últimos 30 días (manual o PayPal).",
-        "Revenue leading indicator. Target 5/mes = $245 MRR incremental (a $49/mo).",
+        f"Revenue leading indicator. Target 5/mes = "
+        f"${TARGETS['pro_activated_30d'] * PUBLIC_PRO_PRICE_USD:.0f} MRR incremental (a ${PUBLIC_PRO_PRICE_USD:.0f}/mo).",
         f"≥{TARGETS['pro_activated_30d']}",
         _fmt(pro_activated_30d) if remote else "—",
         _status(pro_activated_30d, TARGETS["pro_activated_30d"]) if remote else "❓",
@@ -404,10 +407,10 @@ def build_report(*, remote: bool = False) -> str:
 
     lines.append(_row(
         "Revenue", "MRR estimado",
-        "Pro activados acumulados × $49/mes (proxy). No incluye churns ni enterprise.",
+        f"Pro activados acumulados × ${PUBLIC_PRO_PRICE_USD:.0f}/mes (proxy). No incluye churns ni enterprise.",
         "Velocímetro de ingresos. Permite proyectar runway y tomar decisiones de inversión GTM.",
         "→ $1K MRR (goal Q3)",
-        f"${pro_activated_30d * 49}+ (est.)" if remote and pro_activated_30d > 0 else "pre-revenue",
+        f"${pro_activated_30d * PUBLIC_PRO_PRICE_USD:.0f}+ (est.)" if remote and pro_activated_30d > 0 else "pre-revenue",
         "✅" if remote and pro_activated_30d * 49 >= 1000 else "⚠️" if remote and pro_activated_30d > 0 else "❓",
     ))
 
