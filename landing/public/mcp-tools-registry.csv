@@ -18,23 +18,35 @@ market_delivery,recommended,advanced,,Advanced delivery quote — use market_bas
 market_enrich,recommended,advanced,,Advanced Open Food Facts lookup — optional enrichment,false
 market_exchange,recommended,advanced,,Advanced FX conversion — market_intel_brief includes macro context,false
 market_moat_confidence,recommended,advanced,,Advanced receipt confidence — use market_price_risk for volatility,false
-market_price_history,recommended,advanced,,Advanced SKU history — use market_trending or market_inflation,false
 market_stock,recommended,advanced,,Advanced per-SKU stock — use market_search or market_optimize_purchase,false
 market_ticket,recommended,advanced,,,true
 market_voice,recommended,advanced,,Advanced audio transcription — use market_ask for text NL shopping,false
+index_lookup,recommended,intel,,,true
+index_resolve,recommended,intel,,,true
+index_stats,recommended,intel,,,true
 market_affordability,recommended,intel,,,true
 market_analytics_indicators,legacy-alias,intel,market_intel_brief,,false
+market_arbitrage,recommended,intel,,,true
+market_basket_stress,recommended,intel,,,true
+market_commerce_pulse,recommended,intel,,,true
 market_ecosystem_radar,recommended,intel,,"Intel/Pro ecosystem radar — signal only, not shelf prices",false
+market_ecosystem_traction,recommended,intel,,,true
 market_enrichment,legacy-alias,intel,market_intel_brief,,false
 market_enrichment_subcategories,legacy-alias,intel,market_intel_brief,,false
 market_export,recommended,intel,,,true
+market_gov_observations,recommended,intel,,,true
 market_indicators,legacy-alias,intel,market_intel_brief,,false
 market_inflation,recommended,intel,,,true
 market_inflation_report,recommended,intel,,,true
+market_informal_signal,recommended,intel,,,true
 market_intel_brief,recommended,intel,,,true
+market_price_forecast,recommended,intel,,,true
+market_price_history,recommended,intel,,,true
 market_price_risk,recommended,intel,,,true
 market_procurement_bulk,recommended,intel,,Intel/Enterprise bulk signals — prefer market_optimize_purchase or Procure API,false
 market_procurement_signal,recommended,intel,,,true
+market_promo_detector,recommended,intel,,,true
+market_retailer_scorecard,recommended,intel,,,true
 market_scores,recommended,intel,,,true
 market_stats,recommended,intel,,,true
 market_trending,recommended,intel,,,true

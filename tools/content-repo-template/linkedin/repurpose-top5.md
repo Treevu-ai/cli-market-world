@@ -42,7 +42,7 @@ Highest expected reach + technical depth + reusable demos.
 
 1. An AI agent compared 30 supermarkets in 0.8s. Here's how 🧵
 2. Problem: agents can reason but can't shop — 30 APIs, 30 auths
-3. CLI Market = one API, 22 MCP tools, 8 countries
+3. CLI Market = one API, 22 MCP tools, 9 countries
 4. `pip install cli-market-world` + `market search "leche" --country PE`
 5. Open source MIT → cli-market.dev
 

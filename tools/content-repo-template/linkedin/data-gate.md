@@ -64,7 +64,7 @@ Export semanal: `python3 ops/sync_linkedin_metrics.py` → `metrics/price-pulse-
 | 8 | Arroz PE variación | ✅ publicar | S/ 2.90–4.40+ · ver [[metrics/query-arroz-pe.json]] |
 | 9 | Canasta PE | ✅ cualitativo | multi-tienda · evitar S/147–182 |
 | 10 | Collector 8h | ✅ publicar | 37,731 fresh · 43,415 indexados |
-| 11 | Electro/hogar | ✅ publicar | 591 electro · 8 países/líneas |
+| 11 | Electro/hogar | ✅ publicar | 591 electro · 9 países/líneas |
 | 12 | Top 10 carousel | ⚠️ | armar desde dashboard top_discounts |
 | 13 | Retailers EN | ✅ | sin cifras duras |
 | 14 | 3 insights | ✅ publicar | 43,415 moat · 37,731 fresh |

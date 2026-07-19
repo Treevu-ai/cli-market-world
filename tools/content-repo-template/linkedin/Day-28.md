@@ -16,7 +16,7 @@ tags:
 
 ## Hooks (elegir 1)
 
-1. **Hook 1:** 30 días. 35 retailers. 8 países. 22 MCP tools. Recap.
+1. **Hook 1:** 30 días. 35 retailers. 9 países. 22 MCP tools. Recap.
 2. **Hook 2:** Milestone: lo que construimos en un mes de build in public.
 3. **Hook 3:** Números reales — no vanity metrics.
 
@@ -27,7 +27,7 @@ tags:
 Recap honesto:
 
 → **35 retailers** verificados (31 catálogo, 16 healthy hoy)
-→ **8 países** — PE, AR, BR, MX, CO, CL, IT, FR
+→ **9 países** — PE, AR, BR, MX, CO, CL, IT, FR
 → **22 herramientas MCP**
 → **36K+ precios** indexados (refresh 8h)
 → **Billing Pro** live (manual + PayPal)

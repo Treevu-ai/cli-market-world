@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-index
-          ref: 75207f8739c11a22af7fe8e187351b4ea2dca604
+          ref: 7a9bd4efa5439a6e041d6e557abaada4a66cfaac
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
@@ -133,7 +133,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-index
-          ref: 75207f8739c11a22af7fe8e187351b4ea2dca604
+          ref: 7a9bd4efa5439a6e041d6e557abaada4a66cfaac
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 

@@ -107,7 +107,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-index
-          ref: 75207f8739c11a22af7fe8e187351b4ea2dca604
+          ref: 7a9bd4efa5439a6e041d6e557abaada4a66cfaac
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
@@ -573,6 +573,30 @@ jobs:
           cat /tmp/gov-comtrade.json
           if [ "$CODE" != "200" ]; then
             echo "::warning::gov-comtrade refresh returned HTTP $CODE (non-fatal)"
+          fi
+
+  gov-bcb-refresh:
+    needs: indicators-refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - name: Refresh Banco Central do Brasil USD/BRL + IPCA via production API
+        env:
+          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MARKET_API_TOKEN:-}" ]; then
+            echo "::warning::MARKET_API_TOKEN not set — skipping BCB gov refresh"
+            exit 0
+          fi
+          CODE=$(curl -sS -o /tmp/gov-bcb.json -w "%{http_code}" \
+            -X POST "${MARKET_API_URL}/admin/cron/gov-bcb" \
+            -H "Authorization: Bearer ${MARKET_API_TOKEN}" \
+            -H "Content-Type: application/json")
+          cat /tmp/gov-bcb.json
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::gov-bcb refresh returned HTTP $CODE (non-fatal)"
           fi
 
   ceo-metrics:

@@ -2,6 +2,36 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-18] — Banco Central do Brasil connector: first gov source outside Peru (cli-market-index)
+
+Fifth gov connector overall, first one covering a country other than Peru.
+Same shape, same `gov_price_observations` table, same read path — no new
+plumbing needed on the backend or MCP side (`market_gov_observations` is
+already source-agnostic).
+
+- **BCB connector** (`bcb_br`) — USD/BRL exchange rate (venda, série 1) +
+  IPCA monthly variation (série 433) + Selic daily rate (série 11), daily,
+  via the Banco Central do Brasil SGS API. **No API key required** — the
+  lowest-friction gov source so far (BCRP/WTO/Comtrade all need a
+  registered key or portal subscription). Verified live 2026-07-18:
+  `GET api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/5` returns
+  real same-day data.
+- **Real-world catch found during verification, not documented anywhere
+  public:** the SGS endpoint returns HTTP 400 from a Ministério da Fazenda
+  WAF page (not a JSON error) when the request has no browser-like
+  `User-Agent` — a bare `curl`/`httpx` default gets blocked outright. The
+  connector sends an explicit UA header; without it, the daily cron would
+  fail every single run with an error unrelated to the series code or
+  params. Same category of gotcha as SISAP's datacenter-IP block, just
+  worked around instead of blocking the connector.
+- `POST /admin/cron/gov-bcb` (backend) + `gov-bcb-refresh` cron job
+  (morning-ops-chain), same non-fatal-on-failure pattern as the other four
+  gov sources.
+- Série 11 (Selic) shipped same-day as a third series (originally deferred
+  to avoid scope creep before initial review) — same same-day-extension
+  pattern BCRP used when it grew from FX+IPC to include trade balance.
+  Slug `selic_bcb_br`, verified live: `{"data":"17/07/2026","valor":"0.052531"}`.
+
 ## [2026-07-18] — UN Comtrade connector: third independent trade-data source (cli-market-index)
 
 Fourth gov connector overall, third independent export/import figure

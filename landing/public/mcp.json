@@ -1,7 +1,7 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schema.json",
   "name": "CLI Market",
-  "description": "Commerce infrastructure for AI agents \u2014 35 curated MCP tools (60 legacy) to search, compare, and purchase across 37 retailers in 9 countries. 74,000+ real prices, 46 market indicators, refreshed every 4 hours. MIT.",
+  "description": "Commerce infrastructure for AI agents \u2014 44 curated MCP tools (69 legacy) to search, compare, and purchase across 37 retailers in 9 countries. 76,000+ real prices, 46 market indicators, refreshed every 4 hours. MIT.",
   "type": "stdio",
   "command": "market-mcp",
   "args": [],
@@ -36,6 +36,15 @@
     "market_informal_signal",
     "market_promo_detector",
     "market_retailer_scorecard",
+    "market_basket_stress",
+    "market_commerce_pulse",
+    "market_price_forecast",
+    "market_arbitrage",
+    "market_ecosystem_traction",
+    "index_resolve",
+    "index_lookup",
+    "index_stats",
+    "market_gov_observations",
     "market_login",
     "market_discover",
     "market_search",
@@ -68,15 +77,15 @@
   "default_profile": "default",
   "profiles": {
     "default": {
-      "tool_count": 35,
+      "tool_count": 44,
       "description": "Curated Shop + Intel + Account bundles"
     },
     "full": {
-      "tool_count": 57,
+      "tool_count": 66,
       "description": "Default plus advanced tools and legacy aliases"
     },
     "legacy": {
-      "tool_count": 60,
+      "tool_count": 69,
       "description": "All registered tools (backward compatible)"
     }
   },
@@ -119,7 +128,16 @@
         "market_trending",
         "market_informal_signal",
         "market_promo_detector",
-        "market_retailer_scorecard"
+        "market_retailer_scorecard",
+        "market_basket_stress",
+        "market_commerce_pulse",
+        "market_price_forecast",
+        "market_arbitrage",
+        "market_ecosystem_traction",
+        "index_resolve",
+        "index_lookup",
+        "index_stats",
+        "market_gov_observations"
       ],
       "canonical": [
         "market_intel_brief"
@@ -179,6 +197,15 @@
     "market_informal_signal",
     "market_promo_detector",
     "market_retailer_scorecard",
+    "market_basket_stress",
+    "market_commerce_pulse",
+    "market_price_forecast",
+    "market_arbitrage",
+    "market_ecosystem_traction",
+    "index_resolve",
+    "index_lookup",
+    "index_stats",
+    "market_gov_observations",
     "market_analytics_indicators",
     "market_enrichment",
     "market_enrichment_subcategories",

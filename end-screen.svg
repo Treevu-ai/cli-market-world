@@ -2,7 +2,7 @@
   <rect width="800" height="200" fill="#080808"/>
   <rect x="1" y="1" width="798" height="198" fill="none" stroke="#1A1A1A" stroke-width="0.5"/>
   <text x="400" y="62" text-anchor="middle" font-family="monospace" font-size="28" font-weight="bold" fill="#00FF88" letter-spacing="6">C L I   M A R K E T</text>
-  <text x="400" y="92" text-anchor="middle" font-family="monospace" font-size="13" fill="#666">3,760 retailers · 8 countries · 12 lines · open source</text>
+  <text x="400" y="92" text-anchor="middle" font-family="monospace" font-size="13" fill="#666">3,760 retailers · 9 countries · 12 lines · open source</text>
   <line x1="150" y1="112" x2="650" y2="112" stroke="#1A1A1A" stroke-width="0.5"/>
   <text x="400" y="136" text-anchor="middle" font-family="monospace" font-size="15" fill="#FFD600" font-weight="bold">⭐  Star us on GitHub  ⭐</text>
   <text x="400" y="158" text-anchor="middle" font-family="monospace" font-size="12" fill="#888">github.com/Treevu-ai/cli-market-world</text>

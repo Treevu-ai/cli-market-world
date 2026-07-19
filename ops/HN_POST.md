@@ -1,6 +1,6 @@
-# Show HN: CLI Market — Commerce infrastructure for AI agents (38 retailers, 8 countries)
+# Show HN: CLI Market — Commerce infrastructure for AI agents (38 retailers, 9 countries)
 
-**Title:** Show HN: CLI Market — My agent shops at 38 verified retailers across 8 countries. One API.
+**Title:** Show HN: CLI Market — My agent shops at 38 verified retailers across 9 countries. One API.
 
 **URL:** https://cli-market.dev
 
@@ -8,7 +8,7 @@
 
 AI agents can't comparison-shop in physical retail. Every store has its own auth, search logic, and checkout flow. Agents fail before the first query.
 
-CLI Market fixes this: one `pip install`, one API across 80 retailers (40 verified) in 8 countries. 22 curated MCP tools (46 legacy). ~50,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
+CLI Market fixes this: one `pip install`, one API across 82 retailers (37 verified) in 9 countries. 22 curated MCP tools (46 legacy). ~50,000+ real prices refreshed every 4 hours. Checkout via PayPal (API) or QR (Yape/Plin).
 
 ---
 
@@ -22,7 +22,7 @@ How it works:
 
 Built in Python. MIT licensed. Open source.
 
-The hard part isn't the code — it's maintaining connectors for 80 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~51,000+ prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
+The hard part isn't the code — it's maintaining connectors for 82 retailers whose APIs change without notice. We have VTEX, Shopify, and Magento connectors running a collector daemon every 4 hours. ~51,000+ prices indexed so far, growing to 200K+ as we roll out full catalog downloads.
 
 Would love feedback from anyone building AI agents or working on retail infrastructure.
 
