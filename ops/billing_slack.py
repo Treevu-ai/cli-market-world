@@ -12,6 +12,11 @@ def _tier_labels() -> dict[str, str]:
     # numbers — this drifted from the real Pro/Starter price before (showed
     # $39/$24 in Slack revenue alerts for months after the actual price
     # changed to $49/$9, cli-market-backend incident 2026-07-08).
+    #
+    # Called fresh on every use (never cached at module level) -- a cached
+    # TIER_LABELS constant reintroduces the exact same staleness bug it was
+    # meant to fix, just pinned to whatever price was live at the first
+    # import of this module instead of a hardcoded literal.
     from market_billing import PUBLIC_PRO_PRICE_USD, PUBLIC_STARTER_PRICE_USD
 
     return {
@@ -21,9 +26,6 @@ def _tier_labels() -> dict[str, str]:
         "procure_pro": "Procure Pro ($79)",
         "procure_builder": "Procure Builder ($149)",
     }
-
-
-TIER_LABELS: dict[str, str] = _tier_labels()
 
 _FUNNEL_QUIET_DEFAULT = frozenset({"install", "login", "first_search"})
 
@@ -65,7 +67,7 @@ def _funnel_realtime_enabled() -> bool:
 
 def tier_label(tier: str) -> str:
     key = (tier or "").strip().lower()
-    return TIER_LABELS.get(key, key or "suscripción")
+    return _tier_labels().get(key, key or "suscripción")
 
 
 def format_subscription_message(
@@ -158,7 +160,7 @@ def format_funnel_message(
     source = (meta.get("source") or "").strip()
     lines = [f"📥 *[FUNNEL]* {label}*", f"• usuario: `{user}`"]
     if tier:
-        lines.append(f"• tier: {tier_label(tier) if tier in TIER_LABELS else tier}")
+        lines.append(f"• tier: {tier_label(tier) if tier in _tier_labels() else tier}")
     if email:
         lines.append(f"• email: {email}")
     if source:
@@ -180,7 +182,7 @@ def pro_pending_slack_blocks(
     mail = (email or "—").strip()
     method = (payment_method or "—").strip()
     lines = [
-        f"⏳ *[REVENUE]* {TIER_LABELS['pro']} — pago pendiente",
+        f"⏳ *[REVENUE]* {tier_label('pro')} — pago pendiente",
         f"• ref: `{ref}` · usuario: `{user}`",
         f"• email: {mail} · método: {method}",
     ]
@@ -488,7 +490,7 @@ def notify_subscription_cancelled(
 ) -> bool:
     """Churn alert when PayPal downgrades a paid tier to free."""
     t = (tier or "").strip().lower()
-    if t not in TIER_LABELS:
+    if t not in _tier_labels():
         return False
     return notify_subscription(
         tier=t,
@@ -512,7 +514,7 @@ def notify_build_pro_tier_activated(
 ) -> bool:
     """Activated subscription — any paid tier."""
     t = (tier or "").strip().lower()
-    if t not in TIER_LABELS:
+    if t not in _tier_labels():
         return False
     return notify_subscription(
         tier=t,

@@ -15,6 +15,24 @@ def test_tier_labels():
     assert "Procure" in tier_label("procure_pro")
 
 
+def test_tier_label_reflects_live_price_not_a_stale_cache(monkeypatch):
+    """Regression pin: cli-market-backend incident 2026-07-08 — a module-level
+    TIER_LABELS constant computed once at import time kept showing $49/$9 in
+    every Slack revenue/funnel message (MercadoPago, PayPal, Yape, Plin — all
+    payment methods funnel through this same formatter) for months after the
+    real price changed, because it was never recomputed after the process
+    started. tier_label() must read market_billing's price constants fresh on
+    every call, not from any cached dict."""
+    import market_billing
+
+    monkeypatch.setattr(market_billing, "PUBLIC_PRO_PRICE_USD", 39)
+    assert "$39" in tier_label("pro")
+
+    monkeypatch.setattr(market_billing, "PUBLIC_PRO_PRICE_USD", 59)
+    assert "$59" in tier_label("pro")
+    assert "$39" not in tier_label("pro")
+
+
 def test_format_pending_pro():
     text = format_subscription_message(
         tier="pro",
