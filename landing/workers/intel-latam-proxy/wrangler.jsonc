@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Relative to landing/ (this worker deploys alongside the Cloudflare
+  // Pages site there); wrangler isn't a local devDependency today, so
+  // this path is aspirational until `npm i -D wrangler` is run in landing/.
+  "name": "intel-latam-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-19",
+  "routes": [
+    { "pattern": "cli-market.dev/intel-latam", "zone_name": "cli-market.dev" },
+    { "pattern": "cli-market.dev/intel-latam/*", "zone_name": "cli-market.dev" }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
