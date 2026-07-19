@@ -339,12 +339,11 @@ def test_mcp_profile_defaults_to_default(monkeypatch):
 
     monkeypatch.delenv("MCP_TOOL_PROFILE", raising=False)
     assert get_profile() == "default"
-    # Verified live 2026-07-15/16 (JSON-RPC tools/list against the deployed
-    # MCP server, and locally against cli-market-core==1.11.43): the default
-    # profile has grown to 35 tools. Update this alongside the profile, not
+    # Verified locally against cli-market-core==1.11.48: the default
+    # profile has grown to 44 tools. Update this alongside the profile, not
     # the other way around -- it exists to catch accidental regressions in
     # tool count, not to gate growth.
-    assert public_tool_count("default") == 35
+    assert public_tool_count("default") == 44
 
 
 def test_mcp_tool_groups_match_registry_bundles():
