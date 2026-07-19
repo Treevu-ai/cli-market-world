@@ -2,6 +2,7 @@ import os
 import httpx
 from fastapi import APIRouter, Request, Response
 from twilio.rest import Client
+from server_deps import get_messenger_session, update_messenger_session
 
 router = APIRouter(prefix="/v1/integrations/whatsapp", tags=["integrations"])
 
@@ -20,19 +21,27 @@ async def whatsapp_webhook(request: Request):
     if not incoming_msg or not TWILIO_AUTH_TOKEN:
         return Response(content="ignored", status_code=200)
 
-    print(f"📱 WhatsApp de {sender}: {incoming_msg}")
+    # 1. Recover session memory
+    session = get_messenger_session(sender)
+    context = session.get("last_context")
+    user_tier = session.get("user_tier", "starter")
+    
+    # If we have context, we can use it to refine the query
+    effective_query = incoming_msg
+    if context:
+        effective_query = f"Context: {context}\nUser: {incoming_msg}"
 
     # Puente hacia la lógica de market_ask
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
     token = os.getenv("MARKET_API_TOKEN")
-
+    
     answer = "Lo siento, tuve un problema consultando los precios."
-
+    
     async with httpx.AsyncClient() as client_http:
         try:
             response = await client_http.post(
                 f"{market_api_url}/v1/shop/ask",
-                json={"query": incoming_msg, "country": "PE"},
+                json={"query": effective_query, "country": "PE"},
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=30
             )
@@ -40,6 +49,9 @@ async def whatsapp_webhook(request: Request):
                 answer = response.json().get("answer", answer)
         except Exception as e:
             print(f"❌ Error API: {e}")
+
+    # 2. Save memory
+    update_messenger_session(sender, context=f"Query: {incoming_msg} | Answer: {answer[:100]}...")
 
     # Responder vía Twilio SDK
     try:

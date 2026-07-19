@@ -23,6 +23,7 @@ from market_core import (
     check_rate_limit_sqlite,
     db_get_users,
     db_validate_api_key,
+    get_db,
 )
 from market_billing import db_get_subscription
 
@@ -165,7 +166,51 @@ def require_admin(authorization: str | None) -> str:
     return "admin"
 
 
-# ── Per-user rate limiting ────────────────────────────────────────────────────
+# ── Messenger Sessions ────────────────────────────────────────────────────────────
+
+def get_messenger_session(platform_id: str) -> dict:
+    """Retrieve session context and tier for a conversational user.
+    Returns a dict with platform_id, username, last_context, and user_tier.
+    """
+    try:
+        db = get_db()
+        row = db.execute(
+            "SELECT platform_id, username, last_context, user_tier FROM messenger_sessions WHERE platform_id = ?", 
+            (platform_id,)
+        ).fetchone()
+        if row:
+            return {
+                "platform_id": row[0],
+                "username": row[1],
+                "last_context": row[2],
+                "user_tier": row[3],
+            }
+    except Exception as e:
+        logger.error("get_messenger_session error: %s", e)
+    return {
+        "platform_id": platform_id,
+        "username": None,
+        "last_context": None,
+        "user_tier": "starter",
+    }
+
+
+def update_messenger_session(platform_id: str, context: str, username: str = None):
+    """Upsert session context. Updates last_context and updated_at timestamp."""
+    try:
+        db = get_db()
+        # Use UPSERT (SQLite 3.24+ / Postgres)
+        db.execute("""
+            INSERT INTO messenger_sessions (platform_id, username, last_context, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(platform_id) DO UPDATE SET 
+                last_context = excluded.last_context,
+                username = COALESCE(excluded.username, messenger_sessions.username),
+                updated_at = CURRENT_TIMESTAMP
+        """, (platform_id, username, context))
+        db.commit()
+    except Exception as e:
+        logger.error("update_messenger_session error: %s", e)
 
 TIER_LIMITS: dict[str, tuple[int, int]] = {
     # Keep in sync with market_billing.TIERS["free"] (cli-market-core) — this

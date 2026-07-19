@@ -75,6 +75,34 @@ async def lifespan(_app: FastAPI):
     """
     ensure_db_initialized()
     from market_core import USE_PG
+    try:
+        db = get_db()
+        if USE_PG:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS messenger_sessions (
+                    platform_id TEXT PRIMARY KEY,
+                    username TEXT,
+                    last_context TEXT,
+                    user_tier TEXT DEFAULT 'starter',
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+            """)
+        else:
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS messenger_sessions (
+                    platform_id TEXT PRIMARY KEY,
+                    username TEXT,
+                    last_context TEXT,
+                    user_tier TEXT DEFAULT 'starter',
+                    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+                )
+            """)
+        db.commit()
+        db.close()
+    except Exception as e:
+        logger.warning("messenger_sessions schema skipped: %s", e)
     from market_security import is_production_deploy
     if is_production_deploy() and not USE_PG:
         raise RuntimeError(
