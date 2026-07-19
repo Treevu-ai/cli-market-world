@@ -14,10 +14,25 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     concurrency: deploy-fly-api
     steps:
       - uses: actions/checkout@v4
+
+      # Fails in ~30s instead of ~15min: catches "forgot to add it to
+      # requirements.txt" (e.g. the openai import that crash-looped every
+      # deploy on 2026-07-19) before we ever build the Docker image, let
+      # alone roll it out to production. The private cli-market-index dep
+      # needs the same PAT the Docker build already uses.
+      - name: Sanity-check imports resolve
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config --global url."https://x-access-token:${GH_PAT}@github.com/".insteadOf "https://github.com/"
+          python3 -m venv /tmp/import-check-venv
+          source /tmp/import-check-venv/bin/activate
+          pip install --quiet --disable-pip-version-check -r requirements.txt
+          python -c "from market_server import app; print('OK:', len(app.routes), 'routes loaded')"
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
@@ -26,4 +41,19 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          flyctl deploy --app cli-market-api --config fly.toml --build-secret github_token="$GITHUB_TOKEN" --remote-only
+          for attempt in 1 2 3; do
+            echo "::group::Deploy attempt $attempt/3"
+            if flyctl deploy --app cli-market-api --config fly.toml \
+                --build-secret github_token="$GITHUB_TOKEN" --remote-only \
+                --wait-timeout 600; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if [ "$attempt" -lt 3 ]; then
+              echo "Deploy attempt $attempt failed — this is usually a transient Fly.io capacity/health-check issue, not a code problem (see fly.toml comments). Retrying in 45s..."
+              sleep 45
+            fi
+          done
+          echo "All 3 deploy attempts failed. Check 'flyctl status -a cli-market-api' and 'flyctl logs -a cli-market-api' for the real cause before retrying again."
+          exit 1
