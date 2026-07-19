@@ -1,0 +1,105 @@
+{
+  "response_id": "resp_65b1347e0b",
+  "plan_id": "plan_e7696781f8",
+  "intent_primary": "ambiguous",
+  "language": "es",
+  "summary": [
+    "Intent clasificado: **ambiguous** (confianza 0.40).",
+    "Tools ejecutadas OK: 0/0.",
+    "Flags: country_defaulted_PE"
+  ],
+  "facts": {
+    "tools_used": [],
+    "highlights": []
+  },
+  "enrichment": {
+    "sections": []
+  },
+  "recommendation": {
+    "action": "clarify",
+    "rationale": "Intent ambiguo: se necesita una pregunta de clarificación antes de tools de compra.",
+    "confidence": 0.4
+  },
+  "caveats": [
+    "Los precios provienen del data moat de CLI Market; no reemplazan cotización contractual ni IPC oficial.",
+    "Country defaulted a PE por no especificarse en el request."
+  ],
+  "next_actions": [
+    {
+      "type": "user",
+      "label": "Aclarar: ¿comparar un producto, optimizar canasta, o ver inflación?",
+      "payload": {}
+    }
+  ],
+  "raw": {
+    "intent": {
+      "intent_id": "intent_2982d11996",
+      "primary": "ambiguous",
+      "secondary": [],
+      "language": "es",
+      "locale_hint": "PE",
+      "entities": {
+        "country": "PE",
+        "line": null,
+        "store": null,
+        "items": [],
+        "product_query": "arandanos Peru vs España",
+        "product_id": null,
+        "barcode": null,
+        "ticket_url": null,
+        "budget": null,
+        "payment_method": null,
+        "segment": null,
+        "use_case": null,
+        "days": 30,
+        "constraints": {
+          "preferred_stores": [],
+          "allow_substitutes": true,
+          "include_tco": true,
+          "max_stores": 2
+        },
+        "confirm": false
+      },
+      "user_tier_hint": "unknown",
+      "risk_flags": [
+        "country_defaulted_PE"
+      ],
+      "confidence": 0.4,
+      "raw_request": "arandanos Peru vs España"
+    },
+    "plan": {
+      "plan_id": "plan_e7696781f8",
+      "mode": "fast",
+      "tools": [],
+      "agents": [],
+      "response_spec": {
+        "format": "markdown",
+        "sections": [
+          "summary",
+          "facts",
+          "enrichment",
+          "recommendation",
+          "caveats",
+          "next_actions"
+        ],
+        "max_bullets_summary": 5,
+        "language": "es",
+        "audience": "consumer"
+      },
+      "guards": {
+        "max_tools": 2,
+        "max_agents": 2,
+        "forbid_checkout_without_confirm": true,
+        "require_country": true
+      },
+      "meta": {
+        "created_at": "2026-07-18T20:52:37.778049+00:00",
+        "orchestrator_version": "0.2.1",
+        "contract": "docs\\agents\\orchestrator-contract.md"
+      }
+    },
+    "tool_results": [],
+    "agent_outputs_present": []
+  },
+  "synthesized": true
+}

@@ -16,3 +16,4 @@ playwright==1.60.0
 # explicit so this doesn't depend on resolver behavior again. Exact-pinned
 # for the same supply-chain reason as playwright above.
 httpx==0.28.1
+twilio==9.4.1
