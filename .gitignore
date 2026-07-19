@@ -22,6 +22,11 @@ docs/awesome-claude-code/
 !.cursor/rules/
 !.cursor/rules/**
 .codex/
+
+# Claude Code local settings — accumulates an approved-command allowlist that
+# can end up recording literal secrets from ad-hoc commands (e.g. GH_TOKEN=...
+# gh api ...). Keep .claude/skills/ trackable; this file is machine-local.
+.claude/settings.local.json
 .env
 .env.local
 ops/.rotation-local.txt
@@ -59,3 +64,8 @@ docs/financial-services/
 credenciales*
 *credenciales*.txt
 credentials-local/
+
+# Generated local artifacts — CLI run exports and a code-graph cache, not source.
+output/
+market-reports/
+graphify-out/
