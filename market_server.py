@@ -231,6 +231,7 @@ from routers.slack_ops import router as slack_ops_router
 from routers.retailers import router as retailers_router
 from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
+from routers.integrations.whatsapp import router as whatsapp_router
 
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
@@ -270,6 +271,7 @@ for r in (
     search_router,
     slack_ops_router,
     vault_router,
+    whatsapp_router,
 ):
     app.include_router(r)
 

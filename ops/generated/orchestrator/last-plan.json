@@ -1,8 +1,8 @@
 {
-  "plan_id": "plan_4efd266083",
+  "plan_id": "plan_e7696781f8",
   "intent": {
-    "intent_id": "intent_a73608dd37",
-    "primary": "product_search",
+    "intent_id": "intent_2982d11996",
+    "primary": "ambiguous",
     "secondary": [],
     "language": "es",
     "locale_hint": "PE",
@@ -11,7 +11,7 @@
       "line": null,
       "store": null,
       "items": [],
-      "product_query": "precio arandanos blueberries en Peru y España",
+      "product_query": "arandanos Peru vs España",
       "product_id": null,
       "barcode": null,
       "ticket_url": null,
@@ -32,52 +32,12 @@
     "risk_flags": [
       "country_defaulted_PE"
     ],
-    "confidence": 0.8,
-    "raw_request": "precio arandanos blueberries en Peru y España"
+    "confidence": 0.4,
+    "raw_request": "arandanos Peru vs España"
   },
-  "mode": "standard",
-  "tools": [
-    {
-      "tool": "market_compare",
-      "args": {
-        "query": "precio arandanos blueberries en Peru y España",
-        "line": "supermercados",
-        "country": "PE",
-        "limit": 10
-      },
-      "required": true,
-      "on_error": "fallback",
-      "fallback_tool": "market_search",
-      "why": "Comparación cross-retailer"
-    }
-  ],
-  "agents": [
-    {
-      "id": "pricing-analyst",
-      "role_path": "specialized/specialized-pricing-analyst.md",
-      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\pricing-analyst-context.md",
-      "depends_on_tools": [
-        "market_compare",
-        "market_search",
-        "market_promo_detector"
-      ],
-      "input_slice": [],
-      "output_section": "ranking_and_unit_value",
-      "parallel_group": 1
-    },
-    {
-      "id": "reality-checker",
-      "role_path": "testing/testing-reality-checker.md",
-      "context_path": "C:\\Users\\acuba\\cli-market-world\\docs\\agents\\contexts\\reality-checker-context.md",
-      "depends_on_tools": [
-        "market_compare",
-        "market_search"
-      ],
-      "input_slice": [],
-      "output_section": "caveats",
-      "parallel_group": 2
-    }
-  ],
+  "mode": "fast",
+  "tools": [],
+  "agents": [],
   "response_spec": {
     "format": "markdown",
     "sections": [
@@ -93,13 +53,13 @@
     "audience": "consumer"
   },
   "guards": {
-    "max_tools": 4,
-    "max_agents": 4,
+    "max_tools": 2,
+    "max_agents": 2,
     "forbid_checkout_without_confirm": true,
     "require_country": true
   },
   "meta": {
-    "created_at": "2026-07-18T20:19:28.913711+00:00",
+    "created_at": "2026-07-18T20:52:37.778049+00:00",
     "orchestrator_version": "0.2.1",
     "contract": "docs\\agents\\orchestrator-contract.md"
   }

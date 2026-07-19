@@ -1,0 +1,12 @@
+{
+  "tools": {},
+  "product_rows": [],
+  "allowed_number_literals": [],
+  "allowed_label_literals": [],
+  "rules": [
+    "Only cite prices/names/stores/signals present in tools.* or product_rows.",
+    "If a figure is not in allowed_number_literals, do not invent it.",
+    "If query intent mismatches product_rows names, say so explicitly.",
+    "Never invent canasta/IPC/salario tables unless those keys exist in ToolResults."
+  ]
+}

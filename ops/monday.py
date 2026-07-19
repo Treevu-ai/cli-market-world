@@ -3,6 +3,7 @@
 
 Fetches dashboard data. Produces a structured report with:
   TL;DR · Inflation · Price Movers · Store Health · Freshness · Outreach Drafts.
+  + Intelligence Reports (Export/Import).
 
 Usage:
   python3 ops/monday.py                  # full run
@@ -18,6 +19,7 @@ from __future__ import annotations
 
 import os
 import sys
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -28,10 +30,19 @@ CORE_ROOT = Path(__file__).resolve().parent.parent.parent / "cli-market-core"
 if str(CORE_ROOT) not in sys.path:
     sys.path.insert(0, str(CORE_ROOT))
 
-from market_core import market_stats as ms  # noqa: E402
+# Fallback import for market_core
+try:
+    from market_core import market_stats as ms
+except ImportError:
+    class ms:
+        PIP_INSTALL_CMD = "pip install cli-market-world"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from content_paths import content_root, metrics_dir  # noqa: E402
+try:
+    from content_paths import content_root, metrics_dir
+except ImportError:
+    def content_root(): return Path(".")
+    def metrics_dir(): return Path("./metrics")
 
 DASHBOARD_URL = os.getenv(
     "DASHBOARD_DATA_URL",
@@ -83,7 +94,7 @@ LINE_LABELS = {
 def load_store_meta() -> dict[str, dict[str, str]]:
     try:
         import importlib.util
-        spec = importlib.util.spec_from_file_location("ms", "market_stores.py")
+        spec = importlib.util.spec_from_file_location("ms_stores", "market_stores.py")
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         stores = getattr(mod, "STORES", {})
@@ -375,13 +386,22 @@ def main() -> None:
     path.write_text(report, encoding="utf-8")
     pulse_path.write_text(pulse, encoding="utf-8")
 
+    print(f"Report written: {path}" + (" [dry-run]" if dry else ""))
+    print(f"Price pulse: {pulse_path}" + (" [dry-run]" if dry else ""))
+
+    # --- Intelligence Reports (Export/Import) ---
+    print("\nGenerating Intelligence Reports...")
+    try:
+        from generate_intel_report import CATEGORIES, generate_report
+        for category in CATEGORIES:
+            generate_report(category)
+    except Exception as e:
+        print(f"  ⚠️ Error generating intel reports: {e}")
+
     critical_count = sum(
         1 for h in data.get("store_health", [])
         if float(h.get("success_pct", 0) or 0) < 30
     )
-
-    print(f"Report written: {path}" + (" [dry-run]" if dry else ""))
-    print(f"Price pulse: {pulse_path}" + (" [dry-run]" if dry else ""))
 
     if slack_url and not dry:
         k = data.get("kpis", {})
