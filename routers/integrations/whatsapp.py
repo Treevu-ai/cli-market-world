@@ -127,17 +127,17 @@ async def whatsapp_webhook(request: Request):
         else os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
     )
 
-    answer = "Lo siento, tuve un problema consultando los precios."
-    
+    answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
+
     # Simple interactive menu if the user asks for help or is new
     if incoming_msg in ("hola", "hi", "hello", "ayuda", "help", "menu"):
         answer = (
-            f"Hola! Soy el bot de *CLI Market Intelligence* 🚀\n\n"
-            "Puedo ayudarte a monitorear precios de góndola en LATAM en tiempo real.\n\n"
-            "¿Qué quieres hacer?\n"
-            "1️⃣ *Consultar precios*: '¿Cuánto cuesta el café en Perú?'\n"
+            f"¡Hola! Soy el bot de *CLI Market* 🚀\n\n"
+            "Te ayudo a saber cuánto cuestan las cosas en los supermercados de América Latina.\n\n"
+            "¿Qué querés hacer?\n"
+            "1️⃣ *Ver un precio*: '¿Cuánto cuesta el café en Perú?'\n"
             "2️⃣ *Comparar tiendas*: 'Compara leche evaporada en Lima'\n"
-            "3️⃣ *Análisis de riesgo*: '¿Hay riesgo de inflación en arroz?'"
+            "3️⃣ *Ver si va a subir*: '¿Va a subir el precio del arroz?'"
         )
     else:
         async with httpx.AsyncClient() as client_http:

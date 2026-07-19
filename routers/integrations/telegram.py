@@ -85,14 +85,14 @@ async def telegram_webhook(request: Request):
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
     token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
     
-    answer = "Lo siento, tuve un problema consultando los precios en el Data Moat."
+    answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
 
     if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
         answer = (
             f"Hola <b>{first_name}</b> \U0001f44b\n\n"
-            "Soy el bot de <b>CLI Market Intelligence</b>.\n\n"
-            "Pregúntame lo que quieras sobre precios, retailers o productos en LATAM.\n"
-            "Ejemplo: <i>¿Cuál es el precio del café en Perú?</i> o <i>Busca leche evaporada</i>."
+            "Soy el bot de <b>CLI Market</b>.\n\n"
+            "Preguntame lo que quieras sobre precios de productos en tiendas de América Latina.\n"
+            "Por ejemplo: <i>¿Cuánto cuesta el café en Perú?</i> o <i>Busco leche evaporada</i>."
         )
     else:
         async with httpx.AsyncClient() as client_http:
