@@ -6,7 +6,7 @@ from twilio.rest import Client
 router = APIRouter(prefix="/v1/integrations/whatsapp", tags=["integrations"])
 
 # Configuración Twilio (Cargar desde variables de entorno)
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "TWILIO_ACCOUNT_SID_REDACTED")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
 
@@ -17,7 +17,7 @@ async def whatsapp_webhook(request: Request):
     incoming_msg = form_data.get("Body", "").lower()
     sender = form_data.get("From", "")
 
-    if not incoming_msg or not TWILIO_AUTH_TOKEN:
+    if not incoming_msg or not TWILIO_AUTH_TOKEN or not TWILIO_ACCOUNT_SID:
         return Response(content="ignored", status_code=200)
 
     print(f"📱 WhatsApp de {sender}: {incoming_msg}")

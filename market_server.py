@@ -123,7 +123,7 @@ async def lifespan(_app: FastAPI):
     except Exception as e:
         logger.warning("Moat health check failed (non-fatal): %s", e)
     try:
-        from routers.misc import register_telegram_commands
+        from routers.integrations.telegram import register_telegram_commands
         await register_telegram_commands()
     except Exception as e:
         logger.warning("Telegram command menu registration skipped: %s", e)
@@ -232,6 +232,7 @@ from routers.retailers import router as retailers_router
 from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 from routers.integrations.whatsapp import router as whatsapp_router
+from routers.integrations.telegram import router as telegram_router
 
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
@@ -270,6 +271,7 @@ for r in (
     retailer_admin_router,
     search_router,
     slack_ops_router,
+    telegram_router,
     vault_router,
     whatsapp_router,
 ):

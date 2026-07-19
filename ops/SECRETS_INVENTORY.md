@@ -84,7 +84,11 @@
 | `PEPY_API_KEY` | optional | world | Alternative PyPI stats key |
 | `MINIMAX_API_KEY` | optional | core | Minimax connector |
 | `MINIMAX_GROUP_ID` | optional | core | Minimax group |
-| `TELEGRAM_BOT_TOKEN` | optional | world | Telegram notifications |
+| `TELEGRAM_BOT_TOKEN` | optional | world | Telegram notifications + `/v1/integrations/telegram/webhook` bot bridge |
+| `TWILIO_ACCOUNT_SID` | optional | world | WhatsApp bridge (`/v1/integrations/whatsapp/webhook`) via Twilio |
+| `TWILIO_AUTH_TOKEN` | optional | world | WhatsApp bridge — required alongside `TWILIO_ACCOUNT_SID` |
+| `TWILIO_WHATSAPP_NUMBER` | optional | world | Twilio WhatsApp sender number, default `whatsapp:+14155238886` (Twilio sandbox) |
+| `MARKET_API_TOKEN` | optional | world | Bearer token the WhatsApp/Telegram bridges use to call `/v1/shop/ask` |
 
 ### 9. Email / SMTP (`email`)
 | Variable | Required | Where | Notes |
@@ -132,7 +136,7 @@ payments-mp       → MERCADOPAGO_*, MP_* (10 vars)
 payments-other    → LEMON_*, WISE_*, CHECKOUT_WEBHOOK_SECRET
 auth              → MARKET_API_TOKEN, MARKET_ADMIN_PASSWORD
 slack             → SLACK_* (25+ vars)
-external-apis     → ANTHROPIC_API_KEY, PEPY_*, MINIMAX_*, TELEGRAM_*
+external-apis     → ANTHROPIC_API_KEY, PEPY_*, MINIMAX_*, TELEGRAM_*, TWILIO_*
 email             → SMTP_*, GMAIL_*, BILLING_*
 pricing           → *_PRICE_USD, PRO_PEN_PER_USD
 ```
