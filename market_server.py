@@ -38,6 +38,7 @@ from market_core import (
     STORES,
     db_migrate_from_json,
     ensure_db_initialized,
+    get_db,
     logger as log,
 )
 from market_security import production_payment_config_warnings

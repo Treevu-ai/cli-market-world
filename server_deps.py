@@ -180,10 +180,10 @@ def get_messenger_session(platform_id: str) -> dict:
         ).fetchone()
         if row:
             return {
-                "platform_id": row[0],
-                "username": row[1],
-                "last_context": row[2],
-                "user_tier": row[3],
+                "platform_id": row["platform_id"],
+                "username": row["username"],
+                "last_context": row["last_context"],
+                "user_tier": row["user_tier"],
             }
     except Exception as e:
         logger.error("get_messenger_session error: %s", e)
