@@ -55,13 +55,6 @@ jobs:
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: main
-          path: .deps/cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
       - name: PAM tier 1.5 (synthetic journey)
         env:
           MARKET_SKIP_LIVE: "1"
