@@ -201,6 +201,7 @@ app.add_middleware(
 _DEFAULT_CORS_ORIGINS = ",".join([
     "https://cli-market.dev",
     "https://www.cli-market.dev",
+    "https://academy.cli-market.dev",
     "https://procurecopilot.com",
     "https://procure-copilot.contacto-8e4.workers.dev",
     "http://localhost:3000",
@@ -269,10 +270,13 @@ from routers.intelligence_web import router as intelligence_web_router
 from routers.mcp_http import router as mcp_http_router
 from routers.vault import router as vault_router
 from routers.brand_intel import router as brand_intel_router
+from routers.taller import router as taller_router
+from routers.academy import router as academy_router
 
 # Order doesn't matter functionally — each router declares its own paths.
 # Listed alphabetically by router file for easy navigation.
 for r in (
+    academy_router,
     admin_router,
     agent_router,
     alerts_router,
@@ -300,6 +304,7 @@ for r in (
     retailer_admin_router,
     search_router,
     slack_ops_router,
+    taller_router,
     telegram_router,
     vault_router,
     whatsapp_router,
