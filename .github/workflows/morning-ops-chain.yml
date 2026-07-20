@@ -92,85 +92,19 @@ jobs:
             exit 1
           fi
 
-  pam-tier1:
+  pam:
     needs: observatory-snapshot
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
     # Technical health check only — must never block business reporting below.
     continue-on-error: true
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: PAM tier 1 (public, landing, user)
-        env:
-          MARKET_USER_TOKEN: ${{ secrets.MARKET_USER_TOKEN }}
-        run: python ops/production_acceptance.py --phase public,landing,user --tier 1
-
-      - uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-index
-          ref: 7a9bd4efa5439a6e041d6e557abaada4a66cfaac
-          path: .deps/cli-market-index
-          token: ${{ secrets.GH_PAT }}
-
-      - uses: actions/checkout@v6
-        with:
-          repository: Treevu-ai/cli-market-core
-          ref: main
-          path: .deps/cli-market-core
-          token: ${{ secrets.GH_PAT }}
-
-      - name: PAM tier 1.5 (synthetic journey)
-        env:
-          MARKET_SKIP_LIVE: "1"
-        run: |
-          pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install "$(grep '^cli-market-core==' requirements.txt)"
-          pip install -e ".deps/cli-market-index[postgres]"
-          pip install -e .
-          pytest tests/test_funnel.py::test_pam_journey_synthetic -q
-
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: pam-tier1-${{ github.run_id }}
-          path: ops/reports/pam-*.json
-          if-no-files-found: ignore
-
-  pam-tier2:
-    needs: pam-tier1
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: PAM tier 2 (+ admin, post)
-        env:
-          MARKET_API_TOKEN: ${{ secrets.MARKET_API_TOKEN || vars.MARKET_API_TOKEN }}
-          MARKET_USER_TOKEN: ${{ secrets.MARKET_USER_TOKEN }}
-        run: python ops/production_acceptance.py --phase public,landing,user,admin --tier 2
-
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: pam-tier2-${{ github.run_id }}
-          path: ops/reports/pam-*.json
-          if-no-files-found: ignore
+    uses: ./.github/workflows/pam-nightly.yml
+    with:
+      tier: "2"
+      include_destructive: false
+    secrets: inherit
 
   command-control:
-    # Business reporting depends on data-refresh, never on PAM (pam-tier1/tier2
-    # are a technical health side-branch — see note above).
+    # Business reporting depends on data-refresh, never on PAM (the `pam` job
+    # is a technical health side-branch — see note above).
     needs: observatory-snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 5
