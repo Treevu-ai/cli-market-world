@@ -524,32 +524,32 @@ def _dashboard_data():
         row["normalized_unit"] = info["normalized_unit"]
 
     # ── Top discounts (public: sane retail range only) ───────────────────────
+    # Shared by both queries below — was duplicated byte-for-byte; kept as one
+    # subquery so the discount_pct formula can't drift between the two call
+    # sites the way it already had to be cross-referenced against
+    # market_core.compute_price_deal_alerts's separate (external package)
+    # implementation of the same formula (2026-07-19 audit).
+    _discounted_prices_subquery = """
+        SELECT name, store_name, price, list_price,
+               ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
+               currency, line_name
+        FROM price_snapshots
+        WHERE list_price > price AND price > 0 AND list_price < 999999
+    """
     top_discounts = db.execute(
-        """
+        f"""
         SELECT name, store_name, price, list_price, discount_pct, currency, line_name
-        FROM (
-            SELECT name, store_name, price, list_price,
-                   ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
-                   currency, line_name
-            FROM price_snapshots
-            WHERE list_price > price AND price > 0 AND list_price < 999999
-        ) discounted
+        FROM ({_discounted_prices_subquery}) discounted
         WHERE discount_pct BETWEEN 5 AND 80
         ORDER BY discount_pct DESC LIMIT 10
         """
     ).fetchall()
 
     suspect_discounts = db.execute(
-        """
-        SELECT name, store_name, price, list_price, discount_pct, currency, line_name, confidence
-        FROM (
-            SELECT name, store_name, price, list_price,
-                   ROUND(((1 - price / NULLIF(list_price,0)) * 100)::numeric) as discount_pct,
-                   currency, line_name,
-                   'suspect' as confidence
-            FROM price_snapshots
-            WHERE list_price > price AND price > 0 AND list_price < 999999
-        ) discounted
+        f"""
+        SELECT name, store_name, price, list_price, discount_pct, currency, line_name,
+               'suspect' as confidence
+        FROM ({_discounted_prices_subquery}) discounted
         WHERE discount_pct >= 90
         ORDER BY discount_pct DESC LIMIT 20
         """
