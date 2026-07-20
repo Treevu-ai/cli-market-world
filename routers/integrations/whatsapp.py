@@ -1,6 +1,6 @@
 import os
 import httpx
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Request, Response
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from market_core import check_rate_limit_sqlite
@@ -79,36 +79,23 @@ def _is_valid_twilio_signature(request: Request, params: dict) -> bool:
     return validator.validate(_twilio_request_url(request), params, signature)
 
 
-@router.post("/webhook")
-async def whatsapp_webhook(request: Request):
-    # Twilio envía los datos como Form Data (application/x-www-form-urlencoded)
-    form_data = await request.form()
+async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | None) -> None:
+    """The slow work: audio transcription, LLM lookup, and the actual Twilio
+    send. Runs as a FastAPI BackgroundTask — Starlette/uvicorn send the
+    webhook's HTTP response to Twilio BEFORE this executes, so a slow LLM
+    call here can no longer cause Twilio's Sandbox to time out and fall back
+    to its own "You said :X. Configure your Inbound URL" message while our
+    real answer arrives late as a separate message (the exact bug reported
+    2026-07-19 — the earlier synchronous version awaited /v1/intel/ask,
+    which has a 30s timeout, before ever returning any HTTP response)."""
+    if not incoming_msg and audio_url:
+        print(f"🎙️ Audio message from {sender}, transcribing...")
+        incoming_msg = await transcribe_whatsapp_audio(audio_url)
+        if incoming_msg:
+            incoming_msg = incoming_msg.lower()
 
-    if not _is_valid_twilio_signature(request, dict(form_data)):
-        print("❌ WhatsApp webhook: invalid or missing Twilio signature")
-        return Response(content="invalid signature", status_code=403)
-
-    incoming_msg = form_data.get("Body", "").lower()
-    sender = form_data.get("From", "")
-
-    check_rate_limit_sqlite(
-        f"whatsapp:{sender}",
-        window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
-        max_req=WHATSAPP_RATE_LIMIT_MIN,
-        daily_max=WHATSAPP_RATE_LIMIT_DAY,
-    )
-
-    # Handle Voice Messages
-    if not incoming_msg and form_data.get("MediaContentType", "").startswith("audio/"):
-        audio_url = form_data.get("MediaUrl0")
-        if audio_url:
-            print(f"🎙️ Audio message from {sender}, transcribing...")
-            incoming_msg = await transcribe_whatsapp_audio(audio_url)
-            if incoming_msg:
-                incoming_msg = incoming_msg.lower()
-
-    if not incoming_msg or not TWILIO_AUTH_TOKEN:
-        return Response(content="ignored", status_code=200)
+    if not incoming_msg:
+        return
 
     # 1. Recover session memory
     session = get_messenger_session(sender)
@@ -166,10 +153,38 @@ async def whatsapp_webhook(request: Request):
             body=answer,
             to=sender
         )
-        return Response(content="success", status_code=200)
     except Exception as e:
         print(f"❌ Error Twilio: {e}")
-        return Response(content="error", status_code=500)
+
+
+@router.post("/webhook")
+async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
+    # Twilio envía los datos como Form Data (application/x-www-form-urlencoded)
+    form_data = await request.form()
+
+    if not _is_valid_twilio_signature(request, dict(form_data)):
+        print("❌ WhatsApp webhook: invalid or missing Twilio signature")
+        return Response(content="invalid signature", status_code=403)
+
+    incoming_msg = form_data.get("Body", "").lower()
+    sender = form_data.get("From", "")
+    is_audio = form_data.get("MediaContentType", "").startswith("audio/")
+    audio_url = form_data.get("MediaUrl0") if is_audio else None
+
+    check_rate_limit_sqlite(
+        f"whatsapp:{sender}",
+        window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
+        max_req=WHATSAPP_RATE_LIMIT_MIN,
+        daily_max=WHATSAPP_RATE_LIMIT_DAY,
+    )
+
+    if (not incoming_msg and not audio_url) or not TWILIO_AUTH_TOKEN:
+        return Response(content="ignored", status_code=200)
+
+    # Ack Twilio immediately — everything slow (transcription, LLM lookup,
+    # the actual Twilio send) happens after this response is already sent.
+    background_tasks.add_task(_process_and_reply, incoming_msg, sender, audio_url)
+    return Response(content="queued", status_code=200)
 
 def send_whatsapp_proactive(to: str, body: str):
     """Envía un mensaje de WhatsApp fuera del flujo de webhook (Outbound)."""
