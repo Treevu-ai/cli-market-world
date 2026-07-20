@@ -40,4 +40,11 @@ jobs:
           SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
           BILLING_FROM_EMAIL: ${{ secrets.BILLING_FROM_EMAIL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # market_billing.PUBLIC_PRO_PRICE_USD reads this from the environment
+          # with a hardcoded "49" fallback — Fly.io has PRO_PRICE_USD=39 set as
+          # its own secret, but GitHub Actions is a SEPARATE secret store that
+          # never had it, so every run of this workflow silently fell back to
+          # the stale "49" default regardless of what Fly was configured with.
+          PRO_PRICE_USD: ${{ secrets.PRO_PRICE_USD }}
+          STARTER_PRICE_USD: ${{ secrets.STARTER_PRICE_USD }}
         run: python3 ops/pro_payment_reminder.py
