@@ -27,7 +27,7 @@ window.AcademyContent = {
       n: "03",
       title: "Search, compare, history",
       desc: "Búsquedas multi-retailer y reconstrucción de evidencia de precio (normalizada).",
-      key: "Evidencia con as_of, retailers_n y unidades comparables.",
+      key: "Evidencia con fecha del dato, cuántas tiendas se revisaron y unidades comparables.",
     },
     {
       n: "04",
@@ -137,7 +137,7 @@ window.AcademyContent = {
       {
         step: "Insight",
         title: "Acción",
-        desc: "Brief multi-lente: qué hacer esta semana con disclaimers y as_of visibles.",
+        desc: "Brief multi-lente: qué hacer esta semana, con avisos y la fecha del dato siempre visibles.",
       },
     ],
     DDM: [
@@ -214,7 +214,7 @@ window.AcademyContent = {
       {
         k: "CORE",
         title: "Motor de datos",
-        desc: "Series, frescura, confidence y scores listos para consulta.",
+        desc: "Series, frescura, nivel de confianza y scores listos para consulta.",
       },
       {
         k: "CONSUMO",
@@ -324,7 +324,7 @@ window.AcademyContent = {
             uri: "cli-market://docs/quality-block",
             name: "Quality block (methods)",
             description:
-              "Campos de frescura, confidence y cobertura que el alumno debe citar en el workbook.",
+              "Campos de frescura, confianza y cobertura que el alumno debe citar en el workbook.",
             mimeType: "application/json",
           },
           {
@@ -389,7 +389,7 @@ window.AcademyContent = {
     },
     {
       title: "Methods & quality block",
-      desc: "as_of, retailers_n, confidence, disclaimers: formal ≠ IPC ≠ informal.",
+      desc: "Fecha del dato, tiendas revisadas, confianza y avisos: formal ≠ IPC ≠ informal.",
     },
     {
       title: "Capstone del track",
@@ -429,7 +429,7 @@ window.AcademyContent = {
       description:
         "Cuentas clave y directores comerciales que sustentan negociaciones con datos reales de góndola.",
       example:
-        "Comparar en un cuadro el precio de su marca vs competidores en varios supermercados formales del corte (con as_of y frescura).",
+        "Comparar en un cuadro el precio de su marca vs competidores en varios supermercados formales del corte (con fecha del dato y frescura).",
       tip: "Útil para evitar sorpresas de precio en góndola antes de la reunión de categoría.",
     },
     {
@@ -451,7 +451,7 @@ window.AcademyContent = {
       description:
         "Analistas y economistas que necesitan nowcast de consumo masivo formal con metadata de calidad.",
       example:
-        "Quality block (cobertura, frescura, confidence) para justificar el sesgo de muestra respecto al IPC nacional.",
+        "Bloque de calidad (cobertura, frescura, confianza) para justificar el sesgo de muestra respecto al IPC nacional.",
       tip: "Nunca asuma góndola formal = inflación total del país. Use disclaimers.",
     },
     {
@@ -462,7 +462,7 @@ window.AcademyContent = {
       description:
         "Growth y contenido que publican variaciones de básicos con datos duros y atribución.",
       example:
-        "Un dato citable de la semana con as_of, retailers_n y disclaimer de canal formal.",
+        "Un dato citable de la semana con fecha, cuántas tiendas se revisaron, y aviso de canal formal.",
       tip: "Solo publique con semáforo verde. Semáforo amarillo = interno o con advertencia fuerte.",
     },
     {

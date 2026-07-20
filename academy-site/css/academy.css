@@ -927,6 +927,13 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   background: var(--muted);
   border-radius: var(--radius);
 }
+/* Generic accordion body padding — used by the #metodo mega-section
+   accordions, whose content used to sit inside a padded .wrap and now
+   sits directly inside <details> with nothing providing horizontal
+   padding. */
+.acc-body {
+  padding: 1rem 1.1rem 1.25rem;
+}
 .method-details summary {
   list-style: none;
   display: flex;
