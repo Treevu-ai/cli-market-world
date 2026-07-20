@@ -587,12 +587,20 @@
       else trackSelect.value = "Intelligence";
     }
     if (rolSelect && rol) {
+      var exact = -1;
+      var partial = -1;
+      var rolFirstWord = rol.split(" / ")[0];
       for (var i = 0; i < rolSelect.options.length; i++) {
-        if (rolSelect.options[i].value === rol || rolSelect.options[i].text === rol) {
-          rolSelect.selectedIndex = i;
+        var opt = rolSelect.options[i];
+        if (opt.value === rol || opt.text === rol) {
+          exact = i;
           break;
         }
+        if (partial === -1 && opt.text.indexOf(rolFirstWord) !== -1) {
+          partial = i;
+        }
       }
+      rolSelect.selectedIndex = exact !== -1 ? exact : partial;
     }
     if (track === "Procure") showTrackPanel("procure");
     else if (track === "Intelligence") showTrackPanel("intel");
@@ -603,12 +611,6 @@
       applyTrack(el.getAttribute("data-track"), el.getAttribute("data-rol") || "");
       var tracks = document.getElementById("tracks");
       if (tracks) tracks.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
-      setTimeout(function () {
-        var cta = document.getElementById("cta");
-        if (cta && el.classList.contains("door")) {
-          cta.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
-        }
-      }, 450);
     });
   });
   document.querySelectorAll("[data-prefill]").forEach(function (el) {
@@ -1069,25 +1071,9 @@
         btn.setAttribute("aria-selected", on ? "true" : "false");
       });
     }
-    // Prefill form track/rol without forcing scroll
-    if (role.track === "Procure") {
-      if (trackSelect) trackSelect.value = "Procure";
-      showTrackPanel("procure");
-    } else if (role.track === "Intelligence") {
-      if (trackSelect) trackSelect.value = "Intelligence";
-      showTrackPanel("intel");
-    }
-    if (rolSelect && role.name) {
-      for (var ri = 0; ri < rolSelect.options.length; ri++) {
-        if (
-          rolSelect.options[ri].text.indexOf(role.name.split(" / ")[0]) !== -1 ||
-          rolSelect.options[ri].text === role.name
-        ) {
-          rolSelect.selectedIndex = ri;
-          break;
-        }
-      }
-    }
+    // Prefill form track/rol without forcing scroll (shares logic with the
+    // data-track/data-rol click handler below via applyTrack()).
+    applyTrack(role.track, role.name);
   }
 
   if (roleTabs && roles.length) {

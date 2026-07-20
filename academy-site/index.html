@@ -180,46 +180,12 @@
         </a>
       </section>
 
-      <!-- ROLE DOORS -->
+      <!-- Rol → track (fusiona las antiguas "puertas" con el multi-lente) -->
       <section class="block alt" id="para-usted">
         <div class="wrap">
           <div class="eyebrow">Diagnóstico en 10 segundos</div>
           <h2 class="section-h2 reveal">¿Esto es para usted?</h2>
-          <p class="muted reveal">Tres puertas. Un track. Sin jerga primero.</p>
-          <div class="doors reveal">
-            <button type="button" class="door hover-lift" data-track="Procure" data-rol="Abastecimiento / Compras">
-              <div class="num">01</div>
-              <h3>Compro o abastezco</h3>
-              <p>Facilities, hotel, oficina. Comparar, decidir y ejecutar.</p>
-              <span class="go">Track Procure →</span>
-            </button>
-            <button type="button" class="door hover-lift" data-track="Intelligence" data-rol="Pricing / Revenue">
-              <div class="num">02</div>
-              <h3>Fijo precio o forecast</h3>
-              <p>Pricing, comercial, revenue. Señal de mercado esta semana.</p>
-              <span class="go">Track Intelligence →</span>
-            </button>
-            <button type="button" class="door hover-lift" data-track="Intelligence" data-rol="Research / Datos / Fintech">
-              <div class="num">03</div>
-              <h3>Investigo o cito datos</h3>
-              <p>Research, fintech, growth. Methods y claims defendibles.</p>
-              <span class="go">Track Intelligence →</span>
-            </button>
-          </div>
-          <p class="door-help reveal">
-            ¿No está seguro? <button type="button" id="open-quiz">3 preguntas</button>
-            · <button type="button" data-track="Ambos">ambos tracks</button>
-          </p>
-          <div class="quiz" id="quiz"></div>
-        </div>
-      </section>
-
-      <!-- MULTI-LENTE (Google AI Studio) -->
-      <section class="block" id="lentes">
-        <div class="wrap">
-          <div class="eyebrow">Audiencias GTM</div>
-          <h2 class="section-h2 reveal">Mismos hechos de mercado.<br /><span class="dim">Distintas miradas de negocio.</span></h2>
-          <p class="muted reveal">Un motor de góndola formal alimenta lentes distintas. Elija su rol para ver el workbook orientado.</p>
+          <p class="muted reveal">Un motor de góndola formal. Cinco lentes de negocio. Elija su rol para ver el workbook orientado y su track.</p>
           <div class="role-tabs reveal" id="role-tabs" role="tablist" aria-label="Lentes de negocio"></div>
           <div class="role-panel reveal" id="role-panel">
             <div class="role-main">
@@ -236,6 +202,7 @@
                   <p id="role-tip"></p>
                 </div>
               </div>
+              <a href="#tracks" class="btn btn-primary btn-sm" id="role-goto-track">Ir a mi track →</a>
             </div>
             <aside class="role-example">
               <div class="role-example-label">Ejemplo en el workbook</div>
@@ -243,126 +210,15 @@
               <div class="role-example-ok">Configurado como módulo de autoevaluación</div>
             </aside>
           </div>
+          <p class="door-help reveal">
+            ¿No está seguro? <button type="button" id="open-quiz">3 preguntas</button>
+            · <button type="button" data-track="Ambos">ambos tracks</button>
+          </p>
+          <div class="quiz" id="quiz"></div>
         </div>
       </section>
 
       <!-- CAPABILITIES — Optimus feature rows with SVG graphics -->
-      <section class="block" id="capabilities">
-        <div class="wrap">
-          <div class="eyebrow">Capacidades</div>
-          <h2 class="section-h2 reveal">Todo lo que necesita.<br /><span class="dim">Nada de relleno.</span></h2>
-
-          <div class="feature-rows">
-            <article class="feature-row reveal" data-feature>
-              <span class="feature-num">01</span>
-              <div class="feature-body">
-                <div class="feature-copy">
-                  <h3 class="feature-title">Brief de góndola en 1 página</h3>
-                  <p>Nowcast con ventanas 7d/30d, calidad del corte e implicaciones por rol — sin vender un 7d como IPC.</p>
-                </div>
-                <div class="feature-visual" aria-hidden="true">
-                  <!-- Deploy-style bars (Optimus) -->
-                  <svg viewBox="0 0 200 160" class="viz">
-                    <rect x="30" y="20" width="140" height="120" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <g>
-                      <rect x="40" y="35" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0s" repeatCount="indefinite"/></rect>
-                      <rect x="40" y="51" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.15s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.15s" repeatCount="indefinite"/></rect>
-                      <rect x="40" y="67" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.3s" repeatCount="indefinite"/></rect>
-                      <rect x="40" y="83" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.45s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.45s" repeatCount="indefinite"/></rect>
-                      <rect x="40" y="99" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.6s" repeatCount="indefinite"/></rect>
-                      <rect x="40" y="115" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.75s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.75s" repeatCount="indefinite"/></rect>
-                    </g>
-                    <circle cx="100" cy="155" r="3" fill="currentColor" opacity="0.3"><animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/></circle>
-                  </svg>
-                </div>
-              </div>
-            </article>
-
-            <article class="feature-row reveal" data-feature>
-              <span class="feature-num">02</span>
-              <div class="feature-body">
-                <div class="feature-copy">
-                  <h3 class="feature-title">Riesgo comercial legible</h3>
-                  <p>Volatilidad, trending y promos dudosas convertidos en memo accionable a 72 h — no en un gráfico huérfano.</p>
-                </div>
-                <div class="feature-visual" aria-hidden="true">
-                  <!-- AI node network (Optimus) -->
-                  <svg viewBox="0 0 200 160" class="viz">
-                    <circle cx="100" cy="80" r="12" fill="currentColor"><animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite"/></circle>
-                    <g id="orbit-nodes"></g>
-                    <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" stroke-width="1" opacity="0">
-                      <animate attributeName="r" values="20;60" dur="2s" repeatCount="indefinite"/>
-                      <animate attributeName="opacity" values="0.5;0" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                  </svg>
-                </div>
-              </div>
-            </article>
-
-            <article class="feature-row reveal" data-feature>
-              <span class="feature-num">03</span>
-              <div class="feature-body">
-                <div class="feature-copy">
-                  <h3 class="feature-title">Compras multi-retailer</h3>
-                  <p>Del search a la decisión con criterios explícitos. Track Procure: cotizar sin las 8 pestañas de siempre.</p>
-                </div>
-                <div class="feature-visual" aria-hidden="true">
-                  <!-- Collab A/B (Optimus) -->
-                  <svg viewBox="0 0 200 160" class="viz">
-                    <rect x="30" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <text x="55" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">A</text>
-                    <circle cx="55" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <rect x="120" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <text x="145" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">B</text>
-                    <circle cx="145" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <line x1="80" y1="80" x2="120" y2="80" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4">
-                      <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.5s" repeatCount="indefinite"/>
-                    </line>
-                    <circle r="4" fill="currentColor">
-                      <animateMotion dur="1.5s" repeatCount="indefinite" path="M 80 80 L 120 80"/>
-                    </circle>
-                    <g transform="translate(100, 130)">
-                      <circle r="6" fill="none" stroke="currentColor" stroke-width="2">
-                        <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/>
-                        <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
-                      </circle>
-                    </g>
-                  </svg>
-                </div>
-              </div>
-            </article>
-
-            <article class="feature-row reveal" data-feature>
-              <span class="feature-num">04</span>
-              <div class="feature-body">
-                <div class="feature-copy">
-                  <h3 class="feature-title">Claims honestos por diseño</h3>
-                  <p>Rúbrica que castiga inventar IPC o informal. Semáforo de calidad: usar / monitorear / no publicar.</p>
-                </div>
-                <div class="feature-visual" aria-hidden="true">
-                  <!-- Security shield (Optimus) -->
-                  <svg viewBox="0 0 200 160" class="viz">
-                    <path d="M 100 20 L 150 40 L 150 90 Q 150 130 100 145 Q 50 130 50 90 L 50 40 Z" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M 100 35 L 135 50 L 135 85 Q 135 115 100 128 Q 65 115 65 85 L 65 50 Z" fill="currentColor" opacity="0.1">
-                      <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite"/>
-                    </path>
-                    <rect x="85" y="70" width="30" height="25" rx="3" fill="currentColor"/>
-                    <path d="M 90 70 L 90 60 Q 90 50 100 50 Q 110 50 110 60 L 110 70" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                    <circle cx="100" cy="80" r="4" fill="var(--background, #faf9f7)"/>
-                    <rect x="98" y="82" width="4" height="8" fill="var(--background, #faf9f7)"/>
-                    <line x1="60" y1="60" x2="140" y2="60" stroke="currentColor" stroke-width="1" opacity="0">
-                      <animate attributeName="y1" values="40;120;40" dur="3s" repeatCount="indefinite"/>
-                      <animate attributeName="y2" values="40;120;40" dur="3s" repeatCount="indefinite"/>
-                      <animate attributeName="opacity" values="0;0.5;0" dur="3s" repeatCount="indefinite"/>
-                    </line>
-                  </svg>
-                </div>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
       <!-- STACK — dual marquee (tools / method / surfaces) -->
       <section class="block stack-section" id="stack" aria-label="Herramientas y método">
         <div class="wrap">
@@ -435,21 +291,59 @@
               <div class="label">Intelligence</div>
               <h3>Leer el mercado</h3>
               <ul>
-                <li>Brief de góndola (1 página)</li>
+                <li>Brief de góndola (1 página) — nowcast 7d/30d, sin vender un 7d como IPC</li>
                 <li>Risk memo 72 h multi-lente</li>
                 <li>One-pager de categoría / surtido</li>
                 <li>Methods + quality block</li>
               </ul>
+              <div class="feature-visual outcome-visual" aria-hidden="true">
+                <!-- Deploy-style bars (Optimus) -->
+                <svg viewBox="0 0 200 160" class="viz">
+                  <rect x="30" y="20" width="140" height="120" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <g>
+                    <rect x="40" y="35" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0s" repeatCount="indefinite"/></rect>
+                    <rect x="40" y="51" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.15s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.15s" repeatCount="indefinite"/></rect>
+                    <rect x="40" y="67" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.3s" repeatCount="indefinite"/></rect>
+                    <rect x="40" y="83" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.45s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.45s" repeatCount="indefinite"/></rect>
+                    <rect x="40" y="99" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.6s" repeatCount="indefinite"/></rect>
+                    <rect x="40" y="115" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.75s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.75s" repeatCount="indefinite"/></rect>
+                  </g>
+                  <circle cx="100" cy="155" r="3" fill="currentColor" opacity="0.3"><animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/></circle>
+                </svg>
+              </div>
             </div>
             <div class="outcome hover-lift">
               <div class="label">Procure</div>
               <h3>Comprar con método</h3>
               <ul>
                 <li>Ciclo de compra documentado</li>
-                <li>Comparación multi-retailer</li>
+                <li>Comparación multi-retailer — del search a la decisión, sin las 8 pestañas de siempre</li>
                 <li>Escenario multi-ítem optimizado</li>
                 <li>Plan de recompras con límites</li>
               </ul>
+              <div class="feature-visual outcome-visual" aria-hidden="true">
+                <!-- Collab A/B (Optimus) -->
+                <svg viewBox="0 0 200 160" class="viz">
+                  <rect x="30" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <text x="55" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">A</text>
+                  <circle cx="55" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <rect x="120" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <text x="145" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">B</text>
+                  <circle cx="145" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <line x1="80" y1="80" x2="120" y2="80" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4">
+                    <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.5s" repeatCount="indefinite"/>
+                  </line>
+                  <circle r="4" fill="currentColor">
+                    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 80 80 L 120 80"/>
+                  </circle>
+                  <g transform="translate(100, 130)">
+                    <circle r="6" fill="none" stroke="currentColor" stroke-width="2">
+                      <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                    </circle>
+                  </g>
+                </svg>
+              </div>
             </div>
           </div>
           <div class="facts reveal">
@@ -554,7 +448,7 @@
               <p class="line"><strong>Ventanas:</strong> 7d vs 30d — ¿señal o ruido?</p>
               <p class="line"><strong>Calidad:</strong> frescura · confidence · retailers_n</p>
               <p class="line"><strong>Gap vs IPC:</strong> solo si el payload lo trae</p>
-              <p class="disclaimer">shelf formal online ≠ IPC oficial ≠ informal</p>
+              <p class="disclaimer"><a href="#moat">shelf formal online ≠ IPC oficial ≠ informal →</a></p>
             </article>
             <div class="before-after">
               <div class="ba-row"><div class="label">Antes</div><p>“El arroz subió — lo vi en un ticket.”</p></div>
@@ -602,33 +496,6 @@
         </div>
       </section>
 
-      <!-- PEDAGOGY 5-STEP (Google AI Studio) -->
-      <section class="block alt" id="pedagogia">
-        <div class="wrap">
-          <div class="eyebrow">Metodología</div>
-          <h2 class="section-h2 reveal">Aprender haciendo.<br /><span class="dim">No solo slides.</span></h2>
-          <p class="muted reveal">Cada módulo sigue un micro-ciclo de 5 etapas. El juicio de desk es el centro; el comando es la evidencia.</p>
-          <div class="pedagogy-grid reveal" id="pedagogy-grid"></div>
-          <div class="method-banner reveal">
-            <div>
-              <span class="method-banner-label">Estructura del pensamiento</span>
-              <h3>Rigor por diseño, no por slide final</h3>
-              <p>Workflows DDM y SIRI para no improvisar claims cuando el corte está fresco.</p>
-            </div>
-            <div class="method-banner-chips">
-              <div class="method-chip">
-                <span class="k">DDM · Procure</span>
-                <span class="v font-mono">Detect → Compare → Decide → Execute → Improve</span>
-              </div>
-              <div class="method-chip">
-                <span class="k">SIRI · Intelligence</span>
-                <span class="v font-mono">Sense → Interpret → Risk → Insight</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- HOW IT WORKS — Optimus dark + steps + code reveal -->
       <section class="block invert how-it-works" id="how-it-works">
         <div class="how-pattern" aria-hidden="true"></div>
@@ -654,6 +521,17 @@
               </div>
             </div>
           </div>
+
+          <!-- Micro-ciclo pedagógico (antes su propia sección "#pedagogia") —
+               es el detalle del paso II (Módulos 00-08), no un paso aparte. -->
+          <details class="method-details how-pedagogy reveal">
+            <summary>
+              <span>Ver el micro-ciclo de cada módulo (5 etapas)</span>
+              <span class="method-details-chev" aria-hidden="true">▾</span>
+            </summary>
+            <p class="muted" style="margin-top:0.75rem">Cada módulo (paso II) sigue el mismo micro-ciclo. El juicio de desk es el centro; el comando es la evidencia.</p>
+            <div class="pedagogy-grid" id="pedagogy-grid"></div>
+          </details>
         </div>
       </section>
 
@@ -680,28 +558,12 @@
               <div class="label">Refresh de góndola</div>
             </div>
           </div>
-          <div class="limits-grid reveal">
-            <div class="limit-cell">
-              <h3>Qué sí</h3>
-              <ul>
-                <li>Precios multi-retailer formales</li>
-                <li>Frescura y scores de confianza</li>
-                <li>Presión, riesgo y categoría</li>
-              </ul>
-            </div>
-            <div class="limit-cell">
-              <h3>Qué no</h3>
-              <ul>
-                <li>No somos el IPC oficial</li>
-                <li>No medimos informal</li>
-                <li>No garantizamos % de ahorro fijo</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </section>
 
-      <!-- MOAT 3 PILLARS (ecosystem brief) -->
+      <!-- MOAT 3 PILLARS (ecosystem brief) — única fuente de "qué sí / qué no
+           hace el moat"; #metrics ya no repite el limits-grid, el bloque de
+           abajo lo cubre en detalle inmediatamente después. -->
       <section class="block alt" id="moat">
         <div class="wrap">
           <div class="eyebrow">Ética de datos</div>

@@ -723,6 +723,14 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   font-size: 0.95rem;
 }
 .outcome li { margin-bottom: 0.4rem; }
+.outcome { position: relative; overflow: hidden; }
+.outcome-visual {
+  justify-content: flex-end;
+  opacity: 0.4;
+  margin-top: 1rem;
+  pointer-events: none;
+}
+.outcome-visual .viz { width: 6rem; height: 5rem; }
 
 .facts {
   display: grid;
@@ -1021,6 +1029,11 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--muted-foreground);
+}
+.artifact-card .disclaimer a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 .before-after { border: 1px solid var(--border-strong); }
 .ba-row {
@@ -1976,6 +1989,26 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   color: var(--muted-foreground);
   line-height: 1.5;
 }
+
+/* #pedagogia's micro-cycle now lives inside #how-it-works' <details> (dark
+   .invert section) — .method-details/.ped-card default to the light-mode
+   tokens above, so override to the same dark-card treatment .how-code
+   already uses in this section. */
+.how-it-works .method-details {
+  border-color: rgba(250, 249, 247, 0.14);
+  background: rgba(0, 0, 0, 0.2);
+}
+.how-it-works .method-details summary:hover { background: rgba(250, 249, 247, 0.06); }
+.how-it-works .method-details[open] summary { border-bottom-color: rgba(250, 249, 247, 0.14); }
+.how-it-works .method-details-chev { color: rgba(250, 249, 247, 0.5); }
+.how-it-works .ped-card {
+  border-color: rgba(250, 249, 247, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+}
+.how-it-works .ped-card::before { background: rgba(250, 249, 247, 0.14); }
+.how-it-works .ped-card:hover { border-color: rgba(250, 249, 247, 0.32); }
+.how-it-works .ped-card:hover::before { background: rgba(250, 249, 247, 0.6); }
+.how-it-works .ped-card p { color: rgba(250, 249, 247, 0.6); }
 .method-banner {
   margin-top: 2.5rem;
   border: 1px solid var(--border-strong);
