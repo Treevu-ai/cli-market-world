@@ -516,8 +516,11 @@ def get_macro(authorization: str | None = Header(None)):
     from BCRP — Peru's central bank. Use to contextualize PEN-denominated
     prices, or as an official CPI reference point alongside the shelf-price
     RPV signal from /v1/intel/inflation (CLI Market RPV ≠ CPI — see that
-    endpoint's disclaimer). Raw gov data — Free tier, per
-    specs/gov-connectors-prd.md DD-3 (derived indicators like RCLI are Pro)."""
+    endpoint's disclaimer). Pro tier, same as every other /v1/intel/* read
+    endpoint in this router (previously documented as Free per a
+    specs/gov-connectors-prd.md DD-3 that doesn't exist anywhere in this
+    repo's history — the require_pro() call below is the actual, deployed
+    behavior; this docstring was just never updated to match it)."""
     require_pro(authorization)
     return gov_macro_snapshot()
 
