@@ -1775,6 +1775,7 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   display: flex;
   gap: 0.85rem;
   padding: 1rem 1.1rem;
+  margin-bottom: 1.5rem;
   border: 1px solid var(--border-strong);
   background: var(--muted);
 }
