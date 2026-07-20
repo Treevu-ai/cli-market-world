@@ -392,38 +392,18 @@ def _format_slack(report: dict) -> str:
 # Slack delivery
 # ---------------------------------------------------------------------------
 
-def _post_slack(message: str, channel_env: str = "SLACK_BITACORA_CHANNEL") -> bool:
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    channel = os.getenv(channel_env, os.getenv("SLACK_CHANNEL", "")).strip()
-    if not token or not channel:
-        print("[store-health] SLACK_BOT_TOKEN o canal no configurado", file=sys.stderr)
-        return False
+def _post_slack(message: str) -> bool:
+    """Thin wrapper over the shared ops/slack_notify.py transport instead of
+    a hand-rolled httpx/urllib call — was duplicated near-identically
+    across this file, price_volatility_report.py, and
+    pro_conversion_audit.py (2026-07-19 audit). The channel_env override
+    parameter this used to take was never actually called with a non-default
+    value anywhere in this file, so it's dropped along with it."""
+    from slack_notify import deliver_to_bitacora
+
     try:
-        if _HAS_HTTPX:
-            r = httpx.post(
-                "https://slack.com/api/chat.postMessage",
-                headers={"Authorization": f"Bearer {token}"},
-                json={"channel": channel, "text": message},
-                timeout=15,
-            )
-            result = r.json()
-        else:
-            import json as _json
-            payload = _json.dumps({"channel": channel, "text": message}).encode()
-            req = _urllib.Request(
-                "https://slack.com/api/chat.postMessage",
-                data=payload,
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            with _urllib.urlopen(req, timeout=15) as resp:
-                result = _json.loads(resp.read())
-        ok = result.get("ok", False)
-        if not ok:
-            print(f"[store-health] Slack error: {result.get('error')}", file=sys.stderr)
-        return ok
+        deliver_to_bitacora(message)
+        return True
     except Exception as e:
         print(f"[store-health] Slack post failed: {e}", file=sys.stderr)
         return False

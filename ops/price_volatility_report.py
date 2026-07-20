@@ -394,23 +394,19 @@ def _fmt_slack(report: dict) -> str:
 
 
 def _post_slack(message: str) -> bool:
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    channel = os.getenv("SLACK_BITACORA_CHANNEL", os.getenv("SLACK_CHANNEL", "")).strip()
-    if not token or not channel:
-        print("[volatility] Slack no configurado", file=sys.stderr)
-        return False
+    """Thin wrapper over the shared ops/slack_notify.py transport (message
+    chunking, markdown normalization, canonical channel resolution) instead
+    of a hand-rolled httpx call — was duplicated near-identically across
+    this file, store_health_monitor.py, and pro_conversion_audit.py
+    (2026-07-19 audit)."""
+    from slack_notify import deliver_to_bitacora
+
     try:
-        if _HAS_HTTPX:
-            r = httpx.post(
-                "https://slack.com/api/chat.postMessage",
-                headers={"Authorization": f"Bearer {token}"},
-                json={"channel": channel, "text": message},
-                timeout=15,
-            )
-            return r.json().get("ok", False)
+        deliver_to_bitacora(message)
+        return True
     except Exception as e:
         print(f"[volatility] Slack error: {e}", file=sys.stderr)
-    return False
+        return False
 
 
 # ---------------------------------------------------------------------------
