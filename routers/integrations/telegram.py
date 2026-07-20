@@ -20,6 +20,18 @@ TELEGRAM_RATE_LIMIT_WINDOW = int(os.getenv("TELEGRAM_RATE_LIMIT_WINDOW", "60"))
 TELEGRAM_RATE_LIMIT_DAY = int(os.getenv("TELEGRAM_RATE_LIMIT_DAY", "300"))
 
 
+def _esc(text: str) -> str:
+    """Escape text interpolated into an HTML parse_mode Telegram message.
+    Telegram's HTML parser only reserves & < > (unlike MarkdownV2's ~20
+    punctuation chars) — but first_name (user-controlled) and answer
+    (LLM-generated) are never under our control, and an unescaped & < > in
+    either breaks the parser (Telegram returns 400, silently swallowed by
+    _send_telegram's bare except) or lets the sender/LLM inject fake <b>/<i>
+    formatting. Same fix procure-telegram-bot's src/lib/format.ts already
+    applied for the same reason — ported here since it never was."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def _is_valid_telegram_secret(request: Request) -> bool:
     if not TELEGRAM_WEBHOOK_SECRET:
         return False
@@ -88,7 +100,7 @@ async def telegram_webhook(request: Request):
 
     if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
         answer = (
-            f"Hola <b>{first_name}</b> \U0001f44b\n\n"
+            f"Hola <b>{_esc(first_name)}</b> \U0001f44b\n\n"
             "Soy el bot de <b>CLI Market</b>.\n\n"
             "Preguntame lo que quieras sobre precios de productos en tiendas de América Latina.\n"
             "Por ejemplo: <i>¿Cuánto cuesta el café en Perú?</i> o <i>Busco leche evaporada</i>."
@@ -103,7 +115,9 @@ async def telegram_webhook(request: Request):
                     timeout=30
                 )
                 if response.status_code == 200:
-                    answer = response.json().get("answer", answer)
+                    # LLM-generated, not under our control — escape before it
+                    # ever reaches an HTML-parse-mode Telegram message.
+                    answer = _esc(response.json().get("answer", answer))
                 else:
                     print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
             except Exception as e:
