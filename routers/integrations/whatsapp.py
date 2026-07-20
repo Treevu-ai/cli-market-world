@@ -132,7 +132,7 @@ async def whatsapp_webhook(request: Request):
     # Simple interactive menu if the user asks for help or is new
     if incoming_msg in ("hola", "hi", "hello", "ayuda", "help", "menu"):
         answer = (
-            f"¡Hola! Soy el bot de *CLI Market* 🚀\n\n"
+            "¡Hola! Soy el bot de *CLI Market* 🚀\n\n"
             "Te ayudo a saber cuánto cuestan las cosas en los supermercados de América Latina.\n\n"
             "¿Qué querés hacer?\n"
             "1️⃣ *Ver un precio*: '¿Cuánto cuesta el café en Perú?'\n"

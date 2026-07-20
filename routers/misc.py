@@ -8,14 +8,10 @@ Endpoints:
 
 from __future__ import annotations
 
-import os
-import uuid
 
-import httpx
 from fastapi import APIRouter, Header, HTTPException, Request
 
-from market_core import COUNTRIES, FX_PEN_PER_UNIT, LINES, STORES, convert_currency, get_db
-from market_core.market_mcp_registry import public_tool_count
+from market_core import FX_PEN_PER_UNIT, convert_currency, get_db
 from server_deps import require_user
 
 router = APIRouter(tags=["misc"])

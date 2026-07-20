@@ -1,5 +1,3 @@
-import os
-import json
 import sys
 import subprocess
 from pathlib import Path

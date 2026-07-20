@@ -1,7 +1,6 @@
 import os
 import secrets
 import httpx
-import uuid
 from fastapi import APIRouter, Request, Response
 from market_core import check_rate_limit_sqlite
 from server_deps import get_messenger_session, update_messenger_session

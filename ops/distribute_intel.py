@@ -1,9 +1,7 @@
 import os
 import sys
-import json
 import httpx
 from pathlib import Path
-from datetime import datetime, timezone
 
 # Asegurar que el root esté en el path para importar routers
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -20,7 +18,7 @@ SLACK_WEBHOOK_INTEL = os.getenv("SLACK_CHANNEL_NEWSLETTER")
 WHATSAPP_TEST_NUMBER = "whatsapp:+51902126765" # Tu número de prueba
 
 def distribute_reports():
-    print(f"🚀 Iniciando distribución de reportes de Inteligencia...")
+    print("🚀 Iniciando distribución de reportes de Inteligencia...")
     
     if not SLACK_WEBHOOK_INTEL:
         print("  ⚠️ SLACK_CHANNEL_NEWSLETTER no configurado. Saltando Slack.")
