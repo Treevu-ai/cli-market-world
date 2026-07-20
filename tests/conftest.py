@@ -40,6 +40,19 @@ os.environ["MARKET_ADMIN_API_KEYS"] = ""
 # get_token()/session-based auth (test_cli_session.py) would silently pick up
 # a real personal API key instead of its own test fixture value.
 os.environ["CLI_MARKET_API_KEY"] = ""
+# Same leak class as CLI_MARKET_API_KEY above, but for Slack: SLACK_BOT_TOKEN
+# is a real, persisted dev-shell env var on machines set up to run ops/*.py
+# Slack scripts by hand — nothing in this repo sets it either. Every ops/*.py
+# Slack-sender (billing_slack.py's _subscription_slack_ready()/
+# _funnel_slack_ready(), slack_notify.py, etc.) gates on this one token being
+# present. Unmocked tests that exercise a billing/subscription code path
+# (tests/test_server.py's /billing/pro-checkout tests) call straight into
+# that gate — without this scrub, they silently posted real fake-data
+# "$49 pago pendiente" messages to the live production #revenue Slack channel
+# on every local test run. Scrub the webhook fallbacks too, not just the token.
+os.environ["SLACK_BOT_TOKEN"] = ""
+os.environ["SLACK_WEBHOOK_CLI_MARKET_PRO"] = ""
+os.environ["SLACK_WEBHOOK_FUNNEL"] = ""
 
 # Several ops/*.py scripts (e.g. activate_pro.py, imported by
 # run_activate_pro_cli() below and by test_pro_display_name.py/test_server.py)

@@ -1,12 +1,38 @@
 """Subscription Slack message formatting."""
 
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "ops"))
 
-from billing_slack import format_funnel_message, format_subscription_message, tier_label
+from billing_slack import (
+    _funnel_slack_ready,
+    _subscription_slack_ready,
+    format_funnel_message,
+    format_subscription_message,
+    tier_label,
+)
 from market_funnel import is_noise_email
+
+
+def test_slack_credentials_are_scrubbed_in_test_session():
+    """Regression: a developer's real SLACK_BOT_TOKEN, persisted as a Windows
+    user-level env var (same class of leak as CLI_MARKET_API_KEY, see
+    conftest.py), was never scrubbed by conftest.py the way MARKET_API_TOKEN
+    is. Every local run of tests/test_server.py's unmocked /billing/pro-checkout
+    tests (test_pro_checkout_persists_display_name,
+    test_pro_checkout_yape_manual_transfer_fallback, ...) posted real fake-data
+    "$49 pago pendiente" messages to the live production #revenue Slack channel.
+    conftest.py must scrub every credential that gates a real Slack send,
+    exactly like it already does for MARKET_API_TOKEN/CLI_MARKET_API_KEY."""
+    # Assert truthiness, not equality — an equality assertion failure would
+    # print the real secret value in the pytest diff output.
+    assert not os.environ.get("SLACK_BOT_TOKEN", ""), "SLACK_BOT_TOKEN leaked into test env"
+    assert not os.environ.get("SLACK_WEBHOOK_CLI_MARKET_PRO", "")
+    assert not os.environ.get("SLACK_WEBHOOK_FUNNEL", "")
+    assert _subscription_slack_ready() is False
+    assert _funnel_slack_ready() is False
 
 
 def test_tier_labels():
