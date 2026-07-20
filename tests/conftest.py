@@ -53,6 +53,20 @@ os.environ["CLI_MARKET_API_KEY"] = ""
 os.environ["SLACK_BOT_TOKEN"] = ""
 os.environ["SLACK_WEBHOOK_CLI_MARKET_PRO"] = ""
 os.environ["SLACK_WEBHOOK_FUNNEL"] = ""
+# Same leak class again, found in the same audit: _notify_procure_payment()
+# (routers/billing/notifications.py) fires a real httpx POST to
+# PROCURE_WEBHOOK_URL with PROCURE_WEBHOOK_SECRET whenever it's set, and is
+# reachable unmocked from tests/test_checkout_payments.py and
+# tests/test_server.py's PayPal-webhook tests. market_connectors.email_outbound
+# ._send() does the same for SMTP_HOST/SMTP_USER/SMTP_PASSWORD — currently
+# "protected" only by ~30 individual per-test monkeypatches of specific
+# send_* functions in tests/test_server.py, the exact fragile per-call-site
+# discipline that already failed once for Slack. Scrub at the source instead.
+os.environ["PROCURE_WEBHOOK_URL"] = ""
+os.environ["PROCURE_WEBHOOK_SECRET"] = ""
+os.environ["SMTP_HOST"] = ""
+os.environ["SMTP_USER"] = ""
+os.environ["SMTP_PASSWORD"] = ""
 
 # Several ops/*.py scripts (e.g. activate_pro.py, imported by
 # run_activate_pro_cli() below and by test_pro_display_name.py/test_server.py)
