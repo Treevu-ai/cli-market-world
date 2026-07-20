@@ -38,6 +38,29 @@ def test_slack_credentials_are_scrubbed_in_test_session():
 def test_tier_labels():
     assert "Pro" in tier_label("pro")
     assert "Starter" in tier_label("starter")
+
+
+def test_procure_tier_labels_reflect_live_procure_plans_not_hardcoded():
+    """Same staleness bug class as CLI Market Pro/Starter (already fixed once,
+    see test_tier_label_reflects_live_price_not_a_stale_cache) — the Procure
+    tier prices were still hardcoded literals ($29/$79/$149) instead of
+    reading procure_billing.PROCURE_PLANS, so a price change there would
+    silently go unreflected in every Slack revenue message."""
+    import procure_billing
+
+    original = {
+        slug: cfg["amount"] for slug, cfg in procure_billing.PROCURE_PLANS.items()
+    }
+    try:
+        procure_billing.PROCURE_PLANS["starter"]["amount"] = 35.0
+        procure_billing.PROCURE_PLANS["pro"]["amount"] = 85.0
+        procure_billing.PROCURE_PLANS["builder"]["amount"] = 155.0
+        assert "$35" in tier_label("procure_starter")
+        assert "$85" in tier_label("procure_pro")
+        assert "$155" in tier_label("procure_builder")
+    finally:
+        for slug, amount in original.items():
+            procure_billing.PROCURE_PLANS[slug]["amount"] = amount
     assert "Procure" in tier_label("procure_pro")
 
 

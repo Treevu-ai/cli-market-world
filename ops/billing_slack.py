@@ -18,13 +18,14 @@ def _tier_labels() -> dict[str, str]:
     # meant to fix, just pinned to whatever price was live at the first
     # import of this module instead of a hardcoded literal.
     from market_billing import PUBLIC_PRO_PRICE_USD, PUBLIC_STARTER_PRICE_USD
+    from procure_billing import PROCURE_PLANS
 
     return {
         "pro": f"CLI Market Pro (${PUBLIC_PRO_PRICE_USD:.0f})",
         "starter": f"CLI Market Starter (${PUBLIC_STARTER_PRICE_USD:.0f})",
-        "procure_starter": "Procure Starter ($29)",
-        "procure_pro": "Procure Pro ($79)",
-        "procure_builder": "Procure Builder ($149)",
+        "procure_starter": f"Procure Starter (${PROCURE_PLANS['starter']['amount']:.0f})",
+        "procure_pro": f"Procure Pro (${PROCURE_PLANS['pro']['amount']:.0f})",
+        "procure_builder": f"Procure Builder (${PROCURE_PLANS['builder']['amount']:.0f})",
     }
 
 _FUNNEL_QUIET_DEFAULT = frozenset({"install", "login", "first_search"})

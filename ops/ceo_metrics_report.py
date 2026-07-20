@@ -36,8 +36,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from market_billing import PUBLIC_PRO_PRICE_USD
-
 from load_env import load_repo_env  # noqa: E402
 
 load_repo_env()
@@ -221,6 +219,14 @@ def _row(dimension: str, metric: str, definition: str, utility: str,
 # ── Report builder ────────────────────────────────────────────────────────────
 
 def build_report(*, remote: bool = False) -> str:
+    # Imported here, not at module level: this is a one-shot CLI script today
+    # (fresh process per cron run) so it's not an active bug, but matches the
+    # pattern billing_slack.py's _tier_labels() already had to adopt after a
+    # module-level import caused a months-long stale-price incident there —
+    # keep this file consistent so no future long-running caller (or copy of
+    # this function) reintroduces that risk.
+    from market_billing import PUBLIC_PRO_PRICE_USD
+
     today = date.today().strftime("%A %d/%m/%Y")
     now_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
 
@@ -411,7 +417,7 @@ def build_report(*, remote: bool = False) -> str:
         "Velocímetro de ingresos. Permite proyectar runway y tomar decisiones de inversión GTM.",
         "→ $1K MRR (goal Q3)",
         f"${pro_activated_30d * PUBLIC_PRO_PRICE_USD:.0f}+ (est.)" if remote and pro_activated_30d > 0 else "pre-revenue",
-        "✅" if remote and pro_activated_30d * 49 >= 1000 else "⚠️" if remote and pro_activated_30d > 0 else "❓",
+        "✅" if remote and pro_activated_30d * PUBLIC_PRO_PRICE_USD >= 1000 else "⚠️" if remote and pro_activated_30d > 0 else "❓",
     ))
 
     lines.append(_row(
