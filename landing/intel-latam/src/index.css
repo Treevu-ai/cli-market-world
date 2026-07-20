@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Lora", "Playfair Display", Georgia, serif;
+  
+  /* Modern premium Editorial & Lime colors */
+  --color-brand-primary: #bef264; /* Lime green */
+  --color-brand-dark: #0a0a0a; /* Dark background */
+  --color-brand-light: #f5f5f5; /* Light text */
+  --color-terminal-bg: #121212;
+}
+
+/* Base custom styles to enable smooth scrolling and premium aesthetics */
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom terminal scanline effect for the CLI brand look */
+.terminal-grid {
+  background-size: 20px 20px;
+  background-image: linear-gradient(to right, rgba(190, 242, 100, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(190, 242, 100, 0.03) 1px, transparent 1px);
+}
+
+.terminal-grid-light {
+  background-size: 20px 20px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  background-color: #bef264;
+  margin-left: 0.25em;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
