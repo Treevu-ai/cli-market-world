@@ -79,7 +79,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "$(grep '^cli-market-core==' requirements.txt)"  # single source of truth: requirements.txt
+          # requirements.txt is the single source of truth, EXCEPT cli-market-index:
+          # that line points pip at git+https, but we already have it checked out
+          # locally (with GH_PAT auth via the checkout step above) — install that
+          # local copy instead of making pip re-clone it over an unauthenticated URL.
+          grep -v '^cli-market-index' requirements.txt > /tmp/ci-requirements.txt
+          pip install -r /tmp/ci-requirements.txt
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
@@ -161,7 +166,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "$(grep '^cli-market-core==' requirements.txt)"  # single source of truth: requirements.txt
+          # requirements.txt is the single source of truth, EXCEPT cli-market-index:
+          # that line points pip at git+https, but we already have it checked out
+          # locally (with GH_PAT auth via the checkout step above) — install that
+          # local copy instead of making pip re-clone it over an unauthenticated URL.
+          grep -v '^cli-market-index' requirements.txt > /tmp/ci-requirements.txt
+          pip install -r /tmp/ci-requirements.txt
           pip install -e ".deps/cli-market-index[postgres]"
           pip install pytest
           python -c "from market_core.commerce_capabilities import get_commerce_capabilities; assert get_commerce_capabilities()['checkout']['scope'] == 'cli_market_internal'"
