@@ -66,8 +66,13 @@ jobs:
         env:
           MARKET_SKIP_LIVE: "1"
         run: |
-          pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install "$(grep '^cli-market-core==' requirements.txt)"
+          # requirements.txt is the single source of truth for runtime deps
+          # (2026-07-19 audit: a hand-picked package list here had already
+          # drifted twice — missing twilio and openai, both imported by
+          # routers/integrations/whatsapp.py — silently masked until now by
+          # continue-on-error on the caller job).
+          grep -v '^cli-market-index' requirements.txt > /tmp/pam-requirements.txt
+          pip install pytest -r /tmp/pam-requirements.txt
           pip install -e ".deps/cli-market-index[postgres]"
           pip install -e .
           pytest tests/test_funnel.py::test_pam_journey_synthetic -q
