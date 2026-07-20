@@ -1,6 +1,6 @@
 # Índice Canasta Perú
 
-**Actualizado:** 2026-07-19 02:08 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
+**Actualizado:** 2026-07-20 15:11 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
 
 Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa. Señal pública del data moat — ver [`docs/gtm/pitch-agentic-protocols.md`](../docs/gtm/pitch-agentic-protocols.md).
 
@@ -14,16 +14,16 @@ Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa.
 
 | Cadena | Ítems | Total canasta |
 |--------|------:|--------------:|
-| Plaza Vea | 11/10 | S/ 68.49 |
-| Metro | 11/10 | S/ 77.64 |
+| Plaza Vea | 11/10 | S/ 67.19 |
+| Metro | 11/10 | S/ 77.84 |
 | Wong | 11/10 | S/ 82.22 |
 | Nuna Orgánica | 10/10 | S/ 174.80 |
 
 ## Spread
 
-- Más barata: **Plaza Vea** (S/ 68.49)
+- Más barata: **Plaza Vea** (S/ 67.19)
 - Más cara: **Nuna Orgánica** (S/ 174.80)
-- Ratio max/min: **2.55×**
+- Ratio max/min: **2.60×**
 
 ## Metodología
 
