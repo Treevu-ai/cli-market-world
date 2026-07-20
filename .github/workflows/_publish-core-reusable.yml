@@ -1,0 +1,155 @@
+# Reusable workflow — the actual "apply patch → test → build → publish to
+# PyPI → sync git → verify" job shared by core-pypi-trigger.yml (auto, via
+# commit to ops/core-publish.trigger) and publish-core-pypi.yml (manual,
+# workflow_dispatch). Only callable via `uses:` (workflow_call) — cannot be
+# triggered directly by push or workflow_dispatch.
+#
+# Extracted 2026-07-19: the two callers had copy-pasted this entire job
+# verbatim, and had already drifted (e.g. only one of the two applied the
+# "Ensure git tag v1.9.34" one-off fixup). Each caller still resolves
+# VERSION its own way (trigger file vs. workflow_dispatch input) and passes
+# it in — that trigger-specific logic was intentionally NOT merged, to avoid
+# introducing new conditional logic into a PyPI-publish pipeline that works
+# today.
+
+name: (reusable) Publish cli-market-core to PyPI
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Target core version (must match ops/patches/cli-market-core-{version}.patch)"
+        required: true
+        type: string
+      pr_body:
+        description: "Body text for the auto-opened sync PR on cli-market-core, so each caller can attribute the release correctly."
+        required: false
+        type: string
+        default: "Automated cli-market-core release."
+    secrets:
+      GH_PAT:
+        required: true
+      PYPI_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-core:
+    name: Build & publish cli-market-core ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: pypi
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-core
+          token: ${{ secrets.GH_PAT }}
+          path: cli-market-core
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Apply core patch
+        run: |
+          set -eux
+          PATCH="ops/patches/cli-market-core-${VERSION}.patch"
+          test -f "$PATCH"
+          cd cli-market-core
+          if [ "$VERSION" = "1.9.36" ] && ! grep -q 'PACKAGE_VERSION = "1.9.35"' market_core/market_stats.py; then
+            git apply --check "../ops/patches/cli-market-core-1.9.35.patch"
+            git apply "../ops/patches/cli-market-core-1.9.35.patch"
+          fi
+          git apply --check "../${PATCH}"
+          git apply "../${PATCH}"
+          grep -q "version = \"${VERSION}\"" pyproject.toml
+          grep -q "PACKAGE_VERSION = \"${VERSION}\"" market_core/market_stats.py
+
+      - name: Test core patch
+        run: |
+          pip install -e ./cli-market-core pytest
+          python -m pytest cli-market-core/tests/test_observatory.py cli-market-core/tests/test_market_missions.py -q -o addopts=
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build cli-market-core/
+
+      - name: Publish cli-market-core to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: cli-market-core/dist/
+
+      # One-off historical fixup, relevant only to the 1.9.35 release — kept
+      # here (not in a caller) so it isn't lost if the two callers' patch
+      # bodies ever diverge again. No-ops for every other version.
+      - name: Ensure git tag v1.9.34 on cli-market-core
+        if: inputs.version == '1.9.35'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        continue-on-error: true
+        run: |
+          set -eux
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_TOKEN="$GH_PAT"
+          cd cli-market-core
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          git fetch origin main --tags
+          if git rev-parse "v1.9.34" >/dev/null 2>&1; then
+            echo "Tag v1.9.34 already exists"
+            exit 0
+          fi
+          git tag "v1.9.34" "origin/main"
+          git push origin "v1.9.34"
+
+      - name: Sync cli-market-core git (main + tag)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        continue-on-error: true
+        run: |
+          set -eux
+          GH_PAT="$(printf '%s' "${GH_PAT:-}" | tr -d '\n\r')"
+          export GH_TOKEN="$GH_PAT"
+          cd cli-market-core
+          git config user.email "hello@cli-market.dev"
+          git config user.name "CLI Market Release"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/Treevu-ai/cli-market-core.git"
+          BRANCH="release/core-${VERSION}"
+          git checkout -B "$BRANCH"
+          git add market_core/market_missions.py market_core/market_stats.py pyproject.toml tests/test_market_missions.py tests/test_observatory.py
+          git diff --cached --quiet && echo "No git changes" && exit 0
+          git commit -m "release(core): ${VERSION} — Observatory backport from world patch"
+          git push -f origin "$BRANCH"
+          gh pr create --repo Treevu-ai/cli-market-core \
+            --base main --head "$BRANCH" \
+            --title "release(core): ${VERSION} — Observatory backport" \
+            --body "${{ inputs.pr_body }}" \
+            || true
+          gh pr merge --repo Treevu-ai/cli-market-core --merge "$BRANCH" --admin || true
+          git checkout main
+          git pull origin main
+          git tag -f "v${VERSION}"
+          git push origin "v${VERSION}" --force
+
+      - name: Verify PyPI propagation
+        run: |
+          PKG="cli-market-core"
+          for i in $(seq 1 24); do
+            if curl -fsSL "https://pypi.org/pypi/${PKG}/${VERSION}/json" >/dev/null 2>&1; then
+              echo "✓ ${PKG} ${VERSION} visible on PyPI (attempt ${i})"
+              pip index versions cli-market-core | head -3
+              exit 0
+            fi
+            echo "Attempt ${i}/24: waiting 10s..."
+            sleep 10
+          done
+          echo "ERROR: ${PKG} ${VERSION} not visible on PyPI after publish"
+          exit 1
