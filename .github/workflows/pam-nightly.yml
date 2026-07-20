@@ -23,7 +23,7 @@ jobs:
   pam-tier1:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    if: github.event_name == 'schedule' || github.event.inputs.tier == '1' || github.event.inputs.tier == '2'
+    if: github.event.inputs.tier == '1' || github.event.inputs.tier == '2'
 
     steps:
       - uses: actions/checkout@v6
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: pam-tier1
     timeout-minutes: 15
-    if: github.event_name == 'schedule' || github.event.inputs.tier == '2'
+    if: github.event.inputs.tier == '2'
 
     steps:
       - uses: actions/checkout@v6

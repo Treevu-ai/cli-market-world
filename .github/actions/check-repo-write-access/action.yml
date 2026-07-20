@@ -1,0 +1,43 @@
+name: Check repo write access
+description: >
+  Checks whether a given token can push to a target GitHub repo, so the
+  calling workflow can decide between opening an automated PR and falling
+  back to "download the patch artifact and apply manually" instructions.
+  Shared by the sync-backend-*/sync-index-canasta family of workflows,
+  which previously each hand-rolled this identical check.
+
+inputs:
+  repo:
+    description: "Target repo in owner/name form (e.g. Treevu-ai/cli-market-backend)"
+    required: true
+  token:
+    description: "Token to check (e.g. secrets.GH_PAT_BACKEND_WRITE) — pass the secret value itself, not its name"
+    required: true
+
+outputs:
+  has_write:
+    description: "'true' if the token has push access to repo, 'false' otherwise"
+    value: ${{ steps.check.outputs.has_write }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REPO: ${{ inputs.repo }}
+      run: |
+        GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
+        export GH_TOKEN
+        if [ -z "${GH_TOKEN}" ]; then
+          echo "has_write=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::Write token not set for ${REPO} — will skip auto-PR (download artifact instead)"
+          exit 0
+        fi
+        if gh api "repos/${REPO}" --jq '.permissions.push' 2>/dev/null | grep -q true; then
+          echo "has_write=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "has_write=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::Write token cannot push to ${REPO} — refresh token with Contents: Read and write on that repo"
+        fi

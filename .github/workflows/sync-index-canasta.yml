@@ -68,22 +68,10 @@ jobs:
 
       - name: Check index write token
         id: write_token
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_INDEX_WRITE }}
-        run: |
-          GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
-          export GH_TOKEN
-          if [ -z "${GH_TOKEN}" ]; then
-            echo "has_write=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::GH_PAT_INDEX_WRITE not set — will skip auto-PR (download artifact instead)"
-            exit 0
-          fi
-          if gh api repos/Treevu-ai/cli-market-index --jq '.permissions.push' 2>/dev/null | grep -q true; then
-            echo "has_write=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_write=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::GH_PAT_INDEX_WRITE cannot push to cli-market-index"
-          fi
+        uses: ./.github/actions/check-repo-write-access
+        with:
+          repo: Treevu-ai/cli-market-index
+          token: ${{ secrets.GH_PAT_INDEX_WRITE }}
 
       - name: Open PR on cli-market-index
         if: steps.write_token.outputs.has_write == 'true'
