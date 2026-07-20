@@ -313,6 +313,8 @@ def _fmt_slack(report: dict) -> str:
         "",
         "*Segmentos:*",
     ]
+    if report.get("estimated_segmentation"):
+        lines.append("_(⚠️ estimado por benchmarks de industria — sin datos per-user disponibles)_")
     emoji = {"HOT": "🔥", "WARM": "♨️", "COLD": "🧊"}
     for seg, data in segs.items():
         lines.append(f"  {emoji.get(seg,'?')} *{seg}* ({data['count']} usuarios) — {data['action']}")
