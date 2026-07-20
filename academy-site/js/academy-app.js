@@ -951,17 +951,56 @@
   }
 
   /* ——— Form ——— */
+  var ACADEMY_API_URL = "https://cli-market-api.fly.dev";
   var form = document.getElementById("waitlist-form");
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var success = document.getElementById("form-success");
-      if (success) {
-        success.textContent =
-          "Recibimos su solicitud. En producción le escribiremos con el siguiente paso del track.";
-        success.classList.add("show");
-      }
-      form.reset();
+      var error = document.getElementById("form-error");
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if (error) error.classList.remove("show");
+      if (success) success.classList.remove("show");
+      if (submitBtn) submitBtn.disabled = true;
+
+      var body = {
+        email: form.querySelector("#email").value,
+        rol: form.querySelector("#rol").value,
+        track: form.querySelector("#track").value,
+        pais: form.querySelector("#pais").value,
+        empresa: form.querySelector("#empresa").value,
+      };
+
+      fetch(ACADEMY_API_URL + "/v1/academy/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) {
+              throw new Error(
+                (data && data.detail) || "No se pudo registrar su solicitud."
+              );
+            }
+            return data;
+          });
+        })
+        .then(function () {
+          if (success) success.classList.add("show");
+          form.reset();
+        })
+        .catch(function (err) {
+          if (error) {
+            error.textContent =
+              (err && err.message) ||
+              "No se pudo registrar su solicitud. Intente de nuevo.";
+            error.classList.add("show");
+          }
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
     });
   }
 

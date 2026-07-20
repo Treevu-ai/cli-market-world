@@ -5,10 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CLI Market Academy — Decida con precios de góndola reales</title>
   <meta name="description" content="Formación para desks de precio y compras en LATAM. Track Procure o Intelligence. Workbook, capstone y rúbrica. Estilo visual Optimus + contenido Academy." />
+  <link rel="canonical" href="https://academy.cli-market.dev/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CLI Market Academy" />
+  <meta property="og:url" content="https://academy.cli-market.dev/" />
+  <meta property="og:title" content="CLI Market Academy — Decida con precios de góndola reales" />
+  <meta property="og:description" content="Formación para desks de precio y compras en LATAM. Track Procure o Intelligence. Workbook, capstone y rúbrica." />
+  <meta property="og:image" content="https://cli-market.dev/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CLI Market Academy — Decida con precios de góndola reales" />
+  <meta name="twitter:description" content="Formación para desks de precio y compras en LATAM. Track Procure o Intelligence." />
+  <meta name="twitter:image" content="https://cli-market.dev/og.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/academy.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Es un curso genérico de e-commerce o marketing digital?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. No enseñamos a pautar ni a armar tiendas. Es formación aplicada sobre el motor de datos de CLI Market: leer señales de góndola formal (Intelligence) o comprar con método (Procure)." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Necesito saber programar?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No es un bootcamp de software. Los labs están pensados para profesionales de negocios, compras, pricing o research. Se guían CLI/API/MCP paso a paso; estar cómodo con datos acelera, no es requisito ser developer." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Shelf inflation es lo mismo que el IPC oficial?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. El IPC mide una canasta oficial ponderada (y no es lo que indexamos). CLI Market lee precios de góndola formal online de retailers indexados. Da velocidad (nowcast) y complementa; no reemplaza INEI, DANE, INDEC, IBGE u otros institutos." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Puedo cursar ambos tracks a la vez?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Recomendamos secuencia, no paralelo. Procure pregunta “¿cómo compro mejor hoy?”; Intelligence pregunta “¿qué señala el mercado y qué claim puedo defender?”. Entregables y lentes mentales distintos." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿La inscripción incluye el plan pago de la API o Procure?",
+        "acceptedAnswer": { "@type": "Answer", "text": "El form de esta página es acceso prioritario a formación (waitlist): sin tarjeta y sin cargo automático. El acceso a labs depende de la oferta activa. Los planes corporativos de producto son un paso posterior y opcional según su rol." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Qué validez tiene la certificación?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No se certifica por asistencia. Exige capstone con rúbrica (umbral orientativo ≥80%) y cero tolerancia a claims falsos. Es un sello de rigor analítico, no un diploma decorativo." }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cuánto tiempo necesito?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Orientativo: ~12–18 h por track, self-paced (~2–3 semanas a 5–7 h/semana). Puede ir más lento; el capstone no se salta si busca la certificación." }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div class="noise-overlay">
@@ -796,7 +853,8 @@
                 </div>
               </div>
               <form class="form" id="waitlist-form">
-                <div class="form-success" id="form-success">Registrado en este mock. En producción: confirmación real.</div>
+                <div class="form-success" id="form-success">Recibimos su solicitud. Le escribiremos con el siguiente paso del track.</div>
+                <div class="form-error" id="form-error"></div>
                 <div class="field"><label for="email">Email</label><input id="email" type="email" required placeholder="usted@empresa.com" autocomplete="email" /></div>
                 <div class="field">
                   <label for="rol">Rol</label>
@@ -839,7 +897,7 @@
                   Solicitar acceso prioritario
                   <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                 </button>
-                <p class="hint">Mock local · sin tarjeta · formación primero</p>
+                <p class="hint">Sin tarjeta · formación primero</p>
               </form>
             </div>
             <div class="cta-corner tl"></div>

@@ -2458,6 +2458,16 @@ details.faq:hover summary { color: var(--foreground); }
   background: var(--muted);
 }
 .form-success.show { display: block; }
+.form-error {
+  display: none;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  background: rgba(192, 57, 43, 0.06);
+}
+.form-error.show { display: block; }
 
 /* Footer */
 footer {

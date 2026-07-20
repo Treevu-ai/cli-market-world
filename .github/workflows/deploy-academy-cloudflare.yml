@@ -1,0 +1,81 @@
+name: Deploy Academy (Cloudflare Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "academy-site/**"
+      - ".github/workflows/deploy-academy-cloudflare.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve Cloudflare account ID
+        id: cf_account
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN GitHub secret."
+            exit 1
+          fi
+          if [ -n "$CF_ACCOUNT" ]; then
+            echo "id=$CF_ACCOUNT" >> "$GITHUB_OUTPUT"
+            echo "Using CLOUDFLARE_ACCOUNT_ID from secrets"
+            exit 0
+          fi
+          RESP=$(curl -sS -H "Authorization: Bearer $CF_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts?per_page=1")
+          ID=$(echo "$RESP" | jq -r '.result[0].id // empty')
+          if [ -z "$ID" ] || [ "$ID" = "null" ]; then
+            RESP=$(curl -sS -H "Authorization: Bearer $CF_TOKEN" \
+              "https://api.cloudflare.com/client/v4/user/memberships?per_page=1")
+            ID=$(echo "$RESP" | jq -r '.result[0].account.id // empty')
+          fi
+          if [ -z "$ID" ] || [ "$ID" = "null" ]; then
+            echo "::error::Could not resolve Cloudflare account ID. Set CLOUDFLARE_ACCOUNT_ID secret or fix token permissions."
+            echo "$RESP" | jq -r '.errors[]?.message // .' 2>/dev/null || echo "$RESP"
+            exit 1
+          fi
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          echo "Resolved account ID from API token"
+
+      - name: Verify Cloudflare API token (Pages)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ steps.cf_account.outputs.id }}
+        run: |
+          RESP=$(curl -sS -o /tmp/cf.json -w "%{http_code}" \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/pages/projects/cli-market-academy")
+          if [ "$RESP" != "200" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN cannot read Pages project (HTTP $RESP). Token needs Account · Cloudflare Pages · Edit."
+            cat /tmp/cf.json | jq -r '.errors[]?.message // .' 2>/dev/null || cat /tmp/cf.json
+            exit 1
+          fi
+          echo "Token can access Pages project cli-market-academy"
+
+      - name: Deploy to Cloudflare Pages (wrangler)
+        uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf_account.outputs.id }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ steps.cf_account.outputs.id }}
+          wranglerVersion: "4"
+          command: pages deploy academy-site --project-name=cli-market-academy --branch=main
+
+      - name: Deploy complete
+        run: echo "Live at https://academy.cli-market.dev (once the custom domain is attached)"
