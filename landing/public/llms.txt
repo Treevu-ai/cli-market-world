@@ -27,7 +27,7 @@ Cost-of-Living OS for LatAm. One call (`market optimize` / `market_optimize_purc
 - Payments: PayPal · Mercado Pago · Yape/Plin in-app transfer (Peru)
 - Checkout: internal CLI Market order — not retailer-site checkout (not Wong/Rappi/ML)
 - WooCommerce pilot: Nuna Orgánica PE (406 SKUs, FMCG orgánico)
-- Pricing (Build, foco ICP AI Agent Builders): Starter $9/mo (5,000 req/día, CSV export), Pro $49/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
+- Pricing (Build, foco ICP AI Agent Builders): Starter $9/mo (5,000 req/día, CSV export), Pro $39/mo (10,000 req/día, alerts, full MCP, checkout), Enterprise custom (SLAs, high limits)
 - Procurement operators (restaurants, hotels, agro): **Procure Copilot** — https://procurecopilot.com · https://procurecopilot.com/llms.txt ($29–149/mo, CLI Market infra bundled on Pro+)
 - Data/analytics teams: Intelligence pilot $300–500/mo (no checkout)
 
