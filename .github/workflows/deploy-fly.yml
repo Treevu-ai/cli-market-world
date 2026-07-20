@@ -1,23 +1,31 @@
 name: Deploy Fly.io
 
+# Gated on CI (see ci.yml, workflow name "CI") instead of triggering on push
+# directly — a red pytest run used to race a green deploy on the same commit
+# with no dependency between them. workflow_dispatch is kept for manual
+# emergency deploys that should bypass CI (rare; use with care).
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
-    paths:
-      - "**.py"
-      - "requirements.txt"
-      - "Dockerfile"
-      - "fly.toml"
-      - ".github/workflows/deploy-fly.yml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     concurrency: deploy-fly-api
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       # Fails in ~30s instead of ~15min: catches "forgot to add it to
       # requirements.txt" (e.g. the openai import that crash-looped every
@@ -36,15 +44,29 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      # Last successful release's image, captured BEFORE this deploy — used
+      # to roll back automatically if the post-deploy smoke test below fails.
+      # flyctl has no dedicated "rollback" subcommand on this version; the
+      # documented mechanism is redeploying a prior image explicitly.
+      - name: Capture last known good release
+        id: last_good
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          IMAGE=$(flyctl releases --app cli-market-api --image --json \
+            | python3 -c "import json,sys; rs=json.load(sys.stdin); print(next((r['ImageRef'] for r in rs if r.get('Status')=='complete'), ''))")
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Last known good image before this deploy: ${IMAGE:-<none found>}"
+
       - name: Deploy cli-market-api
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          BUILD_GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           for attempt in 1 2 3; do
             echo "::group::Deploy attempt $attempt/3"
             if flyctl deploy --app cli-market-api --config fly.toml \
-                --build-secret github_token="$GITHUB_TOKEN" --remote-only \
+                --build-secret github_token="$BUILD_GH_TOKEN" --remote-only \
                 --wait-timeout 600; then
               echo "::endgroup::"
               exit 0
@@ -57,3 +79,34 @@ jobs:
           done
           echo "All 3 deploy attempts failed. Check 'flyctl status -a cli-market-api' and 'flyctl logs -a cli-market-api' for the real cause before retrying again."
           exit 1
+
+      # Verifies the version that's actually live right now, not "prod in
+      # general" — ci.yml's own smoke-production job runs on the same push
+      # trigger as this workflow, decoupled from whether THIS deploy landed.
+      - name: Post-deploy smoke test
+        id: smoke
+        env:
+          MARKET_API_URL: https://cli-market-api.fly.dev
+        run: |
+          pip install --quiet --disable-pip-version-check httpx
+          bash ops/smoke_e2e.sh
+          python3 ops/doctor_prod_gate.py
+
+      # Only reachable if a later step failed/hung AND we captured an image
+      # to roll back to (i.e. the deploy itself landed — no point "rolling
+      # back" a deploy that never happened because sanity-check failed).
+      # cancelled() matters as much as failure() here: a hung smoke test that
+      # hits the job's timeout-minutes reports "cancelled", not "failure" —
+      # without this it would silently skip rollback on exactly the kind of
+      # stuck-deploy scenario this step exists for.
+      - name: Rollback to last known good release
+        if: (failure() || cancelled()) && steps.last_good.outputs.image != ''
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          ROLLBACK_IMAGE: ${{ steps.last_good.outputs.image }}
+        run: |
+          echo "::error::Post-deploy verification failed — rolling back to $ROLLBACK_IMAGE"
+          flyctl deploy --app cli-market-api --config fly.toml \
+            --image "$ROLLBACK_IMAGE" --remote-only \
+            --wait-timeout 600
+          echo "::error::Rolled back to $ROLLBACK_IMAGE — this deploy still failed and needs investigation before retrying."
