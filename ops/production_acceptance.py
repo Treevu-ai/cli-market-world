@@ -194,7 +194,11 @@ def check_expect(
 
     ct_need = expect.get("content_type_contains")
     if ct_need:
-        ct = headers.get("Content-Type", "")
+        # HTTP header names are case-insensitive (RFC 7230 §3.2); the wire
+        # casing servers/proxies actually send varies (e.g. Starlette emits
+        # lowercase "content-type"), so headers must be looked up
+        # case-insensitively rather than assuming any one casing.
+        ct = next((v for k, v in headers.items() if k.lower() == "content-type"), "")
         if ct_need.lower() not in ct.lower():
             errors.append(f"content-type '{ct}' missing '{ct_need}'")
 
