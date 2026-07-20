@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CLI Market Academy — Decida con precios de góndola reales</title>
+  <meta name="description" content="Formación para desks de precio y compras en LATAM. Track Procure o Intelligence. Workbook, capstone y rúbrica. Estilo visual Optimus + contenido Academy." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/academy.css" />
+</head>
+<body>
+  <div class="noise-overlay">
+    <!-- NAV (Optimus floating pill) -->
+    <header class="site-header" id="site-header">
+      <nav class="nav-shell">
+        <div class="nav-inner">
+          <a href="#top" class="logo">
+            <span class="logo-name">CLI Market</span>
+            <span class="logo-sub">Academy</span>
+          </a>
+          <ul class="nav-links">
+            <li><a href="#para-usted">¿Para usted?</a></li>
+            <li><a href="#tracks">Tracks</a></li>
+            <li><a href="#moat">Moat</a></li>
+            <li><a href="#pipeline">Pipeline</a></li>
+            <li><a href="#mcp">MCP</a></li>
+            <li><a href="#lab">Lab</a></li>
+            <li><a href="#cta">Acceso</a></li>
+          </ul>
+          <div class="nav-cta">
+            <a class="ghost" href="https://cli-market.dev" target="_blank" rel="noopener">Producto</a>
+            <a class="btn btn-primary btn-sm" href="#cta">Acceso prioritario</a>
+          </div>
+          <button class="menu-btn" id="menu-btn" type="button" aria-label="Menú">
+            <svg id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <svg id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <div class="mobile-menu" id="mobile-menu">
+      <a class="big" href="#para-usted" data-close>¿Para usted?</a>
+      <a class="big" href="#tracks" data-close>Tracks</a>
+      <a class="big" href="#moat" data-close>Moat</a>
+      <a class="big" href="#pipeline" data-close>Pipeline</a>
+      <a class="big" href="#mcp" data-close>MCP</a>
+      <a class="big" href="#lab" data-close>Lab</a>
+      <a class="big" href="#cta" data-close>Acceso</a>
+      <div class="bottom">
+        <a class="btn btn-outline" href="https://cli-market.dev" target="_blank" rel="noopener">Producto</a>
+        <a class="btn btn-primary" href="#cta" data-close>Empezar</a>
+      </div>
+    </div>
+
+    <main id="top">
+      <!-- HERO — full viewport + sphere + rotating word + marquee -->
+      <section class="hero">
+        <div class="hero-grid-bg" id="hero-grid" aria-hidden="true"></div>
+        <div class="hero-sphere" aria-hidden="true">
+          <canvas id="canvas-sphere"></canvas>
+        </div>
+
+        <div class="wrap hero-content">
+          <div class="eyebrow hero-fade" data-delay="0">Formación para desks de precio y compras · LATAM</div>
+          <h1 class="hero-fade" data-delay="80">
+            <span class="h1-line h1-line-top">
+              Aprenda a
+              <span class="word-slot">
+                <span id="rotating-word"></span>
+                <span class="word-underline"></span>
+              </span>
+            </span>
+            <span class="h1-line">con góndola real</span>
+          </h1>
+
+          <div class="hero-bottom hero-fade" data-delay="200">
+            <p class="hero-lead">
+              Dos tracks. Un motor de precios de retail formal.
+              Workbook y rúbrica — <strong>sin fingir ser el IPC</strong>, sin programar.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#para-usted">
+                Encontrar mi track
+                <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+              <a class="btn btn-outline" href="#ejemplo">Ver un brief de ejemplo</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marquee (Optimus stats strip) -->
+        <div class="marquee-wrap hero-fade" data-delay="400" aria-hidden="true">
+          <div class="marquee">
+            <div class="marquee-track">
+              <div class="marquee-item"><span class="val">65–70K+</span><span class="meta">precios indexados<small>MOAT</small></span></div>
+              <div class="marquee-item"><span class="val">40</span><span class="meta">retailers verificados<small>ACTIVOS</small></span></div>
+              <div class="marquee-item"><span class="val">82</span><span class="meta">en catálogo<small>RED</small></span></div>
+              <div class="marquee-item"><span class="val">~4h</span><span class="meta">refresh de góndola<small>FRESCURA</small></span></div>
+              <div class="marquee-item"><span class="val">SIRI</span><span class="meta">leer el mercado<small>INTEL</small></span></div>
+              <div class="marquee-item"><span class="val">DDM</span><span class="meta">comprar con datos<small>PROCURE</small></span></div>
+              <div class="marquee-item"><span class="val">12–18h</span><span class="meta">por track<small>SELF-PACED</small></span></div>
+              <div class="marquee-item"><span class="val">9</span><span class="meta">módulos + capstone<small>RÚBRICA</small></span></div>
+            </div>
+            <div class="marquee-track" aria-hidden="true">
+              <div class="marquee-item"><span class="val">65–70K+</span><span class="meta">precios indexados<small>MOAT</small></span></div>
+              <div class="marquee-item"><span class="val">40</span><span class="meta">retailers verificados<small>ACTIVOS</small></span></div>
+              <div class="marquee-item"><span class="val">82</span><span class="meta">en catálogo<small>RED</small></span></div>
+              <div class="marquee-item"><span class="val">~4h</span><span class="meta">refresh de góndola<small>FRESCURA</small></span></div>
+              <div class="marquee-item"><span class="val">SIRI</span><span class="meta">leer el mercado<small>INTEL</small></span></div>
+              <div class="marquee-item"><span class="val">DDM</span><span class="meta">comprar con datos<small>PROCURE</small></span></div>
+              <div class="marquee-item"><span class="val">12–18h</span><span class="meta">por track<small>SELF-PACED</small></span></div>
+              <div class="marquee-item"><span class="val">9</span><span class="meta">módulos + capstone<small>RÚBRICA</small></span></div>
+            </div>
+          </div>
+        </div>
+
+        <a class="scroll-cue hero-fade" data-delay="700" href="#para-usted" aria-label="Bajar al diagnóstico">
+          <span class="mouse" aria-hidden="true"><i></i></span>
+          <span>Scroll</span>
+        </a>
+      </section>
+
+      <!-- ROLE DOORS -->
+      <section class="block alt" id="para-usted">
+        <div class="wrap">
+          <div class="eyebrow">Diagnóstico en 10 segundos</div>
+          <h2 class="section-h2 reveal">¿Esto es para usted?</h2>
+          <p class="muted reveal">Tres puertas. Un track. Sin jerga primero.</p>
+          <div class="doors reveal">
+            <button type="button" class="door hover-lift" data-track="Procure" data-rol="Abastecimiento / Compras">
+              <div class="num">01</div>
+              <h3>Compro o abastezco</h3>
+              <p>Facilities, hotel, oficina. Comparar, decidir y ejecutar.</p>
+              <span class="go">Track Procure →</span>
+            </button>
+            <button type="button" class="door hover-lift" data-track="Intelligence" data-rol="Pricing / Revenue">
+              <div class="num">02</div>
+              <h3>Fijo precio o forecast</h3>
+              <p>Pricing, comercial, revenue. Señal de mercado esta semana.</p>
+              <span class="go">Track Intelligence →</span>
+            </button>
+            <button type="button" class="door hover-lift" data-track="Intelligence" data-rol="Research / Datos / Fintech">
+              <div class="num">03</div>
+              <h3>Investigo o cito datos</h3>
+              <p>Research, fintech, growth. Methods y claims defendibles.</p>
+              <span class="go">Track Intelligence →</span>
+            </button>
+          </div>
+          <p class="door-help reveal">
+            ¿No está seguro? <button type="button" id="open-quiz">3 preguntas</button>
+            · <button type="button" data-track="Ambos">ambos tracks</button>
+          </p>
+          <div class="quiz" id="quiz"></div>
+        </div>
+      </section>
+
+      <!-- MULTI-LENTE (Google AI Studio) -->
+      <section class="block" id="lentes">
+        <div class="wrap">
+          <div class="eyebrow">Audiencias GTM</div>
+          <h2 class="section-h2 reveal">Mismos hechos de mercado.<br /><span class="dim">Distintas miradas de negocio.</span></h2>
+          <p class="muted reveal">Un motor de góndola formal alimenta lentes distintas. Elija su rol para ver el workbook orientado.</p>
+          <div class="role-tabs reveal" id="role-tabs" role="tablist" aria-label="Lentes de negocio"></div>
+          <div class="role-panel reveal" id="role-panel">
+            <div class="role-main">
+              <div class="role-meta">
+                <span class="role-badge" id="role-badge">—</span>
+                <span class="role-meta-label">Lente de negocio</span>
+              </div>
+              <h3 id="role-title">—</h3>
+              <p id="role-desc" class="role-desc"></p>
+              <div class="role-tip">
+                <span class="role-tip-mark" aria-hidden="true">!</span>
+                <div>
+                  <strong>Regla de oro</strong>
+                  <p id="role-tip"></p>
+                </div>
+              </div>
+            </div>
+            <aside class="role-example">
+              <div class="role-example-label">Ejemplo en el workbook</div>
+              <p id="role-example" class="font-mono"></p>
+              <div class="role-example-ok">Configurado como módulo de autoevaluación</div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAPABILITIES — Optimus feature rows with SVG graphics -->
+      <section class="block" id="capabilities">
+        <div class="wrap">
+          <div class="eyebrow">Capacidades</div>
+          <h2 class="section-h2 reveal">Todo lo que necesita.<br /><span class="dim">Nada de relleno.</span></h2>
+
+          <div class="feature-rows">
+            <article class="feature-row reveal" data-feature>
+              <span class="feature-num">01</span>
+              <div class="feature-body">
+                <div class="feature-copy">
+                  <h3 class="feature-title">Brief de góndola en 1 página</h3>
+                  <p>Nowcast con ventanas 7d/30d, calidad del corte e implicaciones por rol — sin vender un 7d como IPC.</p>
+                </div>
+                <div class="feature-visual" aria-hidden="true">
+                  <!-- Deploy-style bars (Optimus) -->
+                  <svg viewBox="0 0 200 160" class="viz">
+                    <rect x="30" y="20" width="140" height="120" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <g>
+                      <rect x="40" y="35" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0s" repeatCount="indefinite"/></rect>
+                      <rect x="40" y="51" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.15s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.15s" repeatCount="indefinite"/></rect>
+                      <rect x="40" y="67" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.3s" repeatCount="indefinite"/></rect>
+                      <rect x="40" y="83" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.45s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.45s" repeatCount="indefinite"/></rect>
+                      <rect x="40" y="99" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.6s" repeatCount="indefinite"/></rect>
+                      <rect x="40" y="115" width="120" height="10" rx="2" fill="currentColor" opacity="0.15"><animate attributeName="opacity" values="0.15;0.8;0.15" dur="2s" begin="0.75s" repeatCount="indefinite"/><animate attributeName="width" values="20;120;20" dur="2s" begin="0.75s" repeatCount="indefinite"/></rect>
+                    </g>
+                    <circle cx="100" cy="155" r="3" fill="currentColor" opacity="0.3"><animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/></circle>
+                  </svg>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature-row reveal" data-feature>
+              <span class="feature-num">02</span>
+              <div class="feature-body">
+                <div class="feature-copy">
+                  <h3 class="feature-title">Riesgo comercial legible</h3>
+                  <p>Volatilidad, trending y promos dudosas convertidos en memo accionable a 72 h — no en un gráfico huérfano.</p>
+                </div>
+                <div class="feature-visual" aria-hidden="true">
+                  <!-- AI node network (Optimus) -->
+                  <svg viewBox="0 0 200 160" class="viz">
+                    <circle cx="100" cy="80" r="12" fill="currentColor"><animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite"/></circle>
+                    <g id="orbit-nodes"></g>
+                    <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" stroke-width="1" opacity="0">
+                      <animate attributeName="r" values="20;60" dur="2s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.5;0" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                  </svg>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature-row reveal" data-feature>
+              <span class="feature-num">03</span>
+              <div class="feature-body">
+                <div class="feature-copy">
+                  <h3 class="feature-title">Compras multi-retailer</h3>
+                  <p>Del search a la decisión con criterios explícitos. Track Procure: cotizar sin las 8 pestañas de siempre.</p>
+                </div>
+                <div class="feature-visual" aria-hidden="true">
+                  <!-- Collab A/B (Optimus) -->
+                  <svg viewBox="0 0 200 160" class="viz">
+                    <rect x="30" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <text x="55" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">A</text>
+                    <circle cx="55" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="120" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <text x="145" y="85" text-anchor="middle" font-size="18" font-family="monospace" fill="currentColor">B</text>
+                    <circle cx="145" cy="35" r="12" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <line x1="80" y1="80" x2="120" y2="80" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4">
+                      <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.5s" repeatCount="indefinite"/>
+                    </line>
+                    <circle r="4" fill="currentColor">
+                      <animateMotion dur="1.5s" repeatCount="indefinite" path="M 80 80 L 120 80"/>
+                    </circle>
+                    <g transform="translate(100, 130)">
+                      <circle r="6" fill="none" stroke="currentColor" stroke-width="2">
+                        <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                      </circle>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature-row reveal" data-feature>
+              <span class="feature-num">04</span>
+              <div class="feature-body">
+                <div class="feature-copy">
+                  <h3 class="feature-title">Claims honestos por diseño</h3>
+                  <p>Rúbrica que castiga inventar IPC o informal. Semáforo de calidad: usar / monitorear / no publicar.</p>
+                </div>
+                <div class="feature-visual" aria-hidden="true">
+                  <!-- Security shield (Optimus) -->
+                  <svg viewBox="0 0 200 160" class="viz">
+                    <path d="M 100 20 L 150 40 L 150 90 Q 150 130 100 145 Q 50 130 50 90 L 50 40 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M 100 35 L 135 50 L 135 85 Q 135 115 100 128 Q 65 115 65 85 L 65 50 Z" fill="currentColor" opacity="0.1">
+                      <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite"/>
+                    </path>
+                    <rect x="85" y="70" width="30" height="25" rx="3" fill="currentColor"/>
+                    <path d="M 90 70 L 90 60 Q 90 50 100 50 Q 110 50 110 60 L 110 70" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="100" cy="80" r="4" fill="var(--background, #faf9f7)"/>
+                    <rect x="98" y="82" width="4" height="8" fill="var(--background, #faf9f7)"/>
+                    <line x1="60" y1="60" x2="140" y2="60" stroke="currentColor" stroke-width="1" opacity="0">
+                      <animate attributeName="y1" values="40;120;40" dur="3s" repeatCount="indefinite"/>
+                      <animate attributeName="y2" values="40;120;40" dur="3s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0;0.5;0" dur="3s" repeatCount="indefinite"/>
+                    </line>
+                  </svg>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- STACK — dual marquee (tools / method / surfaces) -->
+      <section class="block stack-section" id="stack" aria-label="Herramientas y método">
+        <div class="wrap">
+          <div class="stack-head reveal">
+            <div class="eyebrow">Stack del oficio</div>
+            <h2 class="section-h2">Lo que usa el desk.<br /><span class="dim">Sin relleno de logo wall.</span></h2>
+            <p class="muted" style="margin-inline:auto">CLI, API y MCP sobre el mismo moat. Métodos SIRI y DDM. Surfaces de producto solo como next step.</p>
+          </div>
+        </div>
+        <div class="stack-row forward" aria-hidden="true" id="stack-forward"></div>
+        <div class="stack-row reverse" aria-hidden="true" id="stack-reverse"></div>
+      </section>
+
+      <!-- PIPELINE (ecosystem brief) -->
+      <section class="block alt" id="pipeline">
+        <div class="wrap">
+          <div class="eyebrow">Arquitectura</div>
+          <h2 class="section-h2 reveal" id="pipeline-title">Pipeline del motor</h2>
+          <p class="muted reveal" id="pipeline-sub">De la góndola formal al desk.</p>
+          <div class="pipeline-flow reveal" id="pipeline-flow"></div>
+
+          <div class="pipe-log reveal" id="pipe-log">
+            <div class="pipe-log-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <span class="pipe-log-name">pipeline_demo.log</span>
+              <span class="pipe-log-badge">SIMULACIÓN</span>
+            </div>
+            <pre class="pipe-log-body" id="pipe-log-body" aria-live="polite"></pre>
+            <p class="pipe-log-note" id="pipe-log-note"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MCP (ecosystem brief) -->
+      <section class="block" id="mcp">
+        <div class="wrap">
+          <div class="eyebrow">Agentes</div>
+          <h2 class="section-h2 reveal" id="mcp-title">MCP cli-market</h2>
+          <p class="muted reveal" id="mcp-sub"></p>
+          <div class="mcp-grid reveal" id="mcp-grid"></div>
+
+          <div class="mcp-schema reveal">
+            <div class="mcp-schema-head">
+              <span class="mcp-schema-k">Contrato MCP</span>
+              <h3>Tools · Resources · Prompts</h3>
+              <p class="muted" id="mcp-schema-note"></p>
+            </div>
+            <div class="mcp-schema-tabs" role="tablist" aria-label="Esquema MCP">
+              <button type="button" class="mcp-schema-tab active" role="tab" aria-selected="true" data-mcp-tab="tools">Tools</button>
+              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="resources">Resources</button>
+              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="prompts">Prompts</button>
+            </div>
+            <pre class="mcp-schema-body font-mono" id="mcp-schema-body"></pre>
+          </div>
+
+          <div class="mcp-actions reveal">
+            <a class="btn btn-primary" id="mcp-cta-primary" href="https://cli-market.dev/tools" target="_blank" rel="noopener">Ver tools en producto</a>
+            <a class="btn btn-outline" href="#cta">Solicitar acceso Academy</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- OUTCOMES + FORMAT -->
+      <section class="block alt" id="resultados">
+        <div class="wrap">
+          <div class="eyebrow">Resultados</div>
+          <h2 class="section-h2 reveal">Se lleva entregables,<br /><span class="dim">no solo asistencia.</span></h2>
+          <div class="outcome-grid reveal">
+            <div class="outcome hover-lift">
+              <div class="label">Intelligence</div>
+              <h3>Leer el mercado</h3>
+              <ul>
+                <li>Brief de góndola (1 página)</li>
+                <li>Risk memo 72 h multi-lente</li>
+                <li>One-pager de categoría / surtido</li>
+                <li>Methods + quality block</li>
+              </ul>
+            </div>
+            <div class="outcome hover-lift">
+              <div class="label">Procure</div>
+              <h3>Comprar con método</h3>
+              <ul>
+                <li>Ciclo de compra documentado</li>
+                <li>Comparación multi-retailer</li>
+                <li>Escenario multi-ítem optimizado</li>
+                <li>Plan de recompras con límites</li>
+              </ul>
+            </div>
+          </div>
+          <div class="facts reveal">
+            <div class="fact"><div class="k">Duración</div><div class="v">~12–18 h</div><div class="s">por track · self-paced</div></div>
+            <div class="fact"><div class="k">Ritmo</div><div class="v">2–3 semanas</div><div class="s">~5–7 h / semana</div></div>
+            <div class="fact"><div class="k">Necesita</div><div class="v">Cuenta CLI Market</div><div class="s">CLI / API / MCP</div></div>
+            <div class="fact"><div class="k">No necesita</div><div class="v">Ser developer</div><div class="s">Castellano LATAM</div></div>
+          </div>
+          <p class="next-soft reveal"><strong>Oferta:</strong> waitlist de formación. Sin tarjeta. Sin cargo automático de plan producto.</p>
+        </div>
+      </section>
+
+      <!-- TRACKS -->
+      <section class="block" id="tracks">
+        <div class="wrap">
+          <div class="eyebrow">Syllabus</div>
+          <h2 class="section-h2 reveal">Dos caminos.<br /><span class="dim">Nueve módulos cada uno.</span></h2>
+          <div class="track-tabs">
+            <button type="button" class="track-tab active" id="tab-intel">Intelligence</button>
+            <button type="button" class="track-tab" id="tab-procure">Procure</button>
+          </div>
+          <div id="panel-intel" class="track-panel active">
+            <div class="track-layout reveal">
+              <div>
+                <h3 class="track-h">Intelligence</h3>
+                <p class="method-human">Cómo leemos el mercado</p>
+                <div class="method-flow">
+                  <span>Sense</span><span class="arr">→</span><span>Interpret</span><span class="arr">→</span><span>Risk</span><span class="arr">→</span><span>Insight</span>
+                </div>
+                <p class="method-seal-line">Sello: <strong>SIRI</strong></p>
+                <details class="method-details">
+                  <summary>
+                    <span>Ver pasos SIRI</span>
+                    <span class="method-details-chev" aria-hidden="true">▾</span>
+                  </summary>
+                  <div class="method-steps" id="method-steps-intel"></div>
+                </details>
+                <a class="btn btn-primary" href="#cta" data-prefill="Intelligence">Quiero este track</a>
+              </div>
+              <ol class="syllabus" id="syllabus-intel" aria-label="Módulos Intelligence"></ol>
+            </div>
+          </div>
+          <div id="panel-procure" class="track-panel">
+            <div class="track-layout">
+              <div>
+                <h3 class="track-h">Procure</h3>
+                <p class="method-human">Cómo compramos con datos</p>
+                <div class="method-flow">
+                  <span>Detect</span><span class="arr">→</span><span>Compare</span><span class="arr">→</span><span>Decide</span><span class="arr">→</span><span>Execute</span><span class="arr">→</span><span>Improve</span>
+                </div>
+                <p class="method-seal-line">Sello: <strong>DDM</strong></p>
+                <details class="method-details">
+                  <summary>
+                    <span>Ver pasos DDM</span>
+                    <span class="method-details-chev" aria-hidden="true">▾</span>
+                  </summary>
+                  <div class="method-steps" id="method-steps-procure"></div>
+                </details>
+                <a class="btn btn-primary" href="#cta" data-prefill="Procure">Quiero este track</a>
+              </div>
+              <ol class="syllabus" id="syllabus-procure" aria-label="Módulos Procure"></ol>
+            </div>
+          </div>
+          <p class="syllabus-hint reveal">Pulse un módulo para ver el <strong>concepto clave</strong> del workbook.</p>
+        </div>
+      </section>
+
+      <!-- MID CANVAS — lattice (same language as sphere / tetra / wave) -->
+      <section class="block mid-signal" id="signal" aria-label="Señal del moat">
+        <div class="mid-signal-grid" aria-hidden="true" id="mid-signal-grid"></div>
+        <div class="wrap mid-signal-inner">
+          <div class="mid-signal-copy reveal">
+            <div class="eyebrow">Señal en el medio</div>
+            <h2 class="section-h2">Un moat compartido.<br /><span class="dim">Corte, no anécdota.</span></h2>
+            <p class="muted">
+              El lattice es la metáfora visual del desk: un volumen de góndola formal,
+              un plano de lectura que recorre el corte, y pilares de evidencia por retailer.
+              Mismo alfabeto tipográfico que el hero y el cierre — otra geometría.
+            </p>
+            <ul class="mid-signal-legend">
+              <li><span class="font-mono">▓▓</span> aristas del corte</li>
+              <li><span class="font-mono">··</span> plano de scan (frescura)</li>
+              <li><span class="font-mono">██</span> series por retailer</li>
+            </ul>
+          </div>
+          <div class="mid-signal-stage reveal" data-delay="1">
+            <canvas id="canvas-lattice" aria-hidden="true"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXAMPLE ARTIFACT -->
+      <section class="block alt" id="ejemplo">
+        <div class="wrap">
+          <div class="eyebrow">Prueba de realidad</div>
+          <h2 class="section-h2 reveal">Así se ve el trabajo.</h2>
+          <div class="artifact-layout reveal">
+            <article class="artifact-card">
+              <div class="head"><span>Desk brief · estructura</span><span>1 pág.</span></div>
+              <h3>Supermercados PE — góndola formal</h3>
+              <p class="line"><strong>Headline:</strong> presión mixta · monitorear</p>
+              <p class="line"><strong>Ventanas:</strong> 7d vs 30d — ¿señal o ruido?</p>
+              <p class="line"><strong>Calidad:</strong> frescura · confidence · retailers_n</p>
+              <p class="line"><strong>Gap vs IPC:</strong> solo si el payload lo trae</p>
+              <p class="disclaimer">shelf formal online ≠ IPC oficial ≠ informal</p>
+            </article>
+            <div class="before-after">
+              <div class="ba-row"><div class="label">Antes</div><p>“El arroz subió — lo vi en un ticket.”</p></div>
+              <div class="ba-row after"><div class="label">Después</div><p>Corte · as_of · N retailers · spread · semáforo · claim permitido.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERACTIVE LAB TERMINAL (Google AI Studio) -->
+      <section class="block" id="lab">
+        <div class="wrap">
+          <div class="lab-layout">
+            <div class="lab-copy reveal">
+              <div class="eyebrow">Sandbox didáctico</div>
+              <h2 class="section-h2">Pruebe el tipo de lab.<br /><span class="dim">Sin API live.</span></h2>
+              <p class="muted">Terminal de simulación: muestra la <strong>estructura</strong> de salida que se entrena en cada track. Los números se reemplazan en el curso por tool calls reales.</p>
+              <ul class="lab-bullets">
+                <li><strong>Intelligence</strong> — brief / nowcast con quality block</li>
+                <li><strong>Procure</strong> — comparación multi-retailer y criterios</li>
+                <li><strong>Quality</strong> — se sincroniza con el semáforo abajo</li>
+              </ul>
+            </div>
+            <div class="lab-terminal reveal" data-delay="1">
+              <div class="lab-term-bar">
+                <div class="dots"><span></span><span></span><span></span></div>
+                <span class="lab-term-name">academy_sandbox_cli.sh</span>
+                <span class="lab-term-badge">SIMULACIÓN</span>
+              </div>
+              <pre class="lab-term-body" id="lab-output" aria-live="polite"></pre>
+              <div class="lab-term-status" id="lab-status" hidden>
+                <span class="pulse"></span>
+                <span class="font-mono">Consultando sandbox didáctico…</span>
+              </div>
+              <div class="lab-term-actions">
+                <span class="lab-term-hint">Ejecutar simulación:</span>
+                <div class="lab-term-btns">
+                  <button type="button" class="lab-cmd" data-cmd="intel">$ market intel</button>
+                  <button type="button" class="lab-cmd" data-cmd="procure">$ procure cart</button>
+                  <button type="button" class="lab-cmd" data-cmd="quality">$ quality-check</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PEDAGOGY 5-STEP (Google AI Studio) -->
+      <section class="block alt" id="pedagogia">
+        <div class="wrap">
+          <div class="eyebrow">Metodología</div>
+          <h2 class="section-h2 reveal">Aprender haciendo.<br /><span class="dim">No solo slides.</span></h2>
+          <p class="muted reveal">Cada módulo sigue un micro-ciclo de 5 etapas. El juicio de desk es el centro; el comando es la evidencia.</p>
+          <div class="pedagogy-grid reveal" id="pedagogy-grid"></div>
+          <div class="method-banner reveal">
+            <div>
+              <span class="method-banner-label">Estructura del pensamiento</span>
+              <h3>Rigor por diseño, no por slide final</h3>
+              <p>Workflows DDM y SIRI para no improvisar claims cuando el corte está fresco.</p>
+            </div>
+            <div class="method-banner-chips">
+              <div class="method-chip">
+                <span class="k">DDM · Procure</span>
+                <span class="v font-mono">Detect → Compare → Decide → Execute → Improve</span>
+              </div>
+              <div class="method-chip">
+                <span class="k">SIRI · Intelligence</span>
+                <span class="v font-mono">Sense → Interpret → Risk → Insight</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS — Optimus dark + steps + code reveal -->
+      <section class="block invert how-it-works" id="how-it-works">
+        <div class="how-pattern" aria-hidden="true"></div>
+        <div class="wrap">
+          <div class="eyebrow">Proceso</div>
+          <h2 class="section-h2 reveal">Cinco pasos.<br /><span class="dim">Un oficio.</span></h2>
+
+          <div class="how-grid reveal">
+            <div class="how-steps" id="how-steps">
+              <!-- filled by JS -->
+            </div>
+            <div class="how-code-wrap">
+              <div class="how-code">
+                <div class="how-code-bar">
+                  <div class="dots"><span></span><span></span><span></span></div>
+                  <span class="how-code-name" id="how-code-name">lab.sh</span>
+                </div>
+                <pre class="how-code-body" id="how-code-body"></pre>
+                <div class="how-code-status">
+                  <span class="pulse"></span>
+                  <span class="font-mono">Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- METRICS — animated counters -->
+      <section class="block" id="metrics">
+        <div class="wrap">
+          <div class="eyebrow">Moat</div>
+          <h2 class="section-h2 reveal">Señal de góndola formal.<br /><span class="dim">Límites a la vista.</span></h2>
+          <div class="metrics-big reveal" id="metrics-big">
+            <div class="metric-big">
+              <div class="num" data-counter data-end="70" data-suffix="K+" data-prefix="">0</div>
+              <div class="label">Precios indexados (orden de magnitud)</div>
+            </div>
+            <div class="metric-big">
+              <div class="num" data-counter data-end="40" data-suffix="" data-prefix="">0</div>
+              <div class="label">Retailers verificados</div>
+            </div>
+            <div class="metric-big">
+              <div class="num" data-counter data-end="82" data-suffix="" data-prefix="">0</div>
+              <div class="label">En catálogo</div>
+            </div>
+            <div class="metric-big">
+              <div class="num static">~4h</div>
+              <div class="label">Refresh de góndola</div>
+            </div>
+          </div>
+          <div class="limits-grid reveal">
+            <div class="limit-cell">
+              <h3>Qué sí</h3>
+              <ul>
+                <li>Precios multi-retailer formales</li>
+                <li>Frescura y scores de confianza</li>
+                <li>Presión, riesgo y categoría</li>
+              </ul>
+            </div>
+            <div class="limit-cell">
+              <h3>Qué no</h3>
+              <ul>
+                <li>No somos el IPC oficial</li>
+                <li>No medimos informal</li>
+                <li>No garantizamos % de ahorro fijo</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOAT 3 PILLARS (ecosystem brief) -->
+      <section class="block alt" id="moat">
+        <div class="wrap">
+          <div class="eyebrow">Ética de datos</div>
+          <h2 class="section-h2 reveal" id="moat-title">Tres capas. Un solo claim honesto.</h2>
+          <p class="muted reveal" id="moat-sub"></p>
+          <div class="pillars-grid reveal" id="pillars-grid"></div>
+        </div>
+      </section>
+
+      <!-- SEMÁFORO SANDBOX (Google AI Studio) -->
+      <section class="block" id="semaforo">
+        <div class="wrap">
+          <div class="sem-layout">
+            <div class="sem-copy reveal">
+              <div class="eyebrow">Interactive sandbox</div>
+              <h2 class="section-h2">Semáforo de calidad.<br /><span class="dim">Claims con freno.</span></h2>
+              <p class="muted">Mueva cobertura y confianza. Active un claim informal. Vea qué permitiría la rúbrica de Academy — y qué bloquea.</p>
+
+              <div class="sem-controls">
+                <div class="sem-field">
+                  <div class="sem-field-top">
+                    <label for="coverage-slider">Cobertura de góndola formal</label>
+                    <span class="sem-val" id="coverage-val">88%</span>
+                  </div>
+                  <input id="coverage-slider" type="range" min="30" max="100" value="88" />
+                  <span class="sem-hint">% de SKUs esperados del corte presentes en el payload.</span>
+                </div>
+                <div class="sem-field">
+                  <div class="sem-field-top">
+                    <label for="confidence-slider">Confianza de atributos</label>
+                    <span class="sem-val" id="confidence-val">92%</span>
+                  </div>
+                  <input id="confidence-slider" type="range" min="30" max="100" value="92" />
+                  <span class="sem-hint">Pareo de unidades, frescura y scores del motor.</span>
+                </div>
+                <div class="sem-toggle-row">
+                  <div>
+                    <label for="informal-toggle" class="sem-toggle-label">¿Afirma comercio informal / “inflación del país”?</label>
+                    <span class="sem-hint">Ej.: ferias, informal o IPC nacional sin ser el instituto.</span>
+                  </div>
+                  <label class="switch">
+                    <input id="informal-toggle" type="checkbox" />
+                    <span class="switch-ui" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="sem-result reveal" data-delay="1">
+              <div class="sem-status" id="sem-status" data-level="g">
+                <div class="sem-status-icon" id="sem-icon" aria-hidden="true">✓</div>
+                <div>
+                  <span class="sem-status-k">Resultado de evaluación</span>
+                  <span class="sem-status-v" id="sem-label">Semáforo verde (usar)</span>
+                </div>
+              </div>
+              <div class="sem-implication">
+                <h3>Claim permitido</h3>
+                <p id="sem-desc"></p>
+              </div>
+              <div class="sem-rubric">
+                <span class="sem-rubric-k">Umbrales orientativos</span>
+                <div class="sem-rubric-grid">
+                  <div><span class="k">Verde</span><span class="v">≥80% cob. + ≥85% conf.</span></div>
+                  <div><span class="k">Amarillo</span><span class="v">≥60% cob. o ≥70% conf.</span></div>
+                  <div><span class="k">Informal</span><span class="v">siempre bloqueado</span></div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-block" id="sem-sync-lab">
+                Sincronizar con terminal del lab
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAPSTONE + RUBRIC + WORKBOOK (ecosystem brief) -->
+      <section class="block alt" id="capstone">
+        <div class="wrap">
+          <div class="eyebrow">Certificación</div>
+          <h2 class="section-h2 reveal">No “asistió”.<br /><span class="dim">Entregó con rúbrica.</span></h2>
+
+          <div class="wb-grid reveal" id="wb-grid"></div>
+
+          <div class="two-col" style="margin-top:2rem">
+            <div class="box reveal">
+              <h3>Pack Intelligence</h3>
+              <ul>
+                <li>Brief · risk · category · methods</li>
+                <li>Rúbrica de trazabilidad y honestidad</li>
+                <li>Inventar IPC → no aprueba</li>
+              </ul>
+              <div class="sem-row"><span class="sem-badge">Usar</span><span>Confidence OK</span></div>
+              <div class="sem-row"><span class="sem-badge">Monitorear</span><span>Solo 7d / cobertura justa</span></div>
+              <div class="sem-row"><span class="sem-badge">No publicar</span><span>Baja confianza</span></div>
+            </div>
+            <div class="reveal">
+              <div class="box" style="margin-bottom:1rem">
+                <h3>Pack Procure</h3>
+                <ul>
+                  <li>Ciclo DDM documentado</li>
+                  <li>Optimización multi-retailer</li>
+                  <li>Automatización con límites</li>
+                </ul>
+              </div>
+              <div class="ladder">
+                <div class="ladder-item top">Desk Lead <span>orquesta</span></div>
+                <div class="ladder-item">Pro <span>oficio completo</span></div>
+                <div class="ladder-item">Foundations <span>base</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rubric-block reveal">
+            <div class="rubric-head">
+              <span class="eyebrow" style="margin-bottom:0.5rem">Rúbrica orientativa</span>
+              <h3>Cuatro cuartos. Umbral ≥80%.</h3>
+              <p class="muted" style="margin-top:0.35rem">Cero tolerancia a claims falsos (IPC inventado, informal, % de ahorro sin lab).</p>
+            </div>
+            <div class="rubric-grid" id="rubric-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="block" id="faq">
+        <div class="wrap">
+          <div class="eyebrow">FAQ</div>
+          <h2 class="section-h2 reveal">Objeciones frecuentes.</h2>
+          <div class="faq-list reveal" id="faq-list"></div>
+        </div>
+      </section>
+
+      <!-- CTA — tetrahedron + spotlight -->
+      <section class="block" id="cta">
+        <div class="wrap">
+          <div class="cta-frame" id="cta-frame">
+            <div class="cta-spotlight" id="cta-spotlight" aria-hidden="true"></div>
+            <div class="cta-inner">
+              <div class="cta-copy">
+                <h2>Empiece por el oficio,<br />no por otro dashboard.</h2>
+                <p class="muted">Acceso prioritario al track y al workbook. Respuesta orientativa en ≤48 h (cuando el form esté en producción).</p>
+                <ul class="after-list">
+                  <li>Sin tarjeta · sin cargo automático</li>
+                  <li>Track y rol prellenados desde el diagnóstico</li>
+                </ul>
+                <div class="cta-tetra" aria-hidden="true">
+                  <canvas id="canvas-tetra"></canvas>
+                </div>
+              </div>
+              <form class="form" id="waitlist-form">
+                <div class="form-success" id="form-success">Registrado en este mock. En producción: confirmación real.</div>
+                <div class="field"><label for="email">Email</label><input id="email" type="email" required placeholder="usted@empresa.com" autocomplete="email" /></div>
+                <div class="field">
+                  <label for="rol">Rol</label>
+                  <select id="rol" required>
+                    <option value="">Seleccione…</option>
+                    <option>Abastecimiento / Compras</option>
+                    <option>Comercial / Ventas</option>
+                    <option>Pricing / Revenue</option>
+                    <option>Research / Datos / Fintech</option>
+                    <option>Growth / Marketing</option>
+                    <option>Developer / Agent builder</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="track">Track</label>
+                  <select id="track" required>
+                    <option value="">Seleccione…</option>
+                    <option value="Intelligence">Intelligence</option>
+                    <option value="Procure">Procure</option>
+                    <option value="Ambos">Ambos (secuencial)</option>
+                    <option value="No sé">No sé aún</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pais">País</label>
+                  <select id="pais" required>
+                    <option value="">Seleccione…</option>
+                    <option value="PE">Perú</option>
+                    <option value="CO">Colombia</option>
+                    <option value="MX">México</option>
+                    <option value="AR">Argentina</option>
+                    <option value="BR">Brasil</option>
+                    <option value="CL">Chile</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+                <div class="field"><label for="empresa">Empresa (opcional)</label><input id="empresa" type="text" placeholder="Organización" /></div>
+                <button type="submit" class="btn btn-primary btn-block">
+                  Solicitar acceso prioritario
+                  <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+                <p class="hint">Mock local · sin tarjeta · formación primero</p>
+              </form>
+            </div>
+            <div class="cta-corner tl"></div>
+            <div class="cta-corner br"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER + wave -->
+    <footer>
+      <div class="footer-wave" aria-hidden="true">
+        <canvas id="canvas-wave"></canvas>
+      </div>
+      <div class="wrap footer-inner">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">CLI Market <span class="logo-sub">Academy</span></div>
+            <p>Del acceso a los datos al oficio de decidir.</p>
+          </div>
+          <div class="footer-col">
+            <h4>Academy</h4>
+            <a href="#para-usted">¿Para usted?</a>
+            <a href="#tracks">Tracks</a>
+            <a href="#how-it-works">Proceso</a>
+            <a href="#cta">Acceso</a>
+          </div>
+          <div class="footer-col">
+            <h4>Producto</h4>
+            <a href="https://cli-market.dev" target="_blank" rel="noopener">cli-market.dev</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© CLI Market Academy</span>
+          <span>Visual: Optimus (sphere · lattice · tetra · wave) · reduced-motion</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/content-data.js"></script>
+  <script src="js/optimus-graphics.js"></script>
+  <script src="js/academy-app.js"></script>
+</body>
+</html>
