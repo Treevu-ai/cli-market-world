@@ -36,7 +36,17 @@ def _pe_stores_for_country(country: str) -> list[str]:
 
 
 def _cv(prices: list[float]) -> float | None:
-    """Coefficient of variation (std / mean).  Returns None when < 2 prices."""
+    """Coefficient of variation (std / mean). Returns None when < 2 prices.
+
+    NOT the same formula as ops/price_volatility_report.py::_cv() — that one
+    uses sample variance (Bessel-corrected, /(n-1)) and returns a percentage
+    (0-100, 1 decimal); this one uses population variance (/n) and returns a
+    fraction (0-1, 4 decimals). Same metric name, different convention — do
+    not compare values between the two or assume one can substitute the
+    other. Kept intentionally distinct (2026-07-19 audit) rather than
+    unified, since this function backs the live paid /v1/brand-monitor
+    endpoint and changing its output scale would be a breaking change for
+    existing consumers."""
     if len(prices) < 2:
         return None
     n = len(prices)

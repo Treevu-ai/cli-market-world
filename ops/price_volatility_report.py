@@ -133,6 +133,14 @@ def _std(values: list[float]) -> float | None:
 
 
 def _cv(values: list[float]) -> float | None:
+    """Coefficient of variation, as a percentage (0-100, 1 decimal), using
+    sample (Bessel-corrected) standard deviation via _std() above.
+
+    NOT the same formula as routers/brand_intel.py::_cv() — that one uses
+    population variance (/n) and returns a fraction (0-1, 4 decimals). Same
+    metric name, different convention — do not compare values between the
+    two. Kept intentionally distinct (2026-07-19 audit) rather than
+    unified; see that function's docstring for the full rationale."""
     m = _mean(values)
     s = _std(values)
     if m is None or s is None or m == 0:
