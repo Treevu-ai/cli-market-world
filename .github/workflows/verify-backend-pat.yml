@@ -29,11 +29,13 @@ jobs:
             exit 1
           fi
           python ops/probe_gh_pat_backend.py
-          if [ "${{ steps.probe-backend.outputs.ok }}" != "true" ]; then
-            echo "::error::GH_PAT cannot read Treevu-ai/cli-market-backend"
-            echo "Fine-grained PAT: add cli-market-backend with Contents: Read (same token as core/index checkout)."
-            exit 1
-          fi
+
+      - name: Fail if GH_PAT cannot read backend
+        if: steps.probe-backend.outputs.ok != 'true'
+        run: |
+          echo "::error::GH_PAT cannot read Treevu-ai/cli-market-backend"
+          echo "Fine-grained PAT: add cli-market-backend with Contents: Read (same token as core/index checkout)."
+          exit 1
 
       - uses: actions/checkout@v6
         with:

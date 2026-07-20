@@ -23,7 +23,7 @@ jobs:
         with:
           repository: Treevu-ai/cli-market-core
           ref: main
-          path: ../cli-market-core
+          path: cli-market-core
           token: ${{ secrets.GH_PAT }}
 
       - uses: actions/checkout@v6
@@ -39,7 +39,7 @@ jobs:
 
       - name: Regenerate canasta_data.py
         env:
-          CLI_MARKET_CORE_ROOT: ${{ github.workspace }}/../cli-market-core
+          CLI_MARKET_CORE_ROOT: ${{ github.workspace }}/cli-market-core
           CLI_MARKET_INDEX_ROOT: ${{ github.workspace }}/cli-market-index
         run: |
           python3 -c "
