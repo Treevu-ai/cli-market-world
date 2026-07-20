@@ -2,6 +2,12 @@ name: Morning Ops Chain
 
 # Single 08:00 PET cron — jobs run in dependency order (no parallel races).
 # Individual workflows keep workflow_dispatch for ad-hoc runs.
+#
+# Every "pip install cli-market-core==..." below reads the version from
+# requirements.txt at runtime instead of a hardcoded literal — this file
+# used to pin 1.11.0 independently of gtm-preflight.yml/daily-briefing.yml's
+# own hardcoded 1.9.36, and both had already drifted from the real pin in
+# requirements.txt by the time this was caught (2026-07-19 audit).
 on:
   schedule:
     # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
@@ -123,7 +129,7 @@ jobs:
           MARKET_SKIP_LIVE: "1"
         run: |
           pip install pytest httpx fastapi uvicorn pydantic python-multipart psycopg2-binary asyncpg
-          pip install "cli-market-core==1.11.0"
+          pip install "$(grep '^cli-market-core==' requirements.txt)"
           pip install -e ".deps/cli-market-index[postgres]"
           pip install -e .
           pytest tests/test_funnel.py::test_pam_journey_synthetic -q
@@ -215,7 +221,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.0" httpx
+          pip install "$(grep '^cli-market-core==' requirements.txt)" httpx
           python3 -c "from market_core import market_stats"
           if [ -f "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt" ]; then
             pip install -r "${{ env.CLI_MARKET_CONTENT_DIR }}/requirements.txt"
@@ -256,7 +262,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.0" httpx
+          pip install "$(grep '^cli-market-core==' requirements.txt)" httpx
           python3 -c "from market_core import market_stats; print('market_core OK')"
 
       - name: Product briefing + Slack bitácora
@@ -312,7 +318,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.0" httpx
+          pip install "$(grep '^cli-market-core==' requirements.txt)" httpx
           python3 -c "from market_core import market_stats; print('market_core OK')"
 
       - name: Verify content checkout
@@ -403,7 +409,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install "cli-market-core==1.11.0" httpx
+        run: pip install "$(grep '^cli-market-core==' requirements.txt)" httpx
 
       - name: Post del día → #command-control-cli-market
         env:
@@ -613,7 +619,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "cli-market-core==1.11.0" httpx
+          pip install "$(grep '^cli-market-core==' requirements.txt)" httpx
 
       - name: CEO / Founder / PO daily metrics → #ceo-metrics
         env:
