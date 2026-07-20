@@ -6,6 +6,7 @@ Endpoints:
   GET  /v1/intel/scores                     Composite scores from indicators
   GET  /v1/intel/inflation                  Price change 7d by line/currency
   GET  /v1/intel/alerts                     Price alerts (threshold-based)
+  GET  /v1/intel/price-volatility           Cross-retailer price dispersion (CV/spread/outliers)
   GET  /v1/intel/enrichment                 Enrichment indicators (OFF, Wiki, etc.)
   GET  /v1/intel/enrichment/subcategories   Subcategory-level enrichment
   GET  /v1/intel/brief                      One-call intelligence narrative (PR3)
@@ -419,6 +420,35 @@ def get_alerts(
         )
     finally:
         db.close()
+
+
+# ── Price volatility ───────────────────────────────────────────────────────────
+
+def build_price_volatility_report(**kwargs):
+    from ops.price_volatility_report import build_report
+
+    return build_report(**kwargs)
+
+
+@router.get("/price-volatility", summary="Cross-retailer price dispersion — CV, spread %, outliers by product/category/retailer")
+def get_price_volatility(
+    country: str = Query("PE"),
+    top: int = Query(20, ge=1, le=100),
+    authorization: str | None = Header(None),
+):
+    """Return price-dispersion analysis across retailers for the trending basket in
+    `country`: coefficient of variation (CV) and spread % per product, category-level
+    volatility summary, and per-retailer consistency/outlier stats.
+
+    Note: this measures cross-retailer price DISPERSION at a point in time
+    (variación entre retailers en un mismo momento), not the Basket Stress Index
+    (BSI), which measures temporal volatility (volatilidad en el tiempo) — see
+    docs/🧠_intelligence_core/methodology-v2.md. Do not conflate the two.
+
+    Previously internal-only (fed the Price Pulse Slack report); now exposed
+    directly. Maps to ops/price_volatility_report.py::build_report()."""
+    require_pro(authorization)
+    return build_price_volatility_report(country=country.upper(), top_n=top)
 
 
 # ── Refresh ─────────────────────────────────────────────────────────────────────

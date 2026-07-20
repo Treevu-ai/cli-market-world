@@ -57,7 +57,14 @@ API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
 # Fetch helpers
 # ---------------------------------------------------------------------------
 
-def _fetch_json(url: str, *, method: str = "GET", body: dict | None = None, timeout: int = 45) -> dict | list | None:
+def _fetch_json(
+    url: str,
+    *,
+    method: str = "GET",
+    body: dict | None = None,
+    params: dict | None = None,
+    timeout: int = 45,
+) -> dict | list | None:
     token = os.getenv("MARKET_API_TOKEN", "").strip()
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     headers["Content-Type"] = "application/json"
@@ -66,12 +73,14 @@ def _fetch_json(url: str, *, method: str = "GET", body: dict | None = None, time
             if method == "POST":
                 r = httpx.post(url, headers=headers, json=body or {}, timeout=timeout)
             else:
-                r = httpx.get(url, headers=headers, timeout=timeout)
+                r = httpx.get(url, headers=headers, params=params, timeout=timeout)
             r.raise_for_status()
             return r.json()
+        import urllib.parse as _urlparse
         import urllib.request as _urllib
+        full_url = f"{url}?{_urlparse.urlencode(params)}" if params else url
         data = json.dumps(body or {}).encode() if method == "POST" else None
-        req = _urllib.Request(url, headers=headers, data=data, method=method)
+        req = _urllib.Request(full_url, headers=headers, data=data, method=method)
         with _urllib.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read())
     except Exception as e:
@@ -80,21 +89,26 @@ def _fetch_json(url: str, *, method: str = "GET", body: dict | None = None, time
 
 
 def _fetch_trending(country: str = "PE", limit: int = 50) -> list[dict]:
-    result = _fetch_json(f"{API_BASE}/products/trending?country={country}&limit={limit}")
+    # country/limit passed via params (not f-string interpolation) so caller-supplied
+    # values (e.g. from the public /v1/intel/price-volatility endpoint) can't inject
+    # extra query parameters into this internal request.
+    result = _fetch_json(f"{API_BASE}/analytics/trending", params={"country": country, "limit": limit})
     if isinstance(result, list):
         return result
     if isinstance(result, dict):
-        return result.get("products", result.get("items", []))
+        return result.get("trending", result.get("products", result.get("items", [])))
     return []
 
 
-def _fetch_basket(product_ids: list[str], country: str = "PE") -> dict | None:
-    if not product_ids:
+def _fetch_basket(item_names: list[str], country: str = "PE") -> dict | None:
+    """POST /v1/basket/compare expects {"items": [{"name": ...}]}, not product ids —
+    build_basket_compare() resolves items by name against price_snapshots."""
+    if not item_names:
         return None
     return _fetch_json(
         f"{API_BASE}/v1/basket/compare",
         method="POST",
-        body={"products": [{"id": pid} for pid in product_ids[:30]], "country": country},
+        body={"items": [{"name": name} for name in item_names[:30]], "country": country},
     )
 
 
@@ -147,29 +161,39 @@ def _outlier_retailers(prices_by_store: dict[str, float]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _extract_prices_from_basket(basket: dict) -> list[dict]:
-    """Extract per-product price lists from basket/compare response."""
+    """Extract per-item cross-store price lists from a basket/compare response.
+
+    build_basket_compare() groups its response by STORE
+    (stores: [{store_name, breakdown: [{item, unit_price, ...}]}]), not by item —
+    this inverts that into per-item prices_by_store dicts for volatility analysis.
+    breakdown entries don't carry category/line, so category is always "unknown"
+    here (honest limitation, not a bug — no category data exists at this layer)."""
+    by_item: dict[str, dict[str, float]] = defaultdict(dict)
+    product_id_by_item: dict[str, str | None] = {}
+
+    for store_row in basket.get("stores", []):
+        store_name = store_row.get("store_name") or store_row.get("store")
+        if not store_name:
+            continue
+        for entry in store_row.get("breakdown") or []:
+            item_name = entry.get("item")
+            price = entry.get("unit_price")
+            if not item_name or not price or float(price) <= 0:
+                continue
+            by_item[item_name][str(store_name)] = float(price)
+            if entry.get("product_id"):
+                product_id_by_item[item_name] = entry["product_id"]
+
     products_out = []
-    items = basket.get("items", basket.get("products", []))
-    for item in items:
-        pid = item.get("product_id") or item.get("id")
-        name = item.get("name") or item.get("title") or str(pid)
-        category = item.get("category") or item.get("line") or "unknown"
-
-        prices_by_store: dict[str, float] = {}
-        for offer in item.get("offers", item.get("prices", [])):
-            store = offer.get("store") or offer.get("retailer")
-            price = offer.get("price") or offer.get("value")
-            if store and price and float(price) > 0:
-                prices_by_store[str(store)] = float(price)
-
+    for name, prices_by_store in by_item.items():
         if len(prices_by_store) < 2:
             continue
 
         vals = list(prices_by_store.values())
         products_out.append({
-            "product_id": pid,
+            "product_id": product_id_by_item.get(name),
             "name": name,
-            "category": category,
+            "category": "unknown",
             "prices_by_store": prices_by_store,
             "n_stores": len(prices_by_store),
             "mean_price": round(_mean(vals), 2),
@@ -209,10 +233,10 @@ def build_report(*, country: str = "PE", top_n: int = 20) -> dict[str, Any]:
 
     # Fetch trending products for the country
     trending = _fetch_trending(country=country, limit=50)
-    product_ids = [p.get("product_id") or p.get("id") for p in trending if p.get("product_id") or p.get("id")]
+    item_names = [p.get("name") for p in trending if p.get("name")]
 
     # Fetch basket comparison to get multi-retailer prices
-    basket = _fetch_basket(product_ids, country=country) if product_ids else None
+    basket = _fetch_basket(item_names, country=country) if item_names else None
 
     products: list[dict] = []
     if basket:
