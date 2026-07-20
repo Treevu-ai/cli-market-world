@@ -89,8 +89,19 @@ def _dev_calendar_path() -> Path:
         return cal
     return ROOT / "docs" / "dev-calendar.md"
 
-CAMPAIGN_START = os.getenv("LINKEDIN_CAMPAIGN_START", "2026-06-01")
-POST_UTC_HOUR = int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
+def _campaign_start() -> str:
+    """Read fresh on every call, not cached at module level — a module-level
+    `CAMPAIGN_START = os.getenv(...)` constant only evaluates once, at first
+    import. sys.modules caches that first import for the whole pytest
+    session, so a second test file's monkeypatch.setenv("LINKEDIN_CAMPAIGN_START",
+    ...) would silently have no effect if any earlier test had already
+    imported this module (found 2026-07-19: exactly this happened once a
+    second test file started importing daily_briefing)."""
+    return os.getenv("LINKEDIN_CAMPAIGN_START", "2026-06-01")
+
+
+def _post_utc_hour() -> int:
+    return int(os.getenv("LINKEDIN_POST_UTC_HOUR", "13"))
 
 
 def _load_monday():
@@ -124,7 +135,7 @@ def _section(body: str, heading: str) -> str:
 
 
 def _campaign_day(for_date: date) -> int:
-    start = date.fromisoformat(CAMPAIGN_START)
+    start = date.fromisoformat(_campaign_start())
     return (for_date - start).days + 1
 
 
@@ -271,7 +282,7 @@ def _append_linkedin_detail(lines: list[str], doc: dict[str, Any], *, heading: s
         f"| Publicado | {pub_label} |",
         f"| Pilar | {pillar} |",
         f"| Idioma | {lang} |",
-        f"| Hora | {POST_UTC_HOUR}:00 UTC |",
+        f"| Hora | {_post_utc_hour()}:00 UTC |",
         "",
     ]
     asset_png = linkedin_dir() / "assets" / f"day-{day_num:02d}" / f"day-{day_num:02d}-linkedin.png"
@@ -312,10 +323,10 @@ def build_content_report(for_date: date) -> str:
         "",
         (
             f"_Calendario unificado · Día de campaña **{day}** · "
-            f"publicar **{POST_UTC_HOUR}:00 UTC**_"
+            f"publicar **{_post_utc_hour()}:00 UTC**_"
         ),
         "",
-        f"Ancla campaña: `{CAMPAIGN_START}` (Day 1) · fuente: `scripts/calendar_channels.py`",
+        f"Ancla campaña: `{_campaign_start()}` (Day 1) · fuente: `scripts/calendar_channels.py`",
         "",
         "---",
         "",
@@ -443,7 +454,7 @@ def build_content_report(for_date: date) -> str:
         "## Acciones rápidas",
         "",
         "1. En content repo: `make content` (copy listo) o leer secciones arriba.",
-        f"2. Publicar canales de **Canales hoy** ({POST_UTC_HOUR}:00 UTC LinkedIn).",
+        f"2. Publicar canales de **Canales hoy** ({_post_utc_hour()}:00 UTC LinkedIn).",
         f"3. Marcar publicado: `make publish date={ds}` (content repo).",
         "4. Engagement 60 min en LinkedIn.",
         "",
@@ -497,8 +508,19 @@ def _slack_configured() -> bool:
     )
 
 
+_GTM_HUB_STALE_DAYS = 14
+
+
 def _read_revenue_from_gtm_hub() -> dict:
-    """Lee tabla Revenue de cli-market-content/strategy/GTM-Hub.md."""
+    """Lee tabla Revenue de cli-market-content/strategy/GTM-Hub.md.
+
+    Staleness has two independent signals: the literal "[ACTUALIZAR]"
+    placeholder (a human never filled the value in at all) and this file's
+    mtime (a human filled in a real number once and then never touched it
+    again — the placeholder check alone can't catch that, since the text
+    itself looks fine forever). mtime isn't perfectly reliable across a
+    fresh git checkout, but it's the only staleness signal available
+    without depending on a specific date-field format inside the table."""
     try:
         gtm = content_root() / "strategy" / "GTM-Hub.md"
         if not gtm.exists():
@@ -515,9 +537,35 @@ def _read_revenue_from_gtm_hub() -> dict:
             elif "Clientes activos (pagos)" in line:
                 parts = [p.strip() for p in line.split("|")]
                 result["clientes"] = parts[2] if len(parts) > 2 else None
+        age_days = (datetime.now(timezone.utc).timestamp() - gtm.stat().st_mtime) / 86_400
+        result["stale_days"] = round(age_days, 1) if age_days > _GTM_HUB_STALE_DAYS else None
         return result
     except Exception:
         return {}
+
+
+def _format_revenue_lines(revenue: dict) -> list[str]:
+    """Extracted from build_slack_product_message so it's testable without
+    also exercising that function's unrelated campaign-calendar machinery
+    (_load_monday() / calendar_channels, which caches env-derived state at
+    first import and isn't safe to invoke repeatedly across test files)."""
+    mrr = revenue.get("mrr") or "[ACTUALIZAR]"
+    arr = revenue.get("arr") or "[ACTUALIZAR]"
+    clientes = revenue.get("clientes") or "[ACTUALIZAR]"
+    stale_days = revenue.get("stale_days")
+    needs_update = "[ACTUALIZAR]" in f"{mrr}{arr}{clientes}"
+    is_stale = needs_update or stale_days is not None
+    rev_icon = "⚠️" if is_stale else "💰"
+
+    lines = [f"{rev_icon} *Revenue* — MRR: *{mrr}* · ARR: *{arr}* · Clientes pagos: *{clientes}*"]
+    if needs_update:
+        lines.append("_→ Actualizar en `strategy/GTM-Hub.md` › Revenue — tabla viva_")
+    elif stale_days is not None:
+        lines.append(
+            f"_⚠️ Posiblemente desactualizado — `GTM-Hub.md` sin tocar hace {stale_days:.0f} días_"
+        )
+    lines.append("")
+    return lines
 
 
 def build_slack_product_message(
@@ -550,15 +598,7 @@ def build_slack_product_message(
 
     revenue = _read_revenue_from_gtm_hub()
     if revenue:
-        mrr = revenue.get("mrr") or "[ACTUALIZAR]"
-        arr = revenue.get("arr") or "[ACTUALIZAR]"
-        clientes = revenue.get("clientes") or "[ACTUALIZAR]"
-        needs_update = "[ACTUALIZAR]" in f"{mrr}{arr}{clientes}"
-        rev_icon = "⚠️" if needs_update else "💰"
-        lines.append(f"{rev_icon} *Revenue* — MRR: *{mrr}* · ARR: *{arr}* · Clientes pagos: *{clientes}*")
-        if needs_update:
-            lines.append("_→ Actualizar en `strategy/GTM-Hub.md` › Revenue — tabla viva_")
-        lines.append("")
+        lines.extend(_format_revenue_lines(revenue))
 
     try:
         from market_adoption import adoption_slack_lines
@@ -681,7 +721,7 @@ def main() -> None:
                 campaign_day=day,
                 for_date=today,
                 metrics=metrics,
-                post_utc_hour=POST_UTC_HOUR,
+                post_utc_hour=_post_utc_hour(),
                 dashboard_data=data,
             )
             deliver_to_publicaciones(summary)
