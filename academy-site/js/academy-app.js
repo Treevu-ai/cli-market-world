@@ -155,7 +155,7 @@
     { name: "Workbook", cat: "Práctica" },
     { name: "Capstone", cat: "Rúbrica" },
     { name: "Nowcast 7d/30d", cat: "Señal" },
-    { name: "Semáforo", cat: "Calidad de claim" },
+    { name: "Semáforo", cat: "Calidad de afirmación" },
     { name: "Góndola formal", cat: "Alcance" },
     { name: "No-IPC", cat: "Honestidad" },
   ];
@@ -744,7 +744,7 @@
     {
       roman: "IV",
       title: "Capstone",
-      description: "Pack con rúbrica. Claim falso de IPC = no aprueba.",
+      description: "Pack con rúbrica. Afirmación falsa de IPC = no aprueba.",
       file: "capstone.yaml",
       code:
         "pack:\n" +
@@ -1114,7 +1114,7 @@
     { n: "02", title: "El concepto", text: "Fundamentos DDM o SIRI para enmarcar el juicio." },
     { n: "03", title: "La demo", text: "Queries reales (o lab guiado) contra góndola formal." },
     { n: "04", title: "La práctica", text: "El alumno corre el lab y documenta en el workbook." },
-    { n: "05", title: "La reflexión", text: "¿Qué claim puedo emitir — y cuál está prohibido?" },
+    { n: "05", title: "La reflexión", text: "¿Qué afirmación puedo emitir — y cuál está prohibida?" },
   ];
   if (pedGrid) {
     pedGrid.innerHTML = "";
@@ -1162,7 +1162,7 @@
       return {
         level: "r",
         icon: "×",
-        label: (sm.informal && sm.informal.label) || "Rechazado (claim inválido)",
+        label: (sm.informal && sm.informal.label) || "Rechazado (afirmación inválida)",
         desc:
           (sm.informal && sm.informal.desc) ||
           "Prohibido extrapolar e-commerce formal a informal, ferias o inflación nacional sin ser el IPC.",
@@ -1196,7 +1196,7 @@
       label: (sm.red && sm.red.label) || "Semáforo rojo (no publicar)",
       desc:
         (sm.red && sm.red.desc) ||
-        "Confianza o cobertura insuficiente. No sostener claims externos con este corte.",
+        "Confianza o cobertura insuficiente. No sostener afirmaciones públicas con este corte.",
     };
   }
 

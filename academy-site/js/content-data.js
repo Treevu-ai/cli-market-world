@@ -45,12 +45,12 @@ window.AcademyContent = {
       n: "06",
       title: "Categoría y diseño de oferta",
       desc: "Spreads por categoría, mapa de marcas y whitespace de surtido con evidencia.",
-      key: "One-pager de categoría con claims defendibles.",
+      key: "One-pager de categoría con afirmaciones defendibles.",
     },
     {
       n: "07",
       title: "Affordability, cross-country, CPI bridge",
-      desc: "Poder de compra, comparación entre países y puente narrativo al IPC sin claims inválidos.",
+      desc: "Poder de compra, comparación entre países y puente narrativo al IPC sin afirmaciones inválidas.",
       key: "Puente metodológico: traza, no equivalencia con el instituto.",
     },
     {
@@ -132,7 +132,7 @@ window.AcademyContent = {
       {
         step: "Risk",
         title: "Evaluar riesgo",
-        desc: "Exposición de margen, asimetrías y semáforo de calidad antes de cualquier claim externo.",
+        desc: "Exposición de margen, asimetrías y semáforo de calidad antes de cualquier afirmación pública.",
       },
       {
         step: "Insight",
@@ -171,7 +171,7 @@ window.AcademyContent = {
 
   moatPillars: {
     title: "Retail formal online ≠ IPC oficial ≠ comercio informal",
-    subtitle: "Tres capas de precio que no se deben mezclar en un claim.",
+    subtitle: "Tres capas de precio que no se deben mezclar en una afirmación.",
     pillars: [
       {
         n: "01",
@@ -192,7 +192,7 @@ window.AcademyContent = {
         label: "Comercio informal / cercanía",
         title: "El mercado físico tradicional",
         accent: "Fuera del moat",
-        desc: "Ferias, barrio, cash y micro-negocios sin digitalización comparable. El moat no lo mide. Afirmarlo con datos de e-commerce formal es claim inválido en Academy.",
+        desc: "Ferias, barrio, cash y micro-negocios sin digitalización comparable. El moat no lo mide. Afirmarlo con datos de e-commerce formal es una afirmación inválida en Academy.",
       },
     ],
   },
@@ -331,7 +331,7 @@ window.AcademyContent = {
             uri: "cli-market://docs/disclaimers",
             name: "Disclaimers de canal",
             description:
-              "formal online ≠ IPC oficial ≠ informal — texto canónico para claims.",
+              "formal online ≠ IPC oficial ≠ informal — texto canónico para afirmaciones.",
             mimeType: "text/plain",
           },
           {
@@ -366,7 +366,7 @@ window.AcademyContent = {
           {
             name: "claim-guardrail",
             description:
-              "Revisa si un claim confunde góndola formal con IPC o informal; sugiere redacción defendible.",
+              "Revisa si una afirmación confunde góndola formal con IPC o informal; sugiere redacción defendible.",
             arguments: [
               { name: "draft_claim", description: "Texto a auditar", required: true },
             ],
@@ -393,7 +393,7 @@ window.AcademyContent = {
     },
     {
       title: "Capstone del track",
-      desc: "Pack Intelligence o ciclo DDM Procure bajo rúbrica (sin claims falsos).",
+      desc: "Pack Intelligence o ciclo DDM Procure bajo rúbrica (sin afirmaciones falsas).",
     },
   ],
 
@@ -416,7 +416,7 @@ window.AcademyContent = {
     {
       pct: "25%",
       title: "Defensa del caso",
-      desc: "Qué claim puede emitir y cuál queda bloqueado — oral o escrita.",
+      desc: "Qué afirmación puede emitir y cuál queda bloqueada — oral o escrita.",
     },
   ],
 
@@ -492,7 +492,7 @@ window.AcademyContent = {
     },
     {
       q: "¿Puedo cursar ambos tracks a la vez?",
-      a: "Recomendamos secuencia, no paralelo. Procure pregunta “¿cómo compro mejor hoy?”; Intelligence pregunta “¿qué señala el mercado y qué claim puedo defender?”. Entregables y lentes mentales distintos.",
+      a: "Recomendamos secuencia, no paralelo. Procure pregunta “¿cómo compro mejor hoy?”; Intelligence pregunta “¿qué señala el mercado y qué afirmación puedo defender?”. Entregables y lentes mentales distintos.",
     },
     {
       q: "¿La inscripción incluye el plan pago de la API o Procure?",
@@ -500,7 +500,7 @@ window.AcademyContent = {
     },
     {
       q: "¿Qué validez tiene la certificación?",
-      a: "No se certifica por asistencia. Exige capstone con rúbrica (umbral orientativo ≥80%) y cero tolerancia a claims falsos (p. ej. vender góndola formal como inflación nacional o medir informal). Es un sello de rigor analítico, no un diploma decorativo.",
+      a: "No se certifica por asistencia. Exige capstone con rúbrica (umbral orientativo ≥80%) y cero tolerancia a afirmaciones falsas (p. ej. vender góndola formal como inflación nacional o medir informal). Es un sello de rigor analítico, no un diploma decorativo.",
     },
     {
       q: "¿Cuánto tiempo necesito?",
@@ -512,7 +512,7 @@ window.AcademyContent = {
     { n: "02", title: "El concepto", text: "Fundamentos DDM o SIRI para enmarcar el juicio, no solo el comando." },
     { n: "03", title: "La demo", text: "Queries reales (o lab guiado) contra el moat de góndola formal." },
     { n: "04", title: "La práctica", text: "El alumno corre el lab equivalente y documenta en el workbook." },
-    { n: "05", title: "La reflexión", text: "¿Qué claim puedo emitir con este corte — y cuál está prohibido?" },
+    { n: "05", title: "La reflexión", text: "¿Qué afirmación puedo emitir con este corte — y cuál está prohibida?" },
   ],
   levels: [
     {
@@ -576,7 +576,7 @@ window.AcademyContent = {
       "$ quality-check --coverage 40 --confidence 50 --informal=false\n\n" +
       "[EVAL] Validez metodológica…\n\n" +
       "  [BLOQUEADO] ROJO (NO PUBLICAR)\n" +
-      "  El corte no sostiene un claim externo.\n" +
+      "  El corte no sostiene una afirmación pública.\n" +
       "  Acción: esperar refresh o ampliar evidencia.",
     qualityInformal:
       "$ quality-check --informal=true\n\n" +
@@ -584,7 +584,7 @@ window.AcademyContent = {
       "  [CRÍTICO] RECHAZADO\n" +
       "  No está permitido afirmar informal / ferias / 'inflación del país'\n" +
       "  a partir del moat de góndola formal online.\n" +
-      "  Riesgo reputacional: alto. Claim indefendible.",
+      "  Riesgo reputacional: alto. Afirmación indefendible.",
   },
   semaforo: {
     green: {
@@ -597,10 +597,10 @@ window.AcademyContent = {
     },
     red: {
       label: "Semáforo rojo (no publicar)",
-      desc: "Confianza o cobertura insuficiente. No sostener claims externos con este corte.",
+      desc: "Confianza o cobertura insuficiente. No sostener afirmaciones públicas con este corte.",
     },
     informal: {
-      label: "Rechazado (claim inválido)",
+      label: "Rechazado (afirmación inválida)",
       desc: "Prohibido extrapolar e-commerce formal a informal, ferias o 'inflación nacional' sin ser el IPC.",
     },
   },
