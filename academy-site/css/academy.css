@@ -958,6 +958,14 @@ section.invert .section-h2 .dim { opacity: 0.45; }
   gap: 0.5rem;
   padding: 0.75rem 0.85rem 0.9rem;
 }
+/* .method-flow moved inside <details> (SIRI/DDM now collapsible together with
+   the elaborated steps) — it used to sit directly under .method-human with
+   its own margin; now it's the first thing inside the accordion box, so it
+   needs the box's own left/right padding instead of flush edges. */
+.method-details .method-flow {
+  margin: 0;
+  padding: 0.85rem 0.85rem 0;
+}
 .method-step {
   border: 1px solid var(--border-strong);
   background: var(--card);
