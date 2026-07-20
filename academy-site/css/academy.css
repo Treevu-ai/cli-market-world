@@ -1003,6 +1003,14 @@ section.invert .section-h2 .dim { opacity: 0.45; }
 @media (min-width: 900px) {
   .artifact-layout { grid-template-columns: 1fr 1fr; }
 }
+.artifact-example { display: flex; flex-direction: column; gap: 1rem; }
+.artifact-example-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
 .artifact-card {
   border: 1px solid var(--border-strong);
   background: var(--card);
@@ -2018,6 +2026,7 @@ section.invert .section-h2 .dim { opacity: 0.45; }
 .how-it-works .ped-card:hover { border-color: rgba(250, 249, 247, 0.32); }
 .how-it-works .ped-card:hover::before { background: rgba(250, 249, 247, 0.6); }
 .how-it-works .ped-card p { color: rgba(250, 249, 247, 0.6); }
+.how-it-works .muted { color: rgba(250, 249, 247, 0.55); }
 .method-banner {
   margin-top: 2.5rem;
   border: 1px solid var(--border-strong);

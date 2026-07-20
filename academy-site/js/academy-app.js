@@ -315,18 +315,27 @@
     pipeLogLines = (pipe.logSeed || []).slice();
     renderPipeLog();
 
+    // "pipeline" is now the wrapping <details> of the "Dos preguntas que ya
+    // respondemos" accordion — only run the simulated log while it's both
+    // scrolled into view AND actually open, not while collapsed.
     var pipeSection = document.getElementById("pipeline");
     if (pipeSection && "IntersectionObserver" in window) {
+      var pipeVisible = false;
+      function syncPipeLog() {
+        if (pipeVisible && pipeSection.open) startPipeLog();
+        else stopPipeLog();
+      }
       var pio = new IntersectionObserver(
         function (entries) {
           entries.forEach(function (en) {
-            if (en.isIntersecting) startPipeLog();
-            else stopPipeLog();
+            pipeVisible = en.isIntersecting;
+            syncPipeLog();
           });
         },
         { threshold: 0.15 }
       );
       pio.observe(pipeSection);
+      pipeSection.addEventListener("toggle", syncPipeLog);
     } else if (!reduced) {
       startPipeLog();
     }
@@ -412,12 +421,12 @@
   // by offsetTop order, so a stale array silently mis-highlights the nav.
   var sectionIds = [
     "para-usted",
-    "resultados",
     "tracks",
     "ejemplo",
+    "metodo",
+    "how-it-works",
     "lab",
     "semaforo",
-    "how-it-works",
     "metrics",
     "moat",
     "pipeline",
