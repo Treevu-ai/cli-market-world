@@ -348,29 +348,6 @@
         </div>
       </section>
 
-      <!-- MID CANVAS — lattice (same language as sphere / tetra / wave) -->
-      <section class="block mid-signal" id="signal" aria-label="Señal del moat">
-        <div class="mid-signal-grid" aria-hidden="true" id="mid-signal-grid"></div>
-        <div class="wrap mid-signal-inner">
-          <div class="mid-signal-copy reveal">
-            <div class="eyebrow">Señal en el medio</div>
-            <h2 class="section-h2">Una sola base de datos.<br /><span class="dim">Una foto real, no un rumor.</span></h2>
-            <p class="muted">
-              Esta figura representa esa base de datos: un volumen de precios de góndola formal,
-              una capa que recorre la foto más reciente, y una columna de evidencia por cada tienda.
-              Mismo estilo visual que el resto de la página — otra forma.
-            </p>
-            <ul class="mid-signal-legend">
-              <li><span class="font-mono">▓▓</span> bordes de la foto de precios</li>
-              <li><span class="font-mono">··</span> qué tan reciente es el dato</li>
-              <li><span class="font-mono">██</span> historial por tienda</li>
-            </ul>
-          </div>
-          <div class="mid-signal-stage reveal" data-delay="1">
-            <canvas id="canvas-lattice" aria-hidden="true"></canvas>
-          </div>
-        </div>
-      </section>
 
       <!-- EXAMPLE ARTIFACT -->
       <section class="block alt" id="ejemplo">
@@ -398,11 +375,11 @@
       <!-- INTERACTIVE LAB TERMINAL (Google AI Studio) -->
       <section class="block" id="lab">
         <div class="wrap">
+          <div class="eyebrow">Sandbox didáctico</div>
+          <h2 class="section-h2">Pruebe el tipo de ejercicio.<br /><span class="dim">Esto es una simulación.</span></h2>
+          <p class="muted">Esta terminal muestra <strong>cómo se ve</strong> el resultado que se practica en cada track. En el curso real, esos números salen de una consulta real al sistema, no de este demo.</p>
           <div class="lab-layout">
             <div class="lab-copy reveal">
-              <div class="eyebrow">Sandbox didáctico</div>
-              <h2 class="section-h2">Pruebe el tipo de ejercicio.<br /><span class="dim">Esto es una simulación.</span></h2>
-              <p class="muted">Esta terminal muestra <strong>cómo se ve</strong> el resultado que se practica en cada track. En el curso real, esos números salen de una consulta real al sistema, no de este demo.</p>
               <ul class="lab-bullets">
                 <li><strong>Intelligence</strong> — brief / nowcast con quality block</li>
                 <li><strong>Procure</strong> — comparación multi-retailer y criterios</li>
@@ -430,16 +407,11 @@
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- SEMÁFORO SANDBOX (Google AI Studio) -->
-      <section class="block" id="semaforo">
-        <div class="wrap">
-          <div class="sem-layout">
+          <!-- Semáforo de calidad — antes su propia sección "#semaforo" -->
+          <div class="sem-layout" id="semaforo" style="margin-top:3rem">
             <div class="sem-copy reveal">
-              <div class="eyebrow">Interactive sandbox</div>
-              <h2 class="section-h2">Semáforo de calidad.<br /><span class="dim">Afirmaciones con freno.</span></h2>
+              <h3 class="track-h">Semáforo de calidad — afirmaciones con freno</h3>
               <p class="muted">Mueva cobertura y confianza. Active una afirmación informal. Vea qué permitiría la rúbrica de Academy — y qué bloquea.</p>
 
               <div class="sem-controls">
@@ -540,6 +512,10 @@
       </section>
 
       <!-- METRICS — animated counters -->
+      <!-- Por qué confiar en esto: contadores + los 3 límites (antes
+           "#metrics" y "#moat" por separado; id "moat" se conserva como
+           sub-bloque para que el nav y el link del disclaimer sigan
+           resolviendo). -->
       <section class="block" id="metrics">
         <div class="wrap">
           <div class="eyebrow">Moat</div>
@@ -563,35 +539,22 @@
               <div class="label">Refresh de góndola</div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- MOAT 3 PILLARS (ecosystem brief) — única fuente de "qué sí / qué no
-           hace el moat"; #metrics ya no repite el limits-grid, el bloque de
-           abajo lo cubre en detalle inmediatamente después. -->
-      <section class="block alt" id="moat">
-        <div class="wrap">
-          <div class="eyebrow">Ética de datos</div>
-          <h2 class="section-h2 reveal" id="moat-title">Tres capas. Una sola afirmación honesta.</h2>
-          <p class="muted reveal" id="moat-sub"></p>
-          <div class="pillars-grid reveal" id="pillars-grid"></div>
-        </div>
-      </section>
-
-      <!-- STACK — dual marquee (tools / method / surfaces) -->
-      <section class="block stack-section" id="stack" aria-label="Herramientas y método">
-        <div class="wrap">
-          <div class="stack-head reveal">
-            <div class="eyebrow">Stack del oficio</div>
-            <h2 class="section-h2">Lo que usa el desk.<br /><span class="dim">Sin listado de marcas para rellenar.</span></h2>
-            <p class="muted" style="margin-inline:auto">CLI, API y MCP sobre el mismo moat. Métodos SIRI y DDM. Surfaces de producto solo como next step.</p>
+          <div id="moat" style="margin-top:3rem">
+            <div class="eyebrow">Ética de datos</div>
+            <h2 class="section-h2 reveal" id="moat-title">Tres capas. Una sola afirmación honesta.</h2>
+            <p class="muted reveal" id="moat-sub"></p>
+            <div class="pillars-grid reveal" id="pillars-grid"></div>
           </div>
         </div>
-        <div class="stack-row forward" aria-hidden="true" id="stack-forward"></div>
-        <div class="stack-row reverse" aria-hidden="true" id="stack-reverse"></div>
       </section>
 
+
       <!-- PIPELINE (ecosystem brief) -->
+      <!-- Dos historias de negocio (antes "#pipeline" y "#mcp" por separado).
+           id "pipeline" se conserva en la sección: el IntersectionObserver
+           que arranca/para la simulación del log depende de este id
+           (ver academy-app.js). id "mcp" se conserva como sub-bloque. -->
       <section class="block alt" id="pipeline">
         <div class="wrap">
           <div class="eyebrow">Arquitectura</div>
@@ -608,34 +571,16 @@
             <pre class="pipe-log-body" id="pipe-log-body" aria-live="polite"></pre>
             <p class="pipe-log-note" id="pipe-log-note"></p>
           </div>
-        </div>
-      </section>
 
-      <!-- MCP (ecosystem brief) -->
-      <section class="block" id="mcp">
-        <div class="wrap">
-          <div class="eyebrow">Agentes</div>
-          <h2 class="section-h2 reveal" id="mcp-title">¿Compro ahora, o espero?</h2>
-          <p class="muted reveal" id="mcp-sub">Miramos si el precio de un producto está más alto o más bajo de lo normal para él — como una alerta de clima, pero de precios.</p>
-          <div class="mcp-grid reveal" id="mcp-grid"></div>
-
-          <div class="mcp-schema reveal">
-            <div class="mcp-schema-head">
-              <span class="mcp-schema-k">Contrato MCP</span>
-              <h3>Tools · Resources · Prompts</h3>
-              <p class="muted" id="mcp-schema-note"></p>
+          <div id="mcp" style="margin-top:3rem">
+            <div class="eyebrow">Agentes</div>
+            <h2 class="section-h2 reveal" id="mcp-title">¿Compro ahora, o espero?</h2>
+            <p class="muted reveal" id="mcp-sub">Miramos si el precio de un producto está más alto o más bajo de lo normal para él — como una alerta de clima, pero de precios.</p>
+            <div class="mcp-grid reveal" id="mcp-grid"></div>
+            <div class="mcp-actions reveal">
+              <a class="btn btn-primary" id="mcp-cta-primary" href="https://cli-market.dev/tools" target="_blank" rel="noopener">Ver tools en producto</a>
+              <a class="btn btn-outline" href="#cta">Solicitar acceso Academy</a>
             </div>
-            <div class="mcp-schema-tabs" role="tablist" aria-label="Esquema MCP">
-              <button type="button" class="mcp-schema-tab active" role="tab" aria-selected="true" data-mcp-tab="tools">Tools</button>
-              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="resources">Resources</button>
-              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="prompts">Prompts</button>
-            </div>
-            <pre class="mcp-schema-body font-mono" id="mcp-schema-body"></pre>
-          </div>
-
-          <div class="mcp-actions reveal">
-            <a class="btn btn-primary" id="mcp-cta-primary" href="https://cli-market.dev/tools" target="_blank" rel="noopener">Ver tools en producto</a>
-            <a class="btn btn-outline" href="#cta">Solicitar acceso Academy</a>
           </div>
         </div>
       </section>

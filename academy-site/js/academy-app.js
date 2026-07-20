@@ -73,29 +73,10 @@
   if (G) {
     var sphere = document.getElementById("canvas-sphere");
     var tetra = document.getElementById("canvas-tetra");
-    var lattice = document.getElementById("canvas-lattice");
     var wave = document.getElementById("canvas-wave");
     if (sphere) G.AnimatedSphere(sphere);
-    if (lattice && G.AnimatedLattice) G.AnimatedLattice(lattice);
     if (tetra) G.AnimatedTetrahedron(tetra);
     if (wave) G.AnimatedWave(wave, false);
-  }
-
-  /* Mid-section subtle grid (same as hero language) */
-  var midGrid = document.getElementById("mid-signal-grid");
-  if (midGrid) {
-    for (var mi = 1; mi <= 6; mi++) {
-      var mh = document.createElement("div");
-      mh.className = "h-line";
-      mh.style.top = (100 / 7) * mi + "%";
-      midGrid.appendChild(mh);
-    }
-    for (var mj = 1; mj <= 10; mj++) {
-      var mv = document.createElement("div");
-      mv.className = "v-line";
-      mv.style.left = 10 * mj + "%";
-      midGrid.appendChild(mv);
-    }
   }
 
   /* ——— Orbit nodes for AI SVG (feature 02) ——— */
@@ -143,42 +124,6 @@
       orbit.appendChild(circle);
     }
   }
-
-  /* ——— Stack dual marquee ——— */
-  var stackItems = [
-    { name: "CLI Market", cat: "Motor de datos" },
-    { name: "market CLI", cat: "Terminal" },
-    { name: "REST API", cat: "Integración" },
-    { name: "MCP tools", cat: "Agentes" },
-    { name: "SIRI", cat: "Método Intelligence" },
-    { name: "DDM", cat: "Método Procure" },
-    { name: "Workbook", cat: "Práctica" },
-    { name: "Capstone", cat: "Rúbrica" },
-    { name: "Nowcast 7d/30d", cat: "Señal" },
-    { name: "Semáforo", cat: "Calidad de afirmación" },
-    { name: "Góndola formal", cat: "Alcance" },
-    { name: "No-IPC", cat: "Honestidad" },
-  ];
-  function fillStack(el, items) {
-    if (!el) return;
-    function track() {
-      var t = document.createElement("div");
-      t.className = "stack-track";
-      items.forEach(function (it) {
-        var card = document.createElement("div");
-        card.className = "stack-card";
-        card.innerHTML =
-          '<div class="stack-name">' + it.name + "</div>" +
-          '<div class="stack-cat">' + it.cat + "</div>";
-        t.appendChild(card);
-      });
-      return t;
-    }
-    el.appendChild(track());
-    el.appendChild(track());
-  }
-  fillStack(document.getElementById("stack-forward"), stackItems);
-  fillStack(document.getElementById("stack-reverse"), stackItems.slice().reverse());
 
   /* ——— Syllabus expandable + keyConcept ——— */
   function fillSyllabus(el, modules) {
@@ -409,32 +354,6 @@
       mcta.textContent = mcp.ctaPrimary.label;
       mcta.href = mcp.ctaPrimary.href;
     }
-
-    var schemaNote = document.getElementById("mcp-schema-note");
-    var schemaBody = document.getElementById("mcp-schema-body");
-    var schemaTabs = document.querySelectorAll("[data-mcp-tab]");
-    if (schemaNote && mcp.schemaNote) schemaNote.textContent = mcp.schemaNote;
-
-    function showMcpSchema(tab) {
-      if (!schemaBody || !mcp.schema) return;
-      var payload = mcp.schema[tab] || mcp.schema.tools;
-      try {
-        schemaBody.textContent = JSON.stringify(payload, null, 2);
-      } catch (e) {
-        schemaBody.textContent = String(payload);
-      }
-      schemaTabs.forEach(function (btn) {
-        var on = btn.getAttribute("data-mcp-tab") === tab;
-        btn.classList.toggle("active", on);
-        btn.setAttribute("aria-selected", on ? "true" : "false");
-      });
-    }
-    schemaTabs.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        showMcpSchema(btn.getAttribute("data-mcp-tab") || "tools");
-      });
-    });
-    showMcpSchema("tools");
   }
 
   /* ——— Workbook deliverables + rubric ——— */
@@ -495,14 +414,12 @@
     "para-usted",
     "resultados",
     "tracks",
-    "signal",
     "ejemplo",
     "lab",
     "semaforo",
     "how-it-works",
     "metrics",
     "moat",
-    "stack",
     "pipeline",
     "mcp",
     "capstone",
