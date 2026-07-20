@@ -1,31 +1,26 @@
-import os
 import sys
-import httpx
 from pathlib import Path
 
 # Asegurar que el root esté en el path para importar routers
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(PROJECT_ROOT / "ops") not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT / "ops"))
 
 from routers.integrations.whatsapp import send_whatsapp_proactive
 
 REPORTS_DIR = PROJECT_ROOT / "ops" / "generated" / "reports" / "intelligence"
 SENT_DIR = REPORTS_DIR / "sent"
 
-# Configuración
-SLACK_WEBHOOK_INTEL = os.getenv("SLACK_CHANNEL_NEWSLETTER")
 WHATSAPP_TEST_NUMBER = "whatsapp:+51902126765" # Tu número de prueba
 
 def distribute_reports():
     print("🚀 Iniciando distribución de reportes de Inteligencia...")
-    
-    if not SLACK_WEBHOOK_INTEL:
-        print("  ⚠️ SLACK_CHANNEL_NEWSLETTER no configurado. Saltando Slack.")
-    
+
     # Listar reportes generados
     reports = list(REPORTS_DIR.glob("*.md"))
-    
+
     if not reports:
         print("  ❌ No se encontraron reportes para distribuir.")
         return
@@ -37,17 +32,21 @@ def distribute_reports():
         content = report_path.read_text(encoding="utf-8")
         # Limpiar un poco el markdown para WhatsApp/Slack
         clean_content = content.replace("# ", "*").replace("## ", "*").replace("### ", "*")
-        
-        # 1. Enviar a Slack
-        if SLACK_WEBHOOK_INTEL:
-            print(f"  📤 Enviando {report_name} a Slack...")
-            payload = {
-                "text": f"📢 *Nuevo Reporte de Inteligencia: {report_name.upper()}*\n\n{clean_content[:2000]}..."
-            }
-            try:
-                httpx.post(SLACK_WEBHOOK_INTEL, json=payload, timeout=10)
-            except Exception as e:
-                print(f"    ⚠️ Error en Slack: {e}")
+
+        # 1. Enviar a Slack (#publicaciones — vía el transporte compartido con
+        # token de bot, no un webhook dedicado a "newsletter"; SLACK_CHANNEL_NEWSLETTER
+        # aquí trataba el valor como una URL de webhook completa, pero en el
+        # resto del código ese nombre de variable es un channel ID — colisión
+        # de nombres real detectada en la auditoría 2026-07-19, no solo duplicación.)
+        print(f"  📤 Enviando {report_name} a Slack...")
+        try:
+            from slack_notify import deliver_to_publicaciones
+
+            deliver_to_publicaciones(
+                f"📢 *Nuevo Reporte de Inteligencia: {report_name.upper()}*\n\n{clean_content[:2000]}..."
+            )
+        except Exception as e:
+            print(f"    ⚠️ Error en Slack: {e}")
 
         # 2. Enviar a WhatsApp (Proactivo)
         print(f"  📱 Enviando {report_name} a WhatsApp...")

@@ -46,17 +46,10 @@ except Exception:
     pass
 
 try:
-    from slack_notify import (
-        channel_bitacora,
-        channel_command_control,
-        deliver_to_bitacora,
-        post_via_bot,
-    )
+    from slack_notify import deliver_to_bitacora, deliver_to_command_control
 except Exception:
-    channel_bitacora = lambda: ""
-    channel_command_control = lambda: ""
     deliver_to_bitacora = None
-    post_via_bot = None
+    deliver_to_command_control = None
 
 API_BASE = os.getenv(
     "MARKET_API_URL",
@@ -232,18 +225,18 @@ def _save_history(snapshot: dict[str, Any]) -> None:
     )
 
 
-def _post_slack(text: str, channel: str | None = None) -> bool:
-    if not post_via_bot:
+def _post_slack(text: str, ch_name: str = "bitacora") -> bool:
+    """Delegates to the shared ops/slack_notify.py deliver_to_* helpers
+    instead of manually resolving SLACK_BOT_TOKEN + calling post_via_bot —
+    this file already used the shared transport, just not its highest-level
+    entry point (2026-07-19 audit)."""
+    deliver = deliver_to_bitacora if ch_name == "bitacora" else deliver_to_command_control
+    if not deliver:
         print("[collector-daily] slack_notify no disponible (sin deps o token)")
         return False
-    token = os.getenv("SLACK_BOT_TOKEN", "").strip()
-    if not token:
-        print("[collector-daily] SLACK_BOT_TOKEN no configurado")
-        return False
-    ch = channel or channel_bitacora() or channel_command_control()
     try:
-        post_via_bot(token, ch, text)
-        print(f"[collector-daily] posted to {ch}")
+        deliver(text)
+        print(f"[collector-daily] posted to {ch_name}")
         return True
     except Exception as e:
         print(f"[collector-daily] slack post failed: {e}", file=sys.stderr)
@@ -294,9 +287,7 @@ def main() -> int:
             print(f"[collector-daily] save history failed: {e}", file=sys.stderr)
 
     if args.slack and not args.dry_run:
-        ch_name = args.channel or "bitacora"
-        ch = channel_bitacora() if ch_name == "bitacora" else channel_command_control()
-        _post_slack(report, ch)
+        _post_slack(report, args.channel or "bitacora")
 
     return 0
 

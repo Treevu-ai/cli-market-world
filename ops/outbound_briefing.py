@@ -377,9 +377,15 @@ def main() -> int:
 
     if args.slack and not args.dry_run:
         sys.path.insert(0, str(Path(__file__).parent))
-        from slack_notify import deliver
-        deliver(text, channel="C0B9NEEB97U")
-        print("\n→ Enviado a #outbound", file=sys.stderr)
+        from slack_notify import deliver_to_publicaciones
+        # Was hardcoded to the old standalone #outbound channel ID
+        # (C0B9NEEB97U), the one sender that still contradicted the
+        # #publicaciones consolidation every other script already followed
+        # (2026-07-19 audit). channel_outbound() itself is just an alias for
+        # channel_publicaciones() now, so this goes straight to the canonical
+        # helper.
+        deliver_to_publicaciones(text)
+        print("\n→ Enviado a #publicaciones", file=sys.stderr)
 
     return 0
 

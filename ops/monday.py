@@ -358,7 +358,12 @@ def build_price_pulse(data: dict, meta: dict) -> str:
 
 
 def notify_slack(url: str, text: str) -> None:
-    httpx.post(url, json={"text": text}, timeout=10)
+    """Delegates to the shared ops/slack_notify.py transport — was a bare
+    httpx.post with no chunking (Slack rejects messages over ~4000 chars)
+    and no error checking at all (2026-07-19 audit)."""
+    from slack_notify import post_via_webhook
+
+    post_via_webhook(url, text)
 
 
 def main() -> None:
