@@ -198,8 +198,8 @@ window.AcademyContent = {
   },
 
   pipeline: {
-    title: "Pipeline del motor",
-    subtitle: "De la góndola formal al desk — sin inventar capas.",
+    title: "¿Ese descuento es real, o es maquillaje?",
+    subtitle: "Comparamos el precio de lista de los días previos al anuncio de la oferta. Si subió justo antes de la \"oferta\", el descuento es falso — se lo mostramos así de simple, no como un gráfico suelto. El detector de promos ya corre en producción; abajo, una simulación didáctica de cómo se arma ese dato.",
     stages: [
       {
         k: "INGESTA",
@@ -243,8 +243,8 @@ window.AcademyContent = {
   },
 
   mcp: {
-    title: "MCP cli-market",
-    subtitle: "Mismo moat, superficie para agentes — sin mezclar con checkout de Procure en el mismo CTA.",
+    title: "¿Compro ahora, o espero?",
+    subtitle: "Miramos si el precio de un producto está más alto o más bajo de lo normal para él — como una alerta de clima, pero de precios. Si está \"raro\", se lo decimos antes de que pierda tiempo comparando a mano. Esta señal ya corre en producción; el protocolo MCP de abajo es cómo un agente de IA la consulta.",
     features: [
       {
         title: "Protocolo estándar",
