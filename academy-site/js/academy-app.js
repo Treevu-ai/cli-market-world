@@ -488,21 +488,23 @@
   /* ——— Nav scroll + active section ——— */
   var header = document.getElementById("site-header");
   var navLinks = document.querySelectorAll(".nav-links a[href^='#']");
+  // Must reflect the true top-to-bottom visual order of the sections in
+  // index.html — onScroll() below overwrites `current` in array order, not
+  // by offsetTop order, so a stale array silently mis-highlights the nav.
   var sectionIds = [
     "para-usted",
-    "lentes",
-    "capabilities",
-    "stack",
-    "pipeline",
-    "mcp",
+    "resultados",
     "tracks",
     "signal",
+    "ejemplo",
     "lab",
-    "pedagogia",
+    "semaforo",
     "how-it-works",
     "metrics",
     "moat",
-    "semaforo",
+    "stack",
+    "pipeline",
+    "mcp",
     "capstone",
     "faq",
     "cta",

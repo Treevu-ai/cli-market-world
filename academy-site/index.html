@@ -80,10 +80,10 @@
           <ul class="nav-links">
             <li><a href="#para-usted">¿Para usted?</a></li>
             <li><a href="#tracks">Tracks</a></li>
+            <li><a href="#lab">Lab</a></li>
             <li><a href="#moat">Moat</a></li>
             <li><a href="#pipeline">Pipeline</a></li>
             <li><a href="#mcp">MCP</a></li>
-            <li><a href="#lab">Lab</a></li>
             <li><a href="#cta">Acceso</a></li>
           </ul>
           <div class="nav-cta">
@@ -101,10 +101,10 @@
     <div class="mobile-menu" id="mobile-menu">
       <a class="big" href="#para-usted" data-close>¿Para usted?</a>
       <a class="big" href="#tracks" data-close>Tracks</a>
+      <a class="big" href="#lab" data-close>Lab</a>
       <a class="big" href="#moat" data-close>Moat</a>
       <a class="big" href="#pipeline" data-close>Pipeline</a>
       <a class="big" href="#mcp" data-close>MCP</a>
-      <a class="big" href="#lab" data-close>Lab</a>
       <a class="big" href="#cta" data-close>Acceso</a>
       <div class="bottom">
         <a class="btn btn-outline" href="https://cli-market.dev" target="_blank" rel="noopener">Producto</a>
@@ -215,69 +215,6 @@
             · <button type="button" data-track="Ambos">ambos tracks</button>
           </p>
           <div class="quiz" id="quiz"></div>
-        </div>
-      </section>
-
-      <!-- CAPABILITIES — Optimus feature rows with SVG graphics -->
-      <!-- STACK — dual marquee (tools / method / surfaces) -->
-      <section class="block stack-section" id="stack" aria-label="Herramientas y método">
-        <div class="wrap">
-          <div class="stack-head reveal">
-            <div class="eyebrow">Stack del oficio</div>
-            <h2 class="section-h2">Lo que usa el desk.<br /><span class="dim">Sin relleno de logo wall.</span></h2>
-            <p class="muted" style="margin-inline:auto">CLI, API y MCP sobre el mismo moat. Métodos SIRI y DDM. Surfaces de producto solo como next step.</p>
-          </div>
-        </div>
-        <div class="stack-row forward" aria-hidden="true" id="stack-forward"></div>
-        <div class="stack-row reverse" aria-hidden="true" id="stack-reverse"></div>
-      </section>
-
-      <!-- PIPELINE (ecosystem brief) -->
-      <section class="block alt" id="pipeline">
-        <div class="wrap">
-          <div class="eyebrow">Arquitectura</div>
-          <h2 class="section-h2 reveal" id="pipeline-title">Pipeline del motor</h2>
-          <p class="muted reveal" id="pipeline-sub">De la góndola formal al desk.</p>
-          <div class="pipeline-flow reveal" id="pipeline-flow"></div>
-
-          <div class="pipe-log reveal" id="pipe-log">
-            <div class="pipe-log-bar">
-              <div class="dots"><span></span><span></span><span></span></div>
-              <span class="pipe-log-name">pipeline_demo.log</span>
-              <span class="pipe-log-badge">SIMULACIÓN</span>
-            </div>
-            <pre class="pipe-log-body" id="pipe-log-body" aria-live="polite"></pre>
-            <p class="pipe-log-note" id="pipe-log-note"></p>
-          </div>
-        </div>
-      </section>
-
-      <!-- MCP (ecosystem brief) -->
-      <section class="block" id="mcp">
-        <div class="wrap">
-          <div class="eyebrow">Agentes</div>
-          <h2 class="section-h2 reveal" id="mcp-title">MCP cli-market</h2>
-          <p class="muted reveal" id="mcp-sub"></p>
-          <div class="mcp-grid reveal" id="mcp-grid"></div>
-
-          <div class="mcp-schema reveal">
-            <div class="mcp-schema-head">
-              <span class="mcp-schema-k">Contrato MCP</span>
-              <h3>Tools · Resources · Prompts</h3>
-              <p class="muted" id="mcp-schema-note"></p>
-            </div>
-            <div class="mcp-schema-tabs" role="tablist" aria-label="Esquema MCP">
-              <button type="button" class="mcp-schema-tab active" role="tab" aria-selected="true" data-mcp-tab="tools">Tools</button>
-              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="resources">Resources</button>
-              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="prompts">Prompts</button>
-            </div>
-            <pre class="mcp-schema-body font-mono" id="mcp-schema-body"></pre>
-          </div>
-
-          <div class="mcp-actions reveal">
-            <a class="btn btn-primary" id="mcp-cta-primary" href="https://cli-market.dev/tools" target="_blank" rel="noopener">Ver tools en producto</a>
-            <a class="btn btn-outline" href="#cta">Solicitar acceso Academy</a>
-          </div>
         </div>
       </section>
 
@@ -496,6 +433,73 @@
         </div>
       </section>
 
+      <!-- SEMÁFORO SANDBOX (Google AI Studio) -->
+      <section class="block" id="semaforo">
+        <div class="wrap">
+          <div class="sem-layout">
+            <div class="sem-copy reveal">
+              <div class="eyebrow">Interactive sandbox</div>
+              <h2 class="section-h2">Semáforo de calidad.<br /><span class="dim">Claims con freno.</span></h2>
+              <p class="muted">Mueva cobertura y confianza. Active un claim informal. Vea qué permitiría la rúbrica de Academy — y qué bloquea.</p>
+
+              <div class="sem-controls">
+                <div class="sem-field">
+                  <div class="sem-field-top">
+                    <label for="coverage-slider">Cobertura de góndola formal</label>
+                    <span class="sem-val" id="coverage-val">88%</span>
+                  </div>
+                  <input id="coverage-slider" type="range" min="30" max="100" value="88" />
+                  <span class="sem-hint">% de SKUs esperados del corte presentes en el payload.</span>
+                </div>
+                <div class="sem-field">
+                  <div class="sem-field-top">
+                    <label for="confidence-slider">Confianza de atributos</label>
+                    <span class="sem-val" id="confidence-val">92%</span>
+                  </div>
+                  <input id="confidence-slider" type="range" min="30" max="100" value="92" />
+                  <span class="sem-hint">Pareo de unidades, frescura y scores del motor.</span>
+                </div>
+                <div class="sem-toggle-row">
+                  <div>
+                    <label for="informal-toggle" class="sem-toggle-label">¿Afirma comercio informal / “inflación del país”?</label>
+                    <span class="sem-hint">Ej.: ferias, informal o IPC nacional sin ser el instituto.</span>
+                  </div>
+                  <label class="switch">
+                    <input id="informal-toggle" type="checkbox" />
+                    <span class="switch-ui" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="sem-result reveal" data-delay="1">
+              <div class="sem-status" id="sem-status" data-level="g">
+                <div class="sem-status-icon" id="sem-icon" aria-hidden="true">✓</div>
+                <div>
+                  <span class="sem-status-k">Resultado de evaluación</span>
+                  <span class="sem-status-v" id="sem-label">Semáforo verde (usar)</span>
+                </div>
+              </div>
+              <div class="sem-implication">
+                <h3>Claim permitido</h3>
+                <p id="sem-desc"></p>
+              </div>
+              <div class="sem-rubric">
+                <span class="sem-rubric-k">Umbrales orientativos</span>
+                <div class="sem-rubric-grid">
+                  <div><span class="k">Verde</span><span class="v">≥80% cob. + ≥85% conf.</span></div>
+                  <div><span class="k">Amarillo</span><span class="v">≥60% cob. o ≥70% conf.</span></div>
+                  <div><span class="k">Informal</span><span class="v">siempre bloqueado</span></div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-block" id="sem-sync-lab">
+                Sincronizar con terminal del lab
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- HOW IT WORKS — Optimus dark + steps + code reveal -->
       <section class="block invert how-it-works" id="how-it-works">
         <div class="how-pattern" aria-hidden="true"></div>
@@ -573,69 +577,64 @@
         </div>
       </section>
 
-      <!-- SEMÁFORO SANDBOX (Google AI Studio) -->
-      <section class="block" id="semaforo">
+      <!-- STACK — dual marquee (tools / method / surfaces) -->
+      <section class="block stack-section" id="stack" aria-label="Herramientas y método">
         <div class="wrap">
-          <div class="sem-layout">
-            <div class="sem-copy reveal">
-              <div class="eyebrow">Interactive sandbox</div>
-              <h2 class="section-h2">Semáforo de calidad.<br /><span class="dim">Claims con freno.</span></h2>
-              <p class="muted">Mueva cobertura y confianza. Active un claim informal. Vea qué permitiría la rúbrica de Academy — y qué bloquea.</p>
+          <div class="stack-head reveal">
+            <div class="eyebrow">Stack del oficio</div>
+            <h2 class="section-h2">Lo que usa el desk.<br /><span class="dim">Sin relleno de logo wall.</span></h2>
+            <p class="muted" style="margin-inline:auto">CLI, API y MCP sobre el mismo moat. Métodos SIRI y DDM. Surfaces de producto solo como next step.</p>
+          </div>
+        </div>
+        <div class="stack-row forward" aria-hidden="true" id="stack-forward"></div>
+        <div class="stack-row reverse" aria-hidden="true" id="stack-reverse"></div>
+      </section>
 
-              <div class="sem-controls">
-                <div class="sem-field">
-                  <div class="sem-field-top">
-                    <label for="coverage-slider">Cobertura de góndola formal</label>
-                    <span class="sem-val" id="coverage-val">88%</span>
-                  </div>
-                  <input id="coverage-slider" type="range" min="30" max="100" value="88" />
-                  <span class="sem-hint">% de SKUs esperados del corte presentes en el payload.</span>
-                </div>
-                <div class="sem-field">
-                  <div class="sem-field-top">
-                    <label for="confidence-slider">Confianza de atributos</label>
-                    <span class="sem-val" id="confidence-val">92%</span>
-                  </div>
-                  <input id="confidence-slider" type="range" min="30" max="100" value="92" />
-                  <span class="sem-hint">Pareo de unidades, frescura y scores del motor.</span>
-                </div>
-                <div class="sem-toggle-row">
-                  <div>
-                    <label for="informal-toggle" class="sem-toggle-label">¿Afirma comercio informal / “inflación del país”?</label>
-                    <span class="sem-hint">Ej.: ferias, informal o IPC nacional sin ser el instituto.</span>
-                  </div>
-                  <label class="switch">
-                    <input id="informal-toggle" type="checkbox" />
-                    <span class="switch-ui" aria-hidden="true"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
+      <!-- PIPELINE (ecosystem brief) -->
+      <section class="block alt" id="pipeline">
+        <div class="wrap">
+          <div class="eyebrow">Arquitectura</div>
+          <h2 class="section-h2 reveal" id="pipeline-title">Pipeline del motor</h2>
+          <p class="muted reveal" id="pipeline-sub">De la góndola formal al desk.</p>
+          <div class="pipeline-flow reveal" id="pipeline-flow"></div>
 
-            <div class="sem-result reveal" data-delay="1">
-              <div class="sem-status" id="sem-status" data-level="g">
-                <div class="sem-status-icon" id="sem-icon" aria-hidden="true">✓</div>
-                <div>
-                  <span class="sem-status-k">Resultado de evaluación</span>
-                  <span class="sem-status-v" id="sem-label">Semáforo verde (usar)</span>
-                </div>
-              </div>
-              <div class="sem-implication">
-                <h3>Claim permitido</h3>
-                <p id="sem-desc"></p>
-              </div>
-              <div class="sem-rubric">
-                <span class="sem-rubric-k">Umbrales orientativos</span>
-                <div class="sem-rubric-grid">
-                  <div><span class="k">Verde</span><span class="v">≥80% cob. + ≥85% conf.</span></div>
-                  <div><span class="k">Amarillo</span><span class="v">≥60% cob. o ≥70% conf.</span></div>
-                  <div><span class="k">Informal</span><span class="v">siempre bloqueado</span></div>
-                </div>
-              </div>
-              <button type="button" class="btn btn-outline btn-block" id="sem-sync-lab">
-                Sincronizar con terminal del lab
-              </button>
+          <div class="pipe-log reveal" id="pipe-log">
+            <div class="pipe-log-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <span class="pipe-log-name">pipeline_demo.log</span>
+              <span class="pipe-log-badge">SIMULACIÓN</span>
             </div>
+            <pre class="pipe-log-body" id="pipe-log-body" aria-live="polite"></pre>
+            <p class="pipe-log-note" id="pipe-log-note"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- MCP (ecosystem brief) -->
+      <section class="block" id="mcp">
+        <div class="wrap">
+          <div class="eyebrow">Agentes</div>
+          <h2 class="section-h2 reveal" id="mcp-title">MCP cli-market</h2>
+          <p class="muted reveal" id="mcp-sub"></p>
+          <div class="mcp-grid reveal" id="mcp-grid"></div>
+
+          <div class="mcp-schema reveal">
+            <div class="mcp-schema-head">
+              <span class="mcp-schema-k">Contrato MCP</span>
+              <h3>Tools · Resources · Prompts</h3>
+              <p class="muted" id="mcp-schema-note"></p>
+            </div>
+            <div class="mcp-schema-tabs" role="tablist" aria-label="Esquema MCP">
+              <button type="button" class="mcp-schema-tab active" role="tab" aria-selected="true" data-mcp-tab="tools">Tools</button>
+              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="resources">Resources</button>
+              <button type="button" class="mcp-schema-tab" role="tab" aria-selected="false" data-mcp-tab="prompts">Prompts</button>
+            </div>
+            <pre class="mcp-schema-body font-mono" id="mcp-schema-body"></pre>
+          </div>
+
+          <div class="mcp-actions reveal">
+            <a class="btn btn-primary" id="mcp-cta-primary" href="https://cli-market.dev/tools" target="_blank" rel="noopener">Ver tools en producto</a>
+            <a class="btn btn-outline" href="#cta">Solicitar acceso Academy</a>
           </div>
         </div>
       </section>
