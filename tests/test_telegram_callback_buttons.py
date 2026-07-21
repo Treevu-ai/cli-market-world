@@ -121,6 +121,15 @@ def test_callback_query_without_prior_session_asks_to_retype(mock_send, mock_ans
     assert "expiró" in mock_send.call_args.args[1]
 
 
+def test_follow_up_keyboard_only_offers_compare():
+    """"trend"/"alert" were dropped live (2026-07-20) — neither has a real
+    forecasting or persistent-alert backend behind it, only "cmp" (compare
+    stores) is backed by real search_products data."""
+    keyboard = telegram._follow_up_keyboard()
+    all_actions = [btn["callback_data"] for row in keyboard["inline_keyboard"] for btn in row]
+    assert all_actions == ["cmp"]
+
+
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 def test_callback_query_rejected_without_valid_secret():

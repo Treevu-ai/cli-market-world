@@ -79,14 +79,17 @@ def _follow_up_keyboard() -> dict:
     """Inline keyboard attached to a real product-search answer. Each button
     carries only the action code — the product/country context is read back
     from messenger_sessions by chat_id, not from callback_data (Telegram
-    caps callback_data at 64 bytes, too tight for arbitrary product names)."""
+    caps callback_data at 64 bytes, too tight for arbitrary product names).
+
+    Only "cmp" (compare stores) ships: it's backed by real search_products
+    data. "trend"/"alert" were dropped (reported live 2026-07-20) — with no
+    real forecasting or persistent-alert backend wired to Telegram, both
+    just re-asked the LLM a one-off question dressed up as a monitoring
+    feature that doesn't exist. See routers/alerts.py for the real
+    account-scoped alert system this would need to hook into properly."""
     return {
         "inline_keyboard": [
-            [
-                {"text": "🔄 Comparar tiendas", "callback_data": "cmp"},
-                {"text": "📈 ¿Va a subir?", "callback_data": "trend"},
-            ],
-            [{"text": "🔔 Avisarme si baja", "callback_data": "alert"}],
+            [{"text": "🔄 Comparar tiendas", "callback_data": "cmp"}],
         ]
     }
 
@@ -202,12 +205,13 @@ async def _process_message(chat_id: str, message_id: str | None, incoming_msg: s
         await _send_telegram(chat_id, answer, reply_markup=keyboard)
 
 
+# "trend"/"alert" kept out (see _follow_up_keyboard) — no forecasting or
+# persistent-alert backend to back them. get() on these dicts still no-ops
+# gracefully for any already-sent message a user taps from before this change.
 _BUTTON_QUESTIONS = {
     "cmp": lambda q, c: f"Compara precios de {q} en {c} entre tiendas",
-    "trend": lambda q, c: f"¿Va a subir o bajar el precio de {q} en {c}?",
-    "alert": lambda q, c: f"Avísame si baja el precio de {q} en {c}",
 }
-_BUTTON_LABELS = {"cmp": "🔄 Comparando tiendas...", "trend": "📈 Revisando tendencia...", "alert": "🔔 Configurando aviso..."}
+_BUTTON_LABELS = {"cmp": "🔄 Comparando tiendas..."}
 
 
 async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
