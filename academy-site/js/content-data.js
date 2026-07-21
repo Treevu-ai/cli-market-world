@@ -244,7 +244,7 @@ window.AcademyContent = {
 
   mcp: {
     title: "¿Compro ahora, o espero?",
-    subtitle: "Miramos si el precio de un producto está más alto o más bajo de lo normal para él — como una alerta de clima, pero de precios. Si está \"raro\", se lo decimos antes de que pierda tiempo comparando a mano. Esta señal ya corre en producción; el protocolo MCP de abajo es cómo un agente de IA la consulta.",
+    subtitle: "Miramos si el precio de un producto está más alto o más bajo de lo normal para él — como una alerta de clima, pero de precios. Si está \"raro\", se lo decimos antes de que pierda tiempo comparando a mano. Esta señal ya corre en producción.",
     features: [
       {
         title: "Protocolo estándar",
@@ -259,123 +259,7 @@ window.AcademyContent = {
         desc: "En Academy el MCP es medio de evidencia: todo número sale de una tool call, no de una anécdota.",
       },
     ],
-    schemaNote:
-      "Esquema ilustrativo del contrato MCP (tools · resources · prompts). En el lab se usa el servidor real; aquí no hay precios ni series live.",
-    schema: {
-      tools: {
-        tools: [
-          {
-            name: "market_search",
-            description:
-              "Busca productos en góndola formal online por país y query. Devuelve evidencia con frescura cuando el payload la trae.",
-            inputSchema: {
-              type: "object",
-              properties: {
-                query: { type: "string", description: "Producto o texto de búsqueda" },
-                country: {
-                  type: "string",
-                  description: "Código de país del corte (ej. PE, CO, MX)",
-                },
-              },
-              required: ["query", "country"],
-            },
-          },
-          {
-            name: "market_intel_brief",
-            description:
-              "Estructura de brief / nowcast de góndola formal (ventanas y quality). No sustituye el IPC oficial.",
-            inputSchema: {
-              type: "object",
-              properties: {
-                country: { type: "string" },
-                line: { type: "string", description: "Línea o categoría del corte" },
-                days: { type: "number", description: "Ventana orientativa (ej. 7)" },
-              },
-              required: ["country"],
-            },
-          },
-          {
-            name: "market_cart_optimize",
-            description:
-              "Comparación multi-retailer / canasta con unidades normalizadas (lab Procure). Ahorro solo si se midió.",
-            inputSchema: {
-              type: "object",
-              properties: {
-                items: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      query: { type: "string" },
-                      quantity: { type: "number" },
-                    },
-                  },
-                },
-                country: { type: "string" },
-              },
-              required: ["items", "country"],
-            },
-          },
-        ],
-      },
-      resources: {
-        resources: [
-          {
-            uri: "cli-market://docs/quality-block",
-            name: "Quality block (methods)",
-            description:
-              "Campos de frescura, confianza y cobertura que el alumno debe citar en el workbook.",
-            mimeType: "application/json",
-          },
-          {
-            uri: "cli-market://docs/disclaimers",
-            name: "Disclaimers de canal",
-            description:
-              "formal online ≠ IPC oficial ≠ informal — texto canónico para afirmaciones.",
-            mimeType: "text/plain",
-          },
-          {
-            uri: "cli-market://catalog/retailers",
-            name: "Retailers del catálogo (referencia)",
-            description:
-              "Listado de cadenas del catálogo formal; cifras canónicas solo desde marketStats / GTM-Hub.",
-            mimeType: "application/json",
-          },
-        ],
-      },
-      prompts: {
-        prompts: [
-          {
-            name: "desk-brief-anomaly",
-            description:
-              "Plantilla de brief: headline, 7d vs 30d, quality, semáforo y bullets por lente.",
-            arguments: [
-              { name: "country", description: "País del corte", required: true },
-              { name: "category", description: "Categoría o línea", required: true },
-            ],
-          },
-          {
-            name: "procure-cycle-ddm",
-            description:
-              "Plantilla DDM: detect → compare → decide → execute → improve con criterios explícitos.",
-            arguments: [
-              { name: "basket", description: "Lista de insumos", required: true },
-              { name: "country", description: "País", required: true },
-            ],
-          },
-          {
-            name: "claim-guardrail",
-            description:
-              "Revisa si una afirmación confunde góndola formal con IPC o informal; sugiere redacción defendible.",
-            arguments: [
-              { name: "draft_claim", description: "Texto a auditar", required: true },
-            ],
-          },
-        ],
-      },
-    },
     ctaPrimary: { label: "Ver tools en producto", href: "https://cli-market.dev/tools" },
-    ctaSecondary: { label: "Solicitar acceso Academy", href: "#cta" },
   },
 
   workbookDeliverables: [
