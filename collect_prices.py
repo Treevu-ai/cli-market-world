@@ -979,7 +979,7 @@ async def collect_one_sqlite(db, store, queries):
         logger.warning("persistent failures — skipping %s (%d consecutive cycles failed)", store, consec)
         return 0
     queries = queries_for_store(store, queries)
-    line = STORES[store].get("line", "")
+    line = _store_line(store)
     collected = 0
     attempted = 0
     query_ok = 0

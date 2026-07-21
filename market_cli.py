@@ -1198,7 +1198,7 @@ def cmd_stores(args):
 
 
 def cmd_categories(args):
-    with console.status(f"[cyan]Cargando categorías de {STORES[args.store]['name']}..."):
+    with console.status(f"[cyan]Cargando categorías de {STORES.get(args.store, {}).get('name', args.store)}..."):
         data = cli_api("GET", f"/categories/{args.store}")
     # /categories/{store} now returns {"store", "categories", "disclaimer"}
     # instead of a bare list (cli-market-backend#127/#135) — support both
@@ -4459,7 +4459,14 @@ def main():
     # search
     p = sub.add_parser("search", help=t("search"))
     p.add_argument("query", nargs="?", default="")
-    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
+    # No choices= on --store: STORES is the static built-in catalog only —
+    # retailers approved after the fact (e.g. grintek_pe) live server-side
+    # in store_credentials and are invisible to this local, offline argparse
+    # setup. Restricting choices here made it impossible to ever target a
+    # newly-approved retailer by name; the server already validates/returns
+    # a clean empty result for a genuinely unknown store. See `market stores`
+    # for the live, authoritative list.
+    p.add_argument("--store", "-s", default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
@@ -4468,7 +4475,7 @@ def main():
     # compare
     p = sub.add_parser("compare", help=t("compare"))
     p.add_argument("query", nargs="?", default="")
-    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
+    p.add_argument("--store", "-s", default=None)
     p.add_argument("--country", "-c", choices=list(COUNTRIES.keys()), default=None)
     p.add_argument("--line", choices=list(LINES.keys()), default=None)
     p.add_argument("--limit", "-l", type=int, default=10)
@@ -4486,7 +4493,7 @@ def main():
     p.add_argument("product_id")
     p.add_argument("--name")
     p.add_argument("--price", type=float, default=None)
-    p.add_argument("--store", "-s", choices=list(STORES.keys()), default=None)
+    p.add_argument("--store", "-s", default=None)
     p.add_argument("--qty", type=int, default=1)
 
     # cart
@@ -4525,7 +4532,7 @@ def main():
 
     # categories
     p = sub.add_parser("categories", help=t("categories"))
-    p.add_argument("store", choices=list(STORES.keys()))
+    p.add_argument("store")
 
     # barcode
     p = sub.add_parser("barcode", help=t("barcode"))
