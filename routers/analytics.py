@@ -14,6 +14,7 @@ from fastapi import APIRouter, Header
 
 from market_core import STORES, get_db
 from backend_interface import get_indicator_catalog, get_latest_values
+from routers.search import _is_relevant, _query_tokens
 from server_deps import require_api_key, require_pro
 
 router = APIRouter(tags=["analytics"])
@@ -172,10 +173,22 @@ _BRAND_JUNK = {"", "-", "—", "–", "n/a", "na"}
 
 
 @router.get("/analytics/brands", summary="Top brands in the data moat by snapshot count")
-def analytics_brands(line: str | None = None, country: str | None = None, limit: int = 20, authorization: str | None = Header(None)):
+def analytics_brands(
+    line: str | None = None,
+    country: str | None = None,
+    query: str | None = None,
+    limit: int = 20,
+    authorization: str | None = Header(None),
+):
     """Return the most-represented brands in the price snapshot database, ranked by
     number of snapshots. Filter by business line and country. Use for brand coverage
     analysis or to understand which brands dominate a category.
+
+    `query` scopes brands to a specific product category (e.g. query='cafe')
+    instead of every brand in the line — word-boundary matched against the
+    product name (same relevance logic as /v1/search/products/search), so
+    'cafe' doesn't spuriously match an unrelated product whose name merely
+    contains the substring.
 
     Brand values matching a store's own name (e.g. brand="Wong" in a Wong
     snapshot) are kept as-is, not filtered — several retailers sell private-
@@ -194,10 +207,16 @@ def analytics_brands(line: str | None = None, country: str | None = None, limit:
     which scope" would be ambiguous without one."""
     require_api_key(authorization)
     db = get_db()
-    q = "SELECT brand, COUNT(*) as count FROM price_snapshots WHERE brand != '' AND price > 0"
+    q_tokens = _query_tokens(query) if query else []
+
+    if q_tokens:
+        from market_core.market_db import name_like_clause
+        sql = "SELECT brand, name FROM price_snapshots WHERE brand != '' AND price > 0"
+    else:
+        sql = "SELECT brand, COUNT(*) as count FROM price_snapshots WHERE brand != '' AND price > 0"
     params: list = []
     if line:
-        q += " AND line = ?"
+        sql += " AND line = ?"
         params.append(line)
     if country:
         # price_snapshots has no country column — derive it from store via STORES,
@@ -210,27 +229,42 @@ def analytics_brands(line: str | None = None, country: str | None = None, limit:
         if not store_keys:
             db.close()
             return {"brands": [], "total": 0}
-        q += f" AND store IN ({','.join('?' * len(store_keys))})"
+        sql += f" AND store IN ({','.join('?' * len(store_keys))})"
         params.extend(store_keys)
-    q += " GROUP BY brand ORDER BY count DESC"
-    rows = db.execute(q, params).fetchall()
+    if q_tokens:
+        like = name_like_clause()
+        sql += " AND (" + " OR ".join(like for _ in q_tokens) + ")"
+        params.extend(f"%{t}%" for t in q_tokens)
+    else:
+        sql += " GROUP BY brand ORDER BY count DESC"
+    rows = db.execute(sql, params).fetchall()
 
     # Merge casing variants in Python — SQL GROUP BY brand treats "Gloria" and
     # "GLORIA" as distinct groups, which is exactly the fragmentation we're
-    # undoing here.
-    merged: dict[str, dict] = {}
+    # undoing here. When query is set, rows are ungrouped (product) rows —
+    # apply word-boundary relevance filtering and count brand occurrences
+    # here instead of in SQL. Track per-casing-variant sub-counts (not just
+    # first-seen) so the displayed spelling is the most frequent one even
+    # when every row here contributes a count of 1 (the query branch).
+    variant_counts: dict[str, dict[str, int]] = {}
     for row in rows:
+        row = dict(row)
+        if q_tokens and not _is_relevant(row.get("name", ""), q_tokens):
+            continue
         brand = row["brand"]
         if brand.strip().lower() in _BRAND_JUNK:
             continue
         key = brand.strip().lower()
-        bucket = merged.setdefault(key, {"display": brand, "display_count": 0, "count": 0})
-        bucket["count"] += row["count"]
-        if row["count"] > bucket["display_count"]:
-            bucket["display"] = brand
-            bucket["display_count"] = row["count"]
+        row_count = 1 if q_tokens else row["count"]
+        variants = variant_counts.setdefault(key, {})
+        variants[brand] = variants.get(brand, 0) + row_count
 
-    results = sorted(merged.values(), key=lambda b: b["count"], reverse=True)[:limit]
+    merged = []
+    for variants in variant_counts.values():
+        display = max(variants, key=variants.get)
+        merged.append({"display": display, "count": sum(variants.values())})
+
+    results = sorted(merged, key=lambda b: b["count"], reverse=True)[:limit]
     brands_out = [{"brand": b["display"], "count": b["count"]} for b in results]
 
     if country:

@@ -279,6 +279,48 @@ def test_brands_is_new_is_null_without_country_filter():
         assert b["is_new"] is None
 
 
+def test_brands_query_scopes_to_matching_products_only():
+    """query='cafe' should only count brands whose SKUs actually match
+    'cafe' by name (word-boundary), not every brand in the line."""
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('query-cafe-1', 'wong', 'Wong', 'Cafe Instantaneo QueryBrandCafe 100g', 'QueryBrandCafe', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('query-noncafe-1', 'wong', 'Wong', 'Arroz QueryBrandArroz 1kg', 'QueryBrandArroz', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?query=cafe&limit=200", headers=_AUTH)
+    assert r.status_code == 200
+    brands = {b["brand"] for b in r.json()["brands"]}
+    assert "QueryBrandCafe" in brands
+    assert "QueryBrandArroz" not in brands
+
+
+def test_brands_query_avoids_prefix_false_positive():
+    """Word-boundary matching: query='pan' must not match a product whose
+    name merely contains 'pan' as a substring ('pantalon')."""
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('query-prefix-1', 'wong', 'Wong', 'Pantalon QueryBrandPantalon Talla M', 'QueryBrandPantalon', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?query=pan&limit=200", headers=_AUTH)
+    assert r.status_code == 200
+    brands = {b["brand"] for b in r.json()["brands"]}
+    assert "QueryBrandPantalon" not in brands
+
+
 # ── GET /analytics/indicators ─────────────────────────────────────────────────
 
 def test_indicators_requires_auth():

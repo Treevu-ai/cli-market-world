@@ -530,12 +530,19 @@ _TOOLS = [
     },
     {
         "name": "market_brands",
-        "description": "Top brands in the data moat by snapshot count. Filter by product line.",
+        "description": (
+            "Top brands in the data moat by snapshot count. Filter by product line, and "
+            "optionally by product/category (query, e.g. 'cafe') to see only the brands "
+            "competing in that specific category instead of every brand in the line. "
+            "When country is set, each brand also reports is_new: true the first time "
+            "it's ever been seen for that country — a signal of a new market entrant."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "line": {"type": "string"},
                 "country": {"type": "string"},
+                "query": {"type": "string", "description": "Product/category name to scope brands to, e.g. 'cafe'"},
                 "limit": {"type": "integer", "default": 20},
             },
         },
