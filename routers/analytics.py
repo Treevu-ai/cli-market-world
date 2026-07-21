@@ -3,9 +3,9 @@
 Endpoints:
   GET /analytics/price-history   Snapshots filtered by product/store/line
   GET /analytics/stats           Totals + last snapshot timestamp
-  GET /analytics/trending        Recent products (placeholder — sorted by queried_at)
+  GET /analytics/trending        Recent products (Pro — live computed values)
   GET /analytics/brands          Top brands by snapshot count
-  GET /analytics/indicators      Latest moat indicator values
+  GET /analytics/indicators      Latest moat indicator values (Pro — live computed values)
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from fastapi import APIRouter, Header
 
 from market_core import STORES, get_db
 from backend_interface import get_indicator_catalog, get_latest_values
-from server_deps import require_api_key
+from server_deps import require_api_key, require_pro
 
 router = APIRouter(tags=["analytics"])
 
@@ -96,7 +96,7 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
     optionally filtered by country and business line. Each row includes change_pct
     (positive = price rose, negative = fell) and trend ('up' | 'down' | 'stable' | 'new').
     Products with no prior snapshot are ranked last. Maps to the market_trending MCP tool."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
 
     # Get the latest snapshot per (product_id, store) plus the most recent
@@ -168,11 +168,30 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
     return {"trending": results, "total": len(results)}
 
 
+_BRAND_JUNK = {"", "-", "—", "–", "n/a", "na"}
+
+
 @router.get("/analytics/brands", summary="Top brands in the data moat by snapshot count")
 def analytics_brands(line: str | None = None, country: str | None = None, limit: int = 20, authorization: str | None = Header(None)):
     """Return the most-represented brands in the price snapshot database, ranked by
     number of snapshots. Filter by business line and country. Use for brand coverage
-    analysis or to understand which brands dominate a category."""
+    analysis or to understand which brands dominate a category.
+
+    Brand values matching a store's own name (e.g. brand="Wong" in a Wong
+    snapshot) are kept as-is, not filtered — several retailers sell private-
+    label ("marca blanca") products under their own store name as the brand,
+    so that's real brand data, not a scraping artifact.
+
+    Casing variants of the same brand ("Gloria"/"GLORIA") are merged into one
+    row (counts summed, display name = the most frequent casing) — the raw
+    column keeps whatever casing each retailer's page used, which otherwise
+    fragments one brand into several rows.
+
+    When `country` is given, each row also carries `is_new`: true the first
+    time this brand has ever been seen for that country across all calls
+    (tracked in known_brands) — a signal that a scrape found a new market
+    entrant. Omitted (null) when no country filter is given, since "new for
+    which scope" would be ambiguous without one."""
     require_api_key(authorization)
     db = get_db()
     q = "SELECT brand, COUNT(*) as count FROM price_snapshots WHERE brand != '' AND price > 0"
@@ -193,11 +212,43 @@ def analytics_brands(line: str | None = None, country: str | None = None, limit:
             return {"brands": [], "total": 0}
         q += f" AND store IN ({','.join('?' * len(store_keys))})"
         params.extend(store_keys)
-    q += " GROUP BY brand ORDER BY count DESC LIMIT ?"
-    params.append(limit)
+    q += " GROUP BY brand ORDER BY count DESC"
     rows = db.execute(q, params).fetchall()
+
+    # Merge casing variants in Python — SQL GROUP BY brand treats "Gloria" and
+    # "GLORIA" as distinct groups, which is exactly the fragmentation we're
+    # undoing here.
+    merged: dict[str, dict] = {}
+    for row in rows:
+        brand = row["brand"]
+        if brand.strip().lower() in _BRAND_JUNK:
+            continue
+        key = brand.strip().lower()
+        bucket = merged.setdefault(key, {"display": brand, "display_count": 0, "count": 0})
+        bucket["count"] += row["count"]
+        if row["count"] > bucket["display_count"]:
+            bucket["display"] = brand
+            bucket["display_count"] = row["count"]
+
+    results = sorted(merged.values(), key=lambda b: b["count"], reverse=True)[:limit]
+    brands_out = [{"brand": b["display"], "count": b["count"]} for b in results]
+
+    if country:
+        try:
+            from market_brand_registry import diff_and_record_new_brands
+            new_normalized = diff_and_record_new_brands(db, country, [b["brand"] for b in brands_out])
+        except Exception:
+            # known_brands missing/unreachable shouldn't break brand listing
+            # itself — degrade to "unknown" rather than 500 the whole endpoint.
+            new_normalized = set()
+        for b in brands_out:
+            b["is_new"] = b["brand"].strip().lower() in new_normalized
+    else:
+        for b in brands_out:
+            b["is_new"] = None
+
     db.close()
-    return {"brands": [dict(r) for r in rows], "total": len(rows)}
+    return {"brands": brands_out, "total": len(brands_out)}
 
 
 @router.get("/analytics/indicators", summary="Latest indicator values from the data moat (internal + external sources)")
@@ -211,7 +262,7 @@ def analytics_indicators(
     country and line. Combines internal moat indicators (promo_intensity, moat_freshness,
     price_dispersion) with public API sources (World Bank, IMF, Eurostat, BCB).
     Prefer GET /v1/intel/brief for a narrative summary; use this for raw indicator access."""
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     values = get_latest_values(db, country=country, line=line, limit=limit)
     db.close()

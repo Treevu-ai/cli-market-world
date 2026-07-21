@@ -137,6 +137,11 @@ async def lifespan(_app: FastAPI):
     except Exception as e:
         logger.warning("Funnel schema skipped: %s", e)
     try:
+        from market_brand_registry import ensure_known_brands_schema
+        ensure_known_brands_schema()
+    except Exception as e:
+        logger.warning("Known-brands schema skipped: %s", e)
+    try:
         from market_observatory import ensure_observatory_schema
         ensure_observatory_schema()
     except Exception as e:
