@@ -214,6 +214,47 @@ def test_brands_merges_casing_variants():
     assert matches[0]["count"] >= 2
 
 
+def test_brands_merges_accent_and_hyphen_variants():
+    """Confirmed live 2026-07-20 across real PE data: "Nescafe"/"NESCAFÉ",
+    "Genérico"/"Generico", "Fisher-Price"/"FISHER PRICE" and 5 more pairs all
+    fragmented the same brand across accent or hyphenation differences —
+    not a one-brand fluke, the same accent-folding normalizer product search
+    already uses (_normalize_text) must merge these too, not just casing."""
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('accent-1', 'wong', 'Wong', 'Producto A', 'AccéntBrandZ', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('accent-2', 'metro', 'Metro', 'Producto B', 'ACCENTBRANDZ', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('hyphen-1', 'plazavea', 'Plaza Vea', 'Producto C', 'Hyphen-BrandZ', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('hyphen-2', 'wong', 'Wong', 'Producto D', 'HYPHEN BRANDZ', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?country=PE&limit=200", headers=_AUTH)
+    assert r.status_code == 200
+    accent_matches = [b for b in r.json()["brands"] if "accentbrandz" in b["brand"].lower().replace("é", "e")]
+    assert len(accent_matches) == 1
+    assert accent_matches[0]["count"] >= 2
+
+    hyphen_matches = [b for b in r.json()["brands"] if "brandz" in b["brand"].lower() and "hyphen" in b["brand"].lower()]
+    assert len(hyphen_matches) == 1
+    assert hyphen_matches[0]["count"] >= 2
+
+
 def test_brands_keeps_store_name_as_brand_for_private_label():
     """A store's own name as brand ("Wong") is real private-label ("marca
     blanca") data, not a scraping artifact — must not be filtered out just

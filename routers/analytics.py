@@ -14,7 +14,7 @@ from fastapi import APIRouter, Header
 
 from market_core import STORES, get_db
 from backend_interface import get_indicator_catalog, get_latest_values
-from routers.search import _is_relevant, _query_tokens
+from routers.search import _is_relevant, _normalize_text, _query_tokens
 from server_deps import require_api_key, require_pro
 
 router = APIRouter(tags=["analytics"])
@@ -239,13 +239,16 @@ def analytics_brands(
         sql += " GROUP BY brand ORDER BY count DESC"
     rows = db.execute(sql, params).fetchall()
 
-    # Merge casing variants in Python — SQL GROUP BY brand treats "Gloria" and
-    # "GLORIA" as distinct groups, which is exactly the fragmentation we're
-    # undoing here. When query is set, rows are ungrouped (product) rows —
-    # apply word-boundary relevance filtering and count brand occurrences
-    # here instead of in SQL. Track per-casing-variant sub-counts (not just
-    # first-seen) so the displayed spelling is the most frequent one even
-    # when every row here contributes a count of 1 (the query branch).
+    # Merge casing AND accent variants in Python — SQL GROUP BY brand treats
+    # "Gloria"/"GLORIA" (casing) and "Nescafe"/"NESCAFÉ" (accents) as distinct
+    # groups, which is exactly the fragmentation we're undoing here. Grouping
+    # key uses the same accent-folding normalize_text as product search, so
+    # "café"/"cafe" brand spellings merge the same way product names already
+    # do. When query is set, rows are ungrouped (product) rows — apply
+    # word-boundary relevance filtering and count brand occurrences here
+    # instead of in SQL. Track per-variant sub-counts (not just first-seen)
+    # so the displayed spelling is the most frequent one even when every row
+    # here contributes a count of 1 (the query branch).
     variant_counts: dict[str, dict[str, int]] = {}
     for row in rows:
         row = dict(row)
@@ -254,7 +257,7 @@ def analytics_brands(
         brand = row["brand"]
         if brand.strip().lower() in _BRAND_JUNK:
             continue
-        key = brand.strip().lower()
+        key = _normalize_text(brand).strip()
         row_count = 1 if q_tokens else row["count"]
         variants = variant_counts.setdefault(key, {})
         variants[brand] = variants.get(brand, 0) + row_count
