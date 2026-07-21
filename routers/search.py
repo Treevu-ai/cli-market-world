@@ -294,8 +294,10 @@ async def _search_products_live(body: SearchRequest):
         for p in raw:
             try:
                 prod = product_from_json(p, store)
-                prod["line"] = STORES[store]["line"]
-                prod["line_name"] = LINES[STORES[store]["line"]]["name"]
+                store_line = (STORES.get(store) or get_store_profile(store) or {}).get("line", "")
+                if store_line:
+                    prod["line"] = store_line
+                    prod["line_name"] = LINES.get(store_line, {}).get("name", store_line)
                 results.append(prod)
             except Exception as pe:
                 errors.append({"store": store, "product_id": str(p)[:80], "error": str(pe)})
@@ -514,8 +516,8 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
             )
         finally:
             db.close()
-    stores = body.stores or list(STORES.keys())
-    stores = [s for s in stores if s in STORES]
+    stores = body.stores or get_default_stores()
+    stores = [s for s in stores if s in STORES or store_exists(s)]
     # Fetch every item across every store in parallel instead of the old
     # sequential `for store: for item: await fetch_store(...)` — that was
     # O(stores * items) fully-serialized awaits (world#363: a 3-item PE
@@ -579,9 +581,10 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
             except Exception:
                 continue
         if found:
+            store_profile = STORES.get(store) or get_store_profile(store) or {}
             results[store] = {
-                "store_name": STORES[store]["name"],
-                "currency": STORES[store]["currency"],
+                "store_name": store_profile.get("name", store),
+                "currency": store_profile.get("currency", "USD"),
                 "items": found,
                 "total": round(t, 2),
                 "items_found": len(found),
