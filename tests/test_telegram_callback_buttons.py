@@ -82,12 +82,14 @@ def test_callback_query_answers_immediately(mock_api):
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_answer_callback_query", new_callable=AsyncMock)
-@patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
+@patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
 @patch("httpx.AsyncClient.post")
-def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_edit, mock_answer):
+def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_send, mock_answer):
     """A button press must re-run the last search using session context
     (last_query/last_country), not require the user to type the product
-    name again."""
+    name again. The result must be a NEW message (_send_telegram), not an
+    edit of the original — editing in place meant a second button press
+    silently erased the first button's answer (reported live 2026-07-20)."""
     _ensure_messenger_sessions_table()
     update_messenger_session(
         "70002", context="prior turn", last_query="nescafe", last_country="PE"
@@ -99,24 +101,24 @@ def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_edit,
     r = client.post(WEBHOOK_PATH, json=body, headers=_AUTH_HEADERS)
 
     assert r.status_code == 200
-    mock_edit.assert_called_once()
+    mock_send.assert_called_once()
     sent_question = mock_post.call_args.kwargs["json"]["question"]
     assert "nescafe" in sent_question
     assert "PE" in sent_question
-    assert "S/16.00 en Wong" in mock_edit.call_args.args[2]
+    assert "S/16.00 en Wong" in mock_send.call_args.args[1]
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_answer_callback_query", new_callable=AsyncMock)
-@patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
-def test_callback_query_without_prior_session_asks_to_retype(mock_edit, mock_answer):
+@patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
+def test_callback_query_without_prior_session_asks_to_retype(mock_send, mock_answer):
     body = _callback_body(70003, 5003, "trend")
     r = client.post(WEBHOOK_PATH, json=body, headers=_AUTH_HEADERS)
 
     assert r.status_code == 200
-    mock_edit.assert_called_once()
-    assert "expiró" in mock_edit.call_args.args[2]
+    mock_send.assert_called_once()
+    assert "expiró" in mock_send.call_args.args[1]
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)

@@ -214,11 +214,16 @@ async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
     """The slow work for an inline-button press: re-run the last query with
     the button's action folded in, using session context instead of asking
     the user to retype the product — the concrete fix for the tool-selection
-    ambiguity that caused free-text follow-ups to fail (2026-07-20 café bug)."""
+    ambiguity that caused free-text follow-ups to fail (2026-07-20 café bug).
+
+    Sends the result as a NEW message rather than editing the original one
+    (message_id) in place: editing meant pressing a second button (e.g.
+    "trend" after "cmp") silently erased the first button's answer, since
+    both were rewriting the same message (reported live 2026-07-20)."""
     session = get_messenger_session(chat_id)
     last_query = session.get("last_query")
     if not last_query:
-        await _edit_telegram(chat_id, message_id, "Esa búsqueda ya expiró — escribime de nuevo qué precio querés ver.")
+        await _send_telegram(chat_id, "Esa búsqueda ya expiró — escribime de nuevo qué precio querés ver.")
         return
 
     country = session.get("last_country") or "PE"
@@ -227,7 +232,7 @@ async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
         return
     token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
     answer = await _ask_intel(builder(last_query, country), token)
-    await _edit_telegram(chat_id, message_id, answer, reply_markup=_follow_up_keyboard())
+    await _send_telegram(chat_id, answer, reply_markup=_follow_up_keyboard())
 
 
 @router.post("/webhook")
