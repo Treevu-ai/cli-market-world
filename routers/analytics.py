@@ -239,16 +239,20 @@ def analytics_brands(
         sql += " GROUP BY brand ORDER BY count DESC"
     rows = db.execute(sql, params).fetchall()
 
-    # Merge casing AND accent variants in Python — SQL GROUP BY brand treats
-    # "Gloria"/"GLORIA" (casing) and "Nescafe"/"NESCAFÉ" (accents) as distinct
-    # groups, which is exactly the fragmentation we're undoing here. Grouping
-    # key uses the same accent-folding normalize_text as product search, so
-    # "café"/"cafe" brand spellings merge the same way product names already
-    # do. When query is set, rows are ungrouped (product) rows — apply
-    # word-boundary relevance filtering and count brand occurrences here
-    # instead of in SQL. Track per-variant sub-counts (not just first-seen)
-    # so the displayed spelling is the most frequent one even when every row
-    # here contributes a count of 1 (the query branch).
+    # Merge casing, accent, AND spacing variants in Python — SQL GROUP BY
+    # brand treats "Gloria"/"GLORIA" (casing), "Nescafe"/"NESCAFÉ" (accents),
+    # and "Valle Norte"/"VALLENORTE" (spacing) as distinct groups, which is
+    # exactly the fragmentation we're undoing here. First pass groups by the
+    # same accent-folding normalize_text product search already uses
+    # (preserves word spacing); second pass merges groups whose spacing-
+    # collapsed form is identical, since two genuinely different brands
+    # coincidentally sharing every letter in the same order once spaces are
+    # removed is vanishingly unlikely in practice. When query is set, rows
+    # are ungrouped (product) rows — apply word-boundary relevance filtering
+    # and count brand occurrences here instead of in SQL. Track per-variant
+    # sub-counts (not just first-seen) so the displayed spelling is the most
+    # frequent one even when every row here contributes a count of 1 (the
+    # query branch).
     variant_counts: dict[str, dict[str, int]] = {}
     for row in rows:
         row = dict(row)
@@ -262,10 +266,18 @@ def analytics_brands(
         variants = variant_counts.setdefault(key, {})
         variants[brand] = variants.get(brand, 0) + row_count
 
+    spaceless_groups: dict[str, list[dict[str, int]]] = {}
+    for key, variants in variant_counts.items():
+        spaceless_groups.setdefault(key.replace(" ", ""), []).append(variants)
+
     merged = []
-    for variants in variant_counts.values():
-        display = max(variants, key=variants.get)
-        merged.append({"display": display, "count": sum(variants.values())})
+    for group in spaceless_groups.values():
+        combined: dict[str, int] = {}
+        for variants in group:
+            for brand, count in variants.items():
+                combined[brand] = combined.get(brand, 0) + count
+        display = max(combined, key=combined.get)
+        merged.append({"display": display, "count": sum(combined.values())})
 
     results = sorted(merged, key=lambda b: b["count"], reverse=True)[:limit]
     brands_out = [{"brand": b["display"], "count": b["count"]} for b in results]

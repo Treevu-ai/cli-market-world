@@ -255,6 +255,31 @@ def test_brands_merges_accent_and_hyphen_variants():
     assert hyphen_matches[0]["count"] >= 2
 
 
+def test_brands_merges_spacing_variants():
+    """Confirmed live 2026-07-20 on real PE 'arroz' data: "Valle Norte" and
+    "VALLENORTE" are the same brand missing a space, not merged by
+    casing/accent folding alone since that preserves word boundaries."""
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('spacing-1', 'wong', 'Wong', 'Producto E', 'Space Brand Q', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+           VALUES ('spacing-2', 'metro', 'Metro', 'Producto F', 'SPACEBRANDQ', 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))"""
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?country=PE&limit=200", headers=_AUTH)
+    assert r.status_code == 200
+    matches = [b for b in r.json()["brands"] if b["brand"].lower().replace(" ", "") == "spacebrandq"]
+    assert len(matches) == 1
+    assert matches[0]["count"] >= 2
+
+
 def test_brands_keeps_store_name_as_brand_for_private_label():
     """A store's own name as brand ("Wong") is real private-label ("marca
     blanca") data, not a scraping artifact — must not be filtered out just
