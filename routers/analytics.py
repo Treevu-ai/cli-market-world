@@ -169,7 +169,10 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
     return {"trending": results, "total": len(results)}
 
 
-_BRAND_JUNK = {"", "-", "—", "–", "n/a", "na"}
+# These are already accent/casing-normalized forms (checked against the same
+# _normalize_text key used for merging, not the raw brand string) — e.g.
+# "Genérico", "GENÉRICO", and "Generico" all fold to "generico" here.
+_BRAND_JUNK = {"", "n a", "na", "generic", "generico", "generica"}
 
 
 @router.get("/analytics/brands", summary="Top brands in the data moat by snapshot count")
@@ -259,9 +262,9 @@ def analytics_brands(
         if q_tokens and not _is_relevant(row.get("name", ""), q_tokens):
             continue
         brand = row["brand"]
-        if brand.strip().lower() in _BRAND_JUNK:
-            continue
         key = _normalize_text(brand).strip()
+        if key in _BRAND_JUNK:
+            continue
         row_count = 1 if q_tokens else row["count"]
         variants = variant_counts.setdefault(key, {})
         variants[brand] = variants.get(brand, 0) + row_count

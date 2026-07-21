@@ -315,6 +315,32 @@ def test_brands_filters_placeholder_junk_values():
     assert "—" not in brands
 
 
+def test_brands_filters_generic_placeholder_in_any_language_or_accent():
+    """"Genérico"/"GENÉRICO"/"Generico" (Spanish) and "GENERIC" (English) are
+    all the same "no real brand" placeholder — found live scanning PE data,
+    where the Spanish accented form was already filtered but the unaccented
+    and English spellings weren't."""
+    db = get_db()
+    for pid, brand in [
+        ("junk-generico-1", "Generico"),
+        ("junk-generico-2", "GENERIC"),
+    ]:
+        db.execute(
+            """INSERT OR IGNORE INTO price_snapshots
+               (product_id, store, store_name, name, brand, price, currency, line, line_name, queried_at)
+               VALUES (?, 'wong', 'Wong', 'Producto Sin Marca', ?, 5.0, 'PEN', 'supermercados', 'Supermercados', datetime('now'))""",
+            (pid, brand),
+        )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/brands?country=PE&limit=200", headers=_AUTH)
+    assert r.status_code == 200
+    brands = {b["brand"].lower() for b in r.json()["brands"]}
+    assert "generico" not in brands
+    assert "generic" not in brands
+
+
 def test_brands_flags_new_brand_only_on_first_sighting():
     """First call with a never-seen brand marks is_new=true; the exact same
     call again must report is_new=false — it's already in known_brands now."""
