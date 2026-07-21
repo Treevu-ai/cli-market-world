@@ -82,3 +82,33 @@ def test_llm_answer_with_html_special_chars_is_escaped(mock_post, mock_edit, moc
     sent_text = mock_edit.call_args.args[2]
     assert "5% &amp; bajó &lt;b&gt;ayer&lt;/b&gt;" in sent_text
     assert "<b>ayer</b>" not in sent_text
+
+
+@patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
+@patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
+@patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
+@patch("httpx.AsyncClient.post")
+def test_llm_answer_markdown_bold_is_rendered_as_html_bold(mock_post, mock_edit, mock_send):
+    """ask_intel answers are written in Markdown (**bold**); sent with
+    parse_mode: "HTML" they must become <b>...</b>, not show literal
+    asterisks (reported live 2026-07-20)."""
+    mock_send.return_value = "1"
+    mock_edit.return_value = True
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json = lambda: {
+        "answer": "**Leche Evaporada Gloria**: 4.20 PEN en Wong"
+    }
+    body = {
+        "message": {
+            "chat": {"id": 997, "first_name": "Ana"},
+            "text": "leche evaporada en peru",
+        }
+    }
+    r = client.post(WEBHOOK_PATH, json=body, headers=_AUTH_HEADERS)
+
+    assert r.status_code == 200
+    mock_edit.assert_called_once()
+    sent_text = mock_edit.call_args.args[2]
+    assert "<b>Leche Evaporada Gloria</b>" in sent_text
+    assert "**" not in sent_text

@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Request, Response
@@ -39,6 +40,19 @@ def _esc(text: str) -> str:
     formatting. Same fix procure-telegram-bot's src/lib/format.ts already
     applied for the same reason — ported here since it never was."""
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+_MD_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _markdown_bold_to_html(text: str) -> str:
+    """ask_intel's answers are written in Markdown (**bold**), but Telegram
+    messages are sent with parse_mode: "HTML" — the two don't mix, so users
+    were seeing literal asterisks instead of bold text (reported live
+    2026-07-20). Must run AFTER _esc() escapes & < > — ** itself isn't
+    affected by that escaping, and text captured between markers can't
+    contain raw < > to reintroduce after the fact."""
+    return _MD_BOLD_RE.sub(r"<b>\1</b>", text)
 
 
 def _guess_country(text: str) -> str:
@@ -138,7 +152,7 @@ async def _ask_intel(question: str, token: str) -> str:
                 timeout=30,
             )
             if response.status_code == 200:
-                return _esc(response.json().get("answer", ""))
+                return _markdown_bold_to_html(_esc(response.json().get("answer", "")))
             print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
     except Exception as e:
         print(f"❌ Error API (Telegram Bridge): {e}")
@@ -154,9 +168,17 @@ async def _process_message(chat_id: str, message_id: str | None, incoming_msg: s
     if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
         answer = (
             f"Hola <b>{_esc(first_name)}</b> \U0001f44b\n\n"
-            "Soy el bot de <b>CLI Market</b>.\n\n"
-            "Preguntame lo que quieras sobre precios de productos en tiendas de América Latina.\n"
-            "Por ejemplo: <i>¿Cuánto cuesta el café en Perú?</i> o <i>Busco leche evaporada</i>."
+            "Soy el bot de <b>CLI Market</b>. Te ayudo a ver precios de productos en "
+            "supermercados de Perú y otros países de Latinoamérica.\n\n"
+            "<b>Qué puedo hacer:</b>\n"
+            "• Buscarte el precio de un producto (ej: <i>¿Cuánto cuesta el café en Perú?</i>)\n"
+            "• Comparar precios entre tiendas\n"
+            "• Avisarte si el precio de algo baja\n\n"
+            "<b>Qué NO puedo hacer:</b>\n"
+            "• No hago compras ni pagos, solo te muestro precios\n"
+            "• Solo veo las tiendas que ya monitoreamos — puede faltar alguna marca o producto puntual\n"
+            "• Los precios se actualizan varias veces al día, no al segundo\n\n"
+            "Escribime el producto que buscás."
         )
         keyboard = None
     else:

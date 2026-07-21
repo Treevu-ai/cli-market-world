@@ -1,4 +1,5 @@
 import os
+import re
 import httpx
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 from twilio.request_validator import RequestValidator
@@ -20,6 +21,17 @@ TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
 # falls back to its canned "You said :X. Configure your Inbound URL..."
 # message even when our BackgroundTask later sends the real answer via REST.
 _EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+
+_MD_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _markdown_bold_to_whatsapp(text: str) -> str:
+    """ask_intel answers are written in standard Markdown (**bold**), but
+    WhatsApp's own formatting uses a single asterisk (*bold*) — sent as-is,
+    users see literal double asterisks instead of bold text (same bug class
+    reported live on Telegram 2026-07-20; WhatsApp uses the same LLM answer
+    and was never converted either)."""
+    return _MD_BOLD_RE.sub(r"*\1*", text)
 
 # Per-sender cap so a single (correctly-signed) number can't run up paid
 # Whisper transcription / LLM costs by hammering the webhook.
@@ -186,11 +198,16 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
     if incoming_msg in ("hola", "hi", "hello", "ayuda", "help", "menu"):
         answer = (
             "¡Hola! Soy el bot de *CLI Market* 🚀\n\n"
-            "Te ayudo a saber cuánto cuestan las cosas en los supermercados de América Latina.\n\n"
-            "¿Qué querés hacer?\n"
+            "Te ayudo a ver precios de productos en supermercados de Perú y otros países "
+            "de Latinoamérica.\n\n"
+            "*Qué puedo hacer:*\n"
             "1️⃣ *Ver un precio*: '¿Cuánto cuesta el café en Perú?'\n"
             "2️⃣ *Comparar tiendas*: 'Compara leche evaporada en Lima'\n"
-            "3️⃣ *Ver si va a subir*: '¿Va a subir el precio del arroz?'"
+            "3️⃣ *Ver si va a subir*: '¿Va a subir el precio del arroz?'\n\n"
+            "*Qué NO puedo hacer:*\n"
+            "• No hago compras ni pagos, solo te muestro precios\n"
+            "• Solo veo las tiendas que ya monitoreamos — puede faltar alguna marca o producto puntual\n"
+            "• Los precios se actualizan varias veces al día, no al segundo"
         )
     else:
         async with httpx.AsyncClient() as client_http:
@@ -202,7 +219,7 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
                     timeout=30
                 )
                 if response.status_code == 200:
-                    answer = response.json().get("answer", answer)
+                    answer = _markdown_bold_to_whatsapp(response.json().get("answer", answer))
                     print(f"✅ /v1/intel/ask ok for {sender} ({len(answer)} chars)")
                 else:
                     print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
