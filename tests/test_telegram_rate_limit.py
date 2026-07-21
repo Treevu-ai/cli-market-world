@@ -33,9 +33,14 @@ def _update_body(chat_id: int) -> dict:
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "TELEGRAM_RATE_LIMIT_MIN", 2)
 @patch.object(telegram, "TELEGRAM_RATE_LIMIT_DAY", 1000)
+@patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
-def test_chat_is_rate_limited_after_threshold(mock_send):
-    mock_send.return_value = True
+def test_chat_is_rate_limited_after_threshold(mock_send, mock_edit):
+    # Each allowed request sends exactly one placeholder message
+    # ("🔍 Buscando..."); the real answer is delivered via _edit_telegram
+    # (mocked here) in the background task, not a second _send_telegram call.
+    mock_send.return_value = "1"
+    mock_edit.return_value = True
     body = _update_body(90001)
 
     r1 = client.post(WEBHOOK_PATH, json=body, headers=_HEADERS)

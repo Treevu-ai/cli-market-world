@@ -100,6 +100,15 @@ async def lifespan(_app: FastAPI):
                     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
                 )
             """)
+        if USE_PG:
+            db.execute("ALTER TABLE messenger_sessions ADD COLUMN IF NOT EXISTS last_query TEXT")
+            db.execute("ALTER TABLE messenger_sessions ADD COLUMN IF NOT EXISTS last_country TEXT")
+        else:
+            cols = {row["name"] for row in db.execute("PRAGMA table_info(messenger_sessions)").fetchall()}
+            if "last_query" not in cols:
+                db.execute("ALTER TABLE messenger_sessions ADD COLUMN last_query TEXT")
+            if "last_country" not in cols:
+                db.execute("ALTER TABLE messenger_sessions ADD COLUMN last_country TEXT")
         db.commit()
         db.close()
     except Exception as e:

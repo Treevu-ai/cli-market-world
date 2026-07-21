@@ -170,19 +170,24 @@ def require_admin(authorization: str | None) -> str:
 
 def get_messenger_session(platform_id: str) -> dict:
     """Retrieve session context and tier for a conversational user.
-    Returns a dict with platform_id, username, last_context, and user_tier.
+    Returns a dict with platform_id, username, last_context, last_query,
+    last_country, and user_tier.
     """
     try:
         db = get_db()
         row = db.execute(
-            "SELECT platform_id, username, last_context, user_tier FROM messenger_sessions WHERE platform_id = ?", 
+            "SELECT platform_id, username, last_context, last_query, last_country, user_tier "
+            "FROM messenger_sessions WHERE platform_id = ?",
             (platform_id,)
         ).fetchone()
         if row:
+            row = dict(row)
             return {
                 "platform_id": row["platform_id"],
                 "username": row["username"],
                 "last_context": row["last_context"],
+                "last_query": row.get("last_query"),
+                "last_country": row.get("last_country"),
                 "user_tier": row["user_tier"],
             }
     except Exception as e:
@@ -191,23 +196,40 @@ def get_messenger_session(platform_id: str) -> dict:
         "platform_id": platform_id,
         "username": None,
         "last_context": None,
+        "last_query": None,
+        "last_country": None,
         "user_tier": "starter",
     }
 
 
-def update_messenger_session(platform_id: str, context: str, username: str = None):
-    """Upsert session context. Updates last_context and updated_at timestamp."""
+def update_messenger_session(
+    platform_id: str,
+    context: str,
+    username: str = None,
+    last_query: str = None,
+    last_country: str = None,
+):
+    """Upsert session context. Updates last_context and updated_at timestamp.
+
+    last_query/last_country are the free-text product search and resolved
+    country from the most recent turn — read back by inline-keyboard button
+    presses (which arrive as a bare action code, e.g. "cmp", with no room to
+    carry the product text themselves) so a follow-up action can re-run the
+    right search without asking the user to retype it.
+    """
     try:
         db = get_db()
         # Use UPSERT (SQLite 3.24+ / Postgres)
         db.execute("""
-            INSERT INTO messenger_sessions (platform_id, username, last_context, updated_at)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT(platform_id) DO UPDATE SET 
+            INSERT INTO messenger_sessions (platform_id, username, last_context, last_query, last_country, updated_at)
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(platform_id) DO UPDATE SET
                 last_context = excluded.last_context,
+                last_query = COALESCE(excluded.last_query, messenger_sessions.last_query),
+                last_country = COALESCE(excluded.last_country, messenger_sessions.last_country),
                 username = COALESCE(excluded.username, messenger_sessions.username),
                 updated_at = CURRENT_TIMESTAMP
-        """, (platform_id, username, context))
+        """, (platform_id, username, context, last_query, last_country))
         db.commit()
     except Exception as e:
         logger.error("update_messenger_session error: %s", e)

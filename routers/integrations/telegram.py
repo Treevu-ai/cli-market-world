@@ -1,7 +1,7 @@
 import os
 import secrets
 import httpx
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Request, Response
 from market_core import check_rate_limit_sqlite
 from server_deps import get_messenger_session, update_messenger_session
 
@@ -19,6 +19,15 @@ TELEGRAM_RATE_LIMIT_MIN = int(os.getenv("TELEGRAM_RATE_LIMIT_MIN", "20"))
 TELEGRAM_RATE_LIMIT_WINDOW = int(os.getenv("TELEGRAM_RATE_LIMIT_WINDOW", "60"))
 TELEGRAM_RATE_LIMIT_DAY = int(os.getenv("TELEGRAM_RATE_LIMIT_DAY", "300"))
 
+_COUNTRY_HINTS = {
+    "peru": "PE", "perú": "PE",
+    "colombia": "CO",
+    "mexico": "MX", "méxico": "MX",
+    "argentina": "AR",
+    "chile": "CL",
+    "brasil": "BR", "brazil": "BR",
+}
+
 
 def _esc(text: str) -> str:
     """Escape text interpolated into an HTML parse_mode Telegram message.
@@ -32,6 +41,17 @@ def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _guess_country(text: str) -> str:
+    """Best-effort country code from free text, defaulting to PE (primary
+    market) — used only to re-run a button-triggered follow-up query, not
+    for anything user-facing."""
+    lowered = text.lower()
+    for name, code in _COUNTRY_HINTS.items():
+        if name in lowered:
+            return code
+    return "PE"
+
+
 def _is_valid_telegram_secret(request: Request) -> bool:
     if not TELEGRAM_WEBHOOK_SECRET:
         return False
@@ -40,22 +60,160 @@ def _is_valid_telegram_secret(request: Request) -> bool:
         TELEGRAM_WEBHOOK_SECRET,
     )
 
-async def _send_telegram(chat_id: str, text: str) -> bool:
+
+def _follow_up_keyboard() -> dict:
+    """Inline keyboard attached to a real product-search answer. Each button
+    carries only the action code — the product/country context is read back
+    from messenger_sessions by chat_id, not from callback_data (Telegram
+    caps callback_data at 64 bytes, too tight for arbitrary product names)."""
+    return {
+        "inline_keyboard": [
+            [
+                {"text": "🔄 Comparar tiendas", "callback_data": "cmp"},
+                {"text": "📈 ¿Va a subir?", "callback_data": "trend"},
+            ],
+            [{"text": "🔔 Avisarme si baja", "callback_data": "alert"}],
+        ]
+    }
+
+
+async def _telegram_api(method: str, payload: dict) -> httpx.Response | None:
     if not TELEGRAM_TOKEN:
-        return False
+        return None
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
+            return await client.post(
+                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/{method}",
+                json=payload,
             )
-            return r.status_code == 200
+    except Exception as e:
+        print(f"❌ Telegram API error ({method}): {e}")
+        return None
+
+
+async def _send_telegram(chat_id: str, text: str, reply_markup: dict | None = None) -> str | None:
+    """Send a message; returns its message_id (for later editing) or None."""
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    r = await _telegram_api("sendMessage", payload)
+    if r is None or r.status_code != 200:
+        return None
+    try:
+        return str(r.json()["result"]["message_id"])
     except Exception:
-        return False
+        return None
+
+
+async def _edit_telegram(chat_id: str, message_id: str, text: str, reply_markup: dict | None = None) -> bool:
+    payload = {"chat_id": chat_id, "message_id": message_id, "text": text, "parse_mode": "HTML"}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    r = await _telegram_api("editMessageText", payload)
+    return bool(r and r.status_code == 200)
+
+
+async def _send_typing(chat_id: str) -> None:
+    await _telegram_api("sendChatAction", {"chat_id": chat_id, "action": "typing"})
+
+
+async def _answer_callback_query(callback_query_id: str, text: str | None = None) -> None:
+    """Mandatory: Telegram leaves the button showing a loading spinner on the
+    sender's client until this is called, regardless of what else we do."""
+    payload = {"callback_query_id": callback_query_id}
+    if text:
+        payload["text"] = text
+    await _telegram_api("answerCallbackQuery", payload)
+
+
+async def _ask_intel(question: str, token: str) -> str:
+    """Call /v1/intel/ask and return the answer text, or a fallback message."""
+    market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(
+                f"{market_api_url}/v1/intel/ask",
+                json={"question": question},
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=30,
+            )
+            if response.status_code == 200:
+                return _esc(response.json().get("answer", ""))
+            print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
+    except Exception as e:
+        print(f"❌ Error API (Telegram Bridge): {e}")
+    return "No pude consultar los precios ahora. Probá de nuevo en un ratito."
+
+
+async def _process_message(chat_id: str, message_id: str | None, incoming_msg: str, first_name: str) -> None:
+    """The slow work for a plain-text message: LLM call, session save, and
+    editing the placeholder in place (or sending a fresh message if the
+    placeholder itself failed to send)."""
+    token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
+
+    if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
+        answer = (
+            f"Hola <b>{_esc(first_name)}</b> \U0001f44b\n\n"
+            "Soy el bot de <b>CLI Market</b>.\n\n"
+            "Preguntame lo que quieras sobre precios de productos en tiendas de América Latina.\n"
+            "Por ejemplo: <i>¿Cuánto cuesta el café en Perú?</i> o <i>Busco leche evaporada</i>."
+        )
+        keyboard = None
+    else:
+        session = get_messenger_session(chat_id)
+        context = session.get("last_context")
+        effective_query = f"Context: {context}\nUser: {incoming_msg}" if context else incoming_msg
+
+        answer = await _ask_intel(effective_query, token)
+        keyboard = _follow_up_keyboard()
+        update_messenger_session(
+            chat_id,
+            context=f"Query: {incoming_msg} | Answer: {answer[:100]}...",
+            last_query=incoming_msg,
+            last_country=_guess_country(incoming_msg),
+        )
+
+    if message_id:
+        if not await _edit_telegram(chat_id, message_id, answer, reply_markup=keyboard):
+            await _send_telegram(chat_id, answer, reply_markup=keyboard)
+    else:
+        await _send_telegram(chat_id, answer, reply_markup=keyboard)
+
+
+_BUTTON_QUESTIONS = {
+    "cmp": lambda q, c: f"Compara precios de {q} en {c} entre tiendas",
+    "trend": lambda q, c: f"¿Va a subir o bajar el precio de {q} en {c}?",
+    "alert": lambda q, c: f"Avísame si baja el precio de {q} en {c}",
+}
+_BUTTON_LABELS = {"cmp": "🔄 Comparando tiendas...", "trend": "📈 Revisando tendencia...", "alert": "🔔 Configurando aviso..."}
+
+
+async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
+    """The slow work for an inline-button press: re-run the last query with
+    the button's action folded in, using session context instead of asking
+    the user to retype the product — the concrete fix for the tool-selection
+    ambiguity that caused free-text follow-ups to fail (2026-07-20 café bug)."""
+    session = get_messenger_session(chat_id)
+    last_query = session.get("last_query")
+    if not last_query:
+        await _edit_telegram(chat_id, message_id, "Esa búsqueda ya expiró — escribime de nuevo qué precio querés ver.")
+        return
+
+    country = session.get("last_country") or "PE"
+    builder = _BUTTON_QUESTIONS.get(action)
+    if not builder:
+        return
+    token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
+    answer = await _ask_intel(builder(last_query, country), token)
+    await _edit_telegram(chat_id, message_id, answer, reply_markup=_follow_up_keyboard())
+
 
 @router.post("/webhook")
-async def telegram_webhook(request: Request):
-    """Refactored Telegram webhook using market_ask NLP logic."""
+async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Telegram webhook — acks fast, does the slow LLM/tool work in the
+    background (mirrors routers/integrations/whatsapp.py's pattern), and
+    edits its own placeholder message in place instead of leaving the chat
+    silent until the real answer is ready."""
     if not TELEGRAM_TOKEN:
         return {"status": "disabled", "hint": "Set TELEGRAM_BOT_TOKEN env var"}
 
@@ -67,6 +225,30 @@ async def telegram_webhook(request: Request):
         body = await request.json()
     except Exception:
         return {"status": "invalid_json"}
+
+    callback_query = body.get("callback_query")
+    if callback_query:
+        chat_id = str(callback_query.get("message", {}).get("chat", {}).get("id", ""))
+        message_id = str(callback_query.get("message", {}).get("message_id", ""))
+        action = callback_query.get("data", "")
+        callback_query_id = callback_query.get("id", "")
+
+        if not chat_id or not message_id:
+            return {"status": "no_message"}
+
+        # Mandatory ack first — Telegram shows a perpetual loading spinner on
+        # the button otherwise, regardless of what we do afterwards.
+        await _answer_callback_query(callback_query_id, _BUTTON_LABELS.get(action))
+
+        check_rate_limit_sqlite(
+            f"telegram:{chat_id}",
+            window_secs=TELEGRAM_RATE_LIMIT_WINDOW,
+            max_req=TELEGRAM_RATE_LIMIT_MIN,
+            daily_max=TELEGRAM_RATE_LIMIT_DAY,
+        )
+        await _send_typing(chat_id)
+        background_tasks.add_task(_process_callback, chat_id, message_id, action)
+        return {"status": "ok"}
 
     message = body.get("message", {})
     chat = message.get("chat", {})
@@ -84,50 +266,11 @@ async def telegram_webhook(request: Request):
         daily_max=TELEGRAM_RATE_LIMIT_DAY,
     )
 
-    # 1. Recover session memory
-    session = get_messenger_session(chat_id)
-    context = session.get("last_context")
-
-    effective_query = incoming_msg
-    if context:
-        effective_query = f"Context: {context}\nUser: {incoming_msg}"
-
-    # NLP Bridge to market_ask
-    market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
-    token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
-    
-    answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
-
-    if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
-        answer = (
-            f"Hola <b>{_esc(first_name)}</b> \U0001f44b\n\n"
-            "Soy el bot de <b>CLI Market</b>.\n\n"
-            "Preguntame lo que quieras sobre precios de productos en tiendas de América Latina.\n"
-            "Por ejemplo: <i>¿Cuánto cuesta el café en Perú?</i> o <i>Busco leche evaporada</i>."
-        )
-    else:
-        async with httpx.AsyncClient() as client_http:
-            try:
-                response = await client_http.post(
-                    f"{market_api_url}/v1/intel/ask",
-                    json={"question": effective_query},
-                    headers={"Authorization": f"Bearer {token}"},
-                    timeout=30
-                )
-                if response.status_code == 200:
-                    # LLM-generated, not under our control — escape before it
-                    # ever reaches an HTML-parse-mode Telegram message.
-                    answer = _esc(response.json().get("answer", answer))
-                else:
-                    print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
-            except Exception as e:
-                print(f"❌ Error API (Telegram Bridge): {e}")
-
-    # 2. Save memory
-    update_messenger_session(chat_id, context=f"Query: {incoming_msg} | Answer: {answer[:100]}...")
-
-    await _send_telegram(chat_id, answer)
+    await _send_typing(chat_id)
+    message_id = await _send_telegram(chat_id, "🔍 Buscando...")
+    background_tasks.add_task(_process_message, chat_id, message_id, incoming_msg, first_name)
     return {"status": "ok"}
+
 
 async def register_telegram_commands() -> bool:
     """Register the native Telegram command menu."""
@@ -137,12 +280,5 @@ async def register_telegram_commands() -> bool:
         {"command": "start", "description": "Comenzar"},
         {"command": "help", "description": "Ayuda"},
     ]
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setMyCommands",
-                json={"commands": commands},
-            )
-            return r.status_code == 200
-    except Exception:
-        return False
+    r = await _telegram_api("setMyCommands", {"commands": commands})
+    return bool(r and r.status_code == 200)

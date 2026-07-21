@@ -82,9 +82,13 @@ def test_no_downstream_calls_without_valid_secret(mock_send):
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
+@patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
-def test_valid_secret_accepted(mock_send):
-    mock_send.return_value = True
+def test_valid_secret_accepted(mock_send, mock_edit):
+    # Only the placeholder goes through _send_telegram; the real welcome
+    # text is delivered via _edit_telegram (mocked here) in the background.
+    mock_send.return_value = "1"
+    mock_edit.return_value = True
     r = client.post(
         WEBHOOK_PATH,
         json=_UPDATE_BODY,
@@ -93,3 +97,4 @@ def test_valid_secret_accepted(mock_send):
     assert r.status_code == 200
     assert r.json().get("status") == "ok"
     mock_send.assert_called_once()
+    mock_edit.assert_called_once()
