@@ -119,7 +119,11 @@ _TOOLS = [
         "description": (
             f"Search products across {RETAILERS_VERIFIED} LATAM retailers. "
             "Returns prices, brands, stores, and normalized unit prices (price_per_kg/L). "
-            "Countries: PE, AR, BR, MX, CO, CL, IT, FR."
+            "Countries: PE, AR, BR, MX, CO, CL, IT, FR. "
+            "Set require_all=true when you (the agent) will report results directly with "
+            "no human filtering them first — default matching is lenient (any query word "
+            "matches) and can surface unrelated products that merely share one common word "
+            "or number, e.g. 'iphone 11' matching cookware or toys via a bare '11'."
         ),
         "inputSchema": {
             "type": "object",
@@ -129,6 +133,15 @@ _TOOLS = [
                 "country": {"type": "string", "description": "ISO country code: PE, AR, BR, MX, CO, CL"},
                 "store": {"type": "string", "description": "Store key, e.g. 'wong_pe', 'carrefour_ar'"},
                 "limit": {"type": "integer", "default": 20},
+                "require_all": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": (
+                        "Require every query word to match (not just one). Use true when "
+                        "reporting results with no human review — prevents noise from "
+                        "products that only share a single common word/number."
+                    ),
+                },
             },
         },
     },
@@ -136,7 +149,9 @@ _TOOLS = [
         "name": "market_compare",
         "description": (
             "Compare prices for a product across all retailers in a country. "
-            "Returns price spread %, cheapest and most expensive stores, unit price."
+            "Returns price spread %, cheapest and most expensive stores, unit price. "
+            "Set require_all=true when reporting results with no human filtering them first "
+            "(see market_search)."
         ),
         "inputSchema": {
             "type": "object",
@@ -145,6 +160,11 @@ _TOOLS = [
                 "query": {"type": "string"},
                 "country": {"type": "string"},
                 "limit": {"type": "integer", "default": 10},
+                "require_all": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Require every query word to match (not just one). See market_search.",
+                },
             },
         },
     },

@@ -122,6 +122,15 @@ class SearchRequest(BaseModel):
     # Set true to force a live per-store scrape (slow: 15-30s+, can fail
     # under load) when freshness matters more than latency.
     live: bool = False
+    # Default (False) matches ANY query token — fine when a human sees the
+    # full result list and filters themselves (the general-search UI this
+    # endpoint was originally built for). Set True when nothing but this
+    # filter stands between a candidate and being reported as "the" result
+    # — e.g. an LLM agent calling this tool directly with no human in the
+    # loop. Confirmed live: market_search(query='iphone 11') without this
+    # returned toys/cookware/car batteries sharing only a bare '11' token.
+    # Mirrors the require_all already used by the basket auto-picker below.
+    require_all: bool = False
 
     @field_validator("query")
     @classmethod
@@ -250,9 +259,24 @@ def _search_products_db(body: SearchRequest) -> dict:
         return {"query": body.query, "results": [], "total": 0}
 
     like = name_like_clause()
-    like_clause = " OR ".join(like for _ in q_tokens)
+    # AND at the SQL level when require_all: OR here would let the candidate
+    # cap below fill with rows sharing just one common token (e.g. a bare
+    # '11' from thousands of unrelated weights/quantities/model numbers)
+    # before the real match, regardless of what the Python filter does after.
+    joiner = " AND " if body.require_all else " OR "
+    like_clause = joiner.join(like for _ in q_tokens)
     store_placeholders = ",".join("?" for _ in stores)
     candidate_cap = min(500, body.limit * 20)
+
+    # ORDER BY price ASC starves out expensive-but-relevant matches when many
+    # rows match: candidates get capped to the N cheapest before the
+    # word-boundary filter runs. Irrelevant for the default lenient path
+    # (any-token matches are usually few enough not to hit the cap), but for
+    # require_all queries against a token as common as a bare number, it's
+    # the same failure mode already root-caused and fixed for search_products
+    # in cli-market-core — order by freshness instead so the real match can't
+    # be pushed out by unrelated noise before the relevance filter sees it.
+    order_col = "queried_at DESC" if body.require_all else "price ASC"
 
     db = get_db()
     try:
@@ -262,7 +286,7 @@ def _search_products_db(body: SearchRequest) -> dict:
                    store_name, currency, line, line_name, category, stock, url, confidence
             FROM price_snapshots
             WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
-            ORDER BY price ASC
+            ORDER BY {order_col}
             LIMIT ?
             """,
             (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
@@ -273,7 +297,7 @@ def _search_products_db(body: SearchRequest) -> dict:
     results: list[dict] = []
     for r in rows:
         row = dict(r)
-        if not _is_relevant(row.get("name", ""), q_tokens):
+        if not _is_relevant(row.get("name", ""), q_tokens, require_all=body.require_all):
             continue
         row["id"] = row.pop("product_id")
         results.append(row)
@@ -397,9 +421,11 @@ def _compare_products_db(body: SearchRequest) -> dict:
         return payload
 
     like = name_like_clause()
-    like_clause = " OR ".join(like for _ in q_tokens)
+    joiner = " AND " if body.require_all else " OR "
+    like_clause = joiner.join(like for _ in q_tokens)
     store_placeholders = ",".join("?" for _ in stores)
     candidate_cap = min(500, body.limit * 20)
+    order_col = "queried_at DESC" if body.require_all else "price ASC"
 
     db = get_db()
     try:
@@ -408,7 +434,7 @@ def _compare_products_db(body: SearchRequest) -> dict:
             SELECT product_id, name, brand, price, store
             FROM price_snapshots
             WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
-            ORDER BY price ASC
+            ORDER BY {order_col}
             LIMIT ?
             """,
             (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
@@ -419,7 +445,7 @@ def _compare_products_db(body: SearchRequest) -> dict:
     all_products: dict[str, list[dict]] = {}
     for r in rows:
         row = dict(r)
-        if not _is_relevant(row.get("name", ""), q_tokens):
+        if not _is_relevant(row.get("name", ""), q_tokens, require_all=body.require_all):
             continue
         all_products.setdefault(row["store"], []).append(row)
 
