@@ -2,6 +2,142 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-21] — Telegram UX redesign, search-agent hallucination root cause, market_brands quality pass (cli-market-world, cli-market-core 1.11.49/1.11.50)
+
+Started from a live bug report: the Telegram/WhatsApp bot answered real
+product queries ("café", "leche evaporada", "Nescafé en Wong") with
+"no encontré resultados" or a fabricated price range, despite the
+underlying data being real and directly queryable. Root-caused and fixed
+end to end, then used the same investigation loop to harden `market_brands`
+and drop two dead inline buttons.
+
+**Telegram: inline buttons, editMessageText, typing indicator**
+- Webhook now acks immediately with a "🔍 Buscando..." placeholder +
+  `sendChatAction: "typing"`, does the `/v1/intel/ask` call in a
+  `BackgroundTasks` job (mirrors `whatsapp.py`'s existing pattern), then
+  edits the placeholder in place with the real answer — fixes both the
+  silent-until-done UX and a latent webhook-timeout risk.
+- Added a `callback_query` branch handling inline-keyboard button presses.
+  Buttons dispatch directly against the session's `last_query`/
+  `last_country` (new columns on `messenger_sessions`) instead of routing
+  back through the LLM — sidesteps the tool-selection ambiguity entirely
+  for the most common follow-ups.
+- Dropped the "📈 ¿Va a subir?" and "🔔 Avisarme si baja" buttons: neither
+  had a real forecasting or persistent-alert backend behind them, just a
+  one-off LLM question dressed up as a feature that didn't exist. Only
+  "🔄 Comparar tiendas" (backed by real `search_products` data) remains.
+  Button follow-ups now send a new message instead of editing the original
+  in place, after a second button press was found to silently erase the
+  first button's answer.
+- `**bold**` markdown from `ask_intel` answers wasn't rendered — Telegram
+  was sent `parse_mode: "HTML"` (needs `<b>`) and WhatsApp needed
+  single-asterisk bold; neither bridge converted it, so users saw literal
+  asterisks. Both fixed.
+- Rewrote both bots' welcome messages to state mission, capabilities, and
+  explicit limits (no purchases/payments, coverage gaps possible, prices
+  refresh periodically not real-time) instead of just a usage example.
+
+**Root cause: get_prices vs. search_products tool-selection bug**
+- Confirmed via a raw `/v1/intel/ask` call with `tools_used` inspection:
+  Haiku was calling `get_prices` (an unfiltered country/store sample, no
+  name matching) instead of `search_products` for named-product questions,
+  getting a random sample that didn't happen to contain the product, and
+  truthfully-but-wrongly reporting "no encontré nada."
+- Hardened the system prompt and `get_prices`' tool description with an
+  explicit rule + few-shot example; added a structural fallback — when
+  `get_prices` is called with no store/line filter (the shape of a
+  misrouted product lookup), it now also runs a name-matching search
+  against the original question and surfaces it as
+  `possible_product_matches`, giving the model a chance to self-correct
+  even when it picks the wrong tool. Shipped as cli-market-core 1.11.49
+  (PR #158, merged with the previously-unmerged `search_products` tool
+  addition it depended on).
+
+**A second, subtler hallucination: pagination mistaken for absence**
+- Found while testing "pollo": whole-chicken products (San Fernando,
+  Avinka) are real, but 100+ cheaper derivative matches (nuggets, patés,
+  embutidos) filled `search_products`' default 20-result page first — a
+  cheapest-first page can legitimately never include a pricier-but-relevant
+  product, and `ask_intel` was concluding "no existe" from a page with no
+  signal that it was partial.
+- `query_product_search` now returns `truncated: bool`; the system prompt
+  tells the agent to say "puede haber más" instead of "no existe" when
+  true. Also fixed an independent issue in the same function: the SQL
+  candidate fetch was ordered by price ASC and capped (`limit*20`) *before*
+  the word-boundary relevance filter ran, so with enough matching rows,
+  relevant candidates could be excluded from consideration entirely rather
+  than merely ranked low — candidates are now fetched ordered by freshness
+  (price-neutral); the final page is still sorted by price. Shipped as
+  cli-market-core 1.11.50 (PR #159).
+
+**market_brands (`GET /v1/analytics/brands`) quality pass**
+- Merges casing ("Gloria"/"GLORIA"), accent ("Nescafe"/"NESCAFÉ"), hyphen
+  ("Fisher-Price"/"FISHER PRICE"), and spacing ("Valle Norte"/"VALLENORTE")
+  variants of the same brand into one row instead of fragmenting counts —
+  8 such pairs found live in Peru's top-500 brands alone before the fix.
+- Keeps store-name-as-brand values (e.g. `brand="Wong"`) as-is: several
+  retailers sell private-label ("marca blanca") products under their own
+  store name, so that's real brand data, not a scraping artifact — a
+  correction from the user after an earlier pass would have wrongly
+  filtered these out.
+- Filters genuine placeholder junk ("—", "n/a", and "generic"/"genérico" in
+  either language/accent — the Spanish accented form was already filtered
+  but the unaccented and English spellings weren't).
+- New optional `query` param scopes brands to a specific product category
+  (e.g. `query=cafe`) instead of every brand in the line, word-boundary
+  matched against product name.
+- New `is_new` field per brand when `country` is given: true the first time
+  a brand has ever been seen for that country (tracked in a new
+  `known_brands` table) — a discovery signal for a new market entrant.
+- Bundled in the same commit at the user's request: `/analytics/trending`
+  and `/analytics/indicators` now require Pro (an already-in-progress,
+  unrelated fix that was sitting uncommitted — they return the same
+  live-computed values their `/v1/intel/*` equivalents already charge Pro
+  for; was `require_api_key`, an unintended paywall bypass).
+
+Verified end to end against production for both bots (Telegram inline
+buttons + editMessageText; a real Twilio-signed WhatsApp webhook call) after
+every deploy, plus `market_brands` across all 6 countries with a live
+fuzzy-duplicate scan to confirm no further systematic fragmentation
+patterns remained.
+
+## [2026-07-19] — WhatsApp/Telegram bridge fix + dedicated bot account (cli-market-world)
+
+Both messenger bridges were silently broken: every real question (anything
+past the "hola"/"ayuda" greeting menu) fell back to the generic error
+message, because they called a non-existent endpoint.
+
+- **Fixed the endpoint bug** in `routers/integrations/whatsapp.py` and
+  `routers/integrations/telegram.py`: both called
+  `POST {MARKET_API_URL}/v1/shop/ask` with `{"query", "country", "user_tier"}`
+  — that route has never existed. The real Data Moat Q&A endpoint is
+  `POST /v1/intel/ask`, which takes `{"question": str}`. Also added
+  response-body logging on non-200 so a future break fails loudly instead of
+  silently degrading to the fallback string.
+- **Found a bigger issue while fixing it**: `MARKET_API_TOKEN` — the only
+  token either bridge had — resolves to the platform `"admin"` account in
+  `server_deps.auth_user`, with unlimited quota via `is_platform_admin`.
+  Once the endpoint bug was fixed, *every* WhatsApp/Telegram sender would
+  have gotten unrestricted admin-tier backend access, not just the operator.
+- **Added `WHATSAPP_ADMIN_NUMBERS` allowlist** (WhatsApp only, per explicit
+  request — Telegram doesn't have an equivalent admin concept yet): a
+  comma-separated list of Twilio `From` numbers (e.g.
+  `whatsapp:+51902126765`) that get `MARKET_API_TOKEN` (admin/unlimited).
+  Every other sender now gets `MARKET_BOT_API_TOKEN` instead.
+- **Created a dedicated bot service account** (`bot-whatsapp-telegram`,
+  `hello@cli-market.dev`) with a *permanent* Starter subscription (no trial
+  expiry — `db_set_subscription(..., "starter")` with no `expires_days`) and
+  issued its API key as `MARKET_BOT_API_TOKEN`. Had to create it directly
+  against production Postgres via `flyctl proxy 15432:5432 -a cli-market-db`
+  (the normal `/auth/register` flow needs a live inbox for the OTP code,
+  impractical for a service account) rather than the usual registration
+  endpoint.
+- Deployed to `cli-market-api` (`fly deploy --app cli-market-api --config
+  fly.toml --build-secret github_token=...`); both new secrets
+  (`WHATSAPP_ADMIN_NUMBERS`, `MARKET_BOT_API_TOKEN`) set via
+  `flyctl secrets set ... -a cli-market-api`.
+- Documented all three new/changed env vars in `ops/SECRETS_INVENTORY.md`.
+
 ## [2026-07-18] — Banco Central do Brasil connector: first gov source outside Peru (cli-market-index)
 
 Fifth gov connector overall, first one covering a country other than Peru.
