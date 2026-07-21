@@ -384,7 +384,7 @@
       item.className = "rubric-item";
       item.innerHTML =
         '<div class="rp">' +
-        r.pct +
+        r.n +
         "</div><h4>" +
         r.title +
         "</h4><p>" +

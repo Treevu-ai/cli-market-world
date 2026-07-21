@@ -399,24 +399,24 @@ window.AcademyContent = {
 
   rubric: [
     {
-      pct: "25%",
-      title: "Alineación metodológica",
-      desc: "SIRI o DDM aplicados con criterio; no checklist vacío.",
+      n: "1",
+      title: "Método aplicado",
+      desc: "Usa SIRI o DDM con criterio — no como checklist vacío.",
     },
     {
-      pct: "25%",
-      title: "Rigor de datos",
-      desc: "Trazabilidad, quality block, semáforo. Cero IPC/informal inventados.",
+      n: "2",
+      title: "Dato con respaldo",
+      desc: "Trazabilidad y semáforo de calidad. Cero IPC o informal inventados.",
     },
     {
-      pct: "25%",
-      title: "Entregable de valor",
-      desc: "Brief/risk/category o expediente de compra usable por el rol.",
+      n: "3",
+      title: "Entregable usable",
+      desc: "Brief, risk memo o expediente de compra que se pueda usar tal cual.",
     },
     {
-      pct: "25%",
-      title: "Defensa del caso",
-      desc: "Qué afirmación puede emitir y cuál queda bloqueada — oral o escrita.",
+      n: "4",
+      title: "Honestidad ante todo",
+      desc: "Ninguna afirmación que no se pueda sostener con el dato del corte.",
     },
   ],
 
@@ -500,7 +500,7 @@ window.AcademyContent = {
     },
     {
       q: "¿Qué validez tiene la certificación?",
-      a: "No se certifica por asistencia. Exige capstone con rúbrica (umbral orientativo ≥80%) y cero tolerancia a afirmaciones falsas (p. ej. vender góndola formal como inflación nacional o medir informal). Es un sello de rigor analítico, no un diploma decorativo.",
+      a: "No es una certificación formal todavía — es un cohort en vivo. Al terminar se lleva un entregable real (brief, risk memo o ciclo de compra documentado), revisado con criterio, no con nota. Lo único no negociable: cero afirmaciones falsas (vender góndola formal como inflación nacional, o medir informal).",
     },
     {
       q: "¿Cuánto tiempo necesito?",
@@ -513,23 +513,6 @@ window.AcademyContent = {
     { n: "03", title: "La demo", text: "Queries reales (o lab guiado) contra el moat de góndola formal." },
     { n: "04", title: "La práctica", text: "El alumno corre el lab equivalente y documenta en el workbook." },
     { n: "05", title: "La reflexión", text: "¿Qué afirmación puedo emitir con este corte — y cuál está prohibida?" },
-  ],
-  levels: [
-    {
-      id: "L3",
-      title: "Intelligence Desk Lead",
-      text: "Orquesta nowcast y risk para comités de pricing o comercial. Domina disclaimers y puente narrativo al IPC (sin equivalencia).",
-    },
-    {
-      id: "L2",
-      title: "Market Intelligence Pro / Procurement Lead",
-      text: "Reportes avanzados de presión y riesgo, o automatiza recompras multi-retailer con límites y registro.",
-    },
-    {
-      id: "L1",
-      title: "Shelf Analyst / Purchasing Specialist",
-      text: "Extrae y compara con normalización de unidades; arma brief o expediente de compra sin inventar cobertura.",
-    },
   ],
   /** Terminal: SIMULACIÓN didáctica — no datos live */
   terminal: {
