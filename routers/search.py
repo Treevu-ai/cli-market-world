@@ -107,7 +107,7 @@ def _resolve_search_stores(body: SearchRequest) -> list[str]:
         stores = [s for s in stores if (get_store_profile(s) or {}).get("line") == body.line]
     if body.country:
         cc = body.country.strip().upper()
-        stores = [s for s in stores if STORES.get(s, {}).get("country") == cc]
+        stores = [s for s in stores if (STORES.get(s) or get_store_profile(s) or {}).get("country") == cc]
     return stores
 
 
