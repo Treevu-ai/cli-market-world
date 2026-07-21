@@ -44,7 +44,6 @@ def _ensure_messenger_sessions_table() -> None:
     db.close()
 
 
-_ensure_messenger_sessions_table()
 client = TestClient(app)
 
 WEBHOOK_PATH = "/v1/integrations/telegram/webhook"
@@ -89,6 +88,7 @@ def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_edit,
     """A button press must re-run the last search using session context
     (last_query/last_country), not require the user to type the product
     name again."""
+    _ensure_messenger_sessions_table()
     update_messenger_session(
         "70002", context="prior turn", last_query="nescafe", last_country="PE"
     )
