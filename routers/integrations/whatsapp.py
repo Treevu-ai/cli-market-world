@@ -27,19 +27,65 @@ WHATSAPP_RATE_LIMIT_MIN = int(os.getenv("WHATSAPP_RATE_LIMIT_MIN", "20"))
 WHATSAPP_RATE_LIMIT_WINDOW = int(os.getenv("WHATSAPP_RATE_LIMIT_WINDOW", "60"))
 WHATSAPP_RATE_LIMIT_DAY = int(os.getenv("WHATSAPP_RATE_LIMIT_DAY", "300"))
 
-# Numbers (Twilio "From" format, e.g. "whatsapp:+51999999999") that get the
-# plenipotentiary/admin token instead of the shared bot token below. Without
-# this allowlist MARKET_API_TOKEN — which server_deps.auth_user resolves to
-# the platform "admin" account — would grant every WhatsApp sender unlimited
+# Access allowlist: only these Twilio From numbers may use the bot. When
+# empty, any sandbox-joined sender is accepted (legacy open mode). When set,
+# everyone else gets a short denial and no LLM/API call. Comma-separated;
+# accepts "whatsapp:+51…" or bare "+51…".
+# Admin numbers (token tier) are separate — they must also be on this list
+# if the allowlist is non-empty.
+def _normalize_whatsapp_number(number: str) -> str:
+    n = (number or "").strip()
+    if not n:
+        return ""
+    if n.startswith("whatsapp:"):
+        return n
+    if not n.startswith("+"):
+        n = f"+{n}"
+    return f"whatsapp:{n}"
+
+
+def _parse_number_set(raw: str) -> set[str]:
+    return {
+        _normalize_whatsapp_number(part)
+        for part in (raw or "").split(",")
+        if part.strip()
+    }
+
+
+WHATSAPP_ALLOWED_NUMBERS = _parse_number_set(os.getenv("WHATSAPP_ALLOWED_NUMBERS", ""))
+
+# Numbers that get the plenipotentiary/admin token instead of the shared bot
+# token. Without this, MARKET_API_TOKEN — which server_deps.auth_user resolves
+# to the platform "admin" account — would grant every WhatsApp sender unlimited
 # backend access, not just the operator.
-WHATSAPP_ADMIN_NUMBERS = {
-    n.strip() for n in os.getenv("WHATSAPP_ADMIN_NUMBERS", "").split(",") if n.strip()
-}
+WHATSAPP_ADMIN_NUMBERS = _parse_number_set(os.getenv("WHATSAPP_ADMIN_NUMBERS", ""))
+
+_DENIED_BODY = (
+    "Este número no está autorizado para usar el bot de CLI Market. "
+    "Si necesitás acceso, pedilo al administrador."
+)
 
 
 def _empty_twiml() -> Response:
     """Ack Twilio without auto-replying; the real reply goes out via REST API."""
     return Response(content=_EMPTY_TWIML, media_type="application/xml", status_code=200)
+
+
+def _is_sender_allowed(sender: str) -> bool:
+    """True if sender may use the bot. Empty allowlist = open (no restriction)."""
+    if not WHATSAPP_ALLOWED_NUMBERS:
+        return True
+    return _normalize_whatsapp_number(sender) in WHATSAPP_ALLOWED_NUMBERS
+
+
+def _send_twilio_text(to: str, body: str) -> None:
+    twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    msg = twilio_client.messages.create(
+        from_=TWILIO_NUMBER,
+        body=body,
+        to=to,
+    )
+    print(f"✅ WhatsApp reply to {to}. SID: {msg.sid}")
 
 async def transcribe_whatsapp_audio(audio_url: str) -> str:
     """Downloads audio from Twilio and transcribes it using OpenAI Whisper."""
@@ -126,7 +172,7 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
 
     # Puente hacia la lógica de la API
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
-    is_admin_sender = sender in WHATSAPP_ADMIN_NUMBERS
+    is_admin_sender = _normalize_whatsapp_number(sender) in WHATSAPP_ADMIN_NUMBERS
     token = (
         os.getenv("MARKET_API_TOKEN") if is_admin_sender
         else os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
@@ -168,15 +214,17 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
 
     # Responder vía Twilio SDK
     try:
-        twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        msg = twilio_client.messages.create(
-            from_=TWILIO_NUMBER,
-            body=answer,
-            to=sender
-        )
-        print(f"✅ WhatsApp reply to {sender}. SID: {msg.sid}")
+        _send_twilio_text(sender, answer)
     except Exception as e:
         print(f"❌ Error Twilio: {e}")
+
+
+async def _reply_denied(sender: str) -> None:
+    """Short denial for numbers not on WHATSAPP_ALLOWED_NUMBERS — no LLM cost."""
+    try:
+        _send_twilio_text(sender, _DENIED_BODY)
+    except Exception as e:
+        print(f"❌ Error Twilio (denied): {e}")
 
 
 @router.post("/webhook")
@@ -198,6 +246,14 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     )
     is_audio = media_type.startswith("audio/")
     audio_url = str(form_data.get("MediaUrl0") or "") if is_audio else None
+
+    # Access control before rate limit / LLM — anyone who joined the Twilio
+    # Sandbox can hit this webhook; the allowlist is the real gate.
+    if not _is_sender_allowed(sender):
+        print(f"🚫 WhatsApp denied (not on allowlist): {sender}")
+        if TWILIO_AUTH_TOKEN:
+            background_tasks.add_task(_reply_denied, sender)
+        return _empty_twiml()
 
     try:
         check_rate_limit_sqlite(

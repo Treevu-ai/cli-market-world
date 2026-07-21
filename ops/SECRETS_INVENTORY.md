@@ -88,7 +88,10 @@
 | `TWILIO_ACCOUNT_SID` | optional | world | WhatsApp bridge (`/v1/integrations/whatsapp/webhook`) via Twilio |
 | `TWILIO_AUTH_TOKEN` | optional | world | WhatsApp bridge — required alongside `TWILIO_ACCOUNT_SID` |
 | `TWILIO_WHATSAPP_NUMBER` | optional | world | Twilio WhatsApp sender number, default `whatsapp:+14155238886` (Twilio sandbox) |
-| `MARKET_API_TOKEN` | optional | world | Bearer token the WhatsApp/Telegram bridges use to call `/v1/shop/ask` |
+| `MARKET_API_TOKEN` | optional | world | Fallback bearer token the WhatsApp/Telegram bridges use to call `/v1/intel/ask`. This resolves to the platform "admin" account (`server_deps.auth_user`) — prefer `MARKET_BOT_API_TOKEN` for the bridges so ordinary senders don't get admin-tier access. |
+| `MARKET_BOT_API_TOKEN` | optional | world | Real Starter/Pro API token used by the WhatsApp/Telegram bridges for non-admin senders, so quota/tier limits apply per the bot account's own subscription instead of falling back to the admin token. |
+| `WHATSAPP_ADMIN_NUMBERS` | optional | world | Comma-separated Twilio `From` numbers (e.g. `whatsapp:+51999999999`) that get `MARKET_API_TOKEN` (admin/unlimited) instead of `MARKET_BOT_API_TOKEN` on the WhatsApp bridge. Must also appear in `WHATSAPP_ALLOWED_NUMBERS` when that allowlist is non-empty. |
+| `WHATSAPP_ALLOWED_NUMBERS` | optional | world | Comma-separated Twilio `From` numbers allowed to use the WhatsApp bot (e.g. `whatsapp:+51903176598,+51902126765`). When non-empty, every other sender gets a denial and no LLM call. When empty, any sandbox-joined sender is accepted (open mode). Accepts bare `+51…` or `whatsapp:+51…`. |
 
 ### 9. Email / SMTP (`email`)
 | Variable | Required | Where | Notes |
