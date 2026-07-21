@@ -1,6 +1,6 @@
 import os
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Request, Response
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from market_core import check_rate_limit_sqlite
@@ -13,6 +13,13 @@ router = APIRouter(prefix="/v1/integrations/whatsapp", tags=["integrations"])
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
+
+# Empty TwiML — Twilio's Messaging webhook expects valid TwiML (or an empty
+# body). Returning plain text like "queued" is parsed as TwiML, fails with
+# error 12100 (Document parse failure), and the WhatsApp *Sandbox* then
+# falls back to its canned "You said :X. Configure your Inbound URL..."
+# message even when our BackgroundTask later sends the real answer via REST.
+_EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
 
 # Per-sender cap so a single (correctly-signed) number can't run up paid
 # Whisper transcription / LLM costs by hammering the webhook.
@@ -28,6 +35,11 @@ WHATSAPP_RATE_LIMIT_DAY = int(os.getenv("WHATSAPP_RATE_LIMIT_DAY", "300"))
 WHATSAPP_ADMIN_NUMBERS = {
     n.strip() for n in os.getenv("WHATSAPP_ADMIN_NUMBERS", "").split(",") if n.strip()
 }
+
+
+def _empty_twiml() -> Response:
+    """Ack Twilio without auto-replying; the real reply goes out via REST API."""
+    return Response(content=_EMPTY_TWIML, media_type="application/xml", status_code=200)
 
 async def transcribe_whatsapp_audio(audio_url: str) -> str:
     """Downloads audio from Twilio and transcribes it using OpenAI Whisper."""
@@ -87,7 +99,12 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
     to its own "You said :X. Configure your Inbound URL" message while our
     real answer arrives late as a separate message (the exact bug reported
     2026-07-19 — the earlier synchronous version awaited /v1/intel/ask,
-    which has a 30s timeout, before ever returning any HTTP response)."""
+    which has a 30s timeout, before ever returning any HTTP response).
+
+    The webhook itself must also return *valid empty TwiML* (not plain text);
+    otherwise Twilio logs error 12100 and the Sandbox still shows that same
+    canned fallback even when this task succeeds via the REST API."""
+    print(f"📱 WhatsApp processing from {sender}: {incoming_msg[:80]!r}")
     if not incoming_msg and audio_url:
         print(f"🎙️ Audio message from {sender}, transcribing...")
         incoming_msg = await transcribe_whatsapp_audio(audio_url)
@@ -95,6 +112,7 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
             incoming_msg = incoming_msg.lower()
 
     if not incoming_msg:
+        print(f"⚠️ WhatsApp empty body after transcription for {sender}")
         return
 
     # 1. Recover session memory
@@ -113,6 +131,8 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
         os.getenv("MARKET_API_TOKEN") if is_admin_sender
         else os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
     )
+    if not token:
+        print(f"❌ WhatsApp: no MARKET_BOT_API_TOKEN/MARKET_API_TOKEN for {sender}")
 
     answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
 
@@ -132,11 +152,12 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
                 response = await client_http.post(
                     f"{market_api_url}/v1/intel/ask",
                     json={"question": effective_query},
-                    headers={"Authorization": f"Bearer {token}"},
+                    headers={"Authorization": f"Bearer {token}"} if token else {},
                     timeout=30
                 )
                 if response.status_code == 200:
                     answer = response.json().get("answer", answer)
+                    print(f"✅ /v1/intel/ask ok for {sender} ({len(answer)} chars)")
                 else:
                     print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
             except Exception as e:
@@ -148,11 +169,12 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
     # Responder vía Twilio SDK
     try:
         twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        twilio_client.messages.create(
+        msg = twilio_client.messages.create(
             from_=TWILIO_NUMBER,
             body=answer,
             to=sender
         )
+        print(f"✅ WhatsApp reply to {sender}. SID: {msg.sid}")
     except Exception as e:
         print(f"❌ Error Twilio: {e}")
 
@@ -161,30 +183,44 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     # Twilio envía los datos como Form Data (application/x-www-form-urlencoded)
     form_data = await request.form()
+    params = {k: str(v) for k, v in form_data.items()}
 
-    if not _is_valid_twilio_signature(request, dict(form_data)):
+    if not _is_valid_twilio_signature(request, params):
         print("❌ WhatsApp webhook: invalid or missing Twilio signature")
         return Response(content="invalid signature", status_code=403)
 
-    incoming_msg = form_data.get("Body", "").lower()
-    sender = form_data.get("From", "")
-    is_audio = form_data.get("MediaContentType", "").startswith("audio/")
-    audio_url = form_data.get("MediaUrl0") if is_audio else None
-
-    check_rate_limit_sqlite(
-        f"whatsapp:{sender}",
-        window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
-        max_req=WHATSAPP_RATE_LIMIT_MIN,
-        daily_max=WHATSAPP_RATE_LIMIT_DAY,
+    # Body can be missing on pure-media messages; MediaContentType0 is the
+    # real Twilio form key (MediaContentType without index is not sent).
+    incoming_msg = str(form_data.get("Body") or "").strip().lower()
+    sender = str(form_data.get("From") or "")
+    media_type = str(
+        form_data.get("MediaContentType0") or form_data.get("MediaContentType") or ""
     )
+    is_audio = media_type.startswith("audio/")
+    audio_url = str(form_data.get("MediaUrl0") or "") if is_audio else None
+
+    try:
+        check_rate_limit_sqlite(
+            f"whatsapp:{sender}",
+            window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
+            max_req=WHATSAPP_RATE_LIMIT_MIN,
+            daily_max=WHATSAPP_RATE_LIMIT_DAY,
+        )
+    except HTTPException as exc:
+        # Never return 429 to Twilio — Sandbox treats non-2xx / invalid TwiML
+        # as webhook failure and replies with the canned sandbox message.
+        if exc.status_code == 429:
+            print(f"⚠️ WhatsApp rate limit hit for {sender}")
+            return _empty_twiml()
+        raise
 
     if (not incoming_msg and not audio_url) or not TWILIO_AUTH_TOKEN:
-        return Response(content="ignored", status_code=200)
+        return _empty_twiml()
 
-    # Ack Twilio immediately — everything slow (transcription, LLM lookup,
-    # the actual Twilio send) happens after this response is already sent.
+    # Ack Twilio immediately with empty TwiML — everything slow (transcription,
+    # LLM lookup, the actual Twilio send) runs after this response is sent.
     background_tasks.add_task(_process_and_reply, incoming_msg, sender, audio_url)
-    return Response(content="queued", status_code=200)
+    return _empty_twiml()
 
 def send_whatsapp_proactive(to: str, body: str):
     """Envía un mensaje de WhatsApp fuera del flujo de webhook (Outbound)."""

@@ -53,6 +53,10 @@ def test_message_processing_is_deferred_to_a_background_task(mock_twilio_client_
         r = _signed_post({"From": "whatsapp:+15559990000", "Body": "hola"})
 
     assert r.status_code == 200
+    # Empty TwiML — plain text ("queued") triggers Twilio error 12100 and the
+    # Sandbox canned fallback even when the REST reply later succeeds.
+    assert r.headers.get("content-type", "").startswith("application/xml")
+    assert "<Response></Response>" in r.text
     mock_add_task.assert_called_once()
     # The Twilio send must NOT have happened synchronously within the request —
     # only the (mocked-away) background task would have triggered it.
@@ -71,6 +75,7 @@ def test_end_to_end_reply_still_sent_once_background_task_runs(mock_twilio_clien
     r = _signed_post({"From": "whatsapp:+15559990001", "Body": "hola"})
 
     assert r.status_code == 200
+    assert "<Response></Response>" in r.text
     mock_twilio_client_cls.return_value.messages.create.assert_called_once()
     _, kwargs = mock_twilio_client_cls.return_value.messages.create.call_args
     assert "CLI Market" in kwargs["body"]
@@ -83,4 +88,5 @@ def test_empty_body_and_no_media_returns_fast_without_queuing_background_work():
         r = _signed_post({"From": "whatsapp:+15559990002", "Body": ""})
 
     assert r.status_code == 200
+    assert "<Response></Response>" in r.text
     mock_add_task.assert_not_called()

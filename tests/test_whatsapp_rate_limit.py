@@ -43,9 +43,12 @@ def test_sender_is_rate_limited_after_threshold(mock_twilio_client_cls):
     r2 = _signed_post(params)
     r3 = _signed_post(params)
 
+    # Always 200 + empty TwiML to Twilio — a 429 would make the Sandbox fall
+    # back to its canned "You said :X. Configure your Inbound URL" message.
     assert r1.status_code == 200
     assert r2.status_code == 200
-    assert r3.status_code == 429
+    assert r3.status_code == 200
+    assert "<Response></Response>" in r3.text
     # Only the first two requests should have reached the Twilio send step.
     assert mock_twilio_client_cls.return_value.messages.create.call_count == 2
 
@@ -61,8 +64,14 @@ def test_rate_limit_blocks_before_audio_transcription(mock_twilio_client_cls, mo
     params_text = {"From": other_sender, "Body": "hola"}
     _signed_post(params_text)  # consumes the single allowed request
 
-    params_audio = {"From": other_sender, "MediaContentType": "audio/ogg", "MediaUrl0": "https://api.twilio.com/media"}
+    # Twilio sends MediaContentType0 (indexed), not bare MediaContentType.
+    params_audio = {
+        "From": other_sender,
+        "MediaContentType0": "audio/ogg",
+        "MediaUrl0": "https://api.twilio.com/media",
+    }
     r = _signed_post(params_audio)
 
-    assert r.status_code == 429
+    assert r.status_code == 200
+    assert "<Response></Response>" in r.text
     mock_transcribe.assert_not_called()
