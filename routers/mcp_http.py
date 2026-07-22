@@ -18,7 +18,8 @@ human-readable mirror of it. Everything not listed under Pro is Free.
         checkout, orders, alert_create, alert_delete, household_update,
         ecosystem_radar, procurement_bulk, scan, intel_refresh,
         enrichment_refresh, promo_detector, retailer_scorecard,
-        informal_signal
+        informal_signal, inflation, scores, macro, intel_brief,
+        indicators, trending, affordability
         (returns upgrade prompt if tier is free/starter)
 """
 
@@ -71,6 +72,13 @@ _PRO_TOOLS = frozenset({
     "market_promo_detector",
     "market_retailer_scorecard",
     "market_informal_signal",
+    "market_inflation",
+    "market_scores",
+    "market_macro",
+    "market_intel_brief",
+    "market_indicators",
+    "market_trending",
+    "market_affordability",
 })
 
 _UPGRADE_MSG = (
@@ -187,7 +195,7 @@ _TOOLS = [
     },
     {
         "name": "market_trending",
-        "description": "Most searched and purchased products in the last 7 days for a country.",
+        "description": "[Pro] Most searched and purchased products in the last 7 days for a country.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -221,7 +229,7 @@ _TOOLS = [
     {
         "name": "market_inflation",
         "description": (
-            "Per-product price delta over the last N days for a LATAM country. "
+            "[Pro] Per-product price delta over the last N days for a LATAM country. "
             "Returns avg inflation %, top movers, basket stress signals."
         ),
         "inputSchema": {
@@ -237,7 +245,7 @@ _TOOLS = [
     {
         "name": "market_scores",
         "description": (
-            "Market intelligence scores for a LATAM country (0-100). "
+            "[Pro] Market intelligence scores for a LATAM country (0-100). "
             "Includes retail aggression, labor stress, logistics risk, macro alignment."
         ),
         "inputSchema": {
@@ -251,7 +259,7 @@ _TOOLS = [
     {
         "name": "market_macro",
         "description": (
-            "Official tipo de cambio USD/PEN (compra/venta) and IPC Lima Metropolitana "
+            "[Pro] Official tipo de cambio USD/PEN (compra/venta) and IPC Lima Metropolitana "
             "from BCRP (Peru's central bank). PE only, for now. Distinct from "
             "market_inflation, which is CLI Market's own shelf-price signal (RPV), "
             "not an official CPI index — use market_macro when you need the "
@@ -265,7 +273,7 @@ _TOOLS = [
     {
         "name": "market_intel_brief",
         "description": (
-            "Aggregated market intelligence brief: composite scores, basket stress, "
+            "[Pro] Aggregated market intelligence brief: composite scores, basket stress, "
             "enrichment indicators (Open Food Facts, Wikimedia, weather, World Bank), "
             "and per-subcategory price/demand signals — all in one call."
         ),
@@ -577,7 +585,7 @@ _TOOLS = [
     {
         "name": "market_indicators",
         "description": (
-            "Latest enrichment indicator values: Open Food Facts, World Bank, weather, and custom signals. "
+            "[Pro] Latest enrichment indicator values: Open Food Facts, World Bank, weather, and custom signals. "
             "Filter by country or product line."
         ),
         "inputSchema": {
@@ -669,7 +677,7 @@ _TOOLS = [
     {
         "name": "market_affordability",
         "description": (
-            "Affordability OS — canasta pressure, wage ratio, macro gap vs official CPI, regulatory headlines. "
+            "[Pro] Affordability OS — canasta pressure, wage ratio, macro gap vs official CPI, regulatory headlines. "
             "One-call cost-of-living composite for LATAM. Countries: PE, AR, MX, BR, CO, CL."
         ),
         "inputSchema": {
