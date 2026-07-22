@@ -7,11 +7,23 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+from market_core import ensure_db_initialized
 from market_server import app
 
+import server_deps
+
+ensure_db_initialized()
 client = TestClient(app)
 
 _FAKE_IMAGE = b"\xff\xd8\xff\xe0" + b"\x00" * 100  # minimal JPEG header
+
+_ADMIN_TOKEN = "test-token-123"
+_AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
+
+
+@pytest.fixture(autouse=True)
+def patch_token(monkeypatch):
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
 
 
 # ── /v1/ticket/scan ──────────────────────────────────────────────────────────
@@ -22,6 +34,7 @@ def test_ticket_scan_no_tesseract_returns_placeholder():
         r = client.post(
             "/v1/ticket/scan",
             files={"file": ("ticket.jpg", io.BytesIO(_FAKE_IMAGE), "image/jpeg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     data = r.json()
@@ -36,6 +49,7 @@ def test_ticket_scan_tesseract_empty_output():
         r = client.post(
             "/v1/ticket/scan",
             files={"file": ("ticket.jpg", io.BytesIO(_FAKE_IMAGE), "image/jpeg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     data = r.json()
@@ -51,6 +65,7 @@ def test_ticket_scan_tesseract_short_lines_ignored():
         r = client.post(
             "/v1/ticket/scan",
             files={"file": ("ticket.jpg", io.BytesIO(_FAKE_IMAGE), "image/jpeg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     assert r.json()["items_detected"] == 0
@@ -63,6 +78,7 @@ def test_ticket_scan_tesseract_failure_returncode():
         r = client.post(
             "/v1/ticket/scan",
             files={"file": ("ticket.jpg", io.BytesIO(_FAKE_IMAGE), "image/jpeg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     assert r.json()["ocr_text"] == ""
@@ -71,12 +87,12 @@ def test_ticket_scan_tesseract_failure_returncode():
 # ── /v1/ticket/scan-url ──────────────────────────────────────────────────────
 
 def test_ticket_scan_url_rejects_loopback():
-    r = client.post("/v1/ticket/scan-url", json={"url": "http://127.0.0.1/image.jpg"})
+    r = client.post("/v1/ticket/scan-url", json={"url": "http://127.0.0.1/image.jpg"}, headers=_AUTH)
     assert r.status_code == 400
 
 
 def test_ticket_scan_url_rejects_metadata():
-    r = client.post("/v1/ticket/scan-url", json={"url": "http://169.254.169.254/latest"})
+    r = client.post("/v1/ticket/scan-url", json={"url": "http://169.254.169.254/latest"}, headers=_AUTH)
     assert r.status_code == 400
 
 
@@ -86,7 +102,7 @@ def test_ticket_scan_url_returns_ocr_on_success():
         patch("routers.media._fetch_public_url", return_value=_FAKE_IMAGE),
         patch("routers.media.subprocess.run", side_effect=FileNotFoundError),
     ):
-        r = client.post("/v1/ticket/scan-url", json={"url": "https://example.com/ticket.jpg"})
+        r = client.post("/v1/ticket/scan-url", json={"url": "https://example.com/ticket.jpg"}, headers=_AUTH)
     assert r.status_code == 200
     assert "ocr_text" in r.json()
 
@@ -98,6 +114,7 @@ def test_voice_transcribe_no_whisper_returns_placeholder():
         r = client.post(
             "/v1/voice/transcribe",
             files={"file": ("audio.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     data = r.json()
@@ -112,6 +129,7 @@ def test_voice_transcribe_whisper_nonzero_returncode():
         r = client.post(
             "/v1/voice/transcribe",
             files={"file": ("audio.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            headers=_AUTH,
         )
     assert r.status_code == 200
     data = r.json()
@@ -121,7 +139,7 @@ def test_voice_transcribe_whisper_nonzero_returncode():
 # ── /v1/voice/transcribe-url ─────────────────────────────────────────────────
 
 def test_voice_transcribe_url_rejects_private_ip():
-    r = client.post("/v1/voice/transcribe-url", json={"url": "http://10.0.0.1/audio.ogg"})
+    r = client.post("/v1/voice/transcribe-url", json={"url": "http://10.0.0.1/audio.ogg"}, headers=_AUTH)
     assert r.status_code == 400
 
 
@@ -130,6 +148,34 @@ def test_voice_transcribe_url_no_whisper_returns_placeholder():
         patch("routers.media._fetch_public_url", return_value=b"fake-audio"),
         patch("routers.media.subprocess.run", side_effect=FileNotFoundError),
     ):
-        r = client.post("/v1/voice/transcribe-url", json={"url": "https://example.com/audio.ogg"})
+        r = client.post("/v1/voice/transcribe-url", json={"url": "https://example.com/audio.ogg"}, headers=_AUTH)
     assert r.status_code == 200
     assert "transcript" in r.json()
+
+
+# ── auth is required on all four endpoints ────────────────────────────────────
+
+def test_ticket_scan_requires_auth():
+    r = client.post(
+        "/v1/ticket/scan",
+        files={"file": ("ticket.jpg", io.BytesIO(_FAKE_IMAGE), "image/jpeg")},
+    )
+    assert r.status_code == 401
+
+
+def test_ticket_scan_url_requires_auth():
+    r = client.post("/v1/ticket/scan-url", json={"url": "https://example.com/ticket.jpg"})
+    assert r.status_code == 401
+
+
+def test_voice_transcribe_requires_auth():
+    r = client.post(
+        "/v1/voice/transcribe",
+        files={"file": ("audio.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+    )
+    assert r.status_code == 401
+
+
+def test_voice_transcribe_url_requires_auth():
+    r = client.post("/v1/voice/transcribe-url", json={"url": "https://example.com/audio.ogg"})
+    assert r.status_code == 401

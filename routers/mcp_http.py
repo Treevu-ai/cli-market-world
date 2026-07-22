@@ -16,11 +16,13 @@ human-readable mirror of it. Everything not listed under Pro is Free.
   Pro — basket, optimize_purchase, procurement_signal, price_risk,
         favorites, price_alerts, export, ask, add, cart, cart_update,
         checkout, orders, alert_create, alert_delete, household_update,
-        ecosystem_radar, procurement_bulk, scan, intel_refresh,
+        ecosystem_radar, procurement_bulk, intel_refresh,
         enrichment_refresh, promo_detector, retailer_scorecard,
         informal_signal, inflation, scores, macro, intel_brief,
         indicators, trending, affordability
         (returns upgrade prompt if tier is free/starter)
+  Admin — scan (requires MARKET_API_TOKEN, not a paid tier — no upgrade
+        prompt applies; a 401 here means wrong audience, not "pay more")
 """
 
 from __future__ import annotations
@@ -66,7 +68,6 @@ _PRO_TOOLS = frozenset({
     "market_household_update",
     "market_ecosystem_radar",
     "market_procurement_bulk",
-    "market_scan",
     "market_intel_refresh",
     "market_enrichment_refresh",
     "market_promo_detector",

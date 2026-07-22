@@ -9,7 +9,12 @@ from fastapi.testclient import TestClient
 from market_core import db_create_api_key, db_save_user
 from market_server import app, hash_password
 
+import server_deps
+
 client = TestClient(app)
+
+_ADMIN_TOKEN = "test-token-123"
+_AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
 
 
 def test_paypal_webhook_rejects_without_verification_in_production(monkeypatch):
@@ -59,16 +64,19 @@ def test_checkout_webhook_rejects_bad_secret_when_configured(monkeypatch):
     assert r.status_code == 401
 
 
-def test_ticket_scan_url_blocks_loopback():
-    r = client.post("/v1/ticket/scan-url", json={"url": "http://127.0.0.1/image.jpg"})
+def test_ticket_scan_url_blocks_loopback(monkeypatch):
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
+    r = client.post("/v1/ticket/scan-url", json={"url": "http://127.0.0.1/image.jpg"}, headers=_AUTH)
     assert r.status_code == 400
     assert "non-public" in r.json()["detail"].lower() or "not allowed" in r.json()["detail"].lower()
 
 
-def test_ticket_scan_url_blocks_metadata_host():
+def test_ticket_scan_url_blocks_metadata_host(monkeypatch):
+    monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
     r = client.post(
         "/v1/ticket/scan-url",
         json={"url": "http://169.254.169.254/latest/meta-data/"},
+        headers=_AUTH,
     )
     assert r.status_code == 400
 
