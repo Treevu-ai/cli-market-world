@@ -2,6 +2,103 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-21] — Pricing-tier repricing review → full auth/security audit of the Intelligence catalog (cli-market-world)
+
+Started as a pricing/revenue review of the 9 market-intelligence tools
+(inflation, cost-of-living, scores, dashboard) sitting in the Base/free
+tier while Pro was mostly consumer-transactional. Checking why
+`market_whoami` was orphaned surfaced that several "Pro" tools returned
+raw HTTP errors instead of upgrade prompts — pulling that thread found
+the real root cause: multiple backend endpoints had no authentication
+at all. Widened into a full audit of the 54-tool MCP catalog. 8 commits,
+`683bedbb..75bccd2b`, all pushed to `main`; full suite green (964
+passed) at every step. Full writeup: `docs/reports/SECURITY-AUDIT-2026-07-21.md`.
+
+**Unauthenticated `cli-market-core` data endpoints (18 routes, commits `683bedbb`, `ee5d0926`, `dab77652`)**
+- `market_server.py` mounts the pip-installed `cli-market-core` router at
+  `/v1`; several of its handlers ship without `Depends(_v1_auth)` —
+  plain public functions. A pre-existing workaround
+  (`_CORE_INTEL_AUTH_PATHS` + `core_intel_api_key_gate` middleware)
+  covered only 3 of them. Extended it to the other 15: `/v1/intel/{affordability,alerts,informal-signal,promo-detector,retailer-scorecard,andean-panel}`,
+  `/v1/basket/{compare,tco}`, `/v1/products/substitutes`,
+  `/v1/ecosystem/launches`, `/v1/quality/scores`, `/v1/health/slas`,
+  `/v1/health/slas-summary`, and `/v1/receipts/{receipt_id}` (prefix
+  match, not exact-path).
+- Worst single finding: `GET /v1/receipts/{receipt_id}` returned
+  `username` + `image_url` + full OCR line items for any guessable
+  8-hex-char id, with **no ownership check** in `get_receipt()` — a real
+  IDOR, not just a missing-auth gap.
+- Also fixed: the gate middleware was registered *after*
+  `CORSMiddleware` (Starlette makes the last-registered middleware the
+  outer layer), so a browser's `OPTIONS` preflight to any gated path got
+  a bare 401 with no CORS headers before `CORSMiddleware` ever answered
+  it — added an `OPTIONS` bypass.
+- Verified by a dedicated `security-reviewer` pass (not just self-review)
+  before shipping; that pass is what surfaced the receipts IDOR and the
+  CORS ordering bug.
+- Root cause lives upstream, not in this repo — filed
+  [`Treevu-ai/cli-market-core#160`](https://github.com/Treevu-ai/cli-market-core/issues/160)
+  asking for `Depends(_v1_auth)` at the source plus a receipt-ownership
+  check, so the hand-maintained path list in `market_server.py` (which
+  already drifted once) can be deleted once the pin bumps.
+
+**Dependency CVE (commit `41b4a03f`)**
+- Dependabot alert #62: `sharp` (npm, `landing/package-lock.json`,
+  transitive via Next.js image optimization) — libvips CVEs
+  (GHSA-f88m-g3jw-g9cj, high). Pinned to `0.35.3` via `overrides`. Alert
+  auto-closed on push.
+
+**MCP catalog Free/Pro documentation mismatch (10 tools, commits `defbef22`, `6ebf6243`)**
+- `routers/mcp_http.py`'s `_PRO_TOOLS` set controls whether a backend
+  402/403 gets rewritten into a friendly upgrade message. 10 tools were
+  documented as Free (no `[Pro]` tag) while their backend actually calls
+  `require_pro()`, so free/trial callers got a raw passthrough error
+  instead: `market_promo_detector`, `market_retailer_scorecard`,
+  `market_informal_signal`, `market_inflation`, `market_scores`,
+  `market_macro`, `market_intel_brief`, `market_indicators`,
+  `market_trending`, `market_affordability`. Found by cross-referencing
+  every untagged tool's dispatch endpoint against its real backend auth
+  requirement in `routers/intel.py` / `routers/analytics.py`. All 10
+  added to `_PRO_TOOLS` and tagged `[Pro]`.
+- Surfaced by a real GTM artifact: a sales-demo script opened on
+  `market_promo_detector` as the hook step — before this fix, that step
+  would have shown a raw HTTP error at the exact moment meant to hook a
+  prospect.
+
+**Unauthenticated compute-abuse vector + a mislabeled admin tool (commit `75bccd2b`)**
+- `/v1/ticket/scan(-url)` and `/v1/voice/transcribe(-url)` ran
+  `tesseract`/`whisper` subprocesses (up to 60s) for any unauthenticated
+  caller — a free-compute/cost-abuse vector, not a data leak (SSRF was
+  already mitigated via `validate_public_http_url`). Gated all four with
+  `require_api_key`, matching the rest of the API's baseline. Updated
+  `tests/test_media.py` / `tests/test_security.py` accordingly.
+- `market_scan` sat in `_PRO_TOOLS` despite its backend requiring
+  `require_admin` (`MARKET_API_TOKEN`), not a paid tier — description
+  was already correctly `[Admin]`-tagged, so this was dead/misleading
+  bookkeeping, not a live bug. Removed from `_PRO_TOOLS`.
+
+**GTM narrative cross-check (commit `7d1611f6`)**
+- Cross-checked three sales narratives (B2C, Fintech, Enterprise) against
+  actual tool tiers. Headline: the B2C "free copilot" pitch is built
+  almost entirely on `[Pro]`-gated tools (`optimize_purchase`, `basket`,
+  `alert_create`, `household_update`) — should be marketed as Pro
+  ($39/mo), not as a free hook. Full narrative-by-narrative breakdown in
+  `docs/reports/GTM-NARRATIVES-B2C-FINTECH-ENTERPRISE.md`.
+
+**Known follow-ups (not done this session)**
+- Upstream fix for the 18 `cli-market-core` endpoints —
+  [`cli-market-core#160`](https://github.com/Treevu-ai/cli-market-core/issues/160),
+  not yet actioned by that repo.
+- Repricing decision (business call, not a code fix): whether the 9
+  intelligence tools — now correctly gated as Pro — should instead sit
+  in a separate Intelligence tier ($300–500/mo) above Pro ($39/mo).
+  Analysis in `docs/reports/PRICING-INTELLIGENCE-TIER-REVIEW.md`.
+- GTM copy update (marketing call): reposition the B2C narrative as
+  Pro-tier rather than a free hook.
+- `docs/reports/` sits outside this repo's sparse-checkout cone by
+  design — new docs there need `git add --sparse` to commit; left
+  un-added to the cone on explicit instruction.
+
 ## [2026-07-21/22] — Grintek onboarding, require_all root-cause chain, shared-token rotation, security headers, search-logic dedup, Growth plan made real (cli-market-world, cli-market-core 1.11.51–1.11.58)
 
 Long session spanning retailer onboarding, a multi-repo relevance-matching
