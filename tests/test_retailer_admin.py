@@ -233,3 +233,60 @@ def test_admin_store_credentials_returns_summary():
     data = r.json()
     assert "credentials" in data
     assert "active_catalog_size" in data
+
+
+# ── Growth plan admin endpoints ──────────────────────────────────────────────
+
+_GROWTH_STORE_ID = "test_growth_store_pe"
+
+
+@pytest.fixture
+def growth_test_store():
+    db = get_db()
+    db.execute("DELETE FROM store_credentials WHERE store_id = ?", (_GROWTH_STORE_ID,))
+    db.execute(
+        "INSERT INTO store_credentials (store_id, platform, store_name, country) "
+        "VALUES (?, 'woocommerce', 'Test Growth Store', 'PE')",
+        (_GROWTH_STORE_ID,),
+    )
+    db.commit()
+    db.close()
+    yield _GROWTH_STORE_ID
+    db = get_db()
+    db.execute("DELETE FROM store_credentials WHERE store_id = ?", (_GROWTH_STORE_ID,))
+    db.commit()
+    db.close()
+
+
+def test_activate_growth_requires_auth(growth_test_store):
+    r = client.post(f"/admin/stores/{growth_test_store}/activate-growth")
+    assert r.status_code == 401
+
+
+def test_activate_growth_unknown_store():
+    r = client.post("/admin/stores/does_not_exist_xyz/activate-growth", headers=_AUTH)
+    assert r.status_code == 404
+
+
+def test_activate_growth_happy_path(growth_test_store):
+    r = client.post(f"/admin/stores/{growth_test_store}/activate-growth", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["is_growth"] is True
+    assert data["store_id"] == growth_test_store
+    assert len(data["dashboard_token"]) > 20
+
+    status = client.get(f"/admin/stores/{growth_test_store}/growth-status", headers=_AUTH)
+    assert status.status_code == 200
+    assert status.json()["is_growth"] is True
+    assert status.json()["growth_activated_at"]
+
+
+def test_growth_status_requires_auth(growth_test_store):
+    r = client.get(f"/admin/stores/{growth_test_store}/growth-status")
+    assert r.status_code == 401
+
+
+def test_growth_status_unknown_store():
+    r = client.get("/admin/stores/does_not_exist_xyz/growth-status", headers=_AUTH)
+    assert r.status_code == 404

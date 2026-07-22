@@ -18,6 +18,7 @@ import difflib
 import logging
 import os
 import re
+import time
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException
@@ -78,6 +79,37 @@ def _resolve_search_stores(body: SearchRequest) -> list[str]:
         cc = body.country.strip().upper()
         stores = [s for s in stores if (STORES.get(s) or get_store_profile(s) or {}).get("country") == cc]
     return stores
+
+
+_GROWTH_CACHE_TTL = 60.0
+_growth_cache: tuple[float, frozenset[str]] = (0.0, frozenset())
+
+
+def _growth_store_set() -> frozenset[str]:
+    """store_ids with the paid Growth tier active — short TTL cache since
+    growth flips are rare (manual admin action via
+    POST /admin/stores/{store_id}/activate-growth), not worth a query per
+    search request."""
+    global _growth_cache
+
+    now = time.monotonic()
+    cached_at, ids = _growth_cache
+    if now - cached_at < _GROWTH_CACHE_TTL:
+        return ids
+    db = get_db()
+    try:
+        rows = db.execute(
+            "SELECT store_id FROM store_credentials WHERE is_growth = 1 AND active = 1"
+        ).fetchall()
+    except Exception:
+        # is_growth column not yet migrated (older cli-market-core) — no
+        # growth stores rather than a hard failure on every search.
+        db.close()
+        return frozenset()
+    db.close()
+    ids = frozenset(dict(r)["store_id"] for r in rows)
+    _growth_cache = (now, ids)
+    return ids
 
 
 class SearchRequest(BaseModel):
@@ -249,7 +281,11 @@ def _search_products_db(body: SearchRequest) -> dict:
         row["id"] = row.pop("product_id")
         results.append(row)
 
-    results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
+    growth_stores = _growth_store_set()
+    results.sort(key=lambda p: (
+        p["price"] if p["price"] > 0 else float("inf"),
+        0 if p.get("store") in growth_stores else 1,
+    ))
     save_search_query(body.query, body.line, body.store, len(results))
 
     response: dict = {"query": body.query, "results": results, "total": len(results)}
@@ -273,7 +309,11 @@ async def _search_products_live(body: SearchRequest):
             except Exception as pe:
                 errors.append({"store": store, "product_id": str(p)[:80], "error": str(pe)})
 
-    results.sort(key=lambda p: p["price"] if p["price"] > 0 else float("inf"))
+    growth_stores = _growth_store_set()
+    results.sort(key=lambda p: (
+        p["price"] if p["price"] > 0 else float("inf"),
+        0 if p.get("store") in growth_stores else 1,
+    ))
     for p in results:
         save_price_snapshot(p)
     save_search_query(body.query, body.line, body.store, len(results))
@@ -327,12 +367,16 @@ def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> li
                     key_index[ka][sb] = key_index[best_kb][sb]
                     matched_b.add(best_kb)
 
+    growth_stores = _growth_store_set()
     comparison: list[dict] = []
     for _k, sp in key_index.items():
         if len(sp) >= 1:
             prices = {s: p["price"] for s, p in sp.items() if p["price"] > 0}
             if prices:
-                best = min(prices, key=prices.get)
+                # Growth stores (paid placement) win exact price ties only —
+                # never outrank a genuinely cheaper competitor, so "cheapest
+                # first" stays true regardless of who's paying.
+                best = min(prices, key=lambda s: (prices[s], 0 if s in growth_stores else 1))
                 rep = sp[list(sp.keys())[0]]
                 comparison.append(
                     {
@@ -343,7 +387,10 @@ def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> li
                         "best_price": prices[best],
                     }
                 )
-    comparison.sort(key=lambda x: x["best_price"])
+    comparison.sort(key=lambda x: (
+        x["best_price"],
+        0 if x.get("best_store") in growth_stores else 1,
+    ))
     return comparison
 
 

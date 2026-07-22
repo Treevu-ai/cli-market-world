@@ -101,6 +101,79 @@ def test_compare_returns_comparison_structure():
     assert "stores_compared" in data
 
 
+# ── Growth-tier priority tiebreak ────────────────────────────────────────────
+# growth stores win exact price ties only — never outrank a genuinely
+# cheaper competitor, so "cheapest first" stays honest regardless of who paid.
+
+_GT_QUERY = "testgrowthproduct unique9x"
+_GT_STORE_A = "test_gt_store_a"  # non-growth
+_GT_STORE_B = "test_gt_store_b"  # growth
+
+
+@pytest.fixture
+def growth_tiebreak_snapshots():
+    import routers.search as search_mod
+
+    db = get_db()
+    for sid in (_GT_STORE_A, _GT_STORE_B):
+        db.execute("DELETE FROM store_credentials WHERE store_id = ?", (sid,))
+        db.execute(
+            "INSERT INTO store_credentials (store_id, platform, store_name, active) "
+            "VALUES (?, 'woocommerce', ?, 1)",
+            (sid, sid),
+        )
+    db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (_GT_STORE_A, _GT_STORE_B))
+    for sid in (_GT_STORE_A, _GT_STORE_B):
+        db.execute(
+            "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+            (f"prod-{sid}", sid, "Testgrowthproduct Unique9x", 25.0, "PEN"),
+        )
+    db.execute(
+        "UPDATE store_credentials SET is_growth = 1 WHERE store_id = ?", (_GT_STORE_B,)
+    )
+    db.commit()
+    db.close()
+    search_mod._growth_cache = (0.0, frozenset())  # bust the TTL cache
+    yield
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (_GT_STORE_A, _GT_STORE_B))
+    db.execute("DELETE FROM store_credentials WHERE store_id IN (?, ?)", (_GT_STORE_A, _GT_STORE_B))
+    db.commit()
+    db.close()
+    search_mod._growth_cache = (0.0, frozenset())
+
+
+def test_search_boosts_growth_store_on_exact_price_tie(growth_tiebreak_snapshots):
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    with patch.object(
+        search_mod, "_resolve_search_stores", return_value=[_GT_STORE_A, _GT_STORE_B]
+    ):
+        body = SearchRequest(query=_GT_QUERY, require_all=True, limit=10)
+        result = _search_products_db(body)
+
+    stores_in_order = [r["store"] for r in result["results"]]
+    assert stores_in_order[0] == _GT_STORE_B, (
+        f"growth store {_GT_STORE_B} should win the exact price tie, got order {stores_in_order}"
+    )
+
+
+def test_compare_boosts_growth_store_on_exact_price_tie(growth_tiebreak_snapshots):
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _compare_products_db
+
+    with patch.object(
+        search_mod, "_resolve_search_stores", return_value=[_GT_STORE_A, _GT_STORE_B]
+    ):
+        body = SearchRequest(query=_GT_QUERY, require_all=True, limit=10)
+        result = _compare_products_db(body)
+
+    assert result["comparison"], "expected at least one matched product"
+    assert result["comparison"][0]["best_store"] == _GT_STORE_B
+
+
 # ── GET /products/stock/{product_id} ─────────────────────────────────────────
 
 def test_stock_requires_auth():

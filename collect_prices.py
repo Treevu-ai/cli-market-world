@@ -825,6 +825,50 @@ async def force_catalog_stores(stores: list[str]) -> dict:
         print(f"    📦 {store}: {n:,} products (forced catalog)")
     return {"stores": per_store, "prices_collected": total}
 
+
+GROWTH_REFRESH_INTERVAL_MINS = int(os.getenv("COLLECT_GROWTH_REFRESH_INTERVAL", "60"))
+
+
+def _get_due_growth_stores() -> list[str]:
+    """Growth-tier stores (is_growth=1, active=1) whose price_snapshots are
+    staler than GROWTH_REFRESH_INTERVAL_MINS, or never yet collected —
+    scoped-mid-cycle refresh so Growth's "faster refresh" is real without
+    restructuring the main daemon loop (mirrors force_catalog_stores' bypass
+    pattern, but for the price-snapshot loop instead of full catalog pulls).
+    """
+    db = get_db()
+    try:
+        try:
+            rows = db.execute(
+                "SELECT store_id FROM store_credentials WHERE is_growth = 1 AND active = 1"
+            ).fetchall()
+        except Exception:
+            return []  # is_growth column not yet migrated — no growth stores
+        growth_ids = [dict(r)["store_id"] for r in rows]
+        if not growth_ids:
+            return []
+        placeholders = ",".join("?" for _ in growth_ids)
+        # Compare against a Python-computed cutoff (not datetime('now', '-N
+        # minutes')) since the SQLite->PG SQL translation shim (market_db.py)
+        # only rewrites a fixed set of literal datetime('now', ...) intervals
+        # — a parameterized one would pass through unrewritten and break on
+        # Postgres. Mirrors get_feedback_queries()'s isoformat()-comparison
+        # pattern already used elsewhere in this file for the same reason.
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=GROWTH_REFRESH_INTERVAL_MINS)).isoformat()
+        fresh_rows = db.execute(
+            f"""
+            SELECT store FROM price_snapshots
+            WHERE store IN ({placeholders})
+            GROUP BY store
+            HAVING MAX(queried_at) >= ?
+            """,
+            (*growth_ids, cutoff),
+        ).fetchall()
+        fresh_ids = {dict(r)["store"] for r in fresh_rows}
+        return [sid for sid in growth_ids if sid not in fresh_ids]
+    finally:
+        db.close()
+
 # ── Collector core ──────────────────────────────────────────────────────────
 
 async def _pg_consecutive_failures(pool, store: str) -> int:
@@ -1279,6 +1323,14 @@ async def main():
                     db_trig.close()
                 except Exception:
                     pass  # Don't crash the daemon over trigger polling
+                try:
+                    growth_due = _get_due_growth_stores()
+                    if growth_due:
+                        print(f"  ⚡ Growth-tier refresh due for {len(growth_due)} store(s): {growth_due}")
+                        growth_queries = build_query_list(cycle=cycle)
+                        await run_collection(growth_due, growth_queries)
+                except Exception as _ge:
+                    print(f"  ⚠ Growth refresh skipped: {_ge}")  # never crash the daemon over this
     else:
         db = _get_feedback_db()
         queries = build_query_list(db=db, cycle=0)

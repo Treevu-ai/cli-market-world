@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import secrets
+
 from fastapi import APIRouter, Header, HTTPException
 
 try:
@@ -164,4 +166,57 @@ def list_store_credentials(authorization: str | None = Header(None)):
     return {
         "credentials": credential_summary(),
         "active_catalog_size": len(get_default_stores()),
+    }
+
+
+@router.post("/stores/{store_id}/activate-growth")
+def activate_growth(store_id: str, authorization: str | None = Header(None)):
+    """Flip a store into the paid Growth tier ($9/mo).
+
+    Called manually by the team after matching a Retailer Growth checkout's
+    free-text email/store_name (see routers/billing/activation.py's
+    _activate_retailer_growth_from_request, which only marks the billing
+    request activated and Slack-notifies — it has no store_id to act on).
+    Same manual-match pattern already used for retailer-application approval.
+    """
+    require_admin(authorization)
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT store_id FROM store_credentials WHERE store_id = ?", (store_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="store_not_found")
+        token = secrets.token_urlsafe(24)
+        db.execute(
+            "UPDATE store_credentials SET is_growth = 1, growth_dashboard_token = ?, "
+            "growth_activated_at = datetime('now'), updated_at = datetime('now') "
+            "WHERE store_id = ?",
+            (token, store_id),
+        )
+        db.commit()
+    finally:
+        db.close()
+    invalidate_credential_cache()
+    return {"store_id": store_id, "is_growth": True, "dashboard_token": token}
+
+
+@router.get("/stores/{store_id}/growth-status")
+def growth_status(store_id: str, authorization: str | None = Header(None)):
+    require_admin(authorization)
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT store_id, is_growth, growth_activated_at FROM store_credentials WHERE store_id = ?",
+            (store_id,),
+        ).fetchone()
+    finally:
+        db.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="store_not_found")
+    r = dict(row)
+    return {
+        "store_id": r["store_id"],
+        "is_growth": bool(r.get("is_growth")),
+        "growth_activated_at": r.get("growth_activated_at"),
     }

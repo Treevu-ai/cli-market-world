@@ -14,7 +14,7 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from market_core import STORES, canonical_line_name, get_default_stores, get_db, price_to_usd
 from market_basket import build_canasta_basica
@@ -24,7 +24,7 @@ from dashboard_glossary import (
     build_metric_glossary,
 )
 from dashboard_quality import build_quality_funnel, count_flagged_discounts
-from backend_interface import count_flagged_outliers
+from backend_interface import count_flagged_outliers, get_store_profile
 from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
 from server_deps import require_admin, require_user
@@ -1063,3 +1063,106 @@ def dashboard_usage(authorization: str | None = Header(None)):
     from account_service import build_account_summary
 
     return build_account_summary(username, lang="es")
+
+
+@router.get("/v1/retailers/{store_id}/dashboard")
+def retailer_growth_dashboard(store_id: str, token: str):
+    """[Growth] Your prices vs competitors in the same line/country.
+
+    Gated by the opaque growth_dashboard_token issued when the team activates
+    Growth for a store (POST /admin/stores/{store_id}/activate-growth) —
+    retailers have no CLI account/login concept, so this token is the entire
+    access control (same trust tier as a magic link, not a write credential).
+    """
+    import hmac
+
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT store_id, store_name, is_growth, growth_dashboard_token, line, country "
+            "FROM store_credentials WHERE store_id = ?",
+            (store_id,),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="not_found")
+        r = dict(row)
+        if not r.get("is_growth") or not r.get("growth_dashboard_token"):
+            raise HTTPException(status_code=404, detail="not_found")
+        if not hmac.compare_digest(str(r["growth_dashboard_token"]), token or ""):
+            raise HTTPException(status_code=403, detail="invalid_token")
+
+        line = r.get("line") or "supermercados"
+        country = r.get("country") or ""
+
+        own_rows = db.execute(
+            """
+            SELECT name, price FROM price_snapshots
+            WHERE store = ? AND price > 0 AND price < 999999
+            """,
+            (store_id,),
+        ).fetchall()
+
+        # Peer stores resolved the same way _resolve_search_stores does
+        # (STORES.get(s) or get_store_profile(s)) — a plain JOIN against
+        # store_credentials alone would silently exclude every store in the
+        # static built-in catalog (STORES), which most of the ~37+ indexed
+        # retailers still are; only dynamically-approved retailers (e.g.
+        # grintek_pe) live in store_credentials.
+        peer_ids = [
+            sid for sid in get_default_stores()
+            if sid != store_id
+            and (STORES.get(sid) or get_store_profile(sid) or {}).get("line") == line
+            and (STORES.get(sid) or get_store_profile(sid) or {}).get("country") == country
+        ]
+        if peer_ids:
+            placeholders = ",".join("?" for _ in peer_ids)
+            peer_rows = db.execute(
+                f"""
+                SELECT name, MIN(price) as min_price
+                FROM price_snapshots
+                WHERE store IN ({placeholders}) AND price > 0 AND price < 999999
+                GROUP BY name
+                """,
+                tuple(peer_ids),
+            ).fetchall()
+        else:
+            peer_rows = []
+    finally:
+        db.close()
+
+    peer_min_by_name = {dict(pr)["name"]: dict(pr)["min_price"] for pr in peer_rows}
+
+    compared = 0
+    cheapest_count = 0
+    total_delta_pct = 0.0
+    products: list[dict] = []
+    for ro in own_rows:
+        item = dict(ro)
+        peer_min = peer_min_by_name.get(item["name"])
+        if peer_min is None:
+            continue
+        compared += 1
+        delta_pct = round((item["price"] - peer_min) / peer_min * 100, 1) if peer_min > 0 else 0.0
+        is_cheapest = item["price"] <= peer_min
+        if is_cheapest:
+            cheapest_count += 1
+        total_delta_pct += delta_pct
+        products.append({
+            "name": item["name"],
+            "your_price": item["price"],
+            "cheapest_competitor_price": peer_min,
+            "delta_pct": delta_pct,
+            "you_are_cheapest": is_cheapest,
+        })
+
+    products.sort(key=lambda p: p["delta_pct"], reverse=True)
+    return {
+        "store_id": r["store_id"],
+        "store_name": r.get("store_name") or store_id,
+        "line": line,
+        "country": country,
+        "products_compared": compared,
+        "products_you_are_cheapest": cheapest_count,
+        "avg_delta_pct": round(total_delta_pct / compared, 1) if compared else None,
+        "products": products[:100],
+    }

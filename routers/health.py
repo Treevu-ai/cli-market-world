@@ -21,7 +21,8 @@ from fastapi import APIRouter, Request
 
 from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
-from backend_interface import build_sources_health
+from backend_interface import build_sources_health, get_store_profile
+from store_credentials import get_custom_store_ids
 
 logger = logging.getLogger("market.server").getChild("health")
 
@@ -260,15 +261,38 @@ def list_lines():
     return {"lines": result, "total": len(result)}
 
 
+def _growth_flags_by_store() -> dict[str, bool]:
+    """store_id -> is_growth, for badging the public store catalog."""
+    db = get_db()
+    try:
+        rows = db.execute("SELECT store_id, is_growth FROM store_credentials").fetchall()
+    except Exception:
+        return {}  # is_growth column not yet migrated
+    finally:
+        db.close()
+    return {dict(r)["store_id"]: bool(dict(r)["is_growth"]) for r in rows}
+
+
 @router.get("/stores", summary="List all verified retailers, filterable by country and business line")
 def list_stores(country: str | None = None, line: str | None = None):
-    """Return the catalog of 41 verified active retailers with their store key, name,
+    """Return the catalog of verified active retailers with their store key, name,
     country, currency, business line, and base URL. Filter by country (PE, AR, BR, MX,
     CO, CL, IT, FR) and/or line (supermercados, farmacias, electro, moda, hogar,
     departamentales). Use store keys from this response as the stores list when calling
     POST /v1/basket/compare to scope a basket to a specific country."""
+    growth_flags = _growth_flags_by_store()
     result = {}
-    for key, s in STORES.items():
+    # STORES alone is the static built-in catalog — retailers approved via
+    # /admin/retailer-applications/{id}/approve (e.g. grintek_pe) only exist
+    # in store_credentials/get_custom_store_ids(), so limiting to STORES here
+    # silently hid every approved retailer from the public catalog that
+    # market_stores/market_discover (MCP tools) and /v1/basket/compare both
+    # read from.
+    all_keys = list(STORES.keys()) + get_custom_store_ids()
+    for key in all_keys:
+        s = STORES.get(key) or get_store_profile(key)
+        if not s:
+            continue
         if country and s["country"] != country.upper():
             continue
         if line and s["line"] != line:
@@ -278,8 +302,9 @@ def list_stores(country: str | None = None, line: str | None = None):
             "country": s["country"],
             "currency": s["currency"],
             "line": s["line"],
-            "line_name": LINES[s["line"]]["name"],
+            "line_name": LINES.get(s["line"], {}).get("name", s["line"]),
             "base": s["base"],
+            "is_growth": growth_flags.get(key, False),
         }
     return {"stores": result, "total": len(result)}
 
