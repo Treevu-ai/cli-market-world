@@ -61,3 +61,11 @@ def test_non_growth_store_flag_is_false():
     stores = r.json()["stores"]
     static_store = next(iter(stores.values()))
     assert static_store["is_growth"] is False
+
+
+def test_custom_store_appears_in_lines_catalog(custom_store_fixture):
+    r = client.get("/lines")
+    assert r.status_code == 200
+    electro = r.json()["lines"]["electro"]
+    assert _CUSTOM_STORE in electro["stores"], "dynamically-approved retailer missing from /lines"
+    assert electro["stores"][_CUSTOM_STORE]["is_growth"] is True

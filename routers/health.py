@@ -239,17 +239,23 @@ def root(request: Request):
 
 @router.get("/lines")
 def list_lines():
+    # STORES alone is the static built-in catalog — see /stores' identical
+    # fix above for why dynamically-approved retailers must be included too.
+    growth_flags = _growth_flags_by_store()
+    all_keys = list(STORES.keys()) + get_custom_store_ids()
     result: dict[str, dict] = {}
     for line_id, line_meta in LINES.items():
         line_stores: dict[str, dict] = {}
-        for sk, sv in STORES.items():
-            if sv["line"] == line_id:
+        for sk in all_keys:
+            sv = STORES.get(sk) or get_store_profile(sk)
+            if sv and sv.get("line") == line_id:
                 line_stores[sk] = {
                     "name": sv["name"],
                     "country": sv["country"],
                     "currency": sv["currency"],
                     "base": sv.get("base", ""),
                     "emoji": sv.get("emoji", ""),
+                    "is_growth": growth_flags.get(sk, False),
                 }
         result[line_id] = {
             "name": line_meta["name"],

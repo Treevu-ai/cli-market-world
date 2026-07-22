@@ -852,9 +852,18 @@ def _get_due_growth_stores() -> list[str]:
         # minutes')) since the SQLite->PG SQL translation shim (market_db.py)
         # only rewrites a fixed set of literal datetime('now', ...) intervals
         # — a parameterized one would pass through unrewritten and break on
-        # Postgres. Mirrors get_feedback_queries()'s isoformat()-comparison
-        # pattern already used elsewhere in this file for the same reason.
-        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=GROWTH_REFRESH_INTERVAL_MINS)).isoformat()
+        # Postgres. Formatted to match SQLite's own datetime('now') output
+        # ('YYYY-MM-DD HH:MM:SS', space separator, no microseconds/tz) rather
+        # than .isoformat() ('...THH:MM:SS.ffffff+00:00') — space (0x20) sorts
+        # below 'T' (0x54), so a raw isoformat() cutoff compared against
+        # SQLite-stored queried_at values via plain string >= is *always*
+        # "greater", making every store look permanently stale regardless of
+        # actual freshness (confirmed live: broke test_fresh_growth_store_is_not_due).
+        # This format still parses correctly on Postgres via implicit
+        # text->timestamp cast, so it's safe for both backends.
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=GROWTH_REFRESH_INTERVAL_MINS)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         fresh_rows = db.execute(
             f"""
             SELECT store FROM price_snapshots
