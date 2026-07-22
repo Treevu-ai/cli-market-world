@@ -38,7 +38,7 @@ from market_core import (
 from market_core.product_search import (
     build_search_sql,
     is_relevant as _is_relevant,
-    normalize_text as _normalize_text,
+    normalize_text as _normalize_text,  # noqa: F401 - re-exported for routers/analytics.py
     query_tokens as _query_tokens,
 )
 from server_deps import require_api_key
