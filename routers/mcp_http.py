@@ -10,12 +10,16 @@ Usage in claude.ai (Add MCP server):
   URL: https://cli-market-api.fly.dev/mcp?token=<your-market-api-token>
   (claude.ai connectors don't support Bearer auth — use the token query param instead)
 
-Tool tiers:
-  Free  — search, compare, stores, trending, inflation, scores, intel_brief,
-           whoami, stats, barcode, discover
-  Pro   — basket, basket_stress, price_risk, favorites, price_alerts,
-           export, ask, add, cart, cart_update, checkout, orders
-           (returns upgrade prompt if tier is free)
+Tool tiers — kept in sync with _PRO_TOOLS below; that frozenset is the
+source of truth for the upgrade-prompt behavior, this comment is just a
+human-readable mirror of it. Everything not listed under Pro is Free.
+  Pro — basket, optimize_purchase, procurement_signal, price_risk,
+        favorites, price_alerts, export, ask, add, cart, cart_update,
+        checkout, orders, alert_create, alert_delete, household_update,
+        ecosystem_radar, procurement_bulk, scan, intel_refresh,
+        enrichment_refresh, promo_detector, retailer_scorecard,
+        informal_signal
+        (returns upgrade prompt if tier is free/starter)
 """
 
 from __future__ import annotations
@@ -64,6 +68,9 @@ _PRO_TOOLS = frozenset({
     "market_scan",
     "market_intel_refresh",
     "market_enrichment_refresh",
+    "market_promo_detector",
+    "market_retailer_scorecard",
+    "market_informal_signal",
 })
 
 _UPGRADE_MSG = (
@@ -381,7 +388,7 @@ _TOOLS = [
     {
         "name": "market_informal_signal",
         "description": (
-            "Coverage-honesty flag for informal retail channels. Reports how confident our formal-channel "
+            "[Pro] Coverage-honesty flag for informal retail channels. Reports how confident our formal-channel "
             "(VTEX/Shopify/Magento/WooCommerce) coverage is for a country/line — does NOT estimate "
             "informal-economy share (ferias, mercados de abastos, venta ambulante are not observed)."
         ),
@@ -397,7 +404,7 @@ _TOOLS = [
     {
         "name": "market_promo_detector",
         "description": (
-            "Promo authenticity — flags discounts staged by inflating list_price shortly before "
+            "[Pro] Promo authenticity — flags discounts staged by inflating list_price shortly before "
             "advertising a markdown against it (common LatAm retail pattern)."
         ),
         "inputSchema": {
@@ -413,7 +420,7 @@ _TOOLS = [
     {
         "name": "market_retailer_scorecard",
         "description": (
-            "Retailer scorecard — coverage/freshness, catalog quality, and price volatility for one "
+            "[Pro] Retailer scorecard — coverage/freshness, catalog quality, and price volatility for one "
             "store in a single call. Does NOT include cross-store price competitiveness or stock availability."
         ),
         "inputSchema": {
