@@ -18,7 +18,6 @@ import difflib
 import logging
 import os
 import re
-import unicodedata
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException
@@ -36,6 +35,12 @@ from market_core import (
     save_price_snapshot,
     save_search_query,
 )
+from market_core.product_search import (
+    build_search_sql,
+    is_relevant as _is_relevant,
+    normalize_text as _normalize_text,
+    query_tokens as _query_tokens,
+)
 from server_deps import require_api_key
 
 from backend_interface import get_store_profile, store_exists
@@ -45,45 +50,9 @@ logger = logging.getLogger("market.server").getChild("search")
 
 router = APIRouter(tags=["search"])
 
-
-# ── Relevance filter ────────────────────────────────────────────────────
-
-def _normalize_text(text: str) -> str:
-    """Lowercase, strip accents (panó → pano), keep alphanum+spaces."""
-    text = text.lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-    return re.sub(r"[^a-z0-9\s]", " ", text)
-
-
-def _word_set(text: str) -> frozenset[str]:
-    return frozenset(w for w in _normalize_text(text).split() if len(w) >= 2)
-
-
-def _query_tokens(query: str) -> list[str]:
-    """Normalized tokens from the user query (min 2 chars)."""
-    return [w for w in _normalize_text(query).split() if len(w) >= 2]
-
-
-def _is_relevant(product_name: str, q_tokens: list[str], *, require_all: bool = False) -> bool:
-    """True if the query tokens appear as complete words in the product name.
-
-    Matching is word-boundary based to prevent prefix false-positives: query
-    'pan' should not match 'pantalon' because 'pan' is not a standalone word there.
-
-    require_all=False (default): at least one token must match. Used where the
-    caller sees the full result list and picks themselves.
-    require_all=True: every token must match. Used by the basket auto-picker, which
-    selects a single product per item with no human in the loop; one-token matching
-    there silently picks cross-brand / cross-type products (e.g. query
-    'leche evaporada gloria entera' matching 'Shake Capuccino UHT Gloria').
-    """
-    if not q_tokens:
-        return True
-    name_words = _word_set(product_name)
-    if require_all:
-        return all(qt in name_words for qt in q_tokens)
-    return any(qt in name_words for qt in q_tokens)
+# _normalize_text/_word_set/_query_tokens/_is_relevant moved to
+# market_core.product_search — shared with data_v1_service.query_product_search
+# (the intel agent's search tool) so the two no longer drift.
 
 
 def _attach_source_health(response: dict, store_ids: list[str]) -> dict:
@@ -250,47 +219,25 @@ def _search_products_db(body: SearchRequest) -> dict:
     and could OOM the shared-cpu-1x API machine — the same class of problem
     already fixed for market_basket by defaulting it to the DB path.
     """
-    from market_core.market_db import name_like_clause
-
     stores = _resolve_search_stores(body)
     q_tokens = _query_tokens(body.query)
     if not stores or not q_tokens:
         save_search_query(body.query, body.line, body.store, 0)
         return {"query": body.query, "results": [], "total": 0}
 
-    like = name_like_clause()
-    # AND at the SQL level when require_all: OR here would let the candidate
-    # cap below fill with rows sharing just one common token (e.g. a bare
-    # '11' from thousands of unrelated weights/quantities/model numbers)
-    # before the real match, regardless of what the Python filter does after.
-    joiner = " AND " if body.require_all else " OR "
-    like_clause = joiner.join(like for _ in q_tokens)
-    store_placeholders = ",".join("?" for _ in stores)
-    candidate_cap = min(500, body.limit * 20)
-
-    # ORDER BY price ASC starves out expensive-but-relevant matches when many
-    # rows match: candidates get capped to the N cheapest before the
-    # word-boundary filter runs. Irrelevant for the default lenient path
-    # (any-token matches are usually few enough not to hit the cap), but for
-    # require_all queries against a token as common as a bare number, it's
-    # the same failure mode already root-caused and fixed for search_products
-    # in cli-market-core — order by freshness instead so the real match can't
-    # be pushed out by unrelated noise before the relevance filter sees it.
-    order_col = "queried_at DESC" if body.require_all else "price ASC"
-
+    sql, params = build_search_sql(
+        stores=stores,
+        q_tokens=q_tokens,
+        require_all=body.require_all,
+        limit=body.limit,
+        columns=(
+            "product_id, name, brand, price, list_price, discount, store, "
+            "store_name, currency, line, line_name, category, stock, url, confidence"
+        ),
+    )
     db = get_db()
     try:
-        rows = db.execute(
-            f"""
-            SELECT product_id, name, brand, price, list_price, discount, store,
-                   store_name, currency, line, line_name, category, stock, url, confidence
-            FROM price_snapshots
-            WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
-            ORDER BY {order_col}
-            LIMIT ?
-            """,
-            (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
-        ).fetchall()
+        rows = db.execute(sql, params).fetchall()
     finally:
         db.close()
 
@@ -410,8 +357,6 @@ def _compare_products_db(body: SearchRequest) -> dict:
     """DB-backed compare: reads collector-refreshed price_snapshots instead
     of live-scraping every store per request — same rationale and pattern
     as _search_products_db."""
-    from market_core.market_db import name_like_clause
-
     stores = _resolve_search_stores(body)
     q_tokens = _query_tokens(body.query)
     payload: dict = {"query": body.query, "comparison": [], "stores_compared": 0}
@@ -420,25 +365,16 @@ def _compare_products_db(body: SearchRequest) -> dict:
     if not stores or not q_tokens:
         return payload
 
-    like = name_like_clause()
-    joiner = " AND " if body.require_all else " OR "
-    like_clause = joiner.join(like for _ in q_tokens)
-    store_placeholders = ",".join("?" for _ in stores)
-    candidate_cap = min(500, body.limit * 20)
-    order_col = "queried_at DESC" if body.require_all else "price ASC"
-
+    sql, params = build_search_sql(
+        stores=stores,
+        q_tokens=q_tokens,
+        require_all=body.require_all,
+        limit=body.limit,
+        columns="product_id, name, brand, price, store",
+    )
     db = get_db()
     try:
-        rows = db.execute(
-            f"""
-            SELECT product_id, name, brand, price, store
-            FROM price_snapshots
-            WHERE price > 0 AND store IN ({store_placeholders}) AND ({like_clause})
-            ORDER BY {order_col}
-            LIMIT ?
-            """,
-            (*stores, *[f"%{t}%" for t in q_tokens], candidate_cap),
-        ).fetchall()
+        rows = db.execute(sql, params).fetchall()
     finally:
         db.close()
 
