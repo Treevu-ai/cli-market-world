@@ -19,8 +19,13 @@ DANGEROUS_PATTERNS=(
   "reset --hard"
 )
 
+# Match only against text outside quoted string literals, so a commit message,
+# echo string, or heredoc line that happens to contain e.g. "reset --hard" as
+# prose doesn't trip the block. Does not handle heredoc bodies (<<EOF ... EOF).
+STRIPPED=$(printf '%s' "$COMMAND" | sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
+
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
-  if echo "$COMMAND" | grep -qE "$pattern"; then
+  if echo "$STRIPPED" | grep -qE "$pattern"; then
     echo "BLOCKED: '$COMMAND' matches dangerous pattern '$pattern'. The user has prevented you from doing this." >&2
     exit 2
   fi
