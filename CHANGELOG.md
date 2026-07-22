@@ -2,6 +2,173 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-21/22] — Grintek onboarding, require_all root-cause chain, shared-token rotation, security headers, search-logic dedup, Growth plan made real (cli-market-world, cli-market-core 1.11.51–1.11.58)
+
+Long session spanning retailer onboarding, a multi-repo relevance-matching
+bug chain, infra hygiene, and a full audit-driven fix pass. Grouped by
+theme below; cli-market-core went 1.11.50 → 1.11.58 over the course of it.
+
+**Grintek onboarding (grintek.pe / corp.grintek.pe, WooCommerce)**
+- Researched both the retail (`grintek.pe`) and wholesale (`corp.grintek.pe`)
+  WooCommerce stores, confirmed the connection protocol (WooCommerce Store
+  API / REST API v3 with consumer key/secret — no HTML scraping or
+  sitemap crawling involved, contrary to a later question from the
+  retailer's contact about whether `sitemap.xml` mattered; it doesn't).
+- Submitted and approved both retailer applications
+  (`grintek_pe`, `grintek_corp_pe`, `line=electro`) via
+  `POST /v1/retailers/apply` → `POST /admin/retailer-applications/{id}/approve`.
+  Catalog confirmed live in production (iPhone 11 and others discoverable).
+- Diagnosed and messaged the retailer's contact with fix instructions for a
+  Hostinger WAF (`hcdn`) that was blocking `corp.grintek.pe`.
+
+**require_all / relevance-matching bug chain (cli-market-core 1.11.51–1.11.56)**
+- Root cause: `market_search(query='iphone 11')` without word-boundary
+  AND-matching returned toys/cookware/car batteries sharing only a bare
+  `'11'` token. Added a `require_all` param (default `false`, `true` for
+  agent tool calls with no human filtering results) across
+  `routers/search.py`, `routers/mcp_http.py`, and cli-market-core's
+  `data_v1_service.py`, `market_intel_agent.py`, `market_mcp.py`,
+  `market_mcp_registry.py`.
+- Found and fixed a second-order bug in the same area: the SQL-level
+  candidate fetch stayed OR-only even when `require_all=true` at the
+  Python filter, so the candidate cap filled with irrelevant noise before
+  relevance filtering ever ran — fixed by making the SQL joiner and
+  `ORDER BY` conditional on `require_all` too.
+- Fixed a recurring static-`STORES`-dict anti-pattern (6+ instances this
+  chain alone) where dynamically-approved retailers (e.g. `grintek_pe`)
+  were silently excluded from country filters, live-search line/currency
+  lookups, and basket-compare store resolution, because those code paths
+  checked only the static built-in `STORES` dict and not
+  `store_credentials`/`get_store_profile`.
+- `market_cli.py`: removed `choices=list(STORES.keys())` from 4 argparse
+  definitions — it permanently locked out any dynamically-approved store
+  from the CLI, rejecting `--store grintek_pe` before any code ran.
+- Added a business-logic canary to `ops/smoke_e2e.sh` (search for
+  `iphone 11` with `require_all=true`, assert exactly 1 result) after a
+  deploy shipped a `cli-market-core` fix without its `cli-market-world`
+  counterpart and the old health-only smoke test stayed green throughout.
+
+**Shared API token rotation**
+- Rotated the personal API token shared across 11 local IDE/CLI MCP
+  configs (Cursor, Kiro, Windsurf, Codex, Cline, Devin, Grok, Zed, Kilo
+  Code, Kimi Code, VS Code) plus Clay.com. Documented the rotation
+  (old/new token IDs) in a gitignored `.env.local`. Verified end-to-end
+  post-rotation; confirmed Grintek reachable and the 4 paying users
+  unaffected.
+
+**Read-only product/code/security audit**
+- Full pass across cli-market-world, cli-market-core, cli-market-index,
+  cli-market-content, and public landing pages: code quality, security,
+  harness/CI validation, static-vs-dynamic architecture gaps, and
+  tool/logic duplication. Produced the priority list this session's later
+  work (below) executed against.
+
+**Mistral AI Studio + LangSmith Fleet reconfiguration**
+- User deleted the CLI Market MCP connector in Mistral AI Studio and the
+  MCP server entry in LangSmith Fleet; both needed rebuilding after the
+  token rotation. Mistral: recreated the custom MCP connector
+  (`https://cli-market-api.fly.dev/mcp`, API-token auth), added the
+  rotated token as a named credential, verified — all 54 MCP tools
+  fetched successfully, confirming the live `require_all` fix. LangSmith
+  Fleet turned out to be a separate product at `langchain.com/fleet`
+  (not under `smith.langchain.com`); deprioritized by explicit user
+  instruction ("olvida lang") in favor of the audit fix-list below.
+
+**Landing page security headers**
+- Added a `/*` catch-all block to `landing/public/_headers` (Cloudflare
+  Pages' native header mechanism — `next.config.ts`'s `headers()` is inert
+  under the site's `output: "export"` static build): CSP, HSTS,
+  X-Frame-Options, X-Content-Type-Options, Referrer-Policy,
+  Permissions-Policy. `script-src` keeps `'unsafe-inline'` since Next's
+  static export emits inline RSC hydration payloads
+  (`self.__next_f.push(...)`) with no per-request nonce available.
+- Found and fixed a pre-existing, unrelated build break blocking this
+  from ever deploying: `landing/tsconfig.json`'s broad `**/*.ts` include
+  was sweeping `intel-latam/` (a standalone Vite/Express sub-app with its
+  own `package.json`/Dockerfile/`fly.toml`, deployed separately) into the
+  Next.js typecheck, failing on missing `express`/`vite` types. The
+  Cloudflare Pages deploy had been silently failing since 2026-07-20.
+  Excluded `intel-latam` from the tsconfig.
+
+**Search-logic consolidation (cli-market-core 1.11.57)**
+- `routers/search.py` (this repo's HTTP API) and cli-market-core's
+  `data_v1_service.query_product_search` (used by the MCP intel agent)
+  carried independent, byte-for-byte-duplicated copies of the
+  tokenize/word-boundary-relevance/SQL-candidate-selection logic. They had
+  already drifted: `data_v1_service.py`'s candidate ordering was always
+  freshness-based (fixed 2026-07-20 for a "pollo" starvation bug — cheap
+  derivatives filling the candidate cap before a pricier-but-relevant
+  whole chicken could be considered), while `routers/search.py`'s fix only
+  covered `require_all=True`.
+- Extracted the shared logic into a new `market_core.product_search`
+  module (`normalize_text`, `word_set`, `query_tokens`, `is_relevant`,
+  `order_col_for`, `candidate_cap_for`, `build_search_sql`); both callers
+  now import from it, so `routers/search.py` gets the more complete
+  freshness-ordering fix too.
+
+**Retailer Growth plan ($9/mo) made real (cli-market-core 1.11.58)**
+- Found: the Growth checkout (`POST /billing/retailer-growth-checkout` →
+  Mercado Pago → webhook → Slack notification) worked end to end, but
+  none of the 4 promised features (priority search placement, price-vs-
+  competitors dashboard, faster refresh, verified badge) existed in code,
+  and there was no DB flag or admin action to mark a store as Growth once
+  paid — money could be collected for a product that couldn't be
+  delivered.
+- Added `is_growth` / `growth_dashboard_token` / `growth_activated_at`
+  columns to `store_credentials`.
+- New admin endpoints `POST /admin/stores/{store_id}/activate-growth` and
+  `GET .../growth-status` (mirrors the existing retailer-application
+  approve pattern) — the team's manual action once a paid checkout is
+  matched to a `store_id`.
+- Search priority: growth stores win **exact price ties only**, in both
+  `/products/search` and `/products/compare` (including the per-product
+  `best_store` selection inside `_fuzzy_compare`) — never outranks a
+  genuinely cheaper competitor, preserving "cheapest first" trust.
+- `collect_prices.py`: growth stores get a scoped mid-cycle refresh
+  (default 60 min vs. the global multi-hour interval) via the daemon's
+  existing 30s trigger-poll loop — no restructuring of the main cycle.
+- New `GET /v1/retailers/{store_id}/dashboard?token=...`: opaque-token-
+  gated "your prices vs. competitors" view for the store's own line/
+  country, reusing the store-resolution pattern from `_resolve_search_stores`.
+- **Found and fixed while wiring the badge**: `GET /stores` and
+  `GET /lines` — read by the `market_stores`/`market_discover` MCP tools
+  and `/v1/basket/compare`'s store resolution — only ever iterated the
+  static built-in `STORES` dict. Every dynamically-approved retailer,
+  **including Grintek**, was invisible to both endpoints despite being
+  fully onboarded. Same anti-pattern as the require_all chain above,
+  found again in a part of the codebase that chain hadn't reached.
+  Confirmed live: `grintek_pe` now appears in both `/stores` and
+  `/lines`.
+- Caught (and fixed) a real bug in code review before shipping: the new
+  growth-refresh staleness check compared `datetime.isoformat()`
+  (`...THH:MM:SS.ffffff+00:00`) against SQLite's `datetime('now')`
+  (`YYYY-MM-DD HH:MM:SS`, space separator) — since space (0x20) sorts
+  below `'T'` (0x54), every stored timestamp compared as "older" than the
+  cutoff regardless of actual freshness, so every growth store looked
+  permanently stale. Caught by the test written for this exact function.
+  Fixed by formatting the cutoff to match SQLite's own output.
+
+**Known follow-ups (not done this session)**
+- `~/.claude`-adjacent: the `GH_TOKEN` Windows user environment variable
+  is set to a non-GitHub secret (a leftover from the token-rotation work),
+  which was silently breaking `gh auth`/git push all session. Left for the
+  user to clear (`[System.Environment]::SetEnvironmentVariable("GH_TOKEN", $null, "User")`)
+  since it's a persistent system-level setting outside repo scope.
+- Store-resolution divergence between `routers/search.py`'s
+  `_resolve_search_stores` and `data_v1_service.py`'s inline
+  `get_custom_store_ids()` country filter — unverified whether they
+  actually produce different results; flagged, not touched.
+- Growth checkout collects free-text `email`/`store_name`, not a
+  validated `store_id` — the team currently has to manually match a paid
+  checkout to a `store_id` before calling the new activate-growth
+  endpoint. Same manual-match effort as retailer-application approval
+  already requires, so left as-is; a landing-page form change would be
+  needed to remove the manual step.
+- `landing/public/_headers`' CSP keeps `script-src 'self' 'unsafe-inline'`
+  (required by Next static export's inline RSC hydration payloads); a
+  nonce/hash-based CSP would need a build-time header-generation step,
+  not currently in place.
+
 ## [2026-07-21] — Telegram UX redesign, search-agent hallucination root cause, market_brands quality pass (cli-market-world, cli-market-core 1.11.49/1.11.50)
 
 Started from a live bug report: the Telegram/WhatsApp bot answered real
