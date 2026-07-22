@@ -249,6 +249,9 @@ _CORE_INTEL_AUTH_PATHS = frozenset({
     "/v1/products/substitutes",
     "/v1/basket/tco",
     "/v1/ecosystem/launches",
+    "/v1/quality/scores",
+    "/v1/health/slas",
+    "/v1/health/slas-summary",
 })
 
 # GET /v1/receipts/{receipt_id} returns username + image_url + full OCR line
