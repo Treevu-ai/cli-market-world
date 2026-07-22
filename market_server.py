@@ -230,6 +230,9 @@ app.add_middleware(
 )
 
 # Core intel routes (cli-market-core <1.11.4) omit Depends(_v1_auth). Gate here until pin bumps.
+# Exact-path entries below are currently also protected by a shadowing world-repo
+# route (e.g. routers/intel.py, routers/search.py) that FastAPI matches first —
+# listed explicitly anyway so the gate doesn't depend on router registration order.
 _CORE_INTEL_AUTH_PATHS = frozenset({
     "/v1/intel/price-risk",
     "/v1/intel/inflation-report",
@@ -241,13 +244,29 @@ _CORE_INTEL_AUTH_PATHS = frozenset({
     "/v1/intel/informal-signal",
     "/v1/intel/promo-detector",
     "/v1/intel/retailer-scorecard",
+    "/v1/intel/andean-panel",
+    "/v1/basket/compare",
+    "/v1/products/substitutes",
+    "/v1/basket/tco",
+    "/v1/ecosystem/launches",
 })
+
+# GET /v1/receipts/{receipt_id} returns username + image_url + full OCR line
+# items for any guessable 8-hex-char id, with no ownership check in
+# cli-market-core — gate the whole subtree (POST /submit and GET list already
+# carry their own Depends(_v1_auth), so this is redundant-but-harmless there).
+_CORE_INTEL_AUTH_PREFIXES = ("/v1/receipts/",)
 
 
 @app.middleware("http")
 async def core_intel_api_key_gate(request: Request, call_next):
+    if request.method == "OPTIONS":
+        # Let CORSMiddleware answer preflight — this middleware is registered
+        # after CORSMiddleware, which makes it the outer layer and would
+        # otherwise 401 preflight requests before CORS gets to respond.
+        return await call_next(request)
     path = request.url.path.rstrip("/") or "/"
-    if path in _CORE_INTEL_AUTH_PATHS:
+    if path in _CORE_INTEL_AUTH_PATHS or path.startswith(_CORE_INTEL_AUTH_PREFIXES):
         try:
             require_api_key(request.headers.get("authorization"))
         except HTTPException as exc:
