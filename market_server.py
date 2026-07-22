@@ -236,6 +236,11 @@ _CORE_INTEL_AUTH_PATHS = frozenset({
     "/v1/intel/procurement-signal",
     "/v1/intel/regulatory",
     "/v1/moat/confidence",
+    "/v1/intel/affordability",
+    "/v1/intel/alerts",
+    "/v1/intel/informal-signal",
+    "/v1/intel/promo-detector",
+    "/v1/intel/retailer-scorecard",
 })
 
 
