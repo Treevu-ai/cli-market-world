@@ -14,7 +14,7 @@ Copy para LinkedIn, Slack, outreach y reportes ops en **castellano estándar**, 
 | Contexto | Tratamiento | Ejemplo |
 |----------|-------------|---------|
 | CTA retailers B2B | **usted** | Registre su tienda · Complete el formulario |
-| Métricas / datos | neutro | 19.452 precios indexados · 9 países |
+| Métricas / datos | neutro | 19.452 precios indexados · 10 países |
 | Preguntas engagement | tú aceptable | ¿Qué producto le gustaría comparar en PE? |
 | Ortografía | RAE / LATAM | éxito · países · integración · últimas · cambió · avísenos |
 

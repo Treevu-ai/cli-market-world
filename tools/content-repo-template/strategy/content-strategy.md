@@ -11,7 +11,7 @@ hub: "[[GTM-Hub]]"
 
 ## Article 1: "Commerce Infrastructure for AI Agents"
 **Type**: Educational guide | **Target**: AI developers, CTOs
-**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 82 retailers (37 verified), 43 tools, 9 countries
+**Outline**: Agents think but can't shop → Why scraping fails → Commerce infra → CLI Market → 115 retailers (74 verified), 43 tools, 10 countries
 
 ## Article 2: "Add Commerce to Your AI Agent in 4 Lines"
 **Type**: Tutorial | **Target**: Python developers

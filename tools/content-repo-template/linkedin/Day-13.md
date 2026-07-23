@@ -31,7 +31,7 @@ When a user asks their agent "find the cheapest milk in Lima", your store either
 → Appears in structured JSON from a commerce API
 → Or it doesn't exist for that agent
 
-CLI Market gives 82 retailers (37 verified) a unified API surface for AI agents — search, compare, cart, checkout.
+CLI Market gives 115 retailers (74 verified) a unified API surface for AI agents — search, compare, cart, checkout.
 
 No scraping. No fragile HTML parsers. Real VTEX and Magento APIs.
 
