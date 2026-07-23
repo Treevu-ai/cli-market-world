@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  market-cli-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: cli-market-server
+    
+    # Volumes para credenciales y persistencia
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+    
+    # Variables de entorno (cargar desde .env)
+    environment:
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MCP_TOOL_PROFILE: default
+      MARKET_AGENT_ID: ${MARKET_AGENT_ID}
+    
+    # Puerto para API (si aplica)
+    ports:
+      - "8000:8000"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "market", "doctor"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    restart: unless-stopped
+
+  # Servicio opcional para MCP
+  market-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cli-market-mcp
+    
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+      - .cursor/mcp.json:/app/.cursor/mcp.json
+    
+    environment:
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MCP_TOOL_PROFILE: default
+    
+    command: ["market-mcp"]
+    
+    restart: unless-stopped
+
+volumes:
+  market-credentials:
+    driver: local
+  market-cache:
+    driver: local

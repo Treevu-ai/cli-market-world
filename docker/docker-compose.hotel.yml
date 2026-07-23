@@ -1,0 +1,87 @@
+version: '3.9'
+
+# Docker Compose para Canasta Hotelera - CLI Market
+# Ejecuta: docker-compose -f docker-compose.hotel.yml up
+
+services:
+  hotel-basket-analyzer:
+    image: cli-market:latest
+    container_name: hotel-basket-70pax
+    
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+      - ./output:/app/output
+      - ./hotel-basket.sh:/app/hotel-basket.sh
+    
+    environment:
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_COUNTRY: PE
+      MARKET_HOTEL_PAX: 70
+      MARKET_HOTEL_MEALS: 3
+    
+    working_dir: /app
+    
+    # Ejecuta análisis de canasta al iniciar
+    entrypoint: /bin/sh -c
+    command: 
+      - |
+        echo "🏨 Iniciando análisis de canasta hotelera..."
+        echo "70 personas × 3 comidas diarias"
+        chmod +x /app/hotel-basket.sh
+        /app/hotel-basket.sh
+        
+        echo ""
+        echo "📊 Generando reporte..."
+        market doctor
+        
+        echo ""
+        echo "Esperando comandos interactivos..."
+        /bin/sh
+    
+    stdin_open: true
+    tty: true
+    restart: on-failure
+    
+    # Health check para verificar disponibilidad
+    healthcheck:
+      test: ["CMD", "market", "doctor"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # Servicio opcional para exportar datos a CSV
+  basket-exporter:
+    image: cli-market:latest
+    container_name: hotel-basket-exporter
+    
+    volumes:
+      - market-credentials:/root/.market
+      - ./output:/app/output
+    
+    environment:
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_COUNTRY: PE
+    
+    # Exporta resultados cada 6 horas
+    command: |
+      /bin/sh -c '
+        while true; do
+          echo "Exportando canasta a CSV..."
+          market search "arroz" --country PE --json > /app/output/basket_$(date +%Y%m%d_%H%M).json
+          sleep 21600
+        done
+      '
+    
+    depends_on:
+      - hotel-basket-analyzer
+    
+    restart: unless-stopped
+
+volumes:
+  market-credentials:
+    driver: local
+  market-cache:
+    driver: local

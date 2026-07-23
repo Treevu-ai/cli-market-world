@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project
+COPY pyproject.toml README.md ./
+COPY . .
+
+# Install dependencies
+RUN pip install --no-cache-dir -e .
+
+# Credential volume
+RUN mkdir -p /root/.market
+
+# Set env
+ENV MARKET_API_URL=https://cli-market-api.fly.dev
+
+# Start FastAPI server
+CMD ["market-server"]

@@ -1,0 +1,195 @@
+version: '3.9'
+
+# Docker Compose - Solución completa CLI Market con monitoring, alertas y reportes
+# docker-compose -f docker-compose.complete.yml up -d
+
+services:
+  # Contenedor principal con CLI Market
+  market-cli:
+    image: cli-market:latest
+    container_name: market-cli-main
+    
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+      - ./market-reports:/app/reports
+      - ./market-config.json:/app/config.json
+    
+    environment:
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MARKET_COUNTRY: PE
+    
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "market", "doctor"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # Servicio de scheduler (comparativas cada 6 horas)
+  market-scheduler:
+    image: cli-market:latest
+    container_name: market-scheduler
+    
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+      - ./market-reports:/app/reports
+      - ./market-scheduler.sh:/app/market-scheduler.sh
+    
+    environment:
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_COUNTRY: PE
+      OUTPUT_DIR: /app/reports
+    
+    # Ejecuta scheduler cada 6 horas
+    entrypoint: /bin/sh -c
+    command: 
+      - |
+        chmod +x /app/market-scheduler.sh
+        while true; do
+          /app/market-scheduler.sh
+          sleep 21600
+        done
+    
+    depends_on:
+      - market-cli
+    
+    restart: unless-stopped
+
+  # Servicio Python para monitoreo y alerts
+  market-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    container_name: market-monitor
+    
+    volumes:
+      - market-credentials:/root/.market
+      - ./market-reports:/app/reports
+      - ./market-monitor.py:/app/market-monitor.py
+      - ./market-config.json:/app/config.json
+    
+    environment:
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_COUNTRY: PE
+      PYTHONUNBUFFERED: 1
+    
+    entrypoint: python3 /app/market-monitor.py
+    command: ["status"]
+    
+    depends_on:
+      - market-cli
+    
+    restart: on-failure
+
+  # Servicio de exportación a Excel/CSV
+  market-exporter:
+    image: cli-market:latest
+    container_name: market-exporter
+    
+    volumes:
+      - market-credentials:/root/.market
+      - ./market-reports:/app/reports
+    
+    environment:
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MARKET_COUNTRY: PE
+    
+    # Exporta datos cada 24 horas
+    entrypoint: /bin/sh -c
+    command:
+      - |
+        while true; do
+          echo "Exportando datos..."
+          market search "arroz" --country PE --json > /app/reports/export_$(date +%Y%m%d_%H%M%S).json
+          sleep 86400
+        done
+    
+    depends_on:
+      - market-cli
+    
+    restart: unless-stopped
+
+  # Servicio MCP (para integración con Claude/Cursor)
+  market-mcp:
+    image: cli-market:latest
+    container_name: market-mcp-server
+    
+    volumes:
+      - market-credentials:/root/.market
+      - ./market-reports:/app/reports
+    
+    environment:
+      MARKET_API_TOKEN: ${MARKET_API_TOKEN}
+      MCP_TOOL_PROFILE: enterprise
+    
+    command: ["market-mcp"]
+    
+    ports:
+      - "3000:3000"
+    
+    depends_on:
+      - market-cli
+    
+    restart: unless-stopped
+
+  # Base de datos para almacenar histórico de precios (opcional)
+  market-db:
+    image: postgres:15-alpine
+    container_name: market-db
+    
+    environment:
+      POSTGRES_DB: market_prices
+      POSTGRES_USER: market
+      POSTGRES_PASSWORD: ${MARKET_DB_PASSWORD:-secure_password}
+    
+    volumes:
+      - market-db-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    
+    ports:
+      - "5432:5432"
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U market"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cacheo de resultados
+  market-cache:
+    image: redis:7-alpine
+    container_name: market-redis
+    
+    volumes:
+      - market-redis-data:/data
+    
+    ports:
+      - "6379:6379"
+    
+    command: redis-server --appendonly yes
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  market-credentials:
+    driver: local
+  market-cache:
+    driver: local
+  market-db-data:
+    driver: local
+  market-redis-data:
+    driver: local

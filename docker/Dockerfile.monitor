@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar scripts y dependencias
+COPY pyproject.toml requirements.txt* ./
+COPY market-monitor.py .
+
+# Instalar Python dependencies
+RUN pip install --no-cache-dir \
+    click \
+    requests \
+    python-dotenv \
+    pandas \
+    openpyxl \
+    psycopg2-binary \
+    redis \
+    && pip install --no-cache-dir -e . || pip install --no-cache-dir cli-market-world
+
+# Usuario no-root
+RUN useradd -m market && chown -R market:market /app
+USER market
+
+ENTRYPOINT ["python3", "/app/market-monitor.py"]

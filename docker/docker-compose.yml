@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  market-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cli-market
+    
+    # Volume para persistir credenciales entre contenedor restarts
+    volumes:
+      - market-credentials:/root/.market
+      - market-cache:/root/.cache
+    
+    # Variables de entorno
+    environment:
+      MARKET_API_URL: https://cli-market-api.fly.dev
+      MCP_TOOL_PROFILE: default
+    
+    # Comando interactivo
+    stdin_open: true
+    tty: true
+    
+    # Reintentos automáticos
+    restart: on-failure
+    
+    # Entrypoint: shell interactivo para comandos market
+    entrypoint: /bin/sh
+    command: -c "market init && /bin/sh"
+
+volumes:
+  market-credentials:
+    driver: local
+  market-cache:
+    driver: local
