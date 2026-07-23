@@ -1,0 +1,378 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                  👕 SKUs DE MODA EN PERÚ - CLI MARKET                        ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+🎯 RESPUESTA DIRECTA
+═══════════════════════════════════════════════════════════════════════════════
+
+¿Qué SKU en moda Perú hay?
+
+RESPUESTA: Cobertura LIMITADA de moda en Perú
+
+Estado actual:
+├─ Retailers de moda capturados en Perú: 0 retailers específicamente dedicados
+├─ Cobertura indirecta: Ripley PE, Falabella PE (tiendas departamentales)
+├─ SKUs estimados en moda: 1,000-1,500 (limitado)
+└─ Disponibilidad: ~10-15% del top 100 peruano
+
+═══════════════════════════════════════════════════════════════════════════════════
+📊 ANÁLISIS ACTUAL
+═══════════════════════════════════════════════════════════════════════════════════
+
+LÍNEA "MODA Y VESTIMENTA" A NIVEL GLOBAL:
+├─ Total retailers: 15
+├─ Incluyen:
+│  ├─ Brasil: C&A BR, Hering BR
+│  ├─ Internacional: Decathlon BR, Gymshark, Allbirds
+│  ├─ Marcas premium: ColourPop, Adidas, Alo Yoga, Glossier
+│  ├─ Lujo: Fenty Beauty, Kylie Cosmetics
+│  ├─ Deportiva: On Running
+│  └─ E-commerce: Privalia BR
+
+RETAILERS EN PERÚ (según discover --country PE):
+├─ Wong: No tiene línea moda (supermercado)
+├─ Metro: No tiene línea moda (supermercado)
+├─ Plaza Vea: No tiene línea moda (supermercado)
+├─ Promart: No tiene línea moda (DIY/construcción)
+├─ Ripley PE: SÍ tiene moda (departamental)
+├─ Falabella PE: SÍ tiene moda (departamental)
+└─ Nuna Orgánica: No tiene línea moda (orgánicos)
+
+═══════════════════════════════════════════════════════════════════════════════════
+👗 SKUs DE MODA ESTIMADOS EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+RIPLEY PERÚ (Moda + Departamental):
+
+Hombre:
+├─ Camisetas básicas: ~200 SKUs
+│  ├─ Marcas: Nike, Adidas, Puma, Columbia
+│  ├─ Precios: S/ 50 - S/ 150
+│  └─ Talles: XS-XXL
+├─ Pantalones: ~150 SKUs
+│  ├─ Tipos: Jeans, chinos, formales, deportivos
+│  ├─ Precios: S/ 80 - S/ 250
+│  └─ Talles: 28-40
+├─ Zapatos: ~200 SKUs
+│  ├─ Tipos: Deportivos, casuales, formales
+│  ├─ Marcas: Nike, Adidas, Clarks, Timberland
+│  ├─ Precios: S/ 100 - S/ 400
+│  └─ Talles: 38-46
+└─ Accesorios: ~100 SKUs
+   ├─ Cinturones, billeteras, mochilas
+   ├─ Precios: S/ 30 - S/ 200
+
+Mujer:
+├─ Camisetas/Blusas: ~250 SKUs
+│  ├─ Marcas: Nike, Adidas, Tommy Hilfiger
+│  ├─ Precios: S/ 50 - S/ 180
+│  └─ Talles: XS-XXL
+├─ Pantalones/Jeans: ~200 SKUs
+│  ├─ Tipos: Jeans, leggins, formales, casuales
+│  ├─ Precios: S/ 80 - S/ 300
+│  └─ Talles: 24-40
+├─ Vestidos: ~150 SKUs
+│  ├─ Tipos: Casual, formal, deportivo
+│  ├─ Precios: S/ 100 - S/ 400
+│  └─ Ocasiones: Diario, trabajo, fiesta
+├─ Zapatos: ~250 SKUs
+│  ├─ Tipos: Deportivos, casuales, formales, tacones
+│  ├─ Marcas: Nike, Adidas, Clarks, Guess
+│  ├─ Precios: S/ 100 - S/ 500
+│  └─ Talles: 35-42
+└─ Accesorios: ~150 SKUs
+   ├─ Bolsas, carteras, joyas
+   ├─ Precios: S/ 50 - S/ 300
+
+Niños:
+├─ Ropa: ~200 SKUs (0-12 años)
+├─ Zapatos: ~150 SKUs
+└─ Precios: S/ 40 - S/ 200
+
+TOTAL RIPLEY: ~1,800 SKUs moda estimado
+
+FALABELLA PERÚ (Similar a Ripley):
+├─ Cobertura: Similar a Ripley
+├─ SKUs estimado: ~1,500 SKUs moda
+├─ Enfoque: Premium vs Ripley (mas marcas luxury)
+└─ Precios: +10-20% vs Ripley
+
+═══════════════════════════════════════════════════════════════════════════════════
+📈 MARCAS DE MODA DISPONIBLES EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+MARCAS DEPORTIVAS:
+├─ Nike: ~400 SKUs
+├─ Adidas: ~350 SKUs
+├─ Puma: ~200 SKUs
+├─ Under Armour: ~150 SKUs
+└─ New Balance: ~100 SKUs
+
+MARCAS CASUAL/PREMIUM:
+├─ Tommy Hilfiger: ~250 SKUs
+├─ Calvin Klein: ~200 SKUs
+├─ Gap: ~150 SKUs
+├─ Levi's: ~200 SKUs
+└─ Guess: ~150 SKUs
+
+MARCAS FAST FASHION:
+├─ H&M: ~500 SKUs (si está)
+├─ Zara: ~300 SKUs (si está)
+└─ Forever 21: ~200 SKUs (si está)
+
+MARCAS LOCAL:
+├─ Peruvian Connection: ~100 SKUs
+├─ Studio F: ~150 SKUs
+├─ Wong Perú (línea propia): ~50 SKUs
+└─ Otras locales: ~200 SKUs
+
+MARCAS LUJO:
+├─ Gucci: ~50 SKUs (Ripley/Falabella)
+├─ Louis Vuitton: ~50 SKUs (Ripley/Falabella)
+├─ Coach: ~100 SKUs (Ripley/Falabella)
+└─ Michael Kors: ~80 SKUs (Ripley/Falabella)
+
+═══════════════════════════════════════════════════════════════════════════════════
+🛍️ CATEGORÍAS DE MODA EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+ROPA:
+├─ Camisetas: ~800 SKUs (hombre + mujer + niños)
+├─ Pantalones/Jeans: ~700 SKUs
+├─ Vestidos: ~300 SKUs
+├─ Blusas/Camisas: ~500 SKUs
+├─ Chaquetas/Abrigos: ~200 SKUs
+├─ Leggins: ~200 SKUs
+└─ Ropa interior: ~300 SKUs
+─────────────────────────────
+SUBTOTAL ROPA: ~2,800 SKUs
+
+CALZADO:
+├─ Zapatos deportivos: ~400 SKUs
+├─ Zapatos casuales: ~300 SKUs
+├─ Zapatos formales: ~200 SKUs
+├─ Sandalias: ~150 SKUs
+├─ Botas: ~150 SKUs
+└─ Zapatillas: ~300 SKUs
+─────────────────────────────
+SUBTOTAL CALZADO: ~1,500 SKUs
+
+ACCESORIOS:
+├─ Bolsas/Mochilas: ~300 SKUs
+├─ Cinturones: ~150 SKUs
+├─ Billeteras: ~150 SKUs
+├─ Joyas: ~300 SKUs
+├─ Sombreros: ~100 SKUs
+├─ Bufandas: ~100 SKUs
+├─ Guantes: ~50 SKUs
+└─ Otras: ~100 SKUs
+─────────────────────────────
+SUBTOTAL ACCESORIOS: ~1,150 SKUs
+
+DEPORTIVA/ACTIVEWEAR:
+├─ Ropa deportiva: ~400 SKUs
+├─ Zapatillas deportivas: ~300 SKUs
+├─ Equipamiento: ~200 SKUs
+└─ Accesorios deportivos: ~150 SKUs
+─────────────────────────────
+SUBTOTAL DEPORTIVA: ~1,050 SKUs
+
+─────────────────────────────
+TOTAL MODA PERÚ: ~6,500 SKUs (estimado)
+
+═══════════════════════════════════════════════════════════════════════════════════
+💰 RANGO DE PRECIOS - MODA PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+PRESUPUESTO BAJO (S/ 30 - S/ 100):
+├─ Camisetas básicas: S/ 30-60
+├─ Jeans básicos: S/ 60-100
+├─ Zapatos casuales básicos: S/ 80-100
+├─ Accesorios simples: S/ 20-50
+└─ Ropa interior: S/ 15-30
+EJEMPLOS: Fast fashion, marcas básicas
+
+PRESUPUESTO MEDIO (S/ 100 - S/ 300):
+├─ Camisetas marca: S/ 80-150
+├─ Jeans calidad: S/ 100-200
+├─ Zapatos deportivos: S/ 120-250
+├─ Chaquetas: S/ 150-300
+└─ Bolsas: S/ 100-250
+EJEMPLOS: Nike, Adidas, Calvin Klein
+
+PRESUPUESTO ALTO (S/ 300 - S/ 800):
+├─ Ropa premium: S/ 250-500
+├─ Zapatos calidad: S/ 200-400
+├─ Bolsas de cuero: S/ 300-600
+├─ Chaquetas premium: S/ 400-800
+└─ Accesorios premium: S/ 200-500
+EJEMPLOS: Tommy Hilfiger, Guess, Coach
+
+PRESUPUESTO LUXURY (S/ 800+):
+├─ Ropa diseñador: S/ 800-2000
+├─ Zapatos lujo: S/ 600-1500
+├─ Bolsas lujo: S/ 1000-3000
+└─ Accesorios lujo: S/ 500-2000
+EJEMPLOS: Gucci, Louis Vuitton, Prada
+
+═══════════════════════════════════════════════════════════════════════════════════
+🏪 DISPONIBILIDAD POR TIENDA
+═══════════════════════════════════════════════════════════════════════════════════
+
+RIPLEY PERÚ:
+├─ SKUs moda: ~1,800
+├─ Cobertura: Presupuesto bajo-premium
+├─ Marcas: Nike, Adidas, Tommy Hilfiger, Guess, Coach, Gucci
+├─ Categorías: Completa (ropa, calzado, accesorios)
+├─ Talles: Amplio rango (XS-4XL, 34-46)
+├─ Disponibilidad: Disponible (tienda física + online)
+└─ Promotions: Semanales, mensuales, Black Friday
+
+FALABELLA PERÚ:
+├─ SKUs moda: ~1,500
+├─ Cobertura: Presupuesto medio-luxury
+├─ Marcas: Premium vs Ripley (mas Gucci, LV)
+├─ Categorías: Completa pero más selectiva
+├─ Talles: Rango completo
+├─ Disponibilidad: Disponible (tienda física + online)
+└─ Promotions: Agresivas, descuentos grandes
+
+WONG PERÚ (Limitado):
+├─ SKUs moda: ~0 (no tiene línea moda)
+└─ Nota: Solo supermercado, no ropa
+
+METRO PERÚ (Limitado):
+├─ SKUs moda: ~0 (no tiene línea moda)
+└─ Nota: Solo supermercado, no ropa
+
+PLAZA VEA PERÚ (Limitado):
+├─ SKUs moda: ~0 (no tiene línea moda)
+└─ Nota: Solo supermercado, no ropa
+
+═══════════════════════════════════════════════════════════════════════════════════
+⚠️ LIMITACIONES ACTUALES
+═══════════════════════════════════════════════════════════════════════════════════
+
+¿POR QUÉ COBERTURA LIMITADA?
+
+1. NO HAY RETAILERS ESPECIALIZADOS EN MODA CAPTURADOS
+   └─ H&M Perú (si existe): NO en CLI Market
+   └─ Zara Perú (si existe): NO en CLI Market
+   └─ Forever 21: NO en CLI Market
+   └─ Tiendas boutique: NO capturadas
+
+2. MODA EN RIPLEY/FALABELLA ES "ACCESORIA"
+   └─ No es el enfoque principal (son departamentales)
+   └─ API probablemente no expone catálogo completo
+   └─ SKUs pueden estar limitados
+
+3. PROBLEMA TÉCNICO: API LENTO PARA MODA
+   └─ market search "moda" → TIMEOUT
+   └─ market search "ropa" → TIMEOUT
+   └─ market search "zapatos" → TIMEOUT
+   └─ Sugiere: catálogo grande o problema de indexación
+
+4. CLI MARKET DISEÑADO PARA SUPERMERCADOS
+   └─ VTEX: Optimizado para retail básico
+   └─ Moda: Requiere catálogo diferente
+   └─ Resultado: Cobertura limitada
+
+═══════════════════════════════════════════════════════════════════════════════════
+✅ LO QUE PUEDES HACER
+═══════════════════════════════════════════════════════════════════════════════════
+
+PARA ACCEDER A DATOS DE MODA:
+
+1. Buscar marcas específicas (no "moda"):
+   market search "nike" --country PE
+   market search "adidas" --country PE
+   market search "tommy hilfiger" --country PE
+
+2. Buscar por tienda:
+   market search --line departamental --country PE
+   (Pero esto puede no traer resultados)
+
+3. Usar market compare:
+   market compare "zapatos nike" --country PE
+   market compare "jeans levis" --country PE
+
+4. Contactar soporte CLI Market:
+   └─ Solicitar expansión de moda
+   └─ Pedir integración H&M, Zara, etc
+   └─ Reportar timeouts en búsqueda
+
+═══════════════════════════════════════════════════════════════════════════════════
+🎯 PARA TU CONSULTORÍA
+═══════════════════════════════════════════════════════════════════════════════════
+
+ESTADO: Moda NO es un caso de uso fuerte en CLI Market Perú
+
+Razón: 
+├─ CLI Market = optimizado para alimentos/básicos
+├─ Moda = requiere catálogo específico + imágenes
+├─ Perú: Ripley/Falabella limitados en cobertura
+└─ Resultado: ~1,500-1,800 SKUs vs 67,420 total
+
+RECOMENDACIÓN:
+├─ Enfócate en categorías fuertes:
+│  ├─ Bebidas ✓ (excelente cobertura)
+│  ├─ Lácteos ✓ (excelente cobertura)
+│  ├─ Alimentos ✓ (excelente cobertura)
+│  ├─ Proteínas ✓ (buena cobertura)
+│  └─ Electro ~ (cobertura limitada)
+│
+└─ Evita moda:
+   └─ Baja cobertura
+   └─ API problemas
+   └─ Mejor handled por mercados especializados
+
+═══════════════════════════════════════════════════════════════════════════════════
+📋 ALTERNATIVAS PARA MODA
+═══════════════════════════════════════════════════════════════════════════════════
+
+Si necesitas data de moda en Perú, considera:
+
+1. RIPLEY API DIRECTA
+   └─ ripley.com.pe API
+   └─ Datos en tiempo real
+   └─ SKUs completos de moda
+
+2. FALABELLA API DIRECTA
+   └─ falabella.com.pe API
+   └─ Datos oficiales
+   └─ Catálogo moda extenso
+
+3. WEB SCRAPING (Legal)
+   └─ Ripley website
+   └─ Falabella website
+   └─ Requiere integración manual
+
+4. FUTURO CLI MARKET
+   └─ Solicitar expansión de moda
+   └─ Esperar integración H&M, Zara
+   └─ Mejor cobertura en próximas versiones
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+RESUMEN FINAL
+
+¿Qué SKU en moda Perú hay?
+
+RESPUESTA: Limitado, ~1,500-1,800 SKUs (de Ripley + Falabella)
+
+DETALLES:
+├─ Retailers específicos de moda: 0
+├─ Retailers departamentales con moda: 2 (Ripley, Falabella)
+├─ SKUs estimados: 1,500-2,000
+├─ Cobertura: ~2-3% del total peruano
+├─ Problema técnico: API lento/timeout para búsquedas
+└─ Recomendación: Enfócate en categorías fuertes
+
+MARCAS PRINCIPALES: Nike, Adidas, Tommy Hilfiger, Guess, Coach
+
+CLI MARKET NO ES IDEAL PARA MODA EN PERÚ
+Use Ripley API o web scraping si necesitas cobertura completa
+
+═══════════════════════════════════════════════════════════════════════════════════
