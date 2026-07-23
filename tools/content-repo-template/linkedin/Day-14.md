@@ -35,7 +35,7 @@ PDFs, dashboards humanos, scraping frágil… pero no JSON unificado para MCP.
 
 Por eso construimos CLI Market: infraestructura de comercio para agentes.
 
-35 retailers. 22 herramientas MCP. 10 países. Open source.
+35 retailers. 22 herramientas MCP. 13 países. Open source.
 
 ¿Cuál insight te sorprende más?
 

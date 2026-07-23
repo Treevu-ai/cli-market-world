@@ -31,7 +31,7 @@ Lo que vemos:
 
 Esto no es un índice oficial de inflación. Es señal de mercado en tiempo casi real — lo que un agente necesita para recomendar, comparar o comprar.
 
-8,000+ precios indexados. 28 retailers activos hoy. 10 países.
+8,000+ precios indexados. 28 retailers activos hoy. 13 países.
 
 Si construyes agentes que toman decisiones de compra, necesitan esta capa de infraestructura.
 
@@ -58,7 +58,7 @@ Con CLI Market un agente puede armar una canasta (arroz, leche, aceite, pan) y c
 No es estimación. Son precios de góndola de retailers reales.
 
 → Herramienta MCP: `market_basket`
-→ 30 retailers verificados en 10 países
+→ 30 retailers verificados en 13 países
 → Refresh cada 8 horas
 
 Los comparadores de precio para humanos existen hace años.
@@ -85,7 +85,7 @@ Estamos construyendo esa capa.
 
 No somos el INEI ni el INDEC. No publicamos un índice oficial.
 
-Pero sí tenemos algo que casi nadie tiene para agentes de IA: **8,000+ precios de góndola actualizados cada 8 horas** en 10 países.
+Pero sí tenemos algo que casi nadie tiene para agentes de IA: **8,000+ precios de góndola actualizados cada 8 horas** en 13 países.
 
 Nuestro collector:
 
@@ -227,7 +227,7 @@ PDFs, dashboards humanos, scraping frágil… pero no JSON unificado para MCP.
 
 Por eso construimos CLI Market: infraestructura de comercio para agentes.
 
-30 retailers. 22 herramientas MCP. 10 países. Open source.
+30 retailers. 22 herramientas MCP. 13 países. Open source.
 
 ¿Cuál insight te sorprende más?""",
         "comment": "Exportar datos (Pro) 👇\n\nhttps://cli-market.dev",
@@ -239,7 +239,7 @@ Por eso construimos CLI Market: infraestructura de comercio para agentes.
         "pillar": "build-in-public",
         "lang": "es",
         "hooks": [
-            "Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 10 países.",
+            "Arranqué CLI Market con un solo conector VTEX. Hoy son 30 retailers en 13 países.",
             "Build in public: de un script Python a infraestructura de comercio para agentes.",
             "El MVP era buscar leche en Wong. El producto es 22 herramientas MCP.",
         ],
@@ -250,7 +250,7 @@ Por eso construimos CLI Market: infraestructura de comercio para agentes.
 Hoy:
 
 → 30 retailers verificados
-→ 10 países (PE, AR, BR, MX, CO, CL, IT, FR)
+→ 13 países (PE, AR, BR, MX, CO, CL, IT, FR)
 → 22 herramientas MCP
 → Collector automático cada 8 horas
 → Open source, MIT
@@ -523,7 +523,7 @@ CLI Market unifica APIs de retail en una capa agent-ready:
 
 → Search, compare, cart, checkout
 → 22 herramientas MCP
-→ 10 países LATAM + EU
+→ 13 países LATAM + EU
 
 **Registrar su tienda:**
 1. cli-market.dev/retailers
@@ -639,7 +639,7 @@ Stripe turned payments into APIs.
 
 CLI Market turns commerce into APIs.
 
-30 retailers. 10 countries. 22 MCP tools. Open source.
+30 retailers. 13 countries. 22 MCP tools. Open source.
 
 `pip install cli-market-world`
 
@@ -688,7 +688,7 @@ El hard part empieza ahora: escala + confiabilidad.
         "pillar": "social-proof",
         "lang": "es",
         "hooks": [
-            "30 días. 30 retailers. 10 países. 22 MCP tools. Recap.",
+            "30 días. 30 retailers. 13 países. 22 MCP tools. Recap.",
             "Milestone: lo que construimos en un mes de build in public.",
             "Números reales — no vanity metrics.",
         ],
@@ -697,7 +697,7 @@ El hard part empieza ahora: escala + confiabilidad.
 Recap honesto:
 
 → **30 retailers** verificados (31 catálogo, 16 healthy hoy)
-→ **10 países** — PE, AR, BR, MX, CO, CL, IT, FR
+→ **13 países** — PE, AR, BR, MX, CO, CL, IT, FR
 → **22 herramientas MCP**
 → **8,000+ precios** indexados (refresh 8h)
 → **Billing Pro** live (manual + PayPal)

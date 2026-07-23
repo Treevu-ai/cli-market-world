@@ -18,7 +18,7 @@ tags:
 
 1. **Show, don't tell:** Un agente de IA acaba de comparar precios en 30 retailers. Tardó 0,8 segundos.
 2. **Curiosity:** Ejecuté un comando en la terminal. 30 supermercados respondieron antes de soltar la tecla Enter.
-3. **Specific:** 0,8 segundos. 30 tiendas. 10 países. Un solo `pip install`.
+3. **Specific:** 0,8 segundos. 30 tiendas. 13 países. Un solo `pip install`.
 
 ## Post (copiar a LinkedIn — sin link en cuerpo)
 
@@ -32,7 +32,7 @@ Una llamada. Un JSON. Precios reales de góndola — actualizados cada 8 horas.
 
 Esto es lo que construimos con CLI Market: infraestructura de comercio para agentes de IA.
 
-→ 60 retailers (30 verificados) en 10 países
+→ 60 retailers (30 verificados) en 13 países
 → 22 herramientas MCP (buscar, comparar, carrito, checkout)
 → `pip install cli-market-world` y listo
 

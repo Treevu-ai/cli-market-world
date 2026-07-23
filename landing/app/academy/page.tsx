@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import AcademyRegisterForm from "@/components/AcademyRegisterForm";
+import { MARKET_STATS } from "@/lib/marketStats";
 
 const AUDIENCE = [
   {
@@ -131,7 +132,7 @@ export default function AcademyPage() {
                 ● LIVE · VÍA ZOOM
               </span>
               <span className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-full px-3 py-1">
-                37+ RETAILERS · 9 PAÍSES · CADA 4H
+                {MARKET_STATS.retailersVerified}+ RETAILERS · {MARKET_STATS.countries} PAÍSES · CADA {MARKET_STATS.pricesRefreshHours}H
               </span>
               <span className="text-xs font-mono text-[var(--cm-on-surface-variant)] bg-[var(--cm-surface-high)] border border-[var(--cm-outline-variant)] rounded-full px-3 py-1">
                 SOLO 20 CUPOS

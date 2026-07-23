@@ -47,7 +47,7 @@ Pero no pueden comprar ni comparar precios reales porque cada retailer es un mun
 
 Por eso construimos CLI Market:
 
-→ 60 retailers (30 verificados) en 10 países
+→ 60 retailers (30 verificados) en 13 países
 → Precios reales, refresh cada 8 horas
 → Una API, un schema, `pip install cli-market-world`
 

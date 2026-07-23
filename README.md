@@ -24,15 +24,15 @@ mcp-name: io.github.Treevu-ai/cli-market-world
 
 `market optimize "leche, arroz, aceite" --country PE` — una llamada compara toda la canasta entre 41 retailers, calcula TCO, sugiere sustitutos y genera links de acción. Falabella, Ripley, Wong, Metro no van a exponer APIs de comercio por su cuenta. CLI Market es el puente.
 
-**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **115 retailers (74 verificados activos)** en **10 países**. Un único esquema JSON listo para integrar.
+**CLI Market lo resuelve.** Un solo `pip install`. Una llamada a la API que cubre **142 retailers (99 verificados activos)** en **13 países**. Un único esquema JSON listo para integrar.
 
-- 🌍 **115 retailers (74 verificados activos) · 10 países · 4 plataformas**
-- 💰 **Más de 78,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
+- 🌍 **142 retailers (99 verificados activos) · 13 países · 4 plataformas**
+- 💰 **Más de 80,000+ precios de góndola verificados**, normalizados por kg/L, actualizados cada 4 horas
 - 💳 **Pago con PayPal + Mercado Pago + QR (Yape/Plin)** integrado
 
 #### ✨ ¿Por qué CLI Market?
 
-- 🔎 **Busca** cualquier producto en 115 retailers (74 verificados activos) de 10 países
+- 🔎 **Busca** cualquier producto en 142 retailers (99 verificados activos) de 13 países
 - 📊 **Compara** precios transfronterizos — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalizados por kg/L cuando es posible
 - 🧺 **Canasta** — compara tu carrito completo entre retailers (p. ej. Carrefour vs Jumbo vs Vea en AR)
 - 📈 **Inflación** — sigue cambios reales de precios desde la góndola, actualizados cada 4 horas; historial de hasta 12 meses para señales de *cuándo* comprar, no solo *qué*
@@ -99,15 +99,15 @@ Equipos de procurement **no** necesitan CLI Market Pro por separado. Ver [planes
 
 `market optimize "milk, rice, oil" --country PE` — one call compares your full basket across 41 retailers, calculates TCO, suggests substitutes, and generates action links. Falabella, Ripley, Wong, Metro won't expose commerce APIs on their own. CLI Market is the bridge.
 
-**CLI Market fixes that.** One `pip install`. One API call across **115 retailers (74 verified active)** in **10 countries**. One JSON schema ready to integrate.
+**CLI Market fixes that.** One `pip install`. One API call across **142 retailers (99 verified active)** in **13 countries**. One JSON schema ready to integrate.
 
-- 🌍 **115 retailers (74 verified active) · 10 countries · 4 platforms**
-- 💰 **78,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
+- 🌍 **142 retailers (99 verified active) · 13 countries · 4 platforms**
+- 💰 **80,000+ verified shelf prices**, normalized per kg/L, refreshed every 4 hours
 - 💳 **PayPal + Mercado Pago + QR (Yape/Plin)** checkout built in
 
 #### ✨ Why CLI Market?
 
-- 🔎 **Search** any product across 115 retailers (74 verified active) in 10 countries
+- 🔎 **Search** any product across 142 retailers (99 verified active) in 13 countries
 - 📊 **Compare** cross-border prices — PEN, ARS, BRL, MXN, COP, CLP, EUR, USD — normalized per kg/L where parseable
 - 🧺 **Basket** — compare your full cart across retailers (e.g. Carrefour vs Jumbo vs Vea in AR)
 - 📈 **Inflation** — track real shelf-price changes, updated every 4 hours; up to 12-month history for *when-to-buy* signals, not just *what-to-buy*

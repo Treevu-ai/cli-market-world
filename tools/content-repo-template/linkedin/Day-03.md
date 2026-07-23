@@ -38,7 +38,7 @@ AI agents can't shop in that world. They need one schema, one API, one install.
 
 That's CLI Market:
 
-→ 115 retailers (74 verified) across 10 countries
+→ 142 retailers (99 verified) across 13 countries
 → 22 MCP tools — search, compare, basket, checkout
 → 43,000+ real prices, refreshed every 8 hours
 → `pip install cli-market-world`
