@@ -20,6 +20,22 @@ TELEGRAM_RATE_LIMIT_MIN = int(os.getenv("TELEGRAM_RATE_LIMIT_MIN", "20"))
 TELEGRAM_RATE_LIMIT_WINDOW = int(os.getenv("TELEGRAM_RATE_LIMIT_WINDOW", "60"))
 TELEGRAM_RATE_LIMIT_DAY = int(os.getenv("TELEGRAM_RATE_LIMIT_DAY", "300"))
 
+
+def _parse_chat_id_set(raw: str) -> set[str]:
+    return {part.strip() for part in (raw or "").split(",") if part.strip()}
+
+
+# Optional allowlist — empty means open to any chat that passes the webhook
+# secret. Admin chats may use MARKET_API_TOKEN; everyone else must use the
+# dedicated bot-scoped key (never fall back to the platform admin token).
+TELEGRAM_ALLOWED_CHAT_IDS = _parse_chat_id_set(os.getenv("TELEGRAM_ALLOWED_CHAT_IDS", ""))
+TELEGRAM_ADMIN_CHAT_IDS = _parse_chat_id_set(os.getenv("TELEGRAM_ADMIN_CHAT_IDS", ""))
+
+_DENIED_BODY = (
+    "Este chat no está autorizado para usar el bot de CLI Market. "
+    "Si necesitás acceso, pedilo al administrador."
+)
+
 _COUNTRY_HINTS = {
     "peru": "PE", "perú": "PE",
     "colombia": "CO",
@@ -73,6 +89,24 @@ def _is_valid_telegram_secret(request: Request) -> bool:
         request.headers.get("x-telegram-bot-api-secret-token", ""),
         TELEGRAM_WEBHOOK_SECRET,
     )
+
+
+def _is_chat_allowed(chat_id: str) -> bool:
+    """True if chat may use the bot. Empty allowlist = open (no restriction)."""
+    if not TELEGRAM_ALLOWED_CHAT_IDS:
+        return True
+    return chat_id in TELEGRAM_ALLOWED_CHAT_IDS
+
+
+def _bot_token_for_chat(chat_id: str) -> str | None:
+    """Resolve API token for a Telegram chat.
+
+    Public bot traffic must use MARKET_BOT_API_TOKEN only — never the platform
+    admin MARKET_API_TOKEN, which bypasses tier/rate limits on /v1/intel/ask.
+    """
+    if chat_id in TELEGRAM_ADMIN_CHAT_IDS:
+        return os.getenv("MARKET_API_TOKEN") or os.getenv("MARKET_BOT_API_TOKEN")
+    return os.getenv("MARKET_BOT_API_TOKEN") or None
 
 
 def _follow_up_keyboard() -> dict:
@@ -143,8 +177,10 @@ async def _answer_callback_query(callback_query_id: str, text: str | None = None
     await _telegram_api("answerCallbackQuery", payload)
 
 
-async def _ask_intel(question: str, token: str) -> str:
+async def _ask_intel(question: str, token: str | None) -> str:
     """Call /v1/intel/ask and return the answer text, or a fallback message."""
+    if not token:
+        return "El bot no está configurado para consultar precios ahora."
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
     try:
         async with httpx.AsyncClient() as client_http:
@@ -166,7 +202,7 @@ async def _process_message(chat_id: str, message_id: str | None, incoming_msg: s
     """The slow work for a plain-text message: LLM call, session save, and
     editing the placeholder in place (or sending a fresh message if the
     placeholder itself failed to send)."""
-    token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
+    token = _bot_token_for_chat(chat_id)
 
     if incoming_msg.lower() in ("/start", "hola", "hi", "hello"):
         answer = (
@@ -234,7 +270,7 @@ async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
     builder = _BUTTON_QUESTIONS.get(action)
     if not builder:
         return
-    token = os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
+    token = _bot_token_for_chat(chat_id)
     answer = await _ask_intel(builder(last_query, country), token)
     await _send_telegram(chat_id, answer, reply_markup=_follow_up_keyboard())
 
@@ -267,6 +303,11 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
         if not chat_id or not message_id:
             return {"status": "no_message"}
 
+        if not _is_chat_allowed(chat_id):
+            print(f"🚫 Telegram denied (not on allowlist): {chat_id}")
+            background_tasks.add_task(_send_telegram, chat_id, _DENIED_BODY)
+            return {"status": "denied"}
+
         # Mandatory ack first — Telegram shows a perpetual loading spinner on
         # the button otherwise, regardless of what we do afterwards.
         await _answer_callback_query(callback_query_id, _BUTTON_LABELS.get(action))
@@ -289,6 +330,11 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
 
     if not incoming_msg or not chat_id:
         return {"status": "no_message"}
+
+    if not _is_chat_allowed(chat_id):
+        print(f"🚫 Telegram denied (not on allowlist): {chat_id}")
+        background_tasks.add_task(_send_telegram, chat_id, _DENIED_BODY)
+        return {"status": "denied"}
 
     check_rate_limit_sqlite(
         f"telegram:{chat_id}",

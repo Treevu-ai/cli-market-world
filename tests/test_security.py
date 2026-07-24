@@ -197,3 +197,70 @@ def test_procure_magic_token_does_not_embed_api_key(monkeypatch):
     decoded = json.loads(base64.urlsafe_b64decode(body + pad))
     assert "key" not in decoded
     assert api_key not in token
+
+
+def test_procure_subscribe_rejects_foreign_username_binding(monkeypatch):
+    from market_core import db_save_user, ensure_db_initialized
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setenv("PROCURE_MP_CHECKOUT", "1")
+    ensure_db_initialized()
+    db_save_user("victim-user", "hash", None, "victim@example.com")
+
+    r = client.post(
+        "/billing/procure-subscribe",
+        json={
+            "email": "attacker@example.com",
+            "username": "victim-user",
+            "plan": "starter",
+            "payment_method": "mercadopago",
+            "lang": "en",
+        },
+    )
+    assert r.status_code == 403
+    assert "email" in r.json()["detail"].lower()
+
+
+def test_procure_subscribe_allows_new_username(monkeypatch):
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    monkeypatch.setenv("PROCURE_MP_CHECKOUT", "1")
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_payment_email",
+        lambda **kw: {"sent": True, "to": kw["to_email"]},
+    )
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_pro_request_notify",
+        lambda **kw: {"sent": True},
+    )
+
+    async def fake_pref(total, currency, ref, **kwargs):
+        return {"checkout_url": "https://mp.test/procure-checkout", "preference_id": "pref"}
+
+    monkeypatch.setattr("market_connectors.mercadopago_payments.create_preference", fake_pref)
+
+    r = client.post(
+        "/billing/procure-subscribe",
+        json={
+            "email": "newbuyer@example.com",
+            "username": "newbuyer",
+            "plan": "starter",
+            "payment_method": "mercadopago",
+            "lang": "en",
+        },
+    )
+    assert r.status_code == 200
+
+
+def test_telegram_bot_token_does_not_fallback_to_admin_token(monkeypatch):
+    import routers.integrations.telegram as telegram
+
+    monkeypatch.delenv("MARKET_BOT_API_TOKEN", raising=False)
+    monkeypatch.setenv("MARKET_API_TOKEN", "admin-sk-token")
+
+    assert telegram._bot_token_for_chat("12345") is None
+    assert telegram._bot_token_for_chat("99999") is None
+
+    with monkeypatch.context() as m:
+        m.setattr(telegram, "TELEGRAM_ADMIN_CHAT_IDS", {"99999"})
+        assert telegram._bot_token_for_chat("99999") == "admin-sk-token"
+        assert telegram._bot_token_for_chat("12345") is None

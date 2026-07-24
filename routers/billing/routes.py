@@ -618,6 +618,39 @@ def _resolve_pro_username(
     return safe or f"user-{uuid.uuid4().hex[:8]}"
 
 
+def _assert_username_email_binding(
+    email: str,
+    username: str,
+    *,
+    auth_username: str = "",
+    lang: str = "en",
+) -> None:
+    """Block binding a checkout to an existing account unless caller owns it."""
+    username = username.strip()
+    if auth_username:
+        if username != auth_username.strip():
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "username must match the authenticated account"
+                    if lang != "es"
+                    else "el usuario debe coincidir con la cuenta autenticada"
+                ),
+            )
+        return
+
+    account_email = (db_get_user_email(username) or "").strip().lower()
+    if account_email and account_email != email.strip().lower():
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "email does not match the account for this username"
+                if lang != "es"
+                else "el email no coincide con la cuenta de este usuario"
+            ),
+        )
+
+
 async def _start_procure_mercadopago_checkout(
     username: str,
     email: str,
@@ -1253,6 +1286,12 @@ async def billing_procure_subscribe(body: dict, authorization: str | None = Head
             email,
             body_username=(body.get("username") or ""),
             auth_username=auth_user,
+        )
+        _assert_username_email_binding(
+            email,
+            username,
+            auth_username=auth_user,
+            lang=lang,
         )
 
         if not force and method != "paypal":
