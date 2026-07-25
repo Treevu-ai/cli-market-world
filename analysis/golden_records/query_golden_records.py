@@ -4,7 +4,6 @@ Script para consultar golden records en CLI Market
 """
 
 import psycopg2
-from os import environ
 
 db_url = "postgresql://postgres:[REVOKED — old Railway password, project deleted]@zephyr.proxy.rlwy.net:47133/railway"
 

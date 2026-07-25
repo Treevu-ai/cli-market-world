@@ -61,7 +61,7 @@ try:
     print(f"   Items retornados: {len(results)}")
     
     if results:
-        print(f"\n   Sample result:")
+        print("\n   Sample result:")
         print(json.dumps(results[0], indent=2))
         
         # Contar golden records

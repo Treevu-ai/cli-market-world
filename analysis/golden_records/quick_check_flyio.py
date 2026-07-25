@@ -27,10 +27,10 @@ try:
         
         if results:
             item = results[0]
-            print(f'\nPrimer item:')
+            print('\nPrimer item:')
             print(json.dumps(item, indent=2)[:500])
             
-            print(f'\nCampos disponibles:')
+            print('\nCampos disponibles:')
             print(list(item.keys()))
             
             # Buscar campos de golden record
