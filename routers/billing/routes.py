@@ -18,6 +18,7 @@ from market_core import (
     db_create_subscription_request,
     db_find_subscription_request,
     db_get_user_email,
+    db_get_users,
     db_mark_subscription_request_emailed,
     db_recent_subscription_request,
     db_save_billing_pending,
@@ -616,6 +617,48 @@ def _resolve_pro_username(
     local = email.split("@")[0].lower()
     safe = re.sub(r"[^a-z0-9_-]", "", local)[:32]
     return safe or f"user-{uuid.uuid4().hex[:8]}"
+
+
+def _assert_username_email_binding(
+    email: str,
+    username: str,
+    *,
+    auth_username: str = "",
+    lang: str = "en",
+) -> None:
+    """Block binding a checkout to an existing account unless caller owns it."""
+    username = username.strip()
+    if auth_username:
+        if username != auth_username.strip():
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "username must match the authenticated account"
+                    if lang != "es"
+                    else "el usuario debe coincidir con la cuenta autenticada"
+                ),
+            )
+        return
+
+    # Check both sources of truth: db_get_user_email() only reflects a prior
+    # subscription_requests row, so a victim who registered an account
+    # (app_users) but never subscribed before would read back as None there
+    # and the check below would silently no-op -- exactly the ATO this guard
+    # exists to block. app_users is the real account record; check it too.
+    account_email = (db_get_user_email(username) or "").strip().lower()
+    real_account_email = (db_get_users().get(username, {}).get("email") or "").strip().lower()
+    normalized_email = email.strip().lower()
+    if (account_email and account_email != normalized_email) or (
+        real_account_email and real_account_email != normalized_email
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "email does not match the account for this username"
+                if lang != "es"
+                else "el email no coincide con la cuenta de este usuario"
+            ),
+        )
 
 
 async def _start_procure_mercadopago_checkout(
@@ -1253,6 +1296,12 @@ async def billing_procure_subscribe(body: dict, authorization: str | None = Head
             email,
             body_username=(body.get("username") or ""),
             auth_username=auth_user,
+        )
+        _assert_username_email_binding(
+            email,
+            username,
+            auth_username=auth_user,
+            lang=lang,
         )
 
         if not force and method != "paypal":

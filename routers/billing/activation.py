@@ -479,7 +479,7 @@ def _activate_procure_from_request(request_id: str, *, source: str, force: bool 
         pass
 
     method = _pro_payment_method_from_request(req)
-    email = (req.get("email") or "").strip() or db_get_user_email(username) or ""
+    email = db_get_user_email(username) or (req.get("email") or "").strip()
     lang = "es"
     _append_procure_activation_email_actions(
         actions,
