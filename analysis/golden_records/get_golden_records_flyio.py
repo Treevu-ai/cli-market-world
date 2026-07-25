@@ -37,7 +37,7 @@ categories = ["bebidas", "dairy", "lácteos", "alimentos", "proteínas", "fresco
 total_skus = 0
 golden_records = 0
 
-print(f"\n🔍 Buscando por categoría (timeout 30s por búsqueda):")
+print("\n🔍 Buscando por categoría (timeout 30s por búsqueda):")
 
 for cat in categories:
     try:
@@ -65,14 +65,14 @@ for cat in categories:
     except Exception as e:
         print(f"   {cat:15} → Error: {str(e)[:40]}")
 
-print(f"\n📈 TOTALES ACUMULADOS:")
+print("\n📈 TOTALES ACUMULADOS:")
 print(f"   Total SKUs: ~{total_skus:,}")
 print(f"   Golden Records: ~{golden_records:,}")
 if total_skus > 0:
     print(f"   Cobertura: {(golden_records/total_skus*100):.1f}%")
 
 # Hacer búsqueda de muestra para ver estructura
-print(f"\n📋 ESTRUCTURA DE DATOS (muestra):")
+print("\n📋 ESTRUCTURA DE DATOS (muestra):")
 try:
     resp = requests.post(
         f"{api_url}/products/search",

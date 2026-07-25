@@ -15,12 +15,10 @@ export default function Pricing() {
       priceMonthly: "9",
       priceAnnual: "9",
       features: [
-        "Acceso limitado a base de SKUs",
-        "Consultas básicas por WhatsApp (150/mes)",
-        "Monitoreo de hasta 2 Competidores",
+        "Acceso a búsqueda y comparación de precios",
+        "Consultas por WhatsApp",
         "Refresco de datos diario (24H)",
-        "Soporte de comunidad por correo",
-        "Reportes básicos en PDF"
+        "Soporte de comunidad por correo"
       ],
       ctaText: "Iniciar Starter Gratis",
       highlighted: false,
@@ -36,7 +34,6 @@ export default function Pricing() {
         "Resolución de Entidades ilimitada",
         "Procure Copilot integrado",
         "Consultas de WhatsApp ilimitadas",
-        "Monitoreo de hasta 10 Competidores",
         "Refresco de datos de 4 Horas",
         "Acceso API REST completo (Sandbox)",
         "Soporte prioritario por WhatsApp"
@@ -55,7 +52,7 @@ export default function Pricing() {
         "Data Moat completo regional",
         "Reportes especializados Price Pulse",
         "Procure Copilot multilocal",
-        "Competidores ilimitados",
+        "Acceso sin restricción al catálogo completo",
         "Refresco en tiempo real custom",
         "Acceso API Dedicada de alto caudal",
         "Soporte de un Analista Dedicado",

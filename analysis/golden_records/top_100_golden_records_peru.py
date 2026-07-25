@@ -5,7 +5,6 @@ Genera lista de productos más relevantes en Perú
 """
 
 import subprocess
-import json
 import re
 from collections import defaultdict
 
@@ -325,13 +324,13 @@ print(f"\nPrecio promedio: S/ {avg_price:.2f}")
 print(f"Precio mínimo: S/ {min_price:.2f}")
 print(f"Precio máximo: S/ {max_price:.2f}")
 
-print(f"\nTiendas principales (por frecuencia):")
-print(f"  • Wong: Productos premium")
-print(f"  • Metro: Productos volumen")
-print(f"  • Plaza Vea: Productos volumen")
-print(f"  • Promart: Construcción y hogar")
-print(f"  • Ripley: Electro y departamental")
-print(f"  • Falabella: Electro y departamental")
+print("\nTiendas principales (por frecuencia):")
+print("  • Wong: Productos premium")
+print("  • Metro: Productos volumen")
+print("  • Plaza Vea: Productos volumen")
+print("  • Promart: Construcción y hogar")
+print("  • Ripley: Electro y departamental")
+print("  • Falabella: Electro y departamental")
 
 print("\n" + "="*80)
 print("✅ TOP 100 GOLDEN RECORDS PERUANOS - LISTO PARA USAR")

@@ -4,7 +4,6 @@ Consulta golden records específicos de Perú en CLI Market
 """
 
 import subprocess
-import json
 import re
 
 print("="*70)
@@ -66,19 +65,19 @@ for query, label in categories:
                 print(f"      ✓ Encontrados: ~{count} SKUs")
                 total_pe_skus += count
             else:
-                print(f"      ✓ Búsqueda procesada")
+                print("      ✓ Búsqueda procesada")
         else:
-            print(f"      ✓ Búsqueda procesada")
+            print("      ✓ Búsqueda procesada")
             
     except subprocess.TimeoutExpired:
-        print(f"      ⚠️  Timeout - búsqueda lenta")
+        print("      ⚠️  Timeout - búsqueda lenta")
     except Exception as e:
         print(f"      ✗ Error: {str(e)[:50]}")
 
-print(f"\n3. Estimación de SKUs peruanos...")
+print("\n3. Estimación de SKUs peruanos...")
 
 # Datos de mercado de Perú
-print(f"""
+print("""
    Tiendas en Perú: 7
    ├─ Wong (Premium)
    ├─ Metro (Volumen)

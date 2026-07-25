@@ -101,11 +101,11 @@ export default function Hero() {
                   </div>
                   <div className="flex items-center">
                     <Check className="mr-2 h-4 w-4 text-[#bef264] stroke-[3]" />
-                    <span>Precisión del 99.1%</span>
+                    <span>Refresco de góndola cada 4h</span>
                   </div>
                   <div className="flex items-center">
                     <Check className="mr-2 h-4 w-4 text-[#bef264] stroke-[3]" />
-                    <span>Multipaís (9 Países)</span>
+                    <span>Multipaís (13 Países)</span>
                   </div>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function Hero() {
                     <div className="text-xs font-bold font-mono tracking-wider text-[#bef264] uppercase">CLI Market Bot</div>
                     <div className="text-[9px] text-white/50 flex items-center font-mono">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#bef264] animate-pulse mr-1.5"></span>
-                      En línea • Analista AI
+                      En línea • Bot de Precios
                     </div>
                   </div>
                   
@@ -168,7 +168,7 @@ export default function Hero() {
                       className="self-end max-w-[85%] bg-[#056162]/90 text-white p-3 rounded-lg rounded-tr-none border border-[#056162] text-left relative shadow-lg"
                     >
                       <p className="text-[11px] leading-relaxed">
-                        ¿Cuál es la tendencia del precio del café en Lima esta semana?
+                        /buscar cafe soluble 170g
                       </p>
                       <span className="block text-[8px] text-white/40 text-right mt-1 font-mono">14:52 ✓✓</span>
                     </motion.div>
@@ -181,7 +181,7 @@ export default function Hero() {
                       animate={{ opacity: 1, y: 0 }}
                       className="self-start bg-zinc-900 text-white/50 border border-white/5 px-3 py-2 rounded-lg rounded-tl-none flex items-center space-x-1.5"
                     >
-                      <span className="text-[10px] font-mono italic">Analista procesando góndola</span>
+                      <span className="text-[10px] font-mono italic">Buscando en la góndola</span>
                       <span className="flex space-x-1">
                         <span className="h-1 w-1 rounded-full bg-[#bef264] animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="h-1 w-1 rounded-full bg-[#bef264] animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -199,12 +199,12 @@ export default function Hero() {
                       className="self-start max-w-[95%] bg-[#262d31] text-white/90 p-3 rounded-lg rounded-tl-none border border-white/5 text-left shadow-xl"
                     >
                       <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-2">
-                        <span className="text-[9px] font-bold text-[#bef264] font-mono uppercase tracking-widest">📊 Reporte de Categoría</span>
-                        <span className="bg-[#bef264]/20 text-[#bef264] text-[8px] font-mono px-1 rounded uppercase border border-[#bef264]/30 font-bold">Realtime</span>
+                        <span className="text-[9px] font-bold text-[#bef264] font-mono uppercase tracking-widest">📊 Comparación de Precios</span>
+                        <span className="bg-[#bef264]/20 text-[#bef264] text-[8px] font-mono px-1 rounded uppercase border border-[#bef264]/30 font-bold">4H</span>
                       </div>
-                      
+
                       <p className="text-[10px] text-white/70 mb-2 leading-normal">
-                        La categoría <strong className="text-white">Café Soluble</strong> subió un <strong className="text-[#bef264]">4.1%</strong> en promedio. Wong lidera el precio alto.
+                        Encontré <strong className="text-white">2 coincidencias</strong> de Café Soluble cerca de ti. Wong tiene el precio más alto hoy.
                       </p>
 
                       {/* Mock pricing Table inside WhatsApp */}
@@ -227,7 +227,7 @@ export default function Hero() {
                       </div>
 
                       <div className="bg-[#bef264]/10 border-l-2 border-[#bef264] p-1.5 rounded-sm text-[9px] text-[#bef264] leading-tight font-mono">
-                        💡 **Gap del 10.8%** en Nescafé Gold. Plaza Vea lidera en competitividad de precio hoy.
+                        💡 Plaza Vea tiene el precio más bajo en Nescafé Gold hoy.
                       </div>
 
                       <span className="block text-[8px] text-white/40 text-right mt-1.5 font-mono">14:52</span>
