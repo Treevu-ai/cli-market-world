@@ -81,6 +81,7 @@ def test_callback_query_answers_immediately(mock_api):
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
+@patch.dict("os.environ", {"MARKET_BOT_API_TOKEN": "test-bot-api-token"})
 @patch.object(telegram, "_answer_callback_query", new_callable=AsyncMock)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
 @patch("httpx.AsyncClient.post")
@@ -89,7 +90,13 @@ def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_send,
     (last_query/last_country), not require the user to type the product
     name again. The result must be a NEW message (_send_telegram), not an
     edit of the original — editing in place meant a second button press
-    silently erased the first button's answer (reported live 2026-07-20)."""
+    silently erased the first button's answer (reported live 2026-07-20).
+
+    MARKET_BOT_API_TOKEN must be set here: since the ATO/token-fallback fix,
+    a chat not on TELEGRAM_ADMIN_CHAT_IDS only gets a token via that env var
+    (never MARKET_API_TOKEN) -- without it, _ask_intel short-circuits to the
+    "not configured" fallback and never reaches the mocked httpx post this
+    test asserts on."""
     _ensure_messenger_sessions_table()
     update_messenger_session(
         "70002", context="prior turn", last_query="nescafe", last_country="PE"

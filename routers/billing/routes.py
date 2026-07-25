@@ -18,6 +18,7 @@ from market_core import (
     db_create_subscription_request,
     db_find_subscription_request,
     db_get_user_email,
+    db_get_users,
     db_mark_subscription_request_emailed,
     db_recent_subscription_request,
     db_save_billing_pending,
@@ -639,8 +640,17 @@ def _assert_username_email_binding(
             )
         return
 
+    # Check both sources of truth: db_get_user_email() only reflects a prior
+    # subscription_requests row, so a victim who registered an account
+    # (app_users) but never subscribed before would read back as None there
+    # and the check below would silently no-op -- exactly the ATO this guard
+    # exists to block. app_users is the real account record; check it too.
     account_email = (db_get_user_email(username) or "").strip().lower()
-    if account_email and account_email != email.strip().lower():
+    real_account_email = (db_get_users().get(username, {}).get("email") or "").strip().lower()
+    normalized_email = email.strip().lower()
+    if (account_email and account_email != normalized_email) or (
+        real_account_email and real_account_email != normalized_email
+    ):
         raise HTTPException(
             status_code=403,
             detail=(
