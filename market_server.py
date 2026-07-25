@@ -27,10 +27,8 @@ import tomllib
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from starlette.requests import Request
 
 from market_core import (
     COUNTRIES,
@@ -228,54 +226,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-ID", "X-Session-ID", "X-Country"],
 )
-
-# Core intel routes (cli-market-core <1.11.4) omit Depends(_v1_auth). Gate here until pin bumps.
-# Exact-path entries below are currently also protected by a shadowing world-repo
-# route (e.g. routers/intel.py, routers/search.py) that FastAPI matches first —
-# listed explicitly anyway so the gate doesn't depend on router registration order.
-_CORE_INTEL_AUTH_PATHS = frozenset({
-    "/v1/intel/price-risk",
-    "/v1/intel/inflation-report",
-    "/v1/intel/procurement-signal",
-    "/v1/intel/regulatory",
-    "/v1/moat/confidence",
-    "/v1/intel/affordability",
-    "/v1/intel/alerts",
-    "/v1/intel/informal-signal",
-    "/v1/intel/promo-detector",
-    "/v1/intel/retailer-scorecard",
-    "/v1/intel/andean-panel",
-    "/v1/basket/compare",
-    "/v1/products/substitutes",
-    "/v1/basket/tco",
-    "/v1/ecosystem/launches",
-    "/v1/quality/scores",
-    "/v1/health/slas",
-    "/v1/health/slas-summary",
-})
-
-# GET /v1/receipts/{receipt_id} returns username + image_url + full OCR line
-# items for any guessable 8-hex-char id, with no ownership check in
-# cli-market-core — gate the whole subtree (POST /submit and GET list already
-# carry their own Depends(_v1_auth), so this is redundant-but-harmless there).
-_CORE_INTEL_AUTH_PREFIXES = ("/v1/receipts/",)
-
-
-@app.middleware("http")
-async def core_intel_api_key_gate(request: Request, call_next):
-    if request.method == "OPTIONS":
-        # Let CORSMiddleware answer preflight — this middleware is registered
-        # after CORSMiddleware, which makes it the outer layer and would
-        # otherwise 401 preflight requests before CORS gets to respond.
-        return await call_next(request)
-    path = request.url.path.rstrip("/") or "/"
-    if path in _CORE_INTEL_AUTH_PATHS or path.startswith(_CORE_INTEL_AUTH_PREFIXES):
-        try:
-            require_api_key(request.headers.get("authorization"))
-        except HTTPException as exc:
-            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-    return await call_next(request)
-
 
 # ── Routers ──────────────────────────────────────────────────────────────────
 
