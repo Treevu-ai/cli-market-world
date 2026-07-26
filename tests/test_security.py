@@ -264,3 +264,18 @@ def test_telegram_bot_token_does_not_fallback_to_admin_token(monkeypatch):
         m.setattr(telegram, "TELEGRAM_ADMIN_CHAT_IDS", {"99999"})
         assert telegram._bot_token_for_chat("99999") == "admin-sk-token"
         assert telegram._bot_token_for_chat("12345") is None
+
+
+def test_whatsapp_bot_token_does_not_fallback_to_admin_token(monkeypatch):
+    import routers.integrations.whatsapp as whatsapp
+
+    monkeypatch.delenv("MARKET_BOT_API_TOKEN", raising=False)
+    monkeypatch.setenv("MARKET_API_TOKEN", "admin-sk-token")
+
+    assert whatsapp._bot_token_for_sender("whatsapp:+15550001111") is None
+    assert whatsapp._bot_token_for_sender("whatsapp:+15551234567") is None
+
+    with monkeypatch.context() as m:
+        m.setattr(whatsapp, "WHATSAPP_ADMIN_NUMBERS", {"whatsapp:+15551234567"})
+        assert whatsapp._bot_token_for_sender("whatsapp:+15551234567") == "admin-sk-token"
+        assert whatsapp._bot_token_for_sender("whatsapp:+15550001111") is None

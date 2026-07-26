@@ -90,6 +90,17 @@ def _is_sender_allowed(sender: str) -> bool:
     return _normalize_whatsapp_number(sender) in WHATSAPP_ALLOWED_NUMBERS
 
 
+def _bot_token_for_sender(sender: str) -> str | None:
+    """Resolve API token for a WhatsApp sender.
+
+    Public bot traffic must use MARKET_BOT_API_TOKEN only — never the platform
+    admin MARKET_API_TOKEN, which bypasses tier/rate limits on /v1/intel/ask.
+    """
+    if _normalize_whatsapp_number(sender) in WHATSAPP_ADMIN_NUMBERS:
+        return os.getenv("MARKET_API_TOKEN") or os.getenv("MARKET_BOT_API_TOKEN")
+    return os.getenv("MARKET_BOT_API_TOKEN") or None
+
+
 def _send_twilio_text(to: str, body: str) -> None:
     twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     msg = twilio_client.messages.create(
@@ -184,13 +195,9 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
 
     # Puente hacia la lógica de la API
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
-    is_admin_sender = _normalize_whatsapp_number(sender) in WHATSAPP_ADMIN_NUMBERS
-    token = (
-        os.getenv("MARKET_API_TOKEN") if is_admin_sender
-        else os.getenv("MARKET_BOT_API_TOKEN", os.getenv("MARKET_API_TOKEN"))
-    )
+    token = _bot_token_for_sender(sender)
     if not token:
-        print(f"❌ WhatsApp: no MARKET_BOT_API_TOKEN/MARKET_API_TOKEN for {sender}")
+        print(f"❌ WhatsApp: no MARKET_BOT_API_TOKEN for {sender}")
 
     answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
 
