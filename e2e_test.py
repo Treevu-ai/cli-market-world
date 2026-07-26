@@ -5,6 +5,12 @@ import sys, os, time, threading, tempfile, shutil
 # ── Use temp dir to avoid lock conflicts ──
 TEST_DIR = tempfile.mkdtemp(prefix="market_e2e_")
 os.environ["MARKET_DATA_DIR"] = TEST_DIR
+# market_core.market_core.API is read from this env var once at import time
+# and used directly by api()/cli_api() — setting `market_cli.API = ...` after
+# import has zero effect (it only rebinds market_cli's own module attribute,
+# a different name market_core.api() never reads). Must be set before the
+# first `import market_core` (transitively via market_cli/market_server below).
+os.environ["MARKET_API_URL"] = "http://127.0.0.1:8767"
 
 print(f"=== Starting server (data: {TEST_DIR}) ===")
 import uvicorn
@@ -12,19 +18,25 @@ def serve():
     uvicorn.run("market_server:app", host="127.0.0.1", port=8767, log_level="error")
 t = threading.Thread(target=serve, daemon=True)
 t.start()
-time.sleep(3)
 
 import httpx
-try:
-    r = httpx.get("http://127.0.0.1:8767/", timeout=5)
-    print(f"  Server: {r.json()}")
-except httpx.ConnectError:
-    print("  Server: FAIL (could not connect)")
+# Poll instead of a fixed sleep — cold-start time grows with the store
+# catalog (DB init/migrations scale with row count), so a fixed delay goes
+# stale as the catalog grows. 355 stores took ~7s on a dev machine.
+r = None
+for _ in range(30):
+    try:
+        r = httpx.get("http://127.0.0.1:8767/", timeout=2)
+        break
+    except httpx.TransportError:
+        time.sleep(1)
+if r is None:
+    print("  Server: FAIL (could not connect after 30s)")
     shutil.rmtree(TEST_DIR, ignore_errors=True)
     sys.exit(1)
+print(f"  Server: {r.json()}")
 
 import market_cli
-market_cli.API = "http://127.0.0.1:8767"
 
 session = market_cli.SESSION_FILE
 if session.exists():
@@ -59,14 +71,14 @@ test("lines", market_cli.cmd_lines, Namespace())
 test("search celular --line electro", market_cli.cmd_search,
      Namespace(query="celular", store=None, country=None, line="electro", limit=2, page=1, json=False))
 test("compare leche --country PE", market_cli.cmd_compare,
-     Namespace(query="leche", country="PE", line=None, limit=3, json=False))
+     Namespace(query="leche", store=None, country="PE", line=None, limit=3, json=False))
 test("checkout (empty cart)", market_cli.cmd_checkout,
      Namespace(payment="yape"), expect_ok=False)
 
 print("\n=== MCP Agent Flow ===")
-import market_mcp
-print(f"  Tools registered: {len(market_mcp.TOOLS)}")
-for t in market_mcp.TOOLS:
+from market_core.market_mcp_registry import TOOLS
+print(f"  Tools registered: {len(TOOLS)}")
+for t in TOOLS:
     print(f"  · {t['name']}: {t['description'][:85]}")
 
 print("\n=== Config verification ===")
