@@ -200,7 +200,7 @@ WELCOME_BANNER_EN = """\n[#00FF88]  ╭─────────────�
 
 def welcome_banner():
     is_en = get_lang() == "en"
-    n_countries = len(MS_COUNTRIES)
+    n_countries = MS_COUNTRIES
     stats = (
         f"[#00FF88]>[/] {RETAILERS_VERIFIED} retailers    "
         f"[#00FF88]>[/] {n_countries} {'countries' if is_en else 'países'}    "

@@ -1,6 +1,6 @@
 # Contributing to CLI Market
 
-Thanks for your interest in contributing to CLI Market — 142 retailers indexed, 99 verified active, 13 countries, open source.
+Thanks for your interest in contributing to CLI Market — 355 retailers indexed, 320 verified active, 21 countries, open source.
 
 ## How to contribute
 
