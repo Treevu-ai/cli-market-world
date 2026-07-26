@@ -1,5 +1,5 @@
 # PyPI pin — update after each cli-market-core release
-cli-market-core==1.11.84
+cli-market-core==1.11.85
 
 # Semantic moat — Golden Record persistence (SQLite dev / Postgres prod).
 cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@829b15a926a8a2022c38be1b271b662f81302551
