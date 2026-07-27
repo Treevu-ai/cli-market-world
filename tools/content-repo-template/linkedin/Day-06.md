@@ -50,7 +50,7 @@ Un agente con primitives claras devuelve JSON verificable.
 
 Eso es lo que publicamos en MCP: schemas estrictos, descripciones accionables, respuestas minificadas (85% menos tokens vs HTML crudo).
 
-355 retailers (320 verified). 21 países. 43K+ precios reales.
+360 retailers (325 verified). 21 países. 43K+ precios reales.
 
 Un `pip install`. Un servidor MCP. Listo para Cursor, Claude Desktop, o tu propio runtime.
 

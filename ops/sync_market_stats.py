@@ -216,6 +216,20 @@ def write_canasta_taxonomy_data() -> None:
         print("SKIP cli-market-index canasta_data.py (repo not found beside cli-market-world)", file=sys.stderr)
         return
     out.write_text(_canasta_taxonomy_data_py(), encoding="utf-8")
+    # This generator's own string-building doesn't match cli-market-index's
+    # ruff config (nested-dict indent style differs) -- every prior sync ran
+    # `ruff format` by hand afterward as a separate manual step, which is
+    # exactly the kind of thing that gets forgotten (confirmed 2026-07-27:
+    # a later re-run of THIS script silently re-broke a same-day manual
+    # ruff-format fix, since the generator writes its own style unconditionally
+    # every time and nothing re-formatted after). Run ruff format here so the
+    # output is always correctly formatted regardless of who runs this or when.
+    try:
+        subprocess.run(["ruff", "format", str(out)], check=True, capture_output=True)
+    except FileNotFoundError:
+        print(f"WARNING: ruff not found on PATH -- {out} may not match cli-market-index's format config", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"WARNING: ruff format failed on {out}: {e.stderr.decode(errors='replace')}", file=sys.stderr)
     print(f"Wrote {out}")
 
 _BUNDLE_PREFIXES = ("[Shop] ", "[Intel] ", "[Account] ", "[Advanced] ", "[Admin] ")
