@@ -609,6 +609,8 @@ export const MARKET_STATS = {{
   mcpBundles: {json.dumps(bundles, ensure_ascii=False)},
   indicatorsCount: {s.INDICATORS_COUNT},
   goldenLinkagePct: {s.GOLDEN_LINKAGE_PCT},
+  goldenRecordsCount: {s.GOLDEN_RECORDS_COUNT},
+  goldenRecordsLabel: "{s.GOLDEN_RECORDS_LABEL}",
   enrichmentSourcesLabel: "{s.ENRICHMENT_SOURCES_LABEL}",
   pricesVerifiedLabel: "{s.PRICES_VERIFIED_LABEL}",
   pricesRefreshHours: {s.PRICES_REFRESH_HOURS},

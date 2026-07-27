@@ -150,13 +150,8 @@ export default function SecretSauce() {
           {/* KPI 2 */}
           <ScrollReveal delay={0.15} duration={0.8} className="w-full">
             <div className="bg-white/5 border border-white/10 p-6 rounded-sm text-center hover:border-[#bef264]/30 transition-colors h-full flex flex-col justify-center">
-              {/* TODO: "Golden Records" count has no canonical source in
-                  market_core/market_stats.py (only GOLDEN_LINKAGE_PCT, a
-                  percentage, exists) -- left unverified 2026-07-27, don't
-                  assume this is current without pulling a real index_products
-                  count first. */}
               <div className="font-mono text-3xl sm:text-4xl font-extrabold text-[#bef264]">
-                97k+
+                29,000+
               </div>
               <div className="mt-2 text-xs sm:text-sm font-semibold text-white font-sans">
                 Golden Records
