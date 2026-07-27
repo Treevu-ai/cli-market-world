@@ -433,6 +433,58 @@ def _apply_canonical_copy_patches(text: str) -> str:
         f"B1[{s.PIP_INSTALL_CMD}]",
         out,
     )
+    # academy-site/index.html (plain static HTML, deployed to
+    # academy.cli-market.dev via a SEPARATE Cloudflare Pages project from the
+    # Next.js `landing/` app -- found stale 2026-07-27, user-reported: the
+    # hardcoded stat marquee had never been wired into this sync at all,
+    # last touched 2026-07-21 and showing numbers from even before that
+    # (40 verified / 82 in catalog vs. the real 320+/355+). Two occurrences
+    # (desktop + mobile marquee duplicate the same markup).
+    out = re.sub(
+        r'(<span class="val">)\d+(</span><span class="meta">retailers verificados)',
+        rf"\g<1>{s.RETAILERS_VERIFIED}\g<2>",
+        out,
+    )
+    out = re.sub(
+        r'(<span class="val">)\d+(</span><span class="meta">en catálogo)',
+        rf"\g<1>{s.RETAILERS_DEFINED}\g<2>",
+        out,
+    )
+    out = re.sub(
+        r'(<span class="val">)[\d–\-KkM+.,]+(</span><span class="meta">precios indexados)',
+        rf"\g<1>{s.PRICES_VERIFIED_LABEL}\g<2>",
+        out,
+    )
+    out = re.sub(
+        r"más de \d+ tiendas online en \d+ países",
+        f"más de {s.RETAILERS_VERIFIED} tiendas online en {s.COUNTRIES} países",
+        out,
+    )
+    # Second stat widget on the same page: a JS-animated counter using
+    # data-end (bare int) + data-suffix, not prose text -- same 3 metrics,
+    # different markup, so needs its own patch keyed on the following
+    # <div class="label"> text to know which stat each data-end belongs to.
+    # PRICES_VERIFIED_LABEL is "110,000+" (comma + plus, not a bare int) --
+    # derive the K-rounded lead digits from it since the label says "orden
+    # de magnitud" (order of magnitude), matching the existing K+ suffix.
+    _price_k_match = re.search(r"([\d,]+)", s.PRICES_VERIFIED_LABEL)
+    if _price_k_match:
+        price_k = int(_price_k_match.group(1).replace(",", "")) // 1000
+        out = re.sub(
+            r'(data-counter data-end=")\d+("\s+data-suffix="K\+"\s+data-prefix="">0</div>\s*<div class="label">Precios indexados)',
+            rf"\g<1>{price_k}\g<2>",
+            out,
+        )
+    out = re.sub(
+        r'(data-counter data-end=")\d+("\s+data-suffix=""\s+data-prefix="">0</div>\s*<div class="label">Retailers verificados)',
+        rf"\g<1>{s.RETAILERS_VERIFIED}\g<2>",
+        out,
+    )
+    out = re.sub(
+        r'(data-counter data-end=")\d+("\s+data-suffix=""\s+data-prefix="">0</div>\s*<div class="label">En catálogo)',
+        rf"\g<1>{s.RETAILERS_DEFINED}\g<2>",
+        out,
+    )
     return out
 
 
@@ -447,6 +499,7 @@ _MARKETING_COPY_FILES = (
     "ops/generate_linkedin_days.py",
     "ops/DEPLOYMENT_MONITORING_DAILY_COMMANDS.md",
     "ops/PRICING-CHANGE-CHECKLIST.md",
+    "academy-site/index.html",
 )
 
 
