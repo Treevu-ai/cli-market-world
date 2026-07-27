@@ -24,7 +24,7 @@ def two_test_stores(monkeypatch):
         "store_b": {"name": "Store B", "currency": "PEN", "country": "PE", "line": "supermercados"},
     }
     monkeypatch.setattr(search_mod, "STORES", stores)
-    monkeypatch.setattr(search_mod, "require_api_key", lambda auth: "test-user")
+    monkeypatch.setattr(search_mod, "require_pro", lambda auth: "test-user")
     return stores
 
 

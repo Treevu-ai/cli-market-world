@@ -17,7 +17,7 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel
 
 from market_core import db_get_orders
-from server_deps import require_user
+from server_deps import require_pro, require_user
 
 router = APIRouter(tags=["agent"])
 
@@ -54,6 +54,7 @@ async def agent_ask(body: AskRequest, authorization: str | None = Header(None)):
     Action vocabulary: search, reorder, compare, cart, checkout.
     The MCP server uses this for chat-style intent dispatch.
     """
+    require_pro(authorization)
     prompt = body.prompt.lower().strip()
     if any(w in prompt for w in ("compra", "comprar", "agregar", "add")):
         words = re.sub(r"[^a-záéíóúñ ]", "", prompt).split()

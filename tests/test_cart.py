@@ -28,6 +28,12 @@ _ITEM = {
 @pytest.fixture(autouse=True)
 def clean_cart(monkeypatch):
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
+    # /cart/add, /cart, /cart/update now require_pro — "admin" only bypasses
+    # via is_platform_admin() when MARKET_API_TOKEN is a real env var
+    # (production), not in tests. See AGENTS.md "Tier gating de tools MCP".
+    import market_billing
+
+    market_billing.db_set_subscription("admin", "pro")
     db = get_db()
     try:
         db.execute("DELETE FROM carts")

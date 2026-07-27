@@ -12,7 +12,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from market_core import FX_PEN_PER_UNIT, convert_currency, get_db
-from server_deps import require_user
+from server_deps import require_pro
 
 router = APIRouter(tags=["misc"])
 
@@ -22,7 +22,7 @@ router = APIRouter(tags=["misc"])
 @router.post("/favorites")
 def favorites(body: dict, authorization: str | None = Header(None)):
     """Manage favorite products. action ∈ {'list', 'add', 'remove'}."""
-    username = require_user(authorization)
+    username = require_pro(authorization)
     action = body.get("action", "list")
     db = get_db()
     if action == "add":

@@ -567,6 +567,102 @@ def test_wave6_and_brand_monitor_tools_listed_and_gated_pro():
     assert new_tools <= _PRO_TOOLS
 
 
+# ── Full tier-gating audit fix (2026-07-27) ──────────────────────────────────
+#
+# A full audit of all 65 tools found 16 labeled [Pro]/[Starter] whose backend
+# endpoint didn't actually enforce it (aspirational label only). 9 are backed
+# by cli-market-core (fixed via _PRE_CHECK_TIER, same as wave 5/6); 7 are
+# world-native (fixed at the source with require_pro in their own router).
+
+@pytest.mark.parametrize(
+    "tool_name,args",
+    [
+        ("market_optimize_purchase", {"items": [{"name": "leche", "qty": 1}]}),
+        ("market_procurement_signal", {}),
+        ("market_price_risk", {}),
+        ("market_informal_signal", {"country": "PE"}),
+        ("market_promo_detector", {"product": "leche"}),
+        ("market_retailer_scorecard", {"store": "wong_pe"}),
+        ("market_ecosystem_radar", {}),
+        ("market_household_update", {"payload": {"size": 1}}),
+    ],
+)
+def test_audit_fix_pre_check_rejects_starter_for_pro_tools(monkeypatch, tool_name, args):
+    _patch_starter_tier(monkeypatch)
+    mock = AsyncMock()
+    with patch("httpx.AsyncClient.get", mock), patch("httpx.AsyncClient.post", mock):
+        r = client.post("/mcp", json=_rpc_call(tool_name, args), headers={"Authorization": "Bearer sk-fake-starter"})
+
+    assert r.status_code == 200
+    result = r.json()["result"]
+    assert result["isError"] is True
+    assert "Pro" in result["content"][0]["text"]
+    mock.assert_not_called()
+
+
+def test_audit_fix_household_get_accepts_starter_rejects_free(monkeypatch):
+    import market_billing
+    import routers.mcp_http as mcp_http_mod
+
+    fake_auth_user = lambda token: "starter-test-user"
+    monkeypatch.setattr(server_deps, "auth_user", fake_auth_user)
+    monkeypatch.setattr(mcp_http_mod, "auth_user", fake_auth_user)
+
+    # Free tier -> rejected
+    monkeypatch.setattr(server_deps, "db_get_subscription", lambda u: {"tier": "free", "req_limit_min": -1, "req_limit_day": -1})
+    monkeypatch.setattr(market_billing, "db_get_subscription", lambda u: {"tier": "free", "req_limit_min": -1, "req_limit_day": -1})
+    mock_get = AsyncMock()
+    with patch("httpx.AsyncClient.get", mock_get):
+        r = client.post("/mcp", json=_rpc_call("market_household_get", {}), headers={"Authorization": "Bearer sk-fake"})
+    result = r.json()["result"]
+    assert result["isError"] is True
+    assert "Starter" in result["content"][0]["text"]
+    mock_get.assert_not_called()
+
+    # Starter tier -> allowed through to the (mocked) backend call
+    monkeypatch.setattr(server_deps, "db_get_subscription", lambda u: {"tier": "starter", "req_limit_min": -1, "req_limit_day": -1})
+    monkeypatch.setattr(market_billing, "db_get_subscription", lambda u: {"tier": "starter", "req_limit_min": -1, "req_limit_day": -1})
+    fake_resp = MagicMock()
+    fake_resp.status_code = 200
+    fake_resp.json.return_value = {"ok": True}
+    mock_get2 = AsyncMock(return_value=fake_resp)
+    with patch("httpx.AsyncClient.get", mock_get2):
+        r = client.post("/mcp", json=_rpc_call("market_household_get", {}), headers={"Authorization": "Bearer sk-fake"})
+    result = r.json()["result"]
+    assert "isError" not in result
+    mock_get2.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "method,path,body",
+    [
+        ("post", "/agent/ask", {"prompt": "buy milk"}),
+        ("post", "/cart/add", {"product_id": "x", "name": "x", "price": 1, "store": "wong_pe", "quantity": 1}),
+        ("get", "/cart", None),
+        ("put", "/cart/update", {"product_id": "x", "quantity": 1}),
+        ("post", "/favorites", {"action": "list"}),
+        ("get", "/orders", None),
+        ("post", "/v1/basket/compare", {"items": [{"name": "leche", "qty": 1}]}),
+    ],
+)
+def test_audit_fix_world_native_endpoints_now_require_pro(monkeypatch, method, path, body):
+    """These 7 endpoints are cli-market-world's own routers, fixed directly
+    at the source (require_pro) rather than via _pre_check_tier -- test them
+    directly (not through /mcp, which just proxies bytes to production over
+    the network regardless of local code changes) to verify the real
+    dependency injection now rejects a genuine Starter-tier account."""
+    import market_billing
+
+    market_billing.db_set_subscription("starter-world-native-user", "starter")
+    monkeypatch.setattr(server_deps, "auth_user", lambda token: "starter-world-native-user")
+
+    kwargs = {"headers": {"Authorization": "Bearer sk-fake-starter-world-native"}}
+    if body is not None:
+        kwargs["json"] = body
+    r = getattr(client, method)(path, **kwargs)
+    assert r.status_code == 403
+
+
 def test_all_tools_have_dispatch_and_all_dispatch_branches_are_registered():
     """Every _TOOLS entry must resolve in _call_tool (no 'Unknown tool'), and
     every dispatch branch must correspond to a registered tool — catches

@@ -36,6 +36,17 @@ def clean_db():
     db_save_user("admin", hash_password("market"), "test-token-123")
     yield
 
+
+def _grant_admin_pro():
+    """cart/orders/checkout/basket-compare require_pro -- "admin" only
+    bypasses via is_platform_admin() when MARKET_API_TOKEN is a real env var
+    (production), not in tests. See AGENTS.md "Tier gating de tools MCP".
+    Scoped per-test (not autouse) since several tests specifically assert
+    admin's free->pro transition and would break if admin started pro."""
+    import market_billing
+
+    market_billing.db_set_subscription("admin", "pro")
+
 def teardown_module():
     """Clean up temp dir after all tests."""
     shutil.rmtree(TEST_DATA_DIR, ignore_errors=True)
@@ -73,12 +84,14 @@ def test_whoami_with_token():
 
 
 def test_cart_empty():
+    _grant_admin_pro()
     r = client.get("/cart", headers={"Authorization": "Bearer test-token-123"})
     assert r.status_code == 200
     assert r.json()["items"] == 0
 
 
 def test_cart_add():
+    _grant_admin_pro()
     r = client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Test Product", "price": 10.0, "store": "wong", "quantity": 2
     })
@@ -87,6 +100,7 @@ def test_cart_add():
 
 
 def test_cart_view_after_add():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 3
     })
@@ -96,6 +110,7 @@ def test_cart_view_after_add():
 
 
 def test_cart_update():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-2", "name": "Arroz", "price": 8.0, "store": "metro", "quantity": 1
     })
@@ -112,6 +127,7 @@ def test_cart_update():
 
 
 def test_cart_remove():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-3", "name": "Azucar", "price": 3.0, "store": "plazavea", "quantity": 2
     })
@@ -124,11 +140,13 @@ def test_cart_remove():
 
 
 def test_checkout_empty_cart():
+    _grant_admin_pro()
     r = client.post("/checkout", headers={"Authorization": "Bearer test-token-123"}, json={"payment_method": "yape"})
     assert r.status_code == 400
 
 
 def test_checkout_success():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -142,6 +160,7 @@ def test_checkout_success():
 
 
 def test_orders_after_checkout():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -152,6 +171,7 @@ def test_orders_after_checkout():
 
 
 def test_reorder():
+    _grant_admin_pro()
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -247,6 +267,7 @@ def test_stores_include_new():
 # ── Edge case tests ────────────────────────────────────────────────────────
 
 def test_cart_add_invalid_quantity():
+    _grant_admin_pro()
     r = client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Test", "price": 10.0, "store": "wong", "quantity": -1
     })
@@ -255,6 +276,7 @@ def test_cart_add_invalid_quantity():
 
 
 def test_cart_update_nonexistent():
+    _grant_admin_pro()
     r = client.put("/cart/update", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "nonexistent-id-99999", "quantity": 5
     })

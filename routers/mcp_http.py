@@ -1098,8 +1098,23 @@ _PRE_CHECK_TIER: dict[str, str] = {
     "market_prices": "pro",
     "market_basket_snapshot": "pro",
     "market_procurement_bulk": "enterprise",
+    # Found via a full tier-gating audit of all 65 tools (2026-07-27): these
+    # were labeled [Pro]/[Starter] but their market_core-backed endpoint only
+    # checks Depends(_require_v1_auth) -- same structural gap as the wave-6
+    # tools above, just not caught until the audit actually read every
+    # handler instead of trusting the aspirational [Pro] label.
+    "market_optimize_purchase": "pro",
+    "market_procurement_signal": "pro",
+    "market_price_risk": "pro",
+    "market_informal_signal": "pro",
+    "market_promo_detector": "pro",
+    "market_retailer_scorecard": "pro",
+    "market_ecosystem_radar": "pro",
+    "market_household_get": "starter",
+    "market_household_update": "pro",
 }
 
+_STARTER_QUALIFYING_TIERS = frozenset({"starter", "pro", "pro_founding", "pro_annual", "enterprise", "builder"})
 _PRO_QUALIFYING_TIERS = frozenset({"pro", "pro_founding", "pro_annual", "enterprise", "builder"})
 _ENTERPRISE_QUALIFYING_TIERS = frozenset({"enterprise"})
 
@@ -1129,6 +1144,9 @@ def _pre_check_tier(name: str, token: str) -> dict | None:
     elif required == "pro":
         if tier not in _PRO_QUALIFYING_TIERS:
             return {"error": "pro_required", "message": _UPGRADE_MSG}
+    elif required == "starter":
+        if tier not in _STARTER_QUALIFYING_TIERS:
+            return {"error": "starter_required", "message": _STARTER_UPGRADE_MSG}
     return None
 
 

@@ -42,7 +42,7 @@ from market_core.product_search import (
     normalize_text as _normalize_text,  # noqa: F401 - re-exported for routers/analytics.py
     query_tokens as _query_tokens,
 )
-from server_deps import require_api_key
+from server_deps import require_api_key, require_pro
 
 from backend_interface import get_store_profile, store_exists
 from index_gate import infer_category
@@ -500,7 +500,7 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
     Always call this before adding items to cart for multi-item orders — it
     returns best_store and best_total so you can target the right retailer.
     Pass include_tco=true or include_action_links=true for Wave 4 cost analysis."""
-    require_api_key(authorization)
+    require_pro(authorization)
     # DB-backed path is the default (fast, reads collector-refreshed
     # price_snapshots) — matches the fix already forced for the market_basket
     # MCP tool (mcp_http.py always passed include_tco=True to reach this

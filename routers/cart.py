@@ -21,7 +21,7 @@ from market_core import (
     db_remove_cart_item,
     db_update_cart_item,
 )
-from server_deps import require_user
+from server_deps import require_pro, require_user
 
 router = APIRouter(tags=["cart"])
 
@@ -50,7 +50,7 @@ def cart_add(body: AddToCartRequest, authorization: str | None = Header(None)):
     Requires a logged-in Pro-tier user. Call after finding the product via
     POST /products/search or POST /v1/basket/compare. Returns the updated cart
     and running total. Use POST /checkout/yape or /checkout/paypal to pay."""
-    username = require_user(authorization)
+    username = require_pro(authorization)
     store_name = STORES.get(body.store, {}).get("name", body.store)
     cart_id = db_add_to_cart(
         username, body.product_id, body.name, body.price,
@@ -71,7 +71,7 @@ def view_cart(authorization: str | None = Header(None)):
     """Returns all items in the user's cart with quantities, unit prices, and
     the running total. Call before checkout to confirm the order. Empty cart
     returns items: []."""
-    username = require_user(authorization)
+    username = require_pro(authorization)
     cart = db_get_cart(username)
     return {
         "username": username,
@@ -85,7 +85,7 @@ def view_cart(authorization: str | None = Header(None)):
 def cart_update(body: UpdateCartRequest, authorization: str | None = Header(None)):
     """Update the quantity of an item in the cart by product_id or cart_id.
     Returns the updated cart. Use to correct quantities before checkout."""
-    username = require_user(authorization)
+    username = require_pro(authorization)
     cart = db_get_cart(username)
     item = next(
         (i for i in cart if i["cart_id"] == body.product_id or i["product_id"] == body.product_id),

@@ -28,7 +28,7 @@ from market_core import (
     db_get_orders,
     get_db,
 )
-from server_deps import require_user
+from server_deps import require_pro, require_user
 from market_core import user_can_checkout
 
 router = APIRouter(tags=["orders"])
@@ -69,7 +69,7 @@ def checkout(body: CheckoutRequest, authorization: str | None = Header(None)):
 
 @router.get("/orders")
 def order_history(authorization: str | None = Header(None)):
-    username = require_user(authorization)
+    username = require_pro(authorization)
     user_orders = db_get_orders(username)
     return {"username": username, "orders": user_orders, "total_orders": len(user_orders)}
 
