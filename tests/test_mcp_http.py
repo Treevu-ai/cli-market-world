@@ -28,6 +28,21 @@ def patch_token(monkeypatch):
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
 
 
+@pytest.fixture(autouse=True)
+def ensure_admin_pro_tier():
+    """market_receipts/quality_scores/quality_flagged/dispersion/
+    coverage_matrix/prices/basket_snapshot/procurement_bulk are pre-checked
+    for tier in _pre_check_tier() before the (mocked) httpx call ever fires —
+    the "admin" test identity only bypasses that check when MARKET_API_TOKEN
+    is a real env var (production), not in tests. Set it explicitly (to
+    enterprise, a superset of pro, since procurement_bulk needs enterprise
+    specifically) so these dispatch-route tests reach their mocked httpx
+    call as before."""
+    import market_billing
+
+    market_billing.db_set_subscription("admin", "enterprise")
+
+
 def _rpc_call(tool_name: str, arguments: dict | None = None) -> dict:
     return {
         "jsonrpc": "2.0",
@@ -473,6 +488,67 @@ def test_procurement_bulk_returns_enterprise_message_on_403():
     result = r.json()["result"]
     assert result["isError"] is True
     assert "Enterprise" in result["content"][0]["text"]
+
+
+def _patch_starter_tier(monkeypatch):
+    """Simulate a real (non-admin) Starter-tier caller for _pre_check_tier —
+    is_platform_admin("admin") always bypasses tier checks in tests (see
+    ensure_admin_pro_tier fixture note), so verifying real rejection needs a
+    non-admin identity. Two separate auth_user bindings need patching: the
+    request first passes require_api_key() (server_deps.py, own module-level
+    auth_user reference) before _call_tool()'s _pre_check_tier (mcp_http.py,
+    imported its own auth_user reference at module-import time) runs."""
+    import market_billing
+    import routers.mcp_http as mcp_http_mod
+
+    fake_sub = {"tier": "starter", "req_limit_min": -1, "req_limit_day": -1}
+    fake_auth_user = lambda token: "starter-test-user"
+    monkeypatch.setattr(server_deps, "auth_user", fake_auth_user)
+    monkeypatch.setattr(mcp_http_mod, "auth_user", fake_auth_user)
+    monkeypatch.setattr(server_deps, "db_get_subscription", lambda username: fake_sub)
+    monkeypatch.setattr(market_billing, "db_get_subscription", lambda username: fake_sub)
+
+
+@pytest.mark.parametrize(
+    "tool_name,args",
+    [
+        ("market_receipts", {}),
+        ("market_quality_scores", {}),
+        ("market_quality_flagged", {}),
+        ("market_dispersion", {}),
+        ("market_coverage_matrix", {}),
+        ("market_prices", {}),
+        ("market_basket_snapshot", {}),
+    ],
+)
+def test_pre_check_tier_rejects_starter_for_pro_tools_before_hitting_backend(monkeypatch, tool_name, args):
+    _patch_starter_tier(monkeypatch)
+    mock_get = AsyncMock()
+    with patch("httpx.AsyncClient.get", mock_get):
+        r = client.post("/mcp", json=_rpc_call(tool_name, args), headers={"Authorization": "Bearer sk-fake-starter"})
+
+    assert r.status_code == 200
+    result = r.json()["result"]
+    assert result["isError"] is True
+    assert "Pro" in result["content"][0]["text"]
+    mock_get.assert_not_called()
+
+
+def test_pre_check_tier_rejects_starter_for_procurement_bulk_with_enterprise_message(monkeypatch):
+    _patch_starter_tier(monkeypatch)
+    mock_post = AsyncMock()
+    with patch("httpx.AsyncClient.post", mock_post):
+        r = client.post(
+            "/mcp",
+            json=_rpc_call("market_procurement_bulk", {"lines": [{"sku_query": "arroz"}]}),
+            headers={"Authorization": "Bearer sk-fake-starter"},
+        )
+
+    assert r.status_code == 200
+    result = r.json()["result"]
+    assert result["isError"] is True
+    assert "Enterprise" in result["content"][0]["text"]
+    mock_post.assert_not_called()
 
 
 def test_wave6_and_brand_monitor_tools_listed_and_gated_pro():

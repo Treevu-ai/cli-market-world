@@ -20,7 +20,7 @@ from fastapi import APIRouter, Header, Query
 
 from market_core import STORES, get_db
 from price_snapshots_schema import price_snapshots_has_canonical_id
-from server_deps import require_api_key
+from server_deps import require_pro
 
 router = APIRouter(tags=["brand-intelligence"])
 
@@ -113,7 +113,7 @@ def brand_monitor(
 
     Promo events (discount > 0) are flagged inline with ``promo_active: true``.
     """
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
 
     all_brands = [brand]
@@ -285,7 +285,7 @@ def brand_promo_history(
     Use to reconstruct when and where a promo was active, its depth (%), and
     estimated duration (first → last observation with discount in the window).
     """
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
 
     all_brands = [brand]
@@ -365,7 +365,7 @@ def brand_config_upsert(
 
     Calling this endpoint again with the same brand_slug overwrites the config.
     """
-    api_key = require_api_key(authorization)
+    api_key = require_pro(authorization)
     db = get_db()
     slug = _normalize_brand(payload.brand_slug)
 
@@ -485,6 +485,6 @@ def brand_alerts(
     Requires a prior call to POST /v1/brand-monitor/config with sku_pvps.
     Returns an empty list if no config has been registered.
     """
-    api_key = require_api_key(authorization)
+    api_key = require_pro(authorization)
     db = get_db()
     return compute_brand_alerts(db, api_key, brand, country)

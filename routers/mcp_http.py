@@ -49,7 +49,7 @@ from market_stats import (
     PRICES_VERIFIED_LABEL,
     RETAILERS_VERIFIED,
 )
-from server_deps import require_api_key
+from server_deps import auth_user, require_api_key
 
 router = APIRouter(tags=["mcp-http"])
 
@@ -1080,8 +1080,62 @@ _SLOW_TOOLS = frozenset({
     "market_search", "market_compare",
 })
 
+# Tools backed by cli-market-core's shared api_routes.py (Depends(_require_v1_auth)
+# only -- that package has no billing/tier concept, so it can't self-enforce) or
+# by routers unrelated to this fix. Real backend tier checks (require_pro,
+# require_starter, require_export) exist for tools NOT listed here -- those
+# already get 402/403 from the API itself, correctly translated to the right
+# upgrade message below by name membership in _PRO_TOOLS/_STARTER_TOOLS/
+# _ENTERPRISE_TOOLS. The tools below never receive a 402/403 from the backend
+# regardless of caller tier, so gate them here instead -- otherwise their [Pro]/
+# [Enterprise] labels above are purely aspirational.
+_PRE_CHECK_TIER: dict[str, str] = {
+    "market_receipts": "pro",
+    "market_quality_scores": "pro",
+    "market_quality_flagged": "pro",
+    "market_dispersion": "pro",
+    "market_coverage_matrix": "pro",
+    "market_prices": "pro",
+    "market_basket_snapshot": "pro",
+    "market_procurement_bulk": "enterprise",
+}
+
+_PRO_QUALIFYING_TIERS = frozenset({"pro", "pro_founding", "pro_annual", "enterprise", "builder"})
+_ENTERPRISE_QUALIFYING_TIERS = frozenset({"enterprise"})
+
+
+def _pre_check_tier(name: str, token: str) -> dict | None:
+    """Enforce tier for tools whose backend endpoint can't check it itself.
+
+    Returns an error dict (same shape _call_tool's 402/403 handling produces)
+    when the caller doesn't qualify, or None to proceed with the real call.
+    """
+    required = _PRE_CHECK_TIER.get(name)
+    if not required:
+        return None
+    from market_billing import db_get_subscription
+    from market_core.platform_admin import is_platform_admin
+
+    try:
+        username = auth_user(token)
+    except Exception:
+        return None  # let the normal auth path in _call_tool produce the 401
+    if is_platform_admin(username):
+        return None
+    tier = db_get_subscription(username).get("tier", "free")
+    if required == "enterprise":
+        if tier not in _ENTERPRISE_QUALIFYING_TIERS:
+            return {"error": "enterprise_required", "message": _ENTERPRISE_UPGRADE_MSG}
+    elif required == "pro":
+        if tier not in _PRO_QUALIFYING_TIERS:
+            return {"error": "pro_required", "message": _UPGRADE_MSG}
+    return None
+
 
 async def _call_tool(name: str, args: dict, token: str) -> dict:
+    pre_check_error = _pre_check_tier(name, token)
+    if pre_check_error:
+        return pre_check_error
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     _timeout = 60.0 if name in _SLOW_TOOLS else 20.0
     async with httpx.AsyncClient(timeout=_timeout) as client:

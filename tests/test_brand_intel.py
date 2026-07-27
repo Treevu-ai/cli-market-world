@@ -21,6 +21,19 @@ def patch_token(monkeypatch):
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
 
 
+@pytest.fixture(autouse=True)
+def ensure_admin_pro_tier():
+    """These endpoints now require Pro (require_pro) — the "admin" test
+    identity (resolved from DEFAULT_TOKEN) only bypasses the tier check when
+    MARKET_API_TOKEN is set as a real env var (production), not in tests
+    (see market_core.platform_admin._ops_admin_bypass_enabled). Set it
+    explicitly instead of relying on another test file's setup happening to
+    run first and leaving "admin" at a paid tier as a side effect."""
+    import market_billing
+
+    market_billing.db_set_subscription("admin", "pro")
+
+
 def _seed_snapshot(
     product_id: str,
     store: str,
@@ -61,6 +74,38 @@ def _seed_snapshot(
 def test_brand_monitor_requires_auth():
     r = client.get("/v1/brand-monitor?brand=Gloria")
     assert r.status_code == 401
+
+
+def _patch_starter_tier(monkeypatch):
+    """Simulate a real (non-admin) Starter-tier caller — auth_user resolves to
+    a non-admin username so is_platform_admin's bypass in require_pro doesn't
+    short-circuit the tier check (the literal username "admin", used by every
+    other test in this file via DEFAULT_TOKEN, always bypasses tier checks)."""
+    import market_billing
+
+    fake_sub = {"tier": "starter", "req_limit_min": -1, "req_limit_day": -1}
+    monkeypatch.setattr(server_deps, "auth_user", lambda token: "starter-test-user")
+    monkeypatch.setattr(server_deps, "db_get_subscription", lambda username: fake_sub)
+    monkeypatch.setattr(market_billing, "db_get_subscription", lambda username: fake_sub)
+
+
+@pytest.mark.parametrize(
+    "method,url,json_body",
+    [
+        ("get", "/v1/brand-monitor?brand=Gloria", None),
+        ("get", "/v1/brand-monitor/promos?brand=Gloria", None),
+        ("get", "/v1/brand-monitor/alerts?brand=Gloria", None),
+        ("post", "/v1/brand-monitor/config", {"brand_slug": "gloria"}),
+    ],
+)
+def test_brand_monitor_endpoints_reject_starter_tier(monkeypatch, method, url, json_body):
+    _patch_starter_tier(monkeypatch)
+    kwargs = {"headers": {"Authorization": "Bearer sk-fake-starter"}}
+    if json_body is not None:
+        kwargs["json"] = json_body
+    r = getattr(client, method)(url, **kwargs)
+    assert r.status_code == 403
+    assert "Pro" in r.json().get("detail", "")
 
 
 def test_brand_monitor_requires_brand_param():
