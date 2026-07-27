@@ -2,6 +2,174 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-26] — 217 new stores across 30 countries + a critical STORES import regression found and fixed in production (cli-market-core 1.11.76→1.11.85, cli-market-world, cli-market-backend, cli-market-index, procure-copilot, cli-market-content)
+
+Started as "index more organic-product retailers in Argentina" and grew
+into four store-indexing rounds (organic food, non-food organic,
+leather goods, dedicated Bsale research) across 30 countries, plus a
+full ecosystem sync-and-verify pass that surfaced a production-breaking
+regression nobody had caught. `cli-market-core` STORES went 103 → 360;
+version 1.11.76 → 1.11.85 (skipping 1.11.83, see below).
+
+**Store indexing, four rounds (cli-market-core 035081d, 889fb8f, a9d74fb)**
+- Round 1 — organic/natural food retailers: AR, BR, UY, PY, CO, EC, CL,
+  MX, US, ES. 78 stores added (WooCommerce/Shopify/VTEX/magento_graphql),
+  each verified end-to-end via the real connector's `search()` (not
+  curl) — a real product name + correct price in local currency, not
+  just "the platform string appears in the HTML." New Garden AR added
+  via the existing `magento_graphql` connector (its REST API needs an
+  integration token, but `/graphql` is public) instead of writing a new
+  connector. Venezuela and most of Paraguay yielded ~0 candidates —
+  confirmed there's essentially no e-commerce there on a supported
+  platform (WhatsApp/social dominate instead).
+- Round 2 — non-food "organic line" retailers (cosmetics, apparel,
+  home/cleaning) in the same 10 countries, at the user's explicit
+  request to distinguish these from food/grocery. 49 stores added, kept
+  on `line=belleza/moda/hogar` instead of `supermercados` so they don't
+  pollute basic-basket searches (precedent: `valorable_co`, Colombian
+  organic-cotton apparel).
+- Round 3 — 11 more countries (BO, PE-organic-specific, PA/CR/GT, CA,
+  GB, DE, FR, IT, NL): 51 stores across food + non-food in one pass.
+  Bolivia yielded 0.
+- Round 4 — leather goods (consumer → `moda`, B2B tanneries/hide
+  suppliers → `industrial`) across all 20 countries already covered:
+  74 stores, 58 moda + 16 industrial. Two cross-country corrections
+  caught during verification: a store surfaced in a Venezuela search
+  but its Store API returned ARS (filed under AR instead); a Peru
+  candidate's API returned CLP (filed under CL).
+- Consistent finding across every round: initial research always
+  produces false positives (Tiendanube/PrestaShop/Wix/Jumpseller/
+  Ecwid mentioning a supported platform's name only in a third-party
+  script) and a handful of real failures research alone can't catch
+  (price=0 across an entire catalog on wholesale-only stores, wrong
+  currency, catalogs that turn out to be B2B raw materials not finished
+  consumer goods). Every store in this session was verified against the
+  actual connector's `search()`/`normalize()`, not just curl.
+
+**Dedicated Bsale platform research (cli-market-core a9d74fb)**
+- Every earlier Bsale candidate in every round above was a false
+  positive (Wix/Shopify/Tiendanube mentioning "bsale" only in a
+  third-party payment/analytics script) — the platform had exactly 1
+  registered store (`datilerabiomarket_pe`) despite being originally
+  Chilean. Sourced candidates from Bsale's own published client list
+  (`bsale.cl/sheet/clientes`) instead of generic search, which is what
+  finally cut through the noise. 4 new Chilean stores confirmed against
+  the connector's actual endpoint (`GET {base}/collection/details/
+  {slug}` → JSON with `window.INIT.collections.push(...)`): tactical
+  gear, collectible rubber ducks, women's footwear, dried fruit/nuts.
+  Platform now has 5 stores, not 1.
+
+**BigCommerce connector theme-variant fix (cli-market-core a9d74fb)**
+- `market_connectors/bigcommerce.py` only parsed one Stencil theme
+  variant (ssa-peru.com's "with-tax" pricing, href-first `<a>` tags).
+  A second real variant (maggiesorganics.com) puts other attributes
+  before `href` and uses tax-exclusive pricing markup — the original
+  regexes silently returned zero tiles on stores using this variant.
+  Both regexes now tolerate attribute order and the with/without-tax
+  class variants; verified this doesn't regress the original
+  ssa-peru.com fixture. Added `maggiesorganics_us`.
+- Documented but explicitly not fixed: `buckleguy.com` and other
+  Makeswift-hydrated BigCommerce stores have no product markup in the
+  server-rendered HTML at all (client-side JS hydration) — needs a
+  headless-browser fallback, not a parsing fix.
+
+**Critical regression: `from market_core import STORES` broken since 1.11.7x (cli-market-core e01845e, 955276c)**
+- Found while running `cli-market-backend`'s test suite after the store
+  batch: 25 test modules failed collection with `ImportError: cannot
+  import name 'STORES' from 'market_core'`. Root cause: commit
+  `2529d54` ("remove duplicate store_color/currency defs shadowing
+  canonical exports") dropped the actual duplicate definitions but also
+  deleted the one working `from .market_stores import STORES`
+  re-export alongside them — collateral damage in an otherwise correct
+  cleanup. Confirmed via a fresh venv install from PyPI: every published
+  version from ~1.11.7x through 1.11.83 was broken for any consumer
+  importing `STORES` at the package level, which `cli-market-backend`
+  does directly in `routers/agent.py`, `market_server.py`, and
+  `routers/search.py`.
+- Restored the re-export with a comment explaining why it must not be
+  removed again. **1.11.83 was tagged and published to PyPI *before*
+  this fix landed** (fix came in a follow-up commit after the tag), so
+  that specific published version still has the bug — republished as
+  **1.11.84** with the fix actually included. Confirmed via
+  `cli-market-world`'s CI, which failed with the exact same error
+  against 1.11.83 and passed clean against 1.11.84.
+- Net effect: any clean deploy of `cli-market-backend` (not relying on
+  a stale cached wheel from before `2529d54`) would have failed to
+  start. `cli-market-world`'s automated Fly.io pipeline had also been
+  silently skipping deploys (gated on CI, which was failing on the same
+  import) — confirmed the full pipeline (sanity-check imports → deploy
+  → post-deploy smoke test) went green end-to-end once 1.11.84 was
+  live, and the production API (`cli-market-api.fly.dev`) is confirmed
+  serving all 360 stores.
+
+**`e2e_test.py` bit-rot, 4 separate bugs (cli-market-world 555b06b5)**
+- Not wired into any CI workflow, so nothing had caught these. Found
+  while re-running it after the stats sync: (1) `cmd_compare`'s test
+  call was missing `store=None` in its `Namespace` — the one crash
+  originally reported; (2) the fixed 3-second server-startup sleep was
+  too short now that DB init time scales with catalog size (355+ stores
+  took ~7s cold-start, was ~103-150 stores when the constant was
+  chosen) — replaced with a 30×1s poll loop; (3) that poll loop needed
+  to catch `httpx.TransportError`, not just `ConnectError` — a bound
+  socket that isn't fully serving yet can time out instead of refuse;
+  (4) `market_cli.API = "..."` silently did nothing — `api()`/`cli_api()`
+  live in `market_core.market_core` and read that module's own `API`
+  global (populated from `MARKET_API_URL` once at import time), never
+  `market_cli`'s — every "local" run of this script was actually
+  hitting production for every authenticated call. Fixed by setting
+  `MARKET_API_URL` before the first `market_core` import instead. All
+  11 steps now pass end-to-end with zero unintended production traffic.
+
+**Stats sync across the ecosystem (cli-market-world f5636bcd, cli-market-index f92997d, procure-copilot 2eb6abb, cli-market-content b1066b8)**
+- Ran `ops/sync_market_stats.py` to propagate the new store/country
+  counts everywhere they're quoted: `marketStats.ts`, README, MCP
+  registry (`server.json`/`mcp.json`), social-preview assets, LinkedIn/
+  HN content templates, and `cli-market-index`'s `canasta_data.py`
+  (formatting-only diff, no data change).
+- Caught a test-fixture contaminating live stats: a leftover dev-DB row
+  (`test_gd_peer2`, name "X", created 2026-07-22 by an unrelated
+  session) was merging into `get_all_stores()`'s DB-primary read and
+  showing up in the public WooCommerce-store-count list. Deleted.
+- `procure-copilot` was badly stale (82 retailers / 9 countries vs. the
+  real 355 at time of sync) — its `stats-sync.yml` CI only triggers on
+  push/PR touching `lib/market-stats.ts` itself, so with nothing else
+  ever touching that file, drift went undetected indefinitely. Added a
+  weekly `schedule` cron (+`workflow_dispatch`) so the existing
+  validation now runs proactively instead of only reacting to a change
+  nobody was making.
+- `cli-market-content`'s marketing copy sync also propagated a Pro
+  price correction ($49 → $39) that wasn't new — `cli-market-core`
+  fixed that stale default back in `708a98e` (#157), this repo just
+  hadn't been re-synced since; same source of truth
+  (`PUBLIC_PRO_PRICE_USD`) now consistent across GTM-Hub,
+  revenue-architecture, one-pagers, and email templates.
+
+**`tests/test_andean_panel.py` false failure, not a regression (cli-market-core 889fb8f)**
+- The test hardcoded Ecuador as `macro_only` in the CAF Andean
+  affordability panel. Round 1's new EC `supermercados` stores made
+  `_country_has_retail_channel` correctly report EC as
+  `retail_and_macro` — updated the assertions to match reality instead
+  of leaving a real behavior change failing CI.
+
+**Known follow-ups (not done this session)**
+- Tiendanube support: evaluated and explicitly declined. No public
+  unauthenticated API (`api.tiendanube.com` 401s without a per-store
+  OAuth token, unlike the WooCommerce Store API / Shopify
+  `products.json` every existing connector relies on) — the only path
+  is per-product HTML scraping via the storefront sitemap, no bulk JSON,
+  much heavier than any existing connector. Would unlock a meaningful
+  number of stores excluded this session (mostly AR/UY/BR organic and
+  leather retailers — Tiendanube dominates small/mid retail in the
+  Southern Cone), but the maintenance cost was judged disproportionate.
+  Revisit only if the calculus changes (e.g. Tiendanube ships a public
+  read API).
+- `cli-market-backend` is frozen/deprecated as of 2026-07-25 (one day
+  before this session) — confirmed via its `fly.toml`, which
+  deliberately uses a fake app name to block accidental deploys. Still
+  received the version-pin bump for correctness/dependency-graph
+  reasons, but the real production path is `cli-market-world`'s
+  automated Fly.io pipeline.
+
 ## [2026-07-21] — Pricing-tier repricing review → full auth/security audit of the Intelligence catalog (cli-market-world)
 
 Started as a pricing/revenue review of the 9 market-intelligence tools
