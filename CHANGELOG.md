@@ -50,6 +50,16 @@ surfaces separately. Did that for this batch:
   This is the file that actually matters for production — deployed via
   `deploy-fly.yml` (workflow_run after CI green).
 
+**Verified live** — full local suite green before push (978 passed; the
+9 failures seen were pre-existing and reproduce identically with these
+changes stashed out: an untracked local `Clippings/` dir tripping the
+stale-copy-text test, `test_playwright_fallback.py`'s async fixtures,
+one `test_market_observatory_local.py` flake, and an `e2e_test.py`
+error needing a live server — none touch MCP code). Commit `8d9c692f`
+pushed → CI green → Deploy Fly.io green → confirmed directly against
+`POST https://cli-market-api.fly.dev/mcp` (`tools/list`): tool count
+54 → 59, all 5 new names present.
+
 ## [2026-07-26] — 217 new stores across 30 countries + a critical STORES import regression found and fixed in production (cli-market-core 1.11.76→1.11.85, cli-market-world, cli-market-backend, cli-market-index, procure-copilot, cli-market-content)
 
 Started as "index more organic-product retailers in Argentina" and grew
