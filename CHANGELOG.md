@@ -45,15 +45,22 @@ have the same gap during the investigation — those sit on live
 revenue/checkout paths and need explicit product sign-off before
 changing tier requirements, separate from this fix.
 
-**Side finding, not fixed here**: while checking CI, found the
-"Morning Ops Chain" PAM (Production Acceptance Matrix) `user` phase
-failing with `401` across the board (`user.whoami`, `user.search`,
-`user.v1_prices`, etc.) — the `MARKET_USER_TOKEN` GitHub Actions secret
-PAM uses for its user-tier checks appears expired/invalid. This is
-unrelated to this session's `MARKET_API_TOKEN` (admin) rotation — it's
-a different secret — and predates this fix (the failing run was
-triggered before this commit existed). Needs a fresh `sk-...` key
-issued and stored in that secret; flagged for the user, not fixed here.
+**`MARKET_USER_TOKEN` fixed** — the PAM `user` phase was failing `401`
+across the board (`user.whoami`, `user.search`, `user.v1_prices`, etc.)
+because the GitHub Actions secret held a stale/invalid `sk-...` key,
+unrelated to this session's `MARKET_API_TOKEN` (admin) rotation.
+Registered a fresh account (`hello+pam@cli-market.dev`, real email +
+OTP verification, kept — not a throwaway), stored its key as the new
+`MARKET_USER_TOKEN` secret. First local re-run surfaced a second real
+issue: `user.intel_brief` / `user.intel_inflation` (pre-existing
+`require_pro`-gated routes, untouched by this fix) returned `403`
+because the fresh account only had a default Starter trial — the PAM
+matrix's `expect: status 200` assumes a Pro-tier account. Granted Pro
+via `POST /v1/admin/set-tier` (admin-only, `MARKET_API_TOKEN`).
+Re-ran `ops/production_acceptance.py --phase user --tier 1` locally:
+**15/15 PASS**. `MARKET_API_TOKEN` re-synced to GitHub Actions after
+being regenerated for this admin call (same write-once-then-delete
+handling as the rest of this session's token rotations).
 
 ## [2026-07-27] — Gap analysis + fixes on the HTTP MCP transport: 3 tier-gating bugs fixed, 8 new tools (6 here + 2 shared), full dispatch-table test coverage (12% → 100%)
 
