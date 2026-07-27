@@ -14,10 +14,15 @@ market_scan,recommended,admin,,Admin-only VTEX discovery — use market_discover
 market_barcode,recommended,advanced,,,true
 market_brands,recommended,advanced,,Advanced brand frequency — use market_scores for composite signals,false
 market_categories,recommended,advanced,,Advanced VTEX tree — prefer market_discover + market_search,false
+market_coverage_matrix,recommended,advanced,,,false
 market_delivery,recommended,advanced,,Advanced delivery quote — use market_basket/checkout with include_tco,false
+market_dispersion,recommended,advanced,,,false
 market_enrich,recommended,advanced,,Advanced Open Food Facts lookup — optional enrichment,false
 market_exchange,recommended,advanced,,Advanced FX conversion — market_intel_brief includes macro context,false
 market_moat_confidence,recommended,advanced,,Advanced receipt confidence — use market_price_risk for volatility,false
+market_quality_flagged,recommended,advanced,,,false
+market_quality_scores,recommended,advanced,,,false
+market_receipts,recommended,advanced,,,false
 market_stock,recommended,advanced,,Advanced per-SKU stock — use market_search or market_optimize_purchase,false
 market_ticket,recommended,advanced,,,true
 market_voice,recommended,advanced,,Advanced audio transcription — use market_ask for text NL shopping,false
