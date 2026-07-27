@@ -223,6 +223,26 @@ También se commiteó un fix defensivo en `market_mcp.py` del repo para forzar U
 
 Ver `docs/TROUBLESHOOTING-MCP.md` para casos de timeouts de API, `market_optimize_purchase` que no resuelve items, y retailers catalogados sin datos.
 
+### Dos superficies MCP — NO son lo mismo (descubierto 2026-07-27)
+
+Existen **dos implementaciones independientes** de la lista/dispatch de tools MCP. Agregar o modificar una tool en una NO se propaga a la otra — hay que tocar ambas a mano si la tool debe existir en los dos lados:
+
+1. **Servidor stdio** (`cli-market-core/market_core/market_mcp_registry.py` + `market_mcp.py`) — el paquete PyPI `cli-market-core`, usado por `market-mcp` (arriba en esta sección). Perfiles (`default`=44, `legacy`/`full`/`admin`), dispatch genérico vía lambdas.
+2. **Transporte HTTP** (`cli-market-world/routers/mcp_http.py`, ~1300 líneas) — sirve `POST https://cli-market-api.fly.dev/mcp`, usado por claude.ai/Cursor/VS Code/Kiro/Codex/Gemini. **No importa el registro de `cli-market-core`** — tiene su propia lista `_TOOLS`, su propio dispatch `_call_tool()`, y su propio gating por tier (`_PRO_TOOLS`/`_STARTER_TOOLS`/`_ENTERPRISE_TOOLS`). Es intencional (necesita gating de billing, logging de funnel, timeouts por tool que el registro genérico no maneja) — no es deuda técnica a "unificar".
+
+**Test de regresión clave**: `tests/test_mcp_http.py::test_all_tools_have_dispatch_and_all_dispatch_branches_are_registered` compara `_TOOLS` contra cada branch `elif name ==` de `_call_tool()` en ambas direcciones — si agregás una tool a una lista y te olvidás del dispatch (o viceversa), este test lo cacha en CI en vez de fallar en silencio en producción (que es exactamente lo que pasó antes con `market_discover`/`market_price_risk`/`market_price_alerts`).
+
+### Tier gating de tools MCP — cómo funciona de verdad (2026-07-27)
+
+Las etiquetas `[Pro]`/`[Enterprise]`/`[Starter]` en las descripciones de las tools (y los sets `_PRO_TOOLS`/etc. en `mcp_http.py`) **solo controlan el mensaje de upgrade** cuando el backend devuelve 402/403 — no aplican el gating por sí solos. La aplicación real depende del endpoint REST detrás de cada tool:
+
+- **Endpoints que SÍ enforcan tier de verdad**: usan `require_pro`/`require_starter`/`require_export` (`server_deps.py`), definidos y usados en routers nativos de `cli-market-world` (`routers/intel.py`, `routers/analytics.py`, `routers/data_export.py`, `routers/brand_intel.py`). Devuelven 403 real si el tier no alcanza.
+- **Endpoints que NO pueden enforcar tier por sí mismos**: los que viven en el paquete compartido `cli-market-core/market_core/api_routes.py` (`Depends(_require_v1_auth)` — solo exige estar logueado). Ese paquete es una librería PyPI independiente sin acceso a `market_billing`, así que estructuralmente no puede chequear tier. Para estos, `mcp_http.py::_pre_check_tier()` hace el chequeo ANTES de reenviar la request al backend (mismo patrón `_PRO_TOOLS`/`_STARTER_TOOLS`/`_ENTERPRISE_TOOLS`, agregar el nombre a `_PRE_CHECK_TIER` con el tier requerido).
+
+**Antes de agregar una tool nueva backed por `market_core`**: si necesita gating por tier, usar `_pre_check_tier`/`_PRE_CHECK_TIER` en `mcp_http.py` — el endpoint REST en sí NO va a rechazar tiers insuficientes por su cuenta.
+
+**Trampa al testear**: la identidad de test "admin" (`DEFAULT_TOKEN`/`MARKET_API_TOKEN`) solo bypassea el chequeo de tier vía `is_platform_admin()` cuando `MARKET_API_TOKEN` es una env var real (producción) — en tests locales/CI, "admin" necesita tener un tier real seteado explícitamente (`market_billing.db_set_subscription("admin", "pro")` o `"enterprise"` en un fixture) o los tests que dependían del bypass implícito empiezan a fallar con 403 apenas alguna tool nueva quede gateada de verdad.
+
 ## Cuándo usar cada agente
 
 | Necesidad | Agente | Contexto |
