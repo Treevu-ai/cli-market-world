@@ -57,6 +57,12 @@ before (see file docstring). Added:
 Full local suite run before push; PyPI 1.11.87 published, pin bumped,
 `ops/sync_market_stats.py` re-run (legacy 74→76, full 71→73).
 
+**Verified live** — commit `0d0849a9` pushed → CI green (1041 passed,
+9 pre-existing unrelated failures) → Deploy Fly.io green → confirmed
+directly against production: `POST /mcp` (`tools/list`) now returns
+59 → 65 tools with all 6 new names present; `GET /.well-known/mcp.json`
+returns `profiles.legacy.tool_count: 76`.
+
 ## [2026-07-27] — 5 new MCP tools (quality/receipts/coverage), and a discovered architecture split: two independently-maintained MCP tool surfaces
 
 A gap analysis of the MCP tool registry found 5 REST endpoints
