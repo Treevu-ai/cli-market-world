@@ -33,7 +33,7 @@ RUN --mount=type=secret,id=github_token set -eux; \
 # --with-deps uses apt-get to install required shared libraries.
 RUN python -m playwright install chromium --with-deps
 
-COPY *.py pyproject.toml ./
+COPY *.py pyproject.toml mcp.json ./
 COPY routers/ ./routers/
 # Slack ops (cron panels, revenue/funnel routing from API)
 COPY ops/billing_slack.py ops/slack_notify.py ops/load_env.py ops/command_control_daily.py ./ops/
