@@ -2,6 +2,59 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-27] — Real tier gating for 12 MCP tools (a live Starter-account smoke test found the [Pro]/[Enterprise] labels were purely aspirational)
+
+A real Starter-tier account (registered + email-verified for this
+purpose, revoked after) got `HTTP 200` from every single `[Pro]`-labeled
+tool tested via `/mcp` — both the tools added earlier today and several
+pre-existing ones (`market_favorites`, `market_add`, `market_ecosystem_radar`).
+Investigated whether this was intentional (generous trial?) — it isn't.
+`require_pro`/`require_starter`/`require_export` are real, actively-used
+gates elsewhere (`routers/intel.py`, `routers/analytics.py`,
+`routers/data_export.py`); the endpoints backing these 12 tools just
+never called them.
+
+- `routers/brand_intel.py` — swapped `require_api_key` → `require_pro`
+  on all 4 Brand Monitor endpoints (world-native, fixed directly at
+  the source).
+- `routers/mcp_http.py` — new `_pre_check_tier()`, enforced in
+  `_call_tool()` before the backend request, for the 7 tools backed by
+  `cli-market-core`'s shared `api_routes.py` (`Depends(_require_v1_auth)`
+  only — that package has no billing/tier concept, so it structurally
+  can't self-enforce: `market_receipts`, `market_quality_scores`,
+  `market_quality_flagged`, `market_dispersion`, `market_coverage_matrix`,
+  `market_prices`, `market_basket_snapshot`) plus `market_procurement_bulk`
+  (enterprise). Real per-endpoint tier checks elsewhere are untouched.
+- New tests simulate a real non-admin Starter caller (the "admin" test
+  identity always bypasses tier checks via `is_platform_admin`, which
+  only reads a real `MARKET_API_TOKEN` env var in production — not in
+  tests, so most existing tests needed a `db_set_subscription("admin",
+  "enterprise")` fixture to keep working now that these paths actually
+  check tier). Full suite green (1054 passed; 8 pre-existing unrelated
+  failures).
+- **Verified live**: registered a second real Starter account against
+  production, called `market_prices`/`market_brand_monitor`/
+  `market_procurement_bulk` through `/mcp` — all three now correctly
+  return `isError: true` with the right message (`pro_required` for the
+  first two, `enterprise_required` — not `pro_required` — for the last).
+  Revoked the test account afterward.
+
+**Deliberately NOT touched**: `market_favorites`, `market_add`/`cart`,
+`checkout`, `market_ecosystem_radar`, and other older tools found to
+have the same gap during the investigation — those sit on live
+revenue/checkout paths and need explicit product sign-off before
+changing tier requirements, separate from this fix.
+
+**Side finding, not fixed here**: while checking CI, found the
+"Morning Ops Chain" PAM (Production Acceptance Matrix) `user` phase
+failing with `401` across the board (`user.whoami`, `user.search`,
+`user.v1_prices`, etc.) — the `MARKET_USER_TOKEN` GitHub Actions secret
+PAM uses for its user-tier checks appears expired/invalid. This is
+unrelated to this session's `MARKET_API_TOKEN` (admin) rotation — it's
+a different secret — and predates this fix (the failing run was
+triggered before this commit existed). Needs a fresh `sk-...` key
+issued and stored in that secret; flagged for the user, not fixed here.
+
 ## [2026-07-27] — Gap analysis + fixes on the HTTP MCP transport: 3 tier-gating bugs fixed, 8 new tools (6 here + 2 shared), full dispatch-table test coverage (12% → 100%)
 
 Follow-up to the same-day entry below, which only mirrored the wave-5
