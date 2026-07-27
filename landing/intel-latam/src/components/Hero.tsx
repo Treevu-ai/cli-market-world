@@ -105,7 +105,7 @@ export default function Hero() {
                   </div>
                   <div className="flex items-center">
                     <Check className="mr-2 h-4 w-4 text-[#bef264] stroke-[3]" />
-                    <span>Multipaís (13 Países)</span>
+                    <span>Multipaís (21 Países)</span>
                   </div>
                 </div>
               </div>
