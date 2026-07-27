@@ -68,3 +68,42 @@ def test_market_macro_hits_intel_macro_route():
     assert r.status_code == 200
     called_url = mock_get.call_args.args[0]
     assert called_url == "https://cli-market-api.fly.dev/v1/intel/macro"
+
+
+@pytest.mark.parametrize(
+    "tool_name,expected_path",
+    [
+        ("market_receipts", "/v1/receipts"),
+        ("market_quality_scores", "/v1/quality/scores"),
+        ("market_quality_flagged", "/v1/quality/flagged"),
+        ("market_dispersion", "/v1/dispersion"),
+        ("market_coverage_matrix", "/v1/coverage/matrix"),
+    ],
+)
+def test_wave5_quality_tools_hit_correct_route(tool_name, expected_path):
+    fake_resp = MagicMock()
+    fake_resp.status_code = 200
+    fake_resp.json.return_value = {"ok": True}
+
+    mock_get = AsyncMock(return_value=fake_resp)
+    with patch("httpx.AsyncClient.get", mock_get):
+        r = client.post("/mcp", json=_rpc_call(tool_name), headers=_AUTH)
+
+    assert r.status_code == 200
+    called_url = mock_get.call_args.args[0]
+    assert called_url == f"https://cli-market-api.fly.dev{expected_path}"
+
+
+def test_wave5_quality_tools_listed_and_gated_pro():
+    from routers.mcp_http import _PRO_TOOLS, _TOOLS
+
+    wave5 = {
+        "market_receipts",
+        "market_quality_scores",
+        "market_quality_flagged",
+        "market_dispersion",
+        "market_coverage_matrix",
+    }
+    names = {t["name"] for t in _TOOLS}
+    assert wave5 <= names
+    assert wave5 <= _PRO_TOOLS

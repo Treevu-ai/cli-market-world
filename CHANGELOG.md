@@ -2,6 +2,54 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-27] — 5 new MCP tools (quality/receipts/coverage), and a discovered architecture split: two independently-maintained MCP tool surfaces
+
+A gap analysis of the MCP tool registry found 5 REST endpoints
+(`/v1/receipts`, `/v1/quality/scores`, `/v1/quality/flagged`,
+`/v1/dispersion`, `/v1/coverage/matrix`) that already had real handlers
+in `cli-market-core/market_core/api_routes.py` but no MCP tool exposing
+them. Implementing them surfaced a bigger fact worth recording: **there
+are two separate, independently-maintained MCP tool surfaces**, not one.
+
+- `cli-market-core/market_core/market_mcp_registry.py` — the canonical
+  registry used by the **stdio MCP server** (the `cli-market-core` PyPI
+  package, used by local CLI/agent integrations). Profile-based
+  (`default`=44, `legacy`/`full`/`admin`), generic lambda dispatch.
+- `cli-market-world/routers/mcp_http.py` — a fully independent,
+  hand-maintained **HTTP MCP transport** (`POST /mcp` on
+  `cli-market-api.fly.dev`, used by claude.ai, Cursor, VS Code, Kiro,
+  Codex, Gemini). Does NOT import the cli-market-core registry at all.
+  This is intentional, not tech debt: it originated in
+  `cli-market-backend` (`routers/mcp_http.py`, ported over in #298,
+  2026-06-22, "consolidate backend-only features into world") because
+  the HTTP transport needs per-tool subscription-tier gating
+  (free/Pro/Admin), funnel-event logging, and per-tool timeout tuning
+  that don't fit the registry's generic dispatch pattern. It currently
+  exposes more tools (54, pre-this-change) than the stdio default
+  profile (44), including some with no registry equivalent at all
+  (`market_macro`, `market_dashboard`, `market_alert_create/delete`).
+
+Net effect: a new MCP tool added only to `market_mcp_registry.py` does
+**not** reach the production HTTP endpoint — it must be added to both
+surfaces separately. Did that for this batch:
+
+- cli-market-core 1.11.85 → 1.11.86: added `market_receipts`,
+  `market_quality_scores`, `market_quality_flagged`,
+  `market_dispersion`, `market_coverage_matrix` to
+  `market_mcp_registry.py` (bundle `advanced`, hidden from `default`
+  profile — stays at 44) and `market_mcp.py` dispatch. `TOOLS` 69→74,
+  `ORIGINAL_TOOL_NAMES` 63→68. Full suite green (706 passed, 3
+  skipped). Published to PyPI.
+- `cli-market-world/requirements.txt` and `cli-market-backend/requirements.txt`
+  pins bumped to 1.11.86 (backend repo is frozen/deprecated but kept in
+  sync for history — do not deploy from it).
+- `cli-market-world/routers/mcp_http.py`: same 5 tools added to `_TOOLS`,
+  `_PRO_TOOLS` (gated Pro, consistent with similar niche intel tools
+  like `market_retailer_scorecard`/`market_promo_detector`), and
+  `_call_tool` dispatch. New parametrized tests in `tests/test_mcp_http.py`.
+  This is the file that actually matters for production — deployed via
+  `deploy-fly.yml` (workflow_run after CI green).
+
 ## [2026-07-26] — 217 new stores across 30 countries + a critical STORES import regression found and fixed in production (cli-market-core 1.11.76→1.11.85, cli-market-world, cli-market-backend, cli-market-index, procure-copilot, cli-market-content)
 
 Started as "index more organic-product retailers in Argentina" and grew

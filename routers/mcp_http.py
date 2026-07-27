@@ -19,7 +19,8 @@ human-readable mirror of it. Everything not listed under Pro is Free.
         ecosystem_radar, procurement_bulk, intel_refresh,
         enrichment_refresh, promo_detector, retailer_scorecard,
         informal_signal, inflation, scores, macro, intel_brief,
-        indicators, trending, affordability
+        indicators, trending, affordability, receipts, quality_scores,
+        quality_flagged, dispersion, coverage_matrix
         (returns upgrade prompt if tier is free/starter)
   Admin — scan (requires MARKET_API_TOKEN, not a paid tier — no upgrade
         prompt applies; a 401 here means wrong audience, not "pay more")
@@ -80,6 +81,11 @@ _PRO_TOOLS = frozenset({
     "market_indicators",
     "market_trending",
     "market_affordability",
+    "market_receipts",
+    "market_quality_scores",
+    "market_quality_flagged",
+    "market_dispersion",
+    "market_coverage_matrix",
 })
 
 _UPGRADE_MSG = (
@@ -860,6 +866,63 @@ _TOOLS = [
             },
         },
     },
+    # ── Quality / crowd data ─────────────────────────────────────────────────
+    {
+        "name": "market_receipts",
+        "description": "[Pro] List your submitted receipt scans (newest first) — status and moat diff for each.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "limit": {"type": "integer", "default": 20},
+                "offset": {"type": "integer", "default": 0},
+            },
+        },
+    },
+    {
+        "name": "market_quality_scores",
+        "description": "[Pro] Composite data-quality scores for the moat: freshness, unit normalization, and match confidence over a lookback window.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "days": {"type": "integer", "default": 7},
+            },
+        },
+    },
+    {
+        "name": "market_quality_flagged",
+        "description": "[Pro] Paginated data-quality anomalies (discount, outlier, or spread flags) surfaced by the moat's quality pipeline.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "reason": {"type": "string", "description": "discount | outlier | spread"},
+                "limit": {"type": "integer", "default": 50},
+                "offset": {"type": "integer", "default": 0},
+            },
+        },
+    },
+    {
+        "name": "market_dispersion",
+        "description": "[Pro] Price spread groups by subcategory from the data moat — the raw dispersion signal behind market_price_risk.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "line": {"type": "string"},
+                "currency": {"type": "string"},
+                "limit": {"type": "integer", "default": 50},
+                "offset": {"type": "integer", "default": 0},
+            },
+        },
+    },
+    {
+        "name": "market_coverage_matrix",
+        "description": "[Pro] Country x business-line coverage map — check before market_search or market_basket whether the moat has data for a given country/line combination.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "line": {"type": "string"},
+            },
+        },
+    },
     # ── Admin ─────────────────────────────────────────────────────────────────
     {
         "name": "market_scan",
@@ -1075,6 +1138,17 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await method(f"{_API_BASE}/v1/household", json=args["payload"], headers=headers)
         elif name == "market_procurement_bulk":
             r = await client.post(f"{_API_BASE}/v1/intel/procurement-bulk", json=args, headers=headers)
+        # ── Quality / crowd data ─────────────────────────────────────────────────
+        elif name == "market_receipts":
+            r = await client.get(f"{_API_BASE}/v1/receipts", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_quality_scores":
+            r = await client.get(f"{_API_BASE}/v1/quality/scores", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_quality_flagged":
+            r = await client.get(f"{_API_BASE}/v1/quality/flagged", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_dispersion":
+            r = await client.get(f"{_API_BASE}/v1/dispersion", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_coverage_matrix":
+            r = await client.get(f"{_API_BASE}/v1/coverage/matrix", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         # ── Admin ─────────────────────────────────────────────────────────────
         elif name == "market_scan":
             r = await client.post(f"{_API_BASE}/v1/admin/scan-stores", json={"line": args.get("line")}, headers=headers)
