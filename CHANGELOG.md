@@ -60,6 +60,29 @@ pushed → CI green → Deploy Fly.io green → confirmed directly against
 `POST https://cli-market-api.fly.dev/mcp` (`tools/list`): tool count
 54 → 59, all 5 new names present.
 
+**Discovery docs sync (commit `e9caa4df`)** — `mcp.json` (root +
+`landing/public/`), `glama.json`, `landing/public/mcp-tools-registry.csv`,
+and `landing/lib/marketStats.ts` were still describing the
+`market_mcp_registry.py` counts from before this batch. Ran
+`ops/sync_market_stats.py` to regenerate all of them against the
+already-live `cli-market-core` 1.11.86: legacy 69→74, full 66→71 (the
+curated default profile correctly stays 44 — the 5 new tools are
+deliberately hidden from it). Verified live at
+`https://cli-market.dev/mcp.json`.
+
+**Docker image gap found + fixed (commit `02d4c3fd`)** — while
+verifying the API's own `/.well-known/mcp.json`, found it always
+served the generic inline fallback from `routers/discovery.py`
+instead of the real, richer `mcp.json` — the `Dockerfile` only ever
+`COPY`ed `*.py` and `pyproject.toml`, never `mcp.json`, so the file
+was never present in the deployed image regardless of how well-synced
+the git-tracked copy was. Pre-existing, unrelated to this session's
+tool addition — just surfaced while checking the fix end-to-end. Added
+`mcp.json` to the `COPY` line; verified live at
+`https://cli-market-api.fly.dev/.well-known/mcp.json` now returns the
+full `profiles`/`bundles`/`tools_legacy` payload (legacy tool_count 74)
+instead of the stripped-down fallback.
+
 ## [2026-07-26] — 217 new stores across 30 countries + a critical STORES import regression found and fixed in production (cli-market-core 1.11.76→1.11.85, cli-market-world, cli-market-backend, cli-market-index, procure-copilot, cli-market-content)
 
 Started as "index more organic-product retailers in Argentina" and grew
