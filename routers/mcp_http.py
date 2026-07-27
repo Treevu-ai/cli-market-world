@@ -10,20 +10,26 @@ Usage in claude.ai (Add MCP server):
   URL: https://cli-market-api.fly.dev/mcp?token=<your-market-api-token>
   (claude.ai connectors don't support Bearer auth — use the token query param instead)
 
-Tool tiers — kept in sync with _PRO_TOOLS below; that frozenset is the
-source of truth for the upgrade-prompt behavior, this comment is just a
-human-readable mirror of it. Everything not listed under Pro is Free.
+Tool tiers — kept in sync with _PRO_TOOLS/_STARTER_TOOLS/_ENTERPRISE_TOOLS
+below; those frozensets are the source of truth for upgrade-prompt
+behavior, this comment is just a human-readable mirror of it. Everything
+not listed under Starter/Pro/Enterprise/Admin is Free.
+  Starter — household_get (returns starter_required prompt if tier is free)
   Pro — basket, optimize_purchase, procurement_signal, price_risk,
         favorites, price_alerts, export, ask, add, cart, cart_update,
         checkout, orders, alert_create, alert_delete, household_update,
-        ecosystem_radar, procurement_bulk, intel_refresh,
-        enrichment_refresh, promo_detector, retailer_scorecard,
+        ecosystem_radar, promo_detector, retailer_scorecard,
         informal_signal, inflation, scores, macro, intel_brief,
         indicators, trending, affordability, receipts, quality_scores,
-        quality_flagged, dispersion, coverage_matrix
-        (returns upgrade prompt if tier is free/starter)
-  Admin — scan (requires MARKET_API_TOKEN, not a paid tier — no upgrade
-        prompt applies; a 401 here means wrong audience, not "pay more")
+        quality_flagged, dispersion, coverage_matrix, prices,
+        basket_snapshot, brand_monitor, brand_monitor_promos,
+        brand_monitor_config, brand_monitor_alerts
+        (returns pro_required prompt if tier is free/starter)
+  Enterprise — procurement_bulk (returns enterprise_required prompt if
+        tier is below enterprise — a Pro upsell here would undersell it)
+  Admin — scan, intel_refresh, enrichment_refresh (require MARKET_API_TOKEN,
+        not a paid tier — no upgrade prompt applies; a 401 here means
+        wrong audience, not "pay more")
 """
 
 from __future__ import annotations
@@ -68,9 +74,6 @@ _PRO_TOOLS = frozenset({
     "market_alert_delete",
     "market_household_update",
     "market_ecosystem_radar",
-    "market_procurement_bulk",
-    "market_intel_refresh",
-    "market_enrichment_refresh",
     "market_promo_detector",
     "market_retailer_scorecard",
     "market_informal_signal",
@@ -86,6 +89,12 @@ _PRO_TOOLS = frozenset({
     "market_quality_flagged",
     "market_dispersion",
     "market_coverage_matrix",
+    "market_prices",
+    "market_basket_snapshot",
+    "market_brand_monitor",
+    "market_brand_monitor_promos",
+    "market_brand_monitor_config",
+    "market_brand_monitor_alerts",
 })
 
 _UPGRADE_MSG = (
@@ -93,6 +102,24 @@ _UPGRADE_MSG = (
     f"Start with Starter (${PUBLIC_STARTER_PRICE_USD:.0f}/mo) for search and compare, or upgrade to Pro "
     "to unlock basket, cart, checkout, orders, alerts, export, and AI ask. "
     "Plans at https://cli-market.dev."
+)
+
+# Starter-gated tools return a raw HTTP error instead of _UPGRADE_MSG when the
+# caller is on the free tier — these get their own message instead.
+_STARTER_TOOLS = frozenset({"market_household_get"})
+
+_STARTER_UPGRADE_MSG = (
+    f"This tool requires CLI Market Starter (${PUBLIC_STARTER_PRICE_USD:.0f}/mo) or above. "
+    "Plans at https://cli-market.dev."
+)
+
+# Enterprise-gated tools — distinct from _PRO_TOOLS so the upgrade message
+# doesn't undersell a Pro plan that wouldn't actually unlock the tool.
+_ENTERPRISE_TOOLS = frozenset({"market_procurement_bulk"})
+
+_ENTERPRISE_UPGRADE_MSG = (
+    "This tool requires CLI Market Enterprise. Contact hello@cli-market.dev "
+    "or see https://cli-market.dev for B2B procurement plans."
 )
 
 # Canonical client slugs — order matters (first match wins).
@@ -923,6 +950,89 @@ _TOOLS = [
             },
         },
     },
+    {
+        "name": "market_prices",
+        "description": "[Pro] Paginated raw price snapshots from the data moat. Filter by country, line, currency, or store; clean=true (default) excludes flagged/suspect rows.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "clean": {"type": "boolean", "default": True},
+                "country": {"type": "string"},
+                "line": {"type": "string"},
+                "currency": {"type": "string"},
+                "store": {"type": "string"},
+                "limit": {"type": "integer", "default": 100},
+                "offset": {"type": "integer", "default": 0},
+            },
+        },
+    },
+    {
+        "name": "market_basket_snapshot",
+        "description": "[Pro] Canasta básica snapshot computed directly from the DB — distinct from market_basket, which live-compares a specific item list you pass in.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "stores": {"type": "string", "description": "Comma-separated store keys"},
+                "min_items": {"type": "integer", "default": 3},
+            },
+        },
+    },
+    # ── Brand Intelligence ────────────────────────────────────────────────────
+    {
+        "name": "market_brand_monitor",
+        "description": "[Pro] Cross-store SKU snapshot for a brand and its declared competitors — prices, dispersion, and PVP deviations if configured.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["brand"],
+            "properties": {
+                "brand": {"type": "string", "description": "Brand name to monitor, e.g. 'Gloria'"},
+                "country": {"type": "string", "default": "PE"},
+                "competitors": {"type": "string", "description": "Comma-separated competitor brand names"},
+                "line": {"type": "string"},
+                "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_brand_monitor_promos",
+        "description": "[Pro] Promo activation history for a brand and its competitors — when and where discounts ran, and their depth.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["brand"],
+            "properties": {
+                "brand": {"type": "string"},
+                "country": {"type": "string", "default": "PE"},
+                "competitors": {"type": "string", "description": "Comma-separated competitor brand names"},
+                "line": {"type": "string"},
+                "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_brand_monitor_config",
+        "description": "[Pro] Register or update brand config: suggested retail prices (PVP) per SKU and declared competitor brands.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["brand_slug"],
+            "properties": {
+                "brand_slug": {"type": "string"},
+                "competitors": {"type": "array", "description": "Competitor brand names, auto-included in market_brand_monitor calls"},
+                "sku_pvps": {"type": "object", "description": "Mapping of product_id -> suggested retail price"},
+            },
+        },
+    },
+    {
+        "name": "market_brand_monitor_alerts",
+        "description": "[Pro] Active PVP deviations for registered brand SKUs. Requires a prior market_brand_monitor_config call with sku_pvps.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["brand"],
+            "properties": {
+                "brand": {"type": "string", "description": "Brand slug, must match registered config"},
+                "country": {"type": "string", "default": "PE"},
+            },
+        },
+    },
     # ── Admin ─────────────────────────────────────────────────────────────────
     {
         "name": "market_scan",
@@ -1149,6 +1259,19 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.get(f"{_API_BASE}/v1/dispersion", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_coverage_matrix":
             r = await client.get(f"{_API_BASE}/v1/coverage/matrix", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_prices":
+            r = await client.get(f"{_API_BASE}/v1/prices", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_basket_snapshot":
+            r = await client.get(f"{_API_BASE}/v1/basket", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        # ── Brand Intelligence ───────────────────────────────────────────────────
+        elif name == "market_brand_monitor":
+            r = await client.get(f"{_API_BASE}/v1/brand-monitor", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_brand_monitor_promos":
+            r = await client.get(f"{_API_BASE}/v1/brand-monitor/promos", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_brand_monitor_config":
+            r = await client.post(f"{_API_BASE}/v1/brand-monitor/config", json=args, headers=headers)
+        elif name == "market_brand_monitor_alerts":
+            r = await client.get(f"{_API_BASE}/v1/brand-monitor/alerts", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         # ── Admin ─────────────────────────────────────────────────────────────
         elif name == "market_scan":
             r = await client.post(f"{_API_BASE}/v1/admin/scan-stores", json={"line": args.get("line")}, headers=headers)
@@ -1159,6 +1282,10 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
         else:
             return {"error": f"Unknown tool: {name}"}
 
+        if r.status_code in (402, 403) and name in _ENTERPRISE_TOOLS:
+            return {"error": "enterprise_required", "message": _ENTERPRISE_UPGRADE_MSG}
+        if r.status_code in (402, 403) and name in _STARTER_TOOLS:
+            return {"error": "starter_required", "message": _STARTER_UPGRADE_MSG}
         if r.status_code in (402, 403) and name in _PRO_TOOLS:
             return {"error": "pro_required", "message": _UPGRADE_MSG}
         if r.status_code >= 400:

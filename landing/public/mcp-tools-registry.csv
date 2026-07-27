@@ -12,6 +12,7 @@ market_enrichment_refresh,recommended,admin,,Admin/cron enrichment — use marke
 market_intel_refresh,recommended,admin,,Admin/cron refresh — use market_intel_brief for agent reads,false
 market_scan,recommended,admin,,Admin-only VTEX discovery — use market_discover for retail coverage,false
 market_barcode,recommended,advanced,,,true
+market_basket_snapshot,recommended,advanced,,,false
 market_brands,recommended,advanced,,Advanced brand frequency — use market_scores for composite signals,false
 market_categories,recommended,advanced,,Advanced VTEX tree — prefer market_discover + market_search,false
 market_coverage_matrix,recommended,advanced,,,false
@@ -20,6 +21,7 @@ market_dispersion,recommended,advanced,,,false
 market_enrich,recommended,advanced,,Advanced Open Food Facts lookup — optional enrichment,false
 market_exchange,recommended,advanced,,Advanced FX conversion — market_intel_brief includes macro context,false
 market_moat_confidence,recommended,advanced,,Advanced receipt confidence — use market_price_risk for volatility,false
+market_prices,recommended,advanced,,,false
 market_quality_flagged,recommended,advanced,,,false
 market_quality_scores,recommended,advanced,,,false
 market_receipts,recommended,advanced,,,false

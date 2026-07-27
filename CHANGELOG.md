@@ -2,6 +2,61 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-27] — Gap analysis + fixes on the HTTP MCP transport: 3 tier-gating bugs fixed, 8 new tools (6 here + 2 shared), full dispatch-table test coverage (12% → 100%)
+
+Follow-up to the same-day entry below, which only mirrored the wave-5
+tools into `routers/mcp_http.py`. This entry covers a dedicated gap
+analysis of that file (never analyzed on its own before) plus fixes.
+
+**Tier-gating bugs fixed (`routers/mcp_http.py`)**
+- `market_procurement_bulk` was tagged `[Enterprise]` in its description
+  but gated in `_PRO_TOOLS` — a caller below Enterprise got a Pro-plan
+  upsell message that wouldn't actually unlock the tool. Moved to a new
+  `_ENTERPRISE_TOOLS` set with its own `_ENTERPRISE_UPGRADE_MSG`.
+- `market_intel_refresh` / `market_enrichment_refresh` were tagged
+  `[Admin]` (same as `market_scan`) but were still in `_PRO_TOOLS`,
+  contradicting the file's own docstring ("Admin... no upgrade prompt
+  applies"). Removed from `_PRO_TOOLS` — matches `market_scan`.
+- `market_household_get` was tagged `[Starter]` but wasn't in any
+  gated set, so a 403 from insufficient tier reached the caller as a
+  raw `HTTP 403` instead of a friendly message. Added a new
+  `_STARTER_TOOLS` set with `_STARTER_UPGRADE_MSG`.
+
+**8 new MCP tools** (2 shared with `cli-market-core` 1.11.87, 6 world-only):
+- `market_prices` (`GET /v1/prices`), `market_basket_snapshot`
+  (`GET /v1/basket`) — same REST endpoints exposed in
+  `cli-market-core`'s registry this same day (see that repo's
+  CHANGELOG). Pro tier.
+- `market_brand_monitor`, `market_brand_monitor_promos`,
+  `market_brand_monitor_config`, `market_brand_monitor_alerts` — a
+  complete, previously-unexposed product surface:
+  `routers/brand_intel.py` (490 lines, cross-store SKU/competitor
+  monitoring, promo history, PVP deviation alerts), world-only (no
+  cli-market-core equivalent — the feature isn't in the shared
+  package). Pro tier.
+
+**Dispatch-table test coverage: 7/59 (12%) → 71 tests covering all 65
+tools (100%)** — the same class of gap that let `market_discover`,
+`market_price_risk`, and `market_price_alerts` ship broken silently
+before (see file docstring). Added:
+- Parametrized dispatch tests for every simple GET/POST tool.
+- Dedicated tests for tools with non-trivial dispatch logic:
+  `market_basket` (include_tco default), `market_exchange` (payload
+  field remapping), `market_household_update` (PUT vs PATCH),
+  `market_dashboard` (slim param logic), `market_discover`
+  (3-request composition), `market_cart_update`/`market_alert_delete`
+  (PUT/DELETE), `market_ticket`/`market_voice`.
+- Tier-gating regression tests for all three new upgrade-message paths.
+- `test_all_tools_have_dispatch_and_all_dispatch_branches_are_registered`
+  — a structural test using `inspect.getsource` + regex to diff
+  `_TOOLS` names against every `elif name ==` branch in `_call_tool`,
+  in both directions. This is the actual regression guard against the
+  historical bug class — future drift between the schema list and the
+  dispatch table now fails CI immediately instead of shipping silently.
+
+Full local suite run before push; PyPI 1.11.87 published, pin bumped,
+`ops/sync_market_stats.py` re-run (legacy 74→76, full 71→73).
+
 ## [2026-07-27] — 5 new MCP tools (quality/receipts/coverage), and a discovered architecture split: two independently-maintained MCP tool surfaces
 
 A gap analysis of the MCP tool registry found 5 REST endpoints

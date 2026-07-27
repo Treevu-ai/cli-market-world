@@ -41,7 +41,7 @@ For Claude Desktop, add to claude_desktop_config.json:
 
 ## MCP tool bundles (default profile: 44 curated tools)
 
-Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (74 tools, includes deprecated aliases).
+Set `MCP_TOOL_PROFILE=default` (recommended) or `legacy` (76 tools, includes deprecated aliases).
 
 Canonical registry CSV: `/mcp-tools-registry.csv` (columns: tool, estado_codigo, bundle, reemplazo_codigo, alternativa_docs).
 
