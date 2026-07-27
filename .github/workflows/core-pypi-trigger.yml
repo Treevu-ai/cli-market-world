@@ -33,11 +33,13 @@ jobs:
   publish-core:
     needs: read-version
     uses: ./.github/workflows/_publish-core-reusable.yml
-    # Declared here too (not just inside the reusable workflow's own job):
-    # if GH_PAT/PYPI_API_TOKEN are environment-scoped secrets, this caller
-    # job needs `environment: pypi` itself to resolve `secrets.GH_PAT`
-    # below — otherwise it silently forwards an empty string.
-    environment: pypi
+    # `environment: pypi` used to be declared here too -- invalid on a job
+    # whose only content is `uses:` (a reusable-workflow-call job), and it
+    # made the entire workflow FILE fail to parse, so every push to this repo
+    # showed a spurious red X for this workflow regardless of content, found
+    # 2026-07-27. See publish-core-pypi.yml for the full explanation (same
+    # bug, same fix) -- the reusable workflow's own job already declares
+    # `environment: pypi` on itself where the key is actually valid.
     with:
       version: ${{ needs.read-version.outputs.version }}
       pr_body: "Automated from cli-market-world core-pypi-trigger workflow."

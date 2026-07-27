@@ -21,11 +21,19 @@ permissions:
 jobs:
   publish-core:
     uses: ./.github/workflows/_publish-core-reusable.yml
-    # Declared here too (not just inside the reusable workflow's own job):
-    # if GH_PAT/PYPI_API_TOKEN are environment-scoped secrets, this caller
-    # job needs `environment: pypi` itself to resolve `secrets.GH_PAT`
-    # below — otherwise it silently forwards an empty string.
-    environment: pypi
+    # `environment: pypi` used to be declared here too, on the theory that a
+    # caller job needs its own environment context to resolve
+    # environment-scoped secrets before forwarding them via `secrets:` below.
+    # That's not how it works for a job whose only content is `uses:` (a
+    # reusable-workflow-call job) -- `environment:` isn't a valid key in that
+    # schema variant at all (confirmed via `gh workflow run`: "Unexpected
+    # value 'environment'"), and having it here made the entire workflow FILE
+    # fail to parse, so every push to this repo showed a spurious red X for
+    # this workflow regardless of content, found 2026-07-27. The reusable
+    # workflow's own `publish-core` job (_publish-core-reusable.yml) already
+    # declares `environment: pypi` on itself -- a REGULAR runs-on/steps job,
+    # where the key is valid -- and that's what actually resolves the
+    # environment-scoped secrets; the caller doesn't need its own copy.
     with:
       version: ${{ inputs.version }}
       pr_body: "Automated from cli-market-world publish-core-pypi workflow."

@@ -95,7 +95,13 @@ jobs:
   pam:
     needs: observatory-snapshot
     # Technical health check only — must never block business reporting below.
-    continue-on-error: true
+    # (Enforced structurally, not by continue-on-error: nothing else in this
+    # file has `needs: pam`, so its outcome can't block any other job anyway.
+    # continue-on-error is invalid on a job that calls a reusable workflow via
+    # `uses:` -- GitHub's schema only allows it on regular runs-on/steps jobs;
+    # having it here made the entire workflow FILE fail to parse, so every
+    # push to this repo showed a spurious red X for this workflow regardless
+    # of content, found 2026-07-27.)
     uses: ./.github/workflows/pam-nightly.yml
     with:
       tier: "2"
