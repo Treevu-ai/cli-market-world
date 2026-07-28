@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-28] — chore(deps): bump cli-market-core pin to 1.11.90 (Shopify variant-title fix for organix_pe unit-normalization)
+
+Follow-up to yesterday's stale-collector-deploy incident (below): pins
+the fix for `organix_pe`'s ~3% unit-normalization (Shopify catalogs that
+put pack size only on the variant selector, never the product title —
+see `cli-market-core`'s own changelog for the full writeup). After
+merging this pin, redeploy `cli-market-collector` on Fly.io
+(`fly deploy --app cli-market-collector --config fly.collector.toml
+--build-secret github_token=...`) — a git-side pin bump alone does not
+reach the running machine, exactly the gap that caused yesterday's
+incident.
+
 ## [2026-07-27] — `cli-market-collector` Fly.io deploy was 3 days stale, silently missing the entire 217-store batch
 
 Routine ask ("did the collector finish its run and are stats updated?")
