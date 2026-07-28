@@ -20,7 +20,7 @@ from backend_interface import (
 )
 from market_basket import build_canasta_snapshot
 from market_core import get_db
-from server_deps import require_api_key
+from server_deps import require_pro
 
 router = APIRouter(tags=["intelligence"])
 
@@ -32,7 +32,7 @@ def quality_flagged(
     offset: int = Query(0, ge=0),
     authorization: str | None = Header(None),
 ):
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return query_flagged(db, reason=reason, limit=limit, offset=offset)
@@ -51,7 +51,7 @@ def prices_v1(
     offset: int = Query(0, ge=0),
     authorization: str | None = Header(None),
 ):
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return query_prices(
@@ -77,7 +77,7 @@ def dispersion_v1(
     offset: int = Query(0, ge=0),
     authorization: str | None = Header(None),
 ):
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return query_dispersion(
@@ -98,7 +98,7 @@ def basket_snapshot_v1(
     min_items: int = Query(3, ge=1, le=10),
     authorization: str | None = Header(None),
 ):
-    require_api_key(authorization)
+    require_pro(authorization)
     store_filter = None
     if stores:
         store_filter = {s.strip() for s in stores.split(",") if s.strip()}
@@ -111,7 +111,7 @@ def basket_snapshot_v1(
 
 @router.get("/v1/coverage/matrix")
 def coverage_matrix_v1(line: str | None = None, authorization: str | None = Header(None)):
-    require_api_key(authorization)
+    require_pro(authorization)
     db = get_db()
     try:
         return build_coverage_matrix(db, line=line)

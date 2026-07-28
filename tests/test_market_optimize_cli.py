@@ -133,7 +133,7 @@ def test_country_supermarket_stores_pe():
 def test_market_server_mounts_core_v1_router():
     text = (REPO_ROOT / "market_server.py").read_text(encoding="utf-8")
     assert "from market_core.api_routes import router as core_v1_router" in text
-    assert "core_api_routes._auth_fn = require_api_key" in text
+    assert "core_api_routes._auth_fn = require_v1_core_auth" in text
     assert 'app.include_router(core_v1_router, prefix="/v1")' in text
 
 
@@ -156,6 +156,24 @@ def test_optimize_purchase_route_mounted():
     )
     assert response.status_code != 404
     assert response.status_code in (401, 200, 402)
+
+
+def test_optimize_purchase_rejects_starter_tier(isolated_db):
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    from market_server import hash_password
+
+    ensure_db_initialized()
+    db_save_user("starter-opt", hash_password("market"), "starter@test.com")
+    market_billing.db_set_subscription("starter-opt", "starter")
+    key = db_create_api_key("starter-opt", "read", "opt-starter")["key"]
+    client = TestClient(_load_server_app())
+    response = client.post(
+        "/v1/missions/optimize-purchase",
+        json={"items": [{"name": "leche", "qty": 1}], "country": "PE"},
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    assert response.status_code == 403
 
 
 def test_affordability_route_mounted():
