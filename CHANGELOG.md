@@ -2,6 +2,76 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-27] — `cli-market-collector` Fly.io deploy was 3 days stale, silently missing the entire 217-store batch
+
+Routine ask ("did the collector finish its run and are stats updated?")
+surfaced a real production gap: `market_stats` looked healthy
+(110 tracked stores, snapshot from minutes ago), but `market_stores`
+listed 325 registered retailers and `market_coverage_matrix` showed
+`supermercados`/`hogar` freshness stuck at 43–57% instead of the ~90%+
+seen on other lines.
+
+**Investigation, narrowed store by store:**
+- Cross-referencing `market_stores` against the coverage matrix's
+  `supermercados×PE` cell (13 tracked) found 15 registered stores —
+  `delcampoatucasaperu_pe` and `organix_pe` had zero price snapshots
+  ever (`market_retailer_scorecard` → `insufficient_data` on every
+  section).
+- Ruled out "site is down": `WebFetch` against both stores' live
+  catalog endpoints (`delcampoatucasaperu.com/wp-json/wc/store/v1/products`,
+  `organix.pe/products.json`) returned well-formed product JSON,
+  right now, from both.
+- Ruled out "stale PyPI pin": `cli-market-world/requirements.txt` was
+  already pinned to `cli-market-core==1.11.89`, current as of this
+  session.
+- Also found and ruled out as the direct cause (but worth a separate
+  fix): the "coverage_7d_pct" per-store metric in
+  `cli-market-core`'s `source_health.py` (surfaced through
+  `market_retailer_scorecard`) is `snapshots_7d ÷ store's all-time
+  total_snapshots` — a ratio that reads low for old/high-volume stores
+  (wong, metro, plazavea all showed 44–50% despite `success_pct: 100%`
+  and a `last_success` from minutes earlier) purely because of
+  accumulated history, not actual staleness. This is the same
+  ambiguous-name problem already fixed once today in
+  `health_stats.py`'s *different* `coverage_7d_pct` (see the tier-gating
+  entry above and cli-market-core's own changelog) — the rename never
+  reached this second, store-level copy of the metric. Follow-up:
+  apply the same `active_stores_coverage_7d_pct`-style rename here.
+- **Root cause found via `flyctl`, not code inspection**:
+  `flyctl releases -a cli-market-collector` showed the last deploy
+  (v45) was `2026-07-24 20:52` — 3 days before the 217-store batch
+  (`cli-market-core` 1.11.76 → 1.11.85) merged on 2026-07-26.
+  `flyctl ssh console -a cli-market-collector -C "pip show
+  cli-market-core"` confirmed the running container had
+  `Version: 1.11.76` — the exact version the batch started from. The
+  git-side dependency pin was correct and up to date; nobody had
+  redeployed the Fly machine since. Every one of the 217 new stores
+  across all rounds was invisible to the live collector, not just the
+  two caught here.
+
+**Fix**: `flyctl deploy --app cli-market-collector --config
+fly.collector.toml --build-secret github_token=$(gh auth token)` from
+a fresh clone (the checked-out working copy in use was missing
+`Dockerfile.collector`/`fly.collector.toml` due to sparse-checkout).
+New release v46 confirmed via `pip show cli-market-core` →
+`Version: 1.11.89`. Machine healthy post-deploy
+(`Machine ... is now in a good state` on both the primary and standby).
+
+**Also found, not yet fixed**: `db-lock-monitor.yml`'s
+`ops/db_lock_monitor.py --slack` run fails with `Slack API error:
+channel_not_found` (`SLACK_CHANNEL_ALERTAS` misconfigured/empty) on
+every run, which trips `exit code 1` and surfaces `##[warning]DB lock
+or collector staleness detected` in the Actions UI — even on runs
+where the actual check result was `collector: fresh`. This has been
+crying wolf on every ~25-min run; worth fixing the Slack channel
+config before anyone trusts that warning again.
+
+**Follow-up (pending)**: verify after the collector's next few 4h
+cycles (`COLLECT_INTERVAL_HOURS=4`) that `market_stats` /
+`market_coverage_matrix` / `market_retailer_scorecard` show snapshots
+for `delcampoatucasaperu_pe`, `organix_pe`, and the rest of the
+217-store batch.
+
 ## [2026-07-27] — Real tier gating for 12 MCP tools (a live Starter-account smoke test found the [Pro]/[Enterprise] labels were purely aspirational)
 
 A real Starter-tier account (registered + email-verified for this
