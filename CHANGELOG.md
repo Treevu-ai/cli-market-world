@@ -2,6 +2,29 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-29] — chore(deps): bump cli-market-core pin to 1.11.91 (WooCommerce full-catalog Playwright fallback, fixes 2/5 `doctor_prod_gate.py` dead stores)
+
+Follow-up to today's dashboard-OOM incident's "not yet done" list
+(`ops/doctor_prod_gate.py` failing on 5 dead stores, `MAX_DEAD_SOURCES=0`).
+Root-caused in `cli-market-core`: `igardi_pe` and `granjaorganicabudi_cl`
+WAF-block plain `httpx` on the WooCommerce full-catalog batch endpoint with
+a flat 403, and the connector's Playwright fallback (already working for
+`search()`) was never wired into that path — silently returning 0 products
+every cycle. Fixed upstream (`cli-market-core` 1.11.91, full writeup in that
+repo's own changelog), verified live: `granjaorganicabudi_cl` 0 → 84
+products, `igardi_pe` 0 → 100.
+
+The remaining 3 dead stores (`smartnutrition_pe`, `simplynaturalcanada_ca`,
+`thegreenkiss_ca`) all succeeded when queried directly from a non-Fly.io IP
+— looks like Fly.io's datacenter IP range gets blocked more aggressively
+than a residential/office one, not a code bug. Left open pending a check
+after this redeploys.
+
+**After merging this pin, redeploy `cli-market-collector`** (same gap as the
+2026-07-27/07-28 incidents — a git-side pin bump alone doesn't reach the
+running Fly machine):
+`fly deploy --app cli-market-collector --config fly.collector.toml --build-secret github_token=$(gh auth token)`
+
 ## [2026-07-29] — `/dashboard/data` OOM fix (root cause of the 0%-coverage Command & Control report)
 
 Investigating "is the collector operational?" (it was — 325/325 stores, ~4h
