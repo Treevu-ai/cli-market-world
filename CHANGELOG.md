@@ -17,13 +17,47 @@ products, `igardi_pe` 0 → 100.
 The remaining 3 dead stores (`smartnutrition_pe`, `simplynaturalcanada_ca`,
 `thegreenkiss_ca`) all succeeded when queried directly from a non-Fly.io IP
 — looks like Fly.io's datacenter IP range gets blocked more aggressively
-than a residential/office one, not a code bug. Left open pending a check
-after this redeploys.
+than a residential/office one, not a code bug. Left open, not fixed here.
 
-**After merging this pin, redeploy `cli-market-collector`** (same gap as the
-2026-07-27/07-28 incidents — a git-side pin bump alone doesn't reach the
-running Fly machine):
-`fly deploy --app cli-market-collector --config fly.collector.toml --build-secret github_token=$(gh auth token)`
+**Deployed**: `flyctl deploy --app cli-market-collector --config
+fly.collector.toml --build-secret github_token=$(gh auth token)` run same
+day (same gap as the 2026-07-27/07-28 incidents — a git-side pin bump alone
+doesn't reach the running Fly machine). Confirmed via `pip show
+cli-market-core` on the live machine: `Version: 1.11.91`. Both machines
+healthy post-deploy.
+
+**Status when this session ended — pick up here next time:**
+- `ops/doctor_prod_gate.py` still reported `5 dead stores` immediately
+  after the redeploy — **expected, not a failure**: the fix only takes
+  effect on the collector's *next* full-catalog cycle
+  (`COLLECT_CATALOG_INTERVAL`, default 60 min), which hadn't run yet.
+- Even once `igardi_pe`/`granjaorganicabudi_cl` start succeeding every
+  cycle, `doctor_prod_gate.py`'s "dead" classification
+  (`source_health.store_health_state()` in `cli-market-core`) is a
+  **lifetime** success ratio, not a recent window — months of accumulated
+  0%-success history means the average will climb slowly, not flip to
+  "ok" after one good cycle. Don't read a still-red gate a day from now as
+  "the fix didn't work" without checking whether `granjaorganicabudi_cl`/
+  `igardi_pe` individually show recent successes via
+  `GET /v1/sources/health` (`last_success`, `consecutive_failures` reset
+  to 0) even while `success_pct` is still climbing.
+- **To verify**: `GET https://cli-market-api.fly.dev/v1/sources/health`,
+  check `igardi_pe` / `granjaorganicabudi_cl` for `last_success` newer than
+  this deploy and `consecutive_failures: 0`. Full gate green requires their
+  lifetime `success_pct` to climb back above 30% (dead threshold) — will
+  take multiple cycles, not one.
+- **Separate, not-yet-scoped follow-up**: `store_health_state()`'s
+  lifetime-average design is the same "buries recent reality" failure
+  mode already flagged twice for `coverage_7d_pct` (2026-07-27 entry
+  below, and `cli-market-core`'s own changelog) — worth considering a
+  recent-window (e.g. 7d) variant for the dead/ok classification too,
+  not done here.
+- The 3 IP-reputation-blocked stores (`smartnutrition_pe`,
+  `simplynaturalcanada_ca`, `thegreenkiss_ca`) are still unaddressed —
+  no code fix attempted, since the working theory (Fly.io datacenter IP
+  blocked, not a connector bug) doesn't have an obvious fix without
+  routing those specific stores through the Playwright fallback too (or
+  a proxy/residential-IP path), which is a larger change.
 
 ## [2026-07-29] — `/dashboard/data` OOM fix (root cause of the 0%-coverage Command & Control report)
 
