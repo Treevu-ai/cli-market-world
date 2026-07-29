@@ -29,7 +29,11 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
 
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "1024mb"
+  # Bumped from 1024mb after the 2026-07-29 OOM: /dashboard/data's full-table
+  # aggregation (price_snapshots ~150K+ rows and growing) tipped a 1GB machine
+  # over during a cache-miss. See routers/dashboard.py for the accompanying
+  # fetch-dedup + cross-machine compute lock fixes.
+  memory = "2048mb"
 
 [[restart]]
   policy = "always"

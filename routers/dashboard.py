@@ -106,6 +106,45 @@ def _save_shared_dashboard_cache(data: dict) -> None:
         pass
 
 
+# Cross-machine compute guard — distinct from collect_prices.py's
+# COLLECTOR_ADVISORY_LOCK (84957231) so the two never contend.
+_DASHBOARD_COMPUTE_LOCK = 84957232
+
+
+def _compute_dashboard_data_locked() -> dict:
+    """Compute + persist _dashboard_data(), serialized across Fly machines.
+
+    _dashboard_cache_lock only guards one process; on a cache miss, two
+    machines hit by requests at the same moment used to both pay the full
+    ~15-query + full-table-scan cost in parallel — doubling peak memory
+    exactly when a single compute already strains the VM (root cause of the
+    2026-07-29 OOM). Postgres-only: SQLite (local/tests) is single-process,
+    so there's nothing to serialize against.
+    """
+    import market_core
+    if not market_core.USE_PG:
+        data = _dashboard_data()
+        _save_shared_dashboard_cache(data)
+        return data
+
+    lock_db = get_db()
+    try:
+        lock_db.execute("SELECT pg_advisory_lock(?)", (_DASHBOARD_COMPUTE_LOCK,))
+        # Another machine may have finished while we waited for the lock.
+        shared = _load_shared_dashboard_cache()
+        if shared is not None:
+            return shared
+        data = _dashboard_data()
+        _save_shared_dashboard_cache(data)
+        return data
+    finally:
+        try:
+            lock_db.execute("SELECT pg_advisory_unlock(?)", (_DASHBOARD_COMPUTE_LOCK,))
+        except Exception:
+            pass
+        lock_db.close()
+
+
 def _cached_dashboard_data() -> dict:
     global _dashboard_data_cache, _dashboard_data_cache_at
     # Self-heal: if we fell back to SQLite but Postgres is reachable again,
@@ -126,10 +165,9 @@ def _cached_dashboard_data() -> dict:
             _dashboard_data_cache_at = now
             return shared
 
-        data = _dashboard_data()
+        data = _compute_dashboard_data_locked()
         _dashboard_data_cache = data
         _dashboard_data_cache_at = now
-        _save_shared_dashboard_cache(data)
     return data
 
 
@@ -412,6 +450,10 @@ def _dashboard_data():
     )
 
     # ── Dispersión por subcategoría + moneda (+ precio unitario cuando aplica) ─
+    # Single full-table fetch, reused below for percentiles and outliers.
+    # This used to be 3 separate full copies of price_snapshots (spread_rows,
+    # price_rows, and a second [dict(r) for r in spread_rows] for outliers) —
+    # on a table past ~150K rows that OOM-killed the API on 2026-07-29.
     spread_rows = db.execute(
         """
         SELECT line, line_name, currency, category, name, brand, price,
@@ -419,7 +461,9 @@ def _dashboard_data():
         FROM price_snapshots WHERE price > 0 AND price < 999999
         """
     ).fetchall()
-    spread_analytics = build_spread_analytics([dict(r) for r in spread_rows])
+    spread_products = [dict(r) for r in spread_rows]
+    del spread_rows  # only spread_products is needed from here on
+    spread_analytics = build_spread_analytics(spread_products)
     dispersion = spread_analytics["dispersion"]
     canasta_spreads = spread_analytics["canasta_spreads"]
     marketing_spreads = spread_analytics["marketing_spreads"]
@@ -427,14 +471,10 @@ def _dashboard_data():
         d["avg_price_usd"] = price_to_usd(d.get("avg_price", 0), d.get("currency", ""))
 
     # ── By line + currency: Python-side percentiles (P25/P50/P75) ─────────────
-    price_rows = db.execute(
-        """SELECT line, line_name, currency, price, product_id, store
-           FROM price_snapshots WHERE price > 0 AND price < 999999
-           ORDER BY line, currency"""
-    ).fetchall()
-
+    # Derived from spread_products (same WHERE clause) instead of a second
+    # full-table query — order doesn't matter, `groups` is re-sorted below.
     groups: dict[tuple[str, str], dict] = {}
-    for r in price_rows:
+    for r in spread_products:
         key = (r["line"], r["currency"])
         if key not in groups:
             line_id = r["line"] or ""
@@ -798,7 +838,6 @@ def _dashboard_data():
     ).fetchall()
 
     # ── Outliers: bidirectional vs group median (not mean) ───────────────────
-    spread_products = [dict(r) for r in spread_rows]
     outliers = find_median_outliers(spread_products, min_group=5, band=5.0, limit=10)
     for item in outliers:
         item["price_usd"] = price_to_usd(item.get("price", 0), item.get("currency", ""))
