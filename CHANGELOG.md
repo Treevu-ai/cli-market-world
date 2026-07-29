@@ -2,6 +2,37 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-29] — `/dashboard/data` OOM fix (root cause of the 0%-coverage Command & Control report)
+
+Investigating "is the collector operational?" (it was — 325/325 stores, ~4h
+fresh data) surfaced the real problem: `GET /dashboard/data` was 502'ing and
+a `cli-market-api` Fly machine got OOM-killed (`Out of memory: Killed process
+659 (python)`) — full incident writeup in
+[`docs/incident-2026-07-29-dashboard-oom.md`](docs/incident-2026-07-29-dashboard-oom.md).
+
+- `routers/dashboard.py` fetched the full `price_snapshots` table (150K+
+  rows) into Python memory **3 times** per request (`spread_rows`,
+  `price_rows`, and a second dict-list conversion for outliers) — collapsed
+  into a single fetch (`spread_products`) reused across dispersion, P25/P50/P75
+  percentiles, and outlier detection.
+- Added `pg_advisory_lock` around the shared-cache-miss compute path
+  (`_compute_dashboard_data_locked()`) so the app's 2 Fly machines can't both
+  pay the full recompute cost in parallel on cache expiry — the likely trigger
+  for the exact OOM moment (one machine timed out waiting on the endpoint
+  while the other died from OOM ~50s later).
+- `fly.toml`: VM memory `1024mb → 2048mb` as immediate headroom.
+- Hit the same circular CI gate as the 2026-07-25 incident (`smoke-production`
+  checks `/dashboard/data` against the live, still-broken prod, blocking the
+  auto-deploy that would fix it) — resolved with a manual `flyctl deploy` from
+  this repo, then verified live: `coverage_7d_pct` 0% → 88.3%,
+  `collector_stale: false`, `market_dashboard` MCP tool responds cleanly.
+- Full suite green (1070/1071; the 1 failure is pre-existing/unrelated,
+  `test_canonical_copy.py`).
+- **Not fixed here** (separate, pre-existing issue): CI's `doctor_prod_gate`
+  still fails on 5 dead stores + Golden linkage at 71.8% (matches the linkage
+  regression already flagged in today's Command & Control report) — see
+  Follow-ups in the incident doc.
+
 ## [2026-07-28] — chore(deps): bump cli-market-core pin to 1.11.90 (Shopify variant-title fix for organix_pe unit-normalization)
 
 Follow-up to yesterday's stale-collector-deploy incident (below): pins
