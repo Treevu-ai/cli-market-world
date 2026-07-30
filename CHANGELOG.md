@@ -2,6 +2,20 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.11.97 (fix items_resolved/breakdown SKU mismatch — GLORIA report Hallazgo 3)
+
+`requirements.txt` pin bumped to `cli-market-core==1.11.97`. Closes the
+last open finding from `docs/reports/p0-glo-basket-pe-enterprise-blockers.md`:
+`market_optimize_purchase` could resolve the same requested item to
+different SKUs across `items_resolved`, `product_links`, and
+`sections.compare.breakdown` in a single response ("yogurt gloria" → 3
+different GLORIA products in one real production response). Now
+`items_resolved` is reconciled against the leader store's breakdown, so
+it always describes the exact product/price actually priced into the
+shown total. See `cli-market-core`'s own changelog for the full
+root-cause writeup. With this, all 5 findings from that report are
+closed.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.11.96 (fix market_optimize_purchase wrong-category matches)
 
 `requirements.txt` pin bumped to `cli-market-core==1.11.96`. Fixes a bug
