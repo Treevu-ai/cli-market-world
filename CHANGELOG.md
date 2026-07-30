@@ -25,9 +25,19 @@ and an unrelated basil oil from a different retailer.
   vegetal request resolving to an arroz+aceite pack) and disambiguation of
   `meta.confidence`'s meaning (`confidence_basis` field).
 
-**Not yet live** — same gap as every prior pin bump in this file: needs
-`cli-market-core` 1.11.93 to be on PyPI (confirmed, published) and
-`cli-market-api` redeployed before this reaches production.
+**Deployed**: `cli-market-core` 1.11.93 built and published to PyPI via
+`.github/workflows/publish-pypi.yml` (triggered by pushing tag `v1.11.93`),
+confirmed live on PyPI. `flyctl deploy --app cli-market-api --build-secret
+github_token=$(gh auth token)` and `flyctl deploy --app cli-market-collector
+--config fly.collector.toml --build-secret github_token=$(gh auth token)`
+both run same day — both apps rebuilt against the new `requirements.txt`
+pin (Docker's layer cache invalidates automatically since the file content
+changed). Verified live: `cli-market-api` 2 machines healthy;
+`cli-market-collector` active machine healthy (+ 1 standby, by design).
+`curl https://cli-market-api.fly.dev/analytics/price-history?product_id=1`
+and `curl -X POST https://cli-market-api.fly.dev/v1/basket/compare -d
+'{"items":[{"name":"leche"}]}'` both return `401` (auth required) — not
+`404`/`500` — confirming the new code is live, not just the pin bump.
 
 ## [2026-07-30] — wire 4 intel MCP tools into the HTTP transport + bump cli-market-core pin to 1.11.92 (basket-stress, commerce-pulse, price-forecast, arbitrage — 404/"Unknown tool" since 2026-07-17)
 
@@ -62,14 +72,12 @@ substitutes crossing dairy subcategory (mantequilla → queso crema,
 `procurement-bulk` input. Full detail in `cli-market-core/CHANGELOG.md`'s
 2026-07-30 entry.
 
-**Not yet done — pin bump alone doesn't reach the running Fly machine**
-(same gap noted in the 2026-07-29 entry below): `cli-market-core` 1.11.92
-needs to be built and published to PyPI, then `cli-market-api`/
-`cli-market-collector` redeployed, before these 4 tools actually work in
-production. `requirements.txt` pin bumped here as the target version; do not
-consider this closed until a live `curl` against
-`https://cli-market-api.fly.dev/v1/intel/basket-stress?country=PE` (etc.)
-returns 200, not 404.
+**Deployed** (superseded by 1.11.93 above, but confirming this specific
+release reached production first): `cli-market-core` 1.11.92 published to
+PyPI via tag `v1.11.92`, `cli-market-api` redeployed same session. Verified
+live: `curl https://cli-market-api.fly.dev/v1/intel/basket-stress?country=PE`
+(and `/pulse`, `/forecast`, `/arbitrage`) all returned `401` — not `404` —
+confirming the 4 routes exist in production.
 
 ## [2026-07-29] — chore(deps): bump cli-market-core pin to 1.11.91 (WooCommerce full-catalog Playwright fallback, fixes 2/5 `doctor_prod_gate.py` dead stores)
 
