@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.11.95 (register deltron_pe, disabled)
+
+`requirements.txt` pin bumped to `cli-market-core==1.11.95`, which adds
+`deltron_pe` (Deltron, PE wholesale tech distributor) to the `STORES`
+registry. Registered `disabled=True` / `enable_with_credentials=True` —
+the site runs a custom PHP storefront (not VTEX/WooCommerce/Magento/
+Shopify) whose product search returns server-rendered HTML with every
+price hidden behind "Precios - solo para usuarios logueados" (B2B
+wholesale login required). No collector changes possible until account
+credentials are available. See `cli-market-core`'s own changelog for the
+full investigation notes.
+
 ## [2026-07-30] — bump cli-market-index pin to v0.2.2 (ship the DANLAC variety-fingerprint fuzzy-match fix to production)
 
 Found while auditing ecosystem-wide alignment: `cli-market-index` had
