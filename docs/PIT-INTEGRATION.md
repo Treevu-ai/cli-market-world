@@ -250,7 +250,34 @@ Qué hace el merge delgado:
 3. Adjunta `market_evidence` + `market_headline` + `market_evidence_package_id`.
 4. Emite JSON y markdown para demo / enganche a PDF de PIT.
 
-No llama a PIT todavía: cuando `POST .../ficha` o el report estén disponibles con auth, el consumidor solo debe inyectar el bloque `market_evidence` (o el `package_id` + snapshot).
+### 4.5.2 Fase 3 — trazabilidad y cliente PIT delgado
+
+| Pieza | Path |
+|-------|------|
+| Trace receipt builder | `ops/pit_integration/trace.py` |
+| Cliente HTTP PIT | `ops/pit_integration/pit_client.py` |
+| Fixture receipt | `ops/pit_integration/mocks/trace_receipt.example.json` |
+| Tests | `tests/test_pit_phase3_trace.py` |
+| Salida local | `ops/generated/pit/last-trace-receipt.json` |
+
+**Receipt de auditoría** (schema `0.1`): une `package_id` + `as_of` + `pit_run_id` con un `audit_statement` legible:
+
+> Este precio salió de este corte: package_id=… as_of=… pit_run_id=…
+
+```bash
+# Trace automático al hacer merge-ficha o al pasar --pit-run-id
+python ops/market_evidence_package.py --mode mock --merge-ficha --write-trace --pit-run-id demo-run-1
+
+# Intentar crear research-run en PIT (registra status aunque falle auth)
+export PIT_API_URL=https://cli-market-pit-backend.fly.dev
+export PIT_API_TOKEN=...   # si tenés sesión/token
+python ops/market_evidence_package.py --mode mock --create-pit-run --merge-ficha --write-trace \
+  --query "blueberry functional beverage" --country PE
+```
+
+Env vars: `PIT_API_URL`, `PIT_API_TOKEN` (además de `MARKET_API_*` para `--mode live`).
+
+La ficha mergeada incluye `trace: { package_id, as_of, pit_run_id }`. El cliente PIT es **best-effort**: health, create/get research-run, ficha post — sin reimplementar literature/report en CLI Market.
 
 ### 4.6 Endpoint futuro (opcional — fase 4)
 
@@ -269,7 +296,7 @@ Hasta entonces el schema de esta sección es la fuente de verdad para mocks e in
 |----|-----|--------------------------------|--------|
 | G1 | PIT no tiene contrato fijo para “pedir góndola” | No prioritario | Usar este schema; mock o skill primero |
 | G2 | Ficha PIT sin precios reales | No | PIT/agente llama CLI Market al generar ficha |
-| G3 | Trazabilidad `run_id` ↔ snapshot de precios | Opcional | `consumer_ref.pit_run_id` + `as_of` en package |
+| G3 | Trazabilidad `run_id` ↔ snapshot de precios | Cerrado en CLI Market (fase 3) | Receipt + `consumer_ref.pit_run_id` + `as_of`; PIT debe aceptar/guardar el ref |
 | G4 | Auth dual | No | SSO/keys documentadas; tiers independientes al inicio |
 | G5 | “Una tool papers + precios” | **Evitar** | Orquestación, no primitiva única en MCP commerce |
 
@@ -292,7 +319,7 @@ Hasta entonces el schema de esta sección es la fuente de verdad para mocks e in
 | **0** | Límites de dominio alineados (este doc) | Equipos usan la matriz para triage de tickets — **hecho** |
 | **1** | Schema v0.1 del package + mapping query PIT → params CLI Market | Mock fixture + `validate_package` — **hecho** (`ops/pit_integration/`) |
 | **2** | Integración delgada: ficha stub + bloque mercado (live opcional) | `ops/market_evidence_package.py --merge-ficha` — **hecho** (PIT ficha real = siguiente cuando API agents esté up) |
-| **3** | Trazabilidad: `as_of` + `pit_run_id` en metadata del run | Auditoría “este precio salió de este corte” en el lado PIT |
+| **3** | Trazabilidad: `as_of` + `pit_run_id` + receipt + cliente PIT delgado | **Hecho (lado CLI Market)** — `last-trace-receipt.json`, `PitClient`; persistir el mismo ref en metadata del research-run queda del lado PIT cuando auth/API lo permita |
 | **4** | Solo con demanda: tool/API `market_category_evidence` o methods en API formal | Usos reales en fichas / data rooms |
 
 ## 8. Disclaimers canónicos (copiar en package y ficha)
@@ -321,3 +348,4 @@ Hasta entonces el schema de esta sección es la fuente de verdad para mocks e in
 |-------|--------|
 | 2026-07-29 | v0.1 — matriz PIT↔CLI Market, ownership, schema Market Evidence Package, roadmap |
 | 2026-07-29 | v0.2 — mocks, CLI `market_evidence_package.py`, merge ficha, tests, runbook `ops/pit_integration/` |
+| 2026-07-29 | v0.3 — fase 3: trace receipt, `PitClient`, CLI `--write-trace` / `--create-pit-run`, tests |
