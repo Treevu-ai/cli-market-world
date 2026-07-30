@@ -43,6 +43,10 @@ if str(OPS_DIR) not in sys.path:
     sys.path.insert(0, str(OPS_DIR))
 
 from pit_integration.pit_client import DEFAULT_PIT_URL, PitClient  # noqa: E402
+from pit_integration.run_metadata import (  # noqa: E402
+    build_pit_run_metadata,
+    validate_pit_run_metadata,
+)
 from pit_integration.trace import build_trace_receipt, validate_trace_receipt  # noqa: E402
 
 MOCKS_DIR = OPS_DIR / "pit_integration" / "mocks"
@@ -627,6 +631,7 @@ def _write_outputs(
         paths["ficha_json"] = merged_path
         paths["ficha_md"] = md_path
 
+    receipt: dict[str, Any] | None = None
     if write_trace:
         artifact_paths = {k: str(v) for k, v in paths.items()}
         receipt = build_trace_receipt(
@@ -644,6 +649,21 @@ def _write_outputs(
         trace_path = out_dir / "last-trace-receipt.json"
         trace_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         paths["trace"] = trace_path
+
+    # Always write run metadata when we have a package (sidecar for PIT persistence)
+    if write_trace or pit_run_id or merge:
+        meta = build_pit_run_metadata(
+            package,
+            pit_run_id=pit_run_id,
+            trace_id=(receipt or {}).get("trace_id") if receipt else None,
+            mode=mode,
+        )
+        merrors = validate_pit_run_metadata(meta)
+        if merrors:
+            raise ValueError("invalid run metadata: " + "; ".join(merrors))
+        meta_path = out_dir / "last-pit-run-metadata.json"
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        paths["run_metadata"] = meta_path
 
     return paths
 

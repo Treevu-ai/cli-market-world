@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1",
+  "kind": "cli_market.market_evidence_ref",
+  "created_at": "2026-07-29T19:05:00Z",
+  "mode": "mock",
+  "pit_run_id": "mock-pit-run-blueberry-001",
+  "trace_id": "trc_mock_example_001",
+  "package_id": "mep_mock_blueberry_pe_001",
+  "as_of": "2026-07-29T18:00:00Z",
+  "market_api_base": "https://cli-market-api.fly.dev",
+  "request": {
+    "query": "arandanos blueberries",
+    "country": "PE",
+    "line": "supermercados",
+    "application": "functional foods and beverages",
+    "hs_code": "0810.40"
+  },
+  "price_summary": {
+    "currency": "PEN",
+    "min": 8.5,
+    "max": 14.9,
+    "median": 9.7,
+    "n": 4
+  },
+  "coverage": {
+    "retailers_with_price": 3,
+    "items_returned": 4
+  },
+  "audit_statement": "Este precio salió de este corte: package_id=mep_mock_blueberry_pe_001 as_of=2026-07-29T18:00:00Z pit_run_id=mock-pit-run-blueberry-001",
+  "disclaimers": [
+    "Inflación y precios observados desde góndola online (retail formal). No reemplaza IPC oficial (INEI, DANE, INDEC, IBGE, etc.).",
+    "Este paquete no constituye scouting tecnológico ni revisión de literatura."
+  ],
+  "pit_api_note": "PIT OpenAPI v0.1.0 has no metadata field on ResearchRunCreate. Persist this object on the run when the API adds market_evidence_ref or metadata.cli_market support."
+}

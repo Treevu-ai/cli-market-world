@@ -30,6 +30,7 @@ Salidas:
 - `ops/generated/pit/last-ficha-merged.json` (con `--merge-ficha`)
 - `ops/generated/pit/last-ficha-merged.md`
 - `ops/generated/pit/last-trace-receipt.json` (fase 3; también auto si hay `--pit-run-id` o merge)
+- `ops/generated/pit/last-pit-run-metadata.json` (`market_evidence_ref` para persistir en el run PIT)
 
 ### Live (API CLI Market)
 
@@ -56,6 +57,7 @@ Módulos:
 
 - `ops/pit_integration/trace.py` — receipt de auditoría
 - `ops/pit_integration/pit_client.py` — health / research-runs / ficha
+- `ops/pit_integration/run_metadata.py` — `market_evidence_ref` (sidecar + extensión propuesta de API PIT)
 
 ### Tests
 

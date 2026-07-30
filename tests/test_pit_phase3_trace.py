@@ -15,6 +15,12 @@ sys.path.insert(0, str(OPS))
 
 from market_evidence_package import build_package, main  # noqa: E402
 from pit_integration.pit_client import PitClient  # noqa: E402
+from pit_integration.run_metadata import (  # noqa: E402
+    METADATA_SCHEMA_VERSION,
+    build_pit_run_metadata,
+    proposed_research_run_create_extension,
+    validate_pit_run_metadata,
+)
 from pit_integration.trace import (  # noqa: E402
     TRACE_SCHEMA_VERSION,
     build_trace_receipt,
@@ -144,6 +150,57 @@ def test_pit_client_create_research_run_mocked():
     call_kwargs = mock_client.request.call_args
     assert call_kwargs[0][0] == "POST"
     assert "/v1/research-runs" in call_kwargs[0][1]
+
+
+def test_build_pit_run_metadata_valid():
+    pkg = _sample_package()
+    meta = build_pit_run_metadata(pkg, pit_run_id="run-abc", trace_id="trc_1", mode="mock")
+    assert meta["schema_version"] == METADATA_SCHEMA_VERSION
+    assert meta["kind"] == "cli_market.market_evidence_ref"
+    assert meta["package_id"] == "mep_test_phase3"
+    assert meta["as_of"] == "2026-07-29T18:00:00Z"
+    assert meta["pit_run_id"] == "run-abc"
+    assert validate_pit_run_metadata(meta) == []
+
+
+def test_run_metadata_fixture_validates():
+    data = json.loads((MOCKS / "pit_run_metadata.example.json").read_text(encoding="utf-8"))
+    assert validate_pit_run_metadata(data) == []
+
+
+def test_proposed_research_run_create_extension_includes_ref():
+    pkg = _sample_package()
+    meta = build_pit_run_metadata(pkg, pit_run_id="r1")
+    body = proposed_research_run_create_extension(
+        "blueberry",
+        target_market="PE",
+        application="functional foods",
+        market_evidence_ref=meta,
+    )
+    assert body["market_evidence_ref"]["package_id"] == "mep_test_phase3"
+    assert body["target_market"] == "PE"
+
+
+def test_cli_writes_run_metadata(tmp_path: Path):
+    code = main(
+        [
+            "--mode",
+            "mock",
+            "--merge-ficha",
+            "--write-trace",
+            "--pit-run-id",
+            "run-meta",
+            "--out-dir",
+            str(tmp_path),
+        ]
+    )
+    assert code == 0
+    meta_path = tmp_path / "last-pit-run-metadata.json"
+    assert meta_path.is_file()
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert validate_pit_run_metadata(meta) == []
+    assert meta["pit_run_id"] == "run-meta"
+    assert meta["package_id"]
 
 
 def test_cli_create_pit_run_records_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
