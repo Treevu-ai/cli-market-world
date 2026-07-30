@@ -2,6 +2,32 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-index pin to v0.2.2 (ship the DANLAC variety-fingerprint fuzzy-match fix to production)
+
+Found while auditing ecosystem-wide alignment: `cli-market-index` had
+already fixed and backfilled the bug behind "same commercial SKU, different
+`canonical_product_id`" (DANLAC yogurt showing under different ids across
+retailers — see `cli-market-index/CHANGELOG.md`'s 2026-07-30 entry for the
+full root-cause writeup: `_fuzzy_search` matched candidates on
+brand+category+unit+qty only, never checking the variety fingerprint that
+distinguishes real product variants), but this repo's pin was still 10
+commits behind that fix — `829b15a`, pre-dating both the `BRAND_MAP` entry
+and the `_fuzzy_search` fix. The one-time production backfill already run
+against `cli-market-api`'s DB only cleaned up existing rows; without this
+pin bump, newly ingested variants (DANLAC or any other brand) could keep
+silently merging into an existing bare-variety golden record the same way.
+
+- `requirements.txt`: `cli-market-index` pin moved from commit `829b15a`
+  to tag `v0.2.2` (commit `66e6c7e`) — full 174-test suite confirmed green,
+  independent code-reviewer pass on the fix itself: APPROVE, 0 findings.
+- No `cli-market-world` code changes needed — this is purely a dependency
+  pin bump; the resolver logic lives entirely in `cli-market-index`.
+
+**Deployed**: `flyctl deploy --app cli-market-api --build-secret
+github_token=$(gh auth token)` run same session — Docker rebuilds the
+`git+https` pin unconditionally on this layer (no cache-bust needed, the
+commit SHA in `requirements.txt` changed). Verified healthy post-deploy.
+
 ## [2026-07-30] — expose stores_resolved on search/compare + bump cli-market-core pin to 1.11.94 (relevance-ranked search candidates)
 
 Closes the last two code-fixable findings from the tool-performance
