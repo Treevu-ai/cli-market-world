@@ -2,6 +2,28 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.11.98 (fix 3/5 dead-store collector failures)
+
+`requirements.txt` pin bumped to `cli-market-core==1.11.98`. Root-caused
+why `ops/doctor_prod_gate.py` (`MAX_DEAD_SOURCES=0`) has been failing CI
+— and blocking every Fly.io deploy — since 2026-07-29 21:19 UTC: 5 dead
+stores (`thegreenkiss_ca`, `simplynaturalcanada_ca`, `wisqaperu_pe`,
+`smartnutrition_pe`, `igardi_pe`). Fixed 3 of 5: some WAFs return HTTP
+200 with an HTML block page instead of JSON to the collector's IP
+specifically — both the Shopify and WooCommerce connectors only treated
+non-2xx status as "blocked, try the fallback," so `resp.json()` raised
+uncaught and neither connector's existing fallback ever ran. See
+`cli-market-core`'s own changelog for the full root-cause writeup and
+the 2 stores (`wisqaperu_pe`, `igardi_pe`) still unresolved (genuine
+403s that need production-side investigation, not a further guess from
+a local checkout).
+
+**Still blocking deploys**: this fix needs a fresh collector cycle to
+flip the 3 recovering stores back from `dead`, and even then 2 stores
+remain genuinely dead — so `doctor_prod_gate.py` will likely keep CI red
+until either those 2 are fixed or `DOCTOR_MAX_DEAD_SOURCES` is raised
+temporarily. Decision pending.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.11.97 (fix items_resolved/breakdown SKU mismatch — GLORIA report Hallazgo 3)
 
 `requirements.txt` pin bumped to `cli-market-core==1.11.97`. Closes the
