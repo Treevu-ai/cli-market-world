@@ -2,6 +2,33 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — flag cross-retailer product_id collisions in /analytics/price-history + bump cli-market-core pin to 1.11.93
+
+Closes a finding from `Diagnostico_desempeno_tools_CLI_Market_2026-07-29.md`:
+`product_id` is each retailer platform's own raw catalog ID (VTEX
+`productReference`, Shopify/WooCommerce numeric ID), never globally
+namespaced. `GET /analytics/price-history?product_id=...` without `store=`
+queried by `product_id` alone across every retailer's catalog, silently
+merging unrelated products that happen to reuse the same small numeric ID
+— confirmed in production: `product_id=468` returned both a Cafetal coffee
+and an unrelated basil oil from a different retailer.
+
+- `routers/analytics.py`: when `product_id` is given without `store` and the
+  matched rows span more than one distinct store, the response now includes
+  `stores_matched` and a `warning` telling the caller to pass `store=` to
+  disambiguate. `snapshots` stays the same flat list — no shape break.
+- New test reproduces the exact repro (two stores, same `product_id`,
+  unrelated products) and confirms `store=` suppresses the warning.
+- `requirements.txt` pin bumped to `cli-market-core==1.11.93`, which also
+  ships 2 other fixes from the same diagnostic — see that repo's own
+  changelog: a bundle-contamination guard for `market_basket` (an aceite
+  vegetal request resolving to an arroz+aceite pack) and disambiguation of
+  `meta.confidence`'s meaning (`confidence_basis` field).
+
+**Not yet live** — same gap as every prior pin bump in this file: needs
+`cli-market-core` 1.11.93 to be on PyPI (confirmed, published) and
+`cli-market-api` redeployed before this reaches production.
+
 ## [2026-07-30] — wire 4 intel MCP tools into the HTTP transport + bump cli-market-core pin to 1.11.92 (basket-stress, commerce-pulse, price-forecast, arbitrage — 404/"Unknown tool" since 2026-07-17)
 
 Closes the code-fixable findings from `docs/reports/p0-glo-basket-pe-enterprise-blockers.md`
