@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Market Evidence Package — thin glue for PIT ↔ CLI Market (phase 1–2).
+"""Market Evidence Package — thin glue for PIT ↔ CLI Market (phases 1–3).
 
 Builds the JSON contract defined in docs/PIT-INTEGRATION.md:
   - --mode mock   → deterministic fixture (no network)
   - --mode live   → assembles package from CLI Market API
   - --merge-ficha → attaches package to a PIT-like ficha stub
+  - --write-trace → phase-3 audit receipt (package_id + as_of + pit_run_id)
+  - --create-pit-run / --fetch-pit-run → optional PIT API calls when token set
 
 Usage:
-  python ops/market_evidence_package.py --mode mock
-  python ops/market_evidence_package.py --mode mock --merge-ficha
-  python ops/market_evidence_package.py --mode live --query "arandanos" --country PE
-  python ops/market_evidence_package.py --mode live --query "blueberry" --country PE --pit-run-id demo-run
+  python ops/market_evidence_package.py --mode mock --merge-ficha --write-trace
+  python ops/market_evidence_package.py --mode live --query "arandanos" --country PE --pit-run-id demo-run
+  python ops/market_evidence_package.py --mode mock --create-pit-run --merge-ficha --write-trace
 
 Env:
   MARKET_API_URL     default https://cli-market-api.fly.dev
   MARKET_API_TOKEN   Bearer token (required for live intel; search may work with free key)
+  PIT_API_URL        default https://cli-market-pit-backend.fly.dev
+  PIT_API_TOKEN      optional session/API token for PIT research-runs
 """
 
 from __future__ import annotations
@@ -36,6 +39,12 @@ except ImportError:  # pragma: no cover
 
 OPS_DIR = Path(__file__).resolve().parent
 ROOT = OPS_DIR.parent
+if str(OPS_DIR) not in sys.path:
+    sys.path.insert(0, str(OPS_DIR))
+
+from pit_integration.pit_client import DEFAULT_PIT_URL, PitClient  # noqa: E402
+from pit_integration.trace import build_trace_receipt, validate_trace_receipt  # noqa: E402
+
 MOCKS_DIR = OPS_DIR / "pit_integration" / "mocks"
 OUT_DIR = OPS_DIR / "generated" / "pit"
 SCHEMA_VERSION = "0.1"
@@ -295,6 +304,18 @@ def ficha_to_markdown(merged: dict[str, Any]) -> str:
                 f"| {row.get('name', '')} | {row.get('store', '')} | "
                 f"{row.get('price', '')} | {row.get('currency', '')} |"
             )
+    trace = merged.get("trace") or {}
+    if trace:
+        lines.extend(
+            [
+                "",
+                "### Trazabilidad (fase 3)",
+                "",
+                f"- package_id: `{trace.get('package_id')}`",
+                f"- as_of: `{trace.get('as_of')}`",
+                f"- pit_run_id: `{trace.get('pit_run_id')}`",
+            ]
+        )
     lines.extend(["", "### Disclaimers", ""])
     for d in me.get("disclaimers") or []:
         lines.append(f"- {d}")
@@ -577,6 +598,12 @@ def _write_outputs(
     merge: bool,
     pit_run_id: str | None,
     out_dir: Path,
+    *,
+    write_trace: bool = False,
+    mode: str = "mock",
+    pit_api_base: str | None = None,
+    pit_create_status: dict[str, Any] | None = None,
+    pit_fetch_status: dict[str, Any] | None = None,
 ) -> dict[str, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     paths: dict[str, Path] = {}
@@ -587,13 +614,92 @@ def _write_outputs(
     if merge:
         stub = load_mock_ficha_stub(pit_run_id or (package.get("consumer_ref") or {}).get("pit_run_id"))
         merged = merge_ficha(stub, package)
+        # Phase-3: embed audit pointer on merged ficha
+        merged["trace"] = {
+            "package_id": package.get("package_id"),
+            "as_of": package.get("as_of"),
+            "pit_run_id": pit_run_id or (package.get("consumer_ref") or {}).get("pit_run_id"),
+        }
         merged_path = out_dir / "last-ficha-merged.json"
         md_path = out_dir / "last-ficha-merged.md"
         merged_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         md_path.write_text(ficha_to_markdown(merged), encoding="utf-8")
         paths["ficha_json"] = merged_path
         paths["ficha_md"] = md_path
+
+    if write_trace:
+        artifact_paths = {k: str(v) for k, v in paths.items()}
+        receipt = build_trace_receipt(
+            package,
+            pit_run_id=pit_run_id,
+            pit_api_base=pit_api_base,
+            mode=mode,
+            artifact_paths=artifact_paths,
+            pit_create_status=pit_create_status,
+            pit_fetch_status=pit_fetch_status,
+        )
+        terrors = validate_trace_receipt(receipt)
+        if terrors:
+            raise ValueError("invalid trace receipt: " + "; ".join(terrors))
+        trace_path = out_dir / "last-trace-receipt.json"
+        trace_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        paths["trace"] = trace_path
+
     return paths
+
+
+def _maybe_talk_to_pit(
+    *,
+    create_run: bool,
+    fetch_run: bool,
+    pit_run_id: str | None,
+    query: str,
+    country: str,
+    application: str,
+    hs_code: str | None,
+    pit_url: str | None,
+    pit_token: str | None,
+    limit: int,
+) -> tuple[str | None, dict[str, Any] | None, dict[str, Any] | None, str]:
+    """Optional PIT API side effects. Returns (run_id, create_status, fetch_status, base_url)."""
+    base = (pit_url or os.getenv("PIT_API_URL") or DEFAULT_PIT_URL).rstrip("/")
+    if not create_run and not fetch_run:
+        return pit_run_id, None, None, base
+
+    client = PitClient(base_url=base, token=pit_token)
+    create_status: dict[str, Any] | None = None
+    fetch_status: dict[str, Any] | None = None
+    run_id = pit_run_id
+
+    if create_run:
+        create_status = client.create_research_run(
+            query,
+            target_market=country,
+            application=application,
+            limit=min(limit, 25),
+            hs_code=hs_code,
+            full=bool(hs_code),
+        )
+        extracted = PitClient.extract_run_id(create_status)
+        if extracted:
+            run_id = extracted
+        # Always record health/agents for ops diagnostics
+        create_status = {
+            **create_status,
+            "health": client.health(),
+            "agents": client.agents_status(),
+        }
+
+    if fetch_run and run_id:
+        fetch_status = client.get_research_run(run_id)
+    elif fetch_run and not run_id:
+        fetch_status = {
+            "ok": False,
+            "status_code": None,
+            "body": {"error": "no pit_run_id to fetch"},
+        }
+
+    return run_id, create_status, fetch_status, base
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -607,17 +713,65 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pit-run-id", default=None)
     parser.add_argument("--limit", type=int, default=25)
     parser.add_argument("--merge-ficha", action="store_true", help="Merge with PIT ficha stub")
+    parser.add_argument(
+        "--write-trace",
+        action="store_true",
+        help="Write phase-3 last-trace-receipt.json (package_id + as_of + pit_run_id)",
+    )
+    parser.add_argument(
+        "--create-pit-run",
+        action="store_true",
+        help="POST /v1/research-runs on PIT (requires auth; records status even on 401)",
+    )
+    parser.add_argument(
+        "--fetch-pit-run",
+        action="store_true",
+        help="GET /v1/research-runs/{id} when pit_run_id is known",
+    )
+    parser.add_argument("--pit-url", default=None, help="Override PIT_API_URL")
+    parser.add_argument("--pit-token", default=None, help="Override PIT_API_TOKEN")
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--api-url", default=None)
     parser.add_argument("--token", default=None)
     parser.add_argument("--print", dest="do_print", action="store_true", help="Print package JSON to stdout")
     args = parser.parse_args(argv)
 
+    pit_run_id = args.pit_run_id
+    pit_create_status = None
+    pit_fetch_status = None
+    pit_base = (args.pit_url or os.getenv("PIT_API_URL") or DEFAULT_PIT_URL).rstrip("/")
+
+    if args.create_pit_run or args.fetch_pit_run:
+        pit_run_id, pit_create_status, pit_fetch_status, pit_base = _maybe_talk_to_pit(
+            create_run=args.create_pit_run,
+            fetch_run=args.fetch_pit_run,
+            pit_run_id=pit_run_id,
+            query=args.query,
+            country=args.country,
+            application=args.application,
+            hs_code=args.hs_code,
+            pit_url=args.pit_url,
+            pit_token=args.pit_token,
+            limit=args.limit,
+        )
+        if pit_run_id:
+            print(f"pit_run_id={pit_run_id}")
+        if pit_create_status is not None:
+            print(
+                f"pit_create status={pit_create_status.get('status_code')} "
+                f"ok={pit_create_status.get('ok')}"
+            )
+        if pit_fetch_status is not None:
+            print(
+                f"pit_fetch status={pit_fetch_status.get('status_code')} "
+                f"ok={pit_fetch_status.get('ok')}"
+            )
+
     if args.mode == "mock":
         package = load_mock_package(
             query=args.query,
             country=args.country,
-            pit_run_id=args.pit_run_id,
+            pit_run_id=pit_run_id,
         )
         # Re-validate after overrides
         package = build_package(
@@ -626,7 +780,7 @@ def main(argv: list[str] | None = None) -> int:
             line=package["request"].get("line", args.line),
             application=package["request"].get("application", args.application),
             hs_code=package["request"].get("hs_code") or args.hs_code,
-            pit_run_id=(package.get("consumer_ref") or {}).get("pit_run_id") or args.pit_run_id,
+            pit_run_id=(package.get("consumer_ref") or {}).get("pit_run_id") or pit_run_id,
             assortment=package.get("assortment") or [],
             signals=package.get("signals") or {},
             coverage=package.get("coverage"),
@@ -643,7 +797,7 @@ def main(argv: list[str] | None = None) -> int:
             line=args.line,
             application=args.application,
             hs_code=args.hs_code,
-            pit_run_id=args.pit_run_id,
+            pit_run_id=pit_run_id,
             limit=args.limit,
             api_url=args.api_url,
             token=args.token,
@@ -656,12 +810,30 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {e}", file=sys.stderr)
         return 2
 
-    paths = _write_outputs(
-        package,
-        merge=args.merge_ficha,
-        pit_run_id=args.pit_run_id,
-        out_dir=args.out_dir,
+    # Auto-trace when merge or explicit pit_run_id or PIT calls
+    write_trace = bool(
+        args.write_trace
+        or args.merge_ficha
+        or pit_run_id
+        or args.create_pit_run
+        or args.fetch_pit_run
     )
+
+    try:
+        paths = _write_outputs(
+            package,
+            merge=args.merge_ficha,
+            pit_run_id=pit_run_id or (package.get("consumer_ref") or {}).get("pit_run_id"),
+            out_dir=args.out_dir,
+            write_trace=write_trace,
+            mode=args.mode,
+            pit_api_base=pit_base,
+            pit_create_status=pit_create_status,
+            pit_fetch_status=pit_fetch_status,
+        )
+    except ValueError as exc:
+        print(f"TRACE ERROR: {exc}", file=sys.stderr)
+        return 3
 
     print(f"package_id={package['package_id']}")
     print(f"mode={args.mode} country={package['request']['country']} query={package['request']['query']!r}")

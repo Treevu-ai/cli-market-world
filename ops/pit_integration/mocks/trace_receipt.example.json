@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1",
+  "trace_id": "trc_mock_example_001",
+  "created_at": "2026-07-29T19:00:00Z",
+  "mode": "mock",
+  "pit_run_id": "mock-pit-run-blueberry-001",
+  "package_id": "mep_mock_blueberry_pe_001",
+  "as_of": "2026-07-29T18:00:00Z",
+  "market_api_base": "https://cli-market-api.fly.dev",
+  "pit_api_base": "https://cli-market-pit-backend.fly.dev",
+  "request": {
+    "query": "arandanos blueberries",
+    "country": "PE",
+    "line": "supermercados",
+    "application": "functional foods and beverages",
+    "hs_code": "0810.40"
+  },
+  "price_summary": {
+    "currency": "PEN",
+    "min": 8.5,
+    "max": 14.9,
+    "median": 9.7,
+    "n": 4,
+    "method": "simple_on_returned_items"
+  },
+  "coverage": {
+    "retailers_with_price": 3,
+    "items_returned": 4
+  },
+  "artifacts": {
+    "package": "ops/generated/pit/last-market-evidence-package.json",
+    "ficha_json": "ops/generated/pit/last-ficha-merged.json",
+    "ficha_md": "ops/generated/pit/last-ficha-merged.md"
+  },
+  "pit": {
+    "create": null,
+    "fetch": null
+  },
+  "audit_statement": "Este precio salió de este corte: package_id=mep_mock_blueberry_pe_001 as_of=2026-07-29T18:00:00Z pit_run_id=mock-pit-run-blueberry-001",
+  "disclaimers": [
+    "Inflación y precios observados desde góndola online (retail formal). No reemplaza IPC oficial (INEI, DANE, INDEC, IBGE, etc.).",
+    "Este paquete no constituye scouting tecnológico ni revisión de literatura."
+  ]
+}
