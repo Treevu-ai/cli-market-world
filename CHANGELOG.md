@@ -2,6 +2,48 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — wire 4 intel MCP tools into the HTTP transport + bump cli-market-core pin to 1.11.92 (basket-stress, commerce-pulse, price-forecast, arbitrage — 404/"Unknown tool" since 2026-07-17)
+
+Closes the code-fixable findings from `docs/reports/p0-glo-basket-pe-enterprise-blockers.md`
+(Cursor-reported enterprise playbook run against the GLORIA dairy canasta).
+`market_basket_stress`, `market_commerce_pulse`, `market_price_forecast`, and
+`market_arbitrage` were registered as MCP tools since `0f539d3` (2026-07-17)
+but had **two** independent gaps, both now closed:
+
+1. `cli-market-core` never implemented the backing REST routes (404 in prod)
+   — fixed in `cli-market-core` 1.11.92 (see that repo's own changelog for the
+   4 new `@router.get` handlers + `market_price_forecast.py`/
+   `market_arbitrage.py`).
+2. **This repo's `routers/mcp_http.py`** (the production HTTP MCP transport —
+   separate surface from `cli-market-core`'s stdio server, see the
+   two-MCP-surface architecture note in `9083a59d`) had **no dispatch case at
+   all** for these 4 tool names — they fell through to `{"error": "Unknown
+   tool"}` regardless of what `cli-market-core` did. Fixing only the core
+   package would not have fixed what Cursor (an HTTP MCP client) actually
+   sees. Added the 4 missing `elif name ==` branches in `_call_tool()`, same
+   `client.get(f"{_API_BASE}/v1/intel/...", params=...)` pattern as their
+   neighbors, and gated all 4 as `pro` tier in `_PRE_CHECK_TIER` (same
+   structural gap as `market_procurement_signal`/`market_price_risk`: the
+   `cli-market-core` endpoint only checks `Depends(_require_v1_auth)`, no
+   billing tier concept, so this repo must self-enforce).
+
+Also closes 3 P1 correctness findings from the same investigation, all fixed
+upstream in `cli-market-core` 1.11.92: `market_optimize_purchase` resolving
+one requested SKU to 3 different products across response sections;
+substitutes crossing dairy subcategory (mantequilla → queso crema,
+`confidence: "ok"`); and a 500 (should be 422) on malformed
+`procurement-bulk` input. Full detail in `cli-market-core/CHANGELOG.md`'s
+2026-07-30 entry.
+
+**Not yet done — pin bump alone doesn't reach the running Fly machine**
+(same gap noted in the 2026-07-29 entry below): `cli-market-core` 1.11.92
+needs to be built and published to PyPI, then `cli-market-api`/
+`cli-market-collector` redeployed, before these 4 tools actually work in
+production. `requirements.txt` pin bumped here as the target version; do not
+consider this closed until a live `curl` against
+`https://cli-market-api.fly.dev/v1/intel/basket-stress?country=PE` (etc.)
+returns 200, not 404.
+
 ## [2026-07-29] — chore(deps): bump cli-market-core pin to 1.11.91 (WooCommerce full-catalog Playwright fallback, fixes 2/5 `doctor_prod_gate.py` dead stores)
 
 Follow-up to today's dashboard-OOM incident's "not yet done" list

@@ -162,6 +162,13 @@ _SIMPLE_GET_TOOLS = [
     ("market_brand_monitor", {"brand": "Gloria"}, "/v1/brand-monitor"),
     ("market_brand_monitor_promos", {"brand": "Gloria"}, "/v1/brand-monitor/promos"),
     ("market_brand_monitor_alerts", {"brand": "gloria"}, "/v1/brand-monitor/alerts"),
+    # Added with cli-market-core 1.11.92 — had no dispatch case at all before
+    # (fell to "Unknown tool"), on top of cli-market-core never having
+    # implemented the backing route (see docs/reports/p0-glo-basket-pe-enterprise-blockers.md).
+    ("market_basket_stress", {"country": "PE"}, "/v1/intel/basket-stress"),
+    ("market_commerce_pulse", {"country": "PE"}, "/v1/intel/pulse"),
+    ("market_price_forecast", {"product": "leche"}, "/v1/intel/forecast"),
+    ("market_arbitrage", {"product": "leche", "countries": "PE,MX"}, "/v1/intel/arbitrage"),
 ]
 
 
@@ -519,6 +526,10 @@ def _patch_starter_tier(monkeypatch):
         ("market_coverage_matrix", {}),
         ("market_prices", {}),
         ("market_basket_snapshot", {}),
+        ("market_basket_stress", {}),
+        ("market_commerce_pulse", {}),
+        ("market_price_forecast", {"product": "leche"}),
+        ("market_arbitrage", {"product": "leche", "countries": "PE,MX"}),
     ],
 )
 def test_pre_check_tier_rejects_starter_for_pro_tools_before_hitting_backend(monkeypatch, tool_name, args):

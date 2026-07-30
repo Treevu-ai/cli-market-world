@@ -95,6 +95,10 @@ _PRO_TOOLS = frozenset({
     "market_brand_monitor_promos",
     "market_brand_monitor_config",
     "market_brand_monitor_alerts",
+    "market_basket_stress",
+    "market_commerce_pulse",
+    "market_price_forecast",
+    "market_arbitrage",
 })
 
 _UPGRADE_MSG = (
@@ -471,6 +475,70 @@ _TOOLS = [
             "properties": {
                 "store": {"type": "string", "description": "Store key from market_discover"},
                 "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_basket_stress",
+        "description": (
+            "[Pro] Minimum canasta básica stress index for a country — cheapest indexed staple per item "
+            "vs. a 100-baseline. NOT official CPI; a shelf-price-only proxy."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
+            },
+        },
+    },
+    {
+        "name": "market_commerce_pulse",
+        "description": (
+            "[Pro] Agentic Commerce Pulse — weekly research report synthesized from moat signals "
+            "(inflation, basket stress, promo activity, retailer coverage). JSON or markdown."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "default": "PE"},
+                "days": {"type": "integer", "default": 7},
+                "lang": {"type": "string", "default": "es", "description": "es or en"},
+                "format": {"type": "string", "default": "json", "description": "json or markdown"},
+            },
+        },
+    },
+    {
+        "name": "market_price_forecast",
+        "description": (
+            "[Pro] Price forecast from price_history for one product — trend + confidence band over a "
+            "horizon. Requires enough historical snapshots; sparse products return low confidence "
+            "rather than a fabricated trend."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["product"],
+            "properties": {
+                "product": {"type": "string", "description": "e.g. leche, arroz"},
+                "country": {"type": "string", "default": "PE"},
+                "horizon_days": {"type": "integer", "default": 21},
+                "lookback_days": {"type": "integer", "default": 90},
+            },
+        },
+    },
+    {
+        "name": "market_arbitrage",
+        "description": (
+            "[Pro] Cross-border shelf-price arbitrage — buy-country vs. sell-country spread in USD for a "
+            "product across LatAm. Requires product or canonical_id. Shelf prices only; does NOT account "
+            "for import duties, freight, or FX volatility between the compared snapshots."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product": {"type": "string"},
+                "canonical_id": {"type": "string"},
+                "countries": {"type": "string", "description": "Comma-separated ISO codes, e.g. PE,MX,CL"},
+                "min_spread_pct": {"type": "number", "default": 10.0},
             },
         },
     },
@@ -1112,6 +1180,14 @@ _PRE_CHECK_TIER: dict[str, str] = {
     "market_ecosystem_radar": "pro",
     "market_household_get": "starter",
     "market_household_update": "pro",
+    # Added with their real endpoints (cli-market-core 1.11.92) — same [Pro]
+    # bundle="intel" tier as their siblings above (market_procurement_signal,
+    # market_price_risk, market_retailer_scorecard); their market_core-backed
+    # endpoint has the same structural gap (Depends(_require_v1_auth) only).
+    "market_basket_stress": "pro",
+    "market_commerce_pulse": "pro",
+    "market_price_forecast": "pro",
+    "market_arbitrage": "pro",
 }
 
 _STARTER_QUALIFYING_TIERS = frozenset({"starter", "pro", "pro_founding", "pro_annual", "enterprise", "builder"})
@@ -1228,6 +1304,20 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.get(f"{_API_BASE}/v1/intel/promo-detector", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_retailer_scorecard":
             r = await client.get(f"{_API_BASE}/v1/intel/retailer-scorecard", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_basket_stress":
+            # /v1/intel/basket-stress never existed as a route (verified 404 in
+            # prod, cli-market-world#p0-missing-intel-endpoints) — cli-market-core
+            # 1.11.92 adds the real handler. This tool had no dispatch case here
+            # at all (fell through to "Unknown tool"), separate from the
+            # unrelated basket-stress/procurement-signal mixup noted above on
+            # market_procurement_signal.
+            r = await client.get(f"{_API_BASE}/v1/intel/basket-stress", params={"country": args.get("country")}, headers=headers)
+        elif name == "market_commerce_pulse":
+            r = await client.get(f"{_API_BASE}/v1/intel/pulse", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_price_forecast":
+            r = await client.get(f"{_API_BASE}/v1/intel/forecast", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_arbitrage":
+            r = await client.get(f"{_API_BASE}/v1/intel/arbitrage", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_favorites":
             r = await client.post(f"{_API_BASE}/favorites", json=args, headers=headers)
         elif name == "market_price_alerts":
