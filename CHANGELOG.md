@@ -2,6 +2,38 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — expose stores_resolved on search/compare + bump cli-market-core pin to 1.11.94 (relevance-ranked search candidates)
+
+Closes the last two code-fixable findings from the tool-performance
+diagnostics for this round:
+
+- `routers/search.py`: `/products/search` and `/products/compare` now
+  include `stores_resolved` (the pre-filter store count) in their
+  response — turns "0 stores matched your country/line/store filters"
+  into a diagnosable signal instead of looking identical to "candidates
+  existed but none passed the relevance filter" (both previously just an
+  empty list). New tests confirm `stores_resolved == 0` for an unknown
+  country on both endpoints.
+- `requirements.txt` pin bumped to `cli-market-core==1.11.94`, which ranks
+  search candidates by token-match-count before the recency-ordered
+  candidate cap — closes the "exact vs broad" search gap (a broad
+  `market_search` finding a Sapolio 4L pack that a stricter search
+  missed). Same class of bug as the 2026-07-20 "pollo" incident. See that
+  repo's own changelog for the known, intentional limits of this fix
+  (single-token queries and `require_all=True` wording mismatches are
+  unaffected).
+
+With this, all 3 code-fixable findings from
+`Diagnostico_desempeno_tools_CLI_Market_2026-07-29.md` are closed.
+`canonical_product_id` drift across retailers remains out of reach —
+owned entirely by `cli-market-index` (external repo).
+
+**Deployed**: PyPI publish of `cli-market-core` 1.11.94 confirmed via tag
+`v1.11.94`. `flyctl deploy --app cli-market-api --build-secret
+github_token=$(gh auth token)` and the same for `cli-market-collector`
+(`--config fly.collector.toml`) run same session — both apps rebuilt
+against the new pin, both healthy post-deploy.
+
 ## [2026-07-30] — flag cross-retailer product_id collisions in /analytics/price-history + bump cli-market-core pin to 1.11.93
 
 Closes a finding from `Diagnostico_desempeno_tools_CLI_Market_2026-07-29.md`:
