@@ -2,6 +2,22 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.11.96 (fix market_optimize_purchase wrong-category matches)
+
+`requirements.txt` pin bumped to `cli-market-core==1.11.96`. Fixes a bug
+surfaced by a 15-exercise PE diagnostic run: `market_optimize_purchase`
+returned an invalid S/154 plan (vs S/958 validated by hand) because its
+basket-total computation resolved "queso" to "Tequeños de Queso" (a fried
+snack) and "mantequilla" to "Mantequilla de Maní" (peanut butter) — both
+literal word-overlap false positives, cheaper than the real dairy
+staple, so they won the per-store "best price" pick. Fixed at the
+matching layer (`market_food_match.py`/`market_spread.py` exclusion
+lists) in `cli-market-core`; see that repo's changelog for the full
+root-cause writeup and the known, intentional limit (a separate "leche"
+→ "leche light" observation from the same report was NOT touched —
+insufficient evidence to tell a real mismatch from a working-as-intended
+diet-variant substitution).
+
 ## [2026-07-30] — bump cli-market-core pin to 1.11.95 (register deltron_pe, disabled)
 
 `requirements.txt` pin bumped to `cli-market-core==1.11.95`, which adds
