@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-index
-          ref: 829b15a926a8a2022c38be1b271b662f81302551
+          ref: 66e6c7ecdda42353fb99ea42f3790d35f5b9802a
           path: .deps/cli-market-index
           token: ${{ secrets.GH_PAT }}
 
