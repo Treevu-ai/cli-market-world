@@ -61,7 +61,27 @@ def price_history(
     params.append(limit)
     rows = db.execute(q, params).fetchall()
     db.close()
-    return {"count": len(rows), "snapshots": [dict(r) for r in rows]}
+    snapshots = [dict(r) for r in rows]
+    result: dict = {"count": len(snapshots), "snapshots": snapshots}
+
+    # product_id is each retailer platform's own raw catalog ID (VTEX
+    # productReference, Shopify/WooCommerce numeric ID) -- never globally
+    # namespaced. Querying by product_id alone, without store, can silently
+    # merge unrelated products from different retailers that happen to reuse
+    # the same small numeric ID (confirmed in production: product_id=468
+    # returned both a Cafetal coffee and an unrelated basil oil from a
+    # different retailer). Flag it instead of returning a merged series that
+    # looks like one product's history.
+    if product_id and not store:
+        stores_matched = sorted({s.get("store") for s in snapshots if s.get("store")})
+        if len(stores_matched) > 1:
+            result["stores_matched"] = stores_matched
+            result["warning"] = (
+                "product_id is not a global key across retailers -- "
+                f"{len(stores_matched)} distinct stores matched this product_id. "
+                "Pass store= to disambiguate a single retailer's history."
+            )
+    return result
 
 
 @router.get("/analytics/stats", summary="Get data moat totals: snapshots, stores tracked, products, and freshness")

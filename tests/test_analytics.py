@@ -60,6 +60,48 @@ def test_price_history_with_product_filter():
     assert r.json()["count"] == 0
 
 
+def test_price_history_flags_cross_retailer_product_id_collision():
+    """product_id is each retailer platform's own raw catalog ID, never
+    globally namespaced -- confirmed in production: product_id=468 returned
+    a Cafetal coffee AND an unrelated basil oil from a different retailer
+    under the same local ID. Querying without store= must flag the
+    collision instead of silently returning a merged series."""
+    from datetime import datetime, timezone
+
+    db = get_db()
+    try:
+        ts = datetime.now(timezone.utc).isoformat()
+        db.execute(
+            """INSERT INTO price_snapshots
+               (product_id, store, store_name, name, price, line, currency, queried_at, confidence)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ok')""",
+            ("collision-468", "wong", "Wong", "Cafe Tostado Cafetal 200g", 15.0, "supermercados", "PEN", ts),
+        )
+        db.execute(
+            """INSERT INTO price_snapshots
+               (product_id, store, store_name, name, price, line, currency, queried_at, confidence)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ok')""",
+            ("collision-468", "metro", "Metro", "Aceite de Albahaca Gourmet", 22.0, "supermercados", "PEN", ts),
+        )
+        db.commit()
+    finally:
+        db.close()
+
+    r = client.get("/analytics/price-history?product_id=collision-468", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] == 2
+    assert sorted(data["stores_matched"]) == ["metro", "wong"]
+    assert "warning" in data
+
+    # Passing store= disambiguates -- no warning, single-store result only.
+    r2 = client.get("/analytics/price-history?product_id=collision-468&store=wong", headers=_AUTH)
+    assert r2.status_code == 200
+    data2 = r2.json()
+    assert data2["count"] == 1
+    assert "warning" not in data2
+
+
 def test_price_history_returns_inserted_row():
     db = get_db()
     db.execute(
