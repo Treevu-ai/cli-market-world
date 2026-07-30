@@ -69,3 +69,6 @@ credentials-local/
 output/
 market-reports/
 graphify-out/
+ops/generated/pit/*
+!ops/generated/pit/.gitkeep
+

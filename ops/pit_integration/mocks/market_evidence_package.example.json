@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1",
+  "package_id": "mep_mock_blueberry_pe_001",
+  "as_of": "2026-07-29T18:00:00Z",
+  "generated_by": {
+    "system": "cli-market",
+    "api_base": "https://cli-market-api.fly.dev",
+    "tools_used": [
+      "mock",
+      "POST /products/search",
+      "GET /v1/intel/brief",
+      "GET /v1/intel/scores"
+    ]
+  },
+  "consumer_ref": {
+    "pit_run_id": "mock-pit-run-blueberry-001",
+    "request_id": "demo-local"
+  },
+  "request": {
+    "query": "arandanos blueberries",
+    "country": "PE",
+    "line": "supermercados",
+    "application": "functional foods and beverages",
+    "hs_code": "0810.40",
+    "max_items": 25
+  },
+  "coverage": {
+    "retailers_with_price": 3,
+    "items_returned": 4,
+    "freshness_pct_under_24h": 75.0,
+    "data_confidence": 0.72,
+    "notes": [
+      "Mock fixture for PIT thin integration demos. Replace with --mode live."
+    ]
+  },
+  "assortment": [
+    {
+      "product_id": "mock-wong-arandanos-125",
+      "name": "Arándanos bandeja 125g",
+      "brand": "Campo Verde",
+      "store": "wong",
+      "country": "PE",
+      "price": 9.9,
+      "currency": "PEN",
+      "unit": "125g",
+      "url": null,
+      "observed_at": "2026-07-29T12:00:00Z"
+    },
+    {
+      "product_id": "mock-metro-arandanos-125",
+      "name": "Arándanos 125g",
+      "brand": "Metro",
+      "store": "metro",
+      "country": "PE",
+      "price": 8.5,
+      "currency": "PEN",
+      "unit": "125g",
+      "url": null,
+      "observed_at": "2026-07-29T12:05:00Z"
+    },
+    {
+      "product_id": "mock-plaza-arandanos-200",
+      "name": "Arándanos premium 200g",
+      "brand": "Vita",
+      "store": "plaza_vea",
+      "country": "PE",
+      "price": 14.9,
+      "currency": "PEN",
+      "unit": "200g",
+      "url": null,
+      "observed_at": "2026-07-29T12:10:00Z"
+    },
+    {
+      "product_id": "mock-tottus-arandanos-125",
+      "name": "Arándanos 125g",
+      "brand": "Tottus",
+      "store": "tottus",
+      "country": "PE",
+      "price": 9.5,
+      "currency": "PEN",
+      "unit": "125g",
+      "url": null,
+      "observed_at": "2026-07-29T11:55:00Z"
+    }
+  ],
+  "price_summary": {
+    "currency": "PEN",
+    "min": 8.5,
+    "max": 14.9,
+    "median": 9.7,
+    "n": 4,
+    "method": "simple_on_returned_items"
+  },
+  "signals": {
+    "intel_brief_headline": "Mock: presión de góndola moderada en frutas PE (fixture)",
+    "inflation": {
+      "note": "mock",
+      "window_7d_pct": 0.4,
+      "window_30d_pct": 1.2
+    },
+    "scores": {
+      "data_confidence": 0.72,
+      "basket_stress": null,
+      "note": "mock scores — not production indicators"
+    },
+    "affordability": {},
+    "price_risk": {},
+    "trending": {}
+  },
+  "quality": {
+    "layer": "mock",
+    "caveats": [
+      "Retail formal online only; not national CPI.",
+      "Not informal market coverage.",
+      "This file is a mock fixture for integration tests and demos."
+    ]
+  },
+  "citations": {
+    "methodology_ref": "docs/methodology.md | docs/PIT-INTEGRATION.md",
+    "cite_snippet": "CLI Market. Shelf prices / shelf inflation — retail formal online. Corte: 2026-07-29T18:00:00Z, país: PE."
+  },
+  "disclaimers": [
+    "Inflación y precios observados desde góndola online (retail formal). No reemplaza IPC oficial (INEI, DANE, INDEC, IBGE, etc.).",
+    "Este paquete no constituye scouting tecnológico ni revisión de literatura."
+  ]
+}

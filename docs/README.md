@@ -16,6 +16,15 @@
 | [[outbound-sequences]] | Retailer SCRAP sequences |
 | [[reddit-strategy]] | Community plan |
 
+## Integrations
+
+| Document | Description |
+|----------|-------------|
+| [PIT-INTEGRATION.md](./PIT-INTEGRATION.md) | PIT Research API ↔ CLI Market: product boundaries, endpoint matrix, Market Evidence Package schema |
+| [OPENWEBUI-INTEGRATION.md](./OPENWEBUI-INTEGRATION.md) | MCP Streamable HTTP in Open WebUI |
+| [LANGCHAIN-INTEGRATION.md](./LANGCHAIN-INTEGRATION.md) | LangChain / agent wiring |
+| [MISTRAL-INTEGRATION.md](./MISTRAL-INTEGRATION.md) | Mistral integration notes |
+
 ## Folders
 
 - `linkedin/` — draft posts Day-01 … Day-30

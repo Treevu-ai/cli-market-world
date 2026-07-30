@@ -1,0 +1,17 @@
+{
+  "pit_run_id": "mock-pit-run-blueberry-001",
+  "segment": "exportadores y retail premium",
+  "stage": "concepto",
+  "market_label": "PE functional beverages — arándano",
+  "hypothesis": "Bebida funcional a base de arándano con posicionamiento premium en supermercados PE.",
+  "science_summary": "Stub PIT: la corrida de research (literatura / application / enrich) aportaría evidencia tecnológica, tendencias de publicación y, si aplica, contexto HS. Este bloque no sale de CLI Market.",
+  "application": "functional foods and beverages",
+  "target_market": "PE",
+  "query": "blueberry functional beverage",
+  "hs_code": "0810.40",
+  "recommended_action": "validar",
+  "risks": [
+    "Cobertura de góndola solo retail formal online",
+    "Sin evidencia de papers en este stub"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "pit_run_id": "mock-pit-run-blueberry-001",
+  "segment": "exportadores y retail premium",
+  "stage": "concepto",
+  "market_label": "PE functional beverages — arándano",
+  "hypothesis": "Bebida funcional a base de arándano con posicionamiento premium en supermercados PE.",
+  "science_summary": "Stub PIT: la corrida de research (literatura / application / enrich) aportaría evidencia tecnológica, tendencias de publicación y, si aplica, contexto HS. Este bloque no sale de CLI Market.",
+  "application": "functional foods and beverages",
+  "target_market": "PE",
+  "query": "blueberry functional beverage",
+  "hs_code": "0810.40",
+  "recommended_action": "validar",
+  "risks": [
+    "Cobertura de góndola solo retail formal online",
+    "Sin evidencia de papers en este stub"
+  ],
+  "market_evidence_package_id": "mep_mock_blueberry_pe_001",
+  "market_headline": "Góndola PE: n=4, min=8.5 max=14.9 median=9.7 PEN",
+  "market_evidence": {
+    "source": "cli-market-market-evidence-package",
+    "schema_version": "0.1",
+    "package_id": "mep_mock_blueberry_pe_001",
+    "as_of": "2026-07-29T18:00:00Z",
+    "country": "PE",
+    "query": "arandanos blueberries",
+    "price_summary": {
+      "currency": "PEN",
+      "min": 8.5,
+      "max": 14.9,
+      "median": 9.7,
+      "n": 4,
+      "method": "simple_on_returned_items"
+    },
+    "coverage": {
+      "retailers_with_price": 3,
+      "items_returned": 4,
+      "freshness_pct_under_24h": 75.0,
+      "data_confidence": 0.72,
+      "notes": [
+        "Mock fixture for PIT thin integration demos. Replace with --mode live."
+      ]
+    },
+    "assortment_sample": [
+      {
+        "product_id": "mock-wong-arandanos-125",
+        "name": "Arándanos bandeja 125g",
+        "brand": "Campo Verde",
+        "store": "wong",
+        "country": "PE",
+        "price": 9.9,
+        "currency": "PEN",
+        "unit": "125g",
+        "url": null,
+        "observed_at": "2026-07-29T12:00:00Z"
+      },
+      {
+        "product_id": "mock-metro-arandanos-125",
+        "name": "Arándanos 125g",
+        "brand": "Metro",
+        "store": "metro",
+        "country": "PE",
+        "price": 8.5,
+        "currency": "PEN",
+        "unit": "125g",
+        "url": null,
+        "observed_at": "2026-07-29T12:05:00Z"
+      }
+    ],
+    "signals": {
+      "intel_brief_headline": "Mock: presión de góndola moderada en frutas PE (fixture)"
+    },
+    "disclaimers": [
+      "Inflación y precios observados desde góndola online (retail formal). No reemplaza IPC oficial (INEI, DANE, INDEC, IBGE, etc.).",
+      "Este paquete no constituye scouting tecnológico ni revisión de literatura."
+    ],
+    "citations": {
+      "methodology_ref": "docs/methodology.md | docs/PIT-INTEGRATION.md",
+      "cite_snippet": "CLI Market. Shelf prices / shelf inflation — retail formal online. Corte: 2026-07-29T18:00:00Z, país: PE."
+    }
+  }
+}
