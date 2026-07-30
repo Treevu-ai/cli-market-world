@@ -279,6 +279,37 @@ Env vars: `PIT_API_URL`, `PIT_API_TOKEN` (además de `MARKET_API_*` para `--mode
 
 La ficha mergeada incluye `trace: { package_id, as_of, pit_run_id }`. El cliente PIT es **best-effort**: health, create/get research-run, ficha post — sin reimplementar literature/report en CLI Market.
 
+### 4.5.3 Metadata del research-run (`market_evidence_ref`)
+
+| Pieza | Path |
+|-------|------|
+| Builder | `ops/pit_integration/run_metadata.py` |
+| Fixture | `ops/pit_integration/mocks/pit_run_metadata.example.json` |
+| Salida local | `ops/generated/pit/last-pit-run-metadata.json` |
+
+Contrato del bloque que **PIT debería persistir** en el run:
+
+```json
+{
+  "kind": "cli_market.market_evidence_ref",
+  "package_id": "mep_…",
+  "as_of": "2026-07-30T04:08:14Z",
+  "pit_run_id": "…",
+  "price_summary": { "n": 8, "min": 3.9, "max": 12.9, "median": 10.2, "currency": "PEN" },
+  "audit_statement": "Este precio salió de este corte: package_id=… as_of=… pit_run_id=…"
+}
+```
+
+**Bloqueo actual (PIT API v0.1.0):** `ResearchRunCreate` / `ResearchRunFullCreate` no aceptan `metadata` ni `market_evidence_ref`. Hasta que PIT agregue el campo (propuesta: `proposed_research_run_create_extension()` en `run_metadata.py`), CLI Market escribe el sidecar local y el trace; no puede forzar persistencia remota.
+
+Extensión mínima sugerida en PIT:
+
+```text
+POST /v1/research-runs  body += market_evidence_ref?: object
+GET  /v1/research-runs/{id}  response includes market_evidence_ref if set
+# o PATCH /v1/research-runs/{id}/market-evidence
+```
+
 ### 4.6 Endpoint futuro (opcional — fase 4)
 
 Solo si hay demanda medible de fichas/data rooms:
@@ -349,3 +380,4 @@ Hasta entonces el schema de esta sección es la fuente de verdad para mocks e in
 | 2026-07-29 | v0.1 — matriz PIT↔CLI Market, ownership, schema Market Evidence Package, roadmap |
 | 2026-07-29 | v0.2 — mocks, CLI `market_evidence_package.py`, merge ficha, tests, runbook `ops/pit_integration/` |
 | 2026-07-29 | v0.3 — fase 3: trace receipt, `PitClient`, CLI `--write-trace` / `--create-pit-run`, tests |
+| 2026-07-30 | v0.4 — `market_evidence_ref` sidecar (`run_metadata.py`), contrato de extensión PIT |
