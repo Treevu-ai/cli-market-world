@@ -255,7 +255,7 @@ def _search_products_db(body: SearchRequest) -> dict:
     q_tokens = _query_tokens(body.query)
     if not stores or not q_tokens:
         save_search_query(body.query, body.line, body.store, 0)
-        return {"query": body.query, "results": [], "total": 0}
+        return {"query": body.query, "results": [], "total": 0, "stores_resolved": len(stores)}
 
     sql, params = build_search_sql(
         stores=stores,
@@ -288,7 +288,10 @@ def _search_products_db(body: SearchRequest) -> dict:
     ))
     save_search_query(body.query, body.line, body.store, len(results))
 
-    response: dict = {"query": body.query, "results": results, "total": len(results)}
+    response: dict = {
+        "query": body.query, "results": results, "total": len(results),
+        "stores_resolved": len(stores),
+    }
     return _attach_source_health(response, stores)
 
 
@@ -406,7 +409,16 @@ def _compare_products_db(body: SearchRequest) -> dict:
     as _search_products_db."""
     stores = _resolve_search_stores(body)
     q_tokens = _query_tokens(body.query)
-    payload: dict = {"query": body.query, "comparison": [], "stores_compared": 0}
+    payload: dict = {
+        "query": body.query, "comparison": [], "stores_compared": 0,
+        # stores_resolved lets a caller tell "0 stores matched country=X/
+        # line=Y/store=Z" apart from "candidates existed but none passed the
+        # relevance filter" -- previously both looked identical (an empty
+        # comparison list) even though market_search called with the same
+        # free-text query but different country/line/store args resolved a
+        # different store set and could legitimately return non-zero results.
+        "stores_resolved": len(stores),
+    }
     if body.country:
         payload["country"] = body.country.strip().upper()
     if not stores or not q_tokens:

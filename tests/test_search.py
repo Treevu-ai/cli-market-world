@@ -99,6 +99,34 @@ def test_compare_returns_comparison_structure():
     data = r.json()
     assert "comparison" in data
     assert "stores_compared" in data
+    assert "stores_resolved" in data
+
+
+def test_compare_stores_resolved_zero_for_unknown_country():
+    """Reproduces a real diagnosed ambiguity: market_compare returning an
+    empty comparison looked identical whether zero stores matched the
+    filters or products existed but didn't match -- stores_resolved makes
+    the two distinguishable without needing to re-run market_search with
+    the same args to compare."""
+    r = client.post(
+        "/products/compare",
+        json={"query": "arroz", "country": "ZZ"},
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["comparison"] == []
+    assert data["stores_resolved"] == 0
+
+
+def test_search_stores_resolved_zero_for_unknown_country():
+    r = client.post(
+        "/products/search",
+        json={"query": "arroz", "country": "ZZ"},
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    assert r.json()["stores_resolved"] == 0
 
 
 # ── Growth-tier priority tiebreak ────────────────────────────────────────────
