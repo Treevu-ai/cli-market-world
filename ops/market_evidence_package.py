@@ -269,7 +269,7 @@ def ficha_to_markdown(merged: dict[str, Any]) -> str:
     """Human-readable ficha for demos (science stub + market evidence)."""
     me = merged.get("market_evidence") or {}
     lines = [
-        f"# Ficha de oportunidad (merge delgado)",
+        "# Ficha de oportunidad (merge delgado)",
         "",
         f"**Segmento:** {merged.get('segment', '—')}",
         f"**Etapa:** {merged.get('stage', '—')}",
