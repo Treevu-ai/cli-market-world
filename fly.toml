@@ -1,0 +1,65 @@
+# fly.toml - CLI Market app configuration for Fly.io
+app = "cli-market-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  MARKET_API_URL = "https://cli-market-api.fly.dev"
+  PORT = "8765"
+  MARKET_DATA_DIR = "/data"
+
+# HORECA Pilot Configuration
+  HORECA_ENABLED = "false"
+  HORECA_FREE_SEARCHES_DAILY = "5"
+  HORECA_COOLDOWN_HOURS = "4"
+  HORECA_MAX_CONCURRENT_SEARCHES = "3"
+  HORECA_PRIORITY_CATEGORIES = "aceites,limpieza,papel,bebidas,electrodomesticos"
+  HORECA_SAVINGS_NOTIFICATION_THRESHOLD = "50.0"
+
+# Twilio Configuration (set via fly secrets)
+# TWILIO_ACCOUNT_SID
+# TWILIO_AUTH_TOKEN
+# TWILIO_WHATSAPP_NUMBER
+# WHATSAPP_ALLOWED_NUMBERS
+# WHATSAPP_ADMIN_NUMBERS
+# WHATSAPP_RATE_LIMIT_MIN = "20"
+# WHATSAPP_RATE_LIMIT_WINDOW = "60"
+# WHATSAPP_RATE_LIMIT_DAY = "300"
+
+# Telegram Configuration
+# TELEGRAM_BOT_TOKEN
+# TELEGRAM_WEBHOOK_SECRET
+# TELEGRAM_ALLOWED_CHAT_IDS
+# TELEGRAM_ADMIN_CHAT_IDS
+# TELEGRAM_RATE_LIMIT_MIN = "20"
+# TELEGRAM_RATE_LIMIT_WINDOW = "60"
+# TELEGRAM_RATE_LIMIT_DAY = "300"
+
+# API Keys
+# MARKET_API_TOKEN
+# MARKET_BOT_API_TOKEN
+# OPENAI_API_KEY
+
+[mounts]
+  source = "data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8765
+  force_https = true
+  auto_stop_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "1gb"
+
+[deploy]
+  strategy = "rolling"

@@ -259,3 +259,74 @@ def require_checkout_access(username: str) -> None:
         status_code=403,
         detail=checkout_upgrade_detail(),
     )
+
+
+# ── Messenger session management (Telegram/WhatsApp) ───────────────────────
+
+_messenger_sessions: dict[str, dict] = {}
+
+
+def get_messenger_session(chat_id: str) -> dict:
+    """Get or create a messenger session for a given chat_id."""
+    if chat_id not in _messenger_sessions:
+        _messenger_sessions[chat_id] = {
+            "last_context": None,
+            "last_query": None,
+            "created_at": time.time(),
+        }
+    return _messenger_sessions[chat_id]
+
+
+def update_messenger_session(chat_id: str, data: dict) -> None:
+    """Update messenger session with new data."""
+    if chat_id not in _messenger_sessions:
+        _messenger_sessions[chat_id] = {}
+    _messenger_sessions[chat_id].update(data)
+
+
+# ── HORECA session extensions ─────────────────────────────────────────────────
+
+def get_horeca_session(whatsapp_number: str) -> dict:
+    """Obtiene la sesión HORECA de un usuario."""
+    from market_core import get_db
+    
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT * FROM horeca_profiles WHERE whatsapp_number = ?",
+            (whatsapp_number,)
+        ).fetchone()
+        return dict(row) if row else {}
+    finally:
+        db.close()
+
+
+def update_horeca_session(whatsapp_number: str, data: dict) -> bool:
+    """Actualiza datos de sesión HORECA."""
+    from market_core import get_db
+    
+    db = get_db()
+    try:
+        # Actualizar campos relevantes
+        updates = []
+        values = []
+        
+        for key, value in data.items():
+            if key in ['business_name', 'business_type', 'last_search_category']:
+                updates.append(f"{key} = ?")
+                values.append(value)
+        
+        if updates:
+            values.append(whatsapp_number)
+            db.execute(
+                f"UPDATE horeca_profiles SET {', '.join(updates)} WHERE whatsapp_number = ?",
+                values
+            )
+            db.commit()
+            return True
+        return False
+    except Exception as e:
+        print(f"Error updating horeca session: {e}")
+        return False
+    finally:
+        db.close()
