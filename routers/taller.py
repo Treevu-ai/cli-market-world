@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import uuid
+from html import escape as _esc
 
 from fastapi import APIRouter, HTTPException
 
@@ -94,6 +95,8 @@ def _send_confirmation_email(*, nombre: str, email: str, pago: str) -> dict:
         return {"sent": False, "reason": "smtp_not_configured"}
 
     instructions = _payment_instructions(pago)
+    nombre_html = _esc(nombre)
+    pago_html = _esc(pago)
     subject = "Registro confirmado — Taller Inteligencia de Mercados · CLI Market"
     text = f"""Hola {nombre},
 
@@ -119,11 +122,11 @@ hello@cli-market.dev
 <p style="margin:0 0 4px;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#3afecf;">TALLER · CLI MARKET</p>
 <h1 style="margin:0 0 16px;font-size:22px;color:#fff;">Registro confirmado</h1>
 <p style="margin:0 0 20px;font-size:14px;color:#b9cac2;line-height:1.6;">
-Hola <strong style="color:#fff">{nombre}</strong>, tu lugar en el Taller de Inteligencia de Mercados quedó reservado.
+Hola <strong style="color:#fff">{nombre_html}</strong>, tu lugar en el Taller de Inteligencia de Mercados quedó reservado.
 </p>
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#1c1b1c;border:1px solid #3b4a44;border-radius:8px;margin-bottom:20px;">
 <tr><td style="padding:16px 20px;">
-<p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#3afecf;">Método elegido: {pago}</p>
+<p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#3afecf;">Método elegido: {pago_html}</p>
 <p style="margin:0;font-size:13px;color:#b9cac2;line-height:1.7;">{instructions}</p>
 </td></tr>
 </table>
@@ -155,7 +158,7 @@ def _send_ops_notification(*, nombre: str, email: str, telefono: str, pago: str,
         f"Método de pago preferido: {pago}\n"
         f"Comentario: {comentario or '(sin comentario)'}\n"
     )
-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
+    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
 
 
 @router.post("/v1/taller/registro")

@@ -16,8 +16,11 @@ import hashlib
 import logging
 import os
 import time
+from contextvars import ContextVar
 
 from fastapi import HTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 from market_core import (
     check_rate_limit_sqlite,
@@ -363,6 +366,73 @@ def require_pro(authorization: str | None) -> str:
     return username
 
 
+def require_enterprise(authorization: str | None) -> str:
+    """Require Enterprise tier for bulk procurement and similar endpoints."""
+    from market_billing import db_get_subscription, price_label_for_plan
+    from market_core.platform_admin import is_platform_admin
+
+    username = require_api_key(authorization)
+    if is_platform_admin(username):
+        return username
+    sub = db_get_subscription(username)
+    if sub.get("tier", "free") != "enterprise":
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"This endpoint requires CLI Market Enterprise ({price_label_for_plan('enterprise')}). "
+                "Contact sales at hello@cli-market.dev"
+            ),
+        )
+    return username
+
+
+# Core-mounted /v1 routes whose MCP twins are in mcp_http._PRE_CHECK_TIER.
+# World-native routers (data_v1, intel) enforce tier in their own handlers.
+_CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
+    ("GET", "/v1/receipts"): "pro",
+    ("GET", "/v1/quality/scores"): "pro",
+    ("POST", "/v1/missions/optimize-purchase"): "pro",
+    ("GET", "/v1/intel/procurement-signal"): "pro",
+    ("GET", "/v1/intel/price-risk"): "pro",
+    ("GET", "/v1/intel/informal-signal"): "pro",
+    ("GET", "/v1/intel/promo-detector"): "pro",
+    ("GET", "/v1/intel/retailer-scorecard"): "pro",
+    ("GET", "/v1/ecosystem/launches"): "pro",
+    ("GET", "/v1/household"): "starter",
+    ("GET", "/v1/household/summary"): "starter",
+    ("PUT", "/v1/household"): "pro",
+    ("PATCH", "/v1/household"): "pro",
+    ("POST", "/v1/intel/procurement-bulk"): "enterprise",
+}
+
+_request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
+
+
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    """Expose the current Starlette request to pluggable core auth."""
+
+    async def dispatch(self, request, call_next):
+        token = _request_ctx.set(request)
+        try:
+            return await call_next(request)
+        finally:
+            _request_ctx.reset(token)
+
+
+def require_v1_core_auth(authorization: str | None) -> str:
+    """Tier-aware auth for cli-market-core api_routes (_auth_fn hook)."""
+    request = _request_ctx.get()
+    if request is not None:
+        tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
+        if tier == "enterprise":
+            return require_enterprise(authorization)
+        if tier == "pro":
+            return require_pro(authorization)
+        if tier == "starter":
+            return require_starter(authorization)
+    return require_api_key(authorization)
+
+
 def require_export(authorization: str | None) -> str:
     """Require Starter+ with export enabled (CSV/JSON data moat pulls)."""
     from market_billing import TIERS, db_get_subscription, price_label_for_plan
@@ -401,3 +471,74 @@ def require_checkout_access(username: str) -> None:
         status_code=403,
         detail=checkout_upgrade_detail(),
     )
+
+
+# ── Messenger session management (Telegram/WhatsApp) ───────────────────────
+
+_messenger_sessions: dict[str, dict] = {}
+
+
+def get_messenger_session(chat_id: str) -> dict:
+    """Get or create a messenger session for a given chat_id."""
+    if chat_id not in _messenger_sessions:
+        _messenger_sessions[chat_id] = {
+            "last_context": None,
+            "last_query": None,
+            "created_at": time.time(),
+        }
+    return _messenger_sessions[chat_id]
+
+
+def update_messenger_session(chat_id: str, data: dict) -> None:
+    """Update messenger session with new data."""
+    if chat_id not in _messenger_sessions:
+        _messenger_sessions[chat_id] = {}
+    _messenger_sessions[chat_id].update(data)
+
+
+# ── HORECA session extensions ─────────────────────────────────────────────────
+
+def get_horeca_session(whatsapp_number: str) -> dict:
+    """Obtiene la sesión HORECA de un usuario."""
+    from market_core import get_db
+    
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT * FROM horeca_profiles WHERE whatsapp_number = ?",
+            (whatsapp_number,)
+        ).fetchone()
+        return dict(row) if row else {}
+    finally:
+        db.close()
+
+
+def update_horeca_session(whatsapp_number: str, data: dict) -> bool:
+    """Actualiza datos de sesión HORECA."""
+    from market_core import get_db
+    
+    db = get_db()
+    try:
+        # Actualizar campos relevantes
+        updates = []
+        values = []
+        
+        for key, value in data.items():
+            if key in ['business_name', 'business_type', 'last_search_category']:
+                updates.append(f"{key} = ?")
+                values.append(value)
+        
+        if updates:
+            values.append(whatsapp_number)
+            db.execute(
+                f"UPDATE horeca_profiles SET {', '.join(updates)} WHERE whatsapp_number = ?",
+                values
+            )
+            db.commit()
+            return True
+        return False
+    except Exception as e:
+        print(f"Error updating horeca session: {e}")
+        return False
+    finally:
+        db.close()

@@ -50,6 +50,8 @@ from server_deps import (  # noqa: F401
     check_auth_brute_force,
     record_auth_failure,
     require_api_key,
+    require_v1_core_auth,
+    RequestContextMiddleware,
     require_user,
     check_rate_limit,
     DEFAULT_TOKEN,
@@ -226,6 +228,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-ID", "X-Session-ID", "X-Country"],
 )
+app.add_middleware(RequestContextMiddleware)
 
 # ── Routers ──────────────────────────────────────────────────────────────────
 
@@ -254,6 +257,15 @@ from routers.retailer_admin import router as retailer_admin_router
 from routers.search import router as search_router
 from routers.integrations.whatsapp import router as whatsapp_router
 from routers.integrations.telegram import router as telegram_router
+
+# Integrations routers (Twilio WhatsApp, Telegram)
+try:
+    from routers.integrations.whatsapp import router as whatsapp_router
+    from routers.integrations.telegram import router as telegram_router
+    INTEGRATIONS_AVAILABLE = True
+except ImportError:
+    INTEGRATIONS_AVAILABLE = False
+    logger.warning("Integrations routers not available - WhatsApp/Telegram endpoints disabled")
 
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
@@ -302,13 +314,19 @@ for r in (
 ):
     app.include_router(r)
 
+# Integrations routers (Twilio WhatsApp, Telegram) - mount after main routers
+if INTEGRATIONS_AVAILABLE:
+    app.include_router(whatsapp_router)
+    app.include_router(telegram_router)
+    logger.info("Integrations routers mounted: WhatsApp + Telegram")
+
 # Cost-of-Living OS v1 routes from cli-market-core (Waves 1–4).
 # Mounted after world routers so existing handlers win on duplicate paths;
 # adds missions (optimize-purchase), intel affordability, affiliate-click, etc.
 from market_core import api_routes as core_api_routes
 from market_core.api_routes import router as core_v1_router
 
-core_api_routes._auth_fn = require_api_key
+core_api_routes._auth_fn = require_v1_core_auth
 app.include_router(core_v1_router, prefix="/v1")
 
 
