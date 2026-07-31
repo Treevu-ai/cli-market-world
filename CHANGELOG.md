@@ -2,6 +2,23 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.12.0 (also disable igardi_pe, to unblock deploys now)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.0`. On explicit
+request to unblock deploys immediately, `igardi_pe` is now disabled too
+(not a confirmed hard block like `wisqaperu_pe` — production 403s vs. a
+clean residential-IP response minutes later — but disabled anyway
+rather than wait out the ambiguous IP-reputation issue).
+
+**This alone likely still won't turn CI green**: the 3 stores fixed by
+1.11.98 use a lifetime-cumulative success_pct that needs several
+collector cycles to climb back above the dead threshold — right after
+this deploys, `doctor_prod_gate.py` may still see them as dead. To
+actually get code live *now*, use one of:
+- `gh workflow run deploy-fly.yml` (documented in that workflow as the
+  manual emergency bypass — skips the CI gate entirely), or
+- temporarily raise `DOCTOR_MAX_DEAD_SOURCES` in the CI gate step.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.11.99 (disable wisqaperu_pe, confirmed Cloudflare Turnstile)
 
 `requirements.txt` pin bumped to `cli-market-core==1.11.99`. Closes the
