@@ -1,7 +1,7 @@
 import os
 import re
 import httpx
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Request, Response
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from market_core import check_rate_limit_sqlite

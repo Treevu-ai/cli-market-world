@@ -5,10 +5,7 @@ que se integran con la funcionalidad Twilio existente en whatsapp.py.
 """
 
 import os
-import re
-from datetime import datetime, timedelta
 from typing import Optional, Dict
-from fastapi import BackgroundTasks, HTTPException, Request
 import httpx
 
 # Importar módulos HORECA
@@ -24,8 +21,6 @@ from .horeca_profiles import (
     _extract_category
 )
 from .horeca_templates import (
-    get_user_templates,
-    create_template,
     get_template_summary,
     create_sample_templates
 )
