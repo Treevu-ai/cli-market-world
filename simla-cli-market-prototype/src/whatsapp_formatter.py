@@ -39,8 +39,8 @@ class WhatsAppFormatter:
             String formateado para WhatsApp
         """
         if result.get("error"):
-            return self.format_error("No pude buscar ese producto. Intenta con otro nombre.")
-        
+            return self.format_api_error(result["error"], action="buscar ese producto")
+
         products = result.get("products", [])
         if not products:
             return f"{self.emojis['error']} No encontré ese producto en los retailers peruanos."
@@ -73,8 +73,8 @@ class WhatsAppFormatter:
             String formateado para WhatsApp
         """
         if result.get("error"):
-            return self.format_error("No pude comparar precios. Intenta con otro producto.")
-        
+            return self.format_api_error(result["error"], action="comparar precios")
+
         comparisons = result.get("comparisons", [])
         if not comparisons:
             return f"{self.emojis['error']} No encontré precios para comparar."
@@ -112,8 +112,8 @@ class WhatsAppFormatter:
             String formateado para WhatsApp
         """
         if result.get("error"):
-            return self.format_error("No pude optimizar tu canasta. Intenta con menos productos.")
-        
+            return self.format_api_error(result["error"], action="optimizar tu canasta")
+
         recommendations = result.get("recommendations", [])
         if not recommendations:
             return f"{self.emojis['error']} No pude optimizar tu canasta."
@@ -158,8 +158,8 @@ class WhatsAppFormatter:
             String formateado para WhatsApp
         """
         if result.get("error"):
-            return self.format_error("No pude obtener el historial de precios.")
-        
+            return self.format_api_error(result["error"], action="obtener el historial de precios")
+
         history = result.get("history", [])
         if not history:
             return f"{self.emojis['error']} No hay historial disponible para este producto."
@@ -212,16 +212,28 @@ class WhatsAppFormatter:
         return response
     
     def format_error(self, message: str) -> str:
-        """
-        Formatear mensaje de error
-        
-        Args:
-            message: Mensaje de error
-            
-        Returns:
-            String formateado para WhatsApp
-        """
+        """Formatear mensaje de error genérico para WhatsApp."""
         return f"{self.emojis['error']} {message}"
+
+    def format_api_error(self, error_code: str, action: str = "completar la consulta") -> str:
+        """Mensajes claros según código de error de CLI Market (429, 403, etc.)."""
+        code = (error_code or "").lower()
+        if "429" in code or "too many" in code or "rate" in code:
+            return (
+                f"{self.emojis['warning']} Demasiadas consultas en poco tiempo. "
+                "Esperá un minuto e intentá de nuevo."
+            )
+        if "403" in code or "401" in code:
+            return (
+                f"{self.emojis['error']} No tengo permiso para {action} con la cuenta configurada. "
+                "Revisá el plan/API key (canasta exige Pro+)."
+            )
+        if "timeout" in code:
+            return (
+                f"{self.emojis['warning']} La consulta tardó demasiado. "
+                "Intentá de nuevo en unos segundos."
+            )
+        return self.format_error(f"No pude {action}. Intentá con otro nombre o más tarde.")
     
     def _format_bold(self, text: str) -> str:
         """Formatear texto en negrita para WhatsApp"""

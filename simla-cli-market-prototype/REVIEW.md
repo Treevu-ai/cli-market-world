@@ -18,6 +18,15 @@
 | LOW | Logs y `__pycache__` | `.gitignore` local del prototipo |
 | LOW | Tests ausentes | `tests/test_intent_detector.py` |
 
+## Follow-up (2026-07-31, post-demo)
+
+| Fix | Detalle |
+|-----|---------|
+| GET `/api/test-intent` | Evita body JSON roto en PowerShell con tildes |
+| Parser canasta | Extrae `leche, arroz, aceite` sin basura (`sito l`) |
+| `/health` | No bloquea en Simla; timeout 2s; Simla opcional |
+| Mensaje 429 | Copy claro en WhatsApp: esperar un minuto |
+
 ## Qué no se hizo (siguiente iteración)
 
 1. Validar contrato real del tenant Simla (paths WhatsApp outbound).

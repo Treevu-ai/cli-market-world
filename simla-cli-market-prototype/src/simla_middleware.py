@@ -8,6 +8,8 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
+import asyncio
+
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 
@@ -135,13 +137,27 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    """Health rápido: CLI Market es obligatorio; Simla es opcional y con timeout corto."""
     cli_market_healthy = await cli_market.health_check()
-    simla_healthy = await simla.health_check()
+
+    simla_healthy = False
+    simla_checked = False
+    if os.getenv("SIMLA_API_KEY"):
+        simla_checked = True
+        try:
+            simla_healthy = await asyncio.wait_for(simla.health_check(), timeout=2.0)
+        except Exception:
+            simla_healthy = False
+
     return {
         "status": "healthy" if cli_market_healthy else "degraded",
         "cli_market_api": cli_market_healthy,
-        "simla_api": simla_healthy,
-        "note": "simla_api may report false if Simla health path differs by tenant",
+        "simla_api": simla_healthy if simla_checked else None,
+        "simla_checked": simla_checked,
+        "note": (
+            "simla_api is optional; None means SIMLA_API_KEY unset. "
+            "False often means tenant health path differs — not fatal for local demos."
+        ),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -192,9 +208,7 @@ async def whatsapp_webhook(
         raise HTTPException(status_code=500, detail="webhook_processing_error") from e
 
 
-@app.post("/api/test-intent")
-async def test_intent_detection(payload: dict[str, Any]):
-    message = payload.get("message") or payload.get("text") or ""
+def _intent_response(message: str) -> dict[str, Any]:
     intent = intent_detector.detect_intent(message)
     if not intent:
         return {"detected": False, "message": "No se detectó intención de precios"}
@@ -206,6 +220,30 @@ async def test_intent_detection(payload: dict[str, Any]):
         "products_list": intent.products_list or None,
         "threshold": intent.threshold,
     }
+
+
+@app.get("/api/test-intent")
+async def test_intent_get(message: str):
+    """GET fácil para PowerShell: /api/test-intent?message=cuanto%20cuesta%20la%20leche"""
+    return _intent_response(message)
+
+
+@app.post("/api/test-intent")
+async def test_intent_detection(request: Request):
+    """POST JSON {\"message\": \"...\"}. Acepta body vacío si falla el parse (p.ej. encoding PS)."""
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    message = payload.get("message") or payload.get("text") or ""
+    if not message:
+        raise HTTPException(
+            status_code=400,
+            detail="Send JSON {\"message\": \"...\"} or use GET /api/test-intent?message=...",
+        )
+    return _intent_response(message)
 
 
 @app.get("/api/test-search")

@@ -194,26 +194,64 @@ class IntentDetector:
     
     def _extract_products_list(self, message: str) -> List[str]:
         """
-        Extraer lista de productos del mensaje
-        Para optimización de canasta
+        Extraer lista de productos del mensaje para optimización de canasta.
+
+        Acepta formas como:
+        - "necesito leche, arroz y aceite"
+        - "canasta: leche, arroz, aceite"
+        - "quiero comprar leche arroz aceite" (fallback por tokens)
         """
-        # Buscar patrones como: "necesito X, Y, Z" o "quiero comprar X, Y y Z"
-        products = []
-        
-        # Separar por comas, "y", "e"
-        separators = r'[,yYeE]+'
-        items = re.split(separators, message)
-        
-        for item in items:
-            item = item.strip()
-            # Eliminar palabras comunes
-            item = re.sub(r'\b(necesito|quiero|comprar|lista|canasta)\b', '', item, flags=re.IGNORECASE)
-            item = item.strip()
-            
-            if len(item) > 2:  # Mínimo 3 caracteres
-                products.append(item)
-        
-        return products[:10]  # Máximo 10 productos
+        text = message.lower().strip()
+
+        # Quitar frases de intención al inicio / en bloque (no trocear a medias)
+        lead_patterns = [
+            r"^(necesito|quiero|quisiera|busco|dame|arme|arma)\s+(comprar\s+)?",
+            r"^(lista\s+de\s+compras?|canasta|optimizar|compras?)\s*[:\-]?\s*",
+            r"\bpara\s+la\s+canasta\b",
+            r"\bpara\s+optimizar\b",
+        ]
+        for pat in lead_patterns:
+            text = re.sub(pat, " ", text, flags=re.IGNORECASE)
+
+        # Separar por comas o conjunciones " y " / " e " (no la letra sola dentro de palabras)
+        parts = re.split(r"\s*,\s*|\s+y\s+|\s+e\s+", text)
+        stop = {
+            "el", "la", "los", "las", "un", "una", "de", "en", "por", "para",
+            "con", "sin", "que", "del", "al", "mi", "tu", "su", "me", "te",
+            "necesito", "quiero", "comprar", "lista", "canasta", "optimizar",
+            "productos", "varios", "items", "item",
+        }
+
+        products: list[str] = []
+        for part in parts:
+            part = part.strip(" .;:¡!¿?")
+            if not part:
+                continue
+            tokens = [
+                t for t in re.findall(r"[a-záéíóúñ0-9]{2,}", part, flags=re.IGNORECASE)
+                if t.lower() not in stop
+            ]
+            if not tokens:
+                continue
+            # 1–4 tokens por item (ej. "leche evaporada gloria")
+            name = " ".join(tokens[:4]).strip()
+            if len(name) >= 3 and name not in products:
+                products.append(name)
+
+        # Fallback: sin comas, tomar tokens residuales como items sueltos
+        if len(products) < 2:
+            tokens = [
+                t for t in re.findall(r"[a-záéíóúñ0-9]{3,}", text, flags=re.IGNORECASE)
+                if t.lower() not in stop
+            ]
+            products = []
+            for t in tokens:
+                if t not in products:
+                    products.append(t)
+                if len(products) >= 10:
+                    break
+
+        return products[:10]
     
     def _extract_threshold(self, message: str) -> Optional[float]:
         """Extraer umbral de precio para alertas"""

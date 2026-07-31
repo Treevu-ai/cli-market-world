@@ -30,3 +30,20 @@ def test_optimize_list():
     assert intent is not None
     assert intent.intent_type == PriceIntentType.OPTIMIZE
     assert len(intent.products_list) >= 2
+    # No debe quedar basura tipo "sito l" / "para la"
+    joined = " ".join(intent.products_list).lower()
+    assert "leche" in joined
+    assert "arroz" in joined
+    assert "aceite" in joined
+    assert "sito" not in joined
+    assert "necesito" not in joined
+
+
+def test_optimize_list_colon_form():
+    det = IntentDetector()
+    intent = det.detect_intent("canasta: leche evaporada, arroz, aceite vegetal")
+    assert intent is not None
+    assert intent.intent_type == PriceIntentType.OPTIMIZE
+    assert any("leche" in p for p in intent.products_list)
+    assert any("arroz" in p for p in intent.products_list)
+    assert any("aceite" in p for p in intent.products_list)
