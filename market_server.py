@@ -258,6 +258,15 @@ from routers.search import router as search_router
 from routers.integrations.whatsapp import router as whatsapp_router
 from routers.integrations.telegram import router as telegram_router
 
+# Integrations routers (Twilio WhatsApp, Telegram)
+try:
+    from routers.integrations.whatsapp import router as whatsapp_router
+    from routers.integrations.telegram import router as telegram_router
+    INTEGRATIONS_AVAILABLE = True
+except ImportError:
+    INTEGRATIONS_AVAILABLE = False
+    logger.warning("Integrations routers not available - WhatsApp/Telegram endpoints disabled")
+
 # Ported from cli-market-backend (consolidation — single source of truth)
 from routers.discovery import router as discovery_router
 from routers.intelligence_web import router as intelligence_web_router
@@ -304,6 +313,12 @@ for r in (
     whatsapp_router,
 ):
     app.include_router(r)
+
+# Integrations routers (Twilio WhatsApp, Telegram) - mount after main routers
+if INTEGRATIONS_AVAILABLE:
+    app.include_router(whatsapp_router)
+    app.include_router(telegram_router)
+    logger.info("Integrations routers mounted: WhatsApp + Telegram")
 
 # Cost-of-Living OS v1 routes from cli-market-core (Waves 1–4).
 # Mounted after world routers so existing handlers win on duplicate paths;
