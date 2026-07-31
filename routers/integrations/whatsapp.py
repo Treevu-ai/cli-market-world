@@ -1,7 +1,7 @@
 import os
 import re
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Request, Response
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from market_core import check_rate_limit_sqlite
@@ -274,43 +274,66 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     """Webhook endpoint for Twilio WhatsApp messages."""
     if not TWILIO_AUTH_TOKEN:
-        return {"status": "disabled", "hint": "Set TWILIO_AUTH_TOKEN env var"}
-    
+        print("❌ WhatsApp webhook: TWILIO_AUTH_TOKEN not set")
+        raise HTTPException(status_code=503, detail="whatsapp_bridge_disabled")
+
     try:
         form_data = await request.form()
-        params = dict(form_data)
-    except Exception:
-        return {"status": "invalid_form"}
+        params = {k: str(v) for k, v in form_data.items()}
+    except Exception as e:
+        print(f"❌ WhatsApp webhook: invalid form: {e}")
+        raise HTTPException(status_code=400, detail="invalid_form") from e
 
-    # Validar firma Twilio
+    # Validar firma Twilio (Twilio reintenta si no es 2xx; 403 = no re-ejecutar trabajo)
     if not _is_valid_twilio_signature(request, params):
-        return {"status": "invalid_signature"}, 401
+        print("❌ WhatsApp webhook: invalid or missing Twilio signature")
+        raise HTTPException(status_code=403, detail="invalid_signature")
 
-    # Validar allowlist
-    sender = params.get("From", "")
+    sender = params.get("From", "") or ""
+    body_preview = (params.get("Body") or "")[:40]
+    print(f"📥 WhatsApp webhook ok from {sender!r} body={body_preview!r}")
+
+    # Allowlist: reply + 200 so Twilio does not retry
     if not _is_sender_allowed(sender):
-        _send_twilio_text(sender, _DENIED_BODY)
-        return {"status": "denied"}
+        print(f"🚫 WhatsApp denied (allowlist): {sender!r}")
+        try:
+            _send_twilio_text(sender, _DENIED_BODY)
+        except Exception as e:
+            print(f"❌ WhatsApp deny-reply failed: {e}")
+        return _empty_twiml()
 
-    # Rate limiting
-    check_rate_limit_sqlite(
-        sender,
-        window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
-        max_req=WHATSAPP_RATE_LIMIT_MIN,
-        daily_max=WHATSAPP_RATE_LIMIT_DAY,
-    )
+    # Rate limiting (raises if exceeded)
+    try:
+        check_rate_limit_sqlite(
+            sender,
+            window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
+            max_req=WHATSAPP_RATE_LIMIT_MIN,
+            daily_max=WHATSAPP_RATE_LIMIT_DAY,
+        )
+    except Exception as e:
+        print(f"⚠️ WhatsApp rate limit for {sender}: {e}")
+        try:
+            _send_twilio_text(
+                sender,
+                "Demasiados mensajes en poco tiempo. Esperá un minuto e intentá de nuevo.",
+            )
+        except Exception:
+            pass
+        return _empty_twiml()
 
-    # Extraer datos del mensaje
-    incoming_msg = params.get("Body", "").strip()
+    incoming_msg = (params.get("Body") or "").strip()
     media_url = None
-    num_media = int(params.get("NumMedia", 0))
+    try:
+        num_media = int(params.get("NumMedia") or 0)
+    except ValueError:
+        num_media = 0
     if num_media > 0:
-        media_url = params.get(f"MediaUrl{num_media - 1}", "")
+        media_url = params.get(f"MediaUrl{num_media - 1}") or None
 
-    # Ejecutar procesamiento en background
-    background_tasks.add_task(_process_and_reply(incoming_msg, sender, media_url))
+    # IMPORTANT: pass the callable + args — do NOT call the coroutine here.
+    # add_task(coro()) was a bug that silently broke background replies.
+    background_tasks.add_task(_process_and_reply, incoming_msg, sender, media_url)
 
-    # Retornar empty TwiML inmediatamente
     return _empty_twiml()
 
 
@@ -320,6 +343,11 @@ async def whatsapp_health():
     return {
         "status": "ok",
         "twilio_configured": bool(TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN),
+        "twilio_number_set": bool(TWILIO_NUMBER),
+        "bot_token_set": bool(os.getenv("MARKET_BOT_API_TOKEN")),
+        "allowlist_size": len(WHATSAPP_ALLOWED_NUMBERS),
+        "admin_list_size": len(WHATSAPP_ADMIN_NUMBERS),
         "horeca_enabled": HORECA_ENABLED,
-        "horeca_available": HORECA_AVAILABLE
+        "horeca_available": HORECA_AVAILABLE,
+        "webhook_path": "/v1/integrations/whatsapp/webhook",
     }
