@@ -3,7 +3,7 @@
 import os
 import re
 from datetime import datetime, timedelta
-from typing import Optional, Dict
+from typing import Dict
 from market_core import get_db
 
 # Configuración HORECA desde variables de entorno

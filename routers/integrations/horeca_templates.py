@@ -1,6 +1,5 @@
 """Gestión de templates de búsqueda recurrente para HORECA."""
 
-import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from market_core import get_db

@@ -2,7 +2,7 @@ import os
 import re
 import secrets
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Request
 from market_core import check_rate_limit_sqlite
 from server_deps import get_messenger_session, update_messenger_session
 

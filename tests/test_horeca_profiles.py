@@ -6,7 +6,6 @@ from pathlib import Path
 
 # Importar módulos HORECA
 import sys
-from pathlib import Path
 
 root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
@@ -97,7 +96,7 @@ def test_daily_limit_check(horeca_db):
     from routers.integrations.horeca_profiles import HORECA_FREE_SEARCHES_DAILY, update_profile_search
     
     # Crear perfil con 4 búsquedas
-    profile = get_or_create_profile("whatsapp:+51900000003", "Test Cafeteria", "cafeteria")
+    get_or_create_profile("whatsapp:+51900000003", "Test Cafeteria", "cafeteria")
     
     # Simular 4 búsquedas
     for i in range(4):
@@ -132,7 +131,7 @@ def test_savings_summary(horeca_db):
     from routers.integrations.horeca_profiles import update_profile_search
     
     # Crear perfil y agregar búsquedas con ahorro
-    profile = get_or_create_profile("whatsapp:+51900000004", "Test Catering", "catering")
+    get_or_create_profile("whatsapp:+51900000004", "Test Catering", "catering")
     
     # Simular búsquedas con ahorro
     record_search_history(
