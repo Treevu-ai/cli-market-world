@@ -1,6 +1,5 @@
 """Script para ejecutar migraciones HORECA en SQLite."""
 
-import os
 import sys
 from pathlib import Path
 

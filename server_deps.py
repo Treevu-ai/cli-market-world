@@ -473,30 +473,8 @@ def require_checkout_access(username: str) -> None:
     )
 
 
-# ── Messenger session management (Telegram/WhatsApp) ───────────────────────
-
-_messenger_sessions: dict[str, dict] = {}
-
-
-def get_messenger_session(chat_id: str) -> dict:
-    """Get or create a messenger session for a given chat_id."""
-    if chat_id not in _messenger_sessions:
-        _messenger_sessions[chat_id] = {
-            "last_context": None,
-            "last_query": None,
-            "created_at": time.time(),
-        }
-    return _messenger_sessions[chat_id]
-
-
-def update_messenger_session(chat_id: str, data: dict) -> None:
-    """Update messenger session with new data."""
-    if chat_id not in _messenger_sessions:
-        _messenger_sessions[chat_id] = {}
-    _messenger_sessions[chat_id].update(data)
-
-
 # ── HORECA session extensions ─────────────────────────────────────────────────
+
 
 def get_horeca_session(whatsapp_number: str) -> dict:
     """Obtiene la sesión HORECA de un usuario."""

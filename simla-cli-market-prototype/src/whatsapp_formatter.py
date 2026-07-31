@@ -2,7 +2,7 @@
 WhatsApp Response Formatter
 Formatea respuestas de CLI Market para mensajes de WhatsApp
 """
-from typing import Dict, List
+from typing import Dict
 import logging
 from datetime import datetime
 
@@ -58,7 +58,7 @@ class WhatsAppFormatter:
         # Agregar opciones adicionales si hay más resultados
         if len(products) > 1:
             response += f"\n_{len(products) - 1} opciones más disponibles_\n"
-            response += f"¿Quieres que compare con otras tiendas?"
+            response += "¿Quieres que compare con otras tiendas?"
         
         return response
     
@@ -125,7 +125,7 @@ class WhatsAppFormatter:
         for rec in recommendations:
             product_name = rec.get('product', 'Producto')
             optimized_price = rec.get('optimized_price', 0)
-            original_price = rec.get('original_price', 0)
+            rec.get('original_price', 0)
             savings = rec.get('savings', 0)
             store = rec.get('store', 'Tienda')
             
