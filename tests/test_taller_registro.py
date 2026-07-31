@@ -80,3 +80,19 @@ def test_payment_instructions_yape_vs_transferencia():
     bank_text = _payment_instructions("Transferencia bancaria")
     assert YAPE_PLIN_NUMBER in yape_text
     assert BCP_ACCOUNT_NUMBER in bank_text
+
+
+def test_confirmation_email_escapes_html_in_body():
+    from routers.taller import _send_confirmation_email
+
+    with patch("market_connectors.email_outbound._smtp_configured", return_value=True), \
+         patch("market_connectors.email_outbound._send") as send:
+        _send_confirmation_email(
+            nombre='<img src=x onerror="alert(1)">',
+            email="victim@example.com",
+            pago="Yape",
+        )
+
+    html = send.call_args.args[3]
+    assert "<img" not in html
+    assert "&lt;img" in html

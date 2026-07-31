@@ -11,7 +11,10 @@ from market_server import app, hash_password
 @pytest.fixture
 def v1_client(isolated_db):
     ensure_db_initialized()
+    import market_billing
+
     db_save_user("intel-user", hash_password("market"), "intel@test.com")
+    market_billing.db_set_subscription("intel-user", "pro")
     key = db_create_api_key("intel-user", "read", "data-v1-smoke")["key"]
     headers = {"Authorization": f"Bearer {key}"}
     with TestClient(app) as client:
@@ -66,3 +69,16 @@ def test_v1_requires_api_key(isolated_db):
     with TestClient(app) as client:
         r = client.get("/v1/prices?limit=1")
     assert r.status_code == 401
+
+
+def test_v1_data_moat_rejects_starter_tier(isolated_db):
+    import market_billing
+
+    ensure_db_initialized()
+    db_save_user("starter-v1", hash_password("market"), "starter@test.com")
+    market_billing.db_set_subscription("starter-v1", "starter")
+    key = db_create_api_key("starter-v1", "read", "data-v1-starter")["key"]
+    headers = {"Authorization": f"Bearer {key}"}
+    with TestClient(app) as client:
+        r = client.get("/v1/prices?limit=1", headers=headers)
+    assert r.status_code == 403
