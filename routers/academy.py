@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import uuid
+from html import escape as _esc
 
 from fastapi import APIRouter, HTTPException
 
@@ -88,7 +89,7 @@ def _send_ops_notification(*, email: str, rol: str, track: str, pais: str, empre
         f"País: {pais}\n"
         f"Empresa: {empresa or '(sin especificar)'}\n"
     )
-    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{text}</pre>")
+    return _send(NOTIFY_EMAIL, subject, text, f"<pre>{_esc(text)}</pre>")
 
 
 @router.post("/v1/academy/waitlist")

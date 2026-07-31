@@ -77,3 +77,23 @@ def test_waitlist_inserts_row_and_notifies_ops(isolated_db):
     assert row["email"] == "ana@example.com"
     assert row["track"] == "Intelligence"
     assert row["pais"] == "PE"
+
+
+def test_ops_notification_escapes_html_in_body():
+    from routers.academy import _send_ops_notification
+
+    with patch("market_connectors.email_outbound._smtp_configured", return_value=True), \
+         patch("market_connectors.email_outbound._send") as send:
+        _send_ops_notification(
+            email="attacker@example.com",
+            rol='</pre><a href="https://evil.example">Verify payment</a>',
+            track="Intelligence",
+            pais="PE",
+            empresa="<script>alert(1)</script>",
+        )
+
+    html = send.call_args.args[3]
+    assert "</pre><a" not in html
+    assert "&lt;/pre&gt;" in html
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
