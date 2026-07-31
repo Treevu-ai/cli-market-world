@@ -19,8 +19,8 @@ import time
 from contextvars import ContextVar
 
 from fastapi import HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from market_core import (
     check_rate_limit_sqlite,
@@ -408,13 +408,48 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
 _request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
 
 
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    """Expose the current Starlette request to pluggable core auth."""
+def _enforce_core_v1_tier(tier: str, authorization: str | None) -> str:
+    """Apply tier gate for a core-mounted /v1 route."""
+    if tier == "enterprise":
+        return require_enterprise(authorization)
+    if tier == "pro":
+        return require_pro(authorization)
+    if tier == "starter":
+        return require_starter(authorization)
+    return require_api_key(authorization)
 
-    async def dispatch(self, request, call_next):
+
+class RequestContextMiddleware:
+    """Expose request context and enforce core /v1 tier gates.
+
+    Pure ASGI (not BaseHTTPMiddleware) so ContextVar + tier checks survive
+    nested middleware task boundaries in CI/TestClient.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive)
         token = _request_ctx.set(request)
         try:
-            return await call_next(request)
+            tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
+            if tier:
+                try:
+                    _enforce_core_v1_tier(tier, request.headers.get("authorization"))
+                except HTTPException as exc:
+                    response = JSONResponse(
+                        status_code=exc.status_code,
+                        content={"detail": exc.detail},
+                        headers=getattr(exc, "headers", None) or None,
+                    )
+                    await response(scope, receive, send)
+                    return
+            await self.app(scope, receive, send)
         finally:
             _request_ctx.reset(token)
 
@@ -424,12 +459,8 @@ def require_v1_core_auth(authorization: str | None) -> str:
     request = _request_ctx.get()
     if request is not None:
         tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
-        if tier == "enterprise":
-            return require_enterprise(authorization)
-        if tier == "pro":
-            return require_pro(authorization)
-        if tier == "starter":
-            return require_starter(authorization)
+        if tier:
+            return _enforce_core_v1_tier(tier, authorization)
     return require_api_key(authorization)
 
 
