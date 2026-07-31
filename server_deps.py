@@ -19,7 +19,6 @@ import time
 from contextvars import ContextVar
 
 from fastapi import HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 from market_core import (
@@ -408,13 +407,25 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
 _request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
 
 
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    """Expose the current Starlette request to pluggable core auth."""
+class RequestContextMiddleware:
+    """Expose the current Starlette request to pluggable core auth.
 
-    async def dispatch(self, request, call_next):
+    Pure ASGI middleware (not BaseHTTPMiddleware) so ContextVar propagates into
+    FastAPI dependencies — BaseHTTPMiddleware runs call_next in a task that can
+    drop request_ctx before require_v1_core_auth() reads it.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        request = Request(scope, receive)
         token = _request_ctx.set(request)
         try:
-            return await call_next(request)
+            await self.app(scope, receive, send)
         finally:
             _request_ctx.reset(token)
 

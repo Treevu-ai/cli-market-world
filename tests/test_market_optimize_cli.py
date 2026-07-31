@@ -176,6 +176,31 @@ def test_optimize_purchase_rejects_starter_tier(isolated_db):
     assert response.status_code == 403
 
 
+def test_require_v1_core_auth_rejects_starter_on_optimize_purchase(isolated_db):
+    from unittest.mock import MagicMock
+
+    from fastapi import HTTPException
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    import server_deps
+
+    ensure_db_initialized()
+    db_save_user("starter-opt-unit", server_deps.hash_password("market"), "starter-unit@test.com")
+    market_billing.db_set_subscription("starter-opt-unit", "starter")
+    key = db_create_api_key("starter-opt-unit", "read", "opt-starter-unit")["key"]
+
+    request = MagicMock()
+    request.method = "POST"
+    request.url.path = "/v1/missions/optimize-purchase"
+    token = server_deps._request_ctx.set(request)
+    try:
+        with pytest.raises(HTTPException) as exc:
+            server_deps.require_v1_core_auth(f"Bearer {key}")
+        assert exc.value.status_code == 403
+    finally:
+        server_deps._request_ctx.reset(token)
+
+
 def test_affordability_route_mounted():
     client = TestClient(_load_server_app())
     response = client.get("/v1/intel/affordability", params={"country": "PE"})
