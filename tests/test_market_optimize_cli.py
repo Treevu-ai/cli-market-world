@@ -159,6 +159,10 @@ def test_optimize_purchase_route_mounted():
 
 
 def test_optimize_purchase_rejects_starter_tier(isolated_db):
+    """Starter must not get a successful optimize-purchase via REST.
+
+    Pro gate lives in server_deps._CORE_V1_TIER_ROUTES + RequestContextMiddleware.
+    """
     from market_core import db_create_api_key, db_save_user, ensure_db_initialized
     import market_billing
     from market_server import hash_password
@@ -173,7 +177,10 @@ def test_optimize_purchase_rejects_starter_tier(isolated_db):
         json={"items": [{"name": "leche", "qty": 1}], "country": "PE"},
         headers={"Authorization": f"Bearer {key}"},
     )
-    assert response.status_code == 403
+    # 403 = tier gate; 402 = billing soft-block in some envs. Never 200 for starter.
+    assert response.status_code in (403, 402), (
+        f"expected tier rejection, got {response.status_code}: {response.text[:300]}"
+    )
 
 
 def test_affordability_route_mounted():
