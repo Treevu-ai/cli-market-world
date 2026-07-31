@@ -2,6 +2,26 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-07-30] — bump cli-market-core pin to 1.11.99 (disable wisqaperu_pe, confirmed Cloudflare Turnstile)
+
+`requirements.txt` pin bumped to `cli-market-core==1.11.99`. Closes the
+dead-store investigation: `wisqaperu_pe` confirmed as a genuine,
+unconditional Cloudflare Turnstile/JS-challenge (blocks every request,
+including from a fresh residential IP) — disabled, same class as
+Deltron/Efe, no code fix possible. `igardi_pe` investigated but left
+active: production got 403s, but the identical request from a
+residential IP returned clean JSON minutes later with no challenge at
+all — looks like Fly.io IP reputation with Cloudflare rather than a
+hard block, monitor rather than disable. See `cli-market-core`'s own
+changelog for the full writeup.
+
+With `wisqaperu_pe` disabled, `doctor_prod_gate.py`'s dead-store count
+should drop by one immediately; the 3 stores fixed by 1.11.98 need a
+fresh collector cycle to recover their lifetime success_pct back above
+the "dead" threshold (cumulative ratio, not a rolling window — will take
+several cycles, not instant). `igardi_pe` may or may not still show
+dead depending on whether the IP-reputation issue has cleared.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.11.98 (fix 3/5 dead-store collector failures)
 
 `requirements.txt` pin bumped to `cli-market-core==1.11.98`. Root-caused
