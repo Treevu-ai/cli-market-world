@@ -2,7 +2,7 @@ import os
 import re
 import secrets
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi import APIRouter, BackgroundTasks, Request, Response
 from market_core import check_rate_limit_sqlite
 from server_deps import get_messenger_session, update_messenger_session
 
@@ -227,26 +227,43 @@ async def _process_message(chat_id: str, message_id: str | None, incoming_msg: s
 
         answer = await _ask_intel(effective_query, token)
         keyboard = _follow_up_keyboard()
-        update_messenger_session(chat_id, {"last_context": incoming_msg, "last_query": effective_query})
+        update_messenger_session(
+            chat_id,
+            context=f"Query: {incoming_msg} | Answer: {answer[:100]}...",
+            last_query=incoming_msg,
+            last_country=_guess_country(incoming_msg),
+        )
 
     if message_id:
-        await _edit_telegram(chat_id, message_id, answer, keyboard)
+        if not await _edit_telegram(chat_id, message_id, answer, keyboard):
+            await _send_telegram(chat_id, answer, keyboard)
     else:
         await _send_telegram(chat_id, answer, keyboard)
 
 
-async def _process_callback(chat_id: str, message_id: str, callback_data: str) -> None:
-    """Handle inline keyboard button callbacks."""
-    session = get_messenger_session(chat_id)
-    last_query = session.get("last_query", "")
+_BUTTON_QUESTIONS = {
+    "cmp": lambda q, c: f"Compara precios de {q} en {c} entre tiendas",
+}
 
-    if callback_data == "cmp" and last_query:
-        # Re-run the last query with a "compare stores" prefix
-        question = f"Comparar precios entre tiendas para: {last_query}"
-        answer = await _ask_intel(question, _bot_token_for_chat(chat_id))
-        await _edit_telegram(chat_id, message_id, answer, _follow_up_keyboard())
-    else:
-        await _answer_callback_query(callback_data, "Acción no disponible")
+
+async def _process_callback(chat_id: str, message_id: str, action: str) -> None:
+    """Re-run last query for inline button; send as NEW message (don't edit)."""
+    session = get_messenger_session(chat_id)
+    last_query = session.get("last_query")
+    if not last_query:
+        await _send_telegram(
+            chat_id,
+            "Esa búsqueda ya expiró — escribime de nuevo qué precio querés ver.",
+        )
+        return
+
+    country = session.get("last_country") or "PE"
+    builder = _BUTTON_QUESTIONS.get(action)
+    if not builder:
+        return
+    token = _bot_token_for_chat(chat_id)
+    answer = await _ask_intel(builder(last_query, country), token)
+    await _send_telegram(chat_id, answer, _follow_up_keyboard())
 
 
 @router.post("/webhook")
@@ -255,67 +272,66 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     if not TELEGRAM_TOKEN:
         return {"status": "disabled", "hint": "Set TELEGRAM_BOT_TOKEN env var"}
 
-    # Validate webhook secret
     if not _is_valid_telegram_secret(request):
-        return {"status": "invalid_secret"}, 401
+        print("❌ Telegram webhook: invalid or missing secret token")
+        return Response(content="invalid secret token", status_code=403)
 
     try:
-        update = await request.json()
+        body = await request.json()
     except Exception:
         return {"status": "invalid_json"}
 
-    # Extract message data
-    message = update.get("message", {})
-    callback_query = update.get("callback_query", {})
-
+    callback_query = body.get("callback_query")
     if callback_query:
-        # Handle button callback
         chat_id = str(callback_query.get("message", {}).get("chat", {}).get("id", ""))
         message_id = str(callback_query.get("message", {}).get("message_id", ""))
-        callback_data = callback_query.get("data", "")
+        action = callback_query.get("data", "")
+        callback_query_id = callback_query.get("id", "")
+
+        if not chat_id or not message_id:
+            return {"status": "no_message"}
 
         if not _is_chat_allowed(chat_id):
-            await _answer_callback_query(callback_data, "Chat no autorizado")
+            print(f"🚫 Telegram denied (not on allowlist): {chat_id}")
+            background_tasks.add_task(_send_telegram, chat_id, _DENIED_BODY)
             return {"status": "denied"}
 
-        # Rate limiting
+        # Ack button spinner first, then process in background.
+        await _answer_callback_query(callback_query_id, {"cmp": "🔄 Comparando tiendas..."}.get(action))
+
         check_rate_limit_sqlite(
-            chat_id,
+            f"telegram:{chat_id}",
             window_secs=TELEGRAM_RATE_LIMIT_WINDOW,
             max_req=TELEGRAM_RATE_LIMIT_MIN,
             daily_max=TELEGRAM_RATE_LIMIT_DAY,
         )
 
-        background_tasks.add_task(_process_callback, chat_id, message_id, callback_data)
-        await _answer_callback_query(callback_data)
+        background_tasks.add_task(_process_callback, chat_id, message_id, action)
         return {"status": "ok"}
 
+    message = body.get("message") or {}
     if message:
-        # Handle text message
         chat_id = str(message.get("chat", {}).get("id", ""))
-        message_id = str(message.get("message_id", ""))
-        text = message.get("text", "").strip()
-        first_name = message.get("chat", {}).get("first_name", "")
+        text = (message.get("text") or "").strip()
+        first_name = message.get("chat", {}).get("first_name") or message.get("from", {}).get("first_name") or ""
+
+        if not chat_id:
+            return {"status": "no_message"}
 
         if not _is_chat_allowed(chat_id):
-            await _send_telegram(chat_id, _DENIED_BODY)
+            print(f"🚫 Telegram denied (not on allowlist): {chat_id}")
+            background_tasks.add_task(_send_telegram, chat_id, _DENIED_BODY)
             return {"status": "denied"}
 
-        # Rate limiting
         check_rate_limit_sqlite(
-            chat_id,
+            f"telegram:{chat_id}",
             window_secs=TELEGRAM_RATE_LIMIT_WINDOW,
             max_req=TELEGRAM_RATE_LIMIT_MIN,
             daily_max=TELEGRAM_RATE_LIMIT_DAY,
         )
 
-        # Send typing indicator immediately
         await _send_typing(chat_id)
-
-        # Send placeholder message
         placeholder_id = await _send_telegram(chat_id, "🔍 Buscando...")
-
-        # Process in background
         background_tasks.add_task(_process_message, chat_id, placeholder_id, text, first_name)
         return {"status": "ok"}
 

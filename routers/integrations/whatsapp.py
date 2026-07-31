@@ -267,73 +267,69 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
             except Exception as e:
                 print(f"❌ Error API (WhatsApp Bridge): {e}")
 
-    _send_twilio_text(sender, _markdown_bold_to_whatsapp(answer))
+    try:
+        _send_twilio_text(sender, _markdown_bold_to_whatsapp(answer))
+    except Exception as e:
+        print(f"❌ Error Twilio: {e}")
+
+
+async def _reply_denied(sender: str) -> None:
+    """Short denial for numbers not on WHATSAPP_ALLOWED_NUMBERS — no LLM cost."""
+    try:
+        _send_twilio_text(sender, _DENIED_BODY)
+    except Exception as e:
+        print(f"❌ Error Twilio (denied): {e}")
 
 
 @router.post("/webhook")
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
-    """Webhook endpoint for Twilio WhatsApp messages."""
-    if not TWILIO_AUTH_TOKEN:
-        print("❌ WhatsApp webhook: TWILIO_AUTH_TOKEN not set")
-        raise HTTPException(status_code=503, detail="whatsapp_bridge_disabled")
+    """Webhook Twilio WhatsApp — ack fast with empty TwiML; slow work in background."""
+    form_data = await request.form()
+    params = {k: str(v) for k, v in form_data.items()}
 
-    try:
-        form_data = await request.form()
-        params = {k: str(v) for k, v in form_data.items()}
-    except Exception as e:
-        print(f"❌ WhatsApp webhook: invalid form: {e}")
-        raise HTTPException(status_code=400, detail="invalid_form") from e
-
-    # Validar firma Twilio (Twilio reintenta si no es 2xx; 403 = no re-ejecutar trabajo)
     if not _is_valid_twilio_signature(request, params):
         print("❌ WhatsApp webhook: invalid or missing Twilio signature")
-        raise HTTPException(status_code=403, detail="invalid_signature")
+        return Response(content="invalid signature", status_code=403)
 
-    sender = params.get("From", "") or ""
-    body_preview = (params.get("Body") or "")[:40]
-    print(f"📥 WhatsApp webhook ok from {sender!r} body={body_preview!r}")
+    # Body can be missing on pure-media messages; MediaContentType0 is the
+    # real Twilio form key (MediaContentType without index is not sent).
+    incoming_msg = str(form_data.get("Body") or "").strip().lower()
+    sender = str(form_data.get("From") or "")
+    media_type = str(
+        form_data.get("MediaContentType0") or form_data.get("MediaContentType") or ""
+    )
+    is_audio = media_type.startswith("audio/")
+    audio_url = str(form_data.get("MediaUrl0") or "") if is_audio else None
 
-    # Allowlist: reply + 200 so Twilio does not retry
+    print(f"📥 WhatsApp webhook ok from {sender!r} body={(incoming_msg or '')[:40]!r}")
+
+    # Access control before rate limit / LLM — anyone who joined the Twilio
+    # Sandbox can hit this webhook; the allowlist is the real gate.
     if not _is_sender_allowed(sender):
-        print(f"🚫 WhatsApp denied (allowlist): {sender!r}")
-        try:
-            _send_twilio_text(sender, _DENIED_BODY)
-        except Exception as e:
-            print(f"❌ WhatsApp deny-reply failed: {e}")
+        print(f"🚫 WhatsApp denied (not on allowlist): {sender}")
+        if TWILIO_AUTH_TOKEN:
+            background_tasks.add_task(_reply_denied, sender)
         return _empty_twiml()
 
-    # Rate limiting (raises if exceeded)
     try:
         check_rate_limit_sqlite(
-            sender,
+            f"whatsapp:{sender}",
             window_secs=WHATSAPP_RATE_LIMIT_WINDOW,
             max_req=WHATSAPP_RATE_LIMIT_MIN,
             daily_max=WHATSAPP_RATE_LIMIT_DAY,
         )
-    except Exception as e:
-        print(f"⚠️ WhatsApp rate limit for {sender}: {e}")
-        try:
-            _send_twilio_text(
-                sender,
-                "Demasiados mensajes en poco tiempo. Esperá un minuto e intentá de nuevo.",
-            )
-        except Exception:
-            pass
+    except HTTPException as exc:
+        # Never return 429 to Twilio — Sandbox treats non-2xx as webhook failure.
+        if exc.status_code == 429:
+            print(f"⚠️ WhatsApp rate limit hit for {sender}")
+            return _empty_twiml()
+        raise
+
+    if (not incoming_msg and not audio_url) or not TWILIO_AUTH_TOKEN:
         return _empty_twiml()
 
-    incoming_msg = (params.get("Body") or "").strip()
-    media_url = None
-    try:
-        num_media = int(params.get("NumMedia") or 0)
-    except ValueError:
-        num_media = 0
-    if num_media > 0:
-        media_url = params.get(f"MediaUrl{num_media - 1}") or None
-
-    # IMPORTANT: pass the callable + args — do NOT call the coroutine here.
-    # add_task(coro()) was a bug that silently broke background replies.
-    background_tasks.add_task(_process_and_reply, incoming_msg, sender, media_url)
-
+    # IMPORTANT: pass callable + args (not a pre-created coroutine).
+    background_tasks.add_task(_process_and_reply, incoming_msg, sender, audio_url)
     return _empty_twiml()
 
 
@@ -351,3 +347,8 @@ async def whatsapp_health():
         "horeca_available": HORECA_AVAILABLE,
         "webhook_path": "/v1/integrations/whatsapp/webhook",
     }
+
+
+@router.get("/webhook")
+async def whatsapp_verify(request: Request):
+    return Response(content="ok", status_code=200)
