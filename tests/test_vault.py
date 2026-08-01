@@ -144,6 +144,32 @@ def test_vault_setup_success():
     assert r.json()["setup_token_id"] == "st_abc"
 
 
+def test_vault_setup_ignores_foreign_return_url():
+    mock_result = {"setup_token_id": "st_abc", "approve_url": "https://paypal.com/vault/st_abc"}
+    captured = {}
+
+    async def _capture_create_vault_setup_token(*args, **kwargs):
+        captured.update(kwargs)
+        return mock_result
+
+    with patch(
+        "market_connectors.paypal_payments.create_vault_setup_token",
+        new=_capture_create_vault_setup_token,
+        create=True,
+    ):
+        r = client.post(
+            "/billing/vault-setup",
+            headers=_auth(),
+            json={
+                "return_url": "https://evil.example/phish",
+                "cancel_url": "https://evil.example/cancel",
+            },
+        )
+    assert r.status_code == 200
+    assert captured["return_url"] == "https://cli-market.dev?vault=success"
+    assert captured["cancel_url"] == "https://cli-market.dev?vault=cancelled"
+
+
 def test_vault_setup_reuses_own_customer_id():
     bind_vault_customer("vault_tester", "c1")
     mock_result = {"setup_token_id": "st_abc", "approve_url": "https://paypal.com/vault/st_abc"}
