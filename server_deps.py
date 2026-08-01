@@ -19,8 +19,8 @@ import os
 from contextvars import ContextVar
 
 from fastapi import HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from market_core import (
     check_rate_limit_sqlite,
@@ -439,13 +439,26 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
 _request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
 
 
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    """Expose the current Starlette request to pluggable core auth."""
+class RequestContextMiddleware:
+    """Expose the current request to pluggable Core auth without task splits.
 
-    async def dispatch(self, request, call_next):
-        token = _request_ctx.set(request)
+    ``BaseHTTPMiddleware`` may run the downstream application in a separate
+    task. That makes the ContextVar intermittently unavailable to FastAPI
+    dependencies under a full concurrent test run, which could bypass a
+    tier-specific Core route gate. A minimal ASGI wrapper keeps the request
+    context in the same task as the dependency evaluation.
+    """
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        token = _request_ctx.set(Request(scope))
         try:
-            return await call_next(request)
+            await self.app(scope, receive, send)
         finally:
             _request_ctx.reset(token)
 
