@@ -20,8 +20,8 @@ POST https://cli-market-api.fly.dev/mcp
 2. En Open WebUI: **Admin Settings → External Tools → Add Server (+)**.
 3. Completar:
    - **Type:** `MCP (Streamable HTTP)`
-   - **Server URL:** `https://cli-market-api.fly.dev/mcp?token=<tu-token>`
-   - Auth: no requiere OAuth — el token va en el query param (los clientes tipo claude.ai/Open WebUI no siempre soportan Bearer header en este flujo).
+   - **Server URL:** `https://cli-market-api.fly.dev/mcp`
+   - **Auth:** `Bearer`; pegar el token en el campo de API key. Si tu versión muestra **Headers** en vez de ese campo, usar `{"Authorization":"Bearer <tu-token>"}`.
 4. Guardar. Open WebUI hace `initialize` y `tools/list` automáticamente y las tools quedan disponibles para cualquier modelo conectado.
 
 ## Qué se obtiene
@@ -40,6 +40,7 @@ El límite por tier ya viene resuelto del lado del servidor: las tools marcadas 
 
 ```bash
 curl -s -X POST "https://cli-market-api.fly.dev/mcp" \
+  -H "Authorization: Bearer <tu-token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"openwebui","version":"0.0.1"}}}'
 ```

@@ -85,9 +85,10 @@ def test_checkout_webhook_duplicate_is_noop():
         order_id="ORD-DUP01",
     )
     secret = os.getenv("CHECKOUT_WEBHOOK_SECRET", "")
-    params = f"order_id=ORD-DUP01&status=paid&secret={secret}"
-    r1 = client.post(f"/checkout/webhook?{params}")
-    r2 = client.post(f"/checkout/webhook?{params}")
+    params = "order_id=ORD-DUP01&status=paid"
+    headers = {"X-Checkout-Webhook-Secret": secret} if secret else {}
+    r1 = client.post(f"/checkout/webhook?{params}", headers=headers)
+    r2 = client.post(f"/checkout/webhook?{params}", headers=headers)
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r2.json().get("duplicate") is True

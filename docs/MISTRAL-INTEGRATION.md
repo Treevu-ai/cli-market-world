@@ -4,7 +4,7 @@ Guía para conectar las MCP tools de CLI Market a un agente construido con el SD
 
 ## Diferencia clave vs. LangChain / Open WebUI
 
-LangChain y Open WebUI se conectan **directo** al endpoint Streamable HTTP de CLI Market (`POST /mcp?token=...`) en cada llamada. Mistral usa un modelo distinto: primero hay que **registrar el servidor MCP como "connector"** en la plataforma de Mistral (una sola vez), y luego referenciarlo por `connector_id` en cada conversación. No hay forma de pasar la URL del MCP directamente en el request de chat.
+LangChain y Open WebUI se conectan **directo** al endpoint Streamable HTTP de CLI Market (`POST /mcp` con `Authorization: Bearer ...`) en cada llamada. Mistral usa un modelo distinto: primero hay que **registrar el servidor MCP como "connector"** en la plataforma de Mistral (una sola vez), y luego referenciarlo por `connector_id` en cada conversación. No hay forma de pasar la URL del MCP directamente en el request de chat.
 
 Esto se confirmó inspeccionando el código fuente instalado de `mistralai==2.6.0` (`site-packages/mistralai/client/`), no la documentación pública — la guía oficial en la web puede describir una versión distinta del SDK.
 
@@ -38,7 +38,7 @@ connector = client.beta.connectors.create(
 print(connector.id)  # guardar este id, se usa en cada conversación
 ```
 
-`server` es la URL del servidor MCP (`connectors.py:create`, parámetro `server: str`). `headers` son headers a nivel organización que Mistral reenvía en cada llamada al servidor — ahí va el token de CLI Market, no en la URL como en LangChain/Open WebUI.
+`server` es la URL del servidor MCP (`connectors.py:create`, parámetro `server: str`). `headers` son headers a nivel organización que Mistral reenvía en cada llamada al servidor — ahí va el token de CLI Market, igual que en LangChain y Open WebUI.
 
 ## Paso 2: usar el connector en una conversación
 
@@ -71,7 +71,8 @@ print(response.outputs)
 ## Verificación rápida
 
 ```bash
-curl -s -X POST "https://cli-market-api.fly.dev/mcp?token=<tu-token>" \
+curl -s -X POST "https://cli-market-api.fly.dev/mcp" \
+  -H "Authorization: Bearer <tu-token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"mistral","version":"0.0.1"}}}'
 ```
