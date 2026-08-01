@@ -19,6 +19,7 @@ import os
 from contextvars import ContextVar
 
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from starlette.requests import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -437,6 +438,7 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
 }
 
 _request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
+_core_v1_gate_user: ContextVar[str | None] = ContextVar("core_v1_gate_user", default=None)
 
 
 class RequestContextMiddleware:
@@ -456,15 +458,38 @@ class RequestContextMiddleware:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
-        token = _request_ctx.set(Request(scope))
+        request = Request(scope)
+        token = _request_ctx.set(request)
+        gate_token = _core_v1_gate_user.set(None)
         try:
+            tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
+            if tier == "enterprise":
+                _core_v1_gate_user.set(require_enterprise(request.headers.get("authorization")))
+            elif tier == "pro":
+                _core_v1_gate_user.set(require_pro(request.headers.get("authorization")))
+            elif tier == "starter":
+                _core_v1_gate_user.set(require_starter(request.headers.get("authorization")))
             await self.app(scope, receive, send)
+        except HTTPException as exc:
+            response = JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=exc.headers,
+            )
+            await response(scope, receive, send)
         finally:
+            _core_v1_gate_user.reset(gate_token)
             _request_ctx.reset(token)
 
 
 def require_v1_core_auth(authorization: str | None) -> str:
     """Tier-aware auth for cli-market-core api_routes (_auth_fn hook)."""
+    # The ASGI middleware enforces gated Core paths before dispatch. Reuse the
+    # resolved user so the dependency cannot bypass the tier check nor consume
+    # a second rate-limit slot.
+    gated_username = _core_v1_gate_user.get()
+    if gated_username:
+        return gated_username
     request = _request_ctx.get()
     if request is not None:
         tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
