@@ -2,6 +2,21 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-01] — Core 1.12.5: fuentes industriales PE verificadas
+
+World ahora fija `cli-market-core==1.12.5`. La versión incorpora tres
+fuentes industriales peruanas con catálogo y precios públicos verificables:
+Ferretec, Safety Store Perú y Tecnototal. Sus conectores Shopify/WooCommerce
+devuelven resultados normalizados en PEN para búsquedas de producto.
+
+FAGY e Indutex también quedan registradas en Core como candidatas, pero
+desactivadas: sus APIs públicas exponen el catálogo sin precios positivos. No
+se usarán para cotizaciones hasta contar con una fuente de precio verificable.
+
+No se modifica ningún Golden Record, contrato HTTP/MCP ni claim comercial;
+Backend actualiza su piso compatible a `cli-market-core>=1.12.5` y el índice y
+contenido no requieren cambios para esta ola.
+
 ## [2026-08-01] — source-health recovery and coordinated Core 1.12.4 release
 
 Production health was blocking deploys with three `dead` sources:
