@@ -6,6 +6,21 @@ Registro conjunto de `cli-market-core`, `cli-market-backend`,
 `cli-market-world`, `cli-market-index` y `cli-market-content` tras el
 desbloqueo de salud de fuentes en producción.
 
+## Ola industrial PE — Core 1.12.5
+
+| Fuente | Estado | Criterio de ingreso |
+|---|---|---|
+| Ferretec | Activa | Shopify `products.json` accesible, precio público positivo y resultado normalizado en PEN. |
+| Safety Store Perú | Activa | Shopify `products.json` accesible, precio público positivo y resultado normalizado en PEN. |
+| Tecnototal | Activa | WooCommerce Store API accesible, precio público positivo y resultado normalizado en PEN. |
+| FAGY | Candidata bloqueada | La Store API entrega catálogo, pero no precios públicos positivos. |
+| Indutex | Candidata bloqueada | La Store API entrega catálogo, pero no precios públicos positivos. |
+
+Core `1.12.5` contiene las tres fuentes activas y las dos candidatas con
+`disabled_reason`. World fija exactamente esa versión; Backend eleva su piso a
+`>=1.12.5`. No se escribe Golden Record ni se publica claim de cobertura hasta
+que la telemetría de producción y la equivalencia de producto lo sostengan.
+
 ## Hallazgo y decisión
 
 | Fuente | País | Evidencia | Decisión |
