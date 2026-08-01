@@ -13,6 +13,7 @@ Contents:
 from __future__ import annotations
 
 import hashlib
+import hmac
 import logging
 import time
 import os
@@ -81,22 +82,47 @@ def auth_user(token: str) -> str:
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 
+_PASSWORD_SCHEME = "pbkdf2_sha256"
+_LEGACY_PASSWORD_ITERATIONS = 100_000
+try:
+    _PASSWORD_ITERATIONS = max(
+        _LEGACY_PASSWORD_ITERATIONS,
+        int(os.getenv("MARKET_PASSWORD_HASH_ITERATIONS", "600000")),
+    )
+except ValueError:
+    _PASSWORD_ITERATIONS = 600_000
+
+
 def hash_password(password: str) -> str:
     salt = os.urandom(16).hex()
-    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
-    return f"{salt}:{h.hex()}"
+    h = hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt.encode(), _PASSWORD_ITERATIONS
+    )
+    return f"{_PASSWORD_SCHEME}${_PASSWORD_ITERATIONS}${salt}${h.hex()}"
 
 
 def verify_password(password: str, stored: str) -> bool:
-    if ":" not in stored:
+    if stored.startswith(f"{_PASSWORD_SCHEME}$"):
+        try:
+            scheme, iteration_text, salt, expected = stored.split("$", 3)
+            iterations = int(iteration_text)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=500, detail="Invalid password hash format.")
+        if scheme != _PASSWORD_SCHEME or iterations < _LEGACY_PASSWORD_ITERATIONS:
+            raise HTTPException(status_code=500, detail="Invalid password hash parameters.")
+    elif ":" in stored:
+        # Pre-hardening records remain verifiable so existing users are not locked out.
+        salt, expected = stored.split(":", 1)
+        iterations = _LEGACY_PASSWORD_ITERATIONS
+    else:
         raise HTTPException(
             status_code=500,
             detail="Legacy plaintext password detected. Contact admin.",
         )
-    salt, h = stored.split(":", 1)
-    return h == hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 100_000
+    calculated = hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt.encode(), iterations
     ).hex()
+    return hmac.compare_digest(expected, calculated)
 
 
 # ── Brute-force protection ────────────────────────────────────────────────────

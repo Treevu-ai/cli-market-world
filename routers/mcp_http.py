@@ -6,9 +6,12 @@ Streamable HTTP transport (MCP 2025-03-26).
 Endpoint:
   POST /mcp   JSON-RPC 2.0 — handles initialize, tools/list, tools/call
 
-Usage in claude.ai (Add MCP server):
-  URL: https://cli-market-api.fly.dev/mcp?token=<your-market-api-token>
-  (claude.ai connectors don't support Bearer auth — use the token query param instead)
+Usage in remote MCP clients:
+  URL: https://cli-market-api.fly.dev/mcp
+  Header: Authorization: Bearer <your-market-api-token>
+
+API keys must not be placed in the URL. Query parameters are routinely retained
+by browser history, proxies and access logs.
 
 Tool tiers — kept in sync with _PRO_TOOLS/_STARTER_TOOLS/_ENTERPRISE_TOOLS
 below; those frozensets are the source of truth for upgrade-prompt
@@ -35,6 +38,7 @@ not listed under Starter/Pro/Enterprise/Admin is Free.
 from __future__ import annotations
 
 import asyncio
+import os
 
 import httpx
 from fastapi import APIRouter, Header, Request
@@ -156,9 +160,10 @@ def _detect_client(
     return "unknown", raw_name or (user_agent or "")[:80], raw_version
 
 
-def _log_mcp_event(event: str, token: str | None, meta: dict) -> None:
+def _log_mcp_event(event: str, username: str | None, meta: dict) -> None:
+    """Record MCP telemetry without persisting a bearer credential."""
     try:
-        record_funnel_event(event, username=token or None, meta=meta)
+        record_funnel_event(event, username=username or None, meta=meta)
     except Exception:
         pass
 
@@ -1519,15 +1524,31 @@ async def mcp_http_get():
 async def mcp_http(
     request: Request,
     authorization: str | None = Header(None),
-    token: str | None = None,
     user_agent: str | None = Header(None, alias="user-agent"),
 ):
     """HTTP MCP endpoint — JSON-RPC 2.0 over POST (Streamable HTTP, MCP 2025-03-26).
 
     Add to Claude / Cursor / VS Code / Kiro / Codex / Gemini:
-      URL: https://cli-market-api.fly.dev/mcp?token=<your-api-token>
+      URL: https://cli-market-api.fly.dev/mcp
+      Header: Authorization: Bearer <your-api-token>
     """
-    effective_auth = authorization or (f"Bearer {token}" if token else None)
+    has_query_token = "token" in request.query_params
+    query_token = request.query_params.get("token")
+    legacy_query_token_enabled = os.getenv("MCP_ALLOW_QUERY_TOKEN", "").strip() == "1"
+    if has_query_token and not legacy_query_token_enabled:
+        return JSONResponse(
+            _rpc_err(
+                -32001,
+                "API tokens in the URL are disabled. Send Authorization: Bearer <token>.",
+                None,
+            ),
+            status_code=400,
+        )
+
+    # This escape hatch is deliberately disabled by default. It gives operators
+    # a short, explicit migration path for a legacy client while keeping the
+    # safe default (no credentials in URLs) in every environment.
+    effective_auth = authorization or (f"Bearer {query_token}" if query_token else None)
     raw_token = effective_auth.replace("Bearer ", "").strip() if effective_auth else None
 
     try:
@@ -1540,9 +1561,16 @@ async def mcp_http(
     params = body.get("params", {})
 
     if method == "initialize":
+        username = None
+        if raw_token:
+            try:
+                username = auth_user(raw_token)
+            except Exception:
+                # Initialization remains public; an invalid token is rejected on tools/call.
+                username = None
         client_info = params.get("clientInfo") or {}
         client_slug, client_raw, client_version = _detect_client(client_info, user_agent)
-        _log_mcp_event("mcp_connect", raw_token, {
+        _log_mcp_event("mcp_connect", username, {
             "client": client_slug,
             "client_raw": client_raw,
             "client_version": client_version,
@@ -1572,15 +1600,15 @@ async def mcp_http(
         tool_args = params.get("arguments", {})
 
         if not effective_auth:
-            return JSONResponse(_rpc_err(-32001, "Auth required: Authorization header or ?token= query param", req_id), status_code=401)
+            return JSONResponse(_rpc_err(-32001, "Auth required: Authorization header with a Bearer token", req_id), status_code=401)
         try:
-            require_api_key(effective_auth)
+            username = require_api_key(effective_auth)
         except Exception:
             return JSONResponse(_rpc_err(-32001, "Invalid or expired API token", req_id), status_code=401)
 
         client_info = params.get("clientInfo") or {}
         client_slug, client_raw, _ = _detect_client(client_info, user_agent)
-        _log_mcp_event("mcp_tool_call", raw_token, {
+        _log_mcp_event("mcp_tool_call", username, {
             "client": client_slug,
             "client_raw": client_raw,
             "tool": tool_name,

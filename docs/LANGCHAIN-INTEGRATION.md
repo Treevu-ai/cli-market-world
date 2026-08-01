@@ -20,7 +20,8 @@ async def main():
     client = MultiServerMCPClient({
         "cli-market": {
             "transport": "streamable_http",
-            "url": f"https://cli-market-api.fly.dev/mcp?token={TOKEN}",
+            "url": "https://cli-market-api.fly.dev/mcp",
+            "headers": {"Authorization": f"Bearer {TOKEN}"},
         }
     })
     tools = await client.get_tools()
@@ -51,7 +52,8 @@ async def main():
     client = MultiServerMCPClient({
         "cli-market": {
             "transport": "streamable_http",
-            "url": f"https://cli-market-api.fly.dev/mcp?token={TOKEN}",
+            "url": "https://cli-market-api.fly.dev/mcp",
+            "headers": {"Authorization": f"Bearer {TOKEN}"},
         }
     })
     tools = await client.get_tools()
@@ -67,7 +69,7 @@ asyncio.run(main())
 
 ## Autenticación
 
-El token va en el query param (`?token=<tu-api-key>`), igual que en la integración de Open WebUI — no hace falta OAuth ni un header especial. Consíguelo con `market register` o desde `cli-market.dev/account`.
+Envía el token en `Authorization: Bearer <tu-api-key>`. No lo pongas en la URL: los query params pueden quedar en historiales, proxies y logs. Consíguelo con `market register` o desde `cli-market.dev/account`.
 
 ## Limitaciones conocidas
 
@@ -78,7 +80,8 @@ El token va en el query param (`?token=<tu-api-key>`), igual que en la integraci
 ## Verificación rápida
 
 ```bash
-curl -s -X POST "https://cli-market-api.fly.dev/mcp?token=<tu-token>" \
+curl -s -X POST "https://cli-market-api.fly.dev/mcp" \
+  -H "Authorization: Bearer <tu-token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"langchain","version":"0.0.1"}}}'
 ```

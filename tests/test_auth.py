@@ -123,6 +123,27 @@ def test_login_unknown_user_returns_401():
     assert r.status_code == 401
 
 
+def test_login_refuses_implicit_admin_without_config(monkeypatch):
+    db = get_db()
+    db.execute("DELETE FROM app_users")
+    db.commit()
+    db.close()
+    monkeypatch.delenv("MARKET_ADMIN_PASSWORD", raising=False)
+
+    r = client.post("/auth/login", json={"username": "admin", "password": "market"})
+
+    assert r.status_code == 503
+
+
+def test_password_hash_uses_versioned_high_cost_format():
+    from server_deps import _PASSWORD_ITERATIONS, verify_password
+
+    hashed = hash_password("test-pass-456")
+    assert hashed.startswith(f"pbkdf2_sha256${_PASSWORD_ITERATIONS}$")
+    assert verify_password("test-pass-456", hashed) is True
+    assert verify_password("wrong", hashed) is False
+
+
 # ── GET /auth/whoami ──────────────────────────────────────────────────────────
 
 def test_whoami_no_auth_returns_401():

@@ -2,6 +2,20 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-01] — Security hardening: MCP and credential handling
+
+- MCP remoto usa `Authorization: Bearer` y rechaza tokens en la URL por defecto,
+  evitando que nuevas credenciales lleguen a historiales, proxies, logs o la
+  telemetría de funnel. Una migración temporal solo puede habilitarse de manera
+  explícita con `MCP_ALLOW_QUERY_TOKEN=1`.
+- Webhooks de checkout aceptan el secreto únicamente mediante el header
+  `X-Checkout-Webhook-Secret` y lo comparan en tiempo constante.
+- Las contraseñas nuevas usan PBKDF2-HMAC-SHA256 versionado con 600,000
+  iteraciones por defecto; los hashes anteriores siguen verificándose para no
+  bloquear cuentas existentes.
+- Una instalación sin usuarios ya no crea un administrador con contraseña por
+  defecto: requiere `MARKET_ADMIN_PASSWORD` y falla de forma segura si falta.
+
 ## [2026-08-01] — Core 1.12.5: fuentes industriales PE verificadas
 
 World ahora fija `cli-market-core==1.12.5`. La versión incorpora tres
