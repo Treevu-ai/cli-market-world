@@ -2,6 +2,34 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-01] — source-health recovery and coordinated Core 1.12.4 release
+
+Production health was blocking deploys with three `dead` sources:
+`smartnutrition_pe`, `thegreenkiss_ca`, and `simplynaturalcanada_ca`.
+Their public product APIs were verified from non-datacenter egress, but each
+blocks the Fly.io collector IP with a WAF or ModSecurity response. This is an
+egress restriction, not evidence that the retailers or their catalogs are
+offline.
+
+- **Core 1.12.4:** quarantines the three sources from the active catalog with
+  a store-specific `disabled_reason` and a regression test. They can be
+  re-enabled only after a proxy or retailer allowlist has been validated.
+- **World:** pins `cli-market-core==1.12.4`; the Telegram quotation flow and
+  API now consume the same released catalog definition.
+- **Production:** the automatic deploy was initially skipped because its CI
+  smoke measured the old container. A manual `Deploy Fly.io` workflow retained
+  import checks, post-deploy smoke and automatic rollback. It completed
+  successfully; `ops/doctor_prod_gate.py` reported `314 ok · 0 dead` and
+  `golden linkage 68.1%`.
+- **Backend, Index and Content:** no API contract, Golden Record or public
+  claim changed. Backend's compatible `cli-market-core>=1.12.3` range resolves
+  1.12.4; Index remains pinned identically between World and Backend; Content
+  receives no coverage-count or availability claim from this operational
+  change.
+
+The release record, evidence and reactivation criteria are in
+`docs/RELEASE-SYNC-2026-08-01.md`.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.12.0 (also disable igardi_pe, to unblock deploys now)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.0`. On explicit
