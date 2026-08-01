@@ -81,6 +81,7 @@ def test_no_downstream_calls_without_valid_secret(mock_send):
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)

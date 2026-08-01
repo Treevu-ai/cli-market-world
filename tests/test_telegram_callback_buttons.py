@@ -57,12 +57,14 @@ def _callback_body(chat_id: int, message_id: int, action: str, callback_id: str 
         "callback_query": {
             "id": callback_id,
             "data": action,
+            "from": {"id": chat_id},
             "message": {"message_id": message_id, "chat": {"id": chat_id}},
         }
     }
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_telegram_api", new_callable=AsyncMock)
 def test_callback_query_answers_immediately(mock_api):
@@ -80,6 +82,7 @@ def test_callback_query_answers_immediately(mock_api):
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.dict("os.environ", {"MARKET_BOT_API_TOKEN": "test-bot-api-token"})
 @patch.object(telegram, "_answer_callback_query", new_callable=AsyncMock)
@@ -99,7 +102,7 @@ def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_send,
     test asserts on."""
     _ensure_messenger_sessions_table()
     update_messenger_session(
-        "70002", context="prior turn", last_query="nescafe", last_country="PE"
+        "telegram:70002", context="prior turn", last_query="nescafe", last_country="PE"
     )
     mock_post.return_value.status_code = 200
     mock_post.return_value.json = lambda: {"answer": "S/16.00 en Wong"}
@@ -116,6 +119,7 @@ def test_callback_query_reuses_last_query_without_retyping(mock_post, mock_send,
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_answer_callback_query", new_callable=AsyncMock)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
@@ -138,6 +142,7 @@ def test_follow_up_keyboard_only_offers_compare():
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 def test_callback_query_rejected_without_valid_secret():
     body = _callback_body(70004, 5004, "cmp")

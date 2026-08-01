@@ -109,6 +109,16 @@ async def lifespan(_app: FastAPI):
                 db.execute("ALTER TABLE messenger_sessions ADD COLUMN last_query TEXT")
             if "last_country" not in cols:
                 db.execute("ALTER TABLE messenger_sessions ADD COLUMN last_country TEXT")
+        # Webhook providers may redeliver an Update after a transient failure.
+        # Keep the idempotency key independent from the conversational session.
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS messenger_updates (
+                platform TEXT NOT NULL,
+                update_id TEXT NOT NULL,
+                received_at_epoch INTEGER NOT NULL,
+                PRIMARY KEY (platform, update_id)
+            )
+        """)
         db.commit()
         db.close()
     except Exception as e:
@@ -308,9 +318,7 @@ for r in (
     search_router,
     slack_ops_router,
     taller_router,
-    telegram_router,
     vault_router,
-    whatsapp_router,
 ):
     app.include_router(r)
 
