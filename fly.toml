@@ -38,9 +38,11 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
   # TELEGRAM_WEBHOOK_SECRET
   # TELEGRAM_ALLOWED_CHAT_IDS
   # TELEGRAM_ADMIN_CHAT_IDS
+  # TELEGRAM_PUBLIC_MODE = "false"  # solo tras aprobar apertura pública
   # TELEGRAM_RATE_LIMIT_MIN = "20"
   # TELEGRAM_RATE_LIMIT_WINDOW = "60"
   # TELEGRAM_RATE_LIMIT_DAY = "300"
+  # TELEGRAM_GLOBAL_RATE_LIMIT_DAY = "1000"
 
   # API Keys
   # MARKET_API_TOKEN

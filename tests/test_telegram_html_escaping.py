@@ -32,6 +32,7 @@ _AUTH_HEADERS = {"X-Telegram-Bot-Api-Secret-Token": _TEST_SECRET}
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
 @patch.object(telegram, "_edit_telegram", new_callable=AsyncMock)
@@ -58,6 +59,7 @@ def test_first_name_with_html_special_chars_is_escaped_in_welcome_message(mock_e
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.dict("os.environ", {"MARKET_BOT_API_TOKEN": "test-bot-api-token"})
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
@@ -86,6 +88,7 @@ def test_llm_answer_with_html_special_chars_is_escaped(mock_post, mock_edit, moc
 
 
 @patch.object(telegram, "TELEGRAM_TOKEN", _TEST_TOKEN)
+@patch.object(telegram, "TELEGRAM_PUBLIC_MODE", True)
 @patch.object(telegram, "TELEGRAM_WEBHOOK_SECRET", _TEST_SECRET)
 @patch.dict("os.environ", {"MARKET_BOT_API_TOKEN": "test-bot-api-token"})
 @patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
