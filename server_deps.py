@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import hashlib
 import logging
-import os
 import time
+import os
 from contextvars import ContextVar
 
 from fastapi import HTTPException
@@ -236,6 +236,37 @@ def update_messenger_session(
         db.commit()
     except Exception as e:
         logger.error("update_messenger_session error: %s", e)
+
+
+def claim_messenger_update(platform: str, update_id: str | int, ttl_seconds: int = 604800) -> bool:
+    """Atomically claim a provider update so retries don't repeat paid work.
+
+    Returns True only for the first delivery seen within the retention window.
+    ``received_at_epoch`` keeps the cleanup query portable between SQLite and
+    PostgreSQL.
+    """
+    now = int(time.time())
+    try:
+        db = get_db()
+        try:
+            db.execute(
+                "DELETE FROM messenger_updates WHERE platform = ? AND received_at_epoch < ?",
+                (platform, now - ttl_seconds),
+            )
+            cursor = db.execute(
+                "INSERT INTO messenger_updates (platform, update_id, received_at_epoch) VALUES (?, ?, ?) "
+                "ON CONFLICT(platform, update_id) DO NOTHING",
+                (platform, str(update_id), now),
+            )
+            db.commit()
+            return cursor.rowcount == 1
+        finally:
+            db.close()
+    except Exception as e:
+        # Availability must win over dedupe if an older deployment has not run
+        # the migration yet; the error is still visible to operations.
+        logger.error("claim_messenger_update error: %s", e)
+        return True
 
 TIER_LIMITS: dict[str, tuple[int, int]] = {
     # Keep in sync with market_billing.TIERS["free"] (cli-market-core) — this

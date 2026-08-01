@@ -129,6 +129,101 @@ def test_search_stores_resolved_zero_for_unknown_country():
     assert r.json()["stores_resolved"] == 0
 
 
+def test_search_exposes_snapshot_identity_and_observation_when_available():
+    import routers.search as search_mod
+    from price_snapshots_schema import ensure_canonical_product_id_column
+    from routers.search import SearchRequest, _search_products_db
+
+    store = "telegram_identity_store"
+    product_id = "telegram-identity-1"
+    db = get_db()
+    ensure_canonical_product_id_column(db)
+    db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, store_name, name, brand, price, currency, line, queried_at, canonical_product_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            product_id, store, "Tienda de prueba", "Cafe Identidad 180 g", "Marca Prueba", 12.5,
+            "PEN", "supermercados", "2026-08-01 10:00:00", "upid-cafe-180g",
+        ),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=[store]):
+            result = _search_products_db(SearchRequest(query="cafe identidad 180 g", require_all=True))
+        row = result["results"][0]
+        assert row["canonical_product_id"] == "upid-cafe-180g"
+        assert row["queried_at"] == "2026-08-01 10:00:00"
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+        db.commit()
+        db.close()
+
+
+def test_basket_identity_enrichment_adds_snapshot_evidence():
+    import routers.search as search_mod
+    from price_snapshots_schema import ensure_canonical_product_id_column
+
+    store = "telegram_basket_identity_store"
+    product_id = "telegram-basket-identity-1"
+    db = get_db()
+    ensure_canonical_product_id_column(db)
+    db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, store_name, name, price, currency, line, queried_at, stock, canonical_product_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            product_id, store, "Tienda de prueba", "Leche Identidad 390 g", 4.2,
+            "PEN", "supermercados", "2026-08-01 10:00:00", 8, "upid-leche-390g",
+        ),
+    )
+    db.commit()
+    try:
+        result = {"stores": [{"store": store, "breakdown": [{"product_id": product_id}]}]}
+        enriched = search_mod._enrich_basket_identity(result, db)
+        row = enriched["stores"][0]["breakdown"][0]
+        assert row["canonical_product_id"] == "upid-leche-390g"
+        assert row["observed_at"] == "2026-08-01 10:00:00"
+        assert row["stock"] == 8
+    finally:
+        db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+        db.commit()
+        db.close()
+
+
+def test_basket_identity_enrichment_supports_response_envelope():
+    import routers.search as search_mod
+    from price_snapshots_schema import ensure_canonical_product_id_column
+
+    store = "telegram_basket_envelope_store"
+    product_id = "telegram-basket-envelope-1"
+    db = get_db()
+    ensure_canonical_product_id_column(db)
+    db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, store_name, name, price, currency, line, queried_at, canonical_product_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            product_id, store, "Tienda de prueba", "Arroz Identidad 5 kg", 20.0,
+            "PEN", "supermercados", "2026-08-01 10:00:00", "upid-arroz-5kg",
+        ),
+    )
+    db.commit()
+    try:
+        result = {"data": [{"store": store, "breakdown": [{"product_id": product_id}]}]}
+        enriched = search_mod._enrich_basket_identity(result, db)
+        assert enriched["data"][0]["breakdown"][0]["canonical_product_id"] == "upid-arroz-5kg"
+    finally:
+        db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
+        db.commit()
+        db.close()
+
+
 # ── Growth-tier priority tiebreak ────────────────────────────────────────────
 # growth stores win exact price ties only — never outrank a genuinely
 # cheaper competitor, so "cheapest first" stays honest regardless of who paid.

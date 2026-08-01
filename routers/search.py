@@ -257,18 +257,26 @@ def _search_products_db(body: SearchRequest) -> dict:
         save_search_query(body.query, body.line, body.store, 0)
         return {"query": body.query, "results": [], "total": 0, "stores_resolved": len(stores)}
 
-    sql, params = build_search_sql(
-        stores=stores,
-        q_tokens=q_tokens,
-        require_all=body.require_all,
-        limit=body.limit,
-        columns=(
-            "product_id, name, brand, price, list_price, discount, store, "
-            "store_name, currency, line, line_name, category, stock, url, confidence"
-        ),
-    )
     db = get_db()
     try:
+        # canonical_product_id is a world-level additive migration. Older
+        # databases may not have it yet, so discovery remains available while
+        # emitting identity evidence whenever the column exists.
+        from price_snapshots_schema import price_snapshots_has_canonical_id
+
+        columns = (
+            "product_id, name, brand, price, list_price, discount, store, "
+            "store_name, currency, line, line_name, category, stock, url, confidence, queried_at"
+        )
+        if price_snapshots_has_canonical_id(db):
+            columns += ", canonical_product_id"
+        sql, params = build_search_sql(
+            stores=stores,
+            q_tokens=q_tokens,
+            require_all=body.require_all,
+            limit=body.limit,
+            columns=columns,
+        )
         rows = db.execute(sql, params).fetchall()
     finally:
         db.close()
@@ -293,6 +301,53 @@ def _search_products_db(body: SearchRequest) -> dict:
         "stores_resolved": len(stores),
     }
     return _attach_source_health(response, stores)
+
+
+def _enrich_basket_identity(result: dict, db) -> dict:
+    """Attach snapshot identity evidence to basket lines when available.
+
+    ``market_core.market_basket`` intentionally stays portable and returns a
+    retailer product id. World owns the Golden Record migration, so this thin
+    enrichment adds canonical ID, observation timestamp and stock without
+    changing the core basket ranking or inventing a match confidence.
+    """
+    try:
+        from price_snapshots_schema import price_snapshots_has_canonical_id
+
+        if not price_snapshots_has_canonical_id(db):
+            return result
+        stores = result.get("stores")
+        if not isinstance(stores, list):
+            # The default public endpoint returns a response envelope. Its
+            # payload is the same store list exposed as ``meta.stores``; use
+            # data first so the enrichment is visible in either API shape.
+            stores = result.get("data")
+        if not isinstance(stores, list):
+            return result
+        for store in stores:
+            if not isinstance(store, dict):
+                continue
+            store_id = store.get("store")
+            if not store_id:
+                continue
+            for row in store.get("breakdown") or []:
+                if not isinstance(row, dict) or not row.get("product_id"):
+                    continue
+                snapshot = db.execute(
+                    "SELECT canonical_product_id, queried_at, stock "
+                    "FROM price_snapshots WHERE store = ? AND product_id = ? "
+                    "ORDER BY queried_at DESC LIMIT 1",
+                    (store_id, row["product_id"]),
+                ).fetchone()
+                if not snapshot:
+                    continue
+                snapshot = dict(snapshot)
+                row["canonical_product_id"] = snapshot.get("canonical_product_id") or None
+                row["observed_at"] = snapshot.get("queried_at") or None
+                row["stock"] = snapshot.get("stock")
+    except Exception as exc:
+        logger.debug("basket identity enrichment skipped: %s", exc)
+    return result
 
 
 async def _search_products_live(body: SearchRequest):
@@ -523,7 +578,7 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
         store_filter = {s for s in body.stores if s} if body.stores else None
         db = get_db()
         try:
-            return _core_basket(
+            result = _core_basket(
                 db,
                 items=body.items,
                 store_filter=store_filter,
@@ -535,6 +590,7 @@ async def basket_compare(body: BasketRequest, authorization: str | None = Header
                 include_action_links=body.include_action_links,
                 country=body.country,
             )
+            return _enrich_basket_identity(result, db)
         finally:
             db.close()
     stores = body.stores or get_default_stores()
