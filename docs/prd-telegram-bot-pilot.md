@@ -113,7 +113,7 @@ trazable y honesta sobre sus límites.
 | Webhook HTTPS con secreto de Telegram | Implementado | Registrar y verificar webhook en entorno de piloto |
 | Consulta a inteligencia | Implementada con token dedicado | Sustituir texto por contrato completo para comparaciones |
 | Búsqueda de producto | Implementado vía `/products/search`, con identidad canónica cuando existe | Confirmación de equivalencia entre retailers |
-| Canasta exploratoria | Implementada vía `/v1/basket/compare`, enriquecida con snapshot | Publicar Core 1.12.3 y validar en producción |
+| Canasta exploratoria | Implementada vía `/v1/basket/compare`, enriquecida con snapshot | Publicar Core 1.12.4 y validar en producción |
 | Comparación por botón | Implementada para la última consulta | Aislar sesión por usuario en grupos y confirmar identidad |
 | Límite por chat | 20/min y 300/día por defecto | Reconocer con 2xx y comunicar límite; añadir presupuesto global |
 | HTML seguro para nombre y respuesta | Implementado | Mantener pruebas de mensajes largos y respuesta vacía |
@@ -274,7 +274,7 @@ de Golden Records está presente, `/products/search` devuelve
 `match_confidence` ni cobertura de equivalencia por producto, por lo que el
 bot no expresa ganador, ahorro, tendencia ni comparación concluyente.
 
-La canasta actual añade un control de cobertura. Core 1.12.3 añade
+La canasta actual añade un control de cobertura. Core 1.12.4 añade
 `match_confidence` por línea: `high` requiere marca/presentación específica o
 un número de presentación que aparezca en el producto resuelto; una consulta
 genérica como “leche” queda en `medium`. World enriquece cada línea con
