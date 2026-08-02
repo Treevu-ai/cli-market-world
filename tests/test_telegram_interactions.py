@@ -11,7 +11,7 @@ from market_core import ensure_db_initialized
 
 from market_server import app
 import routers.integrations.telegram as telegram
-from server_deps import update_messenger_session
+from server_deps import get_messenger_session, update_messenger_session
 
 
 ensure_db_initialized()
@@ -230,3 +230,65 @@ def test_complete_basket_without_high_identity_confidence_stays_blocked(mock_com
     assert "no puedo verificar" in answer
     assert "No mostraré total" in answer
     assert keyboard["force_reply"] is True
+
+
+@patch.object(telegram, "_send_telegram", new_callable=AsyncMock)
+def test_segment_selection_offers_product_search_and_basket_compare(mock_send):
+    _ensure_messenger_sessions_table()
+
+    asyncio.run(telegram._process_callback("820", "820", "42", "seg:mro"))
+
+    answer = mock_send.call_args.args[1]
+    keyboard = mock_send.call_args.args[2]
+    assert "Mantenimiento y MRO" in answer
+    assert {button["callback_data"] for row in keyboard["inline_keyboard"] for button in row} >= {
+        "segsearch:mro", "segbasket:mro"
+    }
+
+    asyncio.run(telegram._process_callback("820", "820", "42", "segsearch:mro"))
+    context = json.loads(get_messenger_session("telegram:820")["last_context"])
+    assert context == {"type": "catalog_search", "segment": "mro"}
+
+
+def test_segmented_catalog_search_uses_industrial_line(monkeypatch):
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"results": []}
+
+    class FakeClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def post(self, _url, **kwargs):
+            captured.update(kwargs)
+            return FakeResponse()
+
+    monkeypatch.setattr(telegram.httpx, "AsyncClient", lambda: FakeClient())
+
+    result = asyncio.run(telegram._search_catalog("broca para concreto", "token", "PE", "ferreteria"))
+
+    assert result == []
+    assert captured["json"]["line"] == "industrial"
+
+
+@patch.object(telegram, "_compare_basket", new_callable=AsyncMock)
+def test_segmented_basket_compare_uses_selected_segment(mock_compare):
+    _ensure_messenger_sessions_table()
+    mock_compare.return_value = ({"items_searched": 2, "items_found": 1, "stores": []}, 200)
+
+    asyncio.run(
+        telegram._process_basket_input(
+            "821", "telegram:821", "2 x guantes de seguridad\n1 x cinta aislante", "token", "mro"
+        )
+    )
+
+    assert mock_compare.await_args.args[3] == "mro"
+    assert telegram._segment("mro")["stores"] == ("ferrincorp_pe", "igardi_pe", "mkeindustria_pe", "edipesa_pe")
