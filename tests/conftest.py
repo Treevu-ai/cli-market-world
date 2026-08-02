@@ -3,11 +3,27 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 import tempfile
 from pathlib import Path
 
 import pytest
+
+_ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI color/style escape codes emitted by rich's Console.
+
+    Console(no_color=...) only covers the NO_COLOR env var; rich also
+    auto-enables color based on its own terminal detection (e.g. a
+    pytest-captured stream that still reports as a legacy Windows
+    terminal), so CLI-output assertions need to strip escapes rather
+    than assume plain text.
+    """
+    return _ANSI_ESCAPE.sub("", text)
+
 
 # pytest_configure fires before pytest inserts rootdir onto sys.path (that
 # happens during collection), so a plain `import server_deps` here is only

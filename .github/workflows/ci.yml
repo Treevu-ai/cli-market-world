@@ -204,6 +204,44 @@ jobs:
       - name: Run tests against PostgreSQL
         run: pytest tests/test_checkout_payments.py tests/ -q -m "not integration"
 
+  test-connectors:
+    runs-on: ubuntu-latest
+    needs: [lint, secret-scan]
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install connector dependencies
+        run: |
+          pip install "fastapi>=0.110,<1" "uvicorn[standard]>=0.27,<1" \
+            "httpx>=0.27,<1" "python-dotenv>=1.0,<2" "pydantic>=2,<3" \
+            "pytest>=8,<9" "pytest-asyncio>=0.23,<1"
+
+      # cli_market_integrations is an installable package (has __init__.py
+      # at the repo root), so it runs from the repo root like tests/.
+      - name: Test cli_market_integrations (HubSpot/Zoho/Kommo/Simla adapters)
+        run: pytest cli_market_integrations/tests/ -q
+
+      # The three standalone prototypes import `from src.xxx import ...`
+      # with no packaging/conftest to put `src` on sys.path — pytest must
+      # run with cwd inside each prototype dir, same as running them locally.
+      - name: Test hubspot-cli-market-prototype
+        working-directory: hubspot-cli-market-prototype
+        run: pytest tests/ -q
+
+      - name: Test zoho-cli-market-prototype
+        working-directory: zoho-cli-market-prototype
+        run: pytest tests/ -q
+
+      - name: Test simla-cli-market-prototype
+        working-directory: simla-cli-market-prototype
+        run: pytest tests/ -q
+
   smoke-production:
     runs-on: ubuntu-latest
     needs: test

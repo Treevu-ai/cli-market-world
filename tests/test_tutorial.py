@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import market_cli
 import market_core
+from conftest import strip_ansi
 
 
 @pytest.fixture(autouse=True)
@@ -30,7 +31,7 @@ def test_tutorial_demo_emits_event(monkeypatch, capsys):
     monkeypatch.setattr(market_cli, "_report_onboarding_event", fake_report)
     market_cli.cmd_tutorial(argparse_ns(country="PE", demo=True))
 
-    out = capsys.readouterr().out
+    out = strip_ansi(capsys.readouterr().out)
     assert "Tutorial completo" in out
     assert "mcp-setup" in out
     assert "utm_campaign=tutorial" in out

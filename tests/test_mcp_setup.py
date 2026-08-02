@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import market_cli
+from conftest import strip_ansi
 
 
 def test_detect_ide_cursor(monkeypatch, tmp_path):
@@ -81,7 +82,7 @@ def test_mcp_setup_dry_run_vscode(monkeypatch, capsys):
         lambda ide: ("/tmp/.vscode", "/tmp/.vscode/mcp.json", True),
     )
     market_cli.cmd_mcp_setup(argparse_ns(ide="vscode", dry_run=True))
-    out = capsys.readouterr().out
+    out = strip_ansi(capsys.readouterr().out)
     assert "Dry-run" in out
     assert '"servers"' in out
     assert '"type": "stdio"' in out
