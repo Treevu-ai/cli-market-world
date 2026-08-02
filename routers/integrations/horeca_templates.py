@@ -159,7 +159,7 @@ def get_templates_due_for_execution() -> List[Dict]:
 
 def create_sample_templates(whatsapp_number: str, business_type: str) -> bool:
     """Crea templates de ejemplo basados en el tipo de negocio."""
-    
+
     sample_templates = {
         'restaurant': [
             {
@@ -204,11 +204,43 @@ def create_sample_templates(whatsapp_number: str, business_type: str) -> bool:
                 'category': 'insumos',
                 'frequency': 'weekly'
             }
+        ],
+        'estacion90': [
+            {
+                'name': 'Insumos semana cocina (Estación 90)',
+                'query': 'arroz 5kg, aceite girasol, pollo, papa, cebolla, ajo, ají amarillo',
+                'category': 'insumos',
+                'frequency': 'weekly'
+            },
+            {
+                'name': 'Menú criollo — proteínas y verduras',
+                'query': 'lomo de res, gallina, pescado fresco, tomate, culantro, limón',
+                'category': 'insumos',
+                'frequency': 'weekly'
+            },
+            {
+                'name': 'Desayunos Estación 90',
+                'query': 'pan francés, huevos, café molido, leche evaporada, mantequilla',
+                'category': 'insumos',
+                'frequency': 'weekly'
+            },
+            {
+                'name': 'Limpieza cocina',
+                'query': 'detergente industrial 5L, cloro, desengrasante, papel higiénico industrial, servilletas',
+                'category': 'limpieza',
+                'frequency': 'weekly'
+            },
+            {
+                'name': 'Bebidas restaurante',
+                'query': 'gaseosa 2L, agua mineral, jugo, cerveza',
+                'category': 'bebidas',
+                'frequency': 'weekly'
+            }
         ]
     }
-    
+
     templates = sample_templates.get(business_type, [])
-    
+
     for template in templates:
         create_template(
             whatsapp_number,
@@ -217,8 +249,15 @@ def create_sample_templates(whatsapp_number: str, business_type: str) -> bool:
             template['category'],
             template['frequency']
         )
-    
+
     return len(templates) > 0
+
+
+def create_estacion90_templates(whatsapp_number: str) -> int:
+    """Plantillas de procurement para Estación 90 (Wong/Metro/Plazavea en Surco)."""
+    before = len(get_user_templates(whatsapp_number))
+    create_sample_templates(whatsapp_number, 'estacion90')
+    return len(get_user_templates(whatsapp_number)) - before
 
 
 def get_template_usage_stats(whatsapp_number: str) -> Dict:
@@ -226,7 +265,7 @@ def get_template_usage_stats(whatsapp_number: str) -> Dict:
     db = get_db()
     try:
         templates = get_user_templates(whatsapp_number)
-        
+
         if not templates:
             return {
                 'total_templates': 0,
@@ -234,18 +273,17 @@ def get_template_usage_stats(whatsapp_number: str) -> Dict:
                 'most_used_category': None,
                 'active_templates': 0
             }
-        
+
         total_savings = sum(t['savings_accumulated'] for t in templates)
         active_templates = len([t for t in templates if t['last_used']])
-        
-        # Encontrar categoría más usada
+
         category_counts = {}
         for t in templates:
             cat = t['category']
             category_counts[cat] = category_counts.get(cat, 0) + 1
-        
+
         most_used_category = max(category_counts.items(), key=lambda x: x[1])[0] if category_counts else None
-        
+
         return {
             'total_templates': len(templates),
             'total_savings': total_savings,
@@ -262,5 +300,4 @@ def get_template_usage_stats(whatsapp_number: str) -> Dict:
         }
     finally:
         db.close()
-
 

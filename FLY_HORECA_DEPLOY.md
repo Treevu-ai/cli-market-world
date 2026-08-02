@@ -38,6 +38,20 @@ fly secrets set HORECA_PRIORITY_CATEGORIES=aceites,limpieza,papel,bebidas,electr
 fly secrets set HORECA_SAVINGS_NOTIFICATION_THRESHOLD=50.0
 ```
 
+### Piloto Estación 90 (Surco)
+```bash
+# Número WhatsApp del encargado de compras/cocina
+fly secrets set HORECA_ESTACION90_WHATSAPP=whatsapp:+51XXXXXXXXX
+fly secrets set HORECA_ESTACION90_AUTO_SEED=true
+fly secrets set HORECA_ESTACION90_BUSINESS_NAME="Estación 90"
+fly secrets set HORECA_ESTACION90_STORES=wong,metro,plazavea
+fly secrets set HORECA_ESTACION90_MENU_URL=https://estacion90.pe/api/menu.json
+```
+
+O ejecutar el script: `bash ops/horeca/estacion90_fly_secrets.sh`
+
+**Hostinger:** subir `hostinger/estacion90/api/menu.json` a `public_html/api/menu.json` en estacion90.pe.
+
 ## 2. Deploy a Fly.io
 
 ```bash
@@ -95,6 +109,7 @@ curl https://tu-app.fly.dev/v1/integrations/telegram/health
 ### Comandos HORECA
 - `mis ahorros` - Ver resumen de ahorros
 - `mis plantillas` - Ver búsquedas guardadas
+- `costo menú` / `menú del día` - Costo estimado de insumos (Estación 90)
 - `upgrade` - Ver planes HORECA
 
 ### Búsqueda normal
