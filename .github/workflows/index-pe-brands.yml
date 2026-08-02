@@ -107,5 +107,5 @@ jobs:
           asyncio.run(main())
           PY
           PAYLOAD=$(base64 -w0 /tmp/index_pe_brands.py)
-          flyctl ssh console --app cli-market-collector \
+          flyctl ssh console --app cli-market-api \
             --command "printf '%s' '$PAYLOAD' | base64 -d | python3"

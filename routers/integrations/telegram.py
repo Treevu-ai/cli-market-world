@@ -27,6 +27,37 @@ _TELEGRAM_MESSAGE_LIMIT = 3900
 _SEARCH_MODE_CONTEXT = "telegram_mode:search"
 _BASKET_INPUT_CONTEXT_TYPE = "basket_input"
 _BASKET_CANDIDATES_CONTEXT_TYPE = "basket_candidates"
+_CATALOG_SEARCH_CONTEXT_TYPE = "catalog_search"
+
+# A segment must affect the data request, not just the conversation copy.  The
+# selected stores deliberately stay small: a complete basket comparison is
+# useful only when every item can be checked in the same relevant channel.
+_BASKET_SEGMENTS = {
+    "horeca": {
+        "label": "Alimentos / HORECA",
+        "line": "supermercados",
+        "stores": ("wong", "metro", "plazavea", "makro_pe", "vega_pe"),
+        "example": "12 x leche Gloria 390 g\n4 x aceite vegetal 1 L",
+    },
+    "mro": {
+        "label": "Mantenimiento y MRO",
+        "line": "industrial",
+        "stores": ("ferrincorp_pe", "igardi_pe", "mkeindustria_pe", "edipesa_pe"),
+        "example": "6 x guantes de seguridad talla M\n2 x cinta aislante 18 mm",
+    },
+    "ferreteria": {
+        "label": "Ferretería y obra",
+        "line": "industrial",
+        "stores": ("ferrincorp_pe", "igardi_pe", "mkeindustria_pe", "edipesa_pe"),
+        "example": "10 x disco de corte 4 1/2 pulg\n4 x broca para concreto 8 mm",
+    },
+    "general": {
+        "label": "Otra canasta",
+        "line": None,
+        "stores": (),
+        "example": "2 x leche Gloria 390 g\n1 x arroz extra 5 kg",
+    },
+}
 
 
 def _parse_chat_id_set(raw: str) -> set[str]:
@@ -79,7 +110,7 @@ def _segment_keyboard() -> dict:
         "inline_keyboard": [
             [{"text": "🍽️ Alimentos / HORECA", "callback_data": "seg:horeca"}],
             [{"text": "🧹 Limpieza y MRO", "callback_data": "seg:mro"}],
-            [{"text": "🛠️ Obra menor", "callback_data": "seg:obra"},
+            [{"text": "🛠️ Ferretería y obra", "callback_data": "seg:ferreteria"},
              {"text": "📦 Otra canasta", "callback_data": "seg:general"}],
         ]
     }
@@ -95,6 +126,30 @@ def _basket_input_context(segment: str) -> str:
         ensure_ascii=False,
         separators=(",", ":"),
     )
+
+
+def _catalog_search_context(segment: str) -> str:
+    return json.dumps(
+        {"type": _CATALOG_SEARCH_CONTEXT_TYPE, "segment": segment},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def _segment(segment: str | None) -> dict:
+    return _BASKET_SEGMENTS.get(segment or "", _BASKET_SEGMENTS["general"])
+
+
+def _segment_action_keyboard(segment: str) -> dict:
+    return {
+        "inline_keyboard": [
+            [
+                {"text": "🔎 Consultar un producto", "callback_data": f"segsearch:{segment}"},
+                {"text": "🧾 Comparar mi canasta", "callback_data": f"segbasket:{segment}"},
+            ],
+            [{"text": "↩️ Cambiar tipo de canasta", "callback_data": "flow:quote"}],
+        ]
+    }
 
 
 def _check_telegram_rate_limit(identity: str) -> None:
@@ -377,16 +432,18 @@ def _price_label(candidate: dict) -> str:
     return f"{_esc(prefix)} {_esc(str(price))}".strip()
 
 
-def _format_search_candidates(query: str, results: list[dict]) -> tuple[str, dict]:
+def _format_search_candidates(query: str, results: list[dict], segment: str | None = None) -> tuple[str, dict]:
+    segment_label = _segment(segment)["label"]
     candidates = [_candidate_from_result(row) for row in results[:3]]
     if not candidates:
         return (
-            "No encontré una coincidencia suficientemente específica. "
+            f"No encontré una coincidencia suficientemente específica en {segment_label}. "
             "Prueba incluyendo marca y presentación, por ejemplo: <i>café Altomayo clásico 180 g</i>.",
             _initial_keyboard(),
         )
     return (
-        f"<b>Resultados para {_esc(query)}</b>\n\n"
+        f"<b>Resultados para {_esc(query)}</b>\n"
+        f"Canasta: <b>{_esc(segment_label)}</b>\n\n"
         "Elige una oferta para ver su ficha. No compararé opciones ni declararé una más barata hasta confirmar que son equivalentes.\n\n"
         f"Encontré {len(candidates)} coincidencia{'s' if len(candidates) != 1 else ''} del catálogo.",
         _candidate_keyboard(candidates),
@@ -411,16 +468,22 @@ def _format_candidate_detail(candidate: dict) -> str:
     )
 
 
-async def _search_catalog(query: str, token: str | None, country: str) -> list[dict] | None:
+async def _search_catalog(
+    query: str, token: str | None, country: str, segment: str | None = None
+) -> list[dict] | None:
     """Query the authenticated product-search endpoint without LLM synthesis."""
     if not token:
         return None
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
+    segment_config = _segment(segment)
+    payload = {"query": query, "country": country, "limit": 3, "require_all": True}
+    if segment_config["line"]:
+        payload["line"] = segment_config["line"]
     try:
         async with httpx.AsyncClient() as client_http:
             response = await client_http.post(
                 f"{market_api_url}/products/search",
-                json={"query": query, "country": country, "limit": 3, "require_all": True},
+                json=payload,
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=30,
             )
@@ -434,15 +497,23 @@ async def _search_catalog(query: str, token: str | None, country: str) -> list[d
     return None
 
 
-async def _process_catalog_search(chat_id: str, session_id: str, query: str, token: str | None) -> tuple[str, dict]:
+async def _process_catalog_search(
+    chat_id: str, session_id: str, query: str, token: str | None, segment: str | None = None
+) -> tuple[str, dict]:
     country = _guess_country(query)
-    results = await _search_catalog(query, token, country)
+    results = await _search_catalog(query, token, country, segment)
     if results is None:
         return "No pude consultar el catálogo ahora. Inténtalo nuevamente en un momento.", _initial_keyboard()
-    answer, keyboard = _format_search_candidates(query, results)
+    answer, keyboard = _format_search_candidates(query, results, segment)
     candidates = [_candidate_from_result(row) for row in results[:3]]
     context = json.dumps(
-        {"type": "catalog_candidates", "query": query, "country": country, "candidates": candidates},
+        {
+            "type": "catalog_candidates",
+            "query": query,
+            "country": country,
+            "segment": segment or "general",
+            "candidates": candidates,
+        },
         ensure_ascii=False,
         separators=(",", ":"),
     ) if candidates else _SEARCH_MODE_CONTEXT
@@ -467,16 +538,22 @@ def _parse_basket_items(text: str) -> list[dict] | None:
     return items
 
 
-async def _compare_basket(items: list[dict], token: str | None, country: str) -> tuple[dict | None, int | None]:
+async def _compare_basket(
+    items: list[dict], token: str | None, country: str, segment: str | None = None
+) -> tuple[dict | None, int | None]:
     """Call the basket endpoint as raw data; no LLM ranks or rewrites it."""
     if not token:
         return None, None
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
+    segment_config = _segment(segment)
+    payload = {"items": items, "country": country, "enveloped": False}
+    if segment_config["stores"]:
+        payload["stores"] = list(segment_config["stores"])
     try:
         async with httpx.AsyncClient() as client_http:
             response = await client_http.post(
                 f"{market_api_url}/v1/basket/compare",
-                json={"items": items, "country": country, "enveloped": False},
+                json=payload,
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=35,
             )
@@ -529,9 +606,11 @@ def _basket_review_keyboard(stores: list[dict]) -> dict:
     }
 
 
-def _format_basket_options(items_searched: int, stores: list[dict]) -> tuple[str, dict]:
+def _format_basket_options(items_searched: int, stores: list[dict], segment: str | None = None) -> tuple[str, dict]:
+    segment_label = _segment(segment)["label"]
     return (
-        f"<b>Canasta con cobertura completa</b>\n\n"
+        f"<b>Canasta con cobertura completa</b>\n"
+        f"Tipo de canasta: <b>{_esc(segment_label)}</b>\n\n"
         f"Los {items_searched} productos tuvieron coincidencia en {len(stores)} tienda{'s' if len(stores) != 1 else ''}. "
         "Revisa producto, marca y presentación por tienda antes de usar un total. "
         "No recomendaré una tienda ni calcularé ahorro en esta etapa.",
@@ -576,17 +655,21 @@ def _format_basket_store_detail(store: dict) -> str:
     return "\n".join(lines)
 
 
-async def _process_basket_input(chat_id: str, session_id: str, incoming_msg: str, token: str | None) -> tuple[str, dict]:
+async def _process_basket_input(
+    chat_id: str, session_id: str, incoming_msg: str, token: str | None, segment: str | None = None
+) -> tuple[str, dict]:
     items = _parse_basket_items(incoming_msg)
+    segment_config = _segment(segment)
+    example = segment_config["example"]
     if items is None:
         return (
             "Para cotizar una canasta, envía entre 2 y 20 productos, una línea por producto. "
             "Puedes indicar cantidad al inicio.\n\n"
-            "Ejemplo:\n12 x leche Gloria 390 g\n4 arroz extra 5 kg",
-            _force_reply("Una línea por producto"),
+            f"Ejemplo para {segment_config['label']}:\n{example}",
+            _force_reply(example.split("\n")[0]),
         )
     country = _guess_country(incoming_msg)
-    result, status_code = await _compare_basket(items, token, country)
+    result, status_code = await _compare_basket(items, token, country, segment)
     if status_code == 403:
         return "La comparación de canastas no está habilitada para este acceso. Puedes usar /buscar para consultar un producto.", _initial_keyboard()
     if result is None:
@@ -595,12 +678,12 @@ async def _process_basket_input(chat_id: str, session_id: str, incoming_msg: str
     items_searched = int(result.get("items_searched") or len(items))
     items_found = int(result.get("items_found") or 0)
     if items_found != items_searched:
-        update_messenger_session(session_id, context=_basket_input_context("Canasta"))
+        update_messenger_session(session_id, context=_basket_input_context(segment or "general"))
         return (
             f"No puedo cerrar esta cotización: encontré {items_found} de {items_searched} productos. "
-            "No mostraré total, ahorro ni tienda recomendada mientras falte cobertura. "
+            f"No mostraré total, ahorro ni tienda recomendada mientras falte cobertura en {segment_config['label']}. "
             "Reenvía la canasta con marca y presentación más específicas.",
-            _force_reply("Ej.: 12 x leche Gloria 390 g"),
+            _force_reply(example.split("\n")[0]),
         )
 
     full_stores = [
@@ -609,11 +692,11 @@ async def _process_basket_input(chat_id: str, session_id: str, incoming_msg: str
         if isinstance(store, dict) and int(store.get("items_found") or 0) == items_searched
     ]
     if not full_stores:
-        update_messenger_session(session_id, context=_basket_input_context("Canasta"))
+        update_messenger_session(session_id, context=_basket_input_context(segment or "general"))
         return (
-            "Encontré los productos, pero ninguna tienda cubre la canasta completa. "
+            f"Encontré los productos, pero ninguna tienda de {segment_config['label']} cubre la canasta completa. "
             "No mostraré total ni una tienda recomendada. Ajusta marca, presentación o separa la compra.",
-            _force_reply("Una línea por producto"),
+            _force_reply(example.split("\n")[0]),
         )
 
     verified_stores = [
@@ -624,17 +707,18 @@ async def _process_basket_input(chat_id: str, session_id: str, incoming_msg: str
         )
     ][:3]
     if not verified_stores:
-        update_messenger_session(session_id, context=_basket_input_context("Canasta"))
+        update_messenger_session(session_id, context=_basket_input_context(segment or "general"))
         return (
             "Encontré una canasta completa, pero no puedo verificar con suficiente certeza la identidad de cada producto. "
             "No mostraré total ni una tienda recomendada. Reenvía marca y presentación exactas por cada línea.",
-            _force_reply("Ej.: 12 x leche Gloria 390 g"),
+            _force_reply(example.split("\n")[0]),
         )
 
     context = json.dumps(
         {
             "type": _BASKET_CANDIDATES_CONTEXT_TYPE,
             "country": country,
+            "segment": segment or "general",
             "items_searched": items_searched,
             "stores": verified_stores,
         },
@@ -642,7 +726,7 @@ async def _process_basket_input(chat_id: str, session_id: str, incoming_msg: str
         separators=(",", ":"),
     )
     update_messenger_session(session_id, context=context, last_query=incoming_msg, last_country=country)
-    return _format_basket_options(items_searched, verified_stores)
+    return _format_basket_options(items_searched, verified_stores, segment)
 
 
 async def _process_message(
@@ -656,12 +740,14 @@ async def _process_message(
 
     if command == "/start" or incoming_msg.lower() in ("hola", "hi", "hello"):
         deep_link = command_arg.strip().lower()
-        segments = {"horeca": "Alimentos / HORECA", "mro": "Limpieza y MRO", "obra_menor": "Obra menor"}
-        if deep_link in segments:
-            segment = segments[deep_link]
-            update_messenger_session(session_id, context=_basket_input_context(segment))
-            answer = f"Hola <b>{_esc(first_name)}</b>. Elegiste <b>{segment}</b>.\n\nEscribe tu lista con marca, presentación y cantidad."
-            keyboard = _force_reply("Ej.: 12 latas de leche Gloria 390 g")
+        if deep_link in _BASKET_SEGMENTS and deep_link != "general":
+            segment_config = _segment(deep_link)
+            update_messenger_session(session_id, context=_basket_input_context(deep_link))
+            answer = (
+                f"Hola <b>{_esc(first_name)}</b>. Elegiste <b>{segment_config['label']}</b>.\n\n"
+                "Puedes consultar un producto o comparar una canasta."
+            )
+            keyboard = _segment_action_keyboard(deep_link)
         else:
             answer = (
                 f"Hola <b>{_esc(first_name)}</b>.\n\n"
@@ -691,7 +777,13 @@ async def _process_message(
             except (TypeError, json.JSONDecodeError):
                 context_payload = {}
             if context_payload.get("type") == _BASKET_INPUT_CONTEXT_TYPE:
-                answer, keyboard = await _process_basket_input(chat_id, session_id, incoming_msg, token)
+                answer, keyboard = await _process_basket_input(
+                    chat_id, session_id, incoming_msg, token, context_payload.get("segment")
+                )
+            elif context_payload.get("type") == _CATALOG_SEARCH_CONTEXT_TYPE:
+                answer, keyboard = await _process_catalog_search(
+                    chat_id, session_id, incoming_msg, token, context_payload.get("segment")
+                )
             else:
                 effective_query = (
                     "Responde únicamente con datos verificables de CLI Market. Si falta marca, presentación, retailer, cobertura o equivalencia, pide aclaración. "
@@ -742,17 +834,39 @@ async def _process_callback(chat_id: str, user_id: str | None, message_id: str, 
         return
     if action.startswith("seg:"):
         segment = {
-            "seg:horeca": "Alimentos / HORECA",
-            "seg:mro": "Limpieza y MRO",
-            "seg:obra": "Obra menor",
-            "seg:general": "Canasta general",
+            "seg:horeca": "horeca",
+            "seg:mro": "mro",
+            "seg:ferreteria": "ferreteria",
+            "seg:general": "general",
         }.get(action)
-        if segment:
+        if segment and segment in _BASKET_SEGMENTS:
+            segment_config = _segment(segment)
             update_messenger_session(session_id, context=_basket_input_context(segment))
             await _send_telegram(
                 chat_id,
-                f"Perfecto: <b>{segment}</b>. Escribe tu lista con marca, presentación y cantidad.",
-                _force_reply("Ej.: 12 latas de leche Gloria 390 g"),
+                f"Perfecto: <b>{segment_config['label']}</b>. ¿Qué deseas hacer?",
+                _segment_action_keyboard(segment),
+            )
+        return
+
+    if action.startswith("segsearch:") or action.startswith("segbasket:"):
+        mode, _, segment = action.partition(":")
+        if segment not in _BASKET_SEGMENTS:
+            return
+        segment_config = _segment(segment)
+        if mode == "segsearch":
+            update_messenger_session(session_id, context=_catalog_search_context(segment))
+            await _send_telegram(
+                chat_id,
+                f"Busca en <b>{segment_config['label']}</b>. Escribe el producto con marca y presentación, si la conoces.",
+                _force_reply(segment_config["example"].split("\n")[0]),
+            )
+        else:
+            update_messenger_session(session_id, context=_basket_input_context(segment))
+            await _send_telegram(
+                chat_id,
+                f"Compara tu canasta de <b>{segment_config['label']}</b>. Escribe entre 2 y 20 productos, una línea por producto.",
+                _force_reply(segment_config["example"].split("\n")[0]),
             )
         return
 
