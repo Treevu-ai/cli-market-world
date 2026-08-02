@@ -36,7 +36,7 @@ RUN python -m playwright install chromium --with-deps
 COPY *.py pyproject.toml mcp.json ./
 COPY routers/ ./routers/
 # Slack ops (cron panels, revenue/funnel routing from API)
-COPY ops/billing_slack.py ops/slack_notify.py ops/load_env.py ops/command_control_daily.py ./ops/
+COPY ops/billing_slack.py ops/slack_notify.py ops/load_env.py ops/command_control_daily.py ops/mcp_credential_guard.py ./ops/
 
 RUN mkdir -p /data
 ENV MARKET_DATA_DIR=/data

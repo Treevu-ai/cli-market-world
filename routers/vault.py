@@ -31,6 +31,7 @@ from market_vault import (
     vault_payment_token_owned,
     vault_setup_token_owner,
 )
+from market_security import validate_cli_market_redirect_url
 from server_deps import require_api_key
 
 logger = logging.getLogger(__name__)
@@ -57,10 +58,17 @@ async def vault_setup(
 
     from market_connectors.paypal_payments import create_vault_setup_token
 
+    return_url = validate_cli_market_redirect_url(
+        body.get("return_url"), "https://cli-market.dev?vault=success"
+    )
+    cancel_url = validate_cli_market_redirect_url(
+        body.get("cancel_url"), "https://cli-market.dev?vault=cancelled"
+    )
+
     result = await create_vault_setup_token(
         customer_id=customer_id,
-        return_url=body.get("return_url", "https://cli-market.dev?vault=success"),
-        cancel_url=body.get("cancel_url", "https://cli-market.dev?vault=cancelled"),
+        return_url=return_url,
+        cancel_url=cancel_url,
     )
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])

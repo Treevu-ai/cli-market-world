@@ -2,7 +2,8 @@ from __future__ import annotations
 import logging
 import os
 import re
-from fastapi import APIRouter, HTTPException, Request
+import secrets
+from fastapi import APIRouter, Header, HTTPException, Request
 from market_core import (
     db_claim_webhook_event,
     db_delete_billing_pending,
@@ -187,8 +188,12 @@ async def paypal_webhook(request: Request):
 
 
 @router.post("/checkout/webhook")
-def checkout_webhook(order_id: str = "", status: str = "paid", secret: str = ""):
-    """Mark an order paid/failed. Requires CHECKOUT_WEBHOOK_SECRET in production."""
+def checkout_webhook(
+    order_id: str = "",
+    status: str = "paid",
+    webhook_secret: str | None = Header(None, alias="X-Checkout-Webhook-Secret"),
+):
+    """Mark an order paid/failed using a shared secret supplied in a header."""
     expected = os.getenv("CHECKOUT_WEBHOOK_SECRET", "")
     if is_production_deploy():
         if not expected:
@@ -196,9 +201,9 @@ def checkout_webhook(order_id: str = "", status: str = "paid", secret: str = "")
                 status_code=503,
                 detail="CHECKOUT_WEBHOOK_SECRET required in production",
             )
-        if secret != expected:
+        if not webhook_secret or not secrets.compare_digest(webhook_secret, expected):
             raise HTTPException(status_code=401, detail="Invalid webhook secret")
-    elif expected and secret != expected:
+    elif expected and (not webhook_secret or not secrets.compare_digest(webhook_secret, expected)):
         raise HTTPException(status_code=401, detail="Invalid webhook secret")
     if not order_id:
         raise HTTPException(status_code=400, detail="order_id required")

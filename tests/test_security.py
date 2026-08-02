@@ -60,7 +60,16 @@ def test_checkout_webhook_requires_secret_in_production(monkeypatch):
 
 def test_checkout_webhook_rejects_bad_secret_when_configured(monkeypatch):
     monkeypatch.setenv("CHECKOUT_WEBHOOK_SECRET", "good-secret")
-    r = client.post("/checkout/webhook?order_id=ORD-TEST&status=paid&secret=wrong")
+    r = client.post(
+        "/checkout/webhook?order_id=ORD-TEST&status=paid",
+        headers={"X-Checkout-Webhook-Secret": "wrong"},
+    )
+    assert r.status_code == 401
+
+
+def test_checkout_webhook_does_not_accept_secret_in_query(monkeypatch):
+    monkeypatch.setenv("CHECKOUT_WEBHOOK_SECRET", "good-secret")
+    r = client.post("/checkout/webhook?order_id=ORD-TEST&status=paid&secret=good-secret")
     assert r.status_code == 401
 
 

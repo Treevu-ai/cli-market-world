@@ -2,6 +2,63 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-01] — Security hardening: MCP and credential handling
+
+- MCP remoto usa `Authorization: Bearer` y rechaza tokens en la URL por defecto,
+  evitando que nuevas credenciales lleguen a historiales, proxies, logs o la
+  telemetría de funnel. Una migración temporal solo puede habilitarse de manera
+  explícita con `MCP_ALLOW_QUERY_TOKEN=1`.
+- Webhooks de checkout aceptan el secreto únicamente mediante el header
+  `X-Checkout-Webhook-Secret` y lo comparan en tiempo constante.
+- Las contraseñas nuevas usan PBKDF2-HMAC-SHA256 versionado con 600,000
+  iteraciones por defecto; los hashes anteriores siguen verificándose para no
+  bloquear cuentas existentes.
+- Una instalación sin usuarios ya no crea un administrador con contraseña por
+  defecto: requiere `MARKET_ADMIN_PASSWORD` y falla de forma segura si falta.
+
+## [2026-08-01] — Core 1.12.5: fuentes industriales PE verificadas
+
+World ahora fija `cli-market-core==1.12.5`. La versión incorpora tres
+fuentes industriales peruanas con catálogo y precios públicos verificables:
+Ferretec, Safety Store Perú y Tecnototal. Sus conectores Shopify/WooCommerce
+devuelven resultados normalizados en PEN para búsquedas de producto.
+
+FAGY e Indutex también quedan registradas en Core como candidatas, pero
+desactivadas: sus APIs públicas exponen el catálogo sin precios positivos. No
+se usarán para cotizaciones hasta contar con una fuente de precio verificable.
+
+No se modifica ningún Golden Record, contrato HTTP/MCP ni claim comercial;
+Backend actualiza su piso compatible a `cli-market-core>=1.12.5` y el índice y
+contenido no requieren cambios para esta ola.
+
+## [2026-08-01] — source-health recovery and coordinated Core 1.12.4 release
+
+Production health was blocking deploys with three `dead` sources:
+`smartnutrition_pe`, `thegreenkiss_ca`, and `simplynaturalcanada_ca`.
+Their public product APIs were verified from non-datacenter egress, but each
+blocks the Fly.io collector IP with a WAF or ModSecurity response. This is an
+egress restriction, not evidence that the retailers or their catalogs are
+offline.
+
+- **Core 1.12.4:** quarantines the three sources from the active catalog with
+  a store-specific `disabled_reason` and a regression test. They can be
+  re-enabled only after a proxy or retailer allowlist has been validated.
+- **World:** pins `cli-market-core==1.12.4`; the Telegram quotation flow and
+  API now consume the same released catalog definition.
+- **Production:** the automatic deploy was initially skipped because its CI
+  smoke measured the old container. A manual `Deploy Fly.io` workflow retained
+  import checks, post-deploy smoke and automatic rollback. It completed
+  successfully; `ops/doctor_prod_gate.py` reported `314 ok · 0 dead` and
+  `golden linkage 68.1%`.
+- **Backend, Index and Content:** no API contract, Golden Record or public
+  claim changed. Backend's compatible `cli-market-core>=1.12.3` range resolves
+  1.12.4; Index remains pinned identically between World and Backend; Content
+  receives no coverage-count or availability claim from this operational
+  change.
+
+The release record, evidence and reactivation criteria are in
+`docs/RELEASE-SYNC-2026-08-01.md`.
+
 ## [2026-07-30] — bump cli-market-core pin to 1.12.0 (also disable igardi_pe, to unblock deploys now)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.0`. On explicit

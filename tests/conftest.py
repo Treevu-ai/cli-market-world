@@ -24,6 +24,10 @@ os.environ["MARKET_DATA_DIR"] = _TEST_DATA_DIR
 os.environ["DATABASE_URL"] = ""
 os.environ.setdefault("MARKET_LEGACY_CHECKOUT", "1")
 os.environ.setdefault("PAYPAL_SANDBOX", "true")
+# Production defaults to 600,000 PBKDF2 iterations.  Unit tests validate
+# behavior rather than benchmark password hashing, so use the supported
+# legacy floor to keep the feedback cycle practical.
+os.environ["MARKET_PASSWORD_HASH_ITERATIONS"] = "100000"
 # Tests use username ``admin`` with tier fixtures — do not enable prod ops bypass.
 # Empty string, not pop(): a *missing* key is exactly what load_repo_env()
 # (patched to a no-op below, but kept here as defense in depth) treats as

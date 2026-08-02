@@ -690,3 +690,40 @@ def test_all_tools_have_dispatch_and_all_dispatch_branches_are_registered():
         f"In _TOOLS but not dispatched: {tool_names - dispatch_names}; "
         f"Dispatched but not in _TOOLS: {dispatch_names - tool_names}"
     )
+
+
+def test_mcp_rejects_bearer_token_in_query_string():
+    r = client.post("/mcp?token=test-token-123", json=_rpc_call("market_search", {"query": "leche"}))
+
+    assert r.status_code == 400
+    assert "URL" in r.json()["error"]["message"]
+
+
+def test_mcp_query_token_requires_explicit_temporary_opt_in(monkeypatch):
+    import routers.mcp_http as mcp_http_mod
+
+    monkeypatch.setenv("MCP_ALLOW_QUERY_TOKEN", "1")
+    monkeypatch.setattr(mcp_http_mod, "_call_tool", AsyncMock(return_value={"ok": True}))
+
+    r = client.post("/mcp?token=test-token-123", json=_rpc_call("market_search", {"query": "leche"}))
+
+    assert r.status_code == 200
+
+
+def test_mcp_telemetry_uses_username_not_bearer_token(monkeypatch):
+    import routers.mcp_http as mcp_http_mod
+
+    events = []
+
+    def record(event, *, username=None, meta=None, **_kwargs):
+        events.append({"event": event, "username": username, "meta": meta})
+        return {"ok": True}
+
+    monkeypatch.setattr(mcp_http_mod, "record_funnel_event", record)
+    monkeypatch.setattr(mcp_http_mod, "_call_tool", AsyncMock(return_value={"ok": True}))
+
+    r = client.post("/mcp", json=_rpc_call("market_search", {"query": "leche"}), headers=_AUTH)
+
+    assert r.status_code == 200
+    assert events[-1]["username"] == "admin"
+    assert "test-token-123" not in str(events[-1])

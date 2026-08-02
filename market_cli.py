@@ -3162,7 +3162,8 @@ def cmd_register(args):
         f"Email: [cyan]{email}[/]\n"
         f"API key: [bold white]{key}[/]\n\n"
         "[yellow]Guardala ahora — no se vuelve a mostrar.[/]\n"
-        f"MCP (claude.ai): [cyan]{API}/mcp?token={key}[/]"
+        f"MCP remoto: [cyan]{API}/mcp[/]\n"
+        "[dim]Header: Authorization: Bearer <tu API key>[/]"
         + steps_text,
         title="CLI Market",
         border_style="#00FF88",

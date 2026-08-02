@@ -13,14 +13,16 @@ Contents:
 from __future__ import annotations
 
 import hashlib
+import hmac
 import logging
 import time
 import os
 from contextvars import ContextVar
 
 from fastapi import HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import JSONResponse
 from starlette.requests import Request
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from market_core import (
     check_rate_limit_sqlite,
@@ -80,22 +82,47 @@ def auth_user(token: str) -> str:
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 
+_PASSWORD_SCHEME = "pbkdf2_sha256"
+_LEGACY_PASSWORD_ITERATIONS = 100_000
+try:
+    _PASSWORD_ITERATIONS = max(
+        _LEGACY_PASSWORD_ITERATIONS,
+        int(os.getenv("MARKET_PASSWORD_HASH_ITERATIONS", "600000")),
+    )
+except ValueError:
+    _PASSWORD_ITERATIONS = 600_000
+
+
 def hash_password(password: str) -> str:
     salt = os.urandom(16).hex()
-    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
-    return f"{salt}:{h.hex()}"
+    h = hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt.encode(), _PASSWORD_ITERATIONS
+    )
+    return f"{_PASSWORD_SCHEME}${_PASSWORD_ITERATIONS}${salt}${h.hex()}"
 
 
 def verify_password(password: str, stored: str) -> bool:
-    if ":" not in stored:
+    if stored.startswith(f"{_PASSWORD_SCHEME}$"):
+        try:
+            scheme, iteration_text, salt, expected = stored.split("$", 3)
+            iterations = int(iteration_text)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=500, detail="Invalid password hash format.")
+        if scheme != _PASSWORD_SCHEME or iterations < _LEGACY_PASSWORD_ITERATIONS:
+            raise HTTPException(status_code=500, detail="Invalid password hash parameters.")
+    elif ":" in stored:
+        # Pre-hardening records remain verifiable so existing users are not locked out.
+        salt, expected = stored.split(":", 1)
+        iterations = _LEGACY_PASSWORD_ITERATIONS
+    else:
         raise HTTPException(
             status_code=500,
             detail="Legacy plaintext password detected. Contact admin.",
         )
-    salt, h = stored.split(":", 1)
-    return h == hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 100_000
+    calculated = hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt.encode(), iterations
     ).hex()
+    return hmac.compare_digest(expected, calculated)
 
 
 # ── Brute-force protection ────────────────────────────────────────────────────
@@ -437,21 +464,58 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
 }
 
 _request_ctx: ContextVar[Request | None] = ContextVar("request_ctx", default=None)
+_core_v1_gate_user: ContextVar[str | None] = ContextVar("core_v1_gate_user", default=None)
 
 
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    """Expose the current Starlette request to pluggable core auth."""
+class RequestContextMiddleware:
+    """Expose the current request to pluggable Core auth without task splits.
 
-    async def dispatch(self, request, call_next):
+    ``BaseHTTPMiddleware`` may run the downstream application in a separate
+    task. That makes the ContextVar intermittently unavailable to FastAPI
+    dependencies under a full concurrent test run, which could bypass a
+    tier-specific Core route gate. A minimal ASGI wrapper keeps the request
+    context in the same task as the dependency evaluation.
+    """
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        request = Request(scope)
         token = _request_ctx.set(request)
+        gate_token = _core_v1_gate_user.set(None)
         try:
-            return await call_next(request)
+            tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
+            if tier == "enterprise":
+                _core_v1_gate_user.set(require_enterprise(request.headers.get("authorization")))
+            elif tier == "pro":
+                _core_v1_gate_user.set(require_pro(request.headers.get("authorization")))
+            elif tier == "starter":
+                _core_v1_gate_user.set(require_starter(request.headers.get("authorization")))
+            await self.app(scope, receive, send)
+        except HTTPException as exc:
+            response = JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=exc.headers,
+            )
+            await response(scope, receive, send)
         finally:
+            _core_v1_gate_user.reset(gate_token)
             _request_ctx.reset(token)
 
 
 def require_v1_core_auth(authorization: str | None) -> str:
     """Tier-aware auth for cli-market-core api_routes (_auth_fn hook)."""
+    # The ASGI middleware enforces gated Core paths before dispatch. Reuse the
+    # resolved user so the dependency cannot bypass the tier check nor consume
+    # a second rate-limit slot.
+    gated_username = _core_v1_gate_user.get()
+    if gated_username:
+        return gated_username
     request = _request_ctx.get()
     if request is not None:
         tier = _CORE_V1_TIER_ROUTES.get((request.method.upper(), request.url.path))
