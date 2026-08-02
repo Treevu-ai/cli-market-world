@@ -21,7 +21,6 @@ from .horeca_profiles import (
     _extract_category,
     seed_estacion90_profile,
     is_estacion90_profile,
-    ESTACION90_BUSINESS_NAME,
 )
 from .horeca_templates import (
     get_template_summary,
@@ -108,9 +107,9 @@ def _build_cooldown_message(sender: str, search_query: str) -> str:
     """Mensaje cuando el usuario está en cooldown."""
     return (
         f"⏰ Ya buscaste '{search_query}' hace menos de {HORECA_COOLDOWN_HOURS} horas.\n\n"
-        f"Para evitar spam, esperá {HORECA_COOLDOWN_HOURS} horas antes de buscar "
+        f"Para evitar spam, espera {HORECA_COOLDOWN_HOURS} horas antes de buscar "
         f"el mismo producto nuevamente.\n\n"
-        f"Podés buscar otros productos o consultarme por otras categorías."
+        f"Puedes buscar otros productos o consultarme por otras categorías."
     )
 
 def _build_limit_message(profile: Dict) -> str:
@@ -130,7 +129,7 @@ def _build_savings_notification(profile: Dict, current_savings: float) -> str:
         f"💰 ¡Buenas noticias! alcanzaste un nuevo hito de ahorro.\n\n"
         f"Ahorro total acumulado: S/ {profile['total_savings']:.2f}\n"
         f"Ahorro en esta búsqueda: S/ {current_savings:.2f}\n\n"
-        f"Seguí así optimizando tus compras de {profile['business_type']}!"
+        f"Sigue así optimizando tus compras de {profile['business_type']}!"
     )
 
 def _build_progress_message(stage: int, total_stages: int = 3) -> str:
@@ -192,7 +191,7 @@ async def _handle_horeca_onboarding_flow(sender: str, message: str, profile: Dic
         else:
             send_function(
                 sender,
-                "❌ Opción no válida. Por favor respondé con un número del 1 al 4."
+                "❌ Opción no válida. Por favor responde con un número del 1 al 4."
             )
 
 async def process_horeca_message(
@@ -269,12 +268,12 @@ async def process_horeca_message(
                 send_function(sender, format_procure_whatsapp(result))
             except Exception as e:
                 print(f"Error procure menu run: {e}")
-                send_function(sender, "❌ Error en Procure Copilot. Probá de nuevo.")
+                send_function(sender, "❌ Error en Procure Copilot. Inténtalo de nuevo.")
             return True
 
         token = token_function(sender)
         if not token:
-            send_function(sender, "❌ Error de configuración. Contactá al administrador.")
+            send_function(sender, "❌ Error de configuración. Comunícate con el administrador.")
             return True
         send_function(sender, "📊 Calculando costo de insumos del menú del día en Wong, Metro y Plazavea...")
         try:
@@ -286,7 +285,7 @@ async def process_horeca_message(
             send_function(sender, format_menu_cost_response(result))
         except Exception as e:
             print(f"Error estimating menu cost: {e}")
-            send_function(sender, "❌ No pude estimar el costo del menú. Probá de nuevo en un ratito.")
+            send_function(sender, "❌ No pude estimar el costo del menú. Inténtalo de nuevo en unos minutos.")
         return True
 
     if message_lower in ('cotizar semana', 'pedido semana', 'insumos semana'):
@@ -339,7 +338,7 @@ async def process_horeca_message(
     # Procesar búsqueda con lógica estándar (llamar a la API existente)
     token = token_function(sender)
     if not token:
-        send_function(sender, "❌ Error de configuración. Contactá al administrador.")
+        send_function(sender, "❌ Error de configuración. Comunícate con el administrador.")
         return True
     
     try:
@@ -392,10 +391,10 @@ async def process_horeca_message(
                     )
                 
             else:
-                send_function(sender, "❌ Error consultando precios. Probá de nuevo en un ratito.")
+                send_function(sender, "❌ Error consultando precios. Inténtalo de nuevo en unos minutos.")
                 
     except Exception as e:
         print(f"Error en process_horeca_message: {e}")
-        send_function(sender, "❌ Error procesando tu solicitud. Probá de nuevo.")
+        send_function(sender, "❌ Error procesando tu solicitud. Inténtalo de nuevo.")
     
     return True  # Indica que se procesó con lógica HORECA

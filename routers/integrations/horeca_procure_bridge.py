@@ -102,7 +102,7 @@ def format_procure_whatsapp(result: dict[str, Any]) -> str:
     if status == "pending_approval":
         lines.append(
             "\n⏳ *Pendiente de aprobación* del gerente. "
-            "Revisá en Procure Copilot o respondé `aprobar compra` cuando esté listo."
+            "Revisa en Procure Copilot o responde `aprobar compra` cuando esté listo."
         )
     elif status == "checkout_ready":
         lines.append("\n✅ Aprobado — listo para checkout en Procure Copilot.")

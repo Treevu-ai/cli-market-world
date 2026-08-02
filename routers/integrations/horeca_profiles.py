@@ -52,7 +52,7 @@ def get_or_create_profile(whatsapp_number: str, business_name: str = "Desconocid
 
 def seed_estacion90_profile(whatsapp_number: str) -> Dict:
     """Crea o actualiza el perfil HORECA piloto para Estación 90 (Surco)."""
-    profile = get_or_create_profile(whatsapp_number, ESTACION90_BUSINESS_NAME, "estacion90")
+    get_or_create_profile(whatsapp_number, ESTACION90_BUSINESS_NAME, "estacion90")
     update_profile_field(whatsapp_number, "business_name", ESTACION90_BUSINESS_NAME)
     update_profile_field(whatsapp_number, "business_type", "estacion90")
     update_profile_field(whatsapp_number, "currency", "PEN")
