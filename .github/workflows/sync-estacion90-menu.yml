@@ -1,0 +1,51 @@
+name: Sync Estación 90 menu → Hostinger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "hostinger/estacion90/api/menu.json"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Validate menu.json
+        run: python ops/horeca/sync_estacion90_menu.py --dry-run
+
+      # Estación 90 is a prospective client — this integration ships ready
+      # to go, but the FTP secrets below don't exist until they actually
+      # hand over Hostinger credentials. Skip (not fail) until then, so this
+      # workflow doesn't show a false-red CI check on every menu.json edit.
+      - name: Check Hostinger credentials configured
+        id: creds
+        run: |
+          if [ -z "${{ secrets.HOSTINGER_ESTACION90_FTP_HOST }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload to Hostinger and verify live copy
+        if: steps.creds.outputs.configured == 'true'
+        env:
+          HOSTINGER_ESTACION90_FTP_HOST: ${{ secrets.HOSTINGER_ESTACION90_FTP_HOST }}
+          HOSTINGER_ESTACION90_FTP_USER: ${{ secrets.HOSTINGER_ESTACION90_FTP_USER }}
+          HOSTINGER_ESTACION90_FTP_PASSWORD: ${{ secrets.HOSTINGER_ESTACION90_FTP_PASSWORD }}
+        run: python ops/horeca/sync_estacion90_menu.py
+
+      - name: Upload skipped — no Hostinger credentials yet
+        if: steps.creds.outputs.configured != 'true'
+        run: echo "::notice::Estación 90 aún no compartió credenciales FTP de Hostinger (HOSTINGER_ESTACION90_FTP_HOST/USER/PASSWORD). Integración lista; subida omitida hasta que se configuren."

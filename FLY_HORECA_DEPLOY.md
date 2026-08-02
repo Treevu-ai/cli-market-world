@@ -50,7 +50,37 @@ fly secrets set HORECA_ESTACION90_MENU_URL=https://estacion90.pe/api/menu.json
 
 O ejecutar el script: `bash ops/horeca/estacion90_fly_secrets.sh`
 
-**Hostinger:** subir `hostinger/estacion90/api/menu.json` a `public_html/api/menu.json` en estacion90.pe.
+**Hostinger:** Estación 90 es un cliente potencial — la integración de subida
+está lista pero **inactiva** hasta que comparta credenciales FTP de su
+hosting. `hostinger/estacion90/api/menu.json` se sube automáticamente a
+`public_html/api/menu.json` en estacion90.pe cada vez que cambia en `main`
+(workflow `.github/workflows/sync-estacion90-menu.yml`, vía FTPS con
+`ops/horeca/sync_estacion90_menu.py`) — pero solo si los 3 secrets de abajo
+están configurados; si no, el workflow valida el JSON y omite la subida sin
+fallar (no rompe CI). Cuando Estación 90 entregue las credenciales, agregar
+estos secrets en GitHub (Settings → Secrets and variables → Actions):
+
+```
+HOSTINGER_ESTACION90_FTP_HOST
+HOSTINGER_ESTACION90_FTP_USER
+HOSTINGER_ESTACION90_FTP_PASSWORD
+```
+
+Para subir manualmente (o probar credenciales) sin esperar un push a `main`:
+
+```bash
+# Valida el JSON sin subir nada
+python ops/horeca/sync_estacion90_menu.py --dry-run
+
+# Sube y verifica que la URL pública quedó igual al archivo local
+HOSTINGER_ESTACION90_FTP_HOST=... \
+HOSTINGER_ESTACION90_FTP_USER=... \
+HOSTINGER_ESTACION90_FTP_PASSWORD=... \
+python ops/horeca/sync_estacion90_menu.py
+```
+
+También se puede disparar el workflow a mano desde GitHub Actions
+("Run workflow" en `sync-estacion90-menu.yml`).
 
 ## 2. Deploy a Fly.io
 
