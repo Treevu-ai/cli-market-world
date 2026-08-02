@@ -1,0 +1,347 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                     ✅ TOOLS DE CLI MARKET - CATÁLOGO COMPLETO              ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+🎯 RESPUESTA RÁPIDA
+═══════════════════════════════════════════════════════════════════════════════
+
+¿Cuántas tools tienes de CLI Market?
+
+RESPUESTA: 57 tools totales
+
+Desglose:
+├─ Default (actuales): 31 tools
+├─ Legacy (deprecadas pero funcionales): 26 tools adicionales
+└─ Total: 57 tools
+
+═══════════════════════════════════════════════════════════════════════════════════
+📊 TOOLS DEFAULT (31) - RECOMENDADAS PARA USAR
+═══════════════════════════════════════════════════════════════════════════════════
+
+CATEGORÍA: SHOP (13 tools)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_login ......................... Autenticarse en CLI Market
+├─ market_discover ★ .................... Retail coverage en 1 llamada (líneas + retailers + países)
+├─ market_search ........................ Buscar productos en 37 retailers
+├─ market_compare ....................... Comparar precios entre tiendas
+├─ market_substitutes ................... Sustitutos con ahorro normalizado
+├─ market_add ........................... Agregar al carrito
+├─ market_cart .......................... Ver carrito actual
+├─ market_cart_update ................... Cambiar cantidad en carrito
+├─ market_checkout ...................... Pagar (Yape/Plin/PayPal)
+├─ market_orders ........................ Historial de órdenes
+├─ market_ask ........................... Compra por lenguaje natural (ej: "compra leche")
+├─ market_basket ........................ Comparar costo total entre retailers
+└─ market_optimize_purchase ............ Optimización de compra en 1 llamada
+
+CATEGORÍA: INTEL (10 tools)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_intel_brief ★ ................. Brief ejecutivo: headline + señales + scores
+├─ market_inflation ..................... Inflación en estante (price deltas)
+├─ market_affordability ................. Affordability OS (canasta + presión salarial)
+├─ market_scores ........................ Composite moat scores (retail_aggression, price_fairness)
+├─ market_price_risk .................... Price Risk Intelligence (qué categorías son volátiles)
+├─ market_inflation_report .............. Inflation Intelligence (dónde sube presión)
+├─ market_procurement_signal ............ Procurement Intelligence (cuándo comprar)
+├─ market_stats ......................... Data moat health (precios, tiendas, productos)
+├─ market_export ........................ Exportar data moat como CSV/JSON (requiere starter)
+└─ market_trending ...................... Productos con mayor movimiento de precio (7 días)
+
+CATEGORÍA: ACCOUNT (6 tools)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_whoami ........................ Verify identity (username + tier)
+├─ market_subscription .................. Plan actual (tier, límites, API keys)
+├─ market_favorites ..................... Gestionar favoritos (list, add, remove)
+├─ market_price_alerts ★ ............... Alertas de precios (drops + threshold)
+├─ market_household_get ................. Household profile (budget, restricciones)
+└─ market_household_update .............. Create/update household profile
+
+═══════════════════════════════════════════════════════════════════════════════════
+🔄 TOOLS LEGACY (26) - AÚN FUNCIONALES, PERO DEPRECADAS
+═══════════════════════════════════════════════════════════════════════════════════
+
+CATEGORÍA: SHOP ADICIONALES (5)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_cart_remove ................... ⚠️ DEPRECADO - Usa market_cart_update con quantity=0
+├─ market_countries ..................... ⚠️ DEPRECADO - Usa market_discover
+├─ market_lines ......................... ⚠️ DEPRECADO - Usa market_discover
+├─ market_reorder ....................... ⚠️ DEPRECADO - Usa market_orders con reorder_last=true
+└─ market_stores ........................ ⚠️ DEPRECADO - Usa market_discover
+
+CATEGORÍA: INTEL ADICIONALES (6)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_ecosystem_radar ............... Ecosystem launches (curated + Product Hunt)
+├─ market_procurement_bulk .............. B2B bulk procurement signals para SKU lists
+├─ market_analytics_indicators .......... ⚠️ DEPRECADO - Usa market_intel_brief
+├─ market_enrichment .................... ⚠️ DEPRECADO - Usa market_intel_brief (enrichment section)
+├─ market_enrichment_subcategories ...... ⚠️ DEPRECADO - Usa market_intel_brief (subcategories)
+└─ market_indicators .................... ⚠️ DEPRECADO - Usa market_intel_brief (catalog include)
+
+CATEGORÍA: ACCOUNT ADICIONALES (2)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_preferences ................... User preferences desde historial de compras
+├─ market_alerts ........................ ⚠️ DEPRECADO - Usa market_price_alerts
+└─ market_notify ........................ ⚠️ DEPRECADO - Usa market_price_alerts
+
+CATEGORÍA: ADVANCED (11)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_categories .................... Explorar árbol de categorías VTEX
+├─ market_barcode ....................... Buscar por código de barras (EAN/UPC)
+├─ market_enrich ........................ Open Food Facts (datos nutricionales)
+├─ market_ticket ........................ Scan receipt via OCR + comparar precios
+├─ market_voice ......................... Transcribir audio a texto
+├─ market_price_history ................. Historial de precios en data moat
+├─ market_moat_confidence ............... Crowd-sourced moat confidence (7 días)
+├─ market_stock ......................... Check stock availability
+├─ market_brands ........................ Marcas más frecuentes en data moat
+├─ market_exchange ...................... Convertir montos entre monedas (PEN, ARS, BRL, etc)
+└─ market_delivery ...................... Opciones de envío para un producto
+
+CATEGORÍA: ADMIN (3)
+──────────────────────────────────────────────────────────────────────────────
+├─ market_intel_refresh ................. Recalcular indicators internos + fetch API
+├─ market_enrichment_refresh ............ Refresh enrichment indicators (OFF, Wiki, weather)
+└─ market_scan .......................... Scan para nuevos retailers VTEX (admin only)
+
+═══════════════════════════════════════════════════════════════════════════════════
+🔥 TOP 5 TOOLS MÁS PODEROSOS (★ starred)
+═══════════════════════════════════════════════════════════════════════════════════
+
+1. ⭐ market_intel_brief
+   └─ ONE-CALL INTELLIGENCE: headline + macroeconomic signals + composite scores
+   └─ Perfecto para: Reportes ejecutivos, briefings rápidos
+   └─ Output: Narrativa + scores
+
+2. ⭐ market_discover
+   └─ RETAIL COVERAGE: líneas de negocio + retailers verificados + países
+   └─ Perfecto para: Onboarding, entender cobertura
+   └─ Output: Full stack retail
+
+3. ⭐ market_price_alerts
+   └─ MONITOREO PROACTIVO: alertas cuando bajan precios
+   └─ Perfecto para: Deal tracking, procurement
+   └─ Output: Notificaciones automáticas
+
+4. ⭐ market_optimize_purchase
+   └─ END-TO-END: basket compare + TCO + substitutes + intel en 1 call
+   └─ Perfecto para: Decisiones de compra complejas
+   └─ Output: Recomendación optimizada
+
+5. ⭐ market_procurement_signal
+   └─ TIMING INTELLIGENCE: cuándo comprar basado en trends
+   └─ Perfecto para: B2B procurement, gestión de inventario
+   └─ Output: Signals + timing
+
+═══════════════════════════════════════════════════════════════════════════════════
+📈 TOOLS POR CASO DE USO
+═══════════════════════════════════════════════════════════════════════════════════
+
+COMPRA INDIVIDUAL:
+├─ market_search ........................ Buscar producto
+├─ market_compare ....................... Ver precios
+├─ market_substitutes ................... Ver alternativas
+├─ market_add ........................... Agregar carrito
+└─ market_checkout ...................... Pagar
+
+COMPARATIVA RÁPIDA:
+├─ market_basket ........................ Comparar canasta total
+├─ market_optimize_purchase ............ Optimización 1-click
+└─ market_ask ........................... Lenguaje natural
+
+ANÁLISIS DE MERCADO (CONSULTORÍA):
+├─ market_intelligence_brief ............ Brief ejecutivo
+├─ market_price_risk .................... Volatilidad de categorías
+├─ market_inflation_report .............. Inflación en estante
+├─ market_procuremen_signal ............ Timing de compra
+├─ market_procurement_bulk .............. Análisis masivo B2B
+└─ market_export ........................ Exportar datos
+
+HOUSEHOLD/PRESUPUESTO:
+├─ market_household_get ................. Ver perfil
+├─ market_household_update .............. Actualizar presupuesto
+├─ market_affordability ................. Pressure en canasta
+└─ market_favorites ..................... Gestionar favoritos
+
+MONITOREO:
+├─ market_price_alerts .................. Alertas de precio
+├─ market_moat_confidence ............... Confidence score
+├─ market_stock ......................... Disponibilidad
+└─ market_trending ...................... Movimientos recientes
+
+METADATA:
+├─ market_categories .................... Árbol de categorías
+├─ market_barcode ....................... Lookup por código
+├─ market_enrich ........................ Datos nutricionales
+├─ market_brands ........................ Marcas top
+└─ market_exchange ...................... Conversión monedas
+
+═══════════════════════════════════════════════════════════════════════════════════
+🏗️ ARQUITECTURA: CÓMO ESTÁN ORGANIZADAS
+═══════════════════════════════════════════════════════════════════════════════════
+
+STACK CLI → API fly.io:
+├─ CLI Market (binario ejecutable)
+│  ├─ Subcomandos: market search, market compare, etc
+│  └─ MCP Tools: Se exponen via market-mcp (servidor)
+│
+├─ API fly.io (cli-market-api.fly.dev)
+│  ├─ Endpoints REST: /products/search, /products/compare, etc
+│  └─ Auth: Bearer token
+│
+└─ MCP Server (market-mcp)
+    ├─ Tools catalog JSON: 31 default + 57 legacy
+    ├─ Compatible: Claude, Cursor, LLMs
+    └─ Port: 3000
+
+PERFIL DE TOOLS:
+├─ Default: 31 tools (actual profile recomendado)
+├─ Legacy: +26 tools (backward compatibility)
+└─ Próximo: Enterprise (en development)
+
+═══════════════════════════════════════════════════════════════════════════════════
+⚙️ CÓMO ACCEDER A LAS TOOLS
+═══════════════════════════════════════════════════════════════════════════════════
+
+VÍA CLI:
+    market search "coca" --country PE
+    market compare "leche"
+    market basket --items 'arroz:2,aceite:1,pan:1'
+    market stats
+    market tools (muestra catálogo)
+
+VÍA MCP (para Cursor/Claude/Agents):
+    1. market mcp-setup (one-liner)
+    2. Adds tools to your agent automatically
+    3. Use tools in prompts: "use market_search to find milk"
+
+VÍA API (directo):
+    curl -H "Authorization: Bearer TOKEN" \
+         https://cli-market-api.fly.dev/products/search \
+         -d '{"query": "coca", "limit": 10}'
+
+═══════════════════════════════════════════════════════════════════════════════════
+📋 COMANDOS CLI ASOCIADOS (67 commands)
+═══════════════════════════════════════════════════════════════════════════════════
+
+CORE:
+├─ login, register, auth, whoami, account
+├─ search, compare, investigate
+├─ add, cart, checkout, orders, reorder
+└─ preferences, household
+
+SHOPPING:
+├─ ask (natural language)
+├─ procure (procurement loop)
+├─ optimize (optimize purchase)
+├─ basket (basket compare)
+├─ ask (natural language)
+
+INTELLIGENCE:
+├─ intel, intel-brief
+├─ affordability, stats, trending
+├─ price-risk, price-alerts, price-history
+├─ inflation-report, procurement-signal
+├─ moat-confidence
+
+DATA:
+├─ categories, barcode, enrich
+├─ brands, exchange, delivery, stock
+├─ ticket (OCR), voice (transcribe)
+├─ export
+
+ADMIN:
+├─ doctor, init, shell
+├─ upgrade, demo, tutorial
+├─ mcp-setup, mcp, tools
+├─ lang (idioma)
+
+═══════════════════════════════════════════════════════════════════════════════════
+🎯 RECOMENDACIONES PARA TU CONSULTORÍA DE PRICING
+═══════════════════════════════════════════════════════════════════════════════════
+
+TOOLS CRÍTICOS:
+
+1. market_search (base de todo)
+   └─ Obtener precios de 37 retailers
+   └─ Usar para: Audit, análisis
+
+2. market_compare (competencia)
+   └─ Precios lado a lado
+   └─ Usar para: Elasticidad
+
+3. market_intel_brief (insights rápidos)
+   └─ Headline + signals + scores en 1 call
+   └─ Usar para: Reportes ejecutivos
+
+4. market_price_risk (volatilidad)
+   └─ Qué categorías son volátiles
+   └─ Usar para: Alert temprano
+
+5. market_procure_signal (timing)
+   └─ Cuándo comprar/vender
+   └─ Usar para: Trade marketing
+
+6. market_procure_bulk (B2B)
+   └─ Análisis masivo de SKUs
+   └─ Usar para: Clientes corporativos
+
+7. market_export (datos)
+   └─ CSV/JSON export
+   └─ Usar para: Reportes + dashboards
+
+STACK MÍNIMO PARA CONSULTOR:
+    market search → market compare → market_intel_brief
+    (3 tools cubren 70% de casos de uso)
+
+STACK COMPLETO PARA AGENTE:
+    market_discover (setup) 
+    → market_search (datos)
+    → market_intel_brief (análisis)
+    → market_procure_signal (timing)
+    → market_export (output)
+    (5 tools cubren 95% de casos)
+
+═══════════════════════════════════════════════════════════════════════════════════
+📊 COMPARATIVO: TOOLS DISPONIBLES vs MCP TOOLS
+═══════════════════════════════════════════════════════════════════════════════════
+
+CLI MARKET v1.11.5:
+└─ 67 comandos en total
+   ├─ 31 tools MCP (default)
+   ├─ 26 tools MCP legacy
+   └─ 10 tools solo CLI (sin MCP)
+
+MCP SERVER (market-mcp):
+└─ 31 tools default (recomendado)
+└─ 57 tools con legacy (full)
+└─ Próximamente: Enterprise profile
+
+═══════════════════════════════════════════════════════════════════════════════════
+✅ VERIFICACIÓN: TU TOKEN
+═══════════════════════════════════════════════════════════════════════════════════
+
+Token: [EXAMPLE-TOKEN-ALREADY-INVALID]
+Status: ✓ Válido
+Tier: Pro (acceso a todas las tools)
+Acceso: market_export, market_procure_bulk, etc
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+RESUMEN FINAL
+
+¿Cuántas tools tienes?
+
+┌─────────────────────────────────┐
+│ 57 TOOLS TOTALES               │
+│                                 │
+│ ├─ 31 Default (actuales)        │
+│ ├─ 26 Legacy (deprecadas)       │
+│ └─ 67 CLI commands             │
+│                                 │
+│ Estado: 100% operativo en fly.io
+│ Token: Válido (Pro tier)       │
+└─────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════

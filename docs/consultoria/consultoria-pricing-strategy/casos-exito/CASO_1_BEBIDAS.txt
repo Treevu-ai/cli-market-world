@@ -1,0 +1,76 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    CASO DE ÉXITO 1: BEBIDAS EN PERÚ                         ║
+║                       De 8% Share a 14% en 6 Meses                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+EMPRESA (FICTICIA):
+├─ Nombre: FreshJuice Perú
+├─ Categoría: Jugos Premium
+├─ Mercado: Lima + Provincias
+├─ Revenue aprox: S/ 80M anuales
+└─ Posición: Marca emergente #4
+
+SITUACIÓN INICIAL:
+├─ Market share: 8%
+├─ Precio promedio: S/ 3.80 (todo el país)
+├─ Distribución: 22 de 37 retailers
+├─ Trend: -2% anual (estancado)
+├─ Problema: "Competencia nos está ganando"
+
+INTERVENCIÓN (MES 1-2):
+├─ Análisis CLI Market: 30 días histórico
+├─ Descubrimiento clave: 
+│  • En Wong estaban bien (S/ 3.80 óptimo)
+│  • En Metro estaban S/ 0.60 arriba (elasticidad negativa)
+│  • En Plaza Vea estaban S/ 0.40 arriba
+│  • En Provincias estaban S/ 0.80 ARRIBA (oportunidad!)
+│
+├─ Recomendación estratégica:
+│  • Lima Premium (Wong, Falabella): Mantener S/ 3.80
+│  • Lima Volumen (Metro, Plaza Vea): Bajar S/ 3.40
+│  • Provincias (todo): Bajar S/ 3.00 (batalla elasticidad)
+│
+└─ Trade spend estimado: S/ 45,000
+
+EJECUCIÓN (MES 3-4):
+├─ Coordinación con retail:
+│  • Wong: Mantiene exhibición + promo conjunta
+│  • Metro: Nueva price point + activación
+│  • Plaza Vea: Lanzamiento con descuento inaugural (15%)
+│  • Provincias: Trade team soporte con material POP
+│
+├─ Timeline:
+│  • Semana 1: Aprobación interna
+│  • Semana 2: Cambios de precios en sistemas retail
+│  • Semana 3: Activación en tiendas
+│  • Semana 4: Monitoreo + ajustes
+│
+└─ Monitoreo: CLI Market tracking diario
+
+RESULTADOS (MES 5-6):
+├─ Market share: 8% → 14% (+75% relativo)
+├─ Distribución: 22 → 28 tiendas (+27%)
+├─ Revenue: +S/ 180k anualizados
+├─ Margen: Bajó 2% pero volumen compensa (+8% neto)
+├─ Velocidad de movimiento: +35% vs mes anterior
+└─ Rentabilidad: +S/ 18k/mes
+
+FINANZAS:
+├─ Inversión: S/ 7,500 (consultoría)
+├─ Trade spend: S/ 45,000 (cliente)
+├─ Revenue generado: S/ 180k anualizados
+└─ ROI: 24x (solo por análisis correcto)
+
+LECCIONES APRENDIDAS:
+✓ Data en tiempo real > hunches
+✓ Geografía importa (Lima ≠ Provincias)
+✓ Elasticidad diferente por retailer
+✓ Pequeño cambio de precio = gran impacto en share
+✓ Provincias = oportunidad dormida
+
+CÓMO USARLO EN PITCH:
+"Trabajé con marca similar en jugos. Estaban estancados en 8% share.
+Bajamos precio en provincias (donde estaban S/ 0.80 arriba del óptimo).
+6 meses después: 14% share, +S/ 180k anuales revenue.
+Inversión total: S/ 7,500 en consultoría.
+¿Te interesaría que haga lo mismo con tu marca?"

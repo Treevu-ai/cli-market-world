@@ -20,16 +20,16 @@ from src.intent_detector import PriceIntent, PriceIntentType, intent_detector
 from src.simla_client import SimlaClient
 from src.whatsapp_formatter import whatsapp_formatter
 
-# Ensure logs dir exists before FileHandler
-os.makedirs("logs", exist_ok=True)
+# En Fly.io los logs son efímeros; solo usar FileHandler si se pide explícitamente.
+_log_handlers: list[logging.Handler] = [logging.StreamHandler()]
+if os.getenv("LOG_TO_FILE", "").lower() in ("1", "true", "yes"):
+    os.makedirs("logs", exist_ok=True)
+    _log_handlers.append(logging.FileHandler("logs/simla_integration.log", encoding="utf-8"))
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("logs/simla_integration.log", encoding="utf-8"),
-        logging.StreamHandler(),
-    ],
+    handlers=_log_handlers,
 )
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,238 @@
+═══════════════════════════════════════════════════════════════════════════════════
+TEMPLATES DE VENTA PARA CONSULTORES - CLI MARKET
+═══════════════════════════════════════════════════════════════════════════════════
+
+TEMPLATE 1: EMAIL DE PROSPECCIÓN
+════════════════════════════════════════════════════════════════════════════════════
+
+Asunto: [Su marca] está S/ 0.50 fuera del precio óptimo 📊
+
+Hola [Nombre],
+
+Hace 10 minutos terminé un análisis rápido de [Categoría: ej: bebidas] en Perú.
+
+Hallazgo: Tu marca está repriceada 12% arriba del óptimo en Metro.
+En Wong está bien posicionada, pero estás perdiendo share en Plaza Vea.
+
+Aquí lo interesante: ese gap de S/ 0.50 probablemente te está costando 
+18-22% de share capturado que podría ser tuyo.
+
+He trabajado con [Competidor conocido] hace 6 meses. Bajaron precio 
+en 3 retailers = +16% market share en 60 días. Costo: una sola intervención.
+
+¿Vale la pena que hagamos un pequeño diagnóstico en tu categoría?
+Son 2 semanas de análisis, tienes números blindados al final.
+
+Mando attach un ejemplo del tipo de output que entrego.
+
+¿Viernes para un call de 20 minutos?
+
+[Tu nombre]
+Consultor de Pricing & Growth Strategy
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE 2: PROPUESTA DE SERVICIO
+════════════════════════════════════════════════════════════════════════════════════
+
+PROPUESTA: Pricing Strategy Audit
+CLIENTE: [Nombre empresa]
+CATEGORÍA: [Ej: Bebidas No Alcohólicas]
+DURACIÓN: 3-4 semanas
+
+OBJETIVO:
+Determinar si tu marca está repriceada, identificar gaps en el portafolio,
+y generar roadmap de pricing para los próximos 6-12 meses.
+
+METODOLOGÍA:
+1. Análisis de datos en vivo de 37 retailers peruanos
+2. Comparativa vs 3-5 competidores principales
+3. Estimación de elasticidad precio-volumen
+4. Simulación de escenarios (What-if analysis)
+5. Recomendaciones priorizadas por retailer
+
+ENTREGABLES:
+├─ Reporte completo (20 páginas) con hallazgos
+├─ Dashboard interactivo en vivo
+├─ Presentación ejecutiva (1-pager para junta)
+├─ Roadmap de implementación 6-12 meses
+└─ 3 meses de monitoreo automatizado
+
+INVERSIÓN: S/ 8,500 (única pago)
+TIMELINE: Resultado final en semana 4
+
+EXPECTATIVAS DE ROI:
+├─ Escenario conservador: +8% market share (12 meses)
+├─ Escenario realista: +15% market share (6 meses)
+└─ Escenario agresivo: +22% market share (3 meses, si ejecutas rápido)
+
+Traducción: +15% share en categoría de S/ 100M = +S/ 15M adicionales anuales
+
+─────────────────────────────────────────────────────────────────────────────════
+
+TEMPLATE 3: PITCH EN REUNIÓN (5 MINUTOS)
+════════════════════════════════════════════════════════════════════════════════════
+
+[SLIDE 1 - GANCHO]
+"Trabaja con [Brand conocida] en bebidas. Tenían un problema: 
+estaban 'dejando dinero sobre la mesa' en pricing. 
+Hicimos un análisis pequeño, bajamos precio en Metro, 
+y ganaron 18% de market share en 60 días."
+
+[SLIDE 2 - PROBLEMA]
+"La mayoría de decisiones de pricing se basan en hunches o 
+benchmarking de hace 2 meses. Mientras tanto, competencia 
+cambió de estrategia, y tú quedaste atrás."
+
+[SLIDE 3 - SOLUCIÓN]
+"Yo uso data en tiempo real de todos los retailers (37 puntos simultáneos, 
+no muestreo manual). Veo qué está pasando hoy, no hace 2 meses.
+Con eso, corro simulaciones de elasticidad y te digo exactamente 
+dónde repricearte para ganar más."
+
+[SLIDE 4 - NÚMEROS]
+"Inversión: S/ 8,500
+Duración: 4 semanas
+ROI mínimo: +8% share (si no haces nada de mi recomendación)
+ROI probable: +15% share (si ejecutas el 70% de sugerencias)"
+
+[SLIDE 5 - CIERRE]
+"¿Vamos a hacer un quick analysis en una categoría para validar 
+que esto funciona en tu caso?"
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE 4: CASE STUDY PARA PORTFOLIO
+════════════════════════════════════════════════════════════════════════════════════
+
+CASO: [EMPRESA FICTICIA PARA EJEMPLO]
+INDUSTRIA: Bebidas No Alcohólicas (Jugos)
+DESAFÍO: Pérdida de market share vs competidor más agresivo
+
+SITUACIÓN INICIAL:
+├─ Market share: 12% (posición #2)
+├─ Precio promedio: S/ 3.50 (5% arriba de promedio)
+├─ Distribución: 28 de 37 retailers
+└─ Trend: Bajando 2% mes a mes
+
+INTERVENCIÓN:
+Semana 1-2: Análisis profundo
+├─ Descubrimiento clave: En Wong estaban S/ 0.80 arriba del óptimo
+├─ En Plaza Vea, competidor hacía 20% de descuento cada 2 semanas
+└─ En Metro, no había presencia (oportunidad)
+
+Semana 3-4: Recomendaciones
+├─ Bajar precio en Wong (S/ 3.50 → S/ 3.00)
+├─ Activar presencia en Metro con promoción
+└─ Copiar descuento calendar de competidor (pero más eficiente)
+
+Semana 5-8: EJECUCIÓN
+├─ Trade spend: S/ 50,000
+├─ Coordinación con retail
+└─ Monitoreo semanal
+
+RESULTADOS (90 DÍAS):
+├─ Market share: 12% → 18% (+50% relativo)
+├─ Precio promedio: Bajó S/ 0.40 (pero con mejor mix)
+├─ Distribución: 28 → 35 retailers (+25%)
+└─ ROI: S/ 500k adicionales en revenue anualizados
+
+LECCIONES:
+✓ Data en tiempo real > hunches
+✓ Precio no es todo (distribución también cuenta)
+✓ Competidor copying + optimización = ganar
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE 5: PROPUESTA RECURRENTE (SUSCRIPCIÓN)
+════════════════════════════════════════════════════════════════════════════════════
+
+SERVICIO: Competitive Intelligence Monthly Subscription
+TARJETA: S/ 3,500/mes (o S/ 36,000/año, ahorras S/ 6,000)
+
+INCLUYE:
+├─ Acceso 24/7 al Dashboard en vivo
+├─ Monitoreo automático de competencia
+├─ Alertas en Whatsapp cuando hay movimientos clave
+├─ Reporte ejecutivo cada 15 días
+├─ 1 reunión estratégica al mes (1 hora)
+├─ Análisis What-if personalizados
+└─ Acceso a archive de 90 días de precios
+
+PARA QUIEN:
+├─ Brand Managers que necesitan tomar decisiones rápido
+├─ Trade Marketing que quieren "early warning" de cambios
+├─ CFOs que validan ROI de inversiones en trade
+└─ Emprendedores que no pueden darse el lujo de perder
+
+COMPROMISO MÍNIMO: 6 meses
+CANCELACIÓN: 30 días de aviso
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE 6: SCRIPT DE CIERRE EN LLAMADA
+════════════════════════════════════════════════════════════════════════════════════
+
+ESCENARIO: Cliente está interesado pero indeciso
+
+TÚ: "Entiendo la indecisión. Mucha gente piensa 'bueno, haré el análisis 
+internamente'. Tres cosas que escucho siempre:
+
+1) No tienen quien haga el análisis (o quien lo hace toma 2 meses)
+2) Su data es de hace 6 meses (el retail cambió)
+3) Deciden no hacerlo... y después comparan con competidor que SÍ lo hizo"
+
+[Pausa]
+
+"¿Qué tal esto? Te propongo que arranquemos con el análisis en UN retailer 
+importante para ti. Vemos números concretos, validamos si la metodología 
+funciona. Si no te convence, no hay compromiso. ¿Wong o Metro?"
+
+[Esto reduce friction del "commitment" inicial]
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEMPLATE 7: OBJECTIONS & REBUTTALS
+════════════════════════════════════════════════════════════════════════════════════
+
+OBJECIÓN 1: "Es muy caro, S/ 8,500 es mucho"
+
+REBUTTAL: "Entiendo. Pero míralo así: si ganamos 10% market share 
+en una categoría de S/ 50M, son S/ 5M adicionales. Incluso si la 
+probabilidad es 30%, el valor esperado es S/ 1.5M. 
+
+Pagarías S/ 8,500 para tener opción de S/ 1.5M? eso es 180x ROI.
+
+Además, si sientes que no fue útil en las primeras 2 semanas, 
+te devuelvo el 50% del dinero. Sin preguntas."
+
+─────────────────────────────────────────────────────────────────────────────────
+
+OBJECIÓN 2: "Nosotros ya tenemos datos de nuestra categoría"
+
+REBUTTAL: "Seguro, y son valiosos. Pero aquí la diferencia: 
+yo tengo datos de TODOS los competidores EN VIVO (no encuesta, 
+no vieja). Eso es lo que falta. 
+
+Tu data interna te dice qué hiciste. Mi análisis te dice qué 
+debería hacer. Son complementarios, no sustitutos.
+
+¿Querés que hagamos un mini-análisis comparativo de 1 SKU?
+20 minutos y ves la diferencia."
+
+─────────────────────────────────────────────────────────────────────────────────
+
+OBJECIÓN 3: "Nuestro mercado es muy diferente, no creo que funcione"
+
+REBUTTAL: "Interesante. Eso es lo que dicen todos. Aquí el truth: 
+la metodología (elasticidad, market share, retailer benchmarking) 
+funciona en cualquier categoría.
+
+¿Jugos? Funciona. ¿Lácteos? Funciona. ¿Congelados? Funciona.
+
+La pregunta no es '¿funcionará?' sino '¿cuánto voy a ganar?'
+
+Hagamos el análisis y vemos. Si al final dices 'esto no aplica 
+a mi negocio', bien, no hay más."
+
+═══════════════════════════════════════════════════════════════════════════════════

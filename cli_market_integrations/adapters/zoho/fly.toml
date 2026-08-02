@@ -1,0 +1,27 @@
+app = "cli-market-zoho"
+primary_region = "mia"
+
+[build]
+
+[env]
+  SERVER_PORT = "8080"
+  LOG_LEVEL = "INFO"
+  CLI_MARKET_API_URL = "https://cli-market-api.fly.dev"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

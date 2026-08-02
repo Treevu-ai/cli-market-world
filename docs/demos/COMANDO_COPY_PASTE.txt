@@ -1,0 +1,136 @@
+════════════════════════════════════════════════════════════════════════════════
+  COMANDO COMPLETO - COPY & PASTE EN TERMINAL
+  (Solución CLI Market lista para producción)
+════════════════════════════════════════════════════════════════════════════════
+
+OPCIÓN 1: SETUP COMPLETO (RECOMENDADO - 1 comando)
+════════════════════════════════════════════════════════════════════════════════
+
+cd C:\Users\acuba\cli-market-world && \
+export MARKET_API_TOKEN=[EXAMPLE-TOKEN-ALREADY-INVALID] && \
+export MARKET_COUNTRY=PE && \
+export MARKET_API_URL=https://cli-market-api.fly.dev && \
+docker-compose -f docker-compose.complete.yml up -d && \
+echo "⏳ Esperando 5 segundos para inicializar..." && \
+sleep 5 && \
+docker exec market-cli market doctor && \
+echo "" && \
+echo "✅ SISTEMA OPERATIVO - Todos los servicios activos:" && \
+docker-compose -f docker-compose.complete.yml ps
+
+
+════════════════════════════════════════════════════════════════════════════════
+OPCIÓN 2: SOLO CLI + SCHEDULER (Minimal - si no necesitas DB/Redis)
+════════════════════════════════════════════════════════════════════════════════
+
+cd C:\Users\acuba\cli-market-world && \
+export MARKET_API_TOKEN=[EXAMPLE-TOKEN-ALREADY-INVALID] && \
+export MARKET_COUNTRY=PE && \
+docker-compose -f docker-compose.hotel.yml up -d && \
+sleep 5 && \
+docker exec hotel-basket-70pax market doctor
+
+
+════════════════════════════════════════════════════════════════════════════════
+OPCIÓN 3: BÚSQUEDA RÁPIDA (sin Docker Compose, búsqueda única)
+════════════════════════════════════════════════════════════════════════════════
+
+docker run --rm -v market-creds:/root/.market \
+  -e MARKET_API_TOKEN=[EXAMPLE-TOKEN-ALREADY-INVALID] \
+  cli-market:latest \
+  market search "arroz extra" --country PE --limit 5
+
+
+════════════════════════════════════════════════════════════════════════════════
+OPCIÓN 4: EJECUTAR SCHEDULER MANUAL AHORA
+════════════════════════════════════════════════════════════════════════════════
+
+cd C:\Users\acuba\cli-market-world && \
+export MARKET_API_TOKEN=[EXAMPLE-TOKEN-ALREADY-INVALID] && \
+export MARKET_COUNTRY=PE && \
+export OUTPUT_DIR=./market-reports && \
+chmod +x ./market-scheduler.sh && \
+./market-scheduler.sh
+
+
+════════════════════════════════════════════════════════════════════════════════
+OPCIÓN 5: GENERAR REPORTE PYTHON AHORA
+════════════════════════════════════════════════════════════════════════════════
+
+cd C:\Users\acuba\cli-market-world && \
+export MARKET_API_TOKEN=[EXAMPLE-TOKEN-ALREADY-INVALID] && \
+python3 market-monitor.py report
+
+
+════════════════════════════════════════════════════════════════════════════════
+OPCIÓN 6: COMANDOS ÚTILES POST-INSTALACIÓN
+════════════════════════════════════════════════════════════════════════════════
+
+# Ver estado de todos los servicios
+docker-compose -f docker-compose.complete.yml ps
+
+# Ver logs en vivo
+docker-compose -f docker-compose.complete.yml logs -f market-cli
+
+# Ejecutar búsqueda desde CLI ejecutable
+docker exec market-cli market search "huevos" --country PE --limit 10
+
+# Ver reportes generados
+ls -lah market-reports/daily/
+
+# Acceder a base de datos PostgreSQL
+docker exec -it market-db psql -U market -d market_prices
+
+# Ver caché Redis
+docker exec -it market-redis redis-cli KEYS "*"
+
+# Parar todo sin borrar datos
+docker-compose -f docker-compose.complete.yml stop
+
+# Reiniciar todo
+docker-compose -f docker-compose.complete.yml restart
+
+# Limpiar completamente (⚠️ borra todo)
+docker-compose -f docker-compose.complete.yml down -v
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 RECOMENDACIÓN: USA OPCIÓN 1 (SETUP COMPLETO)
+════════════════════════════════════════════════════════════════════════════════
+
+Te da:
+✓ CLI Market funcionando
+✓ Scheduler automático cada 6 horas
+✓ Monitor en tiempo real
+✓ Base de datos PostgreSQL (histórico 30 días)
+✓ Redis cacheo
+✓ MCP server para Claude/Cursor
+
+TODO CON UN COMANDO.
+
+════════════════════════════════════════════════════════════════════════════════
+DESPUÉS DE EJECUTAR (próximos 30 segundos):
+════════════════════════════════════════════════════════════════════════════════
+
+1. Verás "✅ SISTEMA OPERATIVO" con status de servicios
+2. Los 6 contenedores inician
+3. Base de datos se inicializa
+4. Scheduler comienza a ejecutar automáticamente
+5. Listo para usar
+
+Luego puedes:
+✓ docker exec market-cli market search "arroz" --country PE
+✓ python3 market-monitor.py report
+✓ Ver market-reports/daily/ para reportes
+
+════════════════════════════════════════════════════════════════════════════════
+TOKEN DE API (ya incluido):
+════════════════════════════════════════════════════════════════════════════════
+
+[EXAMPLE-TOKEN-ALREADY-INVALID]
+
+(Válido para: user-28b62d609e6a | Enterprise tier | 37 retailers | 11 países)
+
+════════════════════════════════════════════════════════════════════════════════
+
+¿Listo? Copia OPCIÓN 1 y pégalo en terminal. ¡Automático! 🚀

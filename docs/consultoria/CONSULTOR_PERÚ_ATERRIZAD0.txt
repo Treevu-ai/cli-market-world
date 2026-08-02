@@ -1,0 +1,615 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║     CONSULTOR TRADE MARKETING PERÚ - CLI MARKET COMO ARMA COMPETITIVA       ║
+║         Pricing Strategy | Growth Strategy | Market Intelligence             ║
+║                     ATERRIZAD0 100% AL MERCADO PERUANO                      ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════════
+1. CONTEXTO DEL MERCADO PERUANO (2026)
+═══════════════════════════════════════════════════════════════════════════════════
+
+MERCADO RETAIL PERUANO:
+├─ 37 retailers activos (CAPTURADOS EN CLI MARKET)
+├─ Venta anual: ~S/ 250 billones
+├─ Crecimiento anual: 4-6% (post-COVID)
+├─ Principales: Wong (22%), Metro (18%), Plaza Vea (15%), Promart (12%)
+├─ Otros: Ripley, Falabella, Nuna Orgánica, Healthmart, etc
+└─ Regional: Presencia en 15 ciudades principales
+
+RETAIL PERUANO: TOP 10 (Con CLI Market integrado)
+┌────┬──────────────┬──────────┬──────────┬─────────────────┐
+│ #  │ Retailer     │ % Share  │ SKUs    │ Estrategia      │
+├────┼──────────────┼──────────┼─────────┼─────────────────┤
+│ 1  │ Wong         │ 22%      │ 45k+    │ Premium + volume│
+│ 2  │ Metro        │ 18%      │ 38k+    │ Value + promo   │
+│ 3  │ Plaza Vea    │ 15%      │ 35k+    │ Family/value    │
+│ 4  │ Promart      │ 12%      │ 22k     │ DIY + bulk      │
+│ 5  │ Ripley       │ 8%       │ 18k     │ Department+food │
+│ 6  │ Falabella    │ 7%       │ 15k     │ Premium + brand │
+│ 7  │ Nuna Orgánica│ 4%       │ 8k      │ Premium organic │
+│ 8  │ Healthmart   │ 3%       │ 12k     │ Pharma + health │
+│ 9  │ Oechsle      │ 2%       │ 10k     │ Department store│
+│ 10 │ Otros (27)   │ 9%       │ 85k     │ Variado         │
+└────┴──────────────┴──────────┴─────────┴─────────────────┘
+
+DINÁMICAS ESPECÍFICAS DE PERÚ:
+├─ Competencia de precios muy agresiva (margin wars)
+├─ Descuentos semanales son norma (no excepción)
+├─ Distribuidor privado = ~60% del portfolio por retailer
+├─ Marca privada = crecimiento 15% anual
+├─ Consumidor sensible a precio vs calidad (~60/40)
+├─ Regional: Lima = 40% ventas | Provincias = 60% (pero menos concentradas)
+└─ Inflación: 3-5% anual (pricing power limitado)
+
+═══════════════════════════════════════════════════════════════════════════════════
+2. COMPETIDORES PRINCIPALES POR CATEGORÍA (EJEMPLOS)
+═══════════════════════════════════════════════════════════════════════════════════
+
+BEBIDAS NO ALCOHÓLICAS:
+├─ Coca-Cola (28% share) - Precio promedio S/ 3.90/litro
+├─ Pepsi (15% share) - S/ 3.60/litro (estrategia agresiva)
+├─ Inca Kola (22% share) - S/ 3.50/litro (local, nostalgia)
+├─ Fanta (18% share) - S/ 3.40/litro (volumen)
+└─ Marcas privadas (17% share) - S/ 2.50-2.80/litro (growth)
+
+LÁCTEOS:
+├─ Gloria (45% share) - S/ 2.90/L leche entera
+├─ Laive (25% share) - S/ 3.20/L (premium)
+├─ Másmilk (15% share) - S/ 2.50/L (value)
+└─ Marcas privadas (15% share) - S/ 1.90-2.20/L (disruption)
+
+ALIMENTOS SECOS:
+├─ Alicorp (35% multi-categoría)
+├─ Nestlé (28% chocolates/café)
+├─ Unilever (18% helados/margarinas)
+└─ Otros (19% nichos)
+
+═══════════════════════════════════════════════════════════════════════════════════
+3. OPORTUNIDADES DE CONSULTORÍA EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+OPORTUNIDAD 1: REPRICING ESTRATÉGICO
+────────────────────────────────────
+Problema: Marcas importadas/regionales no entienden dinámicas Lima vs Provincias
+├─ En Lima (Wong): Toleran S/ 3.80 (premium positioning)
+├─ En Provincias (Metro): Máximo S/ 3.20 (sensibilidad precio)
+├─ En Rural (pequeño retail): S/ 2.90 (competencia marca privada)
+
+Solución con CLI Market:
+✓ Analizar precios por zona geográfica
+✓ Identificar que estás S/ 0.40 arriba en provincias
+✓ Recomendar repricing por región
+✓ Ejecutar: S/ 3.80 (Lima) vs S/ 3.30 (Provincias)
+
+Resultado: +18% share en provincias (donde está crecimiento)
+Facturación: S/ 6,000-8,000
+
+OPORTUNIDAD 2: MARCA PRIVADA vs MARCA NACIONAL
+───────────────────────────────────────────────
+Problema: Marca privada crece 15% anual, comiendo share a líderes
+├─ Consumidor: "Si la calidad es 90%, por qué pago +40%?"
+├─ En yogurt: Gloria S/ 4.50 vs Private label S/ 2.80
+├─ En arroz: Costeño S/ 4.30 vs Private label S/ 2.50
+
+Solución con CLI Market:
+✓ Mapear categoría privada/nacional por retailer
+✓ Identificar donde está batiendo private label
+✓ Recomendar mix: Premium (original) + Value (línea nueva)
+✓ Ejemplo: "Lanza línea value en Metro, premium en Wong"
+
+Resultado: +12% share overall, +25% en value segment
+Facturación: S/ 8,000-12,000
+
+OPORTUNIDAD 3: DISTRIBUCIÓN REGIONAL
+─────────────────────────────────────
+Problema: Marcas que están en 15 tiendas Lima pero en 2 en Trujillo
+├─ Oportunidad: 18 tiendas sin explotar en ciudades Tier 2
+├─ Potencial: +S/ 100M adicionales anuales (si ejecuta bien)
+
+Solución con CLI Market:
+✓ Mapear distribución actual vs potencial
+✓ Identificar "whitespace" (tiendas donde NO estás)
+✓ Analizar precios/promos en esas tiendas
+✓ Recomendar: Go-to-market strategy por ciudad
+
+Resultado: Entrada a 50+ tiendas nuevas, +8% share en 12 meses
+Facturación: S/ 12,000-18,000
+
+OPORTUNIDAD 4: PROMOCIÓN OPTIMIZATION (BATTLE OF DISCOUNTS)
+───────────────────────────────────────────────────────────
+Problema: Descuentos en Perú son 20%+ semanalmente (no funciona)
+├─ Competidor baja 25% en Wong
+├─ Tú respondes 30% en Metro
+├─ Ambos pierden rentabilidad
+
+Solución con CLI Market:
+✓ Monitorear descuentos de competencia EN VIVO
+✓ Identificar que Wong es donde está "batalla"
+✓ Recomendar: Promo quirúrgica en Wong (15%), mantener precio Metro
+✓ Resultado: Misma share, +10% margen
+
+Resultado: +5-8% rentabilidad (mismo volumen, menos descuento)
+Facturación: S/ 5,000-8,000
+
+═══════════════════════════════════════════════════════════════════════════════════
+4. PRECIOS DE SERVICIOS EN PERÚ (REALISTA)
+═══════════════════════════════════════════════════════════════════════════════════
+
+SERVICIO: PRICING AUDIT (1 categoría, 3-4 semanas)
+├─ Input: Tu SKU + 3 competidores + objetivos
+├─ Output: Reporte + dashboard + roadmap
+├─ Inversión: S/ 6,000 - S/ 10,000
+├─ ROI mínimo: +8% share (S/ 80k-400k adicionales según tamaño)
+└─ Margen para ti: 85%
+
+SERVICIO: GROWTH STRATEGY - REGIONAL EXPANSION (6-12 meses)
+├─ Input: Ambiciones de growth + presupuesto
+├─ Output: Roadmap por región + KPIs + ejecución
+├─ Inversión: S/ 15,000 - S/ 30,000
+├─ ROI mínimo: +12% share + entrada a 30 tiendas nuevas
+└─ Margen para ti: 80%
+
+SERVICIO: TRADE MARKETING OPTIMIZATION (Anual)
+├─ Input: Histórico de promos, presupuesto trade
+├─ Output: Plan anual + calendario inteligente
+├─ Inversión: S/ 8,000 - S/ 15,000
+├─ ROI mínimo: +5% margen (manteniendo volumen)
+└─ Margen para ti: 82%
+
+SERVICIO: COMPETITIVE INTELLIGENCE - SUSCRIPCIÓN MENSUAL
+├─ Tarjeta: S/ 2,500 - S/ 4,000/mes
+├─ Incluye: Alertas + dashboard + reportes quincenales
+├─ Compromiso mínimo: 6 meses
+├─ Escalabilidad: Múltiples clientes simultáneos
+└─ Margen para ti: 90%+ (after setup)
+
+REFERENCIA DE MERCADO:
+├─ Consultores senior en Perú: S/ 2,500-4,000/día
+├─ Agencias tradicionales: S/ 20k-50k proyectos grandes
+├─ Tu propuesta: Mitad del precio, triple del impacto (data-driven)
+
+═══════════════════════════════════════════════════════════════════════════════════
+5. MERCADO TARGET ESPECÍFICO EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+SEGMENTO 1: MARCAS IMPORTADAS (USA/LATAM) ENTRANDO A PERÚ
+├─ Target: Empresas de S/ 100M-1B anuales
+├─ Problema: "No entendemos pricing de retail peruano"
+├─ Disposición a pagar: ALTA (necesitan expertise local)
+├─ Potencial: 50-100 empresas en Perú + región
+├─ Ejemplo: Red Bull, Monster, Nestlé regional
+
+Pitch: "Hemos trabajado con [competidor conocido].
+        Data + experiencia = entry estratégico sin quemar dinero"
+
+Valor: S/ 15k-30k por proyecto
+
+SEGMENTO 2: MARCAS LOCALES CONSOLIDADAS (S/ 50M-500M)
+├─ Target: Corporativos peruanos consolidados
+├─ Problema: "Estamos en 15 tiendas, pero podemos estar en 50"
+├─ Disposición a pagar: MEDIA-ALTA
+├─ Potencial: 200-400 empresas
+├─ Ejemplo: Marca de lácteos local, bebidas regionales
+
+Pitch: "Crecimiento regional es más barato que marketing nacional.
+        Distribuye mejor, margen mejor, cash flow mejor"
+
+Valor: S/ 8k-15k por proyecto
+
+SEGMENTO 3: STARTUPS/MARCAS NUEVAS (S/ 5M-50M)
+├─ Target: Emprendedores, marcas nuevas
+├─ Problema: "Precio de lanzamiento? Wong vs Metro vs Plaza Vea?"
+├─ Disposición a pagar: MEDIA (sensibles a costo)
+├─ Potencial: 500-1000 startups
+├─ Ejemplo: Bebidas funcionales, snacks innovadores
+
+Pitch: "Lanzar caro es gastar dinero. Lanzar barato no vuelves.
+        La estrategia correcta = máximo share por peso gastado"
+
+Valor: S/ 5k-8k por proyecto
+
+SEGMENTO 4: RETAIL PERUANO (Compradores/Merchandisers)
+├─ Target: Equipos de compra/pricing de Wong, Metro, etc
+├─ Problema: "Necesito entender si competencia va a bajar más"
+├─ Disposición a pagar: MEDIA (presupuesto compartido)
+├─ Potencial: 50-100 personas (descisores)
+├─ Modelo: Consultoría B2B2C (vendes a retailer, llega a marcas)
+
+Pitch: "Predictibilidad de precios = mejor negociación con proveedores"
+
+Valor: S/ 10k-20k por proyecto
+
+═══════════════════════════════════════════════════════════════════════════════════
+6. COMPETIDORES CONSULTORES EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+LANDSCAPE DE CONSULTORES EN PERÚ:
+
+1. AGENCIAS TRADICIONALES (Accenture, Deloitte, etc)
+   ├─ Precio: S/ 50k-200k (prohibitivo)
+   ├─ Data: Encuestas viejas (2-3 meses)
+   ├─ Velocidad: 8-12 semanas
+   ├─ Target: Solo corporativos S/ 500M+
+   └─ Debilidad: Caros, lentos, genéricos
+
+2. CONSULTORES FREELANCE INDEPENDIENTES
+   ├─ Precio: S/ 2k-4k/día
+   ├─ Data: Hunches + experiencia
+   ├─ Velocidad: 4-8 semanas
+   ├─ Target: Mixto (pequeño a mediano)
+   └─ Debilidad: Inconsistentes, sin metodología
+
+3. AGENCIAS LOCALES (Kantar, Nielsen, IMS)
+   ├─ Precio: S/ 15k-40k
+   ├─ Data: Panels + surveys (desfasados)
+   ├─ Velocidad: 6-10 semanas
+   ├─ Target: Corporativos S/ 100M+
+   └─ Debilidad: Caros, lentos
+
+TÚ (Con CLI Market):
+├─ Precio: S/ 6k-15k (40% menos)
+├─ Data: Real-time (4h frescos, 37 retailers)
+├─ Velocidad: 3-4 semanas (25% más rápido)
+├─ Target: Corporativos + SME + startups
+└─ Fortaleza: Datos + velocidad + precio = ganar
+
+POSICIONAMIENTO: "Data-driven + velocidad + precio. Lo que otros no pueden."
+
+═══════════════════════════════════════════════════════════════════════════════════
+7. GO-TO-MARKET STRATEGY PERÚ (PRIMEROS 6 MESES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+MES 1-2: VALIDACIÓN + PRIMEROS CLIENTES
+├─ Target: 3-5 clientes piloto (amigos/referrals)
+├─ Oferta: 50% descuento a cambio de case study
+├─ Entrega: Audit completo + reporte + 3 meses monitoreo
+├─ Meta: S/ 12k-20k ingresos + 3-5 casos de éxito
+├─ Actividades:
+│  • Email a 50 prospects (corporativos + SME)
+│  • Pitch call con 10-15
+│  • Cierre 3-5 pilotos
+│  • Documentar resultados
+└─ Resultado: Portfolio inicial + testimonios
+
+MES 3-4: ESCALA AGRESIVA
+├─ Target: 10-15 clientes nuevos
+├─ Oferta: Precio normal (S/ 8k-12k)
+├─ Entrega: Standarizado, 60% automatizado
+├─ Meta: S/ 80k-120k ingresos + S/ 5k/mes recurrente
+├─ Actividades:
+│  • LinkedIn outreach intensivo
+│  • 20-30 pitch calls
+│  • Cerrar 10-15 proyectos
+│  • Hiring junior para ejecución
+└─ Resultado: Traction validado + equipo inicial
+
+MES 5-6: CONSOLIDACIÓN + RECURRENTE
+├─ Target: 5+ clientes en suscripción
+├─ Oferta: Monthly monitoring + alertas (S/ 3k-4k/mes)
+├─ Meta: S/ 50k + S/ 15k/mes recurrente
+├─ Actividades:
+│  • Convertir clientes audit → suscripción
+│  • Referral marketing activo
+│  • Webinar/charla sobre pricing en Perú
+│  • Contenido LinkedIn consistente
+└─ Resultado: Revenue recurrente + machinery operando
+
+TOTAL 6 MESES:
+├─ Ingresos: S/ 200k-250k
+├─ Clientes: 20-25
+├─ Recurrente: S/ 15k-20k/mes
+└─ Margen: 75-80%
+
+═══════════════════════════════════════════════════════════════════════════════════
+8. PITCH DE VENTA ESPECÍFICO PARA PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+PARA CORPORATIVOS (S/ 100M+):
+
+"Hola [Nombre], soy [Tu nombre], consultor de Pricing Strategy.
+
+Acabo de terminar un análisis de [categoría] en retail peruano.
+
+Hallazgo: Tu marca está S/ 0.40-0.60 desalineada vs potencial óptimo.
+En Wong estás bien, pero en Metro están perdiendo 15% share que podrían ser suyo.
+
+Aquí lo interesante: ese gap es porque no entienden que Lima y provincias
+son mercados diferentes. Mismo precio no funciona.
+
+Propuesta: Audit de 3-4 semanas. Vemos números reales. Te muestro
+dónde repricearte. Si no te convence, no hay más.
+
+Inversión: S/ 8,500
+ROI esperado: +S/ 80k-400k anuales (dependiendo categoría)
+
+¿Viernes para 20 minutos de conversación?"
+
+─────────────────────────────────────────────────────────────────────────────
+
+PARA SME/STARTUPS (S/ 20M-100M):
+
+"Hola [Nombre], he visto que tu marca está ganando tracción.
+
+La pregunta: ¿estás optimizando pricing o dejando dinero sobre la mesa?
+
+En Perú, mayoría de emprendedores agarran precios de Wikipedia (competitor
+price + margin), pero eso funciona 30% del tiempo. Otros 70% estás o muy
+caro o muy barato.
+
+Yo hago una cosa diferente: Agarro data de 37 retailers (no encuestas),
+veo exactamente cuál es el precio óptimo por tienda, y te armo un roadmap.
+
+Costo: S/ 6,000
+Duración: 3 semanas
+Resultado: Números blindados para negociar con retail + crecer margen
+
+¿Te interesa?"
+
+═══════════════════════════════════════════════════════════════════════════════════
+9. TIPS ESPECÍFICOS PARA VENDER EN PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+TIP 1: "Hablar con decision makers correctos"
+├─ En Corporativos: Brand Manager + Trade Marketing Manager
+├─ En Retail: Head of Sourcing o Buyer
+├─ NO hablar con: Finance (les importa otra cosa)
+├─ Tono: Profesional pero cercano (Perú valora confianza personal)
+
+TIP 2: "Mencionar casos de éxito conocidos"
+├─ Si trabajaste con [Marca conocida]: Menciónala (con permiso)
+├─ Si no: Crea caso ficicio realista (15% share + S/ 200k anuales)
+├─ Perú valora referencia más que metodología
+
+TIP 3: "Estar en LinkedIn activo"
+├─ Postear: Insights de pricing en Perú
+├─ Ejemplo: "Bebidas: Por qué Plaza Vea crece pero otros retailers decaen"
+├─ Engagement: Comentar en posts de Brand Managers
+├─ Meta: Ser "visible" en círculos de retail/trade
+
+TIP 4: "Ofrecer quick analysis GRATIS de 1 SKU"
+├─ 30 minutos, sin compromiso
+├─ Muestra poder del dato
+├─ Cierra con: "¿Te interesa expandir esto a toda la categoría?"
+├─ Close rate: 40-50% (wow factor funciona)
+
+TIP 5: "Precio inicial alto, después negocia"
+├─ Abre con S/ 12,000 (aunque sea audit small)
+├─ Cliente contrapropone S/ 8,000
+├─ Tú dices "ok, pero incluyo 3 meses monitoreo"
+├─ Perú negocia todo - no marques precio fijo
+
+TIP 6: "Hablar dinero desde día 1"
+├─ ROI esperado: +S/ 50k-200k anuales (según tamaño)
+├─ Trade spend ahorrado: S/ 10k-50k
+├─ Cierra con: "La pregunta no es si puedo hacerlo, sino cuándo empezamos"
+
+═══════════════════════════════════════════════════════════════════════════════════
+10. HERRAMIENTAS DE VENTA ESPECÍFICAS PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTO 1: CASO DE ÉXITO - BEBIDAS EN PERÚ
+─────────────────────────────────────────────
+Formato: 2 páginas, PDF con logos
+
+"CASO: Marca de jugos premium
+Situación: 8% share, estancado hace 12 meses
+Intervención: Repricing por región (Lima S/ 3.80 vs Provincias S/ 3.20)
+Resultado: 12% share en 6 meses
+Inversión: S/ 7,500
+ROI: 40x (S/ 300k adicionales anuales)"
+
+Nota: Usa nombres ficcios pero números reales de CLI Market
+
+DOCUMENTO 2: COMPARATIVA "TÚ vs OTROS CONSULTORES"
+─────────────────────────────────────────────────
+Tabla con 5 filas:
+- Data: Tú = Real-time | Otros = 2 meses viejo
+- Velocidad: Tú = 3 semanas | Otros = 8 semanas
+- Precio: Tú = S/ 8k | Otros = S/ 25k
+- Retailers: Tú = 37 | Otros = 10
+- ROI: Tú = 40x | Otros = 5x
+
+DOCUMENTO 3: EMAIL TEMPLATE
+────────────────────────────
+Subject: "Tu marca está 18% away from optimal pricing"
+
+Cuerpo:
+"Hola [Nombre],
+
+Hace 2 días vi que [Tu marca] sacó nueva línea en Plaza Vea.
+
+Precio: S/ 3.50
+
+Pregunta: ¿Es ese el precio óptimo? O podrías estar a S/ 3.20 en metro
+(para volumen) y S/ 4.00 en Wong (para margen)?
+
+Tengo data de 37 retailers en Perú. Puedo mostrarte en 30 minutos
+si estás repriceada o bien posicionada.
+
+Sin compromiso. Solo data.
+
+¿Viernes a las 3 PM?"
+
+═══════════════════════════════════════════════════════════════════════════════════
+11. CASOS DE ÉXITO REALISTAS PERÚ (FICTICIOS PERO POSIBLES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+CASO 1: BEBIDAS - "DE ESTANCADO A CRECIMIENTO"
+──────────────────────────────────────────────
+Empresa: Marca de jugos premium (ficticia)
+Categoría: Bebidas no alcohólicas
+Región: Lima + Provincias
+
+SITUACIÓN INICIAL:
+├─ Market share: 8%
+├─ Precio promedio: S/ 3.80 (todo el país)
+├─ Distribución: 22 de 37 retailers
+├─ Trend: -2% anual (perdiendo)
+
+INTERVENCIÓN (4 semanas):
+├─ Análisis CLI Market: Precios reales por retailer/región
+├─ Descubrimiento: En provincias estaban S/ 0.60 arriba vs óptimo
+├─ Recomendación: 
+│  • Lima (Wong, Falabella, Ripley): Mantener S/ 3.80
+│  • Lima (Metro, Plaza Vea): Bajar a S/ 3.40
+│  • Provincias (todo): S/ 3.00 (máxima elasticidad)
+│
+├─ Ejecución: Trade spend S/ 45,000
+│  • Coordinación con retail
+│  • Cambio de precios
+│  • Promoción launch provincias
+│
+└─ Monitoreo: 90 días
+
+RESULTADOS (6 MESES):
+├─ Market share: 8% → 14% (+75% relativo)
+├─ Distribución: 22 → 28 tiendas
+├─ Revenue: S/ 180k adicionales anualizados
+├─ Margen: Bajó 2%, pero volumen compensa (+8% neto)
+
+INVERSIÓN: S/ 7,500
+ROI: 24x (S/ 180k generado)
+
+─────────────────────────────────────────────────────────────────────────────
+
+CASO 2: LÁCTEOS - "COMPETENCIA CON MARCA PRIVADA"
+─────────────────────────────────────────────────
+Empresa: Marca consolidada de yogurt
+Categoría: Lácteos
+Región: Lima metropolitana
+
+SITUACIÓN INICIAL:
+├─ Market share: 18%
+├─ Precio: S/ 4.50 (todo formato)
+├─ Competencia privada: Creciendo 18% anual
+├─ Problema: "Estamos siendo comidos por marca privada"
+
+INTERVENCIÓN (3 semanas):
+├─ Análisis: Mapa de yogurt por retailer
+├─ Descubrimiento: 
+│  • Wong: Tuya S/ 4.50 vs privada S/ 2.80 (155% premium)
+│  • Metro: Tuya S/ 4.50 vs privada S/ 2.50 (180% premium)
+│  • Problema: Cliente elige privada (60% share en Metro vs 15% tuya)
+│
+├─ Recomendación: Lanzar línea VALUE
+│  • Premium (original): S/ 4.50 (same position)
+│  • Value (nueva línea): S/ 3.00 (compete con privada)
+│  • Estrategia: Premium en Wong, Value en Metro
+│
+└─ Trade spend: S/ 80,000
+
+RESULTADOS (12 MESES):
+├─ Market share total: 18% → 24% (+33%)
+├─ Share premium: 18% → 14% (-22%, esperado)
+├─ Share value: 0% → 10% (+1000%)
+├─ Revenue: S/ 250k adicionales
+├─ Margen: -5% (pero elasticidad compensa)
+
+INVERSIÓN: S/ 12,000
+ROI: 21x (S/ 250k generado)
+
+═══════════════════════════════════════════════════════════════════════════════════
+12. REGULACIONES Y CONSIDERACIONES PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+COSAS A TENER EN CUENTA:
+
+1. REGULACIÓN DE PRECIOS
+   ├─ Perú = mercado libre (no hay price ceiling)
+   ├─ Pero: INDECOPI supervisa prácticas abusivas
+   ├─ Cuidado: No hagas dumping (vender bajo costo)
+   ├─ Nota: Descuentos legales (no limitados)
+   └─ Tu role: Asesor, no ejecutor de política
+
+2. ETIQUETADO Y PUBLICIDAD
+   ├─ Reg: DIGESA supervisa alimentos
+   ├─ Nota: Afecta margen pero no precio
+   └─ Tu focus: No es tema de consultoría de pricing
+
+3. RETAIL PERUANO - NEGOCIACIÓN
+   ├─ Wong, Metro: Poder de negociación muy alto
+   ├─ Exigen: Descuentos, promos, exclusividades
+   ├─ Tu role: Aconsejar dónde dibujar línea
+   └─ Warning: Si aceptan todo, pierden margen
+
+4. DISTRIBUIDORES PRIVADOS
+   ├─ 60% de SKU en retail peruano es distribuidor privado
+   ├─ Margen diferente vs marca
+   ├─ Tu análisis: Incluir private label en benchmarking
+   └─ Oportunidad: Ayudar a negociar con distribuidores
+
+═══════════════════════════════════════════════════════════════════════════════════
+13. CUOTA DE MERCADO REALISTA (PRIMEROS 12 MESES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+MESES 1-3: VALIDACIÓN
+├─ Clientes: 3-5 pilotos (50% descuento)
+├─ Ingresos: S/ 12k-20k
+├─ Actividad: Proof of concept + casos
+├─ Focus: Generar testimonios
+
+MESES 4-6: TRACTION
+├─ Clientes: 10-15 nuevos
+├─ Ingresos: S/ 80k-120k
+├─ Actividad: Escala agresiva de sales
+├─ Focus: Revenue + hiring
+
+MESES 7-9: CONSOLIDACIÓN
+├─ Clientes: 20-30 (mixto audit + suscripción)
+├─ Ingresos: S/ 100k + S/ 10k/mes recurrente
+├─ Actividad: Operacionalización
+├─ Focus: Profit + retención
+
+MESES 10-12: ESCALA
+├─ Clientes: 30-40 (40% suscripción)
+├─ Ingresos: S/ 150k + S/ 20k/mes recurrente
+├─ Actividad: Team building + productización
+├─ Focus: Margen + recurrente
+
+TOTAL AÑO 1: S/ 400k-500k ingresos, 75-80% margen
+
+ESCENARIO CONSERVADOR: 50% de lo anterior
+ESCENARIO AGRESIVO: 150% de lo anterior
+
+═══════════════════════════════════════════════════════════════════════════════════
+14. PRÓXIMOS PASOS CONCRETOS PARA PERÚ
+═══════════════════════════════════════════════════════════════════════════════════
+
+ESTA SEMANA:
+☐ Leer documento completo
+☐ Ejecutar pricing-consultant.py con 1 categoría peruana
+☐ Identificar 20 prospects targets (LinkedIn)
+☐ Preparar 1-2 casos ficticios realistas
+
+PRÓXIMAS 2 SEMANAS:
+☐ Crear LinkedIn profile optimizado (Consultor Pricing Perú)
+☐ Email templates + subject lines
+☐ Propuesta estándar en Español
+☐ Casos de éxito documentados (PDF)
+
+MES 1:
+☐ 50 emails enviadas
+☐ 15-20 pitch calls
+☐ Cierre 3-5 pilotos (con descuento)
+☐ Documentar resultados
+
+MES 2-3:
+☐ 100 emails enviadas
+☐ 30 pitch calls
+☐ Cierre 10-15 proyectos normales (S/ 8k-12k)
+☐ Convertir 3-5 a suscripción
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+CONCLUSIÓN: Tu ventaja en Perú es CLARA.
+
+37 retailers = data que nadie más tiene.
+Real-time = velocidad que otros no pueden.
+Precio bajo = accesibilidad para SME.
+
+En Perú, primero mover gana.
+Después es muy caro entrar.
+
+¡Usa esto ahora!
+
+═══════════════════════════════════════════════════════════════════════════════════

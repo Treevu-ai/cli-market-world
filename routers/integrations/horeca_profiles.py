@@ -9,6 +9,10 @@ from market_core import get_db
 # Configuración HORECA desde variables de entorno
 HORECA_COOLDOWN_HOURS = int(os.getenv("HORECA_COOLDOWN_HOURS", "4"))
 HORECA_FREE_SEARCHES_DAILY = int(os.getenv("HORECA_FREE_SEARCHES_DAILY", "5"))
+ESTACION90_BUSINESS_NAME = os.getenv("HORECA_ESTACION90_BUSINESS_NAME", "Estación 90")
+ESTACION90_PROCUREMENT_STORES = [
+    s.strip() for s in os.getenv("HORECA_ESTACION90_STORES", "wong,metro,plazavea").split(",") if s.strip()
+]
 
 
 def get_or_create_profile(whatsapp_number: str, business_name: str = "Desconocido", business_type: str = "pending") -> Dict:
@@ -44,6 +48,23 @@ def get_or_create_profile(whatsapp_number: str, business_name: str = "Desconocid
         
     finally:
         db.close()
+
+
+def seed_estacion90_profile(whatsapp_number: str) -> Dict:
+    """Crea o actualiza el perfil HORECA piloto para Estación 90 (Surco)."""
+    profile = get_or_create_profile(whatsapp_number, ESTACION90_BUSINESS_NAME, "estacion90")
+    update_profile_field(whatsapp_number, "business_name", ESTACION90_BUSINESS_NAME)
+    update_profile_field(whatsapp_number, "business_type", "estacion90")
+    update_profile_field(whatsapp_number, "currency", "PEN")
+    update_profile_field(whatsapp_number, "last_search_category", "insumos")
+    return get_or_create_profile(whatsapp_number)
+
+
+def is_estacion90_profile(profile: Dict) -> bool:
+    """True si el perfil corresponde al piloto Estación 90."""
+    name = (profile.get("business_name") or "").strip().lower()
+    btype = (profile.get("business_type") or "").strip().lower()
+    return "estación 90" in name or "estacion 90" in name or btype == "estacion90"
 
 
 def update_profile_field(whatsapp_number: str, field: str, value: str) -> bool:

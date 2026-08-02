@@ -1,0 +1,100 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    CASO DE ÉXITO 2: LÁCTEOS EN PERÚ                         ║
+║                     Defendiendo vs Marca Privada                            ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+EMPRESA (FICTICIA):
+├─ Nombre: Dairy Solutions Perú
+├─ Categoría: Yogurt
+├─ Mercado: Lima metropolitana
+├─ Revenue aprox: S/ 150M anuales
+└─ Posición: Líder consolidado #2
+
+SITUACIÓN INICIAL:
+├─ Market share: 18%
+├─ Precio: S/ 4.50 (todo formato)
+├─ Competencia privada: Creciendo 18% anual
+├─ Problema: "Siendo comido por marca privada"
+├─ En Metro: Tu share 15%, privada 60%
+└─ En Wong: Tu share 35%, privada 12%
+
+ANÁLISIS (MES 1):
+├─ Descubrimiento CLI Market:
+│  • Wong: Tuya S/ 4.50 vs privada S/ 2.80 (Premium 155%)
+│  • Metro: Tuya S/ 4.50 vs privada S/ 2.50 (Premium 180%)
+│  • Plaza Vea: Tuya S/ 4.50 vs privada S/ 2.70 (Premium 167%)
+│
+├─ Insight: Consumidor en Metro = 60% elige privada (precio)
+├─ Problema: No es que sean mejores, es que son 45% más baratos
+└─ Oportunidad: Lanzar línea VALUE para competir
+
+RECOMENDACIÓN (MES 2):
+├─ Estrategia de doble línea:
+│  • Premium (original): S/ 4.50 → Keep en Wong/Falabella
+│  • Value (nueva línea): S/ 3.00 → Launch en Metro/Plaza Vea
+│
+├─ Posicionamiento:
+│  • Premium: "Calidad superior, sabor único"
+│  • Value: "Misma calidad, mejor precio"
+│
+├─ Segmentación por tienda:
+│  • Wong: 80% premium, 20% value
+│  • Metro: 30% premium, 70% value
+│  • Plaza Vea: 40% premium, 60% value
+│
+└─ Trade spend: S/ 80,000
+
+EJECUCIÓN (MES 3-5):
+├─ Desarrollo producto:
+│  • Sabor similar a premium (no compromises)
+│  • Packaging diferente pero reconocible
+│  • Producción: misma línea, input reducido
+│
+├─ Coordinación retail:
+│  • Wong: Exhibición conjunta + promo cruzada
+│  • Metro: Lanzamiento con descuento (20% off)
+│  • Plaza Vea: Co-branding con retailer
+│
+├─ Marketing:
+│  • POP material en tiendas
+│  • Sampling en Metro (máxima necesidad)
+│  • Email a club de clientes
+│
+└─ Timeline: 12 semanas to scale
+
+RESULTADOS (MES 6-12):
+├─ Market share total: 18% → 24% (+33%)
+├─ Share premium: 18% → 14% (-22%, esperado)
+├─ Share value: 0% → 10% (+1000%!)
+├─ Revenue: +S/ 250k anualizados
+├─ Margen blended: -5% vs premium
+│  (pero elasticidad compensa: +8% volumen neto)
+│
+└─ Competencia privada: Trending down (-3% share)
+
+FINANZAS:
+├─ Inversión consultoría: S/ 12,000
+├─ Trade spend: S/ 80,000 (cliente)
+├─ Revenue generado: S/ 250k anualizados
+├─ Margen impacto: +8% (neto)
+└─ ROI: 21x
+
+LECCIONES:
+✓ No compitas con privada en precio (pierdes)
+✓ Segmentación por retailer es clave
+✓ Value line defiende premium
+✓ Elasticidad en segmentos diferentes
+✓ Volumencara en value pero margen defensible
+
+CÓMO USARLO EN PITCH:
+"Trabajé con marca de lácteos consolidada. Marca privada les comía 
+share agresivamente (18% → estancado).
+
+Propusimos doble línea: Premium para Wong, Value para Metro.
+Resultado: 24% share (+33%), pero más importante:
+Pararon a privada (que bajó 3% ese semestre).
+
+Inversión: S/ 12,000 análisis + S/ 80,000 trade.
+Revenue generado: S/ 250,000 anuales.
+
+¿Tienes competencia privada que te está ganando?"

@@ -1,0 +1,252 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                 ÍNDICE COMPLETO - CARPETA CONSULTORÍA                       ║
+║                         Pricing Strategy Perú                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+📍 UBICACIÓN: C:\Users\acuba\cli-market-world\consultoria-pricing-strategy\
+
+═══════════════════════════════════════════════════════════════════════════════════
+📂 ESTRUCTURA DE CARPETAS
+═══════════════════════════════════════════════════════════════════════════════════
+
+consultoria-pricing-strategy/
+│
+├── 📖 README.txt ◄◄◄ EMPIEZA AQUÍ
+│   └─ Guía de navegación + quick start
+│
+├── 📄 DOCUMENTOS/
+│   ├── 1-CONSULTOR_TOOLKIT_GLOBAL.txt (20k palabras - estrategia global)
+│   ├── 2-CONSULTOR_PERÚ_ATERRIZAD0.txt (30k palabras - específico Perú)
+│   ├── 3-CONSULTOR_RESUMEN_EJECUTIVO.txt (Resumen ejecutivo)
+│   └── [4-MODELO_NEGOCIO_DETALLADO.txt] - Disponible en raíz
+│
+├── 🐍 SCRIPTS/
+│   ├── pricing-consultant.py (Análisis automatizado)
+│   ├── market-monitor.py (Monitoreo tiempo real)
+│   ├── market-scheduler.sh (Automatización 6h)
+│   └── market-api-wrapper.sh (API wrapper)
+│
+├── 📋 TEMPLATES/
+│   └── LEER-PLANTILLAS-EN-RAÍZ.txt
+│       └─ Apunta a: TEMPLATES_VENTA_CONSULTOR.txt (en carpeta raíz)
+│          Incluye: 7 templates copy-paste
+│
+├── 👥 PROSPECTS/
+│   └── LEER-PROSPECTS-EN-RAÍZ.txt
+│       └─ Apunta a: PROSPECTS_PERÚ_LISTA_COMPLETA.txt (en carpeta raíz)
+│          Incluye: 100+ empresas + estrategia contacto
+│
+├── 📊 CASOS-EXITO/
+│   ├── CASO_1_BEBIDAS.txt (FreshJuice - Bebidas)
+│   ├── CASO_2_LÁCTEOS.txt (Dairy Solutions - Lácteos)
+│   └── [CASO_3_RETAIL.txt] - Disponible en raíz
+│
+└── 🛠️ HERRAMIENTAS/
+    └── [Archivos disponibles en raíz]
+
+═══════════════════════════════════════════════════════════════════════════════════
+🔗 ARCHIVOS EN CARPETA RAÍZ (C:\Users\acuba\cli-market-world\)
+═══════════════════════════════════════════════════════════════════════════════════
+
+Documentación General:
+├── CONSULTOR_TOOLKIT_COMPLETO.txt ← COPIA EN: documentos/1-
+├── CONSULTOR_PERÚ_ATERRIZAD0.txt ← COPIA EN: documentos/2-
+├── CONSULTOR_RESUMEN_EJECUTIVO.txt ← COPIA EN: documentos/3-
+├── TEMPLATES_VENTA_CONSULTOR.txt ← REFERENCIA EN: templates/
+├── PROSPECTS_PERÚ_LISTA_COMPLETA.txt ← REFERENCIA EN: prospects/
+├── CANASTA_HOTEL_70PAX.txt (para negocios hotelería)
+├── ÍNDICE_ARCHIVOS_COMPLETO.txt (índice general sistema)
+└── VERIFICACIÓN_EXITOSA.txt (estado del sistema)
+
+Scripts (también copiados a carpeta):
+├── pricing-consultant.py ✓
+├── market-monitor.py ✓
+├── market-scheduler.sh ✓
+├── market-api-wrapper.sh ✓
+├── hotel-basket.sh
+└── market-config.json (configuración)
+
+Docker & Infra:
+├── docker-compose.complete.yml
+├── docker-compose.hotel.yml
+├── Dockerfile
+├── Dockerfile.monitor
+├── init-db.sql
+└── .env (credenciales)
+
+═══════════════════════════════════════════════════════════════════════════════════
+📋 GUÍA DE USO POR CASO
+═══════════════════════════════════════════════════════════════════════════════════
+
+CASO 1: "Necesito vender mi primer servicio de pricing"
+├─ Lee: documentos/README.txt (5 min)
+├─ Lee: documentos/2-CONSULTOR_PERÚ_ATERRIZAD0.txt (1 hora)
+├─ Ve: prospects/LEER-PROSPECTS-EN-RAÍZ.txt (30 min)
+├─ Usa: templates/LEER-PLANTILLAS-EN-RAÍZ.txt (30 min)
+├─ Ejecuta: scripts/pricing-consultant.py (30 min)
+└─ Acción: Envía 10 emails personalizados
+
+CASO 2: "Ya tengo clientes, necesito casos de éxito"
+├─ Lee: casos-exito/CASO_1_BEBIDAS.txt
+├─ Lee: casos-exito/CASO_2_LÁCTEOS.txt
+├─ Adapta: Estructura a tus historias reales
+└─ Usa: En pitches + propuestas
+
+CASO 3: "Necesito automatizar ejecución"
+├─ Usa: scripts/pricing-consultant.py (análisis)
+├─ Usa: scripts/market-monitor.py (monitoreo)
+├─ Usa: scripts/market-scheduler.sh (automatización)
+└─ Ve: documentos/5-ROADMAP_12_MESES.txt
+
+CASO 4: "Estoy atascado en prospección"
+├─ Ve: prospects/LEER-PROSPECTS-EN-RAÍZ.txt
+├─ Lee: PROSPECTS_PERÚ_LISTA_COMPLETA.txt (LinkedIn strategy)
+├─ Usa: templates/LEER-PLANTILLAS-EN-RAÍZ.txt (email template)
+└─ Meta: 50 emails semana 1
+
+CASO 5: "Necesito entender modelo financiero"
+├─ Lee: documentos/3-CONSULTOR_RESUMEN_EJECUTIVO.txt
+├─ Ve: documentos/2-CONSULTOR_PERÚ_ATERRIZAD0.txt (sección 4)
+├─ Ve: documentos/5-ROADMAP_12_MESES.txt (proyecciones)
+└─ Cálcula: Tu ROI esperado
+
+═══════════════════════════════════════════════════════════════════════════════════
+⚡ QUICK START (HOY - 24 HORAS)
+═══════════════════════════════════════════════════════════════════════════════════
+
+HORA 1-2: Entender la propuesta
+└─ Leer: README.txt + documentos/3-CONSULTOR_RESUMEN_EJECUTIVO.txt
+
+HORA 3-5: Preparar herramientas de venta
+├─ Personalizar: templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+├─ Adaptar: casos-exito/CASO_1 + CASO_2
+└─ Preparar: LinkedIn profile
+
+HORA 6-8: Identificar prospects
+├─ Abrir: prospects/LEER-PROSPECTS-EN-RAÍZ.txt
+├─ Buscar en LinkedIn: Top 20 corporativos
+└─ Crear lista de 50 contactos
+
+HORA 9-12: Hacer primer análisis + email
+├─ Ejecutar: scripts/pricing-consultant.py
+├─ Generar: Reporte demo
+├─ Enviar: 10 emails personalizados (templates)
+└─ Follow-up: Al día siguiente
+
+HORA 13-24: Descansar / Monitorear respuestas
+
+RESULTADO: 3-5 calls confirmados + 1 análisis demo
+
+═══════════════════════════════════════════════════════════════════════════════════
+📊 SERVICIOS QUE VENDES (DESDE AQUÍ)
+═══════════════════════════════════════════════════════════════════════════════════
+
+SERVICIO 1: PRICING AUDIT (S/ 6,000-10,000) ← Script: pricing-consultant.py
+├─ Duración: 3-4 semanas
+├─ Template: templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+├─ Caso: casos-exito/CASO_1_BEBIDAS.txt
+└─ ROI: +8-15% share
+
+SERVICIO 2: GROWTH STRATEGY (S/ 15,000-30,000) ← Script: market-monitor.py
+├─ Duración: 4-6 semanas
+├─ Template: templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+├─ Caso: casos-exito/CASO_2_LÁCTEOS.txt
+└─ ROI: +12-25% share
+
+SERVICIO 3: TRADE MARKETING (S/ 8,000-15,000) ← Script: market-scheduler.sh
+├─ Duración: 3-4 semanas
+├─ Template: templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+└─ ROI: +5-8% margen
+
+SERVICIO 4: SUSCRIPCIÓN MONTHLY (S/ 2,500-4,000/mes)
+├─ Incluye: Alertas + Dashboard + Reportes
+├─ Compromiso: 6 meses mínimo
+├─ Script: market-scheduler.sh + market-monitor.py
+└─ Margen: 90%+
+
+═══════════════════════════════════════════════════════════════════════════════════
+🎯 MÉTRICAS DE ÉXITO (PRIMEROS 3 MESES)
+═══════════════════════════════════════════════════════════════════════════════════
+
+MES 1:
+☐ 50 emails enviadas
+☐ 10-15 calls confirmados
+☐ 1 análisis demo completado
+☐ 3-5 propuestas enviadas
+☐ Ingresos: S/ 12k-20k
+
+MES 2:
+☐ 100 emails enviadas (nuevos)
+☐ 30 pitch calls
+☐ 3-5 pilotos firmados (50% descuento)
+☐ 5-8 propuestas nuevas (precio normal)
+☐ Ingresos: S/ 40k-60k acumulados
+
+MES 3:
+☐ 10-15 clientes en cartera
+☐ 3-5 en suscripción recurrente
+☐ 1-2 referrals generados
+☐ Portfolio de 2-3 casos de éxito
+☐ Ingresos: S/ 80k-120k acumulados
+
+═══════════════════════════════════════════════════════════════════════════════════
+🔍 CÓMO ENCONTRAR UN ARCHIVO ESPECÍFICO
+═══════════════════════════════════════════════════════════════════════════════════
+
+"Necesito un email template"
+└─ Ve a: templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+   └─ Abre: C:\Users\acuba\cli-market-world\TEMPLATES_VENTA_CONSULTOR.txt
+
+"Necesito prospects de Coca-Cola"
+└─ Ve a: prospects/LEER-PROSPECTS-EN-RAÍZ.txt
+   └─ Abre: C:\Users\acuba\cli-market-world\PROSPECTS_PERÚ_LISTA_COMPLETA.txt
+
+"Necesito hacer análisis de pricing"
+└─ Usa: scripts/pricing-consultant.py
+   └─ Ejecuta: python3 pricing-consultant.py analyze "bebidas" "coca" "pepsi"
+
+"Necesito casos de éxito para pitch"
+└─ Ve a: casos-exito/CASO_1_BEBIDAS.txt
+   └─ O: casos-exito/CASO_2_LÁCTEOS.txt
+
+"Necesito entender el modelo de negocio"
+└─ Lee: documentos/3-CONSULTOR_RESUMEN_EJECUTIVO.txt
+   └─ O: documentos/2-CONSULTOR_PERÚ_ATERRIZAD0.txt (sección 4)
+
+═══════════════════════════════════════════════════════════════════════════════════
+✅ CHECKLIST: "LISTO PARA VENDER"
+═══════════════════════════════════════════════════════════════════════════════════
+
+ANTES DE HACER PRIMER PITCH:
+☐ Leí README.txt (esta carpeta)
+☐ Leí documentos/2-CONSULTOR_PERÚ_ATERRIZAD0.txt
+☐ Personalicé templates/LEER-PLANTILLAS-EN-RAÍZ.txt
+☐ Ejecuté pricing-consultant.py (probé que funciona)
+☐ Identifiqué Top 20 prospects en LinkedIn
+☐ Preparé 2-3 casos de éxito adaptados
+☐ Armé LinkedIn profile profesional
+☐ Preparé pitch de 5 minutos (templates/LEER-PLANTILLAS-EN-RAÍZ.txt)
+
+DESPUÉS DE PRIMER CLIENTE:
+☐ Documenté el resultado (nuevo caso de éxito)
+☐ Pedí testimonial/referencia
+☐ Automicé flujo de entrega
+☐ Creé dashboard cliente
+☐ Planificé suscripción mensual
+☐ Identifiqué 50 nuevos prospects
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+TODO LO QUE NECESITAS PARA VENDER CONSULTORÍA DE PRICING EN PERÚ
+ESTÁ EN ESTA CARPETA.
+
+README.txt = Punto de entrada
+Documentos/ = Entendimiento
+Scripts/ = Automatización
+Templates/ = Venta
+Prospects/ = Targets
+Casos/ = Prueba de valor
+
+¡A VENDER!
+
+═══════════════════════════════════════════════════════════════════════════════════

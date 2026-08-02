@@ -65,6 +65,7 @@ LINE_MAX_PRICE = {
     "hogar": 20_000,
     "departamentales": 10_000,
     "automotriz": 50_000,
+    "restaurantes": 200,
 }
 
 # Nominal caps differ by currency (ARS/CLP/COP use much larger face values).
@@ -135,6 +136,12 @@ STORE_QUERY_OVERRIDES: dict[str, list[tuple[str, str]]] = {
         ("llave", "hogar"), ("perno", "hogar"), ("cinta", "hogar"),
         ("brocha", "hogar"), ("escalera", "hogar"), ("tuberia", "hogar"),
     ],
+    "ferretec_pe": [
+        ("soldadora", "hogar"), ("taladro", "hogar"), ("amoladora", "hogar"),
+        ("sierra", "hogar"), ("martillo", "hogar"), ("tornillo", "hogar"),
+        ("soldadura", "hogar"), ("compresor", "hogar"), ("generador", "hogar"),
+        ("esmeril", "hogar"), ("andamio", "hogar"), ("cizalla", "hogar"),
+    ],
     "sodimac_pe": [
         ("taladro", "hogar"), ("pintura", "hogar"), ("martillo", "hogar"),
         ("tornillo", "hogar"), ("cerradura", "hogar"), ("tubo", "hogar"),
@@ -163,6 +170,13 @@ STORE_QUERY_OVERRIDES: dict[str, list[tuple[str, str]]] = {
         ("congelados", "supermercados"), ("pescado", "supermercados"), ("gambas", "supermercados"),
         ("croquetas", "supermercados"), ("verduras", "supermercados"), ("pizza", "supermercados"),
         ("leche", "supermercados"), ("arroz", "supermercados"), ("aceite", "supermercados"),
+    ],
+    # Estación 90 Surco: menú peruano vía feed JSON — catalog-pull + búsquedas por plato.
+    "estacion90_pe": [
+        ("lomo saltado", "restaurantes"), ("ceviche", "restaurantes"), ("arroz con pollo", "restaurantes"),
+        ("aji de gallina", "restaurantes"), ("seco de res", "restaurantes"), ("causa", "restaurantes"),
+        ("anticuchos", "restaurantes"), ("chicharron", "restaurantes"), ("sopa criolla", "restaurantes"),
+        ("desayuno criollo", "restaurantes"), ("pollo a la brasa", "restaurantes"), ("tallarin saltado", "restaurantes"),
     ],
 }
 
@@ -384,12 +398,15 @@ SEED_QUERIES = [
     ("cuerdas de guitarra","musical_instruments"),("audifonos estudio","musical_instruments"),
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # 🍔 Restaurantes (1 tienda: Bembos)
+    # 🍔 Restaurantes (2 tiendas: Bembos, Estación 90)
     # ═══════════════════════════════════════════════════════════════════════════
     ("hamburguesa","restaurantes"),("combo","restaurantes"),
     ("papas fritas","restaurantes"),("pollo broaster","restaurantes"),
     ("menu","restaurantes"),("gaseosa","restaurantes"),
     ("sandwich","restaurantes"),("postre","restaurantes"),
+    ("lomo saltado","restaurantes"),("ceviche","restaurantes"),
+    ("arroz con pollo","restaurantes"),("aji de gallina","restaurantes"),
+    ("anticuchos","restaurantes"),("causa limeña","restaurantes"),
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 🐾 Mascotas (1 tienda: SuperPet)
@@ -834,14 +851,21 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
     cfg = resolve_store_config(store)
     platform = cfg.get("platform", "vtex")
-    if platform not in ("vtex", "woocommerce"):
+    if platform not in ("vtex", "woocommerce", "estacion90"):
         return 0
     connector = get_connector(platform)
-    try:
-        all_raw = await connector.fetch_all_products(cfg, max_pages=20)
-    except Exception as e:
-        logger.warning("full catalog %s: %s", store, str(e)[:80])
-        return 0
+    if platform == "estacion90":
+        try:
+            all_raw = await connector.fetch_all_products(cfg)
+        except Exception as e:
+            logger.warning("full catalog %s: %s", store, str(e)[:80])
+            return 0
+    else:
+        try:
+            all_raw = await connector.fetch_all_products(cfg, max_pages=20)
+        except Exception as e:
+            logger.warning("full catalog %s: %s", store, str(e)[:80])
+            return 0
     collected = 0
     line = cfg.get("line", "")
     line_name = LINES.get(line, {}).get("name", "")
@@ -894,7 +918,7 @@ async def run_full_catalog_pg(pool, stores: list[str], *, force: bool = False) -
     _last_catalog_pull = now
     total = 0
     for store in stores:
-        if resolve_store_config(store).get("platform") not in ("vtex", "woocommerce"):
+        if resolve_store_config(store).get("platform") not in ("vtex", "woocommerce", "estacion90"):
             continue
         n = await collect_full_catalog_pg(pool, store)
         print(f"    📦 {store}: {n:,} products (full catalog)")
