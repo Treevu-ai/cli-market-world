@@ -1,0 +1,111 @@
+name: Index PE brand pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type INDEX_PE_BRANDS to collect and index the approved PE brand pilot.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: index-pe-brands
+  cancel-in-progress: false
+
+jobs:
+  collect-and-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check explicit confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          test "$CONFIRMATION" = "INDEX_PE_BRANDS" || {
+            echo "::error::Set confirmation to INDEX_PE_BRANDS to run this production data mutation."
+            exit 1
+          }
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Collect PE evidence and resolve Golden Records
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cat > /tmp/index_pe_brands.py <<'PY'
+          import asyncio
+          import json
+
+          import collect_prices as collector
+          from index_gate import backfill_canonical_product_ids, certify_round
+
+
+          STORES = [
+              "wong", "metro", "plazavea", "vega_pe", "makro_pe", "vivanda_pe",
+              "coolbox_pe", "claroshop_pe", "carsa_pe", "grintek_pe",
+              "promart", "estilos_pe",
+          ]
+          QUERIES = [
+              ("ace", "supermercados"), ("ariel", "supermercados"),
+              ("downy", "supermercados"),
+              ("motorola", "electro"), ("tcl", "electro"),
+              ("razer", "electro"), ("huawei", "electro"),
+              ("xiaomi", "electro"), ("epson", "electro"),
+              ("mabe", "hogar"), ("puma", "moda"), ("reebok", "moda"),
+          ]
+
+
+          async def main():
+              collector.PARALLEL = 6
+              collector.STORE_QUERY_OVERRIDES = dict(collector.STORE_QUERY_OVERRIDES)
+              collector.STORE_QUERY_OVERRIDES["promart"] = [("mabe", "hogar")]
+              collector.ensure_db_initialized()
+
+              pool = await collector.get_pool()
+              try:
+                  async with pool.acquire() as lock_connection:
+                      locked = await lock_connection.fetchval(
+                          "SELECT pg_try_advisory_lock($1)",
+                          collector.COLLECTOR_ADVISORY_LOCK,
+                      )
+                      if not locked:
+                          print(json.dumps({"status": "skipped", "reason": "collector_lock_held"}))
+                          return
+                      try:
+                          collection = await collector.run_collection(STORES, QUERIES)
+                          collected = int(collection.get("prices_collected", 0) or 0)
+                          indexing = (
+                              certify_round(collected, since_minutes=90)
+                              if collected
+                              else {"skipped": 1, "reason": "no_snapshots_collected"}
+                          )
+                          backfill = (
+                              backfill_canonical_product_ids(limit=2000)
+                              if collected
+                              else {"skipped": 1}
+                          )
+                          print(json.dumps({
+                              "status": "completed",
+                              "stores": STORES,
+                              "queries": QUERIES,
+                              "collection": collection,
+                              "indexing": indexing,
+                              "backfill": backfill,
+                          }, ensure_ascii=False, default=str))
+                      finally:
+                          await lock_connection.execute(
+                              "SELECT pg_advisory_unlock($1)",
+                              collector.COLLECTOR_ADVISORY_LOCK,
+                          )
+              finally:
+                  await pool.close()
+
+
+          asyncio.run(main())
+          PY
+          PAYLOAD=$(base64 -w0 /tmp/index_pe_brands.py)
+          flyctl ssh console --app cli-market-collector \
+            --command "printf '%s' '$PAYLOAD' | base64 -d | python3"
