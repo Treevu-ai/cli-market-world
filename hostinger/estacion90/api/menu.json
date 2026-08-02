@@ -1,0 +1,159 @@
+{
+  "store": "estacion90_pe",
+  "updated_at": "2026-07-31T12:00:00-05:00",
+  "currency": "PEN",
+  "location": {
+    "address": "Pasaje Monte Azul 144, Chacarilla del Estanque, Santiago de Surco, Lima",
+    "hours": "Lun–Sáb 11:30–15:00; domingo cerrado"
+  },
+  "categories": [
+    {
+      "id": "menu_dia",
+      "name": "Menú del día",
+      "items": [
+        {"id": "lomo_saltado", "name": "Lomo saltado", "price": 28.0, "available": true},
+        {"id": "arroz_con_pollo", "name": "Arroz con pollo", "price": 22.0, "available": true},
+        {"id": "seco_de_res", "name": "Seco de res", "price": 24.0, "available": true},
+        {"id": "aji_de_gallina", "name": "Ají de gallina", "price": 22.0, "available": true},
+        {"id": "causa_limena", "name": "Causa limeña", "price": 18.0, "available": true},
+        {"id": "pescado_frito", "name": "Pescado frito con arroz", "price": 26.0, "available": true}
+      ]
+    },
+    {
+      "id": "a_la_carta",
+      "name": "A la carta",
+      "items": [
+        {"id": "ceviche", "name": "Ceviche", "price": 32.0, "available": true},
+        {"id": "anticuchos", "name": "Anticuchos", "price": 20.0, "available": true},
+        {"id": "tallarin_saltado", "name": "Tallarín saltado", "price": 24.0, "available": true},
+        {"id": "chicharron", "name": "Chicharrón de cerdo", "price": 26.0, "available": true},
+        {"id": "pollo_a_la_brasa", "name": "Pollo a la brasa (1/4)", "price": 22.0, "available": true}
+      ]
+    },
+    {
+      "id": "sopas",
+      "name": "Sopas",
+      "items": [
+        {"id": "sopa_criolla", "name": "Sopa criolla", "price": 12.0, "available": true},
+        {"id": "sopa_minuta", "name": "Sopa a la minuta", "price": 12.0, "available": true},
+        {"id": "caldo_de_gallina", "name": "Caldo de gallina", "price": 14.0, "available": true},
+        {"id": "patasca", "name": "Patasca", "price": 14.0, "available": true}
+      ]
+    },
+    {
+      "id": "desayunos",
+      "name": "Desayunos",
+      "items": [
+        {"id": "desayuno_criollo", "name": "Desayuno criollo", "price": 16.0, "available": true},
+        {"id": "tamal", "name": "Tamal", "price": 8.0, "available": true},
+        {"id": "pan_con_chicharron", "name": "Pan con chicharrón", "price": 14.0, "available": true},
+        {"id": "cafe_pasado", "name": "Café pasado", "price": 5.0, "available": true}
+      ]
+    }
+  ],
+  "procurement_templates": [
+    {
+      "id": "semana_cocina_base",
+      "name": "Insumos semana cocina",
+      "ingredients": [
+        "arroz 5kg",
+        "aceite girasol 5L",
+        "pollo entero",
+        "papa amarilla",
+        "cebolla roja",
+        "ajo",
+        "ají amarillo",
+        "limón",
+        "sal",
+        "pimienta"
+      ]
+    },
+    {
+      "id": "desayunos_semana",
+      "name": "Insumos desayunos",
+      "ingredients": [
+        "pan francés",
+        "huevos",
+        "café molido",
+        "leche evaporada",
+        "mantequilla",
+        "mermelada",
+        "azúcar"
+      ]
+    },
+    {
+      "id": "limpieza_cocina",
+      "name": "Limpieza cocina",
+      "ingredients": [
+        "detergente industrial 5L",
+        "cloro",
+        "desengrasante cocina",
+        "papel higiénico industrial",
+        "servilletas",
+        "guantes desechables",
+        "esponja"
+      ]
+    },
+    {
+      "id": "bebidas_restaurante",
+      "name": "Bebidas restaurante",
+      "ingredients": [
+        "gaseosa 2L",
+        "agua mineral",
+        "jugo concentrado",
+        "cerveza",
+        "hielo"
+      ]
+    },
+    {
+      "id": "menu_criollo_semanal",
+      "name": "Menú criollo semanal",
+      "ingredients": [
+        "lomo de res",
+        "gallina",
+        "pescado fresco",
+        "tomate",
+        "papa",
+        "arroz",
+        "fideos",
+        "vinagre",
+        "aceite vegetal",
+        "culantro"
+      ]
+    }
+  ],
+  "dish_ingredients": [
+    {
+      "dish_id": "lomo_saltado",
+      "ingredients": ["lomo de res", "cebolla", "tomate", "papa", "ají amarillo", "vinagre", "arroz", "aceite vegetal", "sillao"]
+    },
+    {
+      "dish_id": "ceviche",
+      "ingredients": ["pescado fresco", "limón", "cebolla roja", "ají limo", "culantro", "sal", "camote", "choclo"]
+    },
+    {
+      "dish_id": "arroz_con_pollo",
+      "ingredients": ["pollo", "arroz", "culantro", "pimiento", "zanahoria", "arveja", "ajo", "aceite", "sal"]
+    },
+    {
+      "dish_id": "aji_de_gallina",
+      "ingredients": ["gallina", "pan", "leche evaporada", "ají amarillo", "nueces", "arroz", "papa", "huevo", "aceituna"]
+    },
+    {
+      "dish_id": "seco_de_res",
+      "ingredients": ["carne de res", "chicha de jora", "culantro", "ají panca", "cebolla", "arroz", "frijoles", "papa"]
+    },
+    {
+      "dish_id": "causa_limena",
+      "ingredients": ["papa amarilla", "limón", "aceite", "ají amarillo", "atún", "mayonesa", "huevo", "aceituna", "lechuga"]
+    },
+    {
+      "dish_id": "anticuchos",
+      "ingredients": ["corazón de res", "ají panca", "vinagre", "comino", "ajo", "papa", "maíz"]
+    },
+    {
+      "dish_id": "desayuno_criollo",
+      "ingredients": ["pan francés", "huevos", "jamón", "queso", "palta", "aceituna", "café", "mantequilla"]
+    }
+  ]
+}
