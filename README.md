@@ -67,7 +67,7 @@ market intel brief --country PE
 
 | Plan | Starter | Pro | Enterprise |
 |------|---------|-----|------------|
-| **Precio** | $9/mes (prueba gratis 7 días) | $49/mes · Anual $490 | A medida |
+| **Precio** | $9/mes (prueba gratis 7 días) | $39/mes · Anual $390 | A medida |
 | **Solicitudes/día** | 5,000 | 10,000 | Ilimitadas (negociado) |
 | **Solicitudes/min** | 120 | 300 | Ilimitadas |
 | **API keys** | 1 | 10 | Ilimitadas |
@@ -77,13 +77,13 @@ market intel brief --country PE
 | **Exportar datos** | — | CSV ilimitado + cron | Feed directo S3/webhook |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Soporte** | Comunidad | Email 4h | 24/7 + SLA escrito |
-| **Anual** | — | $490/año | — |
+| **Anual** | — | $390/año | — |
 
 #### ¿Quién compra qué? (ecosistema)
 
 | Buyer | Producto | Precio |
 |-------|----------|--------|
-| Developer / agent builder que **integra** comercio en su software | **CLI Market Pro** | $49/mes |
+| Developer / agent builder que **integra** comercio en su software | **CLI Market Pro** | $39/mes |
 | Equipo de **compras** (restaurante, hotel, agro) — sin código | **Procure Copilot** | $29–149/mes (infra CLI Market incluida en Pro+) |
 | Analista / fintech que necesita **datos**, no checkout | **Intelligence** | $300–500/mes |
 
@@ -142,7 +142,7 @@ market intel brief --country PE
 
 | Plan | Starter | Pro | Enterprise |
 |------|---------|-----|------------|
-| **Price** | $9/mo (7-day free trial) | $49/mo · Annual $490 | Custom |
+| **Price** | $9/mo (7-day free trial) | $39/mo · Annual $390 | Custom |
 | **Requests/day** | 5,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 120 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |
@@ -152,13 +152,13 @@ market intel brief --country PE
 | **Export** | — | CSV unlimited + cron | Direct S3/webhook feed |
 | **Checkout** | — | ✅ PayPal / Yape / Plin | ✅ |
 | **Support** | Community | Email 4h | 24/7 + written SLA |
-| **Annual** | — | $490/yr | — |
+| **Annual** | — | $390/yr | — |
 
 #### Who buys what (ecosystem)
 
 | Buyer | Product | Price |
 |-------|---------|-------|
-| Developer / agent builder **embedding** commerce in their software | **CLI Market Pro** | $49/mo |
+| Developer / agent builder **embedding** commerce in their software | **CLI Market Pro** | $39/mo |
 | **Procurement** team (no code) | **Procure Copilot** | $29–149/mo (CLI Market infra bundled on Pro+) |
 | Analyst / fintech needing **data**, not checkout | **Intelligence** | $300–500/mo |
 

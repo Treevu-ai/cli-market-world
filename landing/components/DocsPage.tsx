@@ -304,8 +304,8 @@ curl -X POST ${API_URL}/auth/verify-email \\
             <BillingCheckoutTrigger
               kind={{ type: "build-pro", annual: true }}
               className="rounded-[10px] border border-[#e2e8f0] px-5 py-2.5 text-sm font-semibold text-[#64748b] hover:border-[#3E6B4C] hover:text-[#3E6B4C] transition-colors"
-              label_es="Pro anual $490/año →"
-              label_en="Pro annual $490/yr →"
+              label_es="Pro anual $390/año →"
+              label_en="Pro annual $390/yr →"
             />
           </div>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">
