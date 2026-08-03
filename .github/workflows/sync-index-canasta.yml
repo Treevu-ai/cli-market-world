@@ -29,7 +29,9 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: Treevu-ai/cli-market-index
-          ref: main
+          # cli-market-index's default branch is treevu-ai-main, not main —
+          # unlike core/backend/world, it never has a "main" ref to fetch.
+          ref: treevu-ai-main
           path: cli-market-index
           token: ${{ secrets.GH_PAT }}
 
