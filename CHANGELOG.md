@@ -2,6 +2,94 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-02] — Ecosystem cleanup: branches, CI reliability, HubSpot tooling, pricing drift
+
+Wide-ranging maintenance pass across all four repos plus a first outreach
+integration with HubSpot. No product-facing behavior changed except the
+corrected Pro pricing copy.
+
+**cli-market-world**
+- Fixed the tier-gate/ANSI-escape/pricing bugs and merged the two pending
+  feature branches (`telegram-segmented-baskets`, `index-pe-brand-pilot`)
+  identified in the branch audit; cherry-picked the still-missing HTML-escape
+  fix for `/v1/academy/waitlist` (`e3d2c9a7`).
+- **Pricing docs drift:** README and the landing docs page still quoted the
+  old Pro price ($49/mo · $490/yr). Production billing has been $39/mo ·
+  $390/yr since an earlier, undocumented correction — fixed both surfaces
+  (`3049cb1b`).
+- **Hostinger connector:** `ops/horeca/sync_estacion90_menu.py` automates
+  publishing `hostinger/estacion90/api/menu.json` via FTPS instead of manual
+  upload, wired into `sync-estacion90-menu.yml`. Inactive until Estación 90
+  (a prospective client) shares real credentials — the workflow validates
+  and skips instead of failing when the FTP secrets are unset.
+- **Repo cleanup:** archived 129 stale branches to `archive/*` tags and
+  deleted the branch refs; removed 4 already-merged branches outright; and
+  removed 31 orphaned one-off scripts/notes (`scratch/`, `scratchpad/`,
+  `ops/generated/{buscar,check,chk,verify_sodimac}*`) after confirming zero
+  references anywhere in code or docs. Left `ops/generated/{prompts,reports,
+  orchestrator,outputs}/` untouched — that's live output of the
+  growth-pulse/price-pulse agent pipeline, referenced by `AGENTS.md` and
+  three other docs.
+- **CI/CD audit:** investigated every workflow with a recent failing run.
+  Two were real bugs (`sync-index-canasta.yml` checked out
+  `cli-market-index` at a `main` ref that repo doesn't have, and was missing
+  an install step entirely — `ModuleNotFoundError: httpx`); one was already
+  fixed and just needed a re-run (`index-pe-brands.yml`); two were one-shot
+  manual incident-response tools that had already served their purpose
+  (`ops-collector-demote.yml`, `ops-resend-pro-email.yml`); one was dead
+  weight pinned to a core version ~30 releases stale
+  (`sync-core-git.yml`, removed). Staggered the six workflows that all fired
+  within the same 15-minute window at 08:00 PET so a real failure doesn't
+  get lost in the noise.
+- **`sync-backend-core-pin.yml`:** rewrote the backend-PR step from raw
+  `git push` to the GitHub Contents API via `gh api`. Eight attempts across
+  three regenerated fine-grained PATs all hit the same `git push` 403 from
+  *inside* Actions specifically (the identical token pushed fine from
+  outside Actions and via plain API calls) — root-caused to
+  `actions/checkout`'s persisted `http.extraheader` auth config, which
+  neither `git remote set-url` nor a `-c http...extraheader=` override could
+  cleanly beat (the latter reproduced GitHub's own "Duplicate header:
+  Authorization" 400 locally). Replaced the whole git-credential dance with
+  direct Contents API calls; confirmed working end to end.
+- Documented (not fixed) a deploy/doc drift: `cli-market-simla.fly.dev` runs
+  from the standalone `simla-cli-market-prototype/`, not
+  `cli_market_integrations/adapters/simla/` like HubSpot and Zoho — flagged
+  in `docs/integrations/CRM-PLAYBOOK.md` so it stops being a silent trap.
+
+**cli-market-core**
+- Committed `Estacion90Connector` (menu-feed connector for the Hostinger
+  integration above), registered as `estacion90_pe` under the "restaurantes"
+  line. Fixed a fixture-size mismatch bug in its own test before committing.
+- Fixed a test-isolation bug: `test_build_intel_brief_flags_rpv_anomaly_...`
+  asserted an exact RPV swing (-32%) but ran against the shared, non-isolated
+  default DB instead of `isolated_db` — real accumulated "leche"/"arroz"
+  price history from other tests (or from actually running `market
+  collect_prices` on the dev machine) diluted the signal to 0.0%. Verified
+  the underlying computation is correct in isolation before concluding it
+  was a test bug, not a product bug.
+
+**cli-market-content**
+- Merged 8 pending sync commits (country count, Pro price correction,
+  academy tracking) that had been pushed but never PR'd after the branch's
+  last merge; committed real, previously-uncommitted business content: a
+  147-letter MYPE association outreach campaign, Telegram/WhatsApp bot
+  flyers, and a weekly price-pulse report. Verified with the repo's own
+  `scripts/check-gate.py` before pushing.
+
+**HubSpot (ops tooling, not yet deployed)**
+- `hubspot-cli-market-prototype/scripts/import_contacts.py`: CSV → HubSpot
+  contact importer with column auto-detection (ES/EN), API batch-upsert by
+  email, and a `--export-csv` fallback that bypasses the API entirely for
+  HubSpot's native import UI (this account's Private App creation is
+  currently paywalled — legacy API key auth confirmed dead by HubSpot).
+  Imported 105 of the 147 MYPE contacts (42 skipped: blank/`-` email).
+- `map_oficios_to_contacts.py`: cross-references the imported contacts
+  against the pre-written oficio letters so outreach doesn't require
+  manually matching 105 contacts to 147 files (105/105 matched).
+- `cli-market-hubspot` (the enrichment middleware) is deployed on Fly but
+  reports `hubspot_api: false` — still blocked on the same Private App
+  token issue.
+
 ## [2026-08-01] — Security hardening: MCP and credential handling
 
 - MCP remoto usa `Authorization: Bearer` y rechaza tokens en la URL por defecto,
