@@ -39,6 +39,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # sync_market_stats.write_canasta_taxonomy_data() imports
+      # market_core.market_spread, which pulls in market_core/__init__.py's
+      # full dependency graph (httpx etc.) — install the checked-out core
+      # via its own pyproject.toml instead of guessing packages one by one.
+      - name: Install cli-market-core dependencies
+        run: pip install ./cli-market-core
+
       - name: Regenerate canasta_data.py
         env:
           CLI_MARKET_CORE_ROOT: ${{ github.workspace }}/cli-market-core
