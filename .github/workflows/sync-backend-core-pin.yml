@@ -82,45 +82,52 @@ jobs:
         if: steps.write_token.outputs.has_write == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_BACKEND_WRITE }}
-        working-directory: cli-market-backend
         run: |
           set -euo pipefail
           GH_TOKEN="$(printf '%s' "${GH_TOKEN:-}" | tr -d '\n\r')"
           export GH_TOKEN
           VER="${CORE_PIN_VER}"
           BRANCH="chore/core-pin-${VER}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # actions/checkout persisted an http.<url>.extraheader auth config
-          # for the read-only GH_PAT. Passing -c http...extraheader=... on
-          # the push command does NOT override it — git sends BOTH headers
-          # and GitHub 400s with "Duplicate header: Authorization" (verified
-          # locally). The exact key actions/checkout uses can be scoped to
-          # either the bare github.com host or this specific repo URL, so
-          # don't guess the key string — find and remove every extraheader
-          # entry via regexp, confirm none remain, then set the write token.
-          for key in $(git config --local --get-regexp '\.extraheader$' | awk '{print $1}'); do
-            git config --local --unset-all "$key"
-          done
-          if git config --local --get-regexp '\.extraheader$' >/dev/null 2>&1; then
-            echo "::error::Stale http.extraheader survived unset — would still auth as the read-only token"
-            exit 1
-          fi
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/Treevu-ai/cli-market-backend.git"
-          if git diff --quiet requirements.txt; then
+          REPO="Treevu-ai/cli-market-backend"
+
+          if git -C cli-market-backend diff --quiet requirements.txt; then
             echo "Backend already pinned to cli-market-core>=${VER}"
             exit 0
           fi
-          git checkout -b "$BRANCH"
-          git add requirements.txt
-          git commit -m "chore(deps): pin cli-market-core>=${VER}"
-          git push -u origin "$BRANCH"
-          gh pr create \
-            --repo Treevu-ai/cli-market-backend \
-            --base main \
-            --head "$BRANCH" \
-            --title "chore(deps): pin cli-market-core>=${VER}" \
-            --body "Automated from cli-market-world \`sync-backend-core-pin\` workflow after world release ${VER}."
+
+          # Raw `git push` with this token 403'd from within Actions every
+          # time (7 attempts: different tokens, extraheader removal, -c
+          # override) despite the exact same token pushing fine from outside
+          # Actions and via plain API calls — something about this runner's
+          # git-over-HTTPS auth handling specifically rejects it. Do the
+          # commit through the Contents API instead of git push; gh's own
+          # HTTP client authenticates the same way for every call here and
+          # has been reliable throughout this whole debugging session.
+          MAIN_SHA="$(gh api "repos/${REPO}/git/refs/heads/main" --jq .object.sha)"
+
+          if ! gh api "repos/${REPO}/git/refs/heads/${BRANCH}" >/dev/null 2>&1; then
+            gh api "repos/${REPO}/git/refs" -f ref="refs/heads/${BRANCH}" -f sha="${MAIN_SHA}" >/dev/null
+          fi
+
+          FILE_SHA="$(gh api "repos/${REPO}/contents/requirements.txt?ref=${BRANCH}" --jq .sha)"
+          NEW_CONTENT_B64="$(base64 -w0 cli-market-backend/requirements.txt)"
+
+          gh api "repos/${REPO}/contents/requirements.txt" -X PUT \
+            -f message="chore(deps): pin cli-market-core>=${VER}" \
+            -f content="${NEW_CONTENT_B64}" \
+            -f sha="${FILE_SHA}" \
+            -f branch="${BRANCH}" >/dev/null
+
+          if gh pr view "${BRANCH}" --repo "${REPO}" >/dev/null 2>&1; then
+            echo "PR for ${BRANCH} already exists"
+          else
+            gh pr create \
+              --repo "${REPO}" \
+              --base main \
+              --head "${BRANCH}" \
+              --title "chore(deps): pin cli-market-core>=${VER}" \
+              --body "Automated from cli-market-world \`sync-backend-core-pin\` workflow after world release ${VER}."
+          fi
 
       - name: Manual apply instructions
         if: steps.write_token.outputs.has_write != 'true'
