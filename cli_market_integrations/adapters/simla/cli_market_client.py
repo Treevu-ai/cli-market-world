@@ -3,11 +3,12 @@ CLI Market product client for Simla adapter.
 Handles product search, compare, basket, price history.
 (Simla uses product endpoints, not intel endpoints — see shared/intel_client.py for intel.)
 """
+from __future__ import annotations
+
 # Re-export from prototype — same code, lives here for package install
 from simla_cli_market_prototype.src.cli_market_client import CLIMarketClient  # noqa: F401
 
 # If installed as package (not from prototype path), inline the class:
-from __future__ import annotations
 import logging, os
 from typing import Any
 import httpx

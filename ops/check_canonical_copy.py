@@ -26,6 +26,11 @@ SKIP_DIRS = {
     "cli_market_world.egg-info",
     "ops/generated",
     "out",
+    # Read-only captures of *other* repos' pages (front-matter `source:` links
+    # to e.g. cli-market-backend, procure-copilot) — not this repo's own copy,
+    # and not ours to edit; fixing their stale "pip install cli-market" is a
+    # change to those repos, not this one.
+    "Clippings",
 }
 
 SKIP_FILES = {

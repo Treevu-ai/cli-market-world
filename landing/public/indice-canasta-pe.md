@@ -1,32 +1,27 @@
 # Índice Canasta Perú
 
-**Actualizado:** 2026-07-27 15:41 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
+**Actualizado:** 2026-08-03 14:14 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
 
 Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa. Señal pública del data moat — ver [`docs/gtm/pitch-agentic-protocols.md`](../docs/gtm/pitch-agentic-protocols.md).
 
 ## Resumen
 
-- **Cadenas PE en canasta:** 7
+- **Cadenas PE en canasta:** 2
 - **Freshness:** ver dashboard
-- **Cobertura 7d:** 32.9%
+- **Cobertura 7d:** 93.8%
 
 ## Totales por cadena (PEN)
 
 | Cadena | Ítems | Total canasta |
 |--------|------:|--------------:|
-| Datilera Biomarket | 6/10 | S/ 63.00 |
-| Vega | 10/10 | S/ 65.70 |
+| Del Campo a tu Casa | 3/10 | S/ 58.00 |
 | AmaGreen Mayorista | 4/10 | S/ 66.60 |
-| Plaza Vea | 11/10 | S/ 67.19 |
-| Metro | 11/10 | S/ 78.99 |
-| Wong | 11/10 | S/ 83.39 |
-| Makro Online | 11/10 | S/ 90.59 |
 
 ## Spread
 
-- Más barata: **Datilera Biomarket** (S/ 63.00)
-- Más cara: **Makro Online** (S/ 90.59)
-- Ratio max/min: **1.44×**
+- Más barata: **Del Campo a tu Casa** (S/ 58.00)
+- Más cara: **AmaGreen Mayorista** (S/ 66.60)
+- Ratio max/min: **1.15×**
 
 ## Metodología
 
