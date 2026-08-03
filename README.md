@@ -222,6 +222,8 @@ All six capabilities are backed by the same **63,000+** shelf prices, refreshed 
 
 The canonical entry point is **`market_optimize_purchase`** — one call covers basket compare, TCO, substitutes, intel, and action links. The legacy search → compare → basket flow remains available for granular use.
 
+Client setup guides: [Open WebUI](docs/OPENWEBUI-INTEGRATION.md) · [Claude Desktop](docs/CLAUDE-DESKTOP-INTEGRATION.md) · [LangChain](docs/LANGCHAIN-INTEGRATION.md) · [Mistral](docs/MISTRAL-INTEGRATION.md).
+
 ---
 
 **SINAPSIS INNOVADORA S.A.C.** — RUC 20613045563 — Lima, Peru  
