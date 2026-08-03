@@ -91,6 +91,10 @@ jobs:
           BRANCH="chore/core-pin-${VER}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # The earlier checkout of this repo persisted credentials for the
+          # read-only GH_PAT, not this write token — git push would silently
+          # reuse those and 403. Point origin at the write token explicitly.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/Treevu-ai/cli-market-backend.git"
           if git diff --quiet requirements.txt; then
             echo "Backend already pinned to cli-market-core>=${VER}"
             exit 0
