@@ -49,6 +49,12 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
   # MARKET_BOT_API_TOKEN
   # OPENAI_API_KEY
 
+  # Claude's custom-connector UI has no header field for non-OAuth remote MCP
+  # servers — it only takes a URL, so the API key can only be delivered as a
+  # `?token=` query param. Re-enables the escape hatch that routers/mcp_http.py
+  # disables by default (see CHANGELOG 2026-08-01 security hardening).
+  MCP_ALLOW_QUERY_TOKEN = "1"
+
 [http_service]
   internal_port = 8080
   force_https = true
