@@ -91,12 +91,21 @@ jobs:
           BRANCH="chore/core-pin-${VER}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # The earlier checkout of this repo (actions/checkout, using the
-          # read-only GH_PAT) persisted an http.extraheader auth config —
-          # that header wins over any URL-embedded credentials, so just
-          # changing the remote URL wasn't enough (still 403'd). Drop the
-          # stale header first, then point origin at the write token.
-          git config --local --unset-all http.https://github.com/.extraheader || true
+          # actions/checkout persisted an http.<url>.extraheader auth config
+          # for the read-only GH_PAT. Passing -c http...extraheader=... on
+          # the push command does NOT override it — git sends BOTH headers
+          # and GitHub 400s with "Duplicate header: Authorization" (verified
+          # locally). The exact key actions/checkout uses can be scoped to
+          # either the bare github.com host or this specific repo URL, so
+          # don't guess the key string — find and remove every extraheader
+          # entry via regexp, confirm none remain, then set the write token.
+          for key in $(git config --local --get-regexp '\.extraheader$' | awk '{print $1}'); do
+            git config --local --unset-all "$key"
+          done
+          if git config --local --get-regexp '\.extraheader$' >/dev/null 2>&1; then
+            echo "::error::Stale http.extraheader survived unset — would still auth as the read-only token"
+            exit 1
+          fi
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/Treevu-ai/cli-market-backend.git"
           if git diff --quiet requirements.txt; then
             echo "Backend already pinned to cli-market-core>=${VER}"
