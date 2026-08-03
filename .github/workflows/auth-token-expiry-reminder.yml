@@ -3,7 +3,7 @@ name: Auth token expiry reminder
 on:
   schedule:
     # 08:00 America/Lima (PET, UTC-5) = 13:00 UTC
-    - cron: "0 13 * * *"
+    - cron: "5 13 * * *"
   workflow_dispatch:
 
 permissions:
