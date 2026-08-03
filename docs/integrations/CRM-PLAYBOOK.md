@@ -15,6 +15,18 @@ CLI Market expone inteligencia de góndola peruana (precios, inflación de estan
 | 3 | **Zoho CRM** | PYMEs sensibles al precio | `cli-market-zoho.fly.dev` | 8002 |
 | 4 | **Kommo** | Sales conversacional LATAM | (pending deploy) | 8003 |
 
+> **⚠️ Drift conocido — Simla:** `cli-market-simla.fly.dev` corre hoy desde
+> `simla-cli-market-prototype/` (su propio `fly.toml`/Dockerfile), **no**
+> desde `cli_market_integrations/adapters/simla/`. HubSpot y Zoho sí están
+> desplegados desde el paquete unificado (ver sección Deploy más abajo). Si
+> cambiás lógica de enriquecimiento de Simla, editá
+> `simla-cli-market-prototype/src/` — tocar `cli_market_integrations/adapters/simla/`
+> no tiene efecto en producción hasta que se migre ese deploy. Verificado
+> 2026-08-02 comparando `fly.hubspot.toml`/`fly.zoho.toml` (apuntan a
+> `cli_market_integrations/adapters/*/Dockerfile`) contra
+> `simla-cli-market-prototype/fly.toml` (su propio Dockerfile, app
+> `cli-market-simla`).
+
 ---
 
 ## Instalación (30 minutos por CRM)
@@ -261,9 +273,10 @@ cli_market_integrations/
 │   ├── intel_client.py      CLIMarketIntelClient (HubSpot + Zoho + Kommo)
 │   └── enrichment.py        Helpers comunes + build_deal_pro_fields
 ├── adapters/
-│   ├── simla/               WhatsApp via Simla.com
-│   ├── hubspot/             HubSpot CRM
-│   ├── zoho/                Zoho CRM + Inventory
+│   ├── simla/               WhatsApp via Simla.com — NO es lo desplegado en
+│   │                        cli-market-simla.fly.dev hoy (ver aviso arriba)
+│   ├── hubspot/             HubSpot CRM — esto sí es lo desplegado
+│   ├── zoho/                Zoho CRM + Inventory — esto sí es lo desplegado
 │   └── kommo/               Kommo (ex-amoCRM)
 ├── cli.py                   cli-market-integrate entry point
 └── tests/                   87 tests, 87 passing
