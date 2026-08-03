@@ -4,10 +4,9 @@ PRICING STRATEGY ANALYZER - Para consultores
 Genera análisis completo de pricing para presentar a clientes
 """
 
-import json
 import subprocess
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List
 import sys
 
@@ -257,7 +256,6 @@ def main():
     cmd = sys.argv[1]
     
     if cmd == "analyze" and len(sys.argv) >= 5:
-        category = sys.argv[2]
         your_sku = sys.argv[3]
         competitors = sys.argv[4:]
         
@@ -267,7 +265,6 @@ def main():
         consultant.export_to_pdf(report)
     
     elif cmd == "summary" and len(sys.argv) >= 3:
-        category = sys.argv[2]
         analysis = {"competitors": 3}
         summary = consultant.generate_executive_summary(analysis)
         print(summary)

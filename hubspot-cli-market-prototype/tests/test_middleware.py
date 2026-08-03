@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import pytest
 from unittest.mock import AsyncMock, patch
-from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
 from src.hubspot_middleware import app

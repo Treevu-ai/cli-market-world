@@ -1,7 +1,6 @@
 """Tests for cli_market_integrations.adapters.kommo.enrichment"""
 from __future__ import annotations
 import os
-import pytest
 from unittest.mock import patch
 from cli_market_integrations.adapters.kommo.enrichment import (
     build_lead_custom_fields,

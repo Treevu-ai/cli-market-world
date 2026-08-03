@@ -1,6 +1,5 @@
 """Tests for cli_market_integrations.adapters.hubspot.enrichment"""
 from __future__ import annotations
-import pytest
 from cli_market_integrations.adapters.hubspot.enrichment import (
     build_contact_market_properties,
     build_deal_market_properties,
