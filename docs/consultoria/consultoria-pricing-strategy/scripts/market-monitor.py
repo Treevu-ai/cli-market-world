@@ -127,13 +127,12 @@ class MarketMonitor:
         with open(json_file, "r", encoding="utf-8") as f:
             shopping_list = json.load(f)
         
-        total_cost = 0
         results = []
-        
+
         for item in shopping_list.get("items", []):
             product = item.get("name")
             quantity = item.get("quantity", 1)
-            result = self.search_product(product, limit=1)
+            self.search_product(product, limit=1)
             results.append({
                 "product": product,
                 "quantity": quantity,

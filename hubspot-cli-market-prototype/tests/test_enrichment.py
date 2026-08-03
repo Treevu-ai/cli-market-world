@@ -3,12 +3,10 @@ Tests unitarios para la lógica de enrichment (sin red, sin HubSpot real).
 """
 from __future__ import annotations
 
-import pytest
 from src.enrichment import (
     build_contact_market_properties,
     build_deal_market_properties,
     compute_lead_score_delta,
-    _personalise_basket_stress,
 )
 
 

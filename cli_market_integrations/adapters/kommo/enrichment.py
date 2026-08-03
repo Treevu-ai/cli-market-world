@@ -29,7 +29,7 @@ import os
 from typing import Any
 
 from cli_market_integrations.shared.enrichment import (
-    safe_float, now_iso, extract_scores, action_for_signal,
+    now_iso, extract_scores,
 )
 
 logger = logging.getLogger(__name__)
