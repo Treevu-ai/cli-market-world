@@ -288,9 +288,27 @@ def _resolve_and_link(
     try:
         result = svc.resolve_snapshot(snapshot)
     except Exception as exc:
-        stats["errors"] += 1
-        logger.debug("resolve snapshot %s/%s: %s", store, pid, exc)
-        return
+        # Regression: PostgresStore (cli-market-index) opens exactly one
+        # psycopg2 connection at construction and never reconnects. Once
+        # Postgres drops it (idle timeout), every resolve_snapshot() call on
+        # the long-lived _service singleton throws forever, silently, until
+        # the process restarts — confirmed live: 0/50 resolved via the warm
+        # production process, 50/50 resolved immediately after a restart
+        # (fresh singleton, fresh connection). The retry-with-reconnect logic
+        # in _index_snapshot_rows only reconnects its own `market_core` db
+        # handle, never this module's `_service` global, so it can't recover
+        # this failure mode on its own. Drop the dead singleton and retry
+        # once against a freshly constructed one before counting it as a
+        # real error.
+        global _service
+        _service = None
+        try:
+            fresh_svc = _get_service()
+            result = fresh_svc.resolve_snapshot(snapshot)
+        except Exception as exc2:
+            stats["errors"] += 1
+            logger.debug("resolve snapshot %s/%s: %s (retry after service reset: %s)", store, pid, exc, exc2)
+            return
     if not result.product:
         stats["skipped"] += 1
         return

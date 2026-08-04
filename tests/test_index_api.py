@@ -126,3 +126,40 @@ def test_index_lookup_404(isolated_db, index_env, monkeypatch):
     with TestClient(app) as client:
         r = client.get("/index/lookup/prod_nonexistent_xyz", headers=headers)
     assert r.status_code == 404
+
+
+def test_resolve_and_link_recovers_from_dead_service_singleton(isolated_db, index_env):
+    """Regression: PostgresStore (cli-market-index) opens exactly one
+    psycopg2 connection at construction and never reconnects on failure.
+    Confirmed live in production: once that connection goes stale, the
+    long-lived _service singleton throws on every resolve_snapshot() call
+    forever -- 0/50 resolved via the warm process, 50/50 resolved
+    immediately after a restart (fresh singleton, fresh connection). The
+    existing per-row retry in _index_snapshot_rows only reconnects its own
+    market_core db handle, never this module's _service global, so it
+    can't recover this failure mode. _resolve_and_link must drop the dead
+    singleton and retry once against a freshly constructed one."""
+    import index_gate as gate
+
+    class _DeadServiceOnce:
+        """Raises exactly once, simulating a stale connection that a fresh
+        _get_service() call (post-reset) would no longer hit."""
+
+        def resolve_snapshot(self, snapshot):
+            raise RuntimeError("simulated stale psycopg2 connection")
+
+    row = {
+        "store": "wong",
+        "product_id": "sku-dead-1",
+        "name": "Leche Gloria 1L",
+        "brand": "Gloria",
+        "price": 4.5,
+        "currency": "PEN",
+    }
+    stats = {"resolved": 0, "linked": 0, "exact": 0, "fuzzy": 0, "auto": 0, "skipped": 0, "errors": 0}
+
+    gate._resolve_and_link(_DeadServiceOnce(), None, row, dry_run=True, stats=stats)
+
+    assert stats["errors"] == 0
+    assert stats["resolved"] == 1
+    assert gate._service is not None
