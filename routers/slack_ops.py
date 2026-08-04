@@ -39,6 +39,24 @@ def _verify_slack_signature(body: bytes, timestamp: str, signature: str, secret:
     return hmac.compare_digest(digest, signature)
 
 
+def _slack_activation_allowed(slack_user_id: str) -> bool:
+    if not DEFAULT_TOKEN:
+        return True
+    allowed = {
+        u.strip()
+        for u in os.getenv("SLACK_ACTIVATE_PRO_USERS", "").split(",")
+        if u.strip()
+    }
+    return bool(allowed) and slack_user_id in allowed
+
+
+def _slack_activation_denied_response() -> dict:
+    return {
+        "response_type": "ephemeral",
+        "text": "No autorizado para activar suscripciones desde Slack.",
+    }
+
+
 @router.post("/slack/interactions")
 async def slack_interactions(request: Request):
     """Handle block_actions from #suscripciones-cli-pro (activate Pro after manual payment)."""
@@ -92,17 +110,8 @@ async def slack_interactions(request: Request):
             "text": f"Ref inválida: `{request_id}`",
         }
 
-    if DEFAULT_TOKEN:
-        allowed = {
-            u.strip()
-            for u in os.getenv("SLACK_ACTIVATE_PRO_USERS", "").split(",")
-            if u.strip()
-        }
-        if allowed and user_id not in allowed:
-            return {
-                "response_type": "ephemeral",
-                "text": "No autorizado para activar suscripciones desde Slack.",
-            }
+    if DEFAULT_TOKEN and not _slack_activation_allowed(user_id):
+        return _slack_activation_denied_response()
 
     if _is_procure_subscription_request_id(request_id):
         result = _activate_procure_from_request(request_id, source="slack_interaction")
@@ -152,17 +161,11 @@ async def slack_interactions(request: Request):
 
 def _handle_activate_user_pro(action: dict, slack_user_id: str) -> dict:
     """Activate Pro directly by username (triggered from registration card)."""
-    if DEFAULT_TOKEN:
-        allowed = {
-            u.strip()
-            for u in os.getenv("SLACK_ACTIVATE_PRO_USERS", "").split(",")
-            if u.strip()
+    if DEFAULT_TOKEN and not _slack_activation_allowed(slack_user_id):
+        return {
+            "response_type": "ephemeral",
+            "text": "No autorizado para activar Pro desde Slack.",
         }
-        if allowed and slack_user_id not in allowed:
-            return {
-                "response_type": "ephemeral",
-                "text": "No autorizado para activar Pro desde Slack.",
-            }
 
     username = (action.get("value") or "").strip()
     if not username:

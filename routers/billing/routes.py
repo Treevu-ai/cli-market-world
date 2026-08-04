@@ -39,7 +39,9 @@ from routers.billing.notifications import (
     _slack_notify_subscription,
 )
 from routers.billing.pro_helpers import (
+    can_reveal_duplicate_checkout,
     duplicate_mp_checkout_payload,
+    generic_duplicate_checkout_response,
     is_mp_billing_method,
     mp_pay_note,
     procure_mp_checkout_enabled,
@@ -490,11 +492,20 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
             body_username=body_username,
             auth_username=auth_user,
         )
+        _assert_username_email_binding(
+            email,
+            username,
+            auth_username=auth_user,
+            lang=lang,
+        )
         display_name = (body.get("display_name") or body.get("name") or "").strip()
+        reveal_duplicate = can_reveal_duplicate_checkout(auth_user, email)
 
         if not force:
             recent = db_recent_subscription_request(email)
             if recent:
+                if not reveal_duplicate:
+                    return generic_duplicate_checkout_response(lang)
                 link = recent.get("payment_link") or ""
                 if method == "paypal" and (
                     "billing/subscriptions" in link.lower() or "/subscriptions?" in link.lower()
@@ -517,7 +528,12 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                         ),
                     }
                 if is_mp_billing_method(method):
-                    dup = duplicate_mp_checkout_payload(recent, method=method, lang=lang)
+                    dup = duplicate_mp_checkout_payload(
+                        recent,
+                        method=method,
+                        lang=lang,
+                        reveal_details=reveal_duplicate,
+                    )
                     if dup:
                         return dup
 
@@ -563,6 +579,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 username=username,
                 display_name=display_name,
                 force=force,
+                auth_username=auth_user,
             )
             out["payment_method"] = "paypal"
             out["approve_url"] = out.get("payment_link")
@@ -1307,7 +1324,12 @@ async def billing_procure_subscribe(body: dict, authorization: str | None = Head
         if not force and method != "paypal":
             recent = db_recent_subscription_request(email)
             if recent and is_mp_billing_method(method):
-                dup = duplicate_mp_checkout_payload(recent, method=method, lang=lang)
+                dup = duplicate_mp_checkout_payload(
+                    recent,
+                    method=method,
+                    lang=lang,
+                    reveal_details=can_reveal_duplicate_checkout(auth_user, email),
+                )
                 if dup:
                     from procure_billing import procure_tier_from_request_id, tier_to_procure_plan
 
@@ -1398,6 +1420,12 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
             body_username=(body.get("username") or ""),
             auth_username=auth_user,
         )
+        _assert_username_email_binding(
+            email,
+            username,
+            auth_username=auth_user,
+            lang=lang,
+        )
 
         out = await _start_paypal_subscription(
             username, email, plan="starter", lang=lang, funnel_source="landing_starter_subscribe",
@@ -1466,6 +1494,12 @@ async def billing_build_checkout(body: dict, authorization: str | None = Header(
             email,
             body_username=(body.get("username") or ""),
             auth_username=auth_user,
+        )
+        _assert_username_email_binding(
+            email,
+            username,
+            auth_username=auth_user,
+            lang=lang,
         )
 
         out = await _start_paypal_subscription(

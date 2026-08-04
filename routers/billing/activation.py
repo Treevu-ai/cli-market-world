@@ -13,7 +13,11 @@ from market_core import (
     db_recent_subscription_request,
     db_set_subscription,
 )
-from routers.billing.pro_helpers import is_manual_wallet_pro_payment_link
+from routers.billing.pro_helpers import (
+    can_reveal_duplicate_checkout,
+    generic_duplicate_checkout_response,
+    is_manual_wallet_pro_payment_link,
+)
 from routers.billing.notifications import (
     _append_pro_activation_email_actions,
     _append_procure_activation_email_actions,
@@ -609,6 +613,7 @@ def process_pro_subscription_request(
     display_name: str = "",
     force: bool = False,
     note: str = "",
+    auth_username: str = "",
 ) -> dict:
     """Shared Pro request flow: dedupe, persist, email subscriber + notify hello@."""
     from market_connectors.email_outbound import PRO_PAYMENT_URL, send_pro_payment_email, send_pro_request_notify
@@ -621,6 +626,8 @@ def process_pro_subscription_request(
 
     recent = db_recent_subscription_request(email)
     if recent and not force:
+        if not can_reveal_duplicate_checkout(auth_username, email):
+            return generic_duplicate_checkout_response(lang)
         return {
             "ok": True,
             "request_id": recent["id"],
