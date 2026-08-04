@@ -260,6 +260,114 @@ def test_procure_subscribe_allows_new_username(monkeypatch):
     assert r.status_code == 200
 
 
+@pytest.mark.parametrize(
+    "path,payload",
+    [
+        (
+            "/billing/pro-checkout",
+            {
+                "email": "attacker@example.com",
+                "username": "victim-user",
+                "payment_method": "mercadopago",
+                "lang": "en",
+            },
+        ),
+        (
+            "/billing/starter-subscribe",
+            {
+                "email": "attacker@example.com",
+                "username": "victim-user",
+                "lang": "en",
+            },
+        ),
+        (
+            "/billing/build-checkout",
+            {
+                "email": "attacker@example.com",
+                "username": "victim-user",
+                "plan": "pro",
+                "lang": "en",
+            },
+        ),
+    ],
+)
+def test_billing_checkout_rejects_foreign_username_binding(path, payload, monkeypatch):
+    from market_core import db_save_user, ensure_db_initialized
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    ensure_db_initialized()
+    db_save_user("victim-user", "hash", None, "victim@example.com")
+
+    r = client.post(path, json=payload)
+    assert r.status_code == 403
+    assert "email" in r.json()["detail"].lower()
+
+
+def test_pro_checkout_duplicate_hides_details_without_auth(monkeypatch):
+    from market_core import db_create_subscription_request, ensure_db_initialized
+
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    ensure_db_initialized()
+    db_create_subscription_request(
+        "secret-user",
+        "victim@example.com",
+        "https://mp.test/secret-checkout",
+        prefix="PRO",
+    )
+
+    r = client.post(
+        "/billing/pro-checkout",
+        json={
+            "email": "victim@example.com",
+            "username": "secret-user",
+            "payment_method": "mercadopago",
+            "lang": "en",
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data.get("duplicate") is True
+    assert "username" not in data
+    assert "request_id" not in data
+    assert "payment_link" not in data
+    assert "checkout_url" not in data
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/v1/intel/basket-stress",
+        "/v1/intel/pulse",
+        "/v1/intel/forecast",
+        "/v1/intel/arbitrage",
+    ],
+)
+def test_intel_pro_routes_reject_starter_tier(path, isolated_db):
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    from market_server import hash_password
+
+    ensure_db_initialized()
+    db_save_user("starter-intel", hash_password("market"), "starter-intel@test.com")
+    market_billing.db_set_subscription("starter-intel", "starter")
+    key = db_create_api_key("starter-intel", "read", "intel-starter")["key"]
+    params = {"country": "PE"} if path != "/v1/intel/forecast" else {"product": "leche"}
+    if path == "/v1/intel/arbitrage":
+        params = {"product": "leche", "countries": "PE,MX"}
+    r = client.get(path, params=params, headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
+
+
+def test_slack_activation_fails_closed_when_allowlist_empty(monkeypatch):
+    import routers.slack_ops as slack_ops
+
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-slack-signing-secret")
+    monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
+    monkeypatch.setattr(slack_ops, "DEFAULT_TOKEN", "prod-token")
+
+    assert slack_ops._slack_activation_allowed("U_ANYONE") is False
+
+
 def test_telegram_bot_token_does_not_fallback_to_admin_token(monkeypatch):
     import routers.integrations.telegram as telegram
 
