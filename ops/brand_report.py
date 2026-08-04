@@ -161,10 +161,10 @@ def _api_base() -> str:
 def _api_key() -> str:
     return os.getenv("MARKET_API_TOKEN", "")
 
-PE_STORES = ["wong", "metro", "plazavea", "mimercado_delivery"]
+PE_STORES = ["wong", "metro", "plazavea"]
 STORE_LABELS = {
     "wong": "Wong", "metro": "Metro", "plazavea": "Plaza Vea",
-    "mimercado_delivery": "Mi Mercado", "promart": "Promart",
+    "promart": "Promart",
     "sodimac_pe": "Sodimac", "ripley_pe": "Ripley", "falabella_pe": "Falabella",
 }
 

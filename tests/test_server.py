@@ -1014,7 +1014,7 @@ def test_pro_checkout_requires_username(monkeypatch):
     assert r.status_code == 400
 
 
-def test_pro_checkout_mp_dedupe_returns_checkout_url(monkeypatch):
+def test_pro_checkout_mp_dedupe_hides_checkout_url_from_unauthenticated_caller(monkeypatch):
     from market_core import db_create_subscription_request, db_update_subscription_request_payment_link
 
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
@@ -1042,7 +1042,13 @@ def test_pro_checkout_mp_dedupe_returns_checkout_url(monkeypatch):
     assert r.status_code == 200
     data = r.json()
     assert data.get("duplicate") is True
-    assert data.get("checkout_url") == "https://www.mercadopago.com/checkout/existing"
+    # Regression guard for 2d36d56c (security fix): an unauthenticated
+    # caller must not receive the checkout_url or the account's username on
+    # a dedupe hit -- only the account owner, authenticated, can. This
+    # request supplies no auth, so it must get the generic message instead
+    # of leaking the payment URL to whoever knows/guesses the email.
+    assert data.get("checkout_url") is None
+    assert "message" in data
 
 
 def test_mercadopago_webhook_activates_pro_request(monkeypatch):
