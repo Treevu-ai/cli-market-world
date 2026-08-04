@@ -123,6 +123,18 @@ def test_slack_unauthorized_user_blocked(monkeypatch):
     assert "autorizado" in data.get("text", "").lower()
 
 
+def test_slack_empty_allowlist_blocked_in_production(monkeypatch):
+    import routers.slack_ops as _slack_mod
+
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", _SECRET)
+    monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
+    monkeypatch.setattr(_slack_mod, "DEFAULT_TOKEN", "test-token-123")
+    body = _slack_body(value="PRO-ABCD1234")
+    data = _post_slack(body, monkeypatch)
+    assert data.get("response_type") == "ephemeral"
+    assert "autorizado" in data.get("text", "").lower()
+
+
 def test_slack_valid_pro_ref_not_found_returns_ephemeral(monkeypatch):
     monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
     body = _slack_body(value="PRO-NOTFOUND")

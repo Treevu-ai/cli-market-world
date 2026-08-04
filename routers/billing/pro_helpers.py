@@ -71,11 +71,37 @@ def checkout_url_from_request(row: dict) -> str:
     return ""
 
 
+def can_reveal_duplicate_checkout(auth_username: str, email: str) -> bool:
+    """Only authenticated owners may receive username/checkout URLs on dedupe."""
+    if not auth_username:
+        return False
+    from market_core import db_get_user_email, db_get_users
+
+    normalized = email.strip().lower()
+    account_email = (db_get_user_email(auth_username) or "").strip().lower()
+    real_email = (db_get_users().get(auth_username, {}).get("email") or "").strip().lower()
+    owner_emails = {e for e in (account_email, real_email) if e}
+    return bool(owner_emails) and normalized in owner_emails
+
+
+def generic_duplicate_checkout_response(lang: str) -> dict:
+    return {
+        "ok": True,
+        "duplicate": True,
+        "message": (
+            "Ya enviamos un enlace de pago recientemente. Revisa tu bandeja (y spam)."
+            if lang == "es"
+            else "We already sent a payment link recently. Check your inbox (and spam)."
+        ),
+    }
+
+
 def duplicate_mp_checkout_payload(
     recent: dict,
     *,
     method: str,
     lang: str,
+    reveal_details: bool = True,
 ) -> dict | None:
     """Return a duplicate checkout response when a recent MP request matches."""
     if (recent.get("status") or "").lower() != "pending":
@@ -85,6 +111,8 @@ def duplicate_mp_checkout_payload(
     checkout_url = checkout_url_from_request(recent)
     if not checkout_url:
         return None
+    if not reveal_details:
+        return generic_duplicate_checkout_response(lang)
     display_method = method if method in ("yape", "plin") else "mercadopago"
     return {
         "ok": True,
