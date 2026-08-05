@@ -1,7 +1,12 @@
-"""Unit tests for the standard WhatsApp conversation funnel."""
+"""Unit tests for the standard WhatsApp conversation funnel.
+
+CI test-pg does not enable pytest-asyncio for async def tests — drive
+coroutines with asyncio.run(), matching tests/test_telegram_interactions.py.
+"""
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 import pytest
@@ -60,17 +65,18 @@ def test_classify_intel_and_pick():
     assert conv.classify_specificity("menu") == "help"
 
 
-@pytest.mark.asyncio
-async def test_vague_prompts_clarify_without_search(platform_id):
+def test_vague_prompts_clarify_without_search(platform_id):
     async def boom(*_a, **_k):
         raise AssertionError("search must not run on vague turn")
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "aceite",
-        token="tok",
-        market_api_url="https://example.test",
-        search_fn=boom,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "aceite",
+            token="tok",
+            market_api_url="https://example.test",
+            search_fn=boom,
+        )
     )
     assert "Vegetal" in reply or "vegetal" in reply.lower()
     assert "1." in reply
@@ -79,9 +85,7 @@ async def test_vague_prompts_clarify_without_search(platform_id):
     assert state["family"] == "aceite"
 
 
-@pytest.mark.asyncio
-async def test_clarify_choice_triggers_search(platform_id):
-    _ensure_messenger_sessions_table()
+def test_clarify_choice_triggers_search(platform_id):
     update_messenger_session(
         platform_id,
         context=json.dumps(
@@ -119,12 +123,14 @@ async def test_clarify_choice_triggers_search(platform_id):
             },
         ]
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "1",
-        token="tok",
-        market_api_url="https://example.test",
-        search_fn=fake_search,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "1",
+            token="tok",
+            market_api_url="https://example.test",
+            search_fn=fake_search,
+        )
     )
     assert "Primor" in reply
     assert "1." in reply and "2." in reply
@@ -134,9 +140,7 @@ async def test_clarify_choice_triggers_search(platform_id):
     assert len(state["candidates"]) == 2
 
 
-@pytest.mark.asyncio
-async def test_pick_candidate_shows_detail(platform_id):
-    _ensure_messenger_sessions_table()
+def test_pick_candidate_shows_detail(platform_id):
     update_messenger_session(
         platform_id,
         context=json.dumps(
@@ -163,20 +167,21 @@ async def test_pick_candidate_shows_detail(platform_id):
     async def no_search(*_a, **_k):
         raise AssertionError("no search")
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "1",
-        token="tok",
-        market_api_url="https://example.test",
-        search_fn=no_search,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "1",
+            token="tok",
+            market_api_url="https://example.test",
+            search_fn=no_search,
+        )
     )
     assert "Primor" in reply
     assert "Wong" in reply
     assert "S/" in reply
 
 
-@pytest.mark.asyncio
-async def test_medium_query_searches_catalog(platform_id):
+def test_medium_query_searches_catalog(platform_id):
     async def fake_search(query, country, token):
         assert query == "aceite vegetal"
         assert country == "PE"
@@ -191,44 +196,51 @@ async def test_medium_query_searches_catalog(platform_id):
             }
         ]
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "aceite vegetal",
-        token="tok",
-        market_api_url="https://example.test",
-        search_fn=fake_search,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "aceite vegetal",
+            token="tok",
+            market_api_url="https://example.test",
+            search_fn=fake_search,
+        )
     )
     assert "PlazaVea" in reply
     assert "1." in reply
 
 
-@pytest.mark.asyncio
-async def test_intel_path_uses_guardrails(platform_id):
+def test_intel_path_uses_guardrails(platform_id):
     seen = {}
 
     async def fake_intel(question, token):
         seen["q"] = question
         return "Respuesta de prueba"
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "compara leche evaporada en Lima",
-        token="tok",
-        market_api_url="https://example.test",
-        intel_fn=fake_intel,
-        search_fn=lambda *a, **k: (_ for _ in ()).throw(AssertionError("no search")),
+    async def no_search(*_a, **_k):
+        raise AssertionError("no search")
+
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "compara leche evaporada en Lima",
+            token="tok",
+            market_api_url="https://example.test",
+            intel_fn=fake_intel,
+            search_fn=no_search,
+        )
     )
     assert reply == "Respuesta de prueba"
     assert "verificables" in seen["q"].lower() or "verificable" in seen["q"].lower()
 
 
-@pytest.mark.asyncio
-async def test_welcome_on_hola(platform_id):
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "hola",
-        token="tok",
-        market_api_url="https://example.test",
+def test_welcome_on_hola(platform_id):
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "hola",
+            token="tok",
+            market_api_url="https://example.test",
+        )
     )
     assert "CLI Market" in reply
     assert "Mal:" in reply or "mal" in reply.lower()
@@ -258,36 +270,37 @@ def test_parse_basket_strips_canasta_prefix():
     assert len(items) == 2
 
 
-@pytest.mark.asyncio
-async def test_canasta_command_shows_help(platform_id):
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "canasta",
-        token="tok",
-        market_api_url="https://example.test",
+def test_canasta_command_shows_help(platform_id):
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "canasta",
+            token="tok",
+            market_api_url="https://example.test",
+        )
     )
     assert "2 y 20" in reply or "2 a 20" in reply.lower() or "entre" in reply.lower()
 
 
-@pytest.mark.asyncio
-async def test_basket_incomplete_blocks_total(platform_id):
+def test_basket_incomplete_blocks_total(platform_id):
     async def fake_basket(items, country, token):
         assert len(items) == 2
         return {"items_searched": 2, "items_found": 1, "stores": []}, 200
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
-        token="tok",
-        market_api_url="https://example.test",
-        basket_fn=fake_basket,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
+            token="tok",
+            market_api_url="https://example.test",
+            basket_fn=fake_basket,
+        )
     )
     assert "1" in reply and "2" in reply
     assert "total" in reply.lower() or "Cobertura" in reply
 
 
-@pytest.mark.asyncio
-async def test_basket_complete_lists_stores_and_pick_detail(platform_id):
+def test_basket_complete_lists_stores_and_pick_detail(platform_id):
     async def fake_basket(items, country, token):
         return {
             "items_searched": 2,
@@ -323,23 +336,27 @@ async def test_basket_complete_lists_stores_and_pick_detail(platform_id):
             ],
         }, 200
 
-    reply = await conv.handle_standard_turn(
-        platform_id,
-        "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
-        token="tok",
-        market_api_url="https://example.test",
-        basket_fn=fake_basket,
+    reply = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
+            token="tok",
+            market_api_url="https://example.test",
+            basket_fn=fake_basket,
+        )
     )
     assert "Wong" in reply
     assert "1." in reply
     assert "cobertura completa" in reply.lower() or "Canasta" in reply
 
-    detail = await conv.handle_standard_turn(
-        platform_id,
-        "1",
-        token="tok",
-        market_api_url="https://example.test",
-        basket_fn=fake_basket,
+    detail = asyncio.run(
+        conv.handle_standard_turn(
+            platform_id,
+            "1",
+            token="tok",
+            market_api_url="https://example.test",
+            basket_fn=fake_basket,
+        )
     )
     assert "Total observado" in detail
     assert "Gloria" in detail
