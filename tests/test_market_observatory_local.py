@@ -42,10 +42,22 @@ def test_internal_tool_not_recorded(monkeypatch, tmp_path):
     monkeypatch.setenv("OBSERVATORY_TELEMETRY", "1")
     import market_core.market_core as mc
 
-    mc._db_initialized = False
-    mc.USE_PG = False
-    mc.DATA_DIR = data_dir
-    mc.DB_FILE = data_dir / "market.db"
+    # monkeypatch.setattr (not a plain `mc.X = ...` assignment) so these
+    # revert automatically after this test -- a raw assignment here has no
+    # teardown, so it permanently flips market_core.market_core.USE_PG to
+    # False for the rest of the pytest session the moment this test runs.
+    # That's the actual root cause behind test-pg CI's persistent
+    # test_vault.py-and-friends cluster (found 2026-08-05): downstream
+    # modules read the *top-level* `market_core` package's USE_PG (a
+    # `from .market_core import *` re-export, itself a one-time snapshot
+    # frozen at first import -- see market_core/__init__.py), which stays
+    # True even after this leaks the *submodule*'s live value to False, so
+    # market_vault.py picks Postgres DDL while get_db() actually hands back
+    # a SQLite connection underneath it.
+    monkeypatch.setattr(mc, "_db_initialized", False)
+    monkeypatch.setattr(mc, "USE_PG", False)
+    monkeypatch.setattr(mc, "DATA_DIR", data_dir)
+    monkeypatch.setattr(mc, "DB_FILE", data_dir / "market.db")
     mc.ensure_db_initialized()
 
     skipped = record_agent_event(
@@ -77,10 +89,22 @@ def test_compute_daily_observatory_metrics_sqlite_row(monkeypatch, tmp_path):
     monkeypatch.setenv("OBSERVATORY_TELEMETRY", "1")
     import market_core.market_core as mc
 
-    mc._db_initialized = False
-    mc.USE_PG = False
-    mc.DATA_DIR = data_dir
-    mc.DB_FILE = data_dir / "market.db"
+    # monkeypatch.setattr (not a plain `mc.X = ...` assignment) so these
+    # revert automatically after this test -- a raw assignment here has no
+    # teardown, so it permanently flips market_core.market_core.USE_PG to
+    # False for the rest of the pytest session the moment this test runs.
+    # That's the actual root cause behind test-pg CI's persistent
+    # test_vault.py-and-friends cluster (found 2026-08-05): downstream
+    # modules read the *top-level* `market_core` package's USE_PG (a
+    # `from .market_core import *` re-export, itself a one-time snapshot
+    # frozen at first import -- see market_core/__init__.py), which stays
+    # True even after this leaks the *submodule*'s live value to False, so
+    # market_vault.py picks Postgres DDL while get_db() actually hands back
+    # a SQLite connection underneath it.
+    monkeypatch.setattr(mc, "_db_initialized", False)
+    monkeypatch.setattr(mc, "USE_PG", False)
+    monkeypatch.setattr(mc, "DATA_DIR", data_dir)
+    monkeypatch.setattr(mc, "DB_FILE", data_dir / "market.db")
     mc.ensure_db_initialized()
 
     record_agent_event(
@@ -102,10 +126,22 @@ def test_observatory_snapshot_streak_sqlite(monkeypatch, tmp_path):
     monkeypatch.setenv("OBSERVATORY_TELEMETRY", "1")
     import market_core.market_core as mc
 
-    mc._db_initialized = False
-    mc.USE_PG = False
-    mc.DATA_DIR = data_dir
-    mc.DB_FILE = data_dir / "market.db"
+    # monkeypatch.setattr (not a plain `mc.X = ...` assignment) so these
+    # revert automatically after this test -- a raw assignment here has no
+    # teardown, so it permanently flips market_core.market_core.USE_PG to
+    # False for the rest of the pytest session the moment this test runs.
+    # That's the actual root cause behind test-pg CI's persistent
+    # test_vault.py-and-friends cluster (found 2026-08-05): downstream
+    # modules read the *top-level* `market_core` package's USE_PG (a
+    # `from .market_core import *` re-export, itself a one-time snapshot
+    # frozen at first import -- see market_core/__init__.py), which stays
+    # True even after this leaks the *submodule*'s live value to False, so
+    # market_vault.py picks Postgres DDL while get_db() actually hands back
+    # a SQLite connection underneath it.
+    monkeypatch.setattr(mc, "_db_initialized", False)
+    monkeypatch.setattr(mc, "USE_PG", False)
+    monkeypatch.setattr(mc, "DATA_DIR", data_dir)
+    monkeypatch.setattr(mc, "DB_FILE", data_dir / "market.db")
     mc.ensure_db_initialized()
 
     compute_daily_observatory_metrics(day=date.today())

@@ -28,7 +28,13 @@ client = TestClient(app)
 def clean_db():
     """Reset DB state before each test."""
     db = get_db()
-    for table in ["app_carts", "app_orders", "app_order_items", "rate_limits", "billing_pending", "subscriptions", "subscription_requests"]:
+    # app_order_items.order_id references app_orders(order_id) -- must be
+    # deleted first. SQLite doesn't enforce FKs by default so this order
+    # never mattered there; Postgres does, and an unguarded DELETE FROM
+    # app_orders here failed outright (ForeignKeyViolation), taking every
+    # single test in this file down via this autouse fixture (found
+    # 2026-08-05, same bug class as test_checkout_payments.py's 845fe073).
+    for table in ["app_carts", "app_order_items", "app_orders", "rate_limits", "billing_pending", "subscriptions", "subscription_requests"]:
         db.execute(f"DELETE FROM {table}")
     db.execute("DELETE FROM app_users")
     db.commit()
