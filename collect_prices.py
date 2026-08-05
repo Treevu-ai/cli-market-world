@@ -696,11 +696,18 @@ if USE_PG:
         if discount is not None:
             discount = int(round(float(discount)))
         list_price = prod.get("list_price")
+        price = float(prod["price"])
         confidence = compute_snapshot_confidence(
-            float(prod["price"]),
+            price,
             float(list_price) if list_price else None,
         )
-        await conn.execute("""
+        # `old` reads the pre-upsert price via the statement-start MVCC snapshot
+        # (standard Postgres "capture old value across an upsert" pattern), so
+        # we can detect a price change without a separate round trip.
+        row = await conn.fetchrow("""
+            WITH old AS (
+                SELECT price FROM price_snapshots WHERE product_id=$1 AND store=$7
+            )
             INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,confidence)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
             ON CONFLICT (product_id,store) DO UPDATE SET
@@ -712,8 +719,22 @@ if USE_PG:
                 stock=EXCLUDED.stock,
                 confidence=EXCLUDED.confidence,
                 queried_at=NOW()
-        """, prod["product_id"],prod["name"],prod["brand"],prod["price"],prod["list_price"],discount,
+            RETURNING (SELECT price FROM old) AS old_price
+        """, prod["product_id"],prod["name"],prod["brand"],price,list_price,discount,
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"], confidence)
+
+        # price_history is append-only, change-triggered (mirrors
+        # market_core.append_price_history()'s SQLite behavior). The scheduled
+        # PG collector never wrote it before this fix — only incidental
+        # live=true /search calls did (see 2026-08 investigation) — so
+        # price_history had gone stale for ~11 days despite price_snapshots
+        # refreshing every cycle.
+        old_price = row["old_price"] if row else None
+        if old_price is None or old_price != price:
+            await conn.execute(
+                "INSERT INTO price_history (product_id, store, price, list_price, discount) VALUES ($1, $2, $3, $4, $5)",
+                prod["product_id"], prod["store"], price, list_price, discount,
+            )
 
         stock = prod.get("stock")
         await conn.execute(
@@ -1209,21 +1230,30 @@ async def run_collection(stores, queries):
         await init_schema()
         async with pool.acquire() as c:
             rid = await pg_run_start(c, len(sl))
-        for i in range(0, len(sl), batch_size):
-            batch = sl[i:i + batch_size]
-            tasks = [collect_one_pg(pool, s, queries) for s in batch]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-            for store, r in zip(batch, results, strict=True):
-                if isinstance(r, Exception):
-                    errs.append(f"{store}: {r}")
-                    logger.warning("store %s exception: %s", store, str(r)[:160])
-                else:
-                    responded += 1
-                    if r > 0:
-                        total += r
-                        yielded += 1
-        async with pool.acquire() as c:
-            await pg_run_end(c, rid, responded, total, json.dumps(errs[:100]), yielded)
+        try:
+            for i in range(0, len(sl), batch_size):
+                batch = sl[i:i + batch_size]
+                tasks = [collect_one_pg(pool, s, queries) for s in batch]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                for store, r in zip(batch, results, strict=True):
+                    if isinstance(r, Exception):
+                        errs.append(f"{store}: {r}")
+                        logger.warning("store %s exception: %s", store, str(r)[:160])
+                    else:
+                        responded += 1
+                        if r > 0:
+                            total += r
+                            yielded += 1
+        except Exception as exc:
+            # Anything that escapes the per-store gather() (pool exhaustion,
+            # cancellation, etc.) used to leave this run's collector_runs row
+            # stuck at finished_at=NULL forever, since pg_run_end() below never
+            # ran. Record the crash and still close out the run.
+            errs.append(f"run_collection crashed: {exc}")
+            logger.error("run_collection crashed mid-cycle: %s", exc)
+        finally:
+            async with pool.acquire() as c:
+                await pg_run_end(c, rid, responded, total, json.dumps(errs[:100]), yielded)
         if total == 0 and len(sl) > 0:
             logger.warning(
                 "collection cycle saved 0 prices for %d stores (%d hard errors)",
