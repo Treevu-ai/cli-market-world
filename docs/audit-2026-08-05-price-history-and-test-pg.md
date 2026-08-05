@@ -1,7 +1,7 @@
 # Audit: historical-series data moat + a silently broken Postgres CI gate
 
 **Date:** 2026-08-05
-**Status:** Partially resolved — collector/price-history fixes deployed; test-pg triage in progress (4 of N passes done, 28→14 failed)
+**Status:** test-pg's real target is essentially done (28→1 failed, 0 errors, confirmed in real CI). A different, pre-existing problem in the plain SQLite `test` job was unmasked as a side effect and is now the open item — see bottom.
 **Trigger:** Asked to verify we're actually generating and saving historical price series in production.
 
 ## Summary
@@ -295,17 +295,112 @@ opportunistic-recovery behavior).
   column + "database is locked" — likely downstream of the same connection
   flakiness above, not independent bugs).
 
+## The real root cause (triage pass 5) — and cli-market-core 1.12.8
+
+Spent a full round chasing a wrong lead first: widened `get_db()`'s Postgres
+connect-retry budget in `cli-market-core` (3 attempts/~0.6s ->
+5 attempts/~3s, published as **v1.12.8** on PyPI, pinned here) on the theory
+that the persistent `test_vault.py` cluster was connection-churn flakiness.
+Verified the retry logic works (simulated a 4-consecutive-failure outage,
+recovers on attempt 5) — a real, legitimate improvement, kept — but CI's
+count didn't move (still 14 failed / 42 errors), proving that wasn't the
+actual trigger.
+
+Confirmed by monitoring `pg_stat_activity` through a full local suite run:
+connection count stayed at **1** the entire time — ruling out connection
+exhaustion/leak entirely. Re-reading the exact traceback then found the
+real bug: `tests/test_market_observatory_local.py`'s three tests each did
+a raw `mc.USE_PG = False` (mc = `market_core.market_core`, the
+*submodule*) — a direct attribute assignment, not wrapped in
+`monkeypatch.setattr` despite `monkeypatch` already being used for
+`setenv()` in the same tests. No teardown, so it permanently flipped the
+submodule's live `USE_PG` to `False` for the rest of the pytest session
+the moment any of the three ran.
+
+Why that broke `market_vault.py` (and the ~9 other files fixed in passes
+1/3) specifically: those all do `import market_core; ...
+market_core.USE_PG` (the *top-level package* attribute) — itself a
+`from .market_core import *` one-time re-export snapshot, frozen at first
+import (see `cli-market-core`'s `market_core/__init__.py`). That snapshot
+never updates after the observatory test's leak, so it kept reading `True`
+and picking Postgres DDL, while `get_db()` (which reads the *live*
+submodule attribute directly) correctly returned a SQLite connection —
+the mismatch that produced `sqlite3.OperationalError: near "(": syntax
+error` on every subsequent `ensure_*_schema()` call. Fixed with
+`monkeypatch.setattr` for all four leaked attributes
+(`USE_PG`/`_db_initialized`/`DATA_DIR`/`DB_FILE`).
+
+That fix then surfaced `test_server.py`'s own copy of the FK-delete-order
+bug (pass 1's `test_checkout_payments.py` class) — unguarded this time, so
+it failed outright and took its entire ~80-test file down through the
+autouse fixture. Reordered to delete children first, same as before.
+
+**Result in real CI:** `test-pg` went from 14 failed / 42 errors to
+**6 failed / 0 errors**. Pass 6 fixed four of the remaining six (all
+genuine Postgres-vs-SQLite driver behavior differences — psycopg2
+auto-deserializing `JSONB`/`TIMESTAMPTZ` columns into dicts/datetimes where
+SQLite returns raw strings, plus a real production ordering bug in
+`GET /analytics/price-history/series` where Postgres's `NOW()` returns
+transaction-start time, not statement time, so two rows inserted in one
+transaction could tie on `recorded_at` — added `id DESC` as a tiebreaker).
+**Final confirmed CI result: 1171 passed, 1 failed, 0 errors** — down from
+the pass-1 baseline of 29 failed / 56 errors. The one remaining failure
+(`test_auth.py::test_revoke_api_key_success`, 404 instead of 200) is
+un-triaged; plausibly fallout from the same class of issue, not yet
+confirmed as independent.
+
+## New problem, found by fixing the old one: the plain SQLite `test` job now hangs
+
+The `test_market_observatory_local.py` fix above is correct and necessary
+for `test-pg` — but it changed real behavior for every test that runs
+*after* those three in the **plain SQLite** `test` job too. Before the fix,
+the leaked `mc.DATA_DIR`/`DB_FILE` silently rerouted the rest of that job's
+~1000 remaining tests onto a small, fresh, isolated temp SQLite file
+instead of the real shared session DB (a bug, but one that happened to
+keep things fast). After the fix, those tests correctly go back to
+operating on the real, ever-growing shared DB — and CI's `test` job started
+hanging for the full 10-minute job timeout before being cancelled, twice in
+a row (reproduced identically on both the original run and a manual
+rerun). Reproduced locally too (no Docker needed, SQLite-only): confirmed
+by literally restoring the old broken version of the test file and
+re-running the full local suite — clean, 1177 passed in 2:33 — versus the
+fixed version, which reliably reproduces `FF....EE.E` failures around 91%
+and then hangs.
+
+Leading theory, not yet proven: SQLite WAL-mode checkpoint starvation. The
+shared session DB runs in WAL mode (`_DB.__init__`, `cli-market-core`);
+WAL checkpointing needs no open read connection blocking it, and a
+connection somewhere in this ~1170-test session isn't being closed
+reliably. Before the fix, the shared DB effectively stopped receiving
+writes ~91% of the way through (silently rerouted), so the WAL file never
+grew past whatever size it was at that point. After the fix, the shared DB
+keeps accumulating writes for the *entire* session — if a checkpoint is
+being blocked, the WAL file grows unboundedly, and reads/writes against it
+get progressively (eventually severely) slower, which would present
+exactly as "fine for 90%, then failures, then a hang" without being a
+true deadlock. Not confirmed — a `faulthandler.dump_traceback_later()`
+attempt to catch it in the act didn't get far enough before its own
+process got killed by the outer timeout.
+
+Deliberately not reverting the `test_market_observatory_local.py` fix to
+make this go away — that would silently resurrect the sqlite3.
+OperationalError cluster this whole session was about fixing. This needs
+its own investigation: confirm the WAL theory (e.g. `PRAGMA
+wal_checkpoint` size monitoring during a run, or `lsof`/Process Monitor
+for a connection that's opened but never closed), then either find and fix
+the leak or have conftest.py force periodic checkpoints.
+
 ## Files touched today
 
 - `collect_prices.py` — zombie-run fix, `price_history` write path
-- `routers/analytics.py` — `/price-history/series`, `/stock-availability`
+- `routers/analytics.py` — `/price-history/series`, `/stock-availability`, `id DESC` ordering tiebreaker
 - `market_server.py` — `ensure_stock_history_table()` in lifespan
-- `routers/brand_intel.py` — `days` cutoff computed in Python
+- `routers/brand_intel.py` — `days` cutoff computed in Python, `brand_intel_config` PG DDL branch, dead `price_history` promo-query path removed
 - `tests/test_analytics.py`, `tests/test_brand_intel.py` — new/fixed tests
 - `tests/conftest.py` — stop defeating `test-pg`
-- `market_vault.py` — dynamic `USE_PG` read
-- `tests/test_checkout_payments.py` — FK-safe delete order
+- `market_vault.py`, `market_audit.py`, `procure_magic.py`, `market_adoption_index.py`, `market_brand_registry.py`, `market_funnel.py` — dynamic `USE_PG` read
+- `tests/test_checkout_payments.py`, `tests/test_server.py` — FK-safe delete order
 - `market_funnel.py`, `ops/observatory_audit.py`, `ops/pro_payment_reminder.py` — LIKE patterns bound as params, not inlined
-- `market_audit.py`, `procure_magic.py`, `market_adoption_index.py`, `market_brand_registry.py` — dynamic `USE_PG` read
-- `routers/brand_intel.py` — `brand_intel_config` PG DDL branch, dead `price_history` promo-query path removed
-- `tests/test_collect_prices_growth.py`, `tests/test_market_basket.py` — more literal-interval / backend-assumption test fixes
+- `tests/test_collect_prices_growth.py`, `tests/test_market_basket.py`, `tests/test_audit.py`, `tests/test_search.py` — more literal-interval / backend-typed-value test fixes
+- `tests/test_market_observatory_local.py` — the real root cause: unmonkeypatched `USE_PG` leak
+- **`Treevu-ai/cli-market-core`** (separate repo): `market_core/market_db.py` — wider `get_db()` retry budget, published as v1.12.8; `requirements.txt` here bumped to match
