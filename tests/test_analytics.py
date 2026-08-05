@@ -9,9 +9,11 @@ from market_server import app, hash_password
 
 import server_deps
 from market_brand_registry import ensure_known_brands_schema
+from stock_history_schema import ensure_stock_history_table
 
 ensure_db_initialized()
 ensure_known_brands_schema()
+ensure_stock_history_table()
 client = TestClient(app)
 
 _ADMIN_TOKEN = "test-token-123"
@@ -123,6 +125,123 @@ def test_price_history_limit_param():
     r = client.get("/analytics/price-history?limit=1", headers=_AUTH)
     assert r.status_code == 200
     assert len(r.json()["snapshots"]) <= 1
+
+
+# ── GET /analytics/price-history/series ──────────────────────────────────────
+
+def test_price_history_series_requires_auth():
+    r = client.get("/analytics/price-history/series?product_id=x&store=wong")
+    assert r.status_code == 401
+
+
+def test_price_history_series_requires_product_and_store():
+    # Unlike /analytics/price-history, product_id/store aren't optional here --
+    # price_history has no line/name/brand columns to disambiguate on, so a
+    # bare product_id could silently mix unrelated products across stores.
+    r = client.get("/analytics/price-history/series?product_id=x", headers=_AUTH)
+    assert r.status_code == 422
+    r2 = client.get("/analytics/price-history/series?store=wong", headers=_AUTH)
+    assert r2.status_code == 422
+
+
+def test_price_history_series_returns_change_triggered_points():
+    db = get_db()
+    db.execute(
+        "INSERT INTO price_history (product_id, store, price, list_price, discount) "
+        "VALUES ('series-prod-1', 'metro', 5.90, 6.50, 9)"
+    )
+    db.execute(
+        "INSERT INTO price_history (product_id, store, price, list_price, discount) "
+        "VALUES ('series-prod-1', 'metro', 5.50, 6.50, 15)"
+    )
+    # Different store -- must not leak into the series-prod-1/metro series.
+    db.execute(
+        "INSERT INTO price_history (product_id, store, price, list_price, discount) "
+        "VALUES ('series-prod-1', 'wong', 5.99, NULL, NULL)"
+    )
+    db.commit()
+    db.close()
+
+    r = client.get(
+        "/analytics/price-history/series?product_id=series-prod-1&store=metro",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["product_id"] == "series-prod-1"
+    assert data["store"] == "metro"
+    assert data["count"] == 2
+    assert all(p["store"] == "metro" for p in data["points"])
+    # Newest-first.
+    assert data["points"][0]["price"] == 5.50
+
+
+def test_price_history_series_limit_param():
+    r = client.get(
+        "/analytics/price-history/series?product_id=series-prod-1&store=metro&limit=1",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    assert len(r.json()["points"]) <= 1
+
+
+# ── GET /analytics/stock-availability ─────────────────────────────────────────
+
+def test_stock_availability_requires_auth():
+    r = client.get("/analytics/stock-availability?store=wong")
+    assert r.status_code == 401
+
+
+def test_stock_availability_requires_a_filter():
+    # Unfiltered would aggregate the entire (unbounded, ever-growing)
+    # stock_history table -- require at least one of product_id/store/country.
+    r = client.get("/analytics/stock-availability", headers=_AUTH)
+    assert r.status_code == 422
+
+
+def test_stock_availability_computes_pct_in_stock():
+    db = get_db()
+    # 3 of 4 samples in-stock -> 75.0%.
+    for in_stock in (1, 1, 1, 0):
+        db.execute(
+            "INSERT INTO stock_history (product_id, store, in_stock) VALUES (?, ?, ?)",
+            ("avail-prod-1", "wong", in_stock),
+        )
+    db.commit()
+    db.close()
+
+    r = client.get(
+        "/analytics/stock-availability?product_id=avail-prod-1&store=wong",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["count"] == 1
+    row = data["results"][0]
+    assert row["product_id"] == "avail-prod-1"
+    assert row["store"] == "wong"
+    assert row["samples"] == 4
+    assert row["pct_in_stock"] == 75.0
+
+
+def test_stock_availability_orders_worst_first():
+    db = get_db()
+    db.execute(
+        "INSERT INTO stock_history (product_id, store, in_stock) VALUES (?, ?, ?)",
+        ("avail-good", "metro", 1),
+    )
+    db.execute(
+        "INSERT INTO stock_history (product_id, store, in_stock) VALUES (?, ?, ?)",
+        ("avail-bad", "metro", 0),
+    )
+    db.commit()
+    db.close()
+
+    r = client.get("/analytics/stock-availability?store=metro", headers=_AUTH)
+    assert r.status_code == 200
+    results = r.json()["results"]
+    assert results[0]["product_id"] == "avail-bad"
+    assert results[0]["pct_in_stock"] == 0.0
 
 
 # ── GET /analytics/stats ──────────────────────────────────────────────────────

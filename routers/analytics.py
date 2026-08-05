@@ -1,16 +1,20 @@
 """Read-only analytics over price_snapshots.
 
 Endpoints:
-  GET /analytics/price-history   Snapshots filtered by product/store/line
-  GET /analytics/stats           Totals + last snapshot timestamp
-  GET /analytics/trending        Recent products (Pro — live computed values)
-  GET /analytics/brands          Top brands by snapshot count
-  GET /analytics/indicators      Latest moat indicator values (Pro — live computed values)
+  GET /analytics/price-history          Snapshots filtered by product/store/line
+  GET /analytics/price-history/series   Real price_history series for one product+store
+  GET /analytics/stock-availability     % time in stock, from stock_history
+  GET /analytics/stats                  Totals + last snapshot timestamp
+  GET /analytics/trending               Recent products (Pro — live computed values)
+  GET /analytics/brands                 Top brands by snapshot count
+  GET /analytics/indicators             Latest moat indicator values (Pro — live computed values)
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Header
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Header, HTTPException
 
 from market_core import STORES, get_db
 from backend_interface import get_indicator_catalog, get_latest_values
@@ -82,6 +86,125 @@ def price_history(
                 "Pass store= to disambiguate a single retailer's history."
             )
     return result
+
+
+@router.get(
+    "/analytics/price-history/series",
+    summary="Real change-triggered price time series for one product at one store",
+)
+def price_history_series(
+    product_id: str,
+    store: str,
+    since: str | None = None,
+    limit: int = 200,
+    authorization: str | None = Header(None),
+):
+    """Return the actual price_history series for one product_id + store pair —
+    an append-only log with a new row only when the price actually changed
+    (not one row per collector run). This is the real historical curve for
+    volatility/trend analysis; GET /analytics/price-history instead reads
+    price_snapshots, a single current-state row per product+store that gets
+    overwritten every collector cycle, so it cannot show how a price moved
+    over time for one product.
+
+    Both product_id and store are required: product_id is each retailer's own
+    raw catalog ID, not a global key across retailers (see the warning on
+    GET /analytics/price-history), so a bare product_id could silently mix
+    unrelated products from different stores.
+
+    Optionally filter to points at or after `since` (ISO date/datetime).
+    Ordered newest-first, up to `limit` points (default 200)."""
+    require_api_key(authorization)
+    db = get_db()
+    q = (
+        "SELECT product_id, store, price, list_price, discount, recorded_at "
+        "FROM price_history WHERE product_id = ? AND store = ?"
+    )
+    params: list = [product_id, store]
+    if since:
+        q += " AND recorded_at >= ?"
+        params.append(since)
+    q += " ORDER BY recorded_at DESC LIMIT ?"
+    params.append(limit)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    points = [dict(r) for r in rows]
+    return {"product_id": product_id, "store": store, "count": len(points), "points": points}
+
+
+@router.get(
+    "/analytics/stock-availability",
+    summary="% of time in stock per product/store, from stock_history",
+)
+def stock_availability(
+    product_id: str | None = None,
+    store: str | None = None,
+    country: str | None = None,
+    days: int = 30,
+    limit: int = 50,
+    authorization: str | None = Header(None),
+):
+    """Return % of collector samples where each (product_id, store) was in
+    stock, computed from stock_history — which the collector appends to on
+    every run (unlike price_history, which only appends on a price change),
+    so the sample count reflects actual collector cadence and a low count
+    means the pair hasn't been seen recently, not that it's unavailable.
+
+    At least one of product_id, store, or country is required — stock_history
+    has no upper bound on row growth (one row per product per store per
+    collector run), so an unfiltered aggregate over the full table isn't
+    exposed here.
+
+    Rows are ordered by pct_in_stock ascending (worst availability first) so
+    the most useful read — "what's frequently out of stock" — doesn't require
+    client-side sorting. Use days to control the lookback window (default 30)
+    and limit to cap rows returned (default 50)."""
+    require_api_key(authorization)
+    if not product_id and not store and not country:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one of product_id, store, or country is required.",
+        )
+    # Computed in Python and bound as a plain timestamp, rather than the
+    # SQLite-canonical datetime('now', '-N days') form _DB.execute() rewrites
+    # for Postgres: that rewrite only recognizes a fixed whitelist of literal
+    # intervals (-7/-14/-30 days, -1 day, -24 hours — see market_db.py), so an
+    # arbitrary `days` value here wouldn't reliably translate on Postgres.
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    db = get_db()
+    q = (
+        "SELECT product_id, store, "
+        "ROUND(AVG(CASE WHEN in_stock = 1 THEN 100.0 ELSE 0.0 END), 1) AS pct_in_stock, "
+        "COUNT(*) AS samples, "
+        "MIN(recorded_at) AS first_seen, "
+        "MAX(recorded_at) AS last_seen "
+        "FROM stock_history "
+        "WHERE recorded_at >= ? "
+    )
+    params: list = [cutoff]
+    if product_id:
+        q += " AND product_id = ?"
+        params.append(product_id)
+    if store:
+        q += " AND store = ?"
+        params.append(store)
+    if country:
+        country_stores = [
+            s for s, sv in STORES.items()
+            if sv.get("country", "").upper() == country.upper()
+        ]
+        if not country_stores:
+            db.close()
+            return {"count": 0, "results": [], "country": country}
+        placeholders = ",".join("?" * len(country_stores))
+        q += f" AND store IN ({placeholders})"
+        params.extend(country_stores)
+    q += " GROUP BY product_id, store ORDER BY pct_in_stock ASC, samples DESC LIMIT ?"
+    params.append(limit)
+    rows = db.execute(q, params).fetchall()
+    db.close()
+    results = [dict(r) for r in rows]
+    return {"count": len(results), "days": days, "results": results}
 
 
 @router.get("/analytics/stats", summary="Get data moat totals: snapshots, stores tracked, products, and freshness")

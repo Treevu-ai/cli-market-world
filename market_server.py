@@ -157,6 +157,16 @@ async def lifespan(_app: FastAPI):
     except Exception as e:
         logger.warning("Observatory schema skipped: %s", e)
     try:
+        # Previously only created lazily by the collector daemon
+        # (collect_prices.py) on its own first cycle — the API process never
+        # created it, so GET /analytics/stock-availability could 500 with
+        # "relation does not exist" on a fresh deploy that serves requests
+        # before the collector's first run (found 2026-08-05).
+        from stock_history_schema import ensure_stock_history_table
+        ensure_stock_history_table()
+    except Exception as e:
+        logger.warning("stock_history schema skipped: %s", e)
+    try:
         db_migrate_from_json()
     except Exception as e:
         logger.warning("JSON migration skipped: %s", e)
