@@ -1,7 +1,7 @@
 # Audit: historical-series data moat + a silently broken Postgres CI gate
 
 **Date:** 2026-08-05
-**Status:** Partially resolved — collector/price-history fixes deployed; test-pg triage in progress (2 of N passes done)
+**Status:** Partially resolved — collector/price-history fixes deployed; test-pg triage in progress (4 of N passes done, 28→14 failed)
 **Trigger:** Asked to verify we're actually generating and saving historical price series in production.
 
 ## Summary
@@ -195,39 +195,105 @@ this pass targeted the `failed` (assertion-reachable) bugs, not the
 `test_vault.py`-class errors, which are a separate, still-open,
 intermittent issue (see below).
 
+### Triage pass 3 (`da5395fa`)
+
+Applied the `market_vault.py` dynamic-`USE_PG`-read fix to the rest of the
+module-level occurrences flagged as unaudited: `market_audit.py`,
+`procure_magic.py`, `market_funnel.py` (its schema DDL selector — separate
+from the LIKE-pattern bug fixed in pass 2), `market_adoption_index.py`,
+`market_brand_registry.py`. `market_audit.ensure_audit_schema()` runs
+right after `market_vault.ensure_vault_schema()` in `test_vault.py`'s
+autouse fixture — it was the real reason the ~44-test vault error cluster
+survived pass 1's `market_vault.py`-only fix. Left alone (confirmed
+function-local re-imports, safe): `market_adoption.py`, `audit_funnel.py`,
+`collector_schema.py`, `routers/health.py`, `market_server.py`.
+
+Verified against real Postgres: `test_vault.py` + `test_procure_magic_sprint3.py`
++ `test_security.py` + `test_paypal_reconcile.py` + `test_mcp_credential_guard.py`
+together, 82/82 passed (all failing/erroring before).
+
+### Triage pass 4 (`af47fc39`)
+
+Four more independent bugs, each reproduced against real Postgres before
+fixing:
+
+1. `routers/brand_intel.py`: `brand_intel_config`'s `CREATE TABLE` used
+   `INTEGER PRIMARY KEY AUTOINCREMENT` unconditionally — SQLite-only
+   syntax, no Postgres branch had ever existed for this table. Added the
+   missing PG DDL branch.
+2. `routers/brand_intel.py`: `brand_promo_history()`'s "try `price_history`
+   first, fall back to `price_snapshots`" always threw `UndefinedColumn` on
+   Postgres — `price_history` deliberately lacks the `name`/`brand`/
+   `store_name`/`currency` columns this query needs. That exception left
+   the connection aborted, so the fallback failed too
+   (`InFailedSqlTransaction`) — **`GET /v1/brand-monitor/promos` returned
+   zero events on Postgres, unconditionally, in production, not just in
+   tests.** Removed the dead `price_history` attempt; query
+   `price_snapshots` directly.
+3. `tests/test_collect_prices_growth.py` seeded a snapshot with the
+   SQLite-literal `datetime('now', '-3 hours')` — outside the translator's
+   whitelist, same class as pass-1's `brand_intel.py` fix. Computed in
+   Python instead.
+4. `tests/test_market_basket.py` asserted the exact SQLite-only SQL text
+   `"LOWER(name) LIKE LOWER(?)"` — `market_core.market_db.name_like_clause()`
+   correctly returns a *different* (and correct) clause per backend
+   (`"name ILIKE ?"` on Postgres, GIN-trigram-index friendly there). Not a
+   product bug — the assertion just assumed SQLite; now accepts either form.
+5. `tests/test_brand_intel.py`'s `_seed_snapshot()` helper: the same
+   swallowed-`ALTER`-poisons-the-transaction pattern as
+   `test_checkout_payments.py` (pass 1) — added the same `rollback()`.
+
+Verified against real Postgres (fresh container): `test_brand_intel.py` +
+`test_market_basket.py` + `test_collect_prices_growth.py` together, 46/46
+passed (all failing before).
+
+**CI, `da5395fa` → `af47fc39`: 24 failed → 14 failed, 42 errors → 42
+errors (unchanged).**
+
+### The 42 errors are now understood — genuine Postgres connection flakiness
+
+Pulled the actual traceback for one of the remaining `test_vault.py`
+"ERROR at setup" entries directly from the `af47fc39` CI run. It's **not**
+the stale-snapshot bug anymore — `market_vault.py:73` correctly evaluated
+`market_core.USE_PG` as `True` and picked the Postgres DDL branch. The
+failure is `market_db.py:167: OperationalError` — a genuine
+`psycopg2.OperationalError` at the connection layer itself, inside CI's own
+throwaway Postgres service container. `_DB.__init__()` (in the pinned
+`cli-market-core` package, not this repo) opens a brand-new raw
+`psycopg2.connect()` on every single `get_db()` call — no connection
+pooling — and under this suite's connection churn (1000+ tests, each
+opening/closing its own connection) that occasionally trips a transient
+connection failure, which then permanently falls back the whole rest of
+the process to SQLite via `ensure_db_initialized()`'s fallback logic
+(`market_core.py:1450`), producing the cluster of DDL-branch-mismatched
+errors across whatever runs next.
+
+This **is** a real CI-relevant issue (confirmed in GitHub Actions' own log,
+not just local Docker), but it isn't fixable from this repo — the missing
+piece is retry/pooling in `_DB.__init__()`/`get_db()`, which lives in
+`cli-market-core`. Two options for a future session: (a) a PR against
+`cli-market-core` adding connection retry or pooling, or (b) a
+`test-pg`-local mitigation (e.g. a `pytest` session-scoped fixture that
+calls `market_core.recover_pg_if_needed()` between test modules, or
+retries `ensure_db_initialized()` itself with backoff) — (b) treats the
+symptom, (a) fixes the actual root cause and matters for production too
+(a real prod Postgres blip has the same permanent-fallback-until-next-
+opportunistic-recovery behavior).
+
 ### Not done — remaining backlog
 
-- **24 failed + 42 errors remain untriaged** in `test-pg` as of `e90bbd66`.
-  Local full-suite runs against a fresh Postgres container keep showing a
-  *different* mix of failures/counts between runs (e.g. `test_vault.py`'s
-  errors reappeared in one local run after being confirmed fixed in
-  another) — this points to a real, intermittent ordering/isolation issue
-  in the suite itself (see next item), separate from the specific bugs
-  already fixed one at a time.
-- **Non-deterministic PG→SQLite fallback mid-run, still unexplained.**
-  Across ~6 full local runs against fresh Postgres containers today, error
-  counts varied (79 → 46 → 64 → 42-ish) and *which* tests hit
-  `sqlite3.OperationalError`/`database is locked` varied between runs of
-  the identical code. No `psycopg2.errors.*` or connection-exhaustion
-  message found in the Postgres container's own logs at the times this
-  happens. Checked and ruled out: Postgres-side `FATAL`/`too many clients`
-  (none found). Not yet checked: client-side `connect_timeout` (10s, see
-  `_DB.__init__`) tripping under this Windows/Docker-Desktop local setup
-  specifically — may or may not reproduce the same way on GitHub Actions'
-  Linux runners; real CI's own numbers (28→24 failed, steady 42 errors
-  across two pushes) look more stable than local, so this might be more of
-  a local-environment artifact than a CI-relevant bug. Needs a dedicated
-  investigation before spending more triage time chasing symptoms that
-  might not even reproduce in real CI.
-- **The 10-file `from market_core import USE_PG` stale-snapshot pattern**
-  (same class as the `market_vault.py` fix) is unaudited elsewhere:
-  `audit_funnel.py`, `collector_schema.py`, `market_adoption.py`,
-  `market_adoption_index.py`, `market_audit.py`, `market_brand_registry.py`,
-  `market_funnel.py`, `market_server.py`, `procure_magic.py`,
-  `routers/health.py`. Not all of these necessarily matter in practice
-  (e.g. a one-time startup check vs. a function called repeatedly across
-  the process lifetime) — needs a per-file judgment call, not a blind
-  find-replace.
+- **14 failed + 42 errors remain untriaged** in `test-pg` as of `af47fc39`.
+  The 42 errors are the connection-flakiness cluster above, not
+  independent bugs to fix one-by-one — they need the `cli-market-core`-side
+  fix (or a test-harness mitigation) described above, not more per-file
+  triage.
+- Remaining 14 failures not yet triaged: `test_analytics.py` (a real value
+  mismatch, `assert 5.9 == 5.5` — looks like genuine test-order data
+  bleed, not yet investigated), `test_audit.py` (2), `test_auth.py`
+  (`test_revoke_api_key_success`), `test_mcp_credential_guard.py` (1 of its
+  2 — the other was fixed in pass 3), `test_search.py` (canonical_product_id
+  column + "database is locked" — likely downstream of the same connection
+  flakiness above, not independent bugs).
 
 ## Files touched today
 
@@ -240,3 +306,6 @@ intermittent issue (see below).
 - `market_vault.py` — dynamic `USE_PG` read
 - `tests/test_checkout_payments.py` — FK-safe delete order
 - `market_funnel.py`, `ops/observatory_audit.py`, `ops/pro_payment_reminder.py` — LIKE patterns bound as params, not inlined
+- `market_audit.py`, `procure_magic.py`, `market_adoption_index.py`, `market_brand_registry.py` — dynamic `USE_PG` read
+- `routers/brand_intel.py` — `brand_intel_config` PG DDL branch, dead `price_history` promo-query path removed
+- `tests/test_collect_prices_growth.py`, `tests/test_market_basket.py` — more literal-interval / backend-assumption test fixes
