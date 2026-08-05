@@ -54,7 +54,15 @@ def _seed_snapshot(
             db.execute("ALTER TABLE price_snapshots ADD COLUMN canonical_product_id TEXT")
             db.commit()
         except Exception:
-            pass  # already added by a previous test in this session
+            # Already added by a previous test in this session. On Postgres
+            # the failed ALTER leaves this connection's transaction aborted,
+            # which would otherwise take the INSERT below down with it too
+            # (found 2026-08-05) -- roll back so the connection is usable
+            # again. No-op on SQLite.
+            try:
+                db._conn.rollback()
+            except Exception:
+                pass
     queried_at_sql = "?" if queried_at else "datetime('now')"
     extra_cols = ", canonical_product_id" if canonical_product_id is not None else ""
     extra_placeholders = ", ?" if canonical_product_id is not None else ""

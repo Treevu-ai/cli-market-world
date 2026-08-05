@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header, Query
 
+import market_core
 from market_core import STORES, get_db
 from price_snapshots_schema import price_snapshots_has_canonical_id
 from server_deps import require_pro
@@ -305,8 +306,16 @@ def brand_promo_history(
     if not store_keys:
         return {"promo_events": [], "count": 0}
 
-    # Try price_history first (append-only log); fall back to price_snapshots
-    # In early deployments price_history may not be populated yet.
+    # price_history can't serve this query -- it deliberately only stores
+    # product_id/store/price/list_price/discount/recorded_at (see
+    # collect_prices.py's pg_insert()), never the name/brand/store_name/
+    # currency columns this SELECT and its WHERE clause need. The previous
+    # "try price_history first, fall back to price_snapshots on any
+    # exception" here always threw UndefinedColumn against Postgres, and
+    # that exception left the shared connection in an aborted-transaction
+    # state, so the price_snapshots fallback failed too (InFailedSqlTransaction)
+    # -- this endpoint returned zero events on Postgres, unconditionally,
+    # every time (found 2026-08-05). Query price_snapshots directly.
     placeholders_stores = ",".join("?" * len(store_keys))
     placeholders_brands = ",".join("?" * len(all_brands))
     # See the matching comment in brand_monitor() above: computed in Python
@@ -314,31 +323,22 @@ def brand_promo_history(
     # whitelist, which doesn't cover arbitrary `days` values.
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
 
-    def _query_table(table: str) -> list[dict]:
-        q = f"""
-            SELECT product_id, name, brand, store, store_name,
-                   price, list_price, discount, currency, queried_at
-            FROM {table}
-            WHERE discount > 0
-              AND price > 0
-              AND store IN ({placeholders_stores})
-              AND LOWER(brand) IN ({placeholders_brands})
-              AND queried_at >= ?
-        """
-        p: list = store_keys + [_normalize_brand(b) for b in all_brands] + [cutoff]
-        if line:
-            q += " AND line = ?"
-            p.append(line)
-        q += " ORDER BY queried_at DESC LIMIT 500"
-        try:
-            rows = db.execute(q, p).fetchall()
-            return [dict(r) for r in rows]
-        except Exception:
-            return []
-
-    events = _query_table("price_history")
-    if not events:
-        events = _query_table("price_snapshots")
+    q = f"""
+        SELECT product_id, name, brand, store, store_name,
+               price, list_price, discount, currency, queried_at
+        FROM price_snapshots
+        WHERE discount > 0
+          AND price > 0
+          AND store IN ({placeholders_stores})
+          AND LOWER(brand) IN ({placeholders_brands})
+          AND queried_at >= ?
+    """
+    params: list = store_keys + [_normalize_brand(b) for b in all_brands] + [cutoff]
+    if line:
+        q += " AND line = ?"
+        params.append(line)
+    q += " ORDER BY queried_at DESC LIMIT 500"
+    events = [dict(r) for r in db.execute(q, params).fetchall()]
 
     # Annotate discount depth + homologate brand casing (see brand_monitor's
     # canonical_brand comment — same scraped-casing-drift issue applies here).
@@ -382,8 +382,24 @@ def brand_config_upsert(
     db = get_db()
     slug = _normalize_brand(payload.brand_slug)
 
-    # Ensure table exists (idempotent DDL)
-    db.execute("""
+    # Ensure table exists (idempotent DDL). AUTOINCREMENT is SQLite-only
+    # syntax -- this had no Postgres branch at all (found 2026-08-05: syntax
+    # error at or near "AUTOINCREMENT" against real Postgres).
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS brand_intel_config (
+            id         BIGSERIAL PRIMARY KEY,
+            brand_slug TEXT NOT NULL,
+            api_key    TEXT NOT NULL,
+            sku_pvps   TEXT,
+            competitors TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW(),
+            UNIQUE(api_key, brand_slug)
+        )
+        """
+        if market_core.USE_PG
+        else """
         CREATE TABLE IF NOT EXISTS brand_intel_config (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             brand_slug TEXT NOT NULL,
@@ -394,7 +410,8 @@ def brand_config_upsert(
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(api_key, brand_slug)
         )
-    """)
+        """
+    )
 
     sku_pvps_json = json.dumps(payload.sku_pvps) if payload.sku_pvps else None
     competitors_json = json.dumps(payload.competitors) if payload.competitors else None

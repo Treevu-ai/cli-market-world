@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from market_core import ensure_db_initialized, get_db
 
@@ -38,10 +40,15 @@ def test_stale_growth_store_is_due():
         "VALUES (?, 'woocommerce', ?, 1, 1)",
         (_STALE, _STALE),
     )
+    # Computed in Python, not datetime('now', '-3 hours') -- _DB.execute()'s
+    # SQLite->Postgres translator only rewrites a fixed whitelist of literal
+    # intervals (7/14/30 days, 1 day, 24 hours), so '-3 hours' reached
+    # Postgres unrewritten and errored (found 2026-08-05).
+    stale_at = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S")
     db.execute(
         "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
-        "VALUES (?, ?, 'X', 1, 'PEN', datetime('now', '-3 hours'))",
-        (f"p-{_STALE}", _STALE),
+        "VALUES (?, ?, 'X', 1, 'PEN', ?)",
+        (f"p-{_STALE}", _STALE, stale_at),
     )
     db.commit()
     db.close()

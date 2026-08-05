@@ -18,7 +18,12 @@ from market_core.market_spread import CANASTA_SQL_LIKE, matches_canasta_item
 def test_single_pattern_no_or():
     sql, params = _canasta_name_sql("leche")
     assert "OR" not in sql
-    assert "LOWER(name) LIKE LOWER(?)" in sql
+    # name_like_clause() (market_core.market_db) returns a different clause
+    # per backend -- "LOWER(name) LIKE LOWER(?)" on SQLite, "name ILIKE ?"
+    # on Postgres (GIN-trigram friendly there). Accept either instead of
+    # assuming SQLite (found 2026-08-05: asserting the SQLite form only
+    # broke on real Postgres in CI's test-pg job).
+    assert sql in ("LOWER(name) LIKE LOWER(?)", "name ILIKE ?")
     assert len(params) == 1
 
 
