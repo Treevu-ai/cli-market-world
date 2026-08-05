@@ -10,7 +10,12 @@ import json
 import logging
 from typing import Any
 
-from market_core import USE_PG, get_db
+import market_core
+from market_core import get_db
+
+# See market_vault.py's equivalent comment (found 2026-08-05): market_core.USE_PG
+# can flip at runtime, so read it live at each call site instead of freezing a
+# `from market_core import USE_PG` snapshot at first import.
 
 logger = logging.getLogger("market").getChild("audit")
 
@@ -48,7 +53,7 @@ def ensure_audit_schema() -> None:
     if _schema_ready:
         return
     db = get_db()
-    db.execute(_AUDIT_DDL_PG if USE_PG else _AUDIT_DDL_SQLITE)
+    db.execute(_AUDIT_DDL_PG if market_core.USE_PG else _AUDIT_DDL_SQLITE)
     for idx in (
         "CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log(username)",
         "CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_log(action)",
@@ -74,7 +79,7 @@ def record_audit(
         ensure_audit_schema()
         db = get_db()
         detail_str = json.dumps(detail, default=str) if detail else None
-        if USE_PG:
+        if market_core.USE_PG:
             db.execute(
                 "INSERT INTO audit_log (username, action, resource, detail, ip, user_agent) "
                 "VALUES (%s, %s, %s, %s, %s, %s)",
@@ -102,7 +107,7 @@ def get_audit_log(
     db = get_db()
     clauses: list[str] = []
     params: list[Any] = []
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     if username:
         clauses.append(f"username = {ph}")
         params.append(username)

@@ -18,7 +18,12 @@ import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from market_core import USE_PG, get_db
+import market_core
+from market_core import get_db
+
+# See market_vault.py's equivalent comment (found 2026-08-05): market_core.USE_PG
+# can flip at runtime, so read it live at each call site instead of freezing a
+# `from market_core import USE_PG` snapshot at first import.
 
 FUNNEL_EVENTS = frozenset(
     {
@@ -165,7 +170,7 @@ CREATE TABLE IF NOT EXISTS funnel_events (
 
 def ensure_funnel_schema() -> None:
     db = get_db()
-    db.execute(_FUNNEL_DDL_PG if USE_PG else _FUNNEL_DDL_SQLITE)
+    db.execute(_FUNNEL_DDL_PG if market_core.USE_PG else _FUNNEL_DDL_SQLITE)
     for idx_sql in (
         "CREATE INDEX IF NOT EXISTS idx_funnel_event ON funnel_events(event)",
         "CREATE INDEX IF NOT EXISTS idx_funnel_user ON funnel_events(username)",

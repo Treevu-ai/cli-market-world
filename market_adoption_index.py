@@ -15,8 +15,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from market_adoption import adoption_summary
-from market_core import USE_PG, get_db
+import market_core
+from market_core import get_db
 from market_funnel import ensure_funnel_schema, funnel_summary, is_noise_username
+
+# See market_vault.py's equivalent comment (found 2026-08-05): market_core.USE_PG
+# can flip at runtime, so read it live at each call site instead of freezing a
+# `from market_core import USE_PG` snapshot at first import.
 
 INDEX_SCOPE = "cli-market-world"
 DEFAULT_GITHUB_REPO = "Treevu-ai/cli-market-world"
@@ -65,7 +70,7 @@ def _target(name: str, default: float) -> float:
 def ensure_adoption_index_schema() -> None:
     ensure_funnel_schema()
     db = get_db()
-    db.execute(_SNAPSHOT_DDL_PG if USE_PG else _SNAPSHOT_DDL_SQLITE)
+    db.execute(_SNAPSHOT_DDL_PG if market_core.USE_PG else _SNAPSHOT_DDL_SQLITE)
     db.execute(
         "CREATE INDEX IF NOT EXISTS idx_adoption_index_scope_created "
         "ON adoption_index_snapshots(scope, created_at)"

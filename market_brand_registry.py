@@ -11,7 +11,12 @@ canonicalize display names in analytics_brands.
 
 from __future__ import annotations
 
-from market_core import USE_PG, get_db
+import market_core
+from market_core import get_db
+
+# See market_vault.py's equivalent comment (found 2026-08-05): market_core.USE_PG
+# can flip at runtime, so read it live at each call site instead of freezing a
+# `from market_core import USE_PG` snapshot at first import.
 
 _DDL_PG = """
 CREATE TABLE IF NOT EXISTS known_brands (
@@ -36,7 +41,7 @@ CREATE TABLE IF NOT EXISTS known_brands (
 
 def ensure_known_brands_schema() -> None:
     db = get_db()
-    db.execute(_DDL_PG if USE_PG else _DDL_SQLITE)
+    db.execute(_DDL_PG if market_core.USE_PG else _DDL_SQLITE)
     db.commit()
     db.close()
 
@@ -73,7 +78,7 @@ def diff_and_record_new_brands(db, country: str, brands: list[str]) -> set[str]:
     insert_sql = (
         "INSERT INTO known_brands (brand_normalized, country, display_brand) "
         "VALUES (?, ?, ?) ON CONFLICT (brand_normalized, country) DO NOTHING"
-        if USE_PG else
+        if market_core.USE_PG else
         "INSERT OR IGNORE INTO known_brands (brand_normalized, country, display_brand) VALUES (?, ?, ?)"
     )
     for norm, display in normalized.items():

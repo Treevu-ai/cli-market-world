@@ -12,7 +12,12 @@ import secrets
 import time
 from typing import Any
 
-from market_core import USE_PG, db_create_api_key, db_get_user_email, db_list_api_keys, get_db
+import market_core
+from market_core import db_create_api_key, db_get_user_email, db_list_api_keys, get_db
+
+# See market_vault.py's equivalent comment (found 2026-08-05): market_core.USE_PG
+# can flip at runtime, so read it live at each call site instead of freezing a
+# `from market_core import USE_PG` snapshot at first import.
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +50,7 @@ def procure_app_url() -> str:
 
 def ensure_procure_magic_schema() -> None:
     db = get_db()
-    if USE_PG:
+    if market_core.USE_PG:
         db.execute(
             """
             CREATE TABLE IF NOT EXISTS procure_magic_pending (
