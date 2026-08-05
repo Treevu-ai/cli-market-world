@@ -5,6 +5,7 @@ Handles the common case where users start with a generic description
 
   idle → (vague) clarify family → (medium/specific) catalog candidates
        → pick 1..N for offer detail
+  multi-line list (2–20 líneas) → POST /v1/basket/compare → store review
   analytic / open questions still go to /v1/intel/ask with guardrails
 
 Session state is stored as JSON in messenger_sessions.last_context.
@@ -26,6 +27,28 @@ logger = logging.getLogger("market.whatsapp.conversation")
 FLOW_TYPE = "wa_flow"
 DEFAULT_COUNTRY = "PE"
 MAX_CANDIDATES = 3
+MAX_BASKET_ITEMS = 20
+MIN_BASKET_ITEMS = 2
+# Small PE supermarket set — complete-basket compare is only useful when every
+# item can be checked in the same channel (mirrors Telegram HORECA segment).
+DEFAULT_BASKET_STORES = ("wong", "metro", "plazavea", "makro_pe", "vega_pe")
+
+_BASKET_HELP = frozenset(
+    {
+        "canasta",
+        "cotizar",
+        "cotizacion",
+        "cotización",
+        "lista",
+        "pedido",
+        "mi lista",
+        "armar canasta",
+    }
+)
+_BASKET_LINE_RE = re.compile(
+    r"^(?:(\d{1,4})\s*(?:x|unidades?|unds?|u)?\s+)?(.+?)$",
+    re.IGNORECASE,
+)
 
 # Product families that almost never mean a single SKU on first turn.
 _FAMILY_CLARIFY: dict[str, list[str]] = {
@@ -97,6 +120,11 @@ _COUNTRY_RE = re.compile(
 
 SearchFn = Callable[[str, str, str | None], Awaitable[list[dict] | None]]
 IntelFn = Callable[[str, str | None], Awaitable[str]]
+# (items, country, token) → (payload dict | None, http status | None)
+BasketFn = Callable[
+    [list[dict], str, str | None],
+    Awaitable[tuple[dict | None, int | None]],
+]
 
 
 def _normalize_msg(text: str) -> str:
@@ -229,13 +257,274 @@ def build_welcome_message() -> str:
         "*Cómo preguntar:*\n"
         "• Mal: `aceite`\n"
         "• Bien: `aceite Primor 1L` o `aceite vegetal 1 litro`\n\n"
-        "*También podés:*\n"
-        "1️⃣ Escribir un producto (te muestro hasta 3 opciones)\n"
-        "2️⃣ Preguntar comparación: `compara leche evaporada en Lima`\n"
-        "3️⃣ Pedir tendencia: `¿va a subir el arroz?`\n\n"
-        "Atajos: `menu` · `atras` · respondé *1/2/3* para elegir una opción.\n\n"
-        "*Límites:* no compro ni pago; solo precios observados de tiendas que monitoreamos."
+        "*Canasta (varios productos):*\n"
+        "Mandá *2 a 20 líneas* en un solo mensaje, por ejemplo:\n"
+        "12 x leche Gloria 390 g\n"
+        "4 x aceite vegetal 1 L\n"
+        "2 x arroz extra 5 kg\n"
+        "También: escribí `canasta` para el ejemplo.\n\n"
+        "*Otros:*\n"
+        "1️⃣ Un producto → hasta 3 opciones\n"
+        "2️⃣ `compara leche evaporada en Lima`\n"
+        "3️⃣ `¿va a subir el arroz?`\n\n"
+        "Atajos: `menu` · `atras` · *1/2/3* elige opción o tienda.\n\n"
+        "*Límites:* no compro ni pago; solo precios observados."
     )
+
+
+def build_basket_help_message() -> str:
+    return (
+        "Para cotizar una *canasta*, enviá entre *2 y 20 productos*, "
+        "una línea por producto (podés usar `;` si WhatsApp junta todo):\n\n"
+        "12 x leche Gloria 390 g\n"
+        "4 x aceite vegetal 1 L\n"
+        "2 x arroz extra 5 kg\n\n"
+        "Incluí marca y presentación cuando las sepas. "
+        "Sin cobertura completa no muestro total ni 'mejor tienda'."
+    )
+
+
+def parse_basket_items(text: str) -> list[dict] | None:
+    """Parse 2–20 product lines (newline or ';' separated). Same contract as Telegram."""
+    if not text or not str(text).strip():
+        return None
+    # Strip a leading command word so "canasta\n2 x leche..." still parses.
+    raw = str(text).strip()
+    first_line, _, rest = raw.partition("\n")
+    if _normalize_msg(first_line) in _BASKET_HELP and rest.strip():
+        raw = rest
+    raw_lines = [
+        line.strip(" -•\t")
+        for line in re.split(r"[\n;]+", raw)
+        if line.strip(" -•\t")
+    ]
+    # Drop pure command-only first token lines already handled.
+    raw_lines = [ln for ln in raw_lines if _normalize_msg(ln) not in _BASKET_HELP]
+    if len(raw_lines) < MIN_BASKET_ITEMS or len(raw_lines) > MAX_BASKET_ITEMS:
+        return None
+    items: list[dict] = []
+    for line in raw_lines:
+        match = _BASKET_LINE_RE.match(line)
+        if not match:
+            return None
+        name = match.group(2).strip()
+        if not name or len(name) > 200:
+            return None
+        # Reject pure greetings/help as basket lines
+        if _normalize_msg(name) in _GREETINGS | _HELP | _RESET | _BACK | _BASKET_HELP:
+            return None
+        items.append({"name": name, "qty": int(match.group(1) or 1)})
+    return items
+
+
+def _basket_store_from_result(store: dict) -> dict:
+    breakdown = []
+    for row in (store.get("breakdown") or [])[:20]:
+        if not isinstance(row, dict):
+            continue
+        breakdown.append(
+            {
+                "item": str(row.get("item") or "")[:200],
+                "resolved_name": str(row.get("resolved_name") or "")[:240],
+                "brand": str(row.get("brand") or "")[:120],
+                "qty": row.get("qty"),
+                "unit_price": row.get("unit_price"),
+                "item_total": row.get("item_total"),
+                "canonical_product_id": str(row.get("canonical_product_id") or "")[:160],
+                "match_confidence": str(row.get("match_confidence") or "")[:20],
+            }
+        )
+    return {
+        "store": str(store.get("store") or "")[:80],
+        "store_name": str(store.get("store_name") or "Tienda")[:120],
+        "currency": str(store.get("currency") or "PEN")[:12],
+        "total": store.get("total"),
+        "items_found": store.get("items_found"),
+        "breakdown": breakdown,
+    }
+
+
+def format_basket_store_list(items_searched: int, stores: list[dict], country: str) -> str:
+    lines = [
+        f"*Canasta con cobertura completa* ({country})",
+        f"{items_searched} productos con match en {len(stores)} tienda(s).",
+        "Revisá marca/presentación por tienda antes de usar un total.",
+        "No es cotización contractual ni recomendación de compra.",
+        "",
+    ]
+    for i, store in enumerate(stores[:5], start=1):
+        currency = str(store.get("currency") or "PEN").upper()
+        prefix = {"PEN": "S/", "USD": "US$"}.get(currency, currency)
+        total = store.get("total")
+        total_s = f"{prefix} {total}" if total is not None else "sin total"
+        lines.append(f"{i}. *{store.get('store_name', 'Tienda')}* — {total_s}")
+    lines.extend(
+        [
+            "",
+            f"Respondé *1*{'-' + str(min(len(stores), 5)) if len(stores) > 1 else ''} "
+            "para ver el desglose de esa tienda.",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def format_basket_store_detail(store: dict) -> str:
+    currency = str(store.get("currency") or "PEN").upper()
+    prefix = {"PEN": "S/", "USD": "US$"}.get(currency, currency)
+    lines = [
+        f"*Revisión — {store.get('store_name', 'Tienda')}*",
+        "",
+    ]
+    for row in store.get("breakdown") or []:
+        qty = row.get("qty") or 1
+        requested = row.get("item") or "?"
+        resolved = row.get("resolved_name") or "sin match"
+        brand = row.get("brand") or "s/marca"
+        unit = row.get("unit_price")
+        unit_s = f"{prefix} {unit}" if unit is not None else "s/precio"
+        conf = row.get("match_confidence") or "?"
+        lines.append(
+            f"• {qty} × {requested}\n"
+            f"  → {resolved} · {brand} · {unit_s}\n"
+            f"  match: {conf}"
+        )
+    total = store.get("total")
+    total_s = f"{prefix} {total}" if total is not None else "sin dato"
+    lines.extend(
+        [
+            "",
+            f"Total observado: *{total_s}*",
+            "",
+            "Confirmá equivalencia de cada línea. Escribí otra lista o `menu`.",
+        ]
+    )
+    return "\n".join(lines)
+
+
+async def default_compare_basket(
+    items: list[dict],
+    token: str | None,
+    country: str,
+    market_api_url: str,
+    stores: tuple[str, ...] | list[str] | None = None,
+) -> tuple[dict | None, int | None]:
+    if not token:
+        return None, None
+    payload: dict[str, Any] = {
+        "items": items,
+        "country": country,
+        "enveloped": False,
+        "stores": list(stores or DEFAULT_BASKET_STORES),
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{market_api_url.rstrip('/')}/v1/basket/compare",
+                json=payload,
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=35,
+            )
+        if response.status_code == 200:
+            data = response.json()
+            return (data if isinstance(data, dict) else None), 200
+        logger.warning("WA basket/compare %s: %s", response.status_code, response.text[:200])
+        return None, response.status_code
+    except Exception as exc:
+        logger.warning("WA basket/compare failed: %s", exc)
+        return None, None
+
+
+async def process_basket_list(
+    platform_id: str,
+    raw_message: str,
+    *,
+    token: str | None,
+    market_api_url: str,
+    basket_fn: BasketFn | None = None,
+) -> str:
+    items = parse_basket_items(raw_message)
+    if items is None:
+        return build_basket_help_message()
+
+    country = _guess_country(raw_message)
+    if basket_fn is None:
+
+        async def _basket(
+            its: list[dict], ctry: str, tok: str | None
+        ) -> tuple[dict | None, int | None]:
+            return await default_compare_basket(its, tok, ctry, market_api_url)
+
+        basket_fn = _basket
+
+    result, status = await basket_fn(items, country, token)
+    if status == 403:
+        return (
+            "La comparación de canastas requiere acceso Pro. "
+            "Podés buscar un producto a la vez escribiendo el nombre."
+        )
+    if result is None:
+        return "No pude verificar la canasta ahora. Probá de nuevo en un momento."
+
+    items_searched = int(result.get("items_searched") or len(items))
+    items_found = int(result.get("items_found") or 0)
+    if items_found < items_searched:
+        _save_state(
+            platform_id,
+            {"type": FLOW_TYPE, "state": "idle", "country": country, "candidates": []},
+            last_query=raw_message[:200],
+            last_country=country,
+        )
+        return (
+            f"Cobertura incompleta: encontré *{items_found}* de *{items_searched}* productos.\n"
+            "No muestro total ni mejor tienda con gaps.\n\n"
+            "Reenviá la lista con *marca y presentación* más claras "
+            "(ej. `leche Gloria evaporada 400g` en lugar de `leche`)."
+        )
+
+    raw_stores = result.get("stores") or []
+    if not isinstance(raw_stores, list):
+        raw_stores = []
+    full_stores = [
+        _basket_store_from_result(store)
+        for store in raw_stores
+        if isinstance(store, dict) and int(store.get("items_found") or 0) >= items_searched
+    ]
+    if not full_stores:
+        return (
+            "Encontré productos sueltos, pero *ninguna tienda cubre la canasta completa*.\n"
+            "No muestro total. Ajustá marca/presentación o separá la compra."
+        )
+
+    # Prefer high-confidence canonical matches when available; else show full stores
+    # with an honesty note (WhatsApp users need a usable path without Telegram keyboards).
+    verified = [
+        s
+        for s in full_stores
+        if s.get("breakdown")
+        and all(
+            row.get("canonical_product_id") and row.get("match_confidence") == "high"
+            for row in s["breakdown"]
+        )
+    ][:5]
+    stores_out = verified or full_stores[:5]
+    low_conf = not verified
+
+    state = {
+        "type": FLOW_TYPE,
+        "state": "basket_stores",
+        "country": country,
+        "items_searched": items_searched,
+        "stores": stores_out,
+        "candidates": [],
+    }
+    _save_state(platform_id, state, last_query=raw_message[:200], last_country=country)
+    body = format_basket_store_list(items_searched, stores_out, country)
+    if low_conf:
+        body += (
+            "\n\n_Nota: la identidad de algunos ítems no es alta confianza. "
+            "Revisá el desglose antes de decidir._"
+        )
+    return body
 
 
 def build_clarify_message(family: str, options: list[str]) -> str:
@@ -481,11 +770,13 @@ async def handle_standard_turn(
     market_api_url: str,
     search_fn: SearchFn | None = None,
     intel_fn: IntelFn | None = None,
+    basket_fn: BasketFn | None = None,
 ) -> str:
     """Process one user turn and return the WhatsApp reply body (markdown-ish *bold*)."""
-    msg = _normalize_msg(message)
+    raw = (message or "").strip()
+    msg = _normalize_msg(raw)
     state = _load_state(platform_id)
-    country = _guess_country(msg) if msg else (state.get("country") or DEFAULT_COUNTRY)
+    country = _guess_country(raw) if raw else (state.get("country") or DEFAULT_COUNTRY)
     kind = classify_specificity(msg)
 
     if kind in {"greeting", "help", "reset"}:
@@ -495,6 +786,19 @@ async def handle_standard_turn(
     if kind == "back":
         _clear_state(platform_id, country)
         return "Listo, volvemos al inicio.\n\n" + build_welcome_message()
+
+    # Multi-line (or ';'-separated) basket — must run before normalize loses structure.
+    # Also: lone "canasta"/"cotizar" shows the list template.
+    if msg in _BASKET_HELP and parse_basket_items(raw) is None:
+        return build_basket_help_message()
+    if parse_basket_items(raw) is not None:
+        return await process_basket_list(
+            platform_id,
+            raw,
+            token=token,
+            market_api_url=market_api_url,
+            basket_fn=basket_fn,
+        )
 
     # Active clarify step
     if state.get("state") == "clarify" and state.get("clarify_options"):
@@ -522,7 +826,18 @@ async def handle_standard_turn(
             platform_id, query.strip(), country, token, market_api_url, search_fn
         )
 
-    # Pick from last candidates
+    # Pick store after basket compare
+    if kind == "pick" and state.get("state") == "basket_stores":
+        stores = list(state.get("stores") or [])
+        idx = int(msg) - 1
+        if 0 <= idx < len(stores):
+            state["state"] = "basket_detail"
+            state["selected_store"] = idx
+            _save_state(platform_id, state, last_country=country)
+            return format_basket_store_detail(stores[idx])
+        return f"Elegí un número entre 1 y {len(stores)}." if stores else build_basket_help_message()
+
+    # Pick from last single-product candidates
     if kind == "pick" and state.get("state") == "candidates":
         candidates = list(state.get("candidates") or [])
         idx = int(msg) - 1
@@ -556,7 +871,7 @@ async def handle_standard_turn(
 
     if kind == "intel":
         prior = state.get("query")
-        question = build_intel_question(message.strip(), prior=prior)
+        question = build_intel_question(raw, prior=prior)
         if intel_fn is None:
 
             async def _intel(q: str, t: str | None) -> str:
@@ -570,16 +885,15 @@ async def handle_standard_turn(
                 "type": FLOW_TYPE,
                 "state": "idle",
                 "country": country,
-                "query": message.strip()[:200],
+                "query": raw[:200],
                 "candidates": [],
             },
-            last_query=message.strip()[:200],
+            last_query=raw[:200],
             last_country=country,
         )
         return answer
 
     # medium / specific / fallback → catalog search
-    query = message.strip()
     return await _run_search_and_format(
-        platform_id, query, country, token, market_api_url, search_fn
+        platform_id, raw, country, token, market_api_url, search_fn
     )

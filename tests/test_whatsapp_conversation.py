@@ -233,3 +233,113 @@ async def test_welcome_on_hola(platform_id):
     assert "CLI Market" in reply
     assert "Mal:" in reply or "mal" in reply.lower()
     assert "Bien:" in reply or "bien" in reply.lower()
+    assert "Canasta" in reply or "canasta" in reply.lower()
+
+
+def test_parse_basket_items_multiline_and_semicolon():
+    items = conv.parse_basket_items(
+        "12 x leche Gloria 390 g\n4 x aceite vegetal 1 L\n2 x arroz extra 5 kg"
+    )
+    assert items is not None
+    assert len(items) == 3
+    assert items[0] == {"name": "leche Gloria 390 g", "qty": 12}
+
+    items2 = conv.parse_basket_items("2 x leche Gloria; 1 arroz extra 5 kg")
+    assert items2 is not None
+    assert len(items2) == 2
+
+    assert conv.parse_basket_items("solo un producto") is None
+    assert conv.parse_basket_items("aceite") is None
+
+
+def test_parse_basket_strips_canasta_prefix():
+    items = conv.parse_basket_items("canasta\n2 x leche Gloria\n1 x arroz 5kg")
+    assert items is not None
+    assert len(items) == 2
+
+
+@pytest.mark.asyncio
+async def test_canasta_command_shows_help(platform_id):
+    reply = await conv.handle_standard_turn(
+        platform_id,
+        "canasta",
+        token="tok",
+        market_api_url="https://example.test",
+    )
+    assert "2 y 20" in reply or "2 a 20" in reply.lower() or "entre" in reply.lower()
+
+
+@pytest.mark.asyncio
+async def test_basket_incomplete_blocks_total(platform_id):
+    async def fake_basket(items, country, token):
+        assert len(items) == 2
+        return {"items_searched": 2, "items_found": 1, "stores": []}, 200
+
+    reply = await conv.handle_standard_turn(
+        platform_id,
+        "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
+        token="tok",
+        market_api_url="https://example.test",
+        basket_fn=fake_basket,
+    )
+    assert "1" in reply and "2" in reply
+    assert "total" in reply.lower() or "Cobertura" in reply
+
+
+@pytest.mark.asyncio
+async def test_basket_complete_lists_stores_and_pick_detail(platform_id):
+    async def fake_basket(items, country, token):
+        return {
+            "items_searched": 2,
+            "items_found": 2,
+            "stores": [
+                {
+                    "store": "wong",
+                    "store_name": "Wong",
+                    "currency": "PEN",
+                    "total": 28.4,
+                    "items_found": 2,
+                    "breakdown": [
+                        {
+                            "item": "leche Gloria 390 g",
+                            "resolved_name": "Leche Gloria 390 g",
+                            "brand": "Gloria",
+                            "qty": 2,
+                            "unit_price": 4.2,
+                            "canonical_product_id": "upid-leche",
+                            "match_confidence": "high",
+                        },
+                        {
+                            "item": "arroz extra 5 kg",
+                            "resolved_name": "Arroz extra 5 kg",
+                            "brand": "Costeño",
+                            "qty": 1,
+                            "unit_price": 20.0,
+                            "canonical_product_id": "upid-arroz",
+                            "match_confidence": "high",
+                        },
+                    ],
+                }
+            ],
+        }, 200
+
+    reply = await conv.handle_standard_turn(
+        platform_id,
+        "2 x leche Gloria 390 g\n1 arroz extra 5 kg",
+        token="tok",
+        market_api_url="https://example.test",
+        basket_fn=fake_basket,
+    )
+    assert "Wong" in reply
+    assert "1." in reply
+    assert "cobertura completa" in reply.lower() or "Canasta" in reply
+
+    detail = await conv.handle_standard_turn(
+        platform_id,
+        "1",
+        token="tok",
+        market_api_url="https://example.test",
+        basket_fn=fake_basket,
+    )
+    assert "Total observado" in detail
+    assert "Gloria" in detail
