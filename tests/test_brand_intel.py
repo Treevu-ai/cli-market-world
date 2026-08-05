@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 from market_core import ensure_db_initialized, get_db
@@ -173,15 +175,23 @@ def test_brand_monitor_collapses_duplicate_retailer_skus_via_canonical_product_i
     # example: Metro had product_id "359806" and "42081" both named
     # "Mantequilla con Sal Gloria 180g". Both share canonical_product_id and
     # should collapse to one row, keeping the most recent snapshot.
+    # Relative to "now" (not hardcoded absolute dates) so this stays inside
+    # brand_monitor's default 30-day freshness window regardless of when the
+    # suite runs — a fixed "2026-07-01"/"2026-07-05" pair silently aged past
+    # that window and made this test fail for reasons unrelated to the code
+    # under test (found 2026-08-05).
+    now = datetime.now(timezone.utc)
+    older = (now - timedelta(days=5)).strftime("%Y-%m-%d %H:%M:%S")
+    newer = (now - timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     _seed_snapshot(
         "canon-old-sku", "wong", "Wong", "Mantequilla Canon Test", "CanonBrand",
         price=11.90, canonical_product_id="canon-golden-1",
-        queried_at="2026-07-01 10:00:00",
+        queried_at=older,
     )
     _seed_snapshot(
         "canon-new-sku", "wong", "Wong", "Mantequilla Canon Test", "CanonBrand",
         price=10.50, canonical_product_id="canon-golden-1",
-        queried_at="2026-07-05 10:00:00",
+        queried_at=newer,
     )
 
     r = client.get("/v1/brand-monitor?brand=CanonBrand&country=PE", headers=_AUTH)
