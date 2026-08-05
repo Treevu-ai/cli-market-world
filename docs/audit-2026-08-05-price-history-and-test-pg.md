@@ -1,7 +1,7 @@
 # Audit: historical-series data moat + a silently broken Postgres CI gate
 
 **Date:** 2026-08-05
-**Status:** Partially resolved — collector/price-history fixes deployed; test-pg triage in progress (1 of N passes done)
+**Status:** Partially resolved — collector/price-history fixes deployed; test-pg triage in progress (2 of N passes done)
 **Trigger:** Asked to verify we're actually generating and saving historical price series in production.
 
 ## Summary
@@ -160,18 +160,65 @@ failed / 56 errors (pre-triage) to **28 failed / 42 errors** (post-triage) —
 15 more tests passing, 14 fewer errors, confirmed via the actual GitHub
 Actions log, not just a local approximation.
 
+### Triage pass 2 (`e90bbd66`)
+
+The `market_funnel.py:829` `IndexError: tuple index out of range` flagged
+above was **mis-diagnosed** in pass 1 — it's not row-indexing at all.
+Reproduced directly against real Postgres: `_DB.execute()` hands the whole
+SQL string to psycopg2 as a `%`-format string whenever params are given
+(that's the mechanism behind its `%s` placeholder substitution) — a literal
+`%` inlined in the query text (`id LIKE 'PRO-%'`) collides with that
+substitution and psycopg2 raises `IndexError`, one frame before any
+application code runs. SQLite's driver doesn't do `%`-substitution, so this
+was invisible until `test-pg` actually started hitting real Postgres —
+same root shape as the `datetime('now', ...)` literal-translation bugs in
+part 1, different mechanism.
+
+Grepped the repo for the same shape (a `LIKE '...%...'` literal combined
+with a non-empty params tuple on the same `.execute()` call) and found two
+more real instances, both reproduced and fixed the same way (bind the LIKE
+pattern as a parameter instead of inlining it):
+
+- `market_funnel.py`'s `activation_summary()`
+- `ops/observatory_audit.py`'s noise-heuristic query (4 LIKE patterns)
+- `ops/pro_payment_reminder.py`'s pending-request lookup
+
+Two lookalikes were checked and left alone —
+`migrations/run_migration.py` and `ops/mcp_credential_guard.py` both call
+`.execute()` with no params tuple at all, so `%`-substitution never
+triggers. `routers/health.py`'s `ILIKE` queries are hand-written Postgres
+SQL, also called without params.
+
+**Verified in real CI:** `test-pg` went from 28 failed / 42 errors
+(pass-1 baseline) to **24 failed / 42 errors**. Errors count unchanged —
+this pass targeted the `failed` (assertion-reachable) bugs, not the
+`test_vault.py`-class errors, which are a separate, still-open,
+intermittent issue (see below).
+
 ### Not done — remaining backlog
 
-- **At least one more independent bug found, not yet fixed:**
-  `market_funnel.py:829` (`activation_summary()`) does positional tuple
-  indexing on a query result — works with `sqlite3.Row` (supports both
-  positional and key access), breaks on psycopg2's `RealDictCursor` rows
-  (key access only). `IndexError: tuple index out of range`.
-- **28 failed + 42 errors remain untriaged** in `test-pg` as of `845fe073`.
-  Each local full-suite run against a fresh Postgres container showed a
-  *different* mix of failures/counts, which points to real
-  ordering/isolation issues in the suite (not just fixed-forever bugs) —
-  expect this to take multiple triage passes, not one sweep.
+- **24 failed + 42 errors remain untriaged** in `test-pg` as of `e90bbd66`.
+  Local full-suite runs against a fresh Postgres container keep showing a
+  *different* mix of failures/counts between runs (e.g. `test_vault.py`'s
+  errors reappeared in one local run after being confirmed fixed in
+  another) — this points to a real, intermittent ordering/isolation issue
+  in the suite itself (see next item), separate from the specific bugs
+  already fixed one at a time.
+- **Non-deterministic PG→SQLite fallback mid-run, still unexplained.**
+  Across ~6 full local runs against fresh Postgres containers today, error
+  counts varied (79 → 46 → 64 → 42-ish) and *which* tests hit
+  `sqlite3.OperationalError`/`database is locked` varied between runs of
+  the identical code. No `psycopg2.errors.*` or connection-exhaustion
+  message found in the Postgres container's own logs at the times this
+  happens. Checked and ruled out: Postgres-side `FATAL`/`too many clients`
+  (none found). Not yet checked: client-side `connect_timeout` (10s, see
+  `_DB.__init__`) tripping under this Windows/Docker-Desktop local setup
+  specifically — may or may not reproduce the same way on GitHub Actions'
+  Linux runners; real CI's own numbers (28→24 failed, steady 42 errors
+  across two pushes) look more stable than local, so this might be more of
+  a local-environment artifact than a CI-relevant bug. Needs a dedicated
+  investigation before spending more triage time chasing symptoms that
+  might not even reproduce in real CI.
 - **The 10-file `from market_core import USE_PG` stale-snapshot pattern**
   (same class as the `market_vault.py` fix) is unaudited elsewhere:
   `audit_funnel.py`, `collector_schema.py`, `market_adoption.py`,
@@ -181,12 +228,6 @@ Actions log, not just a local approximation.
   (e.g. a one-time startup check vs. a function called repeatedly across
   the process lifetime) — needs a per-file judgment call, not a blind
   find-replace.
-- No investigation yet into *why* local full-suite runs against a fresh
-  Postgres container show non-deterministic failure counts/positions
-  between runs (42 vs 46 vs 79 errors across three runs against three fresh
-  containers) — likely a genuine test-isolation issue (shared "admin"-style
-  fixtures, connection reuse, or fixture ordering), separate from the
-  specific bugs already fixed.
 
 ## Files touched today
 
@@ -198,3 +239,4 @@ Actions log, not just a local approximation.
 - `tests/conftest.py` — stop defeating `test-pg`
 - `market_vault.py` — dynamic `USE_PG` read
 - `tests/test_checkout_payments.py` — FK-safe delete order
+- `market_funnel.py`, `ops/observatory_audit.py`, `ops/pro_payment_reminder.py` — LIKE patterns bound as params, not inlined
