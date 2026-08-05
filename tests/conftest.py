@@ -37,7 +37,22 @@ if _REPO_ROOT not in sys.path:
 # Must run before test modules import market_core (conftest loads first).
 _TEST_DATA_DIR = tempfile.mkdtemp(prefix="market_test_")
 os.environ["MARKET_DATA_DIR"] = _TEST_DATA_DIR
-os.environ["DATABASE_URL"] = ""
+# Blanked unconditionally since 2026-05-28 (3cd94f05) to stop a real
+# production DATABASE_URL leaking in from a developer's local .env (via
+# load_repo_env(), neutralized separately below) from ever getting hit by
+# tests. But CI's "test-pg" job (added 2026-06-01 specifically to catch
+# Postgres-only regressions like datetime literal translation) sets
+# DATABASE_URL to its own throwaway localhost service container -- the
+# unconditional blank silently defeated that job too, so it had been
+# running the full suite against SQLite under the "test-pg" name for ~2
+# months (found 2026-08-05: a DeprecationWarning that can only come from
+# the sqlite3 module was showing up in that job's own log). A real prod
+# DATABASE_URL is never on localhost/127.0.0.1, so only blank it when it
+# isn't -- that keeps the original leak protection while letting a
+# deliberately-provided local/CI Postgres through.
+_existing_database_url = os.environ.get("DATABASE_URL", "")
+if "@localhost" not in _existing_database_url and "@127.0.0.1" not in _existing_database_url:
+    os.environ["DATABASE_URL"] = ""
 os.environ.setdefault("MARKET_LEGACY_CHECKOUT", "1")
 os.environ.setdefault("PAYPAL_SANDBOX", "true")
 # Production defaults to 600,000 PBKDF2 iterations.  Unit tests validate
