@@ -39,14 +39,17 @@ def _audit_events(*, days: int = 30) -> dict:
             """,
             (since,),
         ).fetchone()
+        # LIKE patterns bound as params -- see market_funnel.py's
+        # activation_summary() for why literal `%` in the SQL text breaks on
+        # Postgres once real params are passed (found 2026-08-05).
         noise_row = db.execute(
             """
             SELECT COUNT(*) AS n FROM agent_events
             WHERE occurred_at >= ?
-              AND (agent_id LIKE 'smoke%' OR agent_id LIKE 'pam-%'
-                   OR agent_id LIKE 'test-%' OR agent_id LIKE 'user-%')
+              AND (agent_id LIKE ? OR agent_id LIKE ?
+                   OR agent_id LIKE ? OR agent_id LIKE ?)
             """,
-            (since,),
+            (since, "smoke%", "pam-%", "test-%", "user-%"),
         ).fetchone()
     finally:
         db.close()

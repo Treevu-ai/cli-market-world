@@ -826,12 +826,19 @@ def activation_summary(*, days: int = 30) -> dict[str, Any]:
     days = max(1, min(days, 90))
     since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
     db = get_db()
+    # LIKE pattern passed as a bound param, not inlined: on Postgres,
+    # _DB.execute() hands the whole SQL string to psycopg2 as a %-format
+    # string when params are given, so a literal `%` in the text (as in
+    # `LIKE 'PRO-%'`) collides with that substitution and raises
+    # `IndexError: tuple index out of range` (found 2026-08-05 --
+    # SQLite's driver doesn't do %-substitution, so this was invisible
+    # until test-pg actually started hitting real Postgres).
     req_rows = db.execute(
         """
         SELECT status, payment_link FROM subscription_requests
-        WHERE created_at >= ? AND id LIKE 'PRO-%'
+        WHERE created_at >= ? AND id LIKE ?
         """,
-        (since,),
+        (since, "PRO-%"),
     ).fetchall()
     act_rows = db.execute(
         """

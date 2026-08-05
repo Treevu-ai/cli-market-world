@@ -47,17 +47,20 @@ def find_pending_pro_requests(*, hours_min: int = 24, hours_max: int = 72) -> li
     window_start = (now - timedelta(hours=hours_max)).strftime("%Y-%m-%d %H:%M:%S")
     window_end = (now - timedelta(hours=hours_min)).strftime("%Y-%m-%d %H:%M:%S")
 
+    # LIKE pattern bound as a param -- see market_funnel.py's activation_summary()
+    # for why a literal `%` in the SQL text breaks on Postgres once real
+    # params are passed (found 2026-08-05).
     rows = db.execute(
         """
         SELECT id, username, email, payment_link, created_at
         FROM subscription_requests
         WHERE status = 'pending'
-          AND id LIKE 'PRO-%'
+          AND id LIKE ?
           AND created_at >= ?
           AND created_at <= ?
         ORDER BY created_at ASC
         """,
-        (window_start, window_end),
+        ("PRO-%", window_start, window_end),
     ).fetchall()
     db.close()
     return [dict(r) for r in rows]
