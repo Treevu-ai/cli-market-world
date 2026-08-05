@@ -9,7 +9,18 @@ import json
 import logging
 from typing import Any
 
-from market_core import USE_PG, get_db
+import market_core
+from market_core import get_db
+
+# `market_core.USE_PG` can flip at runtime (PG outage -> SQLite fallback ->
+# self-healed recovery, see market_core.recover_pg_if_needed()) -- a
+# `from market_core import USE_PG` value-copy import here would freeze
+# whatever it was at first import and silently stop matching the live
+# connections get_db() hands out afterward (found 2026-08-05: this module's
+# DDL picked the Postgres branch off a stale True while the connection
+# get_db() actually returned had already fallen back to SQLite, so
+# BIGSERIAL/TIMESTAMPTZ DDL got sent to a sqlite3 connection). Read
+# market_core.USE_PG fresh at each call site instead.
 
 logger = logging.getLogger("market").getChild("vault")
 
@@ -59,8 +70,8 @@ def ensure_vault_schema() -> None:
     if _schema_ready:
         return
     db = get_db()
-    db.execute(_VAULT_DDL_PG if USE_PG else _VAULT_DDL_SQLITE)
-    db.execute(_SETUP_TOKENS_DDL_PG if USE_PG else _SETUP_TOKENS_DDL_SQLITE)
+    db.execute(_VAULT_DDL_PG if market_core.USE_PG else _VAULT_DDL_SQLITE)
+    db.execute(_SETUP_TOKENS_DDL_PG if market_core.USE_PG else _SETUP_TOKENS_DDL_SQLITE)
     for idx in (
         "CREATE INDEX IF NOT EXISTS idx_vault_bindings_user ON vault_bindings(username)",
         "CREATE INDEX IF NOT EXISTS idx_vault_bindings_customer ON vault_bindings(customer_id)",
@@ -80,11 +91,11 @@ def bind_vault_setup_token(username: str, setup_token_id: str) -> None:
         return
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     db.execute(
         f"INSERT INTO vault_setup_tokens (setup_token_id, username) VALUES ({ph}, {ph}) "
         f"ON CONFLICT (setup_token_id) DO NOTHING"
-        if USE_PG
+        if market_core.USE_PG
         else f"INSERT OR IGNORE INTO vault_setup_tokens (setup_token_id, username) VALUES ({ph}, {ph})",
         (setup_token_id, username),
     )
@@ -103,7 +114,7 @@ def vault_setup_token_owner(setup_token_id: str) -> str | None:
         return None
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT username FROM vault_setup_tokens WHERE setup_token_id = {ph} LIMIT 1",
         (setup_token_id,),
@@ -120,8 +131,8 @@ def mark_vault_setup_token_consumed(setup_token_id: str) -> bool:
         return False
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
-    now_expr = "NOW()" if USE_PG else "datetime('now')"
+    ph = "%s" if market_core.USE_PG else "?"
+    now_expr = "NOW()" if market_core.USE_PG else "datetime('now')"
     cur = db.execute(
         f"UPDATE vault_setup_tokens SET consumed_at = {now_expr} "
         f"WHERE setup_token_id = {ph} AND consumed_at IS NULL",
@@ -139,7 +150,7 @@ def bind_vault_customer(username: str, customer_id: str) -> None:
         return
     ensure_vault_schema()
     db = get_db()
-    if USE_PG:
+    if market_core.USE_PG:
         db.execute(
             "INSERT INTO vault_bindings (username, customer_id) "
             "SELECT %s, %s WHERE NOT EXISTS ("
@@ -165,7 +176,7 @@ def bind_vault_payment_token(username: str, customer_id: str, payment_token_id: 
         return
     ensure_vault_schema()
     db = get_db()
-    if USE_PG:
+    if market_core.USE_PG:
         db.execute(
             "INSERT INTO vault_bindings (username, customer_id, payment_token_id) "
             "VALUES (%s, %s, %s) "
@@ -189,7 +200,7 @@ def vault_customer_owned(username: str, customer_id: str) -> bool:
         return False
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT 1 FROM vault_bindings WHERE username = {ph} AND customer_id = {ph} LIMIT 1",
         (username, customer_id),
@@ -204,7 +215,7 @@ def vault_customer_bound_to_other(username: str, customer_id: str) -> bool:
         return False
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT 1 FROM vault_bindings WHERE customer_id = {ph} AND username != {ph} LIMIT 1",
         (customer_id, username),
@@ -219,7 +230,7 @@ def vault_customer_owner(customer_id: str) -> str | None:
         return None
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT username FROM vault_bindings WHERE customer_id = {ph} LIMIT 1",
         (customer_id,),
@@ -236,7 +247,7 @@ def vault_payment_token_owner(payment_token_id: str) -> str | None:
         return None
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT username FROM vault_bindings WHERE payment_token_id = {ph} LIMIT 1",
         (payment_token_id,),
@@ -327,7 +338,7 @@ def vault_payment_token_owned(username: str, payment_token_id: str) -> bool:
         return False
     ensure_vault_schema()
     db = get_db()
-    ph = "%s" if USE_PG else "?"
+    ph = "%s" if market_core.USE_PG else "?"
     row = db.execute(
         f"SELECT 1 FROM vault_bindings WHERE username = {ph} AND payment_token_id = {ph} LIMIT 1",
         (username, payment_token_id),

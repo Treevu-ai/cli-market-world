@@ -22,10 +22,19 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def clean_payment_tables():
     db = get_db()
+    # app_order_items.order_id references app_orders(order_id) -- deleting
+    # app_orders first violates that FK on Postgres, which (unlike SQLite,
+    # which doesn't enforce FKs by default) always enforces it. That failure
+    # was silently swallowed by the bare except below, but the DB session
+    # stays in an aborted-transaction state afterward, so the very next
+    # statement (DELETE FROM app_users, unguarded) failed too -- every test
+    # in this file, every run, once test-pg started actually hitting
+    # Postgres (found 2026-08-05). Child tables must come before the parents
+    # they reference.
     for table in (
+        "app_order_items",
         "app_carts",
         "app_orders",
-        "app_order_items",
         "webhook_events_processed",
         "rate_limits",
         "subscriptions",
@@ -33,7 +42,12 @@ def clean_payment_tables():
         try:
             db.execute(f"DELETE FROM {table}")
         except Exception:
-            pass
+            # Defense in depth: roll back so a future constraint issue on
+            # one table can't poison every statement after it on Postgres.
+            try:
+                db._conn.rollback()
+            except Exception:
+                pass
     db.execute("DELETE FROM app_users")
     db.commit()
     db.close()
