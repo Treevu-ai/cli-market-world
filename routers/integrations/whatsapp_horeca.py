@@ -6,19 +6,12 @@ que se integran con la funcionalidad Twilio existente en whatsapp.py.
 
 import os
 from typing import Optional, Dict
-import httpx
 
 # Importar módulos HORECA
 from .horeca_profiles import (
     get_or_create_profile,
     update_profile_field,
-    update_profile_search,
-    check_search_cooldown,
-    check_daily_limit,
-    record_search_history,
-    calculate_savings,
     get_user_savings_summary,
-    _extract_category,
     seed_estacion90_profile,
     is_estacion90_profile,
 )
@@ -230,13 +223,22 @@ async def process_horeca_message(
             send_function(sender, _build_horeca_welcome(profile))
             return True
     
-    # Flujo de onboarding si el perfil está pendiente
+    message_lower = (incoming_msg or "").lower().strip()
+
+    # Onboarding only if already mid-flow (name set, type still pending) or the
+    # user explicitly asks to register a business. Otherwise free-text falls
+    # through to the standard product conversation funnel.
     if profile['business_type'] == 'pending':
-        await _handle_horeca_onboarding_flow(sender, incoming_msg, profile, send_function)
-        return True  # Indica que se procesó con lógica HORECA
-    
+        mid_onboarding = profile.get('business_name') not in (None, '', 'Desconocido')
+        explicit_register = message_lower in {
+            'horeca', 'registrar', 'mi negocio', 'soy restaurante', 'registrar negocio',
+        }
+        if mid_onboarding or explicit_register:
+            await _handle_horeca_onboarding_flow(sender, incoming_msg, profile, send_function)
+            return True
+        # leave pending profile untouched; standard flow handles hola/product
+
     # Comandos específicos HORECA
-    message_lower = incoming_msg.lower().strip()
     
     if message_lower in ['mis ahorros', 'ahorros', 'savings']:
         summary = get_user_savings_summary(sender)
@@ -321,80 +323,7 @@ async def process_horeca_message(
         send_function(sender, upgrade_msg)
         return True
     
-    # Chequear cooldowns para búsquedas de productos
-    if not check_search_cooldown(sender, incoming_msg):
-        send_function(sender, _build_cooldown_message(sender, incoming_msg))
-        return True
-    
-    # Chequear límite diario de búsquedas gratis
-    can_search, current_count = check_daily_limit(sender)
-    if not can_search:
-        send_function(sender, _build_limit_message(profile))
-        return True
-    
-    # Enviar mensaje de progreso
-    send_function(sender, _build_progress_message(1))
-    
-    # Procesar búsqueda con lógica estándar (llamar a la API existente)
-    token = token_function(sender)
-    if not token:
-        send_function(sender, "❌ Error de configuración. Comunícate con el administrador.")
-        return True
-    
-    try:
-        send_function(sender, _build_progress_message(2))
-        
-        async with httpx.AsyncClient() as client_http:
-            response = await client_http.post(
-                f"{market_api_url}/v1/intel/ask",
-                json={"question": incoming_msg},
-                headers={"Authorization": f"Bearer {token}"},
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                answer = response.json().get("answer", "")
-                
-                # Calcular ahorro
-                savings = calculate_savings(incoming_msg, answer)
-                
-                # Actualizar perfil
-                update_profile_search(sender, incoming_msg, savings)
-                
-                # Registrar en historial
-                category = _extract_category(incoming_msg)
-                record_search_history(
-                    sender, incoming_msg, category, 
-                    result_count=0,  # Se completaría con datos reales
-                    best_price=0.0,  # Se completaría con datos reales
-                    avg_price=0.0,   # Se completaría con datos reales
-                    savings=savings
-                )
-                
-                # Construir respuesta con ahorro
-                final_answer = answer
-                if savings > 0:
-                    final_answer += f"\n\n💰 *Ahorro estimado: S/ {savings:.2f}*"
-                    # Notificar si alcanzó un hito significativo
-                    if savings > HORECA_SAVINGS_NOTIFICATION_THRESHOLD:
-                        final_answer += f"\n\n{_build_savings_notification(profile, savings)}"
-                
-                send_function(sender, _build_progress_message(3))
-                send_function(sender, final_answer)
-                
-                # CTA para crear template si el ahorro es significativo
-                if savings > 20:  # S/ 20
-                    send_function(
-                        sender,
-                        "💡 ¿Querés guardar esta búsqueda como recurrente? "
-                        "Escribí 'guardar [nombre]' para crear un template."
-                    )
-                
-            else:
-                send_function(sender, "❌ Error consultando precios. Inténtalo de nuevo en unos minutos.")
-                
-    except Exception as e:
-        print(f"Error en process_horeca_message: {e}")
-        send_function(sender, "❌ Error procesando tu solicitud. Inténtalo de nuevo.")
-    
-    return True  # Indica que se procesó con lógica HORECA
+    # Product free-text (and greetings) fall through to the standard WhatsApp
+    # conversation funnel in whatsapp.py — clarify → catalog candidates → detail.
+    # HORECA only owns onboarding + the explicit commands above.
+    return None

@@ -5,7 +5,6 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client
 from market_core import check_rate_limit_sqlite
-from server_deps import get_messenger_session, update_messenger_session
 from openai import OpenAI
 
 # Importar extensiones HORECA
@@ -17,6 +16,10 @@ except ImportError:
     print("⚠️ HORECA extension not available - using standard WhatsApp flow")
 
 router = APIRouter(prefix="/v1/integrations/whatsapp", tags=["integrations"])
+# Compatibility alias: Twilio Console sometimes still points at the shorter
+# historical path. Live traffic was observed as POST /whatsapp/webhook → 404
+# while the canonical route is /v1/integrations/whatsapp/webhook (2026-08-05).
+legacy_router = APIRouter(prefix="/whatsapp", tags=["integrations"])
 
 # Configuración Twilio (Cargar desde variables de entorno)
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
@@ -205,7 +208,7 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
         except Exception as e:
             print(f"⚠️ HORECA processing failed, falling back to standard: {e}")
     
-    # Lógica estándar existente
+    # Lógica estándar: funnel conversacional (clarify → candidatos → detalle / intel)
     print(f"📱 WhatsApp processing from {sender}: {incoming_msg[:80]!r}")
     if not incoming_msg and audio_url:
         print(f"🎙️ Audio message from {sender}, transcribing...")
@@ -217,55 +220,23 @@ async def _process_and_reply(incoming_msg: str, sender: str, audio_url: str | No
         print(f"⚠️ WhatsApp empty body after transcription for {sender}")
         return
 
-    # 1. Recover session memory
-    session = get_messenger_session(sender)
-    context = session.get("last_context")
-
-    # If we have context, we can use it to refine the query
-    effective_query = incoming_msg
-    if context:
-        effective_query = f"Context: {context}\nUser: {incoming_msg}"
-
-    # Puente hacia la lógica de la API (Fly.io en lugar de Railway)
     market_api_url = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
     token = _bot_token_for_sender(sender)
     if not token:
         print(f"❌ WhatsApp: no MARKET_BOT_API_TOKEN for {sender}")
 
-    answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
+    try:
+        from .whatsapp_conversation import handle_standard_turn
 
-    # Simple interactive menu if the user asks for help or is new
-    if incoming_msg in ("hola", "hi", "hello", "ayuda", "help", "menu"):
-        answer = (
-            "¡Hola! Soy el bot de *CLI Market* 🚀\n\n"
-            "Te ayudo a ver precios de productos en supermercados de Perú y otros países "
-            "de Latinoamérica.\n\n"
-            "*Qué puedo hacer:*\n"
-            "1️⃣ *Ver un precio*: '¿Cuánto cuesta el café en Perú?'\n"
-            "2️⃣ *Comparar tiendas*: 'Compara leche evaporada en Lima'\n"
-            "3️⃣ *Ver si va a subir*: '¿Va a subir el precio del arroz?'\n\n"
-            "*Qué NO puedo hacer:*\n"
-            "• No hago compras ni pagos, solo te muestro precios\n"
-            "• Solo veo las tiendas que ya monitoreamos — puede faltar alguna marca o producto puntual\n"
-            "• Los precios se actualizan varias veces al día, no al segundo"
+        answer = await handle_standard_turn(
+            sender,
+            incoming_msg,
+            token=token,
+            market_api_url=market_api_url,
         )
-    else:
-        async with httpx.AsyncClient() as client_http:
-            try:
-                response = await client_http.post(
-                    f"{market_api_url}/v1/intel/ask",
-                    json={"question": effective_query},
-                    headers={"Authorization": f"Bearer {token}"},
-                    timeout=30
-                )
-                if response.status_code == 200:
-                    answer = response.json().get("answer", "")
-                    # Guardar contexto para siguiente mensaje
-                    update_messenger_session(sender, {"last_context": incoming_msg, "last_query": effective_query})
-                else:
-                    print(f"❌ /v1/intel/ask returned {response.status_code}: {response.text[:200]}")
-            except Exception as e:
-                print(f"❌ Error API (WhatsApp Bridge): {e}")
+    except Exception as e:
+        print(f"❌ WhatsApp standard flow error: {e}")
+        answer = "No pude consultar los precios ahora. Probá de nuevo en un ratito."
 
     try:
         _send_twilio_text(sender, _markdown_bold_to_whatsapp(answer))
@@ -282,6 +253,7 @@ async def _reply_denied(sender: str) -> None:
 
 
 @router.post("/webhook")
+@legacy_router.post("/webhook")
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     """Webhook Twilio WhatsApp — ack fast with empty TwiML; slow work in background."""
     form_data = await request.form()
@@ -334,6 +306,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
 
 
 @router.get("/health")
+@legacy_router.get("/health")
 async def whatsapp_health():
     """Health check endpoint."""
     return {
@@ -346,9 +319,11 @@ async def whatsapp_health():
         "horeca_enabled": HORECA_ENABLED,
         "horeca_available": HORECA_AVAILABLE,
         "webhook_path": "/v1/integrations/whatsapp/webhook",
+        "webhook_path_legacy": "/whatsapp/webhook",
     }
 
 
 @router.get("/webhook")
+@legacy_router.get("/webhook")
 async def whatsapp_verify(request: Request):
     return Response(content="ok", status_code=200)

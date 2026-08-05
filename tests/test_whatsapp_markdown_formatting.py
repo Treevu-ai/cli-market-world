@@ -30,18 +30,24 @@ def _signed_post(params: dict, **kwargs):
 
 
 @patch.object(whatsapp, "TWILIO_AUTH_TOKEN", _TEST_AUTH_TOKEN)
+@patch.object(whatsapp, "HORECA_ENABLED", False)
+@patch.dict("os.environ", {"MARKET_BOT_API_TOKEN": "bot-test-token"}, clear=False)
 @patch("routers.integrations.whatsapp.Client")
-@patch("httpx.AsyncClient.post")
-def test_llm_answer_markdown_bold_is_rendered_as_whatsapp_bold(mock_post, mock_twilio_client_cls):
-    mock_post.return_value.status_code = 200
-    mock_post.return_value.json = lambda: {
-        "answer": "**Leche Evaporada Gloria**: 4.20 PEN en Wong"
-    }
+@patch("routers.integrations.whatsapp_conversation.default_ask_intel")
+def test_llm_answer_markdown_bold_is_rendered_as_whatsapp_bold(mock_intel, mock_twilio_client_cls):
+    """Intel path still converts Markdown **bold** → WhatsApp *bold*."""
 
-    r = _signed_post({"From": "whatsapp:+15559990010", "Body": "leche evaporada en peru"})
+    async def _intel(question, token, market_api_url):
+        return "**Leche Evaporada Gloria**: 4.20 PEN en Wong"
+
+    mock_intel.side_effect = _intel
+
+    # "compara …" routes to intel (not catalog) in the standard funnel.
+    r = _signed_post({"From": "whatsapp:+15559990010", "Body": "compara leche evaporada en peru"})
 
     assert r.status_code == 200
     mock_twilio_client_cls.return_value.messages.create.assert_called_once()
     _, kwargs = mock_twilio_client_cls.return_value.messages.create.call_args
     assert "*Leche Evaporada Gloria*" in kwargs["body"]
     assert "**" not in kwargs["body"]
+    assert mock_intel.await_count >= 1

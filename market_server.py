@@ -280,11 +280,15 @@ from routers.integrations.telegram import router as telegram_router
 
 # Integrations routers (Twilio WhatsApp, Telegram)
 try:
-    from routers.integrations.whatsapp import router as whatsapp_router
+    from routers.integrations.whatsapp import (
+        router as whatsapp_router,
+        legacy_router as whatsapp_legacy_router,
+    )
     from routers.integrations.telegram import router as telegram_router
     INTEGRATIONS_AVAILABLE = True
 except ImportError:
     INTEGRATIONS_AVAILABLE = False
+    whatsapp_legacy_router = None  # type: ignore[assignment]
     logger.warning("Integrations routers not available - WhatsApp/Telegram endpoints disabled")
 
 # Ported from cli-market-backend (consolidation — single source of truth)
@@ -335,8 +339,11 @@ for r in (
 # Integrations routers (Twilio WhatsApp, Telegram) - mount after main routers
 if INTEGRATIONS_AVAILABLE:
     app.include_router(whatsapp_router)
+    # Alias for misconfigured Twilio Sandbox inbound URL (/whatsapp/webhook)
+    if whatsapp_legacy_router is not None:
+        app.include_router(whatsapp_legacy_router)
     app.include_router(telegram_router)
-    logger.info("Integrations routers mounted: WhatsApp + Telegram")
+    logger.info("Integrations routers mounted: WhatsApp + Telegram (+ /whatsapp legacy alias)")
 
 # Cost-of-Living OS v1 routes from cli-market-core (Waves 1–4).
 # Mounted after world routers so existing handlers win on duplicate paths;
