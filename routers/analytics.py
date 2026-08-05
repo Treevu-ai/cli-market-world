@@ -124,7 +124,15 @@ def price_history_series(
     if since:
         q += " AND recorded_at >= ?"
         params.append(since)
-    q += " ORDER BY recorded_at DESC LIMIT ?"
+    # id DESC as a tiebreaker: Postgres's NOW() returns the *transaction*
+    # start time (constant for the whole transaction), not the statement
+    # execution time, so multiple price_history rows inserted in quick
+    # succession within one transaction/connection can share the exact same
+    # recorded_at -- id (SERIAL, monotonically increasing with insert order)
+    # keeps "newest-first" deterministic in that case. SQLite's
+    # datetime('now') doesn't have this issue, but the tiebreaker is
+    # harmless there too. Found 2026-08-05 via a genuine test-pg flake.
+    q += " ORDER BY recorded_at DESC, id DESC LIMIT ?"
     params.append(limit)
     rows = db.execute(q, params).fetchall()
     db.close()

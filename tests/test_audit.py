@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import market_core
 from market_core import ensure_db_initialized, get_db
 
 ensure_db_initialized()
@@ -29,9 +30,17 @@ def clean_audit():
 
 def test_ensure_schema_creates_table():
     db = get_db()
-    row = db.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='audit_log'"
-    ).fetchone()
+    # sqlite_master is SQLite-only -- errors as UndefinedTable on Postgres
+    # (found 2026-08-05, test-pg triage). Use the matching system catalog
+    # per backend.
+    if market_core.USE_PG:
+        row = db.execute(
+            "SELECT 1 FROM information_schema.tables WHERE table_name = 'audit_log'"
+        ).fetchone()
+    else:
+        row = db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='audit_log'"
+        ).fetchone()
     db.close()
     assert row is not None
 
@@ -59,7 +68,12 @@ def test_record_audit_with_detail():
     rows = market_audit.get_audit_log(limit=10)
     assert len(rows) == 1
     assert rows[0]["resource"] == "st_abc"
-    assert "st_abc" in (rows[0]["detail"] or "")
+    # audit_log.detail is JSONB on Postgres (TEXT on SQLite) -- psycopg2
+    # auto-deserializes JSONB columns into a dict, so `detail` is a dict on
+    # PG and a raw JSON string on SQLite (found 2026-08-05). Check the
+    # value either way instead of assuming a string to substring-match.
+    detail = rows[0]["detail"] or ""
+    assert "st_abc" in detail if isinstance(detail, str) else "st_abc" in detail.values()
 
 
 def test_record_audit_with_ip_and_ua():

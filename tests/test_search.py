@@ -18,6 +18,15 @@ _ADMIN_TOKEN = "test-token-123"
 _AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
 
 
+def _as_timestamp_str(value):
+    """queried_at is TIMESTAMPTZ on Postgres -- psycopg2 auto-deserializes it
+    to a datetime, unlike SQLite's plain TEXT column (found 2026-08-05, test-pg
+    triage). Normalize either form to the same 'YYYY-MM-DD HH:MM:SS' string."""
+    if hasattr(value, "strftime"):
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+    return value
+
+
 @pytest.fixture(autouse=True)
 def patch_token(monkeypatch):
     monkeypatch.setattr(server_deps, "DEFAULT_TOKEN", _ADMIN_TOKEN)
@@ -155,7 +164,7 @@ def test_search_exposes_snapshot_identity_and_observation_when_available():
             result = _search_products_db(SearchRequest(query="cafe identidad 180 g", require_all=True))
         row = result["results"][0]
         assert row["canonical_product_id"] == "upid-cafe-180g"
-        assert row["queried_at"] == "2026-08-01 10:00:00"
+        assert _as_timestamp_str(row["queried_at"]) == "2026-08-01 10:00:00"
     finally:
         db = get_db()
         db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
@@ -187,7 +196,7 @@ def test_basket_identity_enrichment_adds_snapshot_evidence():
         enriched = search_mod._enrich_basket_identity(result, db)
         row = enriched["stores"][0]["breakdown"][0]
         assert row["canonical_product_id"] == "upid-leche-390g"
-        assert row["observed_at"] == "2026-08-01 10:00:00"
+        assert _as_timestamp_str(row["observed_at"]) == "2026-08-01 10:00:00"
         assert row["stock"] == 8
     finally:
         db.execute("DELETE FROM price_snapshots WHERE product_id = ?", (product_id,))
