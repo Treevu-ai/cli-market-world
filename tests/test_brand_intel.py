@@ -204,6 +204,29 @@ def test_brand_monitor_collapses_duplicate_retailer_skus_via_canonical_product_i
     assert matching[0]["price"] == 10.50
 
 
+@pytest.mark.parametrize("days", [2, 45, 60])
+def test_brand_monitor_non_whitelisted_days_window(days):
+    # Regression: the freshness cutoff used to be built as the SQLite-literal
+    # datetime('now', '-{days} days') string. _DB.execute() only rewrites a
+    # fixed whitelist of literal intervals for Postgres (7/14/30 days, 1 day,
+    # 24 hours -- see market_db.py); `days` here is a free 1-90 query param,
+    # so any value outside that whitelist (e.g. 45) reached Postgres as raw
+    # SQLite syntax and errored. This test runs against real Postgres in the
+    # test-pg CI job, so it catches a regression the SQLite-only run can't
+    # (found + fixed 2026-08-05).
+    _seed_snapshot("days-window-prod", "wong", "Wong", "Days Window Test", "DaysWindowBrand", 4.20)
+
+    r = client.get(
+        f"/v1/brand-monitor?brand=DaysWindowBrand&country=PE&days={days}",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["summary"]["days_window"] == days
+    pids = {s["product_id"] for s in data["my_skus"]}
+    assert "days-window-prod" in pids
+
+
 # ── GET /v1/brand-monitor/promos ──────────────────────────────────────────────
 
 def test_brand_promos_requires_auth():
@@ -231,6 +254,24 @@ def test_brand_promos_returns_discount_depth():
     matching = [e for e in data["promo_events"] if e["product_id"] == "bi-promo-gloria"]
     assert len(matching) >= 1
     assert matching[0]["discount_depth_pct"] == 25.0
+
+
+@pytest.mark.parametrize("days", [2, 45, 60])
+def test_brand_promos_non_whitelisted_days_window(days):
+    # Same regression as test_brand_monitor_non_whitelisted_days_window,
+    # for /promos' separate datetime('now', '-{days} days') site.
+    _seed_snapshot(
+        "days-window-promo", "wong", "Wong", "Days Window Promo Test", "DaysWindowPromoBrand",
+        price=3.00, list_price=4.00, discount=25.0,
+    )
+
+    r = client.get(
+        f"/v1/brand-monitor/promos?brand=DaysWindowPromoBrand&country=PE&days={days}",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    pids = {e["product_id"] for e in r.json()["promo_events"]}
+    assert "days-window-promo" in pids
 
 
 # ── POST /v1/brand-monitor/config ─────────────────────────────────────────────

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 import math
-
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Header, Query
 
@@ -140,6 +140,15 @@ def brand_monitor(
         else "product_id"
     )
 
+    # Cutoff computed in Python and bound as a plain parameter, rather than
+    # the SQLite-canonical datetime('now', '-N days') form _DB.execute()
+    # rewrites for Postgres: that rewrite only recognizes a fixed whitelist
+    # of literal intervals (-7/-14/-30 days, -1 day, -24 hours — see
+    # market_db.py's execute()), so `days` here (any value 1-90 via the
+    # `days` query param) wouldn't reliably translate on Postgres outside
+    # those exact values (found 2026-08-05).
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
     # Latest snapshot per (canonical product, store) within the window
     q = f"""
         SELECT
@@ -164,7 +173,7 @@ def brand_monitor(
             WHERE price > 0
               AND store IN ({placeholders_stores})
               AND LOWER(brand) IN ({placeholders_brands})
-              AND queried_at >= datetime('now', '-{days} days')
+              AND queried_at >= ?
             GROUP BY canon_key, store
         ) cur
           ON {canon_key} = cur.canon_key
@@ -172,7 +181,7 @@ def brand_monitor(
          AND p.queried_at = cur.latest_at
         WHERE p.price > 0
     """
-    params: list = store_keys + [_normalize_brand(b) for b in all_brands]
+    params: list = store_keys + [_normalize_brand(b) for b in all_brands] + [cutoff]
 
     if line:
         q += " AND p.line = ?"
@@ -300,6 +309,10 @@ def brand_promo_history(
     # In early deployments price_history may not be populated yet.
     placeholders_stores = ",".join("?" * len(store_keys))
     placeholders_brands = ",".join("?" * len(all_brands))
+    # See the matching comment in brand_monitor() above: computed in Python
+    # rather than relying on _DB.execute()'s SQLite->Postgres literal-interval
+    # whitelist, which doesn't cover arbitrary `days` values.
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
 
     def _query_table(table: str) -> list[dict]:
         q = f"""
@@ -310,9 +323,9 @@ def brand_promo_history(
               AND price > 0
               AND store IN ({placeholders_stores})
               AND LOWER(brand) IN ({placeholders_brands})
-              AND queried_at >= datetime('now', '-{days} days')
+              AND queried_at >= ?
         """
-        p: list = store_keys + [_normalize_brand(b) for b in all_brands]
+        p: list = store_keys + [_normalize_brand(b) for b in all_brands] + [cutoff]
         if line:
             q += " AND line = ?"
             p.append(line)
