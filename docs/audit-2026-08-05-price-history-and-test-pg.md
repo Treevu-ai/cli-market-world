@@ -367,28 +367,66 @@ re-running the full local suite — clean, 1177 passed in 2:33 — versus the
 fixed version, which reliably reproduces `FF....EE.E` failures around 91%
 and then hangs.
 
-Leading theory, not yet proven: SQLite WAL-mode checkpoint starvation. The
-shared session DB runs in WAL mode (`_DB.__init__`, `cli-market-core`);
-WAL checkpointing needs no open read connection blocking it, and a
-connection somewhere in this ~1170-test session isn't being closed
-reliably. Before the fix, the shared DB effectively stopped receiving
-writes ~91% of the way through (silently rerouted), so the WAL file never
-grew past whatever size it was at that point. After the fix, the shared DB
-keeps accumulating writes for the *entire* session — if a checkpoint is
-being blocked, the WAL file grows unboundedly, and reads/writes against it
-get progressively (eventually severely) slower, which would present
-exactly as "fine for 90%, then failures, then a hang" without being a
-true deadlock. Not confirmed — a `faulthandler.dump_traceback_later()`
-attempt to catch it in the act didn't get far enough before its own
-process got killed by the outer timeout.
+### Follow-up round: found and fixed 7 real connection leaks — hang persists anyway
 
-Deliberately not reverting the `test_market_observatory_local.py` fix to
-make this go away — that would silently resurrect the sqlite3.
-OperationalError cluster this whole session was about fixing. This needs
-its own investigation: confirm the WAL theory (e.g. `PRAGMA
-wal_checkpoint` size monitoring during a run, or `lsof`/Process Monitor
-for a connection that's opened but never closed), then either find and fix
-the leak or have conftest.py force periodic checkpoints.
+Tested the WAL-checkpoint-starvation theory directly: instrumented
+`market_core.market_db._DB.__init__`/`close` with a traceback-tagged
+open-connection counter (small standalone script, not committed) and ran
+it against the full local suite. Found real, independent, unrelated-to-
+each-other connection leaks — every one a `db = get_db()` with no
+`db.close()` on some or all code paths:
+
+- `routers/brand_intel.py` — all 4 endpoints, no close on *any* path
+  (including early returns). On live Postgres this leaks one connection
+  per request toward `max_connections`.
+- `routers/dashboard.py` — `_dashboard_data()` (700+ lines) had a
+  `db.close()` near the end on the success path only, no `try/finally`;
+  `collector_trigger()` never closed at all.
+- `routers/health.py` — `health_deep()`'s observatory/funnel checks only
+  closed on their success path inside their own `try/except`.
+- `market_vault.py` — `backfill_vault_bindings_from_audit()` closed on
+  success but had no `finally`.
+- **`server_deps.py`** — `get_messenger_session()`/
+  `update_messenger_session()`, called on *every* conversational turn
+  across telegram/whatsapp, never closed at all, on any path. By far the
+  largest leak measured: 40 and 29 open connections in a single 10s
+  sample, more than every other site combined.
+- Two test-side instances of the same pattern
+  (`tests/test_server.py`, `tests/test_whatsapp_conversation.py`).
+
+All fixed (commit `d9d563a0`) — genuinely valuable regardless of the hang,
+especially `server_deps.py`'s (a real prod connection-leak risk on
+Postgres). Re-ran the diagnostic afterward: **`open=0` at process exit** —
+confirmed zero leaked connections anywhere in a full suite run. That run
+also happened to *complete*, in 2:42, no hang.
+
+But a subsequent **clean run with no instrumentation, same code, hung
+again** — same position, same `FF....EE.E` pattern, indistinguishable from
+before the leak fixes. Confirmed in real CI too: `test` job on `d9d563a0`
+still hit the full 10m15s timeout. This rules out the WAL-starvation
+theory as the *sole* cause — with zero leaked connections confirmed, WAL
+checkpointing has nothing blocking it. The one run that completed instead
+of hanging, with identical code, points to a genuine timing-sensitive race
+rather than a monotonic resource-exhaustion effect (the diagnostic
+script's own overhead — a wrapping function call + `traceback.format_stack()`
+per connection, running in a background thread — was apparently enough to
+perturb timing past whatever the race depends on).
+
+**Status: unresolved, deprioritized.** Real root cause is still not
+identified after two rounds of investigation (~model of hours spent).
+`test-pg` — the thing that actually matters for this repo's Postgres
+behavior — is unaffected and healthy (1188 passed / 1 failed / 0 errors,
+confirmed on `d9d563a0`). The plain SQLite `test` job hanging blocks
+`deploy-fly.yml`'s automated path (CI must go fully green), but doesn't
+indicate a *production* bug beyond the 7 leaks already fixed. Not
+reverting `test_market_observatory_local.py` — would resurrect the
+`test-pg` cluster this investigation was originally about. Next session
+should try: `git bisect`-style search across which of the ~1050 tests
+between position 0 and the hang is the actual trigger (binary-search the
+`-k` deselect set rather than reasoning about it), or attach a debugger /
+`py-spy dump` to a hung CI runner if that's feasible, since
+`faulthandler.dump_traceback_later()` didn't get a chance to fire in the
+one attempt made.
 
 ## Files touched today
 
@@ -404,3 +442,4 @@ the leak or have conftest.py force periodic checkpoints.
 - `tests/test_collect_prices_growth.py`, `tests/test_market_basket.py`, `tests/test_audit.py`, `tests/test_search.py` — more literal-interval / backend-typed-value test fixes
 - `tests/test_market_observatory_local.py` — the real root cause: unmonkeypatched `USE_PG` leak
 - **`Treevu-ai/cli-market-core`** (separate repo): `market_core/market_db.py` — wider `get_db()` retry budget, published as v1.12.8; `requirements.txt` here bumped to match
+- `routers/brand_intel.py`, `routers/dashboard.py`, `routers/health.py`, `market_vault.py`, `server_deps.py`, `tests/test_server.py`, `tests/test_whatsapp_conversation.py` — closed 7 real DB connection leaks (found chasing the SQLite `test`-job hang, which they did not fully resolve)
