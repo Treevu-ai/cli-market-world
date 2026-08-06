@@ -92,6 +92,9 @@ Canales (un propósito por canal):
 | **threads** | `SLACK_CHANNEL_THREADS` | Threads (opcional: `SLACK_MIRROR_TWITTER_TO_THREADS=1`) |
 | **instagram** | `SLACK_CHANNEL_INSTAGRAM` | Grid IG (desde Jul) |
 | **whatsapp** | `SLACK_CHANNEL_WHATSAPP` | Canal WA (desde Jul) |
+
+**Bot Twilio WhatsApp (prod):** runbook canónico → `docs/integrations/whatsapp-bot.md`  
+(webhook, funnel, canasta multi-línea, secrets, troubleshooting, incidente 2026-08-05).
 | **newsletter** | `SLACK_CHANNEL_NEWSLETTER` | Price Pulse / Beehiiv |
 | **outbound** | `SLACK_CHANNEL_OUTBOUND` | Secuencias DM retailers |
 | **bitácora** | `SLACK_CHANNEL_BITACORA` | Salud producto, deploys, go-live |

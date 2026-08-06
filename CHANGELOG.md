@@ -2,6 +2,21 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-05] — WhatsApp conversational funnel + multi-line basket
+
+- **Standard funnel** (`routers/integrations/whatsapp_conversation.py`): vague
+  product queries clarify first; medium/specific use `/products/search` (no LLM);
+  multi-line lists (2–20 lines or `;`) call `/v1/basket/compare`; compare/trend
+  questions still use `/v1/intel/ask` with guardrails.
+- **HORECA fallthrough:** free-text products no longer force HORECA onboarding;
+  HORECA only claims explicit commands and mid-onboarding.
+- **Webhook alias:** `POST /whatsapp/webhook` mounted (legacy Twilio URL caused
+  live 404 silence); canonical remains `/v1/integrations/whatsapp/webhook`.
+- **Ops:** full runbook in `docs/integrations/whatsapp-bot.md` (secrets, smoke,
+  incident: Anthropic credits + CI-blocked deploy → manual Fly deploy v328).
+- **Tests:** `tests/test_whatsapp_conversation.py` (+ legacy path); CI-safe
+  `asyncio.run` (no bare `@pytest.mark.asyncio` on test-pg).
+
 ## [2026-08-02] — Ecosystem cleanup: branches, CI reliability, HubSpot tooling, pricing drift
 
 Wide-ranging maintenance pass across all four repos plus a first outreach

@@ -97,14 +97,16 @@ fly logs
 
 ## 3. Configurar Webhook Twilio
 
-1. Obtener la URL pública de tu app Fly.io:
-```bash
-fly info
-```
+**Doc canónica del bot (funnel, canasta multi-línea, ops, incidentes):**  
+[`docs/integrations/whatsapp-bot.md`](docs/integrations/whatsapp-bot.md)
 
-2. Configurar el webhook en Twilio Console:
-- URL: `https://tu-app.fly.dev/v1/integrations/whatsapp/webhook`
-- Method: POST
+1. Twilio Console → Messaging → Try it out → Send a WhatsApp message (Sandbox)
+2. **When a message comes in:**
+   - URL: `https://cli-market-api.fly.dev/v1/integrations/whatsapp/webhook` (canónica)
+   - Method: **HTTP POST**
+3. No depender de `/whatsapp/webhook` sola (histórico 404). Hay alias de compatibilidad, pero usá la canónica.
+4. Join: `join <código>` al `+1 415 523 8886` (código solo en Twilio Console).
+5. Allowlist: números de prueba en `WHATSAPP_ALLOWED_NUMBERS`.
 
 ## 4. Configurar Webhook Telegram (opcional)
 
@@ -130,16 +132,24 @@ curl https://tu-app.fly.dev/v1/integrations/telegram/health
 
 ## 6. Testing del Piloto HORECA
 
-### Onboarding flow
-1. Enviar "hola" al número Twilio
-2. El bot pedirá nombre del negocio
-3. Luego pedirá tipo de negocio (1-4)
-4. Se creará perfil HORECA con templates de ejemplo
+### Flujo estándar (default para free-text)
+1. `hola` → welcome con ejemplos + canasta
+2. `aceite` → clarify (no LLM)
+3. Lista multi-línea → `basket/compare` (requiere Pro en `MARKET_BOT_API_TOKEN`)
+4. `compara…` → intel (requiere crédito LLM / Anthropic)
+
+Ver checklist completo: `docs/integrations/whatsapp-bot.md` §13.
+
+### Onboarding HORECA (explícito)
+1. Enviar `registrar` / `horeca` / `mi negocio` (no el primer free-text genérico)
+2. El bot pedirá nombre del negocio y tipo (1–4)
+3. Perfil HORECA + templates de ejemplo
 
 ### Comandos HORECA
 - `mis ahorros` - Ver resumen de ahorros
 - `mis plantillas` - Ver búsquedas guardadas
 - `costo menú` / `menú del día` - Costo estimado de insumos (Estación 90)
+- `cotizar semana` - Insumos semanales (Estación 90 + Procure)
 - `upgrade` - Ver planes HORECA
 
 ### Búsqueda normal

@@ -20,6 +20,7 @@
 
 | Document | Description |
 |----------|-------------|
+| [integrations/whatsapp-bot.md](./integrations/whatsapp-bot.md) | Twilio WhatsApp bot: funnel, multi-line basket, webhook, secrets, ops & incident notes |
 | [PIT-INTEGRATION.md](./PIT-INTEGRATION.md) | PIT Research API ↔ CLI Market: product boundaries, endpoint matrix, Market Evidence Package schema |
 | [OPENWEBUI-INTEGRATION.md](./OPENWEBUI-INTEGRATION.md) | MCP Streamable HTTP in Open WebUI |
 | [CLAUDE-DESKTOP-INTEGRATION.md](./CLAUDE-DESKTOP-INTEGRATION.md) | MCP Streamable HTTP as a Claude Desktop connector |
