@@ -1,14 +1,9 @@
 """Test suite for CLI Market — auth, search, cart, checkout, orders."""
 
 import sys
-import os
-import shutil
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# conftest.py sets MARKET_DATA_DIR + DATABASE_URL before collection
-TEST_DATA_DIR = os.environ["MARKET_DATA_DIR"]
 
 import pytest
 from fastapi.testclient import TestClient
@@ -54,11 +49,6 @@ def _grant_admin_pro():
     import market_billing
 
     market_billing.db_set_subscription("admin", "pro")
-
-def teardown_module():
-    """Clean up temp dir after all tests."""
-    shutil.rmtree(TEST_DATA_DIR, ignore_errors=True)
-
 
 def test_root():
     r = client.get("/")

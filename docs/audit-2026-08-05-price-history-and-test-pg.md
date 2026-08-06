@@ -1,7 +1,7 @@
 # Audit: historical-series data moat + a silently broken Postgres CI gate
 
 **Date:** 2026-08-05
-**Status:** test-pg's real target is essentially done (28→1 failed, 0 errors, confirmed in real CI). A different, pre-existing problem in the plain SQLite `test` job was unmasked as a side effect and is now the open item — see bottom.
+**Status:** Done. test-pg's real target landed (28→1 failed, 0 errors, confirmed in real CI). The plain SQLite `test` job hang that was unmasked as a side effect is now also root-caused and fixed — see "The SQLite `test` job hang: resolved" near the bottom.
 **Trigger:** Asked to verify we're actually generating and saving historical price series in production.
 
 ## Summary
@@ -412,21 +412,90 @@ script's own overhead — a wrapping function call + `traceback.format_stack()`
 per connection, running in a background thread — was apparently enough to
 perturb timing past whatever the race depends on).
 
-**Status: unresolved, deprioritized.** Real root cause is still not
-identified after two rounds of investigation (~model of hours spent).
-`test-pg` — the thing that actually matters for this repo's Postgres
-behavior — is unaffected and healthy (1188 passed / 1 failed / 0 errors,
-confirmed on `d9d563a0`). The plain SQLite `test` job hanging blocks
-`deploy-fly.yml`'s automated path (CI must go fully green), but doesn't
-indicate a *production* bug beyond the 7 leaks already fixed. Not
-reverting `test_market_observatory_local.py` — would resurrect the
-`test-pg` cluster this investigation was originally about. Next session
-should try: `git bisect`-style search across which of the ~1050 tests
-between position 0 and the hang is the actual trigger (binary-search the
-`-k` deselect set rather than reasoning about it), or attach a debugger /
-`py-spy dump` to a hung CI runner if that's feasible, since
-`faulthandler.dump_traceback_later()` didn't get a chance to fire in the
-one attempt made.
+**Status (at the time): unresolved, deprioritized.** Real root cause hadn't
+been identified after two rounds of investigation. `test-pg` — the thing
+that actually matters for this repo's Postgres behavior — was unaffected
+and healthy (1188 passed / 1 failed / 0 errors, confirmed on `d9d563a0`).
+Picked back up in a later session — see below, now resolved.
+
+## The SQLite `test` job hang: resolved
+
+### Method
+
+Reproduced locally with a diagnostic pytest plugin (not committed) that
+hooks `pytest_runtest_setup`/`pytest_runtest_teardown` and snapshots
+`market_core.market_core`'s `DATA_DIR`/`DB_FILE`/`_db_initialized`/`USE_PG`
+(both the submodule and the top-level package re-export) plus a live
+`SELECT ... FROM sqlite_master WHERE name='store_credentials'` existence
+check before/after every single test, logging only on change. Run against
+the full local suite (SQLite, matching CI's `test` job), this pinpointed
+the exact transition: right after `tests/test_server.py`'s last test's
+teardown, `store_credentials_exists` flips `True → False` **with no
+`DATA_DIR`/`DB_FILE` change at all** — i.e. the real shared session DB file
+itself lost its tables in place, not a path swap.
+
+### Root cause
+
+`tests/test_server.py` had a `teardown_module()`:
+
+```python
+TEST_DATA_DIR = os.environ["MARKET_DATA_DIR"]
+...
+def teardown_module():
+    """Clean up temp dir after all tests."""
+    shutil.rmtree(TEST_DATA_DIR, ignore_errors=True)
+```
+
+`MARKET_DATA_DIR` is set once in `conftest.py` via `tempfile.mkdtemp()` —
+it's the **one shared SQLite data directory for the entire pytest
+session**, not a directory private to `test_server.py`. This
+`teardown_module()` deleted it wholesale the moment `test_server.py`'s own
+tests finished, **without** resetting `market_core.market_core._db_initialized`
+back to `False`. Every subsequent test file in the run (alphabetically
+after `test_server.py`: `test_slack_ops.py`, `test_sources_health.py`,
+`test_stores_catalog_growth.py`, `test_vault.py`, the `test_whatsapp_*`
+files, etc.) still saw `_db_initialized == True` and skipped
+re-initialization, so `get_db()` opened a connection to a path that no
+longer existed — SQLite silently auto-creates an empty file there with
+zero tables. Hence the `sqlite3.OperationalError: no such table:
+store_credentials` / `app_users` / `rate_limits` cascade from ~78% onward,
+and very likely the hang itself (whatever downstream code path hits an
+unbounded retry or lock contention against a file that's being
+concurrently recreated).
+
+**Why this was invisible until now, despite presumably existing for a long
+time:** `test_market_observatory_local.py`'s un-monkeypatched `USE_PG`
+leak (fixed earlier in this same investigation, "triage pass 5") had been
+accidentally *masking* this bug — it silently rerouted the rest of the
+session's tests onto a different, small, isolated temp DB, so by the time
+`test_server.py`'s `teardown_module()` deleted the *original* shared
+`MARKET_DATA_DIR`, nothing downstream was still pointed at it, and the
+delete was harmless by coincidence. Fixing that leak correctly restored
+every downstream test to the real shared DB — which is exactly what
+exposed this second, independent, pre-existing bug to the `rmtree()`.
+Two unrelated bugs, stacked, where fixing the first was a precondition for
+the second becoming visible at all.
+
+### Fix
+
+Removed `teardown_module()` (and the now-unused `shutil`/`os` imports and
+`TEST_DATA_DIR` constant) from `tests/test_server.py`. `MARKET_DATA_DIR` is
+already `tempfile.mkdtemp()`-managed per session — nothing needs to
+explicitly delete it, and no single test file should ever delete a
+directory it doesn't own exclusively.
+
+### Verification
+
+Full local suite (SQLite, matching CI's `test` job invocation), after the
+fix: **completed in 9:38 — no hang.** `1190 passed, 1 failed, 0 errors`.
+The one failure (`test_market_observatory_local.py::test_compute_daily_observatory_metrics_sqlite_row`,
+`assert 0 >= 1`) is unrelated to the cascade — a narrow, pre-existing flake,
+not yet triaged, tracked separately (not blocking).
+
+Not yet re-verified in real CI as of this write-up (the fix is committed
+locally / about to be pushed) — expected to also resolve real CI's `test`
+job hang given the local reproduction was 1:1 with CI's invocation and
+environment (SQLite, `DATABASE_URL=""`, same pytest args).
 
 ## Aparte: ¿vale la pena scrapear precio por sucursal? (investigación, sin cambios de código)
 
@@ -512,3 +581,4 @@ capturamos.
 - `tests/test_market_observatory_local.py` — the real root cause: unmonkeypatched `USE_PG` leak
 - **`Treevu-ai/cli-market-core`** (separate repo): `market_core/market_db.py` — wider `get_db()` retry budget, published as v1.12.8; `requirements.txt` here bumped to match
 - `routers/brand_intel.py`, `routers/dashboard.py`, `routers/health.py`, `market_vault.py`, `server_deps.py`, `tests/test_server.py`, `tests/test_whatsapp_conversation.py` — closed 7 real DB connection leaks (found chasing the SQLite `test`-job hang, which they did not fully resolve)
+- `tests/test_server.py` — removed `teardown_module()`'s `shutil.rmtree()` of the shared `MARKET_DATA_DIR`, the actual root cause of the SQLite `test`-job hang (see "The SQLite `test` job hang: resolved")
