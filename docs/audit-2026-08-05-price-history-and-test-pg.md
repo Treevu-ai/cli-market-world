@@ -1,7 +1,7 @@
 # Audit: historical-series data moat + a silently broken Postgres CI gate
 
 **Date:** 2026-08-05
-**Status:** Done. test-pg's real target landed (28→1 failed, 0 errors, confirmed in real CI). The plain SQLite `test` job hang that was unmasked as a side effect is now also root-caused and fixed — see "The SQLite `test` job hang: resolved" near the bottom.
+**Status:** Fully done. test-pg's real target landed (28→1 failed, 0 errors, confirmed in real CI). The plain SQLite `test` job hang that was unmasked as a side effect is root-caused and fixed. The one remaining test-pg failure (`test_auth.py::test_revoke_api_key_success`) is also root-caused and fixed — see the two sections near the bottom. As of `c322074` (cli-market-core v1.12.9), no known failures remain in either CI job.
 **Trigger:** Asked to verify we're actually generating and saving historical price series in production.
 
 ## Summary
@@ -492,10 +492,90 @@ The one failure (`test_market_observatory_local.py::test_compute_daily_observato
 `assert 0 >= 1`) is unrelated to the cascade — a narrow, pre-existing flake,
 not yet triaged, tracked separately (not blocking).
 
-Not yet re-verified in real CI as of this write-up (the fix is committed
-locally / about to be pushed) — expected to also resolve real CI's `test`
-job hang given the local reproduction was 1:1 with CI's invocation and
-environment (SQLite, `DATABASE_URL=""`, same pytest args).
+**Confirmed in real CI** on `500056a2`: the `test` job completed and went
+green — no hang, no timeout. `test-pg` failed separately on an unrelated,
+already-known issue (next section).
+
+## The last test-pg failure: resolved
+
+### Finding
+
+With the hang fixed, `test-pg` on `500056a2` ran to completion cleanly and
+failed on exactly the one pre-existing, already-documented item: `1
+failed, 1188 passed, 2 skipped` — `test_auth.py::test_revoke_api_key_success`,
+`assert 404 == 200` on `DELETE /auth/keys/{key_id}`.
+
+No local Postgres/Docker was available to reproduce interactively (Docker
+Desktop's engine was stopped and wouldn't start non-interactively), so this
+was triaged by temporarily instrumenting the failing test itself with
+`print()`s of the resolved username, `DEFAULT_TOKEN` state, and a direct
+dump of the `api_keys` table before and after the failing DELETE call —
+committed, pushed, read from the CI log, then reverted (`7db06713`).
+
+The dump was unambiguous:
+
+```
+[DIAG] api_keys table rows (before): ... {'id': 10, 'username': 'admin', 'label': 'to-revoke'}
+[DIAG] delete response: 404 {"detail":"Key not found"}
+[DIAG] api_keys table rows (after):  ... (id 10 is gone)
+```
+
+**The DELETE genuinely succeeded — the row was really removed — but the
+endpoint returned 404 anyway.** Root cause, in `cli-market-core`'s
+`db_revoke_api_key()`:
+
+```python
+row = db.execute(
+    "DELETE FROM api_keys WHERE id=? AND username=? RETURNING id",
+    (key_id, username),
+).fetchone()
+...
+return row is not None
+```
+
+`_DB.execute()` (same file) already special-cases any `RETURNING` clause:
+it calls `cur.fetchone()` internally right after executing, to populate
+`.lastrowid`. That consumes the psycopg2 cursor's one-row result set. When
+`db_revoke_api_key()` then calls `.fetchone()` again on the same cursor
+(via the `_PgCursor` wrapper), there's nothing left to fetch — always
+`None`, regardless of whether the DELETE matched a row. So this endpoint
+was **structurally guaranteed to always 404 on Postgres**, even on a
+successful revoke — not a flake, not test-only, a real production bug
+(any `cli-market-api` caller revoking a real API key on Postgres always
+saw a 404 despite the key actually being revoked).
+
+Grepped every other `RETURNING`-using call site in the package:
+`db_add_to_cart` correctly uses `cur.lastrowid` (not `.fetchone()`);
+`db_create_api_key` sidesteps the whole trap by re-`SELECT`ing the row
+after insert instead of trusting the `RETURNING` result. `db_revoke_api_key`
+was the only one still calling `.fetchone()` directly on a `RETURNING`
+result — an isolated instance, not a systemic pattern across the codebase.
+
+### Fix (`cli-market-core` v1.12.9, commit `c322074`)
+
+Read `cur.rowcount` instead of `.fetchone()` — accurate for `DELETE`,
+unaffected by the cursor's fetch state:
+
+```python
+cur = db.execute(
+    "DELETE FROM api_keys WHERE id=? AND username=? RETURNING id",
+    (key_id, username),
+)
+affected = cur.rowcount
+...
+return affected > 0
+```
+
+Published to PyPI as `cli-market-core==1.12.9`; bumped the pin in
+`requirements.txt` here to match.
+
+### Verification
+
+Diagnostic instrumentation confirmed the bug's exact shape via real CI
+output (above) before the fix — high confidence this is the true and only
+cause, not a guess. Not yet re-confirmed with a fresh `test-pg` run as of
+this write-up (queued as the next CI push); expected to be the final
+green light for both CI jobs.
 
 ## Aparte: ¿vale la pena scrapear precio por sucursal? (investigación, sin cambios de código)
 

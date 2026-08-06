@@ -244,30 +244,7 @@ def test_revoke_api_key_success():
     if key_id is None:
         pytest.skip("Key ID not returned in list — skipping revoke test")
 
-    # TEMP DIAGNOSTIC (2026-08-06) -- triaging a 404-on-delete flake in
-    # test-pg. Remove once root-caused.
-    import server_deps as _sd
-    from market_core import db_validate_api_key as _dva
-
-    db = get_db()
-    try:
-        _rows = db.execute("SELECT id, username, label FROM api_keys ORDER BY id").fetchall()
-    finally:
-        db.close()
-    print(f"\n[DIAG] resolved username via require_user: {_sd.auth_user(_ADMIN_TOKEN)!r}")
-    print(f"[DIAG] DEFAULT_TOKEN={_sd.DEFAULT_TOKEN!r} _ADMIN_TOKEN={_ADMIN_TOKEN!r}")
-    print(f"[DIAG] keys_before={keys_before} chosen key_id={key_id}")
-    print(f"[DIAG] api_keys table rows: {[dict(r) for r in _rows]}")
-
     r = client.delete(f"/auth/keys/{key_id}", headers=_auth_header())
-    if r.status_code != 200:
-        db2 = get_db()
-        try:
-            _rows2 = db2.execute("SELECT id, username, label FROM api_keys ORDER BY id").fetchall()
-        finally:
-            db2.close()
-        print(f"[DIAG] AFTER failed delete, api_keys table rows: {[dict(r) for r in _rows2]}")
-        print(f"[DIAG] delete response: {r.status_code} {r.text}")
     assert r.status_code == 200
     keys_after = client.get("/auth/keys", headers=_auth_header()).json()["total"]
     assert keys_after < keys_before
