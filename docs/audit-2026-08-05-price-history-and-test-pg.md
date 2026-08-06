@@ -428,6 +428,75 @@ between position 0 and the hang is the actual trigger (binary-search the
 `faulthandler.dump_traceback_later()` didn't get a chance to fire in the
 one attempt made.
 
+## Aparte: ¿vale la pena scrapear precio por sucursal? (investigación, sin cambios de código)
+
+**Trigger:** pregunta directa del usuario — si internamente alguien pidiera
+"Wong Arequipa" vs "Plaza Vea Trujillo", ¿podríamos responder eso hoy? La
+respuesta corta ya era no (no hay columna de sucursal/ciudad en ningún
+store). Esto es la investigación de seguimiento: ¿vale la pena construirlo?
+
+### Método
+
+Consultas HTTP en vivo (sin cambios de código) contra la API pública de
+catálogo VTEX (`/api/catalog_system/pub/products/search`) de las tiendas
+peruanas rastreadas, variando el parámetro `sc` (sales channel) de VTEX —
+el único mecanismo de segmentación de precio que expone esa API pública.
+
+### Hallazgos
+
+- **`market_connectors/vtex.py`** (conector actual) no usa `sc` ni ningún
+  parámetro de región — llama al catálogo con los defaults de cada tienda.
+  `market_core.STORES["wong"]`/`["metro"]`/`["plazavea"]` no tienen
+  configuración de `sc` ni de región, solo `base`/`country`/`currency`/`line`/`platform`.
+- **Wong** (`wong.pe`): para el SKU 13571 (Chocolate con Leche Triángulo
+  29-30g), `sc=70` (el canal real por defecto, confirmado vía
+  `addToCartLink` de una búsqueda sin `sc` explícito) → S/2.50; `sc=71` →
+  S/1.90. Diferencia real, mismo SKU, mismo momento.
+- **Metro** (`metro.pe`, dominio separado, mismo grupo Cencosud): el mismo
+  SKU 13571, en su canal por defecto, también S/2.50 — igual al *default*
+  de Wong, no al `sc=71` más barato. Es decir, el precio "real" que ve un
+  cliente en cualquiera de las dos marcas es el mismo; `sc=71` no es "el
+  precio de Metro escondido en el canal de Wong".
+- **Plaza Vea** (`plazavea.com.pe`): mismo experimento con otro SKU
+  (Chocolate Nestlé Triángulo Doypack 136g, S/10.90). `sc=1` y `sc=2` (los
+  únicos canales válidos encontrados) devolvieron **el mismo precio**;
+  otros valores de `sc` simplemente no matchearon ningún producto (sin
+  precio alterno, a diferencia de Wong).
+- No se encontró ningún selector de tienda/ciudad de cara al cliente en
+  ninguno de los tres sitios, ni ningún parámetro de región/postal-code
+  soportado por la búsqueda pública de catálogo (`DeliverySlaSamplesPerRegion`,
+  el mecanismo real de "Regionalización" de VTEX, requeriría simular
+  selección de dirección — no probado, ver "no hecho" abajo).
+- Los tags de campaña vistos en Wong (`"Delivery Gratis T121 Playas"`,
+  `"...T116 Playas"`) son zonas de delivery/promoción, no precio distinto.
+- **`tottus` no está en `market_stores.py` en absoluto** — no es un tema de
+  precio por sucursal, es una tienda que hoy no rastreamos. Gap separado,
+  no relacionado con esta investigación.
+
+### Conclusión
+
+**No vale la pena hoy.** La única variación de precio real encontrada
+(Wong `sc=71`) no se repite en Plaza Vea con el mismo método, y Metro
+confirma que el precio por defecto es igual entre marcas hermanas — todo
+apunta a que `sc=71` es un canal interno no representativo (app, mayorista,
+o canal de pruebas), no evidencia de precio geográfico real. Construir
+scraping por sucursal sería ingeniería especulativa sin caso de negocio
+demostrado: ninguna de las tres cadenas probadas publica precio distinto
+por ciudad/tienda en su catálogo web público, que es exactamente lo que ya
+capturamos.
+
+### No hecho / posible siguiente paso
+
+- No se simuló el flujo real de "elegir tienda/dirección" (selección de
+  código postal) en ningún sitio — el mecanismo de Regionalización de VTEX
+  podría, en teoría, afectar disponibilidad o precio de forma que la API
+  de catálogo sin sesión no refleja. Si se quisiera cerrar esto del todo:
+  simular ese flujo (probablemente vía cookies/headers de sesión regional)
+  en 2-3 cadenas más, ~30 min por cadena.
+- Solo se probó 1 SKU por tienda — no se puede descartar que otras
+  categorías (ej. perecibles, que sí suelen variar por tienda física)
+  tengan un comportamiento distinto al de abarrotes empacados.
+
 ## Files touched today
 
 - `collect_prices.py` — zombie-run fix, `price_history` write path
