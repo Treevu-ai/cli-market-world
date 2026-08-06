@@ -21,20 +21,23 @@ ensure_db_initialized()
 def _ensure_messenger_sessions_table() -> None:
     """Table is normally created in market_server lifespan; tests may not run it."""
     db = get_db()
-    db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS messenger_sessions (
-            platform_id TEXT PRIMARY KEY,
-            username TEXT,
-            last_context TEXT,
-            last_query TEXT,
-            last_country TEXT,
-            user_tier TEXT DEFAULT 'starter',
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    try:
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS messenger_sessions (
+                platform_id TEXT PRIMARY KEY,
+                username TEXT,
+                last_context TEXT,
+                last_query TEXT,
+                last_country TEXT,
+                user_tier TEXT DEFAULT 'starter',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
         )
-        """
-    )
-    db.commit()
+        db.commit()
+    finally:
+        db.close()  # was never closed before (found 2026-08-05)
 
 
 @pytest.fixture

@@ -203,6 +203,7 @@ def get_messenger_session(platform_id: str) -> dict:
     Returns a dict with platform_id, username, last_context, last_query,
     last_country, and user_tier.
     """
+    db = None
     try:
         db = get_db()
         row = db.execute(
@@ -222,6 +223,13 @@ def get_messenger_session(platform_id: str) -> dict:
             }
     except Exception as e:
         logger.error("get_messenger_session error: %s", e)
+    finally:
+        # Never closed before (found 2026-08-05) -- called on every
+        # conversational turn across telegram/whatsapp, so this was the
+        # single biggest connection leak in the app, starving SQLite WAL
+        # checkpointing over a long-running process/test session.
+        if db is not None:
+            db.close()
     return {
         "platform_id": platform_id,
         "username": None,
@@ -247,6 +255,7 @@ def update_messenger_session(
     carry the product text themselves) so a follow-up action can re-run the
     right search without asking the user to retype it.
     """
+    db = None
     try:
         db = get_db()
         # Use UPSERT (SQLite 3.24+ / Postgres)
@@ -263,6 +272,11 @@ def update_messenger_session(
         db.commit()
     except Exception as e:
         logger.error("update_messenger_session error: %s", e)
+    finally:
+        # Never closed before (found 2026-08-05) -- same leak class as
+        # get_messenger_session() above.
+        if db is not None:
+            db.close()
 
 
 def claim_messenger_update(platform: str, update_id: str | int, ttl_seconds: int = 604800) -> bool:

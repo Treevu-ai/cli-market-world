@@ -282,12 +282,14 @@ def backfill_vault_bindings_from_audit() -> dict[str, int]:
     ensure_audit_schema()
     ensure_vault_schema()
     db = get_db()
-    rows = db.execute(
-        "SELECT username, action, detail, created_at FROM audit_log "
-        "WHERE action IN ('save_card', 'vault_confirm') "
-        "ORDER BY created_at ASC"
-    ).fetchall()
-    db.close()
+    try:
+        rows = db.execute(
+            "SELECT username, action, detail, created_at FROM audit_log "
+            "WHERE action IN ('save_card', 'vault_confirm') "
+            "ORDER BY created_at ASC"
+        ).fetchall()
+    finally:
+        db.close()  # guard against a leak if the query above ever throws (found 2026-08-05)
 
     stats = {
         "customers_bound": 0,

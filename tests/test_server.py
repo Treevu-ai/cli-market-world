@@ -28,17 +28,19 @@ client = TestClient(app)
 def clean_db():
     """Reset DB state before each test."""
     db = get_db()
-    # app_order_items.order_id references app_orders(order_id) -- must be
-    # deleted first. SQLite doesn't enforce FKs by default so this order
-    # never mattered there; Postgres does, and an unguarded DELETE FROM
-    # app_orders here failed outright (ForeignKeyViolation), taking every
-    # single test in this file down via this autouse fixture (found
-    # 2026-08-05, same bug class as test_checkout_payments.py's 845fe073).
-    for table in ["app_carts", "app_order_items", "app_orders", "rate_limits", "billing_pending", "subscriptions", "subscription_requests"]:
-        db.execute(f"DELETE FROM {table}")
-    db.execute("DELETE FROM app_users")
-    db.commit()
-    db.close()
+    try:
+        # app_order_items.order_id references app_orders(order_id) -- must be
+        # deleted first. SQLite doesn't enforce FKs by default so this order
+        # never mattered there; Postgres does, and an unguarded DELETE FROM
+        # app_orders here failed outright (ForeignKeyViolation), taking every
+        # single test in this file down via this autouse fixture (found
+        # 2026-08-05, same bug class as test_checkout_payments.py's 845fe073).
+        for table in ["app_carts", "app_order_items", "app_orders", "rate_limits", "billing_pending", "subscriptions", "subscription_requests"]:
+            db.execute(f"DELETE FROM {table}")
+        db.execute("DELETE FROM app_users")
+        db.commit()
+    finally:
+        db.close()  # guard against a leak if any DELETE above ever throws (found 2026-08-05)
     db_save_user("admin", hash_password("market"), "test-token-123")
     yield
 
@@ -840,15 +842,17 @@ def test_intel_inflation_with_snapshot_rows():
         ("p2", 12.0, recent),
         ("p3", 8.0, older),
     )
-    for product_id, price, queried_at in rows:
-        db.execute(
-            """INSERT INTO price_snapshots
-               (product_id, store, name, price, currency, line, queried_at, url)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (product_id, "wong", "Leche test", price, "PEN", "supermercados", queried_at, ""),
-        )
-    db.commit()
-    db.close()
+    try:
+        for product_id, price, queried_at in rows:
+            db.execute(
+                """INSERT INTO price_snapshots
+                   (product_id, store, name, price, currency, line, queried_at, url)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (product_id, "wong", "Leche test", price, "PEN", "supermercados", queried_at, ""),
+            )
+        db.commit()
+    finally:
+        db.close()
 
     db_save_user("admin", hash_password("market"), "test@test.com")
     from market_core import db_create_api_key, db_set_subscription

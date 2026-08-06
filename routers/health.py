@@ -389,26 +389,35 @@ def health_deep():
         checks["index"] = {"status": "unavailable", "error": str(e)[:200]}
 
     # 4. Observatory (telemetry)
+    # db.close() moved to finally: the old success-path-only close() leaked
+    # a connection on every exception here (e.g. table not yet migrated in
+    # a fresh env) -- found 2026-08-05.
+    db = None
     try:
         db = get_db()
         obs = db.execute(
             "SELECT COUNT(*) as n FROM observatory_events"
         ).fetchone()
-        db.close()
         checks["observatory"] = {"status": "ok", "events": obs["n"] if obs else 0}
     except Exception:
         checks["observatory"] = {"status": "unavailable"}
+    finally:
+        if db is not None:
+            db.close()
 
     # 5. Funnel
+    db = None
     try:
         db = get_db()
         funnel = db.execute(
             "SELECT COUNT(*) as n FROM funnel_events"
         ).fetchone()
-        db.close()
         checks["funnel"] = {"status": "ok", "events": funnel["n"] if funnel else 0}
     except Exception:
         checks["funnel"] = {"status": "unavailable"}
+    finally:
+        if db is not None:
+            db.close()
 
     overall = "healthy" if failures == 0 else ("degraded" if failures == 1 else "unhealthy")
     return {"status": overall, "checks": checks}

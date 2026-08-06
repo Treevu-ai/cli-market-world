@@ -115,7 +115,6 @@ def brand_monitor(
     Promo events (discount > 0) are flagged inline with ``promo_active: true``.
     """
     require_pro(authorization)
-    db = get_db()
 
     all_brands = [brand]
     if competitors:
@@ -125,6 +124,13 @@ def brand_monitor(
     if not store_keys:
         return {"error": f"No stores found for country '{country}'", "my_skus": [], "competitor_skus": [], "summary": {}}
 
+    # Opened here (not before the early-return check above) and closed right
+    # after the last query that needs it, below -- this endpoint never
+    # called db.close() at all before (found 2026-08-05: every request
+    # leaked a connection; on SQLite that starved WAL checkpointing across
+    # a long-running process/test session until it ground to a halt, and
+    # would leak real Postgres connections toward max_connections in prod).
+    db = get_db()
     placeholders_stores = ",".join("?" * len(store_keys))
     placeholders_brands = ",".join("?" * len(all_brands))
 
@@ -216,6 +222,7 @@ def brand_monitor(
             pvp_map = json.loads(config_row["sku_pvps"])
     except Exception:
         pass  # config table may not exist yet on fresh DB
+    db.close()
 
     # ── annotate each sku row ─────────────────────────────────────────────────
     my_brand_norm = _normalize_brand(brand)
@@ -296,7 +303,6 @@ def brand_promo_history(
     estimated duration (first → last observation with discount in the window).
     """
     require_pro(authorization)
-    db = get_db()
 
     all_brands = [brand]
     if competitors:
@@ -338,7 +344,12 @@ def brand_promo_history(
         q += " AND line = ?"
         params.append(line)
     q += " ORDER BY queried_at DESC LIMIT 500"
+    # Opened here (not before the early-return above), closed immediately
+    # after -- this endpoint never called db.close() at all before (found
+    # 2026-08-05, same leak class as brand_monitor() above).
+    db = get_db()
     events = [dict(r) for r in db.execute(q, params).fetchall()]
+    db.close()
 
     # Annotate discount depth + homologate brand casing (see brand_monitor's
     # canonical_brand comment — same scraped-casing-drift issue applies here).
@@ -425,6 +436,7 @@ def brand_config_upsert(
             updated_at  = CURRENT_TIMESTAMP
     """, [slug, api_key, sku_pvps_json, competitors_json])
     db.commit()
+    db.close()  # was never closed before (found 2026-08-05)
 
     return {
         "status": "ok",
@@ -517,4 +529,7 @@ def brand_alerts(
     """
     api_key = require_pro(authorization)
     db = get_db()
-    return compute_brand_alerts(db, api_key, brand, country)
+    try:
+        return compute_brand_alerts(db, api_key, brand, country)
+    finally:
+        db.close()  # was never closed before (found 2026-08-05)
