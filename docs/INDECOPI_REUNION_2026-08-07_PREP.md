@@ -16,14 +16,16 @@ review_status: COMPLETO — code-reviewer (APPROVE, 0 CRITICAL/0 HIGH) y securit
 
 > **Nota de proceso:** este documento se preparó el 2026-08-06, un día antes de la
 > reunión. Incluye tanto material ya estable (metodología, límites de datos) como
-> dos entregables construidos específicamente hoy (detector de coordinación,
+> dos entregables construidos específicamente ese día (detector de coordinación,
 > audit logging reforzado). Ambos pasaron por revisión de código y seguridad
 > antes de considerarse listos — ver §9. **Actualizado la tarde del 2026-08-06**
 > con hallazgos adicionales de una auditoría de calidad del Golden Record — ver
 > §9.5. **Actualizado la noche del 2026-08-06** con los 5 ejercicios
 > demostrativos ya ejecutados y verificados contra datos reales — ver §10.
-> Todo lo desplegado en producción y verificado con evidencia real antes
-> de agregarse aquí.
+> **Actualizado el 2026-08-07 — día de la reunión** con una segunda ronda de
+> correcciones de calidad de datos, dos causas raíz encontradas y corregidas
+> en `cli-market-index`, ya desplegadas — ver §11. Todo lo desplegado en
+> producción y verificado con evidencia real antes de agregarse aquí.
 
 ---
 
@@ -226,10 +228,11 @@ meses → completo 12 meses), limitaciones de datos que no se resuelven rápido
 - [x] Revisión `security-reviewer` sobre `mcp_http.py` / `market_funnel.py` — **0 CRITICAL/0 HIGH, seguro de presentar** (ver §9)
 - [x] Hallazgos de ambas revisiones corregidos (ver §9)
 - [x] Regresión post-corrección: `--demo` y `--country PE --line supermercados` dan resultados idénticos a antes del refactor
-- [ ] Confirmar que `python3 ops/market_coordination_detector.py --demo` corre sin errores en la máquina que se usará mañana (verificado hoy en esta máquina; repetir en la que se use en la reunión si es distinta)
+- [ ] **Confirmar AHORA** que `python3 ops/market_coordination_detector.py --demo` corre sin errores en la máquina que se use en la reunión (verificado en la máquina de trabajo; la reunión es hoy, no queda otro día para repetirlo)
 - [ ] Tener a mano `docs/methodology.md` y `docs/🏗️_moat_engine/data-integrity-prd.md` por si piden detalle de fórmulas o del proceso de auditoría interna
 - [x] Los 5 ejercicios demostrativos (`cli-market-indecopi/docs/06-EJERCICIOS-DEMOSTRATIVOS.md`) ejecutados contra datos reales — ver §10
-- [ ] Tener a mano ese documento durante la reunión (repo local, no en GitHub — confirmar que está en la máquina que se use mañana)
+- [ ] **Tener a mano AHORA** ese documento durante la reunión (repo local, no en GitHub — confirmar que está en la máquina que se use en la reunión)
+- [x] Trabajo adicional del 2026-08-07 (día de la reunión) sobre calidad del Golden Record — ver §11
 
 ---
 
@@ -361,3 +364,61 @@ detección mencionadas en §4 (coordinación de precios) y §6 (arquitectura
 agéntica) no son solo diseño: se probaron contra datos reales de
 producción y arrojaron señales concretas, con sus propias limitaciones
 declaradas explícitamente en vez de ocultadas.
+
+---
+
+## 11. Actualización — segunda ronda de calidad del Golden Record (2026-08-07, día de la reunión)
+
+Continuación directa de §9.5: se encontraron y corrigieron dos causas raíz
+adicionales en el motor de matching (`cli-market-index`), y se corrió un
+barrido de re-resolución sobre datos reales de producción para aplicar
+ambas correcciones retroactivamente.
+
+**Hallazgo 1 — sobre-fusión de variantes en Golden Records viejos.**
+Varios `canonical_product_id` agrupaban productos genuinamente distintos
+bajo un mismo ID (ej. distintas variedades de queso, o leche vs. crema de
+leche de cocina bajo el mismo ID) — Golden Records registrados antes de
+que la lógica actual de diferenciación de variedades existiera, nunca
+re-resueltos. Confirmado que la lógica actual **ya calcula correctamente**
+un ID distinto para cada variedad — no era un bug del resolver, sino datos
+viejos sin refrescar. Corregido en `cli-market-index` (PR mergeado,
+issue #16).
+
+**Hallazgo 2 — "5G" interpretado como gramos.** Bug real en la extracción
+de medidas: el marcador de red celular ("3G"/"4G"/"5G", presente en casi
+todo nombre de celular/tablet/router) se confundía con una medida de 5
+gramos, dando pesos falsos (0.005kg) a productos electrónicos y
+fusionándolos incorrectamente. Corregido en `cli-market-index` (PR
+mergeado, issue #17), aprovechando que en el catálogo real la red celular
+siempre se escribe en mayúscula ("5G") y los pesos reales en gramos
+siempre en minúscula.
+
+**Resultado del barrido de re-resolución (aplicado hoy, verificado en
+producción, 0 errores en todos los lotes):**
+
+| Categoría | Filas corregidas |
+|---|---|
+| Casos iniciales (queso/leche GLORIA) | 88 |
+| Categoría A — Golden Records viejos (25 IDs) | 1,722 |
+| Categoría B — celulares/telecom con "5G" (5 IDs) | 466 |
+| Lote extendido (45 IDs) | 1,679 |
+| Lote extendido (99 IDs, incluye marca propia "Orange" de Promart) | 3,323 |
+| Bucket "Orange" (836 filas) | 836 |
+| Cola larga, ronda 1 (100 IDs) | 1,617 |
+| Cola larga, ronda 2 (148 IDs) | 1,924 |
+| **Total** | **~11,655** |
+
+**Por qué importa para la reunión (si preguntan por rigor metodológico o
+proceso de mejora continua):** en un solo día se auditó, diagnosticó con
+causa raíz confirmada (no solo síntoma), corrigió en la librería
+compartida, desplegó, y aplicó retroactivamente sobre production real —
+sin un solo error en ningún lote de más de 300 productos afectados. Es el
+mismo patrón de rigor que §3 y §9.5 ya documentan, ahora a mayor escala.
+
+**Nota de transparencia:** queda un caso residual conocido y documentado
+(un producto Samsung con "5g" escrito en minúscula por el retailer, que
+el fix de mayúscula no cubre) y una cola larga de contaminación de bajo
+volumen aún sin barrer por completo — mencionarlo si preguntan si "ya está
+todo arreglado": la respuesta honesta es "la mayoría del volumen real sí,
+quedan casos residuales de baja frecuencia, documentados y con plan claro
+para cerrarlos".
