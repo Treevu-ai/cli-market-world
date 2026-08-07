@@ -42,7 +42,13 @@ DEFAULT_TIME_BUDGET_S = 600
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Re-resolve snapshots stuck on a known-over-fused canonical_product_id")
-    parser.add_argument("--ids", nargs="*", default=OVER_FUSED_IDS)
+    parser.add_argument("--ids", nargs="*", default=None)
+    parser.add_argument(
+        "--ids-file",
+        type=str,
+        default=None,
+        help="Path to a text file with one canonical_product_id per line (avoids shell/SSH arg-length limits for large batches). Combined with --ids if both are given.",
+    )
     parser.add_argument("--limit", type=int, default=DEFAULT_BATCH_LIMIT)
     parser.add_argument("--max-batches", type=int, default=DEFAULT_MAX_BATCHES)
     parser.add_argument("--time-budget", type=int, default=DEFAULT_TIME_BUDGET_S)
@@ -54,12 +60,24 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    ids: list[str] = list(args.ids) if args.ids else []
+    if args.ids_file:
+        file_ids = [
+            line.strip()
+            for line in Path(args.ids_file).read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        ids.extend(file_ids)
+    if not ids:
+        ids = list(OVER_FUSED_IDS)
+    args.ids = ids
+
     # A real canonical_product_id is prod_<brand>_<category>_<qty><unit>[_<variety>].
     # Variety segments come from tokenized Spanish/Portuguese product names and
     # can contain accented letters (e.g. "..._renovación", "..._niños") — \w is
     # Unicode-aware by default in Python 3, so this covers those without
-    # widening past what _build_product_id can actually produce. --ids is
-    # free-form CLI input; unlike reresolve_stale_brands.py's LIKE-pattern
+    # widening past what _build_product_id can actually produce. --ids/--ids-file
+    # are free-form input; unlike reresolve_stale_brands.py's LIKE-pattern
     # validation, this is pure fail-fast sanity checking, not an injection
     # guard — the fetch below uses parameterized = / ANY / IN, which isn't
     # wildcard-sensitive the way LIKE is.
