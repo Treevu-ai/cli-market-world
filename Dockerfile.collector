@@ -34,7 +34,7 @@ RUN --mount=type=secret,id=github_token set -eux; \
     playwright install chromium; \
     rm -f /root/.gitconfig
 
-COPY collect_prices.py collector_schema.py price_snapshots_schema.py stock_history_schema.py ./
+COPY collect_prices.py collector_schema.py price_snapshots_schema.py stock_history_schema.py index_gate.py ./
 
 ENV PYTHONUNBUFFERED=1
 CMD ["python", "collect_prices.py", "--daemon"]

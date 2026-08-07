@@ -1311,7 +1311,14 @@ def _run_index_cycle(prices_collected: int) -> None:
         resolved = stats.get("resolved", 0)
         registry = stats.get("registry_size", 0)
         linked = stats.get("linked", 0)
-        if resolved:
+        if stats.get("failed"):
+            # certify_round already caught and logged the underlying exception —
+            # this branch exists so a total index-gate outage doesn't read
+            # identically to a healthy cycle with nothing new to resolve (see
+            # index_gate.py:_record_index_health for the persisted health flag
+            # GET /index/stats surfaces).
+            print("  🔴 Index cycle FAILED — see logs / GET /index/stats for consecutive_failures")
+        elif resolved:
             print(
                 f"  🧠 Index: {resolved} snapshots resolved, {linked} linked → "
                 f"{registry:,} Golden Records "
@@ -1431,6 +1438,55 @@ async def main():
                         print(f"  🔔 Alerts: {fired} fired")
                 except Exception as _ae:
                     print(f"  ⚠ Alert evaluation skipped: {_ae}")
+                # Feed this cycle's snapshots into the semantic Golden Record
+                # index. Was defined but never called from this loop — the
+                # only live caller was a manual, workflow_dispatch-only
+                # GitHub Action (.github/workflows/index-pe-brands.yml), so
+                # certify_round's outage-visibility fix (see index_gate.py)
+                # never fired during routine automated cycles. _run_index_cycle
+                # already no-ops via INDEX_COLLECT_ENABLED and has its own
+                # try/except, so this is safe to call unconditionally.
+                _run_index_cycle(r["prices_collected"])
+                # certify_round (above) only resolves a narrow window (last
+                # INDEX_COLLECT_SINCE_MINUTES=15 min, capped at
+                # INDEX_COLLECT_LIMIT=500 rows) — confirmed live on
+                # 2026-08-06: a cycle that collected 17,727 prices only got
+                # 500 resolved by certify_round, leaving ~97% of that cycle's
+                # snapshots unlinked until something else picks them up.
+                # POST /index/backfill (routers/index_api.py) resolves the
+                # true backlog regardless of age, but is admin-gated and had
+                # no scheduler anywhere in the repo — confirmed by grepping
+                # every workflow file. Batch it here instead, mirroring that
+                # endpoint's own multi-batch loop, so the backlog actually
+                # gets cleared every cycle instead of depending on someone
+                # remembering to call the admin endpoint by hand.
+                bf_resolved = bf_linked = 0
+                try:
+                    from index_gate import backfill_canonical_product_ids
+                    _bf_t0 = time.monotonic()
+                    _bf_budget_s = 300  # wall-clock cap alongside the batch-count
+                    # cap — this runs synchronously inside the daemon-lock-held
+                    # window (lock released only after this + catalog + indicator
+                    # refresh), so an unexpectedly large backlog shouldn't be able
+                    # to stall the cycle indefinitely just because each individual
+                    # batch keeps resolving rows.
+                    for _bf_batch in range(10):
+                        bf_stats = backfill_canonical_product_ids(limit=2000)
+                        bf_resolved += bf_stats.get("resolved", 0)
+                        bf_linked += bf_stats.get("linked", 0)
+                        if not bf_stats.get("fetched") or not bf_stats.get("resolved"):
+                            break
+                        if time.monotonic() - _bf_t0 > _bf_budget_s:
+                            print(f"  ⏱ Backfill: time budget ({_bf_budget_s}s) reached after batch {_bf_batch + 1}")
+                            break
+                    if bf_resolved:
+                        print(f"  🧠 Backfill: {bf_resolved} resolved, {bf_linked} linked ({_bf_batch + 1} batch(es))")
+                except Exception as _bfe:
+                    # bf_resolved/bf_linked still reflect whatever prior batches
+                    # already committed (backfill_canonical_product_ids commits
+                    # per-row, so that work isn't lost) — surface it so a
+                    # recurring "fails on batch N" pattern isn't invisible.
+                    print(f"  ⚠ Backfill skipped after {bf_resolved} resolved: {_bfe}")
                 if USE_PG and pool:
                     cat_count = await run_full_catalog_pg(pool, stores)
                     if cat_count:
