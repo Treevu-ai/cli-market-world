@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import ProSubscribeButton from "@/components/ProSubscribeButton";
 import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import ProcurePricingPanel from "@/components/ProcurePricingPanel";
+import HubSpotLeadForm from "@/components/HubSpotLeadForm";
 import { PROCURE_SITE_URL } from "@/lib/procurePlans";
 import { redirectLegacyProcureCheckout } from "@/lib/procureCheckoutUrl";
 import type { BillingCheckoutKind } from "@/components/BillingCheckoutModal";
@@ -136,6 +137,7 @@ function TierCard({
   foundingSeats,
   paymentsLabel,
   children,
+  useHubSpotForm = false,
 }: {
   tier: Tier;
   isES: boolean;
@@ -143,6 +145,7 @@ function TierCard({
   foundingSeats?: number | null;
   paymentsLabel: string;
   children?: React.ReactNode;
+  useHubSpotForm?: boolean;
 }) {
   const isAnnual = billing === "annual" && tier.annualPrice;
   const displayPrice = isAnnual ? tier.annualPrice! : tier.price;
@@ -246,7 +249,18 @@ function TierCard({
         ))}
       </ul>
 
-      <div className="mt-auto">{children}</div>
+      <div className="mt-auto">
+        {useHubSpotForm && tier.checkoutKind ? (
+          <HubSpotLeadForm
+            productLine="CLI Market Pro"
+            tierIntent={tier.name === "Starter" ? "Starter $9" : tier.name === "Pro" ? "Pro $39" : "Enterprise"}
+            buttonLabel={isES ? tier.cta_es : tier.cta_en}
+            buttonClassName="btn-mint w-full"
+          />
+        ) : (
+          children
+        )}
+      </div>
     </div>
   );
 }
@@ -260,7 +274,7 @@ function scrollToPricingSection(focusId?: string) {
   });
 }
 
-export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
+export default function Pricing({ spoke, useHubSpotForms = false }: { spoke?: SpokeIcp; useHubSpotForms?: boolean }) {
   const { lang } = useLang();
   const isES = lang === "es";
   const isSpoke = spoke != null;
@@ -404,6 +418,7 @@ export default function Pricing({ spoke }: { spoke?: SpokeIcp }) {
                   isES={isES}
                   billing={billing}
                   paymentsLabel={paymentsLabel}
+                  useHubSpotForm={useHubSpotForms}
                 >
                   {tier.checkoutKind ? (
                     <ProSubscribeButton kind={tier.checkoutKind} />
