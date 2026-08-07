@@ -72,6 +72,11 @@ AGENT_CATALOG: dict[str, dict[str, str]] = {
     "reality-checker": {
         "role_path": "testing/testing-reality-checker.md",
         "context_path": str(CONTEXTS / "reality-checker-context.md"),
+        # Anti-hallucination auditor for every other agent's output — the one
+        # role where a cheaper/weaker model directly undermines the guardrail
+        # it exists to provide. Worth the ~3x per-call cost over the Haiku
+        # default used by the rest of the roster.
+        "llm_model_override": {"anthropic": "claude-sonnet-5"},
     },
     # Condicionales — solo se seleccionan para su intent/segmento específico.
     "analytics-reporter": {
@@ -373,6 +378,7 @@ def _agent(agent_id: str, depends: list[str], section: str, group: int, slice_ke
         "input_slice": slice_keys or [],
         "output_section": section,
         "parallel_group": group,
+        "llm_model_override": meta.get("llm_model_override"),
     }
 
 
@@ -949,7 +955,7 @@ def _llm_config() -> dict[str, Any]:
     if not model:
         model = {
             "openai": "gpt-4o-mini",
-            "anthropic": "claude-3-5-haiku-latest",
+            "anthropic": "claude-haiku-4-5",
             "xai": "grok-2-latest",
             "ollama": "llama3.2",
             "none": "",
@@ -971,6 +977,21 @@ def _llm_config() -> dict[str, Any]:
         "temperature": float(os.getenv("ORCHESTRATOR_LLM_TEMPERATURE", "0.2")),
         "max_tokens": int(os.getenv("ORCHESTRATOR_LLM_MAX_TOKENS", "1800")),
     }
+
+
+def _cfg_with_model_override(cfg: dict[str, Any], override: dict[str, str] | None) -> dict[str, Any]:
+    """Swap the model for this call only, per-provider, when a role needs a
+    different tier than ORCHESTRATOR_LLM_MODEL's default (e.g. reality-checker
+    on Sonnet regardless of the Haiku default used by the rest of the roster).
+    An explicit ORCHESTRATOR_LLM_MODEL still wins — operators pinning a model
+    via env var should always be respected over a role's built-in preference.
+    """
+    if not override or os.getenv("ORCHESTRATOR_LLM_MODEL", "").strip():
+        return cfg
+    model = override.get(cfg["provider"])
+    if not model:
+        return cfg
+    return {**cfg, "model": model}
 
 
 def _truncate_json(obj: Any, max_chars: int = 14000) -> str:
@@ -1429,7 +1450,8 @@ def run_enrichers(
             continue
         try:
             system = _agent_system_prompt(agent)
-            md = llm_complete(system, user_msg, cfg)
+            agent_cfg = _cfg_with_model_override(cfg, agent.get("llm_model_override"))
+            md = llm_complete(system, user_msg, agent_cfg)
             suspects = validate_enrichment_against_facts(md, scoped_facts)
             if suspects and aid != "reality-checker":
                 footer = (
@@ -1444,7 +1466,7 @@ def run_enrichers(
             out_path.write_text(md, encoding="utf-8")
             results[aid] = md
             flag = f" suspects={suspects}" if suspects else ""
-            print(f"  [llm:{cfg['provider']}/{cfg['model']}] {aid}  ({len(md)} chars){flag}")
+            print(f"  [llm:{agent_cfg['provider']}/{agent_cfg['model']}] {aid}  ({len(md)} chars){flag}")
         except Exception as exc:
             md = f"_(error en enricher `{aid}`: {exc})_\n\nwarnings:\n- enricher_failed\n"
             out_path.write_text(md, encoding="utf-8")
@@ -1463,6 +1485,9 @@ def run_synthesizer(
     """Optional LLM pass to polish final markdown from assembled facts+enrichment."""
     cfg = _llm_config()
     cfg = {**cfg, "temperature": min(float(cfg.get("temperature", 0.2)), 0.1)}
+    # Same anti-hallucination reasoning as reality-checker: this pass explicitly
+    # discards ungrounded claims from agent drafts, so it gets the stronger tier.
+    cfg = _cfg_with_model_override(cfg, {"anthropic": "claude-sonnet-5"})
     base = final_to_markdown(assemble_response(plan, tool_results, agent_outputs))
     if not use_llm or cfg["provider"] == "none":
         return base
