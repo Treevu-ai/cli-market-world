@@ -26,6 +26,7 @@ from market_core import (
 )
 from routers.billing.activation import (
     RETAILER_GROWTH_PRICE_USD,
+    _price_pen_for_plan,
     _pro_price_pen,
     _record_plan_funnel_event,
     _retailer_growth_price_pen,
@@ -251,12 +252,16 @@ async def _start_pro_mercadopago_checkout(
     funnel_source: str,
     wallet_method: str = "",
     display_name: str = "",
+    plan: str = "pro",
 ) -> dict:
+    from market_billing import tier_for_billing_plan
     from market_connectors.mercadopago_payments import create_preference
     from market_connectors.email_outbound import send_pro_payment_email, send_pro_request_notify
-    from market_connectors.paypal_payments import PRO_PRICE_USD
 
-    amount_pen = _pro_price_pen()
+    plan_slug = _normalize_build_plan(plan)
+    plan_label, _billing_kind, amount_usd = _paypal_plan_labels(plan_slug)
+    tier = tier_for_billing_plan(plan_slug)
+    amount_pen = _price_pen_for_plan(plan_slug)
     wallet = (wallet_method or "").strip().lower()
     pay_note = mp_pay_note(wallet)
     req = db_create_subscription_request(username, email, pay_note, display_name=display_name)
@@ -267,7 +272,7 @@ async def _start_pro_mercadopago_checkout(
         amount_pen,
         "PEN",
         f"CLI-Market-{request_id}",
-        title="CLI Market Pro",
+        title=f"CLI Market {plan_label}",
         success_url=mp_return,
         pending_url=f"https://cli-market.dev/?mp=pending&ref={request_id}#pricing",
         failure_url=f"https://cli-market.dev/?mp=failure&ref={request_id}#pricing",
@@ -287,35 +292,37 @@ async def _start_pro_mercadopago_checkout(
         subscriber_email=email,
         username=username,
         request_id=request_id,
-        note=f"method=mercadopago amount_pen={amount_pen:.2f} url={checkout_url}",
+        note=f"method=mercadopago plan={plan_slug} amount_pen={amount_pen:.2f} url={checkout_url}",
     )
     if sub_mail.get("sent"):
         db_mark_subscription_request_emailed(req["id"])
 
-    _record_plan_funnel_event("pro", username=username, email=email, source=funnel_source)
+    _record_plan_funnel_event(tier, username=username, email=email, source=funnel_source)
 
+    period_es = "año" if plan_slug == "pro_annual" else "mes"
+    period_en = "yr" if plan_slug == "pro_annual" else "mo"
     wallet_app = "Yape" if wallet == "yape" else "Plin" if wallet == "plin" else ""
     if lang == "es":
         if wallet_app:
             message = (
                 f"Abre Mercado Pago y paga con {wallet_app} — S/ {amount_pen:.2f} "
-                f"(USD {PRO_PRICE_USD:.0f}/mes). Pro se activa en minutos. Ref: {request_id}."
+                f"(USD {amount_usd:.0f}/{period_es}). {plan_label} se activa en minutos. Ref: {request_id}."
             )
         else:
             message = (
                 f"Complete el pago en Mercado Pago — S/ {amount_pen:.2f} "
-                f"(USD {PRO_PRICE_USD:.0f}/mes). Referencia: {request_id}."
+                f"(USD {amount_usd:.0f}/{period_es}). Referencia: {request_id}."
             )
     else:
         if wallet_app:
             message = (
                 f"Open Mercado Pago and pay with {wallet_app} — S/ {amount_pen:.2f} "
-                f"(USD {PRO_PRICE_USD:.0f}/mo). Pro activates in minutes. Ref: {request_id}."
+                f"(USD {amount_usd:.0f}/{period_en}). {plan_label} activates in minutes. Ref: {request_id}."
             )
         else:
             message = (
                 f"Complete payment on Mercado Pago — S/ {amount_pen:.2f} "
-                f"(USD {PRO_PRICE_USD:.0f}/mo). Reference: {request_id}."
+                f"(USD {amount_usd:.0f}/{period_en}). Reference: {request_id}."
             )
 
     display_method = wallet if wallet in ("yape", "plin") else "mercadopago"
@@ -328,7 +335,9 @@ async def _start_pro_mercadopago_checkout(
         "payment_rail": "mercadopago",
         "payment_mode": "mercadopago_checkout",
         "wallet_checkout": bool(wallet_app),
-        "amount_usd": float(PRO_PRICE_USD),
+        "plan": plan_label,
+        "plan_slug": plan_slug,
+        "amount_usd": float(amount_usd),
         "amount_pen": amount_pen,
         "currency": "PEN",
         "checkout_url": checkout_url,
@@ -341,7 +350,7 @@ async def _start_pro_mercadopago_checkout(
         "message": message,
         "next_steps": [
             {"step": 1, "action": "Completa el pago en Mercado Pago" if lang == "es" else "Complete Mercado Pago payment", "url": checkout_url},
-            {"step": 2, "action": "Pro se activa automáticamente" if lang == "es" else "Pro activates automatically"},
+            {"step": 2, "action": f"{plan_label} se activa automáticamente" if lang == "es" else f"{plan_label} activates automatically"},
             {"step": 3, "action": "Verifica con: market whoami" if lang == "es" else "Verify with: market whoami"},
         ],
     }
@@ -455,8 +464,9 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
         check_rate_limit("billing-pro-checkout")
         email = (body.get("email") or "").strip().lower()
         lang = (body.get("lang") or "en").strip().lower()[:2]
-        method = (body.get("payment_method") or "paypal").strip().lower()
+        method = (body.get("payment_method") or "mercadopago").strip().lower()
         force = bool(body.get("resend"))
+        checkout_plan = _normalize_build_plan(body.get("plan") or "pro")
 
         if method not in _PRO_BILLING_METHODS:
             raise HTTPException(
@@ -538,12 +548,11 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                         return dup
 
         if method == "paypal":
-            plan = _normalize_build_plan(body.get("plan") or "pro")
             try:
                 out = await _start_paypal_subscription(
                     username,
                     email,
-                    plan=plan,
+                    plan=checkout_plan,
                     lang=lang,
                     funnel_source="landing_pro_checkout_paypal",
                 )
@@ -606,6 +615,7 @@ async def billing_pro_checkout(body: dict, authorization: str | None = Header(No
                 funnel_source=f"landing_pro_checkout_{method}",
                 wallet_method=wallet_method,
                 display_name=display_name,
+                plan=checkout_plan,
             )
 
         raise HTTPException(status_code=400, detail=f"unsupported payment_method: {method}")
@@ -1457,18 +1467,19 @@ async def billing_starter_subscribe(body: dict, authorization: str | None = Head
 
 @router.post("/billing/build-checkout")
 async def billing_build_checkout(body: dict, authorization: str | None = Header(None)):
-    """Build tier PayPal checkout from landing — starter | pro | pro_annual."""
+    """Build tier checkout from landing — starter | pro | pro_annual, Mercado Pago or PayPal."""
     try:
         check_rate_limit("billing-build-checkout")
         email = (body.get("email") or "").strip().lower()
         lang = (body.get("lang") or "en").strip().lower()[:2]
-        method = (body.get("payment_method") or "paypal").strip().lower()
+        method = (body.get("payment_method") or "mercadopago").strip().lower()
         plan = _normalize_build_plan(body.get("plan") or "pro")
+        display_name = (body.get("display_name") or body.get("name") or "").strip()
 
-        if method != "paypal":
+        if method not in _PRO_BILLING_METHODS:
             raise HTTPException(
                 status_code=400,
-                detail="build-checkout only supports payment_method=paypal",
+                detail=f"payment_method must be one of: {', '.join(sorted(_PRO_BILLING_METHODS))}",
             )
         if not email or not _EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="valid email is required")
@@ -1501,6 +1512,20 @@ async def billing_build_checkout(body: dict, authorization: str | None = Header(
             auth_username=auth_user,
             lang=lang,
         )
+
+        if method in ("mercadopago", "yape", "plin"):
+            wallet_method = method if method in ("yape", "plin") else ""
+            out = await _start_pro_mercadopago_checkout(
+                username,
+                email,
+                lang=lang,
+                funnel_source=f"landing_build_checkout_{plan}_{method}",
+                wallet_method=wallet_method,
+                display_name=display_name,
+                plan=plan,
+            )
+            out["payment_link"] = out.get("checkout_url") or out.get("approve_url")
+            return out
 
         out = await _start_paypal_subscription(
             username,
@@ -1564,3 +1589,47 @@ async def billing_reconcile(authorization: str | None = Header(None), lang: str 
     from routers.billing.paypal_reconcile import reconcile_paypal_subscriptions_for_user
 
     return await reconcile_paypal_subscriptions_for_user(username, lang=lang)
+
+
+@router.post("/billing/hubspot-webhook")
+async def billing_hubspot_webhook(body: dict):
+    """Trigger n8n workflow → HubSpot deal update on billing events.
+
+    This endpoint receives billing events (subscription activated, payment completed)
+    and forwards them to n8n for CRM sync. The n8n workflow then updates HubSpot
+    deals and sends Slack notifications.
+
+    Expected payload:
+    {
+        "event_type": "subscription_activated",
+        "email": "cliente@example.com",
+        "username": "cli-username",
+        "payment_method": "paypal",
+        "reference": "PRO-XXXXXXXX",
+        "amount": 39,
+        "currency": "USD"
+    }
+    """
+    try:
+        n8n_webhook_url = os.getenv("N8N_BILLING_WEBHOOK_URL")
+        if not n8n_webhook_url:
+            logger.warning("N8N_BILLING_WEBHOOK_URL not configured — skipping CRM sync")
+            return {"status": "skipped", "reason": "n8n webhook not configured"}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                n8n_webhook_url,
+                json=body,
+                headers={"Content-Type": "application/json"}
+            )
+            response.raise_for_status()
+
+        logger.info(f"Billing event forwarded to n8n: {body.get('event_type')} for {body.get('email')}")
+        return {"status": "ok", "n8n_status": "forwarded"}
+
+    except httpx.HTTPError as e:
+        logger.error(f"Failed to forward billing event to n8n: {e}")
+        return {"status": "error", "reason": str(e)}
+    except Exception as e:
+        logger.exception("billing_hubspot_webhook failed")
+        return {"status": "error", "reason": str(e)}

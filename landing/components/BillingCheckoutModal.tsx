@@ -160,8 +160,7 @@ export default function BillingCheckoutModal({
   const isPro = kind.type === "build-pro";
   const isStarter = kind.type === "build-starter";
   const isProcure = kind.type === "procure";
-  const isPayPalOnly = isStarter;
-  const isSingleStepCheckout = isPayPalOnly || isPro || isProcure;
+  const isSingleStepCheckout = isPro || isStarter || isProcure;
   const procureMeta =
     kind.type === "procure" ? PROCURE_PLANS.find((p) => p.slug === kind.plan) : null;
   const showProcurePaymentPicker = isProcure && PROCURE_MP_CHECKOUT;
@@ -324,34 +323,21 @@ export default function BillingCheckoutModal({
               ? "pro_annual"
               : "pro";
 
-        if (isStarter || paymentMethod === "paypal") {
-          const { ok, data } = await postCheckout("/billing/build-checkout", {
+        const apiMethod = apiPaymentMethod(paymentMethod);
+        const useManualWalletTransfer =
+          isPro && WALLET_MANUAL_FALLBACK && manualTransfer && paymentMethod === "soles";
+
+        const { ok, data } = await postCheckout(
+          useManualWalletTransfer ? "/billing/pro-checkout" : "/billing/build-checkout",
+          {
             ...payload,
             plan: buildPlan,
-            payment_method: "paypal",
-
-          });
-          if (ok && checkoutSucceeded(data)) {
-            applyCheckoutResult(data, `landing_build_checkout_${buildPlan}`);
-            return;
-          }
-          setError(parseApiError(data, isES ? "Error al preparar el pago" : "Error preparing checkout"));
-          setLoading(false);
-          return;
-        }
-
-        const apiMethod = apiPaymentMethod(paymentMethod);
-        const { ok, data } = await postCheckout("/billing/pro-checkout", {
-          ...payload,
-          payment_method: apiMethod,
-          ...(WALLET_MANUAL_FALLBACK &&
-          manualTransfer &&
-          paymentMethod === "soles"
-            ? { payment_method: "yape", manual_transfer: true }
-            : {}),
-        });
+            payment_method: useManualWalletTransfer ? "yape" : apiMethod,
+            ...(useManualWalletTransfer ? { manual_transfer: true } : {}),
+          },
+        );
         if (ok && checkoutSucceeded(data)) {
-          applyCheckoutResult(data, `landing_checkout_modal_${paymentMethod}`);
+          applyCheckoutResult(data, `landing_build_checkout_${buildPlan}_${apiMethod}`);
           return;
         }
         setError(parseApiError(data, isES ? "Error al preparar el pago" : "Error preparing checkout"));
@@ -546,14 +532,14 @@ export default function BillingCheckoutModal({
         <div className="px-5 py-5">
           {step === "done" ? (
             renderSuccess()
-          ) : isPro || isProcure ? (
+          ) : isPro || isStarter || isProcure ? (
             <div className="form-stack">
               {isProcure && procureMeta && (
                 <p className="text-sm text-[var(--cm-on-surface-variant)] leading-relaxed">
                   {isES ? procureMeta.description_es : procureMeta.description_en}
                 </p>
               )}
-              {(isPro || showProcurePaymentPicker) && (
+              {(isPro || isStarter || showProcurePaymentPicker) && (
                 <div className="space-y-2">
                   <p className="text-[11px] text-[var(--cm-on-surface-variant)]/70">
                     {isES ? "Método de pago" : "Payment method"}
@@ -685,7 +671,7 @@ export default function BillingCheckoutModal({
                       ? "Continuar en Mercado Pago →"
                       : "Continue on Mercado Pago →"}
               </button>
-              {isPro && paymentMethod === "paypal" && selectedOption && (
+              {(isPro || isStarter) && paymentMethod === "paypal" && selectedOption && (
                 <p className="text-[10px] text-center text-[var(--cm-on-surface-variant)]/50 font-mono">
                   {isES ? selectedOption.hint_es : selectedOption.hint_en}
                 </p>
@@ -713,39 +699,6 @@ export default function BillingCheckoutModal({
                   </span>
                 </label>
               )}
-            </div>
-          ) : isPayPalOnly ? (
-            <div className="form-stack">
-              <p className="text-sm text-[var(--cm-on-surface-variant)]">
-                {isES
-                    ? "PayPal (USD). CSV, alertas y API completo."
-                    : "PayPal (USD). CSV, alerts, and full API."}
-              </p>
-              <input
-                type="email"
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={isES ? "su@email.com" : "you@email.com"}
-                className="w-full input-cyber"
-              />
-
-              <LegalConsentCheckbox checked={legal} onChange={setLegal} includeSubscriptions />
-              {error && <p className="text-xs text-[#ffb4ab]">{error}</p>}
-              <button
-                type="button"
-                onClick={() => submit()}
-                disabled={loading || !legal}
-                className="btn-mint w-full disabled:opacity-50"
-              >
-                {loading
-                  ? isES
-                    ? "Preparando…"
-                    : "Preparing…"
-                  : isES
-                    ? "Continuar en PayPal →"
-                    : "Continue on PayPal →"}
-              </button>
             </div>
           ) : null}
         </div>

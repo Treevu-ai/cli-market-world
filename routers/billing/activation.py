@@ -44,10 +44,8 @@ _BARE_SUBSCRIPTION_REF_RE = re.compile(r"^(PRO|PCS|PCP|PCB|RGW)-[A-Z0-9]+$", re.
 RETAILER_GROWTH_PRICE_USD = 9
 
 
-def _pro_price_pen() -> float:
-    """USD Pro price converted to PEN for Yape/Plin/Mercado Pago."""
-    from market_connectors.paypal_payments import PRO_PRICE_USD
-
+def _usd_to_pen(amount_usd: float) -> float:
+    """Convert a USD amount to PEN for Yape/Plin/Mercado Pago checkout."""
     raw = os.getenv("PRO_PEN_PER_USD", "3.75")
     try:
         pen_per_usd = float(str(raw).strip())
@@ -56,7 +54,21 @@ def _pro_price_pen() -> float:
         pen_per_usd = 3.7
     if pen_per_usd <= 0:
         pen_per_usd = 3.7
-    return round(float(PRO_PRICE_USD) * pen_per_usd, 2)
+    return round(float(amount_usd) * pen_per_usd, 2)
+
+
+def _pro_price_pen() -> float:
+    """USD Pro price converted to PEN for Yape/Plin/Mercado Pago."""
+    from market_connectors.paypal_payments import PRO_PRICE_USD
+
+    return _usd_to_pen(PRO_PRICE_USD)
+
+
+def _price_pen_for_plan(plan: str) -> float:
+    """USD price for a build plan (starter | pro | pro_annual) converted to PEN."""
+    from market_billing import price_usd_for_plan
+
+    return _usd_to_pen(price_usd_for_plan(plan))
 
 
 def _retailer_growth_price_pen() -> float:
