@@ -54,14 +54,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # A real canonical_product_id is prod_<brand>_<category>_<qty><unit>[_<variety>],
-    # all lowercase alnum/underscore/dot — --ids is free-form CLI input. Unlike
-    # reresolve_stale_brands.py's LIKE-pattern validation, this is pure
-    # fail-fast sanity checking, not an injection guard: the fetch below uses
-    # parameterized = / ANY / IN, which isn't wildcard-sensitive the way LIKE is.
+    # A real canonical_product_id is prod_<brand>_<category>_<qty><unit>[_<variety>].
+    # Variety segments come from tokenized Spanish/Portuguese product names and
+    # can contain accented letters (e.g. "..._renovación", "..._niños") — \w is
+    # Unicode-aware by default in Python 3, so this covers those without
+    # widening past what _build_product_id can actually produce. --ids is
+    # free-form CLI input; unlike reresolve_stale_brands.py's LIKE-pattern
+    # validation, this is pure fail-fast sanity checking, not an injection
+    # guard — the fetch below uses parameterized = / ANY / IN, which isn't
+    # wildcard-sensitive the way LIKE is.
     for cid in args.ids:
-        if not re.fullmatch(r"prod_[a-z0-9_.]+", cid):
-            parser.error(f"invalid --ids value {cid!r}: must match prod_[a-z0-9_.]+")
+        if not re.fullmatch(r"prod_[\w.]+", cid):
+            parser.error(f"invalid --ids value {cid!r}: must match prod_[\\w.]+")
 
     from index_gate import index_stats, reresolve_snapshots_by_canonical_id
 
