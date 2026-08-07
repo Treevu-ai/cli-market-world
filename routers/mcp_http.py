@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter, Header, Request
@@ -166,6 +167,26 @@ def _log_mcp_event(event: str, username: str | None, meta: dict) -> None:
         record_funnel_event(event, username=username or None, meta=meta)
     except Exception:
         pass
+
+
+def _result_outcome(result: dict) -> tuple[str, str | None]:
+    """Classify a tool result for the audit trail.
+
+    Most tools surface failure as a top-level {"error": ...}. market_discover
+    is the one exception (mcp_http.py _call_tool) — it fans out to three
+    upstream calls and reports each failure as a nested {"error": ...} inside
+    "lines"/"stores"/"countries" instead, with no top-level "error" key. Without
+    this check that tool's audit trail would always read outcome="ok" even when
+    an upstream call actually failed — found during the security review that
+    added this audit logging, not a hypothetical.
+    """
+    if "error" in result:
+        return "error", result["error"]
+    if isinstance(result, dict):
+        for value in result.values():
+            if isinstance(value, dict) and "error" in value:
+                return "partial_error", str(value["error"])[:200]
+    return "ok", None
 
 
 # ── Tool definitions ──────────────────────────────────────────────────────────
@@ -1608,14 +1629,33 @@ async def mcp_http(
 
         client_info = params.get("clientInfo") or {}
         client_slug, client_raw, _ = _detect_client(client_info, user_agent)
+        source_ip = request.client.host if request.client else None
+        call_started = datetime.now(timezone.utc)
         _log_mcp_event("mcp_tool_call", username, {
             "client": client_slug,
             "client_raw": client_raw,
             "tool": tool_name,
             "country": tool_args.get("country") or None,
+            "request_id": req_id,
+            "source_ip": source_ip,
         })
 
         result = await _call_tool(tool_name, tool_args, raw_token)
+
+        # Outcome logged as a distinct event (not merged into mcp_tool_call above)
+        # so an auditor can trace a specific request_id from "called" to "resolved"
+        # even when the call errors before this point is reached — e.g. a crash
+        # inside _call_tool still leaves the call-attempt record intact.
+        latency_ms = round((datetime.now(timezone.utc) - call_started).total_seconds() * 1000, 1)
+        outcome, error_code = _result_outcome(result)
+        _log_mcp_event("mcp_tool_result", username, {
+            "tool": tool_name,
+            "request_id": req_id,
+            "source_ip": source_ip,
+            "outcome": outcome,
+            "error_code": error_code,
+            "latency_ms": latency_ms,
+        })
 
         if "error" in result:
             return JSONResponse(_rpc_ok({

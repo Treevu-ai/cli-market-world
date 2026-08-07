@@ -44,6 +44,7 @@ FUNNEL_EVENTS = frozenset(
         "demo_session_created",
         "demo_first_tool_call",
         "mcp_tool_call",
+        "mcp_tool_result",
         "activated",
         # P1: granular CLI dropoff tracking (install → register)
         "cli_command_attempted",
