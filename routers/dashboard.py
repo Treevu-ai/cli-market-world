@@ -27,6 +27,7 @@ from dashboard_quality import build_quality_funnel, count_flagged_discounts
 from backend_interface import count_flagged_outliers, get_store_profile
 from dashboard_renderer import render_dashboard_html
 from dashboard_view_model import build_dashboard_view_model
+from market_core.health_stats import compute_linkage_metrics
 from server_deps import require_admin, require_user
 
 from .health import _age_hours, derive_collector_status
@@ -396,6 +397,8 @@ def _dashboard_data():
         stores_indexed = db.execute(
             "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
         ).fetchone()["n"]
+
+        linkage_metrics = compute_linkage_metrics(db, total=total_indexed)
 
         last_collected_row = db.execute(
             "SELECT MAX(queried_at) as ts FROM price_snapshots WHERE price > 0"
@@ -990,6 +993,8 @@ def _dashboard_data():
             "stores_24h": stores_24h,
             "last_collected_at": str(last_collected_at) if last_collected_at else None,
             "moat_age_hours": round(moat_age_h, 1) if moat_age_h is not None else None,
+            "linkage_pct": linkage_metrics["linkage_pct"],
+            "golden_records_distinct": linkage_metrics["golden_records_distinct"],
         },
         "moat_summary": {
             "purpose": "Verified cross-retailer prices for agent compare, basket, and inflation signals.",
