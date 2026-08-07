@@ -228,10 +228,10 @@ meses → completo 12 meses), limitaciones de datos que no se resuelven rápido
 - [x] Revisión `security-reviewer` sobre `mcp_http.py` / `market_funnel.py` — **0 CRITICAL/0 HIGH, seguro de presentar** (ver §9)
 - [x] Hallazgos de ambas revisiones corregidos (ver §9)
 - [x] Regresión post-corrección: `--demo` y `--country PE --line supermercados` dan resultados idénticos a antes del refactor
-- [ ] **Confirmar AHORA** que `python3 ops/market_coordination_detector.py --demo` corre sin errores en la máquina que se use en la reunión (verificado en la máquina de trabajo; la reunión es hoy, no queda otro día para repetirlo)
-- [ ] Tener a mano `docs/methodology.md` y `docs/🏗️_moat_engine/data-integrity-prd.md` por si piden detalle de fórmulas o del proceso de auditoría interna
+- [x] `python3 ops/market_coordination_detector.py --demo` corre sin errores en esta máquina, verificado 2026-08-07 (si la reunión usa una máquina distinta, repetir en 10s)
+- [x] `docs/methodology.md` y `docs/🏗️_moat_engine/data-integrity-prd.md` confirmados presentes en esta máquina, 2026-08-07
 - [x] Los 5 ejercicios demostrativos (`cli-market-indecopi/docs/06-EJERCICIOS-DEMOSTRATIVOS.md`) ejecutados contra datos reales — ver §10
-- [ ] **Tener a mano AHORA** ese documento durante la reunión (repo local, no en GitHub — confirmar que está en la máquina que se use en la reunión)
+- [x] `06-EJERCICIOS-DEMOSTRATIVOS.md` confirmado presente en esta máquina, 2026-08-07 (repo local, no está en GitHub)
 - [x] Trabajo adicional del 2026-08-07 (día de la reunión) sobre calidad del Golden Record — ver §11
 
 ---
