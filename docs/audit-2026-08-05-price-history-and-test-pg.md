@@ -646,6 +646,65 @@ capturamos.
   categorías (ej. perecibles, que sí suelen variar por tienda física)
   tengan un comportamiento distinto al de abarrotes empacados.
 
+## Addendum 2026-08-07 — post-fix verification in production (INDECOPI regulatory-impact exercise)
+
+**Trigger:** A simulated INDECOPI regulatory-impact analysis (canasta de 10
+productos básicos, PE, 6 retailers masivos) surfaced that `market_price_history`
+returned exactly **1 snapshot** for all 10 SKUs queried, plus a previously
+audited GLORIA milk SKU. Before concluding "no price changes in the window,"
+this was cross-checked against this file's `05f19bb6` fix (collector wired to
+`price_history` with change-triggered dedup, deployed 2026-08-05).
+
+### Verification method
+
+Direct production checks, no code changes:
+
+- `GET https://cli-market-api.fly.dev/health/collector` — confirms the
+  collector is alive and cycling: `last_run: 2026-08-07T16:36:32Z`,
+  `stores_attempted: 323`, `stores_succeeded: 323`, `runs_total: 876`.
+- `GET https://cli-market-api.fly.dev/health/db` — confirms Postgres backend,
+  `price_history` and `price_snapshots` listed as distinct tables (not
+  conflated).
+- Re-queried `market_price_history` (MCP tool, hits the production API) for
+  two previously-checked SKUs after at least one more collector cycle had
+  run in between:
+  - Arroz Extra Paisana 1kg, Plaza Vea (`product_id=20131000`): `id=16942`
+    unchanged, `queried_at` unchanged (2026-07-13) — no cycle touched it in
+    that window.
+  - Leche Entera UHT Gloria 946ml, Plaza Vea (`product_id=358217`): **same
+    `id=357623`**, but `queried_at` advanced from `09:38` to `16:36` (a real
+    collector cycle ran in between, confirmed against `/health/collector`'s
+    timestamp) — price unchanged (S/6.20 → S/6.20).
+
+### Finding
+
+The same `id` persisting while `queried_at` advances is the *expected*
+signature of the change-triggered dedup design this file's `05f19bb6` fix
+implemented: the collector ran, confirmed the price was still current, and
+did not insert a new `price_history` row because there was no real price
+change — it is not evidence of a stuck or broken pipeline.
+
+This is **not**, however, a full end-to-end confirmation that a new row gets
+appended *when a price does change* — no SKU checked has moved price since
+the fix landed 2 days ago, so the append-on-change path has not been
+observed firing in production, only inferred from the collector being
+healthy and the dedup logic reading correctly in code. This is the exact
+item this file already flagged as open ("not yet confirmed as of this
+write-up... queued, not blocking").
+
+### Implication for the INDECOPI exercise's 30+30 pre/post design
+
+The ~35-day history figure used as the starting assumption for that exercise
+does not apply to `price_history` in practice — real, reliable
+change-triggered accumulation only started **2026-08-05**, not
+"inicios de julio." Recommended earliest viable date for a genuine 30-day
+pre + 30-day post window, recalculated from the fix date: **~2026-10-04**,
+conditional on the collector continuing to run every cycle and on the
+tracked SKUs actually experiencing price movements to populate the series
+(a staple with a genuinely flat price for months will still show few rows
+regardless of elapsed calendar time — that is correct dedup behavior, not a
+data gap to fix).
+
 ## Files touched today
 
 - `collect_prices.py` — zombie-run fix, `price_history` write path
