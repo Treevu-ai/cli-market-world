@@ -3,7 +3,6 @@
 import LegalPage from "@/components/LegalPage";
 import { MARKET_STATS } from "@/lib/marketStats";
 import { usePaymentsChannels } from "@/lib/useBillingCopy";
-import { TRIAL_DAYS } from "@/lib/buildPricingTiers";
 
 export default function DataLicenseAgreement() {
   const paymentsLabelEs = usePaymentsChannels(true);
@@ -63,8 +62,7 @@ export default function DataLicenseAgreement() {
             </p>
             <ul>
               <li>
-                <strong>Starter:</strong> 5.000 consultas/día · exportación CSV · USD 9/mes ·
-                prueba gratuita de {TRIAL_DAYS} días.
+                <strong>Starter:</strong> 5.000 consultas/día · exportación CSV · USD 9/mes.
               </li>
               <li>
                 <strong>Pro:</strong> 10.000 consultas/día · checkout · exportación CSV ·{" "}
@@ -155,8 +153,7 @@ export default function DataLicenseAgreement() {
             </p>
             <ul>
               <li>
-                <strong>Starter:</strong> 5,000 requests/day · CSV export · USD 9/mo · {TRIAL_DAYS}-day
-                free trial.
+                <strong>Starter:</strong> 5,000 requests/day · CSV export · USD 9/mo.
               </li>
               <li>
                 <strong>Pro:</strong> 10,000 requests/day · checkout · CSV export ·{" "}

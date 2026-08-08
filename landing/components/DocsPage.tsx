@@ -11,7 +11,6 @@ import BillingCheckoutTrigger from "@/components/BillingCheckoutTrigger";
 import {
   BUILD_TIER_STARTER,
   BUILD_TIER_PRO,
-  TRIAL_DAYS,
   formatReqLimit,
 } from "@/lib/buildPricingTiers";
 
@@ -153,8 +152,8 @@ export default function DocsPage() {
               </p>
               <p className="text-xs text-[var(--cm-on-surface-variant)]/70 mt-1">
                 {t(
-                  `${TRIAL_DAYS} días de prueba gratis · 1 clave API · export CSV · sin checkout retail.`,
-                  `${TRIAL_DAYS}-day free trial · 1 API key · CSV export · no retail checkout.`,
+                  "1 clave API · export CSV · sin checkout retail.",
+                  "1 API key · CSV export · no retail checkout.",
                 )}
               </p>
               <a href="/build#pricing" className="text-xs text-[var(--cm-mint)] underline mt-2 inline-block">
@@ -230,8 +229,8 @@ market search "leche" --country PE
 market doctor`}</CodeBlock>
           <p className="text-[var(--cm-on-surface-variant)] text-sm mt-4">
             {t(
-              `market init verifica API, crea cuenta con prueba Starter de ${TRIAL_DAYS} días si no hay sesión, muestra readiness %.`,
-              `market init checks API, creates a ${TRIAL_DAYS}-day Starter trial account if needed, shows readiness %.`,
+              "market init verifica API, crea cuenta si no hay sesión, muestra readiness %.",
+              "market init checks API, creates an account if needed, shows readiness %.",
             )}
           </p>
         </section>
@@ -241,8 +240,8 @@ market doctor`}</CodeBlock>
           <PrereqBlock level="session" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              `Cuenta con prueba Starter de ${TRIAL_DAYS} días vía CLI o HTTP. Registro en 2 pasos: email + código de verificación (OTP). La API key (sk-...) se muestra una sola vez, al final del paso 2.`,
-              `${TRIAL_DAYS}-day Starter trial account via CLI or HTTP. Two-step signup: email + verification code (OTP). The API key (sk-...) is shown once, at the end of step 2.`,
+              "Cuenta vía CLI o HTTP. Registro en 2 pasos: email + código de verificación (OTP). La API key (sk-...) se muestra una sola vez, al final del paso 2.",
+              "Account via CLI or HTTP. Two-step signup: email + verification code (OTP). The API key (sk-...) is shown once, at the end of step 2.",
             )}
           </p>
           <h3 className="font-label-caps text-[var(--cm-on-surface-variant)]/50 mb-3">CLI</h3>
@@ -280,8 +279,8 @@ curl -X POST ${API_URL}/auth/verify-email \\
           <PrereqBlock level="paid" isES={isES} />
           <p className="text-[var(--cm-on-surface-variant)] mb-4">
             {t(
-              `Build (API/MCP): Starter ($9/mes, ${TRIAL_DAYS} días gratis), Pro ($39/mes o $390/año).`,
-              `Build (API/MCP): Starter ($9/mo, ${TRIAL_DAYS}-day free trial), Pro ($39/mo or $390/yr).`,
+              "Build (API/MCP): Starter ($9/mes), Pro ($39/mes o $390/año).",
+              "Build (API/MCP): Starter ($9/mo), Pro ($39/mo or $390/yr).",
             )}
           </p>
           <p className="text-sm text-[var(--cm-on-surface-variant)] mb-4 leading-relaxed rounded-lg border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/40 px-4 py-3">
@@ -471,8 +470,7 @@ market --json doctor`}</CodeBlock>
           <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-3 list-none pl-0">
             <li>
               <strong className="text-[var(--cm-on-surface)]">Starter</strong> — {formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES)} ·{" "}
-              {BUILD_TIER_STARTER.apiKeys} {t("clave API", "API key")} · export CSV · USD {BUILD_TIER_STARTER.priceUsd}/mo ·{" "}
-              {t(`prueba gratis ${TRIAL_DAYS} días`, `${TRIAL_DAYS}-day free trial`)}
+              {BUILD_TIER_STARTER.apiKeys} {t("clave API", "API key")} · export CSV · USD {BUILD_TIER_STARTER.priceUsd}/mo
             </li>
             <li>
               <strong className="text-[var(--cm-on-surface)]">Pro</strong> — {formatReqLimit(BUILD_TIER_PRO.reqLimit, isES)} ·{" "}

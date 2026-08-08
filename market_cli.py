@@ -212,7 +212,7 @@ def welcome_banner():
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]authenticate[/]",
-            "[#00FF88]market register[/]     [#888888]7-day free trial[/]\n"
+            "[#00FF88]market register[/]     [#888888]create account[/]\n"
             "     [#00FF88]market login[/]        [#888888]existing account[/]",
         )
     else:
@@ -221,7 +221,7 @@ def welcome_banner():
             stats,
         ).replace(
             "[#00FF88]market login[/]        [#888888]autentícate[/]",
-            "[#00FF88]market register[/]     [#888888]prueba gratis 7 días[/]\n"
+            "[#00FF88]market register[/]     [#888888]crear cuenta[/]\n"
             "     [#00FF88]market login[/]        [#888888]cuenta existente[/]",
         )
     return Panel(body.strip(), border_style="#00FF88", padding=(1, 2))
@@ -619,7 +619,7 @@ def cmd_search(args):
             console.print()
             console.print(
                 "[dim]Using demo account ([cyan]admin/market[/]). "
-                "[bold #FFD600]Start your 7-day free trial?[/] [cyan]market init[/][/]"
+                "[bold #FFD600]Create your account?[/] [cyan]market init[/][/]"
             )
             _write_nag_count(nag + 1)
 
@@ -3062,7 +3062,7 @@ def cmd_whoami(args):
 
 
 def cmd_register(args):
-    """Create an account (7-day Starter trial) via POST /auth/register + /auth/verify-email (2-step OTP)."""
+    """Create an account via POST /auth/register + /auth/verify-email (2-step OTP)."""
     ref_code = getattr(args, "ref", None)
     es = not ui.is_en()
 
@@ -3408,7 +3408,7 @@ def cmd_init(args):
     username = None
     if not get_token():
         if not is_json:
-            console.print(f"[dim]{'Starting 7-day free trial...' if en else 'Iniciando prueba gratuita de 7 días...'}[/]")
+            console.print(f"[dim]{'Creating account...' if en else 'Creando cuenta...'}[/]")
         # Always call register without json when inside init --json, to guarantee SINGLE final payload from init.
         # We collect the resulting auth info afterwards.
         reg_args = argparse.Namespace(

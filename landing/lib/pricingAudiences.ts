@@ -1,5 +1,3 @@
-import { TRIAL_DAYS } from "./buildPricingTiers";
-
 export type PricingAudience = "build" | "procure";
 
 export type PricingTab = {
@@ -22,8 +20,8 @@ export const PRICING_TABS: PricingTab[] = [
     hint_en: "Build · API · CLI",
     title_es: "Inteligencia de retail programable.",
     title_en: "Programmable retail intelligence.",
-    intro_es: `Para developers. Starter $9/mes (5k/día, ${TRIAL_DAYS}d trial) · Pro $39/mes · Enterprise custom. API, CLI, datos normalizados por kg/L.`,
-    intro_en: `For developers. Starter $9/mo (5k/day, ${TRIAL_DAYS}d trial) · Pro $39/mo · Enterprise custom. API, CLI, normalized per kg/L data.`,
+    intro_es: "Para developers. Starter $9/mes (5k/día) · Pro $39/mes · Enterprise custom. API, CLI, datos normalizados por kg/L.",
+    intro_en: "For developers. Starter $9/mo (5k/day) · Pro $39/mo · Enterprise custom. API, CLI, normalized per kg/L data.",
     hash: "#pricing",
   },
   {

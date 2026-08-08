@@ -317,9 +317,8 @@ def claim_messenger_update(platform: str, update_id: str | int, ttl_seconds: int
 TIER_LIMITS: dict[str, tuple[int, int]] = {
     # Keep in sync with market_billing.TIERS["free"] (cli-market-core) — this
     # is only the fallback when a subscription row lacks a stored
-    # req_limit_day/min. No free plan: registration (routers/auth.py) writes
-    # an explicit Starter-trial value at signup, so "free" here is really the
-    # post-trial/no-active-subscription floor.
+    # req_limit_day/min. Registration (routers/auth.py) creates no
+    # subscription row, so every account starts here until it upgrades.
     "free":       (15,      10),
     "starter":    (5_000,  120),
     "pro":       (10_000,  300),
@@ -367,7 +366,7 @@ def require_api_key(authorization: str | None) -> str:
     """Enforce API key auth + per-tier rate limiting on data endpoints.
 
     Accepts: sk-... API key or Bearer token (session token / MARKET_API_TOKEN).
-    Applies the caller's subscription tier limits (starter trial: 120/min, pro: 300/min).
+    Applies the caller's subscription tier limits (starter: 120/min, pro: 300/min).
     Returns the resolved username.
     Raises 401 if no credentials, 429 if rate limited.
     """

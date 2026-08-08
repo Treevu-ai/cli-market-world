@@ -119,7 +119,7 @@ export default function HubSpotLeadForm({
           ? isES
             ? "Enviando..."
             : "Sending..."
-          : buttonLabel || (isES ? "Comenzar prueba gratis" : "Start free trial")}
+          : buttonLabel || (isES ? "Empezar" : "Get started")}
       </button>
 
       <p className="text-[10px] text-[var(--cm-on-surface-variant)]/60 text-center">

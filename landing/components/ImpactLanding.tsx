@@ -11,7 +11,6 @@ import { MARKET_STATS } from "@/lib/marketStats";
 import { useLang } from "@/lib/LanguageContext";
 import { useLiveStats } from "@/hooks/useLiveStats";
 import { PRICING_BUILD_HASH, PRICING_PROCURE_HASH } from "@/lib/siteNav";
-import { TRIAL_DAYS } from "@/lib/buildPricingTiers";
 
 const COVERAGE_ROWS = [
   { cc: "PE", stores: "Wong · Metro · Plaza Vea", noteEs: "supermercados · piloto FMCG orgánico", noteEn: "supermarkets · organic FMCG pilot" },
@@ -129,7 +128,7 @@ export default function ImpactLanding() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href={PRICING_BUILD_HASH} className="btn-mint">
-                  {isES ? "Empezar con la API — prueba gratis" : "Start with the API — free trial"}
+                  {isES ? "Empezar con la API" : "Start with the API"}
                 </Link>
                 <a href="#intel" className="btn-outline">
                   {isES ? "Ver Intelligence ↓" : "See Intelligence ↓"}
@@ -346,7 +345,7 @@ export default function ImpactLanding() {
                 $9
                 <small className="text-sm font-normal text-[var(--cm-on-surface-variant)]">
                   {" "}
-                  / {isES ? `mes · ${TRIAL_DAYS} días gratis` : `mo · ${TRIAL_DAYS}-day trial`}
+                  / {isES ? "mes" : "mo"}
                 </small>
               </div>
               <ul className="text-sm text-[var(--cm-on-surface-variant)] space-y-2 mb-6 text-left w-full max-w-[16rem]">
@@ -358,7 +357,7 @@ export default function ImpactLanding() {
                 <li>• {isES ? "Historial 7 días" : "7-day history"}</li>
               </ul>
               <Link href={PRICING_BUILD_HASH} className="btn-outline w-full mt-auto">
-                {isES ? `Prueba ${TRIAL_DAYS} días gratis →` : `Free ${TRIAL_DAYS}-day trial →`}
+                {isES ? "Elegir Starter →" : "Choose Starter →"}
               </Link>
             </div>
 

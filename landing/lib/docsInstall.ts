@@ -26,13 +26,13 @@ export function prereqSteps(level: PrereqLevel, isES: boolean): string[] {
         ? [
             `# Python ${PY}`,
             pip,
-            "market init        # prueba 7 días + readiness %",
+            "market init        # readiness %",
             "# o: market register && market login",
           ]
         : [
             `# Python ${PY}`,
             pip,
-            "market init        # 7-day trial + readiness %",
+            "market init        # readiness %",
             "# or: market register && market login",
           ];
     case "paid":

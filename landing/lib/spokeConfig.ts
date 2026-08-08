@@ -54,19 +54,19 @@ export type SpokeFinalCtaConfig = {
 export const SPOKE_FINAL_CTA: Record<SpokeIcp, SpokeFinalCtaConfig> = {
   "cost-of-living": {
     id: "cost-of-living-final",
-    eyebrow_es: "PRUEBA GRATIS",
-    eyebrow_en: "FREE TRIAL",
+    eyebrow_es: "EMPIEZA HOY",
+    eyebrow_en: "GET STARTED",
     titleBefore_es: "Empieza a optimizar ",
     titleAccent_es: "tu canasta",
     titleAfter_es: " hoy",
     titleBefore_en: "Start optimizing ",
     titleAccent_en: "your basket",
     titleAfter_en: " today",
-    body_es: "Prueba gratis 7 días de Starter — score de asequibilidad, sustitutos y canasta optimizada sin tarjeta.",
-    body_en: "7-day free trial of Starter — affordability score, substitutes, and optimized basket with no credit card.",
+    body_es: "Starter — score de asequibilidad, sustitutos y canasta optimizada.",
+    body_en: "Starter — affordability score, substitutes, and optimized basket.",
     primaryCta: {
-      es: "Empezar prueba gratis →",
-      en: "Start free trial →",
+      es: "Empezar →",
+      en: "Get started →",
       href: CTA.getApiKey.href,
     },
     secondaryCta: {

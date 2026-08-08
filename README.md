@@ -142,7 +142,7 @@ market intel brief --country PE
 
 | Plan | Starter | Pro | Enterprise |
 |------|---------|-----|------------|
-| **Price** | $9/mo (7-day free trial) | $39/mo · Annual $390 | Custom |
+| **Price** | $9/mo | $39/mo · Annual $390 | Custom |
 | **Requests/day** | 5,000 | 10,000 | Unlimited (negotiated) |
 | **Requests/min** | 120 | 300 | Unlimited |
 | **API keys** | 1 | 10 | Unlimited |

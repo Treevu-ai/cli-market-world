@@ -1,9 +1,6 @@
 /**
  * Canonical Build (API) tier limits for landing copy.
- * Source of truth: cli-market-core/market_core/market_billing.py (TIERS,
- * TRIAL_DAYS). No free plan — Starter starts with a time-limited trial
- * instead (see TRIAL_DAYS below, and db_set_subscription(..., "starter",
- * expires_days=TRIAL_DAYS) in cli-market-backend's registration flow).
+ * Source of truth: cli-market-core/market_core/market_billing.py (TIERS).
  */
 
 export type ReqPeriod = "day" | "month";
@@ -17,21 +14,17 @@ export type BuildTierSpec = {
   latamPricePen?: string;
   annualPriceUsd?: number;
   annualLatamPricePen?: string;
-  trialDays?: number;
   reqLimit: { amount: number; period: ReqPeriod };
   apiKeys: number;
   features_es: string[];
   features_en: string[];
 };
 
-export const TRIAL_DAYS = 14;
-
 export const BUILD_TIER_STARTER: BuildTierSpec = {
   id: "starter",
   name: "Starter",
   priceUsd: 9,
   latamPricePen: "S/35",
-  trialDays: TRIAL_DAYS,
   reqLimit: { amount: 5_000, period: "day" },
   apiKeys: 1,
   features_es: [
@@ -106,19 +99,8 @@ export function formatReqLimit(
       : `${n} requests / month`;
 }
 
-export function formatTrialHeroChip(isES: boolean): string {
-  return isES
-    ? `Prueba gratis ${TRIAL_DAYS} días · sin tarjeta`
-    : `${TRIAL_DAYS}-day free trial · no card`;
-}
-
 export function formatTierPriceLine(tier: BuildTierSpec, isES: boolean): string {
   const req = formatReqLimit(tier.reqLimit, isES, "short");
-  if (tier.trialDays) {
-    return isES
-      ? `USD ${tier.priceUsd}/mes · ${req} · ${tier.trialDays} días gratis`
-      : `USD ${tier.priceUsd}/mo · ${req} · ${tier.trialDays}-day trial`;
-  }
   return `USD ${tier.priceUsd}/mo · ${req}`;
 }
 
@@ -126,15 +108,7 @@ export function formatFaqPricingSummary(isES: boolean): string {
   const starter = formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "short");
   const pro = formatReqLimit(BUILD_TIER_PRO.reqLimit, isES, "short");
   if (isES) {
-    return `Build (API): Starter USD ${BUILD_TIER_STARTER.priceUsd}/mes (${starter}, export CSV, prueba gratis de ${TRIAL_DAYS} días); Pro USD ${BUILD_TIER_PRO.priceUsd}/mes o USD ${BUILD_TIER_PRO.annualPriceUsd}/año (${pro}, alertas, API completa + checkout). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Advisors: lista de espera. Listado retailer: gratis.`;
+    return `Build (API): Starter USD ${BUILD_TIER_STARTER.priceUsd}/mes (${starter}, export CSV); Pro USD ${BUILD_TIER_PRO.priceUsd}/mes o USD ${BUILD_TIER_PRO.annualPriceUsd}/año (${pro}, alertas, API completa + checkout). Enterprise a medida. Procure (compras): Compare/Ops/Scale desde USD 29/mes — distinto de Build. Advisors: lista de espera. Listado retailer: gratis.`;
   }
-  return `Build (API): Starter USD ${BUILD_TIER_STARTER.priceUsd}/mo (${starter}, CSV export, ${TRIAL_DAYS}-day free trial); Pro USD ${BUILD_TIER_PRO.priceUsd}/mo or USD ${BUILD_TIER_PRO.annualPriceUsd}/yr (${pro}, alerts, full API + checkout). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Advisors: waitlist. Retailer listing: free forever.`;
-}
-
-export function formatTrialApiKeyBlurb(isES: boolean): string {
-  const req = formatReqLimit(BUILD_TIER_STARTER.reqLimit, isES, "long");
-  if (isES) {
-    return `pip install cli-market-world → market login → se genera tu key automáticamente. Empezás con ${TRIAL_DAYS} días gratis del plan Starter: ${req}, sin tarjeta de crédito. Tu key también activa el endpoint API remoto (claude.ai, ChatGPT, Cursor) y la CLI local.`;
-  }
-  return `pip install cli-market-world → market login → your key is generated automatically. You start with a ${TRIAL_DAYS}-day free trial of the Starter plan: ${req}, no credit card. Your key also activates the remote API endpoint (claude.ai, ChatGPT, Cursor) and the local CLI.`;
+  return `Build (API): Starter USD ${BUILD_TIER_STARTER.priceUsd}/mo (${starter}, CSV export); Pro USD ${BUILD_TIER_PRO.priceUsd}/mo or USD ${BUILD_TIER_PRO.annualPriceUsd}/yr (${pro}, alerts, full API + checkout). Enterprise custom. Procure (procurement): Compare/Ops/Scale from USD 29/mo — separate from Build. Advisors: waitlist. Retailer listing: free forever.`;
 }

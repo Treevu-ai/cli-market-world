@@ -25,7 +25,6 @@ import PaymentReturnBanner, { readPaymentReturnState } from "@/components/Paymen
 import {
   BUILD_TIER_STARTER,
   BUILD_TIER_PRO,
-  TRIAL_DAYS,
   formatReqLimit,
 } from "@/lib/buildPricingTiers";
 import type { SpokeIcp } from "@/lib/spokeConfig";
@@ -59,12 +58,12 @@ const tiers: Tier[] = [
     name: BUILD_TIER_STARTER.name,
     price: `$${BUILD_TIER_STARTER.priceUsd}`,
     latamPrice: BUILD_TIER_STARTER.latamPricePen,
-    period_es: `/ mes · ${TRIAL_DAYS} días de prueba`,
-    period_en: `/ mo · ${TRIAL_DAYS}-day trial`,
+    period_es: "/ mes",
+    period_en: "/ mo",
     f_es: BUILD_TIER_STARTER.features_es,
     f_en: BUILD_TIER_STARTER.features_en,
-    cta_es: `Prueba gratis ${TRIAL_DAYS} días`,
-    cta_en: `Free ${TRIAL_DAYS}-day trial`,
+    cta_es: "Elegir Starter",
+    cta_en: "Choose Starter",
     checkoutKind: { type: "build-starter" },
   },
   {
