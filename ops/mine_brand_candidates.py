@@ -107,7 +107,7 @@ def mine_candidates(db, *, min_count: int, top: int, samples: int) -> list[dict]
 
 
 def _print_report(candidates: list[dict], *, total_unmapped_snapshots: int) -> None:
-    print(f"\n=== BRAND_MAP candidates (Fase 4.1) ===")
+    print("\n=== BRAND_MAP candidates (Fase 4.1) ===")
     print(f"Total snapshots on an unmapped brand slug: {total_unmapped_snapshots:,}")
     print(f"Top {len(candidates)} candidates by volume (screening only — review before promoting):\n")
     for c in candidates:
