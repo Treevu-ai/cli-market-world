@@ -398,7 +398,13 @@ def _dashboard_data():
             "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
         ).fetchone()["n"]
 
-        linkage_metrics = compute_linkage_metrics(db, total=total_indexed)
+        # Don't pass total=total_indexed here: that count excludes
+        # price >= 999999 (junk/placeholder prices), but compute_linkage_metrics'
+        # own "linked" query doesn't apply that upper bound — a linked snapshot
+        # with a junk price would count in the numerator but not the passed-in
+        # denominator, pushing the percentage above 100% (seen live: 100.4%).
+        # Let it compute its own total with the same WHERE clause as "linked".
+        linkage_metrics = compute_linkage_metrics(db)
 
         last_collected_row = db.execute(
             "SELECT MAX(queried_at) as ts FROM price_snapshots WHERE price > 0"
