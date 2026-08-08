@@ -270,6 +270,12 @@ export default function BillingCheckoutModal({
   const applyCheckoutResult = (data: CheckoutResult, source: string) => {
     const redirectUrl = checkoutRedirectFromResult(data);
     setTrustedCheckoutHref(redirectUrl);
+    if (redirectUrl) {
+      // Best-effort: skip the extra "go to checkout" click. Some browsers
+      // block this as a popup if too much time passed since the user's
+      // click — the link rendered below is the fallback for that case.
+      window.open(redirectUrl, "_blank", "noopener,noreferrer");
+    }
     recordFunnelEvent(
       isStarter ? "starter_subscribe" : isProcure ? "procure_subscribe" : "request_pro",
       {
@@ -430,14 +436,21 @@ export default function BillingCheckoutModal({
           const href = sanitizeCheckoutHref(trustedCheckoutHref);
           if (!href || isManualWallet) return null;
           return (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-mint w-full inline-flex justify-center"
-            >
-              {paymentRedirectLabel(method, isES)}
-            </a>
+            <div className="space-y-1.5">
+              <p className="text-xs text-[var(--cm-on-surface-variant)]/70">
+                {isES
+                  ? "Se abrió en una pestaña nueva. ¿No la ves? Tu navegador pudo haberla bloqueado:"
+                  : "Opened in a new tab. Don't see it? Your browser may have blocked it:"}
+              </p>
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-mint w-full inline-flex justify-center"
+              >
+                {paymentRedirectLabel(method, isES)}
+              </a>
+            </div>
           );
         })()}
         <div className="rounded border border-[var(--cm-outline-variant)]/30 bg-[var(--cm-surface-low)]/30 px-3 py-3 text-xs text-[var(--cm-on-surface-variant)] space-y-1">
