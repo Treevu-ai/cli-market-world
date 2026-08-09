@@ -2,7 +2,41 @@
 
 All notable changes to the CLI Market ecosystem.
 
-## [2026-08-05] — WhatsApp conversational funnel + multi-line basket
+## [2026-08-08] — Tottus PE indexed; stale test-connectors CI break fixed
+
+**cli-market-core** ([#168](https://github.com/Treevu-ai/cli-market-core/pull/168), released as `1.12.10`)
+- Added `tottus_pe` to `STORES` — Falabella Retail's PE supermarket brand,
+  indexed via the existing `falabella_web` connector (same `__NEXT_DATA__`
+  "Project Catalyst" SSR platform as `falabella_pe`/`sodimac_cl`, confirmed
+  live against the real site before writing any code). Fills a real gap in
+  the `supermercados` line: Wong/Metro/Plaza Vea/Vega were already indexed,
+  Grupo Falabella's own chain wasn't.
+- Required two connector changes, not just a `STORES` entry: `search_path`
+  is now configurable per store (Tottus's search page is `/buscar`, not
+  `/search` like every other `falabella_web` store — was hardcoded), and a
+  new `decimal_prices` flag opts a store into decimal-preserving price
+  parsing. Tottus is the first `falabella_web` store that shows centavos,
+  using `.` as a real decimal point (`"40.40"` = S/40.40) while `,` still
+  means thousands (`"1,249"` = S/1,249 flat) — the existing thousands-
+  stripping logic stripped both unconditionally, which would have silently
+  parsed `"40.40"` as `4040`, a 100x price bug caught before merge.
+
+**cli-market-world**
+- [#542](https://github.com/Treevu-ai/cli-market-world/pull/542) bumped the
+  `cli-market-core` pin to `1.12.10` to pick up the above.
+- [#543](https://github.com/Treevu-ai/cli-market-world/pull/543) fixed
+  `test-connectors`, which had been failing on every push to `main` since
+  2026-08-07: `dc3e32d2` deleted `hubspot-cli-market-prototype`'s content
+  (superseded by `cli_market_integrations/adapters/hubspot/`) but left the
+  CI step that still `cd`s into that now-empty directory. Found while
+  merging #542 — that PR's own `test-connectors` failure was this same
+  pre-existing, unrelated break (merged past with admin override at the
+  time; #543 fixed it cleanly right after with green CI).
+- Deployed to `cli-market-api.fly.dev`; confirmed live via `market_stores`
+  (78 PE stores, `tottus_pe` present). No Tottus price data yet as of this
+  writing — the background collector picks it up on its next ~4h cycle
+  (`index-pe-brands.yml`'s manual pilot list wasn't extended to include it
+  this round).
 
 - **Standard funnel** (`routers/integrations/whatsapp_conversation.py`): vague
   product queries clarify first; medium/specific use `/products/search` (no LLM);
