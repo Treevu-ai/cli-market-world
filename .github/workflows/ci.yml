@@ -227,13 +227,12 @@ jobs:
       - name: Test cli_market_integrations (HubSpot/Zoho/Kommo/Simla adapters)
         run: pytest cli_market_integrations/tests/ -q
 
-      # The three standalone prototypes import `from src.xxx import ...`
+      # The two remaining standalone prototypes import `from src.xxx import ...`
       # with no packaging/conftest to put `src` on sys.path — pytest must
       # run with cwd inside each prototype dir, same as running them locally.
-      - name: Test hubspot-cli-market-prototype
-        working-directory: hubspot-cli-market-prototype
-        run: pytest tests/ -q
-
+      # (hubspot-cli-market-prototype was removed in dc3e32d2 — superseded by
+      # cli_market_integrations/adapters/hubspot/, tested above — but this
+      # step wasn't cleaned up at the time, breaking test-connectors on main.)
       - name: Test zoho-cli-market-prototype
         working-directory: zoho-cli-market-prototype
         run: pytest tests/ -q
