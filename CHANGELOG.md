@@ -33,10 +33,19 @@ All notable changes to the CLI Market ecosystem.
   pre-existing, unrelated break (merged past with admin override at the
   time; #543 fixed it cleanly right after with green CI).
 - Deployed to `cli-market-api.fly.dev`; confirmed live via `market_stores`
-  (78 PE stores, `tottus_pe` present). No Tottus price data yet as of this
-  writing — the background collector picks it up on its next ~4h cycle
-  (`index-pe-brands.yml`'s manual pilot list wasn't extended to include it
-  this round).
+  (78 PE stores, `tottus_pe` present).
+- **Follow-up (2026-08-09):** Tottus still had zero price snapshots 10+
+  hours later — not a "wait for the next cycle" situation as first assumed.
+  `cli-market-collector` (the scraping daemon) is a **separate Fly.io app
+  with no CI/CD** — `deploy-fly.yml` only redeploys `cli-market-api`. Its
+  last release was 2026-08-07, so it was still running pre-Tottus code and
+  never attempted the store. Fixed with a manual
+  `fly deploy --app cli-market-collector --config fly.collector.toml
+  --build-secret github_token=$(gh auth token)`; first real snapshots (90
+  products, decimal prices parsing correctly — e.g. Nan 3 leche at S/40.40,
+  not S/4040) landed within ~5 minutes of redeploying. Lesson: don't assume
+  a change reached the collector just because the API deploy went green —
+  check `fly releases --app cli-market-collector` first.
 
 - **Standard funnel** (`routers/integrations/whatsapp_conversation.py`): vague
   product queries clarify first; medium/specific use `/products/search` (no LLM);
