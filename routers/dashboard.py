@@ -71,11 +71,16 @@ def _ensure_dashboard_cache_table(db) -> None:
     _dashboard_cache_table_ready = True
 
 
-def _load_shared_dashboard_cache() -> dict | None:
+def _load_shared_dashboard_cache(*, ignore_ttl: bool = False) -> dict | None:
     """Cross-machine cache: 4 machines behind Fly's proxy each had their own
     in-memory cache, so round-robin routing meant a cache hit on one machine
     rarely helped the others — most requests paid the full ~15-query cost.
-    Backing the cache with Postgres shares it across all machines."""
+    Backing the cache with Postgres shares it across all machines.
+
+    ignore_ttl=True serves a stale payload regardless of age — used as a
+    degraded fallback when the compute lock can't be acquired (see
+    _compute_dashboard_data_locked), so a stuck lock produces old-but-valid
+    data instead of a hang."""
     try:
         db = get_db()
         _ensure_dashboard_cache_table(db)
@@ -84,7 +89,9 @@ def _load_shared_dashboard_cache() -> dict | None:
             (_DASHBOARD_CACHE_KEY,),
         ).fetchone()
         db.close()
-        if not row or (time.time() - float(row["computed_at"])) >= _DASHBOARD_CACHE_TTL:
+        if not row:
+            return None
+        if not ignore_ttl and (time.time() - float(row["computed_at"])) >= _DASHBOARD_CACHE_TTL:
             return None
         return json.loads(row["payload"])
     except Exception:
@@ -111,6 +118,17 @@ def _save_shared_dashboard_cache(data: dict) -> None:
 # COLLECTOR_ADVISORY_LOCK (84957231) so the two never contend.
 _DASHBOARD_COMPUTE_LOCK = 84957232
 
+# pg_advisory_lock() blocks forever with no timeout by default. Confirmed
+# live 2026-08-10: a request that died mid-compute (client disconnect/
+# timeout) left its session holding this lock — every subsequent request on
+# every machine hung indefinitely waiting for it, since _dashboard_cache_lock
+# (the in-process Python lock in _cached_dashboard_data) is held for the
+# whole blocking wait too. Only cleared because an unrelated deploy
+# restarted the process, killing the orphaned session. A lock_timeout here
+# makes that failure mode fail fast (and fall back to stale cache) instead
+# of wedging the endpoint until the next deploy.
+_DASHBOARD_LOCK_TIMEOUT_S = 15
+
 
 def _compute_dashboard_data_locked() -> dict:
     """Compute + persist _dashboard_data(), serialized across Fly machines.
@@ -129,8 +147,12 @@ def _compute_dashboard_data_locked() -> dict:
         return data
 
     lock_db = get_db()
+    lock_acquired = False
     try:
+        lock_db.execute(f"SET lock_timeout = '{_DASHBOARD_LOCK_TIMEOUT_S}s'")
         lock_db.execute("SELECT pg_advisory_lock(?)", (_DASHBOARD_COMPUTE_LOCK,))
+        lock_acquired = True
+
         # Another machine may have finished while we waited for the lock.
         shared = _load_shared_dashboard_cache()
         if shared is not None:
@@ -138,11 +160,29 @@ def _compute_dashboard_data_locked() -> dict:
         data = _dashboard_data()
         _save_shared_dashboard_cache(data)
         return data
-    finally:
+    except Exception:
+        if lock_acquired:
+            raise
+        # Didn't get the lock within the timeout — someone else (possibly a
+        # stuck/orphaned session) holds it. Serve stale cache rather than
+        # hang; only 503 if there's genuinely nothing cached yet.
         try:
-            lock_db.execute("SELECT pg_advisory_unlock(?)", (_DASHBOARD_COMPUTE_LOCK,))
+            lock_db.rollback()
         except Exception:
             pass
+        stale = _load_shared_dashboard_cache(ignore_ttl=True)
+        if stale is not None:
+            return stale
+        raise HTTPException(
+            status_code=503,
+            detail="Dashboard temporarily unavailable (compute lock busy, no cached data yet)",
+        )
+    finally:
+        if lock_acquired:
+            try:
+                lock_db.execute("SELECT pg_advisory_unlock(?)", (_DASHBOARD_COMPUTE_LOCK,))
+            except Exception:
+                pass
         lock_db.close()
 
 
