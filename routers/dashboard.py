@@ -752,11 +752,14 @@ def _dashboard_data():
         healthy_count = sum(1 for h in store_health if float(h.get("success_pct") or 0) >= 80)
 
         # ── Per-store coverage 7d ─────────────────────────────────────────────────
+        # coverage_7d_pct is distinct-days-with-a-snapshot ÷ 7, NOT
+        # snapshots-in-7d ÷ lifetime-total-snapshots — see the same fix and
+        # rationale in cli-market-core's source_health.py (this block
+        # duplicates that logic rather than importing build_sources_health).
         cutoff_7d = (now - timedelta(days=7)).isoformat()
         store_coverage_rows = db.execute(
             """SELECT store,
-                      COUNT(*) FILTER (WHERE queried_at >= ?) as snapshots_7d,
-                      COUNT(*) as total_snapshots
+                      COUNT(DISTINCT DATE(queried_at)) FILTER (WHERE queried_at >= ?) as days_covered_7d
                FROM price_snapshots WHERE price > 0
                GROUP BY store""",
             (cutoff_7d,),
@@ -764,8 +767,7 @@ def _dashboard_data():
         store_coverage_map: dict[str, float] = {}
         for r in store_coverage_rows:
             sid = r["store"]
-            total = int(r["total_snapshots"] or 0)
-            store_coverage_map[sid] = round(int(r["snapshots_7d"] or 0) / total * 100, 1) if total > 0 else 0.0
+            store_coverage_map[sid] = round(min(int(r["days_covered_7d"] or 0), 7) / 7 * 100, 1)
         for h in store_health:
             h["coverage_7d_pct"] = store_coverage_map.get(h["store"], 0.0)
 

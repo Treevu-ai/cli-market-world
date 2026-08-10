@@ -2,6 +2,26 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — Fix misleading per-store coverage_7d_pct
+
+**cli-market-core** (released as `1.12.21`)
+- `build_sources_health()`'s per-store `coverage_7d_pct` (feeds `GET
+  /v1/sources/health` and the ops dashboard) computed
+  snapshots-in-7d ÷ lifetime-total-snapshots — structurally penalized
+  old healthy stores (months of history → low %) while new stores read
+  ~100% regardless of real reliability. Confirmed live: plazavea/wong/
+  metro read 39-47% despite `state: ok` and clean 200s on every recent
+  collector run.
+- Fix: redefined as distinct-days-with-a-snapshot ÷ 7 × 100 — genuine
+  day coverage, matching what the name implies. Not used by any live
+  gate (`marketing_gate_pass` already used the correct
+  `active_stores_coverage_7d_pct`) — display/diagnostic only.
+- `routers/dashboard.py` had an independent duplicate of the same
+  buggy query (doesn't import `build_sources_health`) — fixed in this
+  repo too, same commit.
+
+Bumped `cli-market-core` pin to `1.12.21` in `requirements.txt`.
+
 ## [2026-08-10] — Fix contaminated matching in market_price_forecast
 
 **cli-market-core** (released as `1.12.20`)
