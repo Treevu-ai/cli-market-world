@@ -2,6 +2,23 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — Fix contaminated matching in market_price_forecast
+
+**cli-market-core** (released as `1.12.20`)
+- `compute_price_forecast()` matched candidates with a raw `name ILIKE
+  '%query%'` and no `ORDER BY` before `LIMIT 50` — canasta-item forecasts
+  (e.g. arroz) mixed in unrelated products sharing the substring (Vinagre
+  de Arroz, Condimento para Arroz, Nestum Arroz cereal), and the
+  50-candidate set could vary between calls with no real price movement.
+  Root-caused live: arroz/PE forecast was returning `r_squared: 0.036`,
+  `trend_pct_per_day: +8.36` at `confidence: low`.
+- Fix: reuse the existing word-boundary + exclusion matcher
+  (`matches_canasta_item` / `CANASTA_SQL_LIKE` from `market_spread.py`)
+  for the 11 canasta staples; deterministic `ORDER BY` for the freeform
+  substring fallback.
+
+Bumped `cli-market-core` pin to `1.12.20` in `requirements.txt`.
+
 ## [2026-08-10] — Fertisem Perú indexed (agro, new business line)
 
 **cli-market-core** ([#177](https://github.com/Treevu-ai/cli-market-core/pull/177), released as `1.12.19`)
