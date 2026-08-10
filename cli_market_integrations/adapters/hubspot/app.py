@@ -1,10 +1,10 @@
 """HubSpot adapter — FastAPI app. Imports from package instead of prototype."""
 from __future__ import annotations
 import asyncio, logging, os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel
 
 load_dotenv()
@@ -23,12 +23,42 @@ app = FastAPI(title="HubSpot + CLI Market", version="0.1.0", description="Enrich
 cli_market = CLIMarketIntelClient()
 hubspot = HubSpotClient()
 WEBHOOK_SECRET = os.getenv("HUBSPOT_WEBHOOK_SECRET", "")
+CRM_API_KEY = os.getenv("CRM_API_KEY", "")
+HUBSPOT_PORTAL_ID = os.getenv("HUBSPOT_PORTAL_ID", "")
+
+DEAL_PROPERTIES = ["dealname", "amount", "dealstage", "pipeline", "createdate", "closedate"]
 
 
 def _check_auth(request: Request) -> None:
     if not WEBHOOK_SECRET: return
     if (request.headers.get("X-HubSpot-Signature") or "") != WEBHOOK_SECRET:
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+
+def _check_crm_api_key(request: Request) -> None:
+    # Deliberately 401 (not 503) even when CRM_API_KEY isn't configured on
+    # the server — never signal to an unauthenticated caller whether the
+    # endpoint is merely misconfigured vs. actually protected.
+    if not CRM_API_KEY or (request.headers.get("X-CRM-Api-Key") or "") != CRM_API_KEY:
+        raise HTTPException(status_code=401, detail="Missing or invalid X-CRM-Api-Key")
+
+
+def _map_deal(raw: dict[str, Any]) -> dict[str, Any]:
+    props = raw.get("properties") or {}
+    deal_id = str(raw.get("id") or "")
+    return {
+        "deal_id": deal_id,
+        "dealname": props.get("dealname"),
+        "amount": props.get("amount"),
+        "dealstage": props.get("dealstage"),
+        "pipeline": props.get("pipeline"),
+        "createdate": props.get("createdate"),
+        "closedate": props.get("closedate"),
+        "hubspot_url": (
+            f"https://app.hubspot.com/contacts/{HUBSPOT_PORTAL_ID}/deal/{deal_id}"
+            if HUBSPOT_PORTAL_ID and deal_id else None
+        ),
+    }
 
 
 class HubSpotWebhookEvent(BaseModel):
@@ -112,6 +142,29 @@ async def market_intelligence(country: str = "PE"):
 async def pro_signals(country: str = "PE"):
     procurement, price_risk = await asyncio.gather(cli_market.get_procurement_signal(country=country), cli_market.get_price_risk(country=country))
     return {"country": country, "timestamp": datetime.now(timezone.utc).isoformat(), "procurement_signal": procurement, "price_risk": price_risk}
+
+@app.get("/api/crm/deals/recent")
+async def recent_deals(
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    days: int = Query(7, ge=1, le=365),
+    pipeline: str | None = None,
+):
+    """Private: recent HubSpot deals. Requires X-CRM-Api-Key. Not for public docs."""
+    _check_crm_api_key(request)
+    if not hubspot.access_token:
+        raise HTTPException(status_code=503, detail="HubSpot not configured (HUBSPOT_ACCESS_TOKEN missing)")
+
+    since_ms = str(int((datetime.now(timezone.utc) - timedelta(days=days)).timestamp() * 1000))
+    result = await hubspot.search_deals(
+        properties=DEAL_PROPERTIES, since_ms=since_ms, limit=limit, pipeline=pipeline,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=503, detail=f"HubSpot deals search failed: {result['error']}")
+
+    deals = [_map_deal(r) for r in result.get("results", [])]
+    return {"count": len(deals), "days": days, "limit": limit, "pipeline": pipeline, "deals": deals}
+
 
 @app.get("/api/setup-properties")
 async def setup_properties():

@@ -75,6 +75,75 @@ class TestHubSpotApp:
         assert r.json()["status"] == "enriched"
 
 
+class TestHubSpotRecentDeals:
+    """GET /api/crm/deals/recent — private endpoint, X-CRM-Api-Key required."""
+
+    def test_missing_api_key_401(self):
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"):
+            r = hs.get("/api/crm/deals/recent")
+        assert r.status_code == 401
+
+    def test_wrong_api_key_401(self):
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"):
+            r = hs.get("/api/crm/deals/recent", headers={"X-CRM-Api-Key": "wrong"})
+        assert r.status_code == 401
+
+    def test_unconfigured_key_is_401_not_open(self):
+        # CRM_API_KEY unset on the server must still reject, never fall open.
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", ""):
+            r = hs.get("/api/crm/deals/recent", headers={"X-CRM-Api-Key": "anything"})
+        assert r.status_code == 401
+
+    def test_missing_hubspot_token_503(self):
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"), \
+             patch("cli_market_integrations.adapters.hubspot.app.hubspot") as m_hs:
+            m_hs.access_token = ""
+            r = hs.get("/api/crm/deals/recent", headers={"X-CRM-Api-Key": "secret-123"})
+        assert r.status_code == 503
+        assert "HUBSPOT_ACCESS_TOKEN" in r.json()["detail"]
+
+    def test_hubspot_error_503_no_token_leak(self):
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"), \
+             patch("cli_market_integrations.adapters.hubspot.app.hubspot") as m_hs:
+            m_hs.access_token = "sk-real-hubspot-token"
+            m_hs.search_deals = AsyncMock(return_value={"error": "http_500"})
+            r = hs.get("/api/crm/deals/recent", headers={"X-CRM-Api-Key": "secret-123"})
+        assert r.status_code == 503
+        assert "sk-real-hubspot-token" not in r.text
+
+    def test_happy_path(self):
+        raw = {
+            "results": [
+                {
+                    "id": "42",
+                    "properties": {
+                        "dealname": "Canasta PYME Lima", "amount": "1500", "dealstage": "closedwon",
+                        "pipeline": "default", "createdate": "2026-08-09T10:00:00Z", "closedate": "2026-08-10T10:00:00Z",
+                    },
+                }
+            ]
+        }
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"), \
+             patch("cli_market_integrations.adapters.hubspot.app.HUBSPOT_PORTAL_ID", "12345"), \
+             patch("cli_market_integrations.adapters.hubspot.app.hubspot") as m_hs:
+            m_hs.access_token = "sk-real-hubspot-token"
+            m_hs.search_deals = AsyncMock(return_value=raw)
+            r = hs.get("/api/crm/deals/recent?limit=5&days=3", headers={"X-CRM-Api-Key": "secret-123"})
+        assert r.status_code == 200
+        body = r.json()
+        assert body["count"] == 1
+        deal = body["deals"][0]
+        assert deal["deal_id"] == "42"
+        assert deal["dealname"] == "Canasta PYME Lima"
+        assert deal["hubspot_url"] == "https://app.hubspot.com/contacts/12345/deal/42"
+        assert "sk-real-hubspot-token" not in r.text
+
+    def test_limit_out_of_range_422(self):
+        with patch("cli_market_integrations.adapters.hubspot.app.CRM_API_KEY", "secret-123"):
+            r = hs.get("/api/crm/deals/recent?limit=101", headers={"X-CRM-Api-Key": "secret-123"})
+        assert r.status_code == 422
+
+
 # ── Zoho ──────────────────────────────────────────────────────────────────────
 
 from cli_market_integrations.adapters.zoho.app import app as zoho_app

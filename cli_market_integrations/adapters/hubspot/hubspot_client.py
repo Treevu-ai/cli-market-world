@@ -81,6 +81,39 @@ class HubSpotClient:
         except Exception as e:
             logger.error("Error creating deal property %s: %s", name, e); return False
 
+    async def search_deals(
+        self,
+        *,
+        properties: list[str],
+        since_ms: str,
+        limit: int = 20,
+        pipeline: str | None = None,
+    ) -> dict[str, Any]:
+        """Deals created since `since_ms` (epoch milliseconds).
+
+        Uses POST /crm/v3/objects/deals/search — the plain GET
+        /crm/v3/objects/deals list endpoint doesn't support filterGroups,
+        only search does. HubSpot date-property filters require the value
+        as a millisecond Unix timestamp, not an ISO string.
+        """
+        filters = [{"propertyName": "createdate", "operator": "GTE", "value": since_ms}]
+        if pipeline:
+            filters.append({"propertyName": "pipeline", "operator": "EQ", "value": pipeline})
+        payload = {
+            "filterGroups": [{"filters": filters}],
+            "sorts": [{"propertyName": "createdate", "direction": "DESCENDING"}],
+            "properties": properties,
+            "limit": min(limit, 100),
+        }
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as c:
+                r = await c.post(f"{self.BASE_URL}/crm/v3/objects/deals/search", headers=self._headers(), json=payload)
+                r.raise_for_status(); return r.json()
+        except httpx.HTTPStatusError as e:
+            return {"error": f"http_{e.response.status_code}"}
+        except Exception as e:
+            return {"error": str(e)}
+
     async def health_check(self) -> bool:
         try:
             async with httpx.AsyncClient(timeout=10.0) as c:

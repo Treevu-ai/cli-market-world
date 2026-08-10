@@ -663,6 +663,52 @@ deal_properties = [
 #    - deal: products, amount, region
 ```
 
+### 2b. **Endpoint privado: deals recientes** ⚠️ PRIVADO — no exponer en documentación pública ni en `/docs` (OpenAPI) sin auth
+
+`GET /api/crm/deals/recent` en el adapter (`cli_market_integrations/adapters/hubspot/app.py`). Requiere el header `X-CRM-Api-Key`; sin él, o si no coincide, responde `401` — incluso si `CRM_API_KEY` no está configurado en el servidor (nunca "abre" el endpoint por falta de configuración). Si `HUBSPOT_ACCESS_TOKEN` no está seteado, responde `503` antes de intentar la llamada a HubSpot.
+
+Internamente usa `POST /crm/v3/objects/deals/search` (no el `GET` de listado — ese no soporta `filterGroups`), filtrando `createdate` con un timestamp Unix en milisegundos (formato que exige HubSpot para propiedades de fecha).
+
+**Request:**
+```
+GET /api/crm/deals/recent?limit=5&days=3&pipeline=default
+X-CRM-Api-Key: <CRM_API_KEY>
+```
+
+**Response 200:**
+```json
+{
+  "count": 1,
+  "days": 3,
+  "limit": 5,
+  "pipeline": "default",
+  "deals": [
+    {
+      "deal_id": "42",
+      "dealname": "Canasta PYME Lima",
+      "amount": "1500",
+      "dealstage": "closedwon",
+      "pipeline": "default",
+      "createdate": "2026-08-09T10:00:00Z",
+      "closedate": "2026-08-10T10:00:00Z",
+      "hubspot_url": "https://app.hubspot.com/contacts/<HUBSPOT_PORTAL_ID>/deal/42"
+    }
+  ]
+}
+```
+`hubspot_url` es `null` si no está seteado `HUBSPOT_PORTAL_ID` (opcional).
+
+**Errores:** `401` (API key faltante/incorrecta) · `422` (`limit`/`days` fuera de rango — `limit` 1-100, `days` 1-365) · `503` (HubSpot sin token configurado, o la búsqueda a HubSpot falló).
+
+**Config requerida (Fly secrets, NO en `fly.hubspot.toml`):**
+```
+fly secrets set --app cli-market-hubspot CRM_API_KEY=<valor-generado>
+fly secrets set --app cli-market-hubspot HUBSPOT_ACCESS_TOKEN=<token-de-la-private-app>
+# opcional, solo para que hubspot_url resuelva:
+fly secrets set --app cli-market-hubspot HUBSPOT_PORTAL_ID=<hub-id-numerico>
+```
+`CRM_API_KEY` se lee como cualquier otro secreto (`os.getenv`) — deliberadamente **no** se agregó al bloque `[env]` de `fly.hubspot.toml` como pedía la instrucción original, porque ese archivo está versionado en git y `[env]` queda en texto plano en el repo.
+
 ### 3. **Crear Workflows de HubSpot**
 
 ```python
