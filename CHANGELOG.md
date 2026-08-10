@@ -2,6 +2,21 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — Fix db_get_user_email missing admin-provisioned accounts
+
+**cli-market-core** (released as `1.12.22`)
+- `db_get_user_email()` only checked `subscription_requests` (the PayPal/
+  MercadoPago checkout table) — accounts created outside checkout
+  (`admin_set_tier` grants, manual provisioning for offline payment like
+  Yape/Plin) never get a row there, so the lookup silently returned `None`.
+- Confirmed live: 3 Starter accounts granted via `admin_set_tier` (paid
+  Yape/Plin, outside the app) posted to `#revenue-funnel-cli-market` with
+  `email: —` despite each having a real email on `app_users`.
+- Fix: fall back to `app_users.email` when `subscription_requests` has no
+  row for the username.
+
+Bumped `cli-market-core` pin to `1.12.22` in `requirements.txt`.
+
 ## [2026-08-10] — Fix misleading per-store coverage_7d_pct
 
 **cli-market-core** (released as `1.12.21`)
