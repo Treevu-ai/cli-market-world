@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — Fertisem Perú indexed (agro, new business line)
+
+**cli-market-core** ([#177](https://github.com/Treevu-ai/cli-market-core/pull/177), released as `1.12.19`)
+- Adds `fertisem_pe` (fertilizers, agrochemicals, seeds) via the existing
+  `woocommerce` connector — config-only. First store in a new `agro`
+  business line. Real cart/checkout and public Store API confirmed live.
+- Investigated, not added: Nutriferza (Store API 404s), Agro Solución
+  (dead domain), Makroagro (B2B quote catalog, no real sale), Silvestre
+  Perú (manufacturer site, no active shop).
+
+Bumped `cli-market-core` pin to `1.12.19` in `requirements.txt`.
+
 ## [2026-08-10] — PC Factory Perú indexed (electro)
 
 **cli-market-core** ([#176](https://github.com/Treevu-ai/cli-market-core/pull/176), released as `1.12.18`)
