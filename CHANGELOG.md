@@ -2,6 +2,17 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — PC Factory Perú indexed (electro)
+
+**cli-market-core** ([#176](https://github.com/Treevu-ai/cli-market-core/pull/176), released as `1.12.18`)
+- New `pcfactory.py` connector for PC Factory's proprietary catalog API
+  (Modyo-based backend, shared with pcfactory.cl) — no existing connector
+  matched. Real domain confirmed live as `pcfactory.com.pe` (`pcfactory.pe`
+  doesn't resolve). Public, unauthenticated, WAF-free JSON search endpoint.
+  Adds `pcfactory_pe` to `electro×PE`.
+
+Bumped `cli-market-core` pin to `1.12.18` in `requirements.txt`.
+
 ## [2026-08-08] — Tottus PE indexed; stale test-connectors CI break fixed
 
 **cli-market-core** ([#168](https://github.com/Treevu-ai/cli-market-core/pull/168), released as `1.12.10`)
