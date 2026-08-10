@@ -1,27 +1,28 @@
 # Índice Canasta Perú
 
-**Actualizado:** 2026-08-03 14:14 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
+**Actualizado:** 2026-08-10 13:57 (UTC) · Fuente: [CLI Market dashboard](https://cli-market-api.fly.dev/dashboard/data)
 
 Canasta básica comparable (10 ítems) en cadenas peruanas con cobertura activa. Señal pública del data moat — ver [`docs/gtm/pitch-agentic-protocols.md`](../docs/gtm/pitch-agentic-protocols.md).
 
 ## Resumen
 
-- **Cadenas PE en canasta:** 2
+- **Cadenas PE en canasta:** 3
 - **Freshness:** ver dashboard
-- **Cobertura 7d:** 93.8%
+- **Cobertura 7d:** 93.2%
 
 ## Totales por cadena (PEN)
 
 | Cadena | Ítems | Total canasta |
 |--------|------:|--------------:|
-| Del Campo a tu Casa | 3/10 | S/ 58.00 |
+| Tambo+ | 5/10 | S/ 57.20 |
+| Del Campo a tu Casa | 3/10 | S/ 57.70 |
 | AmaGreen Mayorista | 4/10 | S/ 66.60 |
 
 ## Spread
 
-- Más barata: **Del Campo a tu Casa** (S/ 58.00)
+- Más barata: **Tambo+** (S/ 57.20)
 - Más cara: **AmaGreen Mayorista** (S/ 66.60)
-- Ratio max/min: **1.15×**
+- Ratio max/min: **1.16×**
 
 ## Metodología
 
