@@ -671,42 +671,44 @@ Internamente usa `POST /crm/v3/objects/deals/search` (no el `GET` de listado —
 
 **Request:**
 ```
-GET /api/crm/deals/recent?limit=5&days=3&pipeline=default
+GET /api/crm/deals/recent?limit=5&days=365
 X-CRM-Api-Key: <CRM_API_KEY>
 ```
 
-**Response 200:**
+**Response 200 — ejemplo real, verificado en vivo contra producción el 2026-08-10:**
 ```json
 {
   "count": 1,
-  "days": 3,
+  "days": 365,
   "limit": 5,
-  "pipeline": "default",
+  "pipeline": null,
   "deals": [
     {
-      "deal_id": "42",
-      "dealname": "Canasta PYME Lima",
+      "deal_id": "63361085465",
+      "dealname": "Integraciones ERP - Estación 90",
       "amount": "1500",
-      "dealstage": "closedwon",
+      "dealstage": "appointmentscheduled",
       "pipeline": "default",
-      "createdate": "2026-08-09T10:00:00Z",
-      "closedate": "2026-08-10T10:00:00Z",
-      "hubspot_url": "https://app.hubspot.com/contacts/<HUBSPOT_PORTAL_ID>/deal/42"
+      "createdate": "2026-08-03T01:18:12.560Z",
+      "closedate": "2026-08-05T02:05:47.261Z",
+      "hubspot_url": "https://app.hubspot.com/contacts/51814253/deal/63361085465"
     }
   ]
 }
 ```
-`hubspot_url` es `null` si no está seteado `HUBSPOT_PORTAL_ID` (opcional).
+Con `days=3` en vez de `365` este mismo deal cae fuera del filtro (`count: 0`) — confirma que `createdate >= now - days` filtra de verdad, no solo pagina.
+
+`hubspot_url` es `null` únicamente si `HUBSPOT_PORTAL_ID` no está seteado — en `cli-market-hubspot` **sí lo está** (`51814253`, el `portalId` de la cuenta, obtenido vía `GET /account-info/v3/details` con el mismo `HUBSPOT_ACCESS_TOKEN`; no es secreto, es el identificador público que usan las URLs de HubSpot).
 
 **Errores:** `401` (API key faltante/incorrecta) · `422` (`limit`/`days` fuera de rango — `limit` 1-100, `days` 1-365) · `503` (HubSpot sin token configurado, o la búsqueda a HubSpot falló).
 
-**Config requerida (Fly secrets, NO en `fly.hubspot.toml`):**
+**Config en producción (Fly secrets, NO en `fly.hubspot.toml`) — ya seteada en `cli-market-hubspot`:**
 ```
-fly secrets set --app cli-market-hubspot CRM_API_KEY=<valor-generado>
-fly secrets set --app cli-market-hubspot HUBSPOT_ACCESS_TOKEN=<token-de-la-private-app>
-# opcional, solo para que hubspot_url resuelva:
-fly secrets set --app cli-market-hubspot HUBSPOT_PORTAL_ID=<hub-id-numerico>
+CRM_API_KEY        # generado con secrets.token_urlsafe(32), rotar vía fly secrets import si se filtra
+HUBSPOT_ACCESS_TOKEN   # pat-na1-... (Private App, scope deals.read)
+HUBSPOT_PORTAL_ID  # 51814253
 ```
+Para rotar o setear en otro entorno: `printf 'NOMBRE=valor\n' | fly secrets import --app cli-market-hubspot --stage`, luego `fly deploy --app cli-market-hubspot --config fly.hubspot.toml --remote-only` para que tome efecto (import por sí solo solo deja el secreto en staged). Guardar el valor de `CRM_API_KEY` en un gestor de secretos aparte al generarlo — Fly no permite leerlo de vuelta después de seteado.
 `CRM_API_KEY` se lee como cualquier otro secreto (`os.getenv`) — deliberadamente **no** se agregó al bloque `[env]` de `fly.hubspot.toml` como pedía la instrucción original, porque ese archivo está versionado en git y `[env]` queda en texto plano en el repo.
 
 ### 3. **Crear Workflows de HubSpot**
