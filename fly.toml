@@ -14,7 +14,17 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
 [env]
   MARKET_DATA_DIR = "/data"
   PORT = "8080"
-  
+
+  # Checkout price-freshness gate (pre_checkout_validate.py). Default was
+  # 900s (15min), far tighter than the bulk collector's own refresh cadence
+  # (COLLECT_INTERVAL_HOURS, default 4h) — under normal operation nearly
+  # every checkout hit price_stale_or_drift regardless of client. Raised to
+  # match that cadence with headroom (observed moat_age_hours ~1.8h in
+  # practice). Was set at runtime via `fly secrets set` on 2026-08-11 to
+  # avoid deploying this working tree's unrelated in-progress changes;
+  # promoted here now that it's a deliberate, permanent config value.
+  CHECKOUT_MAX_SNAPSHOT_AGE_SEC = "21600"
+
   # HORECA Pilot Configuration
   HORECA_ENABLED = "false"
   HORECA_FREE_SEARCHES_DAILY = "5"
