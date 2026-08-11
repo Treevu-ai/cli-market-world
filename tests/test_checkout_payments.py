@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -61,11 +62,58 @@ def _auth():
 
 
 def _add_cart():
+    # _prepare_pending_order now runs pre_checkout_validate against the live
+    # price_snapshots table before charging (2026-08-11 checkout price-bypass
+    # fix) — a bare cart/add with no matching snapshot gets rejected as
+    # missing_snapshot (409), so seed one matching this cart's price exactly.
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
+        (
+            "p1", "wong", "Wong", "Leche", 5.0, "PEN", "supermercados", 100,
+            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+    )
+    db.commit()
+    db.close()
     client.post(
         "/cart/add",
         headers=_auth(),
         json={"product_id": "p1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1},
     )
+
+
+def test_checkout_rejects_tampered_cart_price():
+    """Regression for the 2026-08-07 Cursor finding: AddToCartRequest.price
+    is caller-controlled, so a client that POSTs a real product_id with a
+    manipulated low price must not be able to check out at that price."""
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
+        (
+            "p-real", "wong", "Wong", "Aceite Primor 900ml", 50.0, "PEN", "supermercados", 100,
+            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+    )
+    db.commit()
+    db.close()
+    client.post(
+        "/cart/add",
+        headers=_auth(),
+        json={"product_id": "p-real", "name": "Aceite Primor 900ml", "price": 0.01, "store": "wong", "quantity": 1},
+    )
+    r = client.post("/checkout/yape", headers=_auth())
+    assert r.status_code == 409
+    detail = r.json()["detail"]
+    assert detail["ok"] is False
+    # The order must never be created at the tampered price -- confirmed by
+    # rejection alone, but assert the validated (real) total is what the
+    # response reports back, not the 0.01 the client sent.
+    assert detail["validated_total"] == 50.0
 
 
 def test_checkout_yape_idempotency_key_same_order():

@@ -25,21 +25,29 @@ router = APIRouter(tags=["payments"])
 _QR_SERVICE_URL = os.getenv("QR_SERVICE_URL", "https://api.qrserver.com/v1/create-qr-code/")
 
 
-def _cart_total(cart: list[dict]) -> float:
-    return round(sum(i["price"] * i["quantity"] for i in cart), 2)
-
-
 def _prepare_pending_order(
     username: str,
     method: str,
     idempotency_key: str | None = None,
 ) -> tuple[list[dict], float, str]:
-    """Common preamble: get cart, compute total, create pending order, clear cart."""
+    """Common preamble: get cart, validate against live prices, create pending order, clear cart.
+
+    Charges pre_checkout_validate's server-computed validated_total, never the
+    client-supplied cart price — /cart's AddToCartRequest.price is caller-
+    controlled, so trusting it here let an authenticated Pro user charge
+    themselves e.g. price=0.01 for a real catalog item (every payment method
+    reached this function directly; only the separate, optional
+    /checkout/validate endpoint ever called pre_checkout_validate). Confirmed
+    live via Cursor security scan 2026-08-07, fixed 2026-08-11.
+    """
     require_checkout_access(username)
     cart = db_get_cart(username)
     if not cart:
         raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = _cart_total(cart)
+    result = pre_checkout_validate(username, cart)
+    if not result.ok:
+        raise HTTPException(status_code=409, detail=result.to_dict())
+    total = result.validated_total
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
     idem = (idempotency_key or "").strip() or None
     created = db_create_order(
