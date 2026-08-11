@@ -77,8 +77,14 @@ def get_market_data(query, country):
         # En la CLI actual no hay --format json, parseamos stdout
         # Pero podemos intentar usar market_orchestrator o la API directa
         # Para este script rápido, usaremos la salida de texto de la CLI
-        cmd = ["market", "compare", f"\"{query}\"", "--country", country, "--limit", "1"]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=True)
+        # shell=True with a list `cmd` only ever ran cmd[0] via the shell on
+        # POSIX (the rest silently became unused shell positional args) --
+        # besides being a correctness bug, it's a command-injection footgun
+        # the moment `query` stops coming from ops/monday.py's fixed
+        # CATEGORIES list. shell=False executes cmd as real argv, both
+        # fixed. Flagged by security audit 2026-08-11.
+        cmd = ["market", "compare", query, "--country", country, "--limit", "1"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, shell=False)
         
         output = result.stdout
         # Parser rústico para extraer info de la tabla de la CLI si es necesario

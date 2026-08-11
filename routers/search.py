@@ -21,7 +21,7 @@ import re
 import time
 
 import httpx
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, field_validator
 
 from market_core import (
@@ -42,7 +42,7 @@ from market_core.product_search import (
     normalize_text as _normalize_text,  # noqa: F401 - re-exported for routers/analytics.py
     query_tokens as _query_tokens,
 )
-from server_deps import require_api_key, require_pro
+from server_deps import check_rate_limit, require_api_key, require_pro
 
 from backend_interface import get_store_profile, store_exists
 from index_gate import infer_category
@@ -716,8 +716,10 @@ def product_stock(product_id: str, store: str, authorization: str | None = Heade
     "/products/delivery/{product_id}",
     summary="Get delivery estimate for a product from a specific store",
 )
-def product_delivery(product_id: str, store: str, zipcode: str = ""):
+def product_delivery(request: Request, product_id: str, store: str, zipcode: str = ""):
     """Referential delivery estimate — VTEX defaults/simulation when available."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"products-delivery:{client_ip}")
     store_info = STORES.get(store, {})
     message = "Estimación referencial. Confirmar plazo, costo y cobertura con el retailer."
     fee = None
@@ -760,10 +762,12 @@ def product_delivery(product_id: str, store: str, zipcode: str = ""):
     "/products/barcode/{code}",
     summary="Look up product metadata by EAN/UPC barcode",
 )
-def barcode_lookup(code: str):
+def barcode_lookup(request: Request, code: str):
     """Look up product name, brand, and Nutri-Score from OpenFoodFacts by
     EAN or UPC barcode. Use when you have a physical barcode and want to
     identify the product before searching for prices."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"products-barcode:{client_ip}")
     r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{code}.json", timeout=10)
     if r.status_code == 200:
         product = r.json().get("product", {})
@@ -778,8 +782,10 @@ def barcode_lookup(code: str):
 
 
 @router.get("/products/enrich")
-def enrich_products(query: str, limit: int = 5):
+def enrich_products(request: Request, query: str, limit: int = 5):
     """OpenFoodFacts text search."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"products-enrich:{client_ip}")
     r = httpx.get(
         f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&json=1&page_size={limit}",
         timeout=10,
@@ -801,8 +807,10 @@ def enrich_products(query: str, limit: int = 5):
 
 
 @router.get("/categories/{store}")
-async def categories(store: str):
+async def categories(request: Request, store: str):
     """VTEX category tree (depth 10) for a store."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"categories:{client_ip}")
     base = STORES.get(store, {}).get("base", "")
     if not base:
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
