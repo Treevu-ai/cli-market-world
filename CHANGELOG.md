@@ -2,6 +2,19 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-10] — Disable oosterumleder_nl (JS-challenge block)
+
+**cli-market-core** (released as `1.12.23`)
+- `shop.oosterumleder.nl`'s WooCommerce Store API returns HTTP 200 with
+  an obfuscated JS-challenge page instead of JSON — no CDN/WAF header,
+  likely a WordPress security plugin. Collector doesn't execute JS.
+  Confirmed live: 0% coverage_7d_pct, 10 consecutive failures, last
+  real success 2026-08-01.
+- Marked `disabled`/`disabled_reason`, same pattern as Éxito/Cruz
+  Verde/Motorola ES.
+
+Bumped `cli-market-core` pin to `1.12.23` in `requirements.txt`.
+
 ## [2026-08-10] — Fix db_get_user_email missing admin-provisioned accounts
 
 **cli-market-core** (released as `1.12.22`)
