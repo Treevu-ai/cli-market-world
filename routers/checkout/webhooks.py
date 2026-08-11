@@ -16,6 +16,7 @@ from market_core import (
     db_update_order_status,
 )
 from market_security import is_production_deploy, paypal_allow_unverified_webhooks
+from server_deps import check_rate_limit
 from routers.billing.activation import (
     _activate_pro_from_request,
     _activate_procure_from_request,
@@ -189,11 +190,14 @@ async def paypal_webhook(request: Request):
 
 @router.post("/checkout/webhook")
 def checkout_webhook(
+    request: Request,
     order_id: str = "",
     status: str = "paid",
     webhook_secret: str | None = Header(None, alias="X-Checkout-Webhook-Secret"),
 ):
     """Mark an order paid/failed using a shared secret supplied in a header."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"checkout-webhook:{client_ip}")
     expected = os.getenv("CHECKOUT_WEBHOOK_SECRET", "")
     if is_production_deploy():
         if not expected:
@@ -205,6 +209,19 @@ def checkout_webhook(
             raise HTTPException(status_code=401, detail="Invalid webhook secret")
     elif expected and (not webhook_secret or not secrets.compare_digest(webhook_secret, expected)):
         raise HTTPException(status_code=401, detail="Invalid webhook secret")
+    elif not expected:
+        # Unprotected only outside is_production_deploy() (which already
+        # covers every Fly deployment, staging included, via FLY_APP_NAME) --
+        # genuine local dev. Logged so a misconfigured non-Fly deployment
+        # that's actually internet-reachable doesn't silently accept
+        # unauthenticated order-status changes. Rate-limited above either
+        # way to slow brute-forcing the 8-hex-char order_id. Flagged by
+        # security audit 2026-08-11.
+        logger.warning(
+            "checkout_webhook: no CHECKOUT_WEBHOOK_SECRET configured, request unauthenticated (order_id=%s, ip=%s)",
+            order_id,
+            client_ip,
+        )
     if not order_id:
         raise HTTPException(status_code=400, detail="order_id required")
     event_key = f"checkout:{order_id}:{status}"
