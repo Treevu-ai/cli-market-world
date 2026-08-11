@@ -20,7 +20,7 @@ import logging
 from fastapi import APIRouter, Body, Header, HTTPException
 
 from market_audit import record_audit
-from market_core import db_get_user_email
+from market_core import db_get_user_email, get_db
 from market_vault import (
     bind_vault_customer,
     bind_vault_payment_token,
@@ -37,6 +37,29 @@ from server_deps import require_api_key
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["vault"])
+
+
+def _resolve_pending_order_total(username: str, order_id: str) -> float:
+    """Look up a caller-owned pending order and return its server-recorded
+    total. Both vault-charge and card-payment otherwise charge whatever
+    `amount` the client sends against a token/card the caller genuinely
+    owns -- fine for their documented use as a generic "charge my own
+    saved method" API with no known caller, but if a future flow ever
+    wires a real priced order through here without this, it reintroduces
+    the same client-controlled-price bug fixed elsewhere in checkout.
+    Passing order_id is optional and additive: omitting it preserves the
+    existing client-amount behavior for the generic API use case.
+    Flagged by security audit 2026-08-11."""
+    db = get_db()
+    order = db.execute(
+        "SELECT * FROM app_orders WHERE order_id=? AND username=?", (order_id, username)
+    ).fetchone()
+    db.close()
+    if not order:
+        raise HTTPException(status_code=404, detail="order_id not found")
+    if order["status"] != "pending":
+        raise HTTPException(status_code=409, detail=f"order status is {order['status']!r}, not pending")
+    return float(order["total"])
 
 
 # ── PayPal Vault ─────────────────────────────────────────────────────────────
@@ -128,11 +151,16 @@ async def vault_charge(
     """Charge a vaulted payment method — no buyer redirect needed."""
     username = require_api_key(authorization)
     payment_token_id = (body.get("payment_token_id") or "").strip()
-    amount = body.get("amount")
+    order_id = (body.get("order_id") or "").strip()
     if not payment_token_id:
         raise HTTPException(status_code=400, detail="payment_token_id required")
-    if not amount or float(amount) <= 0:
-        raise HTTPException(status_code=400, detail="amount must be > 0")
+    if order_id:
+        amount = _resolve_pending_order_total(username, order_id)
+    else:
+        amount = body.get("amount")
+        if not amount or float(amount) <= 0:
+            raise HTTPException(status_code=400, detail="amount must be > 0")
+        amount = float(amount)
     if not vault_payment_token_owned(username, payment_token_id):
         raise HTTPException(status_code=403, detail="payment_token_id not owned by caller")
 
@@ -204,11 +232,16 @@ async def card_payment(
     """Process a card payment using a MercadoPago card token (embedded checkout)."""
     username = require_api_key(authorization)
     card_token_id = (body.get("card_token_id") or body.get("token") or "").strip()
-    amount = body.get("amount")
+    order_id = (body.get("order_id") or "").strip()
     if not card_token_id:
         raise HTTPException(status_code=400, detail="card_token_id required")
-    if not amount or float(amount) <= 0:
-        raise HTTPException(status_code=400, detail="amount must be > 0")
+    if order_id:
+        amount = _resolve_pending_order_total(username, order_id)
+    else:
+        amount = body.get("amount")
+        if not amount or float(amount) <= 0:
+            raise HTTPException(status_code=400, detail="amount must be > 0")
+        amount = float(amount)
 
     from market_connectors.mercadopago_payments import create_card_payment
 

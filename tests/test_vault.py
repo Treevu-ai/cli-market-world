@@ -216,6 +216,62 @@ def test_vault_charge_success():
     assert r.json()["order_id"] == "ORD-001"
 
 
+def test_vault_charge_with_order_id_ignores_client_amount():
+    """Regression: passing order_id must charge the order's server-recorded
+    total, not whatever amount the client also sends -- the same
+    client-controlled-price bug already fixed on the main checkout path,
+    closed here as an additive safety rail (security audit 2026-08-11)."""
+    from market_core import db_create_order
+
+    bind_vault_payment_token("vault_tester", "c1", "pt_xyz")
+    order = db_create_order(
+        "vault_tester",
+        [{"product_id": "p1", "name": "Leche", "price": 50.0, "store": "wong", "quantity": 1}],
+        "vault",
+        50.0,
+        status="pending",
+        order_id="ORD-VAULT01",
+    )
+    captured = {}
+
+    async def _capture_charge(token_id, amount, **kwargs):
+        captured["amount"] = amount
+        return {"ok": True, "order_id": "PP-1", "status": "COMPLETED"}
+
+    with patch(
+        "market_connectors.paypal_payments.charge_vault_payment_token",
+        new=_capture_charge,
+        create=True,
+    ):
+        r = client.post(
+            "/billing/vault-charge",
+            headers=_auth(),
+            json={"payment_token_id": "pt_xyz", "amount": 0.01, "order_id": order["order_id"]},
+        )
+    assert r.status_code == 200
+    assert captured["amount"] == 50.0
+
+
+def test_vault_charge_rejects_foreign_order_id():
+    bind_vault_payment_token("vault_tester", "c1", "pt_xyz")
+    from market_core import db_create_order
+
+    db_create_order(
+        "someone_else",
+        [{"product_id": "p1", "name": "Leche", "price": 50.0, "store": "wong", "quantity": 1}],
+        "vault",
+        50.0,
+        status="pending",
+        order_id="ORD-VAULT02",
+    )
+    r = client.post(
+        "/billing/vault-charge",
+        headers=_auth(),
+        json={"payment_token_id": "pt_xyz", "order_id": "ORD-VAULT02"},
+    )
+    assert r.status_code == 404
+
+
 def test_vault_tokens_list():
     bind_vault_customer("vault_tester", "c1")
     mock_result = {"tokens": [{"id": "pt_1"}, {"id": "pt_2"}]}
@@ -255,6 +311,39 @@ def test_card_payment_success():
         )
     assert r.status_code == 200
     assert r.json()["status"] == "approved"
+
+
+def test_card_payment_with_order_id_ignores_client_amount():
+    """Regression: same order_id safety rail as vault-charge -- see
+    test_vault_charge_with_order_id_ignores_client_amount."""
+    from market_core import db_create_order
+
+    order = db_create_order(
+        "vault_tester",
+        [{"product_id": "p1", "name": "Leche", "price": 25.0, "store": "wong", "quantity": 1}],
+        "card",
+        25.0,
+        status="pending",
+        order_id="ORD-CARD01",
+    )
+    captured = {}
+
+    async def _capture_charge(token_id, amount, **kwargs):
+        captured["amount"] = amount
+        return {"payment_id": 1, "status": "approved", "card_last_four": "4242"}
+
+    with patch(
+        "market_connectors.mercadopago_payments.create_card_payment",
+        new=_capture_charge,
+        create=True,
+    ):
+        r = client.post(
+            "/checkout/card-payment",
+            headers=_auth(),
+            json={"card_token_id": "ct_tok", "amount": 0.01, "order_id": order["order_id"]},
+        )
+    assert r.status_code == 200
+    assert captured["amount"] == 25.0
 
 
 def test_save_card_success():
