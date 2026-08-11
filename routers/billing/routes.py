@@ -136,13 +136,14 @@ def request_starter_subscription(body: dict, authorization: str | None = Header(
         if not email or not _EMAIL_RE.match(email):
             raise HTTPException(status_code=400, detail="valid email is required")
 
-        username = (body.get("username") or "").strip()
-        if authorization:
-            try:
-                username = require_user(authorization)
-            except HTTPException:
-                if not username:
-                    raise
+        # username is derived ONLY from a validated Authorization header, never
+        # from the request body -- a body-supplied username let an
+        # unauthenticated caller bind an arbitrary victim's username to their
+        # own email here (require_user's failure was swallowed whenever the
+        # body also carried a username), creating a subscription request an
+        # ops reviewer could approve without any account-takeover signal.
+        # Confirmed by Cursor security scan 2026-08-07, fixed 2026-08-11.
+        username = require_user(authorization) if authorization else ""
 
         return process_starter_subscription_request(
             email=email,

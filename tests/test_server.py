@@ -631,6 +631,34 @@ def test_request_starter_creates_subscription_request(monkeypatch):
     assert "pro-checkout" in data["payment_link"]
 
 
+def test_request_starter_ignores_spoofed_username_without_auth(monkeypatch):
+    """Regression: an unauthenticated caller must not be able to bind an
+    arbitrary victim username to their own email via the body's "username"
+    field -- the account-takeover surface flagged by the 2026-08-07 Cursor
+    scan. Without a valid Authorization header, the request must be recorded
+    under a username derived from the caller's own email, never the
+    attacker-supplied one."""
+    monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
+    captured = {}
+
+    def _fake_send(**kw):
+        captured.update(kw)
+        return {"sent": True, "to": kw["to_email"]}
+
+    monkeypatch.setattr("routers.billing.activation._send_starter_payment_email", _fake_send)
+    monkeypatch.setattr(
+        "market_connectors.email_outbound.send_starter_request_notify",
+        lambda **kw: {"sent": True},
+    )
+    r = client.post(
+        "/billing/request-starter",
+        json={"email": "attacker@test.com", "lang": "en", "username": "victim_username"},
+    )
+    assert r.status_code == 200
+    assert r.json()["username"] != "victim_username"
+    assert captured.get("username") != "victim_username"
+
+
 def test_request_pro_creates_subscription_request(monkeypatch):
     monkeypatch.setattr("server_deps.check_rate_limit", lambda _ip: None)
     monkeypatch.setattr(
