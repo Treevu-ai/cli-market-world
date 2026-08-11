@@ -61,18 +61,25 @@ def _auth():
     return {"Authorization": "Bearer test-token-123"}
 
 
+_TEST_PRODUCT_ID = "p1-checkout-test"
+
+
 def _add_cart():
     # _prepare_pending_order now runs pre_checkout_validate against the live
     # price_snapshots table before charging (2026-08-11 checkout price-bypass
     # fix) — a bare cart/add with no matching snapshot gets rejected as
     # missing_snapshot (409), so seed one matching this cart's price exactly.
+    # product_id is namespaced (not the generic "p1") because price_snapshots
+    # is never cleared between test files -- a plain "p1"/"wong" row here
+    # collided with test_server.py::test_intel_inflation_with_snapshot_rows's
+    # own unguarded INSERT for the same key, breaking test-pg CI (2026-08-11).
     db = get_db()
     db.execute(
         """INSERT OR IGNORE INTO price_snapshots
            (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
         (
-            "p1", "wong", "Wong", "Leche", 5.0, "PEN", "supermercados", 100,
+            _TEST_PRODUCT_ID, "wong", "Wong", "Leche", 5.0, "PEN", "supermercados", 100,
             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         ),
     )
@@ -81,7 +88,7 @@ def _add_cart():
     client.post(
         "/cart/add",
         headers=_auth(),
-        json={"product_id": "p1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1},
+        json={"product_id": _TEST_PRODUCT_ID, "name": "Leche", "price": 5.0, "store": "wong", "quantity": 1},
     )
 
 
@@ -95,7 +102,7 @@ def test_checkout_rejects_tampered_cart_price():
            (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
         (
-            "p-real", "wong", "Wong", "Aceite Primor 900ml", 50.0, "PEN", "supermercados", 100,
+            "p-real-checkout-test", "wong", "Wong", "Aceite Primor 900ml", 50.0, "PEN", "supermercados", 100,
             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         ),
     )
@@ -104,7 +111,13 @@ def test_checkout_rejects_tampered_cart_price():
     client.post(
         "/cart/add",
         headers=_auth(),
-        json={"product_id": "p-real", "name": "Aceite Primor 900ml", "price": 0.01, "store": "wong", "quantity": 1},
+        json={
+            "product_id": "p-real-checkout-test",
+            "name": "Aceite Primor 900ml",
+            "price": 0.01,
+            "store": "wong",
+            "quantity": 1,
+        },
     )
     r = client.post("/checkout/yape", headers=_auth())
     assert r.status_code == 409
