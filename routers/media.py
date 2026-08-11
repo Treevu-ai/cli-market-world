@@ -26,7 +26,7 @@ from fastapi import APIRouter, File, Header, HTTPException, UploadFile
 import re
 
 from market_core import get_db
-from market_security import validate_public_http_url
+from market_security import pinned_request_kwargs
 from server_deps import require_api_key
 
 _PRICE_RE = re.compile(r"(\d[\d.,]*)")
@@ -117,11 +117,11 @@ def _match_ocr_against_moat(ocr_text: str) -> dict:
 
 async def _fetch_public_url(url: str) -> bytes:
     try:
-        safe_url = validate_public_http_url(url)
+        pinned_url, kwargs = pinned_request_kwargs(url)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
-        r = await client.get(safe_url)
+        r = await client.get(pinned_url, **kwargs)
         if r.status_code != 200:
             raise HTTPException(
                 status_code=400,

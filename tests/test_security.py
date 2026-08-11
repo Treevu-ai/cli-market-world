@@ -103,6 +103,25 @@ def test_validate_public_http_url_rejects_credentials():
         validate_public_http_url("https://user:pass@example.com/hook")
 
 
+def test_pinned_request_kwargs_targets_validated_ip_not_hostname(monkeypatch):
+    """Regression for the DNS-rebinding TOCTOU (Cursor scan 2026-08-07):
+    validate_public_http_url() resolved the hostname once to check it isn't
+    private, but the actual httpx request re-resolved the same hostname at
+    connect time -- an attacker's nameserver can answer those two lookups
+    differently (public IP for the check, 169.254.169.254 for the connect).
+    pinned_request_kwargs() must return a URL whose host is literally the
+    validated IP, with the original hostname preserved only in the Host
+    header / sni_hostname extension (so TLS still validates and virtual
+    hosting still routes) -- never left for the HTTP client to re-resolve."""
+    import market_security
+
+    monkeypatch.setattr(market_security, "_resolve_host_ips", lambda host: ["93.184.216.34"])
+    pinned_url, kwargs = market_security.pinned_request_kwargs("https://example.com/webhook")
+    assert pinned_url == "https://93.184.216.34/webhook"
+    assert kwargs["headers"]["Host"] == "example.com"
+    assert kwargs["extensions"]["sni_hostname"] == "example.com"
+
+
 def test_alert_webhook_blocks_loopback():
     db_save_user("ent-ssrf", hash_password("market"), "ent@test.com")
     from market_billing import db_set_subscription

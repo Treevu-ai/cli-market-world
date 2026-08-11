@@ -102,6 +102,20 @@ def _resolve_host_ips(hostname: str) -> list[str]:
 
 def validate_public_http_url(url: str) -> str:
     """Validate and return a safe public HTTPS URL. Raises ValueError if invalid."""
+    return _validate_and_pin_public_http_url(url)[0]
+
+
+def _validate_and_pin_public_http_url(url: str) -> tuple[str, str, str]:
+    """Validate url and return (url, host, pinned_ip).
+
+    Callers that actually fetch the URL must connect to `pinned_ip` (not
+    re-resolve `host`) -- see pinned_request_kwargs(). Resolving once here
+    to check for a private/metadata IP and then letting the HTTP client
+    resolve `host` again at connect time is a DNS-rebinding TOCTOU: an
+    attacker's nameserver can answer the check-time lookup with a public IP
+    and the connect-time lookup (moments later) with 169.254.169.254 or
+    similar. Confirmed by Cursor security scan 2026-08-07.
+    """
     url = url.strip()
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
@@ -119,14 +133,37 @@ def validate_public_http_url(url: str) -> str:
     if parsed.username or parsed.password:
         raise ValueError(f"URL must not include credentials: {url!r}")
 
-    for ip in _resolve_host_ips(host):
+    resolved_ips = _resolve_host_ips(host)
+    for ip in resolved_ips:
         if _is_private_ip(ip):
             raise ValueError(f"Non-public or not allowed URL: {url!r}")
 
     if not _SAFE_URL_RE.match(url):
         raise ValueError(f"URL contains invalid characters: {url!r}")
 
-    return url
+    return url, host, resolved_ips[0]
+
+
+def pinned_request_kwargs(url: str) -> tuple[str, dict]:
+    """Validate url and return (pinned_url, kwargs) safe to pass to httpx.
+
+    pinned_url swaps the hostname for the already-validated IP so the HTTP
+    client cannot re-resolve DNS at connect time (see
+    _validate_and_pin_public_http_url). kwargs carries the Host header
+    (so virtual-hosted origins still route correctly) and the sni_hostname
+    extension (so TLS SNI and certificate hostname checks still target the
+    real domain, not the IP).
+    """
+    url, host, ip = _validate_and_pin_public_http_url(url)
+    parsed = urlparse(url)
+    netloc = f"[{ip}]" if ":" in ip else ip
+    if parsed.port:
+        netloc += f":{parsed.port}"
+    pinned_url = parsed._replace(netloc=netloc).geturl()
+    return pinned_url, {
+        "headers": {"Host": host},
+        "extensions": {"sni_hostname": host},
+    }
 
 
 _REDIRECT_HOST_ALLOWLIST = (
@@ -164,9 +201,9 @@ def validate_cli_market_redirect_url(url: str, default: str) -> str:
 
 def safe_post_json(url: str, payload: dict, *, timeout: float = 15.0) -> httpx.Response:
     """POST JSON to a user-supplied URL after SSRF validation."""
-    safe_url = validate_public_http_url(url)
+    pinned_url, kwargs = pinned_request_kwargs(url)
     with httpx.Client(timeout=timeout, follow_redirects=False) as client:
-        return client.post(safe_url, json=payload)
+        return client.post(pinned_url, json=payload, **kwargs)
 
 
 def patch_alert_webhook_dispatch() -> None:
