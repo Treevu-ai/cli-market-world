@@ -40,8 +40,13 @@ def _verify_slack_signature(body: bytes, timestamp: str, signature: str, secret:
 
 
 def _slack_activation_allowed(slack_user_id: str) -> bool:
+    # Fail closed, matching require_admin's posture on the rest of the admin
+    # surface (503 "disabled" when MARKET_API_TOKEN is unset) -- this used to
+    # return True here, meaning an unset admin token gave *any* Slack user in
+    # the workspace free Pro/Procure activation via block_actions instead of
+    # disabling the feature. Confirmed by Cursor security scan, fixed 2026-08-11.
     if not DEFAULT_TOKEN:
-        return True
+        return False
     allowed = {
         u.strip()
         for u in os.getenv("SLACK_ACTIVATE_PRO_USERS", "").split(",")
@@ -110,7 +115,10 @@ async def slack_interactions(request: Request):
             "text": f"Ref inválida: `{request_id}`",
         }
 
-    if DEFAULT_TOKEN and not _slack_activation_allowed(user_id):
+    # No "DEFAULT_TOKEN and" prefix -- that short-circuited this whole check
+    # to skipped (not denied) whenever the admin token was unset, the same
+    # fail-open bug as inside _slack_activation_allowed itself.
+    if not _slack_activation_allowed(user_id):
         return _slack_activation_denied_response()
 
     if _is_procure_subscription_request_id(request_id):
@@ -161,7 +169,7 @@ async def slack_interactions(request: Request):
 
 def _handle_activate_user_pro(action: dict, slack_user_id: str) -> dict:
     """Activate Pro directly by username (triggered from registration card)."""
-    if DEFAULT_TOKEN and not _slack_activation_allowed(slack_user_id):
+    if not _slack_activation_allowed(slack_user_id):
         return {
             "response_type": "ephemeral",
             "text": "No autorizado para activar Pro desde Slack.",

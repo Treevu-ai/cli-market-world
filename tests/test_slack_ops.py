@@ -135,6 +135,23 @@ def test_slack_empty_allowlist_blocked_in_production(monkeypatch):
     assert "autorizado" in data.get("text", "").lower()
 
 
+def test_slack_empty_token_fails_closed_not_open(monkeypatch):
+    """Regression: DEFAULT_TOKEN unset used to mean "skip the allowlist
+    check entirely" (fail-open) instead of denying, so any Slack user in
+    the workspace got free Pro/Procure activation whenever the admin token
+    was misconfigured -- the rest of the admin surface (require_admin)
+    fails closed in that same situation. Confirmed by Cursor security scan,
+    fixed 2026-08-11."""
+    import routers.slack_ops as _slack_mod
+
+    monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
+    monkeypatch.setattr(_slack_mod, "DEFAULT_TOKEN", "")
+    body = _slack_body(value="PRO-ABCD1234")
+    data = _post_slack(body, monkeypatch)
+    assert data.get("response_type") == "ephemeral"
+    assert "autorizado" in data.get("text", "").lower()
+
+
 def test_slack_valid_pro_ref_not_found_returns_ephemeral(monkeypatch):
     monkeypatch.delenv("SLACK_ACTIVATE_PRO_USERS", raising=False)
     body = _slack_body(value="PRO-NOTFOUND")
