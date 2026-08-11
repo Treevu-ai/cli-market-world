@@ -28,6 +28,7 @@ from market_core import (
     db_get_orders,
     get_db,
 )
+from pre_checkout_validate import pre_checkout_validate
 from server_deps import require_pro, require_user
 from market_core import user_can_checkout
 
@@ -61,7 +62,14 @@ def checkout(body: CheckoutRequest, authorization: str | None = Header(None)):
     cart = db_get_cart(username)
     if not cart:
         raise HTTPException(status_code=400, detail="Carrito vacío")
-    total = round(sum(i["price"] * i["quantity"] for i in cart), 2)
+    # Charge the server-validated price, not the client-supplied cart price --
+    # this legacy path reintroduced the 2026-08-11 checkout price-bypass bug
+    # (routers/checkout/routes.py) since /cart/add's price field is
+    # caller-controlled. Confirmed by security audit 2026-08-11.
+    result = pre_checkout_validate(username, cart)
+    if not result.ok:
+        raise HTTPException(status_code=409, detail=result.to_dict())
+    total = result.validated_total
     order = db_create_order(username, cart, body.payment_method, total)
     db_clear_cart(username)
     return {"message": "Compra completada", "order": order}

@@ -50,6 +50,29 @@ def _grant_admin_pro():
 
     market_billing.db_set_subscription("admin", "pro")
 
+
+def _seed_snapshot(product_id, store, price, store_name=None, name="Producto test"):
+    """Checkout now runs pre_checkout_validate against price_snapshots before
+    charging (2026-08-11 price-bypass fix) -- seed a fresh matching row so
+    legacy fixture product_ids ("prod-1", etc.) pass validation at the price
+    the test expects to be charged."""
+    from datetime import datetime, timezone
+    from market_core import get_db
+
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
+        (
+            product_id, store, store_name or store.title(), name, price, "PEN", "supermercados", 100,
+            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+    )
+    db.commit()
+    db.close()
+
+
 def test_root():
     r = client.get("/")
     assert r.status_code == 200
@@ -145,6 +168,8 @@ def test_checkout_empty_cart():
 
 def test_checkout_success():
     _grant_admin_pro()
+    _seed_snapshot("prod-1", "wong", 5.0, name="Leche")
+    _seed_snapshot("prod-2", "metro", 3.0, name="Pan")
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -159,6 +184,7 @@ def test_checkout_success():
 
 def test_orders_after_checkout():
     _grant_admin_pro()
+    _seed_snapshot("prod-1", "wong", 5.0, name="Leche")
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -170,6 +196,7 @@ def test_orders_after_checkout():
 
 def test_reorder():
     _grant_admin_pro()
+    _seed_snapshot("prod-1", "wong", 5.0, name="Leche")
     client.post("/cart/add", headers={"Authorization": "Bearer test-token-123"}, json={
         "product_id": "prod-1", "name": "Leche", "price": 5.0, "store": "wong", "quantity": 2
     })
@@ -469,6 +496,54 @@ def test_paypal_webhook_payment_capture_marks_order_paid():
     row = db.execute("SELECT status FROM app_orders WHERE order_id=?", ("ORD-TEST01",)).fetchone()
     db.close()
     assert row["status"] == "paid"
+
+
+def test_legacy_checkout_rejects_tampered_cart_price(monkeypatch):
+    """Regression: POST /checkout (MARKET_LEGACY_CHECKOUT=1) reintroduced the
+    2026-08-11 checkout price-bypass bug on its own code path -- it summed
+    the client-controlled cart price directly instead of running
+    pre_checkout_validate like routers/checkout/routes.py does. Confirmed by
+    security audit 2026-08-11."""
+    from datetime import datetime, timezone
+    from market_core import db_set_subscription, get_db
+
+    monkeypatch.setenv("MARKET_LEGACY_CHECKOUT", "1")
+    db_set_subscription("admin", "pro")
+    db = get_db()
+    db.execute(
+        """INSERT OR IGNORE INTO price_snapshots
+           (product_id, store, store_name, name, price, currency, line, line_name, stock, queried_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Supermercados', ?, ?)""",
+        (
+            "p-legacy-checkout-test", "wong", "Wong", "Aceite Primor 900ml", 50.0, "PEN", "supermercados", 100,
+            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+    )
+    db.commit()
+    db.close()
+    client.post(
+        "/cart/add",
+        headers={"Authorization": "Bearer test-token-123"},
+        json={
+            "product_id": "p-legacy-checkout-test",
+            "name": "Aceite Primor 900ml",
+            "price": 0.01,
+            "store": "wong",
+            "quantity": 1,
+        },
+    )
+    r = client.post("/checkout", headers={"Authorization": "Bearer test-token-123"}, json={})
+    assert r.status_code == 409
+    assert r.json()["detail"]["validated_total"] == 50.0
+
+
+def test_hubspot_webhook_requires_admin_token():
+    """Regression: POST /billing/hubspot-webhook forwarded any anonymous
+    caller's payload straight to the n8n → HubSpot/Slack CRM sync, letting
+    an attacker fabricate fake subscription-activated events. Confirmed by
+    security audit 2026-08-11."""
+    r = client.post("/billing/hubspot-webhook", json={"event_type": "subscription_activated"})
+    assert r.status_code in (401, 503)
 
 
 def test_checkout_yape_requires_pro_without_legacy(monkeypatch):

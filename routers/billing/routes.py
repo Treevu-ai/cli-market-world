@@ -48,7 +48,7 @@ from routers.billing.pro_helpers import (
     procure_mp_checkout_enabled,
     wallet_manual_fallback_enabled,
 )
-from server_deps import check_rate_limit, require_user
+from server_deps import check_rate_limit, require_admin, require_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
@@ -1593,12 +1593,17 @@ async def billing_reconcile(authorization: str | None = Header(None), lang: str 
 
 
 @router.post("/billing/hubspot-webhook")
-async def billing_hubspot_webhook(body: dict):
+async def billing_hubspot_webhook(body: dict, authorization: str | None = Header(None)):
     """Trigger n8n workflow → HubSpot deal update on billing events.
 
-    This endpoint receives billing events (subscription activated, payment completed)
-    and forwards them to n8n for CRM sync. The n8n workflow then updates HubSpot
-    deals and sends Slack notifications.
+    This is an internal trigger, called by our own billing code when a real
+    event happens -- not an inbound webhook from HubSpot/n8n, despite the
+    name. It had no auth at all, so anyone could POST a fabricated
+    "subscription_activated" event with an arbitrary email/username/amount
+    and have it land in HubSpot as a real deal plus a Slack "payment
+    confirmed" notification ops might act on. Gated behind require_admin
+    like the rest of the ops-trigger surface. Confirmed by security audit
+    2026-08-11.
 
     Expected payload:
     {
@@ -1611,6 +1616,7 @@ async def billing_hubspot_webhook(body: dict):
         "currency": "USD"
     }
     """
+    require_admin(authorization)
     try:
         n8n_webhook_url = os.getenv("N8N_BILLING_WEBHOOK_URL")
         if not n8n_webhook_url:
