@@ -2,6 +2,16 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-11] — Add El Surco (agro, MX)
+
+**cli-market-core** (released as `1.12.24`)
+- `elsurco_mx` is the second store in the `agro` line — config-only
+  addition, reuses the existing `shopify` connector. Live-verified
+  `/products.json` with real non-zero MXN prices (herbicides,
+  fertilizers, farm equipment).
+
+Bumped `cli-market-core` pin to `1.12.24` in `requirements.txt`.
+
 ## [2026-08-10] — Disable oosterumleder_nl (JS-challenge block)
 
 **cli-market-core** (released as `1.12.23`)
