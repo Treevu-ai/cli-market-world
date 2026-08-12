@@ -2,6 +2,22 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-12] — Fix `market ask`/`market compare` intent routing and relevance ranking
+
+**cli-market-world** (released as `1.11.46`)
+- `/agent/ask` classified any "compara"/"comparar" prompt as a single-SKU
+  compare and forwarded the whole free-text sentence to `/products/compare`,
+  which OR-matches individual query tokens against product names. Basket-style
+  prompts ("canasta basica para peru") matched unrelated products on generic
+  words ("canasta", "para") instead of the intended basic-basket comparison.
+  Now routes "canasta basica"/"canasta familiar"/"combinacion de canasta"
+  prompts to the canonical basket snapshot (`GET /v1/basket`, now with
+  optional `country` filtering) instead.
+- `/products/compare` sorted matches by price alone, so a multi-token query
+  like "aceite vegetal primor" let a cheap off-brand product matching only
+  1 of 3 tokens outrank the actual brand match. `_fuzzy_compare` now sorts by
+  query-token match count before price.
+
 ## [2026-08-11] — Add El Surco (agro, MX)
 
 **cli-market-core** (released as `1.12.24`)
