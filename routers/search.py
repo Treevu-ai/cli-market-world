@@ -41,6 +41,7 @@ from market_core.product_search import (
     is_relevant as _is_relevant,
     normalize_text as _normalize_text,  # noqa: F401 - re-exported for routers/analytics.py
     query_tokens as _query_tokens,
+    word_set as _word_set,
 )
 from server_deps import check_rate_limit, require_api_key, require_pro
 
@@ -392,7 +393,9 @@ def _match_key(p: dict) -> str:
     return f"{brand.lower()}|{name}"
 
 
-def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> list[dict]:
+def _fuzzy_compare(
+    all_products: dict[str, list[dict]], stores: list[str], q_tokens: list[str] | None = None
+) -> list[dict]:
     """Cross-store brand+name fuzzy matching, shared by the DB and live compare paths."""
     key_index: dict[str, dict] = {}
     for store, prods in all_products.items():
@@ -426,6 +429,7 @@ def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> li
                     matched_b.add(best_kb)
 
     growth_stores = _growth_store_set()
+    q_token_set = set(q_tokens or [])
     comparison: list[dict] = []
     for _k, sp in key_index.items():
         if len(sp) >= 1:
@@ -436,6 +440,14 @@ def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> li
                 # first" stays true regardless of who's paying.
                 best = min(prices, key=lambda s: (prices[s], 0 if s in growth_stores else 1))
                 rep = sp[list(sp.keys())[0]]
+                # How many query tokens this product's name actually matches.
+                # Multi-token queries like "aceite vegetal primor" OR-match
+                # any single token (see is_relevant require_all=False docstring),
+                # so a cheap tuna-in-oil can ("aceite" + "vegetal") would
+                # otherwise outrank the actual Primor oil bottle on price
+                # alone. Sorting by match count first keeps the most relevant
+                # matches on top; price still breaks ties within that tier.
+                match_count = len(q_token_set & _word_set(rep["name"])) if q_token_set else 0
                 comparison.append(
                     {
                         "name": rep["name"],
@@ -443,12 +455,16 @@ def _fuzzy_compare(all_products: dict[str, list[dict]], stores: list[str]) -> li
                         "prices": prices,
                         "best_store": best,
                         "best_price": prices[best],
+                        "_match_count": match_count,
                     }
                 )
     comparison.sort(key=lambda x: (
+        -x["_match_count"],
         x["best_price"],
         0 if x.get("best_store") in growth_stores else 1,
     ))
+    for entry in comparison:
+        del entry["_match_count"]
     return comparison
 
 
@@ -499,7 +515,7 @@ def _compare_products_db(body: SearchRequest) -> dict:
             continue
         all_products.setdefault(row["store"], []).append(row)
 
-    payload["comparison"] = _fuzzy_compare(all_products, stores)
+    payload["comparison"] = _fuzzy_compare(all_products, stores, q_tokens=q_tokens)
     payload["stores_compared"] = len(all_products)
     return _attach_source_health(payload, list(all_products.keys()) or stores)
 
@@ -518,7 +534,7 @@ async def _compare_products_live(body: SearchRequest) -> dict:
             except Exception:
                 pass
 
-    comparison = _fuzzy_compare(all_products, stores)
+    comparison = _fuzzy_compare(all_products, stores, q_tokens=_query_tokens(body.query))
     payload: dict = {"query": body.query, "comparison": comparison, "stores_compared": len(all_raw)}
     if body.country:
         payload["country"] = body.country.strip().upper()

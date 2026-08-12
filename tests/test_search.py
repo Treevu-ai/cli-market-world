@@ -138,6 +138,44 @@ def test_search_stores_resolved_zero_for_unknown_country():
     assert r.json()["stores_resolved"] == 0
 
 
+def test_fuzzy_compare_ranks_full_token_match_over_cheaper_partial_match():
+    """Regression: "aceite vegetal primor" OR-matched (require_all=False,
+    the /products/compare default) any product containing just "aceite" +
+    "vegetal", so a cheap tuna-in-oil can outranked the actual Primor oil
+    bottle on price alone and buried it past the CLI's top-5 cutoff.
+    Matching more query tokens should now win the tiebreak before price."""
+    from routers.search import _fuzzy_compare, _query_tokens
+
+    all_products = {
+        "storeA": [
+            {"name": "Filete de Atún CAMPOMAR en Aceite Vegetal Lata 150g", "brand": "CAMPOMAR", "price": 4.9},
+            {"name": "Aceite Vegetal PRIMOR Botella 900ml", "brand": "PRIMOR", "price": 6.9},
+        ],
+    }
+    q_tokens = _query_tokens("aceite vegetal primor")
+
+    comparison = _fuzzy_compare(all_products, ["storeA"], q_tokens=q_tokens)
+
+    assert comparison[0]["name"] == "Aceite Vegetal PRIMOR Botella 900ml"
+
+
+def test_fuzzy_compare_without_q_tokens_still_sorts_by_price():
+    """No regression for callers that don't pass q_tokens (e.g. future
+    callers) -- falls back to pure price sort."""
+    from routers.search import _fuzzy_compare
+
+    all_products = {
+        "storeA": [
+            {"name": "Producto caro", "brand": "", "price": 9.9},
+            {"name": "Producto barato", "brand": "", "price": 1.5},
+        ],
+    }
+
+    comparison = _fuzzy_compare(all_products, ["storeA"])
+
+    assert comparison[0]["name"] == "Producto barato"
+
+
 def test_search_exposes_snapshot_identity_and_observation_when_available():
     import routers.search as search_mod
     from price_snapshots_schema import ensure_canonical_product_id_column
