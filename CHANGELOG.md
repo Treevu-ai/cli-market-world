@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-12] — Fix moat_freshness denominator not scoped by line
+
+**cli-market-core** (released as `1.12.26`)
+- `compute_moat_freshness`/`_compute_snapshot_kpis` divided a line-scoped
+  numerator (fresh stores for that line) by the country's entire
+  multi-line store catalog, producing a `data_confidence` score that
+  disagreed sharply with the unscoped cached indicator for the same
+  country/moment (observed: 20% vs 82.5% for PE). Denominator now scoped
+  by line to match.
+
+Bumped `cli-market-core` pin to `1.12.26` in `requirements.txt`.
+
 ## [2026-08-12] — Stop demo sessions from paging #revenue-funnel Slack
 
 **cli-market-world** (released as `1.12.7`)
