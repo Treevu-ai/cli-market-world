@@ -1,0 +1,271 @@
+{
+  "name": "Demo Booking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "demo-booking-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "deal_id",
+              "value": "={{ $json.body.deal_id }}",
+              "type": "string"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "name": "product_line",
+              "value": "={{ $json.body.product_line }}",
+              "type": "string"
+            },
+            {
+              "name": "calendar_link",
+              "value": "={{ $json.body.calendar_link || 'https://calendly.com/your-calendar' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "extract-data",
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "procure-check",
+              "leftValue": "={{ $json.product_line }}",
+              "rightValue": "Procure",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-product-line",
+      "name": "Check Product Line",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pre-demo checklist for Procure\nconst productId = $input.item.json.product_line;\n\nconst checklist = {\n  'Procure Starter': [\n    '✅ Verify moat health (make gate-remote)',\n    '✅ Prepare horeca basket example',\n    '✅ Set up demo environment',\n    '✅ Prepare pricing comparison'\n  ],\n  'Procure Pro': [\n    '✅ Verify moat health (make gate-remote)',\n    '✅ Prepare approval workflow demo',\n    '✅ Set up demo environment',\n    '✅ Prepare checkout demo (optional)'\n  ],\n  'CLI Market Pro': [\n    '✅ Verify API documentation',\n    '✅ Prepare MCP tools demo',\n    '✅ Set up CLI demo environment'\n  ],\n  'Intelligence': [\n    '✅ Prepare latest Price Pulse report',\n    '✅ Verify commodity spread data',\n    '✅ Prepare market analysis demo'\n  ]\n};\n\nconst items = checklist[productId] || ['✅ General demo preparation'];\n\nreturn {\n  json: {\n    checklist: items,\n    calendar_link: $input.item.json.calendar_link\n  }\n};"
+      },
+      "id": "prepare-checklist",
+      "name": "Prepare Checklist",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fallback checklist for other products\nreturn {\n  json: {\n    checklist: ['✅ General demo preparation'],\n    calendar_link: $input.item.json.calendar_link\n  }\n};"
+      },
+      "id": "fallback-checklist",
+      "name": "Fallback Checklist",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "update",
+        "dealId": "={{ $node[\"Extract Data\"].json.deal_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "dealstage",
+              "value": "demo_booked"
+            }
+          ]
+        }
+      },
+      "id": "update-hubspot-deal",
+      "name": "Update HubSpot Deal",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format Slack notification\nconst checklist = $input.item.json.checklist;\nconst calendarLink = $input.item.json.calendar_link;\nconst email = $node[\"Extract Data\"].json.email;\nconst dealId = $node[\"Extract Data\"].json.deal_id;\n\nconst checklistText = checklist.map(item => `• ${item}`).join('\\n');\n\nreturn {\n  json: {\n    channel: '#command-control',\n    text: `📅 Demo Booked: ${email}`,\n    blocks: [\n      {\n        type: 'header',\n        text: {\n          type: 'plain_text',\n          text: '📅 Demo Booked'\n        }\n      },\n      {\n        type: 'section',\n        fields: [\n          {\n            type: 'mrkdwn',\n            text: `*Email:*\\n${email}`\n          },\n          {\n            type: 'mrkdwn',\n            text: `*Deal ID:*\\n${dealId}`\n          }\n        ]\n      },\n      {\n        type: 'section',\n        text: {\n          type: 'mrkdwn',\n          text: `*Pre-demo Checklist:*\\n${checklistText}`\n        }\n      },\n      {\n        type: 'actions',\n        elements: [\n          {\n            type: 'button',\n            text: {\n              type: 'plain_text',\n              text: 'Calendar Link'\n            },\n            url: calendarLink\n          },\n          {\n            type: 'button',\n            text: {\n              type: 'plain_text',\n              text: 'View in HubSpot'\n            },\n            url: `https://app.hubspot.com/contacts/YOUR_PORTAL/deal/${dealId}`\n          }\n        ]\n      }\n    ]\n  }\n};"
+      },
+      "id": "format-slack-notification",
+      "name": "Format Slack Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.channel }}",
+        "text": "={{ $json.text }}",
+        "blocks": "={{ $json.blocks }}",
+        "otherOptions": {}
+      },
+      "id": "post-to-slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1450, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"ok\", \"deal_stage\": \"demo_booked\" } }}"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Check Product Line",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Product Line": {
+      "main": [
+        [
+          {
+            "node": "Prepare Checklist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Checklist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Checklist": {
+      "main": [
+        [
+          {
+            "node": "Update HubSpot Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback Checklist": {
+      "main": [
+        [
+          {
+            "node": "Update HubSpot Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update HubSpot Deal": {
+      "main": [
+        [
+          {
+            "node": "Format Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Slack": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-08-04T00:00:00.000Z",
+  "versionId": "1"
+}

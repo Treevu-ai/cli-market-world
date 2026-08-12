@@ -390,6 +390,24 @@ jobs:
             exit 1
           fi
 
+  sales-digest:
+    needs: product-briefing
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post sales digest to Slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_VENTAS: ${{ vars.SLACK_CHANNEL_VENTAS || secrets.SLACK_CHANNEL_VENTAS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ] || [ -z "${SLACK_CHANNEL_VENTAS:-}" ]; then
+            echo "::warning::Slack ventas not configured — skipping sales digest"
+            exit 0
+          fi
+          CODE=$(python3 ops/sales_funnel_digest.py --hours 24 --slack 2>&1 | tail -1 || true)
+          echo "$CODE"
+
   index-backfill:
     needs: indicators-refresh
     runs-on: ubuntu-latest

@@ -81,6 +81,7 @@ Canales (un propósito por canal):
 | **command-control** | `SLACK_CHANNEL_COMMAND_CONTROL` | Panel founder 1×/día — **salud hub CLI Market** (KPIs + checklist); no outbound hotel |
 | **suscripciones-cli-pro** | `SLACK_CHANNEL_CLI_MARKET_PRO` | Solo `[REVENUE]`: pending / activated / cancelled |
 | **funnel-cli-market** | `SLACK_CHANNEL_FUNNEL` | `[FUNNEL DIGEST]` adopción (registro, checkout) |
+| **ventas-cli-market** | `SLACK_CHANNEL_VENTAS` | `[VENTAS]` pipeline, leads calientes, deals |
 | **publicaciones** | `SLACK_CHANNEL_PUBLICACIONES` | Índice diario GTM por **serie del día** + mix 40/25/25/10 (gate + checklist) |
 | **outbound** | `SLACK_CHANNEL_OUTBOUND` | Solo Procure / compras — sin pip/MCP |
 | **linkedin-personal** | `SLACK_CHANNEL_LINKEDIN_PERSONAL` | Copy LI founder |
@@ -108,6 +109,7 @@ Ritual diario (automático vía **`morning-ops-chain.yml`**, **08:00 PET = 13:00
 4. gtm-preflight → gate + content `check-gate.py` / `status.py`
 5. daily-briefing → `#publicaciones` + copy por red en cada `SLACK_CHANNEL_*` GTM
 6. funnel-digest → `#funnel-cli-market`
+7. sales-digest → `#ventas-cli-market` (leads, pipeline, deals)
 
 Ad-hoc (sin cadena): `workflow_dispatch` en cada workflow individual, o bump `ops/gtm-ci-run.trigger` en `main` (solo GTM preflight + briefing).
 

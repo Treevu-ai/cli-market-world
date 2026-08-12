@@ -1,0 +1,337 @@
+{
+  "name": "Billing to CRM Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "billing-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "billing-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse billing event from CLI Market\nconst event = $input.item.json;\n\n// Extract relevant data\nconst eventType = event.event_type || event.type;\nconst email = event.email || event.payer_email;\nconst username = event.username;\nconst paymentMethod = event.payment_method || 'paypal';\nconst activationReference = event.reference || event.subscription_id || 'N/A';\nconst amount = event.amount || event.amount_paid;\nconst currency = event.currency || 'USD';\n\nreturn {\n  json: {\n    event_type: eventType,\n    email: email,\n    username: username,\n    payment_method: paymentMethod,\n    activation_reference: activationReference,\n    amount: amount,\n    currency: currency,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "parse-billing-event",
+      "name": "Parse Billing Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "subscription-activated",
+              "leftValue": "={{ $json.event_type }}",
+              "rightValue": "subscription_activated",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-event-type",
+      "name": "Check Event Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "resource": "crm",
+        "operation": "search",
+        "search": "={{ $json.email }}",
+        "output": "json",
+        "options": {}
+      },
+      "id": "lookup-contact",
+      "name": "Lookup Contact",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [850, 200],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 10,
+        "filters": {
+          "filters": [
+            {
+              "key": "associations.contact",
+              "value": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "lookup-deals",
+      "name": "Lookup Deals",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the most recent deal that's not already customer\nconst deals = $input.item.json.results || [];\nconst customerStage = 'customer';\n\nconst openDeals = deals.filter(deal => \n  deal.properties.dealstage !== customerStage\n);\n\n// Sort by created date descending\nopenDeals.sort((a, b) => \n  new Date(b.properties.createdate) - new Date(a.properties.createdate)\n);\n\nconst targetDeal = openDeals[0];\n\nif (!targetDeal) {\n  throw new Error('No open deal found for contact');\n}\n\nreturn {\n  json: {\n    deal_id: targetDeal.dealId,\n    current_stage: targetDeal.properties.dealstage,\n    deal_name: targetDeal.properties.dealname\n  }\n};"
+      },
+      "id": "select-target-deal",
+      "name": "Select Target Deal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "update",
+        "dealId": "={{ $json.deal_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "dealstage",
+              "value": "customer"
+            },
+            {
+              "key": "payment_method",
+              "value": "={{ $node[\"Parse Billing Event\"].json.payment_method }}"
+            },
+            {
+              "key": "activation_reference",
+              "value": "={{ $node[\"Parse Billing Event\"].json.activation_reference }}"
+            },
+            {
+              "key": "amount",
+              "value": "={{ $node[\"Parse Billing Event\"].json.amount }}"
+            },
+            {
+              "key": "closedate",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "update-deal-stage",
+      "name": "Update Deal Stage",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [1450, 200],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle non-activation events\nreturn {\n  json: {\n    message: 'Event not processed: ' + $json.event_type,\n    skip: true\n  }\n};"
+      },
+      "id": "skip-event",
+      "name": "Skip Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format Slack notification\nconst dealId = $json.deal_id;\nconst dealName = $json.deal_name;\nconst email = $node[\"Parse Billing Event\"].json.email;\nconst paymentMethod = $node[\"Parse Billing Event\"].json.payment_method;\nconst activationRef = $node[\"Parse Billing Event\"].json.activation_reference;\nconst amount = $node[\"Parse Billing Event\"].json.amount;\nconst currency = $node[\"Parse Billing Event\"].json.currency;\n\nconst emojis = {\n  'paypal': '💳',\n  'mp': '🇦🇷',\n  'yape': '📱',\n  'plin': '📱',\n  'invoice': '📄'\n};\n\nconst emoji = emojis[paymentMethod.toLowerCase()] || '💰';\n\nreturn {\n  json: {\n    channel: '#cli-market-pro',\n    text: `${emoji} Pro Activated: ${email}`,\n    blocks: [\n      {\n        type: 'header',\n        text: {\n          type: 'plain_text',\n          text: `${emoji} Pro Activated`\n        }\n      },\n      {\n        type: 'section',\n        fields: [\n          {\n            type: 'mrkdwn',\n            text: `*Email:*\\n${email}`\n          },\n          {\n            type: 'mrkdwn',\n            text: `*Payment:*\\n${paymentMethod.toUpperCase()}`\n          },\n          {\n            type: 'mrkdwn',\n            text: `*Amount:*\\n${amount} ${currency}`\n          },\n          {\n            type: 'mrkdwn',\n            text: `*Reference:*\\n${activationRef}`\n          }\n        ]\n      },\n      {\n        type: 'section',\n        fields: [\n          {\n            type: 'mrkdwn',\n            text: `*Deal:*\\n${dealName}`\n          },\n          {\n            type: 'mrkdwn',\n            text: `*Deal ID:*\\n${dealId}`\n          }\n        ]\n      },\n      {\n        type: 'actions',\n        elements: [\n          {\n            type: 'button',\n            text: {\n              type: 'plain_text',\n              text: 'View in HubSpot'\n            },\n            url: `https://app.hubspot.com/contacts/YOUR_PORTAL/deal/${dealId}`\n          }\n        ]\n      }\n    ]\n  }\n};"
+      },
+      "id": "format-slack-notification",
+      "name": "Format Slack Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.channel }}",
+        "text": "={{ $json.text }}",
+        "blocks": "={{ $json.blocks }}",
+        "otherOptions": {}
+      },
+      "id": "post-to-slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1850, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"ok\", \"deal_stage\": \"customer\" } }}"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2050, 200]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Billing Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Billing Event": {
+      "main": [
+        [
+          {
+            "node": "Check Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Event Type": {
+      "main": [
+        [
+          {
+            "node": "Lookup Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Contact": {
+      "main": [
+        [
+          {
+            "node": "Lookup Deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Deals": {
+      "main": [
+        [
+          {
+            "node": "Select Target Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Target Deal": {
+      "main": [
+        [
+          {
+            "node": "Update Deal Stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Deal Stage": {
+      "main": [
+        [
+          {
+            "node": "Format Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Event": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Slack": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-08-04T00:00:00.000Z",
+  "versionId": "1"
+}
