@@ -96,6 +96,42 @@ def test_search_query_sanitizes_special_chars():
 
 # ── POST /products/compare ────────────────────────────────────────────────────
 
+def test_search_demo_session_does_not_trigger_revenue_funnel_slack_ping():
+    """Regression: /products/search unconditionally called maybe_first_search
+    (the real #revenue-funnel "contactar ahora" Slack alert, meant for real
+    users with an email on file) even for anonymous demo:* try-before-signup
+    sessions, which have no email -- paging sales on every demo search with
+    nobody to actually contact."""
+    import routers.search as search_mod
+
+    with patch.object(search_mod, "require_api_key", return_value="demo:DS-TEST123"), \
+         patch("market_funnel.maybe_first_search") as mock_maybe_first_search, \
+         patch("market_funnel.record_funnel_event") as mock_record:
+        r = client.post("/products/search", json={"query": "iphone 11"}, headers=_AUTH)
+
+    assert r.status_code == 200
+    mock_maybe_first_search.assert_not_called()
+    mock_record.assert_any_call(
+        "demo_first_tool_call",
+        session_id="DS-TEST123",
+        meta={"tool": "search", "query": "iphone 11", "agent_source": "demo"},
+        dedupe=True,
+    )
+
+
+def test_search_real_user_still_triggers_first_search_funnel_event():
+    """Non-demo users must keep triggering maybe_first_search (the real
+    activation/outreach signal) -- only demo:* sessions are exempt."""
+    import routers.search as search_mod
+
+    with patch.object(search_mod, "require_api_key", return_value="acubatruweb"), \
+         patch("market_funnel.maybe_first_search") as mock_maybe_first_search:
+        r = client.post("/products/search", json={"query": "leche"}, headers=_AUTH)
+
+    assert r.status_code == 200
+    mock_maybe_first_search.assert_called_once_with("acubatruweb", query="leche")
+
+
 def test_compare_no_auth_returns_401():
     r = client.post("/products/compare", json={"query": "leche"})
     assert r.status_code == 401

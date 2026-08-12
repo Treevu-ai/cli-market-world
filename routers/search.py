@@ -189,11 +189,18 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
                 )
             except Exception:
                 pass
-        try:
-            from market_funnel import maybe_first_search
-            maybe_first_search(username, query=body.query)
-        except Exception:
-            pass
+        else:
+            # Demo sessions (anonymous try-before-signup, no email on file)
+            # are tracked above via demo_first_tool_call, which is quiet by
+            # design. maybe_first_search fires the real #revenue-funnel Slack
+            # ping ("contactar ahora si tiene email registrado") -- calling
+            # it unconditionally paged sales on every demo search (e.g.
+            # "demo:DS-A871596C59" / "iphone 11") with nobody to contact.
+            try:
+                from market_funnel import maybe_first_search
+                maybe_first_search(username, query=body.query)
+            except Exception:
+                pass
         return result
     except Exception as e:
         logger.exception("search_products crashed")
