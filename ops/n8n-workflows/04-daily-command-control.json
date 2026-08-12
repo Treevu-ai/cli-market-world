@@ -1,0 +1,361 @@
+{
+  "name": "Daily Command Control",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://cli-market-api.fly.dev/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-cli-market-health",
+      "name": "Fetch CLI Market Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "CLI Market API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cli-market-api.fly.dev/observatory/daily",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-observatory-metrics",
+      "name": "Fetch Observatory Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "CLI Market API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cli-market-api.fly.dev/indicators/daily",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-indicators",
+      "name": "Fetch Indicators",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "CLI Market API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "crm",
+        "operation": "search",
+        "search": "",
+        "output": "json",
+        "options": {}
+      },
+      "id": "fetch-hubspot-leads",
+      "name": "Fetch HubSpot Leads",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [650, 200],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 50,
+        "filters": {
+          "filters": [
+            {
+              "key": "dealstage",
+              "value": "new_lead",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "fetch-hubspot-deals",
+      "name": "Fetch HubSpot Deals",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 50,
+        "filters": {
+          "filters": [
+            {
+              "key": "dealstage",
+              "value": "demo_booked",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "fetch-demo-booked",
+      "name": "Fetch Demo Booked",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [650, 400],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 50,
+        "filters": {
+          "filters": [
+            {
+              "key": "dealstage",
+              "value": "customer",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "fetch-customers",
+      "name": "Fetch Customers",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 1,
+      "position": [650, 500],
+      "credentials": {
+        "hubspotApi": {
+          "id": "1",
+          "name": "HubSpot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate metrics from all sources\nconst health = $input.item.json;\nconst observatory = $input.item.json;\nconst indicators = $input.item.json;\nconst leads = $input.item.json.results || [];\nconst newLeads = $input.item.json.results || [];\nconst demoBooked = $input.item.json.results || [];\nconst customers = $input.item.json.results || [];\n\n// CLI Market metrics\nconst maa = observatory.maa || 0;\nconst activeAgents = observatory.active_agents || 0;\nconst retailers = observatory.retailers_count || 0;\nconst countries = observatory.countries_count || 0;\n\n// Sales metrics\nconst newLeadsCount = newLeads.length;\nconst demoBookedCount = demoBooked.length;\nconst customerCount = customers.length;\n\n// Calculate conversion rates\nconst demoRate = newLeadsCount > 0 ? ((demoBookedCount / newLeadsCount) * 100).toFixed(1) : 0;\nconst customerRate = demoBookedCount > 0 ? ((customerCount / demoBookedCount) * 100).toFixed(1) : 0;\n\n// Revenue estimation (assuming $39 average for Pro)\nconst mrr = customerCount * 39;\n\nreturn {\n  json: {\n    date: new Date().toISOString().split('T')[0],\n    cli_market: {\n      maa: maa,\n      active_agents: activeAgents,\n      retailers: retailers,\n      countries: countries\n    },\n    sales: {\n      new_leads: newLeadsCount,\n      demo_booked: demoBookedCount,\n      customers: customerCount,\n      demo_rate: `${demoRate}%`,\n      customer_rate: `${customerRate}%`\n    },\n    revenue: {\n      mrr: mrr,\n      arr: mrr * 12\n    }\n  }\n};"
+      },
+      "id": "aggregate-metrics",
+      "name": "Aggregate Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format daily briefing for Slack\nconst metrics = $input.item.json;\nconst date = metrics.date;\n\nconst cliMarket = metrics.cli_market;\nconst sales = metrics.sales;\nconst revenue = metrics.revenue;\n\nconst cliMarketSection = [\n  {\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: '*CLI Market Metrics:*'\n    }\n  },\n  {\n    type: 'section',\n    fields: [\n      {\n        type: 'mrkdwn',\n        text: `*MAA:*\\n${cliMarket.maa.toLocaleString()}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Active Agents:*\\n${cliMarket.active_agents.toLocaleString()}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Retailers:*\\n${cliMarket.retailers}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Countries:*\\n${cliMarket.countries}`\n      }\n    ]\n  }\n];\n\nconst salesSection = [\n  {\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: '*Sales Pipeline:*'\n    }\n  },\n  {\n    type: 'section',\n    fields: [\n      {\n        type: 'mrkdwn',\n        text: `*New Leads:*\\n${sales.new_leads}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Demo Booked:*\\n${sales.demo_booked}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Customers:*\\n${sales.customers}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Demo Rate:*\\n${sales.demo_rate}`\n      }\n    ]\n  }\n];\n\nconst revenueSection = [\n  {\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: '*Revenue:*'\n    }\n  },\n  {\n    type: 'section',\n    fields: [\n      {\n        type: 'mrkdwn',\n        text: `*MRR:*\\n$${revenue.mrr.toLocaleString()}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*ARR:*\\n$${revenue.arr.toLocaleString()}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Customer Rate:*\\n${sales.customer_rate}`\n      },\n      {\n        type: 'mrkdwn',\n        text: `*Date:*\\n${date}`\n      }\n    ]\n  }\n];\n\nreturn {\n  json: {\n    channel: '#command-control',\n    text: `📊 Daily Command Control - ${date}`,\n    blocks: [\n      {\n        type: 'header',\n        text: {\n          type: 'plain_text',\n          text: `📊 Daily Command Control - ${date}`\n        }\n      },\n      ...cliMarketSection,\n      {\n        type: 'divider'\n      },\n      ...salesSection,\n      {\n        type: 'divider'\n      },\n      ...revenueSection,\n      {\n        type: 'actions',\n        elements: [\n          {\n            type: 'button',\n            text: {\n              type: 'plain_text',\n              text: 'View HubSpot Pipeline'\n            },\n            url: 'https://app.hubspot.com/contacts/YOUR_PORTAL/pipeline'\n          },\n          {\n            type: 'button',\n            text: {\n              type: 'plain_text',\n              text: 'View CLI Market Stats'\n            },\n            url: 'https://cli-market.dev/stats'\n          }\n        ]\n      }\n    ]\n  }\n};"
+      },
+      "id": "format-daily-briefing",
+      "name": "Format Daily Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.channel }}",
+        "text": "={{ $json.text }}",
+        "blocks": "={{ $json.blocks }}",
+        "otherOptions": {}
+      },
+      "id": "post-to-slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1250, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch CLI Market Health",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Observatory Metrics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Indicators",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch CLI Market Health": {
+      "main": [
+        [
+          {
+            "node": "Fetch HubSpot Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Observatory Metrics": {
+      "main": [
+        [
+          {
+            "node": "Fetch HubSpot Deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Indicators": {
+      "main": [
+        [
+          {
+            "node": "Fetch Demo Booked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch HubSpot Leads": {
+      "main": [
+        [
+          {
+            "node": "Fetch Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch HubSpot Deals": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Demo Booked": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Customers": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Metrics": {
+      "main": [
+        [
+          {
+            "node": "Format Daily Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Daily Briefing": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-08-04T00:00:00.000Z",
+  "versionId": "1"
+}

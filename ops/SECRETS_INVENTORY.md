@@ -1,6 +1,6 @@
 # CLI Market — Secrets Inventory
 
-> Last updated: 2026-06-22  
+> Last updated: 2026-08-10  
 > Scope: cli-market-world + cli-market-core (runtime secrets)
 
 ## Groups
@@ -51,7 +51,7 @@
 ### 5. Auth & API Keys (`auth`)
 | Variable | Required | Where | Notes |
 |---|---|---|---|
-| `MARKET_API_TOKEN` | always | world | Default admin bearer token |
+| `MARKET_API_TOKEN` | always | world | Default admin bearer token. Last rotated 2026-08-03 (see `ops/ROTATION_MANUAL.md`); propagated to Fly, GitHub Actions, and all 9 local MCP clients. |
 | `MARKET_ADMIN_PASSWORD` | prod | world | Admin panel password |
 | `MARKET_USER_TOKEN` | optional | world | User-level token override |
 

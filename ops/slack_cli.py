@@ -11,6 +11,7 @@ Usage:
   python3 ops/slack_cli.py post --revisiones-cursor "Resumen de PR"
   python3 ops/slack_cli.py command-control [--remote] [--dry-run]
   python3 ops/slack_cli.py funnel-digest [--hours 24]
+  python3 ops/slack_cli.py sales-digest [--hours 24]
   python3 ops/slack_cli.py activate-pro PRO-XXXXXXXX [--bitacora]
   # posts to #cli-market-pro by default
   python3 ops/slack_cli.py activate-pro --email cliente@example.com
@@ -223,6 +224,13 @@ def cmd_funnel_digest(*, slack: bool, hours: int) -> int:
     return subprocess.call(args, cwd=ROOT)
 
 
+def cmd_sales_digest(*, slack: bool, hours: int) -> int:
+    args = [sys.executable, str(ROOT / "ops" / "sales_funnel_digest.py"), "--hours", str(hours)]
+    if slack:
+        args.append("--slack")
+    return subprocess.call(args, cwd=ROOT)
+
+
 def cmd_command_control(dry_run: bool, remote: bool, slack: bool, full: bool) -> int:
     args = [sys.executable, str(ROOT / "ops" / "command_control_daily.py")]
     if dry_run:
@@ -305,6 +313,13 @@ def main() -> int:
     p_fd.add_argument("--dry-run", action="store_true", help="Print only; no Slack")
     p_fd.add_argument("--hours", type=int, default=24, help="Lookback window")
 
+    p_sd = sub.add_parser(
+        "sales-digest",
+        help="Sales digest → #ventas-cli-market (leads, pipeline, deals)",
+    )
+    p_sd.add_argument("--dry-run", action="store_true", help="Print only; no Slack")
+    p_sd.add_argument("--hours", type=int, default=24, help="Lookback window")
+
     p_cc = sub.add_parser(
         "command-control",
         help="Founder ops panel → #command-control-cli-market",
@@ -364,6 +379,8 @@ def main() -> int:
         )
     if args.command == "funnel-digest":
         return cmd_funnel_digest(slack=not args.dry_run, hours=args.hours)
+    if args.command == "sales-digest":
+        return cmd_sales_digest(slack=not args.dry_run, hours=args.hours)
     if args.command == "command-control":
         return cmd_command_control(
             dry_run=args.dry_run,

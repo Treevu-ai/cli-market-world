@@ -103,11 +103,20 @@ Dos señales independientes, sobre el schema real (`price_snapshots` +
 `price_history`):
 
 - **Señal A — uniformidad de precio:** CV cross-tienda anormalmente bajo
-  (≤2%) entre ≥2 tiendas para el mismo producto.
+  (umbral estadístico calibrado, ajustable por categoría — no compartir el
+  valor exacto fuera de la reunión, ver nota abajo) entre ≥2 tiendas para el
+  mismo producto.
 - **Señal B — promociones sincronizadas:** ≥2 tiendas iniciando un descuento
-  dentro de una ventana corta (48h), **recurrente** entre el mismo par de
+  dentro de una ventana corta de tiempo, **recurrente** entre el mismo par de
   tiendas (una sola coincidencia no cuenta — evita confundir ruido con
   patrón).
+
+> **Nota de confidencialidad:** los valores exactos de umbral (CV, ventana
+> horaria) están en el código (`ops/market_coordination_detector.py`) y se
+> pueden dar de palabra si preguntan en la reunión, pero no deben quedar en
+> ninguna copia de este documento que pueda circular fuera del salón — si el
+> umbral exacto es público, un actor colusorio puede calibrar su
+> comportamiento justo por debajo de él y evadir la detección.
 
 Un producto se marca "alto riesgo" solo si ambas señales coinciden; "vigilar"
 si solo una. Cada output incluye la nota metodológica: es screening
@@ -131,7 +140,7 @@ nombres dentro de una sola vertical en un solo país).
 
 | Línea | Filas reales en PE | Señal encontrada |
 |---|---|---|
-| **Supermercados** | 101 | ✅ 1 producto en "vigilar" — Leche sin Lactosa UHT LAIVE, Makro vs Plaza Vea, CV=0% |
+| **Supermercados** | 101 | ✅ 1 producto (categoría lácteos) en "vigilar" — 2 tiendas, umbral de Señal A alcanzado |
 | Departamentales | 17 | Ninguna (datos insuficientes) |
 | Belleza | 7 | Ninguna (datos insuficientes) |
 | Electro | 6 | Ninguna (datos insuficientes) |
@@ -140,6 +149,14 @@ nombres dentro de una sola vertical en un solo país).
 | Hogar | 3 | Ninguna (datos insuficientes) |
 | Moda | 3 | Ninguna (datos insuficientes) |
 | Flores y regalos | 2 | Ninguna (datos insuficientes) |
+
+> **Nota de confidencialidad:** el producto y las dos tiendas involucradas en
+> el hallazgo de "vigilar" están identificados internamente (nombre de
+> producto, retailers, CV exacto). Es solo "vigilar" — una señal, no una
+> conclusión de coordinación — así que nombrar retailers reales fuera de un
+> contexto controlado sería injusto para ellos y expondría innecesariamente
+> el umbral de detección. Dar el detalle de palabra en la reunión si lo
+> piden, no dejarlo en copias de este documento que puedan circular.
 
 Solo Supermercados tiene densidad suficiente hoy (múltiples tiendas activas:
 Wong, Metro, Plaza Vea, Makro, Vega). Las demás líneas no tienen aún

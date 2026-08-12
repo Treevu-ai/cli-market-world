@@ -32,6 +32,7 @@ def load_repo_env() -> None:
             "SLACK_CHANNEL_COMMAND_CONTROL",
             "SLACK_CHANNEL_CLI_MARKET_PRO",
             "SLACK_CHANNEL_FUNNEL",
+            "SLACK_CHANNEL_VENTAS",
             "SLACK_SIGNING_SECRET",
             "SLACK_WEBHOOK_FUNNEL",
             "SLACK_WEBHOOK_CLI_MARKET_PRO",
