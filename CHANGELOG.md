@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-12] — Fix items_found exceeding items_total in canasta básica
+
+**cli-market-core** (released as `1.12.25`)
+- `CANASTA_TOTAL_ITEMS` was hardcoded to `10` while `CANASTA_ITEMS` had
+  grown to 11 entries ("verduras" added later without updating the
+  count), so a store matching every canasta category showed
+  `items_found: 11` against `items_total: 10` ("11/10") in
+  `GET /v1/basket` and the dashboard. Both now derive from
+  `len(CANASTA_ITEMS)`.
+
+Bumped `cli-market-core` pin to `1.12.25` in `requirements.txt`.
+
 ## [2026-08-12] — Fix `market ask`/`market compare` intent routing and relevance ranking
 
 **cli-market-world** (released as `1.11.46`)
