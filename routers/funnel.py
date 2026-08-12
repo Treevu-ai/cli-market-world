@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Header, HTTPException
 
 from fastapi.responses import HTMLResponse
@@ -19,6 +21,7 @@ from market_golive import go_live_summary, render_go_live_html
 from server_deps import auth_user, check_rate_limit, require_admin
 
 router = APIRouter(tags=["funnel"])
+logger = logging.getLogger("market.funnel_router")
 
 
 def _trusted_body_username(raw_username: str | None) -> str | None:
@@ -36,6 +39,7 @@ def _trusted_body_username(raw_username: str | None) -> str | None:
         finally:
             db.close()
     except Exception:
+        logger.warning("Failed to validate funnel event username against app_users", exc_info=True)
         return None
     return candidate if row else None
 
