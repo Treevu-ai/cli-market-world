@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-12] — Stop demo sessions from paging #revenue-funnel Slack
+
+**cli-market-world** (released as `1.12.7`)
+- `POST /products/search` logged a quiet `demo_first_tool_call` event for
+  `demo:*` try-before-signup sessions, but then unconditionally also called
+  `maybe_first_search` -- the function that pings `#revenue-funnel`/
+  `#funnel-cli-market` with "[PRIMERA BÚSQUEDA] usuario activo ... contactar
+  ahora si tiene email registrado". Demo sessions have no email on file, so
+  every demo search (e.g. an anonymous `iphone 11` query) paged sales with
+  nobody to actually contact. `maybe_first_search` now only fires for real
+  (non-demo) users.
+
 ## [2026-08-12] — Fix items_found exceeding items_total in canasta básica
 
 **cli-market-core** (released as `1.12.25`)
