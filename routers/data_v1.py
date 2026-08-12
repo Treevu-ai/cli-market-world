@@ -14,12 +14,14 @@ from fastapi import APIRouter, Header, Query
 
 from backend_interface import (
     build_coverage_matrix,
+    get_store_profile,
     query_dispersion,
     query_flagged,
     query_prices,
+    store_exists,
 )
 from market_basket import build_canasta_snapshot
-from market_core import get_db
+from market_core import STORES, get_db, get_default_stores
 from server_deps import require_pro
 
 router = APIRouter(tags=["intelligence"])
@@ -95,6 +97,7 @@ def dispersion_v1(
 @router.get("/v1/basket")
 def basket_snapshot_v1(
     stores: str | None = Query(None, description="Comma-separated store keys"),
+    country: str | None = Query(None, description="ISO country code, e.g. PE"),
     min_items: int = Query(3, ge=1, le=10),
     authorization: str | None = Header(None),
 ):
@@ -102,6 +105,13 @@ def basket_snapshot_v1(
     store_filter = None
     if stores:
         store_filter = {s.strip() for s in stores.split(",") if s.strip()}
+    if country:
+        cc = country.strip().upper()
+        country_stores = {
+            s for s in get_default_stores()
+            if store_exists(s) and (STORES.get(s) or get_store_profile(s) or {}).get("country") == cc
+        }
+        store_filter = (store_filter & country_stores) if store_filter else country_stores
     db = get_db()
     try:
         return build_canasta_snapshot(db, min_items=min_items, store_filter=store_filter)

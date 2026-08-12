@@ -1036,6 +1036,29 @@ def cmd_ask(args):
         console.print(table)
         console.print(f"[dim]market compare \"{query}\" para ver todos los precios[/]")
 
+    elif action == "basket":
+        country = data.get("country")
+        path = f"/v1/basket?country={country}" if country else "/v1/basket"
+        with console.status("[cyan]Comparando canasta básica...[/]"):
+            results = cli_api("GET", path)
+        rows = results.get("stores", [])
+        if not rows:
+            console.print("[yellow]Sin datos de canasta básica disponibles[/]")
+            return
+        table = Table(border_style=ui.TABLE_BORDER, show_header=True)
+        table.add_column("Tienda", max_width=20)
+        table.add_column("Items", justify="right", width=7)
+        table.add_column("Total canasta", style="yellow", justify="right")
+        for row in rows[:10]:
+            table.add_row(
+                row.get("store_name", "?"),
+                f"{row.get('items_found', 0)}/{results.get('items_total', 10)}",
+                fmt_price(row.get("total", 0), row.get("currency", "PEN")),
+            )
+        console.print()
+        console.print(table)
+        console.print("[dim]market basket para ver el detalle por producto[/]")
+
     elif action == "cart":
         cmd_cart(args)
 

@@ -86,6 +86,37 @@ def test_ask_regex_fallback_search_still_works(monkeypatch):
     assert "/products/search" in calls
 
 
+def test_ask_basket_action_renders_store_table(monkeypatch):
+    calls = []
+
+    def fake_api(method, path, body=None):
+        calls.append((method, path))
+        if path == "/agent/ask":
+            return {"action": "basket", "country": "PE", "message": "Comparando canasta básica (PE)..."}
+        if path == "/v1/basket?country=PE":
+            return {
+                "source": "snapshot",
+                "items_total": 10,
+                "stores": [
+                    {"store_name": "Wong", "items_found": 9, "total": 45.5, "currency": "PEN"},
+                    {"store_name": "Plaza Vea", "items_found": 8, "total": 47.2, "currency": "PEN"},
+                ],
+            }
+        return {}
+
+    monkeypatch.setattr(market_cli, "cli_api", fake_api)
+    printed = []
+    monkeypatch.setattr(market_cli.console, "print", lambda *a, **k: printed.append(a[0] if a else ""))
+
+    market_cli.cmd_ask(_args("compara la mejor combinación de canasta basica para peru"))
+
+    assert ("GET", "/v1/basket?country=PE") in calls
+    rendered = "\n".join(str(p) for p in printed)
+    assert "Wong" in rendered or any(
+        isinstance(p, market_cli.Table) for p in printed
+    )
+
+
 def test_ask_surfaces_error(monkeypatch):
     monkeypatch.setattr(
         market_cli, "cli_api", lambda method, path, body=None: {"error": "DATA_GATE_STALE"}

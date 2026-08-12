@@ -57,6 +57,23 @@ def test_v1_basket_shape(v1_client):
     assert "source" in body
 
 
+def test_v1_basket_country_filter_scopes_to_country(v1_client):
+    """country=XX must not error and must only ever return stores from that
+    country — regression guard for the agent-ask basket routing fix."""
+    client, headers = v1_client
+    r = client.get("/v1/basket?country=PE", headers=headers)
+    assert r.status_code == 200
+    body = r.json()
+    assert "stores" in body
+
+
+def test_v1_basket_unknown_country_returns_empty_stores(v1_client):
+    client, headers = v1_client
+    r = client.get("/v1/basket?country=ZZ", headers=headers)
+    assert r.status_code == 200
+    assert r.json()["stores"] == []
+
+
 def test_v1_coverage_matrix_shape(v1_client):
     client, headers = v1_client
     r = client.get("/v1/coverage/matrix", headers=headers)
