@@ -691,6 +691,7 @@ if USE_PG:
 
     async def pg_insert(conn, prod):
         from price_confidence import compute_snapshot_confidence
+        from market_core.market_units import price_per_base_unit
 
         discount = prod.get("discount")
         if discount is not None:
@@ -704,9 +705,16 @@ if USE_PG:
         # `old` reads the pre-upsert price via the statement-start MVCC snapshot
         # (standard Postgres "capture old value across an upsert" pattern), so
         # we can detect a price change without a separate round trip.
+        # `old_hist` mirrors that trick for the last recorded price_history
+        # pack_qty, so a pack-size-only change (shelf price flat) can also be
+        # detected without an extra round trip.
         row = await conn.fetchrow("""
             WITH old AS (
                 SELECT price FROM price_snapshots WHERE product_id=$1 AND store=$7
+            ),
+            old_hist AS (
+                SELECT pack_qty FROM price_history WHERE product_id=$1 AND store=$7
+                ORDER BY recorded_at DESC LIMIT 1
             )
             INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,confidence)
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
@@ -719,7 +727,7 @@ if USE_PG:
                 stock=EXCLUDED.stock,
                 confidence=EXCLUDED.confidence,
                 queried_at=NOW()
-            RETURNING (SELECT price FROM old) AS old_price
+            RETURNING (SELECT price FROM old) AS old_price, (SELECT pack_qty FROM old_hist) AS old_pack_qty
         """, prod["product_id"],prod["name"],prod["brand"],price,list_price,discount,
            prod["store"],prod["store_name"],prod["currency"],prod["line"],prod["line_name"],prod["category"],prod["stock"],prod["url"], confidence)
 
@@ -729,11 +737,24 @@ if USE_PG:
         # live=true /search calls did (see 2026-08 investigation) — so
         # price_history had gone stale for ~11 days despite price_snapshots
         # refreshing every cycle.
+        pack = price_per_base_unit(price, prod.get("name") or "")
+        pack_qty = pack["pack_qty"] if pack else None
+        pack_unit = pack["basis"] if pack else None
+        price_per_base = pack["price_per"] if pack else None
+
         old_price = row["old_price"] if row else None
-        if old_price is None or old_price != price:
+        old_pack_qty = row["old_pack_qty"] if row else None
+        if old_pack_qty is None or pack_qty is None:
+            pack_qty_changed = old_pack_qty is not pack_qty
+        else:
+            pack_qty_changed = abs(old_pack_qty - pack_qty) > 1e-9
+
+        if old_price is None or old_price != price or pack_qty_changed:
             await conn.execute(
-                "INSERT INTO price_history (product_id, store, price, list_price, discount) VALUES ($1, $2, $3, $4, $5)",
+                "INSERT INTO price_history (product_id, store, price, list_price, discount, name, pack_qty, pack_unit, price_per_base) "
+                "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
                 prod["product_id"], prod["store"], price, list_price, discount,
+                prod.get("name"), pack_qty, pack_unit, price_per_base,
             )
 
         stock = prod.get("stock")

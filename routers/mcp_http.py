@@ -80,6 +80,7 @@ _PRO_TOOLS = frozenset({
     "market_household_update",
     "market_ecosystem_radar",
     "market_promo_detector",
+    "market_shrinkflation_detector",
     "market_retailer_scorecard",
     "market_informal_signal",
     "market_inflation",
@@ -486,6 +487,22 @@ _TOOLS = [
                 "product": {"type": "string"},
                 "store": {"type": "string"},
                 "days": {"type": "integer", "default": 30},
+            },
+        },
+    },
+    {
+        "name": "market_shrinkflation_detector",
+        "description": (
+            "[Pro] Shrinkflation signal — flags pack-size (weight/volume/unit) reductions at a flat "
+            "shelf price, comparing current pack size vs. the product's own stable history."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["product"],
+            "properties": {
+                "product": {"type": "string"},
+                "store": {"type": "string"},
+                "days": {"type": "integer", "default": 90},
             },
         },
     },
@@ -1202,6 +1219,7 @@ _PRE_CHECK_TIER: dict[str, str] = {
     "market_price_risk": "pro",
     "market_informal_signal": "pro",
     "market_promo_detector": "pro",
+    "market_shrinkflation_detector": "pro",
     "market_retailer_scorecard": "pro",
     "market_ecosystem_radar": "pro",
     "market_household_get": "starter",
@@ -1328,6 +1346,8 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.get(f"{_API_BASE}/v1/intel/informal-signal", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_promo_detector":
             r = await client.get(f"{_API_BASE}/v1/intel/promo-detector", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_shrinkflation_detector":
+            r = await client.get(f"{_API_BASE}/v1/intel/shrinkflation-detector", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_retailer_scorecard":
             r = await client.get(f"{_API_BASE}/v1/intel/retailer-scorecard", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_basket_stress":
