@@ -22,7 +22,7 @@ primary_region = "gru"
 
 [[vm]]
   size = "shared-cpu-2x"   # Playwright necesita más CPU
-  memory = "1024mb"
+  memory = "2048mb"
   processes = ["collector"]
 
 # Sin health checks HTTP — el collector no expone puerto
