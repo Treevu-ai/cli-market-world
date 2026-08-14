@@ -2,17 +2,37 @@
 
 Host SaaS subscription checkout on **procurecopilot.com/procure/subscribe** instead of cli-market.dev.
 
-## Quick install (sparse checkout / wrong branch — recommended on Windows)
+## Quick install (private repo — use `gh`, not raw GitHub URL)
 
-From **procure-copilot** root — does **not** need your local `cli-market-world` clone:
+`raw.githubusercontent.com` returns **404** on private repos. From **procure-copilot** root:
+
+### Option A — sparse clone + apply (no script download)
 
 ```powershell
 cd ~\procure-copilot
-irm https://raw.githubusercontent.com/Treevu-ai/cli-market-world/main/patches/procure-copilot-checkout/install-checkout.ps1 -OutFile install-checkout.ps1
-.\install-checkout.ps1
+gh auth login
+
+$WorldRoot = "$env:TEMP\cli-market-world-checkout-patch"
+Remove-Item -Recurse -Force $WorldRoot -ErrorAction SilentlyContinue
+
+git clone --depth 1 --filter=blob:none --sparse https://github.com/Treevu-ai/cli-market-world.git $WorldRoot
+Set-Location $WorldRoot
+git sparse-checkout set patches/procure-copilot-checkout landing/components landing/lib landing/hooks
+Set-Location ~\procure-copilot
+
+python "$WorldRoot\patches\procure-copilot-checkout\apply.py" --target . --world $WorldRoot
 ```
 
-Uses a temp sparse clone of `main` (only `landing/` + this patch).
+### Option B — download installer via GitHub CLI
+
+```powershell
+cd ~\procure-copilot
+gh auth login
+gh api repos/Treevu-ai/cli-market-world/contents/patches/procure-copilot-checkout/install-checkout.ps1 -q .content `
+  | ForEach-Object { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_ -replace "`n","")) } `
+  | Set-Content install-checkout.ps1 -Encoding utf8
+.\install-checkout.ps1
+```
 
 ## Manual apply (full cli-market-world clone on `main`)
 
