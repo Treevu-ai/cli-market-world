@@ -2,6 +2,20 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-14] — Fix collector_vs_official_gap period mismatch (30d vs YoY)
+
+**cli-market-core** (released as `1.12.29`)
+- `collector_vs_official_gap` (`vs_official_cpi_gap_pp` in
+  `market_inflation_report`) subtracted the 30-day internal shelf-inflation
+  signal directly from the World Bank YoY official CPI — mixing periods.
+  Subtle for low-inflation countries, but produced a nonsensical -220.7pp
+  gap for Argentina (200%+ YoY CPI). Fixed by de-annualizing the official
+  CPI to a 30-day equivalent before comparing, instead of annualizing the
+  noisy internal signal (which overcorrects — tried and rejected, it turned
+  Colombia's +4.98pp into +218pp).
+
+Bumped `cli-market-core` pin to `1.12.29` in `requirements.txt`.
+
 ## [2026-08-12] — Fix moat_freshness denominator not scoped by line
 
 **cli-market-core** (released as `1.12.26`)
