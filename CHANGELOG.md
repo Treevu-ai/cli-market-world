@@ -2,6 +2,53 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-17] — Fix market_quality_flagged false positives (7-day window + placeholder prices)
+
+**cli-market-core** (released as `1.12.30`, then `1.12.31`)
+
+- **`1.12.30`**: `query_flagged` (`market_quality_flagged`) scanned the full,
+  append-only `price_snapshots` table with no recency filter. A scrape-error
+  guard for jumbo_ar/vea_ar (VTEX ListPrice ~90-100x inflated, producing fake
+  ~99% "discounts") had already been fixed at ingestion back on 2026-06-18
+  (`2bf4857`), but months of pre-fix contaminated rows still sat in the table
+  and kept surfacing in the report as if they were live problems — total
+  flagged items stuck at ~18,880 even though live jumbo_ar snapshots were
+  already clean (`list_price == price`, `confidence: ok`). Root cause: found
+  by comparing `market_quality_flagged` output against a fresh
+  `market_price_history` pull for the same store — the flagged SKUs simply
+  weren't in the last 7 days of data. Fixed by scoping `query_flagged`'s
+  discount/outlier/spread branches to `queried_at >= now() - 7 days`, the
+  same pattern already used by `build_coverage_matrix`. ([#178](https://github.com/Treevu-ai/cli-market-core/pull/178))
+  Verified live post-deploy: flagged total dropped 18,880 → 12,789 and the
+  jumbo_ar/vea_ar harina/fruta/verdura entries disappeared entirely.
+
+- **`1.12.31`**: while auditing the remaining flagged items on claroshop_pe,
+  found some VTEX SKU variants (e.g. Honor Magic 8 Lite, Oppo A5 5G bundle
+  configurations) publish with both `Price` and `ListPrice` at a `0.01`
+  placeholder instead of the field being left unset — genuinely what
+  claro.com.pe's own storefront returns for unconfigured SKUs, not a scraper
+  bug. Since `price == list_price`, there's no implied discount for the
+  existing scrape-error guard to catch, so these silently carried
+  `confidence: "ok"` — meaning `clean=True` queries (basket comparisons,
+  cheapest-price lookups) could have surfaced a placeholder price as real.
+  `compute_snapshot_confidence` now also flags `suspect` when price is at/under
+  a `0.05` floor and list_price (if present) is too.
+  ([#179](https://github.com/Treevu-ai/cli-market-core/pull/179)) Verified
+  live post-deploy: the two known claroshop_pe placeholder SKUs now carry
+  `confidence: "suspect"`.
+
+- Deliberately left unchanged: claroshop_pe still shows several genuine
+  ≥90%-discount flags for telco line-renewal bundles (mid-range phones
+  bundled with a 24-month postpago plan, e.g. Galaxy S25FE at ~90% off vs.
+  an iPhone 17 Pro Max at ~32% off in the same bundle type). This is real
+  telco subsidy pricing, not a data bug — the fixed `SCRAPE_ERROR_DISCOUNT_PCT`
+  threshold just can't distinguish it from a scrape error. Confirmed and
+  decided to leave as-is rather than risk masking a real jumbo_ar/vea_ar-style
+  bug by loosening the threshold.
+
+Bumped `cli-market-core` pin to `1.12.31` in `requirements.txt`, redeployed
+both `cli-market-collector` and `cli-market-api`.
+
 ## [2026-08-14] — Fix collector_vs_official_gap period mismatch (30d vs YoY)
 
 **cli-market-core** (released as `1.12.29`)
