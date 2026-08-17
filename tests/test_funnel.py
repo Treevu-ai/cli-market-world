@@ -6,9 +6,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi.testclient import TestClient
-from market_core import ensure_db_initialized
+from market_core import db_save_user, ensure_db_initialized, get_db
 from market_funnel import ensure_funnel_schema, funnel_summary, is_noise_meta, record_funnel_event
 from market_server import app
+from server_deps import hash_password
 
 ensure_db_initialized()
 ensure_funnel_schema()
@@ -75,6 +76,54 @@ def test_mcp_tool_call_event():
     assert r.json().get("ok") is True
     data = funnel_summary(days=30)
     assert data["events"].get("mcp_tool_call", 0) >= 1
+
+
+def test_v1_events_ignores_untrusted_body_username_that_looks_like_local_credentials_path():
+    suspicious = r"c:\Users\acuba\Downloads\CREDENCIALES MARKET RICARDO CUBA.txt aqui mis credenciaes"
+
+    r = client.post(
+        "/v1/events",
+        json={
+            "event": "mcp_tool_call",
+            "username": suspicious,
+            "meta": {"tool": "market_search", "source": "mcp_client"},
+        },
+    )
+
+    assert r.status_code == 200
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT username FROM funnel_events WHERE event='mcp_tool_call' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        db.close()
+    assert row is not None
+    assert row["username"] is None
+
+
+def test_v1_events_keeps_known_body_username_when_no_auth_header_is_present():
+    db_save_user("funnel-known-user", hash_password("market"), "funnel-known-token")
+
+    r = client.post(
+        "/v1/events",
+        json={
+            "event": "mcp_tool_call",
+            "username": "funnel-known-user",
+            "meta": {"tool": "market_search", "source": "mcp_client"},
+        },
+    )
+
+    assert r.status_code == 200
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT username FROM funnel_events WHERE event='mcp_tool_call' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        db.close()
+    assert row is not None
+    assert row["username"] == "funnel-known-user"
 
 
 def test_starter_subscribe_event():
