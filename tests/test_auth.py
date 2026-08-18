@@ -194,6 +194,27 @@ def test_create_api_key_invalid_scope_returns_400():
     assert r.status_code == 400
 
 
+def test_create_api_key_without_ttl_has_no_expiry():
+    r = client.post("/auth/keys", json={"scopes": "read", "label": "permanent"}, headers=_auth_header())
+    assert r.status_code == 200
+    assert r.json()["expires_at"] is None
+
+
+def test_create_api_key_with_ttl_returns_expiry():
+    r = client.post(
+        "/auth/keys", json={"scopes": "read", "label": "workshop", "ttl_days": 30}, headers=_auth_header()
+    )
+    assert r.status_code == 200
+    assert r.json()["expires_at"] is not None
+
+
+def test_create_api_key_non_positive_ttl_returns_400():
+    r = client.post(
+        "/auth/keys", json={"scopes": "read", "ttl_days": 0}, headers=_auth_header()
+    )
+    assert r.status_code == 400
+
+
 # ── GET /auth/keys ────────────────────────────────────────────────────────────
 
 def test_list_api_keys_requires_auth():

@@ -63,6 +63,10 @@ def _login_attempt_key(request: Request, username: str) -> str:
 class CreateApiKeyRequest(BaseModel):
     scopes: str = "read"
     label: str = ""
+    # Omit for a permanent key (existing behavior, unchanged). Set for
+    # time-boxed grants (workshop/trial participants) so the key stops
+    # validating on its own past this many days -- no manual revoke needed.
+    ttl_days: int | None = None
 
 
 class RefreshRequest(BaseModel):
@@ -423,13 +427,16 @@ def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header
     username = require_user(authorization)
     if body.scopes not in ("read", "read_write"):
         raise HTTPException(status_code=400, detail="Scopes must be 'read' or 'read_write'")
-    result = db_create_api_key(username, body.scopes, body.label)
+    if body.ttl_days is not None and body.ttl_days <= 0:
+        raise HTTPException(status_code=400, detail="ttl_days must be a positive integer")
+    result = db_create_api_key(username, body.scopes, body.label, ttl_days=body.ttl_days)
     return {
         "message": "API key created. Store it safely — it won't be shown again.",
         "key": result["key"],
         "prefix": result["prefix"],
         "scopes": result["scopes"],
         "label": result["label"],
+        "expires_at": result["expires_at"],
     }
 
 
