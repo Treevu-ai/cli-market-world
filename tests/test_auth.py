@@ -215,6 +215,20 @@ def test_create_api_key_non_positive_ttl_returns_400():
     assert r.status_code == 400
 
 
+def test_create_api_key_ttl_above_one_year_returns_400():
+    r = client.post(
+        "/auth/keys", json={"scopes": "read", "ttl_days": 366}, headers=_auth_header()
+    )
+    assert r.status_code == 400
+
+
+def test_create_api_key_ttl_at_one_year_boundary_succeeds():
+    r = client.post(
+        "/auth/keys", json={"scopes": "read", "ttl_days": 365}, headers=_auth_header()
+    )
+    assert r.status_code == 200
+
+
 # ── GET /auth/keys ────────────────────────────────────────────────────────────
 
 def test_list_api_keys_requires_auth():

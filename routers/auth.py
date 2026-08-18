@@ -427,8 +427,8 @@ def create_api_key(body: CreateApiKeyRequest, authorization: str | None = Header
     username = require_user(authorization)
     if body.scopes not in ("read", "read_write"):
         raise HTTPException(status_code=400, detail="Scopes must be 'read' or 'read_write'")
-    if body.ttl_days is not None and body.ttl_days <= 0:
-        raise HTTPException(status_code=400, detail="ttl_days must be a positive integer")
+    if body.ttl_days is not None and not (0 < body.ttl_days <= 365):
+        raise HTTPException(status_code=400, detail="ttl_days must be between 1 and 365")
     result = db_create_api_key(username, body.scopes, body.label, ttl_days=body.ttl_days)
     return {
         "message": "API key created. Store it safely — it won't be shown again.",
