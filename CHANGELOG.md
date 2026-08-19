@@ -2,6 +2,15 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-19] — bump cli-market-core 1.12.40 -> 1.12.41 (add Mac Center PE + La Ibérica PE)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.41`. Adds two
+new PE stores, both config-only via existing connectors: Mac Center
+(mac-center.com.pe, Apple Premium Partner, Shopify, `line: electro`)
+and La Ibérica (delivery.laiberica.com.pe/pedir, artisanal chocolate,
+Justo/OrionEat platform, `line: supermercados`). Both verified live
+end-to-end via their connectors before shipping.
+
 ## [2026-08-19] — bump cli-market-core 1.12.39 -> 1.12.40 (basket_stress_index point-in-time fix)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.40`. Fourth and
