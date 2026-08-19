@@ -212,6 +212,14 @@ _TOOLS = [
                 "query": {"type": "string", "description": "Product name, e.g. 'arroz', 'leche entera'"},
                 "country": {"type": "string", "description": "ISO country code: PE, AR, BR, MX, CO, CL"},
                 "store": {"type": "string", "description": "Store key, e.g. 'wong_pe', 'carrefour_ar'"},
+                "category": {
+                    "type": "string",
+                    "description": (
+                        "Narrow a broad query by store-reported category, e.g. 'lacteos' "
+                        "(case-insensitive substring match; categories aren't standardized "
+                        "across retailers, so this filters noise rather than a fixed enum)."
+                    ),
+                },
                 "limit": {"type": "integer", "default": 20},
                 "require_all": {
                     "type": "boolean",

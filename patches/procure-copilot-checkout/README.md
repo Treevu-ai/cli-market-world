@@ -49,13 +49,13 @@ python ..\cli-market-world\patches\procure-copilot-checkout\apply.py
 ## 3. Cloudflare build env
 
 ```bash
-NEXT_PUBLIC_API_URL=https://cli-market-production.up.railway.app
+NEXT_PUBLIC_API_URL=https://cli-market-api.fly.dev
 NEXT_PUBLIC_PROCURE_SITE_URL=https://procurecopilot.com
 NEXT_PUBLIC_PROCURE_APP_URL=https://procurecopilot.com/dashboard
 NEXT_PUBLIC_PROCURE_MP_CHECKOUT=1
 ```
 
-## 4. Railway (return URLs — set after Worker deploy)
+## 4. Fly.io backend (return URLs — set after Worker deploy)
 
 ```bash
 PROCURE_SUBSCRIBE_RETURN_URL=https://procurecopilot.com/procure/subscribe?sub=success&audience=procure

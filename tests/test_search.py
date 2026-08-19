@@ -307,6 +307,43 @@ def test_basket_identity_enrichment_supports_response_envelope():
         db.close()
 
 
+def test_search_category_filter_narrows_broad_query():
+    """market_search's category param: case-insensitive substring match
+    against each result's store-reported category. Real example from live
+    validation -- 'leche' mixes coconut-milk drinks (category 'Bebidas')
+    with actual dairy (category 'Huevos lacteos y derivados ecologicos')."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    store = "category_filter_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, category, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+        ("cat-filt-dairy", store, "Leche Unica6w de vaca entera", 3.5, "PEN", "Lacteos"),
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, category, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+        ("cat-filt-coco", store, "Leche Unica6w de coco", 2.0, "PEN", "Bebidas"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=[store]):
+            body = SearchRequest(query="leche unica6w", require_all=True, category="lacteos")
+            result = _search_products_db(body)
+        names = [r["name"] for r in result["results"]]
+        assert any("vaca" in n for n in names)
+        assert not any("coco" in n for n in names)
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.commit()
+        db.close()
+
+
 # ── Growth-tier priority tiebreak ────────────────────────────────────────────
 # growth stores win exact price ties only — never outrank a genuinely
 # cheaper competitor, so "cheapest first" stays honest regardless of who paid.
@@ -348,6 +385,70 @@ def growth_tiebreak_snapshots():
     db.commit()
     db.close()
     search_mod._growth_cache = (0.0, frozenset())
+
+
+def test_search_truncates_results_to_requested_limit():
+    """Regression: build_search_sql over-fetches candidates (up to limit*20,
+    capped at 500) so the relevance filter has enough rows to work with --
+    but _search_products_db never re-applied body.limit afterward, so
+    limit=5 on a common query silently returned every surviving candidate
+    (confirmed live: limit=5 on 'leche'/PE returned 99 rows). total must
+    still report the full matched count, only the returned list is capped."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    store = "truncate_limit_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    for i in range(12):
+        db.execute(
+            "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+            (f"trunc-prod-{i}", store, f"Producto Truncado Unico8y {i}", 1.0 + i, "PEN"),
+        )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=[store]):
+            body = SearchRequest(query="truncado unico8y", require_all=True, limit=5)
+            result = _search_products_db(body)
+        assert len(result["results"]) == 5
+        assert result["total"] == 12
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.commit()
+        db.close()
+
+
+def test_compare_truncates_comparison_to_requested_limit():
+    """Same over-fetch-then-truncate bug as search, for /products/compare."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _compare_products_db
+
+    stores = [f"trunc_compare_store_{i}" for i in range(8)]
+    db = get_db()
+    for s in stores:
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (s,))
+    for i, s in enumerate(stores):
+        db.execute(
+            "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+            (f"trunc-cmp-{i}", s, f"Comparado Unico7z {i}", 1.0 + i, "PEN"),
+        )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=stores):
+            body = SearchRequest(query="comparado unico7z", require_all=False, limit=3)
+            result = _compare_products_db(body)
+        assert len(result["comparison"]) <= 3
+    finally:
+        db = get_db()
+        for s in stores:
+            db.execute("DELETE FROM price_snapshots WHERE store = ?", (s,))
+        db.commit()
+        db.close()
 
 
 def test_search_boosts_growth_store_on_exact_price_tie(growth_tiebreak_snapshots):

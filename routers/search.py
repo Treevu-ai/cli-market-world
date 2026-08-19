@@ -118,6 +118,12 @@ class SearchRequest(BaseModel):
     store: str | None = None
     line: str | None = None
     country: str | None = None
+    # Case-insensitive substring match against each result's store-reported
+    # category (e.g. "Bebidas", "Huevos lacteos y derivados ecologicos").
+    # Store category taxonomies aren't standardized across retailers, so this
+    # narrows a broad query (e.g. "leche" mixing coconut drinks with dairy)
+    # rather than mapping to a fixed enum.
+    category: str | None = None
     page: int = 1
     limit: int = PAGE_SIZE
     # Default reads collector-refreshed price_snapshots (fast, <=4h old).
@@ -172,8 +178,11 @@ async def search_products(body: SearchRequest, authorization: str | None = Heade
     store name, stock status, and product URL. Covers 41 verified retailers across
     PE, AR, BR, MX, CO, CL, IT, FR. Prices are shelf data refreshed every 4h — never
     scraped on demand (pass live=true to force a per-store scrape instead; slower
-    and best-effort). Prefer POST /v1/basket/compare when procuring multiple items;
-    use this endpoint for single-item discovery or spot price checks."""
+    and best-effort). Pass category to narrow a broad query (case-insensitive
+    substring match against each result's store-reported category, e.g. "lacteos" —
+    taxonomies aren't standardized across retailers, so this filters noise rather
+    than mapping to a fixed enum). Prefer POST /v1/basket/compare when procuring
+    multiple items; use this endpoint for single-item discovery or spot price checks."""
     username = require_api_key(authorization)
     try:
         result = await _search_products(body)
@@ -289,10 +298,13 @@ def _search_products_db(body: SearchRequest) -> dict:
     finally:
         db.close()
 
+    category_needle = body.category.strip().lower() if body.category else None
     results: list[dict] = []
     for r in rows:
         row = dict(r)
         if not _is_relevant(row.get("name", ""), q_tokens, require_all=body.require_all):
+            continue
+        if category_needle and category_needle not in (row.get("category") or "").lower():
             continue
         row["id"] = row.pop("product_id")
         results.append(row)
@@ -302,10 +314,17 @@ def _search_products_db(body: SearchRequest) -> dict:
         p["price"] if p["price"] > 0 else float("inf"),
         0 if p.get("store") in growth_stores else 1,
     ))
-    save_search_query(body.query, body.line, body.store, len(results))
+    total_matched = len(results)
+    save_search_query(body.query, body.line, body.store, total_matched)
+    # build_search_sql over-fetches (candidate_cap_for: up to limit*20, capped
+    # at 500) so relevance filtering has enough rows to work with before the
+    # requested limit is applied -- results must be truncated here or callers
+    # asking for limit=5 got every surviving candidate instead (confirmed
+    # live: limit=5 on "leche"/PE returned 99 rows instead of 5).
+    results = results[: body.limit]
 
     response: dict = {
-        "query": body.query, "results": results, "total": len(results),
+        "query": body.query, "results": results, "total": total_matched,
         "stores_resolved": len(stores),
     }
     return _attach_source_health(response, stores)
@@ -522,7 +541,11 @@ def _compare_products_db(body: SearchRequest) -> dict:
             continue
         all_products.setdefault(row["store"], []).append(row)
 
-    payload["comparison"] = _fuzzy_compare(all_products, stores, q_tokens=q_tokens)
+    comparison = _fuzzy_compare(all_products, stores, q_tokens=q_tokens)
+    # Same over-fetch-then-truncate issue as _search_products_db: build_search_sql's
+    # candidate cap (up to limit*20) is a fetch-side budget for relevance
+    # filtering, not the caller's requested result count.
+    payload["comparison"] = comparison[: body.limit]
     payload["stores_compared"] = len(all_products)
     return _attach_source_health(payload, list(all_products.keys()) or stores)
 
