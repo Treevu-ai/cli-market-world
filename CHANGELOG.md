@@ -2,6 +2,20 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-19] — bump cli-market-core 1.12.39 -> 1.12.40 (basket_stress_index point-in-time fix)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.40`. Fourth and
+structurally deepest round: `price_history` only appends a row when a
+product's price changes, so a naive `recorded_at >= 30d-ago` filter has
+zero rows for any product whose price has been stable longer than
+that — silently dropping the cheapest, most stable options from
+baseline while `current` (always current-state) kept them, crashing the
+index below its true value (confirmed live post-1.12.39 deploy: 53.66).
+Baseline now reconstructs each product's price as of the 30d-ago cutoff
+(latest row at or before that date) instead of requiring an in-window
+change. See cli-market-core CHANGELOG 1.12.37-1.12.40 for the full
+sequence of partial fixes that led here.
+
 ## [2026-08-19] — bump cli-market-core 1.12.38 -> 1.12.39 (basket_stress_index grouped by item, not product)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.39`. Third round
