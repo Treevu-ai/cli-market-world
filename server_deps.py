@@ -478,6 +478,15 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
     ("GET", "/v1/intel/promo-detector"): "pro",
     ("GET", "/v1/intel/retailer-scorecard"): "pro",
     ("GET", "/v1/ecosystem/launches"): "pro",
+    # Regression: dab77652 (2026-07-21) originally gated these two behind
+    # auth via the now-retired _CORE_INTEL_AUTH_PATHS set (per-retailer
+    # scraper freshness/uptime is competitive intel, not public). That set
+    # required only a valid key, not Pro specifically; when core v1 routes
+    # moved to this tiered dict, both paths were dropped entirely, leaving
+    # them auth-only again (confirmed live: any free key gets 200 with full
+    # per-retailer freshness/error-rate data). Re-gated behind Pro here.
+    ("GET", "/v1/health/slas"): "pro",
+    ("GET", "/v1/health/slas-summary"): "pro",
     ("GET", "/v1/household"): "starter",
     ("GET", "/v1/household/summary"): "starter",
     ("PUT", "/v1/household"): "pro",

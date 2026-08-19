@@ -377,6 +377,32 @@ def test_intel_pro_routes_reject_starter_tier(path, isolated_db):
     assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/v1/health/slas",
+        "/v1/health/slas-summary",
+    ],
+)
+def test_health_slas_routes_reject_starter_tier(path, isolated_db):
+    """Regression: dab77652 (2026-07-21) gated these behind auth via the
+    now-retired _CORE_INTEL_AUTH_PATHS set, but that set only required a
+    valid key, not Pro specifically. When core v1 routes moved to the
+    tiered _CORE_V1_TIER_ROUTES dict, both paths were dropped entirely --
+    a free/starter key got 200 with full per-retailer freshness/error-rate
+    data (competitive intel). Confirmed still 200 pre-fix on 2026-08-19."""
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    from market_server import hash_password
+
+    ensure_db_initialized()
+    db_save_user("starter-slas", hash_password("market"), "starter-slas@test.com")
+    market_billing.db_set_subscription("starter-slas", "starter")
+    key = db_create_api_key("starter-slas", "read", "slas-starter")["key"]
+    r = client.get(path, headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
+
+
 def test_slack_activation_fails_closed_when_allowlist_empty(monkeypatch):
     import routers.slack_ops as slack_ops
 
