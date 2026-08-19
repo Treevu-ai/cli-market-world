@@ -2,6 +2,17 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-19] — bump cli-market-core 1.12.37 -> 1.12.38 (basket_stress_index still matched substrings)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.38`. 1.12.37's
+fix scoped the baseline to `CANASTA_ITEMS` but used a bare
+`LIKE '%item%'`, which still substring-matched unrelated products
+("Panasonic" contains "pan", "Cafetera" contains "cafe") and reinflated
+the baseline the same way — confirmed live post-1.12.37 deploy,
+`basket_stress_index` was still 0.02. Now uses the word-boundary +
+exclusion-list matcher (`_canasta_name_matches`) the rest of the canasta
+code already uses, so single-word substrings can't false-match.
+
 ## [2026-08-19] — bump cli-market-core 1.12.36 -> 1.12.37 (fix basket_stress_index baseline)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.37`. Fixes
