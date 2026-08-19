@@ -2,6 +2,20 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-19] — bump cli-market-core 1.12.36 -> 1.12.37 (fix basket_stress_index baseline)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.37`. Fixes
+`compute_basket_stress()`: the 30d-ago baseline summed `MIN(price)` over
+every product a store sold in the window (its entire catalog), not just
+the canasta staple items `current` is scoped to — so the ratio crashed
+toward 0 regardless of real price movement, misreporting `basket_stress`
+as "eased" (steep drop) in `market_basket_stress`, `market_commerce_pulse`,
+and `market_intel_brief`. Baseline now filters to the same `CANASTA_ITEMS`
+as `current`. Found while sourcing a data point for a LinkedIn post —
+`basket_stress_index: 0.0` looked implausible (would mean the canasta is
+free) and contradicted `market_inflation_report`'s own +1.55% 30d signal
+in the same window.
+
 ## [2026-08-17] — Fix market_quality_flagged false positives (7-day window + placeholder prices)
 
 **cli-market-core** (released as `1.12.30`, then `1.12.31`)
