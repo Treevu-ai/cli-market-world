@@ -403,6 +403,31 @@ def test_health_slas_routes_reject_starter_tier(path, isolated_db):
     assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
 
 
+@pytest.mark.parametrize(
+    "path,params",
+    [
+        ("/v1/intel/inflation-report", {"country": "PE"}),
+        ("/v1/intel/shrinkflation-detector", {"product": "leche"}),
+    ],
+)
+def test_intel_core_routes_reject_starter_tier(path, params, isolated_db):
+    """Regression: same gap class as test_health_slas_routes_reject_starter_tier
+    -- both routes sit in market_core.api_routes alongside pulse/forecast/
+    basket-stress/promo-detector (all correctly Pro-gated) but were missing
+    from _CORE_V1_TIER_ROUTES, so a free/starter key got 200 with the full
+    payload. Found by security-reviewer scan 2026-08-19."""
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    from market_server import hash_password
+
+    ensure_db_initialized()
+    db_save_user("starter-intel-core", hash_password("market"), "starter-intel-core@test.com")
+    market_billing.db_set_subscription("starter-intel-core", "starter")
+    key = db_create_api_key("starter-intel-core", "read", "intel-core-starter")["key"]
+    r = client.get(path, params=params, headers={"Authorization": f"Bearer {key}"})
+    assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
+
+
 def test_slack_activation_fails_closed_when_allowlist_empty(monkeypatch):
     import routers.slack_ops as slack_ops
 

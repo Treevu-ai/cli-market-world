@@ -478,6 +478,15 @@ _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
     ("GET", "/v1/intel/promo-detector"): "pro",
     ("GET", "/v1/intel/retailer-scorecard"): "pro",
     ("GET", "/v1/ecosystem/launches"): "pro",
+    # Same class of gap as the health/slas regression below: these two core
+    # routes sit in the same product family as pulse/forecast/basket-stress/
+    # promo-detector (all Pro-gated above) but were never added to this dict.
+    # Confirmed live: free-tier key got 200 on both, full payload, while the
+    # world-native sibling /v1/intel/inflation (routers/intel.py) correctly
+    # 403s the same key for the same signal. Found via security-reviewer scan
+    # 2026-08-19.
+    ("GET", "/v1/intel/inflation-report"): "pro",
+    ("GET", "/v1/intel/shrinkflation-detector"): "pro",
     # Regression: dab77652 (2026-07-21) originally gated these two behind
     # auth via the now-retired _CORE_INTEL_AUTH_PATHS set (per-retailer
     # scraper freshness/uptime is competitive intel, not public). That set

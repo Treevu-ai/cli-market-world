@@ -275,10 +275,19 @@ async def checkout_paypal_capture(
     buyer returns from the approve_url, passing the paypal_order_id from the
     /checkout/paypal response. Acts as a fallback if the PayPal webhook is delayed.
     Marks the linked market order as paid on success."""
-    require_user(authorization)
+    username = require_user(authorization)
     if not paypal_order_id:
         raise HTTPException(status_code=400, detail="paypal_order_id required")
     from market_connectors.paypal_payments import capture_order
+
+    # Ownership check before capturing: without it, any authenticated user
+    # who obtains another user's paypal_order_id (not secret -- it appears
+    # in redirect URLs/approve_url responses) could flip that order to
+    # "paid" and fire the Procure payment notification for it, even though
+    # PayPal itself won't move money to an order the buyer never approved.
+    existing = db_find_order_by_gateway_ref(paypal_order_id)
+    if existing and existing.get("username") != username:
+        raise HTTPException(status_code=404, detail="Order not found")
 
     cap = await capture_order(paypal_order_id)
     if not cap.get("ok"):

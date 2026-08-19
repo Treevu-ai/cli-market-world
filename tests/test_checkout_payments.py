@@ -254,6 +254,37 @@ def test_checkout_paypal_ignores_foreign_return_url():
     assert captured["cancel_url"] == "https://cli-market.dev?order=cancelled"
 
 
+def test_checkout_paypal_capture_rejects_other_users_order():
+    """Regression: checkout_paypal_capture looked up an order purely by
+    paypal_order_id (not secret -- it's returned in the /checkout/paypal
+    response and appears in redirect URLs) and marked it paid without
+    checking the order belonged to the caller. PayPal itself won't move
+    money to an order the buyer never approved, but an attacker who obtains
+    another user's paypal_order_id could still flip status to "paid" and
+    fire the Procure payment notification for someone else's order.
+    Found by security-reviewer scan 2026-08-19."""
+    db_save_user("victim-paypal", hash_password("market"), "victim-paypal@test.com")
+    db_create_order(
+        "victim-paypal",
+        [{"product_id": _TEST_PRODUCT_ID, "name": "test", "price": 10.0, "qty": 1}],
+        "paypal",
+        10.0,
+        status="pending",
+        gateway_ref="PP-VICTIM-1",
+    )
+
+    async def _capture_order(*args, **kwargs):
+        raise AssertionError("capture_order must not be called for a non-owned order")
+
+    with patch("market_connectors.paypal_payments.capture_order", new=_capture_order, create=True):
+        r = client.post(
+            "/checkout/paypal/capture",
+            headers=_auth(),  # authenticated as "admin", not "victim-paypal"
+            params={"paypal_order_id": "PP-VICTIM-1"},
+        )
+    assert r.status_code == 404
+
+
 def test_checkout_mercadopago_ignores_foreign_success_url():
     _add_cart()
     mock_result = {"checkout_url": "https://mercadopago.com/checkout/1", "preference_id": "pref1"}

@@ -12,6 +12,7 @@ from market_core import (
     db_mark_subscription_requests_activated_for_user,
     db_recent_subscription_request,
     db_set_subscription,
+    get_db,
 )
 from routers.billing.pro_helpers import (
     can_reveal_duplicate_checkout,
@@ -197,7 +198,8 @@ def _activate_retailer_growth_from_request(request_id: str, *, source: str, forc
         return [f"already_activated:{request_id}"]
 
     username = (req.get("username") or "").strip()
-    db_mark_subscription_request_activated(request_id, username)
+    if not _claim_activation(request_id, username, force=force):
+        return [f"already_activated:{request_id}"]
     actions = [f"retailer_growth_paid:{request_id}"]
 
     email = (req.get("email") or "").strip()
@@ -400,6 +402,53 @@ hello@cli-market.dev
     return _send(to_email, subject, text, html)
 
 
+def _claim_activation(request_id: str, username: str = "", *, force: bool = False) -> bool:
+    """Atomically claim a subscription_request for activation.
+
+    Closes a TOCTOU race in _activate_pro_from_request /
+    _activate_procure_from_request / _activate_retailer_growth_from_request:
+    each does "read status -> if not activated: run full activation flow",
+    with no atomicity between the read and the write. Two concurrent callers
+    for the same request_id (two ops staff double-clicking the Slack approve
+    button, or two payment-retry webhook deliveries resolving to the same
+    request_id) both pass the read-check and both run the full flow --
+    reproduced live with a two-thread race (security-reviewer scan
+    2026-08-19). db_mark_subscription_request_activated's own UPDATE has no
+    status guard, so its return value can't tell a genuine winner from a
+    replay. This repo-local conditional UPDATE (WHERE status != 'activated')
+    can: only the caller whose UPDATE actually changed a row should run the
+    tier-set + email/Slack side effects. The root-cause fix belongs in
+    cli-market-core's db_mark_subscription_request_activated (separate repo/
+    release chain); this closes the window without one.
+
+    force=True skips the atomic gate entirely and always claims -- matches
+    the pre-existing "force" semantics on the admin/ops re-trigger path
+    (explicit admin action, not a race-prone automatic path; should always
+    proceed even if already activated).
+    """
+    if force:
+        db_mark_subscription_request_activated(request_id, username)
+        return True
+    db = get_db()
+    try:
+        if username:
+            cur = db.execute(
+                "UPDATE subscription_requests SET status='activated', username=? "
+                "WHERE id=? AND status != 'activated'",
+                (username, request_id),
+            )
+        else:
+            cur = db.execute(
+                "UPDATE subscription_requests SET status='activated' "
+                "WHERE id=? AND status != 'activated'",
+                (request_id,),
+            )
+        db.commit()
+        return cur.rowcount > 0
+    finally:
+        db.close()
+
+
 def _activate_pro_from_request(request_id: str, *, source: str, force: bool = False) -> list[str]:
     """Mark subscription request paid and upgrade user to Pro."""
     req = db_find_subscription_request(request_id=request_id)
@@ -417,8 +466,9 @@ def _activate_pro_from_request(request_id: str, *, source: str, force: bool = Fa
     if not username:
         return [f"request_no_user:{request_id}"]
 
+    if not _claim_activation(request_id, username):
+        return [f"already_activated:{request_id}"]
     db_set_subscription(username, "pro")
-    db_mark_subscription_request_activated(request_id, username)
     actions = [f"pro_activated:{username}", f"request_closed:{request_id}"]
 
     try:
@@ -478,8 +528,9 @@ def _activate_procure_from_request(request_id: str, *, source: str, force: bool 
     if not tier:
         return [f"unknown_procure_request:{request_id}"]
 
+    if not _claim_activation(request_id, username):
+        return [f"already_activated:{request_id}"]
     db_set_subscription(username, tier)
-    db_mark_subscription_request_activated(request_id, username)
     actions = [f"{tier}_activated:{username}", f"request_closed:{request_id}"]
 
     try:
