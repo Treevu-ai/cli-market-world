@@ -2,6 +2,17 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-19] — bump cli-market-core 1.12.38 -> 1.12.39 (basket_stress_index grouped by item, not product)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.39`. Third round
+of the same fix: 1.12.38 corrected substring false-positives but still
+grouped the baseline by `product_id`, summing every distinct matching
+brand/pack-size SKU per staple across 30d — `current` sums exactly one
+MIN price *per canasta item*, so the two remained structurally
+mismatched and the ratio stayed crashed near 0 (confirmed live: 0.02,
+then 0.08). Baseline now reduces to one value per item before summing,
+matching `current`'s own reduction.
+
 ## [2026-08-19] — bump cli-market-core 1.12.37 -> 1.12.38 (basket_stress_index still matched substrings)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.38`. 1.12.37's
