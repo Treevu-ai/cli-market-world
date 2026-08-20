@@ -2,6 +2,16 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-20] — bump cli-market-core 1.12.41 -> 1.12.42 (add Farmacia Universal + InkaFarma + Mifarma PE)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.42`. Adds three
+new PE `farmacias` stores, closing most of PE's pharmacy coverage gap
+(previously only `boticasperu_pe`): Farmacia Universal (VTEX, existing
+connector), and InkaFarma + Mifarma (InRetail Pharma S.A.) via a brand
+new generic Algolia connector — both put a public search-only API key
+directly in their Angular frontend, price included in the search hit.
+All three verified live end-to-end before shipping.
+
 ## [2026-08-19] — bump cli-market-core 1.12.40 -> 1.12.41 (add Mac Center PE + La Ibérica PE)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.41`. Adds two
