@@ -44,11 +44,32 @@ jobs:
           pip install -q -r /tmp/ci-requirements.txt
           pip install -q -e ".deps/cli-market-index[postgres]"
 
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # cli-market-db only has a private Fly 6PN IP (no public IP -- confirmed
+      # via `flyctl ips list -a cli-market-db`), so DATABASE_URL's
+      # `cli-market-db.internal` host is unreachable from a GH Actions
+      # runner directly. flyctl proxy opens an ephemeral WireGuard peer and
+      # forwards localhost:5432 to it -- only that one port is tunneled,
+      # this does NOT reroute the runner's normal internet egress (the
+      # catalog-pull HTTP requests to the stores still go out the runner's
+      # own IP, which is what makes this whole workaround work).
+      - name: Open WireGuard tunnel to cli-market-db
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl proxy 5432:5432 -a cli-market-db &
+          for i in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null && { echo "tunnel up"; break; }
+            sleep 1
+          done
+
       - name: Force catalog pull for egress-blocked stores
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PG_SSL_MODE: ${{ secrets.PG_SSL_MODE || 'prefer' }}
+          DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
+          PG_SSL_MODE: disable
         run: |
+          export DATABASE_URL=$(echo "$DATABASE_URL_INTERNAL" | sed -E 's#@[^/]+/#@localhost:5432/#')
           python3 collect_prices.py \
             --catalog-store smartnutrition_pe \
             --catalog-store simplynaturalcanada_ca

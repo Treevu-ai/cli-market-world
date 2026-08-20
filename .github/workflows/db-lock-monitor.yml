@@ -32,14 +32,34 @@ jobs:
       - name: Install dependencies
         run: pip install -q httpx psycopg2-binary
 
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # cli-market-db has no public IP (private Fly 6PN only) -- this
+      # script's DATABASE_URL secret has always pointed at the unreachable
+      # `cli-market-db.internal` host, which is why every run of this
+      # monitor has silently skipped its actual DB check since it was
+      # created (see project_database_url_secret_missing memory). Tunnel
+      # localhost:5432 to it the same way collect-egress-blocked-stores.yml
+      # does.
+      - name: Open WireGuard tunnel to cli-market-db
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl proxy 5432:5432 -a cli-market-db &
+          for i in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null && { echo "tunnel up"; break; }
+            sleep 1
+          done
+
       - name: Run DB lock / collector freshness check
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PG_SSL_MODE: ${{ secrets.PG_SSL_MODE || 'prefer' }}
+          DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
+          PG_SSL_MODE: disable
           MARKET_API_URL: https://cli-market-api.fly.dev
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ALERTAS: ${{ secrets.SLACK_CHANNEL_ALERTAS || vars.SLACK_CHANNEL_ALERTAS }}
         run: |
+          export DATABASE_URL=$(echo "$DATABASE_URL_INTERNAL" | sed -E 's#@[^/]+/#@localhost:5432/#')
           python3 ops/db_lock_monitor.py --slack \
             --max-idle-minutes "${{ github.event.inputs.max_idle_minutes || '5' }}" \
             --max-stale-hours "${{ github.event.inputs.max_stale_hours || '6' }}"
