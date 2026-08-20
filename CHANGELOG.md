@@ -2,6 +2,15 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-20] — bump cli-market-core 1.12.44 -> 1.12.45 (add Salcobrand CL)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.45`. Adds
+Salcobrand — first Chile pharmacy in the moat, Algolia-backed (Spree
+Commerce storefront), confirmed live with real priced products. Algolia
+connector now handles two distinct hit shapes (InkaFarma/Mifarma vs
+Salcobrand), plus an optional referer header for Salcobrand's
+domain-restricted search key.
+
 ## [2026-08-20] — bump cli-market-core 1.12.43 -> 1.12.44 (add Farmacity AR)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.44`. Adds
