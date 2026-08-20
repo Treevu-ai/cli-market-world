@@ -893,7 +893,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
     cfg = resolve_store_config(store)
     platform = cfg.get("platform", "vtex")
-    if platform not in ("vtex", "woocommerce", "estacion90", "shopify"):
+    if platform not in ("vtex", "woocommerce", "estacion90", "shopify", "algolia"):
         return 0
     connector = get_connector(platform)
     if platform == "estacion90":
@@ -921,29 +921,18 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
             if prod["price"] > max_allowed_price(store, line):
                 continue
             try:
-                from price_confidence import compute_snapshot_confidence
-
-                list_price = prod.get("list_price")
-                confidence = compute_snapshot_confidence(
-                    float(prod["price"]),
-                    float(list_price) if list_price else None,
-                )
-                await conn.execute("""
-                    INSERT INTO price_snapshots (product_id,name,brand,price,list_price,discount,store,store_name,currency,line,line_name,category,stock,url,confidence)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-                    ON CONFLICT (product_id,store) DO UPDATE SET
-                        name=EXCLUDED.name,
-                        brand=EXCLUDED.brand,
-                        price=EXCLUDED.price,
-                        list_price=EXCLUDED.list_price,
-                        discount=EXCLUDED.discount,
-                        stock=EXCLUDED.stock,
-                        confidence=EXCLUDED.confidence,
-                        queried_at=NOW()
-                """, prod["product_id"], prod["name"], prod["brand"], prod["price"],
-                   prod.get("list_price", 0), prod.get("discount"), prod["store"],
-                   prod["store_name"], prod["currency"], prod["line"], prod["line_name"],
-                   prod.get("category", ""), prod.get("stock", 0), prod.get("url", ""), confidence)
+                # pg_insert (module-level under `if USE_PG:`) is the same
+                # helper the regular search-based collector uses -- it
+                # writes price_history/stock_history on top of
+                # price_snapshots. This function used to duplicate just the
+                # price_snapshots upsert inline, which meant any store
+                # collected only through the full-catalog path (every
+                # VTEX/Shopify/WooCommerce/estacion90 store's periodic full
+                # pull, plus every --catalog-store backfill) never
+                # accumulated a real time series -- see
+                # project_price_history_gap_full_catalog_path memory,
+                # 2026-08-20.
+                await pg_insert(conn, prod)
                 collected += 1
             except Exception:
                 pass

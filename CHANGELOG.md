@@ -2,6 +2,29 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-20] — bump cli-market-core 1.12.45 -> 1.12.46 + fix price_history gap in the full-catalog collection path
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.46` (adds
+`AlgoliaConnector.fetch_all_products`). Two bugs fixed together, found
+while verifying the pharmacy connectors shipped earlier today:
+
+1. `collect_full_catalog_pg`'s platform whitelist never included
+   `"algolia"` — InkaFarma, Mifarma, and Salcobrand silently collected 0
+   products via `--catalog-store` and the daemon's periodic full-catalog
+   cycle since each was added, no error, just a quiet early return.
+2. `collect_full_catalog_pg` had its own inline `price_snapshots` upsert
+   instead of calling the shared `pg_insert()` helper, so it never wrote
+   `price_history`/`stock_history` — any store collected primarily
+   through the full-catalog path (every VTEX/Shopify/WooCommerce/
+   estacion90/Algolia store's periodic full pull, not just pharmacies)
+   showed a fresh `queried_at` in `price_snapshots` but never accumulated
+   a real price time series.
+
+Verified live against production Postgres (via a temporary `flyctl
+proxy` tunnel): ran `--catalog-store salcobrand_cl` before and after the
+fix — `price_history` went from 0 rows to 213 rows for that store in the
+few minutes the run completed.
+
 ## [2026-08-20] — bump cli-market-core 1.12.44 -> 1.12.45 (add Salcobrand CL)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.45`. Adds
