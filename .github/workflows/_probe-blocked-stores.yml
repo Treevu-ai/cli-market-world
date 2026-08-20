@@ -1,0 +1,29 @@
+name: TEMP Probe blocked stores from GH Actions egress
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl each blocked store's catalog endpoint
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          declare -A ENDPOINTS=(
+            [smartnutrition_pe]="https://smartnutrition.com.pe/wp-json/wc/store/v1/products?per_page=1"
+            [igardi_pe]="https://igardi.com/wp-json/wc/store/v1/products?per_page=1"
+            [thegreenkiss_ca]="https://www.thegreenkiss.com/products.json?limit=1"
+            [simplynaturalcanada_ca]="https://www.simplynaturalcanada.com/products.json?limit=1"
+          )
+          echo "runner egress IP:"
+          curl -s https://api.ipify.org
+          echo
+          for key in "${!ENDPOINTS[@]}"; do
+            url="${ENDPOINTS[$key]}"
+            code=$(curl -s -A "$UA" -o /tmp/resp_$key.json -w "%{http_code}" --max-time 20 "$url")
+            size=$(wc -c < /tmp/resp_$key.json)
+            echo "$key -> HTTP $code, body size $size bytes"
+            head -c 200 /tmp/resp_$key.json
+            echo
+            echo "---"
+          done
