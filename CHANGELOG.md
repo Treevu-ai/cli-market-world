@@ -2,6 +2,13 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-20] — bump cli-market-core 1.12.43 -> 1.12.44 (add Farmacity AR)
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.44`. Adds
+Farmacity — first Argentina pharmacy in the moat, VTEX (published VTEX
+case study), confirmed live with real priced products. Config-only, no
+new connector code.
+
 ## [2026-08-20] — bump cli-market-core 1.12.42 -> 1.12.43 + new collect-egress-blocked-stores.yml workflow
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.43` (adds
