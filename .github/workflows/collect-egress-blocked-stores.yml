@@ -31,6 +31,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/checkout@v6
+        with:
+          repository: Treevu-ai/cli-market-index
+          ref: 4ed5f585ece892722cac1d06cb82f2d671635c5d
+          path: .deps/cli-market-index
+          token: ${{ secrets.GH_PAT }}
+
       - name: Install dependencies
         run: |
           grep -v '^cli-market-index' requirements.txt > /tmp/ci-requirements.txt
