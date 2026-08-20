@@ -2,6 +2,21 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-20] — bump cli-market-core 1.12.42 -> 1.12.43 + new collect-egress-blocked-stores.yml workflow
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.43` (adds
+`ShopifyConnector.fetch_all_products`, needed for `--catalog-store` to
+work on Shopify stores at all). New scheduled workflow
+`.github/workflows/collect-egress-blocked-stores.yml` runs
+`collect_prices.py --catalog-store smartnutrition_pe --catalog-store
+simplynaturalcanada_ca` daily from a GitHub Actions runner — both stores
+WAF-block Fly.io's collector IP but pass from GH Actions egress
+(confirmed live), so this is a free fix, no proxy service. Writes
+straight to the same production Postgres via `secrets.DATABASE_URL`,
+same pattern as `db-lock-monitor.yml`. `thegreenkiss_ca` was tested too
+but stays disabled — GH Actions egress is also Cloudflare-challenged
+there.
+
 ## [2026-08-20] — bump cli-market-core 1.12.41 -> 1.12.42 (add Farmacia Universal + InkaFarma + Mifarma PE)
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.42`. Adds three

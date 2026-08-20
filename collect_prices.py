@@ -893,7 +893,7 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
 
     cfg = resolve_store_config(store)
     platform = cfg.get("platform", "vtex")
-    if platform not in ("vtex", "woocommerce", "estacion90"):
+    if platform not in ("vtex", "woocommerce", "estacion90", "shopify"):
         return 0
     connector = get_connector(platform)
     if platform == "estacion90":
