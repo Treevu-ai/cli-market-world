@@ -212,6 +212,72 @@ def test_fuzzy_compare_without_q_tokens_still_sorts_by_price():
     assert comparison[0]["name"] == "Producto barato"
 
 
+def test_fuzzy_compare_reports_stores_compared_per_product():
+    """Real-world gap: a 'top N most dispersed SKUs' query mixed products
+    seen in 2+ stores (real dispersion) with products seen in exactly 1
+    store (nothing to compare, CV is meaningless) with no way to tell them
+    apart. Every comparison entry must carry stores_compared."""
+    from routers.search import _fuzzy_compare
+
+    all_products = {
+        "storeA": [{"name": "Silk Almendra 1L", "brand": "Silk", "price": 10.0}],
+        "storeB": [{"name": "Silk Almendra 1L", "brand": "Silk", "price": 12.0}],
+        "storeC": [{"name": "Monster Energy 473ml", "brand": "Monster", "price": 5.0}],
+    }
+
+    comparison = _fuzzy_compare(all_products, list(all_products.keys()))
+    by_name = {c["name"]: c for c in comparison}
+
+    assert by_name["Silk Almendra 1L"]["stores_compared"] == 2
+    assert by_name["Monster Energy 473ml"]["stores_compared"] == 1
+
+
+def test_fuzzy_compare_deprioritizes_low_coverage_store_over_price():
+    """Real example from live validation: market_compare(query='leche', country='AR')
+    without a store filter returned mostly 'dulce de leche' from a
+    28%-coverage specialty store ahead of actual milk from 100%-coverage
+    supermarket chains, because both legitimately token-match 'leche' and
+    the specialty store's price happened to be lower. A well-covered store
+    should win within the same relevance tier even when pricier."""
+    from routers.search import _fuzzy_compare
+
+    all_products = {
+        "specialty_low_coverage": [
+            {"name": "Dulce De Leche Clasico", "brand": "", "price": 4.99},
+        ],
+        "supermarket_high_coverage": [
+            {"name": "Leche Entera Sachet 1L", "brand": "", "price": 1975.0},
+        ],
+    }
+    coverage_by_store = {
+        "specialty_low_coverage": 28.6,
+        "supermarket_high_coverage": 100.0,
+    }
+
+    comparison = _fuzzy_compare(
+        all_products,
+        list(all_products.keys()),
+        coverage_by_store=coverage_by_store,
+    )
+
+    assert comparison[0]["best_store"] == "supermarket_high_coverage"
+
+
+def test_fuzzy_compare_without_coverage_dict_falls_back_to_price():
+    """No regression when coverage_by_store isn't supplied (e.g. source_health
+    lookup failed) -- behaves exactly as before this change."""
+    from routers.search import _fuzzy_compare
+
+    all_products = {
+        "storeA": [{"name": "Producto caro", "brand": "", "price": 9.9}],
+        "storeB": [{"name": "Producto barato", "brand": "", "price": 1.5}],
+    }
+
+    comparison = _fuzzy_compare(all_products, ["storeA", "storeB"])
+
+    assert comparison[0]["best_store"] == "storeB"
+
+
 def test_search_exposes_snapshot_identity_and_observation_when_available():
     import routers.search as search_mod
     from price_snapshots_schema import ensure_canonical_product_id_column
@@ -344,6 +410,49 @@ def test_search_category_filter_narrows_broad_query():
         db.close()
 
 
+def test_search_products_db_deprioritizes_low_coverage_store_results():
+    """End-to-end version of the _fuzzy_compare unit test above, through
+    _search_products_db's own sort (which doesn't go through _fuzzy_compare)."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    cheap_low_cov = "leche_low_cov_store"
+    pricier_high_cov = "leche_high_cov_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (cheap_low_cov, pricier_high_cov))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("leche-cov-1", cheap_low_cov, "Leche barata cobertura baja", 1.79, "ARS"),
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("leche-cov-2", pricier_high_cov, "Leche cara cobertura alta", 1975.0, "ARS"),
+    )
+    db.commit()
+    db.close()
+    fake_health = {
+        "summary": {"ok": 1, "partial": 1, "dead": 0, "total": 2},
+        "stores": [
+            {"store": cheap_low_cov, "coverage_7d_pct": 28.6},
+            {"store": pricier_high_cov, "coverage_7d_pct": 100.0},
+        ],
+    }
+    try:
+        with patch.object(
+            search_mod, "_resolve_search_stores", return_value=[cheap_low_cov, pricier_high_cov]
+        ), patch("market_core.source_health.health_for_stores", return_value=fake_health):
+            body = SearchRequest(query="leche", require_all=True)
+            result = _search_products_db(body)
+        assert result["results"][0]["store"] == pricier_high_cov
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (cheap_low_cov, pricier_high_cov))
+        db.commit()
+        db.close()
+
+
 # ── Growth-tier priority tiebreak ────────────────────────────────────────────
 # growth stores win exact price ties only — never outrank a genuinely
 # cheaper competitor, so "cheapest first" stays honest regardless of who paid.
@@ -447,6 +556,83 @@ def test_compare_truncates_comparison_to_requested_limit():
         db = get_db()
         for s in stores:
             db.execute("DELETE FROM price_snapshots WHERE store = ?", (s,))
+        db.commit()
+        db.close()
+
+
+def test_compare_min_stores_filters_single_store_matches():
+    """Real ticket from a user's live audit: 'top 10 SKU con mas dispersion'
+    mixed products genuinely seen in 2+ stores with products seen in only 1
+    (no dispersion to measure). min_stores=2 must drop the latter and report
+    how many were excluded."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _compare_products_db
+
+    multi_store = ["min_stores_multi_a", "min_stores_multi_b"]
+    single_store = ["min_stores_single"]
+    all_stores = multi_store + single_store
+    db = get_db()
+    for s in all_stores:
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (s,))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("ms-multi-a", multi_store[0], "Silk Almendra Unica9x 1L", 10.0, "PEN"),
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("ms-multi-b", multi_store[1], "Silk Almendra Unica9x 1L", 12.0, "PEN"),
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("ms-single", single_store[0], "Monster Unica9x Energy", 5.0, "PEN"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=all_stores):
+            body = SearchRequest(query="unica9x", require_all=True, min_stores=2)
+            result = _compare_products_db(body)
+        names = [c["name"] for c in result["comparison"]]
+        assert "Silk Almendra Unica9x 1L" in names
+        assert "Monster Unica9x Energy" not in names
+        assert result["excluded_below_min_stores"] == 1
+    finally:
+        db = get_db()
+        for s in all_stores:
+            db.execute("DELETE FROM price_snapshots WHERE store = ?", (s,))
+        db.commit()
+        db.close()
+
+
+def test_compare_min_stores_default_does_not_filter():
+    """No regression: default min_stores=1 keeps current behavior (no filter,
+    no excluded_below_min_stores key)."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _compare_products_db
+
+    single_store = ["min_stores_default_single"]
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (single_store[0],))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("ms-default-1", single_store[0], "Gatorade Unica2q 500ml", 3.0, "PEN"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=single_store):
+            body = SearchRequest(query="unica2q", require_all=True)
+            result = _compare_products_db(body)
+        names = [c["name"] for c in result["comparison"]]
+        assert "Gatorade Unica2q 500ml" in names
+        assert "excluded_below_min_stores" not in result
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (single_store[0],))
         db.commit()
         db.close()
 

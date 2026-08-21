@@ -247,40 +247,42 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
     """Return the most price-volatile products in the moat over the last 7 days,
     optionally filtered by country and business line. Each row includes change_pct
     (positive = price rose, negative = fell) and trend ('up' | 'down' | 'stable' | 'new').
-    Products with no prior snapshot are ranked last. Maps to the market_trending MCP tool."""
+    Products with no prior snapshot are ranked last. Maps to the market_trending MCP tool.
+
+    Note: `line` filters by the STORE's business line, not a food/product
+    subcategory — a supermercados-line store's furniture or electronics SKUs
+    can still show up here. There is no subcategory filter today."""
     require_pro(authorization)
     db = get_db()
 
-    # Get the latest snapshot per (product_id, store) plus the most recent
-    # snapshot from ≥7 days ago for the same pair, to compute price velocity.
-    q = """
+    # price_snapshots holds exactly one row per (product_id, store) — the
+    # collector upserts it every cycle, it is NOT a history table (see
+    # GET /analytics/price-history/series's docstring). A self-join/
+    # correlated-subquery against price_snapshots for "the price 7 days ago"
+    # can therefore never return a genuine prior price: there is only ever
+    # the current row. That was the real bug behind "15/15 results came back
+    # change_pct: null/0" — this now reads the actual prior price from
+    # price_history, the append-only log that DOES carry historical points.
+    base_select = """
         SELECT
-            p.name, p.store_name,
+            p.product_id, p.store, p.name, p.store_name,
             p.price        AS current_price,
             p.currency, p.line_name, p.queried_at,
             (
-                SELECT price FROM price_snapshots
+                SELECT price FROM price_history
                 WHERE product_id = p.product_id
                   AND store = p.store
                   AND price > 0
-                  AND queried_at <= datetime('now', '-7 days')
-                ORDER BY queried_at DESC LIMIT 1
+                  AND recorded_at <= datetime('now', '-7 days')
+                ORDER BY recorded_at DESC, id DESC LIMIT 1
             ) AS prev_price
         FROM price_snapshots p
-        JOIN (
-            SELECT product_id, store, MAX(queried_at) AS latest_at
-            FROM price_snapshots
-            WHERE price > 0
-            GROUP BY product_id, store
-        ) cur
-          ON p.product_id = cur.product_id
-         AND p.store      = cur.store
-         AND p.queried_at = cur.latest_at
-        WHERE p.price > 0
+        WHERE p.price > 0 AND (p.stock IS NULL OR p.stock != 0)
     """
+    filters = ""
     params: list = []
     if line:
-        q += " AND p.line = ?"
+        filters += " AND p.line = ?"
         params.append(line)
     if country:
         country_stores = [
@@ -289,27 +291,49 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
         ]
         if country_stores:
             placeholders = ",".join("?" * len(country_stores))
-            q += f" AND p.store IN ({placeholders})"
+            filters += f" AND p.store IN ({placeholders})"
             params.extend(country_stores)
-    q += " LIMIT ?"
-    params.append(limit * 3)  # fetch extra before re-ranking by velocity
-    rows = db.execute(q, params).fetchall()
-    db.close()
 
+    # First pass: only rows with a real ≥7-day-old snapshot to compare against,
+    # so an unordered sample of "recently seen" products (which for a big,
+    # continuously-scraped catalog rarely lines up with the shrinking pool of
+    # 7-day-old rows) can't crowd out every actual mover. Padded below if short.
+    matched_q = f"SELECT * FROM ({base_select}{filters}) t WHERE prev_price IS NOT NULL LIMIT ?"
+    matched_rows = db.execute(matched_q, [*params, limit * 5]).fetchall()
+
+    seen: set[tuple] = set()
     results = []
-    for row in rows:
+    for row in matched_rows:
         r = dict(row)
+        key = (r.pop("product_id", None), r.pop("store", None))
+        seen.add(key)
         current = r.pop("current_price", 0) or 0
         prev = r.pop("prev_price", None)
         r["price"] = current
-        if prev and prev > 0 and current > 0:
-            change_pct = round((current - prev) / prev * 100, 1)
-            r["change_pct"] = change_pct
-            r["trend"] = "up" if change_pct > 1 else ("down" if change_pct < -1 else "stable")
-        else:
+        change_pct = round((current - prev) / prev * 100, 1) if prev and prev > 0 and current > 0 else None
+        r["change_pct"] = change_pct
+        r["trend"] = "up" if change_pct and change_pct > 1 else ("down" if change_pct and change_pct < -1 else "stable")
+        results.append(r)
+
+    if len(results) < limit:
+        pad_q = f"SELECT * FROM ({base_select}{filters}) t LIMIT ?"
+        pad_rows = db.execute(pad_q, [*params, limit * 3]).fetchall()
+        for row in pad_rows:
+            if len(results) >= limit * 3:  # enough candidates to rank from
+                break
+            r = dict(row)
+            key = (r.pop("product_id", None), r.pop("store", None))
+            if key in seen:
+                continue
+            seen.add(key)
+            current = r.pop("current_price", 0) or 0
+            r.pop("prev_price", None)
+            r["price"] = current
             r["change_pct"] = None
             r["trend"] = "new"
-        results.append(r)
+            results.append(r)
+
+    db.close()
 
     # Rank by absolute price velocity; products with no baseline go last
     results.sort(

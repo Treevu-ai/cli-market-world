@@ -337,6 +337,22 @@ async def gov_collect_bcrp() -> Dict[str, Any]:
     return {"collected": len(snapshots), "resolved": resolved, "registry_size": svc.size}
 
 
+def gov_list_observations(
+    commodity_slug: str = "", region: str = "", limit: int = 30
+) -> List[Dict[str, Any]]:
+    """Recent gov-source price observations (BCRP, SISAP, Osinergmin), most
+    recent first, optionally filtered by commodity_slug and/or region.
+    Never raises — callers get an empty list on failure instead of a 500."""
+    try:
+        svc = _get_service()
+        return svc.list_gov_observations(
+            commodity_slug=commodity_slug, region=region, limit=limit
+        )
+    except Exception as exc:
+        logger.warning("gov_list_observations failed: %s", exc)
+        return []
+
+
 def gov_macro_snapshot() -> Dict[str, Any]:
     """Latest tipo de cambio (venta/compra) + IPC Lima from gov-sourced
     Golden Records. Never raises — callers get an empty-shaped response on

@@ -305,6 +305,59 @@ def test_trending_with_line_filter():
     assert "trending" in data
 
 
+def test_trending_surfaces_real_mover_among_many_no_baseline_products():
+    """Real bug from live validation: 15/15 trending results came back with
+    change_pct null/0. Root cause: price_snapshots holds exactly one row per
+    (product_id, store) -- the collector upserts it every cycle -- so the old
+    query's self-correlated-subquery against price_snapshots for "the price
+    7 days ago" could structurally never return a genuine prior price (only
+    ever the current row). Seed a real mover with a price_history point from
+    8 days ago plus many no-history "noise" rows, and confirm the mover
+    surfaces with a real change_pct now that the query reads price_history."""
+    from market_core import get_db
+
+    line = "trending_regression_line"
+    store = "trending_regression_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    db.execute("DELETE FROM price_history WHERE store = ?", (store,))
+    for i in range(20):
+        db.execute(
+            "INSERT INTO price_snapshots "
+            "(product_id, store, name, price, currency, line, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+            (f"trend-noise-{i}", store, f"Producto sin historial {i}", 100.0, "ARS", line),
+        )
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, name, price, currency, line, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+        ("trend-mover", store, "Producto que subio de precio", 150.0, "ARS", line),
+    )
+    db.execute(
+        "INSERT INTO price_history (product_id, store, price, list_price, discount, recorded_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now', '-8 days'))",
+        ("trend-mover", store, 100.0, None, None),
+    )
+    db.commit()
+    db.close()
+    try:
+        r = client.get(f"/analytics/trending?line={line}&limit=2", headers=_AUTH)
+        assert r.status_code == 200
+        data = r.json()
+        names = [row["name"] for row in data["trending"]]
+        assert "Producto que subio de precio" in names
+        mover = next(row for row in data["trending"] if row["name"] == "Producto que subio de precio")
+        assert mover["change_pct"] == 50.0
+        assert mover["trend"] == "up"
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.execute("DELETE FROM price_history WHERE store = ?", (store,))
+        db.commit()
+        db.close()
+
+
 # ── GET /analytics/brands ─────────────────────────────────────────────────────
 
 def test_brands_requires_auth():

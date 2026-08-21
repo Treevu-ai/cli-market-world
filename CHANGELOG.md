@@ -2,6 +2,44 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-21] — bump cli-market-core 1.12.46 -> 1.12.47 + world-side intel fixes from a live LATAM audit
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.47` — see that
+repo's changelog for the full list (CPI headline series-conflict gate,
+affordability spread gating + per-country disclaimer, line-scoped
+`intel_brief` coverage, `wiki_demand_momentum` language-scope labeling,
+scorecard description fix, `market_compare` `min_stores`).
+
+World-side companion fixes (same audit, verified live against production
+MCP 2026-08-21):
+
+- `routers/analytics.py` `analytics_trending`: real root cause found —
+  `price_snapshots` holds exactly one row per (product_id, store), the
+  collector upserts it every cycle, so the old query's self-join against
+  `price_snapshots` for "the price 7 days ago" could never return a
+  genuine prior price. Now reads the actual prior price from
+  `price_history`. This is why `market_trending` was returning 15/15
+  results with `change_pct: null/0`.
+- `routers/intel.py` `get_inflation`: excludes out-of-stock rows and
+  per-line-currency price outliers (>5x/<1/5 the median) from
+  `avg_now`/`avg_before` before computing `delta_pct` — a single
+  placeholder-scrape row (e.g. "1.79 ARS" milk) no longer swings a whole
+  line's average.
+- `routers/search.py` `market_search`/`market_compare`: results now rank
+  low-coverage stores (`coverage_7d_pct<60`) below well-covered ones
+  within the same relevance tier, so a query like "leche" without a
+  `store` filter doesn't surface mostly "dulce de leche" from a
+  28%-coverage specialty store ahead of actual milk from 100%-coverage
+  supermarket chains.
+- New `GET /v1/intel/gov-observations` route (`market_gov_observations`
+  MCP tool previously 404'd — the underlying `list_gov_observations`
+  service call existed, it just had no REST route exposing it).
+- `GET /v1/intel/brief`'s embedded `affordability` sub-object now uses
+  the same v2 computation as the standalone `market_affordability` tool
+  (core's `build_intel_brief` can't depend on world's v2 override
+  directly — see `market_intel_v2.py`'s module docstring — so this is
+  patched at the router level instead).
+
 ## [2026-08-20] — bump cli-market-core 1.12.45 -> 1.12.46 + fix price_history gap in the full-catalog collection path
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.46` (adds

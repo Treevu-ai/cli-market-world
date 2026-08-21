@@ -139,6 +139,13 @@ class SearchRequest(BaseModel):
     # returned toys/cookware/car batteries sharing only a bare '11' token.
     # Mirrors the require_all already used by the basket auto-picker below.
     require_all: bool = False
+    # market_compare only: minimum number of stores a matched product must
+    # appear in to be included. Default 1 (no filtering, current behavior).
+    # A CV/dispersion figure computed over a single store isn't dispersion —
+    # it's just that store's price. Set >=2 to only see products where a
+    # real cross-store comparison exists (see `stores_compared` on each
+    # comparison entry, always returned regardless of this filter).
+    min_stores: int = 1
 
     @field_validator("query")
     @classmethod
@@ -310,7 +317,24 @@ def _search_products_db(body: SearchRequest) -> dict:
         results.append(row)
 
     growth_stores = _growth_store_set()
+    response: dict = {
+        "query": body.query, "results": results, "total": len(results),
+        "stores_resolved": len(stores),
+    }
+    response = _attach_source_health(response, stores)
+    # Coverage-aware ranking: without a `store` filter, a query like "leche"
+    # legitimately matches "dulce de leche" too, and a cheap-but-barely-
+    # scraped specialty store (coverage_7d_pct in the 20-40% range) can then
+    # outrank a well-covered supermarket on price alone. Bucket by coverage
+    # first (>=60% before <60%, matching source_health's own threshold) so
+    # low-confidence stores don't crowd out high-confidence ones; price still
+    # decides within each bucket.
+    coverage_by_store = {
+        s["store"]: s.get("coverage_7d_pct", 0) or 0
+        for s in response.get("source_health", {}).get("stores", [])
+    }
     results.sort(key=lambda p: (
+        0 if coverage_by_store.get(p.get("store"), 100) >= 60 else 1,
         p["price"] if p["price"] > 0 else float("inf"),
         0 if p.get("store") in growth_stores else 1,
     ))
@@ -321,13 +345,9 @@ def _search_products_db(body: SearchRequest) -> dict:
     # requested limit is applied -- results must be truncated here or callers
     # asking for limit=5 got every surviving candidate instead (confirmed
     # live: limit=5 on "leche"/PE returned 99 rows instead of 5).
-    results = results[: body.limit]
-
-    response: dict = {
-        "query": body.query, "results": results, "total": total_matched,
-        "stores_resolved": len(stores),
-    }
-    return _attach_source_health(response, stores)
+    response["results"] = results[: body.limit]
+    response["total"] = total_matched
+    return response
 
 
 def _enrich_basket_identity(result: dict, db) -> dict:
@@ -420,7 +440,10 @@ def _match_key(p: dict) -> str:
 
 
 def _fuzzy_compare(
-    all_products: dict[str, list[dict]], stores: list[str], q_tokens: list[str] | None = None
+    all_products: dict[str, list[dict]],
+    stores: list[str],
+    q_tokens: list[str] | None = None,
+    coverage_by_store: dict[str, float] | None = None,
 ) -> list[dict]:
     """Cross-store brand+name fuzzy matching, shared by the DB and live compare paths."""
     key_index: dict[str, dict] = {}
@@ -481,11 +504,26 @@ def _fuzzy_compare(
                         "prices": prices,
                         "best_store": best,
                         "best_price": prices[best],
+                        # How many stores this product was actually matched
+                        # against. A CV/dispersion figure computed with
+                        # stores_compared=1 isn't dispersion — there's
+                        # nothing to compare. Always present so a caller can
+                        # tell "identical price everywhere" (stores_compared
+                        # >=2, spread=0) apart from "only seen once"
+                        # (stores_compared=1) without guessing.
+                        "stores_compared": len(prices),
                         "_match_count": match_count,
                     }
                 )
+    coverage_by_store = coverage_by_store or {}
     comparison.sort(key=lambda x: (
         -x["_match_count"],
+        # Low-coverage stores (barely scraped, coverage_7d_pct<60) can still
+        # win on price for genuinely-matching-but-off-target products (e.g.
+        # "leche" query legitimately token-matching "dulce de leche" at a
+        # specialty store) — don't let them outrank well-covered stores
+        # within the same relevance tier.
+        0 if coverage_by_store.get(x.get("best_store", ""), 100) >= 60 else 1,
         x["best_price"],
         0 if x.get("best_store") in growth_stores else 1,
     ))
@@ -541,13 +579,28 @@ def _compare_products_db(body: SearchRequest) -> dict:
             continue
         all_products.setdefault(row["store"], []).append(row)
 
-    comparison = _fuzzy_compare(all_products, stores, q_tokens=q_tokens)
+    payload = _attach_source_health(payload, list(all_products.keys()) or stores)
+    coverage_by_store = {
+        s["store"]: s.get("coverage_7d_pct", 0) or 0
+        for s in payload.get("source_health", {}).get("stores", [])
+    }
+    comparison = _fuzzy_compare(
+        all_products, stores, q_tokens=q_tokens, coverage_by_store=coverage_by_store
+    )
+    total_matched_before_min_stores = len(comparison)
+    if body.min_stores > 1:
+        comparison = [c for c in comparison if c["stores_compared"] >= body.min_stores]
     # Same over-fetch-then-truncate issue as _search_products_db: build_search_sql's
     # candidate cap (up to limit*20) is a fetch-side budget for relevance
-    # filtering, not the caller's requested result count.
+    # filtering, not the caller's requested result count. Truncate AFTER the
+    # coverage-aware sort and min_stores filter above, not before — otherwise
+    # a low-coverage or single-store match could consume a limit slot ahead
+    # of a better-covered one that only gets reordered/filtered post-truncation.
     payload["comparison"] = comparison[: body.limit]
     payload["stores_compared"] = len(all_products)
-    return _attach_source_health(payload, list(all_products.keys()) or stores)
+    if body.min_stores > 1:
+        payload["excluded_below_min_stores"] = total_matched_before_min_stores - len(comparison)
+    return payload
 
 
 async def _compare_products_live(body: SearchRequest) -> dict:
@@ -565,7 +618,15 @@ async def _compare_products_live(body: SearchRequest) -> dict:
                 pass
 
     comparison = _fuzzy_compare(all_products, stores, q_tokens=_query_tokens(body.query))
+    if body.min_stores > 1:
+        before = len(comparison)
+        comparison = [c for c in comparison if c["stores_compared"] >= body.min_stores]
+        payload_excluded = before - len(comparison)
+    else:
+        payload_excluded = None
     payload: dict = {"query": body.query, "comparison": comparison, "stores_compared": len(all_raw)}
+    if payload_excluded is not None:
+        payload["excluded_below_min_stores"] = payload_excluded
     if body.country:
         payload["country"] = body.country.strip().upper()
     if errors:

@@ -15,6 +15,7 @@ Endpoints:
   POST /v1/intel/enrichment/refresh         Trigger enrichment-only refresh
   GET  /v1/intel/macro                      Tipo de cambio + IPC Lima (BCRP, oficial)
   POST /v1/intel/macro/refresh              Fetch latest BCRP tipo de cambio + IPC
+  GET  /v1/intel/gov-observations           Raw gov-source observations by commodity_slug/region
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ from market_core import STORES, get_db, price_to_usd
 from market_billing import db_get_subscription
 from market_security import validate_public_http_url
 from server_deps import require_pro, require_starter
-from index_gate import gov_collect_bcrp, gov_macro_snapshot
+from index_gate import gov_collect_bcrp, gov_list_observations, gov_macro_snapshot
 from backend_interface import (
     ENRICHMENT_INDICATOR_KEYS,
     build_intel_brief,
@@ -216,13 +217,43 @@ def intel_brief(
     require_pro(authorization)
     db = get_db()
     try:
-        return build_intel_brief(
+        brief = build_intel_brief(
             db,
             country=country.upper() if country else None,
             line=line,
             days=days,
             include_catalog=include_catalog,
         )
+        # build_intel_brief's embedded `affordability` comes from core's v1
+        # compute_affordability (canasta_min-based headline, generic
+        # disclaimer) -- core can't depend on this world-repo-only v2
+        # override (see market_intel_v2.py's module docstring). Without this,
+        # market_intel_brief.affordability and the standalone market_affordability
+        # tool disagree on both wording and which canasta basis "canastas por
+        # salario mínimo" means for the same country/day (confirmed live,
+        # 2026-08-21: PE showed 52.8 vs 15.6 canastas/SM for the same request
+        # window). Rebuild the same slim shape core produces, but from v2's
+        # numbers, so both surfaces agree.
+        if brief.get("affordability") is not None and brief.get("country"):
+            try:
+                aff = compute_affordability_v2(
+                    db, country=brief["country"], line=line, days=max(days, 30)
+                )
+                components = aff.get("components") or {}
+                brief["affordability"] = {
+                    "score": aff.get("affordability_score"),
+                    "band": aff.get("affordability_band"),
+                    "band_es": aff.get("affordability_band_es"),
+                    "headline_es": aff.get("headline_es"),
+                    "canasta_min": components.get("canasta_min"),
+                    "canasta_average": components.get("canasta_average"),
+                    "canastas_per_minimum_wage_band": components.get("canastas_per_minimum_wage_band"),
+                    "canasta_band_confidence": components.get("canasta_band_confidence"),
+                    "canasta_confidence_note": components.get("canasta_confidence_note"),
+                }
+            except Exception:
+                logger.debug("v2 affordability override skipped for brief", exc_info=True)
+        return brief
     finally:
         db.close()
 
@@ -294,7 +325,15 @@ def get_inflation(
     rolling window of `days` (default 7, max 90). Filter by country and line.
     Data comes from the price_snapshots moat — not official CPI. Use for procurement
     cost-trend analysis, price alerts, and inflation monitoring. Maps to the
-    market_inflation MCP tool."""
+    market_inflation MCP tool.
+
+    IMPORTANT: `avg_inflation_pct` / `retail_price_velocity_pct` are a single
+    number weighted by n_products ACROSS every `items[].line` returned. If you
+    omit `line`, that average blends supermercados with farmacias/electro/moda/
+    hogar/departamentales — it is a catalog-wide RPV, not a "grocery shelf
+    inflation" figure, and should not be compared against line-scoped signals
+    (e.g. market_intel_brief's staple RPV) without passing the same `line`
+    here. Always pass `line` when the caller cares about a specific channel."""
     require_pro(authorization)
     db = get_db()
     try:
@@ -307,6 +346,7 @@ def get_inflation(
                       FROM price_snapshots
                       WHERE price > 0 AND price < 999999 AND queried_at >= ?"""
         params: list = [recent_cutoff]
+        store_keys: list[str] = []
         if country:
             store_keys = [k for k, s in STORES.items() if s.get("country") == country.upper()]
             if not store_keys:
@@ -322,27 +362,42 @@ def get_inflation(
         pairs = db.execute(pair_sql, params).fetchall()
 
         from market_core import LINES
+        from price_confidence import price_vs_median_confidence
+
+        def _clean_avg(ln: str, cur: str, gte: str, lt: str | None) -> float:
+            """Mean price for (line, currency) in [gte, lt), excluding out-of-stock
+            rows and per-line-currency price outliers (>5x or <1/5 the median) —
+            a single sub-5-ARS "leche" row must not silently drag a whole line's
+            avg_inflation_pct, since that's what feeds delta_pct/avg_inflation_pct
+            below without any other safeguard."""
+            q = """SELECT price FROM price_snapshots
+                   WHERE line=? AND currency=? AND price>0 AND price<999999
+                     AND (stock IS NULL OR stock != 0) AND queried_at>=?"""
+            qparams = [ln, cur, gte]
+            if store_keys:
+                qparams.extend(store_keys)
+                q += f" AND store IN ({','.join('?' * len(store_keys))})"
+            if lt:
+                q += " AND queried_at<?"
+                qparams.append(lt)
+            prices = [float(r["price"]) for r in db.execute(q, qparams).fetchall()]
+            if not prices:
+                return 0.0
+            sorted_prices = sorted(prices)
+            median = sorted_prices[len(sorted_prices) // 2]
+            clean = [
+                p for p in prices
+                if price_vs_median_confidence(p, median) == "ok"
+            ] or prices  # never drop everything if the whole set looks "off"
+            return round(sum(clean) / len(clean), 2)
 
         items: list[dict] = []
         deltas: list[float] = []
         for pair in pairs:
             ln = pair["line"]
             cur = pair["currency"] or ""
-            recent_avg = db.execute(
-                """SELECT AVG(price) as avg_price
-                   FROM price_snapshots
-                   WHERE line=? AND currency=? AND price>0 AND price<999999 AND queried_at>=?""",
-                (ln, cur, recent_cutoff),
-            ).fetchone()
-            older_avg = db.execute(
-                """SELECT AVG(price) as avg_price
-                   FROM price_snapshots
-                   WHERE line=? AND currency=? AND price>0 AND price<999999
-                     AND queried_at>=? AND queried_at<?""",
-                (ln, cur, older_cutoff, recent_cutoff),
-            ).fetchone()
-            r_avg = round(float(recent_avg["avg_price"] or 0), 2) if recent_avg else 0.0
-            o_avg = round(float(older_avg["avg_price"] or 0), 2) if older_avg else 0.0
+            r_avg = _clean_avg(ln, cur, recent_cutoff, None)
+            o_avg = _clean_avg(ln, cur, older_cutoff, recent_cutoff)
             delta = round((r_avg - o_avg) / o_avg * 100, 1) if o_avg > 0 else 0
             deltas.append(delta)
             items.append({
@@ -533,6 +588,31 @@ async def refresh_macro(authorization: str | None = Header(None)):
     call on-demand rather than only on a schedule."""
     require_pro(authorization)
     return await gov_collect_bcrp()
+
+
+@router.get(
+    "/gov-observations",
+    summary="Raw gov-source price observations, filterable by commodity_slug/region",
+)
+def get_gov_observations(
+    commodity_slug: str = Query(""),
+    region: str = Query(""),
+    limit: int = Query(30, ge=1, le=200),
+    authorization: str | None = Header(None),
+):
+    """Recent gov-source observations (BCRP today; SISAP/Osinergmin as those
+    connectors ship) — most-recent-first, optionally filtered by
+    commodity_slug (e.g. "tipo_cambio_usd_pen", "ipc_lima") and/or region.
+    Maps to the market_gov_observations MCP tool. For the two BCRP series
+    combined into one snapshot, prefer /v1/intel/macro instead."""
+    require_pro(authorization)
+    return {
+        "observations": gov_list_observations(
+            commodity_slug=commodity_slug, region=region, limit=limit
+        ),
+        "commodity_slug": commodity_slug or None,
+        "region": region or None,
+    }
 
 
 # ── Enrichment ──────────────────────────────────────────────────────────────────

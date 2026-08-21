@@ -14,12 +14,50 @@ from market_core.market_intel_products import compute_affordability
 
 PROMO_DISCOUNT_THRESHOLD = 0.03  # 3% — docs/methodology.md §6
 
-_AFFORDABILITY_DISCLAIMER_ES = (
+_NATIONAL_CPI_INSTITUTE: dict[str, str] = {
+    "PE": "INEI",
+    "AR": "INDEC",
+    "MX": "INEGI",
+    "BR": "IBGE",
+    "CO": "DANE",
+    "CL": "INE",
+    "BO": "INE Bolivia",
+    "EC": "INEC",
+}
+
+_HOUSEHOLD_ADJECTIVE_ES: dict[str, str] = {
+    "PE": "peruano",
+    "AR": "argentino",
+    "MX": "mexicano",
+    "BR": "brasileño",
+    "CO": "colombiano",
+    "CL": "chileno",
+    "BO": "boliviano",
+    "EC": "ecuatoriano",
+}
+
+_AFFORDABILITY_DISCLAIMER_TEMPLATE_ES = (
     "La canasta CLI Market es un benchmark referencial de productos esenciales en "
     "canales digitales verificados. No representa el gasto mensual total de un hogar "
-    "peruano, que incluye canales no digitales, servicios y mayor variedad de categorías. "
-    "Precios observados en tiendas online indexadas; no reemplaza el IPC INEI ni encuestas de hogares."
+    "{household_adj}, que incluye canales no digitales, servicios y mayor variedad de categorías. "
+    "Precios observados en tiendas online indexadas; no reemplaza el IPC {institute} ni encuestas de hogares."
 )
+
+
+def _affordability_disclaimer_es(cc: str | None) -> str:
+    cc = (cc or "").upper()
+    return _AFFORDABILITY_DISCLAIMER_TEMPLATE_ES.format(
+        household_adj=_HOUSEHOLD_ADJECTIVE_ES.get(cc, "local"),
+        institute=_NATIONAL_CPI_INSTITUTE.get(cc, "oficial"),
+    )
+
+
+# Above this best-vs-worst canasta spread (%), the "canasta" isn't a single
+# comparable basket anymore -- e.g. AR 2026-08-21 live: best 1,498 ARS vs
+# worst 141,550 ARS, a ~9,350% spread, averaging in an outlier rather than
+# a real price range. Publishing a numeric score/band on top of that reads
+# as more precise than the underlying data supports.
+_AFFORDABILITY_SPREAD_GATE_THRESHOLD_PCT = 100.0
 
 _RPV_DISCLAIMER_ES = (
     "Retail Price Velocity (RPV): movimiento de precios observado en góndola online. "
@@ -194,8 +232,22 @@ def compute_affordability_v2(
         rpv_pct=float(rpv) if rpv is not None else None,
     )
     base["components"] = components
-    base["disclaimer_es"] = _AFFORDABILITY_DISCLAIMER_ES
+    base["disclaimer_es"] = _affordability_disclaimer_es(cc)
     base["methodology"] = "affordability_os_v2"
+
+    if spread_pct is not None and spread_pct > _AFFORDABILITY_SPREAD_GATE_THRESHOLD_PCT:
+        # Retailers in this canasta snapshot don't form one comparable basket
+        # (e.g. one store's total is 10x+ another's for the same item list) --
+        # publishing a numeric score/band on top of that average is more
+        # confident than the data supports. Surface the reason instead.
+        base["affordability_score"] = None
+        base["affordability_band"] = "unavailable"
+        base["affordability_band_es"] = "no disponible"
+        base["unavailable_reason"] = (
+            f"canasta_band_spread_pct ({spread_pct:.0f}%) excede el umbral de "
+            f"{_AFFORDABILITY_SPREAD_GATE_THRESHOLD_PCT:.0f}% -- los retailers comparados no "
+            "forman una canasta comparable en este momento (ver components.canasta_best/worst)."
+        )
     return base
 
 

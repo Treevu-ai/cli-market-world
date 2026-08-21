@@ -133,6 +133,54 @@ def test_inflation_unknown_country_returns_empty():
     assert data["avg_inflation_pct"] == 0
 
 
+def test_inflation_excludes_price_outliers_and_out_of_stock():
+    """Real example from live validation: a 1.79 ARS 'Leche' row next to
+    normal ~1975 ARS milk prices dragged avg_now/delta_pct for the whole
+    line. A single placeholder-scrape row shouldn't swing the aggregate."""
+    from market_core import get_db
+
+    store = "inflation_outlier_store"
+    line = "inflation_outlier_line"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    normal_rows = [
+        ("infl-out-1", 1900.0, None),
+        ("infl-out-2", 1950.0, None),
+        ("infl-out-3", 2000.0, None),
+        ("infl-out-4", 2050.0, 0),  # would be a normal price but out of stock
+    ]
+    for pid, price, stock in normal_rows:
+        db.execute(
+            "INSERT INTO price_snapshots "
+            "(product_id, store, name, price, currency, line, stock, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+            (pid, store, "Producto normal", price, "ARS", line, stock),
+        )
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, name, price, currency, line, stock, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+        ("infl-out-placeholder", store, "Producto con precio roto", 1.79, "ARS", line, None),
+    )
+    db.commit()
+    db.close()
+    try:
+        r = client.get(f"/v1/intel/inflation?line={line}", headers=_AUTH)
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data["items"]) == 1
+        item = data["items"][0]
+        # The three normal, in-stock rows (1900, 1950, 2000) should survive —
+        # the out-of-stock row (2050, stock=0) and the 1.79 placeholder
+        # (>5x below the median) are both excluded from the average.
+        assert item["avg_now"] == pytest.approx((1900.0 + 1950.0 + 2000.0) / 3, abs=0.01)
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.commit()
+        db.close()
+
+
 # ── GET /v1/intel/alerts ──────────────────────────────────────────────────────
 
 def test_alerts_requires_auth():
@@ -306,3 +354,37 @@ def test_macro_refresh_calls_gov_collect_bcrp(monkeypatch):
     data = r.json()
     assert data["collected"] == 3
     assert data["resolved"] == 3
+
+
+# ── GET /v1/intel/gov-observations ───────────────────────────────────────────
+
+def test_gov_observations_requires_auth():
+    r = client.get("/v1/intel/gov-observations")
+    assert r.status_code == 401
+
+
+def test_gov_observations_filters_by_commodity_slug(monkeypatch):
+    captured = {}
+
+    def fake_list(commodity_slug="", region="", limit=30):
+        captured["args"] = (commodity_slug, region, limit)
+        return [{"commodity_slug": commodity_slug, "price": 3.41}]
+
+    monkeypatch.setattr("routers.intel.gov_list_observations", fake_list)
+    r = client.get(
+        "/v1/intel/gov-observations?commodity_slug=tipo_cambio_usd_pen&limit=5",
+        headers=_AUTH,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["commodity_slug"] == "tipo_cambio_usd_pen"
+    assert data["observations"] == [{"commodity_slug": "tipo_cambio_usd_pen", "price": 3.41}]
+    assert captured["args"] == ("tipo_cambio_usd_pen", "", 5)
+
+
+def test_gov_observations_degrades_gracefully_when_empty(monkeypatch):
+    monkeypatch.setattr("routers.intel.gov_list_observations", lambda **kw: [])
+    r = client.get("/v1/intel/gov-observations?commodity_slug=ipc_lima", headers=_AUTH)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["observations"] == []
