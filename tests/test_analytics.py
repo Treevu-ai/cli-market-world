@@ -313,7 +313,12 @@ def test_trending_surfaces_real_mover_among_many_no_baseline_products():
     7 days ago" could structurally never return a genuine prior price (only
     ever the current row). Seed a real mover with a price_history point from
     8 days ago plus many no-history "noise" rows, and confirm the mover
-    surfaces with a real change_pct now that the query reads price_history."""
+    surfaces with a real change_pct now that the query reads price_history.
+
+    Uses -14 days (not -8) for the price_history point: market_db.py's
+    SQLite->Postgres datetime() translation only whitelists a fixed set of
+    literal patterns (-14/-7/-30 days, -24 hours, -1 day, bare 'now') -- -8
+    days isn't one of them and 500s on the Postgres CI job."""
     from market_core import get_db
 
     line = "trending_regression_line"
@@ -336,7 +341,7 @@ def test_trending_surfaces_real_mover_among_many_no_baseline_products():
     )
     db.execute(
         "INSERT INTO price_history (product_id, store, price, list_price, discount, recorded_at) "
-        "VALUES (?, ?, ?, ?, ?, datetime('now', '-8 days'))",
+        "VALUES (?, ?, ?, ?, ?, datetime('now', '-14 days'))",
         ("trend-mover", store, 100.0, None, None),
     )
     db.commit()
