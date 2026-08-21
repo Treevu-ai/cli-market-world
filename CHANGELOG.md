@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-21] — bump cli-market-core 1.12.47 -> 1.12.48
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.48` — fixes
+`demand_outlook`/`staple_demand`'s `scope: "language"` label (added in
+1.12.47) getting silently dropped by `build_intel_brief`'s
+`scores_summary` before it reached the API response. Found immediately
+while verifying 1.12.47 live post-deploy.
+
 ## [2026-08-21] — bump cli-market-core 1.12.46 -> 1.12.47 + world-side intel fixes from a live LATAM audit
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.47` — see that
