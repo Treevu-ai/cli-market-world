@@ -2,6 +2,22 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-24] — collector observability backlog COL-1…13
+
+Implementa el PRD de observabilidad del collector sin cerrar el data-gate:
+
+- COL-1/2/4: overlay + dashboard `fresh_24h` con `last_success`; `store_day_hit_rate_7d_pct`; `state=circuit_open`.
+- COL-3/9: `/health/collector` con identidad de catálogo y SLA `degraded` >5h / `stale` >8h (gate no cierra en degraded).
+- COL-5/6/7/11: scripts ops + workflows semanales; US DTC `casper`/`parachute`/`brooklinen` salen del denominador del gate (siguen en catálogo); `alo_yoga` en watch.
+- COL-8: monitor dual (collector_runs 5h **o** snapshot 6h).
+- COL-10: sparklines C&C requieren baseline (≥2 puntos reales).
+- COL-12: PAM billing acepta 403 (auth gate, no falso P0 collector).
+- COL-13: timeout Canasta PE 90s.
+
+El pin `cli-market-core==1.12.48` se mantiene hasta publicar 1.12.49; el overlay cubre COL-1/2/4 en este deploy.
+
+
+
 ## [2026-08-21] — bump cli-market-core 1.12.47 -> 1.12.48
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.48` — fixes

@@ -140,9 +140,16 @@ STORE_SUCCESS_WARN = 70.0
 
 
 def _sparkline(values: list[float], *, width: int = 10) -> str:
-    """Unicode mini-chart (oldest → newest, left to right)."""
-    if not values:
-        return "—"
+    """Unicode mini-chart (oldest → newest, left to right).
+
+    COL-10: no sparkline without a baseline (need ≥2 real points; ignore a
+    single spike padded with zeros).
+    """
+    if not values or len(values) < 2:
+        return "n/a"
+    nonzero = [v for v in values if v]
+    if len(nonzero) < 2:
+        return "n/a"
     subset = values[-width:]
     lo, hi = min(subset), max(subset)
     if hi == lo:
@@ -563,7 +570,7 @@ def _metric_cards(metrics: dict[str, Any], history: list[dict[str, Any]]) -> lis
     m = metrics["moat"]
     ix = metrics["index"]
     pam = metrics["pam"]
-    prev = history[-1] if history else {}
+    prev = history[-1] if len(history) >= 2 else {}
     pm, pi = prev.get("moat", {}), prev.get("index", {})
 
     cards: list[dict[str, str]] = [

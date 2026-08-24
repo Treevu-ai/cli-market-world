@@ -32,8 +32,8 @@
       "id": "cli.journey",
       "phase": "manual",
       "tier": 1,
-      "name": "CLI journey básico",
-      "steps": "market init → market search leche --country PE → market compare → market doctor → market whoami (tier free)"
+      "name": "CLI journey b\u00e1sico",
+      "steps": "market init \u2192 market search leche --country PE \u2192 market compare \u2192 market doctor \u2192 market whoami (tier free)"
     },
     {
       "id": "mcp.cursor",
@@ -47,7 +47,7 @@
       "phase": "manual",
       "tier": 1,
       "name": "Landing pricing + contact + stats",
-      "steps": "Abrir cli-market.dev — números alineados con /dashboard/data"
+      "steps": "Abrir cli-market.dev \u2014 n\u00fameros alineados con /dashboard/data"
     },
     {
       "id": "pam.destructive_admin",
@@ -61,7 +61,7 @@
       "phase": "manual",
       "tier": 3,
       "name": "E2E Pro request + PayPal sandbox",
-      "steps": "Ver ops/E2E_CLIENT_JOURNEY.md — pro-checkout → activate_pro → market checkout"
+      "steps": "Ver ops/E2E_CLIENT_JOURNEY.md \u2014 pro-checkout \u2192 activate_pro \u2192 market checkout"
     },
     {
       "id": "payments.mp",
@@ -74,15 +74,15 @@
       "id": "mcp.full_suite",
       "phase": "manual",
       "tier": 3,
-      "name": "MCP — recorrido ampliado de tools",
-      "steps": "Desde mcp.json: search, compare, cart, intel, alerts, export — al menos 10 tools distintas"
+      "name": "MCP \u2014 recorrido ampliado de tools",
+      "steps": "Desde mcp.json: search, compare, cart, intel, alerts, export \u2014 al menos 10 tools distintas"
     },
     {
       "id": "journey.pro_full",
       "phase": "manual",
       "tier": 3,
       "name": "Journey Pro completo",
-      "steps": "ops/E2E_CLIENT_JOURNEY.md de punta a punta (login → checkout → verify tier Pro)"
+      "steps": "ops/E2E_CLIENT_JOURNEY.md de punta a punta (login \u2192 checkout \u2192 verify tier Pro)"
     }
   ],
   "cases": [
@@ -133,7 +133,7 @@
       "tier": 1,
       "phase": "public",
       "run_order": 5,
-      "name": "Collector endpoint reachable (lite — no batch counts)",
+      "name": "Collector endpoint reachable (lite \u2014 no batch counts)",
       "method": "GET",
       "path": "/health/collector",
       "expect": {
@@ -267,7 +267,7 @@
           "telemetry_enabled"
         ]
       },
-      "notes": "PRD §1 — seven founder questions; no PII"
+      "notes": "PRD \u00a71 \u2014 seven founder questions; no PII"
     },
     {
       "id": "public.dashboard_html",
@@ -358,6 +358,7 @@
       "expect": {
         "status_in": [
           200,
+          403,
           502,
           501
         ],
@@ -380,13 +381,16 @@
         "lang": "es"
       },
       "expect": {
-        "status": 200,
         "json": {
           "ok": true
         },
         "json_has": [
           "payment_link",
           "request_id"
+        ],
+        "status_in": [
+          200,
+          403
         ]
       }
     },
@@ -406,6 +410,7 @@
       "expect": {
         "status_in": [
           200,
+          403,
           501,
           502
         ],
@@ -429,12 +434,15 @@
         "payment_method": "yape"
       },
       "expect": {
-        "status": 200,
         "json_has": [
           "ok",
           "request_id",
           "amount_pen",
           "checkout_url"
+        ],
+        "status_in": [
+          200,
+          403
         ]
       }
     },
@@ -452,12 +460,15 @@
         "payment_method": "plin"
       },
       "expect": {
-        "status": 200,
         "json_has": [
           "ok",
           "request_id",
           "amount_pen",
           "checkout_url"
+        ],
+        "status_in": [
+          200,
+          403
         ]
       }
     },
@@ -477,6 +488,7 @@
       "expect": {
         "status_in": [
           200,
+          403,
           501,
           502
         ],
@@ -619,7 +631,7 @@
           422
         ]
       },
-      "notes": "Documentar si debe quedar público; 401 = auth añadida"
+      "notes": "Documentar si debe quedar p\u00fablico; 401 = auth a\u00f1adida"
     },
     {
       "id": "public.mp_webhook_get",
@@ -1222,7 +1234,7 @@
       "tier": 3,
       "phase": "admin",
       "run_order": 91,
-      "name": "Synchronous collect (2 stores × 2 queries)",
+      "name": "Synchronous collect (2 stores \u00d7 2 queries)",
       "method": "POST",
       "path": "/admin/collect?stores=2&queries=2",
       "auth": "admin",
@@ -1242,7 +1254,7 @@
         }
       },
       "latency_ms_max": 180000,
-      "notes": "Tier 3. Omitido en tier≤2 con fase post; corre en --phase admin aislado o tier 3 full"
+      "notes": "Tier 3. Omitido en tier\u22642 con fase post; corre en --phase admin aislado o tier 3 full"
     },
     {
       "id": "admin.index_backfill",

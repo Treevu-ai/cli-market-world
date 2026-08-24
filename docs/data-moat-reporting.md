@@ -86,6 +86,7 @@ Estas son las métricas que **definen vuestro moat**. No están en las plantilla
 | **total_indexed** | Filas útiles en `price_snapshots` (último precio por product_id + store) | Crece con catálogo + feedback loop |
 | **snapshots_24h** | Observaciones con `queried_at` < 24h | 0 con inventario > 0 = moat envejeciendo |
 | **coverage_7d_pct** | % de `DEFAULT_STORES` con ≥1 snapshot en 7d | Gate marketing: **≥ 80%** |
+| **store_day_hit_rate_7d_pct** | Días con snapshot ÷ 7, *por tienda* (no es el gate) | Ops / sources/health |
 | **fresh_24h_pct** | % tiendas activas con refresh < 24h | Complemento a coverage |
 | **spread_ratio** | max/min en **subcategoría + moneda** (precio unitario si aplica) | >10x y ≠ `otros` → revisar o copy |
 | **canasta_spreads** | Spread por ítem canasta (10 productos) | ✅ basket homologado |

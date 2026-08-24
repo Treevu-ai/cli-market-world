@@ -435,10 +435,10 @@ Collector Docker/Fly **solo** en PRs que toquen `collect_prices.py` (COL-5 bypas
 
 | Store | success_pct 24-ago | Decisión | Fecha | Issue |
 |---|---|---|---|---|
-| casper | 30.7 | _pendiente_ | | COL-7 |
-| parachute | 31.0 | _pendiente_ | | COL-7 |
-| brooklinen | 31.1 | _pendiente_ | | COL-7 |
-| alo_yoga | 50.1 | _pendiente_ | | COL-7 |
+| casper | 30.7 | `delist_from_gate` — yield crónico ~31% pero fresh; no ensuciar el denominador del gate. Catalog se queda. | 2026-08-24 | COL-7 |
+| parachute | 31.0 | `delist_from_gate` (mismo patrón US DTC hogar) | 2026-08-24 | COL-7 |
+| brooklinen | 31.1 | `delist_from_gate` | 2026-08-24 | COL-7 |
+| alo_yoga | 50.1 | `watch` — más cerca de 70%; re-evaluar tras COL-5 probe. No GHA todavía. | 2026-08-24 | COL-7 |
 
 ---
 
