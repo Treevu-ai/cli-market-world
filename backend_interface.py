@@ -49,7 +49,16 @@ from store_credentials import (
     resolve_store_config,
     store_exists,
 )
-from source_health import build_sources_health
+from source_health import build_sources_health as _core_build_sources_health
+from source_health_overlay import apply_sources_health_overlay
+
+
+def build_sources_health(*args, **kwargs):
+    """Core payload + COL-1/2/4 overlay (fresh_24h COALESCE, circuit_open, hit-rate alias)."""
+    return apply_sources_health_overlay(_core_build_sources_health(*args, **kwargs))
+
+
+build_sources_health = build_sources_health
 from retailer_onboarding import (
     approve_retailer_application,
     reject_retailer_application,
@@ -103,6 +112,7 @@ __all__ = [
     "resolve_store_config",
     "store_exists",
     # source_health
+    "build_sources_health",
     "build_sources_health",
     # retailer_onboarding
     "approve_retailer_application",

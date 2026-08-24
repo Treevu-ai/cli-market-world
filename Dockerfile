@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Fly.io: pass via `fly deploy --build-secret github_token=$GITHUB_TOKEN` — never as --build-arg
 # (build args get persisted in plaintext in `fly config show`; secret mounts don't).
 COPY requirements.txt .
-ARG CACHE_BUST=2026-06-23-core-1.11.0
+ARG CACHE_BUST=2026-08-24-core-1.12.49
 RUN --mount=type=secret,id=github_token set -eux; \
     TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)"; \
     if [ -z "${TOKEN}" ]; then \

@@ -15,7 +15,6 @@ Endpoints:
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 
@@ -23,72 +22,17 @@ from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
 from backend_interface import build_sources_health, get_store_profile
 from store_credentials import get_custom_store_ids
+from collector_health import (
+    build_collector_catalog_identity,
+    circuit_skip_threshold,
+    derive_collector_status,
+)
 
 logger = logging.getLogger("market.server").getChild("health")
 
 router = APIRouter(tags=["health"])
 
-
-def _age_hours(timestamp_str: str | datetime | None) -> float | None:
-    """Parse a SQLite/Postgres timestamp and return hours since.
-
-    Accepts ISO strings, SQLite naive strings, or datetime objects from asyncpg/psycopg.
-    Returns None if parsing fails. UTC is assumed for naive values.
-    """
-    if timestamp_str is None:
-        return None
-    if isinstance(timestamp_str, datetime):
-        dt = timestamp_str
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
-    if not timestamp_str:
-        return None
-    try:
-        s = timestamp_str.replace("Z", "+00:00")
-        # SQLite's datetime('now') uses space as separator; ISO uses T.
-        # datetime.fromisoformat handles both since Python 3.11; for 3.10
-        # we replace space → T defensively.
-        if " " in s and "T" not in s:
-            s = s.replace(" ", "T", 1)
-        dt = datetime.fromisoformat(s)
-        # Naive timestamps from SQLite are UTC by convention here.
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
-    except Exception as e:
-        logger.warning("Could not parse timestamp %r: %s", timestamp_str, e)
-        return None
-
-
-def derive_collector_status(
-    *,
-    finished_at: str | datetime | None,
-    prices_collected: int | None,
-    moat_age_h: float | None = None,
-) -> tuple[str, float | None]:
-    """Map last collector run + moat freshness to a dashboard/health status.
-
-    ``ok`` — finished recently and ingested prices.
-    ``empty`` — finished recently but saved zero prices (runner alive, ingest broken).
-    ``stale`` — run or moat data older than SLA (8h moat / 12h run).
-    ``dead`` — run or moat very old (24h+).
-    """
-    if finished_at is None:
-        return "running", None
-    age_h = _age_hours(finished_at)
-    if age_h is None:
-        return "unknown", None
-    collected = int(prices_collected or 0)
-    if age_h > 24 or (moat_age_h is not None and moat_age_h >= 24):
-        return "dead", age_h
-    if age_h > 12 or (moat_age_h is not None and moat_age_h >= 8):
-        return "stale", age_h
-    if collected > 0:
-        return "ok", age_h
-    return "empty", age_h
-
-
+_circuit_skip_threshold = circuit_skip_threshold
 @router.get("/health")
 def health():
     return {"status": "healthy"}
@@ -159,6 +103,8 @@ def health_db():
 @router.get("/health/collector")
 def health_collector():
     """Collector health: last run, staleness, store coverage."""
+    circuit_open: list[str] = []
+    inactive: list[str] = []
     try:
         db = get_db()
         last = db.execute(
@@ -169,6 +115,24 @@ def health_collector():
         active_stores = db.execute(
             "SELECT COUNT(DISTINCT store) as n FROM price_snapshots WHERE price > 0"
         ).fetchone()["n"]
+        skip = _circuit_skip_threshold()
+        catalog = list(STORES)
+        try:
+            health_rows = db.execute(
+                "SELECT store, consecutive_failures, total_requests FROM store_health"
+            ).fetchall()
+            by_store = {r["store"]: r for r in health_rows}
+            circuit_open = sorted(
+                s for s in catalog
+                if int((by_store.get(s) or {}).get("consecutive_failures") or 0) >= skip
+            )
+            inactive = sorted(
+                s for s in catalog
+                if s not in by_store or int((by_store.get(s) or {}).get("total_requests") or 0) == 0
+            )
+            inactive = [s for s in inactive if s not in set(circuit_open)]
+        except Exception:
+            circuit_open, inactive = [], []
         db.close()
     except Exception:
         return {"status": "unknown", "error": "Database not initialized"}
@@ -186,6 +150,13 @@ def health_collector():
         status = "running"
         age_h = None
 
+    catalog_identity = build_collector_catalog_identity(
+        catalog_ids=list(STORES),
+        attempted=last["stores_attempted"] or 0,
+        succeeded=last["stores_succeeded"] or 0,
+        circuit_open=circuit_open,
+        inactive=inactive,
+    )
     return {
         "status": status,
         "last_run": last["started_at"],
@@ -197,6 +168,8 @@ def health_collector():
         "stores_active": active_stores or 0,
         "stores_total": len(STORES),
         "runs_total": total_runs,
+        "catalog": catalog_identity,
+        "data_gate_closes_on": ["stale", "dead"],
     }
 
 

@@ -26,7 +26,7 @@ OUT_PATH = ROOT / "landing/public/indice-canasta-pe.md"
 
 
 def _fetch(url: str) -> dict:
-    with urllib.request.urlopen(url, timeout=45) as resp:
+    with urllib.request.urlopen(url, timeout=90) as resp:
         return json.loads(resp.read().decode())
 
 

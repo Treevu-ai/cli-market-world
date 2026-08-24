@@ -93,35 +93,85 @@ def check_idle_transactions(max_idle_minutes: int) -> tuple[list[dict], str | No
         conn.close()
 
 
-def check_collector_freshness(max_stale_hours: int) -> dict | None:
-    """Hit the public dashboard endpoint for last_collected_at. Returns a
-    problem dict if stale or unreachable, else None."""
+def _parse_ts(raw) -> datetime | None:
+    if raw is None:
+        return None
+    ts = str(raw).replace("Z", "+00:00")
+    if " " in ts and "T" not in ts:
+        ts = ts.replace(" ", "T", 1)
+    try:
+        dt = datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except ValueError:
+        return None
+
+
+def check_run_clock(max_run_hours: float = 5.0) -> dict | None:
+    """COL-8: freshness from /health/collector last_finished (collector_runs)."""
+    url = f"{API_BASE}/health/collector"
+    try:
+        resp = httpx.get(url, timeout=30.0)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as exc:
+        return {"clock": "collector_runs", "error": f"health/collector fetch failed: {exc}"}
+
+    last_finished = data.get("last_finished") or data.get("last_run")
+    dt = _parse_ts(last_finished)
+    if dt is None:
+        return {"clock": "collector_runs", "error": f"unparseable last_finished: {last_finished}"}
+    age_hours = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+    if age_hours > max_run_hours:
+        return {
+            "clock": "collector_runs",
+            "last_finished": last_finished,
+            "age_hours": round(age_hours, 1),
+            "max_hours": max_run_hours,
+            "status": data.get("status"),
+        }
+    return None
+
+
+def check_collector_freshness(max_stale_hours: int, *, max_run_hours: float = 5.0) -> dict | None:
+    """Dual-clock freshness: snapshot KPI (6h) OR collector_runs (5h).
+
+    Returns a problem dict if either clock is stale/unreachable, else None.
+    HTTP /health/collector is the run-clock fallback when the PG proxy is down.
+    """
+    snapshot_problem = None
     try:
         resp = httpx.get(DASHBOARD_URL, timeout=30.0)
         resp.raise_for_status()
         data = resp.json()
+        kpis = data.get("kpis", {})
+        last_collected_raw = kpis.get("last_collected_at")
+        if not last_collected_raw:
+            snapshot_problem = {"clock": "snapshot", "error": "last_collected_at missing from dashboard/data"}
+        else:
+            last_dt = _parse_ts(last_collected_raw)
+            if last_dt is None:
+                snapshot_problem = {
+                    "clock": "snapshot",
+                    "error": f"unparseable last_collected_at: {last_collected_raw}",
+                }
+            else:
+                age_hours = (datetime.now(timezone.utc) - last_dt).total_seconds() / 3600
+                if age_hours > max_stale_hours:
+                    snapshot_problem = {
+                        "clock": "snapshot",
+                        "last_collected_at": last_collected_raw,
+                        "age_hours": round(age_hours, 1),
+                        "max_hours": max_stale_hours,
+                    }
     except Exception as exc:
-        return {"error": f"dashboard fetch failed: {exc}"}
+        snapshot_problem = {"clock": "snapshot", "error": f"dashboard fetch failed: {exc}"}
 
-    kpis = data.get("kpis", {})
-    last_collected_raw = kpis.get("last_collected_at")
-    if not last_collected_raw:
-        return {"error": "last_collected_at missing from dashboard/data"}
-
-    ts = str(last_collected_raw).replace("Z", "+00:00")
-    if " " in ts and "T" not in ts:
-        ts = ts.replace(" ", "T", 1)
-    try:
-        last_dt = datetime.fromisoformat(ts)
-        if last_dt.tzinfo is None:
-            last_dt = last_dt.replace(tzinfo=timezone.utc)
-    except ValueError:
-        return {"error": f"unparseable last_collected_at: {last_collected_raw}"}
-
-    age_hours = (datetime.now(timezone.utc) - last_dt).total_seconds() / 3600
-    if age_hours > max_stale_hours:
-        return {"last_collected_at": last_collected_raw, "age_hours": round(age_hours, 1)}
-    return None
+    run_problem = check_run_clock(max_run_hours=max_run_hours)
+    if snapshot_problem and run_problem:
+        return {"clocks": [snapshot_problem, run_problem], "clock": "both"}
+    return snapshot_problem or run_problem
 
 
 def main() -> int:
@@ -173,13 +223,28 @@ def main() -> int:
             )
         if idle_error:
             lines.append(f"\n*Chequeo de locks fallo:* {idle_error}")
-        if stale and "error" not in stale:
-            lines.append(
-                f"\n*Collector stale:* ultimo run hace {stale['age_hours']}h "
-                f"(ultimo: {stale['last_collected_at']}). Ciclo esperado: 4h."
-            )
-        elif stale and "error" in stale:
-            lines.append(f"\n*Collector check fallo:* {stale['error']}")
+        if stale:
+            clock = stale.get("clock", "unknown")
+            if stale.get("clocks"):
+                bits = []
+                for c in stale["clocks"]:
+                    if "error" in c:
+                        bits.append(f"{c.get('clock')}: {c['error']}")
+                    else:
+                        bits.append(
+                            f"{c.get('clock')} {c.get('age_hours')}h "
+                            f"(umbral {c.get('max_hours')}h)"
+                        )
+                lines.append("\n*Collector stale (doble reloj):* " + " · ".join(bits))
+            elif "error" in stale:
+                lines.append(f"\n*Collector check fallo ({clock}):* {stale['error']}")
+            else:
+                marker = stale.get("last_finished") or stale.get("last_collected_at")
+                lines.append(
+                    f"\n*Collector stale ({clock}):* edad {stale.get('age_hours')}h "
+                    f"(ultimo: {marker}). Ciclo esperado: 4h. "
+                    f"Umbral runs=5h / snapshot=6h."
+                )
 
         try:
             from slack_notify import deliver_to_alertas
