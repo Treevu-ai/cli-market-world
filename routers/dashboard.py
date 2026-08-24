@@ -31,7 +31,7 @@ from dashboard_view_model import build_dashboard_view_model
 from market_core.health_stats import compute_linkage_metrics
 from server_deps import require_admin, require_user
 
-from .health import _age_hours, derive_collector_status
+from collector_health import _age_hours, derive_collector_status
 
 router = APIRouter(tags=["dashboard"])
 

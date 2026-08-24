@@ -53,7 +53,7 @@ BLOCK_TIER_C = lambda: _env_bool("CHECKOUT_BLOCK_TIER_C", True)
 
 
 def _snapshot_age_sec(queried_at: Any) -> int | None:
-    from routers.health import _age_hours
+    from collector_health import _age_hours
 
     hours = _age_hours(queried_at)
     if hours is None:

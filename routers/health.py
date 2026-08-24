@@ -15,8 +15,6 @@ Endpoints:
 from __future__ import annotations
 
 import logging
-import os
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 
@@ -24,16 +22,13 @@ from market_core import STORES, LINES, COUNTRIES, get_db
 from server_deps import check_rate_limit
 from backend_interface import build_sources_health, get_store_profile
 from store_credentials import get_custom_store_ids
-
-logger = logging.getLogger("market.server").getChild("health")
-
 from collector_health import (
-    WAF_GHA_ONLY_STORES,
-    _age_hours,
     build_collector_catalog_identity,
     circuit_skip_threshold,
     derive_collector_status,
 )
+
+logger = logging.getLogger("market.server").getChild("health")
 
 router = APIRouter(tags=["health"])
 
