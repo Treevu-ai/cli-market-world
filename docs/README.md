@@ -2,6 +2,14 @@
 
 **Start here in Obsidian:** [[GTM-Hub]]
 
+## Product PRDs (Intelligence)
+
+| Document | Description |
+|----------|-------------|
+| [prd-brand-intelligence-v1.md](./prd-brand-intelligence-v1.md) | Brand Monitor — PVP vs góndola digital por marca |
+| [prd-digital-gondola-v0.md](./prd-digital-gondola-v0.md) | Góndola Digital — surtido/precio online; no Nielsen espacio |
+| [backlog-digital-gondola.md](./backlog-digital-gondola.md) | Backlog Now/Next/Later del add-on |
+
 ## GTM package
 
 | Document | Description |

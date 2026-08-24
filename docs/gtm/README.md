@@ -25,3 +25,12 @@ Material para el piloto **Intelligence** ($300–500/mes):
 **Estilo copy:** castellano neutro LATAM / Perú, tratamiento **usted** en B2B — ver `tools/content-repo-template/linkedin/STYLE-es.md`.
 
 **Antes de enviar outreach:** confirmar en LinkedIn que el contacto ocupa un rol relevante (ver tabla de roles en outreach doc). No hay decisores verificados precargados en este repo.
+
+### Add-on en definición — Góndola Digital
+
+Asesor de **surtido y precio en góndola formal online** (cobertura SKU×retailer, whitespace de tier, acciones LIST/PRICE/PROMO). **No** es NielsenIQ Optimize (facings, planograma, sell-out).
+
+| Doc | Uso |
+|-----|-----|
+| [prd-digital-gondola-v0.md](../prd-digital-gondola-v0.md) | PRD v0 |
+| [backlog-digital-gondola.md](../backlog-digital-gondola.md) | Now / Next / Later |
