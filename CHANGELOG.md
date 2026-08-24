@@ -14,7 +14,7 @@ Implementa el PRD de observabilidad del collector sin cerrar el data-gate:
 - COL-12: PAM billing acepta 403 (auth gate, no falso P0 collector).
 - COL-13: timeout Canasta PE 90s.
 
-El pin `cli-market-core==1.12.48` se mantiene hasta publicar 1.12.49; el overlay cubre COL-1/2/4 en este deploy.
+Pin de deploy `cli-market-core==1.12.49` (PyPI). El overlay COL-1/2/4 queda como red de seguridad si el pin se atrasa.
 
 
 
