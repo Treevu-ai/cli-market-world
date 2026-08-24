@@ -209,6 +209,8 @@ El collector no es la causa. PAM 403 es gating de billing (posible regresión de
 
 ## 6. Plan de abordaje
 
+Canónico para build: **[PRD — Collector Observability & Coverage Integrity](../prd-collector-observability-coverage.md)** (issues COL-1…COL-13 + user stories). El resto de esta sección es el resumen operativo del debug.
+
 ### Fase 0 — hoy (sin deploy de collector)
 
 1. Tratar el collector como **verde** en C&C / data-gate.
