@@ -139,7 +139,7 @@ def _load_rows(db) -> list[dict[str, Any]]:
            FROM price_snapshots"""
     )
     cols = [d[0] for d in cur.description]
-    return [dict(zip(cols, r)) for r in cur.fetchall()]
+    return [dict(zip(cols, r, strict=True)) for r in cur.fetchall()]
 
 
 def _candidate_stores(country: str, line: str | None) -> list[str]:
