@@ -24,6 +24,18 @@ def test_engine_loader_returns_callable():
     assert issubclass(err, ValueError)
 
 
+def test_rows_as_dicts_accepts_postgres_dict_rows():
+    from gondola_advise import _rows_as_dicts
+
+    class _PgLike:
+        description = None
+
+        def fetchall(self):
+            return [{"product_id": "g1", "store": "wong"}]
+
+    assert _rows_as_dicts(_PgLike()) == [{"product_id": "g1", "store": "wong"}]
+
+
 def test_validate_advice_rejects_list_without_evidence():
     with pytest.raises(GondolaAdviceError, match="evidence"):
         validate_advice({

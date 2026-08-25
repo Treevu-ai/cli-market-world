@@ -132,14 +132,25 @@ def _confidence(row: dict[str, Any] | None) -> str:
     return "ok" if row else "low"
 
 
+def _rows_as_dicts(cur) -> list[dict[str, Any]]:
+    """SQLite cursors yield tuples; world/core Postgres `_PgCursor` yields dicts."""
+    rows = cur.fetchall()
+    if not rows:
+        return []
+    first = rows[0]
+    if isinstance(first, dict):
+        return [dict(r) for r in rows]
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r, strict=True)) for r in rows]
+
+
 def _load_rows(db) -> list[dict[str, Any]]:
     cur = db.execute(
         """SELECT product_id, store, store_name, name, brand, price, list_price,
                   discount, line, currency, queried_at, confidence
            FROM price_snapshots"""
     )
-    cols = [d[0] for d in cur.description]
-    return [dict(zip(cols, r, strict=True)) for r in cur.fetchall()]
+    return _rows_as_dicts(cur)
 
 
 def _candidate_stores(country: str, line: str | None) -> list[str]:
