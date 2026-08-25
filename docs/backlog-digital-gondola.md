@@ -1,7 +1,7 @@
 ---
 title: Backlog — Góndola Digital
-status: Draft
-updated: 2026-08-24
+status: v0 code complete — pending merge + core pin
+updated: 2026-08-25
 prd: docs/prd-digital-gondola-v0.md
 owner: Ricardo Cuba
 ---
@@ -24,10 +24,10 @@ Objetivo: un cliente pega categoría + país + portafolio y recibe **3–7 accio
 Como plataforma, quiero un contrato JSON versionado (`scope`, `not_included`, `coverage`, `landscape`, `actions[]`) para que REST, MCP y PDF no diverjan.
 
 **AC:**
-- [ ] Schema publicado (OpenAPI o JSON Schema) en repo; `type` enum cerrado: `LIST|PRICE|PROMO|HOLD`.
-- [ ] `not_included` siempre presente con physical_space, facings, planogram, pos_share, market_share.
-- [ ] Test: payload sin `evidence` en `LIST|PRICE|PROMO` falla.
-- [ ] Test: rationale con palabra denylist (`facing`, `planograma`, `share of shelf`, `espacio lineal`) falla.
+- [x] Schema publicado (OpenAPI o JSON Schema) en repo; `type` enum cerrado: `LIST|PRICE|PROMO|HOLD`.
+- [x] `not_included` siempre presente con physical_space, facings, planogram, pos_share, market_share.
+- [x] Test: payload sin `evidence` en `LIST|PRICE|PROMO` falla.
+- [x] Test: rationale con palabra denylist (`facing`, `planograma`, `share of shelf`, `espacio lineal`) falla.
 
 **No hacer:** campos `facings`, `linear_cm`, `share_of_shelf`.
 
@@ -36,10 +36,10 @@ Como plataforma, quiero un contrato JSON versionado (`scope`, `not_included`, `c
 Como Elena (trade), quiero celdas `listed|missing|stale|insufficient_data` para mi portafolio × retailers del país.
 
 **AC:**
-- [ ] Input: `country`, `line`/`category`, lista de queries o `product_id`s.
-- [ ] Frescura: si el store no tiene snapshot reciente (mismo SLA que el resto de intel), celda `stale` — **no** `missing`.
-- [ ] Reutilizar snapshots; no nuevo crawl ad hoc.
-- [ ] Extiende o envuelve `build_coverage_matrix` (hoy línea×país); no reemplazar esa API pública sin deprecación.
+- [x] Input: `country`, `line`/`category`, lista de queries o `product_id`s.
+- [x] Frescura: si el store no tiene snapshot reciente (mismo SLA que el resto de intel), celda `stale` — **no** `missing`.
+- [x] Reutilizar snapshots; no nuevo crawl ad hoc.
+- [x] Extiende o envuelve `build_coverage_matrix` (hoy línea×país); no reemplazar esa API pública sin deprecación.
 
 **Esfuerzo:** M — es el hueco real vs la matriz actual.
 
@@ -48,9 +48,9 @@ Como Elena (trade), quiero celdas `listed|missing|stale|insufficient_data` para 
 Como Diego (pricing), quiero p20/p50/p80 y spread de la subcategoría en unidad comparable (kg/L/unidad).
 
 **AC:**
-- [ ] Misma normalización que compare/intel (no mezclar pack 400g con 1L sin convertir).
-- [ ] Si no hay unidad comparable, `landscape.status = insufficient_data`.
-- [ ] No inventar PVP.
+- [x] Misma normalización que compare/intel (no mezclar pack 400g con 1L sin convertir).
+- [x] Si no hay unidad comparable, `landscape.status = insufficient_data`.
+- [x] No inventar PVP.
 
 ### DG-04 — Motor de acciones (reglas)
 **P0 · core**  
@@ -68,37 +68,37 @@ Como Elena, quiero acciones priorizadas 1–N derivadas de cobertura + landscape
 | Poca cobertura de categoría | `HOLD` + `insufficient_data` |
 
 **AC:**
-- [ ] LLM opcional **solo** reescribe `rationale` a partir de `evidence`; no elige `type`.
-- [ ] Máximo 7 acciones; orden por (tipo LIST/PRICE antes que vanity, luego spread, luego frescura).
-- [ ] Tests unitarios por regla con fixtures de snapshots, sin red.
+- [x] LLM opcional **solo** reescribe `rationale` a partir de `evidence`; no elige `type`. (v0: sin LLM; type sale del motor)
+- [x] Máximo 7 acciones; orden por (tipo LIST/PRICE antes que vanity, luego spread, luego frescura).
+- [x] Tests unitarios por regla con fixtures de snapshots, sin red.
 
 ### DG-05 — REST `/v1/intel/gondola-advise`
 **P0 · world + core**  
 Como analista o integración, quiero POST con API key Intelligence/Pro.
 
 **AC:**
-- [ ] Auth igual que otros intel; 403 si el tier no alcanza (gate en world; core no tiene billing).
-- [ ] 422 si falta country o category.
-- [ ] Idempotencia no requerida v0; sí `run_id` en respuesta.
-- [ ] Persistencia opcional `gondola_advice_run` para reconstruir el one-pager del piloto.
+- [x] Auth igual que otros intel; 403 si el tier no alcanza (gate en world; core no tiene billing).
+- [x] 422 si falta country o category.
+- [x] Idempotencia no requerida v0; sí `run_id` en respuesta.
+- [ ] Persistencia opcional `gondola_advice_run` para reconstruir el one-pager del piloto. (diferida a DG-08 PDF)
 
 ### DG-06 — MCP `market_gondola_advise`
 **P0 · core stdio + world HTTP**  
 Como agente, quiero la misma tool en las **dos** superficies MCP.
 
 **AC:**
-- [ ] Registrada en `market_mcp_registry.py` **y** `routers/mcp_http.py` (`_TOOLS` + `_call_tool` + `_PRE_CHECK_TIER` si aplica).
-- [ ] Test de paridad HTTP: toda tool en lista tiene branch de dispatch (patrón existente).
-- [ ] Descripción de la tool dice explícitamente “digital shelf / góndola formal online; not planogram”.
+- [x] Registrada en `market_mcp_registry.py` **y** `routers/mcp_http.py` (`_TOOLS` + `_call_tool` + `_PRE_CHECK_TIER` si aplica).
+- [x] Test de paridad HTTP: toda tool en lista tiene branch de dispatch (patrón existente).
+- [x] Descripción de la tool dice explícitamente “digital shelf / góndola formal online; not planogram”.
 
 ### DG-07 — Denylist + copy GTM mínimo
 **P0 · world docs + tests**  
 Como GTM, quiero que el producto no se pueda describir como Nielsen espacio.
 
 **AC:**
-- [ ] One-pager Intelligence actualizado: “no incluye espacio físico / planograma”.
-- [ ] README GTM enlaza PRD + backlog.
-- [ ] Script de objeción Nielsen en el PRD (ya escrito) — no hace falta landing nueva en v0.
+- [x] One-pager Intelligence actualizado: “no incluye espacio físico / planograma”.
+- [x] README GTM enlaza PRD + backlog.
+- [x] Script de objeción Nielsen en el PRD (ya escrito) — no hace falta landing nueva en v0.
 
 ---
 

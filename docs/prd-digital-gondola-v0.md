@@ -6,7 +6,7 @@ tags:
   - intelligence
   - category
   - digital-shelf
-status: Draft — In Review
+status: v0 implemented — pending merge + PyPI pin
 owner: Ricardo Cuba
 updated: 2026-08-24
 repos: cli-market-core, cli-market-world
