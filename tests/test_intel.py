@@ -388,3 +388,97 @@ def test_gov_observations_degrades_gracefully_when_empty(monkeypatch):
     assert r.status_code == 200
     data = r.json()
     assert data["observations"] == []
+
+
+# ── POST /v1/intel/gondola-advise ─────────────────────────────────────────────
+
+_GONDOLA_BODY = {
+    "country": "PE",
+    "category": "leche",
+    "line": "supermercados",
+    "portfolio": [{"query": "leche gloria 1l", "pvp": 4.0}],
+    "competitors": ["Laive"],
+}
+
+
+def test_gondola_advise_requires_auth():
+    r = client.post("/v1/intel/gondola-advise", json=_GONDOLA_BODY)
+    assert r.status_code == 401
+
+
+def test_gondola_advise_requires_pro():
+    db_set_subscription("admin", "starter")
+    try:
+        r = client.post("/v1/intel/gondola-advise", json=_GONDOLA_BODY, headers=_AUTH)
+        assert r.status_code == 403
+        assert "Pro" in r.json()["detail"]
+    finally:
+        db_set_subscription("admin", "pro")
+
+
+def test_gondola_advise_requires_country_and_category():
+    r = client.post(
+        "/v1/intel/gondola-advise",
+        json={"portfolio": [{"query": "leche"}]},
+        headers=_AUTH,
+    )
+    assert r.status_code == 422
+    assert "country" in r.json()["detail"]
+
+
+def test_gondola_advise_returns_digital_shelf_payload(monkeypatch):
+    from datetime import datetime, timedelta, timezone
+
+    from market_core import get_db
+
+    catalog = {
+        "wong": {"name": "Wong", "country": "PE", "line": "supermercados"},
+        "metro": {"name": "Metro", "country": "PE", "line": "supermercados"},
+        "plaza_vea": {"name": "Plaza Vea", "country": "PE", "line": "supermercados"},
+        "exito": {"name": "Éxito", "country": "CO", "line": "supermercados"},
+    }
+    monkeypatch.setattr("market_core.store_credentials.get_all_stores", lambda: catalog)
+    now = datetime.now(timezone.utc)
+    db = get_db()
+    try:
+        db.execute("DELETE FROM price_snapshots WHERE store IN ('wong','metro','plaza_vea','exito')")
+        rows = [
+            ("g1", "wong", "Leche Gloria Entera 1L", "Gloria", 5.5, None, 0, now.isoformat()),
+            ("g2", "metro", "Arroz Costeno 1kg", "Costeno", 5.0, None, 0, now.isoformat()),
+            ("g3", "plaza_vea", "Azucar Rubia 1kg", "Cartier", 4.0, None, 0,
+             (now - timedelta(hours=72)).isoformat()),
+            ("g4", "wong", "Leche Laive Entera 1L", "Laive", 4.0, 5.0, 20, now.isoformat()),
+            ("g5", "wong", "Leche Ideal Evaporada 400g", "Ideal", 3.8, None, 0, now.isoformat()),
+        ]
+        for pid, store, name, brand, price, list_price, discount, ts in rows:
+            db.execute(
+                """INSERT INTO price_snapshots
+                   (product_id, store, store_name, name, brand, price, list_price, discount,
+                    line, currency, queried_at, confidence)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'supermercados', 'PEN', ?, 'ok')""",
+                (pid, store, store.title(), name, brand, price, list_price, discount, ts),
+            )
+        db.commit()
+    finally:
+        db.close()
+
+    r = client.post("/v1/intel/gondola-advise", json=_GONDOLA_BODY, headers=_AUTH)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    data = body.get("data", body)
+    assert data["schema_version"] == "gondola-advise.v0"
+    assert data["scope"] == "digital_shelf_formal"
+    assert "planogram" in data["not_included"]
+    assert data["run_id"]
+    cells = {(c["sku"], c["store"]): c["status"] for c in data["coverage"]["cells"]}
+    assert cells[("leche gloria 1l", "wong")] == "listed"
+    assert cells[("leche gloria 1l", "metro")] == "missing"
+    assert cells[("leche gloria 1l", "plaza_vea")] == "stale"
+    assert "exito" not in {c["store"] for c in data["coverage"]["cells"]}
+    types = {a["type"] for a in data["actions"]}
+    assert "LIST" in types
+    assert "PRICE" in types
+    assert "PROMO" in types
+    rationale_blob = " ".join(str(a.get("rationale") or "") for a in data["actions"]).lower()
+    for term in ("facing", "planogram", "planograma", "share of shelf", "espacio lineal"):
+        assert term not in rationale_blob

@@ -80,6 +80,7 @@ Como analista o integración, quiero POST con API key Intelligence/Pro.
 - [x] Auth igual que otros intel; 403 si el tier no alcanza (gate en world; core no tiene billing).
 - [x] 422 si falta country o category.
 - [x] Idempotencia no requerida v0; sí `run_id` en respuesta.
+- [x] Ruta world-native (no espera pin PyPI 1.12.49) para que Fly deje de 404.
 - [ ] Persistencia opcional `gondola_advice_run` para reconstruir el one-pager del piloto. (diferida a DG-08 PDF)
 
 ### DG-06 — MCP `market_gondola_advise`

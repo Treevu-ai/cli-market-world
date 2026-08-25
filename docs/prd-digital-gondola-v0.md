@@ -6,7 +6,7 @@ tags:
   - intelligence
   - category
   - digital-shelf
-status: v0 implemented — pending merge + PyPI pin
+status: v0 implemented — REST in world (Fly on merge); core pin 1.12.49 still pending PyPI
 owner: Ricardo Cuba
 updated: 2026-08-24
 repos: cli-market-core, cli-market-world
@@ -210,7 +210,7 @@ Tipos de acción:
 
 | Superficie | v0 | Nota |
 |------------|----|------|
-| `GET/POST /v1/intel/gondola-advise` | Sí | World router; lógica en core si es pura sobre snapshots |
+| `POST /v1/intel/gondola-advise` | Sí | World-native en `routers/intel.py` (Fly al merge). Motor: `market_core.market_gondola` si el pin ≥1.12.49; si no, `gondola_advise.py` vendored. |
 | MCP `market_gondola_advise` | Sí | **stdio + HTTP** (dos listas independientes) |
 | CLI `market gondola` | Opcional v0.1 | Solo si reutiliza el mismo contrato JSON |
 | PDF one-pager (email) | v0.1 | Máx. 2 páginas; mismo disclaimer |

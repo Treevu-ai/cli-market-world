@@ -16,6 +16,7 @@ Endpoints:
   GET  /v1/intel/macro                      Tipo de cambio + IPC Lima (BCRP, oficial)
   POST /v1/intel/macro/refresh              Fetch latest BCRP tipo de cambio + IPC
   GET  /v1/intel/gov-observations           Raw gov-source observations by commodity_slug/region
+  POST /v1/intel/gondola-advise             Digital-shelf assortment/price advice (not planogram)
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Body, Header, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 from market_core import STORES, get_db, price_to_usd
@@ -853,3 +854,61 @@ def download_price_pulse_report(job_id: str, authorization: str | None = Header(
     if not path or not Path(path).is_file():
         raise HTTPException(status_code=404, detail="Report file missing")
     return FileResponse(path, media_type="text/markdown", filename=Path(path).name)
+
+
+# ── Góndola Digital v0 (world-native so Fly does not wait on core 1.12.49) ──
+
+def _gondola_engine():
+    """Prefer the PyPI module; fall back to the vendored world copy on 1.12.48."""
+    try:
+        from market_core.market_gondola import GondolaAdviceError, advise_gondola
+    except ImportError:
+        from gondola_advise import GondolaAdviceError, advise_gondola
+    return advise_gondola, GondolaAdviceError
+
+
+@router.post(
+    "/gondola-advise",
+    summary="Digital-shelf assortment/price advice (formal online gondola; not a planogram)",
+)
+def intel_gondola_advise(
+    payload: dict = Body(...),
+    enveloped: bool = Query(True),
+    authorization: str | None = Header(None),
+):
+    """Advise LIST/PRICE/PROMO/HOLD on the formal online shelf. Not Nielsen space."""
+    require_pro(authorization)
+    country = str((payload or {}).get("country") or "").strip()
+    category = str((payload or {}).get("category") or "").strip()
+    if not country or not category:
+        raise HTTPException(status_code=422, detail="country and category are required")
+    advise_gondola, GondolaAdviceError = _gondola_engine()
+    db = get_db()
+    try:
+        with timing() as t:
+            try:
+                result = advise_gondola(
+                    db,
+                    country=country,
+                    category=category,
+                    portfolio=payload.get("portfolio") or payload.get("skus") or [],
+                    line=payload.get("line"),
+                    competitors=payload.get("competitors"),
+                )
+            except GondolaAdviceError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+        if enveloped:
+            return envelope(
+                result,
+                confidence="ok",
+                latency_ms=t.elapsed_ms,
+                extra_meta={
+                    "provenance": build_provenance(
+                        primary_source="price_snapshots",
+                        methodology="gondola_advise_v0",
+                    )
+                },
+            )
+        return result
+    finally:
+        db.close()
