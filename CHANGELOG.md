@@ -2,6 +2,19 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-25] — Góndola Digital v0 (MCP HTTP + PRD)
+
+HTTP MCP `market_gondola_advise` (Pro, `_PRE_CHECK_TIER`) dispatch to
+`POST /v1/intel/gondola-advise`. Contrato y backlog en
+`docs/prd-digital-gondola-v0.md`. **Pin de core:** no bump a
+`cli-market-core==1.12.49` hasta que esa versión esté en PyPI (orden
+core → world).
+
+World-native `POST /v1/intel/gondola-advise` in `routers/intel.py` (Pro)
+plus vendored `gondola_advise.py` so Fly serves the route on pin 1.12.48
+without waiting for the PyPI bump. Prefer `market_core.market_gondola`
+when that module exists.
+
 ## [2026-08-21] — bump cli-market-core 1.12.47 -> 1.12.48
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.48` — fixes

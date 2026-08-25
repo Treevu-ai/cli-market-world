@@ -63,6 +63,7 @@ Perú y/o Colombia prioritarios; otros países LATAM bajo demanda (AR, MX, CL, B
 | Listado de tienda para GEO | **Puerta B** — gratis, separado de Intelligence |
 | Scraping ad hoc / fuentes no acordadas | Solo catálogo activo + reglas del collector |
 | Garantía legal tipo Nielsen | Piloto con métricas de freshness/cobertura verificables en dashboard |
+| Espacio físico de góndola (facings, planograma, share of shelf, sell-out POS) | Fuera del moat. Add-on **Góndola Digital** (ver `docs/prd-digital-gondola-v0.md`) cubre listado y precio **online**, no el pasillo |
 
 ---
 

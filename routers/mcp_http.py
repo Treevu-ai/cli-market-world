@@ -83,6 +83,7 @@ _PRO_TOOLS = frozenset({
     "market_shrinkflation_detector",
     "market_retailer_scorecard",
     "market_informal_signal",
+    "market_gondola_advise",
     "market_inflation",
     "market_scores",
     "market_macro",
@@ -479,6 +480,28 @@ _TOOLS = [
             "properties": {
                 "country": {"type": "string", "description": "PE, AR, MX, BR, CO, CL"},
                 "line": {"type": "string", "default": "supermercados"},
+            },
+        },
+    },
+    {
+        "name": "market_gondola_advise",
+        "description": (
+            "[Pro] Digital-shelf / gondola formal online advise: SKU x store coverage, "
+            "normalized price landscape, and LIST/PRICE/PROMO/HOLD actions with evidence. "
+            "Not a planogram — no facings, linear space, or POS share."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "required": ["country", "category", "portfolio"],
+            "properties": {
+                "country": {"type": "string", "description": "ISO country code, e.g. PE"},
+                "category": {"type": "string"},
+                "portfolio": {
+                    "type": "array",
+                    "description": '[{"query":"leche gloria 1l","pvp":4.2}]',
+                },
+                "line": {"type": "string", "default": "supermercados"},
+                "competitors": {"type": "array"},
             },
         },
     },
@@ -1226,6 +1249,7 @@ _PRE_CHECK_TIER: dict[str, str] = {
     "market_procurement_signal": "pro",
     "market_price_risk": "pro",
     "market_informal_signal": "pro",
+    "market_gondola_advise": "pro",
     "market_promo_detector": "pro",
     "market_shrinkflation_detector": "pro",
     "market_retailer_scorecard": "pro",
@@ -1352,6 +1376,8 @@ async def _call_tool(name: str, args: dict, token: str) -> dict:
             r = await client.get(f"{_API_BASE}/v1/intel/price-risk", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_informal_signal":
             r = await client.get(f"{_API_BASE}/v1/intel/informal-signal", params={k: v for k, v in args.items() if v is not None}, headers=headers)
+        elif name == "market_gondola_advise":
+            r = await client.post(f"{_API_BASE}/v1/intel/gondola-advise", json=args, headers=headers)
         elif name == "market_promo_detector":
             r = await client.get(f"{_API_BASE}/v1/intel/promo-detector", params={k: v for k, v in args.items() if v is not None}, headers=headers)
         elif name == "market_shrinkflation_detector":

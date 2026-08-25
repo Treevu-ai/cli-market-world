@@ -223,6 +223,7 @@ _SIMPLE_POST_TOOLS = [
     ("market_alert_create", {"product": "leche"}, "/v1/alerts"),
     ("market_procurement_bulk", {"lines": [{"sku_query": "arroz"}]}, "/v1/intel/procurement-bulk"),
     ("market_brand_monitor_config", {"brand_slug": "gloria"}, "/v1/brand-monitor/config"),
+    ("market_gondola_advise", {"country": "PE", "category": "leche"}, "/v1/intel/gondola-advise"),
 ]
 
 
@@ -598,6 +599,7 @@ def test_wave6_and_brand_monitor_tools_listed_and_gated_pro():
         ("market_retailer_scorecard", {"store": "wong_pe"}),
         ("market_ecosystem_radar", {}),
         ("market_household_update", {"payload": {"size": 1}}),
+        ("market_gondola_advise", {"country": "PE", "category": "leche"}),
     ],
 )
 def test_audit_fix_pre_check_rejects_starter_for_pro_tools(monkeypatch, tool_name, args):
