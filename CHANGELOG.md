@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.48 -> 1.12.50
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.50` — pulls in
+1.12.49 (Góndola Digital v0, digital-shelf advise) and 1.12.50: first
+farmacias stores for Ecuador (Cruz Azul, Pharmacys), Uruguay (Farmacity
+UY), Brazil (Pague Menos), Mexico (Farmacias Similares) and Paraguay
+(Farmatotal). Closes the 0-1 store farmacias gap flagged by the coverage
+matrix in those 5 countries. Paraguay supermercados (0 stores) and the
+remaining custom-platform candidates from the same research pass (Punto
+Farma PY, SanaSana EC, San Roque UY, Panvel BR, Farmacias Guadalajara MX,
+Stock/Casa Rica/Areté PY) are queued as follow-up connector work.
+
 ## [2026-08-25] — Góndola Digital v0 (MCP HTTP + PRD)
 
 HTTP MCP `market_gondola_advise` (Pro, `_PRE_CHECK_TIER`) dispatch to
