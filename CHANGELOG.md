@@ -2,6 +2,13 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.52 -> 1.12.53
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.53` — Stock PY
+via the new `stock_py` connector (ASP.NET WebForms, uses the new shared
+Playwright HTML fallback since httpx can't complete a TLS handshake
+against this host at all). No world-side changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.51 -> 1.12.52
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.52` — Punto
