@@ -2,6 +2,13 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.51 -> 1.12.52
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.52` — Punto
+Farma PY, Paraguay's largest pharmacy chain (700+ sucursales), via a new
+`puntofarma` connector (sitemap-filtered search + per-product JSON-LD).
+No world-side changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.50 -> 1.12.51
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.51` — first
