@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.55 -> 1.12.56
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.56` — Excelsior
+Gama VE, first Venezuela store in the moat, new `sapcommerce` connector
+(SAP Commerce Cloud/Hybris — required a Playwright session to reverse-
+engineer the API host and a required `warehouse` param). No world-side
+changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.54 -> 1.12.55
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.55` — Alkosto
