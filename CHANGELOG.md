@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.50 -> 1.12.51
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.51` — first
+supermercados stores for Paraguay (Casa Rica, Areté), whose line had 0
+stores. New `ecommercepro` connector platform (category-crawl instead of
+search-by-term — neither `/wp-json/` nor native WP search work on this
+WordPress theme, confirmed live). No world-side changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.48 -> 1.12.50
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.50` — pulls in
