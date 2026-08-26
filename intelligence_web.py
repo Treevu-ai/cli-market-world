@@ -10,6 +10,15 @@ def _esc(value: object) -> str:
     return html.escape(str(value if value is not None else ""))
 
 
+def public_pulse_view_model(pulse: dict[str, Any]) -> dict[str, Any]:
+    """Marketing-safe payload for unauthenticated JSON widgets — no Pro KPIs."""
+    vm = pulse_view_model(pulse)
+    vm.pop("executive_highlights", None)
+    vm.pop("kpis", None)
+    vm.pop("largest_anomaly", None)
+    return vm
+
+
 def pulse_view_model(pulse: dict[str, Any]) -> dict[str, Any]:
     """Slim payload for homepage widgets (no brief blob)."""
     executive = pulse.get("executive") or {}

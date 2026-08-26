@@ -9,7 +9,7 @@ import time
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 
-from intelligence_web import embed_snippet_for_homepage, pulse_view_model, render_commerce_pulse_page
+from intelligence_web import embed_snippet_for_homepage, public_pulse_view_model, render_commerce_pulse_page
 from server_deps import check_rate_limit
 
 router = APIRouter(tags=["intelligence-web"])
@@ -95,7 +95,7 @@ def intelligence_data_json(
     client_ip = request.client.host if request.client else "unknown"
     check_rate_limit(f"intelligence-data:{client_ip}")
     pulse = _load_pulse(country, lang)
-    return pulse_view_model(pulse)
+    return public_pulse_view_model(pulse)
 
 
 @router.get("/public/intelligence/embed-snippet", response_class=PlainTextResponse)

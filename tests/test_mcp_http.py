@@ -591,6 +591,7 @@ def test_wave6_and_brand_monitor_tools_listed_and_gated_pro():
     "tool_name,args",
     [
         ("market_optimize_purchase", {"items": [{"name": "leche", "qty": 1}]}),
+        ("market_substitutes", {"query": "leche", "country": "PE"}),
         ("market_procurement_signal", {}),
         ("market_price_risk", {}),
         ("market_informal_signal", {"country": "PE"}),
