@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.53 -> 1.12.54
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.54` — LATAM
+supermercados expansion: 29 stores across 13 countries, 7 brand-new to
+the moat (BO, CR, DO, SV, GT, HN, NI). All on already-supported VTEX/
+Shopify platforms, verified live before registering. Full breakdown in
+cli-market-core's CHANGELOG.md. No world-side changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.52 -> 1.12.53
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.53` — Stock PY
