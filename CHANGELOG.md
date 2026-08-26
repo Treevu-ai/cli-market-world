@@ -2,6 +2,12 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-26] — bump cli-market-core 1.12.54 -> 1.12.55
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.55` — Alkosto
+CO, first `electro` store in Colombia, third Algolia hit shape. No
+world-side changes needed.
+
 ## [2026-08-26] — bump cli-market-core 1.12.53 -> 1.12.54
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.54` — LATAM
