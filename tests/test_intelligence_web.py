@@ -41,9 +41,12 @@ def test_intelligence_data_json_returns_expected_keys():
     r = client.get("/public/intelligence/data?country=PE")
     assert r.status_code == 200
     data = r.json()
-    for key in ("country", "week", "headline", "title", "kpis", "moat", "executive_highlights"):
+    for key in ("country", "week", "headline", "title", "moat", "publishable"):
         assert key in data
     assert data["country"] == "PE"
+    assert "kpis" not in data
+    assert "executive_highlights" not in data
+    assert "largest_anomaly" not in data
 
 
 def test_intelligence_embed_snippet_returns_pasteable_html():

@@ -1246,6 +1246,7 @@ _PRE_CHECK_TIER: dict[str, str] = {
     # tools above, just not caught until the audit actually read every
     # handler instead of trusting the aspirational [Pro] label.
     "market_optimize_purchase": "pro",
+    "market_substitutes": "pro",
     "market_procurement_signal": "pro",
     "market_price_risk": "pro",
     "market_informal_signal": "pro",

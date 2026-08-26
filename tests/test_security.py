@@ -428,6 +428,26 @@ def test_intel_core_routes_reject_starter_tier(path, params, isolated_db):
     assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
 
 
+def test_products_substitutes_rejects_starter_tier(isolated_db):
+    """Regression: GET /v1/products/substitutes was auth-only while optimize-purchase
+    and MCP market_substitutes were Pro-gated — free/demo tokens got full substitute
+    intelligence. Found by security-reviewer scan 2026-08-25."""
+    from market_core import db_create_api_key, db_save_user, ensure_db_initialized
+    import market_billing
+    from market_server import hash_password
+
+    ensure_db_initialized()
+    db_save_user("starter-subs", hash_password("market"), "starter-subs@test.com")
+    market_billing.db_set_subscription("starter-subs", "starter")
+    key = db_create_api_key("starter-subs", "read", "subs-starter")["key"]
+    r = client.get(
+        "/v1/products/substitutes",
+        params={"query": "leche", "country": "PE"},
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    assert r.status_code in (403, 402), f"expected tier rejection, got {r.status_code}: {r.text[:300]}"
+
+
 def test_slack_activation_fails_closed_when_allowlist_empty(monkeypatch):
     import routers.slack_ops as slack_ops
 

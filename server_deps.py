@@ -467,6 +467,7 @@ def require_enterprise(authorization: str | None) -> str:
 _CORE_V1_TIER_ROUTES: dict[tuple[str, str], str] = {
     ("GET", "/v1/receipts"): "pro",
     ("GET", "/v1/quality/scores"): "pro",
+    ("GET", "/v1/products/substitutes"): "pro",
     ("POST", "/v1/missions/optimize-purchase"): "pro",
     ("GET", "/v1/intel/procurement-signal"): "pro",
     ("GET", "/v1/intel/basket-stress"): "pro",
