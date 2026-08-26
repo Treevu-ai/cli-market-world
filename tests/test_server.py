@@ -386,11 +386,12 @@ def test_mcp_profile_defaults_to_default(monkeypatch):
 
     monkeypatch.delenv("MCP_TOOL_PROFILE", raising=False)
     assert get_profile() == "default"
-    # Verified locally against cli-market-core==1.11.48: the default
-    # profile has grown to 44 tools. Update this alongside the profile, not
-    # the other way around -- it exists to catch accidental regressions in
-    # tool count, not to gate growth.
-    assert public_tool_count("default") == 44
+    # Verified locally against cli-market-core==1.12.50: the default
+    # profile has grown to 45 tools (market_gondola_advise added in
+    # 1.12.49). Update this alongside the profile, not the other way
+    # around -- it exists to catch accidental regressions in tool count,
+    # not to gate growth.
+    assert public_tool_count("default") == 45
 
 
 def test_mcp_tool_groups_match_registry_bundles():
