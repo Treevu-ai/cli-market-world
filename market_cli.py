@@ -1825,7 +1825,15 @@ def cmd_affordability(args):
         ("Canasta mínima" if not is_en else "Minimum basket", _fmt(components.get("canasta_min"), prefix=f"{currency} ")),
         ("Canasta promedio" if not is_en else "Average basket", _fmt(components.get("canasta_average"), prefix=f"{currency} ")),
         ("Canasta más cara" if not is_en else "Worst-case basket", _fmt(components.get("canasta_worst"), prefix=f"{currency} ")),
-        ("Canastas por sueldo mínimo" if not is_en else "Baskets per minimum wage", _fmt(components.get("canastas_per_minimum_wage"))),
+        # canastas_per_minimum_wage is the midpoint of a best/worst band
+        # (components.canastas_per_minimum_wage_best/_worst), not an
+        # absolute figure -- shown alone it reads as a single hard number
+        # when it's actually an average across stores with very different
+        # prices (best case can be ~40% higher than worst case). Surfacing
+        # the band directly under it gives that context.
+        ("Canastas por sueldo mínimo (promedio)" if not is_en else "Baskets per minimum wage (average)", _fmt(components.get("canastas_per_minimum_wage"))),
+        ("  → mejor caso (tienda más barata)" if not is_en else "  -> best case (cheapest store)", _fmt(components.get("canastas_per_minimum_wage_best"))),
+        ("  → peor caso (tienda más cara)" if not is_en else "  -> worst case (priciest store)", _fmt(components.get("canastas_per_minimum_wage_worst"))),
         ("Sueldo mínimo local" if not is_en else "Local minimum wage", _fmt(components.get("minimum_wage_local"), prefix=f"{currency} ")),
         ("Brecha vs IPC oficial" if not is_en else "Gap vs official CPI", _fmt(components.get("vs_official_cpi_gap_pp"), suffix=" pp")),
         ("Momentum básicos 7d" if not is_en else "Staple momentum 7d", _fmt(components.get("staple_momentum_7d_pct"), suffix="%")),

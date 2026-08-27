@@ -78,6 +78,48 @@ def test_cmd_affordability_defaults_country_to_pe(monkeypatch):
     assert "days=30" in captured["path"]
 
 
+class _FakeTable:
+    """Records add_row calls instead of rendering, so tests can assert on
+    the actual table content rather than just that console.print ran."""
+
+    def __init__(self, *a, **k):
+        self.rows: list[tuple] = []
+
+    def add_column(self, *a, **k):
+        pass
+
+    def add_row(self, *a, **k):
+        self.rows.append(a)
+
+
+def test_cmd_affordability_shows_best_worst_case_band(monkeypatch):
+    """K2 (docs/backlog/2026-08-27-transparencia-metricas-ambiguas-backlog.md):
+    canastas_per_minimum_wage is a midpoint, not an absolute figure -- the
+    best/worst band the API already returns (components.
+    canastas_per_minimum_wage_best/_worst) must be visible in the table, not
+    just the average."""
+    response = json.loads(json.dumps(FAKE_RESPONSE))  # deep copy
+    response["data"]["components"]["canastas_per_minimum_wage_best"] = 19.58
+    response["data"]["components"]["canastas_per_minimum_wage_worst"] = 13.68
+
+    monkeypatch.setattr(market_cli, "cli_api", lambda *a, **k: response)
+    monkeypatch.setattr(market_cli.console, "print", MagicMock())
+    monkeypatch.setattr(market_cli.console, "status", lambda *a, **k: MagicMock(__enter__=lambda s: s, __exit__=lambda *a: False))
+    monkeypatch.setattr(market_cli.ui, "is_json_mode", lambda: False)
+    monkeypatch.setattr(market_cli.ui, "is_en", lambda: False)
+
+    tables: list[_FakeTable] = []
+    monkeypatch.setattr(market_cli, "Table", lambda *a, **k: tables.append(_FakeTable()) or tables[-1])
+
+    args = argparse.Namespace(country="PE", line=None, days=30, json=False)
+    market_cli.cmd_affordability(args)
+
+    assert len(tables) == 1
+    values_by_label = {label: value for label, value in tables[0].rows}
+    assert "19.58" in next(v for k, v in values_by_label.items() if "mejor caso" in k)
+    assert "13.68" in next(v for k, v in values_by_label.items() if "peor caso" in k)
+
+
 def test_cmd_affordability_json_mode_prints_raw_payload(monkeypatch, capsys):
     monkeypatch.setattr(market_cli, "cli_api", lambda *a, **k: FAKE_RESPONSE)
     monkeypatch.setattr(market_cli.ui, "is_json_mode", lambda: False)
