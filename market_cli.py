@@ -1953,6 +1953,24 @@ def cmd_price_risk(args):
     for key, label, suffix in signal_labels:
         value = signals.get(key)
         table.add_row(label, f"{value}{suffix}" if value is not None else "—")
+    # basket_stress_index reads as exactly 100 both when the market is
+    # genuinely stable AND when there's no 30d history to compare against
+    # (current_fallback) -- indistinguishable without this field. This is
+    # the original ambiguity that started the whole transparency-gap
+    # initiative (T1, docs/backlog/2026-08-27-transparencia-cli-wiring-backlog.md).
+    baseline_source = signals.get("basket_stress_baseline_source")
+    baseline_label = {
+        "30d_history": "con historial real de 30d" if not is_en else "backed by real 30d history",
+        "current_fallback": (
+            "sin historial de 30d -- es un valor de referencia, no una medición"
+            if not is_en else
+            "no 30d history -- a reference value, not a measurement"
+        ),
+    }.get(baseline_source, baseline_source or "—")
+    table.add_row(
+        "Fuente del índice de estrés" if not is_en else "Basket stress baseline",
+        baseline_label,
+    )
     console.print(table)
 
 
@@ -2006,14 +2024,28 @@ def cmd_substitutes(args):
     table.add_column("Tienda" if not is_en else "Store")
     table.add_column("Precio" if not is_en else "Price", justify="right")
     table.add_column("Precio/unidad" if not is_en else "Price/unit", justify="right")
+    table.add_column("Calidad de match" if not is_en else "Match quality")
+    # match_quality (exact/canonical/fuzzy, added N1) collapses substitution_type
+    # into a consumer-facing tier; fall back to the older substitution_type/
+    # confidence fields (predate N1) if match_quality is somehow absent, so a
+    # verified same-SKU cross-store match and a plain name-guess never render
+    # identically (T3, docs/backlog/2026-08-27-transparencia-cli-wiring-backlog.md).
+    _match_quality_labels = {
+        "exact": ("exacto" if not is_en else "exact", "#3cffd0"),
+        "canonical": ("mismo tipo, otra marca" if not is_en else "same type, other brand", "yellow"),
+        "fuzzy": ("aproximado" if not is_en else "approximate", "red"),
+    }
     for s in subs:
         ppu = s.get("price_per_unit") or {}
         ppu_str = f"{ppu.get('price_per')}/{ppu.get('basis')}" if ppu.get("price_per") is not None else "—"
+        quality = s.get("match_quality") or s.get("substitution_type") or s.get("confidence") or "—"
+        label, color = _match_quality_labels.get(quality, (quality, "white"))
         table.add_row(
             s.get("name") or "?",
             s.get("store") or "?",
             str(s.get("price", "—")),
             ppu_str,
+            f"[{color}]{label}[/]",
         )
     console.print(table)
 
@@ -2462,6 +2494,22 @@ def cmd_inflation_report(args):
         value = signals.get(key)
         table.add_row(label, f"{value}{suffix}" if value is not None else "—")
     console.print(table)
+
+    # internal_inflation_pct is a small-sample average of price_history
+    # pairs -- a single thinly-tracked product with a low denominator can
+    # dominate it even after the min_samples gate and per-pair cap (Epic J).
+    # This exact endpoint produced the "Licorerías +745.8%" that kicked off
+    # this whole initiative, so the warning gets its own visible line, not
+    # just another table row easy to skim past (T2, docs/backlog/2026-08-27-
+    # transparencia-cli-wiring-backlog.md).
+    if signals.get("internal_inflation_low_baseline"):
+        console.print(
+            "[yellow]⚠ inflación interna con respaldo débil -- al menos un producto con "
+            "denominador bajo dominó el cálculo; no lo cites como una tendencia confirmada.[/]"
+            if not is_en else
+            "[yellow]⚠ internal inflation has thin backing -- at least one low-denominator "
+            "product dominated the calculation; don't cite it as a confirmed trend.[/]"
+        )
 
 
 def cmd_procurement_signal(args):
