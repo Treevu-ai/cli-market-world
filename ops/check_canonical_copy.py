@@ -26,6 +26,12 @@ SKIP_DIRS = {
     "cli_market_world.egg-info",
     "ops/generated",
     "out",
+    # git worktrees for other in-progress branches (e.g. concurrent agent
+    # sessions) -- untracked, not part of this branch's actual content, and
+    # scanning them re-triggers on their own copy of this very file's
+    # STALE_PIP_RE/SKIP_FILES source (a false positive matching the checker's
+    # own pattern definitions, not a real stale-copy reference).
+    ".worktrees",
     # Read-only captures of *other* repos' pages (front-matter `source:` links
     # to e.g. cli-market-backend, procure-copilot) — not this repo's own copy,
     # and not ours to edit; fixing their stale "pip install cli-market" is a

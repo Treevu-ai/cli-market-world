@@ -17,9 +17,28 @@ _ADMIN_TOKEN = "test-token-123"
 _AUTH = {"Authorization": f"Bearer {_ADMIN_TOKEN}"}
 
 
+def _clear_paypal_webhook_id(monkeypatch):
+    # market_connectors.paypal_payments.PAYPAL_WEBHOOK_ID is a module-level
+    # constant (`= os.getenv("PAYPAL_WEBHOOK_ID", "")`) computed once at
+    # import time -- monkeypatch.delenv on the env var alone does nothing to
+    # it once the module is already cached in sys.modules (collection-time
+    # import, well before any test's monkeypatch runs). This repo's .env has
+    # a real PAYPAL_WEBHOOK_ID configured for live sandbox testing, so
+    # without patching the module attribute directly, these tests silently
+    # exercise the *signature-verified* branch (a real PayPal API call, that
+    # then fails on this machine's stale/invalid sandbox credentials)
+    # instead of the *no webhook ID configured* branch they're written to
+    # test. routers/checkout/webhooks.py re-imports the name fresh on every
+    # request (`from market_connectors.paypal_payments import
+    # PAYPAL_WEBHOOK_ID` inside the handler), so patching the module
+    # attribute here does reach it.
+    import market_connectors.paypal_payments as paypal_payments
+    monkeypatch.setattr(paypal_payments, "PAYPAL_WEBHOOK_ID", "")
+
+
 def test_paypal_webhook_rejects_without_verification_in_production(monkeypatch):
+    _clear_paypal_webhook_id(monkeypatch)
     monkeypatch.setenv("PAYPAL_SANDBOX", "false")
-    monkeypatch.delenv("PAYPAL_WEBHOOK_ID", raising=False)
     monkeypatch.delenv("PAYPAL_ALLOW_UNVERIFIED_WEBHOOKS", raising=False)
     event = {
         "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
@@ -30,8 +49,8 @@ def test_paypal_webhook_rejects_without_verification_in_production(monkeypatch):
 
 
 def test_paypal_webhook_rejects_unsigned_in_sandbox_by_default(monkeypatch):
+    _clear_paypal_webhook_id(monkeypatch)
     monkeypatch.setenv("PAYPAL_SANDBOX", "true")
-    monkeypatch.delenv("PAYPAL_WEBHOOK_ID", raising=False)
     monkeypatch.delenv("PAYPAL_ALLOW_UNVERIFIED_WEBHOOKS", raising=False)
     r = client.post(
         "/checkout/paypal-webhook",
@@ -40,9 +59,18 @@ def test_paypal_webhook_rejects_unsigned_in_sandbox_by_default(monkeypatch):
     assert r.status_code == 401
 
 
-def test_paypal_webhook_allows_explicit_sandbox_bypass(monkeypatch):
+def test_paypal_webhook_allows_explicit_sandbox_bypass(monkeypatch, isolated_db):
+    # Unlike the two tests above (rejected before ever reaching the DB
+    # layer), an explicitly-bypassed webhook proceeds to
+    # db_find_order_by_gateway_ref -- needs a real schema (app_orders)
+    # behind it. isolated_db only resets DATA_DIR/DB_FILE/_db_initialized;
+    # the schema itself is created lazily by ensure_db_initialized(), which
+    # nothing on this request path calls before the query -- same pattern
+    # other DB-touching tests in this repo already follow explicitly (see
+    # test_admin.py, test_agent_ask.py).
+    isolated_db.ensure_db_initialized()
+    _clear_paypal_webhook_id(monkeypatch)
     monkeypatch.setenv("PAYPAL_SANDBOX", "true")
-    monkeypatch.delenv("PAYPAL_WEBHOOK_ID", raising=False)
     monkeypatch.setenv("PAYPAL_ALLOW_UNVERIFIED_WEBHOOKS", "1")
     r = client.post(
         "/checkout/paypal-webhook",
