@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-29] — bump cli-market-core 1.12.59 -> 1.12.60
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.60` — fixes the
+/health/stats timeout that caused 3 consecutive deploy rollbacks earlier
+today (query caching + work_mem, not an index — see cli-market-core's
+CHANGELOG.md for the full EXPLAIN ANALYZE root-cause). No world-side code
+changes needed. Verified 91 tests pass against the real published wheel.
+
 ## [2026-08-29] — bump cli-market-core 1.12.58 -> 1.12.59
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.59` — tokenized
