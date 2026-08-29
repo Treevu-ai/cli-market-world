@@ -7,7 +7,7 @@ Fly.io-compatible: DATABASE_URL is auto-injected by `fly postgres attach`.
 
 Usage:
     python collect_prices.py              # run once
-    python collect_prices.py --daemon     # run every 4h
+    python collect_prices.py --daemon     # run every COLLECT_INTERVAL_HOURS (default 8h)
     python collect_prices.py --status     # collection stats
     python collect_prices.py --report     # latest prices per line
 """
@@ -36,10 +36,26 @@ logger = log.getChild("collector")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
+def cycles_per_day(interval_hours: int) -> int:
+    """How many daemon cycles at `interval_hours` fit in ~24h, minimum 1.
+
+    Used to space out once-a-day work (enrichment indicator refresh) evenly
+    regardless of the collector's own cadence, instead of a hardcoded cycle
+    count that silently assumes a specific interval (see the 2026-08-29
+    4h->8h cadence change this was extracted for). interval_hours<=0 ("run
+    continuously" -- the same input `wait_s = max(interval_hours * 3600, 60)`
+    elsewhere in this module already treats as valid) returns 1 rather than
+    raising, so callers refresh every cycle instead of crashing.
+    """
+    if interval_hours <= 0:
+        return 1
+    return max(1, round(24 / interval_hours))
+
+
 PARALLEL = int(os.getenv("COLLECT_PARALLEL", "6"))
 REQUEST_DELAY = float(os.getenv("COLLECT_DELAY", "0.75"))
 QUERY_TIMEOUT = 15.0
-DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "4"))
+DAEMON_INTERVAL = int(os.getenv("COLLECT_INTERVAL_HOURS", "8"))
 MAX_QUERIES_PER_LINE = int(os.getenv("COLLECT_MAX_QUERIES_PER_LINE", "12"))
 CORE_QUERIES_PER_LINE = int(os.getenv("COLLECT_CORE_QUERIES", "3"))
 COLLECTOR_ADVISORY_LOCK = int(os.getenv("COLLECTOR_ADVISORY_LOCK", "84957231"))
@@ -1532,8 +1548,12 @@ async def main():
                     cat_count = await run_full_catalog_pg(pool, stores)
                     if cat_count:
                         print(f"  📦 Full catalog: {cat_count:,} new products")
-                    # Refresh enrichment indicators every 6 cycles (24h) for all countries
-                    if cycle % 6 == 0:
+                    # Refresh enrichment indicators roughly once every 24h for all
+                    # countries -- was a hardcoded "every 6 cycles", silently
+                    # assuming the daemon's --interval is 4h (6 x 4h = 24h). Derive
+                    # it from the actual interval instead so changing the collection
+                    # cadence (e.g. to 8h) doesn't stretch this to 48h+ unnoticed.
+                    if cycle % cycles_per_day(args.interval) == 0:
                         try:
                             from market_indicators import refresh_after_collection
                             result = refresh_after_collection()

@@ -17,13 +17,20 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
 
   # Checkout price-freshness gate (pre_checkout_validate.py). Default was
   # 900s (15min), far tighter than the bulk collector's own refresh cadence
-  # (COLLECT_INTERVAL_HOURS, default 4h) — under normal operation nearly
-  # every checkout hit price_stale_or_drift regardless of client. Raised to
-  # match that cadence with headroom (observed moat_age_hours ~1.8h in
-  # practice). Was set at runtime via `fly secrets set` on 2026-08-11 to
-  # avoid deploying this working tree's unrelated in-progress changes;
-  # promoted here now that it's a deliberate, permanent config value.
-  CHECKOUT_MAX_SNAPSHOT_AGE_SEC = "21600"
+  # (COLLECT_INTERVAL_HOURS) — under normal operation nearly every checkout
+  # hit price_stale_or_drift regardless of client. Raised to match that
+  # cadence with headroom (~1.5x, same ratio applied to the other stale-
+  # threshold configs this repo derives from COLLECT_INTERVAL_HOURS -- see
+  # .github/workflows/db-lock-monitor.yml / ops/db_lock_monitor.py). Was
+  # 21600 (6h = 1.5x the collector's old 4h cadence); COLLECT_INTERVAL_HOURS
+  # is now 8h (fly.collector.toml, 2026-08-29), so this must move too or
+  # checkouts start failing near the end of every collection cycle -- this
+  # threshold has no automatic link to the collector's own interval, it has
+  # to be kept in sync by hand whenever that changes. Was set at runtime via
+  # `fly secrets set` on 2026-08-11 to avoid deploying this working tree's
+  # unrelated in-progress changes; promoted here now that it's a deliberate,
+  # permanent config value.
+  CHECKOUT_MAX_SNAPSHOT_AGE_SEC = "43200"
 
   # HORECA Pilot Configuration
   HORECA_ENABLED = "false"

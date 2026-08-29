@@ -12,9 +12,11 @@ Alerts to Slack #alertas when:
   - Any session has been idle-in-transaction longer than --max-idle-minutes
     (default 5 — legitimate transactions on this codebase commit in
     milliseconds to low seconds; anything idle for minutes is stuck).
-  - The collector hasn't completed a run in --max-stale-hours (default 6;
-    the collect cycle is every 4h, so 6h gives one missed cycle of slack
-    before alerting).
+  - The collector hasn't completed a run in --max-stale-hours (default 12;
+    the collect cycle is every 8h (COLLECT_INTERVAL_HOURS, fly.collector.toml),
+    so 12h -- 1.5x the interval, same ratio the old 6h-for-a-4h-cycle default
+    used -- gives some slack before alerting without waiting a full missed
+    cycle).
 
 Usage:
   python ops/db_lock_monitor.py               # console report
@@ -49,7 +51,7 @@ API_BASE = os.getenv("MARKET_API_URL", "https://cli-market-api.fly.dev")
 DASHBOARD_URL = f"{API_BASE}/dashboard/data"
 
 MAX_IDLE_MINUTES_DEFAULT = 5
-MAX_STALE_HOURS_DEFAULT = 6
+MAX_STALE_HOURS_DEFAULT = 12
 
 
 def check_idle_transactions(max_idle_minutes: int) -> tuple[list[dict], str | None]:

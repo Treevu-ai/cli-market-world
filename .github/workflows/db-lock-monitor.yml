@@ -4,7 +4,7 @@ on:
   schedule:
     # Every 15 min — catches stuck idle-in-transaction sessions (like the
     # 2026-07-09 backfill incident) fast, before they block the collector
-    # for an entire 4h cycle.
+    # for an entire 8h cycle.
     - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
@@ -15,7 +15,11 @@ on:
       max_stale_hours:
         description: "Alert if the collector hasn't run in N hours"
         required: false
-        default: "6"
+        # Collector cadence is COLLECT_INTERVAL_HOURS (fly.collector.toml) =
+        # 8h -- was 4h when this default of 6 was set, which would now false-
+        # alarm every single cycle since 8 > 6. ~1.5x the interval, same
+        # margin the old 6-for-4h default gave.
+        default: "12"
 
 jobs:
   monitor:
@@ -69,7 +73,7 @@ jobs:
           export DATABASE_URL=$(echo "$DATABASE_URL_INTERNAL" | sed -E 's#@[^/]+/#@localhost:5432/#')
           python3 ops/db_lock_monitor.py --slack \
             --max-idle-minutes "${{ github.event.inputs.max_idle_minutes || '5' }}" \
-            --max-stale-hours "${{ github.event.inputs.max_stale_hours || '6' }}"
+            --max-stale-hours "${{ github.event.inputs.max_stale_hours || '12' }}"
         # Exit code 1 = problem detected — mark as warning (Slack alert already
         # sent above), not a hard CI failure.
         continue-on-error: true

@@ -14,7 +14,7 @@ primary_region = "gru"
   COLLECT_PARALLEL = "6"
   COLLECT_DELAY = "0.75"
   COLLECT_MAX_QUERIES_PER_LINE = "12"
-  COLLECT_INTERVAL_HOURS = "4"
+  COLLECT_INTERVAL_HOURS = "8"
 
 # No HTTP service — solo proceso daemon
 [processes]
