@@ -1,0 +1,82 @@
+name: Deploy Collector (manual)
+
+# cli-market-collector is intentionally NOT wired to CI (deploy-fly.yml only
+# deploys cli-market-api) -- see fly.collector.toml's header comment and this
+# repo's own operating convention. This workflow exists only so a manual
+# collector deploy can happen from an environment (like this one) that has
+# no local flyctl auth, using the FLY_API_TOKEN secret already used by
+# deploy-fly.yml for the main API app. workflow_dispatch only -- never runs
+# automatically, mirroring how the collector itself is never auto-deployed.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency: deploy-fly-collector
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Capture last known good release
+        id: last_good
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          IMAGE=$(flyctl releases --app cli-market-collector --image --json \
+            | python3 -c "import json,sys; rs=json.load(sys.stdin); print(next((r['ImageRef'] for r in rs if r.get('Status')=='complete'), ''))")
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Last known good image before this deploy: ${IMAGE:-<none found>}"
+
+      - name: Deploy cli-market-collector
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          BUILD_GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          flyctl deploy --app cli-market-collector --config fly.collector.toml \
+            --build-secret github_token="$BUILD_GH_TOKEN" --remote-only \
+            --wait-timeout 600
+
+      # No HTTP health check exists for this app (background daemon, no
+      # exposed port -- see fly.collector.toml's own comment). The closest
+      # available signal is the machine reaching "started" state and staying
+      # there past its own boot window, instead of crash-looping.
+      - name: Verify machine is running (no HTTP endpoint to smoke-test)
+        id: verify
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          sleep 60
+          flyctl status --app cli-market-collector --json > /tmp/status.json
+          cat /tmp/status.json
+          python3 -c "
+          import json, sys
+          data = json.load(open('/tmp/status.json'))
+          machines = data.get('Machines', data) if isinstance(data, dict) else data
+          if not machines:
+              print('No machines found')
+              sys.exit(1)
+          bad = [m for m in machines if m.get('state') != 'started']
+          if bad:
+              print('Machine(s) not in started state:', bad)
+              sys.exit(1)
+          print('All machines started OK')
+          "
+
+      - name: Rollback to last known good release
+        if: (failure() || cancelled()) && steps.last_good.outputs.image != ''
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          ROLLBACK_IMAGE: ${{ steps.last_good.outputs.image }}
+        run: |
+          echo "::error::Post-deploy verification failed — rolling back to $ROLLBACK_IMAGE"
+          flyctl deploy --app cli-market-collector --config fly.collector.toml \
+            --image "$ROLLBACK_IMAGE" --remote-only \
+            --wait-timeout 600
+          echo "::error::Rolled back to $ROLLBACK_IMAGE — this deploy still failed and needs investigation before retrying."
