@@ -298,13 +298,47 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
     # so an unordered sample of "recently seen" products (which for a big,
     # continuously-scraped catalog rarely lines up with the shrinking pool of
     # 7-day-old rows) can't crowd out every actual mover. Padded below if short.
-    matched_q = f"SELECT * FROM ({base_select}{filters}) t WHERE prev_price IS NOT NULL LIMIT ?"
-    matched_rows = db.execute(matched_q, [*params, limit * 5]).fetchall()
+    #
+    # Neither query below had an ORDER BY, and both went straight from the
+    # unrestricted match to a flat `LIMIT N`: with no per-store cap, a single
+    # store whose rows happen to sort first for whatever reason (index
+    # locality, insertion order — SQLite/Postgres don't guarantee a scan order
+    # absent ORDER BY) can fill the *entire* candidate pool before any other
+    # store's products are even fetched into Python — confirmed live
+    # 2026-08-29: an AR trending call with no store/line filter returned
+    # 15/15 results from a single store. The final `results.sort()` below
+    # only ranks *within* whatever made it past this LIMIT, so it can't
+    # recover a store that got excluded at the SQL stage — the fix has to be
+    # here, not there. `rn <= max_per_store` (window function, applied before
+    # the outer LIMIT) guarantees no store can occupy more than its share of
+    # the candidate pool regardless of scan order — the SQL-level analogue of
+    # product_search.py's candidate-starvation fix for search.
+    #
+    # Capped at 20 regardless of `limit`: this endpoint has no upper bound on
+    # the caller-supplied `limit` (true of every endpoint in this file), and
+    # max(3, limit) alone would let the cap grow right along with an
+    # unbounded limit -- a large enough request reintroduces the exact
+    # single-store domination this fix exists to prevent, just at a bigger
+    # limit instead of a small one.
+    max_per_store = min(max(3, limit), 20)
+
+    matched_q = f"""
+        SELECT * FROM (
+            SELECT t.*, ROW_NUMBER() OVER (PARTITION BY t.store ORDER BY t.queried_at DESC) AS rn
+            FROM ({base_select}{filters}) t
+            WHERE prev_price IS NOT NULL
+        ) ranked
+        WHERE rn <= ?
+        ORDER BY queried_at DESC
+        LIMIT ?
+    """
+    matched_rows = db.execute(matched_q, [*params, max_per_store, limit * 5]).fetchall()
 
     seen: set[tuple] = set()
     results = []
     for row in matched_rows:
         r = dict(row)
+        r.pop("rn", None)
         key = (r.pop("product_id", None), r.pop("store", None))
         seen.add(key)
         current = r.pop("current_price", 0) or 0
@@ -316,12 +350,21 @@ def analytics_trending(country: str | None = None, line: str | None = None, limi
         results.append(r)
 
     if len(results) < limit:
-        pad_q = f"SELECT * FROM ({base_select}{filters}) t LIMIT ?"
-        pad_rows = db.execute(pad_q, [*params, limit * 3]).fetchall()
+        pad_q = f"""
+            SELECT * FROM (
+                SELECT t.*, ROW_NUMBER() OVER (PARTITION BY t.store ORDER BY t.queried_at DESC) AS rn
+                FROM ({base_select}{filters}) t
+            ) ranked
+            WHERE rn <= ?
+            ORDER BY queried_at DESC
+            LIMIT ?
+        """
+        pad_rows = db.execute(pad_q, [*params, max_per_store, limit * 3]).fetchall()
         for row in pad_rows:
             if len(results) >= limit * 3:  # enough candidates to rank from
                 break
             r = dict(row)
+            r.pop("rn", None)
             key = (r.pop("product_id", None), r.pop("store", None))
             if key in seen:
                 continue

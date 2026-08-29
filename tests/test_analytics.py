@@ -363,6 +363,78 @@ def test_trending_surfaces_real_mover_among_many_no_baseline_products():
         db.close()
 
 
+def test_trending_one_store_cannot_starve_another_stores_real_mover():
+    """Live repro, 2026-08-29: an AR trending call with no store filter
+    returned 15/15 results from a single store. Root cause: the candidate
+    query had no per-store cap, so a store with many qualifying rows could
+    fill the entire LIMIT-bounded pool before another store's products were
+    even fetched into Python -- the final sort-by-abs(change_pct) can only
+    rank what made it past that LIMIT, so it can't recover a starved store.
+    Seed one store with far more matched (>=7-day-old) rows than the query's
+    candidate LIMIT (limit*5) can hold by itself, give the *other* store —
+    inserted last, so it would lose any insertion/rowid-order scan under the
+    old no-ORDER-BY query — the real, large price mover, and confirm it
+    still surfaces: the per-store window-function cap must let it through
+    regardless of how many rows the noisy store contributes."""
+    from market_core import get_db
+
+    line = "trending_domination_line"
+    noisy_store = "trending_domination_noisy_store"
+    mover_store = "trending_domination_mover_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (noisy_store, mover_store))
+    db.execute("DELETE FROM price_history WHERE store IN (?, ?)", (noisy_store, mover_store))
+    # limit=5 below -> matched_q's outer LIMIT is limit*5 == 25. 30 noise rows
+    # (inserted, and therefore rowid-ordered, before the mover) must exceed
+    # that so a pre-fix, no-ORDER-BY/no-cap fetch can plausibly truncate
+    # before ever reaching the mover row inserted after them.
+    for i in range(30):
+        db.execute(
+            "INSERT INTO price_snapshots "
+            "(product_id, store, store_name, name, price, currency, line, queried_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+            (f"trend-noisy-{i}", noisy_store, noisy_store, f"Producto sin cambio {i}", 100.0, "ARS", line),
+        )
+        db.execute(
+            "INSERT INTO price_history (product_id, store, price, list_price, discount, recorded_at) "
+            "VALUES (?, ?, ?, ?, ?, datetime('now', '-14 days'))",
+            (f"trend-noisy-{i}", noisy_store, 100.0, None, None),
+        )
+    db.execute(
+        "INSERT INTO price_snapshots "
+        "(product_id, store, name, price, currency, line, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+        ("trend-real-mover", mover_store, "Producto real que se disparo", 300.0, "ARS", line),
+    )
+    db.execute(
+        "INSERT INTO price_history (product_id, store, price, list_price, discount, recorded_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now', '-14 days'))",
+        ("trend-real-mover", mover_store, 100.0, None, None),
+    )
+    db.commit()
+    db.close()
+    try:
+        r = client.get(f"/analytics/trending?line={line}&limit=5", headers=_AUTH)
+        assert r.status_code == 200
+        data = r.json()
+        names = [row["name"] for row in data["trending"]]
+        assert "Producto real que se disparo" in names
+        mover = next(row for row in data["trending"] if row["name"] == "Producto real que se disparo")
+        assert mover["change_pct"] == 200.0
+        assert mover["trend"] == "up"
+        # The cap doesn't have to reduce the noisy store to a single row —
+        # just enough that it can't occupy the whole pool. max(3, limit) with
+        # limit=5 means up to 5 of its rows may still appear.
+        noisy_count = sum(1 for row in data["trending"] if row.get("store_name") == noisy_store)
+        assert noisy_count <= 5
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (noisy_store, mover_store))
+        db.execute("DELETE FROM price_history WHERE store IN (?, ?)", (noisy_store, mover_store))
+        db.commit()
+        db.close()
+
+
 # ── GET /analytics/brands ─────────────────────────────────────────────────────
 
 def test_brands_requires_auth():
