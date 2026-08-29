@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-29] — bump cli-market-core 1.12.58 -> 1.12.59
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.59` — tokenized
+name matching for arbitrage/promo/shrinkflation detectors + affordability
+canasta comparability fix (see cli-market-core's CHANGELOG.md). No
+world-side code changes needed this round. Verified: 91 tests pass against
+the real published wheel.
+
 ## [2026-08-29] — bump cli-market-core 1.12.57 -> 1.12.58
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.58` — search
