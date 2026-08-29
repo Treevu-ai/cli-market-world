@@ -136,11 +136,16 @@ STORE_QUERY_OVERRIDES: dict[str, list[tuple[str, str]]] = {
         ("llave", "hogar"), ("perno", "hogar"), ("cinta", "hogar"),
         ("brocha", "hogar"), ("escalera", "hogar"), ("tuberia", "hogar"),
     ],
+    # STORES['ferretec_pe']['line'] is "industrial", not "hogar" -- these
+    # entries were tagged "hogar" so collect_one_pg's `lf == line` check
+    # never matched, making queries_for_line == 0 and silently skipping this
+    # store every cycle despite having 12 dedicated override queries defined
+    # (found by the B1 coverage guard, cli-market-core PRD 2026-08-28).
     "ferretec_pe": [
-        ("soldadora", "hogar"), ("taladro", "hogar"), ("amoladora", "hogar"),
-        ("sierra", "hogar"), ("martillo", "hogar"), ("tornillo", "hogar"),
-        ("soldadura", "hogar"), ("compresor", "hogar"), ("generador", "hogar"),
-        ("esmeril", "hogar"), ("andamio", "hogar"), ("cizalla", "hogar"),
+        ("soldadora", "industrial"), ("taladro", "industrial"), ("amoladora", "industrial"),
+        ("sierra", "industrial"), ("martillo", "industrial"), ("tornillo", "industrial"),
+        ("soldadura", "industrial"), ("compresor", "industrial"), ("generador", "industrial"),
+        ("esmeril", "industrial"), ("andamio", "industrial"), ("cizalla", "industrial"),
     ],
     "sodimac_pe": [
         ("taladro", "hogar"), ("pintura", "hogar"), ("martillo", "hogar"),
@@ -341,6 +346,17 @@ SEED_QUERIES = [
     ("vitamina d","suplementos"),("batido proteico","suplementos"),
     ("protein powder","suplementos"),("vitamins","suplementos"),
     ("supplements","suplementos"),("whey protein","suplementos"),
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 🌾 Agro (2 tiendas: Fertisem PE, El Surco MX) — found with zero SEED_QUERIES
+    # coverage during the collector guard audit (cli-market-core PRD 2026-08-28,
+    # backlog Epic B / B1) — same failure shape as "suplementos" (2026-07-24):
+    # queries_for_line == 0 -> collect_one_pg skips these stores every cycle.
+    # ═══════════════════════════════════════════════════════════════════════════
+    ("fertilizante","agro"),("semilla","agro"),("agroquimico","agro"),
+    ("herbicida","agro"),("fungicida","agro"),("insecticida","agro"),
+    ("abono","agro"),("fertilizer","agro"),("seeds","agro"),
+    ("pesticide","agro"),("riego","agro"),("invernadero","agro"),
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 💐 Flores y regalos (5 tiendas: Rosatel, Magia, L'amour, Lima Floral Co, Alore)
@@ -934,8 +950,16 @@ async def collect_full_catalog_pg(pool, store: str) -> int:
                 # 2026-08-20.
                 await pg_insert(conn, prod)
                 collected += 1
-            except Exception:
-                pass
+            except Exception as e:
+                # Was a bare `except: pass` -- a product that fails the
+                # insert (constraint, bad type, whatever) vanished from this
+                # store's catalog for the cycle with zero diagnosable trace,
+                # unlike the store-level exceptions above which already log
+                # (cli-market-core PRD 2026-08-28, C1).
+                logger.warning(
+                    "catalog insert failed for %s @ %s: %s",
+                    prod.get("product_id"), store, str(e)[:120],
+                )
             await asyncio.sleep(0.05)
     return collected
 
@@ -949,7 +973,14 @@ async def run_full_catalog_pg(pool, stores: list[str], *, force: bool = False) -
     _last_catalog_pull = now
     total = 0
     for store in stores:
-        if resolve_store_config(store).get("platform") not in ("vtex", "woocommerce", "estacion90"):
+        # Same platform set collect_full_catalog_pg itself supports (line
+        # 896) -- this loop used to only include vtex/woocommerce/estacion90,
+        # silently skipping shopify/algolia stores' periodic full-catalog
+        # pull even though the function that would do it already existed
+        # and already supported them (cli-market-core PRD 2026-08-28, A1).
+        if resolve_store_config(store).get("platform") not in (
+            "vtex", "woocommerce", "estacion90", "shopify", "algolia"
+        ):
             continue
         n = await collect_full_catalog_pg(pool, store)
         print(f"    📦 {store}: {n:,} products (full catalog)")
