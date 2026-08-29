@@ -2,6 +2,17 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-29] — bump cli-market-core 1.12.57 -> 1.12.58
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.58` — search
+relevance ranking fix (see cli-market-core's CHANGELOG.md). This release
+unblocks `routers/search.py`'s own matching fix, committed earlier and
+already merged here but non-functional until this pin landed (it imports
+`market_core.product_search.match_count`, added in 1.12.58). Verified: 91
+tests across `tests/test_search.py`, `tests/test_search_relevance.py`,
+`tests/test_search_country.py`, `tests/test_analytics.py` pass against the
+real published 1.12.58 wheel (not an editable/local install).
+
 ## [2026-08-26] — bump cli-market-core 1.12.55 -> 1.12.56
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.56` — Excelsior
