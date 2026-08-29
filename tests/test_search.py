@@ -453,6 +453,49 @@ def test_search_products_db_deprioritizes_low_coverage_store_results():
         db.close()
 
 
+def test_search_products_db_ranks_full_token_match_over_cheaper_partial_match():
+    """Live repro, 2026-08-29: query 'protector solar' with the default
+    require_all=False returned lip balm ('protector' only) ahead of real
+    sunscreens ('protector' + 'solar') because the final sort was price-only
+    and threw away the match-count signal already computed for candidate
+    selection. Both rows are `is_relevant` (>=1 token each), so relevance
+    filtering alone doesn't fix it -- the sort itself must prefer the fuller
+    match before falling back to price, same convention _fuzzy_compare
+    already uses (see test_fuzzy_compare_ranks_full_token_match_over_cheaper_partial_match)."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    lip_balm = "protector_lip_balm_store"
+    sunscreen_store = "protector_sunscreen_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (lip_balm, sunscreen_store))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("protector-partial", lip_balm, "Protector Labial Nivea Blackberry Shine", 3172.0, "ARS"),
+    )
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("protector-full", sunscreen_store, "Protector Solar Nivea Sun FPS 50", 15213.0, "ARS"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(
+            search_mod, "_resolve_search_stores", return_value=[lip_balm, sunscreen_store]
+        ):
+            body = SearchRequest(query="protector solar")
+            result = _search_products_db(body)
+        assert result["results"][0]["store"] == sunscreen_store
+        assert result["results"][1]["store"] == lip_balm
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store IN (?, ?)", (lip_balm, sunscreen_store))
+        db.commit()
+        db.close()
+
+
 # ── Growth-tier priority tiebreak ────────────────────────────────────────────
 # growth stores win exact price ties only — never outrank a genuinely
 # cheaper competitor, so "cheapest first" stays honest regardless of who paid.

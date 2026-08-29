@@ -39,6 +39,7 @@ from market_core import (
 from market_core.product_search import (
     build_search_sql,
     is_relevant as _is_relevant,
+    match_count as _match_count,
     normalize_text as _normalize_text,  # noqa: F401 - re-exported for routers/analytics.py
     query_tokens as _query_tokens,
     word_set as _word_set,
@@ -335,6 +336,13 @@ def _search_products_db(body: SearchRequest) -> dict:
     }
     results.sort(key=lambda p: (
         0 if coverage_by_store.get(p.get("store"), 100) >= 60 else 1,
+        # Relevance before price: under body.require_all=False, `results`
+        # keeps every row matching >=1 token, so a cheap barely-relevant row
+        # (e.g. "Protector Labial" for query "protector solar") would
+        # otherwise outrank an expensive fully-relevant one purely on price.
+        # Constant across the set (== len(q_tokens)) when require_all=True,
+        # so that path is unaffected.
+        -_match_count(p.get("name", ""), q_tokens),
         p["price"] if p["price"] > 0 else float("inf"),
         0 if p.get("store") in growth_stores else 1,
     ))
