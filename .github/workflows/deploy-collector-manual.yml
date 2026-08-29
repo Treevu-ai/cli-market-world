@@ -45,8 +45,13 @@ jobs:
 
       # No HTTP health check exists for this app (background daemon, no
       # exposed port -- see fly.collector.toml's own comment). The closest
-      # available signal is the machine reaching "started" state and staying
-      # there past its own boot window, instead of crash-looping.
+      # available signal is at least one machine reaching "started" state.
+      # This app runs 1 active + 1 standby machine by design (confirmed via
+      # `standbys` in the started machine's own config, and this repo's own
+      # CHANGELOG: "active machine healthy (+ 1 standby, by design)") -- the
+      # standby sits "stopped" until failover, so requiring EVERY machine to
+      # be "started" is wrong and rolls back a perfectly good deploy (learned
+      # the hard way: first run here did exactly that).
       - name: Verify machine is running (no HTTP endpoint to smoke-test)
         id: verify
         env:
@@ -62,11 +67,11 @@ jobs:
           if not machines:
               print('No machines found')
               sys.exit(1)
-          bad = [m for m in machines if m.get('state') != 'started']
-          if bad:
-              print('Machine(s) not in started state:', bad)
+          started = [m for m in machines if m.get('state') == 'started']
+          if not started:
+              print('No machine in started state:', machines)
               sys.exit(1)
-          print('All machines started OK')
+          print(f'{len(started)}/{len(machines)} machine(s) started OK (standbys may legitimately sit stopped)')
           "
 
       - name: Rollback to last known good release
