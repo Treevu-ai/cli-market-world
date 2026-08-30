@@ -31,7 +31,7 @@ jobs:
           done
           [ -n "$up" ] || { echo "::error::tunnel never came up"; exit 1; }
 
-      - name: Inspect name column in old price_history rows
+      - name: Find when name started being populated
         env:
           DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
           PG_SSL_MODE: disable
@@ -42,32 +42,13 @@ jobs:
           conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="disable", connect_timeout=10)
           cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-          cur.execute("""
-              SELECT COUNT(*) AS n, SUM(CASE WHEN name IS NULL THEN 1 ELSE 0 END) AS null_name,
-                     SUM(CASE WHEN name = '' THEN 1 ELSE 0 END) AS empty_name
-              FROM price_history WHERE recorded_at <= now() - interval '30 days'
-          """)
-          print("=== name column stats for old rows ===")
-          print(dict(cur.fetchone()))
-          print()
+          cur.execute("SELECT MIN(recorded_at) AS earliest_named FROM price_history WHERE name IS NOT NULL")
+          print("earliest row with non-null name:", dict(cur.fetchone()))
 
-          cur.execute("""
-              SELECT store, name, price, recorded_at
-              FROM price_history
-              WHERE recorded_at <= now() - interval '30 days' AND store = 'plazavea'
-              ORDER BY recorded_at DESC LIMIT 10
-          """)
-          print("=== sample plazavea old rows (any name) ===")
-          for r in cur.fetchall():
-              print(dict(r))
-          print()
+          cur.execute("SELECT COUNT(*) AS n FROM price_history WHERE name IS NOT NULL")
+          print("total rows with non-null name:", dict(cur.fetchone()))
 
-          cur.execute("""
-              SELECT column_name, data_type FROM information_schema.columns
-              WHERE table_name = 'price_history' ORDER BY ordinal_position
-          """)
-          print("=== price_history columns ===")
-          for r in cur.fetchall():
-              print(dict(r))
+          cur.execute("SELECT COUNT(*) AS n FROM price_history WHERE name IS NULL")
+          print("total rows with null name:", dict(cur.fetchone()))
           conn.close()
           PYEOF
