@@ -31,7 +31,7 @@ jobs:
           done
           [ -n "$up" ] || { echo "::error::tunnel never came up"; exit 1; }
 
-      - name: Inspect old price_history rows by store/country
+      - name: Inspect name column in old price_history rows
         env:
           DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
           PG_SSL_MODE: disable
@@ -43,26 +43,30 @@ jobs:
           cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
           cur.execute("""
-              SELECT store, COUNT(*) AS n
-              FROM price_history
-              WHERE recorded_at <= now() - interval '30 days'
-              GROUP BY store ORDER BY n DESC LIMIT 30
+              SELECT COUNT(*) AS n, SUM(CASE WHEN name IS NULL THEN 1 ELSE 0 END) AS null_name,
+                     SUM(CASE WHEN name = '' THEN 1 ELSE 0 END) AS empty_name
+              FROM price_history WHERE recorded_at <= now() - interval '30 days'
           """)
-          print("=== stores with >=30d-old price_history rows ===")
+          print("=== name column stats for old rows ===")
+          print(dict(cur.fetchone()))
+          print()
+
+          cur.execute("""
+              SELECT store, name, price, recorded_at
+              FROM price_history
+              WHERE recorded_at <= now() - interval '30 days' AND store = 'plazavea'
+              ORDER BY recorded_at DESC LIMIT 10
+          """)
+          print("=== sample plazavea old rows (any name) ===")
           for r in cur.fetchall():
               print(dict(r))
           print()
 
-          # PE canasta stores
-          import json
           cur.execute("""
-              SELECT store, name, price, recorded_at
-              FROM price_history
-              WHERE recorded_at <= now() - interval '30 days'
-                AND (name ILIKE '%leche%' OR name ILIKE '%arroz%' OR name ILIKE '%aceite%')
-              ORDER BY recorded_at DESC LIMIT 15
+              SELECT column_name, data_type FROM information_schema.columns
+              WHERE table_name = 'price_history' ORDER BY ordinal_position
           """)
-          print("=== sample old canasta-name-matching rows (any country) ===")
+          print("=== price_history columns ===")
           for r in cur.fetchall():
               print(dict(r))
           conn.close()
