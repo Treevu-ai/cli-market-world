@@ -31,7 +31,7 @@ jobs:
           done
           [ -n "$up" ] || { echo "::error::tunnel never came up"; exit 1; }
 
-      - name: Inspect price_history age and volume
+      - name: Inspect old price_history rows by store/country
         env:
           DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
           PG_SSL_MODE: disable
@@ -42,20 +42,28 @@ jobs:
           conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="disable", connect_timeout=10)
           cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-          cur.execute("SELECT COUNT(*) AS n, MIN(recorded_at) AS earliest, MAX(recorded_at) AS latest FROM price_history")
-          print("=== price_history overall ===")
-          print(dict(cur.fetchone()))
+          cur.execute("""
+              SELECT store, COUNT(*) AS n
+              FROM price_history
+              WHERE recorded_at <= now() - interval '30 days'
+              GROUP BY store ORDER BY n DESC LIMIT 30
+          """)
+          print("=== stores with >=30d-old price_history rows ===")
+          for r in cur.fetchall():
+              print(dict(r))
           print()
 
-          cur.execute("SELECT COUNT(*) AS n FROM price_history WHERE recorded_at <= now() - interval '30 days'")
-          print("rows with recorded_at <= 30d ago:", cur.fetchone()["n"])
-          print()
-
-          cur.execute("SELECT COUNT(DISTINCT product_id) AS n FROM price_history")
-          print("distinct product_id in price_history:", cur.fetchone()["n"])
-          print()
-
-          cur.execute("SELECT COUNT(*) AS n FROM price_snapshots")
-          print("price_snapshots total rows:", cur.fetchone()["n"])
+          # PE canasta stores
+          import json
+          cur.execute("""
+              SELECT store, name, price, recorded_at
+              FROM price_history
+              WHERE recorded_at <= now() - interval '30 days'
+                AND (name ILIKE '%leche%' OR name ILIKE '%arroz%' OR name ILIKE '%aceite%')
+              ORDER BY recorded_at DESC LIMIT 15
+          """)
+          print("=== sample old canasta-name-matching rows (any country) ===")
+          for r in cur.fetchall():
+              print(dict(r))
           conn.close()
           PYEOF
