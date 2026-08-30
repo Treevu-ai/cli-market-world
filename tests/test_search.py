@@ -834,3 +834,68 @@ def test_enrich_upstream_failure_returns_empty():
 def test_categories_unknown_store_returns_404():
     r = client.get("/categories/no_such_store_xyz")
     assert r.status_code == 404
+
+
+# ── ambiguous_query_hint (catalog-naming collisions) ────────────────────────
+
+def test_search_products_db_attaches_botiquin_hint_alongside_real_results():
+    """Live repro, 2026-08-30: 'botiquin primeros auxilios' (AR) returns real,
+    catalog-accurate results (bathroom medicine cabinets, since that's what
+    Easy/Coppel's own taxonomy calls a "Botiquín" -- never a first-aid kit),
+    not zero results -- so the hint must appear ALONGSIDE results, not
+    instead of them. See market_core.product_search.ambiguous_query_hint's
+    docstring for why this is a hint, not query expansion or a filter."""
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    store = "botiquin_hint_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("cabinet", store, "Botiquin con Espejo 55x55 cm Melamina Blanco", 103490.0, "ARS"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=[store]):
+            body = SearchRequest(query="botiquin primeros auxilios")
+            result = _search_products_db(body)
+        assert result["total"] == 1
+        assert result["hint"] is not None
+        assert "curitas" in result["hint"]["try_instead"]
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.commit()
+        db.close()
+
+
+def test_search_products_db_no_hint_for_unrelated_query():
+    import routers.search as search_mod
+    from routers.search import SearchRequest, _search_products_db
+
+    store = "no_hint_store"
+    db = get_db()
+    db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+    db.execute(
+        "INSERT INTO price_snapshots (product_id, store, name, price, currency, queried_at) "
+        "VALUES (?, ?, ?, ?, ?, datetime('now'))",
+        ("milk", store, "Leche Entera 1L", 1975.0, "ARS"),
+    )
+    db.commit()
+    db.close()
+    try:
+        with patch.object(search_mod, "_resolve_search_stores", return_value=[store]):
+            body = SearchRequest(query="leche entera")
+            result = _search_products_db(body)
+        # Omitted entirely when None (found in code review, 2026-08-30), not
+        # present-but-null -- keeps the response lean on the overwhelming
+        # majority of searches that don't match a known ambiguous term.
+        assert "hint" not in result
+    finally:
+        db = get_db()
+        db.execute("DELETE FROM price_snapshots WHERE store = ?", (store,))
+        db.commit()
+        db.close()

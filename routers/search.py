@@ -37,6 +37,7 @@ from market_core import (
     save_search_query,
 )
 from market_core.product_search import (
+    ambiguous_query_hint as _ambiguous_query_hint,
     build_search_sql,
     is_relevant as _is_relevant,
     match_count as _match_count,
@@ -278,9 +279,21 @@ def _search_products_db(body: SearchRequest) -> dict:
     """
     stores = _resolve_search_stores(body)
     q_tokens = _query_tokens(body.query)
+    # Computed regardless of outcome: "botiquin primeros auxilios" (AR)
+    # returns real, catalog-accurate results (bathroom cabinets), not zero
+    # -- see ambiguous_query_hint's docstring for why this is a hint
+    # alongside results, not a filter or query-expansion. Only attached
+    # when non-None (**hint_kw below) -- an always-present "hint": null
+    # would bloat every single search response for a feature that fires on
+    # a handful of known terms today (found in code review, 2026-08-30).
+    hint = _ambiguous_query_hint(body.query)
+    hint_kw = {"hint": hint} if hint else {}
     if not stores or not q_tokens:
         save_search_query(body.query, body.line, body.store, 0)
-        return {"query": body.query, "results": [], "total": 0, "stores_resolved": len(stores)}
+        return {
+            "query": body.query, "results": [], "total": 0,
+            "stores_resolved": len(stores), **hint_kw,
+        }
 
     db = get_db()
     try:
@@ -320,7 +333,7 @@ def _search_products_db(body: SearchRequest) -> dict:
     growth_stores = _growth_store_set()
     response: dict = {
         "query": body.query, "results": results, "total": len(results),
-        "stores_resolved": len(stores),
+        "stores_resolved": len(stores), **hint_kw,
     }
     response = _attach_source_health(response, stores)
     # Coverage-aware ranking: without a `store` filter, a query like "leche"
