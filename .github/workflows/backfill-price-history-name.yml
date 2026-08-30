@@ -1,0 +1,83 @@
+name: Backfill price_history.name (temp, one-off)
+
+# One-off backfill: price_history.name was NULL for every row written before
+# 2026-08-14 (a caller started passing `name` to append_price_history() on
+# that date; older writes never did). This blocks market_basket_stress's
+# 30-day baseline lookup, which name-matches canasta staples against
+# price_history — see market_indicators_compute.py:295-341. price_snapshots
+# holds each product's current name keyed by (product_id, store), the same
+# join key append_price_history() uses, so it's a safe source to backfill
+# from. Delete this workflow after use.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -q psycopg2-binary
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Open WireGuard tunnel to cli-market-db
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_DB_PROXY_TOKEN }}
+        run: |
+          flyctl proxy 5432:5432 -a cli-market-db &
+          up=""
+          for i in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null && { up=1; echo "tunnel up"; break; }
+            sleep 1
+          done
+          [ -n "$up" ] || { echo "::error::tunnel never came up"; exit 1; }
+
+      - name: Backfill price_history.name from price_snapshots
+        env:
+          DATABASE_URL_INTERNAL: ${{ secrets.DATABASE_URL }}
+          PG_SSL_MODE: disable
+        run: |
+          export DATABASE_URL=$(echo "$DATABASE_URL_INTERNAL" | sed -E 's#@[^/]+/#@localhost:5432/#')
+          python3 - <<'PYEOF'
+          import os, psycopg2, psycopg2.extras
+          conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="disable", connect_timeout=10)
+          cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+          cur.execute("""
+              SELECT COUNT(*) AS n
+              FROM price_history ph
+              JOIN price_snapshots ps
+                ON ph.product_id = ps.product_id AND ph.store = ps.store
+              WHERE ph.name IS NULL AND ps.name IS NOT NULL
+          """)
+          matchable = cur.fetchone()["n"]
+          print("rows matchable for backfill (dry-run count):", matchable)
+
+          cur.execute("""
+              UPDATE price_history ph
+              SET name = ps.name
+              FROM price_snapshots ps
+              WHERE ph.product_id = ps.product_id AND ph.store = ps.store
+                AND ph.name IS NULL AND ps.name IS NOT NULL
+          """)
+          updated = cur.rowcount
+          print("rows updated:", updated)
+          conn.commit()
+
+          cur.execute("SELECT COUNT(*) AS n FROM price_history WHERE name IS NULL")
+          print("remaining NULL-name rows after backfill:", cur.fetchone()["n"])
+
+          cur.execute("""
+              SELECT COUNT(*) AS n FROM price_history
+              WHERE recorded_at <= now() - interval '30 days' AND name IS NOT NULL
+          """)
+          print("rows >=30d old with a name now:", cur.fetchone()["n"])
+          conn.close()
+          PYEOF
