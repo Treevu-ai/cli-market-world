@@ -2,6 +2,22 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-30] — bump cli-market-core 1.12.62 -> 1.12.63
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.63` — fixes
+market_basket_stress's current/baseline methodology mismatch (see
+cli-market-core's CHANGELOG.md). `current` used the curated
+canonical_product_id + taxonomy match whenever available, but `baseline`
+(30d-ago) always used a cruder name-LIKE match — comparing two different
+product baskets, not one basket over time. Confirmed live right after the
+same-day `price_history.name` backfill first unblocked real 30d_history
+data: PE 67.78, AR 49.45, MX 136.64, CO 127.95, all methodology noise, not
+real price movement. Also fixes a pre-existing `PARTITION BY product_id`
+(missing `store`) bug found in code review — `product_id` is only unique
+per `(product_id, store)`, so two stores sharing a `product_id` could
+silently drop one store's row from the baseline. No world-side code
+changes needed. Verified 64 tests pass against the real published wheel.
+
 ## [2026-08-30] — bump cli-market-core 1.12.61 -> 1.12.62
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.62` — removes the
