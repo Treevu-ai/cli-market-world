@@ -2,6 +2,14 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-30] — bump cli-market-core 1.12.60 -> 1.12.61
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.61` — adds the
+"botiquín" ambiguous-query hint (see cli-market-core's CHANGELOG.md).
+routers/search.py's own hint attachment (committed earlier, non-functional
+until this release) now works end to end. Verified 93 tests pass against
+the real published wheel.
+
 ## [2026-08-29] — bump cli-market-core 1.12.59 -> 1.12.60
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.60` — fixes the
