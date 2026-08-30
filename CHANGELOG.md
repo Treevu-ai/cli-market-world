@@ -2,6 +2,18 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-08-30] — bump cli-market-core 1.12.61 -> 1.12.62
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.62` — removes the
+dead `ivano_pe` store from the static registry (see cli-market-core's
+CHANGELOG.md). This was the only store failing `/v1/sources/health` and
+had been blocking the automated deploy gate (zero-tolerance for dead
+sources) across multiple releases this session, forcing manual no-gate
+bypasses. `store_credentials` confirmed to have zero rows for `ivano_pe`,
+so removing it from the static dict is sufficient — no DB migration
+needed. No world-side code changes needed. Verified 84 tests pass against
+the real published wheel.
+
 ## [2026-08-30] — bump cli-market-core 1.12.60 -> 1.12.61
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.61` — adds the
