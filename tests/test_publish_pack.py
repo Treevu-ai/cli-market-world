@@ -260,7 +260,10 @@ def test_activation_blitz_june_10_channels(monkeypatch):
     assert "Day-10.md" not in paths
     assert "Reddit (r/Python)" in labels
     assert "Reddit (r/aiagents)" not in labels
-    assert "WhatsApp" in labels
+    # WhatsApp channel discontinued (whatsapp/ removed from cli-market-content,
+    # 2026-09-03) -- routing correctly omits it now that the file is gone via
+    # _append_if_ready's is_file() check, no code change needed on this side.
+    assert "WhatsApp" not in labels
     assert "Instagram" in labels
 
 

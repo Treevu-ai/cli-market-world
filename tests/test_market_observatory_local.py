@@ -2,7 +2,7 @@
 
 import json
 import sys
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -114,9 +114,15 @@ def test_compute_daily_observatory_metrics_sqlite_row(monkeypatch, tmp_path):
         retailer="wong-pe",
         country="PE",
     )
-    payload = compute_daily_observatory_metrics(day=date.today())
+    # record_agent_event() stamps occurred_at in UTC -- pass the same UTC date
+    # here (not local date.today()) or this silently reads 0 activity near
+    # the day boundary in any timezone offset from UTC (see
+    # compute_daily_observatory_metrics' own docstring comment for the
+    # production-code side of this fix, bf28f10).
+    today_utc = datetime.now(timezone.utc).date()
+    payload = compute_daily_observatory_metrics(day=today_utc)
     assert payload["daily_active_agents"] >= 1
-    assert payload["date"] == date.today().isoformat()
+    assert payload["date"] == today_utc.isoformat()
 
 
 def test_observatory_snapshot_streak_sqlite(monkeypatch, tmp_path):
@@ -144,7 +150,7 @@ def test_observatory_snapshot_streak_sqlite(monkeypatch, tmp_path):
     monkeypatch.setattr(mc, "DB_FILE", data_dir / "market.db")
     mc.ensure_db_initialized()
 
-    compute_daily_observatory_metrics(day=date.today())
+    compute_daily_observatory_metrics(day=datetime.now(timezone.utc).date())
     streak = observatory_snapshot_streak(days=7)
     assert streak["window_days"] == 7
     assert streak["snapshots_found"] >= 1
