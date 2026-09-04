@@ -2,6 +2,19 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-04] — bump cli-market-core 1.12.63 -> 1.12.66
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.66` — three
+fixes since 1.12.63 (see cli-market-core's CHANGELOG.md): 1.12.64
+multi-language pack-size parsing + normalization_pct by country (#187),
+1.12.65 adaptive per-store freshness window (#189), 1.12.66
+golden-taxonomy canasta price rejects mistagged condiments (fixes an
+implausible AR basket_stress_index of ~1 caused by a seasoning product
+mistagged into the "arroz" canonical bucket, confirmed live 2026-09-04).
+
+Full world test suite verified green against the new pin before this
+commit: 1402 passed, 1 skipped, 0 failed.
+
 ## [2026-08-30] — bump cli-market-core 1.12.62 -> 1.12.63
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.63` — fixes
