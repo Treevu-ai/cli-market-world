@@ -14,6 +14,7 @@ from market_cli import (
     _country_supermarket_stores,
     _format_basket_item_label,
     _format_basket_alternates,
+    _format_split_recommendation,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -121,6 +122,38 @@ def test_format_basket_alternates_lists_brand_and_price():
 def test_format_basket_alternates_falls_back_to_name_without_brand():
     item = {"item": "leche", "alternates": [{"brand": "—", "name": "Leche Sin Marca 1L", "price": 3.5}]}
     assert _format_basket_alternates(item, "PEN") == "Leche Sin Marca 1L (PEN 3.50)"
+
+
+def test_format_split_recommendation_none_when_absent():
+    assert _format_split_recommendation(None, "PEN", is_en=False) is None
+
+
+def test_format_split_recommendation_renders_headline_and_stores():
+    split = {
+        "stores": [
+            {"store": "wong", "store_name": "Wong", "items": ["leche", "arroz"], "subtotal": 12.5},
+            {"store": "metro", "store_name": "Metro", "items": ["aceite"], "subtotal": 8.0},
+        ],
+        "shelf_total": 20.5,
+        "net_total": 21.0,
+        "currency": "PEN",
+        "savings_vs_single_store": 3.4,
+        "savings_vs_single_store_pct": 13.9,
+    }
+    lines = _format_split_recommendation(split, "PEN", is_en=False)
+    assert lines[0] == "💡 También puedes ahorrar PEN 3.40 (13.9%) partiendo tu compra entre Wong + Metro"
+    assert lines[1] == "Wong: leche, arroz"
+    assert lines[2] == "Metro: aceite"
+
+
+def test_format_split_recommendation_english():
+    split = {
+        "stores": [{"store": "wong", "store_name": "Wong", "items": ["milk"], "subtotal": 5.0}],
+        "savings_vs_single_store": 1.0,
+        "savings_vs_single_store_pct": None,
+    }
+    lines = _format_split_recommendation(split, "PEN", is_en=True)
+    assert lines[0] == "💡 You could also save PEN 1.00 by splitting your basket between Wong"
 
 
 def test_country_supermarket_stores_pe():

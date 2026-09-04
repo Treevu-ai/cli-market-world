@@ -488,6 +488,36 @@ def _format_basket_alternates(breakdown_item: dict, currency: str) -> str:
     return ", ".join(parts)
 
 
+def _format_split_recommendation(
+    split: dict | None, currency: str, is_en: bool
+) -> list[str] | None:
+    """Render optimize-purchase's ``split_recommendation`` (F2b/F2c) as display
+    lines: a headline with net savings vs. the single-store recommendation,
+    then one line per store listing which items go there. Returns None when
+    there's no split to show (field absent, or the optimizer found none worth
+    surfacing -- see market_split_optimizer.min_net_savings)."""
+    if not split:
+        return None
+    savings = float(split.get("savings_vs_single_store") or 0)
+    savings_pct = split.get("savings_vs_single_store_pct")
+    pct_suffix = f" ({savings_pct:.1f}%)" if savings_pct is not None else ""
+    store_names = " + ".join(
+        s.get("store_name") or s.get("store") for s in (split.get("stores") or [])
+    )
+    headline = (
+        f"💡 También puedes ahorrar {currency} {savings:.2f}{pct_suffix} "
+        f"partiendo tu compra entre {store_names}"
+        if not is_en
+        else f"💡 You could also save {currency} {savings:.2f}{pct_suffix} "
+        f"by splitting your basket between {store_names}"
+    )
+    lines = [headline]
+    for s in split.get("stores") or []:
+        items_str = ", ".join(s.get("items") or [])
+        lines.append(f"{s.get('store_name') or s.get('store')}: {items_str}")
+    return lines
+
+
 def _normalize_basket_store_rows(data: dict) -> list[dict]:
     """Wave 4 returns ``stores``; legacy live API returns ``comparison`` keyed by store."""
     rows = data.get("stores") or []
@@ -1590,6 +1620,11 @@ def cmd_optimize(args):
     rationale = rec.get("rationale_es") or rec.get("rationale")
     if rationale:
         console.print(f"\n[dim]{rationale}[/]")
+    split_lines = _format_split_recommendation(data.get("split_recommendation"), currency, is_en)
+    if split_lines:
+        console.print(f"\n[bold #00FF88]{split_lines[0]}[/]")
+        for line in split_lines[1:]:
+            console.print(f"  [dim]{line}[/]")
     links = data.get("action_links") or []
     if links:
         console.print(f"\n[bold]{'Siguiente paso' if not is_en else 'Next step'}:[/]")
