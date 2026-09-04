@@ -1,0 +1,178 @@
+[
+  {
+    "rank": 1,
+    "sku": "Silk Almendras Sin Azúcar (1L)",
+    "dispersión_cv_pct": 25.42,
+    "spread_pct": 35.95,
+    "precio_promedio": 5636.88,
+    "desv_estandar": 1432.78,
+    "rango_min": 4623.75,
+    "rango_max": 6650.0,
+    "num_tiendas": 2,
+    "tiendas": [
+      "Carrefour AR",
+      "Jumbo AR"
+    ],
+    "precios": [
+      4623.75,
+      6650.0
+    ]
+  },
+  {
+    "rank": 2,
+    "sku": "Monster Energy (473ml)",
+    "dispersión_cv_pct": 0.02,
+    "spread_pct": 0.03,
+    "precio_promedio": 3299.5,
+    "desv_estandar": 0.71,
+    "rango_min": 3299.0,
+    "rango_max": 3300.0,
+    "num_tiendas": 2,
+    "tiendas": [
+      "Carrefour AR",
+      "Vea AR"
+    ],
+    "precios": [
+      3299.0,
+      3300.0
+    ]
+  },
+  {
+    "rank": 3,
+    "sku": "Bebida Vegetal Notmilk (1L)",
+    "dispersión_cv_pct": 0.0,
+    "spread_pct": 0.0,
+    "precio_promedio": 765.93,
+    "desv_estandar": 0.0,
+    "rango_min": 765.93,
+    "rango_max": 765.93,
+    "num_tiendas": 2,
+    "tiendas": [
+      "Vea AR",
+      "Jumbo AR"
+    ],
+    "precios": [
+      765.93,
+      765.93
+    ]
+  },
+  {
+    "rank": 4,
+    "sku": "Gatorade Manzana (1.25L)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 2750.0,
+    "desv_estandar": 0,
+    "rango_min": 2750.0,
+    "rango_max": 2750.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Carrefour AR"
+    ],
+    "precios": [
+      2750.0
+    ]
+  },
+  {
+    "rank": 5,
+    "sku": "Nescafé Cappuccino Clásico (270ml)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 2804.25,
+    "desv_estandar": 0,
+    "rango_min": 2804.25,
+    "rango_max": 2804.25,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Carrefour AR"
+    ],
+    "precios": [
+      2804.25
+    ]
+  },
+  {
+    "rank": 6,
+    "sku": "Speed Zero Sugar (473ml)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 2925.0,
+    "desv_estandar": 0,
+    "rango_min": 2925.0,
+    "rango_max": 2925.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Carrefour AR"
+    ],
+    "precios": [
+      2925.0
+    ]
+  },
+  {
+    "rank": 7,
+    "sku": "Ades Soja Manzana (1L)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 3390.0,
+    "desv_estandar": 0,
+    "rango_min": 3390.0,
+    "rango_max": 3390.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Vea AR"
+    ],
+    "precios": [
+      3390.0
+    ]
+  },
+  {
+    "rank": 8,
+    "sku": "Terma Pomelo Rosado (1.75L)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 3399.0,
+    "desv_estandar": 0,
+    "rango_min": 3399.0,
+    "rango_max": 3399.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Vea AR"
+    ],
+    "precios": [
+      3399.0
+    ]
+  },
+  {
+    "rank": 9,
+    "sku": "Bebida Quinoa Biba (1L)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 3400.0,
+    "desv_estandar": 0,
+    "rango_min": 3400.0,
+    "rango_max": 3400.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "New Garden"
+    ],
+    "precios": [
+      3400.0
+    ]
+  },
+  {
+    "rank": 10,
+    "sku": "Red Bull Sugar Free (250ml)",
+    "dispersión_cv_pct": 0,
+    "spread_pct": 0,
+    "precio_promedio": 3439.0,
+    "desv_estandar": 0,
+    "rango_min": 3439.0,
+    "rango_max": 3439.0,
+    "num_tiendas": 1,
+    "tiendas": [
+      "Carrefour AR"
+    ],
+    "precios": [
+      3439.0
+    ]
+  }
+]
