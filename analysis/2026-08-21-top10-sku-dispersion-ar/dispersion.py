@@ -5,7 +5,6 @@ CLI Market - Argentina Supermercados
 """
 
 import json
-import subprocess
 from typing import List, Dict
 from statistics import stdev, mean
 
