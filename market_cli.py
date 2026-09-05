@@ -1582,7 +1582,17 @@ def cmd_optimize(args):
     data = _unwrap_v1(raw)
     if data.get("status") != "ok":
         err = data.get("error") or ("Error en misión" if not is_en else "Mission error")
-        console.print(f"[red]{err}[/]")
+        if "no stores with prices" in err.lower():
+            err = (
+                f"[red]{err}[/]\n\n[yellow]⚠ El datamoat reporta datos obsoletos (stale). "
+                f"Es posible que el Collector Daemon esté detenido o bloqueado en Fly.io.[/]"
+                if not is_en else
+                f"[red]{err}[/]\n\n[yellow]⚠ The datamoat reports stale data. "
+                f"The Collector Daemon might be stopped or locked on Fly.io.[/]"
+            )
+            console.print(err)
+        else:
+            console.print(f"[red]{err}[/]")
         return
     rec = data.get("recommendation") or {}
     action = rec.get("action", "monitor")
@@ -1592,6 +1602,43 @@ def cmd_optimize(args):
         f"\n[bold]{'Recomendación' if not is_en else 'Recommendation'}:[/] "
         f"[{action_color}]{action.upper()}[/]"
     )
+    compare_section = (data.get("sections") or {}).get("compare", {})
+    compare_stores = compare_section.get("stores", [])
+    if compare_stores:
+        tco_table = Table(
+            title="Comparativa de TCO" if not is_en else "TCO Comparison",
+            border_style=ui.MINT,
+            box=ui.table_box(),
+            expand=True,
+        )
+        tco_table.add_column("Tienda" if not is_en else "Store", style="bold")
+        tco_table.add_column("Costo Total (TCO)" if not is_en else "Total Cost (TCO)", justify="right")
+        tco_table.add_column("Estado" if not is_en else "Status", justify="center")
+        tcos = []
+        for s in compare_stores:
+            tco_val = float((s.get("tco") or {}).get("total") or 0)
+            tcos.append(tco_val)
+            status = "[#00FF88]Best[/]" if s.get("primary") else "[dim]Alternative[/]"
+            tco_table.add_row(s.get("store_name") or s.get("store"), f"{currency} {tco_val:.2f}", status)
+        console.print(tco_table)
+        if len(tcos) > 1:
+            max_tco = max(tcos)
+            min_tco = min(tcos)
+            savings = max_tco - min_tco
+            savings_pct = (savings / max_tco * 100) if max_tco > 0 else 0
+            savings_msg = (
+                f"Ahorras {currency} {savings:.2f} ({savings_pct:.1f}%)"
+                if not is_en else
+                f"Save {currency} {savings:.2f} ({savings_pct:.1f}%)"
+            )
+            console.print(
+                Panel(
+                    f"[bold #00FF88]{savings_msg}[/]",
+                    title="💰 Ahorro Detectado" if not is_en else "💰 Savings Found",
+                    border_style=ui.MINT,
+                    box=ui.table_box(),
+                )
+            )
     console.print(
         f"  {'Tienda' if not is_en else 'Store'}: {rec.get('primary_store_name') or rec.get('primary_store')}"
     )
