@@ -602,6 +602,13 @@ def cmd_search(args):
     if not results:
         console.print(f"\n[yellow]Sin resultados para '{args.query}'[/]")
         return
+    stores_resolved = data.get("stores_resolved")
+    active_stores = {p.get("store") for p in results if p.get("store")}
+    if stores_resolved and len(active_stores) < stores_resolved:
+        console.print(
+            f"[yellow]Cobertura parcial: {len(active_stores)} de {stores_resolved} "
+            f"retailers configurados devolvieron resultados para esta búsqueda.[/]"
+        )
     try:
         api("POST", "/v1/events", {"event": "first_search", "meta": {"query": args.query}})
     except Exception:
@@ -631,6 +638,7 @@ def cmd_search(args):
         )
     console.print()
     console.print(table)
+    console.print("[dim]ID: identificador propio de cada tienda (no es universal). Para agregar al carrito usa el número de fila (#), ej. `market add 1`.[/]")
     ui.price_data_footer(console)
     if args.country:
         ui.set_default_country(args.country)
