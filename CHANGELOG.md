@@ -2,6 +2,15 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-11] — bump cli-market-core 1.12.75 -> 1.12.76
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.76` — serializes
+concurrent golden-linkage cache-miss computations with a lock, closing
+the gap left by 1.12.75's TTL bump and this repo's own startup-warmup
+fix (#574): a burst of concurrent callers hitting a cold cache could
+each fire the expensive query independently, several copies contending
+for CPU/disk on the shared-cpu-1x machine instead of one slow run.
+
 ## [2026-09-11] — bump cli-market-core 1.12.73 -> 1.12.75
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.75` (see
