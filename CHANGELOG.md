@@ -2,6 +2,24 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-11] — bump cli-market-core 1.12.73 -> 1.12.75
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.75` (see
+cli-market-core's CHANGELOG.md for both):
+
+- **1.12.74**: fixes a same-store-panel bias in `basket_stress_index` —
+  onboarding a new, cheaper store mid-window could pull the index down
+  with zero real price movement behind it, since the 30d-ago baseline
+  naturally has no history for a store that didn't exist yet. `current`
+  is now restricted to the same store panel as the baseline whenever a
+  real `30d_history` comparison is made.
+- **1.12.75**: raises the `/health/stats` golden-linkage cache TTL from
+  5 to 30 minutes — the underlying `COUNT(DISTINCT ...)` query can spill
+  to disk on Postgres and exceed `ops/doctor_prod_gate.py`'s timeout;
+  the 5-minute cache was too short to reliably avoid landing on a slow
+  moment (confirmed live: 3 consecutive gate failures on this PR, ~2h+
+  after the last deploy, unrelated to the code being deployed).
+
 ## [2026-09-11] — bump cli-market-core 1.12.70 -> 1.12.73
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.73` — two new PE
