@@ -67,6 +67,25 @@ def test_lock_timeout_with_no_cache_raises_503():
     assert exc_info.value.status_code == 503
 
 
+def test_lock_holder_bounds_idle_in_transaction_time():
+    """Regression for the 2026-09-11 orphaned-advisory-lock incident:
+    lock_db's own connection sits idle-in-transaction for the whole compute
+    window (the real work runs on a different connection, in
+    _run_dashboard_compute_bounded's background thread). Confirmed live
+    that idle_in_transaction_session_timeout was 0 (disabled) at the DB
+    level, so an abandoned lock_db session (process killed, unhandled
+    exception) held the advisory lock forever until a deploy restarted the
+    process. Must bound this session's own idle time so Postgres reclaims
+    it (and releases the lock) on its own."""
+    fake_db = _FakeDb(fail_on_lock=False)
+    with patch.object(dashboard, "get_db", return_value=fake_db), \
+         patch("market_core.USE_PG", True), \
+         patch.object(dashboard, "_load_shared_dashboard_cache", return_value={"cached": True}):
+        dashboard._compute_dashboard_data_locked()
+
+    assert any("idle_in_transaction_session_timeout" in sql for sql in fake_db.executed)
+
+
 def test_lock_acquired_propagates_real_errors():
     """A failure AFTER the lock is acquired is a real bug — must not be
     swallowed into a fake 503/stale-cache response."""
