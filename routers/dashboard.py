@@ -198,6 +198,24 @@ def _compute_dashboard_data_locked() -> dict:
     lock_acquired = False
     try:
         lock_db.execute(f"SET lock_timeout = '{_DASHBOARD_LOCK_TIMEOUT_S}s'")
+        # `lock_db`'s own connection does nothing but hold the advisory lock
+        # while the real compute runs on a *different* connection in
+        # _run_dashboard_compute_bounded()'s background thread -- so this
+        # session sits idle-in-transaction for the whole compute window.
+        # Confirmed live 2026-09-11 (twice): idle_in_transaction_session_
+        # timeout and statement_timeout are both 0 (disabled) at the DB
+        # level, so if this connection is ever abandoned mid-transaction
+        # (process killed, unhandled exception bypassing the `finally`
+        # below, a stuck background compute the request never returns
+        # from) nothing ever reclaims it -- pg_advisory_unlock() never
+        # runs, and the lock is held forever until a deploy restarts the
+        # process and kills the orphaned session (the exact incident this
+        # module's other comments already describe from a prior
+        # occurrence). Bound this session's own idle-in-transaction time
+        # so Postgres itself force-rolls-back (releasing the lock) if this
+        # ever happens again, instead of depending on a human noticing a
+        # 502 and redeploying by hand.
+        lock_db.execute(f"SET idle_in_transaction_session_timeout = '{_DASHBOARD_COMPUTE_TIMEOUT_S + 15}s'")
         lock_db.execute("SELECT pg_advisory_lock(?)", (_DASHBOARD_COMPUTE_LOCK,))
         lock_acquired = True
 
