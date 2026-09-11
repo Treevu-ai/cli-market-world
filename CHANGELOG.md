@@ -2,6 +2,16 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-11] — bump cli-market-core 1.12.70 -> 1.12.73
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.73` — two new PE
+retailers (see cli-market-core's CHANGELOG.md): `licoreriasunidas_pe`
+(Shopify, licores, 2nd retailer in the line, enables cross-store
+price_competitiveness) and `funcar_pe` (Shopify, automotriz, first
+retailer in the line — was registered metadata-only with zero stores).
+Also carries 1.12.71 (market_price_forecast price_observations) and
+1.12.72 (H5 write-endpoint freshness_note).
+
 ## [2026-09-04] — bump cli-market-core 1.12.63 -> 1.12.66
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.66` — three
