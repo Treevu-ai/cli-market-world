@@ -2,6 +2,16 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-11] — bump cli-market-core 1.12.73 -> 1.12.74
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.74` — fixes a
+same-store-panel bias in `basket_stress_index` (see cli-market-core's
+CHANGELOG.md): onboarding a new, cheaper store mid-window could pull the
+index down with zero real price movement behind it, since the 30d-ago
+baseline naturally has no history for a store that didn't exist yet.
+`current` is now restricted to the same store panel as the baseline
+whenever a real `30d_history` comparison is made.
+
 ## [2026-09-11] — bump cli-market-core 1.12.70 -> 1.12.73
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.73` — two new PE
