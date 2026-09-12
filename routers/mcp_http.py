@@ -1220,6 +1220,17 @@ _SLOW_TOOLS = frozenset({
     # 60s headroom as the other DB-fallback tools instead of a 20s timeout
     # that was shorter than typical live-scrape latency (18-34s observed).
     "market_search", "market_compare",
+    # market_intel_brief proxies to this app's own /v1/intel/brief over the
+    # public internet (client.get(f"{_API_BASE}/v1/intel/brief", ...) --
+    # _API_BASE is the public https://cli-market-api.fly.dev URL, not an
+    # in-process call), which internally runs build_intel_brief()'s full
+    # multi-indicator aggregation. Confirmed live 2026-09-11: repeated
+    # httpx.ReadTimeout at the 20s default (fly logs traceback), isolated to
+    # this tool while simpler ones stayed fast -- the round-trip-to-self
+    # overhead plus the aggregation cost don't reliably fit in 20s under any
+    # concurrent load, the same class of problem market_search/compare were
+    # already given 60s for above.
+    "market_intel_brief",
 })
 
 # Tools backed by cli-market-core's shared api_routes.py (Depends(_require_v1_auth)
