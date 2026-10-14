@@ -1,7 +1,15 @@
-# PyPI pin — update after each cli-market-core release
-cli-market-core==1.12.71
+# PyPI pin — update after each cli-market-core release.
+# Local-only mode (2026-10-14): cli-market-api on Fly is stopped and this repo
+# is run exclusively via run_local.py, which uses `pip install -e ~/cli-market-core`
+# instead of this pin — see run_local.py. Pin documents the version actually in
+# use (1.12.77, includes the find_substitutes accent/non-contiguous-match fix)
+# so a future Docker/Fly build stays correct once 1.12.77 is published to PyPI.
+cli-market-core==1.12.77
 
 # Semantic moat — Golden Record persistence (SQLite dev / Postgres prod).
+# Local-only mode (2026-10-14): installed via `pip install -e ~/cli-market-index`
+# instead of this git ref — see run_local.py / requirements.txt note above.
+# Commit below matches the local clone's HEAD at time of writing (0.2.2).
 cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@4ed5f585ece892722cac1d06cb82f2d671635c5d
 
 # Runtime dep the web tier imports directly (also pulled in transitively by the
