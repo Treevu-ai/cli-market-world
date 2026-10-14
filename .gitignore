@@ -69,6 +69,10 @@ credentials-local/
 output/
 market-reports/
 graphify-out/
+
+# Local-only dev server data (run_local.py against a local Postgres container,
+# decoupled from Fly's suspended cli-market-db).
+data_local/
 ops/generated/pit/*
 !ops/generated/pit/.gitkeep
 

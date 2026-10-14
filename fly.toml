@@ -76,7 +76,20 @@ primary_region = "gru"   # São Paulo — closest to PE/MX/CO/AR/CL
   internal_port = 8080
   force_https = true
   auto_stop_machines = false   # API debe estar siempre up
-  auto_start_machines = true
+
+  # Local-only mode (2026-10-14): cli-market-api's machines were stopped by
+  # hand (`fly machine stop`) so the app no longer serves traffic or bills.
+  # auto_start_machines=true would silently wake them on the next incoming
+  # request, undoing that -- set to false so a stray request can't revive it.
+  # Tried to also disable per-machine autostart directly (`fly machine
+  # update --autostart=false`, no redeploy needed) so this takes effect
+  # immediately instead of waiting for the next deploy, but Fly rejected it:
+  # the account needs billing info added at
+  # https://fly.io/dashboard/contacto-treevu-app/billing first. Until that's
+  # resolved (and/or this is redeployed), the stopped machines still run
+  # under the old deployed config and CAN auto-start on a request despite
+  # this file saying otherwise.
+  auto_start_machines = false
   min_machines_running = 1
 
   [http_service.concurrency]
