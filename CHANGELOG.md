@@ -2,6 +2,43 @@
 
 All notable changes to the CLI Market ecosystem.
 
+## [2026-09-11] — bump cli-market-core 1.12.75 -> 1.12.76
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.76` — serializes
+concurrent golden-linkage cache-miss computations with a lock, closing
+the gap left by 1.12.75's TTL bump and this repo's own startup-warmup
+fix (#574): a burst of concurrent callers hitting a cold cache could
+each fire the expensive query independently, several copies contending
+for CPU/disk on the shared-cpu-1x machine instead of one slow run.
+
+## [2026-09-11] — bump cli-market-core 1.12.73 -> 1.12.75
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.75` (see
+cli-market-core's CHANGELOG.md for both):
+
+- **1.12.74**: fixes a same-store-panel bias in `basket_stress_index` —
+  onboarding a new, cheaper store mid-window could pull the index down
+  with zero real price movement behind it, since the 30d-ago baseline
+  naturally has no history for a store that didn't exist yet. `current`
+  is now restricted to the same store panel as the baseline whenever a
+  real `30d_history` comparison is made.
+- **1.12.75**: raises the `/health/stats` golden-linkage cache TTL from
+  5 to 30 minutes — the underlying `COUNT(DISTINCT ...)` query can spill
+  to disk on Postgres and exceed `ops/doctor_prod_gate.py`'s timeout;
+  the 5-minute cache was too short to reliably avoid landing on a slow
+  moment (confirmed live: 3 consecutive gate failures on this PR, ~2h+
+  after the last deploy, unrelated to the code being deployed).
+
+## [2026-09-11] — bump cli-market-core 1.12.70 -> 1.12.73
+
+`requirements.txt` pin bumped to `cli-market-core==1.12.73` — two new PE
+retailers (see cli-market-core's CHANGELOG.md): `licoreriasunidas_pe`
+(Shopify, licores, 2nd retailer in the line, enables cross-store
+price_competitiveness) and `funcar_pe` (Shopify, automotriz, first
+retailer in the line — was registered metadata-only with zero stores).
+Also carries 1.12.71 (market_price_forecast price_observations) and
+1.12.72 (H5 write-endpoint freshness_note).
+
 ## [2026-09-04] — bump cli-market-core 1.12.63 -> 1.12.66
 
 `requirements.txt` pin bumped to `cli-market-core==1.12.66` — three

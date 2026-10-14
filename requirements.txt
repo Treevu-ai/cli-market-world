@@ -9,8 +9,11 @@ cli-market-core==1.12.77
 # Semantic moat — Golden Record persistence (SQLite dev / Postgres prod).
 # Local-only mode (2026-10-14): installed via `pip install -e ~/cli-market-index`
 # instead of this git ref — see run_local.py / requirements.txt note above.
-# Commit below matches the local clone's HEAD at time of writing (0.2.2).
-cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@4ed5f585ece892722cac1d06cb82f2d671635c5d
+# Commit below matches the local clone's HEAD after syncing with main's own
+# pin bump (origin/main had moved this to aab06b2 independently; pulled the
+# local clone forward to treevu-ai-main's current tip, 8d6d623, instead of
+# just taking whichever side was newer).
+cli-market-index[postgres] @ git+https://github.com/Treevu-ai/cli-market-index@8d6d623680196bfc37336c0a25d9894ade6ef5dc
 
 # Runtime dep the web tier imports directly (also pulled in transitively by the
 # core, kept explicit so the server's Playwright fallback always resolves).

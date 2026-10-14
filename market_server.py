@@ -190,6 +190,37 @@ async def lifespan(_app: FastAPI):
         await register_telegram_commands()
     except Exception as e:
         logger.warning("Telegram command menu registration skipped: %s", e)
+    try:
+        # health_stats._LINKAGE_CACHE is process-local (see its own module
+        # docstring) -- every fresh deploy restarts the process and starts
+        # cold, so the first GET /health/stats after a deploy still pays the
+        # full COUNT(DISTINCT ...) cost regardless of the cache's TTL. That
+        # first request is often the deploy workflow's own post-deploy smoke
+        # test (ops/doctor_prod_gate.py's "Golden linkage" check), which has
+        # a tighter timeout than a human visitor would tolerate -- confirmed
+        # live 2026-09-11: 3+ consecutive deploys failed/rolled back on this
+        # exact cold-cache race, unrelated to the code actually being
+        # deployed. Warm the cache here in a background thread (non-blocking
+        # -- app readiness shouldn't wait on this) so it's populated by the
+        # time the smoke test's request arrives, instead of leaving every
+        # deploy to race a query that can take 20s+.
+        import threading
+
+        from market_core.health_stats import compute_linkage_metrics
+
+        def _warm_linkage_cache() -> None:
+            try:
+                db = get_db()
+                try:
+                    compute_linkage_metrics(db)
+                finally:
+                    db.close()
+            except Exception as exc:
+                logger.warning("Golden-linkage cache warm-up skipped: %s", exc)
+
+        threading.Thread(target=_warm_linkage_cache, daemon=True).start()
+    except Exception as e:
+        logger.warning("Golden-linkage cache warm-up scheduling skipped: %s", e)
     yield
 
 
